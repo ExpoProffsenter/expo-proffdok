@@ -173,3 +173,25 @@
     width: 100% !important;
   }
 }
+@media screen and (max-width: 900px) {
+  body {
+    zoom: 1 !important;
+    transform: none !important;
+  }
+
+  button,
+  .upload,
+  input,
+  select,
+  textarea {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  main,
+  section,
+  .item {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+}
