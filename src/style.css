@@ -118,3 +118,15 @@
     flex: 0 0 auto;
   }
 }
+
+@media screen and (max-width: 900px) {
+  .grid,
+  .two,
+  .row,
+  .cards,
+  .checks,
+  .photos {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+}
