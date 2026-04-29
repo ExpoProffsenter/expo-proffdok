@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import { createRoot } from 'react-dom/client';
 import { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck } from 'lucide-react';
 import './style.css';
-
+const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 const productSections=[
  {title:'Avretting / støpeprodukter',items:['Sopro VS582 Avretting','Sopro 3.50 Avretting','Sopro HF-S 563 Avretting','Sopro FS 5® Avretting','Sopro RDS 960 - Ekspansjonsbånd','Sopro Classic EM Hurtigstøp','Sopro RAM 3® reparasjon og støpemørtel','Sopro RS 462 reparasjonsmørtel','Sopro Rapidur M5® hurtigstøp']},
  {title:'Primer / forsterkningsduk',items:['Sopro PG-X 1188','Sopro EPG 1522 - 2 Komponent Epoxy primer','Sopro HPS 673 - spesial primer ikke sugende','Sopro GD 749 - primer sugende underlag','Sopro SG 874 Dampsperre-Primer']},
