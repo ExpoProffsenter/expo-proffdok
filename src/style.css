@@ -130,3 +130,24 @@
     grid-template-columns: 1fr !important;
   }
 }
+@media screen and (max-width: 900px) {
+  body {
+    zoom: 1.35;
+  }
+
+  .head,
+  nav,
+  main {
+    max-width: 100% !important;
+  }
+
+  .grid,
+  .two,
+  .row,
+  .cards,
+  .checks,
+  .photos {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+}
