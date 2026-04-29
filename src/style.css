@@ -64,3 +64,57 @@
     flex: 0 0 auto;
   }
 }
+
+@media screen and (max-width: 900px) {
+
+  /* TVING ALT til én kolonne */
+  .grid,
+  .two,
+  .row,
+  .cards,
+  .checks,
+  .photos {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px;
+  }
+
+  /* Gjør feltene store */
+  input,
+  textarea,
+  select {
+    width: 100% !important;
+    font-size: 20px !important;
+    padding: 14px !important;
+  }
+
+  /* Gjør knapper store */
+  button {
+    width: 100% !important;
+    font-size: 18px !important;
+    padding: 16px !important;
+  }
+
+  /* Bilder skal fylle skjerm */
+  img {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Header fikser seg */
+  .head {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* Nav blir scrollbar */
+  nav {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+  }
+
+  nav button {
+    flex: 0 0 auto;
+  }
+}
