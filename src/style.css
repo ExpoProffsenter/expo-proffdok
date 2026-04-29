@@ -195,3 +195,15 @@
     z-index: 1 !important;
   }
 }
+@media screen and (max-width: 900px) {
+  body {
+    zoom: 1 !important;
+  }
+
+  button {
+    position: relative !important;
+    z-index: 999 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+}
