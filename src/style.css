@@ -1,1 +1,66 @@
 *{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f8fafc;color:#0f172a}header{position:sticky;top:0;background:#fff;border-bottom:1px solid #e2e8f0;z-index:10}.head{max-width:1180px;margin:auto;display:flex;align-items:center;gap:16px;justify-content:space-between;padding:16px}.head>div:nth-child(2){margin-right:auto}.head h1{margin:0;font-size:28px}.head p{margin:3px 0 0;color:#64748b}nav{max-width:1180px;margin:auto;display:flex;gap:8px;overflow:auto;padding:0 16px 14px}button,.upload{border:0;background:#dc2626;color:white;border-radius:16px;padding:11px 16px;font-weight:700;display:inline-flex;gap:8px;align-items:center;cursor:pointer;text-decoration:none}nav button{background:#f1f5f9;color:#0f172a;white-space:nowrap}nav button.on{background:#dc2626;color:white}.secondary{background:white;color:#0f172a;border:1px solid #cbd5e1}main{max-width:1180px;margin:auto;padding:22px 16px}section{background:white;border-radius:22px;padding:22px;margin-bottom:18px;box-shadow:0 4px 18px #0f172a0c}h2{display:flex;align-items:center;gap:10px;margin:0 0 18px}.brand{display:flex;align-items:center;gap:10px}.brand>div{height:48px;width:48px;background:#dc2626;color:white;border-radius:16px;display:grid;place-items:center;font-weight:900}.brand b{display:block;font-size:22px}.brand small{font-weight:800;letter-spacing:.18em;text-transform:uppercase}.brandImg{max-height:58px;max-width:240px;object-fit:contain}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.two{display:grid;grid-template-columns:320px 1fr;gap:24px}.logoBox{border:1px solid #e2e8f0;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center}.note{background:#fef2f2;color:#7f1d1d;border:1px solid #fecaca;border-radius:18px;padding:14px}label span{display:block;color:#475569;font-size:14px;font-weight:700;margin-bottom:6px}input,textarea,select{width:100%;border:1px solid #cbd5e1;border-radius:16px;padding:12px;font:inherit}textarea{min-height:96px}.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.check{border:1px solid #e2e8f0;border-radius:16px;padding:12px;display:flex;gap:10px}.check input{width:auto;accent-color:#dc2626}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.tile{border:1px solid #e2e8f0;border-radius:18px;padding:16px;cursor:pointer}.tile b{display:flex;gap:8px}.tile span{color:#64748b;margin-top:6px}.tile input,.upload input{display:none}.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}.photo{border:1px solid #e2e8f0;border-radius:18px;padding:12px}.photo img{width:100%;height:190px;object-fit:cover;border-radius:14px}.photo small,.file small,.item small{display:block;color:#64748b;margin:4px 0 8px}.row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin-top:12px}.item,.file{border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin-top:12px}.reportTop{display:flex;justify-content:space-between;gap:20px;border:1px solid #e2e8f0;border-radius:18px;padding:16px;margin-bottom:18px}.out{background:#f8fafc;border-radius:14px;padding:12px}footer{text-align:center;color:#64748b;border-top:1px solid #e2e8f0;padding-top:14px;margin-top:24px}@media(max-width:760px){.head{align-items:flex-start;flex-direction:column}.grid,.two,.checks,.cards,.photos,.row{grid-template-columns:1fr}.head button{width:100%;justify-content:center}}@media print{header{display:none}body{background:white}main{max-width:none}section{box-shadow:none;border:1px solid #e2e8f0;break-inside:avoid}.reportPhotos{grid-template-columns:repeat(2,1fr)}button,.upload{display:none}}
+
+@media screen and (max-width: 900px) {
+  html {
+    font-size: 22px !important;
+  }
+
+  body,
+  input,
+  textarea,
+  select,
+  button,
+  label,
+  span,
+  p,
+  div {
+    font-size: 1rem !important;
+  }
+
+  h1 {
+    font-size: 1.6rem !important;
+  }
+
+  h2 {
+    font-size: 1.35rem !important;
+  }
+
+  main {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 10px !important;
+  }
+
+  section {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 16px !important;
+  }
+
+  .grid,
+  .two,
+  .row {
+    display: block !important;
+  }
+
+  input,
+  textarea,
+  select {
+    min-height: 56px !important;
+  }
+
+  button {
+    width: 100%;
+    padding: 14px !important;
+  }
+
+  nav {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+  }
+
+  nav button {
+    flex: 0 0 auto;
+  }
+}
