@@ -151,3 +151,25 @@
     flex-direction: column !important;
   }
 }
+@media screen and (max-width: 900px) {
+  select {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 56px !important;
+    width: 100% !important;
+    background: white !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+
+  .item {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .item button,
+  .item .upload {
+    width: 100% !important;
+  }
+}
