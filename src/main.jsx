@@ -6,7 +6,7 @@ import './style.css';
 
 const supabase = createClient(
   'https://dqffxflaoyarbxyiyhop.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE'
 );
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -69,13 +69,13 @@ function App() {
 
   const loadProjects = async () => {
     const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending:false });
-    if (error) return alert('Kunne ikke hente prosjektliste');
+    if (error) { console.error(error); return alert('Kunne ikke hente prosjektliste: ' + error.message); }
     setProjects(data || []);
   };
 
   const openProjectById = async (id) => {
     const { data, error } = await supabase.from('projects').select('*').eq('id', id).single();
-    if (error || !data) return alert('Kunne ikke åpne prosjekt');
+    if (error || !data) { console.error(error); return alert('Kunne ikke åpne prosjekt: ' + (error?.message || 'Fant ikke prosjekt')); }
     unpackData(data.data || {});
     setProjectId(data.id);
     setTab('rapport');
@@ -92,11 +92,11 @@ function App() {
     const payload = { title: project.projectName || project.address || 'Uten navn', data: packData() };
     if (projectId) {
       const { error } = await supabase.from('projects').update(payload).eq('id', projectId);
-      if (error) return alert('Kunne ikke oppdatere prosjekt i sky');
+      if (error) { console.error(error); return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message); }
       alert('Prosjektet er oppdatert i sky');
     } else {
       const { data, error } = await supabase.from('projects').insert(payload).select().single();
-      if (error) return alert('Kunne ikke lagre i sky. Sjekk Supabase-policy.');
+      if (error) { console.error(error); return alert('Kunne ikke lagre i sky: ' + error.message); }
       setProjectId(data.id);
       alert('Prosjekt lagret i sky');
     }
@@ -106,7 +106,7 @@ function App() {
   const saveAsNewProject = async () => {
     const payload = { title: project.projectName || project.address || 'Uten navn', data: packData() };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
-    if (error) return alert('Kunne ikke lagre som nytt prosjekt');
+    if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
     alert('Lagret som nytt prosjekt');
     loadProjects();
@@ -115,7 +115,7 @@ function App() {
   const deleteProject = async (id) => {
     if (!window.confirm('Er du sikker på at du vil slette prosjektet?')) return;
     const { error } = await supabase.from('projects').delete().eq('id', id);
-    if (error) return alert('Kunne ikke slette prosjekt. Sjekk DELETE-policy i Supabase.');
+    if (error) { console.error(error); return alert('Kunne ikke slette prosjekt: ' + error.message); }
     if (id === projectId) setProjectId(null);
     loadProjects();
   };
