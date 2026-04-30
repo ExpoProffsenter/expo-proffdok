@@ -38,6 +38,8 @@ function App() {
   const [files, setFiles] = useState([]);
   const [cloudProjects, setCloudProjects] = useState([]);
   const [cloudLoading, setCloudLoading] = useState(false);
+  const [activeProjectId, setActiveProjectId] = useState(null);
+  const [activeProjectTitle, setActiveProjectTitle] = useState('');
 
   const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({ section:s.title, item:i }))), [checked]);
   const name = company.companyName || 'Expo Proffsenter';
@@ -89,13 +91,15 @@ function App() {
   };
 
   const saveCloud = async () => {
+    if (!activeProjectId) return saveCloudAsNew();
+
     const title = getProjectTitle();
     const data = makeProjectData();
 
     try {
       setCloudLoading(true);
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/projects`, {
-        method: 'POST',
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/projects?id=eq.${activeProjectId}`, {
+        method: 'PATCH',
         headers: {
           apikey: SUPABASE_ANON_KEY,
           Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
@@ -107,7 +111,44 @@ function App() {
 
       if (!res.ok) throw new Error(await res.text());
 
-      alert('Prosjekt lagret i skyen');
+      setActiveProjectTitle(title);
+      alert('Eksisterende prosjekt er oppdatert i skyen');
+      await fetchProjects();
+    } catch (err) {
+      console.error(err);
+      alert('Kunne ikke oppdatere prosjektet. Sjekk Supabase UPDATE-policy.');
+    } finally {
+      setCloudLoading(false);
+    }
+  };
+
+  const saveCloudAsNew = async () => {
+    const title = getProjectTitle();
+    const data = makeProjectData();
+
+    try {
+      setCloudLoading(true);
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/projects`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        },
+        body: JSON.stringify({ title, data })
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      const rows = await res.json();
+      const saved = rows?.[0];
+      if (saved?.id) {
+        setActiveProjectId(saved.id);
+        setActiveProjectTitle(saved.title || title);
+      }
+
+      alert('Prosjekt lagret som nytt i skyen');
       await fetchProjects();
     } catch (err) {
       console.error(err);
@@ -115,6 +156,13 @@ function App() {
     } finally {
       setCloudLoading(false);
     }
+  };
+
+  const newBlankProject = () => {
+    setActiveProjectId(null);
+    setActiveProjectTitle('');
+    applyProjectData({});
+    setTab('prosjekt');
   };
 
   const fetchProjects = async () => {
@@ -143,6 +191,8 @@ function App() {
   const openCloudProject = (row) => {
     if (!row || !row.data) return alert('Dette prosjektet mangler data');
     applyProjectData(row.data);
+    setActiveProjectId(row.id);
+    setActiveProjectTitle(row.title || 'Uten navn');
     setTab('prosjekt');
     alert(`Åpnet prosjekt: ${row.title || 'Uten navn'}`);
   };
@@ -153,15 +203,18 @@ function App() {
         <div className="head">
           <Brand logo={company.logoUrl} name={name}/>
           <div><h1>Expo ProffDok</h1><p>{name}</p></div>
-          <button type="button" onClick={saveCloud} disabled={cloudLoading}>{cloudLoading ? 'Jobber...' : 'Lagre i sky'}</button>
+          <button type="button" onClick={saveCloud} disabled={cloudLoading}>{cloudLoading ? 'Jobber...' : (activeProjectId ? 'Oppdater prosjekt' : 'Lagre i sky')}</button>
+          <button type="button" onClick={saveCloudAsNew} disabled={cloudLoading}>Lagre som nytt</button>
           <button type="button" onClick={() => { setTab('prosjekter'); fetchProjects(); }}>Prosjektliste</button>
+          <button type="button" onClick={newBlankProject}>Nytt prosjekt</button>
           <button onClick={() => { setTab('rapport'); setTimeout(() => window.print(), 300); }}><Download size={18}/> Lag PDF / skriv ut</button>
         </div>
         <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>setTab(id)} key={id}>{l}</button>)}</nav>
+        {activeProjectId && <div style={{maxWidth:'1180px', margin:'0 auto', padding:'0 16px 12px', color:'#64748b', fontSize:'14px'}}>Aktivt prosjekt: <b>{activeProjectTitle || getProjectTitle()}</b></div>}
       </header>
       <main>
         {tab==='prosjekter' && <Section title="Prosjektliste i sky">
-          <p className="note">Her ser du prosjekter som er lagret i Supabase. Klikk “Åpne prosjekt” for å hente et prosjekt tilbake i appen.</p>
+          <p className="note">Her ser du prosjekter som er lagret i Supabase. Klikk “Åpne prosjekt” for å hente et prosjekt tilbake i appen. Når et prosjekt er åpnet, vil “Oppdater prosjekt” lagre endringer på samme prosjekt.</p>
           <button type="button" onClick={fetchProjects} disabled={cloudLoading}>{cloudLoading ? 'Henter...' : 'Oppdater prosjektliste'}</button>
           <div style={{ marginTop:'16px', display:'grid', gap:'12px' }}>
             {cloudProjects.map(row => {
@@ -172,6 +225,7 @@ function App() {
                   <small>{new Date(row.created_at).toLocaleString('no-NO')}</small>
                   {savedProject.customer && <p><b>Kunde:</b> {savedProject.customer}</p>}
                   {savedProject.address && <p><b>Adresse:</b> {savedProject.address}</p>}
+                  {activeProjectId === row.id && <p><b>Aktivt prosjekt</b></p>}
                   <button type="button" onClick={() => openCloudProject(row)}>Åpne prosjekt</button>
                 </div>
               );
