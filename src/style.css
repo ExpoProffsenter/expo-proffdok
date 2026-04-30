@@ -9,8 +9,6 @@ body {
   color: #0f172a;
 }
 
-/* HEADER */
-
 header {
   position: sticky;
   top: 0;
@@ -48,19 +46,6 @@ nav {
   padding: 0 16px 14px;
 }
 
-nav button {
-  background: #f1f5f9;
-  color: #0f172a;
-  white-space: nowrap;
-}
-
-nav button.on {
-  background: #dc2626;
-  color: white;
-}
-
-/* BUTTONS */
-
 button,
 .upload {
   border: 0;
@@ -72,13 +57,22 @@ button,
   cursor: pointer;
 }
 
+nav button {
+  background: #f1f5f9;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+nav button.on {
+  background: #dc2626;
+  color: white;
+}
+
 .secondary {
   background: white;
   color: #0f172a;
   border: 1px solid #cbd5e1;
 }
-
-/* MAIN */
 
 main {
   max-width: 1180px;
@@ -98,8 +92,6 @@ h2 {
   margin-bottom: 16px;
 }
 
-/* GRID */
-
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -117,8 +109,6 @@ h2 {
   grid-template-columns: 1fr 1fr 1fr auto;
   gap: 12px;
 }
-
-/* INPUT */
 
 label span {
   display: block;
@@ -140,8 +130,6 @@ textarea {
   min-height: 100px;
 }
 
-/* CARDS */
-
 .cards,
 .photos,
 .checks {
@@ -157,10 +145,7 @@ textarea {
   border-radius: 12px;
 }
 
-/* MOBILE */
-
 @media screen and (max-width: 900px) {
-
   body {
     font-size: 18px;
   }
@@ -202,66 +187,9 @@ textarea {
   }
 }
 
-/* PRINT */
-
-@media print {
-  header {
-    display: none;
-  }
-
-  button,
-  .upload {
-    display: none;
-  }
-}
-
-@media print {
-
-  body {
-    background: white;
-  }
-
-  header, nav, button {
-    display: none !important;
-  }
-
-  .report {
-    padding: 20px;
-  }
-
-  .report h2 {
-    border-bottom: 2px solid #000;
-    padding-bottom: 5px;
-    margin-top: 30px;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .out {
-    border: 1px solid #ccc;
-    padding: 8px;
-  }
-
-  .photos {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-
-  .photo img {
-    width: 100%;
-    height: auto;
-  }
-
-}
-
 @media print {
   @page {
-    margin: 14mm;
+    margin: 12mm;
   }
 
   body {
@@ -283,32 +211,49 @@ textarea {
   section {
     box-shadow: none !important;
     border: 1px solid #ddd !important;
-    margin-bottom: 14px !important;
-    padding: 16px !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    margin-bottom: 12px !important;
+    padding: 14px !important;
+    break-inside: auto;
+    page-break-inside: auto;
   }
 
-  .photo,
-  .out,
-  .item,
-  .file {
+  .report h2 {
+    border-bottom: 1px solid #000;
+    padding-bottom: 4px;
+    margin-top: 18px;
+  }
+
+  .grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .out {
+    border: 1px solid #ccc;
+    padding: 8px;
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
   .photos {
+    display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 10px !important;
   }
 
+  .photo {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   .photo img {
-    height: 130px !important;
+    width: 100% !important;
+    height: 120px !important;
     object-fit: cover !important;
   }
 
   footer {
-    break-before: avoid;
-    page-break-before: avoid;
+    margin-top: 20px;
   }
 }
