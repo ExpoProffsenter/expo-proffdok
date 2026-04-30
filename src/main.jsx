@@ -148,6 +148,24 @@ function App() {
     id: uid(), name:f.name, url: URL.createObjectURL(f), by:user.name || 'Ukjent', created:new Date().toLocaleString('no-NO')
   }))]);
 
+  const isReadOnly = new URLSearchParams(window.location.search).has("project");
+
+  if (isReadOnly) {
+    return <div>
+      <header>
+        <div className="head">
+          <Brand logo={company.logoUrl} name={name}/>
+          <div><h1>Expo ProffDok</h1><p>Kundevisning – kun lesing</p></div>
+          <button onClick={() => window.print()}><Download size={18}/> Lag PDF / skriv ut</button>
+        </div>
+      </header>
+      <main>
+        <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files}/>
+      </main>
+    </div>;
+  }
+
+
   return <div>
     <header>
       <div className="head">
