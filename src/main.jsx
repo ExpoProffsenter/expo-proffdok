@@ -227,6 +227,23 @@ function App() {
     setTimeout(() => setSavingStatus(''), 3000);
   };
 
+
+  const startNewProject = () => {
+    if (projectId && !window.confirm('Vil du starte et nytt tomt prosjekt? Husk å lagre endringer først.')) return;
+    setProjectId(null);
+    setProject(emptyProject());
+    setChecked({});
+    setOther({});
+    setSurf({});
+    setPhotos([]);
+    setAccess([]);
+    setInst([]);
+    setFiles([]);
+    setSavingStatus('Nytt prosjekt klart');
+    setTab('prosjekt');
+    setTimeout(() => setSavingStatus(''), 2500);
+  };
+
   const deleteProject = async (id) => {
     if (!window.confirm('Er du sikker på at du vil slette prosjektet?')) return;
     if (!authUser) return alert('Du må være logget inn for å slette prosjekt.');
@@ -445,6 +462,7 @@ function App() {
         <Brand logo={company.logoUrl} name={name}/>
         <div><h1>Expo ProffDok</h1><p>{projectId ? 'Åpnet prosjekt' : (authUser?.email || name)}</p></div>
         <button className="secondary" onClick={signOut}>Logg ut</button>
+        <button className="secondary" onClick={startNewProject}>Nytt tomt prosjekt</button>
         <button onClick={saveProject} disabled={savingStatus === 'Lagrer...'}>{savingStatus === 'Lagrer...' ? 'Lagrer...' : (projectId ? 'Oppdater prosjekt' : 'Lagre nytt prosjekt')}</button>
         <button onClick={saveAsNewProject} disabled={savingStatus === 'Lagrer...'}>Lagre som nytt</button>
         <button onClick={shareProject}>Kopier delingslink</button>
@@ -507,7 +525,22 @@ function App() {
 
       {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}><label className="upload"><Plus size={18}/> Last opp sjekkliste / vedlegg<input type="file" multiple onChange={e=>addFiles(e.target.files)}/></label>{files.map(f=><div className="file" key={f.id}><b>{f.name}</b><small>Lastet opp av {f.by} · {f.created}</small><a href={f.url} target="_blank">Åpne</a><button className="secondary" onClick={()=>setFiles(files.filter(x=>x.id!==f.id))}>Fjern</button></div>)}</Section>}
 
-      {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={() => loadProjects(authUser)}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>{new Date(p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
+      {tab==='prosjektliste' && <Section title="Prosjektliste">
+        <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginBottom:'18px' }}>
+          <button onClick={() => loadProjects(authUser)}>Oppdater liste</button>
+          <button className="secondary" onClick={startNewProject}><Plus size={18}/> Nytt tomt prosjekt</button>
+        </div>
+        <div style={{ display:'grid', gap:'12px' }}>
+          {projects.map(p=><div className="item" key={p.id} style={{ display:'grid', gridTemplateColumns:'1fr auto auto', alignItems:'center', gap:'12px', padding:'14px 0', borderBottom:'1px solid #e2e8f0' }}>
+            <div>
+              <b>{p.title || 'Uten navn'}</b>
+              <small style={{ display:'block', color:'#64748b', marginTop:'4px' }}>{new Date(p.created_at).toLocaleString('no-NO')}</small>
+            </div>
+            <button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button>
+            <button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button>
+          </div>)}
+        </div>
+      </Section>}
 
       {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files}/>} 
     </main>
