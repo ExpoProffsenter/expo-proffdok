@@ -4,6 +4,8 @@ import { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, Ba
 import './style.css';
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+const SUPABASE_URL = 'https://dqffxflaoyarbxyiyhop.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE';
 
 const productSections = [
   { title: 'Avretting / støpeprodukter', items: ['Sopro VS582 Avretting','Sopro 3.50 Avretting','Sopro HF-S 563 Avretting','Sopro FS 5® Avretting','Sopro RDS 960 - Ekspansjonsbånd','Sopro Classic EM Hurtigstøp','Sopro RAM 3® reparasjon og støpemørtel','Sopro RS 462 reparasjonsmørtel','Sopro Rapidur M5® hurtigstøp'] },
@@ -52,26 +54,58 @@ function App() {
     id: uid(), name:f.name, url: URL.createObjectURL(f), by:user.name || 'Ukjent', created:new Date().toLocaleString('no-NO')
   }))]);
 
-  const saveLocal = () => {
+  const saveCloud = async () => {
     const data = { company, user, project, checked, other, surf, access, inst, files: files.map(f => ({ ...f, url:'' })) };
-    localStorage.setItem('expoProffDokProject', JSON.stringify(data));
-    alert('Prosjekt lagret lokalt på denne enheten');
+    const title = project.projectName || project.customer || 'Uten navn';
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/projects`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal'
+        },
+        body: JSON.stringify({ title, data })
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+      alert('Prosjekt lagret i skyen');
+    } catch (err) {
+      console.error(err);
+      alert('Kunne ikke lagre i skyen. Sjekk Supabase URL/API key og tabellen projects.');
+    }
   };
 
-  const loadLocal = () => {
-    const raw = localStorage.getItem('expoProffDokProject');
-    if (!raw) return alert('Fant ingen lagret prosjektdata på denne enheten');
-    const data = JSON.parse(raw);
-    setCompany(data.company || company);
-    setUser(data.user || user);
-    setProject(data.project || project);
-    setChecked(data.checked || {});
-    setOther(data.other || {});
-    setSurf(data.surf || {});
-    setAccess(data.access || []);
-    setInst(data.inst || []);
-    setFiles(data.files || []);
-    alert('Prosjekt lastet inn');
+  const loadCloud = async () => {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/projects?select=*&order=created_at.desc&limit=1`, {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+      const rows = await res.json();
+      if (!rows.length) return alert('Fant ingen lagrede prosjekter i skyen');
+
+      const data = rows[0].data || {};
+      setCompany(data.company || company);
+      setUser(data.user || user);
+      setProject(data.project || project);
+      setChecked(data.checked || {});
+      setOther(data.other || {});
+      setSurf(data.surf || {});
+      setAccess(data.access || []);
+      setInst(data.inst || []);
+      setFiles(data.files || []);
+      alert('Siste prosjekt lastet inn fra skyen');
+    } catch (err) {
+      console.error(err);
+      alert('Kunne ikke laste fra skyen. Sjekk Supabase URL/API key og tabellen projects.');
+    }
   };
 
   return (
@@ -80,8 +114,8 @@ function App() {
         <div className="head">
           <Brand logo={company.logoUrl} name={name}/>
           <div><h1>Expo ProffDok</h1><p>{name}</p></div>
-          <button onClick={saveLocal}>Lagre prosjekt</button>
-          <button onClick={loadLocal}>Last inn prosjekt</button>
+          <button onClick={saveCloud}>Lagre i sky</button>
+          <button onClick={loadCloud}>Last inn fra sky</button>
           <button onClick={() => { setTab('rapport'); setTimeout(() => window.print(), 300); }}><Download size={18}/> Lag PDF / skriv ut</button>
         </div>
         <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>setTab(id)} key={id}>{l}</button>)}</nav>
