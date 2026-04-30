@@ -49,6 +49,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [savingStatus, setSavingStatus] = useState('');
 
   const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({ section:s.title, item:i }))), [checked]);
   const name = company.companyName || 'Expo Proffsenter';
@@ -184,28 +185,46 @@ function App() {
 
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
+    setSavingStatus('Lagrer...');
     const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), user_id: authUser.id, share_enabled: true };
+
     if (projectId) {
       const { error } = await supabase.from('projects').update(payload).eq('id', projectId).eq('user_id', authUser.id);
-      if (error) { console.error(error); return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message); }
-      alert('Prosjektet er oppdatert i sky');
+      if (error) {
+        console.error(error);
+        setSavingStatus('Kunne ikke lagre');
+        return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message);
+      }
+      setSavingStatus('Lagret ✔️');
     } else {
       const { data, error } = await supabase.from('projects').insert(payload).select().single();
-      if (error) { console.error(error); return alert('Kunne ikke lagre i sky: ' + error.message); }
+      if (error) {
+        console.error(error);
+        setSavingStatus('Kunne ikke lagre');
+        return alert('Kunne ikke lagre i sky: ' + error.message);
+      }
       setProjectId(data.id);
-      alert('Prosjekt lagret i sky');
+      setSavingStatus('Lagret ✔️');
     }
-    loadProjects(authUser);
+
+    await loadProjects(authUser);
+    setTimeout(() => setSavingStatus(''), 3000);
   };
 
   const saveAsNewProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
+    setSavingStatus('Lagrer...');
     const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), user_id: authUser.id, share_enabled: true };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
-    if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
+    if (error) {
+      console.error(error);
+      setSavingStatus('Kunne ikke lagre');
+      return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message);
+    }
     setProjectId(data.id);
-    alert('Lagret som nytt prosjekt');
-    loadProjects(authUser);
+    setSavingStatus('Lagret ✔️');
+    await loadProjects(authUser);
+    setTimeout(() => setSavingStatus(''), 3000);
   };
 
   const deleteProject = async (id) => {
@@ -426,10 +445,11 @@ function App() {
         <Brand logo={company.logoUrl} name={name}/>
         <div><h1>Expo ProffDok</h1><p>{projectId ? 'Åpnet prosjekt' : (authUser?.email || name)}</p></div>
         <button className="secondary" onClick={signOut}>Logg ut</button>
-        <button onClick={saveProject}>{projectId ? 'Oppdater prosjekt' : 'Lagre nytt prosjekt'}</button>
-        <button onClick={saveAsNewProject}>Lagre som nytt</button>
+        <button onClick={saveProject} disabled={savingStatus === 'Lagrer...'}>{savingStatus === 'Lagrer...' ? 'Lagrer...' : (projectId ? 'Oppdater prosjekt' : 'Lagre nytt prosjekt')}</button>
+        <button onClick={saveAsNewProject} disabled={savingStatus === 'Lagrer...'}>Lagre som nytt</button>
         <button onClick={shareProject}>Kopier delingslink</button>
         <button onClick={printReport}><Download size={18}/> Lag PDF / skriv ut</button>
+        {savingStatus && <span style={{ fontWeight:700, color: savingStatus === 'Lagret ✔️' ? '#16a34a' : '#dc2626' }}>{savingStatus}</span>}
       </div>
       <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>setTab(id)} key={id}>{l}</button>)}</nav>
     </header>
