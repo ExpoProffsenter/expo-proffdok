@@ -79,6 +79,28 @@ function App() {
     ]);
 
   const addFiles = fl =>
+    const saveLocal = () => {
+  const data = { company, user, project, checked, other, surf, access, inst, files: files.map(f=>({ ...f, url:'' })) };
+  localStorage.setItem('expoProffDokProject', JSON.stringify(data));
+  alert('Prosjekt lagret lokalt på denne enheten');
+};
+
+const loadLocal = () => {
+  const raw = localStorage.getItem('expoProffDokProject');
+  if (!raw) return alert('Fant ingen lagret prosjektdata på denne enheten');
+
+  const data = JSON.parse(raw);
+  setCompany(data.company || company);
+  setUser(data.user || user);
+  setProject(data.project || project);
+  setChecked(data.checked || {});
+  setOther(data.other || {});
+  setSurf(data.surf || {});
+  setAccess(data.access || []);
+  setInst(data.inst || []);
+  setFiles(data.files || []);
+  alert('Prosjekt lastet inn');
+};
     setFiles(p => [
       ...p,
       ...Array.from(fl || []).map(f => ({
@@ -99,6 +121,12 @@ function App() {
             <h1>Expo ProffDok</h1>
             <p>{name}</p>
           </div>
+          <button onClick={saveLocal}>Lagre prosjekt</button>
+<button onClick={loadLocal}>Last inn prosjekt</button>
+
+<button onClick={() => window.print()}>
+  <Download size={18}/> Lag PDF / skriv ut
+</button>
           <button onClick={() => window.print()}><Download size={18}/> Lag PDF / skriv ut</button>
         </div>
 
