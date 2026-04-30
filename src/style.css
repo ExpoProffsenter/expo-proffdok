@@ -258,3 +258,57 @@ textarea {
   }
 
 }
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  header,
+  nav,
+  button,
+  .upload {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  section {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    margin-bottom: 14px !important;
+    padding: 16px !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .photo,
+  .out,
+  .item,
+  .file {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .photos {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .photo img {
+    height: 130px !important;
+    object-fit: cover !important;
+  }
+
+  footer {
+    break-before: avoid;
+    page-break-before: avoid;
+  }
+}
