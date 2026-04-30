@@ -258,7 +258,7 @@ function App() {
     const link = `${window.location.origin}${window.location.pathname}?project=${projectId}`;
     try {
       await navigator.clipboard.writeText(link);
-      alert('Delingslink kopiert');
+      alert('Delingslink er kopiert til utklippstavlen. Du kan nå lime den inn i for eksempel en e-post med Ctrl+V.');
     } catch {
       prompt('Kopier denne linken:', link);
     }
@@ -685,13 +685,40 @@ function ChecklistReport({checklist}) {
   </section>;
 }
 
+
+function ProductsReport({selected, other}) {
+  const hasOther = Object.values(other || {}).some(v => hasValue(v));
+  if ((!selected || selected.length === 0) && !hasOther) return null;
+
+  const sections = productSections
+    .map(section => {
+      const items = (selected || []).filter(p => p.section === section.title);
+      const comment = other?.[section.title];
+      return { title: section.title, items, comment };
+    })
+    .filter(section => section.items.length > 0 || hasValue(section.comment));
+
+  return (
+    <section>
+      <h2>Produkter</h2>
+      {sections.map(section => (
+        <div key={section.title} className="productGroup">
+          <h3>{section.title}</h3>
+          {section.items.map(p => <p key={p.item}>• {p.item}</p>)}
+          {hasValue(section.comment) && <p className="productComment"><b>Annet / hvor brukt:</b> {section.comment}</p>}
+        </div>
+      ))}
+    </section>
+  );
+}
+
 function Report({company,name,project,selected,other,surf,photos,access,inst,files,checklist}) {
   const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, Kunde: project.customer, Dato: project.date, Notater: project.notes };
   const cats = [...new Set(photos.map(p=>p.cat))];
   return <div className="report">
     <section><div className="reportTop"><Brand logo={company.logoUrl} name={name}/><div><h2>{name}</h2>{company.address&&<p>{company.address}</p>}{company.orgNumber&&<p>Org.nr: {company.orgNumber}</p>}{company.phone&&<p>{company.phone}</p>}{company.email&&<p>{company.email}</p>}{company.website&&<p>{company.website}</p>}</div></div><h2>FDV-rapport / Prosjektdokumentasjon</h2><Grid>{Object.entries(projectFields).map(([k,v])=><div className="out" key={k}><b>{k}</b><p>{v || 'Ikke fylt ut'}</p></div>)}</Grid></section>
     <section><h2>Prosjektering</h2><Grid><div className="out"><b>Fall mot sluk</b><p>{project.fall || 'Ikke oppgitt'}</p></div><div className="out"><b>Slukplassering</b><p>{project.sluk || 'Ikke oppgitt'}</p></div><div className="out"><b>Terskelhøyde</b><p>{project.terskel || 'Ikke oppgitt'}</p></div><div className="out"><b>Membran</b><p>{project.membran || 'Ikke oppgitt'}</p></div></Grid>{project.prosjekteringKommentar&&<div className="out"><b>Kommentar / avvik</b><p>{project.prosjekteringKommentar}</p></div>}</section>
-    <section><h2>Produkter</h2>{selected.map(p=><p key={p.item}><b>{p.section}:</b> {p.item}</p>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k} annet:</b> {v}</p>)}</section>
+    <ProductsReport selected={selected} other={other}/>
     <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><p key={i.id}><b>{i.category}:</b> {i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>)}</section>
@@ -753,11 +780,7 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
       <Grid>{prosjektering.map(([label,value]) => <InfoCard key={label} label={label} value={value}/>)}</Grid>
     </section>}
 
-    {(selected.length > 0 || otherRows.length > 0) && <section>
-      <h2>Produkter</h2>
-      {selected.map(p => <p key={p.item}><b>{p.section}:</b> {p.item}</p>)}
-      {otherRows.map(([k,v]) => <p key={k}><b>{k} annet:</b> {v}</p>)}
-    </section>}
+    <ProductsReport selected={selected} other={other}/>
 
     {surfaceRows.length > 0 && <section>
       <h2>Overflater</h2>
