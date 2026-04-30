@@ -24,7 +24,7 @@ function App(){
  const [photos,setPhotos]=useState([]); const [access,setAccess]=useState([]); const [inst,setInst]=useState([]); const [files,setFiles]=useState([]);
  const selected=useMemo(()=>productSections.flatMap(s=>s.items.filter(i=>checked[i]).map(i=>({section:s.title,item:i}))),[checked]);
  const name=company.companyName||'Expo Proffsenter';
- const tabs=[['prosjekt','Prosjekt'],['firma','Firma'],['innlogging','Innlogging'],['produkter','Produkter'],['overflater','Overflater'],['bilder','Bilder'],['tilgang','Tilgang'],['installasjoner','Rør/utstyr'],['sjekklister','Sjekklister'],['rapport','Rapport']];
+const tabs=[['prosjekt','Prosjekt'],['firma','Firma'],['innlogging','Innlogging'],['prosjektering','Prosjektering'],['produkter','Produkter'],['overflater','Overflater'],['bilder','Bilder'],['tilgang','Tilgang'],['installasjoner','Fag/utstyr'],['sjekklister','Sjekklister'],['rapport','Rapport']];
  const addPhoto=(cat,fl)=>setPhotos(p=>[...p,...Array.from(fl||[]).map(f=>({id:uid(),cat,url:URL.createObjectURL(f),comment:'',created:new Date().toLocaleString('no-NO')}))]);
 const addFiles=fl=>setFiles(p=>[...p,...Array.from(fl||[]).map(f=>({id:uid(),name:f.name,url:URL.createObjectURL(f),by:user.name||'Ukjent',created:new Date().toLocaleString('no-NO')}))]);
  return <div><header><div className="head"><Brand logo={company.logoUrl} name={name}/><div><h1>Expo ProffDok</h1><p>{name}</p></div><button onClick={()=>window.print()}><Download size={18}/> Lag PDF / skriv ut</button></div><nav>{tabs.map(([id,l])=><button className={tab===id?'on':''} onClick={()=>setTab(id)} key={id}>{l}</button>)}</nav></header><main>
