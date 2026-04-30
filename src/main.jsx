@@ -43,12 +43,20 @@ function App() {
   const [files, setFiles] = useState([]);
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState(null);
+  const [authUser, setAuthUser] = useState(null);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({ section:s.title, item:i }))), [checked]);
   const name = company.companyName || 'Expo Proffsenter';
 
+  const isReadOnly = new URLSearchParams(window.location.search).has('project');
+
   const tabs = [
-    ['prosjekt','Prosjekt'], ['firma','Firma'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
+    ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
     ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport']
   ];
@@ -67,8 +75,16 @@ function App() {
     setFiles(data.files || []);
   };
 
-  const loadProjects = async () => {
-    const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending:false });
+  const loadProjects = async (currentUser = authUser) => {
+    if (!currentUser) {
+      setProjects([]);
+      return;
+    }
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending:false });
     if (error) { console.error(error); return alert('Kunne ikke hente prosjektliste: ' + error.message); }
     setProjects(data || []);
   };
@@ -81,17 +97,94 @@ function App() {
     setTab('rapport');
   };
 
+  const applyProfile = (row) => {
+    if (!row) return;
+    setProfile(row);
+    setCompany(c => ({
+      ...c,
+      companyName: row.company_name || c.companyName || 'Expo Proffsenter',
+      orgNumber: row.org_number || '',
+      address: row.address || '',
+      phone: row.phone || '',
+      email: row.email || '',
+    }));
+  };
+
+  const ensureProfile = async (sessionUser) => {
+    if (!sessionUser) return null;
+    setProfileLoading(true);
+
+    let { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', sessionUser.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error(error);
+      alert('Kunne ikke hente brukerprofil: ' + error.message);
+      setProfileLoading(false);
+      return null;
+    }
+
+    if (!data) {
+      const { data: inserted, error: insertError } = await supabase
+        .from('profiles')
+        .insert({ id: sessionUser.id, email: sessionUser.email, approved: false })
+        .select('*')
+        .single();
+
+      if (insertError) {
+        console.error(insertError);
+        alert('Kunne ikke opprette brukerprofil: ' + insertError.message);
+        setProfileLoading(false);
+        return null;
+      }
+      data = inserted;
+    }
+
+    applyProfile(data);
+    setProfileLoading(false);
+    return data;
+  };
+
+  const handleAuthUser = async (sessionUser) => {
+    setAuthUser(sessionUser);
+    if (!sessionUser) {
+      setProjects([]);
+      setProfile(null);
+      setProfileLoading(false);
+      return;
+    }
+    const row = await ensureProfile(sessionUser);
+    if (row?.approved) loadProjects(sessionUser);
+  };
+
   useEffect(() => {
-    loadProjects();
     const params = new URLSearchParams(window.location.search);
     const id = params.get('project');
-    if (id) openProjectById(id);
+    if (id) {
+      openProjectById(id);
+      setAuthLoading(false);
+      return;
+    }
+
+    supabase.auth.getSession().then(({ data }) => {
+      handleAuthUser(data.session?.user || null).finally(() => setAuthLoading(false));
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      handleAuthUser(session?.user || null);
+    });
+
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   const saveProject = async () => {
-    const payload = { title: project.projectName || project.address || 'Uten navn', data: packData() };
+    if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
+    const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), user_id: authUser.id, share_enabled: true };
     if (projectId) {
-      const { error } = await supabase.from('projects').update(payload).eq('id', projectId);
+      const { error } = await supabase.from('projects').update(payload).eq('id', projectId).eq('user_id', authUser.id);
       if (error) { console.error(error); return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message); }
       alert('Prosjektet er oppdatert i sky');
     } else {
@@ -100,24 +193,26 @@ function App() {
       setProjectId(data.id);
       alert('Prosjekt lagret i sky');
     }
-    loadProjects();
+    loadProjects(authUser);
   };
 
   const saveAsNewProject = async () => {
-    const payload = { title: project.projectName || project.address || 'Uten navn', data: packData() };
+    if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
+    const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), user_id: authUser.id, share_enabled: true };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
     alert('Lagret som nytt prosjekt');
-    loadProjects();
+    loadProjects(authUser);
   };
 
   const deleteProject = async (id) => {
     if (!window.confirm('Er du sikker på at du vil slette prosjektet?')) return;
-    const { error } = await supabase.from('projects').delete().eq('id', id);
+    if (!authUser) return alert('Du må være logget inn for å slette prosjekt.');
+    const { error } = await supabase.from('projects').delete().eq('id', id).eq('user_id', authUser.id);
     if (error) { console.error(error); return alert('Kunne ikke slette prosjekt: ' + error.message); }
     if (id === projectId) setProjectId(null);
-    loadProjects();
+    loadProjects(authUser);
   };
 
   const shareProject = async () => {
@@ -133,6 +228,50 @@ function App() {
     } catch {
       prompt('Kopier denne linken:', link);
     }
+  };
+
+
+  const saveProfile = async () => {
+    if (!authUser) return alert('Du må være logget inn.');
+
+    const payload = {
+      id: authUser.id,
+      email: company.email || authUser.email,
+      company_name: company.companyName || '',
+      org_number: company.orgNumber || '',
+      address: company.address || '',
+      phone: company.phone || '',
+    };
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(payload)
+      .eq('id', authUser.id);
+
+    if (error) return alert('Kunne ikke lagre firmaprofil: ' + error.message);
+
+    const row = { ...(profile || {}), ...payload };
+    applyProfile(row);
+    alert('Firmaprofil lagret');
+  };
+
+  const signIn = async () => {
+    const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+    if (error) return alert('Kunne ikke logge inn: ' + error.message);
+  };
+
+  const signUp = async () => {
+    const { error } = await supabase.auth.signUp({ email: authEmail, password: authPassword });
+    if (error) return alert('Kunne ikke opprette bruker: ' + error.message);
+    alert('Bruker opprettet. Kontoen må godkjennes før appen kan brukes.');
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setProjectId(null);
+    setProjects([]);
+    setProfile(null);
+    setTab('prosjekt');
   };
 
   const printReport = () => {
@@ -178,7 +317,70 @@ function App() {
     id: uid(), name:f.name, url: URL.createObjectURL(f), by:user.name || 'Ukjent', created:new Date().toLocaleString('no-NO')
   }))]);
 
-  const isReadOnly = new URLSearchParams(window.location.search).has("project");
+
+  if (authLoading && !isReadOnly) {
+    return <div><main><section><h2>Laster...</h2></section></main></div>;
+  }
+
+  if (!authUser && !isReadOnly) {
+    return <div>
+      <header>
+        <div className="head">
+          <Brand logo={company.logoUrl} name={name}/>
+          <div><h1>Expo ProffDok</h1><p>Logg inn for å se dine prosjekter</p></div>
+        </div>
+      </header>
+      <main>
+        <Section title="Innlogging" icon={<BadgeCheck/>}>
+          <Grid>
+            <Input label="E-post" value={authEmail} onChange={setAuthEmail}/>
+            <Input label="Passord" type="password" value={authPassword} onChange={setAuthPassword}/>
+          </Grid>
+          <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
+            <button onClick={signIn}>Logg inn</button>
+            <button className="secondary" onClick={signUp}>Opprett bruker</button>
+          </div>
+          <p className="note" style={{ marginTop:'16px' }}>Delingslenker fungerer fortsatt uten innlogging.</p>
+        </Section>
+      </main>
+    </div>;
+  }
+
+  if (!isReadOnly && (profileLoading || (authUser && !profile))) {
+    return <div>
+      <header><div className="head"><Brand logo={company.logoUrl} name={name}/><div><h1>Expo ProffDok</h1><p>Laster brukerprofil...</p></div></div></header>
+      <main><Section title="Laster" icon={<BadgeCheck/>}><p>Henter brukerprofil...</p></Section></main>
+    </div>;
+  }
+
+  if (!isReadOnly && authUser && profile && !profile.approved) {
+    return <div>
+      <header>
+        <div className="head">
+          <Brand logo={company.logoUrl} name={name}/>
+          <div><h1>Expo ProffDok</h1><p>Venter på godkjenning</p></div>
+          <button className="secondary" onClick={signOut}>Logg ut</button>
+        </div>
+      </header>
+      <main>
+        <Section title="Konto venter på godkjenning" icon={<BadgeCheck/>}>
+          <p className="note">Brukeren <b>{authUser.email}</b> er registrert, men må godkjennes av administrator før appen kan brukes.</p>
+          <p>Fyll gjerne inn firmaprofilen under. Administrator kan deretter godkjenne deg i Supabase ved å sette <b>approved = true</b> i tabellen <b>profiles</b>.</p>
+          <Grid>
+            <Input label="Firmanavn" value={company.companyName} onChange={v=>setCompany({...company,companyName:v})}/>
+            <Input label="Org.nr" value={company.orgNumber} onChange={v=>setCompany({...company,orgNumber:v})}/>
+            <Input label="Adresse" value={company.address} onChange={v=>setCompany({...company,address:v})}/>
+            <Input label="Telefon" value={company.phone} onChange={v=>setCompany({...company,phone:v})}/>
+            <Input label="E-post" value={company.email || authUser.email} onChange={v=>setCompany({...company,email:v})}/>
+          </Grid>
+          <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
+            <button onClick={saveProfile}>Lagre firmaprofil</button>
+            <button className="secondary" onClick={signOut}>Logg ut</button>
+          </div>
+        </Section>
+      </main>
+    </div>;
+  }
 
   if (isReadOnly) {
     return <div>
@@ -200,7 +402,8 @@ function App() {
     <header>
       <div className="head">
         <Brand logo={company.logoUrl} name={name}/>
-        <div><h1>Expo ProffDok</h1><p>{projectId ? 'Åpnet prosjekt' : name}</p></div>
+        <div><h1>Expo ProffDok</h1><p>{projectId ? 'Åpnet prosjekt' : (authUser?.email || name)}</p></div>
+        <button className="secondary" onClick={signOut}>Logg ut</button>
         <button onClick={saveProject}>{projectId ? 'Oppdater prosjekt' : 'Lagre nytt prosjekt'}</button>
         <button onClick={saveAsNewProject}>Lagre som nytt</button>
         <button onClick={shareProject}>Kopier delingslink</button>
@@ -219,8 +422,8 @@ function App() {
         <Textarea label="Notater" value={project.notes} onChange={v=>setProject({...project,notes:v})}/>
       </Grid></Section>}
 
-      {tab==='firma' && <Section title="Firma / white-label" icon={<Building2/>}>
-        <p className="note">Kundens logo og firmainfo vises i appen og rapporten. Uten kundelogo brukes Expo Proffsenter som standard.</p>
+      {tab==='firma' && <Section title="Firmaprofil" icon={<Building2/>}>
+        <p className="note">Firmaprofilen lagres på brukeren din og brukes automatisk i prosjekter og rapporter.</p>
         <div className="two"><div className="logoBox"><Brand logo={company.logoUrl} name={name}/><label className="upload"><Plus size={18}/> Last opp kundelogo<input type="file" accept="image/*" onChange={e=>setCompany({...company,logoUrl:URL.createObjectURL(e.target.files[0])})}/></label>{company.logoUrl && <button className="secondary" onClick={()=>setCompany({...company,logoUrl:''})}>Fjern logo</button>}</div>
         <Grid>
           <Input label="Firmanavn" value={company.companyName} onChange={v=>setCompany({...company,companyName:v})}/>
@@ -229,14 +432,18 @@ function App() {
           <Input label="Telefon" value={company.phone} onChange={v=>setCompany({...company,phone:v})}/>
           <Input label="E-post" value={company.email} onChange={v=>setCompany({...company,email:v})}/>
           <Input label="Hjemmeside" value={company.website} onChange={v=>setCompany({...company,website:v})}/>
-        </Grid></div>
+        </Grid></div><button onClick={saveProfile}>Lagre firmaprofil</button>
       </Section>}
 
-      {tab==='innlogging' && <Section title="Innlogging og brukerprofil" icon={<BadgeCheck/>}><p className="note">Demo av brukerprofil. I ferdig løsning kobles dette til ekte innlogging og database.</p><Grid>
-        <Input label="Navn" value={user.name} onChange={v=>setUser({...user,name:v})}/>
-        <Input label="E-post" value={user.email} onChange={v=>setUser({...user,email:v})}/>
-        <Select label="Rolle" value={user.role} options={roles} onChange={v=>setUser({...user,role:v})}/>
-      </Grid></Section>}
+      {tab==='innlogging' && <Section title="Innlogging og brukerprofil" icon={<BadgeCheck/>}>
+        <p className="note">Du er logget inn som <b>{authUser?.email}</b>. Prosjektlisten viser kun dine prosjekter. Delingslenker kan fortsatt åpnes av kunde uten innlogging.</p>
+        <Grid>
+          <Input label="Navn" value={user.name} onChange={v=>setUser({...user,name:v})}/>
+          <Input label="E-post i rapport" value={user.email} onChange={v=>setUser({...user,email:v})}/>
+          <Select label="Rolle" value={user.role} options={roles} onChange={v=>setUser({...user,role:v})}/>
+        </Grid>
+        <button className="secondary" onClick={signOut}>Logg ut</button>
+      </Section>}
 
       {tab==='prosjektering' && <Section title="Prosjektering"><Grid>
         <Input label="Fall mot sluk (mm per meter)" value={project.fall} onChange={v=>setProject({...project,fall:v})}/>
@@ -258,7 +465,7 @@ function App() {
 
       {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}><label className="upload"><Plus size={18}/> Last opp sjekkliste / vedlegg<input type="file" multiple onChange={e=>addFiles(e.target.files)}/></label>{files.map(f=><div className="file" key={f.id}><b>{f.name}</b><small>Lastet opp av {f.by} · {f.created}</small><a href={f.url} target="_blank">Åpne</a><button className="secondary" onClick={()=>setFiles(files.filter(x=>x.id!==f.id))}>Fjern</button></div>)}</Section>}
 
-      {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={loadProjects}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>{new Date(p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
+      {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={() => loadProjects(authUser)}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>{new Date(p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
 
       {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files}/>} 
     </main>
