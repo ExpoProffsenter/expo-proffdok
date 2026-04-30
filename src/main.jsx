@@ -36,12 +36,14 @@ function App() {
   const [access, setAccess] = useState([]);
   const [inst, setInst] = useState([]);
   const [files, setFiles] = useState([]);
+  const [cloudProjects, setCloudProjects] = useState([]);
+  const [cloudLoading, setCloudLoading] = useState(false);
 
   const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({ section:s.title, item:i }))), [checked]);
   const name = company.companyName || 'Expo Proffsenter';
 
   const tabs = [
-    ['prosjekt','Prosjekt'], ['firma','Firma'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
+    ['prosjekt','Prosjekt'], ['prosjekter','Prosjekter'], ['firma','Firma'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
     ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['rapport','Rapport']
   ];
@@ -54,11 +56,44 @@ function App() {
     id: uid(), name:f.name, url: URL.createObjectURL(f), by:user.name || 'Ukjent', created:new Date().toLocaleString('no-NO')
   }))]);
 
+  const getProjectTitle = () => project.projectName || project.customer || project.address || 'Uten navn';
+
+  const makeProjectData = () => ({
+    company,
+    user,
+    project,
+    checked,
+    other,
+    surf,
+    photos: photos.map(p => ({ ...p, url: '' })),
+    access,
+    inst: inst.map(i => ({ ...i, photos: (i.photos || []).map(p => ({ ...p, url: '' })) })),
+    files: files.map(f => ({ ...f, url: '' }))
+  });
+
+  const applyProjectData = (data = {}) => {
+    setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
+    setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
+    setProject(data.project || {
+      responsible:'', projectName:'', address:'', customer:'',
+      date:new Date().toISOString().slice(0,10), notes:'',
+      fall:'', sluk:'', terskel:'', membran:'', prosjekteringKommentar:''
+    });
+    setChecked(data.checked || {});
+    setOther(data.other || {});
+    setSurf(data.surf || {});
+    setPhotos(data.photos || []);
+    setAccess(data.access || []);
+    setInst(data.inst || []);
+    setFiles(data.files || []);
+  };
+
   const saveCloud = async () => {
-    const data = { company, user, project, checked, other, surf, access, inst, files: files.map(f => ({ ...f, url:'' })) };
-    const title = project.projectName || project.customer || 'Uten navn';
+    const title = getProjectTitle();
+    const data = makeProjectData();
 
     try {
+      setCloudLoading(true);
       const res = await fetch(`${SUPABASE_URL}/rest/v1/projects`, {
         method: 'POST',
         headers: {
@@ -71,16 +106,21 @@ function App() {
       });
 
       if (!res.ok) throw new Error(await res.text());
+
       alert('Prosjekt lagret i skyen');
+      await fetchProjects();
     } catch (err) {
       console.error(err);
-      alert('Kunne ikke lagre i skyen. Sjekk Supabase URL/API key og tabellen projects.');
+      alert('Kunne ikke lagre i skyen. Sjekk Supabase policy/URL/API key.');
+    } finally {
+      setCloudLoading(false);
     }
   };
 
-  const loadCloud = async () => {
+  const fetchProjects = async () => {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/projects?select=*&order=created_at.desc&limit=1`, {
+      setCloudLoading(true);
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/projects?select=id,title,created_at,data&order=created_at.desc`, {
         headers: {
           apikey: SUPABASE_ANON_KEY,
           Authorization: `Bearer ${SUPABASE_ANON_KEY}`
@@ -88,24 +128,23 @@ function App() {
       });
 
       if (!res.ok) throw new Error(await res.text());
-      const rows = await res.json();
-      if (!rows.length) return alert('Fant ingen lagrede prosjekter i skyen');
 
-      const data = rows[0].data || {};
-      setCompany(data.company || company);
-      setUser(data.user || user);
-      setProject(data.project || project);
-      setChecked(data.checked || {});
-      setOther(data.other || {});
-      setSurf(data.surf || {});
-      setAccess(data.access || []);
-      setInst(data.inst || []);
-      setFiles(data.files || []);
-      alert('Siste prosjekt lastet inn fra skyen');
+      const rows = await res.json();
+      setCloudProjects(rows || []);
+      if (!rows || rows.length === 0) alert('Fant ingen prosjekter i skyen ennå');
     } catch (err) {
       console.error(err);
-      alert('Kunne ikke laste fra skyen. Sjekk Supabase URL/API key og tabellen projects.');
+      alert('Kunne ikke hente prosjekter fra skyen.');
+    } finally {
+      setCloudLoading(false);
     }
+  };
+
+  const openCloudProject = (row) => {
+    if (!row || !row.data) return alert('Dette prosjektet mangler data');
+    applyProjectData(row.data);
+    setTab('prosjekt');
+    alert(`Åpnet prosjekt: ${row.title || 'Uten navn'}`);
   };
 
   return (
@@ -114,13 +153,33 @@ function App() {
         <div className="head">
           <Brand logo={company.logoUrl} name={name}/>
           <div><h1>Expo ProffDok</h1><p>{name}</p></div>
-          <button onClick={saveCloud}>Lagre i sky</button>
-          <button onClick={loadCloud}>Last inn fra sky</button>
+          <button type="button" onClick={saveCloud} disabled={cloudLoading}>{cloudLoading ? 'Jobber...' : 'Lagre i sky'}</button>
+          <button type="button" onClick={() => { setTab('prosjekter'); fetchProjects(); }}>Prosjektliste</button>
           <button onClick={() => { setTab('rapport'); setTimeout(() => window.print(), 300); }}><Download size={18}/> Lag PDF / skriv ut</button>
         </div>
         <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>setTab(id)} key={id}>{l}</button>)}</nav>
       </header>
       <main>
+        {tab==='prosjekter' && <Section title="Prosjektliste i sky">
+          <p className="note">Her ser du prosjekter som er lagret i Supabase. Klikk “Åpne prosjekt” for å hente et prosjekt tilbake i appen.</p>
+          <button type="button" onClick={fetchProjects} disabled={cloudLoading}>{cloudLoading ? 'Henter...' : 'Oppdater prosjektliste'}</button>
+          <div style={{ marginTop:'16px', display:'grid', gap:'12px' }}>
+            {cloudProjects.map(row => {
+              const savedProject = row.data?.project || {};
+              return (
+                <div className="item" key={row.id}>
+                  <b>{row.title || 'Uten navn'}</b>
+                  <small>{new Date(row.created_at).toLocaleString('no-NO')}</small>
+                  {savedProject.customer && <p><b>Kunde:</b> {savedProject.customer}</p>}
+                  {savedProject.address && <p><b>Adresse:</b> {savedProject.address}</p>}
+                  <button type="button" onClick={() => openCloudProject(row)}>Åpne prosjekt</button>
+                </div>
+              );
+            })}
+            {cloudProjects.length === 0 && <p>Ingen prosjekter hentet ennå. Trykk “Oppdater prosjektliste”.</p>}
+          </div>
+        </Section>}
+
         {tab==='prosjekt' && <Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
           <Input label="Prosjektansvarlig" value={project.responsible} onChange={v=>setProject({...project,responsible:v})}/>
           <Input label="Dato" type="date" value={project.date} onChange={v=>setProject({...project,date:v})}/>
