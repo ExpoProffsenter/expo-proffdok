@@ -153,7 +153,7 @@ function App() {
       <div className="head">
         <Brand logo={company.logoUrl} name={name}/>
         <div><h1>Expo ProffDok</h1><p>{projectId ? 'Åpnet prosjekt' : name}</p></div>
-        <button onClick={saveProject}>Lagre i sky</button>
+        <button onClick={saveProject}>{projectId ? 'Oppdater prosjekt' : 'Lagre nytt prosjekt'}</button>
         <button onClick={saveAsNewProject}>Lagre som nytt</button>
         <button onClick={shareProject}>Kopier delingslink</button>
         <button onClick={printReport}><Download size={18}/> Lag PDF / skriv ut</button>
