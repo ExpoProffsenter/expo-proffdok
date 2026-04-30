@@ -85,6 +85,33 @@ function App() {
     ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport']
   ];
 
+  const projectFlow = [
+    ['prosjekt','Prosjekt'],
+    ['prosjektering','Prosjektering'],
+    ['produkter','Produkter'],
+    ['overflater','Overflater'],
+    ['bilder','Bilder'],
+    ['tilgang','Tilgang'],
+    ['installasjoner','Fag/utstyr'],
+    ['sjekklister','Sjekklister'],
+    ['rapport','Rapport']
+  ];
+
+  const flowIndex = projectFlow.findIndex(([id]) => id === tab);
+  const goFlow = (direction) => {
+    if (flowIndex === -1) {
+      setTab('prosjekt');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const nextIndex = flowIndex + direction;
+    if (nextIndex < 0 || nextIndex >= projectFlow.length) return;
+
+    setTab(projectFlow[nextIndex][0]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
@@ -572,7 +599,13 @@ function App() {
         </div>
       </Section>}
 
-      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist}/>} 
+      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist}/>}
+
+      {flowIndex !== -1 && <section style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:'12px', flexWrap:'wrap' }}>
+        <button className="secondary" onClick={() => goFlow(-1)} disabled={flowIndex <= 0}>← Forrige</button>
+        <div style={{ fontWeight:700, color:'#64748b' }}>Steg {flowIndex + 1} av {projectFlow.length}: {projectFlow[flowIndex][1]}</div>
+        <button onClick={() => goFlow(1)} disabled={flowIndex >= projectFlow.length - 1}>Neste →</button>
+      </section>}
     </main>
   </div>;
 }
