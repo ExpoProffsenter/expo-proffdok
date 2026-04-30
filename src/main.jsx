@@ -185,12 +185,12 @@ function App() {
       <header>
         <div className="head">
           <Brand logo={company.logoUrl} name={name}/>
-          <div><h1>Expo ProffDok</h1><p>Kundevisning – kun lesing</p></div>
+          <div><h1>FDV-rapport</h1><p>Expo ProffDok – kundevisning</p></div>
           <button onClick={() => window.print()}><Download size={18}/> Lag PDF / skriv ut</button>
         </div>
       </header>
       <main>
-        <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files}/>
+        <CustomerReport company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} inst={inst} files={files}/>
       </main>
     </div>;
   }
@@ -285,6 +285,102 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><p key={i.id}><b>{i.category}:</b> {i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>)}</section>
     <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
     <section><h2>Prosjekttilgang</h2>{access.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>
+    <footer>Levert av Expo Proffsenter</footer>
+  </div>;
+}
+
+function hasValue(value) {
+  return value !== undefined && value !== null && String(value).trim() !== '';
+}
+
+function InfoCard({label, value}) {
+  if (!hasValue(value)) return null;
+  return <div className="out"><b>{label}</b><p>{value}</p></div>;
+}
+
+function CustomerReport({company,name,project,selected,other,surf,photos,inst,files}) {
+  const projectFields = [
+    ['Prosjektansvarlig', project.responsible],
+    ['Prosjektnavn', project.projectName],
+    ['Adresse', project.address],
+    ['Kunde', project.customer],
+    ['Dato', project.date],
+    ['Notater', project.notes]
+  ];
+
+  const prosjektering = [
+    ['Fall mot sluk', project.fall],
+    ['Slukplassering', project.sluk],
+    ['Terskelhøyde', project.terskel],
+    ['Membranløsning', project.membran],
+    ['Kommentar / avvik', project.prosjekteringKommentar]
+  ];
+
+  const surfaceRows = Object.entries(surf || {}).filter(([,v]) => hasValue(v));
+  const otherRows = Object.entries(other || {}).filter(([,v]) => hasValue(v));
+  const photoCats = [...new Set((photos || []).map(p => p.cat).filter(Boolean))];
+
+  return <div className="report">
+    <section>
+      <div className="reportTop">
+        <Brand logo={company.logoUrl} name={name}/>
+        <div>
+          <h2>{project.projectName || 'FDV-rapport / Prosjektdokumentasjon'}</h2>
+          {project.address && <p>{project.address}</p>}
+          {project.customer && <p><b>Kunde:</b> {project.customer}</p>}
+          {company.companyName && <p><b>Utførende:</b> {company.companyName}</p>}
+          {company.orgNumber && <p>Org.nr: {company.orgNumber}</p>}
+        </div>
+      </div>
+      <h2>Prosjektinformasjon</h2>
+      <Grid>{projectFields.map(([label,value]) => <InfoCard key={label} label={label} value={value}/>)}</Grid>
+    </section>
+
+    {prosjektering.some(([,v]) => hasValue(v)) && <section>
+      <h2>Prosjektering</h2>
+      <Grid>{prosjektering.map(([label,value]) => <InfoCard key={label} label={label} value={value}/>)}</Grid>
+    </section>}
+
+    {(selected.length > 0 || otherRows.length > 0) && <section>
+      <h2>Produkter</h2>
+      {selected.map(p => <p key={p.item}><b>{p.section}:</b> {p.item}</p>)}
+      {otherRows.map(([k,v]) => <p key={k}><b>{k} annet:</b> {v}</p>)}
+    </section>}
+
+    {surfaceRows.length > 0 && <section>
+      <h2>Overflater</h2>
+      <Grid>{surfaceRows.map(([k,v]) => <InfoCard key={k} label={k} value={v}/>)}</Grid>
+    </section>}
+
+    {(photos || []).length > 0 && <section>
+      <h2>Bildedokumentasjon</h2>
+      {photoCats.map(cat => <div key={cat}>
+        <h3>{cat}</h3>
+        <div className="photos reportPhotos">
+          {photos.filter(p => p.cat === cat).map(p => <div className="photo" key={p.id}>
+            <img src={p.url} alt={p.cat || 'Dokumentasjonsbilde'}/>
+            {p.comment && <p>{p.comment}</p>}
+          </div>)}
+        </div>
+      </div>)}
+    </section>}
+
+    {(inst || []).length > 0 && <section>
+      <h2>Fag, deler og utstyr</h2>
+      {inst.map(i => <div className="out" key={i.id}>
+        <b>{i.category || 'Post'}</b>
+        <p>{[i.name, i.qty, i.supplier, i.desc].filter(Boolean).join(' · ')}</p>
+        {(i.photos || []).length > 0 && <div className="photos reportPhotos">
+          {i.photos.map(p => <div className="photo" key={p.id}><img src={p.url} alt={p.name || 'Bilde'}/></div>)}
+        </div>}
+      </div>)}
+    </section>}
+
+    {(files || []).length > 0 && <section>
+      <h2>Sjekklister og vedlegg</h2>
+      {files.map(f => <p key={f.id}>{f.name}</p>)}
+    </section>}
+
     <footer>Levert av Expo Proffsenter</footer>
   </div>;
 }
