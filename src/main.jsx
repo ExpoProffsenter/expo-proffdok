@@ -107,6 +107,8 @@ function App() {
       address: row.address || '',
       phone: row.phone || '',
       email: row.email || '',
+      website: row.website || '',
+      logoUrl: row.logo_url || c.logoUrl || '',
     }));
   };
 
@@ -231,6 +233,19 @@ function App() {
   };
 
 
+  const uploadLogo = async (file) => {
+    if (!authUser || !file) return;
+    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+    const path = `logos/${authUser.id}/${Date.now()}-${cleanName}`;
+    const { error } = await supabase.storage
+      .from('project-images')
+      .upload(path, file, { cacheControl: '3600', upsert: true });
+    if (error) return alert('Kunne ikke laste opp logo: ' + error.message);
+    const { data } = supabase.storage.from('project-images').getPublicUrl(path);
+    setCompany(c => ({ ...c, logoUrl: data.publicUrl }));
+    alert('Logo lastet opp. Husk å trykke Lagre firmaprofil.');
+  };
+
   const saveProfile = async () => {
     if (!authUser) return alert('Du må være logget inn.');
 
@@ -241,6 +256,8 @@ function App() {
       org_number: company.orgNumber || '',
       address: company.address || '',
       phone: company.phone || '',
+      website: company.website || '',
+      logo_url: company.logoUrl || '',
     };
 
     const { error } = await supabase
@@ -372,7 +389,12 @@ function App() {
             <Input label="Adresse" value={company.address} onChange={v=>setCompany({...company,address:v})}/>
             <Input label="Telefon" value={company.phone} onChange={v=>setCompany({...company,phone:v})}/>
             <Input label="E-post" value={company.email || authUser.email} onChange={v=>setCompany({...company,email:v})}/>
+            <Input label="Hjemmeside" value={company.website || ''} onChange={v=>setCompany({...company,website:v})}/>
           </Grid>
+          <div style={{ marginTop:'16px' }}>
+            <Brand logo={company.logoUrl} name={name}/>
+            <label className="upload"><Plus size={18}/> Last opp firmalogo<input type="file" accept="image/*" onChange={e=>uploadLogo(e.target.files?.[0])}/></label>
+          </div>
           <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
             <button onClick={saveProfile}>Lagre firmaprofil</button>
             <button className="secondary" onClick={signOut}>Logg ut</button>
@@ -424,7 +446,7 @@ function App() {
 
       {tab==='firma' && <Section title="Firmaprofil" icon={<Building2/>}>
         <p className="note">Firmaprofilen lagres på brukeren din og brukes automatisk i prosjekter og rapporter.</p>
-        <div className="two"><div className="logoBox"><Brand logo={company.logoUrl} name={name}/><label className="upload"><Plus size={18}/> Last opp kundelogo<input type="file" accept="image/*" onChange={e=>setCompany({...company,logoUrl:URL.createObjectURL(e.target.files[0])})}/></label>{company.logoUrl && <button className="secondary" onClick={()=>setCompany({...company,logoUrl:''})}>Fjern logo</button>}</div>
+        <div className="two"><div className="logoBox"><Brand logo={company.logoUrl} name={name}/><label className="upload"><Plus size={18}/> Last opp firmalogo<input type="file" accept="image/*" onChange={e=>uploadLogo(e.target.files?.[0])}/></label>{company.logoUrl && <button className="secondary" onClick={()=>setCompany({...company,logoUrl:''})}>Fjern logo</button>}</div>
         <Grid>
           <Input label="Firmanavn" value={company.companyName} onChange={v=>setCompany({...company,companyName:v})}/>
           <Input label="Org.nr" value={company.orgNumber} onChange={v=>setCompany({...company,orgNumber:v})}/>
