@@ -197,6 +197,41 @@ function App() {
     alert(`Åpnet prosjekt: ${row.title || 'Uten navn'}`);
   };
 
+
+  const deleteCloudProject = async (row) => {
+    if (!row?.id) return alert('Mangler prosjekt-ID');
+    const title = row.title || 'Uten navn';
+    const ok = window.confirm(`Er du sikker på at du vil slette prosjektet "${title}"? Dette kan ikke angres.`);
+    if (!ok) return;
+
+    try {
+      setCloudLoading(true);
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/projects?id=eq.${row.id}`, {
+        method: 'DELETE',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          Prefer: 'return=minimal'
+        }
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      if (activeProjectId === row.id) {
+        setActiveProjectId(null);
+        setActiveProjectTitle('');
+      }
+
+      setCloudProjects(prev => prev.filter(p => p.id !== row.id));
+      alert('Prosjekt slettet');
+    } catch (err) {
+      console.error(err);
+      alert('Kunne ikke slette prosjektet. Sjekk Supabase DELETE-policy.');
+    } finally {
+      setCloudLoading(false);
+    }
+  };
+
   return (
     <div>
       <header>
@@ -226,7 +261,10 @@ function App() {
                   {savedProject.customer && <p><b>Kunde:</b> {savedProject.customer}</p>}
                   {savedProject.address && <p><b>Adresse:</b> {savedProject.address}</p>}
                   {activeProjectId === row.id && <p><b>Aktivt prosjekt</b></p>}
-                  <button type="button" onClick={() => openCloudProject(row)}>Åpne prosjekt</button>
+                  <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
+                    <button type="button" onClick={() => openCloudProject(row)}>Åpne prosjekt</button>
+                    <button type="button" className="secondary" onClick={() => deleteCloudProject(row)}>Slett prosjekt</button>
+                  </div>
                 </div>
               );
             })}
