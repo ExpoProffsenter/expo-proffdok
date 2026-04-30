@@ -53,42 +53,6 @@ function App() {
   }))]);
 
   const saveLocal = () => {
-  const data = {
-    company,
-    user,
-    project,
-    checked,
-    other,
-    surf,
-    photos,
-    access,
-    inst
-  };
-
-  localStorage.setItem('expoProffDokProject', JSON.stringify(data));
-  alert('Prosjekt lagret');
-};
-
-const loadLocal = () => {
-  const raw = localStorage.getItem('expoProffDokProject');
-  if (!raw) return alert('Ingen lagret prosjekt');
-
-  const data = JSON.parse(raw);
-
-  setCompany(data.company || company);
-  setUser(data.user || user);
-  setProject(data.project || project);
-  setChecked(data.checked || {});
-  setOther(data.other || {});
-  setSurf(data.surf || {});
-  setPhotos(data.photos || []);
-  setAccess(data.access || []);
-  setInst(data.inst || []);
-
-  alert('Prosjekt lastet');
-};
-
-  const saveLocal = () => {
     const data = { company, user, project, checked, other, surf, access, inst, files: files.map(f => ({ ...f, url:'' })) };
     localStorage.setItem('expoProffDokProject', JSON.stringify(data));
     alert('Prosjekt lagret lokalt på denne enheten');
@@ -118,8 +82,6 @@ const loadLocal = () => {
           <div><h1>Expo ProffDok</h1><p>{name}</p></div>
           <button onClick={saveLocal}>Lagre prosjekt</button>
           <button onClick={loadLocal}>Last inn prosjekt</button>
-          <button type="button" onClick={saveLocal}>Lagre</button>
-<button type="button" onClick={loadLocal}>Last inn</button>
           <button onClick={() => window.print()}><Download size={18}/> Lag PDF / skriv ut</button>
         </div>
         <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>setTab(id)} key={id}>{l}</button>)}</nav>
