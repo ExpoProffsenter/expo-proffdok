@@ -82,7 +82,7 @@ function App() {
           <div><h1>Expo ProffDok</h1><p>{name}</p></div>
           <button onClick={saveLocal}>Lagre prosjekt</button>
           <button onClick={loadLocal}>Last inn prosjekt</button>
-          <button onClick={() => window.print()}><Download size={18}/> Lag PDF / skriv ut</button>
+          <button onClick={() => { setTab('rapport'); setTimeout(() => window.print(), 300); }}><Download size={18}/> Lag PDF / skriv ut</button>
         </div>
         <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>setTab(id)} key={id}>{l}</button>)}</nav>
       </header>
