@@ -145,18 +145,65 @@ textarea {
   border-radius: 12px;
 }
 
+/* MOBILE - compact header */
 @media screen and (max-width: 900px) {
   body {
     font-size: 18px;
   }
 
+  header {
+    position: sticky;
+    top: 0;
+  }
+
   .head {
-    flex-direction: column;
+    padding: 10px 12px;
+    gap: 8px;
     align-items: flex-start;
   }
 
+  .head > div:first-child {
+    width: 170px !important;
+    height: 54px !important;
+  }
+
+  .head h1 {
+    font-size: 24px;
+    line-height: 1.1;
+  }
+
+  .head p {
+    font-size: 16px;
+  }
+
+  .head button {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 14px;
+    font-size: 15px;
+  }
+
   nav {
+    padding: 8px 12px 10px;
+    gap: 8px;
     overflow-x: auto;
+  }
+
+  nav button {
+    width: auto;
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 14px;
+  }
+
+  main {
+    padding: 14px 10px;
+  }
+
+  section {
+    padding: 18px;
+    border-radius: 18px;
   }
 
   .grid,
@@ -176,14 +223,39 @@ textarea {
     min-height: 52px;
   }
 
-  button {
-    width: 100%;
-    padding: 14px;
-  }
-
   img {
     width: 100%;
     height: auto;
+  }
+}
+
+/* Very small mobile: hide subtitle and tighten */
+@media screen and (max-width: 600px) {
+  .head {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .head > div:first-child {
+    width: 160px !important;
+    height: 48px !important;
+  }
+
+  .head h1 {
+    font-size: 22px;
+  }
+
+  .head p {
+    display: none;
+  }
+
+  .head button {
+    font-size: 14px;
+    padding: 9px 10px;
+  }
+
+  section h2 {
+    font-size: 28px;
   }
 }
 
