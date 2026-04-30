@@ -214,3 +214,47 @@ textarea {
     display: none;
   }
 }
+
+@media print {
+
+  body {
+    background: white;
+  }
+
+  header, nav, button {
+    display: none !important;
+  }
+
+  .report {
+    padding: 20px;
+  }
+
+  .report h2 {
+    border-bottom: 2px solid #000;
+    padding-bottom: 5px;
+    margin-top: 30px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .out {
+    border: 1px solid #ccc;
+    padding: 8px;
+  }
+
+  .photos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .photo img {
+    width: 100%;
+    height: auto;
+  }
+
+}
