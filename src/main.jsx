@@ -151,39 +151,16 @@ function PhotoGrid({photos,setPhotos}) { return <div className="photos">{photos.
 
 function Report({company,name,project,selected,other,surf,photos,access,inst,files}) {
   const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, Kunde: project.customer, Dato: project.date, Notater: project.notes };
-
-  <section>
-  <h2>Prosjektering</h2>
-
-  <div className="grid">
-    <div className="out">
-      <b>Fall mot sluk</b>
-      <p>{project.fall || 'Ikke oppgitt'}</p>
-    </div>
-
-    <div className="out">
-      <b>Slukplassering</b>
-      <p>{project.sluk || 'Ikke oppgitt'}</p>
-    </div>
-
-    <div className="out">
-      <b>Terskelhøyde</b>
-      <p>{project.terskel || 'Ikke oppgitt'}</p>
-    </div>
-
-    <div className="out">
-      <b>Membranløsning</b>
-      <p>{project.membran || 'Ikke oppgitt'}</p>
-    </div>
-  </div>
-
-  {project.prosjekteringKommentar && (
-    <div className="out">
-      <b>Kommentar / avvik</b>
-      <p>{project.prosjekteringKommentar}</p>
-    </div>
-  )}
-</section>
+  return <div className="report">
+    <section><div className="reportTop"><Brand logo={company.logoUrl} name={name}/><div><h2>{name}</h2>{company.address&&<p>{company.address}</p>}{company.orgNumber&&<p>Org.nr: {company.orgNumber}</p>}{company.phone&&<p>{company.phone}</p>}{company.email&&<p>{company.email}</p>}{company.website&&<p>{company.website}</p>}</div></div><h2>FDV-rapport / Prosjektdokumentasjon</h2><Grid>{Object.entries(projectFields).map(([k,v])=><div className="out" key={k}><b>{k}</b><p>{v || 'Ikke fylt ut'}</p></div>)}</Grid></section>
+    <section><h2>Prosjektering</h2>{project.fall&&<p><b>Fall mot sluk:</b> {project.fall}</p>}{project.sluk&&<p><b>Slukplassering:</b> {project.sluk}</p>}{project.terskel&&<p><b>Terskelhøyde:</b> {project.terskel}</p>}{project.membran&&<p><b>Membran:</b> {project.membran}</p>}{project.prosjekteringKommentar&&<p><b>Kommentar:</b> {project.prosjekteringKommentar}</p>}</section>
+    <section><h2>Produkter</h2>{selected.map(p=><p key={p.item}><b>{p.section}:</b> {p.item}</p>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k} annet:</b> {v}</p>)}</section>
+    <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
+    <section><h2>Bildedokumentasjon</h2><div className="photos reportPhotos">{photos.map(p=><div className="photo" key={p.id}><img src={p.url}/><b>{p.cat}</b><p>{p.comment}</p></div>)}</div></section>
+    <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><p key={i.id}><b>{i.category}:</b> {i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>)}</section>
+    <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
+    <section><h2>Prosjekttilgang</h2>{access.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>
+    <footer>Levert av Expo Proffsenter</footer>
   </div>;
 }
 
