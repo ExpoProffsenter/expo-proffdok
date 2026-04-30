@@ -574,51 +574,53 @@ function App() {
         <h3>Kontrollsjekkliste</h3>
         <p className="note">Velg Ok, Ikke aktuelt eller Avvik. Bilder og kommentarer lagres på hvert sjekkpunkt.</p>
 
-        {checklistTemplate.map(group => (
-          <div className="checklistGroup" key={group.cat}>
-            <h3>{group.cat}</h3>
-            {group.items.map(item => {
-              const value = checklist[group.cat]?.[item] || {};
-              return <div className={`checklistItem ${value.status === 'Avvik' ? 'deviation' : ''}`} key={item}>
-                <div className="checklistTop">
-                  <b>{item}</b>
-                  <div className="checklistChoices">
-                    {['Ok','Ikke aktuelt','Avvik'].map(status => (
-                      <button
-                        type="button"
-                        key={status}
-                        className={value.status === status ? 'on' : 'secondary'}
-                        onClick={() => setChecklistStatus(group.cat, item, status)}
-                      >
-                        {status}
-                      </button>
-                    ))}
+        <div className="checklistList">
+          {checklistTemplate.map(group => (
+            <div className="checklistGroup" key={group.cat}>
+              <h3>{group.cat}</h3>
+              {group.items.map(item => {
+                const value = checklist[group.cat]?.[item] || {};
+                return <div className={`checklistPoint ${value.status === 'Avvik' ? 'deviation' : ''}`} key={item}>
+                  <div className="checklistHeader">
+                    <b>{item}</b>
+                    <div className="checklistStatusButtons">
+                      {['Ok','Ikke aktuelt','Avvik'].map(status => (
+                        <button
+                          type="button"
+                          key={status}
+                          className={value.status === status ? 'on' : 'secondary'}
+                          onClick={() => setChecklistStatus(group.cat, item, status)}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {(value.status === 'Avvik' || value.comment) && (
-                  <Textarea
-                    label="Kommentar / avvik"
-                    value={value.comment || ''}
-                    onChange={v => setChecklistComment(group.cat, item, v)}
-                  />
-                )}
+                  {(value.status === 'Avvik' || value.comment) && (
+                    <Textarea
+                      label="Kommentar / avvik"
+                      value={value.comment || ''}
+                      onChange={v => setChecklistComment(group.cat, item, v)}
+                    />
+                  )}
 
-                <label className="upload checklistUpload">
-                  <Plus size={18}/> Ta bilde / last opp bilde
-                  <input type="file" accept="image/*" capture="environment" multiple onChange={e=>addChecklistPhotos(group.cat, item, e.target.files)}/>
-                </label>
+                  <label className="upload checklistUpload">
+                    <Plus size={18}/> Ta bilde / last opp bilde
+                    <input type="file" accept="image/*" capture="environment" multiple onChange={e=>addChecklistPhotos(group.cat, item, e.target.files)}/>
+                  </label>
 
-                {(value.photos || []).length > 0 && <div className="photos checklistPhotos">
-                  {(value.photos || []).map(p => <div className="photo" key={p.id}>
-                    <img src={p.url}/>
-                    <button className="secondary" type="button" onClick={()=>removeChecklistPhoto(group.cat, item, p.id)}>Fjern</button>
-                  </div>)}
-                </div>}
-              </div>;
-            })}
-          </div>
-        ))}
+                  {(value.photos || []).length > 0 && <div className="photos checklistPhotos">
+                    {(value.photos || []).map(p => <div className="photo" key={p.id}>
+                      <img src={p.url}/>
+                      <button className="secondary" type="button" onClick={()=>removeChecklistPhoto(group.cat, item, p.id)}>Fjern</button>
+                    </div>)}
+                  </div>}
+                </div>;
+              })}
+            </div>
+          ))}
+        </div>
 
         {Object.values(checklist || {}).some(group => Object.values(group || {}).some(v => v.status === 'Avvik')) && <div className="deviationList">
           <h3>Avviksliste</h3>
@@ -666,7 +668,7 @@ function ChecklistReport({checklist}) {
     <h2>Sjekkliste / kontrollpunkter</h2>
     {groups.map(([cat, items]) => <div key={cat}>
       <h3>{cat}</h3>
-      {Object.entries(items || {}).filter(([,val]) => val?.status).map(([item, val]) => <div className="out" key={item}>
+      {Object.entries(items || {}).filter(([,val]) => val?.status).map(([item, val]) => <div className="out checklistReportItem" key={item}>
         <b>{item}</b>
         <p><b>Status:</b> {val.status}</p>
         {val.comment && <p><b>Kommentar:</b> {val.comment}</p>}
@@ -685,7 +687,6 @@ function ChecklistReport({checklist}) {
   </section>;
 }
 
-
 function ProductsReport({selected, other}) {
   const hasOther = Object.values(other || {}).some(v => hasValue(v));
   if ((!selected || selected.length === 0) && !hasOther) return null;
@@ -698,18 +699,14 @@ function ProductsReport({selected, other}) {
     })
     .filter(section => section.items.length > 0 || hasValue(section.comment));
 
-  return (
-    <section>
-      <h2>Produkter</h2>
-      {sections.map(section => (
-        <div key={section.title} className="productGroup">
-          <h3>{section.title}</h3>
-          {section.items.map(p => <p key={p.item}>• {p.item}</p>)}
-          {hasValue(section.comment) && <p className="productComment"><b>Annet / hvor brukt:</b> {section.comment}</p>}
-        </div>
-      ))}
-    </section>
-  );
+  return <section>
+    <h2>Produkter</h2>
+    {sections.map(section => <div key={section.title} className="productGroup">
+      <h3>{section.title}</h3>
+      {section.items.map(p => <p key={p.item}>• {p.item}</p>)}
+      {hasValue(section.comment) && <p className="productComment"><b>Annet / hvor brukt:</b> {section.comment}</p>}
+    </div>)}
+  </section>;
 }
 
 function Report({company,name,project,selected,other,surf,photos,access,inst,files,checklist}) {
@@ -722,7 +719,8 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
     <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><p key={i.id}><b>{i.category}:</b> {i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>)}</section>
-    <ChecklistReport checklist={checklist}/><section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
+    <ChecklistReport checklist={checklist}/>
+    <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
     <section><h2>Prosjekttilgang</h2>{access.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>
     <footer>Levert av Expo Proffsenter</footer>
   </div>;
