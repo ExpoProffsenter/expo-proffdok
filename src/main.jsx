@@ -140,9 +140,39 @@ function App() {
     setTimeout(() => window.print(), 400);
   };
 
-  const addPhoto = (cat, fl) => setPhotos(p => [...p, ...Array.from(fl || []).map(f => ({
-    id: uid(), cat, url: URL.createObjectURL(f), comment:'', created:new Date().toLocaleString('no-NO')
-  }))]);
+  const uploadImages = async (fileList, folder = 'photos') => {
+    const filesArray = Array.from(fileList || []);
+    const uploaded = [];
+
+    for (const file of filesArray) {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+      const path = `${folder}/${Date.now()}-${uid()}-${cleanName}`;
+      const { error } = await supabase.storage
+        .from('project-images')
+        .upload(path, file, { cacheControl: '3600', upsert: false });
+
+      if (error) {
+        console.error(error);
+        alert('Kunne ikke laste opp bilde: ' + error.message);
+        continue;
+      }
+
+      const { data } = supabase.storage.from('project-images').getPublicUrl(path);
+      uploaded.push({ id: uid(), url: data.publicUrl, path, name: file.name });
+    }
+
+    return uploaded;
+  };
+
+  const addPhoto = async (cat, fl) => {
+    const imgs = await uploadImages(fl, 'photos');
+    setPhotos(p => [...p, ...imgs.map(img => ({
+      ...img,
+      cat,
+      comment: '',
+      created: new Date().toLocaleString('no-NO')
+    }))]);
+  };
 
   const addFiles = fl => setFiles(p => [...p, ...Array.from(fl || []).map(f => ({
     id: uid(), name:f.name, url: URL.createObjectURL(f), by:user.name || 'Ukjent', created:new Date().toLocaleString('no-NO')
@@ -224,7 +254,7 @@ function App() {
 
       {tab==='tilgang' && <Section title="Del tilgang til prosjekt"><button onClick={()=>setAccess([...access,{id:uid(),name:'',email:'',role:'Underleverandør'}])}><Plus size={18}/> Legg til tilgang</button>{access.map(a=><div className="row" key={a.id}><Input label="Navn" value={a.name} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,name:v}:x))}/><Input label="E-post" value={a.email} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,email:v}:x))}/><Select label="Rolle" value={a.role} options={roles} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,role:v}:x))}/><button className="secondary" onClick={()=>setAccess(access.filter(x=>x.id!==a.id))}>Fjern</button></div>)}</Section>}
 
-      {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',photos:[],by:user.name||'Ukjent',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={e=>{const imgs = Array.from(e.target.files || []).map(f=>({id:uid(),url:URL.createObjectURL(f),name:f.name})); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label><div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
+      {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',photos:[],by:user.name||'Ukjent',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label><div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
 
       {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}><label className="upload"><Plus size={18}/> Last opp sjekkliste / vedlegg<input type="file" multiple onChange={e=>addFiles(e.target.files)}/></label>{files.map(f=><div className="file" key={f.id}><b>{f.name}</b><small>Lastet opp av {f.by} · {f.created}</small><a href={f.url} target="_blank">Åpne</a><button className="secondary" onClick={()=>setFiles(files.filter(x=>x.id!==f.id))}>Fjern</button></div>)}</Section>}
 
