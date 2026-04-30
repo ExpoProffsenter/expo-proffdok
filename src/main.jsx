@@ -549,7 +549,7 @@ function App() {
       {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',photos:[],by:user.name||'Ukjent',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label><div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
 
       {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}>
-        <ChecklistEditor checklist={checklist} setChecklist={setChecklist} addPhoto={addPhoto}/>
+        <ChecklistEditor checklist={checklist} setChecklist={setChecklist} uploadImages={uploadImages}/>
         <h3 style={{ marginTop:'22px' }}>Opplastede sjekklister / vedlegg fra andre fag</h3>
         <label className="upload"><Plus size={18}/> Last opp sjekkliste / vedlegg<input type="file" multiple onChange={e=>addFiles(e.target.files)}/></label>
         {files.map(f=><div className="file" key={f.id}><b>{f.name}</b><small>Lastet opp av {f.by} · {f.created}</small><a href={f.url} target="_blank">Åpne</a><button className="secondary" onClick={()=>setFiles(files.filter(x=>x.id!==f.id))}>Fjern</button></div>)}
@@ -586,7 +586,7 @@ function Select({label,value,onChange,options}) { return <label><span>{label}</s
 function PhotoGrid({photos,setPhotos}) { return <div className="photos">{photos.map(p=><div className="photo" key={p.id}><img src={p.url}/><b>{p.cat}</b><small>{p.created}</small><textarea placeholder="Kommentar" value={p.comment} onChange={e=>setPhotos(photos.map(x=>x.id===p.id?{...x,comment:e.target.value}:x))}/><button className="secondary" onClick={()=>setPhotos(photos.filter(x=>x.id!==p.id))}><Trash2 size={16}/> Fjern</button></div>)}</div>; }
 
 
-function ChecklistEditor({checklist,setChecklist,addPhoto}) {
+function ChecklistEditor({checklist,setChecklist,uploadImages}) {
   const updatePoint = (point, patch) => {
     setChecklist(prev => ({
       ...prev,
@@ -597,17 +597,39 @@ function ChecklistEditor({checklist,setChecklist,addPhoto}) {
     }));
   };
 
+  const addChecklistImages = async (point, fileList) => {
+    const imgs = await uploadImages(fileList, 'sjekklister');
+    if (!imgs.length) return;
+    setChecklist(prev => ({
+      ...prev,
+      [point]: {
+        ...(prev[point] || {}),
+        photos: [...(prev[point]?.photos || []), ...imgs]
+      }
+    }));
+  };
+
+  const removeChecklistImage = (point, imageId) => {
+    setChecklist(prev => ({
+      ...prev,
+      [point]: {
+        ...(prev[point] || {}),
+        photos: (prev[point]?.photos || []).filter(img => img.id !== imageId)
+      }
+    }));
+  };
+
   const avvik = Object.entries(checklist || {}).filter(([,v]) => v?.status === 'Avvik');
 
   return <div>
     <p className="note">Velg status per punkt. Ved <b>Avvik</b> kommer punktet automatisk i avvikslisten i rapporten. Du kan fortsatt laste opp eksterne sjekklister/vedlegg under.</p>
-    <div style={{ display:'grid', gap:'12px' }}>
+    <div className="checklistList">
       {checklistTemplate.map((point, index) => {
         const row = checklist[point] || {};
-        return <div key={point} className="item" style={{ display:'grid', gridTemplateColumns:'1.2fr 1fr', gap:'14px', alignItems:'start' }}>
-          <div>
+        return <div key={point} className="item checklistPoint">
+          <div className="checklistHeader">
             <b>{index + 1}. {point}</b>
-            <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', marginTop:'10px' }}>
+            <div className="checklistStatusButtons">
               {checklistStatusOptions.map(opt => <button
                 type="button"
                 key={opt}
@@ -617,13 +639,20 @@ function ChecklistEditor({checklist,setChecklist,addPhoto}) {
             </div>
           </div>
 
-          <div>
-            <Textarea label={row.status === 'Avvik' ? 'Avviksbeskrivelse / tiltak' : 'Kommentar'} value={row.comment || ''} onChange={v=>updatePoint(point,{comment:v})}/>
-            <label className="upload" style={{ marginTop:'8px', display:'inline-block' }}>
-              <Plus size={18}/> Bilde til punkt
-              <input type="file" accept="image/*" multiple onChange={e=>addPhoto(`Sjekkliste - ${point}`, e.target.files)}/>
-            </label>
-          </div>
+          <Textarea label={row.status === 'Avvik' ? 'Avviksbeskrivelse / tiltak' : 'Kommentar'} value={row.comment || ''} onChange={v=>updatePoint(point,{comment:v})}/>
+
+          <label className="upload checklistUpload">
+            <Plus size={18}/> Ta bilde / legg til bilde på dette punktet
+            <input type="file" accept="image/*" capture="environment" multiple onChange={e=>addChecklistImages(point, e.target.files)}/>
+          </label>
+
+          {(row.photos || []).length > 0 && <div className="photos checklistPhotos">
+            {row.photos.map(img => <div className="photo" key={img.id}>
+              <img src={img.url} alt={img.name || point}/>
+              <small>{img.name}</small>
+              <button type="button" className="secondary" onClick={()=>removeChecklistImage(point, img.id)}>Fjern</button>
+            </div>)}
+          </div>}
         </div>;
       })}
     </div>
@@ -638,14 +667,23 @@ function ChecklistEditor({checklist,setChecklist,addPhoto}) {
 function ChecklistReport({checklist}) {
   const rows = checklistTemplate
     .map(point => [point, checklist?.[point]])
-    .filter(([,val]) => val?.status);
+    .filter(([,val]) => val?.status || val?.comment || (val?.photos || []).length > 0);
   const avvik = rows.filter(([,val]) => val?.status === 'Avvik');
 
   if (rows.length === 0) return null;
 
   return <section>
     <h2>Sjekkliste</h2>
-    {rows.map(([point,val], index) => <p key={point}><b>{index + 1}. {point}:</b> {val.status}{val.comment ? ` — ${val.comment}` : ''}</p>)}
+    {rows.map(([point,val]) => <div key={point} className="out checklistReportItem">
+      <b>{point}</b>
+      <p><b>Status:</b> {val.status || 'Ikke utfylt'}</p>
+      {val.comment && <p><b>Kommentar:</b> {val.comment}</p>}
+      {(val.photos || []).length > 0 && <div className="photos reportPhotos">
+        {val.photos.map(img => <div className="photo" key={img.id}>
+          <img src={img.url} alt={img.name || point}/>
+        </div>)}
+      </div>}
+    </div>)}
     {avvik.length > 0 && <div className="out">
       <h3>Avvik</h3>
       {avvik.map(([point,val]) => <p key={point}><b>{point}:</b> {val.comment || 'Avvik registrert'}</p>)}
