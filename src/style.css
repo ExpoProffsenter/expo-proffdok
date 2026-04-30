@@ -146,7 +146,8 @@ textarea {
 .photo img {
   width: 100%;
   height: 180px;
-  object-fit: cover;
+  object-fit: contain;
+  background: #f8fafc;
   border-radius: 12px;
 }
 
@@ -331,6 +332,52 @@ textarea {
   }
 }
 
+
+/* PROFF PROSJEKTLISTE: mer luft mellom tekst, dato og knapper */
+.item:has(> b:first-child):has(> small):has(> button) {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto auto;
+  align-items: center;
+  column-gap: 18px;
+  row-gap: 10px;
+  padding: 16px;
+}
+
+.item:has(> b:first-child):has(> small):has(> button) > b {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.item:has(> b:first-child):has(> small):has(> button) > small {
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.item:has(> b:first-child):has(> small):has(> button) > button,
+.item:has(> b:first-child):has(> small):has(> button) > .secondary {
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Rapportbilder skal skaleres, ikke klippes */
+.report .photo img,
+.reportPhotos .photo img,
+.checklistReportItem img {
+  object-fit: contain !important;
+  background: #f8fafc !important;
+}
+
+@media screen and (max-width: 900px) {
+  .item:has(> b:first-child):has(> small):has(> button) {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .item:has(> b:first-child):has(> small):has(> button) > small {
+    white-space: normal;
+  }
+}
+
 @media print {
   @page {
     margin: 12mm;
@@ -394,7 +441,8 @@ textarea {
   .photo img {
     width: 100% !important;
     height: 120px !important;
-    object-fit: cover !important;
+    object-fit: contain !important;
+    background: #f8fafc !important;
   }
 
   footer {
