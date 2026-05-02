@@ -65,9 +65,9 @@ function App() {
   const isReadOnly = new URLSearchParams(window.location.search).has('project');
 
   const tabs = [
-    ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
-    ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
-    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport']
+    ['prosjekt','Prosjekt'], ['prosjektering','Prosjektering'], ['produkter','Produkter'], ['overflater','Overflater'],
+    ['bilder','Bilder'], ['tilgang','Tilgang'], ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'],
+    ['rapport','Rapport'], ['prosjektliste','Prosjektliste'], ['firma','Firmaprofil'], ['innlogging','Innlogging']
   ];
 
   const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist });
