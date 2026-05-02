@@ -94,7 +94,7 @@ function App() {
       .from('projects')
       .select('*')
       .eq('user_id', currentUser.id)
-      .order('updated_at', { ascending:false, nullsFirst:false });
+      .order('updated_at', { ascending:false });
     if (error) { console.error(error); return alert('Kunne ikke hente prosjektliste: ' + error.message); }
     setProjects(data || []);
   };
@@ -368,36 +368,9 @@ function App() {
     }));
   };
 
-  const addFiles = async (fl) => {
-    const filesArray = Array.from(fl || []);
-    const uploaded = [];
-
-    for (const file of filesArray) {
-      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
-      const path = `vedlegg/${Date.now()}-${uid()}-${cleanName}`;
-      const { error } = await supabase.storage
-        .from('project-images')
-        .upload(path, file, { cacheControl: '3600', upsert: false });
-
-      if (error) {
-        console.error(error);
-        alert('Kunne ikke laste opp vedlegg: ' + error.message);
-        continue;
-      }
-
-      const { data } = supabase.storage.from('project-images').getPublicUrl(path);
-      uploaded.push({
-        id: uid(),
-        name: file.name,
-        url: data.publicUrl,
-        path,
-        by: user.name || 'Ukjent',
-        created: new Date().toLocaleString('no-NO')
-      });
-    }
-
-    if (uploaded.length) setFiles(p => [...p, ...uploaded]);
-  };
+  const addFiles = fl => setFiles(p => [...p, ...Array.from(fl || []).map(f => ({
+    id: uid(), name:f.name, url: URL.createObjectURL(f), by:user.name || 'Ukjent', created:new Date().toLocaleString('no-NO')
+  }))]);
 
 
   const startNewProject = () => {
@@ -667,8 +640,8 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><p key={i.id}><b>{i.category}:</b> {i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>)}</section>
     <ChecklistReportSection checklist={checklist}/>
-    {(files || []).length > 0 && <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}><a href={f.url} target="_blank" rel="noopener noreferrer">{f.name}</a></p>)}</section>}
-    {(access || []).length > 0 && <section><h2>Prosjekttilgang</h2>{access.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>}
+    <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
+    <section><h2>Prosjekttilgang</h2>{access.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>
     <footer>Levert av Expo Proffsenter</footer>
   </div>;
 }
@@ -764,7 +737,7 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
 
     {(files || []).length > 0 && <section>
       <h2>Sjekklister og vedlegg</h2>
-      {files.map(f => <p key={f.id}><a href={f.url} target="_blank" rel="noopener noreferrer">{f.name}</a></p>)}
+      {files.map(f => <p key={f.id}>{f.name}</p>)}
     </section>}
 
     <footer>Levert av Expo Proffsenter</footer>
