@@ -71,18 +71,18 @@ function App() {
   ];
 
   const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist });
-  const unpackData = (data) => {
-    setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
-    setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
-    setProject(data.project || emptyProject());
-    setChecked(data.checked || {});
-    setOther(data.other || {});
-    setSurf(data.surf || {});
-    setPhotos(data.photos || []);
-    setAccess(data.access || []);
-    setInst(data.inst || []);
-    setFiles(data.files || []);
-    setChecklist(data.checklist || {});
+  const unpackData = (data = {}) => {
+    setCompany(data.company ?? { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
+    setUser(data.user ?? { name:'', email:'', role:'Eier / administrator' });
+    setProject(data.project ?? emptyProject());
+    setChecked(data.checked ?? {});
+    setOther(data.other ?? {});
+    setSurf(data.surf ?? {});
+    setPhotos(Array.isArray(data.photos) ? data.photos : []);
+    setAccess(Array.isArray(data.access) ? data.access : []);
+    setInst(Array.isArray(data.inst) ? data.inst : []);
+    setFiles(Array.isArray(data.files) ? data.files : []);
+    setChecklist(data.checklist && typeof data.checklist === 'object' ? data.checklist : {});
   };
 
   const loadProjects = async (currentUser = authUser) => {
@@ -94,7 +94,8 @@ function App() {
       .from('projects')
       .select('*')
       .eq('user_id', currentUser.id)
-      .order('updated_at', { ascending:false });
+      .order('updated_at', { ascending:false, nullsFirst:false })
+      .order('created_at', { ascending:false });
     if (error) { console.error(error); return alert('Kunne ikke hente prosjektliste: ' + error.message); }
     setProjects(data || []);
   };
@@ -368,9 +369,30 @@ function App() {
     }));
   };
 
-  const addFiles = fl => setFiles(p => [...p, ...Array.from(fl || []).map(f => ({
-    id: uid(), name:f.name, url: URL.createObjectURL(f), by:user.name || 'Ukjent', created:new Date().toLocaleString('no-NO')
-  }))]);
+  const addFiles = async (fl) => {
+    if (!authUser) return alert('Du må være logget inn for å laste opp vedlegg.');
+    const filesArray = Array.from(fl || []);
+    const uploaded = [];
+
+    for (const file of filesArray) {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+      const path = `vedlegg/${authUser.id}/${Date.now()}-${uid()}-${cleanName}`;
+      const { error } = await supabase.storage
+        .from('project-images')
+        .upload(path, file, { cacheControl: '3600', upsert: false });
+
+      if (error) {
+        console.error(error);
+        alert('Kunne ikke laste opp vedlegg: ' + error.message);
+        continue;
+      }
+
+      const { data } = supabase.storage.from('project-images').getPublicUrl(path);
+      uploaded.push({ id: uid(), name:file.name, url:data.publicUrl, path, by:user.name || 'Ukjent', created:new Date().toLocaleString('no-NO') });
+    }
+
+    if (uploaded.length) setFiles(p => [...p, ...uploaded]);
+  };
 
 
   const startNewProject = () => {
@@ -597,17 +619,60 @@ function Textarea({label,value,onChange}) { return <label><span>{label}</span><t
 function Select({label,value,onChange,options}) { return <label><span>{label}</span><select value={value} onChange={e=>onChange(e.target.value)}>{options.map(o=><option key={o}>{o}</option>)}</select></label>; }
 function PhotoGrid({photos,setPhotos}) { return <div className="photos">{photos.map(p=><div className="photo" key={p.id}><img src={p.url}/><b>{p.cat}</b><small>{p.created}</small><textarea placeholder="Kommentar" value={p.comment} onChange={e=>setPhotos(photos.map(x=>x.id===p.id?{...x,comment:e.target.value}:x))}/><button className="secondary" onClick={()=>setPhotos(photos.filter(x=>x.id!==p.id))}><Trash2 size={16}/> Fjern</button></div>)}</div>; }
 
-function ChecklistReportSection({checklist}) {
+function normalizeChecklistRows(checklist = {}, photos = []) {
   const rows = [];
-  Object.entries(checklist || {}).forEach(([category, items]) => {
-    Object.entries(items || {}).forEach(([item, value]) => {
-      if (value?.status || value?.comment || (value?.photos || []).length) {
-        rows.push({ category, item, ...value });
+
+  Object.entries(checklist || {}).forEach(([category, value]) => {
+    if (!value || typeof value !== 'object') return;
+
+    const isFlatPoint = value.status || value.comment || (value.photos || []).length;
+
+    if (isFlatPoint) {
+      rows.push({
+        category,
+        item: category,
+        status: value.status,
+        comment: value.comment,
+        photos: value.photos || []
+      });
+      return;
+    }
+
+    Object.entries(value || {}).forEach(([item, itemValue]) => {
+      if (!itemValue || typeof itemValue !== 'object') return;
+      if (itemValue.status || itemValue.comment || (itemValue.photos || []).length) {
+        rows.push({
+          category,
+          item,
+          status: itemValue.status,
+          comment: itemValue.comment,
+          photos: itemValue.photos || []
+        });
       }
     });
   });
 
+  return rows.map(row => {
+    const linkedPhotos = (photos || []).filter(photo =>
+      photo?.cat === `Sjekkliste - ${row.item}` ||
+      photo?.cat === `Sjekkliste - ${row.category}`
+    );
+
+    const allPhotos = [...(row.photos || [])];
+    linkedPhotos.forEach(photo => {
+      if (!allPhotos.some(existing => existing.id === photo.id || existing.url === photo.url)) {
+        allPhotos.push(photo);
+      }
+    });
+
+    return { ...row, photos: allPhotos };
+  });
+}
+
+function ChecklistReportSection({checklist, photos = []}) {
+  const rows = normalizeChecklistRows(checklist, photos);
   if (!rows.length) return null;
+
   const deviations = rows.filter(r => r.status === 'Avvik');
 
   return <section>
@@ -618,7 +683,7 @@ function ChecklistReportSection({checklist}) {
         <p><b>{r.item}</b> — {r.status || 'Ikke vurdert'}</p>
         {r.comment && <p>{r.comment}</p>}
         {(r.photos || []).length > 0 && <div className="photos reportPhotos">
-          {r.photos.map(p => <div className="photo" key={p.id}><img src={p.url} alt={p.name || r.item}/></div>)}
+          {r.photos.map(p => <div className="photo" key={p.id || p.url}><img src={p.url} alt={p.name || r.item}/>{p.comment && <p>{p.comment}</p>}</div>)}
         </div>}
       </div>)}
     </div>)}
@@ -631,17 +696,24 @@ function ChecklistReportSection({checklist}) {
 
 function Report({company,name,project,selected,other,surf,photos,access,inst,files,checklist}) {
   const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, Kunde: project.customer, Dato: project.date, Notater: project.notes };
-  const cats = [...new Set(photos.map(p=>p.cat))];
+  const cats = [...new Set((photos || []).map(p=>p.cat).filter(Boolean))];
+  const otherRows = Object.entries(other || {}).filter(([,v])=>hasValue(v));
+  const surfaceRows = Object.entries(surf || {}).filter(([,v])=>hasValue(v));
+  const hasProsjektering = [project.fall, project.sluk, project.terskel, project.membran, project.prosjekteringKommentar].some(hasValue);
+  const hasProducts = selected.length > 0 || otherRows.length > 0;
+  const filledInst = (inst || []).filter(i => [i.category, i.name, i.qty, i.supplier, i.desc].some(hasValue) || (i.photos || []).length > 0);
+  const filledAccess = (access || []).filter(a => [a.name, a.email, a.role].some(hasValue));
+
   return <div className="report">
     <section><div className="reportTop"><Brand logo={company.logoUrl} name={name}/><div><h2>{name}</h2>{company.address&&<p>{company.address}</p>}{company.orgNumber&&<p>Org.nr: {company.orgNumber}</p>}{company.phone&&<p>{company.phone}</p>}{company.email&&<p>{company.email}</p>}{company.website&&<p>{company.website}</p>}</div></div><h2>FDV-rapport / Prosjektdokumentasjon</h2><Grid>{Object.entries(projectFields).map(([k,v])=><div className="out" key={k}><b>{k}</b><p>{v || 'Ikke fylt ut'}</p></div>)}</Grid></section>
-    <section><h2>Prosjektering</h2><Grid><div className="out"><b>Fall mot sluk</b><p>{project.fall || 'Ikke oppgitt'}</p></div><div className="out"><b>Slukplassering</b><p>{project.sluk || 'Ikke oppgitt'}</p></div><div className="out"><b>Terskelhøyde</b><p>{project.terskel || 'Ikke oppgitt'}</p></div><div className="out"><b>Membran</b><p>{project.membran || 'Ikke oppgitt'}</p></div></Grid>{project.prosjekteringKommentar&&<div className="out"><b>Kommentar / avvik</b><p>{project.prosjekteringKommentar}</p></div>}</section>
-    <section><h2>Produkter</h2>{selected.map(p=><p key={p.item}><b>{p.section}:</b> {p.item}</p>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k} annet:</b> {v}</p>)}</section>
-    <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
-    <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
-    <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><p key={i.id}><b>{i.category}:</b> {i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>)}</section>
-    <ChecklistReportSection checklist={checklist}/>
-    <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
-    <section><h2>Prosjekttilgang</h2>{access.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>
+    {hasProsjektering && <section><h2>Prosjektering</h2><Grid>{project.fall&&<div className="out"><b>Fall mot sluk</b><p>{project.fall}</p></div>}{project.sluk&&<div className="out"><b>Slukplassering</b><p>{project.sluk}</p></div>}{project.terskel&&<div className="out"><b>Terskelhøyde</b><p>{project.terskel}</p></div>}{project.membran&&<div className="out"><b>Membran</b><p>{project.membran}</p></div>}</Grid>{project.prosjekteringKommentar&&<div className="out"><b>Kommentar / avvik</b><p>{project.prosjekteringKommentar}</p></div>}</section>}
+    {hasProducts && <section><h2>Produkter</h2>{[...new Set(selected.map(p => p.section))].map(section => <div key={section} style={{ marginBottom:'12px' }}><b>{section}</b>{selected.filter(p => p.section === section).map(p => <p key={p.item}>• {p.item}</p>)}{other[section] && <p><i>Annet: {other[section]}</i></p>}</div>)}{otherRows.filter(([section]) => !selected.some(p => p.section === section)).map(([k,v])=><p key={k}><b>{k} annet:</b> {v}</p>)}</section>}
+    {surfaceRows.length > 0 && <section><h2>Overflater</h2>{surfaceRows.map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>}
+    {(photos || []).length > 0 && <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id || p.url}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>}
+    {filledInst.length > 0 && <section><h2>Fag, deler og utstyr</h2>{filledInst.map(i=><div className="out" key={i.id}><b>{i.category || 'Post'}</b><p>{[i.name, i.qty, i.supplier, i.desc].filter(Boolean).join(' · ')}</p>{(i.photos || []).length > 0 && <div className="photos reportPhotos">{i.photos.map(p => <div className="photo" key={p.id || p.url}><img src={p.url} alt={p.name || 'Bilde'}/></div>)}</div>}</div>)}</section>}
+    <ChecklistReportSection checklist={checklist} photos={photos}/>
+    {(files || []).length > 0 && <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id || f.url}><a href={f.url} target="_blank" rel="noopener noreferrer">{f.name}</a></p>)}</section>}
+    {filledAccess.length > 0 && <section><h2>Prosjekttilgang</h2>{filledAccess.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>}
     <footer>Levert av Expo Proffsenter</footer>
   </div>;
 }
@@ -733,11 +805,11 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
       </div>)}
     </section>}
 
-    <ChecklistReportSection checklist={checklist}/>
+    <ChecklistReportSection checklist={checklist} photos={photos}/>
 
     {(files || []).length > 0 && <section>
       <h2>Sjekklister og vedlegg</h2>
-      {files.map(f => <p key={f.id}>{f.name}</p>)}
+      {files.map(f => <p key={f.id || f.url}><a href={f.url} target="_blank" rel="noopener noreferrer">{f.name}</a></p>)}
     </section>}
 
     <footer>Levert av Expo Proffsenter</footer>
