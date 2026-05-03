@@ -94,7 +94,7 @@ function App() {
       .from('projects')
       .select('*')
       .eq('user_id', currentUser.id)
-      .order('updated_at', { ascending:false });
+      .order('updated_at', { ascending:false, nullsFirst:false });
     if (error) { console.error(error); return alert('Kunne ikke hente prosjektliste: ' + error.message); }
     setProjects(data || []);
   };
