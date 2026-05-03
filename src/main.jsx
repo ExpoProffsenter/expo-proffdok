@@ -32,7 +32,6 @@ const checklistTemplate = [
   { category: 'Sluttkontroll', items: ['Visuell kontroll utført', 'Bilder tatt', 'Dokumentasjon komplett'] }
 ];
 
-
 const emptyProject = () => ({
   responsible:'', projectName:'', address:'', customer:'', date:new Date().toISOString().slice(0,10), notes:'',
   fall:'', sluk:'', terskel:'', membran:'', prosjekteringKommentar:''
@@ -564,7 +563,7 @@ function App() {
         </Section>
       </Section>}
 
-      {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={() => loadProjects(authUser)}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>{new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
+      {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={() => loadProjects(authUser)}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>Sist oppdatert: {new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
 
       {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist}/>} 
     </main>
