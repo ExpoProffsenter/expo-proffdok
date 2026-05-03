@@ -32,6 +32,7 @@ const checklistTemplate = [
   { category: 'Sluttkontroll', items: ['Visuell kontroll utført', 'Bilder tatt', 'Dokumentasjon komplett'] }
 ];
 
+
 const emptyProject = () => ({
   responsible:'', projectName:'', address:'', customer:'', date:new Date().toISOString().slice(0,10), notes:'',
   fall:'', sluk:'', terskel:'', membran:'', prosjekteringKommentar:''
@@ -577,6 +578,7 @@ function Input({label,value,onChange,type='text'}) { return <label><span>{label}
 function Textarea({label,value,onChange}) { return <label><span>{label}</span><textarea value={value} onChange={e=>onChange(e.target.value)} /></label>; }
 function Select({label,value,onChange,options}) { return <label><span>{label}</span><select value={value} onChange={e=>onChange(e.target.value)}>{options.map(o=><option key={o}>{o}</option>)}</select></label>; }
 function PhotoGrid({photos,setPhotos}) { return <div className="photos">{photos.map(p=><div className="photo" key={p.id}><img src={p.url}/><b>{p.cat}</b><small>{p.created}</small><textarea placeholder="Kommentar" value={p.comment} onChange={e=>setPhotos(photos.map(x=>x.id===p.id?{...x,comment:e.target.value}:x))}/><button className="secondary" onClick={()=>setPhotos(photos.filter(x=>x.id!==p.id))}><Trash2 size={16}/> Fjern</button></div>)}</div>; }
+
 
 function ChecklistReportSection({checklist}) {
   const rows = [];
