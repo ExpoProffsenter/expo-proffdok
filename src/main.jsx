@@ -513,7 +513,7 @@ function App() {
         <Textarea label="Kommentar / avvik" value={project.prosjekteringKommentar} onChange={v=>setProject({...project,prosjekteringKommentar:v})}/>
       </Grid><label className="upload"><Plus size={18}/> Last opp tegning / bilde<input type="file" accept="image/*" multiple onChange={e=>addPhoto('Prosjektering',e.target.files)}/></label></Section>}
 
-      {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}><div className="checks">{s.items.map(i=><label className="check" key={i}><input type="checkbox" checked={!!checked[i]} onChange={e=>setChecked({...checked,[i]:e.target.checked})}/>{i}</label>)}</div><Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/></Section>)}</>}
+      {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}><div className="checks">{s.items.map(i=><label className="check" key={i} style={{ display:'flex', alignItems:'center', gap:'8px' }}><input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>setChecked({...checked,[i]:e.target.checked})}/><span style={{ margin:0 }}>{i}</span></label>)}</div><Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/></Section>)}</>}
 
       {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
 
