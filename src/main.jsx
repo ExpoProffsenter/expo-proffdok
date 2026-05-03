@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 import { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck } from 'lucide-react';
@@ -50,6 +50,7 @@ function App() {
   const [inst, setInst] = useState([]);
   const [files, setFiles] = useState([]);
   const [checklist, setChecklist] = useState({});
+  const checklistRef = useRef({});
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState(null);
   const [authUser, setAuthUser] = useState(null);
@@ -70,7 +71,7 @@ function App() {
     ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport']
   ];
 
-  const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist });
+  const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist: checklistRef.current });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
     setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
@@ -82,7 +83,9 @@ function App() {
     setAccess(data.access || []);
     setInst(data.inst || []);
     setFiles(data.files || []);
-    setChecklist(data.checklist || {});
+    const loadedChecklist = data.checklist && typeof data.checklist === 'object' ? data.checklist : {};
+    checklistRef.current = loadedChecklist;
+    setChecklist(loadedChecklist);
   };
 
   const loadProjects = async (currentUser = authUser) => {
@@ -94,7 +97,7 @@ function App() {
       .from('projects')
       .select('*')
       .eq('user_id', currentUser.id)
-      .order('updated_at', { ascending:false, nullsFirst:false });
+      .order('created_at', { ascending:false });
     if (error) { console.error(error); return alert('Kunne ikke hente prosjektliste: ' + error.message); }
     setProjects(data || []);
   };
@@ -194,7 +197,7 @@ function App() {
 
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
-    const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), user_id: authUser.id, share_enabled: true, updated_at: new Date().toISOString() };
+    const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), user_id: authUser.id, share_enabled: true };
     if (projectId) {
       const { error } = await supabase.from('projects').update(payload).eq('id', projectId).eq('user_id', authUser.id);
       if (error) { console.error(error); return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message); }
@@ -210,7 +213,7 @@ function App() {
 
   const saveAsNewProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
-    const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), user_id: authUser.id, share_enabled: true, updated_at: new Date().toISOString() };
+    const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), user_id: authUser.id, share_enabled: true };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
@@ -341,31 +344,39 @@ function App() {
   };
 
   const setChecklistValue = (category, item, patch) => {
-    setChecklist(prev => ({
-      ...prev,
-      [category]: {
-        ...(prev[category] || {}),
-        [item]: {
-          ...(prev[category]?.[item] || {}),
-          ...patch
+    setChecklist(prev => {
+      const next = {
+        ...prev,
+        [category]: {
+          ...(prev[category] || {}),
+          [item]: {
+            ...(prev[category]?.[item] || {}),
+            ...patch
+          }
         }
-      }
-    }));
+      };
+      checklistRef.current = next;
+      return next;
+    });
   };
 
   const addChecklistPhoto = async (category, item, fl) => {
     const imgs = await uploadImages(fl, 'sjekklister');
     if (!imgs.length) return;
-    setChecklist(prev => ({
-      ...prev,
-      [category]: {
-        ...(prev[category] || {}),
-        [item]: {
-          ...(prev[category]?.[item] || {}),
-          photos: [...(prev[category]?.[item]?.photos || []), ...imgs]
+    setChecklist(prev => {
+      const next = {
+        ...prev,
+        [category]: {
+          ...(prev[category] || {}),
+          [item]: {
+            ...(prev[category]?.[item] || {}),
+            photos: [...(prev[category]?.[item]?.photos || []), ...imgs]
+          }
         }
-      }
-    }));
+      };
+      checklistRef.current = next;
+      return next;
+    });
   };
 
   const addFiles = fl => setFiles(p => [...p, ...Array.from(fl || []).map(f => ({
@@ -385,6 +396,7 @@ function App() {
     setAccess([]);
     setInst([]);
     setFiles([]);
+    checklistRef.current = {};
     setChecklist({});
     setProjectId(null);
     setTab('prosjekt');
@@ -582,7 +594,7 @@ function App() {
         </Section>
       </Section>}
 
-      {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={() => loadProjects(authUser)}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>Sist oppdatert: {new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
+      {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={() => loadProjects(authUser)}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>{new Date(p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
 
       {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist}/>} 
     </main>
