@@ -70,6 +70,15 @@ function App() {
     ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport']
   ];
 
+  const currentTabIndex = tabs.findIndex(([id]) => id === tab);
+  const previousTab = currentTabIndex > 0 ? tabs[currentTabIndex - 1] : null;
+  const nextTab = currentTabIndex >= 0 && currentTabIndex < tabs.length - 1 ? tabs[currentTabIndex + 1] : null;
+  const goToTab = (id) => {
+    if (!id) return;
+    setTab(id);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+  };
+
   const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
@@ -469,8 +478,37 @@ function App() {
         <button onClick={shareProject}>Kopier delingslink</button>
         <button onClick={printReport}><Download size={18}/> Lag PDF / skriv ut</button>
       </div>
-      <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>setTab(id)} key={id}>{l}</button>)}</nav>
+      <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
     </header>
+
+    <div style={{
+      display:'flex',
+      justifyContent:'space-between',
+      alignItems:'center',
+      gap:'12px',
+      maxWidth:'1180px',
+      margin:'14px auto 0',
+      padding:'0 18px',
+      flexWrap:'wrap'
+    }}>
+      <button
+        type="button"
+        className="secondary"
+        disabled={!previousTab}
+        onClick={() => previousTab && goToTab(previousTab[0])}
+        style={{ flex:'1 1 150px' }}
+      >
+        ← Forrige{previousTab ? `: ${previousTab[1]}` : ''}
+      </button>
+      <button
+        type="button"
+        onClick={() => nextTab && goToTab(nextTab[0])}
+        disabled={!nextTab}
+        style={{ flex:'1 1 150px' }}
+      >
+        Neste{nextTab ? `: ${nextTab[1]}` : ''} →
+      </button>
+    </div>
 
     <main>
       {tab==='prosjekt' && <Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
