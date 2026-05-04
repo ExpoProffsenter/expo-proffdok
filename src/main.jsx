@@ -451,7 +451,7 @@ function App() {
       </header>
       <main>
         <Section title="Sett nytt passord" icon={<BadgeCheck/>}>
-          <p className="note">Skriv inn ønsket passord. Du kan bruke samme passord som tidligere hvis Supabase godtar det.</p>
+          <p className="note">Skriv inn et nytt passord. Det kan ikke være det samme som forrige passord.</p>
           <Grid>
             <Input
               label="Nytt passord"
