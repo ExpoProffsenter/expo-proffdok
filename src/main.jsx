@@ -268,6 +268,40 @@ function App() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  const createNewProject = () => {
+    const hasContent =
+      projectId ||
+      project.projectName ||
+      project.address ||
+      project.customer ||
+      project.notes ||
+      Object.keys(checked || {}).length ||
+      Object.keys(other || {}).length ||
+      Object.keys(surf || {}).length ||
+      (photos || []).length ||
+      (access || []).length ||
+      (inst || []).length ||
+      (files || []).length ||
+      Object.keys(checklist || {}).length;
+
+    if (hasContent && !window.confirm('Starte nytt prosjekt? Ulagrede endringer vil gå tapt.')) return;
+
+    setProject(emptyProject());
+    setChecked({});
+    setOther({});
+    setSurf({});
+    setPhotos([]);
+    setAccess([]);
+    setInst([]);
+    setFiles([]);
+    setChecklist({});
+    setProjectId(null);
+    setTab('prosjekt');
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+  };
+
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
 
@@ -901,6 +935,7 @@ function App() {
         <Brand logo={company.logoUrl} name={name}/>
         <div><h1>Expo ProffDok</h1><p>{projectId ? 'Åpnet prosjekt' : (authUser?.email || name)}</p></div>
         <button className="secondary" onClick={signOut}>Logg ut</button>
+        <button className="secondary" onClick={createNewProject}>+ Nytt prosjekt</button>
         <button onClick={saveProject}>{projectId ? 'Oppdater prosjekt' : 'Lagre'}</button>
         <button onClick={saveAsNewProject}>Lagre kopi</button>
         <button onClick={shareProject}>Del med kunde</button>
