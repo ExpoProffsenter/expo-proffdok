@@ -481,35 +481,6 @@ function App() {
       <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
     </header>
 
-    <div style={{
-      display:'flex',
-      justifyContent:'space-between',
-      alignItems:'center',
-      gap:'12px',
-      maxWidth:'1180px',
-      margin:'14px auto 0',
-      padding:'0 18px',
-      flexWrap:'wrap'
-    }}>
-      <button
-        type="button"
-        className="secondary"
-        disabled={!previousTab}
-        onClick={() => previousTab && goToTab(previousTab[0])}
-        style={{ flex:'1 1 150px' }}
-      >
-        ← Forrige{previousTab ? `: ${previousTab[1]}` : ''}
-      </button>
-      <button
-        type="button"
-        onClick={() => nextTab && goToTab(nextTab[0])}
-        disabled={!nextTab}
-        style={{ flex:'1 1 150px' }}
-      >
-        Neste{nextTab ? `: ${nextTab[1]}` : ''} →
-      </button>
-    </div>
-
     <main>
       {tab==='prosjekt' && <Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
         <Input label="Prosjektansvarlig" value={project.responsible} onChange={v=>setProject({...project,responsible:v})}/>
@@ -605,6 +576,36 @@ function App() {
 
       {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist}/>} 
     </main>
+
+    <div style={{
+      display:'flex',
+      justifyContent:'space-between',
+      alignItems:'center',
+      gap:'12px',
+      maxWidth:'1180px',
+      margin:'18px auto 28px',
+      padding:'0 18px',
+      flexWrap:'wrap'
+    }}>
+      <button
+        type="button"
+        className="secondary"
+        disabled={!previousTab}
+        onClick={() => previousTab && goToTab(previousTab[0])}
+        style={{ flex:'1 1 150px' }}
+      >
+        ← Forrige{previousTab ? `: ${previousTab[1]}` : ''}
+      </button>
+      <button
+        type="button"
+        onClick={() => nextTab && goToTab(nextTab[0])}
+        disabled={!nextTab}
+        style={{ flex:'1 1 150px' }}
+      >
+        Neste{nextTab ? `: ${nextTab[1]}` : ''} →
+      </button>
+    </div>
+
   </div>;
 }
 
