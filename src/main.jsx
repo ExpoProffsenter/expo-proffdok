@@ -41,7 +41,8 @@ const checklistTemplate = [
 
 const emptyProject = () => ({
   responsible:'', projectName:'', address:'', customer:'', date:new Date().toISOString().slice(0,10), notes:'',
-  fall:'', sluk:'', terskel:'', membran:'', prosjekteringKommentar:''
+  fall:'', sluk:'', terskel:'', membran:'', prosjekteringKommentar:'',
+  locked:false, lockedAt:'', lockedBy:''
 });
 
 function App() {
@@ -89,6 +90,7 @@ function App() {
     authUser.email === 'kenneth@ringside.no' ||
     (!!company.email && authUser.email === company.email)
   );
+  const isProjectLocked = !!project.locked;
 
   const tabs = [
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
@@ -240,6 +242,7 @@ function App() {
   }, []);
 
   const saveProject = async () => {
+    if (isProjectLocked) return alert('Prosjektet er avsluttet og låst. Lås opp prosjektet før du gjør endringer.');
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
     const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), user_id: authUser.id, share_enabled: true, updated_at: new Date().toISOString() };
     if (projectId) {
@@ -257,6 +260,7 @@ function App() {
 
 
   const saveSharedProject = async () => {
+    if (isProjectLocked) return alert('Prosjektet er avsluttet og låst. Bidrag kan ikke lagres.');
     if (!projectId) return alert('Prosjektet mangler ID og kan ikke lagres fra delingslink.');
     const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), share_enabled: true, updated_at: new Date().toISOString() };
     const { error } = await supabase.from('projects').update(payload).eq('id', projectId);
@@ -401,6 +405,46 @@ function App() {
     }
     alert('Godkjenning er fjernet.');
     loadAdminUsers();
+  };
+
+
+  const setProjectLockedState = async (locked) => {
+    if (!authUser) return alert('Du må være logget inn for å endre prosjektstatus.');
+    if (!projectId) return alert('Prosjektet må lagres før det kan avsluttes eller låses opp.');
+    const message = locked
+      ? 'Vil du avslutte og låse prosjektet? Etter dette kan ingen lagre endringer før prosjektet låses opp igjen.'
+      : 'Vil du låse opp prosjektet slik at endringer kan lagres igjen?';
+    if (!window.confirm(message)) return;
+
+    const updatedProject = {
+      ...project,
+      locked,
+      lockedAt: locked ? new Date().toISOString() : '',
+      lockedBy: locked ? (authUser.email || user.email || user.name || 'Ukjent') : ''
+    };
+
+    const payload = {
+      title: updatedProject.projectName || updatedProject.address || 'Uten navn',
+      data: { company, user, project: updatedProject, checked, other, surf, photos, access, inst, files, checklist },
+      user_id: authUser.id,
+      share_enabled: true,
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase
+      .from('projects')
+      .update(payload)
+      .eq('id', projectId)
+      .eq('user_id', authUser.id);
+
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke oppdatere prosjektstatus: ' + error.message);
+    }
+
+    setProject(updatedProject);
+    alert(locked ? '🔒 Prosjektet er avsluttet og låst.' : '🔓 Prosjektet er låst opp igjen.');
+    loadProjects(authUser);
   };
 
   const signIn = async () => {
@@ -585,13 +629,14 @@ function App() {
         <div className="head">
           <Brand logo={company.logoUrl} name={name}/>
           <div><h1>Expo ProffDok</h1><p>Underentreprenør-tilgang · {project.projectName || project.address || 'Prosjekt'}</p></div>
-          <button onClick={saveSharedProject}>Lagre bidrag</button>
+          {isProjectLocked ? <button className="secondary" disabled>🔒 Avsluttet</button> : <button onClick={saveSharedProject}>Lagre bidrag</button>}
         </div>
         <nav>{limitedTabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
       </header>
       <main>
         <Section title="Begrenset tilgang" icon={<BadgeCheck/>}>
-          <p className="note">Du har tilgang til å se produkter, overflater, bilder, fag/utstyr og sjekklister på dette prosjektet. Du kan legge inn bilder, sjekklistepunkter, fag/utstyr og kommentarer. Prosjektinfo, prosjektering, rapport, tilbud/kontrakt og admin er skjult.</p>
+          {isProjectLocked && <p className="note"><b>🔒 Prosjektet er avsluttet og låst.</b> Du kan se innholdet, men nye bidrag kan ikke lagres.</p>}
+          <p className="note">Du har tilgang til å se produkter, overflater, bilder, fag/utstyr og sjekklister på dette prosjektet. Du kan legge inn bilder, sjekklistepunkter, fag/utstyr og kommentarer så lenge prosjektet ikke er låst. Prosjektinfo, prosjektering, rapport, tilbud/kontrakt og admin er skjult.</p>
         </Section>
         {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}><div className="checks">{s.items.map(i=><label className="check" key={i} style={{ display:'flex', alignItems:'center', gap:'8px' }}><input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>setChecked({...checked,[i]:e.target.checked})}/><span style={{ margin:0 }}>{i}</span></label>)}</div><Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/></Section>)}</>}
         {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
@@ -723,11 +768,21 @@ function App() {
         <button onClick={saveAsNewProject}>Lagre kopi</button>
         <button onClick={shareProject}>Del med kunde</button>
         <button onClick={printReport}><Download size={18}/> Lag PDF / skriv ut</button>
+        {projectId && (isProjectLocked
+          ? <button className="secondary" onClick={()=>setProjectLockedState(false)}>🔓 Lås opp prosjekt</button>
+          : <button className="secondary" onClick={()=>setProjectLockedState(true)}>🔒 Avslutt prosjekt</button>
+        )}
       </div>
       <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
     </header>
 
     <main>
+      {projectId && <Section title={isProjectLocked ? '🔒 Prosjekt avsluttet' : '🟢 Prosjekt aktivt'} icon={<BadgeCheck/>}>
+        <p className="note">{isProjectLocked
+          ? `Prosjektet ble låst${project.lockedAt ? ' ' + new Date(project.lockedAt).toLocaleString('no-NO') : ''}${project.lockedBy ? ' av ' + project.lockedBy : ''}. Lås opp prosjektet hvis du trenger å gjøre endringer.`
+          : 'Prosjektet er åpent for endringer. Når prosjektet er ferdig og overlevert kan det avsluttes og låses.'}
+        </p>
+      </Section>}
       {tab==='prosjekt' && <Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
         <Input label="Prosjektansvarlig" value={project.responsible} onChange={v=>setProject({...project,responsible:v})}/>
         <Input label="Dato" type="date" value={project.date} onChange={v=>setProject({...project,date:v})}/>
@@ -911,7 +966,7 @@ function ChecklistReportSection({checklist}) {
 }
 
 function Report({company,name,project,selected,other,surf,photos,access,inst,files,checklist}) {
-  const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, Kunde: project.customer, Dato: project.date, Notater: project.notes };
+  const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, Kunde: project.customer, Dato: project.date, Status: project.locked ? 'Avsluttet / låst' : 'Aktivt', Notater: project.notes };
   const cats = [...new Set(photos.map(p=>p.cat))];
   return <div className="report">
     <section><div className="reportTop"><Brand logo={company.logoUrl} name={name}/><div><h2>{name}</h2>{company.address&&<p>{company.address}</p>}{company.orgNumber&&<p>Org.nr: {company.orgNumber}</p>}{company.phone&&<p>{company.phone}</p>}{company.email&&<p>{company.email}</p>}{company.website&&<p>{company.website}</p>}</div></div><h2>FDV-rapport / Prosjektdokumentasjon</h2><Grid>{Object.entries(projectFields).map(([k,v])=><div className="out" key={k}><b>{k}</b><p>{v || 'Ikke fylt ut'}</p></div>)}</Grid></section>
@@ -943,7 +998,8 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
     ['Adresse', project.address],
     ['Kunde', project.customer],
     ['Dato', project.date],
-    ['Notater', project.notes]
+    ['Notater', project.notes],
+    ['Status', project.locked ? 'Avsluttet / låst' : 'Aktivt']
   ];
 
   const prosjektering = [
