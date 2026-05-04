@@ -91,12 +91,27 @@ function App() {
     (!!company.email && authUser.email === company.email)
   );
   const projectIsLocked = (p = project) => p?.locked === true || p?.locked === 'true' || p?.status === 'locked' || p?.status === 'Avsluttet';
-  const applyLockState = (baseProject, sourceProject = {}) => ({
-    ...baseProject,
-    locked: projectIsLocked(sourceProject),
-    lockedAt: sourceProject.lockedAt || '',
-    lockedBy: sourceProject.lockedBy || ''
-  });
+  const normalizeProject = (p = {}) => {
+    const merged = { ...emptyProject(), ...(p || {}) };
+    const locked = projectIsLocked(merged);
+    return {
+      ...merged,
+      locked,
+      status: locked ? 'locked' : (merged.status || 'active'),
+      lockedAt: locked ? (merged.lockedAt || '') : '',
+      lockedBy: locked ? (merged.lockedBy || '') : ''
+    };
+  };
+  const applyLockState = (baseProject, sourceProject = {}) => {
+    const source = normalizeProject(sourceProject || {});
+    return normalizeProject({
+      ...(baseProject || {}),
+      locked: source.locked,
+      status: source.locked ? 'locked' : 'active',
+      lockedAt: source.lockedAt || '',
+      lockedBy: source.lockedBy || ''
+    });
+  };
   const isProjectLocked = projectIsLocked(project);
 
   const tabs = [
@@ -115,11 +130,11 @@ function App() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   };
 
-  const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist });
+  const packData = () => ({ company, user, project: normalizeProject(project), checked, other, surf, photos, access, inst, files, checklist });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
     setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
-    setProject({ ...emptyProject(), ...(data.project || {}) });
+    setProject(normalizeProject(data.project || {}));
     setChecked(data.checked || {});
     setOther(data.other || {});
     setSurf(data.surf || {});
@@ -250,6 +265,7 @@ function App() {
 
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
+    if (projectId && isProjectLocked) return alert('Prosjektet er låst. Lås opp prosjektet før du lagrer endringer.');
 
     if (projectId) {
       const { data: existing, error: fetchError } = await supabase
@@ -313,6 +329,7 @@ function App() {
 
   const saveSharedProject = async () => {
     if (!projectId) return alert('Prosjektet mangler ID og kan ikke lagres fra delingslink.');
+    if (isProjectLocked) return alert('Prosjektet er låst og kan ikke endres. Kontakt prosjektansvarlig hvis noe må korrigeres.');
 
     const { data: existing, error: fetchError } = await supabase
       .from('projects')
@@ -372,30 +389,30 @@ function App() {
     }
 
     const existingData = existing.data || {};
-    const existingProject = existingData.project || {};
-    const updatedProject = {
-      ...emptyProject(),
+    const existingProject = normalizeProject(existingData.project || {});
+    const currentProject = normalizeProject(project || {});
+    const updatedProject = normalizeProject({
       ...existingProject,
-      ...project,
-      locked,
+      ...currentProject,
+      locked: !!locked,
       status: locked ? 'locked' : 'active',
       lockedAt: locked ? new Date().toISOString() : '',
       lockedBy: locked ? (authUser.email || user.email || user.name || 'Ukjent') : ''
-    };
+    });
 
     const updatedData = {
       ...existingData,
-      company: existingData.company || company,
-      user: existingData.user || user,
+      company,
+      user,
       project: updatedProject,
-      checked: existingData.checked || checked,
-      other: existingData.other || other,
-      surf: existingData.surf || surf,
-      photos: existingData.photos || photos,
-      access: existingData.access || access,
-      inst: existingData.inst || inst,
-      files: existingData.files || files,
-      checklist: existingData.checklist || checklist
+      checked,
+      other,
+      surf,
+      photos,
+      access,
+      inst,
+      files,
+      checklist
     };
 
     const payload = {
@@ -417,14 +434,32 @@ function App() {
       return alert('Kunne ikke oppdatere prosjektstatus: ' + error.message);
     }
 
-    unpackData(updatedData);
+    const { data: verified, error: verifyError } = await supabase
+      .from('projects')
+      .select('data')
+      .eq('id', projectId)
+      .eq('user_id', authUser.id)
+      .single();
+
+    if (verifyError || !verified) {
+      console.error(verifyError);
+      setProject(updatedProject);
+      return alert('Prosjektstatus er oppdatert, men kunne ikke verifiseres. Oppdater siden før videre testing.');
+    }
+
+    const verifiedProject = normalizeProject(verified.data?.project || {});
+    if (locked && !projectIsLocked(verifiedProject)) {
+      return alert('Prosjektet ble ikke bekreftet låst i databasen. Ikke test videre før dette er fikset.');
+    }
+
+    unpackData(verified.data || updatedData);
     alert(locked ? '🔒 Prosjektet er avsluttet og låst.' : '🔓 Prosjektet er låst opp igjen.');
     loadProjects(authUser);
   };
 
   const saveAsNewProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
-    const unlockedProject = { ...project, locked:false, lockedAt:'', lockedBy:'' };
+    const unlockedProject = normalizeProject({ ...project, locked:false, status:'active', lockedAt:'', lockedBy:'' });
     const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, other, surf, photos, access, inst, files, checklist }, user_id: authUser.id, share_enabled: true, updated_at: new Date().toISOString() };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
@@ -875,7 +910,7 @@ function App() {
         <Brand logo={company.logoUrl} name={name}/>
         <div><h1>Expo ProffDok</h1><p>{projectId ? 'Åpnet prosjekt' : (authUser?.email || name)}</p></div>
         <button className="secondary" onClick={signOut}>Logg ut</button>
-        <button onClick={saveProject}>{projectId ? 'Oppdater prosjekt' : 'Lagre'}</button>
+        <button onClick={saveProject} disabled={isProjectLocked}>{isProjectLocked ? '🔒 Låst' : (projectId ? 'Oppdater prosjekt' : 'Lagre')}</button>
         <button onClick={saveAsNewProject}>Lagre kopi</button>
         <button onClick={shareProject}>Del med kunde</button>
         <button onClick={printReport}><Download size={18}/> Lag PDF / skriv ut</button>{projectId && (isProjectLocked ? <button className="secondary" onClick={()=>setProjectLockedState(false)}>🔓 Lås opp prosjekt</button> : <button className="secondary" onClick={()=>setProjectLockedState(true)}>🔒 Avslutt prosjekt</button>)}
