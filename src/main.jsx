@@ -24,6 +24,13 @@ const imageCats = ['Før arbeid','Underlag','Avretting/støp','Primer','Membran'
 const roles = ['Eier / administrator','Ansatt','Underleverandør','Kun lesetilgang'];
 const installCats = ['Rørlegger','Tømrer/Snekker','Maler','Andre'];
 
+const accessRoleInfo = [
+  { role: 'Eier / administrator', text: 'Full tilgang til prosjekt, rapport, firmaprofil, prosjektliste, deling og brukergodkjenning.' },
+  { role: 'Ansatt', text: 'Kan normalt opprette, endre og dokumentere prosjekter for firmaet.' },
+  { role: 'Underleverandør', text: 'Anbefales for fag som skal bidra med dokumentasjon, bilder, sjekklister eller utstyr på prosjektet.' },
+  { role: 'Kun lesetilgang', text: 'Anbefales for kunde/byggherre som kun skal se rapport og dokumentasjon via delingslink.' }
+];
+
 const checklistTemplate = [
   { category: 'Forarbeid', items: ['Underlag kontrollert', 'Fall kontrollert', 'Sluk korrekt montert', 'Terskel og høyder kontrollert'] },
   { category: 'Primer / underlag', items: ['Riktig primer valgt', 'Primer påført', 'Tørketid fulgt'] },
@@ -278,6 +285,21 @@ function App() {
     }
   };
 
+
+  const copyAccessLink = async () => {
+    if (!projectId) {
+      await saveProject();
+      alert('Prosjektet er lagret. Trykk Kopier tilgangslink en gang til.');
+      return;
+    }
+    const link = `${window.location.origin}${window.location.pathname}?project=${projectId}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      alert('Tilgangslink kopiert. Send linken til den som skal se prosjektet.');
+    } catch {
+      prompt('Kopier denne linken:', link);
+    }
+  };
 
   const uploadLogo = async (file) => {
     if (!authUser || !file) return;
@@ -682,7 +704,7 @@ function App() {
 
       {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>Ta bilde eller velg fra galleri</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
 
-      {tab==='tilgang' && <Section title="Del tilgang til prosjekt"><button onClick={()=>setAccess([...access,{id:uid(),name:'',email:'',role:'Underleverandør'}])}><Plus size={18}/> Legg til tilgang</button>{access.map(a=><div className="row" key={a.id}><Input label="Navn" value={a.name} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,name:v}:x))}/><Input label="E-post" value={a.email} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,email:v}:x))}/><Select label="Rolle" value={a.role} options={roles} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,role:v}:x))}/><button className="secondary" onClick={()=>setAccess(access.filter(x=>x.id!==a.id))}>Fjern</button></div>)}</Section>}
+      {tab==='tilgang' && <Section title="Tilgang og deling"><p className="note">Her registrerer du hvem som skal ha rolle i prosjektet. Bruk dette til å dokumentere hvem som har fått tilgang. Kunde/lesetilgang åpner delingslinken uten innlogging. Underentreprenører kan foreløpig få delingslink og registreres her som ansvarlig rolle.</p><div className="cards">{accessRoleInfo.map(r=><div className="tile" key={r.role}><b>{r.role}</b><span>{r.text}</span></div>)}</div><div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}><button onClick={()=>setAccess([...access,{id:uid(),name:'',email:'',role:'Underleverandør'}])}><Plus size={18}/> Legg til person/firma</button><button className="secondary" onClick={copyAccessLink}>Kopier tilgangslink</button></div>{access.length===0 && <p className="note" style={{ marginTop:'16px' }}>Ingen ekstra tilganger er lagt til ennå.</p>}{access.map(a=><div className="item" key={a.id}><Grid><Input label="Navn/firma" value={a.name} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,name:v}:x))}/><Input label="E-post" value={a.email} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,email:v}:x))}/><Select label="Rolle" value={a.role} options={roles} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,role:v}:x))}/></Grid><p className="note">{accessRoleInfo.find(r=>r.role===a.role)?.text || ''}</p><div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}><button className="secondary" onClick={copyAccessLink}>Kopier link til denne</button><button className="secondary" onClick={()=>setAccess(access.filter(x=>x.id!==a.id))}>Fjern</button></div></div>)}</Section>}
 
       {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',photos:[],by:user.name||'Ukjent',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label><div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
 
