@@ -426,82 +426,24 @@ function App() {
       : 'Vil du låse opp prosjektet slik at endringer kan lagres igjen?';
     if (!window.confirm(message)) return;
 
-    const { data: existing, error: fetchError } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .eq('user_id', authUser.id)
-      .maybeSingle();
-
-    if (fetchError || !existing) {
-      console.error(fetchError);
-      return alert('Kunne ikke hente prosjektet før statusendring: ' + (fetchError?.message || 'Fant ikke prosjekt'));
-    }
-
-    const nowIso = new Date().toISOString();
-    const updatedProject = {
-      ...emptyProject(),
-      ...(existing.data?.project || {}),
-      ...project,
-      locked: !!locked,
-      status: locked ? 'locked' : 'active',
-      lockedAt: locked ? nowIso : '',
-      lockedBy: locked ? (authUser.email || user.email || user.name || 'Ukjent') : ''
-    };
-
-    const updatedData = JSON.parse(JSON.stringify({
-      company,
-      user,
-      project: updatedProject,
-      checked,
-      other,
-      surf,
-      photos,
-      access,
-      inst,
-      files,
-      checklist
-    }));
-
-    const { error } = await supabase
-      .from('projects')
-      .update({
-        title: updatedProject.projectName || updatedProject.address || 'Uten navn',
-        data: updatedData,
-        user_id: authUser.id,
-        share_enabled: true,
-        locked: !!locked,
-        locked_at: locked ? nowIso : null,
-        locked_by: locked ? (authUser.email || user.email || user.name || 'Ukjent') : '',
-        updated_at: nowIso
-      })
-      .eq('id', projectId)
-      .eq('user_id', authUser.id);
+    const { data, error } = await supabase.rpc('set_project_lock', {
+      p_project_id: projectId,
+      p_locked: !!locked,
+      p_locked_by: authUser.email || user.email || user.name || 'Ukjent'
+    });
 
     if (error) {
       console.error(error);
       return alert('Kunne ikke oppdatere prosjektstatus: ' + error.message);
     }
 
-    const { data: verified, error: verifyError } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .eq('user_id', authUser.id)
-      .maybeSingle();
-
-    if (verifyError || !verified) {
-      console.error(verifyError);
-      return alert('Prosjektstatus ble oppdatert, men kunne ikke kontrolleres. Trykk Ctrl+F5 og åpne prosjektet på nytt.');
+    const updatedRow = Array.isArray(data) ? data[0] : data;
+    if (!updatedRow) {
+      return alert('Prosjektstatus ble ikke oppdatert. Åpne prosjektet på nytt og prøv igjen.');
     }
 
-    const verifiedProject = projectFromRow(verified, verified.data?.project || {});
-    if (rowIsLocked(verified) !== !!locked) {
-      console.error('Lås-verifisering feilet', { wanted: locked, verifiedProject, verifiedRow: verified });
-      return alert('Prosjektstatus ble ikke bekreftet i databasen. Ikke test videre før dette er fikset.');
-    }
-
-    unpackData(dataFromRow(verified, updatedData));
+    const updatedData = dataFromRow(updatedRow, updatedRow.data || packData());
+    unpackData(updatedData);
     alert(locked ? '🔒 Prosjektet er avsluttet og låst.' : '🔓 Prosjektet er låst opp igjen.');
     loadProjects(authUser);
   };
