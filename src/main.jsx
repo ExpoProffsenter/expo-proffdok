@@ -221,7 +221,7 @@ function App() {
     if (id && !isRecoveryLink) {
       openProjectById(id);
       setAuthLoading(false);
-      if (params.get('role') === 'underleverandor') setTab('bilder');
+      if (params.get('role') === 'underleverandor') setTab('produkter');
       return;
     }
 
@@ -529,7 +529,7 @@ function App() {
   }))]);
 
 
-  if (authLoading && !isReadOnly) {
+  if (authLoading && !isReadOnly && !isUnderleverandorView) {
     return <div><main><section><h2>Laster...</h2></section></main></div>;
   }
 
@@ -571,7 +571,13 @@ function App() {
   }
 
   if (isUnderleverandorView) {
-    const limitedTabs = [['bilder','Bilder'], ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister']];
+    const limitedTabs = [['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister']];
+    if (!projectId && !(project.projectName || project.address)) {
+      return <div>
+        <header><div className="head"><Brand logo={company.logoUrl} name={name}/><div><h1>Expo ProffDok</h1><p>Laster prosjekt...</p></div></div></header>
+        <main><Section title="Laster prosjekt" icon={<BadgeCheck/>}><p>Henter prosjektdata...</p></Section></main>
+      </div>;
+    }
     return <div>
       <header>
         <div className="head">
@@ -583,8 +589,10 @@ function App() {
       </header>
       <main>
         <Section title="Begrenset tilgang" icon={<BadgeCheck/>}>
-          <p className="note">Du har tilgang til å legge inn bilder, sjekklistepunkter og fag/utstyr på dette prosjektet. Prosjektering, produkter, rapport, tilbud/kontrakt og admin er skjult.</p>
+          <p className="note">Du har tilgang til å se produkter, overflater, bilder, fag/utstyr og sjekklister på dette prosjektet. Du kan legge inn bilder, sjekklistepunkter, fag/utstyr og kommentarer. Prosjektinfo, prosjektering, rapport, tilbud/kontrakt og admin er skjult.</p>
         </Section>
+        {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}><div className="checks">{s.items.map(i=><label className="check" key={i} style={{ display:'flex', alignItems:'center', gap:'8px' }}><input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>setChecked({...checked,[i]:e.target.checked})}/><span style={{ margin:0 }}>{i}</span></label>)}</div><Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/></Section>)}</>}
+        {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
         {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>Ta bilde eller velg fra galleri</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
         {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',photos:[],by:user.name||'Underentreprenør',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label><div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
         {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}>
