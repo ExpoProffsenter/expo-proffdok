@@ -100,6 +100,24 @@ function App() {
     lockedBy: sourceProject.lockedBy || ''
   });
   const isProjectLocked = projectIsLocked(project);
+  const rowIsLocked = (row) => row?.locked === true || row?.locked === 'true' || projectIsLocked(row?.data?.project || {});
+  const projectFromRow = (row, fallbackProject = project) => {
+    const dataProject = row?.data?.project || {};
+    const lockedValue = rowIsLocked(row);
+    return {
+      ...emptyProject(),
+      ...dataProject,
+      ...fallbackProject,
+      locked: lockedValue,
+      status: lockedValue ? 'locked' : (dataProject.status || fallbackProject.status || 'active'),
+      lockedAt: row?.locked_at || dataProject.lockedAt || fallbackProject.lockedAt || '',
+      lockedBy: row?.locked_by || dataProject.lockedBy || fallbackProject.lockedBy || ''
+    };
+  };
+  const dataFromRow = (row, fallbackData = {}) => ({
+    ...(row?.data || fallbackData || {}),
+    project: projectFromRow(row, (row?.data || fallbackData || {}).project || emptyProject())
+  });
 
   const tabs = [
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
@@ -149,7 +167,7 @@ function App() {
   const openProjectById = async (id) => {
     const { data, error } = await supabase.from('projects').select('*').eq('id', id).single();
     if (error || !data) { console.error(error); return alert('Kunne ikke åpne prosjekt: ' + (error?.message || 'Fant ikke prosjekt')); }
-    unpackData(data.data || {});
+    unpackData(dataFromRow(data));
     setProjectId(data.id);
     setTab('rapport');
   };
@@ -261,7 +279,7 @@ function App() {
     if (projectId) {
       const { data: existing, error: fetchError } = await supabase
         .from('projects')
-        .select('id,data')
+        .select('*')
         .eq('id', projectId)
         .eq('user_id', authUser.id)
         .maybeSingle();
@@ -275,9 +293,9 @@ function App() {
         return alert('Fant ikke prosjektet for din bruker. Åpne prosjektet på nytt fra prosjektlisten.');
       }
 
-      const existingProject = existing?.data?.project || {};
-      if (projectIsLocked(existingProject) || isProjectLocked) {
-        const lockedProject = applyLockState({ ...emptyProject(), ...project }, existingProject);
+      const existingProject = projectFromRow(existing, existing?.data?.project || {});
+      if (rowIsLocked(existing) || isProjectLocked) {
+        const lockedProject = existingProject;
         setProject(lockedProject);
         return alert('Prosjektet er låst. Lås opp prosjektet før du lagrer endringer.');
       }
@@ -296,6 +314,9 @@ function App() {
         data: cleanData,
         user_id: authUser.id,
         share_enabled: true,
+        locked: false,
+        locked_at: null,
+        locked_by: '',
         updated_at: new Date().toISOString()
       };
 
@@ -326,6 +347,9 @@ function App() {
         data: makeCleanData(newProjectData),
         user_id: authUser.id,
         share_enabled: true,
+        locked: false,
+        locked_at: null,
+        locked_by: '',
         updated_at: new Date().toISOString()
       };
       const { data, error } = await supabase.from('projects').insert(payload).select().single();
@@ -343,7 +367,7 @@ function App() {
 
     const { data: existing, error: fetchError } = await supabase
       .from('projects')
-      .select('id,data,share_enabled')
+      .select('*')
       .eq('id', projectId)
       .maybeSingle();
 
@@ -352,9 +376,9 @@ function App() {
       return alert('Kunne ikke kontrollere prosjektstatus før lagring: ' + (fetchError?.message || 'Fant ikke prosjekt'));
     }
 
-    const existingProject = existing.data?.project || {};
-    if (projectIsLocked(existingProject) || isProjectLocked) {
-      const lockedProject = applyLockState({ ...emptyProject(), ...project }, existingProject);
+    const existingProject = projectFromRow(existing, existing.data?.project || {});
+    if (rowIsLocked(existing) || isProjectLocked) {
+      const lockedProject = existingProject;
       setProject(lockedProject);
       return alert('Prosjektet er låst og kan ikke endres. Kontakt prosjektansvarlig hvis noe må korrigeres.');
     }
@@ -377,6 +401,9 @@ function App() {
       title: safeProject.projectName || safeProject.address || 'Uten navn',
       data: cleanData,
       share_enabled: true,
+      locked: false,
+      locked_at: null,
+      locked_by: '',
       updated_at: new Date().toISOString()
     };
 
@@ -401,7 +428,7 @@ function App() {
 
     const { data: existing, error: fetchError } = await supabase
       .from('projects')
-      .select('id,data')
+      .select('*')
       .eq('id', projectId)
       .eq('user_id', authUser.id)
       .maybeSingle();
@@ -443,6 +470,9 @@ function App() {
         data: updatedData,
         user_id: authUser.id,
         share_enabled: true,
+        locked: !!locked,
+        locked_at: locked ? nowIso : null,
+        locked_by: locked ? (authUser.email || user.email || user.name || 'Ukjent') : '',
         updated_at: nowIso
       })
       .eq('id', projectId)
@@ -455,7 +485,7 @@ function App() {
 
     const { data: verified, error: verifyError } = await supabase
       .from('projects')
-      .select('id,data')
+      .select('*')
       .eq('id', projectId)
       .eq('user_id', authUser.id)
       .maybeSingle();
@@ -465,13 +495,13 @@ function App() {
       return alert('Prosjektstatus ble oppdatert, men kunne ikke kontrolleres. Trykk Ctrl+F5 og åpne prosjektet på nytt.');
     }
 
-    const verifiedProject = verified.data?.project || {};
-    if (projectIsLocked(verifiedProject) !== !!locked) {
-      console.error('Lås-verifisering feilet', { wanted: locked, verifiedProject });
+    const verifiedProject = projectFromRow(verified, verified.data?.project || {});
+    if (rowIsLocked(verified) !== !!locked) {
+      console.error('Lås-verifisering feilet', { wanted: locked, verifiedProject, verifiedRow: verified });
       return alert('Prosjektstatus ble ikke bekreftet i databasen. Ikke test videre før dette er fikset.');
     }
 
-    unpackData(verified.data || updatedData);
+    unpackData(dataFromRow(verified, updatedData));
     alert(locked ? '🔒 Prosjektet er avsluttet og låst.' : '🔓 Prosjektet er låst opp igjen.');
     loadProjects(authUser);
   };
@@ -479,7 +509,7 @@ function App() {
   const saveAsNewProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
     const unlockedProject = { ...emptyProject(), ...project, locked:false, status:'active', lockedAt:'', lockedBy:'' };
-    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, other, surf, photos, access, inst, files, checklist }, user_id: authUser.id, share_enabled: true, updated_at: new Date().toISOString() };
+    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, other, surf, photos, access, inst, files, checklist }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
