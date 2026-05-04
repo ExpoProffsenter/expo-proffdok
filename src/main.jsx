@@ -10,6 +10,7 @@ const supabase = createClient(
 );
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+const cloneData = (value) => JSON.parse(JSON.stringify(value));
 
 const productSections = [
   { title: 'Avretting / støpeprodukter', items: ['Sopro VS582 Avretting','Sopro 3.50 Avretting','Sopro HF-S 563 Avretting','Sopro FS 5® Avretting','Sopro RDS 960 - Ekspansjonsbånd','Sopro Classic EM Hurtigstøp','Sopro RAM 3® reparasjon og støpemørtel','Sopro RS 462 reparasjonsmørtel','Sopro Rapidur M5® hurtigstøp'] },
@@ -130,7 +131,7 @@ function App() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   };
 
-  const packData = () => ({ company, user, project: normalizeProject(project), checked, other, surf, photos, access, inst, files, checklist });
+  const packData = (projectOverride = project) => cloneData({ company, user, project: normalizeProject(projectOverride), checked, other, surf, photos, access, inst, files, checklist });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
     setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
@@ -289,7 +290,7 @@ function App() {
       const saveProjectData = applyLockState(project, existingProject);
       const payload = {
         title: saveProjectData.projectName || saveProjectData.address || 'Uten navn',
-        data: { company, user, project: saveProjectData, checked, other, surf, photos, access, inst, files, checklist },
+        data: packData(saveProjectData),
         user_id: authUser.id,
         share_enabled: true,
         updated_at: new Date().toISOString()
@@ -312,7 +313,7 @@ function App() {
       const newProjectData = applyLockState(project, { locked:false, lockedAt:'', lockedBy:'' });
       const payload = {
         title: newProjectData.projectName || newProjectData.address || 'Uten navn',
-        data: { company, user, project: newProjectData, checked, other, surf, photos, access, inst, files, checklist },
+        data: packData(newProjectData),
         user_id: authUser.id,
         share_enabled: true,
         updated_at: new Date().toISOString()
@@ -352,7 +353,7 @@ function App() {
 
     const payload = {
       title: safeProject.projectName || safeProject.address || 'Uten navn',
-      data: { company, user, project: safeProject, checked, other, surf, photos, access, inst, files, checklist },
+      data: packData(safeProject),
       share_enabled: true,
       updated_at: new Date().toISOString()
     };
@@ -390,18 +391,17 @@ function App() {
 
     const existingData = existing.data || {};
     const existingProject = normalizeProject(existingData.project || {});
-    const currentProject = normalizeProject(project || {});
     const updatedProject = normalizeProject({
       ...existingProject,
-      ...currentProject,
-      locked: !!locked,
+      ...project,
+      locked: locked === true,
       status: locked ? 'locked' : 'active',
       lockedAt: locked ? new Date().toISOString() : '',
       lockedBy: locked ? (authUser.email || user.email || user.name || 'Ukjent') : ''
     });
 
-    const updatedData = {
-      ...existingData,
+    // Viktig: lag en helt ny JSON-pakke og tving låsverdiene inn rett før Supabase-update.
+    const updatedData = cloneData({
       company,
       user,
       project: updatedProject,
@@ -413,7 +413,11 @@ function App() {
       inst,
       files,
       checklist
-    };
+    });
+    updatedData.project.locked = locked === true;
+    updatedData.project.status = locked ? 'locked' : 'active';
+    updatedData.project.lockedAt = updatedProject.lockedAt;
+    updatedData.project.lockedBy = updatedProject.lockedBy;
 
     const payload = {
       title: updatedProject.projectName || updatedProject.address || 'Uten navn',
@@ -423,36 +427,30 @@ function App() {
       updated_at: new Date().toISOString()
     };
 
-    const { error } = await supabase
+    const { data: saved, error } = await supabase
       .from('projects')
       .update(payload)
       .eq('id', projectId)
-      .eq('user_id', authUser.id);
-
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke oppdatere prosjektstatus: ' + error.message);
-    }
-
-    const { data: verified, error: verifyError } = await supabase
-      .from('projects')
-      .select('data')
-      .eq('id', projectId)
       .eq('user_id', authUser.id)
+      .select('data')
       .single();
 
-    if (verifyError || !verified) {
-      console.error(verifyError);
-      setProject(updatedProject);
-      return alert('Prosjektstatus er oppdatert, men kunne ikke verifiseres. Oppdater siden før videre testing.');
+    if (error || !saved) {
+      console.error(error);
+      return alert('Kunne ikke oppdatere prosjektstatus: ' + (error?.message || 'Ingen rad ble oppdatert'));
     }
 
-    const verifiedProject = normalizeProject(verified.data?.project || {});
-    if (locked && !projectIsLocked(verifiedProject)) {
+    const savedProject = normalizeProject(saved.data?.project || {});
+    if (locked && !projectIsLocked(savedProject)) {
+      console.error('Lock verify failed', saved);
       return alert('Prosjektet ble ikke bekreftet låst i databasen. Ikke test videre før dette er fikset.');
     }
+    if (!locked && projectIsLocked(savedProject)) {
+      console.error('Unlock verify failed', saved);
+      return alert('Prosjektet ble ikke bekreftet låst opp i databasen. Ikke test videre før dette er fikset.');
+    }
 
-    unpackData(verified.data || updatedData);
+    unpackData(saved.data || updatedData);
     alert(locked ? '🔒 Prosjektet er avsluttet og låst.' : '🔓 Prosjektet er låst opp igjen.');
     loadProjects(authUser);
   };
@@ -680,6 +678,7 @@ function App() {
   };
 
   const addPhoto = async (cat, fl) => {
+    if (isProjectLocked) return alert('Prosjektet er låst. Lås opp prosjektet før du legger til bilder.');
     const imgs = await uploadImages(fl, 'photos');
     setPhotos(p => [...p, ...imgs.map(img => ({
       ...img,
@@ -690,6 +689,7 @@ function App() {
   };
 
   const setChecklistValue = (category, item, patch) => {
+    if (isProjectLocked) return alert('Prosjektet er låst. Lås opp prosjektet før du endrer sjekkliste.');
     setChecklist(prev => ({
       ...prev,
       [category]: {
@@ -703,6 +703,7 @@ function App() {
   };
 
   const addChecklistPhoto = async (category, item, fl) => {
+    if (isProjectLocked) return alert('Prosjektet er låst. Lås opp prosjektet før du legger til bilder.');
     const imgs = await uploadImages(fl, 'sjekklister');
     if (!imgs.length) return;
     setChecklist(prev => ({
