@@ -90,7 +90,14 @@ function App() {
     authUser.email === 'kenneth@ringside.no' ||
     (!!company.email && authUser.email === company.email)
   );
-  const isProjectLocked = !!project.locked;
+  const projectIsLocked = (p = project) => p?.locked === true || p?.locked === 'true' || p?.status === 'locked' || p?.status === 'Avsluttet';
+  const applyLockState = (baseProject, sourceProject = {}) => ({
+    ...baseProject,
+    locked: projectIsLocked(sourceProject),
+    lockedAt: sourceProject.lockedAt || '',
+    lockedBy: sourceProject.lockedBy || ''
+  });
+  const isProjectLocked = projectIsLocked(project);
 
   const tabs = [
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
@@ -243,22 +250,61 @@ function App() {
 
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
-    if (projectId && project.locked) return alert('Prosjektet er låst. Lås opp prosjektet før du lagrer endringer.');
-    const payload = { title: project.projectName || project.address || 'Uten navn', data: packData(), user_id: authUser.id, share_enabled: true, updated_at: new Date().toISOString() };
+
     if (projectId) {
-      const { data: existing, error: fetchError } = await supabase.from('projects').select('data').eq('id', projectId).eq('user_id', authUser.id).single();
-      if (fetchError) { console.error(fetchError); return alert('Kunne ikke kontrollere prosjektstatus: ' + fetchError.message); }
-      if (existing?.data?.project?.locked) {
-        setProject({ ...project, locked:true, lockedAt: existing.data.project.lockedAt || '', lockedBy: existing.data.project.lockedBy || '' });
+      const { data: existing, error: fetchError } = await supabase
+        .from('projects')
+        .select('data')
+        .eq('id', projectId)
+        .eq('user_id', authUser.id)
+        .single();
+
+      if (fetchError) {
+        console.error(fetchError);
+        return alert('Kunne ikke kontrollere prosjektstatus: ' + fetchError.message);
+      }
+
+      const existingProject = existing?.data?.project || {};
+      if (projectIsLocked(existingProject)) {
+        setProject(applyLockState(project, existingProject));
         return alert('Prosjektet er låst. Lås opp prosjektet før du lagrer endringer.');
       }
-      const { error } = await supabase.from('projects').update(payload).eq('id', projectId).eq('user_id', authUser.id);
-      if (error) { console.error(error); return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message); }
+
+      const saveProjectData = applyLockState(project, existingProject);
+      const payload = {
+        title: saveProjectData.projectName || saveProjectData.address || 'Uten navn',
+        data: { company, user, project: saveProjectData, checked, other, surf, photos, access, inst, files, checklist },
+        user_id: authUser.id,
+        share_enabled: true,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('projects')
+        .update(payload)
+        .eq('id', projectId)
+        .eq('user_id', authUser.id);
+
+      if (error) {
+        console.error(error);
+        return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message);
+      }
+
+      setProject(saveProjectData);
       alert('✔ Prosjekt oppdatert');
     } else {
+      const newProjectData = applyLockState(project, { locked:false, lockedAt:'', lockedBy:'' });
+      const payload = {
+        title: newProjectData.projectName || newProjectData.address || 'Uten navn',
+        data: { company, user, project: newProjectData, checked, other, surf, photos, access, inst, files, checklist },
+        user_id: authUser.id,
+        share_enabled: true,
+        updated_at: new Date().toISOString()
+      };
       const { data, error } = await supabase.from('projects').insert(payload).select().single();
       if (error) { console.error(error); return alert('Kunne ikke lagre i sky: ' + error.message); }
       setProjectId(data.id);
+      setProject(newProjectData);
       alert('✔ Prosjekt lagret');
     }
     loadProjects(authUser);
@@ -280,17 +326,12 @@ function App() {
     }
 
     const existingProject = existing.data?.project || {};
-    if (existingProject.locked) {
-      setProject({ ...project, locked:true, lockedAt: existingProject.lockedAt || '', lockedBy: existingProject.lockedBy || '' });
+    if (projectIsLocked(existingProject)) {
+      setProject(applyLockState(project, existingProject));
       return alert('Prosjektet er låst og kan ikke endres. Kontakt prosjektansvarlig hvis noe må korrigeres.');
     }
 
-    const safeProject = {
-      ...project,
-      locked: !!existingProject.locked,
-      lockedAt: existingProject.lockedAt || '',
-      lockedBy: existingProject.lockedBy || ''
-    };
+    const safeProject = applyLockState(project, existingProject);
 
     const payload = {
       title: safeProject.projectName || safeProject.address || 'Uten navn',
@@ -318,16 +359,48 @@ function App() {
       : 'Vil du låse opp prosjektet slik at endringer kan lagres igjen?';
     if (!window.confirm(message)) return;
 
+    const { data: existing, error: fetchError } = await supabase
+      .from('projects')
+      .select('data')
+      .eq('id', projectId)
+      .eq('user_id', authUser.id)
+      .single();
+
+    if (fetchError || !existing) {
+      console.error(fetchError);
+      return alert('Kunne ikke hente prosjektet før statusendring: ' + (fetchError?.message || 'Fant ikke prosjekt'));
+    }
+
+    const existingData = existing.data || {};
+    const existingProject = existingData.project || {};
     const updatedProject = {
+      ...emptyProject(),
+      ...existingProject,
       ...project,
       locked,
+      status: locked ? 'locked' : 'active',
       lockedAt: locked ? new Date().toISOString() : '',
       lockedBy: locked ? (authUser.email || user.email || user.name || 'Ukjent') : ''
     };
 
+    const updatedData = {
+      ...existingData,
+      company: existingData.company || company,
+      user: existingData.user || user,
+      project: updatedProject,
+      checked: existingData.checked || checked,
+      other: existingData.other || other,
+      surf: existingData.surf || surf,
+      photos: existingData.photos || photos,
+      access: existingData.access || access,
+      inst: existingData.inst || inst,
+      files: existingData.files || files,
+      checklist: existingData.checklist || checklist
+    };
+
     const payload = {
       title: updatedProject.projectName || updatedProject.address || 'Uten navn',
-      data: { company, user, project: updatedProject, checked, other, surf, photos, access, inst, files, checklist },
+      data: updatedData,
       user_id: authUser.id,
       share_enabled: true,
       updated_at: new Date().toISOString()
@@ -344,7 +417,7 @@ function App() {
       return alert('Kunne ikke oppdatere prosjektstatus: ' + error.message);
     }
 
-    setProject(updatedProject);
+    unpackData(updatedData);
     alert(locked ? '🔒 Prosjektet er avsluttet og låst.' : '🔓 Prosjektet er låst opp igjen.');
     loadProjects(authUser);
   };
