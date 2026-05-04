@@ -55,6 +55,9 @@ function App() {
   const [authUser, setAuthUser] = useState(null);
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordRepeat, setNewPasswordRepeat] = useState('');
   const [authLoading, setAuthLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -188,8 +191,15 @@ function App() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
     const id = params.get('project');
-    if (id) {
+    const isRecoveryLink = params.get('type') === 'recovery' || hashParams.get('type') === 'recovery';
+
+    if (isRecoveryLink) {
+      setPasswordRecovery(true);
+    }
+
+    if (id && !isRecoveryLink) {
       openProjectById(id);
       setAuthLoading(false);
       return;
@@ -200,6 +210,9 @@ function App() {
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true);
+      }
       handleAuthUser(session?.user || null);
     });
 
@@ -324,6 +337,26 @@ function App() {
     alert('E-post for tilbakestilling av passord er sendt. Sjekk innboksen din.');
   };
 
+  const completePasswordReset = async () => {
+    if (!newPassword || !newPasswordRepeat) return alert('Skriv inn nytt passord to ganger.');
+    if (newPassword !== newPasswordRepeat) return alert('Passordene er ikke like.');
+    if (newPassword.length < 6) return alert('Passordet må være minst 6 tegn.');
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return alert('Kunne ikke oppdatere passord: ' + error.message);
+
+    setNewPassword('');
+    setNewPasswordRepeat('');
+    setPasswordRecovery(false);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    await supabase.auth.signOut();
+    setAuthUser(null);
+    setProfile(null);
+    setProjects([]);
+    setTab('prosjekt');
+    alert('Passordet er oppdatert. Logg inn på nytt.');
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setProjectId(null);
@@ -406,6 +439,43 @@ function App() {
 
   if (authLoading && !isReadOnly) {
     return <div><main><section><h2>Laster...</h2></section></main></div>;
+  }
+
+  if (passwordRecovery && !isReadOnly) {
+    return <div>
+      <header>
+        <div className="head">
+          <Brand logo={company.logoUrl} name={name}/>
+          <div><h1>Expo ProffDok</h1><p>Sett nytt passord</p></div>
+        </div>
+      </header>
+      <main>
+        <Section title="Sett nytt passord" icon={<BadgeCheck/>}>
+          <p className="note">Skriv inn ønsket passord. Du kan bruke samme passord som tidligere hvis Supabase godtar det.</p>
+          <Grid>
+            <Input
+              label="Nytt passord"
+              type="password"
+              value={newPassword}
+              onChange={setNewPassword}
+              autoComplete="new-password"
+            />
+            <Input
+              label="Gjenta nytt passord"
+              type="password"
+              value={newPasswordRepeat}
+              onChange={setNewPasswordRepeat}
+              autoComplete="new-password"
+              onKeyDown={e => { if (e.key === 'Enter') completePasswordReset(); }}
+            />
+          </Grid>
+          <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
+            <button onClick={completePasswordReset}>Lagre nytt passord</button>
+            <button className="secondary" onClick={async()=>{ setPasswordRecovery(false); setNewPassword(''); setNewPasswordRepeat(''); window.history.replaceState({}, document.title, window.location.pathname); await supabase.auth.signOut(); setAuthUser(null); setProfile(null); }}>Avbryt og gå til innlogging</button>
+          </div>
+        </Section>
+      </main>
+    </div>;
   }
 
   if (!authUser && !isReadOnly) {
