@@ -427,17 +427,27 @@ function App() {
       updated_at: new Date().toISOString()
     };
 
-    const { data: saved, error } = await supabase
+    const { error } = await supabase
       .from('projects')
       .update(payload)
       .eq('id', projectId)
-      .eq('user_id', authUser.id)
-      .select('data')
-      .single();
+      .eq('user_id', authUser.id);
 
-    if (error || !saved) {
+    if (error) {
       console.error(error);
-      return alert('Kunne ikke oppdatere prosjektstatus: ' + (error?.message || 'Ingen rad ble oppdatert'));
+      return alert('Kunne ikke oppdatere prosjektstatus: ' + error.message);
+    }
+
+    const { data: saved, error: verifyError } = await supabase
+      .from('projects')
+      .select('data')
+      .eq('id', projectId)
+      .eq('user_id', authUser.id)
+      .maybeSingle();
+
+    if (verifyError || !saved) {
+      console.error(verifyError);
+      return alert('Prosjektstatus ble sendt til Supabase, men kunne ikke verifiseres etterpå: ' + (verifyError?.message || 'Fant ikke prosjektet'));
     }
 
     const savedProject = normalizeProject(saved.data?.project || {});
