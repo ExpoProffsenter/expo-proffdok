@@ -570,6 +570,49 @@ function App() {
     </div>;
   }
 
+  if (isUnderleverandorView) {
+    const limitedTabs = [['bilder','Bilder'], ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister']];
+    return <div>
+      <header>
+        <div className="head">
+          <Brand logo={company.logoUrl} name={name}/>
+          <div><h1>Expo ProffDok</h1><p>Underentreprenør-tilgang · {project.projectName || project.address || 'Prosjekt'}</p></div>
+          <button onClick={saveSharedProject}>Lagre bidrag</button>
+        </div>
+        <nav>{limitedTabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
+      </header>
+      <main>
+        <Section title="Begrenset tilgang" icon={<BadgeCheck/>}>
+          <p className="note">Du har tilgang til å legge inn bilder, sjekklistepunkter og fag/utstyr på dette prosjektet. Prosjektering, produkter, rapport, tilbud/kontrakt og admin er skjult.</p>
+        </Section>
+        {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>Ta bilde eller velg fra galleri</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
+        {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',photos:[],by:user.name||'Underentreprenør',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label><div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
+        {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}>
+          <p className="note">Velg status per kontrollpunkt. Ved Avvik kan du skrive kommentar og ta bilde.</p>
+          <div className="checklistList">
+            {checklistTemplate.map(group => <div className="item" key={group.category}>
+              <h3>{group.category}</h3>
+              {group.items.map(item => {
+                const value = checklist[group.category]?.[item] || {};
+                return <div className="checklistPoint" key={item}>
+                  <div className="checklistHeader"><b>{item}</b><div className="checklistStatusButtons">{['Ok','Ikke aktuelt','Avvik'].map(status => <button type="button" key={status} className={value.status===status ? '' : 'secondary'} onClick={()=>setChecklistValue(group.category, item, { status })}>{status}</button>)}</div></div>
+                  {(value.status || value.comment || (value.photos||[]).length>0) && <Textarea label="Kommentar" value={value.comment || ''} onChange={v=>setChecklistValue(group.category, item, { comment:v })}/>} 
+                  <label className="upload checklistUpload"><Plus size={18}/> Ta bilde / last opp bilde<input type="file" accept="image/*" multiple onChange={e=>addChecklistPhoto(group.category, item, e.target.files)}/></label>
+                  {(value.photos || []).length > 0 && <div className="photos checklistPhotos">{value.photos.map(p => <div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div>}
+                </div>;
+              })}
+            </div>)}
+          </div>
+          <Section title="Opplastede sjekklister / vedlegg fra andre fag" icon={<FileText/>}>
+            <label className="upload"><Plus size={18}/> Last opp sjekkliste / vedlegg<input type="file" multiple onChange={e=>addFiles(e.target.files)}/></label>
+            {files.map(f=><div className="file" key={f.id}><b>{f.name}</b><small>Lastet opp av {f.by} · {f.created}</small><a href={f.url} target="_blank">Åpne</a><button className="secondary" onClick={()=>setFiles(files.filter(x=>x.id!==f.id))}>Fjern</button></div>)}
+          </Section>
+        </Section>}
+      </main>
+    </div>;
+  }
+
+
   if (!authUser && !isReadOnly) {
     return <div>
       <header>
@@ -655,49 +698,6 @@ function App() {
       </header>
       <main>
         <CustomerReport company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist}/>
-      </main>
-    </div>;
-  }
-
-
-  if (isUnderleverandorView) {
-    const limitedTabs = [['bilder','Bilder'], ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister']];
-    return <div>
-      <header>
-        <div className="head">
-          <Brand logo={company.logoUrl} name={name}/>
-          <div><h1>Expo ProffDok</h1><p>Underentreprenør-tilgang · {project.projectName || project.address || 'Prosjekt'}</p></div>
-          <button onClick={saveSharedProject}>Lagre bidrag</button>
-        </div>
-        <nav>{limitedTabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
-      </header>
-      <main>
-        <Section title="Begrenset tilgang" icon={<BadgeCheck/>}>
-          <p className="note">Du har tilgang til å legge inn bilder, sjekklistepunkter og fag/utstyr på dette prosjektet. Prosjektering, produkter, rapport, tilbud/kontrakt og admin er skjult.</p>
-        </Section>
-        {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>Ta bilde eller velg fra galleri</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
-        {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',photos:[],by:user.name||'Underentreprenør',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label><div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
-        {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}>
-          <p className="note">Velg status per kontrollpunkt. Ved Avvik kan du skrive kommentar og ta bilde.</p>
-          <div className="checklistList">
-            {checklistTemplate.map(group => <div className="item" key={group.category}>
-              <h3>{group.category}</h3>
-              {group.items.map(item => {
-                const value = checklist[group.category]?.[item] || {};
-                return <div className="checklistPoint" key={item}>
-                  <div className="checklistHeader"><b>{item}</b><div className="checklistStatusButtons">{['Ok','Ikke aktuelt','Avvik'].map(status => <button type="button" key={status} className={value.status===status ? '' : 'secondary'} onClick={()=>setChecklistValue(group.category, item, { status })}>{status}</button>)}</div></div>
-                  {(value.status || value.comment || (value.photos||[]).length>0) && <Textarea label="Kommentar" value={value.comment || ''} onChange={v=>setChecklistValue(group.category, item, { comment:v })}/>} 
-                  <label className="upload checklistUpload"><Plus size={18}/> Ta bilde / last opp bilde<input type="file" accept="image/*" multiple onChange={e=>addChecklistPhoto(group.category, item, e.target.files)}/></label>
-                  {(value.photos || []).length > 0 && <div className="photos checklistPhotos">{value.photos.map(p => <div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div>}
-                </div>;
-              })}
-            </div>)}
-          </div>
-          <Section title="Opplastede sjekklister / vedlegg fra andre fag" icon={<FileText/>}>
-            <label className="upload"><Plus size={18}/> Last opp sjekkliste / vedlegg<input type="file" multiple onChange={e=>addFiles(e.target.files)}/></label>
-            {files.map(f=><div className="file" key={f.id}><b>{f.name}</b><small>Lastet opp av {f.by} · {f.created}</small><a href={f.url} target="_blank">Åpne</a><button className="secondary" onClick={()=>setFiles(files.filter(x=>x.id!==f.id))}>Fjern</button></div>)}
-          </Section>
-        </Section>}
       </main>
     </div>;
   }
