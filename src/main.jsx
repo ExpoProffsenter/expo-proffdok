@@ -59,6 +59,11 @@ function App() {
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
 
+  useEffect(() => {
+    const savedEmail = window.localStorage.getItem('expoProffDokAuthEmail');
+    if (savedEmail) setAuthEmail(savedEmail);
+  }, []);
+
   const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({ section:s.title, item:i }))), [checked]);
   const name = company.companyName || 'Expo Proffsenter';
 
@@ -292,14 +297,31 @@ function App() {
   };
 
   const signIn = async () => {
-    const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+    const cleanEmail = authEmail.trim();
+    if (!cleanEmail || !authPassword) return alert('Fyll inn e-post og passord.');
+    window.localStorage.setItem('expoProffDokAuthEmail', cleanEmail);
+    const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: authPassword });
     if (error) return alert('Kunne ikke logge inn: ' + error.message);
   };
 
   const signUp = async () => {
-    const { error } = await supabase.auth.signUp({ email: authEmail, password: authPassword });
+    const cleanEmail = authEmail.trim();
+    if (!cleanEmail || !authPassword) return alert('Fyll inn e-post og passord.');
+    window.localStorage.setItem('expoProffDokAuthEmail', cleanEmail);
+    const { error } = await supabase.auth.signUp({ email: cleanEmail, password: authPassword });
     if (error) return alert('Kunne ikke opprette bruker: ' + error.message);
     alert('Bruker opprettet. Kontoen må godkjennes før appen kan brukes.');
+  };
+
+  const resetPassword = async () => {
+    const cleanEmail = authEmail.trim();
+    if (!cleanEmail) return alert('Skriv inn e-postadressen din først.');
+    window.localStorage.setItem('expoProffDokAuthEmail', cleanEmail);
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: window.location.origin + window.location.pathname
+    });
+    if (error) return alert('Kunne ikke sende tilbakestilling: ' + error.message);
+    alert('E-post for tilbakestilling av passord er sendt. Sjekk innboksen din.');
   };
 
   const signOut = async () => {
@@ -397,14 +419,23 @@ function App() {
       <main>
         <Section title="Innlogging" icon={<BadgeCheck/>}>
           <Grid>
-            <Input label="E-post" value={authEmail} onChange={setAuthEmail}/>
-            <Input label="Passord" type="password" value={authPassword} onChange={setAuthPassword}/>
+            <Input label="E-post" value={authEmail} onChange={setAuthEmail} autoComplete="email"/>
+            <Input
+              label="Passord"
+              type="password"
+              value={authPassword}
+              onChange={setAuthPassword}
+              autoComplete="current-password"
+              onKeyDown={e => { if (e.key === 'Enter') signIn(); }}
+            />
           </Grid>
           <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
             <button onClick={signIn}>Logg inn</button>
             <button className="secondary" onClick={signUp}>Opprett bruker</button>
+            <button className="secondary" onClick={resetPassword}>Glemt passord?</button>
           </div>
-          <p className="note" style={{ marginTop:'16px' }}>Delingslenker fungerer fortsatt uten innlogging.</p>
+          <p className="note" style={{ marginTop:'16px' }}>E-post huskes på denne enheten. Passord lagres ikke i appen, men nettleseren/Supabase kan holde deg innlogget trygt.</p>
+          <p className="note">Delingslenker fungerer fortsatt uten innlogging.</p>
         </Section>
       </main>
     </div>;
@@ -612,7 +643,7 @@ function App() {
 function Brand({logo,name}) { return <div style={{ width:"260px", height:"80px", overflow:"hidden", display:"flex", alignItems:"center" }}><img src={logo ? logo : "/expo-logo.png"} alt={name || "Expo Proffsenter"} style={{ maxWidth:"100%", maxHeight:"100%", objectFit:"contain" }}/></div>; }
 function Section({title,icon,children}) { return <section><h2>{icon}{title}</h2>{children}</section>; }
 function Grid({children}) { return <div className="grid">{children}</div>; }
-function Input({label,value,onChange,type='text'}) { return <label><span>{label}</span><input type={type} value={value} onChange={e=>onChange(e.target.value)}/></label>; }
+function Input({label,value,onChange,type='text',onKeyDown,autoComplete}) { return <label><span>{label}</span><input type={type} value={value} autoComplete={autoComplete} onKeyDown={onKeyDown} onChange={e=>onChange(e.target.value)}/></label>; }
 function Textarea({label,value,onChange}) { return <label><span>{label}</span><textarea value={value} onChange={e=>onChange(e.target.value)} /></label>; }
 function Select({label,value,onChange,options}) { return <label><span>{label}</span><select value={value} onChange={e=>onChange(e.target.value)}>{options.map(o=><option key={o}>{o}</option>)}</select></label>; }
 function PhotoGrid({photos,setPhotos}) { return <div className="photos">{photos.map(p=><div className="photo" key={p.id}><img src={p.url}/><b>{p.cat}</b><small>{p.created}</small><textarea placeholder="Kommentar" value={p.comment} onChange={e=>setPhotos(photos.map(x=>x.id===p.id?{...x,comment:e.target.value}:x))}/><button className="secondary" onClick={()=>setPhotos(photos.filter(x=>x.id!==p.id))}><Trash2 size={16}/> Fjern</button></div>)}</div>; }
