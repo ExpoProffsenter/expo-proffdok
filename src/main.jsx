@@ -61,6 +61,8 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [adminLoading, setAdminLoading] = useState(false);
 
   useEffect(() => {
     const savedEmail = window.localStorage.getItem('expoProffDokAuthEmail');
@@ -71,11 +73,18 @@ function App() {
   const name = company.companyName || 'Expo Proffsenter';
 
   const isReadOnly = new URLSearchParams(window.location.search).has('project');
+  const isAdminUser = !!authUser && (
+    profile?.is_admin === true ||
+    profile?.role === 'admin' ||
+    authUser.email === 'kenneth@ringside.no' ||
+    (!!company.email && authUser.email === company.email)
+  );
 
   const tabs = [
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
-    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport']
+    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
+    ...(isAdminUser && !isReadOnly ? [['admin','Admin']] : [])
   ];
 
   const currentTabIndex = tabs.findIndex(([id]) => id === tab);
@@ -225,12 +234,12 @@ function App() {
     if (projectId) {
       const { error } = await supabase.from('projects').update(payload).eq('id', projectId).eq('user_id', authUser.id);
       if (error) { console.error(error); return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message); }
-      alert('Prosjektet er oppdatert i sky');
+      alert('✔ Prosjekt oppdatert');
     } else {
       const { data, error } = await supabase.from('projects').insert(payload).select().single();
       if (error) { console.error(error); return alert('Kunne ikke lagre i sky: ' + error.message); }
       setProjectId(data.id);
-      alert('Prosjekt lagret i sky');
+      alert('✔ Prosjekt lagret');
     }
     loadProjects(authUser);
   };
@@ -241,7 +250,7 @@ function App() {
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
-    alert('Lagret som nytt prosjekt');
+    alert('✔ Kopi lagret');
     loadProjects(authUser);
   };
 
@@ -307,6 +316,50 @@ function App() {
     const row = { ...(profile || {}), ...payload };
     applyProfile(row);
     alert('Firmaprofil lagret');
+  };
+
+  const loadAdminUsers = async () => {
+    if (!isAdminUser) return alert('Du har ikke tilgang til admin.');
+    setAdminLoading(true);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id,email,approved,company_name,created_at')
+      .order('created_at', { ascending:false });
+    setAdminLoading(false);
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke hente brukere. Sjekk at Supabase-policy tillater admin å lese profiles.');
+    }
+    setAdminUsers(data || []);
+  };
+
+  const approveAdminUser = async (id) => {
+    if (!isAdminUser) return alert('Du har ikke tilgang til admin.');
+    const { error } = await supabase
+      .from('profiles')
+      .update({ approved: true })
+      .eq('id', id);
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke godkjenne bruker: ' + error.message);
+    }
+    alert('Bruker er godkjent.');
+    loadAdminUsers();
+  };
+
+  const revokeAdminUser = async (id) => {
+    if (!isAdminUser) return alert('Du har ikke tilgang til admin.');
+    if (!window.confirm('Vil du fjerne godkjenning for denne brukeren?')) return;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ approved: false })
+      .eq('id', id);
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke fjerne godkjenning: ' + error.message);
+    }
+    alert('Godkjenning er fjernet.');
+    loadAdminUsers();
   };
 
   const signIn = async () => {
@@ -574,9 +627,9 @@ function App() {
         <Brand logo={company.logoUrl} name={name}/>
         <div><h1>Expo ProffDok</h1><p>{projectId ? 'Åpnet prosjekt' : (authUser?.email || name)}</p></div>
         <button className="secondary" onClick={signOut}>Logg ut</button>
-        <button onClick={saveProject}>{projectId ? 'Oppdater prosjekt' : 'Lagre nytt prosjekt'}</button>
-        <button onClick={saveAsNewProject}>Lagre som nytt</button>
-        <button onClick={shareProject}>Kopier delingslink</button>
+        <button onClick={saveProject}>{projectId ? 'Oppdater prosjekt' : 'Lagre'}</button>
+        <button onClick={saveAsNewProject}>Lagre kopi</button>
+        <button onClick={shareProject}>Del med kunde</button>
         <button onClick={printReport}><Download size={18}/> Lag PDF / skriv ut</button>
       </div>
       <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
@@ -676,6 +729,20 @@ function App() {
       {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={() => loadProjects(authUser)}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>Sist oppdatert: {new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
 
       {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist}/>} 
+
+      {tab==='admin' && isAdminUser && <Section title="Admin – brukergodkjenning" icon={<BadgeCheck/>}>
+        <p className="note">Her kan administrator se registrerte brukere og godkjenne tilgang uten å gå inn i Supabase. Dette forutsetter at Supabase-policy tillater admin å lese og oppdatere profiles.</p>
+        <button onClick={loadAdminUsers}>{adminLoading ? 'Henter brukere...' : 'Oppdater brukerliste'}</button>
+        {adminUsers.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen brukere hentet ennå. Trykk Oppdater brukerliste.</p>}
+        {adminUsers.map(u => <div className="item" key={u.id}>
+          <b>{u.email || 'Ukjent e-post'}</b>
+          <small>{u.company_name ? `Firma: ${u.company_name} · ` : ''}Status: {u.approved ? 'Godkjent' : 'Venter på godkjenning'}</small>
+          <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginTop:'10px' }}>
+            {!u.approved && <button onClick={()=>approveAdminUser(u.id)}>Godkjenn bruker</button>}
+            {u.approved && <button className="secondary" onClick={()=>revokeAdminUser(u.id)}>Fjern godkjenning</button>}
+          </div>
+        </div>)}
+      </Section>}
     </main>
 
     <div style={{
