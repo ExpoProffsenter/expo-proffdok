@@ -71,6 +71,7 @@ function App() {
   const [project, setProject] = useState(emptyProject());
   const [checked, setChecked] = useState({});
   const [productDocs, setProductDocs] = useState({});
+  const [manualProducts, setManualProducts] = useState([]);
   const [other, setOther] = useState({});
   const [surf, setSurf] = useState({});
   const [photos, setPhotos] = useState([]);
@@ -100,6 +101,7 @@ function App() {
   }, []);
 
   const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({ section:s.title, item:i, fdvUrl: productDocs[i]?.fdvUrl || '', comment: productDocs[i]?.comment || '' }))), [checked, productDocs]);
+  const manualSelected = useMemo(() => (manualProducts || []).filter(p => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment) || hasValue(p.trade)), [manualProducts]);
   const name = company.companyName || 'Expo Proffsenter';
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -171,13 +173,14 @@ function App() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   };
 
-  const packData = () => ({ company, user, project, checked, productDocs, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse });
+  const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
     setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
     setProject({ ...emptyProject(), ...(data.project || {}) });
     setChecked(data.checked || {});
     setProductDocs(data.productDocs || {});
+    setManualProducts(Array.isArray(data.manualProducts) ? data.manualProducts : []);
     setOther(data.other || {});
     setSurf(data.surf || {});
     setPhotos(data.photos || []);
@@ -324,6 +327,7 @@ function App() {
       (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length ||
       Object.keys(checked || {}).length ||
       Object.keys(productDocs || {}).length ||
+      (manualProducts || []).length ||
       Object.keys(other || {}).length ||
       Object.keys(surf || {}).length ||
       (photos || []).length ||
@@ -348,6 +352,7 @@ function App() {
     setProject(emptyProject());
     setChecked({});
     setProductDocs({});
+    setManualProducts([]);
     setOther({});
     setSurf({});
     setPhotos([]);
@@ -400,12 +405,24 @@ function App() {
     }));
   };
 
+  const addManualProduct = () => {
+    setManualProducts(prev => [...prev, { id: uid(), trade:'Mur- og flisarbeid', name:'', fdvUrl:'', comment:'' }]);
+  };
+
+  const updateManualProduct = (id, patch) => {
+    setManualProducts(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p));
+  };
+
+  const removeManualProduct = (id) => {
+    setManualProducts(prev => prev.filter(p => p.id !== id));
+  };
+
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
 
     const makeCleanData = (projectOverride = project) => JSON.parse(JSON.stringify({
       company, user, project: { ...emptyProject(), ...projectOverride },
-      checked, productDocs, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
+      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
     }));
 
     if (projectId) {
@@ -526,7 +543,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: safeProject,
-      checked, productDocs, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
+      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
     }));
 
     const payload = {
@@ -583,7 +600,7 @@ function App() {
   const saveAsNewProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
     const unlockedProject = { ...emptyProject(), ...project, locked:false, status:'active', lockedAt:'', lockedBy:'' };
-    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, productDocs, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
+    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
@@ -618,7 +635,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: newProjectData,
-      checked, productDocs, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
+      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
     }));
 
     const payload = {
@@ -700,6 +717,7 @@ function App() {
       project: { ...emptyProject(), ...project, locked: false, status: 'active', lockedAt: '', lockedBy: '' },
       checked,
       productDocs,
+      manualProducts,
       other,
       surf,
       photos,
@@ -1052,10 +1070,25 @@ function App() {
           </div>;
         })}</div>
         <Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/>
-      </Section>)}</>}
+      </Section>)}
+      <Section title="Andre produkter med FDV" icon={<FileText/>}>
+        <p className="note">Bruk denne listen for produkter som ikke ligger i standardlisten. Dette er felles for prosjektet og kan brukes for mur/flis eller andre fag.</p>
+        <button type="button" onClick={addManualProduct}><Plus size={18}/> Legg til annet produkt</button>
+        {(manualProducts || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen andre produkter er lagt til ennå.</p>}
+        {(manualProducts || []).map(p => <div className="item" key={p.id}>
+          <Grid>
+            <Input label="Fag / område" value={p.trade || ''} onChange={v=>updateManualProduct(p.id, { trade:v })}/>
+            <Input label="Produktnavn" value={p.name || ''} onChange={v=>updateManualProduct(p.id, { name:v })}/>
+            <Input label="FDV-/databladlink" value={p.fdvUrl || ''} onChange={v=>updateManualProduct(p.id, { fdvUrl:v })}/>
+            <Input label="Hvor brukt / kommentar" value={p.comment || ''} onChange={v=>updateManualProduct(p.id, { comment:v })}/>
+          </Grid>
+          <button type="button" className="secondary" onClick={()=>removeManualProduct(p.id)}>Fjern produkt</button>
+        </div>)}
+      </Section>
+      </>}
         {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
         {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>{photos.filter(p=>p.cat===c).length > 0 ? `📷 ${photos.filter(p=>p.cat===c).length} bilder lagt til` : 'Ta bilde eller velg fra galleri'}</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
-        {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',photos:[],by:user.name||'Underentreprenør',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label>{(x.photos||[]).length > 0 && <p className="note">📷 {(x.photos||[]).length} bilder lagt til</p>}<div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
+        {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',fdvUrl:'',photos:[],by:user.name||'Underentreprenør',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/><Input label="FDV-/databladlink" value={x.fdvUrl || ''} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,fdvUrl:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label>{(x.photos||[]).length > 0 && <p className="note">📷 {(x.photos||[]).length} bilder lagt til</p>}<div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
         {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}>
           <p className="note">Velg status per kontrollpunkt. Ved Avvik kan du skrive kommentar og ta bilde.</p>
           <div className="checklistList">
@@ -1166,7 +1199,7 @@ function App() {
         </div>
       </header>
       <main>
-        <CustomerReport company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse}/>
+        <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse}/>
       </main>
     </div>;
   }
@@ -1268,7 +1301,22 @@ function App() {
           </div>;
         })}</div>
         <Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/>
-      </Section>)}</>}
+      </Section>)}
+      <Section title="Andre produkter med FDV" icon={<FileText/>}>
+        <p className="note">Bruk denne listen for produkter som ikke ligger i standardlisten. Dette er felles for prosjektet og kan brukes for mur/flis eller andre fag.</p>
+        <button type="button" onClick={addManualProduct}><Plus size={18}/> Legg til annet produkt</button>
+        {(manualProducts || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen andre produkter er lagt til ennå.</p>}
+        {(manualProducts || []).map(p => <div className="item" key={p.id}>
+          <Grid>
+            <Input label="Fag / område" value={p.trade || ''} onChange={v=>updateManualProduct(p.id, { trade:v })}/>
+            <Input label="Produktnavn" value={p.name || ''} onChange={v=>updateManualProduct(p.id, { name:v })}/>
+            <Input label="FDV-/databladlink" value={p.fdvUrl || ''} onChange={v=>updateManualProduct(p.id, { fdvUrl:v })}/>
+            <Input label="Hvor brukt / kommentar" value={p.comment || ''} onChange={v=>updateManualProduct(p.id, { comment:v })}/>
+          </Grid>
+          <button type="button" className="secondary" onClick={()=>removeManualProduct(p.id)}>Fjern produkt</button>
+        </div>)}
+      </Section>
+      </>}
 
       {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
 
@@ -1276,7 +1324,7 @@ function App() {
 
       {tab==='tilgang' && <Section title="Tilgang og deling"><p className="note">Her administrerer du deling og roller på prosjektet. Kunde får kun rapportvisning. Underentreprenør kan bidra med produkter, overflater, bilder, fag/utstyr og sjekklister via egen tilgangslink.</p><div className="cards">{accessRoleInfo.map(r=><div className="tile" key={r.role}><b>{r.role}</b><span>{r.text}</span></div>)}</div><div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}><button onClick={()=>setAccess([...access,{id:uid(),name:'',email:'',role:'Underleverandør'}])}><Plus size={18}/> Legg til person/firma</button><button className="secondary" onClick={()=>copyAccessLink('kunde')}>Del med kunde</button></div>{access.length===0 && <p className="note" style={{ marginTop:'16px' }}>Ingen ekstra tilganger er lagt til ennå.</p>}{access.map(a=><div className="item" key={a.id}><Grid><Input label="Navn/firma" value={a.name} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,name:v}:x))}/><Input label="E-post" value={a.email} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,email:v}:x))}/><Select label="Rolle" value={a.role} options={roles} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,role:v}:x))}/></Grid><p className="note">{accessRoleInfo.find(r=>r.role===a.role)?.text || ''}</p><div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}><button className="secondary" onClick={()=>copyAccessLink(a.role)}>Del med denne personen</button><button className="secondary" onClick={()=>setAccess(access.filter(x=>x.id!==a.id))}>Fjern</button></div></div>)}</Section>}
 
-      {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',photos:[],by:user.name||'Ukjent',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label>{(x.photos||[]).length > 0 && <p className="note">📷 {(x.photos||[]).length} bilder lagt til</p>}<div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
+      {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',fdvUrl:'',photos:[],by:user.name||'Ukjent',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/><Input label="FDV-/databladlink" value={x.fdvUrl || ''} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,fdvUrl:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label>{(x.photos||[]).length > 0 && <p className="note">📷 {(x.photos||[]).length} bilder lagt til</p>}<div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
 
       {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}>
         <p className="note">Velg status per kontrollpunkt. Ved Avvik kan du skrive kommentar og ta bilde. Opplastede sjekklister fra andre fag kan fortsatt legges ved nederst.</p>
@@ -1408,10 +1456,11 @@ function App() {
         })}
       </Section>}
 
-      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse}/>} 
+      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse}/>} 
 
       {tab==='admin' && isAdminUser && <Section title="Admin – brukergodkjenning" icon={<BadgeCheck/>}>
         <p className="note">Her kan administrator se registrerte brukere og godkjenne tilgang uten å gå inn i Supabase. Dette forutsetter at Supabase-policy tillater admin å lese og oppdatere profiles.</p>
+        <p className="note">Neste naturlige admin-steg er et felles produktregister med standard FDV-linker. Koden er nå klargjort ved at FDV lagres strukturert per produkt, slik at standardprodukter senere kan autoutfylles fra en egen produktdatabase.</p>
         <button onClick={loadAdminUsers}>{adminLoading ? 'Henter brukere...' : 'Oppdater brukerliste'}</button>
         {adminUsers.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen brukere hentet ennå. Trykk Oppdater brukerliste.</p>}
         {adminUsers.map(u => <div className="item" key={u.id}>
@@ -1498,7 +1547,7 @@ function ChecklistReportSection({checklist}) {
   </section>;
 }
 
-function Report({company,name,project,selected,other,surf,photos,access,inst,files,checklist,tilbud,overtagelse}) {
+function Report({company,name,project,selected,manualProducts,other,surf,photos,access,inst,files,checklist,tilbud,overtagelse}) {
   const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, Kunde: project.customer, Dato: project.date, Status: project.locked ? 'Avsluttet / låst' : 'Aktivt', Notater: project.notes };
   const cats = [...new Set(photos.map(p=>p.cat))];
   return <div className="report">
@@ -1513,10 +1562,10 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
     </Grid>
     {(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter(p=>hasValue(p.title) || hasValue(p.value)).map(p=><div className="out" key={p.id || p.title}><b>{p.title || 'Eget punkt'}</b><p>{p.value || 'Ikke oppgitt'}</p></div>)}
     {project.prosjekteringKommentar&&<div className="out"><b>Kommentar / avvik</b><p>{project.prosjekteringKommentar}</p></div>}</section>
-    <section><h2>Produkter / FDV</h2>{selected.map(p=><div className="out" key={p.item}><b>{p.section}</b><p>{p.item}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k} annet:</b> {v}</p>)}</section>
+    <section><h2>Produkter / FDV</h2>{selected.map(p=><div className="out" key={p.item}><b>{p.section}</b><p>{p.item}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{(manualProducts || []).map(p=><div className="out" key={p.id}><b>{p.trade || 'Annet produkt'}</b><p>{p.name || 'Uten produktnavn'}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k} annet:</b> {v}</p>)}</section>
     <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
-    <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><p key={i.id}><b>{i.category}:</b> {i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>)}</section>
+    <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><div className="out" key={i.id}><b>{i.category}:</b><p>{i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>{i.fdvUrl&&<p><a href={i.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}</section>
     <ChecklistReportSection checklist={checklist}/>
     {tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && <section>
       <h2>Tilbud / kontrakt</h2>
@@ -1669,7 +1718,7 @@ function SignaturePad({label, value, onChange}) {
   </div>;
 }
 
-function CustomerReport({company,name,project,selected,other,surf,photos,inst,files,checklist,tilbud,overtagelse}) {
+function CustomerReport({company,name,project,selected,manualProducts,other,surf,photos,inst,files,checklist,tilbud,overtagelse}) {
   const projectFields = [
     ['Prosjektansvarlig', project.responsible],
     ['Prosjektnavn', project.projectName],
@@ -1727,6 +1776,12 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
         {p.comment && <p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}
         {p.fdvUrl && <p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}
       </div>)}
+      {(manualProducts || []).map(p => <div className="out" key={p.id}>
+        <b>{p.trade || 'Annet produkt'}</b>
+        <p>{p.name || 'Uten produktnavn'}</p>
+        {p.comment && <p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}
+        {p.fdvUrl && <p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}
+      </div>)}
       {otherRows.map(([k,v]) => <p key={k}><b>{k} annet:</b> {v}</p>)}
     </section>}
 
@@ -1753,6 +1808,7 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
       {inst.map(i => <div className="out" key={i.id}>
         <b>{i.category || 'Post'}</b>
         <p>{[i.name, i.qty, i.supplier, i.desc].filter(Boolean).join(' · ')}</p>
+        {i.fdvUrl && <p><a href={i.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}
         {(i.photos || []).length > 0 && <div className="photos reportPhotos">
           {i.photos.map(p => <div className="photo" key={p.id}><img src={p.url} alt={p.name || 'Bilde'}/></div>)}
         </div>}
