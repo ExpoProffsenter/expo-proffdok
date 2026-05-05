@@ -71,7 +71,7 @@ function App() {
   const [project, setProject] = useState(emptyProject());
   const [checked, setChecked] = useState({});
   const [productDocs, setProductDocs] = useState({});
-  const [manualProducts, setManualProducts] = useState([]);
+  const [manualProducts, setManualProducts] = useState({});
   const [other, setOther] = useState({});
   const [surf, setSurf] = useState({});
   const [photos, setPhotos] = useState([]);
@@ -101,7 +101,16 @@ function App() {
   }, []);
 
   const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({ section:s.title, item:i, fdvUrl: productDocs[i]?.fdvUrl || '', comment: productDocs[i]?.comment || '' }))), [checked, productDocs]);
-  const manualSelected = useMemo(() => (manualProducts || []).filter(p => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment) || hasValue(p.trade)), [manualProducts]);
+  const manualSelected = useMemo(() => {
+    if (Array.isArray(manualProducts)) {
+      return manualProducts.filter(p => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment) || hasValue(p.trade));
+    }
+    return Object.entries(manualProducts || {}).flatMap(([section, products]) =>
+      (products || [])
+        .filter(p => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment))
+        .map(p => ({ ...p, section }))
+    );
+  }, [manualProducts]);
   const name = company.companyName || 'Expo Proffsenter';
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -180,7 +189,16 @@ function App() {
     setProject({ ...emptyProject(), ...(data.project || {}) });
     setChecked(data.checked || {});
     setProductDocs(data.productDocs || {});
-    setManualProducts(Array.isArray(data.manualProducts) ? data.manualProducts : []);
+    if (Array.isArray(data.manualProducts)) {
+      const migratedManual = {};
+      data.manualProducts.forEach(p => {
+        const section = p.trade || 'Andre produkter';
+        migratedManual[section] = [...(migratedManual[section] || []), { ...p, trade: undefined }];
+      });
+      setManualProducts(migratedManual);
+    } else {
+      setManualProducts(data.manualProducts || {});
+    }
     setOther(data.other || {});
     setSurf(data.surf || {});
     setPhotos(data.photos || []);
@@ -327,7 +345,7 @@ function App() {
       (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length ||
       Object.keys(checked || {}).length ||
       Object.keys(productDocs || {}).length ||
-      (manualProducts || []).length ||
+      (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some(list => (list || []).length)) ||
       Object.keys(other || {}).length ||
       Object.keys(surf || {}).length ||
       (photos || []).length ||
@@ -352,7 +370,7 @@ function App() {
     setProject(emptyProject());
     setChecked({});
     setProductDocs({});
-    setManualProducts([]);
+    setManualProducts({});
     setOther({});
     setSurf({});
     setPhotos([]);
@@ -405,16 +423,28 @@ function App() {
     }));
   };
 
-  const addManualProduct = () => {
-    setManualProducts(prev => [...prev, { id: uid(), trade:'Mur- og flisarbeid', name:'', fdvUrl:'', comment:'' }]);
+  const addManualProduct = (section) => {
+    setManualProducts(prev => ({
+      ...(prev || {}),
+      [section]: [
+        ...((prev || {})[section] || []),
+        { id: uid(), name:'', fdvUrl:'', comment:'' }
+      ]
+    }));
   };
 
-  const updateManualProduct = (id, patch) => {
-    setManualProducts(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p));
+  const updateManualProduct = (section, id, patch) => {
+    setManualProducts(prev => ({
+      ...(prev || {}),
+      [section]: ((prev || {})[section] || []).map(p => p.id === id ? { ...p, ...patch } : p)
+    }));
   };
 
-  const removeManualProduct = (id) => {
-    setManualProducts(prev => prev.filter(p => p.id !== id));
+  const removeManualProduct = (section, id) => {
+    setManualProducts(prev => ({
+      ...(prev || {}),
+      [section]: ((prev || {})[section] || []).filter(p => p.id !== id)
+    }));
   };
 
   const saveProject = async () => {
@@ -1069,22 +1099,21 @@ function App() {
             </Grid>}
           </div>;
         })}</div>
-        <p className="note">Finner du ikke produktet i listen, bruk «Andre produkter med FDV» nederst.</p>
+        <div className="item">
+          <h3>Andre produkter i {s.title}</h3>
+          <p className="note">Bruk dette hvis produktet ikke ligger i standardlisten for denne kategorien.</p>
+          <button type="button" onClick={()=>addManualProduct(s.title)}><Plus size={18}/> Legg til annet produkt</button>
+          {((manualProducts || {})[s.title] || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen andre produkter lagt til i denne kategorien.</p>}
+          {((manualProducts || {})[s.title] || []).map(p => <div className="item" key={p.id}>
+            <Grid>
+              <Input label="Produktnavn" value={p.name || ''} onChange={v=>updateManualProduct(s.title, p.id, { name:v })}/>
+              <Input label="FDV-/databladlink" value={p.fdvUrl || ''} onChange={v=>updateManualProduct(s.title, p.id, { fdvUrl:v })}/>
+              <Input label="Hvor brukt / kommentar" value={p.comment || ''} onChange={v=>updateManualProduct(s.title, p.id, { comment:v })}/>
+            </Grid>
+            <button type="button" className="secondary" onClick={()=>removeManualProduct(s.title, p.id)}>Fjern produkt</button>
+          </div>)}
+        </div>
       </Section>)}
-      <Section title="Andre produkter med FDV" icon={<FileText/>}>
-        <p className="note">Bruk denne listen for produkter som ikke ligger i standardlisten. Dette er felles for prosjektet og kan brukes for mur/flis eller andre fag.</p>
-        <button type="button" onClick={addManualProduct}><Plus size={18}/> Legg til annet produkt</button>
-        {(manualProducts || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen andre produkter er lagt til ennå.</p>}
-        {(manualProducts || []).map(p => <div className="item" key={p.id}>
-          <Grid>
-            <Input label="Fag / område" value={p.trade || ''} onChange={v=>updateManualProduct(p.id, { trade:v })}/>
-            <Input label="Produktnavn" value={p.name || ''} onChange={v=>updateManualProduct(p.id, { name:v })}/>
-            <Input label="FDV-/databladlink" value={p.fdvUrl || ''} onChange={v=>updateManualProduct(p.id, { fdvUrl:v })}/>
-            <Input label="Hvor brukt / kommentar" value={p.comment || ''} onChange={v=>updateManualProduct(p.id, { comment:v })}/>
-          </Grid>
-          <button type="button" className="secondary" onClick={()=>removeManualProduct(p.id)}>Fjern produkt</button>
-        </div>)}
-      </Section>
       </>}
         {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
         {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>{photos.filter(p=>p.cat===c).length > 0 ? `📷 ${photos.filter(p=>p.cat===c).length} bilder lagt til` : 'Ta bilde eller velg fra galleri'}</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
@@ -1300,22 +1329,21 @@ function App() {
             </Grid>}
           </div>;
         })}</div>
-        <p className="note">Finner du ikke produktet i listen, bruk «Andre produkter med FDV» nederst.</p>
+        <div className="item">
+          <h3>Andre produkter i {s.title}</h3>
+          <p className="note">Bruk dette hvis produktet ikke ligger i standardlisten for denne kategorien.</p>
+          <button type="button" onClick={()=>addManualProduct(s.title)}><Plus size={18}/> Legg til annet produkt</button>
+          {((manualProducts || {})[s.title] || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen andre produkter lagt til i denne kategorien.</p>}
+          {((manualProducts || {})[s.title] || []).map(p => <div className="item" key={p.id}>
+            <Grid>
+              <Input label="Produktnavn" value={p.name || ''} onChange={v=>updateManualProduct(s.title, p.id, { name:v })}/>
+              <Input label="FDV-/databladlink" value={p.fdvUrl || ''} onChange={v=>updateManualProduct(s.title, p.id, { fdvUrl:v })}/>
+              <Input label="Hvor brukt / kommentar" value={p.comment || ''} onChange={v=>updateManualProduct(s.title, p.id, { comment:v })}/>
+            </Grid>
+            <button type="button" className="secondary" onClick={()=>removeManualProduct(s.title, p.id)}>Fjern produkt</button>
+          </div>)}
+        </div>
       </Section>)}
-      <Section title="Andre produkter med FDV" icon={<FileText/>}>
-        <p className="note">Bruk denne listen for produkter som ikke ligger i standardlisten. Dette er felles for prosjektet og kan brukes for mur/flis eller andre fag.</p>
-        <button type="button" onClick={addManualProduct}><Plus size={18}/> Legg til annet produkt</button>
-        {(manualProducts || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen andre produkter er lagt til ennå.</p>}
-        {(manualProducts || []).map(p => <div className="item" key={p.id}>
-          <Grid>
-            <Input label="Fag / område" value={p.trade || ''} onChange={v=>updateManualProduct(p.id, { trade:v })}/>
-            <Input label="Produktnavn" value={p.name || ''} onChange={v=>updateManualProduct(p.id, { name:v })}/>
-            <Input label="FDV-/databladlink" value={p.fdvUrl || ''} onChange={v=>updateManualProduct(p.id, { fdvUrl:v })}/>
-            <Input label="Hvor brukt / kommentar" value={p.comment || ''} onChange={v=>updateManualProduct(p.id, { comment:v })}/>
-          </Grid>
-          <button type="button" className="secondary" onClick={()=>removeManualProduct(p.id)}>Fjern produkt</button>
-        </div>)}
-      </Section>
       </>}
 
       {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
@@ -1460,7 +1488,7 @@ function App() {
 
       {tab==='admin' && isAdminUser && <Section title="Admin – brukergodkjenning" icon={<BadgeCheck/>}>
         <p className="note">Her kan administrator se registrerte brukere og godkjenne tilgang uten å gå inn i Supabase. Dette forutsetter at Supabase-policy tillater admin å lese og oppdatere profiles.</p>
-        <p className="note">Neste naturlige admin-steg er et felles produktregister med standard FDV-linker. Koden er nå klargjort ved at FDV lagres strukturert per produkt, slik at standardprodukter senere kan autoutfylles fra en egen produktdatabase.</p>
+        <p className="note">Neste naturlige admin-steg er et felles produktregister med standard FDV-linker per produktkategori. Koden er nå klargjort ved at FDV lagres strukturert per standardprodukt og per manuelle produktkategori, slik at standardprodukter senere kan autoutfylles fra en egen produktdatabase.</p>
         <button onClick={loadAdminUsers}>{adminLoading ? 'Henter brukere...' : 'Oppdater brukerliste'}</button>
         {adminUsers.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen brukere hentet ennå. Trykk Oppdater brukerliste.</p>}
         {adminUsers.map(u => <div className="item" key={u.id}>
@@ -1562,7 +1590,7 @@ function Report({company,name,project,selected,manualProducts,other,surf,photos,
     </Grid>
     {(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter(p=>hasValue(p.title) || hasValue(p.value)).map(p=><div className="out" key={p.id || p.title}><b>{p.title || 'Eget punkt'}</b><p>{p.value || 'Ikke oppgitt'}</p></div>)}
     {project.prosjekteringKommentar&&<div className="out"><b>Kommentar / avvik</b><p>{project.prosjekteringKommentar}</p></div>}</section>
-    <section><h2>Produkter / FDV</h2>{selected.map(p=><div className="out" key={p.item}><b>{p.section}</b><p>{p.item}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{(manualProducts || []).map(p=><div className="out" key={p.id}><b>{p.trade || 'Annet produkt'}</b><p>{p.name || 'Uten produktnavn'}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>Tidligere registrert annet produkt under {k}:</b> {v}</p>)}</section>
+    <section><h2>Produkter / FDV</h2>{selected.map(p=><div className="out" key={p.item}><b>{p.section}</b><p>{p.item}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{(manualProducts || []).map(p=><div className="out" key={p.id}><b>{p.section || 'Annet produkt'}</b><p>{p.name || 'Uten produktnavn'}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>Tidligere registrert annet produkt under {k}:</b> {v}</p>)}</section>
     <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><div className="out" key={i.id}><b>{i.category}:</b><p>{i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>{i.fdvUrl&&<p><a href={i.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}</section>
@@ -1768,7 +1796,7 @@ function CustomerReport({company,name,project,selected,manualProducts,other,surf
       <Grid>{prosjektering.map(([label,value]) => <InfoCard key={label} label={label} value={value}/>)}</Grid>
     </section>}
 
-    {(selected.length > 0 || otherRows.length > 0) && <section>
+    {(selected.length > 0 || (manualProducts || []).length > 0 || otherRows.length > 0) && <section>
       <h2>Produkter / FDV</h2>
       {selected.map(p => <div className="out" key={p.item}>
         <b>{p.section}</b>
