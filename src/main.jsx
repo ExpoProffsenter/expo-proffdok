@@ -34,7 +34,7 @@ const accessRoleInfo = [
 const checklistTemplate = [
   { category: 'Tildekning/forarbeid', items: ['Underlag kontrollert', 'Fall kontrollert', 'Sluk korrekt montert', 'Terskel og høyder kontrollert'] },
   { category: 'Primer / underlag', items: ['Riktig primer valgt', 'Primer påført', 'Tørketid fulgt'] },
-  { category: 'Membran / tetting', items: ['Membranløsning kontrollert', 'Tettebånd montert', 'Slukmansjett montert', 'Rørmansjetter montert'] },
+  { category: 'Membran / tetting', items: ['Membranløsning kontrollert', 'Tettebånd montert', 'Slukmansjett montert', 'Rørmansjetter montert', 'Trykktesting av membran'] },
   { category: 'Flislegging / fuging', items: ['Fliser montert iht. plan', 'Fuging utført', 'Silikon utført'] },
   { category: 'Sluttkontroll', items: ['Visuell kontroll utført', 'Bilder tatt', 'Dokumentasjon komplett'] }
 ];
@@ -70,6 +70,7 @@ function App() {
   const [user, setUser] = useState({ name:'', email:'', role:'Eier / administrator' });
   const [project, setProject] = useState(emptyProject());
   const [checked, setChecked] = useState({});
+  const [productDocs, setProductDocs] = useState({});
   const [other, setOther] = useState({});
   const [surf, setSurf] = useState({});
   const [photos, setPhotos] = useState([]);
@@ -98,7 +99,7 @@ function App() {
     if (savedEmail) setAuthEmail(savedEmail);
   }, []);
 
-  const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({ section:s.title, item:i }))), [checked]);
+  const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({ section:s.title, item:i, fdvUrl: productDocs[i]?.fdvUrl || '', comment: productDocs[i]?.comment || '' }))), [checked, productDocs]);
   const name = company.companyName || 'Expo Proffsenter';
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -170,12 +171,13 @@ function App() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   };
 
-  const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse });
+  const packData = () => ({ company, user, project, checked, productDocs, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
     setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
     setProject({ ...emptyProject(), ...(data.project || {}) });
     setChecked(data.checked || {});
+    setProductDocs(data.productDocs || {});
     setOther(data.other || {});
     setSurf(data.surf || {});
     setPhotos(data.photos || []);
@@ -321,6 +323,7 @@ function App() {
       project.prosjekteringKommentar ||
       (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length ||
       Object.keys(checked || {}).length ||
+      Object.keys(productDocs || {}).length ||
       Object.keys(other || {}).length ||
       Object.keys(surf || {}).length ||
       (photos || []).length ||
@@ -344,6 +347,7 @@ function App() {
 
     setProject(emptyProject());
     setChecked({});
+    setProductDocs({});
     setOther({});
     setSurf({});
     setPhotos([]);
@@ -386,12 +390,22 @@ function App() {
     }));
   };
 
+  const updateProductDoc = (productName, patch) => {
+    setProductDocs(prev => ({
+      ...prev,
+      [productName]: {
+        ...(prev[productName] || {}),
+        ...patch
+      }
+    }));
+  };
+
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
 
     const makeCleanData = (projectOverride = project) => JSON.parse(JSON.stringify({
       company, user, project: { ...emptyProject(), ...projectOverride },
-      checked, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
+      checked, productDocs, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
     }));
 
     if (projectId) {
@@ -512,7 +526,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: safeProject,
-      checked, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
+      checked, productDocs, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
     }));
 
     const payload = {
@@ -569,7 +583,7 @@ function App() {
   const saveAsNewProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
     const unlockedProject = { ...emptyProject(), ...project, locked:false, status:'active', lockedAt:'', lockedBy:'' };
-    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
+    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, productDocs, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
@@ -604,7 +618,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: newProjectData,
-      checked, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
+      checked, productDocs, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
     }));
 
     const payload = {
@@ -685,6 +699,7 @@ function App() {
       user,
       project: { ...emptyProject(), ...project, locked: false, status: 'active', lockedAt: '', lockedBy: '' },
       checked,
+      productDocs,
       other,
       surf,
       photos,
@@ -1021,7 +1036,23 @@ function App() {
         <Section title="Begrenset tilgang" icon={<BadgeCheck/>}>
           <p className="note">Du har tilgang til å se produkter, overflater, bilder, fag/utstyr og sjekklister på dette prosjektet. Du kan legge inn bilder, sjekklistepunkter, fag/utstyr og kommentarer. Prosjektinfo, prosjektering, rapport, tilbud/kontrakt og admin er skjult.</p>{isProjectLocked && <p className="note">🔒 Prosjektet er avsluttet og låst. Nye endringer kan ikke lagres.</p>}
         </Section>
-        {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}><div className="checks">{s.items.map(i=><label className="check" key={i} style={{ display:'flex', alignItems:'center', gap:'8px' }}><input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>setChecked({...checked,[i]:e.target.checked})}/><span style={{ margin:0 }}>{i}</span></label>)}</div><Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/></Section>)}</>}
+        {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}>
+        <p className="note">Kryss av produkter som er brukt. For hvert valgt produkt kan du legge inn FDV-/databladlink og kommentar. Dette vises i rapporten.</p>
+        <div className="checklistList">{s.items.map(i=>{
+          const doc = productDocs[i] || {};
+          return <div className="item" key={i}>
+            <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+              <input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>setChecked({...checked,[i]:e.target.checked})}/>
+              <span style={{ margin:0 }}>{i}</span>
+            </label>
+            {checked[i] && <Grid>
+              <Input label="FDV-/databladlink" value={doc.fdvUrl || ''} onChange={v=>updateProductDoc(i, { fdvUrl:v })}/>
+              <Input label="Hvor brukt / kommentar" value={doc.comment || ''} onChange={v=>updateProductDoc(i, { comment:v })}/>
+            </Grid>}
+          </div>;
+        })}</div>
+        <Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/>
+      </Section>)}</>}
         {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
         {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>{photos.filter(p=>p.cat===c).length > 0 ? `📷 ${photos.filter(p=>p.cat===c).length} bilder lagt til` : 'Ta bilde eller velg fra galleri'}</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
         {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',photos:[],by:user.name||'Underentreprenør',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label>{(x.photos||[]).length > 0 && <p className="note">📷 {(x.photos||[]).length} bilder lagt til</p>}<div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
@@ -1221,7 +1252,23 @@ function App() {
         <label className="upload"><Plus size={18}/> Last opp tegning / bilde<input type="file" accept="image/*" multiple onChange={e=>addPhoto('Prosjektering',e.target.files)}/></label>
       </Section>}
 
-      {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}><div className="checks">{s.items.map(i=><label className="check" key={i} style={{ display:'flex', alignItems:'center', gap:'8px' }}><input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>setChecked({...checked,[i]:e.target.checked})}/><span style={{ margin:0 }}>{i}</span></label>)}</div><Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/></Section>)}</>}
+      {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}>
+        <p className="note">Kryss av produkter som er brukt. For hvert valgt produkt kan du legge inn FDV-/databladlink og kommentar. Dette vises i rapporten.</p>
+        <div className="checklistList">{s.items.map(i=>{
+          const doc = productDocs[i] || {};
+          return <div className="item" key={i}>
+            <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+              <input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>setChecked({...checked,[i]:e.target.checked})}/>
+              <span style={{ margin:0 }}>{i}</span>
+            </label>
+            {checked[i] && <Grid>
+              <Input label="FDV-/databladlink" value={doc.fdvUrl || ''} onChange={v=>updateProductDoc(i, { fdvUrl:v })}/>
+              <Input label="Hvor brukt / kommentar" value={doc.comment || ''} onChange={v=>updateProductDoc(i, { comment:v })}/>
+            </Grid>}
+          </div>;
+        })}</div>
+        <Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/>
+      </Section>)}</>}
 
       {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
 
@@ -1466,7 +1513,7 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
     </Grid>
     {(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter(p=>hasValue(p.title) || hasValue(p.value)).map(p=><div className="out" key={p.id || p.title}><b>{p.title || 'Eget punkt'}</b><p>{p.value || 'Ikke oppgitt'}</p></div>)}
     {project.prosjekteringKommentar&&<div className="out"><b>Kommentar / avvik</b><p>{project.prosjekteringKommentar}</p></div>}</section>
-    <section><h2>Produkter</h2>{selected.map(p=><p key={p.item}><b>{p.section}:</b> {p.item}</p>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k} annet:</b> {v}</p>)}</section>
+    <section><h2>Produkter / FDV</h2>{selected.map(p=><div className="out" key={p.item}><b>{p.section}</b><p>{p.item}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k} annet:</b> {v}</p>)}</section>
     <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><p key={i.id}><b>{i.category}:</b> {i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>)}</section>
@@ -1673,8 +1720,13 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
     </section>}
 
     {(selected.length > 0 || otherRows.length > 0) && <section>
-      <h2>Produkter</h2>
-      {selected.map(p => <p key={p.item}><b>{p.section}:</b> {p.item}</p>)}
+      <h2>Produkter / FDV</h2>
+      {selected.map(p => <div className="out" key={p.item}>
+        <b>{p.section}</b>
+        <p>{p.item}</p>
+        {p.comment && <p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}
+        {p.fdvUrl && <p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}
+      </div>)}
       {otherRows.map(([k,v]) => <p key={k}><b>{k} annet:</b> {v}</p>)}
     </section>}
 
