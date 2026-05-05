@@ -32,7 +32,7 @@ const accessRoleInfo = [
 ];
 
 const checklistTemplate = [
-  { category: 'Forarbeid', items: ['Underlag kontrollert', 'Fall kontrollert', 'Sluk korrekt montert', 'Terskel og høyder kontrollert'] },
+  { category: 'Tildekning/forarbeid', items: ['Underlag kontrollert', 'Fall kontrollert', 'Sluk korrekt montert', 'Terskel og høyder kontrollert'] },
   { category: 'Primer / underlag', items: ['Riktig primer valgt', 'Primer påført', 'Tørketid fulgt'] },
   { category: 'Membran / tetting', items: ['Membranløsning kontrollert', 'Tettebånd montert', 'Slukmansjett montert', 'Rørmansjetter montert'] },
   { category: 'Flislegging / fuging', items: ['Fliser montert iht. plan', 'Fuging utført', 'Silikon utført'] },
