@@ -553,38 +553,82 @@ function App() {
     loadProjects(authUser);
   };
 
-  const shareProject = async () => {
-    if (!projectId) {
-      await saveProject();
-      alert('Prosjektet er lagret. Trykk Kopier delingslink en gang til.');
-      return;
+  const saveProjectForLink = async () => {
+    if (projectId) return projectId;
+    if (!authUser) {
+      alert('Du må være logget inn for å lage delingslink.');
+      return null;
     }
-    const link = `${window.location.origin}${window.location.pathname}?project=${projectId}&role=kunde`;
+
+    const newProjectData = {
+      ...emptyProject(),
+      ...project,
+      locked: false,
+      status: 'active',
+      lockedAt: '',
+      lockedBy: ''
+    };
+
+    const cleanData = JSON.parse(JSON.stringify({
+      company, user, project: newProjectData,
+      checked, other, surf, photos, access, inst, files, checklist, tilbud
+    }));
+
+    const payload = {
+      title: newProjectData.projectName || newProjectData.address || 'Uten navn',
+      data: cleanData,
+      user_id: authUser.id,
+      share_enabled: true,
+      locked: false,
+      locked_at: null,
+      locked_by: '',
+      updated_at: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase.from('projects').insert(payload).select().single();
+    if (error) {
+      console.error(error);
+      alert('Kunne ikke lagre prosjekt før deling: ' + error.message);
+      return null;
+    }
+
+    setProjectId(data.id);
+    setProject(newProjectData);
+    loadProjects(authUser);
+    return data.id;
+  };
+
+  const makeProjectLink = (id, role = 'kunde') => {
+    const roleParam = role === 'Underleverandør' ? 'underleverandor' : 'kunde';
+    return roleParam === 'underleverandor'
+      ? `${window.location.origin}${window.location.pathname}?project=${id}&access=underleverandor`
+      : `${window.location.origin}${window.location.pathname}?project=${id}&role=kunde`;
+  };
+
+  const copyLinkToClipboard = async (link, successMessage) => {
     try {
       await navigator.clipboard.writeText(link);
-      alert('Kundelink kopiert');
+      alert(successMessage);
     } catch {
       prompt('Kopier denne linken:', link);
     }
   };
 
+  const shareProject = async () => {
+    const id = await saveProjectForLink();
+    if (!id) return;
+    await copyLinkToClipboard(makeProjectLink(id, 'kunde'), 'Kundelink kopiert.');
+  };
+
 
   const copyAccessLink = async (role = 'kunde') => {
-    if (!projectId) {
-      await saveProject();
-      alert('Prosjektet er lagret. Trykk Kopier tilgangslink en gang til.');
-      return;
-    }
+    const id = await saveProjectForLink();
+    if (!id) return;
     const roleParam = role === 'Underleverandør' ? 'underleverandor' : 'kunde';
-    const link = roleParam === 'underleverandor'
-      ? `${window.location.origin}${window.location.pathname}?project=${projectId}&access=underleverandor`
-      : `${window.location.origin}${window.location.pathname}?project=${projectId}&role=kunde`;
-    try {
-      await navigator.clipboard.writeText(link);
-      alert(roleParam === 'underleverandor' ? 'Underentreprenør-link kopiert.' : 'Kundelink kopiert.');
-    } catch {
-      prompt('Kopier denne linken:', link);
-    }
+    await copyLinkToClipboard(
+      makeProjectLink(id, role),
+      roleParam === 'underleverandor' ? 'Underentreprenør-link kopiert.' : 'Kundelink kopiert.'
+    );
   };
 
   const uploadLogo = async (file) => {
@@ -1022,7 +1066,7 @@ function App() {
         <button className="secondary" onClick={createNewProject}>+ Nytt prosjekt</button>
         <button onClick={saveProject}>{projectId ? 'Oppdater prosjekt' : 'Lagre'}</button>
         <button onClick={saveAsNewProject}>Lagre kopi</button>
-        <button onClick={shareProject}>Del med kunde</button>
+        <button onClick={shareProject}>Kopier kundelink</button>
         <button onClick={printReport}><Download size={18}/> Lag PDF / skriv ut</button>
         {projectId && (isProjectLocked ? <button className="secondary" onClick={()=>setProjectLockedState(false)}>🔓 Lås opp prosjekt</button> : <button className="secondary" onClick={()=>setProjectLockedState(true)}>🔒 Avslutt prosjekt</button>)}
       </div>
