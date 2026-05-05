@@ -1007,7 +1007,7 @@ function App() {
         </div>
       </header>
       <main>
-        <CustomerReport company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist}/>
+        <CustomerReport company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud}/>
       </main>
     </div>;
   }
@@ -1281,8 +1281,19 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><p key={i.id}><b>{i.category}:</b> {i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>)}</section>
     <ChecklistReportSection checklist={checklist}/>
-    {tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && <section><h2>Tilbud / kontrakt</h2>{tilbud.tillegg&&<p><b>Tillegg:</b> {tilbud.tillegg}</p>}{tilbud.fradrag&&<p><b>Fradrag:</b> {tilbud.fradrag}</p>}{tilbud.kommentar&&<p><b>Avtaleendringer / kommentar:</b> {tilbud.kommentar}</p>}{(tilbud.files || []).map(f=><p key={f.id}>{f.name}</p>)}</section>}
-        <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
+    {tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && <section>
+      <h2>Tilbud / kontrakt</h2>
+      <Grid>
+        <InfoCard label="Tillegg" value={tilbud.tillegg}/>
+        <InfoCard label="Fradrag" value={tilbud.fradrag}/>
+        <InfoCard label="Avtaleendringer / kommentar" value={tilbud.kommentar}/>
+      </Grid>
+      {(tilbud.files || []).length > 0 && <div>
+        <h3>Vedlegg</h3>
+        {(tilbud.files || []).map(f=><p key={f.id}><a href={f.url} target="_blank">{f.name}</a></p>)}
+      </div>}
+    </section>}
+    <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
     <section><h2>Prosjekttilgang</h2>{access.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>
     <footer>Levert av Expo Proffsenter</footer>
   </div>;
@@ -1297,7 +1308,7 @@ function InfoCard({label, value}) {
   return <div className="out"><b>{label}</b><p>{value}</p></div>;
 }
 
-function CustomerReport({company,name,project,selected,other,surf,photos,inst,files,checklist}) {
+function CustomerReport({company,name,project,selected,other,surf,photos,inst,files,checklist,tilbud}) {
   const projectFields = [
     ['Prosjektansvarlig', project.responsible],
     ['Prosjektnavn', project.projectName],
@@ -1379,6 +1390,19 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
           {i.photos.map(p => <div className="photo" key={p.id}><img src={p.url} alt={p.name || 'Bilde'}/></div>)}
         </div>}
       </div>)}
+    </section>}
+
+    {tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && <section>
+      <h2>Tilbud / kontrakt</h2>
+      <Grid>
+        <InfoCard label="Tillegg" value={tilbud.tillegg}/>
+        <InfoCard label="Fradrag" value={tilbud.fradrag}/>
+        <InfoCard label="Avtaleendringer / kommentar" value={tilbud.kommentar}/>
+      </Grid>
+      {(tilbud.files || []).length > 0 && <div>
+        <h3>Vedlegg</h3>
+        {(tilbud.files || []).map(f => <p key={f.id}><a href={f.url} target="_blank">{f.name}</a></p>)}
+      </div>}
     </section>}
 
     <ChecklistReportSection checklist={checklist}/>
