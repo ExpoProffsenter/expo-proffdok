@@ -1055,7 +1055,7 @@ function App() {
           <p className="note">Du har tilgang til å se produkter, overflater, bilder, fag/utstyr og sjekklister på dette prosjektet. Du kan legge inn bilder, sjekklistepunkter, fag/utstyr og kommentarer. Prosjektinfo, prosjektering, rapport, tilbud/kontrakt og admin er skjult.</p>{isProjectLocked && <p className="note">🔒 Prosjektet er avsluttet og låst. Nye endringer kan ikke lagres.</p>}
         </Section>
         {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}>
-        <p className="note">Kryss av produkter som er brukt. For hvert valgt produkt kan du legge inn FDV-/databladlink og kommentar. Dette vises i rapporten.</p>
+        <p className="note">Kryss av produkter som er brukt. Når et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte på produktet.</p>
         <div className="checklistList">{s.items.map(i=>{
           const doc = productDocs[i] || {};
           return <div className="item" key={i}>
@@ -1069,7 +1069,7 @@ function App() {
             </Grid>}
           </div>;
         })}</div>
-        <Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/>
+        <p className="note">Finner du ikke produktet i listen, bruk «Andre produkter med FDV» nederst.</p>
       </Section>)}
       <Section title="Andre produkter med FDV" icon={<FileText/>}>
         <p className="note">Bruk denne listen for produkter som ikke ligger i standardlisten. Dette er felles for prosjektet og kan brukes for mur/flis eller andre fag.</p>
@@ -1286,7 +1286,7 @@ function App() {
       </Section>}
 
       {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}>
-        <p className="note">Kryss av produkter som er brukt. For hvert valgt produkt kan du legge inn FDV-/databladlink og kommentar. Dette vises i rapporten.</p>
+        <p className="note">Kryss av produkter som er brukt. Når et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte på produktet.</p>
         <div className="checklistList">{s.items.map(i=>{
           const doc = productDocs[i] || {};
           return <div className="item" key={i}>
@@ -1300,7 +1300,7 @@ function App() {
             </Grid>}
           </div>;
         })}</div>
-        <Textarea label="Annet produkt / hvor brukt" value={other[s.title]||''} onChange={v=>setOther({...other,[s.title]:v})}/>
+        <p className="note">Finner du ikke produktet i listen, bruk «Andre produkter med FDV» nederst.</p>
       </Section>)}
       <Section title="Andre produkter med FDV" icon={<FileText/>}>
         <p className="note">Bruk denne listen for produkter som ikke ligger i standardlisten. Dette er felles for prosjektet og kan brukes for mur/flis eller andre fag.</p>
@@ -1562,7 +1562,7 @@ function Report({company,name,project,selected,manualProducts,other,surf,photos,
     </Grid>
     {(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter(p=>hasValue(p.title) || hasValue(p.value)).map(p=><div className="out" key={p.id || p.title}><b>{p.title || 'Eget punkt'}</b><p>{p.value || 'Ikke oppgitt'}</p></div>)}
     {project.prosjekteringKommentar&&<div className="out"><b>Kommentar / avvik</b><p>{project.prosjekteringKommentar}</p></div>}</section>
-    <section><h2>Produkter / FDV</h2>{selected.map(p=><div className="out" key={p.item}><b>{p.section}</b><p>{p.item}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{(manualProducts || []).map(p=><div className="out" key={p.id}><b>{p.trade || 'Annet produkt'}</b><p>{p.name || 'Uten produktnavn'}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k} annet:</b> {v}</p>)}</section>
+    <section><h2>Produkter / FDV</h2>{selected.map(p=><div className="out" key={p.item}><b>{p.section}</b><p>{p.item}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{(manualProducts || []).map(p=><div className="out" key={p.id}><b>{p.trade || 'Annet produkt'}</b><p>{p.name || 'Uten produktnavn'}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>Tidligere registrert annet produkt under {k}:</b> {v}</p>)}</section>
     <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><div className="out" key={i.id}><b>{i.category}:</b><p>{i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>{i.fdvUrl&&<p><a href={i.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}</section>
@@ -1782,7 +1782,7 @@ function CustomerReport({company,name,project,selected,manualProducts,other,surf
         {p.comment && <p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}
         {p.fdvUrl && <p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}
       </div>)}
-      {otherRows.map(([k,v]) => <p key={k}><b>{k} annet:</b> {v}</p>)}
+      {otherRows.map(([k,v]) => <p key={k}><b>Tidligere registrert annet produkt under {k}:</b> {v}</p>)}
     </section>}
 
     {surfaceRows.length > 0 && <section>
