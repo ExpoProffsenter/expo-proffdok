@@ -47,6 +47,14 @@ const emptyTilbud = () => ({
   kommentar:''
 });
 
+const emptyOvertagelse = () => ({
+  enabled:false,
+  dato: new Date().toISOString().slice(0,10),
+  kommentar:'',
+  signUtførende:'',
+  signKunde:''
+});
+
 const emptyProject = () => ({
   responsible:'', projectName:'', address:'', customer:'', date:new Date().toISOString().slice(0,10), notes:'',
   fall:'', fallDusj:'', fallUtenfor:'', sluk:'', terskel:'', membran:'', prosjekteringKommentar:'',
@@ -68,6 +76,7 @@ function App() {
   const [files, setFiles] = useState([]);
   const [checklist, setChecklist] = useState({});
   const [tilbud, setTilbud] = useState(emptyTilbud());
+  const [overtagelse, setOvertagelse] = useState(emptyOvertagelse());
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState(null);
   const [authUser, setAuthUser] = useState(null);
@@ -132,7 +141,7 @@ function App() {
   const tabs = [
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
-    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
+    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['overtagelse','Overtagelse'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
     ...(isAdminUser && !isReadOnly ? [['admin','Admin']] : [])
   ];
 
@@ -145,7 +154,7 @@ function App() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   };
 
-  const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist, tilbud });
+  const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
     setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
@@ -159,6 +168,7 @@ function App() {
     setFiles(data.files || []);
     setChecklist(data.checklist || {});
     setTilbud(data.tilbud || emptyTilbud());
+    setOvertagelse(data.overtagelse || emptyOvertagelse());
   };
 
   const loadProjects = async (currentUser = authUser) => {
@@ -306,7 +316,11 @@ function App() {
       tilbud.tillegg ||
       tilbud.fradrag ||
       tilbud.kommentar ||
-      (tilbud.files || []).length;
+      (tilbud.files || []).length ||
+      overtagelse.enabled ||
+      overtagelse.kommentar ||
+      overtagelse.signUtførende ||
+      overtagelse.signKunde;
 
     if (hasContent && !window.confirm('Starte nytt prosjekt? Ulagrede endringer vil gå tapt.')) return;
 
@@ -320,6 +334,7 @@ function App() {
     setFiles([]);
     setChecklist({});
     setTilbud(emptyTilbud());
+    setOvertagelse(emptyOvertagelse());
     setProjectId(null);
     setTab('prosjekt');
 
@@ -358,7 +373,7 @@ function App() {
 
     const makeCleanData = (projectOverride = project) => JSON.parse(JSON.stringify({
       company, user, project: { ...emptyProject(), ...projectOverride },
-      checked, other, surf, photos, access, inst, files, checklist, tilbud
+      checked, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
     }));
 
     if (projectId) {
@@ -479,7 +494,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: safeProject,
-      checked, other, surf, photos, access, inst, files, checklist, tilbud
+      checked, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
     }));
 
     const payload = {
@@ -536,7 +551,7 @@ function App() {
   const saveAsNewProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
     const unlockedProject = { ...emptyProject(), ...project, locked:false, status:'active', lockedAt:'', lockedBy:'' };
-    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, other, surf, photos, access, inst, files, checklist, tilbud }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
+    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
@@ -571,7 +586,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: newProjectData,
-      checked, other, surf, photos, access, inst, files, checklist, tilbud
+      checked, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
     }));
 
     const payload = {
@@ -629,6 +644,55 @@ function App() {
       makeProjectLink(id, role),
       roleParam === 'underleverandor' ? 'Underentreprenør-link kopiert.' : 'Kundelink kopiert.'
     );
+  };
+
+  const completeOvertagelseAndLock = async () => {
+    if (!projectId) return alert('Prosjektet må lagres før overtagelse kan fullføres.');
+    if (!authUser) return alert('Du må være logget inn for å fullføre overtagelse.');
+    if (!hasValue(overtagelse.signUtførende) || !hasValue(overtagelse.signKunde)) {
+      return alert('Både utførende og kunde må signere før overtagelse kan fullføres.');
+    }
+
+    const completedOvertagelse = {
+      ...emptyOvertagelse(),
+      ...overtagelse,
+      enabled: true,
+      dato: overtagelse.dato || new Date().toISOString().slice(0,10)
+    };
+
+    const cleanData = JSON.parse(JSON.stringify({
+      company,
+      user,
+      project: { ...emptyProject(), ...project, locked: false, status: 'active', lockedAt: '', lockedBy: '' },
+      checked,
+      other,
+      surf,
+      photos,
+      access,
+      inst,
+      files,
+      checklist,
+      tilbud,
+      overtagelse: completedOvertagelse
+    }));
+
+    const { error: saveError } = await supabase
+      .from('projects')
+      .update({
+        data: cleanData,
+        title: project.projectName || project.address || 'Uten navn',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', projectId)
+      .eq('user_id', authUser.id);
+
+    if (saveError) {
+      console.error(saveError);
+      return alert('Kunne ikke lagre overtagelse før låsing: ' + saveError.message);
+    }
+
+    setOvertagelse(completedOvertagelse);
+    await setProjectLockedState(true);
   };
 
   const uploadLogo = async (file) => {
@@ -1051,7 +1115,7 @@ function App() {
         </div>
       </header>
       <main>
-        <CustomerReport company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud}/>
+        <CustomerReport company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse}/>
       </main>
     </div>;
   }
@@ -1212,9 +1276,39 @@ function App() {
         </div>
       </Section>}
 
+      {tab==='overtagelse' && <Section title="Overtagelse og signering" icon={<ClipboardCheck/>}>
+        <p className="note">Bruk denne ved sluttbefaring og overlevering. Når begge signaturer er fylt ut kan prosjektet fullføres og låses.</p>
+        {isProjectLocked && <p className="note">🔒 Prosjektet er låst. Overtagelsen kan vises i rapporten, men endringer krever at prosjektet låses opp.</p>}
+        <Grid>
+          <Input label="Dato for overtagelse" type="date" value={overtagelse.dato || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, dato:v})}/>
+          <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+            <input
+              type="checkbox"
+              style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }}
+              checked={!!overtagelse.enabled}
+              onChange={e=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, enabled:e.target.checked})}
+            />
+            <span style={{ margin:0 }}>Ta med overtagelse i rapport</span>
+          </label>
+          <Textarea label="Kommentar / merknader fra sluttbefaring" value={overtagelse.kommentar || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, kommentar:v})}/>
+          <div className="item">
+            <h3>Signaturer</h3>
+            <p className="note">Skriv inn navn som signatur. Tegnet signatur kan legges til senere, men denne løsningen lagres trygt på prosjektet og vises i rapporten.</p>
+            <Grid>
+              <Input label="Signatur utførende" value={overtagelse.signUtførende || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signUtførende:v})}/>
+              <Input label="Signatur kunde" value={overtagelse.signKunde || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signKunde:v})}/>
+            </Grid>
+          </div>
+        </Grid>
+        <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
+          <button onClick={saveProject}>Lagre overtagelse</button>
+          <button onClick={completeOvertagelseAndLock} disabled={isProjectLocked}>Fullfør overtagelse og lås prosjekt</button>
+        </div>
+      </Section>}
+
       {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={() => loadProjects(authUser)}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>Sist oppdatert: {new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
 
-      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist} tilbud={tilbud}/>} 
+      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse}/>} 
 
       {tab==='admin' && isAdminUser && <Section title="Admin – brukergodkjenning" icon={<BadgeCheck/>}>
         <p className="note">Her kan administrator se registrerte brukere og godkjenne tilgang uten å gå inn i Supabase. Dette forutsetter at Supabase-policy tillater admin å lese og oppdatere profiles.</p>
@@ -1304,7 +1398,7 @@ function ChecklistReportSection({checklist}) {
   </section>;
 }
 
-function Report({company,name,project,selected,other,surf,photos,access,inst,files,checklist,tilbud}) {
+function Report({company,name,project,selected,other,surf,photos,access,inst,files,checklist,tilbud,overtagelse}) {
   const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, Kunde: project.customer, Dato: project.date, Status: project.locked ? 'Avsluttet / låst' : 'Aktivt', Notater: project.notes };
   const cats = [...new Set(photos.map(p=>p.cat))];
   return <div className="report">
@@ -1336,7 +1430,16 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
         {(tilbud.files || []).map(f=><p key={f.id}><a href={f.url} target="_blank">{f.name}</a></p>)}
       </div>}
     </section>}
-    <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
+    {overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde)) && <section>
+      <h2>Overtagelse</h2>
+      <Grid>
+        <InfoCard label="Dato" value={overtagelse.dato}/>
+        <InfoCard label="Kommentar / merknader" value={overtagelse.kommentar}/>
+        <InfoCard label="Signatur utførende" value={overtagelse.signUtførende}/>
+        <InfoCard label="Signatur kunde" value={overtagelse.signKunde}/>
+      </Grid>
+    </section>}
+        <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
     <section><h2>Prosjekttilgang</h2>{access.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>
     <footer>Levert av Expo Proffsenter</footer>
   </div>;
@@ -1351,7 +1454,7 @@ function InfoCard({label, value}) {
   return <div className="out"><b>{label}</b><p>{value}</p></div>;
 }
 
-function CustomerReport({company,name,project,selected,other,surf,photos,inst,files,checklist,tilbud}) {
+function CustomerReport({company,name,project,selected,other,surf,photos,inst,files,checklist,tilbud,overtagelse}) {
   const projectFields = [
     ['Prosjektansvarlig', project.responsible],
     ['Prosjektnavn', project.projectName],
@@ -1446,6 +1549,16 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
         <h3>Vedlegg</h3>
         {(tilbud.files || []).map(f => <p key={f.id}><a href={f.url} target="_blank">{f.name}</a></p>)}
       </div>}
+    </section>}
+
+    {overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde)) && <section>
+      <h2>Overtagelse</h2>
+      <Grid>
+        <InfoCard label="Dato" value={overtagelse.dato}/>
+        <InfoCard label="Kommentar / merknader" value={overtagelse.kommentar}/>
+        <InfoCard label="Signatur utførende" value={overtagelse.signUtførende}/>
+        <InfoCard label="Signatur kunde" value={overtagelse.signKunde}/>
+      </Grid>
     </section>}
 
     <ChecklistReportSection checklist={checklist}/>
