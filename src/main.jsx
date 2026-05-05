@@ -1015,11 +1015,10 @@ function App() {
       </Section>}
 
       {tab==='prosjektering' && <Section title="Prosjektering">
-        <p className="note">Angi fall som forholdstall, for eksempel 1:50 i dusjsone og 1:100 utenfor dusjsone. Gamle prosjekter med tidligere fallfelt vises fortsatt i rapporten.</p>
+        <p className="note">Angi fall som forholdstall, for eksempel 1:50 i dusjsone og 1:100 utenfor dusjsone.</p>
         <Grid>
           <Input label="Fall i dusjsone" value={project.fallDusj || ''} onChange={v=>setProject({...project,fallDusj:v})}/>
           <Input label="Fall utenfor dusjsone / våtsone" value={project.fallUtenfor || ''} onChange={v=>setProject({...project,fallUtenfor:v})}/>
-          <Input label="Fall mot sluk – gammelt felt / ekstra info" value={project.fall || ''} onChange={v=>setProject({...project,fall:v})}/>
           <Input label="Slukplassering" value={project.sluk} onChange={v=>setProject({...project,sluk:v})}/>
           <Input label="Terskelhøyde" value={project.terskel} onChange={v=>setProject({...project,terskel:v})}/>
           <Input label="Membranløsning" value={project.membran} onChange={v=>setProject({...project,membran:v})}/>
@@ -1191,7 +1190,7 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
     <section><h2>Prosjektering</h2><Grid>
       <div className="out"><b>Fall i dusjsone</b><p>{project.fallDusj || 'Ikke oppgitt'}</p></div>
       <div className="out"><b>Fall utenfor dusjsone / våtsone</b><p>{project.fallUtenfor || 'Ikke oppgitt'}</p></div>
-      <div className="out"><b>Fall mot sluk / ekstra info</b><p>{project.fall || 'Ikke oppgitt'}</p></div>
+      {project.fall && <div className="out"><b>Fall mot sluk</b><p>{project.fall}</p></div>}
       <div className="out"><b>Slukplassering</b><p>{project.sluk || 'Ikke oppgitt'}</p></div>
       <div className="out"><b>Terskelhøyde</b><p>{project.terskel || 'Ikke oppgitt'}</p></div>
       <div className="out"><b>Membran</b><p>{project.membran || 'Ikke oppgitt'}</p></div>
@@ -1232,7 +1231,7 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
   const prosjektering = [
     ['Fall i dusjsone', project.fallDusj],
     ['Fall utenfor dusjsone / våtsone', project.fallUtenfor],
-    ['Fall mot sluk / ekstra info', project.fall],
+    ...(hasValue(project.fall) ? [['Fall mot sluk', project.fall]] : []),
     ['Slukplassering', project.sluk],
     ['Terskelhøyde', project.terskel],
     ['Membranløsning', project.membran],
