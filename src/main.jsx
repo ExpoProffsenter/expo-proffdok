@@ -28,7 +28,7 @@ const accessRoleInfo = [
   { role: 'Eier / administrator', text: 'Full tilgang til prosjekt, rapport, firmaprofil, prosjektliste, deling og brukergodkjenning.' },
   { role: 'Ansatt', text: 'Kan normalt opprette, endre og dokumentere prosjekter for firmaet.' },
   { role: 'Underleverandør', text: 'Anbefales for fag som skal bidra med dokumentasjon, bilder, sjekklister eller utstyr på prosjektet.' },
-  { role: 'Kun lesetilgang', text: 'Anbefales for kunde/byggherre som kun skal se rapport og dokumentasjon via delingslink.' }
+  { role: 'Kun lesetilgang', text: 'Kunde/byggherre får egen kundelink med rapport, tilbud/kontrakt og chat.' }
 ];
 
 const checklistTemplate = [
@@ -149,6 +149,10 @@ function App() {
     background: tone === 'done' ? '#ecfdf5' : tone === 'locked' ? '#f8fafc' : tone === 'progress' ? '#fffbeb' : '#eff6ff',
     color: tone === 'done' ? '#065f46' : tone === 'locked' ? '#334155' : tone === 'progress' ? '#92400e' : '#075985'
   });
+  const chatMessages = projectLog?.messages || [];
+  const customerChatCount = chatMessages.filter(m => m.role === 'kunde').length;
+  const totalChatCount = chatMessages.length;
+  const latestChatMessage = chatMessages.length ? chatMessages[chatMessages.length - 1] : null;
   const rowIsLocked = (row) => row?.locked === true || row?.locked === 'true' || projectIsLocked(row?.data?.project || {});
   const projectFromRow = (row, fallbackProject = project) => {
     const dataProject = row?.data?.project || {};
@@ -169,9 +173,11 @@ function App() {
   });
 
   const tabs = [
-    ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
+    ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
-    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['overtagelse','Overtagelse'], ['chat','Chat'], ['internt','Interne notater'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
+    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['overtagelse','Overtagelse'],
+    ['chat', customerChatCount > 0 ? `Chat (${customerChatCount})` : 'Chat'],
+    ['internt','Interne notater'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
     ...(isAdminUser && !isReadOnly ? [['admin','Admin']] : [])
   ];
 
@@ -1315,12 +1321,12 @@ function App() {
       <header>
         <div className="head">
           <Brand logo={company.logoUrl} name={name}/>
-          <div><h1>Kundetilgang</h1><p>Rapport, tilbud/kontrakt og chat</p></div>
+          <div><h1>Kundetilgang</h1><p>Rapport, tilbud/kontrakt og chat{totalChatCount ? ` · ${totalChatCount} melding${totalChatCount === 1 ? '' : 'er'}` : ''}</p></div>
           <button onClick={() => window.print()}><Download size={18}/> Lag PDF / skriv ut</button>
         </div>
         <nav>
           <button className="on" onClick={()=>document.getElementById('kunde-rapport')?.scrollIntoView({behavior:'smooth'})}>Rapport</button>
-          <button onClick={()=>document.getElementById('kunde-chat')?.scrollIntoView({behavior:'smooth'})}>Chat</button>
+          <button onClick={()=>document.getElementById('kunde-chat')?.scrollIntoView({behavior:'smooth'})}>Chat{totalChatCount ? ` (${totalChatCount})` : ''}</button>
           <button onClick={()=>document.getElementById('kunde-tilbud')?.scrollIntoView({behavior:'smooth'})}>Tilbud/kontrakt</button>
         </nav>
       </header>
@@ -1328,7 +1334,7 @@ function App() {
         <div id="kunde-rapport">
           <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>
         </div>
-        <Section title="Chat" icon={<FileText/>}>
+        <Section title={totalChatCount ? `Chat (${totalChatCount})` : 'Chat'} icon={<FileText/>}>
           <div id="kunde-chat"></div>
           <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet.</p>
           <Textarea label="Ny melding fra kunde" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
@@ -1337,7 +1343,7 @@ function App() {
           </div>
           {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
           {(projectLog.messages || []).slice().reverse().map(m => <div className="item" key={m.id}>
-            <b>{m.by || 'Ukjent'}</b>
+            <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'}</b>
             <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
             <p>{m.text}</p>
           </div>)}
@@ -1368,7 +1374,7 @@ function App() {
       </div>
       <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
       <div className="mobileNav" style={{ maxWidth:'1180px', margin:'0 auto', padding:'0 16px 14px' }}>
-        <Select label="Meny" value={tab} options={tabs.map(([,l])=>l)} onChange={label=>{ const found = tabs.find(([,l])=>l===label); if (found) goToTab(found[0]); }}/>
+        <label><span>Meny</span><select value={tab} onChange={e=>goToTab(e.target.value)}>{tabs.map(([id,l])=><option value={id} key={id}>{l}</option>)}</select></label>
       </div>
     </header>
 
@@ -1379,6 +1385,7 @@ function App() {
         </div>
         <p className="note">{isProjectLocked ? `Prosjektet ble låst${project.lockedAt ? ' ' + new Date(project.lockedAt).toLocaleString('no-NO') : ''}${project.lockedBy ? ' av ' + project.lockedBy : ''}. Lås opp prosjektet hvis du trenger å gjøre endringer.` : 'Prosjektet er åpent for endringer. Når prosjektet er ferdig og overlevert kan det avsluttes og låses.'}</p>
         {projectHasOvertagelse() && <p className="note">Overtagelse er registrert{overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString('no-NO')}` : ''}.</p>}
+        {customerChatCount > 0 && <p className="note">💬 Chat: {customerChatCount} melding{customerChatCount === 1 ? '' : 'er'} fra kunde{latestChatMessage?.created ? ` · siste ${new Date(latestChatMessage.created).toLocaleString('no-NO')}` : ''}.</p>}
       </Section>}
       {tab==='prosjekt' && <Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
         <Input label="Prosjektansvarlig" value={project.responsible} onChange={v=>setProject({...project,responsible:v})}/>
@@ -1475,7 +1482,7 @@ function App() {
 
       {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>{photos.filter(p=>p.cat===c).length > 0 ? `📷 ${photos.filter(p=>p.cat===c).length} bilder lagt til` : 'Ta bilde eller velg fra galleri'}</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
 
-      {tab==='tilgang' && <Section title="Tilgang og deling"><p className="note">Her administrerer du deling og roller på prosjektet. Kunde får kun rapportvisning. Underentreprenør kan bidra med produkter, overflater, bilder, fag/utstyr og sjekklister via egen tilgangslink.</p><div className="cards">{accessRoleInfo.map(r=><div className="tile" key={r.role}><b>{r.role}</b><span>{r.text}</span></div>)}</div><div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}><button onClick={()=>setAccess([...access,{id:uid(),name:'',email:'',role:'Underleverandør'}])}><Plus size={18}/> Legg til person/firma</button><button className="secondary" onClick={()=>copyAccessLink('kunde')}>Del med kunde</button></div>{access.length===0 && <p className="note" style={{ marginTop:'16px' }}>Ingen ekstra tilganger er lagt til ennå.</p>}{access.map(a=><div className="item" key={a.id}><Grid><Input label="Navn/firma" value={a.name} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,name:v}:x))}/><Input label="E-post" value={a.email} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,email:v}:x))}/><Select label="Rolle" value={a.role} options={roles} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,role:v}:x))}/></Grid><p className="note">{accessRoleInfo.find(r=>r.role===a.role)?.text || ''}</p><div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}><button className="secondary" onClick={()=>copyAccessLink(a.role)}>Del med denne personen</button><button className="secondary" onClick={()=>setAccess(access.filter(x=>x.id!==a.id))}>Fjern</button></div></div>)}</Section>}
+      {tab==='tilgang' && <Section title="Tilgang og deling"><p className="note">Administrer tilgang til prosjektet. Kunde får egen kundelink med rapport, tilbud/kontrakt og chat. Underentreprenører kan bidra med dokumentasjon via egen tilgang.</p><div className="cards">{accessRoleInfo.map(r=><div className="tile" key={r.role}><b>{r.role}</b><span>{r.text}</span></div>)}</div><div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}><button onClick={()=>setAccess([...access,{id:uid(),name:'',email:'',role:'Underleverandør'}])}><Plus size={18}/> Legg til person/firma</button><button className="secondary" onClick={()=>copyAccessLink('kunde')}>Del med kunde</button></div>{access.length===0 && <p className="note" style={{ marginTop:'16px' }}>Ingen ekstra tilganger er lagt til ennå.</p>}{access.map(a=><div className="item" key={a.id}><Grid><Input label="Navn/firma" value={a.name} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,name:v}:x))}/><Input label="E-post" value={a.email} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,email:v}:x))}/><Select label="Rolle" value={a.role} options={roles} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,role:v}:x))}/></Grid><p className="note">{accessRoleInfo.find(r=>r.role===a.role)?.text || ''}</p><div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}><button className="secondary" onClick={()=>copyAccessLink(a.role)}>Del med denne personen</button><button className="secondary" onClick={()=>setAccess(access.filter(x=>x.id!==a.id))}>Fjern</button></div></div>)}</Section>}
 
       {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',fdvUrl:'',photos:[],by:user.name||'Ukjent',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/><Input label="FDV-/databladlink" value={x.fdvUrl || ''} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,fdvUrl:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label>{(x.photos||[]).length > 0 && <p className="note">📷 {(x.photos||[]).length} bilder lagt til</p>}<div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
 
@@ -1593,8 +1600,9 @@ function App() {
         </div>
       </Section>}
 
-      {tab==='chat' && <Section title="Chat" icon={<FileText/>}>
+      {tab==='chat' && <Section title={customerChatCount > 0 ? `Chat (${customerChatCount} fra kunde)` : 'Chat'} icon={<FileText/>}>
         <p className="note">Chatten kan brukes mellom utførende og kunde. Kunde kan sende meldinger via kundelinken. Du velger selv om chatten skal tas med i rapporten.</p>
+        {customerChatCount > 0 && <p className="note" style={{ fontWeight:700 }}>💬 Det finnes {customerChatCount} melding{customerChatCount === 1 ? '' : 'er'} fra kunde i chatten.</p>}
         <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'14px' }}>
           <input
             type="checkbox"
@@ -1611,7 +1619,7 @@ function App() {
         </div>
         {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
         {(projectLog.messages || []).slice().reverse().map(m => <div className="item" key={m.id}>
-          <b>{m.by || 'Ukjent'}</b>
+          <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'}</b>
           <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
           <p>{m.text}</p>
           <button type="button" className="secondary" onClick={()=>removeProjectLogMessage(m.id)}>Fjern melding</button>
@@ -1761,7 +1769,7 @@ function Report({company,name,project,selected,manualProducts,other,surf,photos,
       </div>)}
     </section>}
     <ChecklistReportSection checklist={checklist}/>
-    {(hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0) && <section id="kunde-tilbud">
+    {tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && <section>
       <h2>Tilbud / kontrakt</h2>
       <Grid>
         <InfoCard label="Tillegg" value={tilbud.tillegg}/>
@@ -2011,7 +2019,7 @@ function CustomerReport({company,name,project,selected,manualProducts,other,surf
       </div>)}
     </section>}
 
-    {tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && <section>
+    {(hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0) && <section id="kunde-tilbud">
       <h2>Tilbud / kontrakt</h2>
       <Grid>
         <InfoCard label="Tillegg" value={tilbud.tillegg}/>
