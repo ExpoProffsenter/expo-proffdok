@@ -58,7 +58,7 @@ const emptyOvertagelse = () => ({
 });
 
 const emptyProject = () => ({
-  responsible:'', projectName:'', address:'', customer:'', date:new Date().toISOString().slice(0,10), notes:'',
+  responsible:'', projectName:'', address:'', postnr:'', city:'', customer:'', date:new Date().toISOString().slice(0,10), notes:'',
   fall:'', fallDusj:'', fallUtenfor:'', sluk:'', terskel:'', membran:'', prosjekteringKommentar:'',
   prosjekteringPunkter: [],
   locked:false, status:'active', lockedAt:'', lockedBy:''
@@ -81,6 +81,7 @@ function App() {
   const [checklist, setChecklist] = useState({});
   const [tilbud, setTilbud] = useState(emptyTilbud());
   const [overtagelse, setOvertagelse] = useState(emptyOvertagelse());
+  const [projectLog, setProjectLog] = useState({ enabled:false, draft:'', messages:[] });
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState(null);
   const [authUser, setAuthUser] = useState(null);
@@ -169,7 +170,7 @@ function App() {
   const tabs = [
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
-    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['overtagelse','Overtagelse'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
+    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['overtagelse','Overtagelse'], ['chat','Prosjektlogg'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
     ...(isAdminUser && !isReadOnly ? [['admin','Admin']] : [])
   ];
 
@@ -182,7 +183,7 @@ function App() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   };
 
-  const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse });
+  const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
     setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
@@ -208,6 +209,7 @@ function App() {
     setChecklist(data.checklist || {});
     setTilbud(data.tilbud || emptyTilbud());
     setOvertagelse(data.overtagelse || emptyOvertagelse());
+    setProjectLog(data.projectLog || { enabled:false, draft:'', messages:[] });
   };
 
   const loadProjects = async (currentUser = authUser) => {
@@ -333,6 +335,8 @@ function App() {
       projectId ||
       project.projectName ||
       project.address ||
+      project.postnr ||
+      project.city ||
       project.customer ||
       project.notes ||
       project.fall ||
@@ -363,7 +367,10 @@ function App() {
       overtagelse.signUtførende ||
       overtagelse.signKunde ||
       overtagelse.signUtførendeImage ||
-      overtagelse.signKundeImage;
+      overtagelse.signKundeImage ||
+      projectLog.enabled ||
+      projectLog.draft ||
+      (projectLog.messages || []).length;
 
     if (hasContent && !window.confirm('Starte nytt prosjekt? Ulagrede endringer vil gå tapt.')) return;
 
@@ -380,6 +387,7 @@ function App() {
     setChecklist({});
     setTilbud(emptyTilbud());
     setOvertagelse(emptyOvertagelse());
+    setProjectLog({ enabled:false, draft:'', messages:[] });
     setProjectId(null);
     setTab('prosjekt');
 
@@ -447,12 +455,35 @@ function App() {
     }));
   };
 
+  const addProjectLogMessage = () => {
+    const text = (projectLog.draft || '').trim();
+    if (!text) return alert('Skriv en melding først.');
+    const message = {
+      id: uid(),
+      text,
+      by: user.name || authUser?.email || 'Ukjent',
+      created: new Date().toISOString()
+    };
+    setProjectLog(prev => ({
+      ...prev,
+      draft: '',
+      messages: [...(prev.messages || []), message]
+    }));
+  };
+
+  const removeProjectLogMessage = (id) => {
+    setProjectLog(prev => ({
+      ...prev,
+      messages: (prev.messages || []).filter(m => m.id !== id)
+    }));
+  };
+
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
 
     const makeCleanData = (projectOverride = project) => JSON.parse(JSON.stringify({
       company, user, project: { ...emptyProject(), ...projectOverride },
-      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
+      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog
     }));
 
     if (projectId) {
@@ -573,7 +604,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: safeProject,
-      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
+      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog
     }));
 
     const payload = {
@@ -630,7 +661,7 @@ function App() {
   const saveAsNewProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
     const unlockedProject = { ...emptyProject(), ...project, locked:false, status:'active', lockedAt:'', lockedBy:'' };
-    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
+    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
@@ -665,7 +696,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: newProjectData,
-      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse
+      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog
     }));
 
     const payload = {
@@ -756,7 +787,8 @@ function App() {
       files,
       checklist,
       tilbud,
-      overtagelse: completedOvertagelse
+      overtagelse,
+      projectLog: completedOvertagelse
     }));
 
     const { error: saveError } = await supabase
@@ -1228,7 +1260,7 @@ function App() {
         </div>
       </header>
       <main>
-        <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse}/>
+        <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>
       </main>
     </div>;
   }
@@ -1262,6 +1294,8 @@ function App() {
         <Input label="Dato" type="date" value={project.date} onChange={v=>setProject({...project,date:v})}/>
         <Input label="Navn på prosjekt" value={project.projectName} onChange={v=>setProject({...project,projectName:v})}/>
         <Input label="Adresse" value={project.address} onChange={v=>setProject({...project,address:v})}/>
+        <Input label="Postnr." value={project.postnr || ''} onChange={v=>setProject({...project,postnr:v})}/>
+        <Input label="Poststed / by" value={project.city || ''} onChange={v=>setProject({...project,city:v})}/>
         <Input label="Kunde" value={project.customer} onChange={v=>setProject({...project,customer:v})}/>
         <Textarea label="Notater" value={project.notes} onChange={v=>setProject({...project,notes:v})}/>
       </Grid></Section>}
@@ -1468,6 +1502,31 @@ function App() {
         </div>
       </Section>}
 
+      {tab==='chat' && <Section title="Prosjektlogg / chat" icon={<FileText/>}>
+        <p className="note">Bruk prosjektloggen til interne avklaringer, kundebeskjeder eller viktige notater underveis. Du velger selv om loggen skal tas med i rapporten.</p>
+        <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'14px' }}>
+          <input
+            type="checkbox"
+            style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }}
+            checked={!!projectLog.enabled}
+            onChange={e=>setProjectLog(prev=>({...prev, enabled:e.target.checked}))}
+          />
+          <span style={{ margin:0 }}>Ta med prosjektlogg i rapport</span>
+        </label>
+        <Textarea label="Ny melding" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
+        <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
+          <button type="button" onClick={addProjectLogMessage}>Legg til melding</button>
+          <button type="button" className="secondary" onClick={()=>setProjectLog(prev=>({...prev, draft:''}))}>Tøm skrivefelt</button>
+        </div>
+        {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger er lagt til ennå.</p>}
+        {(projectLog.messages || []).slice().reverse().map(m => <div className="item" key={m.id}>
+          <b>{m.by || 'Ukjent'}</b>
+          <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
+          <p>{m.text}</p>
+          <button type="button" className="secondary" onClick={()=>removeProjectLogMessage(m.id)}>Fjern melding</button>
+        </div>)}
+      </Section>}
+
       {tab==='prosjektliste' && <Section title="Prosjektliste">
         <button onClick={() => loadProjects(authUser)}>Oppdater liste</button>
         {projects.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen prosjekter hentet ennå.</p>}
@@ -1484,7 +1543,7 @@ function App() {
         })}
       </Section>}
 
-      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse}/>} 
+      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>} 
 
       {tab==='admin' && isAdminUser && <Section title="Admin – brukergodkjenning" icon={<BadgeCheck/>}>
         <p className="note">Her kan administrator se registrerte brukere og godkjenne tilgang uten å gå inn i Supabase. Dette forutsetter at Supabase-policy tillater admin å lese og oppdatere profiles.</p>
@@ -1575,8 +1634,8 @@ function ChecklistReportSection({checklist}) {
   </section>;
 }
 
-function Report({company,name,project,selected,manualProducts,other,surf,photos,access,inst,files,checklist,tilbud,overtagelse}) {
-  const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, Kunde: project.customer, Dato: project.date, Status: project.locked ? 'Avsluttet / låst' : 'Aktivt', Notater: project.notes };
+function Report({company,name,project,selected,manualProducts,other,surf,photos,access,inst,files,checklist,tilbud,overtagelse,projectLog}) {
+  const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, 'Postnr.': project.postnr, 'Poststed / by': project.city, Kunde: project.customer, Dato: project.date, Status: project.locked ? 'Avsluttet / låst' : 'Aktivt', Notater: project.notes };
   const cats = [...new Set(photos.map(p=>p.cat))];
   return <div className="report">
     <section><div className="reportTop"><Brand logo={company.logoUrl} name={name}/><div><h2>{name}</h2>{company.address&&<p>{company.address}</p>}{company.orgNumber&&<p>Org.nr: {company.orgNumber}</p>}{company.phone&&<p>{company.phone}</p>}{company.email&&<p>{company.email}</p>}{company.website&&<p>{company.website}</p>}</div></div><h2>FDV-rapport / Prosjektdokumentasjon</h2>{project.locked && <p style={{ fontWeight:800, letterSpacing:'0.04em' }}>✅ FERDIGSTILT / LÅST</p>}<Grid>{Object.entries(projectFields).map(([k,v])=><div className="out" key={k}><b>{k}</b><p>{v || 'Ikke fylt ut'}</p></div>)}</Grid></section>
@@ -1594,6 +1653,14 @@ function Report({company,name,project,selected,manualProducts,other,surf,photos,
     <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><div className="out" key={i.id}><b>{i.category}:</b><p>{i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>{i.fdvUrl&&<p><a href={i.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}</section>
+    {projectLog?.enabled && (projectLog.messages || []).length > 0 && <section>
+      <h2>Prosjektlogg</h2>
+      {(projectLog.messages || []).map(m => <div className="out" key={m.id}>
+        <b>{m.by || 'Ukjent'}</b>
+        <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
+        <p>{m.text}</p>
+      </div>)}
+    </section>}
     <ChecklistReportSection checklist={checklist}/>
     {tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && <section>
       <h2>Tilbud / kontrakt</h2>
@@ -1746,11 +1813,13 @@ function SignaturePad({label, value, onChange}) {
   </div>;
 }
 
-function CustomerReport({company,name,project,selected,manualProducts,other,surf,photos,inst,files,checklist,tilbud,overtagelse}) {
+function CustomerReport({company,name,project,selected,manualProducts,other,surf,photos,inst,files,checklist,tilbud,overtagelse,projectLog}) {
   const projectFields = [
     ['Prosjektansvarlig', project.responsible],
     ['Prosjektnavn', project.projectName],
     ['Adresse', project.address],
+    ['Postnr.', project.postnr],
+    ['Poststed / by', project.city],
     ['Kunde', project.customer],
     ['Dato', project.date],
     ['Status', project.locked ? 'Avsluttet / låst' : 'Aktivt'],
@@ -1805,7 +1874,7 @@ function CustomerReport({company,name,project,selected,manualProducts,other,surf
         {p.fdvUrl && <p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}
       </div>)}
       {(manualProducts || []).map(p => <div className="out" key={p.id}>
-        <b>{p.trade || 'Annet produkt'}</b>
+        <b>{p.section || 'Annet produkt'}</b>
         <p>{p.name || 'Uten produktnavn'}</p>
         {p.comment && <p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}
         {p.fdvUrl && <p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}
@@ -1866,6 +1935,14 @@ function CustomerReport({company,name,project,selected,manualProducts,other,surf
       </Grid>
     </section>}
 
+    {projectLog?.enabled && (projectLog.messages || []).length > 0 && <section>
+      <h2>Prosjektlogg</h2>
+      {(projectLog.messages || []).map(m => <div className="out" key={m.id}>
+        <b>{m.by || 'Ukjent'}</b>
+        <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
+        <p>{m.text}</p>
+      </div>)}
+    </section>}
     <ChecklistReportSection checklist={checklist}/>
 
     {(files || []).length > 0 && <section>
