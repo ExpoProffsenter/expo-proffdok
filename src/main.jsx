@@ -52,7 +52,9 @@ const emptyOvertagelse = () => ({
   dato: new Date().toISOString().slice(0,10),
   kommentar:'',
   signUtførende:'',
-  signKunde:''
+  signKunde:'',
+  signUtførendeImage:'',
+  signKundeImage:''
 });
 
 const emptyProject = () => ({
@@ -320,7 +322,9 @@ function App() {
       overtagelse.enabled ||
       overtagelse.kommentar ||
       overtagelse.signUtførende ||
-      overtagelse.signKunde;
+      overtagelse.signKunde ||
+      overtagelse.signUtførendeImage ||
+      overtagelse.signKundeImage;
 
     if (hasContent && !window.confirm('Starte nytt prosjekt? Ulagrede endringer vil gå tapt.')) return;
 
@@ -649,7 +653,9 @@ function App() {
   const completeOvertagelseAndLock = async () => {
     if (!projectId) return alert('Prosjektet må lagres før overtagelse kan fullføres.');
     if (!authUser) return alert('Du må være logget inn for å fullføre overtagelse.');
-    if (!hasValue(overtagelse.signUtførende) || !hasValue(overtagelse.signKunde)) {
+    const utførendeSigned = hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signUtførendeImage);
+    const kundeSigned = hasValue(overtagelse.signKunde) || hasValue(overtagelse.signKundeImage);
+    if (!utførendeSigned || !kundeSigned) {
       return alert('Både utførende og kunde må signere før overtagelse kan fullføres.');
     }
 
@@ -1293,11 +1299,23 @@ function App() {
           <Textarea label="Kommentar / merknader fra sluttbefaring" value={overtagelse.kommentar || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, kommentar:v})}/>
           <div className="item">
             <h3>Signaturer</h3>
-            <p className="note">Skriv inn navn som signatur. Tegnet signatur kan legges til senere, men denne løsningen lagres trygt på prosjektet og vises i rapporten.</p>
+            <p className="note">Signer direkte på skjermen med finger på telefon eller mus på PC. Navn kan fylles ut i tillegg for tydelig dokumentasjon.</p>
             <Grid>
-              <Input label="Signatur utførende" value={overtagelse.signUtførende || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signUtførende:v})}/>
-              <Input label="Signatur kunde" value={overtagelse.signKunde || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signKunde:v})}/>
+              <Input label="Navn utførende" value={overtagelse.signUtførende || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signUtførende:v})}/>
+              <Input label="Navn kunde" value={overtagelse.signKunde || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signKunde:v})}/>
             </Grid>
+            <div className="grid" style={{ marginTop:'14px' }}>
+              <SignaturePad
+                label="Signatur utførende"
+                value={overtagelse.signUtførendeImage || ''}
+                onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signUtførendeImage:v})}
+              />
+              <SignaturePad
+                label="Signatur kunde"
+                value={overtagelse.signKundeImage || ''}
+                onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signKundeImage:v})}
+              />
+            </div>
           </div>
         </Grid>
         <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
@@ -1430,13 +1448,13 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
         {(tilbud.files || []).map(f=><p key={f.id}><a href={f.url} target="_blank">{f.name}</a></p>)}
       </div>}
     </section>}
-    {overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde)) && <section>
+    {overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtførendeImage) || hasValue(overtagelse.signKundeImage)) && <section>
       <h2>Overtagelse</h2>
       <Grid>
         <InfoCard label="Dato" value={overtagelse.dato}/>
         <InfoCard label="Kommentar / merknader" value={overtagelse.kommentar}/>
-        <InfoCard label="Signatur utførende" value={overtagelse.signUtførende}/>
-        <InfoCard label="Signatur kunde" value={overtagelse.signKunde}/>
+        <SignatureCard label="Signatur utførende" name={overtagelse.signUtførende} image={overtagelse.signUtførendeImage}/>
+        <SignatureCard label="Signatur kunde" name={overtagelse.signKunde} image={overtagelse.signKundeImage}/>
       </Grid>
     </section>}
         <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
@@ -1452,6 +1470,121 @@ function hasValue(value) {
 function InfoCard({label, value}) {
   if (!hasValue(value)) return null;
   return <div className="out"><b>{label}</b><p>{value}</p></div>;
+}
+
+function SignatureCard({label, name, image}) {
+  if (!hasValue(name) && !hasValue(image)) return null;
+  return <div className="out">
+    <b>{label}</b>
+    {name && <p>{name}</p>}
+    {image && <img src={image} alt={label} style={{ width:'100%', maxWidth:'360px', height:'120px', objectFit:'contain', background:'#fff', border:'1px solid #dbe7ec', borderRadius:'12px', marginTop:'8px' }}/>}
+  </div>;
+}
+
+function SignaturePad({label, value, onChange}) {
+  const canvasRef = React.useRef(null);
+  const drawingRef = React.useRef(false);
+  const hasDrawnRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+    canvas.height = Math.max(1, Math.floor(180 * ratio));
+
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.lineWidth = 2.4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#0f172a';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width / ratio, canvas.height / ratio);
+
+    if (value) {
+      const img = new Image();
+      img.onload = () => {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width / ratio, canvas.height / ratio);
+        ctx.drawImage(img, 0, 0, canvas.width / ratio, canvas.height / ratio);
+      };
+      img.src = value;
+      hasDrawnRef.current = true;
+    } else {
+      hasDrawnRef.current = false;
+    }
+  }, [value]);
+
+  const getPoint = (event) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const touch = event.touches?.[0] || event.changedTouches?.[0];
+    const source = touch || event;
+    return {
+      x: source.clientX - rect.left,
+      y: source.clientY - rect.top
+    };
+  };
+
+  const start = (event) => {
+    event.preventDefault();
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const p = getPoint(event);
+    drawingRef.current = true;
+    hasDrawnRef.current = true;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  };
+
+  const move = (event) => {
+    if (!drawingRef.current) return;
+    event.preventDefault();
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const p = getPoint(event);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  };
+
+  const end = (event) => {
+    if (!drawingRef.current) return;
+    event.preventDefault();
+    drawingRef.current = false;
+    const canvas = canvasRef.current;
+    if (hasDrawnRef.current) onChange(canvas.toDataURL('image/png'));
+  };
+
+  const clear = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, rect.width, 180);
+    hasDrawnRef.current = false;
+    onChange('');
+  };
+
+  return <div className="item">
+    <b>{label}</b>
+    <canvas
+      ref={canvasRef}
+      style={{ width:'100%', height:'180px', background:'#fff', border:'1px solid #c7d6dd', borderRadius:'14px', touchAction:'none', display:'block', marginTop:'10px' }}
+      onMouseDown={start}
+      onMouseMove={move}
+      onMouseUp={end}
+      onMouseLeave={end}
+      onTouchStart={start}
+      onTouchMove={move}
+      onTouchEnd={end}
+    />
+    <div style={{ display:'flex', gap:'8px', marginTop:'10px', flexWrap:'wrap' }}>
+      <button type="button" className="secondary" onClick={clear}>Tøm signatur</button>
+    </div>
+  </div>;
 }
 
 function CustomerReport({company,name,project,selected,other,surf,photos,inst,files,checklist,tilbud,overtagelse}) {
@@ -1551,13 +1684,13 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
       </div>}
     </section>}
 
-    {overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde)) && <section>
+    {overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtførendeImage) || hasValue(overtagelse.signKundeImage)) && <section>
       <h2>Overtagelse</h2>
       <Grid>
         <InfoCard label="Dato" value={overtagelse.dato}/>
         <InfoCard label="Kommentar / merknader" value={overtagelse.kommentar}/>
-        <InfoCard label="Signatur utførende" value={overtagelse.signUtførende}/>
-        <InfoCard label="Signatur kunde" value={overtagelse.signKunde}/>
+        <SignatureCard label="Signatur utførende" name={overtagelse.signUtførende} image={overtagelse.signUtførendeImage}/>
+        <SignatureCard label="Signatur kunde" name={overtagelse.signKunde} image={overtagelse.signKundeImage}/>
       </Grid>
     </section>}
 
