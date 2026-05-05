@@ -121,6 +121,20 @@ function App() {
     lockedBy: sourceProject.lockedBy || ''
   });
   const isProjectLocked = projectIsLocked(project);
+  const projectHasOvertagelse = (o = overtagelse) =>
+    !!o?.enabled || hasValue(o?.dato) || hasValue(o?.kommentar) || hasValue(o?.signUtførende) || hasValue(o?.signKunde) || hasValue(o?.signUtførendeImage) || hasValue(o?.signKundeImage);
+  const projectStatusInfo = (p = project, o = overtagelse) => {
+    const locked = projectIsLocked(p);
+    if (locked && projectHasOvertagelse(o)) return { label:'Ferdigstilt', icon:'✅', tone:'done' };
+    if (locked) return { label:'Avsluttet / låst', icon:'🔒', tone:'locked' };
+    if (p?.projectName || p?.address || p?.customer || projectHasOvertagelse(o)) return { label:'Pågår', icon:'🟡', tone:'progress' };
+    return { label:'Åpen', icon:'🟢', tone:'open' };
+  };
+  const currentStatus = projectStatusInfo(project, overtagelse);
+  const statusStyle = (tone) => ({
+    background: tone === 'done' ? '#ecfdf5' : tone === 'locked' ? '#f8fafc' : tone === 'progress' ? '#fffbeb' : '#eff6ff',
+    color: tone === 'done' ? '#065f46' : tone === 'locked' ? '#334155' : tone === 'progress' ? '#92400e' : '#075985'
+  });
   const rowIsLocked = (row) => row?.locked === true || row?.locked === 'true' || projectIsLocked(row?.data?.project || {});
   const projectFromRow = (row, fallbackProject = project) => {
     const dataProject = row?.data?.project || {};
@@ -1131,7 +1145,7 @@ function App() {
     <header>
       <div className="head">
         <Brand logo={company.logoUrl} name={name}/>
-        <div><h1>Expo ProffDok</h1><p>{projectId ? 'Åpnet prosjekt' : (authUser?.email || name)}</p></div>
+        <div><h1>Expo ProffDok</h1><p>{projectId ? `${currentStatus.icon} ${currentStatus.label}` : (authUser?.email || name)}</p></div>
         <button className="secondary" onClick={signOut}>Logg ut</button>
         <button className="secondary" onClick={createNewProject}>+ Nytt prosjekt</button>
         <button onClick={saveProject}>{projectId ? 'Oppdater prosjekt' : 'Lagre'}</button>
@@ -1143,7 +1157,13 @@ function App() {
     </header>
 
     <main>
-      {projectId && <Section title={isProjectLocked ? '🔒 Prosjekt avsluttet' : '🟢 Prosjekt aktivt'} icon={<BadgeCheck/>}><p className="note">{isProjectLocked ? `Prosjektet ble låst${project.lockedAt ? ' ' + new Date(project.lockedAt).toLocaleString('no-NO') : ''}${project.lockedBy ? ' av ' + project.lockedBy : ''}. Lås opp prosjektet hvis du trenger å gjøre endringer.` : 'Prosjektet er åpent for endringer. Når prosjektet er ferdig og overlevert kan det avsluttes og låses.'}</p></Section>}
+      {projectId && <Section title={`${currentStatus.icon} Prosjektstatus: ${currentStatus.label}`} icon={<BadgeCheck/>}>
+        <div className={`statusBadge status-${currentStatus.tone}`} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 12px', borderRadius:'999px', fontWeight:700, marginBottom:'10px', border:'1px solid #dbe7ec', ...statusStyle(currentStatus.tone) }}>
+          <span>{currentStatus.icon}</span><span>{currentStatus.label}</span>
+        </div>
+        <p className="note">{isProjectLocked ? `Prosjektet ble låst${project.lockedAt ? ' ' + new Date(project.lockedAt).toLocaleString('no-NO') : ''}${project.lockedBy ? ' av ' + project.lockedBy : ''}. Lås opp prosjektet hvis du trenger å gjøre endringer.` : 'Prosjektet er åpent for endringer. Når prosjektet er ferdig og overlevert kan det avsluttes og låses.'}</p>
+        {projectHasOvertagelse() && <p className="note">Overtagelse er registrert{overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString('no-NO')}` : ''}.</p>}
+      </Section>}
       {tab==='prosjekt' && <Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
         <Input label="Prosjektansvarlig" value={project.responsible} onChange={v=>setProject({...project,responsible:v})}/>
         <Input label="Dato" type="date" value={project.date} onChange={v=>setProject({...project,date:v})}/>
@@ -1285,6 +1305,7 @@ function App() {
       {tab==='overtagelse' && <Section title="Overtagelse og signering" icon={<ClipboardCheck/>}>
         <p className="note">Bruk denne ved sluttbefaring og overlevering. Når begge signaturer er fylt ut kan prosjektet fullføres og låses.</p>
         {isProjectLocked && <p className="note">🔒 Prosjektet er låst. Overtagelsen kan vises i rapporten, men endringer krever at prosjektet låses opp.</p>}
+        {projectHasOvertagelse() && <p className="note">✅ Overtagelse registrert{overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString('no-NO')}` : ''}.</p>}
         <Grid>
           <Input label="Dato for overtagelse" type="date" value={overtagelse.dato || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, dato:v})}/>
           <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
@@ -1324,7 +1345,21 @@ function App() {
         </div>
       </Section>}
 
-      {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={() => loadProjects(authUser)}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>Sist oppdatert: {new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
+      {tab==='prosjektliste' && <Section title="Prosjektliste">
+        <button onClick={() => loadProjects(authUser)}>Oppdater liste</button>
+        {projects.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen prosjekter hentet ennå.</p>}
+        {projects.map(p=>{
+          const listProject = projectFromRow(p, p.data?.project || {});
+          const listStatus = projectStatusInfo(listProject, p.data?.overtagelse || {});
+          return <div className="item" key={p.id}>
+            <b>{p.title || 'Uten navn'}</b>
+            <span className={`statusBadge status-${listStatus.tone}`} style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:700, border:'1px solid #dbe7ec', width:'fit-content', ...statusStyle(listStatus.tone) }}>{listStatus.icon} {listStatus.label}</span>
+            <small>Sist oppdatert: {new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</small>
+            <button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button>
+            <button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button>
+          </div>;
+        })}
+      </Section>}
 
       {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse}/>} 
 
@@ -1420,7 +1455,7 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
   const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, Kunde: project.customer, Dato: project.date, Status: project.locked ? 'Avsluttet / låst' : 'Aktivt', Notater: project.notes };
   const cats = [...new Set(photos.map(p=>p.cat))];
   return <div className="report">
-    <section><div className="reportTop"><Brand logo={company.logoUrl} name={name}/><div><h2>{name}</h2>{company.address&&<p>{company.address}</p>}{company.orgNumber&&<p>Org.nr: {company.orgNumber}</p>}{company.phone&&<p>{company.phone}</p>}{company.email&&<p>{company.email}</p>}{company.website&&<p>{company.website}</p>}</div></div><h2>FDV-rapport / Prosjektdokumentasjon</h2><Grid>{Object.entries(projectFields).map(([k,v])=><div className="out" key={k}><b>{k}</b><p>{v || 'Ikke fylt ut'}</p></div>)}</Grid></section>
+    <section><div className="reportTop"><Brand logo={company.logoUrl} name={name}/><div><h2>{name}</h2>{company.address&&<p>{company.address}</p>}{company.orgNumber&&<p>Org.nr: {company.orgNumber}</p>}{company.phone&&<p>{company.phone}</p>}{company.email&&<p>{company.email}</p>}{company.website&&<p>{company.website}</p>}</div></div><h2>FDV-rapport / Prosjektdokumentasjon</h2>{project.locked && <p style={{ fontWeight:800, letterSpacing:'0.04em' }}>✅ FERDIGSTILT / LÅST</p>}<Grid>{Object.entries(projectFields).map(([k,v])=><div className="out" key={k}><b>{k}</b><p>{v || 'Ikke fylt ut'}</p></div>)}</Grid></section>
     <section><h2>Prosjektering</h2><Grid>
       <div className="out"><b>Fall i dusjsone</b><p>{project.fallDusj || 'Ikke oppgitt'}</p></div>
       <div className="out"><b>Fall utenfor dusjsone / våtsone</b><p>{project.fallUtenfor || 'Ikke oppgitt'}</p></div>
@@ -1628,6 +1663,7 @@ function CustomerReport({company,name,project,selected,other,surf,photos,inst,fi
         </div>
       </div>
       <h2>Prosjektinformasjon</h2>
+      {project.locked && <p style={{ fontWeight:800, letterSpacing:'0.04em' }}>✅ FERDIGSTILT / LÅST</p>}
       <Grid>{projectFields.map(([label,value]) => <InfoCard key={label} label={label} value={value}/>)}</Grid>
     </section>
 
