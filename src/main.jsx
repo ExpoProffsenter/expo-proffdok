@@ -39,6 +39,14 @@ const checklistTemplate = [
   { category: 'Sluttkontroll', items: ['Visuell kontroll utført', 'Bilder tatt', 'Dokumentasjon komplett'] }
 ];
 
+const emptyTilbud = () => ({
+  enabled:false,
+  files: [],
+  tillegg:'',
+  fradrag:'',
+  kommentar:''
+});
+
 const emptyProject = () => ({
   responsible:'', projectName:'', address:'', customer:'', date:new Date().toISOString().slice(0,10), notes:'',
   fall:'', fallDusj:'', fallUtenfor:'', sluk:'', terskel:'', membran:'', prosjekteringKommentar:'',
@@ -59,6 +67,7 @@ function App() {
   const [inst, setInst] = useState([]);
   const [files, setFiles] = useState([]);
   const [checklist, setChecklist] = useState({});
+  const [tilbud, setTilbud] = useState(emptyTilbud());
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState(null);
   const [authUser, setAuthUser] = useState(null);
@@ -123,7 +132,7 @@ function App() {
   const tabs = [
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
-    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
+    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
     ...(isAdminUser && !isReadOnly ? [['admin','Admin']] : [])
   ];
 
@@ -136,7 +145,7 @@ function App() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   };
 
-  const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist });
+  const packData = () => ({ company, user, project, checked, other, surf, photos, access, inst, files, checklist, tilbud });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
     setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
@@ -149,6 +158,7 @@ function App() {
     setInst(data.inst || []);
     setFiles(data.files || []);
     setChecklist(data.checklist || {});
+    setTilbud(data.tilbud || emptyTilbud());
   };
 
   const loadProjects = async (currentUser = authUser) => {
@@ -291,7 +301,12 @@ function App() {
       (access || []).length ||
       (inst || []).length ||
       (files || []).length ||
-      Object.keys(checklist || {}).length;
+      Object.keys(checklist || {}).length ||
+      tilbud.enabled ||
+      tilbud.tillegg ||
+      tilbud.fradrag ||
+      tilbud.kommentar ||
+      (tilbud.files || []).length;
 
     if (hasContent && !window.confirm('Starte nytt prosjekt? Ulagrede endringer vil gå tapt.')) return;
 
@@ -304,6 +319,7 @@ function App() {
     setInst([]);
     setFiles([]);
     setChecklist({});
+    setTilbud(emptyTilbud());
     setProjectId(null);
     setTab('prosjekt');
 
@@ -342,7 +358,7 @@ function App() {
 
     const makeCleanData = (projectOverride = project) => JSON.parse(JSON.stringify({
       company, user, project: { ...emptyProject(), ...projectOverride },
-      checked, other, surf, photos, access, inst, files, checklist
+      checked, other, surf, photos, access, inst, files, checklist, tilbud
     }));
 
     if (projectId) {
@@ -463,7 +479,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: safeProject,
-      checked, other, surf, photos, access, inst, files, checklist
+      checked, other, surf, photos, access, inst, files, checklist, tilbud
     }));
 
     const payload = {
@@ -520,7 +536,7 @@ function App() {
   const saveAsNewProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
     const unlockedProject = { ...emptyProject(), ...project, locked:false, status:'active', lockedAt:'', lockedBy:'' };
-    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, other, surf, photos, access, inst, files, checklist }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
+    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, other, surf, photos, access, inst, files, checklist, tilbud }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
@@ -780,6 +796,39 @@ function App() {
   const addFiles = fl => setFiles(p => [...p, ...Array.from(fl || []).map(f => ({
     id: uid(), name:f.name, url: URL.createObjectURL(f), by:user.name || 'Ukjent', created:new Date().toLocaleString('no-NO')
   }))]);
+
+  const uploadTilbudFiles = async (fileList) => {
+    const filesArray = Array.from(fileList || []);
+    const uploaded = [];
+
+    for (const file of filesArray) {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+      const path = `tilbud-kontrakt/${Date.now()}-${uid()}-${cleanName}`;
+      const { error } = await supabase.storage
+        .from('project-images')
+        .upload(path, file, { cacheControl: '3600', upsert: false });
+
+      if (error) {
+        console.error(error);
+        alert('Kunne ikke laste opp vedlegg: ' + error.message);
+        continue;
+      }
+
+      const { data } = supabase.storage.from('project-images').getPublicUrl(path);
+      uploaded.push({
+        id: uid(),
+        url: data.publicUrl,
+        path,
+        name: file.name,
+        by: user.name || authUser?.email || 'Ukjent',
+        created: new Date().toLocaleString('no-NO')
+      });
+    }
+
+    if (uploaded.length) {
+      setTilbud(t => ({ ...emptyTilbud(), ...t, files: [...(t.files || []), ...uploaded] }));
+    }
+  };
 
 
   if (authLoading && !isReadOnly && !isUnderleverandorView) {
@@ -1090,9 +1139,39 @@ function App() {
         </Section>
       </Section>}
 
+      {tab==='tilbud' && <Section title="Tilbud / kontrakt" icon={<FileText/>}>
+        <p className="note">Dette er intern prosjektinformasjon. Underentreprenør og kundevisning har ikke tilgang til denne fanen. Velg selv om sammendraget skal tas med i rapporten.</p>
+        <Grid>
+          <Textarea label="Tillegg" value={tilbud.tillegg || ''} onChange={v=>setTilbud({...emptyTilbud(), ...tilbud, tillegg:v})}/>
+          <Textarea label="Fradrag" value={tilbud.fradrag || ''} onChange={v=>setTilbud({...emptyTilbud(), ...tilbud, fradrag:v})}/>
+          <Textarea label="Avtaleendringer / kommentar" value={tilbud.kommentar || ''} onChange={v=>setTilbud({...emptyTilbud(), ...tilbud, kommentar:v})}/>
+          <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+            <input
+              type="checkbox"
+              style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }}
+              checked={!!tilbud.enabled}
+              onChange={e=>setTilbud({...emptyTilbud(), ...tilbud, enabled:e.target.checked})}
+            />
+            <span style={{ margin:0 }}>Ta med sammendrag i rapport</span>
+          </label>
+        </Grid>
+        <div className="item">
+          <h3>Vedlegg</h3>
+          <p className="note">Last opp tilbud, kontrakt eller andre avtaledokumenter. Vedleggene lagres på prosjektet, men vises ikke i kundevisning eller for underentreprenør.</p>
+          <label className="upload"><Plus size={18}/> Last opp tilbud / kontrakt<input type="file" multiple onChange={e=>uploadTilbudFiles(e.target.files)}/></label>
+          {(tilbud.files || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen tilbud eller kontrakter er lastet opp ennå.</p>}
+          {(tilbud.files || []).map(f=><div className="file" key={f.id}>
+            <b>{f.name}</b>
+            <small>Lastet opp av {f.by || 'Ukjent'} · {f.created}</small>
+            <a href={f.url} target="_blank">Åpne</a>
+            <button className="secondary" onClick={()=>setTilbud({...emptyTilbud(), ...tilbud, files:(tilbud.files || []).filter(x=>x.id!==f.id)})}>Fjern</button>
+          </div>)}
+        </div>
+      </Section>}
+
       {tab==='prosjektliste' && <Section title="Prosjektliste"><button onClick={() => loadProjects(authUser)}>Oppdater liste</button>{projects.map(p=><div className="item" key={p.id}><b>{p.title || 'Uten navn'}</b><small>Sist oppdatert: {new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</small><button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button><button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button></div>)}</Section>}
 
-      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist}/>} 
+      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist} tilbud={tilbud}/>} 
 
       {tab==='admin' && isAdminUser && <Section title="Admin – brukergodkjenning" icon={<BadgeCheck/>}>
         <p className="note">Her kan administrator se registrerte brukere og godkjenne tilgang uten å gå inn i Supabase. Dette forutsetter at Supabase-policy tillater admin å lese og oppdatere profiles.</p>
@@ -1182,7 +1261,7 @@ function ChecklistReportSection({checklist}) {
   </section>;
 }
 
-function Report({company,name,project,selected,other,surf,photos,access,inst,files,checklist}) {
+function Report({company,name,project,selected,other,surf,photos,access,inst,files,checklist,tilbud}) {
   const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, Kunde: project.customer, Dato: project.date, Status: project.locked ? 'Avsluttet / låst' : 'Aktivt', Notater: project.notes };
   const cats = [...new Set(photos.map(p=>p.cat))];
   return <div className="report">
@@ -1202,7 +1281,8 @@ function Report({company,name,project,selected,other,surf,photos,access,inst,fil
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><p key={i.id}><b>{i.category}:</b> {i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>)}</section>
     <ChecklistReportSection checklist={checklist}/>
-    <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
+    {tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && <section><h2>Tilbud / kontrakt</h2>{tilbud.tillegg&&<p><b>Tillegg:</b> {tilbud.tillegg}</p>}{tilbud.fradrag&&<p><b>Fradrag:</b> {tilbud.fradrag}</p>}{tilbud.kommentar&&<p><b>Avtaleendringer / kommentar:</b> {tilbud.kommentar}</p>}{(tilbud.files || []).map(f=><p key={f.id}>{f.name}</p>)}</section>}
+        <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
     <section><h2>Prosjekttilgang</h2>{access.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>
     <footer>Levert av Expo Proffsenter</footer>
   </div>;
