@@ -82,6 +82,7 @@ function App() {
   const [tilbud, setTilbud] = useState(emptyTilbud());
   const [overtagelse, setOvertagelse] = useState(emptyOvertagelse());
   const [projectLog, setProjectLog] = useState({ enabled:false, draft:'', messages:[] });
+  const [internalNotes, setInternalNotes] = useState('');
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState(null);
   const [authUser, setAuthUser] = useState(null);
@@ -170,7 +171,7 @@ function App() {
   const tabs = [
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['innlogging','Innlogging'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
-    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['overtagelse','Overtagelse'], ['chat','Prosjektlogg'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
+    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['overtagelse','Overtagelse'], ['chat','Chat'], ['internt','Interne notater'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
     ...(isAdminUser && !isReadOnly ? [['admin','Admin']] : [])
   ];
 
@@ -183,7 +184,7 @@ function App() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   };
 
-  const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog });
+  const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes });
   const unpackData = (data) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
     setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
@@ -210,6 +211,7 @@ function App() {
     setTilbud(data.tilbud || emptyTilbud());
     setOvertagelse(data.overtagelse || emptyOvertagelse());
     setProjectLog(data.projectLog || { enabled:false, draft:'', messages:[] });
+    setInternalNotes(data.internalNotes || '');
   };
 
   const loadProjects = async (currentUser = authUser) => {
@@ -370,7 +372,8 @@ function App() {
       overtagelse.signKundeImage ||
       projectLog.enabled ||
       projectLog.draft ||
-      (projectLog.messages || []).length;
+      (projectLog.messages || []).length ||
+      internalNotes;
 
     if (hasContent && !window.confirm('Starte nytt prosjekt? Ulagrede endringer vil gå tapt.')) return;
 
@@ -388,6 +391,7 @@ function App() {
     setTilbud(emptyTilbud());
     setOvertagelse(emptyOvertagelse());
     setProjectLog({ enabled:false, draft:'', messages:[] });
+    setInternalNotes('');
     setProjectId(null);
     setTab('prosjekt');
 
@@ -461,7 +465,8 @@ function App() {
     const message = {
       id: uid(),
       text,
-      by: user.name || authUser?.email || 'Ukjent',
+      by: user.name || authUser?.email || 'Utførende',
+      role: 'utførende',
       created: new Date().toISOString()
     };
     setProjectLog(prev => ({
@@ -478,12 +483,66 @@ function App() {
     }));
   };
 
+  const saveCustomerChatMessage = async () => {
+    if (!projectId) return alert('Prosjektet mangler ID.');
+    const text = (projectLog.draft || '').trim();
+    if (!text) return alert('Skriv en melding først.');
+
+    const message = {
+      id: uid(),
+      text,
+      by: project.customer || 'Kunde',
+      role: 'kunde',
+      created: new Date().toISOString()
+    };
+
+    const { data: existing, error: fetchError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
+      .maybeSingle();
+
+    if (fetchError || !existing) {
+      console.error(fetchError);
+      return alert('Kunne ikke hente prosjekt før melding ble lagret: ' + (fetchError?.message || 'Fant ikke prosjekt'));
+    }
+
+    const existingData = dataFromRow(existing);
+    const existingLog = existingData.projectLog || { enabled:false, draft:'', messages:[] };
+    const updatedLog = {
+      ...existingLog,
+      draft: '',
+      messages: [...(existingLog.messages || []), message]
+    };
+
+    const cleanData = JSON.parse(JSON.stringify({
+      ...existingData,
+      projectLog: updatedLog
+    }));
+
+    const { error } = await supabase
+      .from('projects')
+      .update({
+        data: cleanData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', projectId);
+
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke lagre melding: ' + error.message);
+    }
+
+    setProjectLog(updatedLog);
+    alert('✔ Melding sendt');
+  };
+
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
 
     const makeCleanData = (projectOverride = project) => JSON.parse(JSON.stringify({
       company, user, project: { ...emptyProject(), ...projectOverride },
-      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog
+      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes
     }));
 
     if (projectId) {
@@ -604,7 +663,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: safeProject,
-      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog
+      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes
     }));
 
     const payload = {
@@ -661,7 +720,7 @@ function App() {
   const saveAsNewProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
     const unlockedProject = { ...emptyProject(), ...project, locked:false, status:'active', lockedAt:'', lockedBy:'' };
-    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
+    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
@@ -696,7 +755,7 @@ function App() {
 
     const cleanData = JSON.parse(JSON.stringify({
       company, user, project: newProjectData,
-      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog
+      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes
     }));
 
     const payload = {
@@ -787,8 +846,9 @@ function App() {
       files,
       checklist,
       tilbud,
-      overtagelse,
-      projectLog: completedOvertagelse
+      overtagelse: completedOvertagelse,
+      projectLog,
+      internalNotes
     }));
 
     const { error: saveError } = await supabase
@@ -1255,18 +1315,46 @@ function App() {
       <header>
         <div className="head">
           <Brand logo={company.logoUrl} name={name}/>
-          <div><h1>FDV-rapport</h1><p>Expo ProffDok – kundevisning</p></div>
+          <div><h1>Kundetilgang</h1><p>Rapport, tilbud/kontrakt og chat</p></div>
           <button onClick={() => window.print()}><Download size={18}/> Lag PDF / skriv ut</button>
         </div>
+        <nav>
+          <button className="on" onClick={()=>document.getElementById('kunde-rapport')?.scrollIntoView({behavior:'smooth'})}>Rapport</button>
+          <button onClick={()=>document.getElementById('kunde-chat')?.scrollIntoView({behavior:'smooth'})}>Chat</button>
+          <button onClick={()=>document.getElementById('kunde-tilbud')?.scrollIntoView({behavior:'smooth'})}>Tilbud/kontrakt</button>
+        </nav>
       </header>
       <main>
-        <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>
+        <div id="kunde-rapport">
+          <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>
+        </div>
+        <Section title="Chat" icon={<FileText/>}>
+          <div id="kunde-chat"></div>
+          <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet.</p>
+          <Textarea label="Ny melding fra kunde" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
+          <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
+            <button type="button" onClick={saveCustomerChatMessage}>Send melding</button>
+          </div>
+          {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
+          {(projectLog.messages || []).slice().reverse().map(m => <div className="item" key={m.id}>
+            <b>{m.by || 'Ukjent'}</b>
+            <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
+            <p>{m.text}</p>
+          </div>)}
+        </Section>
       </main>
     </div>;
   }
 
 
   return <div>
+    <style>{`
+      .mobileNav { display: none; }
+      @media screen and (max-width: 700px) {
+        header nav { display: none !important; }
+        .mobileNav { display: block !important; }
+      }
+    `}</style>
     <header>
       <div className="head">
         <Brand logo={company.logoUrl} name={name}/>
@@ -1279,6 +1367,9 @@ function App() {
         {projectId && (isProjectLocked ? <button className="secondary" onClick={()=>setProjectLockedState(false)}>🔓 Lås opp prosjekt</button> : <button className="secondary" onClick={()=>setProjectLockedState(true)}>🔒 Avslutt prosjekt</button>)}
       </div>
       <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
+      <div className="mobileNav" style={{ maxWidth:'1180px', margin:'0 auto', padding:'0 16px 14px' }}>
+        <Select label="Meny" value={tab} options={tabs.map(([,l])=>l)} onChange={label=>{ const found = tabs.find(([,l])=>l===label); if (found) goToTab(found[0]); }}/>
+      </div>
     </header>
 
     <main>
@@ -1430,7 +1521,7 @@ function App() {
       </Section>}
 
       {tab==='tilbud' && <Section title="Tilbud / kontrakt" icon={<FileText/>}>
-        <p className="note">Dette er intern prosjektinformasjon. Underentreprenør og kundevisning har ikke tilgang til denne fanen. Velg selv om sammendraget skal tas med i rapporten.</p>
+        <p className="note">Her legger du inn tilbud, kontrakt og avtaleendringer. Kunde får se dette i kundelinken når det finnes innhold eller vedlegg. Huk av hvis sammendraget også skal med i vanlig rapport/PDF.</p>
         <Grid>
           <Textarea label="Tillegg" value={tilbud.tillegg || ''} onChange={v=>setTilbud({...emptyTilbud(), ...tilbud, tillegg:v})}/>
           <Textarea label="Fradrag" value={tilbud.fradrag || ''} onChange={v=>setTilbud({...emptyTilbud(), ...tilbud, fradrag:v})}/>
@@ -1447,7 +1538,7 @@ function App() {
         </Grid>
         <div className="item">
           <h3>Vedlegg</h3>
-          <p className="note">Last opp tilbud, kontrakt eller andre avtaledokumenter. Vedleggene lagres på prosjektet, men vises ikke i kundevisning eller for underentreprenør.</p>
+          <p className="note">Last opp tilbud, kontrakt eller andre avtaledokumenter. Vedleggene lagres på prosjektet og vises i kundelinken. Underentreprenør har ikke tilgang til tilbud/kontrakt.</p>
           <label className="upload"><Plus size={18}/> Last opp tilbud / kontrakt<input type="file" multiple onChange={e=>uploadTilbudFiles(e.target.files)}/></label>
           {(tilbud.files || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen tilbud eller kontrakter er lastet opp ennå.</p>}
           {(tilbud.files || []).map(f=><div className="file" key={f.id}>
@@ -1502,8 +1593,8 @@ function App() {
         </div>
       </Section>}
 
-      {tab==='chat' && <Section title="Prosjektlogg / chat" icon={<FileText/>}>
-        <p className="note">Bruk prosjektloggen til interne avklaringer, kundebeskjeder eller viktige notater underveis. Du velger selv om loggen skal tas med i rapporten.</p>
+      {tab==='chat' && <Section title="Chat" icon={<FileText/>}>
+        <p className="note">Chatten kan brukes mellom utførende og kunde. Kunde kan sende meldinger via kundelinken. Du velger selv om chatten skal tas med i rapporten.</p>
         <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'14px' }}>
           <input
             type="checkbox"
@@ -1511,20 +1602,28 @@ function App() {
             checked={!!projectLog.enabled}
             onChange={e=>setProjectLog(prev=>({...prev, enabled:e.target.checked}))}
           />
-          <span style={{ margin:0 }}>Ta med prosjektlogg i rapport</span>
+          <span style={{ margin:0 }}>Ta med chat i rapport</span>
         </label>
         <Textarea label="Ny melding" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
         <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
-          <button type="button" onClick={addProjectLogMessage}>Legg til melding</button>
+          <button type="button" onClick={addProjectLogMessage}>Send melding</button>
           <button type="button" className="secondary" onClick={()=>setProjectLog(prev=>({...prev, draft:''}))}>Tøm skrivefelt</button>
         </div>
-        {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger er lagt til ennå.</p>}
+        {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
         {(projectLog.messages || []).slice().reverse().map(m => <div className="item" key={m.id}>
           <b>{m.by || 'Ukjent'}</b>
           <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
           <p>{m.text}</p>
           <button type="button" className="secondary" onClick={()=>removeProjectLogMessage(m.id)}>Fjern melding</button>
         </div>)}
+      </Section>}
+
+      {tab==='internt' && <Section title="Interne notater" icon={<FileText/>}>
+        <p className="note">Dette feltet er kun internt. Det vises ikke i kundelink og tas ikke med i rapport.</p>
+        <Textarea label="Interne notater" value={internalNotes || ''} onChange={setInternalNotes}/>
+        <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
+          <button type="button" onClick={saveProject}>Lagre interne notater</button>
+        </div>
       </Section>}
 
       {tab==='prosjektliste' && <Section title="Prosjektliste">
@@ -1654,7 +1753,7 @@ function Report({company,name,project,selected,manualProducts,other,surf,photos,
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><div className="out" key={i.id}><b>{i.category}:</b><p>{i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>{i.fdvUrl&&<p><a href={i.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}</section>
     {projectLog?.enabled && (projectLog.messages || []).length > 0 && <section>
-      <h2>Prosjektlogg</h2>
+      <h2>Chat</h2>
       {(projectLog.messages || []).map(m => <div className="out" key={m.id}>
         <b>{m.by || 'Ukjent'}</b>
         <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
@@ -1662,7 +1761,7 @@ function Report({company,name,project,selected,manualProducts,other,surf,photos,
       </div>)}
     </section>}
     <ChecklistReportSection checklist={checklist}/>
-    {tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && <section>
+    {(hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0) && <section id="kunde-tilbud">
       <h2>Tilbud / kontrakt</h2>
       <Grid>
         <InfoCard label="Tillegg" value={tilbud.tillegg}/>
@@ -1936,7 +2035,7 @@ function CustomerReport({company,name,project,selected,manualProducts,other,surf
     </section>}
 
     {projectLog?.enabled && (projectLog.messages || []).length > 0 && <section>
-      <h2>Prosjektlogg</h2>
+      <h2>Chat</h2>
       {(projectLog.messages || []).map(m => <div className="out" key={m.id}>
         <b>{m.by || 'Ukjent'}</b>
         <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
