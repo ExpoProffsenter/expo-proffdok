@@ -1729,7 +1729,7 @@ function App() {
           <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
             <button type="button" onClick={saveCustomerChatMessage}>Send melding</button>
             <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
-            {unreadForCustomer > 0 && <button type="button" className="secondary" onClick={()=>markChatAsRead('customer')}>Marker alle som lest</button>}
+            <button type="button" className="secondary" disabled={unreadForCustomer === 0} onClick={()=>markChatAsRead('customer')}>Marker alle som lest</button>
           </div>
           {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
           {(projectLog.messages || []).slice().reverse().map(m => {
@@ -2029,7 +2029,7 @@ function App() {
         <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
           <button type="button" onClick={addProjectLogMessage}>Send melding</button>
           <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
-          {unreadForAdmin > 0 && <button type="button" className="secondary" onClick={()=>markChatAsRead('admin')}>Marker alle som lest</button>}
+          <button type="button" className="secondary" disabled={unreadForAdmin === 0} onClick={()=>markChatAsRead('admin')}>Marker alle som lest</button>
           <button type="button" className="secondary" onClick={()=>setProjectLog(prev=>({...prev, draft:''}))}>Tøm skrivefelt</button>
         </div>
         {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
