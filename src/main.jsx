@@ -122,6 +122,7 @@ function App() {
   const latestStateRef = useRef({});
   const lastChatMessageCountRef = useRef(0);
   const lastChatRefreshAtRef = useRef(0);
+  const quickCameraInputRef = useRef(null);
 
   useEffect(() => {
     latestStateRef.current = {
@@ -1706,6 +1707,14 @@ function App() {
     }))]);
   };
 
+  const addQuickPhoto = async (fl) => {
+    if (!projectId) return alert('Velg prosjekt før du tar bilde.');
+    const category = tab === 'sjekklister' ? 'Sjekklister / hurtigbilde' : 'Hurtigbilde';
+    await addPhoto(category, fl);
+    if (quickCameraInputRef.current) quickCameraInputRef.current.value = '';
+    if (tab !== 'bilder') setTab('bilder');
+  };
+
   const setChecklistValue = (category, item, patch) => {
     setChecklist(prev => ({
       ...prev,
@@ -2255,6 +2264,91 @@ function App() {
         .mobileCurrentProjectActions button { min-height:44px !important; font-size:14px !important; }
       }
 
+      /* Mobile UX fase 3: sticky feltapp-meny */
+      .mobileFieldBar { display:none; }
+      @media screen and (max-width: 700px) {
+        .mobileNav { display:none !important; }
+        .mobileCurrentProjectBar { display:none !important; }
+        .mobileFieldBar {
+          display:block !important;
+          position:sticky;
+          top:0;
+          z-index:60;
+          padding:8px 10px 9px;
+          background:rgba(248,250,252,0.96);
+          backdrop-filter:blur(14px);
+          border-bottom:1px solid #dbe7ec;
+          box-shadow:0 8px 22px rgba(15,23,42,0.08);
+        }
+        .mobileFieldBarInner {
+          max-width:1180px;
+          margin:0 auto;
+          display:grid;
+          grid-template-columns:1fr auto;
+          gap:8px;
+          align-items:center;
+        }
+        .mobileProjectLine {
+          grid-column:1 / -1;
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:8px;
+          min-width:0;
+        }
+        .mobileProjectLineText { min-width:0; }
+        .mobileProjectLineText b {
+          display:block;
+          font-size:11px;
+          letter-spacing:.05em;
+          text-transform:uppercase;
+          color:#64748b;
+          line-height:1.1;
+        }
+        .mobileProjectLineText span {
+          display:block;
+          font-size:15px;
+          font-weight:900;
+          color:#0f172a;
+          white-space:nowrap;
+          overflow:hidden;
+          text-overflow:ellipsis;
+          max-width:70vw;
+          line-height:1.25;
+        }
+        .mobileFieldBar select {
+          width:100%;
+          min-height:44px !important;
+          border-radius:14px !important;
+          font-size:16px !important;
+          font-weight:900 !important;
+          background:#fff !important;
+          border:1px solid #cbd5e1 !important;
+          padding:8px 12px !important;
+        }
+        .mobileFieldActions {
+          display:flex;
+          gap:6px;
+          align-items:center;
+        }
+        .mobileFieldActions button,
+        .mobileFieldBar .quickCameraButton {
+          min-height:44px !important;
+          padding:8px 10px !important;
+          border-radius:14px !important;
+          font-size:14px !important;
+          font-weight:900 !important;
+          white-space:nowrap;
+        }
+        .mobileFieldBar .quickCameraButton {
+          background:#082f3a !important;
+          color:#fff !important;
+          border-color:#082f3a !important;
+        }
+        section { scroll-margin-top:106px !important; }
+        main { padding-top:10px !important; }
+      }
+
     `}</style>
     <header>
       <div className="head">
@@ -2299,6 +2393,33 @@ function App() {
         </div>
       </div>}
     </header>
+
+    {projectId && <div className="mobileFieldBar" aria-label="Mobil arbeidsmeny">
+      <div className="mobileFieldBarInner">
+        <div className="mobileProjectLine">
+          <div className="mobileProjectLineText">
+            <b>Du jobber i</b>
+            <span>{project.projectName || project.address || 'Åpent prosjekt'}</span>
+          </div>
+          <button type="button" className="secondary" onClick={()=>{ setProjectId(null); setTab('prosjekt'); }}>Bytt</button>
+        </div>
+        <select aria-label="Velg seksjon" value={tab} onChange={e=>goToTab(e.target.value)}>
+          {tabs.map(([id,l])=><option value={id} key={'mobile-field-' + id}>{l}</option>)}
+        </select>
+        <div className="mobileFieldActions">
+          <button type="button" className="quickCameraButton" onClick={()=>quickCameraInputRef.current?.click()}>📷 Bilde</button>
+          <input
+            ref={quickCameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            multiple
+            style={{ display:'none' }}
+            onChange={e=>addQuickPhoto(e.target.files)}
+          />
+        </div>
+      </div>
+    </div>}
 
     <main>
       {!projectId && <section className="mobileProjectChooser">
