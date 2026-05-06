@@ -64,6 +64,20 @@ const emptyProject = () => ({
   locked:false, status:'active', lockedAt:'', lockedBy:''
 });
 
+const emptyProjectLog = () => ({
+  enabled:false,
+  draft:'',
+  messages:[],
+  lastReadByAdmin:'',
+  lastReadByCustomer:''
+});
+
+const normalizeProjectLog = (log = {}) => ({
+  ...emptyProjectLog(),
+  ...(log || {}),
+  messages: Array.isArray(log?.messages) ? log.messages : []
+});
+
 function App() {
   const [tab, setTab] = useState('prosjekt');
   const [company, setCompany] = useState({ companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
@@ -81,7 +95,7 @@ function App() {
   const [checklist, setChecklist] = useState({});
   const [tilbud, setTilbud] = useState(emptyTilbud());
   const [overtagelse, setOvertagelse] = useState(emptyOvertagelse());
-  const [projectLog, setProjectLog] = useState({ enabled:false, draft:'', messages:[] });
+  const [projectLog, setProjectLog] = useState(emptyProjectLog());
   const [customerTab, setCustomerTab] = useState('rapport');
   const [internalNotes, setInternalNotes] = useState('');
   const [projects, setProjects] = useState([]);
@@ -166,6 +180,10 @@ function App() {
   const customerChatCount = chatMessages.filter(m => m.role === 'kunde').length;
   const totalChatCount = chatMessages.length;
   const latestChatMessage = chatMessages.length ? chatMessages[chatMessages.length - 1] : null;
+  const lastReadByAdmin = projectLog?.lastReadByAdmin || '';
+  const lastReadByCustomer = projectLog?.lastReadByCustomer || '';
+  const unreadForAdmin = chatMessages.filter(m => m.role === 'kunde' && (!lastReadByAdmin || (m.created || '') > lastReadByAdmin)).length;
+  const unreadForCustomer = chatMessages.filter(m => m.role !== 'kunde' && (!lastReadByCustomer || (m.created || '') > lastReadByCustomer)).length;
   const rowIsLocked = (row) => row?.locked === true || row?.locked === 'true' || projectIsLocked(row?.data?.project || {});
   const projectFromRow = (row, fallbackProject = project) => {
     const dataProject = row?.data?.project || {};
@@ -189,7 +207,7 @@ function App() {
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
     ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['overtagelse','Overtagelse'],
-    ['chat', totalChatCount > 0 ? `Chat (${totalChatCount})` : 'Chat'],
+    ['chat', unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : (totalChatCount > 0 ? `Chat (${totalChatCount})` : 'Chat')],
     ['internt','Interne notater'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
     ...(isAdminUser && !isReadOnly ? [['admin','Admin']] : [])
   ];
@@ -230,7 +248,7 @@ function App() {
     setTilbud(data.tilbud || emptyTilbud());
     setOvertagelse(data.overtagelse || emptyOvertagelse());
 
-    const incomingLog = data.projectLog || { enabled:false, draft:'', messages:[] };
+    const incomingLog = normalizeProjectLog(data.projectLog);
     setProjectLog(prev => ({
       ...incomingLog,
       draft: preserveDraft ? (prev?.draft || '') : (incomingLog.draft || '')
@@ -278,7 +296,7 @@ function App() {
     }
 
     const cloudData = dataFromRow(data);
-    const incomingLog = cloudData.projectLog || { enabled:false, draft:'', messages:[] };
+    const incomingLog = normalizeProjectLog(cloudData.projectLog);
     const isChatRefresh = !fullRefresh && (silent || tab === 'chat' || customerTab === 'chat' || isReadOnly);
 
     if (isChatRefresh) {
@@ -416,7 +434,7 @@ function App() {
     const applyChatData = (row) => {
       if (!row || cancelled) return;
       const cloudData = dataFromRow(row);
-      const incomingLog = cloudData.projectLog || { enabled:false, draft:'', messages:[] };
+      const incomingLog = normalizeProjectLog(cloudData.projectLog);
       const incomingCount = (incomingLog.messages || []).length;
 
       setProjectLog(prev => ({
@@ -452,6 +470,20 @@ function App() {
       supabase.removeChannel(channel);
     };
   }, [projectId, isReadOnly, tab, customerTab]);
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    if (!isReadOnly && tab === 'chat' && unreadForAdmin > 0) {
+      const timer = window.setTimeout(() => markChatAsRead('admin'), 900);
+      return () => window.clearTimeout(timer);
+    }
+
+    if (isReadOnly && customerTab === 'chat' && unreadForCustomer > 0) {
+      const timer = window.setTimeout(() => markChatAsRead('customer'), 900);
+      return () => window.clearTimeout(timer);
+    }
+  }, [projectId, isReadOnly, tab, customerTab, unreadForAdmin, unreadForCustomer]);
 
   const createNewProject = () => {
     const hasContent =
@@ -512,7 +544,7 @@ function App() {
     setChecklist({});
     setTilbud(emptyTilbud());
     setOvertagelse(emptyOvertagelse());
-    setProjectLog({ enabled:false, draft:'', messages:[] });
+    setProjectLog(emptyProjectLog());
     setInternalNotes('');
     setProjectId(null);
     setTab('prosjekt');
@@ -581,6 +613,55 @@ function App() {
     }));
   };
 
+  const markChatAsRead = async (reader = 'admin') => {
+    if (!projectId) return;
+    const timestamp = new Date().toISOString();
+    const key = reader === 'customer' ? 'lastReadByCustomer' : 'lastReadByAdmin';
+
+    let nextLogForSave = null;
+    setProjectLog(prev => {
+      const normalized = normalizeProjectLog(prev);
+      nextLogForSave = { ...normalized, [key]: timestamp };
+      return nextLogForSave;
+    });
+
+    try {
+      const { data: existing, error: fetchError } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .maybeSingle();
+
+      if (fetchError || !existing) {
+        if (fetchError) console.warn('Kunne ikke markere chat som lest:', fetchError.message);
+        return;
+      }
+
+      const existingData = dataFromRow(existing);
+      const existingLog = normalizeProjectLog(existingData.projectLog);
+      const cleanData = JSON.parse(JSON.stringify({
+        ...existingData,
+        projectLog: {
+          ...existingLog,
+          [key]: timestamp,
+          draft: ''
+        }
+      }));
+
+      const { error } = await supabase
+        .from('projects')
+        .update({
+          data: cleanData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', projectId);
+
+      if (error) console.warn('Kunne ikke markere chat som lest:', error.message);
+    } catch (error) {
+      console.warn('Kunne ikke markere chat som lest:', error);
+    }
+  };
+
   const notifyChatMessage = async ({ toEmail, direction, message }) => {
     if (!toEmail || !message?.text) return;
 
@@ -624,8 +705,9 @@ function App() {
     };
 
     const updatedLog = {
-      ...projectLog,
+      ...normalizeProjectLog(projectLog),
       draft: '',
+      lastReadByAdmin: new Date().toISOString(),
       messages: [...(projectLog.messages || []), message]
     };
 
@@ -705,10 +787,11 @@ function App() {
     }
 
     const existingData = dataFromRow(existing);
-    const existingLog = existingData.projectLog || { enabled:false, draft:'', messages:[] };
+    const existingLog = normalizeProjectLog(existingData.projectLog);
     const updatedLog = {
       ...existingLog,
       draft: '',
+      lastReadByCustomer: new Date().toISOString(),
       messages: [...(existingLog.messages || []), message]
     };
 
@@ -812,7 +895,7 @@ function App() {
       };
 
       const saveProjectLog = {
-        ...(snapshot.projectLog || { enabled:false, draft:'', messages:[] }),
+        ...(normalizeProjectLog(snapshot.projectLog)),
         draft: ''
       };
 
@@ -929,7 +1012,7 @@ function App() {
         lockedBy: ''
       };
       const newProjectLog = {
-        ...(snapshot.projectLog || { enabled:false, draft:'', messages:[] }),
+        ...(normalizeProjectLog(snapshot.projectLog)),
         draft: ''
       };
       const payload = {
@@ -1646,14 +1729,14 @@ function App() {
         </div>
         <nav>
           <button className={customerTab==='rapport' ? 'on' : ''} onClick={()=>setCustomerTab('rapport')}>Rapport</button>
-          <button className={customerTab==='chat' ? 'on' : ''} onClick={()=>setCustomerTab('chat')}>Chat{totalChatCount ? ` (${totalChatCount})` : ''}</button>
+          <button className={customerTab==='chat' ? 'on' : ''} onClick={()=>setCustomerTab('chat')}>Chat{unreadForCustomer > 0 ? ` (${unreadForCustomer} ulest)` : (totalChatCount ? ` (${totalChatCount})` : '')}</button>
           <button className={customerTab==='tilbud' ? 'on' : ''} onClick={()=>setCustomerTab('tilbud')}>Tilbud/kontrakt</button>
         </nav>
       </header>
       <main>
         {customerTab==='rapport' && <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>}
 
-        {customerTab==='chat' && <Section title={totalChatCount ? `Chat (${totalChatCount})` : 'Chat'} icon={<FileText/>}>
+        {customerTab==='chat' && <Section title={unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : (totalChatCount ? `Chat (${totalChatCount})` : 'Chat')} icon={<FileText/>}>
           <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet. Chatten oppdateres automatisk live, og utførende varsles på e-post når e-postvarsling er satt opp.</p>
           <Textarea label="Ny melding fra kunde" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
           <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
@@ -1661,11 +1744,14 @@ function App() {
             <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
           </div>
           {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
-          {(projectLog.messages || []).slice().reverse().map(m => <div className="item" key={m.id}>
-            <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'}</b>
+          {(projectLog.messages || []).slice().reverse().map(m => {
+            const isUnread = m.role !== 'kunde' && (!lastReadByCustomer || (m.created || '') > lastReadByCustomer);
+            return <div className="item" key={m.id} style={isUnread ? { borderColor:'#fecaca', background:'#fff7f7' } : undefined}>
+            <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'} {isUnread ? '· Ulest' : ''}</b>
             <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
             <p>{m.text}</p>
-          </div>)}
+          </div>;
+          })}
         </Section>}
 
         {customerTab==='tilbud' && <Section title="Tilbud / kontrakt" icon={<FileText/>}>
@@ -1719,7 +1805,7 @@ function App() {
         </div>
         <p className="note">{isProjectLocked ? `Prosjektet ble låst${project.lockedAt ? ' ' + new Date(project.lockedAt).toLocaleString('no-NO') : ''}${project.lockedBy ? ' av ' + project.lockedBy : ''}. Lås opp prosjektet hvis du trenger å gjøre endringer.` : 'Prosjektet er åpent for endringer. Når prosjektet er ferdig og overlevert kan det avsluttes og låses.'}</p>
         {projectHasOvertagelse() && <p className="note">Overtagelse er registrert{overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString('no-NO')}` : ''}.</p>}
-        {totalChatCount > 0 && <p className="note">💬 Chat: {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt{customerChatCount > 0 ? ` · ${customerChatCount} fra kunde` : ''}{latestChatMessage?.created ? ` · siste ${new Date(latestChatMessage.created).toLocaleString('no-NO')}` : ''}.</p>}
+        {totalChatCount > 0 && <p className="note">💬 Chat: {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt{customerChatCount > 0 ? ` · ${customerChatCount} fra kunde` : ''}{unreadForAdmin > 0 ? ` · ${unreadForAdmin} ulest` : ''}{latestChatMessage?.created ? ` · siste ${new Date(latestChatMessage.created).toLocaleString('no-NO')}` : ''}.</p>}
       </Section>}
       {tab==='prosjekt' && <Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
         <Input label="Prosjektansvarlig" value={project.responsible} onChange={v=>setProject({...project,responsible:v})}/>
@@ -1935,9 +2021,9 @@ function App() {
         </div>
       </Section>}
 
-      {tab==='chat' && <Section title={totalChatCount > 0 ? `Chat (${totalChatCount} meldinger)` : 'Chat'} icon={<FileText/>}>
+      {tab==='chat' && <Section title={unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : (totalChatCount > 0 ? `Chat (${totalChatCount} meldinger)` : 'Chat')} icon={<FileText/>}>
         <p className="note">Chatten oppdateres automatisk live når kunde eller utførende sender nye meldinger. Skrivefeltet beholdes selv om chatten oppdateres i bakgrunnen. E-postvarsling sendes når e-post er registrert. Du velger selv om chatten skal tas med i rapporten.</p>
-        {totalChatCount > 0 && <p className="note" style={{ fontWeight:700 }}>💬 Det finnes {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt i chatten{customerChatCount > 0 ? `, hvorav ${customerChatCount} fra kunde` : ''}.</p>}
+        {totalChatCount > 0 && <p className="note" style={{ fontWeight:700 }}>💬 Det finnes {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt i chatten{customerChatCount > 0 ? `, hvorav ${customerChatCount} fra kunde` : ''}{unreadForAdmin > 0 ? ` · ${unreadForAdmin} ulest fra kunde` : ' · alt er lest'}.</p>}
         {!hasValue(project.customerEmail) && <p className="note" style={{ fontWeight:700 }}>⚠️ Legg inn kunde e-post i Prosjektinformasjon for at kunde skal få e-postvarsling ved nye chatmeldinger.</p>}
         <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'14px' }}>
           <input
@@ -1955,12 +2041,15 @@ function App() {
           <button type="button" className="secondary" onClick={()=>setProjectLog(prev=>({...prev, draft:''}))}>Tøm skrivefelt</button>
         </div>
         {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
-        {(projectLog.messages || []).slice().reverse().map(m => <div className="item" key={m.id}>
-          <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'}</b>
+        {(projectLog.messages || []).slice().reverse().map(m => {
+          const isUnread = m.role === 'kunde' && (!lastReadByAdmin || (m.created || '') > lastReadByAdmin);
+          return <div className="item" key={m.id} style={isUnread ? { borderColor:'#fecaca', background:'#fff7f7' } : undefined}>
+          <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'} {isUnread ? '· Ulest' : ''}</b>
           <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
           <p>{m.text}</p>
           <button type="button" className="secondary" onClick={()=>removeProjectLogMessage(m.id)}>Fjern melding</button>
-        </div>)}
+        </div>;
+        })}
       </Section>}
 
       {tab==='internt' && <Section title="Interne notater" icon={<FileText/>}>
@@ -1977,9 +2066,12 @@ function App() {
         {projects.map(p=>{
           const listProject = projectFromRow(p, p.data?.project || {});
           const listStatus = projectStatusInfo(listProject, p.data?.overtagelse || {});
+          const listLog = normalizeProjectLog(p.data?.projectLog);
+          const listUnreadForAdmin = (listLog.messages || []).filter(m => m.role === 'kunde' && (!listLog.lastReadByAdmin || (m.created || '') > listLog.lastReadByAdmin)).length;
           return <div className="item" key={p.id}>
             <b>{p.title || 'Uten navn'}</b>
             <span className={`statusBadge status-${listStatus.tone}`} style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:700, border:'1px solid #dbe7ec', width:'fit-content', ...statusStyle(listStatus.tone) }}>{listStatus.icon} {listStatus.label}</span>
+            {listUnreadForAdmin > 0 && <span style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:800, border:'1px solid #fecaca', background:'#fef2f2', color:'#991b1b', width:'fit-content' }}>💬 {listUnreadForAdmin} ulest</span>}
             <small>Sist oppdatert: {new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</small>
             <button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button>
             <button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button>
