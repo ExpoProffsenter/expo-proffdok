@@ -227,9 +227,10 @@ function App() {
     setInternalNotes(data.internalNotes || '');
   };
 
-  const loadProjects = async (currentUser = authUser) => {
+  const loadProjects = async (currentUser = authUser, notify = false) => {
     if (!currentUser) {
       setProjects([]);
+      if (notify) alert('Du må være logget inn for å hente prosjektliste.');
       return;
     }
     const { data, error } = await supabase
@@ -239,6 +240,7 @@ function App() {
       .order('updated_at', { ascending:false });
     if (error) { console.error(error); return alert('Kunne ikke hente prosjektliste: ' + error.message); }
     setProjects(data || []);
+    if (notify) alert(`Prosjektliste oppdatert. Fant ${(data || []).length} prosjekt${(data || []).length === 1 ? '' : 'er'}.`);
   };
 
   const openProjectById = async (id) => {
@@ -675,9 +677,9 @@ function App() {
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
 
-    const makeCleanData = (projectOverride = project) => JSON.parse(JSON.stringify({
+    const makeCleanData = (projectOverride = project, projectLogOverride = projectLog) => JSON.parse(JSON.stringify({
       company, user, project: { ...emptyProject(), ...projectOverride },
-      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes
+      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog: projectLogOverride, internalNotes
     }));
 
     if (projectId) {
@@ -712,7 +714,13 @@ function App() {
         lockedAt: '',
         lockedBy: ''
       };
-      const cleanData = makeCleanData(saveProjectData);
+
+      const saveProjectLog = {
+        ...(projectLog || { enabled:false, draft:'', messages:[] }),
+        draft: ''
+      };
+
+      const cleanData = makeCleanData(saveProjectData, saveProjectLog);
       const payload = {
         title: saveProjectData.projectName || saveProjectData.address || 'Uten navn',
         data: cleanData,
@@ -724,25 +732,42 @@ function App() {
         updated_at: new Date().toISOString()
       };
 
-      const { data: updatedRow, error } = await supabase
+      const { error } = await supabase
         .from('projects')
         .update(payload)
         .eq('id', projectId)
-        .eq('user_id', authUser.id)
-        .select('*')
-        .maybeSingle();
+        .eq('user_id', authUser.id);
 
       if (error) {
         console.error(error);
         return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message);
       }
 
-      if (updatedRow) {
-        unpackData(dataFromRow(updatedRow));
-        setProjectId(updatedRow.id);
-      } else {
+      const { data: verifyRow, error: verifyError } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .eq('user_id', authUser.id)
+        .maybeSingle();
+
+      if (verifyError) {
+        console.error(verifyError);
         setProject(saveProjectData);
+        setProjectLog(saveProjectLog);
+        await loadProjects(authUser);
+        return alert('Prosjektet ble forsøkt lagret, men kunne ikke bekreftes fra skyen: ' + verifyError.message);
       }
+
+      if (!verifyRow) {
+        setProject(saveProjectData);
+        setProjectLog(saveProjectLog);
+        await loadProjects(authUser);
+        return alert('Prosjektet ble forsøkt lagret, men Supabase returnerte ingen rad. Åpne prosjektlisten og prøv igjen hvis endringen ikke vises.');
+      }
+
+      unpackData(dataFromRow(verifyRow), false);
+      setProjectId(verifyRow.id);
+      await loadProjects(authUser);
       alert('✔ Prosjekt oppdatert og bekreftet lagret');
     } else {
       const newProjectData = {
@@ -753,9 +778,13 @@ function App() {
         lockedAt: '',
         lockedBy: ''
       };
+      const newProjectLog = {
+        ...(projectLog || { enabled:false, draft:'', messages:[] }),
+        draft: ''
+      };
       const payload = {
         title: newProjectData.projectName || newProjectData.address || 'Uten navn',
-        data: makeCleanData(newProjectData),
+        data: makeCleanData(newProjectData, newProjectLog),
         user_id: authUser.id,
         share_enabled: true,
         locked: false,
@@ -766,7 +795,7 @@ function App() {
       const { data, error } = await supabase.from('projects').insert(payload).select().single();
       if (error) { console.error(error); return alert('Kunne ikke lagre i sky: ' + error.message); }
       setProjectId(data.id);
-      unpackData(dataFromRow(data));
+      unpackData(dataFromRow(data), false);
       alert('✔ Prosjekt lagret');
     }
     loadProjects(authUser);
@@ -1790,7 +1819,7 @@ function App() {
       </Section>}
 
       {tab==='prosjektliste' && <Section title="Prosjektliste">
-        <button onClick={() => loadProjects(authUser)}>Oppdater liste</button>
+        <button onClick={() => loadProjects(authUser, true)}>Oppdater liste</button>
         {projects.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen prosjekter hentet ennå.</p>}
         {projects.map(p=>{
           const listProject = projectFromRow(p, p.data?.project || {});
