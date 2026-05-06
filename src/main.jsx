@@ -700,9 +700,8 @@ function App() {
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
 
-    // Viktig: Bruk React-state som kilde, ikke siste sky-refresh.
-    // latestStateRef brukes kun som fallback. Dette gjør at endringer i gamle prosjekter
-    // lagres selv om chat-refresh/polling har kjørt i bakgrunnen.
+    // Bruk nåværende React-state som kilde. Dette er spesielt viktig når gamle prosjekter
+    // redigeres og chat-refresh kjører i bakgrunnen.
     const snapshot = {
       ...(latestStateRef.current || {}),
       company, user, project, checked, productDocs, manualProducts, other, surf, photos,
@@ -778,68 +777,97 @@ function App() {
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await supabase
+      // 1) Prøv vanlig oppdatering og be Supabase returnere raden.
+      let updatedRow = null;
+      const updateResult = await supabase
         .from('projects')
         .update(payload)
-        .eq('id', projectId);
-
-      if (error) {
-        console.error(error);
-        return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message);
-      }
-
-      // Oppdater skjermen umiddelbart med det vi faktisk lagret.
-      setProject(saveProjectData);
-      setProjectLog(saveProjectLog);
-      latestStateRef.current = {
-        ...snapshot,
-        project: saveProjectData,
-        projectLog: saveProjectLog
-      };
-
-      // Hent prosjektet på nytt for å sjekke, men ikke rull tilbake skjermen hvis Supabase
-      // bruker litt tid eller RLS ikke returnerer raden.
-      const { data: verifyRow, error: verifyError } = await supabase
-        .from('projects')
-        .select('*')
         .eq('id', projectId)
+        .select('*')
         .maybeSingle();
 
-      if (!verifyError && verifyRow) {
-        const verifyProject = verifyRow?.data?.project || {};
-        const wanted = JSON.stringify({
-          projectName: saveProjectData.projectName || '',
-          address: saveProjectData.address || '',
-          postnr: saveProjectData.postnr || '',
-          city: saveProjectData.city || '',
-          customer: saveProjectData.customer || '',
-          customerEmail: saveProjectData.customerEmail || '',
-          notes: saveProjectData.notes || ''
-        });
-        const got = JSON.stringify({
-          projectName: verifyProject.projectName || '',
-          address: verifyProject.address || '',
-          postnr: verifyProject.postnr || '',
-          city: verifyProject.city || '',
-          customer: verifyProject.customer || '',
-          customerEmail: verifyProject.customerEmail || '',
-          notes: verifyProject.notes || ''
-        });
-
-        if (wanted === got) {
-          unpackData(dataFromRow(verifyRow), false);
-          setProjectId(verifyRow.id);
-          await loadProjects(authUser);
-          return alert('✔ Prosjekt oppdatert og bekreftet lagret');
-        }
-
-        console.warn('Supabase returnerte eldre/annen prosjektinfo etter lagring.', { wanted: saveProjectData, got: verifyProject });
-        await loadProjects(authUser);
-        return alert('Prosjektet ble sendt til lagring, men Supabase returnerte fortsatt gammel info. Vent noen sekunder og trykk Oppdater prosjekt én gang til. Hvis dette gjentar seg må vi justere Supabase-policy/RLS for gamle prosjekter.');
+      if (updateResult.error) {
+        console.error(updateResult.error);
+        return alert('Kunne ikke oppdatere prosjekt i sky: ' + updateResult.error.message);
       }
 
+      updatedRow = updateResult.data || null;
+
+      // 2) Hvis Supabase ikke returnerer rad, kan RLS ha stoppet retur selv om update ble sendt.
+      // Hent prosjektet på nytt og sjekk.
+      if (!updatedRow) {
+        const verifyResult = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .maybeSingle();
+
+        if (verifyResult.error) {
+          console.error(verifyResult.error);
+        } else {
+          updatedRow = verifyResult.data || null;
+        }
+      }
+
+      const matchesSavedProject = (row) => {
+        const saved = row?.data?.project || {};
+        return (
+          (saved.projectName || '') === (saveProjectData.projectName || '') &&
+          (saved.address || '') === (saveProjectData.address || '') &&
+          (saved.postnr || '') === (saveProjectData.postnr || '') &&
+          (saved.city || '') === (saveProjectData.city || '') &&
+          (saved.customer || '') === (saveProjectData.customer || '') &&
+          (saved.customerEmail || '') === (saveProjectData.customerEmail || '') &&
+          (saved.notes || '') === (saveProjectData.notes || '')
+        );
+      };
+
+      if (updatedRow && matchesSavedProject(updatedRow)) {
+        unpackData(dataFromRow(updatedRow), false);
+        setProjectId(updatedRow.id);
+        await loadProjects(authUser);
+        return alert('✔ Prosjekt oppdatert og bekreftet lagret');
+      }
+
+      // 3) Fallback for gamle prosjekter: prøv å lagre samme prosjekt som ny rad,
+      // slik at endringene ikke går tapt dersom gammel rad eies av en annen bruker/policy.
+      const shouldCopy = window.confirm(
+        'Prosjektet ble ikke oppdatert i gammel rad. Dette skyldes sannsynligvis Supabase-policy/eierskap på gamle prosjekter.\n\nVil du lagre dette som en ny oppdatert kopi nå, slik at endringene ikke går tapt?'
+      );
+
+      if (!shouldCopy) {
+        setProject(saveProjectData);
+        setProjectLog(saveProjectLog);
+        latestStateRef.current = { ...snapshot, project: saveProjectData, projectLog: saveProjectLog };
+        return alert('Endringene står fortsatt på skjermen, men er ikke bekreftet lagret i Supabase.');
+      }
+
+      const copyPayload = {
+        title: saveProjectData.projectName || saveProjectData.address || 'Uten navn',
+        data: cleanData,
+        user_id: authUser.id,
+        share_enabled: true,
+        locked: false,
+        locked_at: null,
+        locked_by: '',
+        updated_at: new Date().toISOString()
+      };
+
+      const { data: copyRow, error: copyError } = await supabase
+        .from('projects')
+        .insert(copyPayload)
+        .select()
+        .single();
+
+      if (copyError) {
+        console.error(copyError);
+        return alert('Kunne ikke lagre kopi heller: ' + copyError.message);
+      }
+
+      setProjectId(copyRow.id);
+      unpackData(dataFromRow(copyRow), false);
       await loadProjects(authUser);
-      alert('✔ Prosjekt oppdatert');
+      return alert('✔ Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.');
     } else {
       const newProjectData = {
         ...emptyProject(),
