@@ -2102,6 +2102,70 @@ function App() {
         .projectImageThumb { flex-basis:84px; width:84px; }
         .projectImageThumb img { width:84px; height:64px; }
       }
+
+
+      /* Mobile-first redesign v1 */
+      .bottomAppNav { display:none; }
+      @media screen and (max-width: 700px) {
+        body { -webkit-text-size-adjust:100%; }
+        header { position:sticky; top:0; z-index:20; background:rgba(255,255,255,0.96); backdrop-filter:blur(14px); border-bottom:1px solid #e2edf2; }
+        header .head { padding:8px 12px !important; gap:8px !important; align-items:center !important; }
+        header .head > div:first-child { width:122px !important; height:42px !important; flex:0 0 122px !important; }
+        header .head h1 { font-size:18px !important; line-height:1.1 !important; margin:0 !important; }
+        header .head p { font-size:12px !important; margin:2px 0 0 !important; max-width:170px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        header .head > button { display:none !important; }
+        header .head > button:nth-of-type(2), header .head > button:nth-of-type(3) { display:inline-flex !important; min-height:34px !important; padding:7px 10px !important; font-size:12px !important; border-radius:12px !important; }
+        main { padding:10px 10px 84px !important; }
+        section { padding:14px !important; border-radius:18px !important; margin:10px auto !important; }
+        section h2 { font-size:19px !important; margin-bottom:10px !important; gap:6px !important; }
+        .mobileNav { padding:0 10px 8px !important; }
+        .mobileNavPanel { box-shadow:none !important; border-radius:14px !important; padding:8px !important; }
+        .mobileNavTop, .mobileNavStatus, .mobileNavQuick { display:none !important; }
+        .mobileNav select { min-height:42px !important; font-size:15px !important; border-radius:12px !important; padding:8px 12px !important; background:#f8fafc !important; }
+        .bottomAppNav { position:fixed; left:10px; right:10px; bottom:10px; z-index:50; display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; padding:8px; border:1px solid #dbe7ec; border-radius:22px; background:rgba(255,255,255,0.97); box-shadow:0 16px 42px rgba(15,23,42,0.18); backdrop-filter:blur(14px); }
+        .bottomAppNav button { min-height:48px !important; padding:6px 4px !important; border-radius:16px !important; font-size:11px !important; font-weight:900 !important; display:flex !important; flex-direction:column !important; gap:2px !important; align-items:center !important; justify-content:center !important; line-height:1.05 !important; }
+        .bottomAppNav button span:first-child { font-size:18px; line-height:1; }
+        .bottomAppNav button.active { background:#082f3a !important; color:#fff !important; border-color:#082f3a !important; }
+        .grid { grid-template-columns:1fr !important; gap:10px !important; }
+        label span { font-size:12px !important; }
+        input, textarea, select { min-height:42px !important; font-size:16px !important; border-radius:12px !important; }
+        textarea { min-height:86px !important; }
+        button, .upload { min-height:42px !important; border-radius:14px !important; padding:9px 12px !important; font-size:14px !important; }
+        .cards { gap:8px !important; }
+        .tile { padding:10px !important; border-radius:16px !important; min-height:auto !important; }
+        .tile b { font-size:16px !important; }
+        .tile span { font-size:12px !important; }
+        .projectListHeaderCards { display:grid !important; grid-template-columns:repeat(4, minmax(0,1fr)) !important; gap:6px !important; overflow:visible !important; }
+        .projectListHeaderCards .tile { padding:8px 6px !important; text-align:center !important; }
+        .projectListHeaderCards .tile b { font-size:18px !important; }
+        .projectListHeaderCards .tile span { font-size:10px !important; line-height:1.1 !important; }
+        .projectListToolbar { position:static !important; display:grid !important; grid-template-columns:1fr 1fr 1fr !important; gap:6px !important; padding:0 !important; border:0 !important; box-shadow:none !important; background:transparent !important; margin:8px 0 10px !important; }
+        .projectListToolbar button { width:100% !important; min-height:38px !important; padding:7px 6px !important; font-size:12px !important; border-radius:12px !important; }
+        .projectListCard { padding:12px !important; border-radius:20px !important; margin:10px 0 !important; }
+        .projectListCardTop { display:block !important; }
+        .projectListCardTop b[style] { font-size:17px !important; line-height:1.15 !important; display:block; }
+        .projectListCardTop p { font-size:14px !important; margin:4px 0 0 !important; }
+        .projectListCardTop small { font-size:12px !important; }
+        .projectListBadges { justify-content:flex-start !important; gap:6px !important; margin-top:8px !important; }
+        .statusBadge, .projectMiniBadge { font-size:11px !important; padding:4px 7px !important; }
+        .projectListMetaCards { display:grid !important; grid-template-columns:1fr 1fr !important; gap:6px !important; margin-top:8px !important; }
+        .projectListMetaCards .tile { padding:8px !important; }
+        .projectListMetaCards .tile:nth-child(3) { display:none !important; }
+        .projectImageCounts { gap:5px !important; margin-top:8px !important; }
+        .projectImageStrip { gap:6px !important; padding:6px 0 0 !important; margin-top:4px !important; }
+        .projectImageThumb { flex:0 0 58px !important; width:58px !important; }
+        .projectImageThumb img { width:58px !important; height:46px !important; border-radius:10px !important; }
+        .projectImageThumb small { font-size:9px !important; }
+        .projectImageThumb[style] { height:46px !important; min-width:58px !important; font-size:12px !important; }
+        .projectListActions { display:grid !important; grid-template-columns:1fr 1fr 1fr !important; gap:6px !important; margin-top:10px !important; }
+        .projectListActions button { width:100% !important; min-height:38px !important; padding:7px 6px !important; font-size:12px !important; border-radius:12px !important; }
+        .note { font-size:13px !important; line-height:1.35 !important; }
+        .photos { grid-template-columns:repeat(2, minmax(0,1fr)) !important; gap:8px !important; }
+        .photo { border-radius:14px !important; padding:8px !important; }
+        .photo img { border-radius:12px !important; }
+        body:has(.bottomAppNav) > div { padding-bottom:0; }
+      }
+
     `}</style>
     <header>
       <div className="head">
@@ -2498,9 +2562,9 @@ function App() {
             </div>}
 
             <div className="projectListActions">
-              <button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button>
-              <button className="secondary" onClick={()=>openProjectById(p.id, 'chat')}>Åpne chat</button>
-              <button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button>
+              <button onClick={()=>openProjectById(p.id)}>📂 Åpne</button>
+              <button className="secondary" onClick={()=>openProjectById(p.id, 'chat')}>💬 Chat</button>
+              <button className="secondary" onClick={()=>deleteProject(p.id)}>🗑️ Slett</button>
             </div>
           </div>;
         })}
@@ -2555,6 +2619,14 @@ function App() {
         </div>
       </Section>}
     </main>
+
+    <div className="bottomAppNav" aria-label="Hovednavigasjon mobil">
+      <button type="button" className={tab==='prosjektliste' ? 'active' : 'secondary'} onClick={()=>goToTab('prosjektliste')}><span>📁</span><span>Prosjekter</span></button>
+      <button type="button" className={tab==='prosjekt' ? 'active' : 'secondary'} onClick={()=>goToTab('prosjekt')}><span>➕</span><span>Ny/info</span></button>
+      <button type="button" className={tab==='chat' ? 'active' : 'secondary'} onClick={()=>goToTab('chat')}><span>💬</span><span>{unreadForAdmin > 0 ? `${unreadForAdmin} ulest` : 'Chat'}</span></button>
+      <button type="button" className={tab==='bilder' ? 'active' : 'secondary'} onClick={()=>goToTab('bilder')}><span>📷</span><span>Bilder</span></button>
+      <button type="button" className={tab==='rapport' ? 'active' : 'secondary'} onClick={()=>goToTab('rapport')}><span>📄</span><span>Rapport</span></button>
+    </div>
 
     <div style={{
       display:'flex',
