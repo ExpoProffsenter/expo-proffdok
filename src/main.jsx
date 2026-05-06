@@ -98,6 +98,8 @@ function App() {
   const [adminUsers, setAdminUsers] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
   const latestStateRef = useRef({});
+  const lastChatMessageCountRef = useRef(0);
+  const lastChatRefreshAtRef = useRef(0);
 
   useEffect(() => {
     latestStateRef.current = {
@@ -279,16 +281,28 @@ function App() {
     const isChatRefresh = !fullRefresh && (silent || tab === 'chat' || customerTab === 'chat' || isReadOnly);
 
     if (isChatRefresh) {
-      setProjectLog(prev => ({
-        ...incomingLog,
-        draft: prev?.draft || ''
-      }));
+      const incomingCount = (incomingLog.messages || []).length;
+      setProjectLog(prev => {
+        const currentDraft = prev?.draft || '';
+        const currentCount = (prev?.messages || []).length;
+        if (incomingCount > currentCount && !silent) {
+          // manuell Oppdater chat skal bare oppdatere, ikke lage ekstra støy
+        }
+        return {
+          ...incomingLog,
+          draft: currentDraft
+        };
+      });
+      lastChatMessageCountRef.current = incomingCount;
+      lastChatRefreshAtRef.current = Date.now();
       setProjectId(data.id);
       if (!silent) alert('Chat oppdatert.');
       return;
     }
 
     unpackData(cloudData, true);
+    lastChatMessageCountRef.current = (incomingLog.messages || []).length;
+    lastChatRefreshAtRef.current = Date.now();
     setProjectId(data.id);
     if (!silent) alert('Prosjektdata oppdatert.');
   };
@@ -391,14 +405,50 @@ function App() {
 
   useEffect(() => {
     if (!projectId) return;
-    if (!(isReadOnly || tab === 'chat')) return;
+    const chatVisible = isReadOnly || tab === 'chat' || customerTab === 'chat';
+    if (!chatVisible) return;
 
+    let cancelled = false;
+
+    const applyChatData = (row) => {
+      if (!row || cancelled) return;
+      const cloudData = dataFromRow(row);
+      const incomingLog = cloudData.projectLog || { enabled:false, draft:'', messages:[] };
+      const incomingCount = (incomingLog.messages || []).length;
+
+      setProjectLog(prev => ({
+        ...incomingLog,
+        draft: prev?.draft || ''
+      }));
+
+      lastChatMessageCountRef.current = incomingCount;
+      lastChatRefreshAtRef.current = Date.now();
+      setProjectId(row.id);
+    };
+
+    const channel = supabase
+      .channel(`project-chat-${projectId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'projects', filter: `id=eq.${projectId}` },
+        payload => applyChatData(payload.new)
+      )
+      .subscribe();
+
+    // Hent én gang med en gang når chat åpnes, og behold skrivefeltet.
+    refreshProjectFromCloud(true);
+
+    // Fallback polling hvis realtime er treg/blokkert i nettleser.
     const timer = window.setInterval(() => {
       refreshProjectFromCloud(true);
-    }, 12000);
+    }, 5000);
 
-    return () => window.clearInterval(timer);
-  }, [projectId, isReadOnly, tab]);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      supabase.removeChannel(channel);
+    };
+  }, [projectId, isReadOnly, tab, customerTab]);
 
   const createNewProject = () => {
     const hasContent =
@@ -583,7 +633,6 @@ function App() {
         .from('projects')
         .select('*')
         .eq('id', projectId)
-        .eq('user_id', authUser.id)
         .maybeSingle();
 
       if (!fetchError && existing && !rowIsLocked(existing)) {
@@ -602,7 +651,6 @@ function App() {
             updated_at: new Date().toISOString()
           })
           .eq('id', projectId)
-          .eq('user_id', authUser.id)
           .select('*')
           .maybeSingle();
 
@@ -1600,7 +1648,7 @@ function App() {
         {customerTab==='rapport' && <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>}
 
         {customerTab==='chat' && <Section title={totalChatCount ? `Chat (${totalChatCount})` : 'Chat'} icon={<FileText/>}>
-          <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet. Utførende varsles på e-post når e-postvarsling er satt opp.</p>
+          <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet. Chatten oppdateres automatisk live, og utførende varsles på e-post når e-postvarsling er satt opp.</p>
           <Textarea label="Ny melding fra kunde" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
           <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
             <button type="button" onClick={saveCustomerChatMessage}>Send melding</button>
@@ -1882,7 +1930,7 @@ function App() {
       </Section>}
 
       {tab==='chat' && <Section title={customerChatCount > 0 ? `Chat (${customerChatCount} fra kunde)` : 'Chat'} icon={<FileText/>}>
-        <p className="note">Chatten kan brukes mellom utførende og kunde. Kunde kan sende meldinger via kundelinken. E-postvarsling sendes når e-post er registrert. Du velger selv om chatten skal tas med i rapporten.</p>
+        <p className="note">Chatten oppdateres automatisk live når kunde eller utførende sender nye meldinger. Skrivefeltet beholdes selv om chatten oppdateres i bakgrunnen. E-postvarsling sendes når e-post er registrert. Du velger selv om chatten skal tas med i rapporten.</p>
         {customerChatCount > 0 && <p className="note" style={{ fontWeight:700 }}>💬 Det finnes {customerChatCount} melding{customerChatCount === 1 ? '' : 'er'} fra kunde i chatten.</p>}
         {!hasValue(project.customerEmail) && <p className="note" style={{ fontWeight:700 }}>⚠️ Legg inn kunde e-post i Prosjektinformasjon for at kunde skal få e-postvarsling ved nye chatmeldinger.</p>}
         <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'14px' }}>
