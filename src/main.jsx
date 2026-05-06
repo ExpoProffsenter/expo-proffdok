@@ -2067,6 +2067,7 @@ function App() {
       .mobileNavQuick button { width:100%; min-height:44px; justify-content:center; }
       .mobileNavStatus { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
       .mobileNavPill { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border-radius:999px; background:#f8fafc; border:1px solid #dbe7ec; font-size:12px; font-weight:800; color:#334155; }
+      .mobileSectionChips { display:none; }
       .projectListHeaderCards { margin-bottom:16px; }
       .projectListToolbar { display:flex; gap:12px; flex-wrap:wrap; margin:14px 0 16px; }
       .projectListCard { position:relative; overflow:hidden; }
@@ -2115,16 +2116,21 @@ function App() {
         header .head p { font-size:12px !important; margin:2px 0 0 !important; max-width:170px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         header .head > button { display:none !important; }
         header .head > button:nth-of-type(2), header .head > button:nth-of-type(3) { display:inline-flex !important; min-height:34px !important; padding:7px 10px !important; font-size:12px !important; border-radius:12px !important; }
-        main { padding:10px 10px 84px !important; }
+        main { padding:10px 10px calc(150px + env(safe-area-inset-bottom)) !important; }
         section { padding:14px !important; border-radius:18px !important; margin:10px auto !important; }
         section h2 { font-size:19px !important; margin-bottom:10px !important; gap:6px !important; }
         .mobileNav { padding:0 10px 8px !important; }
-        .mobileNavPanel { box-shadow:none !important; border-radius:14px !important; padding:8px !important; }
-        .mobileNavTop, .mobileNavStatus, .mobileNavQuick { display:none !important; }
-        .mobileNav select { min-height:42px !important; font-size:15px !important; border-radius:12px !important; padding:8px 12px !important; background:#f8fafc !important; }
-        .bottomAppNav { position:fixed; left:10px; right:10px; bottom:10px; z-index:50; display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; padding:8px; border:1px solid #dbe7ec; border-radius:22px; background:rgba(255,255,255,0.97); box-shadow:0 16px 42px rgba(15,23,42,0.18); backdrop-filter:blur(14px); }
-        .bottomAppNav button { min-height:48px !important; padding:6px 4px !important; border-radius:16px !important; font-size:11px !important; font-weight:900 !important; display:flex !important; flex-direction:column !important; gap:2px !important; align-items:center !important; justify-content:center !important; line-height:1.05 !important; }
-        .bottomAppNav button span:first-child { font-size:18px; line-height:1; }
+        .mobileNavPanel { box-shadow:none !important; border-radius:14px !important; padding:9px !important; }
+        .mobileNavTop { display:flex !important; margin-bottom:6px !important; }
+        .mobileNavTitle b { font-size:12px !important; letter-spacing:.02em; text-transform:uppercase; color:#64748b !important; }
+        .mobileNavTitle small { font-size:13px !important; color:#0f172a !important; font-weight:800; }
+        .mobileNavStatus, .mobileNavQuick { display:none !important; }
+        .mobileNav select { min-height:44px !important; font-size:17px !important; border-radius:13px !important; padding:9px 12px !important; background:#f8fafc !important; }
+        .mobileSectionChips { display:grid !important; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px; margin-top:8px; }
+        .mobileSectionChips button { min-height:36px !important; padding:6px 5px !important; border-radius:12px !important; font-size:12px !important; font-weight:900 !important; }
+        .bottomAppNav { position:fixed; left:12px; right:12px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:50; display:grid; grid-template-columns:repeat(5, 1fr); gap:5px; padding:7px; border:1px solid #dbe7ec; border-radius:20px; background:rgba(255,255,255,0.98); box-shadow:0 12px 34px rgba(15,23,42,0.16); backdrop-filter:blur(14px); }
+        .bottomAppNav button { min-height:44px !important; padding:5px 3px !important; border-radius:14px !important; font-size:12px !important; font-weight:900 !important; display:flex !important; flex-direction:column !important; gap:1px !important; align-items:center !important; justify-content:center !important; line-height:1.05 !important; }
+        .bottomAppNav button span:first-child { font-size:16px; line-height:1; }
         .bottomAppNav button.active { background:#082f3a !important; color:#fff !important; border-color:#082f3a !important; }
         .grid { grid-template-columns:1fr !important; gap:10px !important; }
         label span { font-size:12px !important; }
@@ -2220,6 +2226,12 @@ function App() {
             <select aria-label="Velg side" value={tab} onChange={e=>goToTab(e.target.value)}>
               {tabs.map(([id,l])=><option value={id} key={id}>{l}</option>)}
             </select>
+          </div>
+          <div className="mobileSectionChips" aria-label="Hurtigvalg seksjoner">
+            <button type="button" className={tab==='produkter' ? '' : 'secondary'} onClick={()=>goToTab('produkter')}>Produkter</button>
+            <button type="button" className={tab==='sjekklister' ? '' : 'secondary'} onClick={()=>goToTab('sjekklister')}>Sjekk</button>
+            <button type="button" className={tab==='tilbud' ? '' : 'secondary'} onClick={()=>goToTab('tilbud')}>Tilbud</button>
+            <button type="button" className={tab==='overtagelse' ? '' : 'secondary'} onClick={()=>goToTab('overtagelse')}>Overtag.</button>
           </div>
           <div className="mobileNavQuick">
             <button type="button" className="secondary" disabled={!previousTab} onClick={() => previousTab && goToTab(previousTab[0])}>← Forrige</button>
@@ -2649,14 +2661,14 @@ function App() {
     </main>
 
     <div className="bottomAppNav" aria-label="Hovednavigasjon mobil">
-      <button type="button" className={tab==='prosjektliste' ? 'active' : 'secondary'} onClick={()=>goToTab('prosjektliste')}><span>📁</span><span>Prosjekter</span></button>
-      <button type="button" className={tab==='prosjekt' ? 'active' : 'secondary'} onClick={()=>goToTab('prosjekt')}><span>➕</span><span>Ny/info</span></button>
-      <button type="button" className={tab==='chat' ? 'active' : 'secondary'} onClick={()=>goToTab('chat')}><span>💬</span><span>{unreadForAdmin > 0 ? `${unreadForAdmin} ulest` : 'Chat'}</span></button>
-      <button type="button" className={tab==='bilder' ? 'active' : 'secondary'} onClick={()=>goToTab('bilder')}><span>📷</span><span>Bilder</span></button>
-      <button type="button" className={tab==='rapport' ? 'active' : 'secondary'} onClick={()=>goToTab('rapport')}><span>📄</span><span>Rapport</span></button>
+      <button type="button" className={tab==='prosjektliste' ? 'active' : 'secondary'} onClick={()=>goToTab('prosjektliste')}><span>📁</span><span>Liste</span></button>
+      <button type="button" className={tab==='prosjekt' ? 'active' : 'secondary'} onClick={()=>goToTab('prosjekt')}><span>✏️</span><span>Info</span></button>
+      <button type="button" className={tab==='chat' ? 'active' : 'secondary'} onClick={()=>goToTab('chat')}><span>💬</span><span>{unreadForAdmin > 0 ? `${unreadForAdmin}` : 'Chat'}</span></button>
+      <button type="button" className={tab==='bilder' ? 'active' : 'secondary'} onClick={()=>goToTab('bilder')}><span>📷</span><span>Foto</span></button>
+      <button type="button" className={tab==='rapport' ? 'active' : 'secondary'} onClick={()=>goToTab('rapport')}><span>📄</span><span>PDF</span></button>
     </div>
 
-    <div style={{
+    <div className="bottomPrevNext" style={{
       display:'flex',
       justifyContent:'space-between',
       alignItems:'center',
