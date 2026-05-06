@@ -129,8 +129,9 @@ function App() {
 
   const urlParams = new URLSearchParams(window.location.search);
   const accessMode = urlParams.get('access') || urlParams.get('role') || (urlParams.has('project') ? 'kunde' : '');
+  const isAdminProjectLink = urlParams.has('project') && accessMode === 'admin';
   const isUnderleverandorView = urlParams.has('project') && accessMode === 'underleverandor';
-  const isReadOnly = urlParams.has('project') && !isUnderleverandorView;
+  const isReadOnly = urlParams.has('project') && !isUnderleverandorView && !isAdminProjectLink;
   const isAdminUser = !!authUser && (
     profile?.is_admin === true ||
     profile?.role === 'admin' ||
@@ -384,9 +385,11 @@ function App() {
 
     if (id && !isRecoveryLink) {
       openProjectById(id);
-      setAuthLoading(false);
       if ((params.get('access') || params.get('role')) === 'underleverandor') setTab('produkter');
-      return;
+      if ((params.get('access') || params.get('role')) !== 'admin') {
+        setAuthLoading(false);
+        return;
+      }
     }
 
     supabase.auth.getSession().then(({ data }) => {
@@ -593,7 +596,7 @@ function App() {
           companyName: company.companyName || name || 'Expo ProffDok',
           fromName: message.by || 'Ukjent',
           message: message.text,
-          projectLink: projectId ? makeProjectLink(projectId, 'kunde') : ''
+          projectLink: projectId ? makeProjectLink(projectId, direction === 'to_owner' ? 'admin' : 'kunde') : ''
         }
       });
 
@@ -1101,6 +1104,9 @@ function App() {
   };
 
   const makeProjectLink = (id, role = 'kunde') => {
+    if (role === 'admin') {
+      return `${window.location.origin}${window.location.pathname}?project=${id}&role=admin`;
+    }
     const roleParam = role === 'Underleverandør' ? 'underleverandor' : 'kunde';
     return roleParam === 'underleverandor'
       ? `${window.location.origin}${window.location.pathname}?project=${id}&access=underleverandor`
