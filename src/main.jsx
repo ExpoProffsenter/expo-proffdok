@@ -95,7 +95,7 @@ function App() {
   const [checklist, setChecklist] = useState({});
   const [tilbud, setTilbud] = useState(emptyTilbud());
   const [overtagelse, setOvertagelse] = useState(emptyOvertagelse());
-  const [chatImageUploading, setChatImageUploading] = useState(false);
+  const [chatUploadFile, setChatUploadFile] = useState(null);
 
 const [projectLog, setProjectLog] = useState(emptyProjectLog());
   const [customerTab, setCustomerTab] = useState('rapport');
@@ -2029,44 +2029,16 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
         </label>
         <Textarea label="Ny melding" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
         <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
-          <label className="upload" style={{ margin:0 }}>
-            📷 Last opp bilde
-            <input
-              type="file"
-              accept="image/*"
-              onChange={async (e)=>{
-                const file = e.target.files?.[0];
-                if (!file) return;
+          <label className="upload" style={{marginBottom:0}}>
+  📷 Last opp bilde
+  <input
+    type="file"
+    accept="image/*"
+    onChange={e=>setChatUploadFile(e.target.files?.[0] || null)}
+  />
+</label>
 
-                setChatImageUploading(true);
-
-                const uploaded = await uploadChatImage(file);
-
-                if (uploaded) {
-                  setProjectLog(prev => ({
-                    ...prev,
-                    entries: [
-                      ...(prev.entries || []),
-                      {
-                        id: uid(),
-                        created: new Date().toLocaleString(),
-                        by: profile?.company_name || 'Utførende',
-                        message: '',
-                        imageUrl: uploaded.imageUrl,
-                        imageName: uploaded.imageName
-                      }
-                    ]
-                  }));
-                }
-
-                setChatImageUploading(false);
-              }}
-            />
-          </label>
-
-          <button type="button" disabled={chatImageUploading} onClick={addProjectLogMessage}>
-            {chatImageUploading ? 'Laster opp...' : 'Send melding'}
-          </button>
+<button type="button" onClick={addProjectLogMessage}>Send melding</button>
           <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
           <button type="button" className="secondary" disabled={unreadForAdmin === 0} onClick={()=>markChatAsRead('admin')}>Marker alle som lest</button>
           <button type="button" className="secondary" onClick={()=>setProjectLog(prev=>({...prev, draft:''}))}>Tøm skrivefelt</button>
@@ -2164,30 +2136,29 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
 }
 
 
-async function uploadChatImage(file) {
-  if (!file) return null;
 
-  const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
+async function uploadChatImage(file){
+  if(!file) return null;
+
+  const ext = file.name.split('.').pop();
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const { data, error } = await supabase.storage
     .from('chat-images')
-    .upload(filename, file, {
-      cacheControl: '3600',
-      upsert: false
-    });
+    .upload(fileName, file);
 
-  if (error) {
+  if(error){
+    console.error(error);
     alert('Kunne ikke laste opp bilde');
     return null;
   }
 
-  const { data: publicUrlData } = supabase
-    .storage
+  const { data:publicData } = supabase.storage
     .from('chat-images')
     .getPublicUrl(data.path);
 
   return {
-    imageUrl: publicUrlData.publicUrl,
+    imageUrl: publicData.publicUrl,
     imageName: file.name
   };
 }
