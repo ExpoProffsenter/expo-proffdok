@@ -532,7 +532,7 @@ function App() {
     if (!toEmail || !message?.text) return;
 
     try {
-      const { error } = await supabase.functions.invoke('send-chat-notification', {
+      const { error } = await supabase.functions.invoke('smart-worker', {
         body: {
           toEmail,
           direction,
@@ -1937,7 +1937,7 @@ function App() {
 
       {tab==='admin' && isAdminUser && <Section title="Admin – brukergodkjenning" icon={<BadgeCheck/>}>
         <p className="note">Her kan administrator se registrerte brukere og godkjenne tilgang uten å gå inn i Supabase. Dette forutsetter at Supabase-policy tillater admin å lese og oppdatere profiles.</p>
-        <p className="note">Neste naturlige admin-steg er et felles produktregister med standard FDV-linker per produktkategori. Koden er nå klargjort ved at FDV lagres strukturert per standardprodukt og per manuelle produktkategori, slik at standardprodukter senere kan autoutfylles fra en egen produktdatabase. E-postvarsling i chat kaller Supabase Edge Function: send-chat-notification.</p>
+        <p className="note">Neste naturlige admin-steg er et felles produktregister med standard FDV-linker per produktkategori. Koden er nå klargjort ved at FDV lagres strukturert per standardprodukt og per manuelle produktkategori, slik at standardprodukter senere kan autoutfylles fra en egen produktdatabase. E-postvarsling i chat kaller Supabase Edge Function: smart-worker.</p>
         <button onClick={loadAdminUsers}>{adminLoading ? 'Henter brukere...' : 'Oppdater brukerliste'}</button>
         {adminUsers.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen brukere hentet ennå. Trykk Oppdater brukerliste.</p>}
         {adminUsers.map(u => <div className="item" key={u.id}>
