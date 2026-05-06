@@ -2056,6 +2056,17 @@ function App() {
   return <div>
     <style>{`
       .mobileNav { display: none; }
+      .mobileNavPanel { background:#ffffff; border:1px solid #dbe7ec; border-radius:18px; padding:12px; box-shadow:0 10px 24px rgba(15,23,42,0.08); }
+      .mobileNavTop { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+      .mobileNavTitle { display:flex; flex-direction:column; gap:2px; min-width:0; }
+      .mobileNavTitle b { font-size:14px; color:#0f172a; }
+      .mobileNavTitle small { color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .mobileNavSelectWrap { position:relative; }
+      .mobileNav select { width:100%; min-height:52px; border-radius:14px; font-size:17px; font-weight:800; padding:12px 44px 12px 14px; background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; appearance:auto; }
+      .mobileNavQuick { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+      .mobileNavQuick button { width:100%; min-height:44px; justify-content:center; }
+      .mobileNavStatus { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+      .mobileNavPill { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border-radius:999px; background:#f8fafc; border:1px solid #dbe7ec; font-size:12px; font-weight:800; color:#334155; }
       .projectListHeaderCards { margin-bottom:16px; }
       .projectListToolbar { display:flex; gap:12px; flex-wrap:wrap; margin:14px 0 16px; }
       .projectListCard { position:relative; overflow:hidden; }
@@ -2072,6 +2083,10 @@ function App() {
       @media screen and (max-width: 700px) {
         header nav { display: none !important; }
         .mobileNav { display: block !important; }
+        .mobileNav { padding:0 12px 12px !important; }
+        .mobileNavPanel { border-radius:16px; padding:10px; }
+        .mobileNavTop { margin-bottom:8px; }
+        .mobileNav select { min-height:54px; font-size:16px; }
         .projectListHeaderCards { display:grid !important; grid-template-columns:1fr 1fr; gap:8px; }
         .projectListHeaderCards .tile { min-height:auto; padding:10px !important; }
         .projectListHeaderCards .tile b { font-size:20px; }
@@ -2101,7 +2116,29 @@ function App() {
       </div>
       <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
       <div className="mobileNav" style={{ maxWidth:'1180px', margin:'0 auto', padding:'0 16px 14px' }}>
-        <label><span>Meny</span><select value={tab} onChange={e=>goToTab(e.target.value)}>{tabs.map(([id,l])=><option value={id} key={id}>{l}</option>)}</select></label>
+        <div className="mobileNavPanel">
+          <div className="mobileNavTop">
+            <div className="mobileNavTitle">
+              <b>Meny</b>
+              <small>{tabs.find(([id]) => id === tab)?.[1] || 'Velg side'}</small>
+            </div>
+            {projectId && <span className="mobileNavPill">{currentStatus.icon} {currentStatus.label}</span>}
+          </div>
+          <div className="mobileNavSelectWrap">
+            <select aria-label="Velg side" value={tab} onChange={e=>goToTab(e.target.value)}>
+              {tabs.map(([id,l])=><option value={id} key={id}>{l}</option>)}
+            </select>
+          </div>
+          <div className="mobileNavQuick">
+            <button type="button" className="secondary" disabled={!previousTab} onClick={() => previousTab && goToTab(previousTab[0])}>← Forrige</button>
+            <button type="button" disabled={!nextTab} onClick={() => nextTab && goToTab(nextTab[0])}>Neste →</button>
+          </div>
+          <div className="mobileNavStatus">
+            {unreadForAdmin > 0 && <span className="mobileNavPill">💬 {unreadForAdmin} ulest</span>}
+            {totalChatCount > 0 && <span className="mobileNavPill">Chat: {totalChatCount}</span>}
+            {projectId && <span className="mobileNavPill">Lagret prosjekt</span>}
+          </div>
+        </div>
       </div>
     </header>
 
