@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 import { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck } from 'lucide-react';
@@ -97,6 +97,15 @@ function App() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [adminUsers, setAdminUsers] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
+  const latestStateRef = useRef({});
+
+  useEffect(() => {
+    latestStateRef.current = {
+      company, user, project, checked, productDocs, manualProducts, other, surf, photos,
+      access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes
+    };
+  }, [company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes]);
+
 
   useEffect(() => {
     const savedEmail = window.localStorage.getItem('expoProffDokAuthEmail');
@@ -251,7 +260,7 @@ function App() {
     setTab('rapport');
   };
 
-  const refreshProjectFromCloud = async (silent = false) => {
+  const refreshProjectFromCloud = async (silent = false, fullRefresh = false) => {
     if (!projectId) return;
     const { data, error } = await supabase
       .from('projects')
@@ -265,7 +274,21 @@ function App() {
       return;
     }
 
-    unpackData(dataFromRow(data), true);
+    const cloudData = dataFromRow(data);
+    const incomingLog = cloudData.projectLog || { enabled:false, draft:'', messages:[] };
+    const isChatRefresh = !fullRefresh && (silent || tab === 'chat' || customerTab === 'chat' || isReadOnly);
+
+    if (isChatRefresh) {
+      setProjectLog(prev => ({
+        ...incomingLog,
+        draft: prev?.draft || ''
+      }));
+      setProjectId(data.id);
+      if (!silent) alert('Chat oppdatert.');
+      return;
+    }
+
+    unpackData(cloudData, true);
     setProjectId(data.id);
     if (!silent) alert('Prosjektdata oppdatert.');
   };
@@ -677,9 +700,30 @@ function App() {
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
 
-    const makeCleanData = (projectOverride = project, projectLogOverride = projectLog) => JSON.parse(JSON.stringify({
-      company, user, project: { ...emptyProject(), ...projectOverride },
-      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog: projectLogOverride, internalNotes
+    const snapshot = {
+      company, user, project, checked, productDocs, manualProducts, other, surf, photos,
+      access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes,
+      ...(latestStateRef.current || {})
+    };
+
+    const makeCleanData = (projectOverride = snapshot.project, projectLogOverride = snapshot.projectLog) => JSON.parse(JSON.stringify({
+      company: snapshot.company,
+      user: snapshot.user,
+      project: { ...emptyProject(), ...projectOverride },
+      checked: snapshot.checked,
+      productDocs: snapshot.productDocs,
+      manualProducts: snapshot.manualProducts,
+      other: snapshot.other,
+      surf: snapshot.surf,
+      photos: snapshot.photos,
+      access: snapshot.access,
+      inst: snapshot.inst,
+      files: snapshot.files,
+      checklist: snapshot.checklist,
+      tilbud: snapshot.tilbud,
+      overtagelse: snapshot.overtagelse,
+      projectLog: projectLogOverride,
+      internalNotes: snapshot.internalNotes
     }));
 
     if (projectId) {
@@ -708,7 +752,7 @@ function App() {
 
       const saveProjectData = {
         ...emptyProject(),
-        ...project,
+        ...(snapshot.project || {}),
         locked: false,
         status: 'active',
         lockedAt: '',
@@ -716,7 +760,7 @@ function App() {
       };
 
       const saveProjectLog = {
-        ...(projectLog || { enabled:false, draft:'', messages:[] }),
+        ...(snapshot.projectLog || { enabled:false, draft:'', messages:[] }),
         draft: ''
       };
 
@@ -732,54 +776,46 @@ function App() {
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await supabase
+      const { data: updatedRows, error } = await supabase
         .from('projects')
         .update(payload)
         .eq('id', projectId)
-        .eq('user_id', authUser.id);
+        .eq('user_id', authUser.id)
+        .select('*');
 
       if (error) {
         console.error(error);
         return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message);
       }
 
-      const { data: verifyRow, error: verifyError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('id', projectId)
-        .eq('user_id', authUser.id)
-        .maybeSingle();
-
-      if (verifyError) {
-        console.error(verifyError);
-        setProject(saveProjectData);
-        setProjectLog(saveProjectLog);
-        await loadProjects(authUser);
-        return alert('Prosjektet ble forsøkt lagret, men kunne ikke bekreftes fra skyen: ' + verifyError.message);
+      const updatedRow = Array.isArray(updatedRows) ? updatedRows[0] : updatedRows;
+      if (!updatedRow) {
+        return alert('Prosjektet ble ikke oppdatert. Supabase returnerte ingen rad. Sjekk innlogging/tilgang og prøv igjen.');
       }
 
-      if (!verifyRow) {
-        setProject(saveProjectData);
-        setProjectLog(saveProjectLog);
-        await loadProjects(authUser);
-        return alert('Prosjektet ble forsøkt lagret, men Supabase returnerte ingen rad. Åpne prosjektlisten og prøv igjen hvis endringen ikke vises.');
+      const savedProject = updatedRow?.data?.project || {};
+      const wantedEmail = saveProjectData.customerEmail || '';
+      const savedEmail = savedProject.customerEmail || '';
+      if (wantedEmail !== savedEmail) {
+        console.warn('E-post ble ikke bekreftet lagret', { wantedEmail, savedEmail, savedProject });
+        return alert('Prosjektet ble sendt til lagring, men kunde e-post ble ikke bekreftet lagret. Prøv igjen eller last siden på nytt.');
       }
 
-      unpackData(dataFromRow(verifyRow), false);
-      setProjectId(verifyRow.id);
+      unpackData(dataFromRow(updatedRow), false);
+      setProjectId(updatedRow.id);
       await loadProjects(authUser);
       alert('✔ Prosjekt oppdatert og bekreftet lagret');
     } else {
       const newProjectData = {
         ...emptyProject(),
-        ...project,
+        ...(snapshot.project || {}),
         locked: false,
         status: 'active',
         lockedAt: '',
         lockedBy: ''
       };
       const newProjectLog = {
-        ...(projectLog || { enabled:false, draft:'', messages:[] }),
+        ...(snapshot.projectLog || { enabled:false, draft:'', messages:[] }),
         draft: ''
       };
       const payload = {
