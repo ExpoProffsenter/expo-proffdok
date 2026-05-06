@@ -2066,7 +2066,8 @@ function App() {
       .mobileNavQuick { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
       .mobileNavQuick button { width:100%; min-height:44px; justify-content:center; }
       .mobileNavStatus { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-      .mobileNavPill { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border-radius:999px; background:#f8fafc; border:1px solid #dbe7ec; font-size:12px; font-weight:800; color:#334155; }
+      .mobileNavPill { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:6px 9px; border-radius:999px; background:#f8fafc; border:1px solid #dbe7ec; font-size:12px; font-weight:800; color:#334155; cursor:pointer; }
+      .mobileNavPill.active { background:#21c7cd; border-color:#21c7cd; color:#082f3a; box-shadow:0 8px 18px rgba(33,199,205,0.22); }
       .mobileSectionChips { display:none; }
       .projectListHeaderCards { margin-bottom:16px; }
       .projectListToolbar { display:flex; gap:12px; flex-wrap:wrap; margin:14px 0 16px; }
@@ -2215,10 +2216,32 @@ function App() {
         .mobileNav select { min-height:46px !important; font-size:18px !important; font-weight:900 !important; }
         .mobileNavQuick { display:none !important; }
         .mobileNavStatus { display:grid !important; grid-template-columns:repeat(4, minmax(0, 1fr)) !important; gap:6px !important; margin-top:8px !important; }
-        .mobileNavStatus .mobileNavPill { justify-content:center !important; min-height:38px !important; font-size:13px !important; padding:7px 6px !important; border-radius:14px !important; }
+        .mobileNavStatus .mobileNavPill { justify-content:center !important; min-height:38px !important; font-size:13px !important; padding:7px 6px !important; border-radius:14px !important; width:100% !important; box-shadow:none !important; }
+        .mobileNavStatus button.mobileNavPill { background:#f8fafc !important; color:#0f172a !important; border:1px solid #dbe7ec !important; }
+        .mobileNavStatus button.mobileNavPill.active { background:#21c7cd !important; color:#082f3a !important; border-color:#21c7cd !important; }
         .mobileNavStatus .mobileNavPill:nth-child(n+5) { display:none !important; }
         section { scroll-margin-top:12px !important; }
         .projectListToolbar { position:static !important; }
+      }
+
+
+      /* Mobile final cleanup v3 - enkel og stabil mobilmeny */
+      @media screen and (max-width: 700px) {
+        header { position: static !important; background: transparent !important; border-bottom: 0 !important; }
+        main { padding: 10px 10px calc(190px + env(safe-area-inset-bottom)) !important; }
+        .bottomAppNav, .bottomPrevNext { display: none !important; }
+        .mobileNavPanel { border-radius: 18px !important; padding: 12px !important; margin: 8px 0 12px !important; }
+        .mobileNavTitle b { font-size: 13px !important; }
+        .mobileNavTitle small { font-size: 18px !important; }
+        .mobileNav select { min-height: 50px !important; font-size: 18px !important; border-radius: 14px !important; }
+        .mobileSectionChips { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; margin-top: 10px !important; }
+        .mobileSectionChips button { min-height: 48px !important; font-size: 15px !important; padding: 9px 8px !important; border-radius: 14px !important; white-space: normal !important; }
+        .mobileNavStatus, .mobileNavQuick { display: none !important; }
+        .checklistStatusButtons { display: grid !important; grid-template-columns: 1fr !important; gap: 8px !important; width: 100% !important; margin-top: 10px !important; }
+        .checklistStatusButtons button { width: 100% !important; min-height: 48px !important; font-size: 15px !important; }
+        .checklistPoint { padding-bottom: 18px !important; }
+        .checklistUpload { width: 100% !important; justify-content: center !important; }
+        section:last-of-type { margin-bottom: 160px !important; }
       }
 
     `}</style>
@@ -2250,19 +2273,15 @@ function App() {
           </div>
           <div className="mobileSectionChips" aria-label="Hurtigvalg seksjoner">
             <button type="button" className={tab==='produkter' ? '' : 'secondary'} onClick={()=>goToTab('produkter')}>Produkter</button>
-            <button type="button" className={tab==='sjekklister' ? '' : 'secondary'} onClick={()=>goToTab('sjekklister')}>Sjekk</button>
+            <button type="button" className={tab==='sjekklister' ? '' : 'secondary'} onClick={()=>goToTab('sjekklister')}>Sjekklister</button>
             <button type="button" className={tab==='tilbud' ? '' : 'secondary'} onClick={()=>goToTab('tilbud')}>Tilbud</button>
-            <button type="button" className={tab==='overtagelse' ? '' : 'secondary'} onClick={()=>goToTab('overtagelse')}>Overtag.</button>
+            <button type="button" className={tab==='overtagelse' ? '' : 'secondary'} onClick={()=>goToTab('overtagelse')}>Overtagelse</button>
           </div>
           <div className="mobileNavQuick">
             <button type="button" className="secondary" disabled={!previousTab} onClick={() => previousTab && goToTab(previousTab[0])}>← Forrige</button>
             <button type="button" disabled={!nextTab} onClick={() => nextTab && goToTab(nextTab[0])}>Neste →</button>
           </div>
-          <div className="mobileNavStatus">
-            {unreadForAdmin > 0 && <span className="mobileNavPill">💬 {unreadForAdmin} ulest</span>}
-            {totalChatCount > 0 && <span className="mobileNavPill">Chat: {totalChatCount}</span>}
-            {projectId && <span className="mobileNavPill">Lagret prosjekt</span>}
-          </div>
+          <div className="mobileNavStatus" aria-hidden="true"></div>
         </div>
       </div>
     </header>
