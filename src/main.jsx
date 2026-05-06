@@ -114,6 +114,8 @@ function App() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [adminUsers, setAdminUsers] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
+  const [fdvRegister, setFdvRegister] = useState([]);
+  const [fdvLoading, setFdvLoading] = useState(false);
   const latestStateRef = useRef({});
   const lastChatMessageCountRef = useRef(0);
   const lastChatRefreshAtRef = useRef(0);
@@ -142,6 +144,13 @@ function App() {
         .map(p => ({ ...p, section }))
     );
   }, [manualProducts]);
+  const fdvRegisterByProduct = useMemo(() => {
+    const map = {};
+    (fdvRegister || []).forEach(row => {
+      if (row?.product_name) map[row.product_name] = row;
+    });
+    return map;
+  }, [fdvRegister]);
   const name = company.companyName || 'Expo Proffsenter';
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -474,6 +483,12 @@ function App() {
     };
   }, [projectId, isReadOnly, tab, customerTab]);
 
+  useEffect(() => {
+    if (!isReadOnly) {
+      loadFdvRegister(false);
+    }
+  }, [isReadOnly]);
+
 
   const createNewProject = () => {
     const hasContent =
@@ -577,6 +592,29 @@ function App() {
         ...patch
       }
     }));
+  };
+
+
+  const toggleProductChecked = (productName, isChecked) => {
+    setChecked(prev => ({ ...prev, [productName]: isChecked }));
+
+    if (!isChecked) return;
+
+    const registerRow = fdvRegisterByProduct[productName];
+    if (!registerRow?.fdv_url) return;
+
+    setProductDocs(prev => {
+      const current = prev[productName] || {};
+      if (hasValue(current.fdvUrl)) return prev;
+      return {
+        ...prev,
+        [productName]: {
+          ...current,
+          fdvUrl: registerRow.fdv_url,
+          fdvSource: 'admin-register'
+        }
+      };
+    });
   };
 
   const addManualProduct = (section) => {
@@ -1393,6 +1431,95 @@ function App() {
     loadAdminUsers();
   };
 
+
+  const loadFdvRegister = async (notify = false) => {
+    setFdvLoading(true);
+    const { data, error } = await supabase
+      .from('fdv_register')
+      .select('*')
+      .order('section', { ascending:true })
+      .order('product_name', { ascending:true });
+    setFdvLoading(false);
+
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke hente FDV-register. Kjør SQL-oppsettet først og sjekk Supabase-policy: ' + error.message);
+    }
+
+    setFdvRegister(data || []);
+    if (notify) alert(`FDV-register oppdatert. Fant ${(data || []).length} produkter.`);
+  };
+
+  const seedFdvRegister = async () => {
+    if (!isAdminUser) return alert('Du har ikke tilgang til FDV-register.');
+    if (!window.confirm('Vil du legge inn alle standardproduktene i FDV-registeret? Eksisterende produkter oppdateres ikke, men manglende produkter legges til.')) return;
+
+    setFdvLoading(true);
+    const rows = productSections.flatMap(section => section.items.map(productName => ({
+      section: section.title,
+      product_name: productName,
+      fdv_url: '',
+      comment: '',
+      active: true,
+      updated_by: authUser?.email || ''
+    })));
+
+    const { error } = await supabase
+      .from('fdv_register')
+      .upsert(rows, { onConflict: 'product_name' });
+    setFdvLoading(false);
+
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke opprette standardprodukter i FDV-register: ' + error.message);
+    }
+
+    await loadFdvRegister(false);
+    alert('FDV-register er klargjort med standardprodukter.');
+  };
+
+  const saveFdvRegisterRow = async (row) => {
+    if (!isAdminUser) return alert('Du har ikke tilgang til FDV-register.');
+    if (!row?.product_name) return alert('Produktnavn mangler.');
+
+    const payload = {
+      section: row.section || '',
+      product_name: row.product_name,
+      fdv_url: row.fdv_url || '',
+      comment: row.comment || '',
+      active: row.active !== false,
+      updated_by: authUser?.email || ''
+    };
+
+    const { data, error } = await supabase
+      .from('fdv_register')
+      .upsert(payload, { onConflict: 'product_name' })
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke lagre FDV-produkt: ' + error.message);
+    }
+
+    setFdvRegister(prev => {
+      const exists = (prev || []).some(x => x.product_name === data.product_name);
+      return exists
+        ? prev.map(x => x.product_name === data.product_name ? data : x)
+        : [...(prev || []), data].sort((a,b) => `${a.section}${a.product_name}`.localeCompare(`${b.section}${b.product_name}`));
+    });
+    alert('FDV-produkt lagret.');
+  };
+
+  const updateFdvRegisterLocal = (productName, patch) => {
+    setFdvRegister(prev => {
+      const list = prev || [];
+      const exists = list.some(row => row.product_name === productName);
+      if (!exists) return [...list, { product_name: productName, section: patch.section || '', fdv_url:'', comment:'', active:true, ...patch }];
+      return list.map(row => row.product_name === productName ? { ...row, ...patch } : row);
+    });
+  };
+
   const signIn = async () => {
     const cleanEmail = authEmail.trim();
     if (!cleanEmail || !authPassword) return alert('Fyll inn e-post og passord.');
@@ -1622,13 +1749,16 @@ function App() {
           const doc = productDocs[i] || {};
           return <div className="item" key={i}>
             <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-              <input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>setChecked({...checked,[i]:e.target.checked})}/>
+              <input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>toggleProductChecked(i, e.target.checked)}/>
               <span style={{ margin:0 }}>{i}</span>
             </label>
-            {checked[i] && <Grid>
-              <Input label="FDV-/databladlink" value={doc.fdvUrl || ''} onChange={v=>updateProductDoc(i, { fdvUrl:v })}/>
-              <Input label="Hvor brukt / kommentar" value={doc.comment || ''} onChange={v=>updateProductDoc(i, { comment:v })}/>
-            </Grid>}
+            {checked[i] && <>
+              <Grid>
+                <Input label="FDV-/databladlink" value={doc.fdvUrl || ''} onChange={v=>updateProductDoc(i, { fdvUrl:v, fdvSource:'manual' })}/>
+                <Input label="Hvor brukt / kommentar" value={doc.comment || ''} onChange={v=>updateProductDoc(i, { comment:v })}/>
+              </Grid>
+              {doc.fdvSource === 'admin-register' && <small>FDV-link er hentet automatisk fra admin FDV-register.</small>}
+            </>}
           </div>;
         })}</div>
         <div className="item">
@@ -1932,13 +2062,16 @@ function App() {
           const doc = productDocs[i] || {};
           return <div className="item" key={i}>
             <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-              <input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>setChecked({...checked,[i]:e.target.checked})}/>
+              <input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>toggleProductChecked(i, e.target.checked)}/>
               <span style={{ margin:0 }}>{i}</span>
             </label>
-            {checked[i] && <Grid>
-              <Input label="FDV-/databladlink" value={doc.fdvUrl || ''} onChange={v=>updateProductDoc(i, { fdvUrl:v })}/>
-              <Input label="Hvor brukt / kommentar" value={doc.comment || ''} onChange={v=>updateProductDoc(i, { comment:v })}/>
-            </Grid>}
+            {checked[i] && <>
+              <Grid>
+                <Input label="FDV-/databladlink" value={doc.fdvUrl || ''} onChange={v=>updateProductDoc(i, { fdvUrl:v, fdvSource:'manual' })}/>
+                <Input label="Hvor brukt / kommentar" value={doc.comment || ''} onChange={v=>updateProductDoc(i, { comment:v })}/>
+              </Grid>
+              {doc.fdvSource === 'admin-register' && <small>FDV-link er hentet automatisk fra admin FDV-register.</small>}
+            </>}
           </div>;
         })}</div>
         <div className="item">
@@ -2167,19 +2300,51 @@ function App() {
 
       {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>} 
 
-      {tab==='admin' && isAdminUser && <Section title="Admin – brukergodkjenning" icon={<BadgeCheck/>}>
-        <p className="note">Her kan administrator se registrerte brukere og godkjenne tilgang uten å gå inn i Supabase. Dette forutsetter at Supabase-policy tillater admin å lese og oppdatere profiles.</p>
-        <p className="note">Neste naturlige admin-steg er et felles produktregister med standard FDV-linker per produktkategori. Koden er nå klargjort ved at FDV lagres strukturert per standardprodukt og per manuelle produktkategori, slik at standardprodukter senere kan autoutfylles fra en egen produktdatabase. E-postvarsling i chat kaller Supabase Edge Function: smart-worker.</p>
-        <button onClick={loadAdminUsers}>{adminLoading ? 'Henter brukere...' : 'Oppdater brukerliste'}</button>
-        {adminUsers.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen brukere hentet ennå. Trykk Oppdater brukerliste.</p>}
-        {adminUsers.map(u => <div className="item" key={u.id}>
-          <b>{u.email || 'Ukjent e-post'}</b>
-          <small>{u.company_name ? `Firma: ${u.company_name} · ` : ''}Status: {u.approved ? 'Godkjent' : 'Venter på godkjenning'}</small>
-          <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginTop:'10px' }}>
-            {!u.approved && <button onClick={()=>approveAdminUser(u.id)}>Godkjenn bruker</button>}
-            {u.approved && <button className="secondary" onClick={()=>revokeAdminUser(u.id)}>Fjern godkjenning</button>}
+      {tab==='admin' && isAdminUser && <Section title="Admin" icon={<BadgeCheck/>}>
+        <p className="note">Her kan administrator godkjenne brukere og vedlikeholde felles FDV-register. FDV-linker fra registeret fylles automatisk inn når et standardprodukt krysses av i et prosjekt, men kan fortsatt overstyres manuelt per prosjekt.</p>
+
+        <div className="item">
+          <h3>Brukergodkjenning</h3>
+          <p className="note">Forutsetter at Supabase-policy tillater admin å lese og oppdatere profiles.</p>
+          <button onClick={loadAdminUsers}>{adminLoading ? 'Henter brukere...' : 'Oppdater brukerliste'}</button>
+          {adminUsers.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen brukere hentet ennå. Trykk Oppdater brukerliste.</p>}
+          {adminUsers.map(u => <div className="item" key={u.id}>
+            <b>{u.email || 'Ukjent e-post'}</b>
+            <small>{u.company_name ? `Firma: ${u.company_name} · ` : ''}Status: {u.approved ? 'Godkjent' : 'Venter på godkjenning'}</small>
+            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginTop:'10px' }}>
+              {!u.approved && <button onClick={()=>approveAdminUser(u.id)}>Godkjenn bruker</button>}
+              {u.approved && <button className="secondary" onClick={()=>revokeAdminUser(u.id)}>Fjern godkjenning</button>}
+            </div>
+          </div>)}
+        </div>
+
+        <div className="item">
+          <h3>Admin FDV-register</h3>
+          <p className="note">Første gang: kjør SQL-oppsettet i Supabase, trykk deretter "Opprett standardprodukter". Deretter legger du inn FDV-/databladlinker og lagrer per produkt.</p>
+          <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginBottom:'12px' }}>
+            <button type="button" onClick={()=>loadFdvRegister(true)}>{fdvLoading ? 'Henter FDV-register...' : 'Oppdater FDV-register'}</button>
+            <button type="button" className="secondary" onClick={seedFdvRegister}>Opprett standardprodukter</button>
           </div>
-        </div>)}
+          {(fdvRegister || []).length === 0 && <p className="note">Ingen produkter i FDV-registeret ennå.</p>}
+          {productSections.map(section => {
+            const sectionRows = (fdvRegister || []).filter(row => row.section === section.title || section.items.includes(row.product_name));
+            const uniqueRows = sectionRows.length ? sectionRows : section.items.map(productName => ({ section:section.title, product_name:productName, fdv_url:'', comment:'', active:true }));
+            return <div className="item" key={'fdv-' + section.title}>
+              <h3>{section.title}</h3>
+              {uniqueRows.map(row => <div className="item" key={'fdv-row-' + row.product_name}>
+                <b>{row.product_name}</b>
+                <Grid>
+                  <Input label="FDV-/databladlink" value={row.fdv_url || ''} onChange={v=>updateFdvRegisterLocal(row.product_name, { ...row, fdv_url:v, section:row.section || section.title })}/>
+                  <Input label="Kommentar" value={row.comment || ''} onChange={v=>updateFdvRegisterLocal(row.product_name, { ...row, comment:v, section:row.section || section.title })}/>
+                </Grid>
+                <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginTop:'10px' }}>
+                  <button type="button" onClick={()=>saveFdvRegisterRow({ ...row, section:row.section || section.title })}>Lagre FDV-produkt</button>
+                  {row.updated_at && <small>Sist oppdatert: {new Date(row.updated_at).toLocaleString('no-NO')}{row.updated_by ? ` · ${row.updated_by}` : ''}</small>}
+                </div>
+              </div>)}
+            </div>;
+          })}
+        </div>
       </Section>}
     </main>
 
