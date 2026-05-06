@@ -700,10 +700,13 @@ function App() {
   const saveProject = async () => {
     if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
 
+    // Viktig: Bruk React-state som kilde, ikke siste sky-refresh.
+    // latestStateRef brukes kun som fallback. Dette gjør at endringer i gamle prosjekter
+    // lagres selv om chat-refresh/polling har kjørt i bakgrunnen.
     const snapshot = {
+      ...(latestStateRef.current || {}),
       company, user, project, checked, productDocs, manualProducts, other, surf, photos,
-      access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes,
-      ...(latestStateRef.current || {})
+      access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes
     };
 
     const makeCleanData = (projectOverride = snapshot.project, projectLogOverride = snapshot.projectLog) => JSON.parse(JSON.stringify({
@@ -767,7 +770,7 @@ function App() {
       const payload = {
         title: saveProjectData.projectName || saveProjectData.address || 'Uten navn',
         data: cleanData,
-        user_id: authUser.id,
+        user_id: existing.user_id || authUser.id,
         share_enabled: true,
         locked: false,
         locked_at: null,
@@ -785,6 +788,7 @@ function App() {
         return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message);
       }
 
+      // Oppdater skjermen umiddelbart med det vi faktisk lagret.
       setProject(saveProjectData);
       setProjectLog(saveProjectLog);
       latestStateRef.current = {
@@ -793,6 +797,8 @@ function App() {
         projectLog: saveProjectLog
       };
 
+      // Hent prosjektet på nytt for å sjekke, men ikke rull tilbake skjermen hvis Supabase
+      // bruker litt tid eller RLS ikke returnerer raden.
       const { data: verifyRow, error: verifyError } = await supabase
         .from('projects')
         .select('*')
@@ -800,8 +806,36 @@ function App() {
         .maybeSingle();
 
       if (!verifyError && verifyRow) {
-        unpackData(dataFromRow(verifyRow), false);
-        setProjectId(verifyRow.id);
+        const verifyProject = verifyRow?.data?.project || {};
+        const wanted = JSON.stringify({
+          projectName: saveProjectData.projectName || '',
+          address: saveProjectData.address || '',
+          postnr: saveProjectData.postnr || '',
+          city: saveProjectData.city || '',
+          customer: saveProjectData.customer || '',
+          customerEmail: saveProjectData.customerEmail || '',
+          notes: saveProjectData.notes || ''
+        });
+        const got = JSON.stringify({
+          projectName: verifyProject.projectName || '',
+          address: verifyProject.address || '',
+          postnr: verifyProject.postnr || '',
+          city: verifyProject.city || '',
+          customer: verifyProject.customer || '',
+          customerEmail: verifyProject.customerEmail || '',
+          notes: verifyProject.notes || ''
+        });
+
+        if (wanted === got) {
+          unpackData(dataFromRow(verifyRow), false);
+          setProjectId(verifyRow.id);
+          await loadProjects(authUser);
+          return alert('✔ Prosjekt oppdatert og bekreftet lagret');
+        }
+
+        console.warn('Supabase returnerte eldre/annen prosjektinfo etter lagring.', { wanted: saveProjectData, got: verifyProject });
+        await loadProjects(authUser);
+        return alert('Prosjektet ble sendt til lagring, men Supabase returnerte fortsatt gammel info. Vent noen sekunder og trykk Oppdater prosjekt én gang til. Hvis dette gjentar seg må vi justere Supabase-policy/RLS for gamle prosjekter.');
       }
 
       await loadProjects(authUser);
