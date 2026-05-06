@@ -1747,8 +1747,11 @@ function App() {
           {(projectLog.messages || []).slice().reverse().map(m => {
             const isUnread = m.role !== 'kunde' && (!lastReadByCustomer || (m.created || '') > lastReadByCustomer);
             return <div className="item" key={m.id} style={isUnread ? { borderColor:'#fecaca', background:'#fff7f7' } : undefined}>
-            <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'} {isUnread ? '· Ulest' : ''}</b>
-            <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
+            <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'}</b>
+            <small>
+              {m.created ? new Date(m.created).toLocaleString('no-NO') : ''}
+              {m.role === 'kunde' ? ((!lastReadByAdmin || (m.created || '') > lastReadByAdmin) ? ' · Ulest for admin' : ' · Lest av admin') : (isUnread ? ' · Ulest for kunde' : ' · Lest av kunde')}
+            </small>
             <p>{m.text}</p>
           </div>;
           })}
@@ -2044,8 +2047,11 @@ function App() {
         {(projectLog.messages || []).slice().reverse().map(m => {
           const isUnread = m.role === 'kunde' && (!lastReadByAdmin || (m.created || '') > lastReadByAdmin);
           return <div className="item" key={m.id} style={isUnread ? { borderColor:'#fecaca', background:'#fff7f7' } : undefined}>
-          <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'} {isUnread ? '· Ulest' : ''}</b>
-          <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
+          <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'}</b>
+          <small>
+            {m.created ? new Date(m.created).toLocaleString('no-NO') : ''}
+            {m.role === 'kunde' ? (isUnread ? ' · Ulest for admin' : ' · Lest av admin') : ((!lastReadByCustomer || (m.created || '') > lastReadByCustomer) ? ' · Ulest for kunde' : ' · Lest av kunde')}
+          </small>
           <p>{m.text}</p>
           <button type="button" className="secondary" onClick={()=>removeProjectLogMessage(m.id)}>Fjern melding</button>
         </div>;
