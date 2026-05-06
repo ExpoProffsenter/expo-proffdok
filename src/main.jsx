@@ -471,20 +471,6 @@ function App() {
     };
   }, [projectId, isReadOnly, tab, customerTab]);
 
-  useEffect(() => {
-    if (!projectId) return;
-
-    if (!isReadOnly && tab === 'chat' && unreadForAdmin > 0) {
-      const timer = window.setTimeout(() => markChatAsRead('admin'), 900);
-      return () => window.clearTimeout(timer);
-    }
-
-    if (isReadOnly && customerTab === 'chat' && unreadForCustomer > 0) {
-      const timer = window.setTimeout(() => markChatAsRead('customer'), 900);
-      return () => window.clearTimeout(timer);
-    }
-  }, [projectId, isReadOnly, tab, customerTab, unreadForAdmin, unreadForCustomer]);
-
   const createNewProject = () => {
     const hasContent =
       projectId ||
@@ -1737,16 +1723,17 @@ function App() {
         {customerTab==='rapport' && <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>}
 
         {customerTab==='chat' && <Section title={unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : (totalChatCount ? `Chat (${totalChatCount})` : 'Chat')} icon={<FileText/>}>
-          <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet. Chatten oppdateres automatisk live, og utførende varsles på e-post når e-postvarsling er satt opp.</p>
+          <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet. Nye meldinger står som ulest til du svarer, klikker på meldingen eller trykker Marker alle som lest.</p>
           <Textarea label="Ny melding fra kunde" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
           <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
             <button type="button" onClick={saveCustomerChatMessage}>Send melding</button>
             <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
+            {unreadForCustomer > 0 && <button type="button" className="secondary" onClick={()=>markChatAsRead('customer')}>Marker alle som lest</button>}
           </div>
           {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
           {(projectLog.messages || []).slice().reverse().map(m => {
             const isUnread = m.role !== 'kunde' && (!lastReadByCustomer || (m.created || '') > lastReadByCustomer);
-            return <div className="item" key={m.id} style={isUnread ? { borderColor:'#fecaca', background:'#fff7f7' } : undefined}>
+            return <div className="item" key={m.id} onClick={()=>isUnread && markChatAsRead('customer')} style={isUnread ? { borderColor:'#fecaca', background:'#fff7f7', cursor:'pointer' } : undefined}>
             <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'}</b>
             <small>
               {m.created ? new Date(m.created).toLocaleString('no-NO') : ''}
@@ -2025,7 +2012,7 @@ function App() {
       </Section>}
 
       {tab==='chat' && <Section title={unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : (totalChatCount > 0 ? `Chat (${totalChatCount} meldinger)` : 'Chat')} icon={<FileText/>}>
-        <p className="note">Chatten oppdateres automatisk live når kunde eller utførende sender nye meldinger. Skrivefeltet beholdes selv om chatten oppdateres i bakgrunnen. E-postvarsling sendes når e-post er registrert. Du velger selv om chatten skal tas med i rapporten.</p>
+        <p className="note">Chatten oppdateres automatisk live. Nye kundemeldinger står som ulest til du svarer, klikker på meldingen eller trykker Marker alle som lest. Skrivefeltet beholdes ved refresh.</p>
         {totalChatCount > 0 && <p className="note" style={{ fontWeight:700 }}>💬 Det finnes {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt i chatten{customerChatCount > 0 ? `, hvorav ${customerChatCount} fra kunde` : ''}{unreadForAdmin > 0 ? ` · ${unreadForAdmin} ulest fra kunde` : ' · alt er lest'}.</p>}
         {!hasValue(project.customerEmail) && <p className="note" style={{ fontWeight:700 }}>⚠️ Legg inn kunde e-post i Prosjektinformasjon for at kunde skal få e-postvarsling ved nye chatmeldinger.</p>}
         <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'14px' }}>
@@ -2041,12 +2028,13 @@ function App() {
         <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
           <button type="button" onClick={addProjectLogMessage}>Send melding</button>
           <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
+          {unreadForAdmin > 0 && <button type="button" className="secondary" onClick={()=>markChatAsRead('admin')}>Marker alle som lest</button>}
           <button type="button" className="secondary" onClick={()=>setProjectLog(prev=>({...prev, draft:''}))}>Tøm skrivefelt</button>
         </div>
         {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
         {(projectLog.messages || []).slice().reverse().map(m => {
           const isUnread = m.role === 'kunde' && (!lastReadByAdmin || (m.created || '') > lastReadByAdmin);
-          return <div className="item" key={m.id} style={isUnread ? { borderColor:'#fecaca', background:'#fff7f7' } : undefined}>
+          return <div className="item" key={m.id} onClick={()=>isUnread && markChatAsRead('admin')} style={isUnread ? { borderColor:'#fecaca', background:'#fff7f7', cursor:'pointer' } : undefined}>
           <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'}</b>
           <small>
             {m.created ? new Date(m.created).toLocaleString('no-NO') : ''}
