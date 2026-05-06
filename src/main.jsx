@@ -2200,6 +2200,27 @@ function App() {
         .projectImageThumb small { font-size:10.5px !important; line-height:1.15 !important; }
       }
 
+
+      /* Mobile navigation cleanup v2: no fixed chrome on small screens */
+      @media screen and (max-width: 700px) {
+        header { position:static !important; top:auto !important; z-index:auto !important; backdrop-filter:none !important; border-bottom:0 !important; }
+        main { padding:10px 10px 28px !important; }
+        .bottomAppNav { display:none !important; }
+        body:has(.bottomAppNav) > div { padding-bottom:0 !important; }
+        .mobileNav { padding:0 10px 10px !important; }
+        .mobileNavPanel { position:static !important; border-radius:16px !important; padding:10px !important; margin-bottom:8px !important; }
+        .mobileNavTop { display:flex !important; align-items:flex-start !important; margin-bottom:8px !important; }
+        .mobileNavTitle b { font-size:13px !important; letter-spacing:.04em !important; text-transform:uppercase !important; color:#64748b !important; }
+        .mobileNavTitle small { font-size:18px !important; font-weight:900 !important; color:#0f172a !important; }
+        .mobileNav select { min-height:46px !important; font-size:18px !important; font-weight:900 !important; }
+        .mobileNavQuick { display:none !important; }
+        .mobileNavStatus { display:grid !important; grid-template-columns:repeat(4, minmax(0, 1fr)) !important; gap:6px !important; margin-top:8px !important; }
+        .mobileNavStatus .mobileNavPill { justify-content:center !important; min-height:38px !important; font-size:13px !important; padding:7px 6px !important; border-radius:14px !important; }
+        .mobileNavStatus .mobileNavPill:nth-child(n+5) { display:none !important; }
+        section { scroll-margin-top:12px !important; }
+        .projectListToolbar { position:static !important; }
+      }
+
     `}</style>
     <header>
       <div className="head">
