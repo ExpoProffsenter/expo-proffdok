@@ -103,6 +103,7 @@ function App() {
   const [internalNotes, setInternalNotes] = useState('');
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState(null);
+  const [mobileCreatingProject, setMobileCreatingProject] = useState(false);
   const [authUser, setAuthUser] = useState(null);
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
@@ -381,6 +382,7 @@ function App() {
     if (error || !data) { console.error(error); return alert('Kunne ikke åpne prosjekt: ' + (error?.message || 'Fant ikke prosjekt')); }
     unpackData(dataFromRow(data));
     setProjectId(data.id);
+    setMobileCreatingProject(false);
     setTab(targetTab);
   };
 
@@ -643,6 +645,7 @@ function App() {
     setProjectLog(emptyProjectLog());
     setInternalNotes('');
     setProjectId(null);
+    setMobileCreatingProject(true);
     setTab('prosjekt');
 
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -1190,6 +1193,7 @@ function App() {
       const { data, error } = await supabase.from('projects').insert(payload).select().single();
       if (error) { console.error(error); return alert('Kunne ikke lagre i sky: ' + error.message); }
       setProjectId(data.id);
+      setMobileCreatingProject(false);
       unpackData(dataFromRow(data), false);
       alert('✔ Prosjekt lagret');
     }
@@ -1290,6 +1294,7 @@ function App() {
     const { data, error } = await supabase.from('projects').insert(payload).select().single();
     if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
     setProjectId(data.id);
+    setMobileCreatingProject(false);
     alert('✔ Kopi lagret');
     loadProjects(authUser);
   };
@@ -1343,6 +1348,7 @@ function App() {
     }
 
     setProjectId(data.id);
+    setMobileCreatingProject(false);
     setProject(newProjectData);
     loadProjects(authUser);
     return data.id;
@@ -1662,6 +1668,7 @@ function App() {
   const signOut = async () => {
     await supabase.auth.signOut();
     setProjectId(null);
+    setMobileCreatingProject(false);
     setProjects([]);
     setProfile(null);
     setTab('prosjekt');
@@ -2424,7 +2431,7 @@ function App() {
     </div>}
 
     <main>
-      {!projectId && <section className="mobileProjectChooser">
+      {!projectId && !mobileCreatingProject && <section className="mobileProjectChooser">
         <h2>Hvilket prosjekt vil du jobbe i?</h2>
         <p className="mobileProjectChooserIntro">Velg prosjekt først. Deretter kan du ta bilder, fylle ut sjekklister, skrive i chat eller lage rapport.</p>
         <Input label="Søk etter prosjekt, kunde eller adresse" value={projectSearch} onChange={setProjectSearch}/>
@@ -2473,7 +2480,7 @@ function App() {
         {projectHasOvertagelse() && <p className="note">Overtagelse er registrert{overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString('no-NO')}` : ''}.</p>}
         {totalChatCount > 0 && <p className="note">💬 Chat: {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt{customerChatCount > 0 ? ` · ${customerChatCount} fra kunde` : ''}{unreadForAdmin > 0 ? ` · ${unreadForAdmin} ulest` : ''}{latestChatMessage?.created ? ` · siste ${new Date(latestChatMessage.created).toLocaleString('no-NO')}` : ''}.</p>}
       </Section>}
-      {tab==='prosjekt' && <div className={!projectId ? 'desktopOnlyWhenNoProject' : ''}><Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
+      {tab==='prosjekt' && <div className={!projectId && !mobileCreatingProject ? 'desktopOnlyWhenNoProject' : ''}><Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
         <Input label="Prosjektansvarlig" value={project.responsible} onChange={v=>setProject({...project,responsible:v})}/>
         <Input label="Dato" type="date" value={project.date} onChange={v=>setProject({...project,date:v})}/>
         <Input label="Navn på prosjekt" value={project.projectName} onChange={v=>setProject({...project,projectName:v})}/>
