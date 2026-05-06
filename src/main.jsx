@@ -188,7 +188,7 @@ function App() {
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
     ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['overtagelse','Overtagelse'],
-    ['chat', customerChatCount > 0 ? `Chat (${customerChatCount})` : 'Chat'],
+    ['chat', totalChatCount > 0 ? `Chat (${totalChatCount})` : 'Chat'],
     ['internt','Interne notater'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
     ...(isAdminUser && !isReadOnly ? [['admin','Admin']] : [])
   ];
@@ -1713,7 +1713,7 @@ function App() {
         </div>
         <p className="note">{isProjectLocked ? `Prosjektet ble låst${project.lockedAt ? ' ' + new Date(project.lockedAt).toLocaleString('no-NO') : ''}${project.lockedBy ? ' av ' + project.lockedBy : ''}. Lås opp prosjektet hvis du trenger å gjøre endringer.` : 'Prosjektet er åpent for endringer. Når prosjektet er ferdig og overlevert kan det avsluttes og låses.'}</p>
         {projectHasOvertagelse() && <p className="note">Overtagelse er registrert{overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString('no-NO')}` : ''}.</p>}
-        {customerChatCount > 0 && <p className="note">💬 Chat: {customerChatCount} melding{customerChatCount === 1 ? '' : 'er'} fra kunde{latestChatMessage?.created ? ` · siste ${new Date(latestChatMessage.created).toLocaleString('no-NO')}` : ''}.</p>}
+        {totalChatCount > 0 && <p className="note">💬 Chat: {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt{customerChatCount > 0 ? ` · ${customerChatCount} fra kunde` : ''}{latestChatMessage?.created ? ` · siste ${new Date(latestChatMessage.created).toLocaleString('no-NO')}` : ''}.</p>}
       </Section>}
       {tab==='prosjekt' && <Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
         <Input label="Prosjektansvarlig" value={project.responsible} onChange={v=>setProject({...project,responsible:v})}/>
@@ -1929,9 +1929,9 @@ function App() {
         </div>
       </Section>}
 
-      {tab==='chat' && <Section title={customerChatCount > 0 ? `Chat (${customerChatCount} fra kunde)` : 'Chat'} icon={<FileText/>}>
+      {tab==='chat' && <Section title={totalChatCount > 0 ? `Chat (${totalChatCount} meldinger)` : 'Chat'} icon={<FileText/>}>
         <p className="note">Chatten oppdateres automatisk live når kunde eller utførende sender nye meldinger. Skrivefeltet beholdes selv om chatten oppdateres i bakgrunnen. E-postvarsling sendes når e-post er registrert. Du velger selv om chatten skal tas med i rapporten.</p>
-        {customerChatCount > 0 && <p className="note" style={{ fontWeight:700 }}>💬 Det finnes {customerChatCount} melding{customerChatCount === 1 ? '' : 'er'} fra kunde i chatten.</p>}
+        {totalChatCount > 0 && <p className="note" style={{ fontWeight:700 }}>💬 Det finnes {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt i chatten{customerChatCount > 0 ? `, hvorav ${customerChatCount} fra kunde` : ''}.</p>}
         {!hasValue(project.customerEmail) && <p className="note" style={{ fontWeight:700 }}>⚠️ Legg inn kunde e-post i Prosjektinformasjon for at kunde skal få e-postvarsling ved nye chatmeldinger.</p>}
         <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'14px' }}>
           <input
