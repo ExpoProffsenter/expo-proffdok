@@ -114,6 +114,9 @@ function App() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [adminUsers, setAdminUsers] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
+  const [projectSearch, setProjectSearch] = useState('');
+  const [projectStatusFilter, setProjectStatusFilter] = useState('alle');
+  const [projectUnreadOnly, setProjectUnreadOnly] = useState(false);
   const [fdvRegister, setFdvRegister] = useState([]);
   const [fdvLoading, setFdvLoading] = useState(false);
   const latestStateRef = useRef({});
@@ -215,6 +218,46 @@ function App() {
     project: projectFromRow(row, (row?.data || fallbackData || {}).project || emptyProject())
   });
 
+  const projectListRows = useMemo(() => {
+    return (projects || []).map(row => {
+      const listProject = projectFromRow(row, row.data?.project || {});
+      const listStatus = projectStatusInfo(listProject, row.data?.overtagelse || {});
+      const listLog = normalizeProjectLog(row.data?.projectLog);
+      const messages = listLog.messages || [];
+      const unreadForAdminInList = messages.filter(m => m.role === 'kunde' && (!listLog.lastReadByAdmin || (m.created || '') > listLog.lastReadByAdmin)).length;
+      const latestMessage = messages.length ? messages[messages.length - 1] : null;
+      const searchable = [
+        row.title,
+        listProject.projectName,
+        listProject.customer,
+        listProject.address,
+        listProject.city,
+        listProject.postnr,
+        listProject.customerEmail,
+        listProject.responsible
+      ].filter(Boolean).join(' ').toLowerCase();
+      return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, searchable };
+    });
+  }, [projects]);
+
+  const filteredProjectListRows = useMemo(() => {
+    const term = (projectSearch || '').trim().toLowerCase();
+    return projectListRows.filter(item => {
+      if (term && !item.searchable.includes(term)) return false;
+      if (projectUnreadOnly && item.unreadForAdminInList <= 0) return false;
+      if (projectStatusFilter !== 'alle' && item.listStatus.tone !== projectStatusFilter) return false;
+      return true;
+    });
+  }, [projectListRows, projectSearch, projectStatusFilter, projectUnreadOnly]);
+
+  const projectListStats = useMemo(() => {
+    const total = projectListRows.length;
+    const unread = projectListRows.reduce((sum, item) => sum + item.unreadForAdminInList, 0);
+    const active = projectListRows.filter(item => item.listStatus.tone === 'progress' || item.listStatus.tone === 'open').length;
+    const finished = projectListRows.filter(item => item.listStatus.tone === 'done' || item.listStatus.tone === 'locked').length;
+    return { total, unread, active, finished, visible: filteredProjectListRows.length };
+  }, [projectListRows, filteredProjectListRows]);
+
   const tabs = [
     ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['prosjektering','Prosjektering'],
     ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
@@ -285,12 +328,12 @@ function App() {
     if (notify) alert(`Prosjektliste oppdatert. Fant ${(data || []).length} prosjekt${(data || []).length === 1 ? '' : 'er'}.`);
   };
 
-  const openProjectById = async (id) => {
+  const openProjectById = async (id, targetTab = 'rapport') => {
     const { data, error } = await supabase.from('projects').select('*').eq('id', id).single();
     if (error || !data) { console.error(error); return alert('Kunne ikke åpne prosjekt: ' + (error?.message || 'Fant ikke prosjekt')); }
     unpackData(dataFromRow(data));
     setProjectId(data.id);
-    setTab('rapport');
+    setTab(targetTab);
   };
 
   const refreshProjectFromCloud = async (silent = false, fullRefresh = false) => {
@@ -2280,20 +2323,56 @@ function App() {
       </Section>}
 
       {tab==='prosjektliste' && <Section title="Prosjektliste">
-        <button onClick={() => loadProjects(authUser, true)}>Oppdater liste</button>
+        <div className="cards" style={{ marginBottom:'16px' }}>
+          <div className="tile"><b>{projectListStats.total}</b><span>Prosjekter totalt</span></div>
+          <div className="tile"><b>{projectListStats.visible}</b><span>Vises med filter</span></div>
+          <div className="tile"><b>{projectListStats.unread}</b><span>Uleste kundemeldinger</span></div>
+          <div className="tile"><b>{projectListStats.active}</b><span>Åpne / pågående</span></div>
+        </div>
+
+        <Grid>
+          <Input label="Søk i prosjektliste" value={projectSearch} onChange={setProjectSearch}/>
+          <Select label="Statusfilter" value={projectStatusFilter} onChange={setProjectStatusFilter} options={['alle','open','progress','done','locked']}/>
+        </Grid>
+
+        <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', margin:'14px 0 16px' }}>
+          <button onClick={() => loadProjects(authUser, true)}>Oppdater liste</button>
+          <button type="button" className={projectUnreadOnly ? '' : 'secondary'} onClick={()=>setProjectUnreadOnly(v=>!v)}>
+            {projectUnreadOnly ? 'Vis alle prosjekter' : 'Vis kun uleste'}
+          </button>
+          <button type="button" className="secondary" onClick={()=>{ setProjectSearch(''); setProjectStatusFilter('alle'); setProjectUnreadOnly(false); }}>Nullstill filter</button>
+        </div>
+
+        <p className="note">Statusfilter: open = åpen, progress = pågår, done = ferdigstilt, locked = avsluttet/låst.</p>
         {projects.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen prosjekter hentet ennå.</p>}
-        {projects.map(p=>{
-          const listProject = projectFromRow(p, p.data?.project || {});
-          const listStatus = projectStatusInfo(listProject, p.data?.overtagelse || {});
-          const listLog = normalizeProjectLog(p.data?.projectLog);
-          const listUnreadForAdmin = (listLog.messages || []).filter(m => m.role === 'kunde' && (!listLog.lastReadByAdmin || (m.created || '') > listLog.lastReadByAdmin)).length;
-          return <div className="item" key={p.id}>
-            <b>{p.title || 'Uten navn'}</b>
-            <span className={`statusBadge status-${listStatus.tone}`} style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:700, border:'1px solid #dbe7ec', width:'fit-content', ...statusStyle(listStatus.tone) }}>{listStatus.icon} {listStatus.label}</span>
-            {listUnreadForAdmin > 0 && <span style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:800, border:'1px solid #fecaca', background:'#fef2f2', color:'#991b1b', width:'fit-content' }}>💬 {listUnreadForAdmin} ulest</span>}
-            <small>Sist oppdatert: {new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</small>
-            <button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button>
-            <button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button>
+        {projects.length > 0 && filteredProjectListRows.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen prosjekter matcher søket eller filteret.</p>}
+
+        {filteredProjectListRows.map(({ row:p, listProject, listStatus, unreadForAdminInList, latestMessage })=>{
+          const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(', ');
+          return <div className="item" key={p.id} style={unreadForAdminInList > 0 ? { borderColor:'#fecaca', background:'#fff7f7' } : undefined}>
+            <div style={{ display:'flex', justifyContent:'space-between', gap:'12px', flexWrap:'wrap', alignItems:'flex-start' }}>
+              <div>
+                <b>{p.title || listProject.projectName || 'Uten navn'}</b>
+                {listProject.customer && <p style={{ margin:'6px 0 0' }}><b>Kunde:</b> {listProject.customer}</p>}
+                {locationLine && <small>{locationLine}</small>}
+              </div>
+              <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', justifyContent:'flex-end' }}>
+                <span className={`statusBadge status-${listStatus.tone}`} style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:700, border:'1px solid #dbe7ec', width:'fit-content', ...statusStyle(listStatus.tone) }}>{listStatus.icon} {listStatus.label}</span>
+                {unreadForAdminInList > 0 && <span style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:800, border:'1px solid #fecaca', background:'#fef2f2', color:'#991b1b', width:'fit-content' }}>💬 {unreadForAdminInList} ulest</span>}
+              </div>
+            </div>
+
+            <div className="cards" style={{ marginTop:'12px' }}>
+              <div className="tile"><b>Oppdatert</b><span>{new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</span></div>
+              <div className="tile"><b>Chat</b><span>{latestMessage?.created ? `Siste: ${new Date(latestMessage.created).toLocaleString('no-NO')}` : 'Ingen meldinger'}</span></div>
+              <div className="tile"><b>Ansvarlig</b><span>{listProject.responsible || 'Ikke fylt ut'}</span></div>
+            </div>
+
+            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginTop:'12px' }}>
+              <button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button>
+              <button className="secondary" onClick={()=>openProjectById(p.id, 'chat')}>Åpne chat</button>
+              <button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button>
+            </div>
           </div>;
         })}
       </Section>}
