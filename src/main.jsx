@@ -471,6 +471,7 @@ function App() {
     };
   }, [projectId, isReadOnly, tab, customerTab]);
 
+
   const createNewProject = () => {
     const hasContent =
       projectId ||
@@ -1723,7 +1724,7 @@ function App() {
         {customerTab==='rapport' && <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>}
 
         {customerTab==='chat' && <Section title={unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : (totalChatCount ? `Chat (${totalChatCount})` : 'Chat')} icon={<FileText/>}>
-          <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet. Nye meldinger står som ulest til du svarer, klikker på meldingen eller trykker Marker alle som lest.</p>
+          <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet. Chatten oppdateres automatisk live, og utførende varsles på e-post når e-postvarsling er satt opp.</p>
           <Textarea label="Ny melding fra kunde" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
           <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
             <button type="button" onClick={saveCustomerChatMessage}>Send melding</button>
@@ -2041,7 +2042,7 @@ function App() {
             {m.role === 'kunde' ? (isUnread ? ' · Ulest for admin' : ' · Lest av admin') : ((!lastReadByCustomer || (m.created || '') > lastReadByCustomer) ? ' · Ulest for kunde' : ' · Lest av kunde')}
           </small>
           <p>{m.text}</p>
-          <button type="button" className="secondary" onClick={()=>removeProjectLogMessage(m.id)}>Fjern melding</button>
+          <button type="button" className="secondary" onClick={(e)=>{ e.stopPropagation(); removeProjectLogMessage(m.id); }}>Fjern melding</button>
         </div>;
         })}
       </Section>}
