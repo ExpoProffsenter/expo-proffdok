@@ -573,7 +573,7 @@ function App() {
           .eq('id', projectId)
           .eq('user_id', authUser.id)
           .select('*')
-          .single();
+          .maybeSingle();
 
         if (updatedRow) {
           unpackData(dataFromRow(updatedRow));
@@ -643,7 +643,7 @@ function App() {
       })
       .eq('id', projectId)
       .select('*')
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error(error);
@@ -724,7 +724,7 @@ function App() {
         .eq('id', projectId)
         .eq('user_id', authUser.id)
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error(error);
