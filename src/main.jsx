@@ -192,7 +192,7 @@ function App() {
   };
 
   const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes });
-  const unpackData = (data) => {
+  const unpackData = (data, preserveDraft = false) => {
     setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
     setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
     setProject({ ...emptyProject(), ...(data.project || {}) });
@@ -217,7 +217,13 @@ function App() {
     setChecklist(data.checklist || {});
     setTilbud(data.tilbud || emptyTilbud());
     setOvertagelse(data.overtagelse || emptyOvertagelse());
-    setProjectLog(data.projectLog || { enabled:false, draft:'', messages:[] });
+
+    const incomingLog = data.projectLog || { enabled:false, draft:'', messages:[] };
+    setProjectLog(prev => ({
+      ...incomingLog,
+      draft: preserveDraft ? (prev?.draft || '') : (incomingLog.draft || '')
+    }));
+
     setInternalNotes(data.internalNotes || '');
   };
 
@@ -257,7 +263,7 @@ function App() {
       return;
     }
 
-    unpackData(dataFromRow(data));
+    unpackData(dataFromRow(data), true);
     setProjectId(data.id);
     if (!silent) alert('Prosjektdata oppdatert.');
   };
