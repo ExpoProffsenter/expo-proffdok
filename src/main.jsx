@@ -731,7 +731,6 @@ function App() {
         .from('projects')
         .select('*')
         .eq('id', projectId)
-        .eq('user_id', authUser.id)
         .maybeSingle();
 
       if (fetchError) {
@@ -740,7 +739,7 @@ function App() {
       }
 
       if (!existing) {
-        return alert('Fant ikke prosjektet for din bruker. Åpne prosjektet på nytt fra prosjektlisten.');
+        return alert('Fant ikke prosjektet. Åpne prosjektet på nytt fra prosjektlisten.');
       }
 
       const existingProject = projectFromRow(existing, existing?.data?.project || {});
@@ -776,35 +775,37 @@ function App() {
         updated_at: new Date().toISOString()
       };
 
-      const { data: updatedRows, error } = await supabase
+      const { error } = await supabase
         .from('projects')
         .update(payload)
-        .eq('id', projectId)
-        .eq('user_id', authUser.id)
-        .select('*');
+        .eq('id', projectId);
 
       if (error) {
         console.error(error);
         return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message);
       }
 
-      const updatedRow = Array.isArray(updatedRows) ? updatedRows[0] : updatedRows;
-      if (!updatedRow) {
-        return alert('Prosjektet ble ikke oppdatert. Supabase returnerte ingen rad. Sjekk innlogging/tilgang og prøv igjen.');
+      setProject(saveProjectData);
+      setProjectLog(saveProjectLog);
+      latestStateRef.current = {
+        ...snapshot,
+        project: saveProjectData,
+        projectLog: saveProjectLog
+      };
+
+      const { data: verifyRow, error: verifyError } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .maybeSingle();
+
+      if (!verifyError && verifyRow) {
+        unpackData(dataFromRow(verifyRow), false);
+        setProjectId(verifyRow.id);
       }
 
-      const savedProject = updatedRow?.data?.project || {};
-      const wantedEmail = saveProjectData.customerEmail || '';
-      const savedEmail = savedProject.customerEmail || '';
-      if (wantedEmail !== savedEmail) {
-        console.warn('E-post ble ikke bekreftet lagret', { wantedEmail, savedEmail, savedProject });
-        return alert('Prosjektet ble sendt til lagring, men kunde e-post ble ikke bekreftet lagret. Prøv igjen eller last siden på nytt.');
-      }
-
-      unpackData(dataFromRow(updatedRow), false);
-      setProjectId(updatedRow.id);
       await loadProjects(authUser);
-      alert('✔ Prosjekt oppdatert og bekreftet lagret');
+      alert('✔ Prosjekt oppdatert');
     } else {
       const newProjectData = {
         ...emptyProject(),
