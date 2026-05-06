@@ -2198,15 +2198,44 @@ function App() {
         .photo b { font-size:14px !important; line-height:1.25 !important; }
         .photo small { font-size:12px !important; line-height:1.25 !important; }
         .projectImageThumb small { font-size:10.5px !important; line-height:1.15 !important; }
+      }
 
 
-      /* Mobile project chooser v4 */
-      .mobileProjectChooser { display:none; }
-      .desktopOnlyWhenNoProject { display:block; }
+      /* Mobile navigation cleanup v2: no fixed chrome on small screens */
+      @media screen and (max-width: 700px) {
+        header { position:static !important; top:auto !important; z-index:auto !important; backdrop-filter:none !important; border-bottom:0 !important; }
+        main { padding:10px 10px 28px !important; }
+        .bottomAppNav { display:none !important; }
+        body:has(.bottomAppNav) > div { padding-bottom:0 !important; }
+        .mobileNav { padding:0 10px 10px !important; }
+        .mobileNavPanel { position:static !important; border-radius:16px !important; padding:10px !important; margin-bottom:8px !important; }
+        .mobileNavTop { display:flex !important; align-items:flex-start !important; margin-bottom:8px !important; }
+        .mobileNavTitle b { font-size:13px !important; letter-spacing:.04em !important; text-transform:uppercase !important; color:#64748b !important; }
+        .mobileNavTitle small { font-size:18px !important; font-weight:900 !important; color:#0f172a !important; }
+        .mobileNav select { min-height:46px !important; font-size:18px !important; font-weight:900 !important; }
+        .mobileNavQuick { display:none !important; }
+        .mobileNavStatus { display:grid !important; grid-template-columns:repeat(4, minmax(0, 1fr)) !important; gap:6px !important; margin-top:8px !important; }
+        .mobileNavStatus .mobileNavPill { justify-content:center !important; min-height:38px !important; font-size:13px !important; padding:7px 6px !important; border-radius:14px !important; }
+        .mobileNavStatus .mobileNavPill:nth-child(n+5) { display:none !important; }
+        section { scroll-margin-top:12px !important; }
+        .projectListToolbar { position:static !important; }
+      }
+
+
+      /* Mobile project chooser v5 - desktop-safe */
+      .mobileProjectChooser,
+      .mobileCurrentProjectBar { display:none !important; }
+      .desktopOnlyWhenNoProject { display:block !important; }
+      @media screen and (min-width: 701px) {
+        .mobileProjectChooser,
+        .mobileCurrentProjectBar { display:none !important; }
+        .desktopOnlyWhenNoProject { display:block !important; }
+      }
       @media screen and (max-width: 700px) {
         .mobileProjectChooser { display:block !important; }
+        .mobileCurrentProjectBar { display:block !important; }
         .desktopOnlyWhenNoProject { display:none !important; }
-        .mobileProjectChooser { padding:16px !important; border-radius:22px !important; background:#ffffff !important; border:1px solid #dbe7ec !important; box-shadow:0 12px 30px rgba(15,23,42,0.08) !important; }
+        .mobileProjectChooser { padding:16px !important; border-radius:22px !important; background:#fff !important; border:1px solid #dbe7ec !important; box-shadow:0 12px 30px rgba(15,23,42,0.08) !important; }
         .mobileProjectChooser h2 { font-size:24px !important; line-height:1.15 !important; margin-bottom:8px !important; }
         .mobileProjectChooserIntro { color:#64748b; font-size:15px; line-height:1.45; margin:0 0 14px; }
         .mobileProjectChooserActions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0; }
@@ -2217,15 +2246,13 @@ function App() {
         .mobileProjectPickCard b { font-size:17px; line-height:1.25; color:#0f172a; }
         .mobileProjectPickCard small { display:block; color:#64748b; font-size:13px; line-height:1.35; margin-top:3px; }
         .mobileProjectPickStatus { white-space:nowrap; font-size:12px; font-weight:900; border:1px solid #dbe7ec; border-radius:999px; padding:5px 8px; background:#fff; }
-        .mobileProjectPickActions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:10px; }
-        .mobileProjectPickActions button { min-height:40px !important; padding:7px 6px !important; font-size:13px !important; border-radius:13px !important; }
-        .mobileCurrentProjectBar { display:block !important; margin:0 10px 10px !important; padding:12px !important; border:1px solid #dbe7ec !important; background:#ffffff !important; border-radius:18px !important; }
+        .mobileProjectPickActions { display:grid !important; grid-template-columns:1fr 1fr !important; gap:6px; margin-top:10px; }
+        .mobileProjectPickActions button { min-height:42px !important; padding:7px 6px !important; font-size:13px !important; border-radius:13px !important; width:100% !important; }
+        .mobileCurrentProjectBar { margin:0 10px 10px !important; padding:12px !important; border:1px solid #dbe7ec !important; background:#ffffff !important; border-radius:18px !important; }
         .mobileCurrentProjectBar b { display:block; font-size:13px; text-transform:uppercase; color:#64748b; letter-spacing:.04em; margin-bottom:4px; }
         .mobileCurrentProjectBar span { display:block; font-size:17px; font-weight:900; color:#0f172a; line-height:1.25; }
         .mobileCurrentProjectActions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
         .mobileCurrentProjectActions button { min-height:44px !important; font-size:14px !important; }
-      }
-
       }
 
     `}</style>
@@ -2259,13 +2286,16 @@ function App() {
             <button type="button" className={tab==='produkter' ? '' : 'secondary'} onClick={()=>goToTab('produkter')}>Produkter</button>
             <button type="button" className={tab==='sjekklister' ? '' : 'secondary'} onClick={()=>goToTab('sjekklister')}>Sjekklister</button>
             <button type="button" className={tab==='tilbud' ? '' : 'secondary'} onClick={()=>goToTab('tilbud')}>Tilbud</button>
-            <button type="button" className={tab==='overtagelse' ? '' : 'secondary'} onClick={()=>goToTab('overtagelse')}>Overtagelse</button>
+            <button type="button" className={tab==='overtagelse' ? '' : 'secondary'} onClick={()=>goToTab('overtagelse')}>Overtag.</button>
           </div>
           <div className="mobileNavQuick">
             <button type="button" className="secondary" disabled={!previousTab} onClick={() => previousTab && goToTab(previousTab[0])}>← Forrige</button>
             <button type="button" disabled={!nextTab} onClick={() => nextTab && goToTab(nextTab[0])}>Neste →</button>
           </div>
-          <div className="mobileNavStatus" aria-hidden="true"></div>
+          <div className="mobileNavStatus">
+            {unreadForAdmin > 0 && <button type="button" className="mobileNavPill" onClick={()=>goToTab('chat')}>💬 {unreadForAdmin} ulest</button>}
+            {totalChatCount > 0 && <button type="button" className="mobileNavPill" onClick={()=>goToTab('chat')}>Chat: {totalChatCount}</button>}
+          </div>
         </div>
       </div>}
     </header>
@@ -2273,14 +2303,14 @@ function App() {
     <main>
       {!projectId && <section className="mobileProjectChooser">
         <h2>Hvilket prosjekt vil du jobbe i?</h2>
-        <p className="mobileProjectChooserIntro">Velg et prosjekt først. Deretter kan du ta bilder, fylle ut sjekklister, skrive i chat eller lage rapport.</p>
+        <p className="mobileProjectChooserIntro">Velg prosjekt først. Deretter kan du ta bilder, fylle ut sjekklister, skrive i chat eller lage rapport.</p>
         <Input label="Søk etter prosjekt, kunde eller adresse" value={projectSearch} onChange={setProjectSearch}/>
         <div className="mobileProjectChooserActions">
           <button type="button" onClick={() => loadProjects(authUser, true)}>Oppdater liste</button>
           <button type="button" className="secondary" onClick={()=>{ createNewProject(); setTab('prosjekt'); }}>+ Nytt prosjekt</button>
         </div>
         <div className="mobileProjectList">
-          {filteredProjectListRows.slice(0, 6).map(({ row:p, listProject, listStatus, unreadForAdminInList }) => {
+          {filteredProjectListRows.slice(0, 8).map(({ row:p, listProject, listStatus, unreadForAdminInList }) => {
             const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(', ');
             return <div className="mobileProjectPickCard" key={`mobile-pick-${p.id}`}>
               <div className="mobileProjectPickCardTop">
@@ -2293,7 +2323,8 @@ function App() {
                 <span className="mobileProjectPickStatus">{listStatus.icon} {listStatus.label}</span>
               </div>
               <div className="mobileProjectPickActions">
-                <button type="button" onClick={()=>openProjectById(p.id, 'bilder')}>Bilder</button>
+                <button type="button" onClick={()=>openProjectById(p.id, 'prosjekt')}>Åpne</button>
+                <button type="button" className="secondary" onClick={()=>openProjectById(p.id, 'bilder')}>Bilder</button>
                 <button type="button" className="secondary" onClick={()=>openProjectById(p.id, 'sjekklister')}>Sjekklister</button>
                 <button type="button" className="secondary" onClick={()=>openProjectById(p.id, 'chat')}>Chat</button>
               </div>
@@ -2307,7 +2338,7 @@ function App() {
         <b>Du jobber i</b>
         <span>{project.projectName || project.address || 'Åpent prosjekt'}</span>
         <div className="mobileCurrentProjectActions">
-          <button type="button" onClick={()=>goToTab('prosjektliste')}>Bytt prosjekt</button>
+          <button type="button" onClick={()=>{ setProjectId(null); setTab('prosjekt'); }}>Bytt prosjekt</button>
           <button type="button" className="secondary" onClick={()=>goToTab('bilder')}>Gå til bilder</button>
         </div>
       </div>}
