@@ -1872,25 +1872,15 @@ function App() {
         {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>{photos.filter(p=>p.cat===c).length > 0 ? `📷 ${photos.filter(p=>p.cat===c).length} bilder lagt til` : 'Ta bilde eller velg fra galleri'}</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
         {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',fdvUrl:'',photos:[],by:user.name||'Underentreprenør',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/><Input label="FDV-/databladlink" value={x.fdvUrl || ''} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,fdvUrl:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label>{(x.photos||[]).length > 0 && <p className="note">📷 {(x.photos||[]).length} bilder lagt til</p>}<div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
         {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}>
-          <p className="note">Velg status per kontrollpunkt. Ved Avvik kan du skrive kommentar og ta bilde.</p>
-          <div className="checklistList">
-            {checklistTemplate.map(group => <div className="item" key={group.category}>
-              <h3>{group.category}</h3>
-              {group.items.map(item => {
-                const value = checklist[group.category]?.[item] || {};
-                return <div className="checklistPoint" key={item}>
-                  <div className="checklistHeader"><b>{item}</b>{(value.photos||[]).length > 0 && <small>📷 {(value.photos||[]).length} bilder lagt til</small>}<div className="checklistStatusButtons">{['Ok','Ikke aktuelt','Avvik'].map(status => <button type="button" key={status} className={value.status===status ? '' : 'secondary'} onClick={()=>setChecklistValue(group.category, item, { status })}>{status}</button>)}</div></div>
-                  {(value.status || value.comment || (value.photos||[]).length>0) && <Textarea label="Kommentar" value={value.comment || ''} onChange={v=>setChecklistValue(group.category, item, { comment:v })}/>} 
-                  <label className="upload checklistUpload"><Plus size={18}/> Ta bilde / last opp bilde<input type="file" accept="image/*" multiple onChange={e=>addChecklistPhoto(group.category, item, e.target.files)}/></label>
-                  {(value.photos || []).length > 0 && <div className="photos checklistPhotos">{value.photos.map(p => <div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div>}
-                </div>;
-              })}
-            </div>)}
-          </div>
-          <Section title="Opplastede sjekklister / vedlegg fra andre fag" icon={<FileText/>}>
-            <label className="upload"><Plus size={18}/> Last opp sjekkliste / vedlegg<input type="file" multiple onChange={e=>addFiles(e.target.files)}/></label>
-            {files.map(f=><div className="file" key={f.id}><b>{f.name}</b><small>Lastet opp av {f.by} · {f.created}</small><a href={f.url} target="_blank">Åpne</a><button className="secondary" onClick={()=>setFiles(files.filter(x=>x.id!==f.id))}>Fjern</button></div>)}
-          </Section>
+          <p className="note">Velg status per kontrollpunkt. Kategoriene kan åpnes/lukkes for mindre scrolling på mobil. Ved Avvik kan du skrive kommentar og ta bilde.</p>
+          <ChecklistEditor
+            checklist={checklist}
+            setChecklistValue={setChecklistValue}
+            addChecklistPhoto={addChecklistPhoto}
+            addFiles={addFiles}
+            files={files}
+            setFiles={setFiles}
+          />
         </Section>}
       </main>
     </div>;
@@ -2255,6 +2245,58 @@ function App() {
         .mobileCurrentProjectActions button { min-height:44px !important; font-size:14px !important; }
       }
 
+
+      /* Mobile UX fase 4: feltapp-sjekklister */
+      .checklistSummaryCard {
+        border:1px solid #dbe7ec;
+        background:#f8fafc;
+        border-radius:18px;
+        padding:14px;
+        margin:12px 0 16px;
+      }
+      .checklistSummaryCard b { font-size:18px; color:#0f172a; }
+      .checklistSummaryCard p { margin:4px 0 10px; color:#64748b; }
+      .checklistProgress { height:10px; border-radius:999px; background:#e2e8f0; overflow:hidden; margin:10px 0; }
+      .checklistProgress span { display:block; height:100%; border-radius:999px; background:#082f3a; transition:width .2s ease; }
+      .checklistSummaryBadges { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+      .checklistSummaryBadges span { display:inline-flex; align-items:center; gap:4px; padding:6px 9px; border-radius:999px; border:1px solid #dbe7ec; background:#fff; font-size:13px; font-weight:800; color:#334155; }
+      .checklistSummaryActions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+      .checklistAccordion { display:grid; gap:12px; }
+      .checklistGroup { padding:0 !important; overflow:hidden; border-radius:18px !important; }
+      .checklistGroupHeader { width:100%; border:0 !important; background:#ffffff !important; color:#0f172a !important; box-shadow:none !important; display:flex !important; justify-content:space-between !important; align-items:center !important; gap:12px !important; padding:14px !important; text-align:left !important; min-height:64px !important; }
+      .checklistGroupTitle { display:flex; flex-direction:column; gap:3px; min-width:0; }
+      .checklistGroupTitle b { font-size:18px; line-height:1.2; }
+      .checklistGroupTitle small { color:#64748b; font-weight:700; }
+      .checklistGroupBadge { white-space:nowrap; border:1px solid #dbe7ec; border-radius:999px; padding:6px 9px; font-size:12px; font-weight:900; background:#f8fafc; }
+      .checklistGroupBadge-done { background:#ecfdf5; color:#065f46; border-color:#bbf7d0; }
+      .checklistGroupBadge-avvik { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+      .checklistGroupBadge-progress { background:#fffbeb; color:#92400e; border-color:#fde68a; }
+      .checklistGroupBadge-missing { background:#f8fafc; color:#475569; }
+      .checklistGroupBody { padding:0 14px 14px; display:grid; gap:10px; }
+      .checklistPoint { border:1px solid #dbe7ec; background:#fff; border-radius:16px; padding:12px; }
+      .checklistPoint-avvik { border-color:#fecaca; background:#fff7f7; }
+      .checklistPoint-done { border-color:#bbf7d0; }
+      .checklistPointTitle { display:flex; flex-direction:column; gap:3px; min-width:0; }
+      .checklistPointTitle small { color:#64748b; font-weight:700; }
+      @media screen and (max-width:700px) {
+        .checklistSummaryCard { padding:12px !important; border-radius:16px !important; margin:10px 0 12px !important; }
+        .checklistSummaryCard b { font-size:17px !important; }
+        .checklistSummaryBadges { display:grid !important; grid-template-columns:1fr 1fr !important; gap:6px !important; }
+        .checklistSummaryBadges span { justify-content:center !important; font-size:12.5px !important; padding:7px 6px !important; }
+        .checklistSummaryActions { display:grid !important; grid-template-columns:1fr 1fr !important; gap:6px !important; }
+        .checklistSummaryActions button { width:100% !important; font-size:13px !important; }
+        .checklistGroupHeader { padding:12px !important; min-height:62px !important; }
+        .checklistGroupTitle b { font-size:16.5px !important; }
+        .checklistGroupTitle small { font-size:12.5px !important; }
+        .checklistGroupBadge { font-size:11.5px !important; padding:5px 7px !important; }
+        .checklistGroupBody { padding:0 10px 10px !important; gap:8px !important; }
+        .checklistPoint { padding:10px !important; border-radius:15px !important; }
+        .checklistHeader { display:grid !important; gap:8px !important; }
+        .checklistStatusButtons { display:grid !important; grid-template-columns:1fr 1fr 1fr !important; gap:6px !important; }
+        .checklistStatusButtons button { width:100% !important; min-height:40px !important; padding:7px 4px !important; font-size:12.5px !important; }
+        .checklistUpload { width:100% !important; justify-content:center !important; margin-top:8px !important; }
+      }
+
       /* Mobile UX fase 3: sticky feltapp-meny */
       .mobileFieldBar { display:none; }
       @media screen and (max-width: 700px) {
@@ -2535,45 +2577,16 @@ function App() {
       {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',fdvUrl:'',photos:[],by:user.name||'Ukjent',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/><Input label="FDV-/databladlink" value={x.fdvUrl || ''} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,fdvUrl:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label>{(x.photos||[]).length > 0 && <p className="note">📷 {(x.photos||[]).length} bilder lagt til</p>}<div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
 
       {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}>
-        <p className="note">Velg status per kontrollpunkt. Ved Avvik kan du skrive kommentar og ta bilde. Opplastede sjekklister fra andre fag kan fortsatt legges ved nederst.</p>
-        <div className="checklistList">
-          {checklistTemplate.map(group => <div className="item" key={group.category}>
-            <h3>{group.category}</h3>
-            {group.items.map(item => {
-              const value = checklist[group.category]?.[item] || {};
-              return <div className="checklistPoint" key={item}>
-                <div className="checklistHeader">
-                  <b>{item}</b>
-                  {(value.photos||[]).length > 0 && <small>📷 {(value.photos||[]).length} bilder lagt til</small>}
-                  <div className="checklistStatusButtons">
-                    {['Ok','Ikke aktuelt','Avvik'].map(status => <button
-                      type="button"
-                      key={status}
-                      className={value.status===status ? '' : 'secondary'}
-                      onClick={()=>setChecklistValue(group.category, item, { status })}
-                    >{status}</button>)}
-                  </div>
-                </div>
-                {(value.status || value.comment || (value.photos||[]).length>0) && <Textarea
-                  label="Kommentar"
-                  value={value.comment || ''}
-                  onChange={v=>setChecklistValue(group.category, item, { comment:v })}
-                />}
-                <label className="upload checklistUpload"><Plus size={18}/> Ta bilde / last opp bilde
-                  <input type="file" accept="image/*" multiple onChange={e=>addChecklistPhoto(group.category, item, e.target.files)}/>
-                </label>
-                {(value.photos || []).length > 0 && <div className="photos checklistPhotos">
-                  {value.photos.map(p => <div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}
-                </div>}
-              </div>;
-            })}
-          </div>)}
-        </div>
-        <Section title="Opplastede sjekklister / vedlegg fra andre fag" icon={<FileText/>}>
-          <label className="upload"><Plus size={18}/> Last opp sjekkliste / vedlegg<input type="file" multiple onChange={e=>addFiles(e.target.files)}/></label>
-          {files.map(f=><div className="file" key={f.id}><b>{f.name}</b><small>Lastet opp av {f.by} · {f.created}</small><a href={f.url} target="_blank">Åpne</a><button className="secondary" onClick={()=>setFiles(files.filter(x=>x.id!==f.id))}>Fjern</button></div>)}
-        </Section>
-      </Section>}
+          <p className="note">Velg status per kontrollpunkt. Kategoriene kan åpnes/lukkes for mindre scrolling på mobil. Ved Avvik kan du skrive kommentar og ta bilde.</p>
+          <ChecklistEditor
+            checklist={checklist}
+            setChecklistValue={setChecklistValue}
+            addChecklistPhoto={addChecklistPhoto}
+            addFiles={addFiles}
+            files={files}
+            setFiles={setFiles}
+          />
+        </Section>}
 
       {tab==='tilbud' && <Section title="Tilbud / kontrakt" icon={<FileText/>}>
         <p className="note">Her legger du inn tilbud, kontrakt og avtaleendringer. Kunde får se dette i kundelinken når det finnes innhold eller vedlegg. Huk av hvis sammendraget også skal med i vanlig rapport/PDF.</p>
@@ -2915,6 +2928,115 @@ function Input({label,value,onChange,type='text',onKeyDown,autoComplete}) { retu
 function Textarea({label,value,onChange}) { return <label><span>{label}</span><textarea value={value} onChange={e=>onChange(e.target.value)} /></label>; }
 function Select({label,value,onChange,options}) { return <label><span>{label}</span><select value={value} onChange={e=>onChange(e.target.value)}>{options.map(o=><option key={o}>{o}</option>)}</select></label>; }
 function PhotoGrid({photos,setPhotos}) { return <div className="photos">{photos.map(p=><div className="photo" key={p.id}><img src={p.url}/><b>{p.cat}</b><small>{p.created}</small><textarea placeholder="Kommentar" value={p.comment} onChange={e=>setPhotos(photos.map(x=>x.id===p.id?{...x,comment:e.target.value}:x))}/><button className="secondary" onClick={()=>setPhotos(photos.filter(x=>x.id!==p.id))}><Trash2 size={16}/> Fjern</button></div>)}</div>; }
+
+
+function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles }) {
+  const [openCategories, setOpenCategories] = React.useState(() => ({ [checklistTemplate[0]?.category || '']: true }));
+
+  const groupStats = (group) => {
+    const total = group.items.length;
+    const done = group.items.filter(item => hasValue(checklist?.[group.category]?.[item]?.status)).length;
+    const deviations = group.items.filter(item => checklist?.[group.category]?.[item]?.status === 'Avvik').length;
+    const photos = group.items.reduce((sum, item) => sum + ((checklist?.[group.category]?.[item]?.photos || []).length), 0);
+    return { total, done, missing: Math.max(0, total - done), deviations, photos };
+  };
+
+  const totalStats = checklistTemplate.reduce((acc, group) => {
+    const stats = groupStats(group);
+    acc.total += stats.total;
+    acc.done += stats.done;
+    acc.missing += stats.missing;
+    acc.deviations += stats.deviations;
+    acc.photos += stats.photos;
+    return acc;
+  }, { total:0, done:0, missing:0, deviations:0, photos:0 });
+
+  const percent = totalStats.total ? Math.round((totalStats.done / totalStats.total) * 100) : 0;
+  const toggleCategory = (category) => setOpenCategories(prev => ({ ...prev, [category]: !prev[category] }));
+  const expandAll = () => setOpenCategories(Object.fromEntries(checklistTemplate.map(group => [group.category, true])));
+  const collapseDone = () => setOpenCategories(Object.fromEntries(checklistTemplate.map(group => {
+    const stats = groupStats(group);
+    return [group.category, stats.missing > 0 || stats.deviations > 0];
+  })));
+
+  return <>
+    <div className="checklistSummaryCard">
+      <div>
+        <b>Sjekklistefremdrift</b>
+        <p>{totalStats.done} av {totalStats.total} punkter vurdert · {percent}% ferdig</p>
+      </div>
+      <div className="checklistProgress"><span style={{ width: `${percent}%` }}/></div>
+      <div className="checklistSummaryBadges">
+        <span>✅ {totalStats.done} utfylt</span>
+        <span>⚪ {totalStats.missing} mangler</span>
+        <span>⚠️ {totalStats.deviations} avvik</span>
+        <span>📷 {totalStats.photos} bilder</span>
+      </div>
+      <div className="checklistSummaryActions">
+        <button type="button" className="secondary" onClick={expandAll}>Åpne alle</button>
+        <button type="button" className="secondary" onClick={collapseDone}>Vis det som gjenstår</button>
+      </div>
+    </div>
+
+    <div className="checklistList checklistAccordion">
+      {checklistTemplate.map(group => {
+        const stats = groupStats(group);
+        const isOpen = openCategories[group.category] !== false;
+        const groupTone = stats.deviations > 0 ? 'avvik' : stats.missing === 0 ? 'done' : stats.done > 0 ? 'progress' : 'missing';
+        return <div className={`item checklistGroup checklistGroup-${groupTone}`} key={group.category}>
+          <button type="button" className="checklistGroupHeader" onClick={()=>toggleCategory(group.category)} aria-expanded={isOpen}>
+            <span className="checklistGroupTitle">
+              <b>{isOpen ? '▾' : '▸'} {group.category}</b>
+              <small>{stats.done}/{stats.total} utfylt{stats.deviations ? ` · ${stats.deviations} avvik` : ''}{stats.photos ? ` · ${stats.photos} bilder` : ''}</small>
+            </span>
+            <span className={`checklistGroupBadge checklistGroupBadge-${groupTone}`}>
+              {stats.deviations > 0 ? '⚠️ Avvik' : stats.missing === 0 ? '✅ Ferdig' : stats.done > 0 ? '🟡 Pågår' : '⚪ Mangler'}
+            </span>
+          </button>
+
+          {isOpen && <div className="checklistGroupBody">
+            {group.items.map(item => {
+              const value = checklist[group.category]?.[item] || {};
+              const pointTone = value.status === 'Avvik' ? 'avvik' : value.status ? 'done' : 'missing';
+              return <div className={`checklistPoint checklistPoint-${pointTone}`} key={item}>
+                <div className="checklistHeader">
+                  <div className="checklistPointTitle">
+                    <b>{item}</b>
+                    <small>{value.status || 'Ikke vurdert'}{(value.photos||[]).length > 0 ? ` · 📷 ${(value.photos||[]).length} bilder` : ''}</small>
+                  </div>
+                  <div className="checklistStatusButtons">
+                    {['Ok','Ikke aktuelt','Avvik'].map(status => <button
+                      type="button"
+                      key={status}
+                      className={value.status===status ? '' : 'secondary'}
+                      onClick={()=>setChecklistValue(group.category, item, { status })}
+                    >{status}</button>)}
+                  </div>
+                </div>
+                {(value.status || value.comment || (value.photos||[]).length>0) && <Textarea
+                  label="Kommentar"
+                  value={value.comment || ''}
+                  onChange={v=>setChecklistValue(group.category, item, { comment:v })}
+                />}
+                <label className="upload checklistUpload"><Plus size={18}/> Ta bilde / last opp bilde
+                  <input type="file" accept="image/*" multiple onChange={e=>addChecklistPhoto(group.category, item, e.target.files)}/>
+                </label>
+                {(value.photos || []).length > 0 && <div className="photos checklistPhotos">
+                  {value.photos.map(p => <div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}
+                </div>}
+              </div>;
+            })}
+          </div>}
+        </div>;
+      })}
+    </div>
+
+    <Section title="Opplastede sjekklister / vedlegg fra andre fag" icon={<FileText/>}>
+      <label className="upload"><Plus size={18}/> Last opp sjekkliste / vedlegg<input type="file" multiple onChange={e=>addFiles(e.target.files)}/></label>
+      {files.map(f=><div className="file" key={f.id}><b>{f.name}</b><small>Lastet opp av {f.by} · {f.created}</small><a href={f.url} target="_blank">Åpne</a><button className="secondary" onClick={()=>setFiles(files.filter(x=>x.id!==f.id))}>Fjern</button></div>)}
+    </Section>
+  </>;
+}
 
 
 function ChecklistReportSection({checklist}) {
