@@ -2164,6 +2164,34 @@ function App() {
         .photo { border-radius:14px !important; padding:8px !important; }
         .photo img { border-radius:12px !important; }
         body:has(.bottomAppNav) > div { padding-bottom:0; }
+
+        /* Mobile readability tuning v2 */
+        section h2 { font-size:21px !important; line-height:1.22 !important; }
+        h3 { font-size:18px !important; line-height:1.25 !important; }
+        p, small, .out p, .item p { line-height:1.45 !important; }
+        .note { font-size:14px !important; line-height:1.48 !important; }
+        label span { font-size:13px !important; line-height:1.3 !important; }
+        input, textarea, select { font-size:17px !important; line-height:1.35 !important; }
+        button, .upload { font-size:15px !important; font-weight:800 !important; line-height:1.2 !important; }
+        .bottomAppNav button { font-size:12px !important; }
+        .bottomAppNav button span:first-child { font-size:20px !important; }
+        .projectListCardTop b[style] { font-size:19px !important; line-height:1.24 !important; }
+        .projectListCardTop p { font-size:15px !important; line-height:1.35 !important; }
+        .projectListCardTop small { font-size:13px !important; line-height:1.35 !important; }
+        .statusBadge, .projectMiniBadge { font-size:12.5px !important; line-height:1.15 !important; padding:6px 9px !important; }
+        .projectListMetaCards .tile b { font-size:13px !important; line-height:1.2 !important; }
+        .projectListMetaCards .tile span { font-size:12.5px !important; line-height:1.28 !important; }
+        .projectListHeaderCards .tile b { font-size:20px !important; }
+        .projectListHeaderCards .tile span { font-size:11.5px !important; line-height:1.18 !important; }
+        .projectListToolbar button, .projectListActions button { font-size:13.5px !important; min-height:42px !important; }
+        .tile b { font-size:17px !important; line-height:1.2 !important; }
+        .tile span { font-size:13px !important; line-height:1.3 !important; }
+        .check span { font-size:15px !important; }
+        .checklistHeader b { font-size:15.5px !important; line-height:1.3 !important; }
+        .checklistStatusButtons button { font-size:13px !important; }
+        .photo b { font-size:14px !important; line-height:1.25 !important; }
+        .photo small { font-size:12px !important; line-height:1.25 !important; }
+        .projectImageThumb small { font-size:10.5px !important; line-height:1.15 !important; }
       }
 
     `}</style>
