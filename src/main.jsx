@@ -683,14 +683,22 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
 
   const addProjectLogMessage = async () => {
     const text = (projectLog.draft || '').trim();
-    if (!text) return alert('Skriv en melding først.');
+    if (!text && !chatUploadFile) return alert('Skriv en melding eller velg et bilde først.');
+
+    let uploadedImage = null;
+    if (chatUploadFile) {
+      uploadedImage = await uploadChatImage(chatUploadFile);
+      if (!uploadedImage) return;
+    }
 
     const message = {
       id: uid(),
       text,
       by: user.name || authUser?.email || 'Utførende',
       role: 'utførende',
-      created: new Date().toISOString()
+      created: new Date().toISOString(),
+      imageUrl: uploadedImage?.imageUrl || '',
+      imageName: uploadedImage?.imageName || ''
     };
 
     const updatedLog = {
@@ -701,6 +709,9 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
     };
 
     setProjectLog(updatedLog);
+    setChatUploadFile(null);
+    const fileInput = document.getElementById('admin-chat-image-input');
+    if (fileInput) fileInput.value = '';
 
     if (projectId && authUser) {
       const { data: existing, error: fetchError } = await supabase
@@ -1743,6 +1754,18 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
               {m.role === 'kunde' ? ((!lastReadByAdmin || (m.created || '') > lastReadByAdmin) ? ' · Ulest for admin' : ' · Lest av admin') : (isUnread ? ' · Ulest for kunde' : ' · Lest av kunde')}
             </small>
             <p>{m.text}</p>
+            {m.imageUrl && (
+              <div style={{ marginTop:'10px' }}>
+                <a href={m.imageUrl} target="_blank" rel="noreferrer">
+                  <img
+                    src={m.imageUrl}
+                    alt={m.imageName || 'Chat bilde'}
+                    style={{ maxWidth:'280px', width:'100%', borderRadius:'12px', border:'1px solid #dbe7ec' }}
+                  />
+                </a>
+                {m.imageName && <small style={{ display:'block', marginTop:'6px' }}>{m.imageName}</small>}
+              </div>
+            )}
           </div>;
           })}
         </Section>}
@@ -2032,10 +2055,12 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
           <label className="upload" style={{marginBottom:0}}>
   📷 Last opp bilde
   <input
+    id="admin-chat-image-input"
     type="file"
     accept="image/*"
     onChange={e=>setChatUploadFile(e.target.files?.[0] || null)}
   />
+  {chatUploadFile && <small style={{display:'block', marginTop:'6px'}}>Valgt: {chatUploadFile.name}</small>}
 </label>
 
 <button type="button" onClick={addProjectLogMessage}>Send melding</button>
@@ -2053,6 +2078,18 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
             {m.role === 'kunde' ? (isUnread ? ' · Ulest for admin' : ' · Lest av admin') : ((!lastReadByCustomer || (m.created || '') > lastReadByCustomer) ? ' · Ulest for kunde' : ' · Lest av kunde')}
           </small>
           <p>{m.text}</p>
+          {m.imageUrl && (
+            <div style={{ marginTop:'10px' }}>
+              <a href={m.imageUrl} target="_blank" rel="noreferrer">
+                <img
+                  src={m.imageUrl}
+                  alt={m.imageName || 'Chat bilde'}
+                  style={{ maxWidth:'280px', width:'100%', borderRadius:'12px', border:'1px solid #dbe7ec' }}
+                />
+              </a>
+              {m.imageName && <small style={{ display:'block', marginTop:'6px' }}>{m.imageName}</small>}
+            </div>
+          )}
           <button type="button" className="secondary" onClick={(e)=>{ e.stopPropagation(); removeProjectLogMessage(m.id); }}>Fjern melding</button>
         </div>;
         })}
@@ -2229,6 +2266,7 @@ function Report({company,name,project,selected,manualProducts,other,surf,photos,
         <b>{m.by || 'Ukjent'}</b>
         <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
         <p>{m.text}</p>
+        {m.imageUrl && <div className="photos reportPhotos"><div className="photo"><img src={m.imageUrl} alt={m.imageName || 'Chat bilde'}/>{m.imageName && <small>{m.imageName}</small>}</div></div>}
       </div>)}
     </section>}
     <ChecklistReportSection checklist={checklist}/>
@@ -2512,6 +2550,7 @@ function CustomerReport({company,name,project,selected,manualProducts,other,surf
         <b>{m.by || 'Ukjent'}</b>
         <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
         <p>{m.text}</p>
+        {m.imageUrl && <div className="photos reportPhotos"><div className="photo"><img src={m.imageUrl} alt={m.imageName || 'Chat bilde'}/>{m.imageName && <small>{m.imageName}</small>}</div></div>}
       </div>)}
     </section>}
     <ChecklistReportSection checklist={checklist}/>
