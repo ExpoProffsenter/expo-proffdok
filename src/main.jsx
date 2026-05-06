@@ -82,6 +82,7 @@ function App() {
   const [tilbud, setTilbud] = useState(emptyTilbud());
   const [overtagelse, setOvertagelse] = useState(emptyOvertagelse());
   const [projectLog, setProjectLog] = useState({ enabled:false, draft:'', messages:[] });
+  const [customerTab, setCustomerTab] = useState('rapport');
   const [internalNotes, setInternalNotes] = useState('');
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState(null);
@@ -1395,6 +1396,8 @@ function App() {
   }
 
   if (isReadOnly) {
+    const hasTilbudContent = hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0;
+
     return <div>
       <header>
         <div className="head">
@@ -1403,17 +1406,15 @@ function App() {
           <button onClick={() => window.print()}><Download size={18}/> Lag PDF / skriv ut</button>
         </div>
         <nav>
-          <button className="on" onClick={()=>document.getElementById('kunde-rapport')?.scrollIntoView({behavior:'smooth'})}>Rapport</button>
-          <button onClick={()=>document.getElementById('kunde-chat')?.scrollIntoView({behavior:'smooth'})}>Chat{totalChatCount ? ` (${totalChatCount})` : ''}</button>
-          <button onClick={()=>document.getElementById('kunde-tilbud')?.scrollIntoView({behavior:'smooth'})}>Tilbud/kontrakt</button>
+          <button className={customerTab==='rapport' ? 'on' : ''} onClick={()=>setCustomerTab('rapport')}>Rapport</button>
+          <button className={customerTab==='chat' ? 'on' : ''} onClick={()=>setCustomerTab('chat')}>Chat{totalChatCount ? ` (${totalChatCount})` : ''}</button>
+          <button className={customerTab==='tilbud' ? 'on' : ''} onClick={()=>setCustomerTab('tilbud')}>Tilbud/kontrakt</button>
         </nav>
       </header>
       <main>
-        <div id="kunde-rapport">
-          <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>
-        </div>
-        <Section title={totalChatCount ? `Chat (${totalChatCount})` : 'Chat'} icon={<FileText/>}>
-          <div id="kunde-chat"></div>
+        {customerTab==='rapport' && <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>}
+
+        {customerTab==='chat' && <Section title={totalChatCount ? `Chat (${totalChatCount})` : 'Chat'} icon={<FileText/>}>
           <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet. Utførende varsles på e-post når e-postvarsling er satt opp.</p>
           <Textarea label="Ny melding fra kunde" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
           <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
@@ -1425,7 +1426,22 @@ function App() {
             <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
             <p>{m.text}</p>
           </div>)}
-        </Section>
+        </Section>}
+
+        {customerTab==='tilbud' && <Section title="Tilbud / kontrakt" icon={<FileText/>}>
+          {!hasTilbudContent && <p className="note">Ingen tilbud eller kontrakt er delt på dette prosjektet ennå.</p>}
+          {hasTilbudContent && <>
+            <Grid>
+              <InfoCard label="Tillegg" value={tilbud.tillegg}/>
+              <InfoCard label="Fradrag" value={tilbud.fradrag}/>
+              <InfoCard label="Avtaleendringer / kommentar" value={tilbud.kommentar}/>
+            </Grid>
+            {(tilbud.files || []).length > 0 && <div className="item">
+              <h3>Vedlegg</h3>
+              {(tilbud.files || []).map(f => <p key={f.id}><a href={f.url} target="_blank">{f.name}</a></p>)}
+            </div>}
+          </>}
+        </Section>}
       </main>
     </div>;
   }
