@@ -2066,8 +2066,7 @@ function App() {
       .mobileNavQuick { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
       .mobileNavQuick button { width:100%; min-height:44px; justify-content:center; }
       .mobileNavStatus { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-      .mobileNavPill { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:6px 9px; border-radius:999px; background:#f8fafc; border:1px solid #dbe7ec; font-size:12px; font-weight:800; color:#334155; cursor:pointer; }
-      .mobileNavPill.active { background:#21c7cd; border-color:#21c7cd; color:#082f3a; box-shadow:0 8px 18px rgba(33,199,205,0.22); }
+      .mobileNavPill { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border-radius:999px; background:#f8fafc; border:1px solid #dbe7ec; font-size:12px; font-weight:800; color:#334155; }
       .mobileSectionChips { display:none; }
       .projectListHeaderCards { margin-bottom:16px; }
       .projectListToolbar { display:flex; gap:12px; flex-wrap:wrap; margin:14px 0 16px; }
@@ -2199,49 +2198,34 @@ function App() {
         .photo b { font-size:14px !important; line-height:1.25 !important; }
         .photo small { font-size:12px !important; line-height:1.25 !important; }
         .projectImageThumb small { font-size:10.5px !important; line-height:1.15 !important; }
+
+
+      /* Mobile project chooser v4 */
+      .mobileProjectChooser { display:none; }
+      .desktopOnlyWhenNoProject { display:block; }
+      @media screen and (max-width: 700px) {
+        .mobileProjectChooser { display:block !important; }
+        .desktopOnlyWhenNoProject { display:none !important; }
+        .mobileProjectChooser { padding:16px !important; border-radius:22px !important; background:#ffffff !important; border:1px solid #dbe7ec !important; box-shadow:0 12px 30px rgba(15,23,42,0.08) !important; }
+        .mobileProjectChooser h2 { font-size:24px !important; line-height:1.15 !important; margin-bottom:8px !important; }
+        .mobileProjectChooserIntro { color:#64748b; font-size:15px; line-height:1.45; margin:0 0 14px; }
+        .mobileProjectChooserActions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0; }
+        .mobileProjectChooserActions button { width:100% !important; min-height:46px !important; justify-content:center !important; }
+        .mobileProjectList { display:grid; gap:10px; margin-top:14px; }
+        .mobileProjectPickCard { border:1px solid #dbe7ec; border-radius:18px; padding:12px; background:#f8fafc; }
+        .mobileProjectPickCardTop { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+        .mobileProjectPickCard b { font-size:17px; line-height:1.25; color:#0f172a; }
+        .mobileProjectPickCard small { display:block; color:#64748b; font-size:13px; line-height:1.35; margin-top:3px; }
+        .mobileProjectPickStatus { white-space:nowrap; font-size:12px; font-weight:900; border:1px solid #dbe7ec; border-radius:999px; padding:5px 8px; background:#fff; }
+        .mobileProjectPickActions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:10px; }
+        .mobileProjectPickActions button { min-height:40px !important; padding:7px 6px !important; font-size:13px !important; border-radius:13px !important; }
+        .mobileCurrentProjectBar { display:block !important; margin:0 10px 10px !important; padding:12px !important; border:1px solid #dbe7ec !important; background:#ffffff !important; border-radius:18px !important; }
+        .mobileCurrentProjectBar b { display:block; font-size:13px; text-transform:uppercase; color:#64748b; letter-spacing:.04em; margin-bottom:4px; }
+        .mobileCurrentProjectBar span { display:block; font-size:17px; font-weight:900; color:#0f172a; line-height:1.25; }
+        .mobileCurrentProjectActions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+        .mobileCurrentProjectActions button { min-height:44px !important; font-size:14px !important; }
       }
 
-
-      /* Mobile navigation cleanup v2: no fixed chrome on small screens */
-      @media screen and (max-width: 700px) {
-        header { position:static !important; top:auto !important; z-index:auto !important; backdrop-filter:none !important; border-bottom:0 !important; }
-        main { padding:10px 10px 28px !important; }
-        .bottomAppNav { display:none !important; }
-        body:has(.bottomAppNav) > div { padding-bottom:0 !important; }
-        .mobileNav { padding:0 10px 10px !important; }
-        .mobileNavPanel { position:static !important; border-radius:16px !important; padding:10px !important; margin-bottom:8px !important; }
-        .mobileNavTop { display:flex !important; align-items:flex-start !important; margin-bottom:8px !important; }
-        .mobileNavTitle b { font-size:13px !important; letter-spacing:.04em !important; text-transform:uppercase !important; color:#64748b !important; }
-        .mobileNavTitle small { font-size:18px !important; font-weight:900 !important; color:#0f172a !important; }
-        .mobileNav select { min-height:46px !important; font-size:18px !important; font-weight:900 !important; }
-        .mobileNavQuick { display:none !important; }
-        .mobileNavStatus { display:grid !important; grid-template-columns:repeat(4, minmax(0, 1fr)) !important; gap:6px !important; margin-top:8px !important; }
-        .mobileNavStatus .mobileNavPill { justify-content:center !important; min-height:38px !important; font-size:13px !important; padding:7px 6px !important; border-radius:14px !important; width:100% !important; box-shadow:none !important; }
-        .mobileNavStatus button.mobileNavPill { background:#f8fafc !important; color:#0f172a !important; border:1px solid #dbe7ec !important; }
-        .mobileNavStatus button.mobileNavPill.active { background:#21c7cd !important; color:#082f3a !important; border-color:#21c7cd !important; }
-        .mobileNavStatus .mobileNavPill:nth-child(n+5) { display:none !important; }
-        section { scroll-margin-top:12px !important; }
-        .projectListToolbar { position:static !important; }
-      }
-
-
-      /* Mobile final cleanup v3 - enkel og stabil mobilmeny */
-      @media screen and (max-width: 700px) {
-        header { position: static !important; background: transparent !important; border-bottom: 0 !important; }
-        main { padding: 10px 10px calc(190px + env(safe-area-inset-bottom)) !important; }
-        .bottomAppNav, .bottomPrevNext { display: none !important; }
-        .mobileNavPanel { border-radius: 18px !important; padding: 12px !important; margin: 8px 0 12px !important; }
-        .mobileNavTitle b { font-size: 13px !important; }
-        .mobileNavTitle small { font-size: 18px !important; }
-        .mobileNav select { min-height: 50px !important; font-size: 18px !important; border-radius: 14px !important; }
-        .mobileSectionChips { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; margin-top: 10px !important; }
-        .mobileSectionChips button { min-height: 48px !important; font-size: 15px !important; padding: 9px 8px !important; border-radius: 14px !important; white-space: normal !important; }
-        .mobileNavStatus, .mobileNavQuick { display: none !important; }
-        .checklistStatusButtons { display: grid !important; grid-template-columns: 1fr !important; gap: 8px !important; width: 100% !important; margin-top: 10px !important; }
-        .checklistStatusButtons button { width: 100% !important; min-height: 48px !important; font-size: 15px !important; }
-        .checklistPoint { padding-bottom: 18px !important; }
-        .checklistUpload { width: 100% !important; justify-content: center !important; }
-        section:last-of-type { margin-bottom: 160px !important; }
       }
 
     `}</style>
@@ -2257,7 +2241,7 @@ function App() {
         {projectId && (isProjectLocked ? <button className="secondary" onClick={()=>setProjectLockedState(false)}>🔓 Lås opp prosjekt</button> : <button className="secondary" onClick={()=>setProjectLockedState(true)}>🔒 Avslutt prosjekt</button>)}
       </div>
       <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
-      <div className="mobileNav" style={{ maxWidth:'1180px', margin:'0 auto', padding:'0 16px 14px' }}>
+      {projectId && <div className="mobileNav" style={{ maxWidth:'1180px', margin:'0 auto', padding:'0 16px 14px' }}>
         <div className="mobileNavPanel">
           <div className="mobileNavTop">
             <div className="mobileNavTitle">
@@ -2283,10 +2267,50 @@ function App() {
           </div>
           <div className="mobileNavStatus" aria-hidden="true"></div>
         </div>
-      </div>
+      </div>}
     </header>
 
     <main>
+      {!projectId && <section className="mobileProjectChooser">
+        <h2>Hvilket prosjekt vil du jobbe i?</h2>
+        <p className="mobileProjectChooserIntro">Velg et prosjekt først. Deretter kan du ta bilder, fylle ut sjekklister, skrive i chat eller lage rapport.</p>
+        <Input label="Søk etter prosjekt, kunde eller adresse" value={projectSearch} onChange={setProjectSearch}/>
+        <div className="mobileProjectChooserActions">
+          <button type="button" onClick={() => loadProjects(authUser, true)}>Oppdater liste</button>
+          <button type="button" className="secondary" onClick={()=>{ createNewProject(); setTab('prosjekt'); }}>+ Nytt prosjekt</button>
+        </div>
+        <div className="mobileProjectList">
+          {filteredProjectListRows.slice(0, 6).map(({ row:p, listProject, listStatus, unreadForAdminInList }) => {
+            const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(', ');
+            return <div className="mobileProjectPickCard" key={`mobile-pick-${p.id}`}>
+              <div className="mobileProjectPickCardTop">
+                <div>
+                  <b>{p.title || listProject.projectName || 'Uten navn'}</b>
+                  {listProject.customer && <small>Kunde: {listProject.customer}</small>}
+                  {locationLine && <small>{locationLine}</small>}
+                  {unreadForAdminInList > 0 && <small style={{ color:'#991b1b', fontWeight:900 }}>💬 {unreadForAdminInList} ulest fra kunde</small>}
+                </div>
+                <span className="mobileProjectPickStatus">{listStatus.icon} {listStatus.label}</span>
+              </div>
+              <div className="mobileProjectPickActions">
+                <button type="button" onClick={()=>openProjectById(p.id, 'bilder')}>Bilder</button>
+                <button type="button" className="secondary" onClick={()=>openProjectById(p.id, 'sjekklister')}>Sjekklister</button>
+                <button type="button" className="secondary" onClick={()=>openProjectById(p.id, 'chat')}>Chat</button>
+              </div>
+            </div>;
+          })}
+          {projects.length === 0 && <p className="note">Ingen prosjekter hentet ennå. Trykk Oppdater liste.</p>}
+          {projects.length > 0 && filteredProjectListRows.length === 0 && <p className="note">Ingen prosjekter matcher søket.</p>}
+        </div>
+      </section>}
+      {projectId && <div className="mobileCurrentProjectBar">
+        <b>Du jobber i</b>
+        <span>{project.projectName || project.address || 'Åpent prosjekt'}</span>
+        <div className="mobileCurrentProjectActions">
+          <button type="button" onClick={()=>goToTab('prosjektliste')}>Bytt prosjekt</button>
+          <button type="button" className="secondary" onClick={()=>goToTab('bilder')}>Gå til bilder</button>
+        </div>
+      </div>}
       {projectId && <Section title={`${currentStatus.icon} Prosjektstatus: ${currentStatus.label}`} icon={<BadgeCheck/>}>
         <div className={`statusBadge status-${currentStatus.tone}`} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 12px', borderRadius:'999px', fontWeight:700, marginBottom:'10px', border:'1px solid #dbe7ec', ...statusStyle(currentStatus.tone) }}>
           <span>{currentStatus.icon}</span><span>{currentStatus.label}</span>
@@ -2295,7 +2319,7 @@ function App() {
         {projectHasOvertagelse() && <p className="note">Overtagelse er registrert{overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString('no-NO')}` : ''}.</p>}
         {totalChatCount > 0 && <p className="note">💬 Chat: {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt{customerChatCount > 0 ? ` · ${customerChatCount} fra kunde` : ''}{unreadForAdmin > 0 ? ` · ${unreadForAdmin} ulest` : ''}{latestChatMessage?.created ? ` · siste ${new Date(latestChatMessage.created).toLocaleString('no-NO')}` : ''}.</p>}
       </Section>}
-      {tab==='prosjekt' && <Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
+      {tab==='prosjekt' && <div className={!projectId ? 'desktopOnlyWhenNoProject' : ''}><Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
         <Input label="Prosjektansvarlig" value={project.responsible} onChange={v=>setProject({...project,responsible:v})}/>
         <Input label="Dato" type="date" value={project.date} onChange={v=>setProject({...project,date:v})}/>
         <Input label="Navn på prosjekt" value={project.projectName} onChange={v=>setProject({...project,projectName:v})}/>
@@ -2305,7 +2329,7 @@ function App() {
         <Input label="Kunde" value={project.customer} onChange={v=>setProject({...project,customer:v})}/>
         <Input label="Kunde e-post" type="email" value={project.customerEmail || ''} onChange={v=>setProject({...project,customerEmail:v})}/>
         <Textarea label="Notater" value={project.notes} onChange={v=>setProject({...project,notes:v})}/>
-      </Grid></Section>}
+      </Grid></Section></div>}
 
       {tab==='firma' && <Section title="Firmaprofil" icon={<Building2/>}>
         <p className="note">Firmaprofilen lagres på brukeren din og brukes automatisk i prosjekter og rapporter.</p>
