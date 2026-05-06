@@ -243,6 +243,25 @@ function App() {
     setTab('rapport');
   };
 
+  const refreshProjectFromCloud = async (silent = false) => {
+    if (!projectId) return;
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
+      .maybeSingle();
+
+    if (error || !data) {
+      console.error(error);
+      if (!silent) alert('Kunne ikke oppdatere prosjektdata: ' + (error?.message || 'Fant ikke prosjekt'));
+      return;
+    }
+
+    unpackData(dataFromRow(data));
+    setProjectId(data.id);
+    if (!silent) alert('Prosjektdata oppdatert.');
+  };
+
   const applyProfile = (row) => {
     if (!row) return;
     setProfile(row);
@@ -338,6 +357,17 @@ function App() {
 
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!projectId) return;
+    if (!(isReadOnly || tab === 'chat')) return;
+
+    const timer = window.setInterval(() => {
+      refreshProjectFromCloud(true);
+    }, 12000);
+
+    return () => window.clearInterval(timer);
+  }, [projectId, isReadOnly, tab]);
 
   const createNewProject = () => {
     const hasContent =
@@ -534,14 +564,21 @@ function App() {
           internalNotes
         }));
 
-        await supabase
+        const { data: updatedRow } = await supabase
           .from('projects')
           .update({
             data: cleanData,
             updated_at: new Date().toISOString()
           })
           .eq('id', projectId)
-          .eq('user_id', authUser.id);
+          .eq('user_id', authUser.id)
+          .select('*')
+          .single();
+
+        if (updatedRow) {
+          unpackData(dataFromRow(updatedRow));
+          setProjectId(updatedRow.id);
+        }
       }
     }
 
@@ -598,20 +635,27 @@ function App() {
       projectLog: updatedLog
     }));
 
-    const { error } = await supabase
+    const { data: updatedRow, error } = await supabase
       .from('projects')
       .update({
         data: cleanData,
         updated_at: new Date().toISOString()
       })
-      .eq('id', projectId);
+      .eq('id', projectId)
+      .select('*')
+      .single();
 
     if (error) {
       console.error(error);
       return alert('Kunne ikke lagre melding: ' + error.message);
     }
 
-    setProjectLog(updatedLog);
+    if (updatedRow) {
+      unpackData(dataFromRow(updatedRow));
+      setProjectId(updatedRow.id);
+    } else {
+      setProjectLog(updatedLog);
+    }
 
     await notifyChatMessage({
       toEmail: ownerNotificationEmail(),
@@ -674,19 +718,26 @@ function App() {
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await supabase
+      const { data: updatedRow, error } = await supabase
         .from('projects')
         .update(payload)
         .eq('id', projectId)
-        .eq('user_id', authUser.id);
+        .eq('user_id', authUser.id)
+        .select('*')
+        .single();
 
       if (error) {
         console.error(error);
         return alert('Kunne ikke oppdatere prosjekt i sky: ' + error.message);
       }
 
-      setProject(saveProjectData);
-      alert('✔ Prosjekt oppdatert');
+      if (updatedRow) {
+        unpackData(dataFromRow(updatedRow));
+        setProjectId(updatedRow.id);
+      } else {
+        setProject(saveProjectData);
+      }
+      alert('✔ Prosjekt oppdatert og bekreftet lagret');
     } else {
       const newProjectData = {
         ...emptyProject(),
@@ -709,7 +760,7 @@ function App() {
       const { data, error } = await supabase.from('projects').insert(payload).select().single();
       if (error) { console.error(error); return alert('Kunne ikke lagre i sky: ' + error.message); }
       setProjectId(data.id);
-      setProject(newProjectData);
+      unpackData(dataFromRow(data));
       alert('✔ Prosjekt lagret');
     }
     loadProjects(authUser);
@@ -1419,6 +1470,7 @@ function App() {
           <Textarea label="Ny melding fra kunde" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
           <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
             <button type="button" onClick={saveCustomerChatMessage}>Send melding</button>
+            <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
           </div>
           {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
           {(projectLog.messages || []).slice().reverse().map(m => <div className="item" key={m.id}>
@@ -1698,7 +1750,7 @@ function App() {
       {tab==='chat' && <Section title={customerChatCount > 0 ? `Chat (${customerChatCount} fra kunde)` : 'Chat'} icon={<FileText/>}>
         <p className="note">Chatten kan brukes mellom utførende og kunde. Kunde kan sende meldinger via kundelinken. E-postvarsling sendes når e-post er registrert. Du velger selv om chatten skal tas med i rapporten.</p>
         {customerChatCount > 0 && <p className="note" style={{ fontWeight:700 }}>💬 Det finnes {customerChatCount} melding{customerChatCount === 1 ? '' : 'er'} fra kunde i chatten.</p>}
-        {!project.customerEmail && <p className="note" style={{ fontWeight:700 }}>⚠️ Legg inn kunde e-post i Prosjektinformasjon for at kunde skal få e-postvarsling ved nye chatmeldinger.</p>}
+        {!hasValue(project.customerEmail) && <p className="note" style={{ fontWeight:700 }}>⚠️ Legg inn kunde e-post i Prosjektinformasjon for at kunde skal få e-postvarsling ved nye chatmeldinger.</p>}
         <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'14px' }}>
           <input
             type="checkbox"
@@ -1711,6 +1763,7 @@ function App() {
         <Textarea label="Ny melding" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
         <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
           <button type="button" onClick={addProjectLogMessage}>Send melding</button>
+          <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
           <button type="button" className="secondary" onClick={()=>setProjectLog(prev=>({...prev, draft:''}))}>Tøm skrivefelt</button>
         </div>
         {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
