@@ -122,7 +122,6 @@ function App() {
   const latestStateRef = useRef({});
   const lastChatMessageCountRef = useRef(0);
   const lastChatRefreshAtRef = useRef(0);
-  const quickCameraInputRef = useRef(null);
 
   useEffect(() => {
     latestStateRef.current = {
@@ -1707,14 +1706,6 @@ function App() {
     }))]);
   };
 
-  const addQuickPhoto = async (fl) => {
-    if (!projectId) return alert('Velg prosjekt før du tar bilde.');
-    const category = tab === 'sjekklister' ? 'Sjekklister / hurtigbilde' : 'Hurtigbilde';
-    await addPhoto(category, fl);
-    if (quickCameraInputRef.current) quickCameraInputRef.current.value = '';
-    if (tab !== 'bilder') setTab('bilder');
-  };
-
   const setChecklistValue = (category, item, patch) => {
     setChecklist(prev => ({
       ...prev,
@@ -2284,7 +2275,7 @@ function App() {
           max-width:1180px;
           margin:0 auto;
           display:grid;
-          grid-template-columns:1fr auto;
+          grid-template-columns:1fr;
           gap:8px;
           align-items:center;
         }
@@ -2325,25 +2316,6 @@ function App() {
           background:#fff !important;
           border:1px solid #cbd5e1 !important;
           padding:8px 12px !important;
-        }
-        .mobileFieldActions {
-          display:flex;
-          gap:6px;
-          align-items:center;
-        }
-        .mobileFieldActions button,
-        .mobileFieldBar .quickCameraButton {
-          min-height:44px !important;
-          padding:8px 10px !important;
-          border-radius:14px !important;
-          font-size:14px !important;
-          font-weight:900 !important;
-          white-space:nowrap;
-        }
-        .mobileFieldBar .quickCameraButton {
-          background:#082f3a !important;
-          color:#fff !important;
-          border-color:#082f3a !important;
         }
         section { scroll-margin-top:106px !important; }
         main { padding-top:10px !important; }
@@ -2406,18 +2378,6 @@ function App() {
         <select aria-label="Velg seksjon" value={tab} onChange={e=>goToTab(e.target.value)}>
           {tabs.map(([id,l])=><option value={id} key={'mobile-field-' + id}>{l}</option>)}
         </select>
-        <div className="mobileFieldActions">
-          <button type="button" className="quickCameraButton" onClick={()=>quickCameraInputRef.current?.click()}>📷 Bilde</button>
-          <input
-            ref={quickCameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            multiple
-            style={{ display:'none' }}
-            onChange={e=>addQuickPhoto(e.target.files)}
-          />
-        </div>
       </div>
     </div>}
 
