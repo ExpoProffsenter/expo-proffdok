@@ -96,8 +96,9 @@ function App() {
   const [tilbud, setTilbud] = useState(emptyTilbud());
   const [overtagelse, setOvertagelse] = useState(emptyOvertagelse());
   const [chatUploadFile, setChatUploadFile] = useState(null);
+  const [customerChatUploadFile, setCustomerChatUploadFile] = useState(null);
 
-const [projectLog, setProjectLog] = useState(emptyProjectLog());
+  const [projectLog, setProjectLog] = useState(emptyProjectLog());
   const [customerTab, setCustomerTab] = useState('rapport');
   const [internalNotes, setInternalNotes] = useState('');
   const [projects, setProjects] = useState([]);
@@ -682,12 +683,14 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
     user.email || authUser?.email || company.email || profile?.email || '';
 
   const addProjectLogMessage = async () => {
+    if (!projectId) return alert('Prosjektet må lagres før chatmelding med bilde kan lagres på prosjektet.');
+
     const text = (projectLog.draft || '').trim();
     if (!text && !chatUploadFile) return alert('Skriv en melding eller velg et bilde først.');
 
     let uploadedImage = null;
     if (chatUploadFile) {
-      uploadedImage = await uploadChatImage(chatUploadFile);
+      uploadedImage = await uploadChatImage(chatUploadFile, projectId, 'admin');
       if (!uploadedImage) return;
     }
 
@@ -698,52 +701,65 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
       role: 'utførende',
       created: new Date().toISOString(),
       imageUrl: uploadedImage?.imageUrl || '',
-      imageName: uploadedImage?.imageName || ''
+      imageName: uploadedImage?.imageName || '',
+      imagePath: uploadedImage?.imagePath || ''
     };
 
+    const { data: existing, error: fetchError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
+      .maybeSingle();
+
+    if (fetchError || !existing) {
+      console.error(fetchError);
+      return alert('Kunne ikke hente prosjekt før melding ble lagret: ' + (fetchError?.message || 'Fant ikke prosjekt'));
+    }
+
+    if (rowIsLocked(existing)) {
+      return alert('Prosjektet er låst og chatmeldingen kan ikke lagres. Lås opp prosjektet først.');
+    }
+
+    const existingData = dataFromRow(existing);
+    const existingLog = normalizeProjectLog(existingData.projectLog);
     const updatedLog = {
-      ...normalizeProjectLog(projectLog),
+      ...existingLog,
       draft: '',
       lastReadByAdmin: new Date().toISOString(),
-      messages: [...(projectLog.messages || []), message]
+      messages: [...(existingLog.messages || []), message]
     };
 
-    setProjectLog(updatedLog);
+    const cleanData = JSON.parse(JSON.stringify({
+      ...existingData,
+      project: { ...emptyProject(), ...(existingData.project || {}), ...project },
+      projectLog: updatedLog,
+      internalNotes
+    }));
+
+    const { data: updatedRow, error } = await supabase
+      .from('projects')
+      .update({
+        data: cleanData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', projectId)
+      .select('*')
+      .maybeSingle();
+
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke lagre chatmelding på prosjektet: ' + error.message);
+    }
+
     setChatUploadFile(null);
     const fileInput = document.getElementById('admin-chat-image-input');
     if (fileInput) fileInput.value = '';
 
-    if (projectId && authUser) {
-      const { data: existing, error: fetchError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('id', projectId)
-        .maybeSingle();
-
-      if (!fetchError && existing && !rowIsLocked(existing)) {
-        const existingData = dataFromRow(existing);
-        const cleanData = JSON.parse(JSON.stringify({
-          ...existingData,
-          project: { ...emptyProject(), ...(existingData.project || {}), ...project },
-          projectLog: updatedLog,
-          internalNotes
-        }));
-
-        const { data: updatedRow } = await supabase
-          .from('projects')
-          .update({
-            data: cleanData,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', projectId)
-          .select('*')
-          .maybeSingle();
-
-        if (updatedRow) {
-          unpackData(dataFromRow(updatedRow));
-          setProjectId(updatedRow.id);
-        }
-      }
+    if (updatedRow) {
+      unpackData(dataFromRow(updatedRow));
+      setProjectId(updatedRow.id);
+    } else {
+      setProjectLog(updatedLog);
     }
 
     await notifyChatMessage({
@@ -752,7 +768,7 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
       message
     });
 
-    alert(project.customerEmail ? '✔ Melding sendt. E-postvarsling forsøkt sendt til kunde.' : '✔ Melding lagt til. Legg inn kunde e-post for e-postvarsling.');
+    alert(project.customerEmail ? '✔ Melding sendt og lagret på prosjektet. E-postvarsling forsøkt sendt til kunde.' : '✔ Melding lagret på prosjektet. Legg inn kunde e-post for e-postvarsling.');
   };
 
   const removeProjectLogMessage = (id) => {
@@ -765,14 +781,23 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
   const saveCustomerChatMessage = async () => {
     if (!projectId) return alert('Prosjektet mangler ID.');
     const text = (projectLog.draft || '').trim();
-    if (!text) return alert('Skriv en melding først.');
+    if (!text && !customerChatUploadFile) return alert('Skriv en melding eller velg et bilde først.');
+
+    let uploadedImage = null;
+    if (customerChatUploadFile) {
+      uploadedImage = await uploadChatImage(customerChatUploadFile, projectId, 'kunde');
+      if (!uploadedImage) return;
+    }
 
     const message = {
       id: uid(),
       text,
       by: project.customer || 'Kunde',
       role: 'kunde',
-      created: new Date().toISOString()
+      created: new Date().toISOString(),
+      imageUrl: uploadedImage?.imageUrl || '',
+      imageName: uploadedImage?.imageName || '',
+      imagePath: uploadedImage?.imagePath || ''
     };
 
     const { data: existing, error: fetchError } = await supabase
@@ -784,6 +809,10 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
     if (fetchError || !existing) {
       console.error(fetchError);
       return alert('Kunne ikke hente prosjekt før melding ble lagret: ' + (fetchError?.message || 'Fant ikke prosjekt'));
+    }
+
+    if (rowIsLocked(existing)) {
+      return alert('Prosjektet er låst og chatmeldingen kan ikke lagres. Kontakt prosjektansvarlig hvis noe må korrigeres.');
     }
 
     const existingData = dataFromRow(existing);
@@ -815,6 +844,10 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
       return alert('Kunne ikke lagre melding: ' + error.message);
     }
 
+    setCustomerChatUploadFile(null);
+    const fileInput = document.getElementById('customer-chat-image-input');
+    if (fileInput) fileInput.value = '';
+
     if (updatedRow) {
       unpackData(dataFromRow(updatedRow));
       setProjectId(updatedRow.id);
@@ -828,7 +861,7 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
       message
     });
 
-    alert(ownerNotificationEmail() ? '✔ Melding sendt. E-postvarsling forsøkt sendt til utførende.' : '✔ Melding sendt.');
+    alert(ownerNotificationEmail() ? '✔ Melding sendt og lagret på prosjektet. E-postvarsling forsøkt sendt til utførende.' : '✔ Melding sendt og lagret på prosjektet.');
   };
 
   const saveProject = async () => {
@@ -1740,6 +1773,16 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
           <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet. Chatten oppdateres automatisk live, og utførende varsles på e-post når e-postvarsling er satt opp.</p>
           <Textarea label="Ny melding fra kunde" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
           <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
+            <label className="upload" style={{marginBottom:0}}>
+              📷 Last opp bilde
+              <input
+                id="customer-chat-image-input"
+                type="file"
+                accept="image/*"
+                onChange={e=>setCustomerChatUploadFile(e.target.files?.[0] || null)}
+              />
+              {customerChatUploadFile && <small style={{display:'block', marginTop:'6px'}}>Valgt: {customerChatUploadFile.name}</small>}
+            </label>
             <button type="button" onClick={saveCustomerChatMessage}>Send melding</button>
             <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
             <button type="button" className="secondary" disabled={unreadForCustomer === 0} onClick={()=>markChatAsRead('customer')}>Marker alle som lest</button>
@@ -2174,19 +2217,22 @@ const [projectLog, setProjectLog] = useState(emptyProjectLog());
 
 
 
-async function uploadChatImage(file){
+async function uploadChatImage(file, projectId = 'uten-prosjekt', sender = 'chat'){
   if(!file) return null;
 
-  const ext = file.name.split('.').pop();
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
+  const ext = cleanName.includes('.') ? cleanName.split('.').pop() : 'jpg';
+  const safeProjectId = String(projectId || 'uten-prosjekt').replace(/[^a-zA-Z0-9._-]/g, '-');
+  const safeSender = String(sender || 'chat').replace(/[^a-zA-Z0-9._-]/g, '-');
+  const fileName = `${safeProjectId}/${safeSender}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const { data, error } = await supabase.storage
     .from('chat-images')
-    .upload(fileName, file);
+    .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
   if(error){
     console.error(error);
-    alert('Kunne ikke laste opp bilde');
+    alert('Kunne ikke laste opp bilde: ' + error.message);
     return null;
   }
 
@@ -2196,7 +2242,8 @@ async function uploadChatImage(file){
 
   return {
     imageUrl: publicData.publicUrl,
-    imageName: file.name
+    imageName: file.name,
+    imagePath: data.path
   };
 }
 
