@@ -220,12 +220,60 @@ function App() {
 
   const projectListRows = useMemo(() => {
     return (projects || []).map(row => {
-      const listProject = projectFromRow(row, row.data?.project || {});
-      const listStatus = projectStatusInfo(listProject, row.data?.overtagelse || {});
-      const listLog = normalizeProjectLog(row.data?.projectLog);
+      const data = row.data || {};
+      const listProject = projectFromRow(row, data.project || {});
+      const listStatus = projectStatusInfo(listProject, data.overtagelse || {});
+      const listLog = normalizeProjectLog(data.projectLog);
       const messages = listLog.messages || [];
       const unreadForAdminInList = messages.filter(m => m.role === 'kunde' && (!listLog.lastReadByAdmin || (m.created || '') > listLog.lastReadByAdmin)).length;
       const latestMessage = messages.length ? messages[messages.length - 1] : null;
+
+      const photoImages = Array.isArray(data.photos) ? data.photos.filter(photo => photo?.url).map(photo => ({
+        url: photo.url,
+        label: photo.cat || photo.name || 'Prosjektbilde',
+        source: 'Bilder'
+      })) : [];
+
+      const checklistImages = [];
+      Object.entries(data.checklist || {}).forEach(([category, items]) => {
+        Object.entries(items || {}).forEach(([item, value]) => {
+          (value?.photos || []).forEach(photo => {
+            if (photo?.url) checklistImages.push({
+              url: photo.url,
+              label: `${category} · ${item}`,
+              source: 'Sjekkliste'
+            });
+          });
+        });
+      });
+
+      const installImages = [];
+      (Array.isArray(data.inst) ? data.inst : []).forEach(entry => {
+        (entry?.photos || []).forEach(photo => {
+          if (photo?.url) installImages.push({
+            url: photo.url,
+            label: entry.name || entry.category || photo.name || 'Fag/utstyr',
+            source: 'Fag/utstyr'
+          });
+        });
+      });
+
+      const chatImages = messages.filter(message => message?.imageUrl).map(message => ({
+        url: message.imageUrl,
+        label: message.imageName || message.text || 'Chatbilde',
+        source: 'Chat'
+      }));
+
+      const allProjectImages = [...photoImages, ...checklistImages, ...installImages, ...chatImages];
+      const imageSummary = {
+        total: allProjectImages.length,
+        photos: photoImages.length,
+        checklist: checklistImages.length,
+        install: installImages.length,
+        chat: chatImages.length,
+        previews: allProjectImages.slice(0, 4)
+      };
+
       const searchable = [
         row.title,
         listProject.projectName,
@@ -236,7 +284,7 @@ function App() {
         listProject.customerEmail,
         listProject.responsible
       ].filter(Boolean).join(' ').toLowerCase();
-      return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, searchable };
+      return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, searchable };
     });
   }, [projects]);
 
@@ -2008,9 +2056,36 @@ function App() {
   return <div>
     <style>{`
       .mobileNav { display: none; }
+      .projectListHeaderCards { margin-bottom:16px; }
+      .projectListToolbar { display:flex; gap:12px; flex-wrap:wrap; margin:14px 0 16px; }
+      .projectListCard { position:relative; overflow:hidden; }
+      .projectListCardTop { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start; }
+      .projectListBadges { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+      .projectListMetaCards { margin-top:12px; }
+      .projectListActions { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+      .projectImageStrip { display:flex; gap:8px; overflow-x:auto; padding:8px 2px 4px; margin-top:10px; scrollbar-width:thin; }
+      .projectImageThumb { flex:0 0 76px; width:76px; }
+      .projectImageThumb img { width:76px; height:58px; object-fit:cover; border-radius:12px; border:1px solid #dbe7ec; background:#f8fafc; display:block; }
+      .projectImageThumb small { display:block; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; }
+      .projectImageCounts { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+      .projectMiniBadge { display:inline-flex; align-items:center; gap:5px; padding:5px 8px; border-radius:999px; border:1px solid #dbe7ec; background:#f8fafc; font-size:12px; font-weight:700; }
       @media screen and (max-width: 700px) {
         header nav { display: none !important; }
         .mobileNav { display: block !important; }
+        .projectListHeaderCards { display:grid !important; grid-template-columns:1fr 1fr; gap:8px; }
+        .projectListHeaderCards .tile { min-height:auto; padding:10px !important; }
+        .projectListHeaderCards .tile b { font-size:20px; }
+        .projectListToolbar { position:sticky; top:0; z-index:5; background:#ffffff; border:1px solid #dbe7ec; border-radius:16px; padding:10px; box-shadow:0 8px 22px rgba(15,23,42,0.08); }
+        .projectListToolbar button { flex:1 1 100%; width:100%; justify-content:center; }
+        .projectListCard { padding:14px !important; border-radius:18px; }
+        .projectListCardTop { display:block; }
+        .projectListBadges { justify-content:flex-start; margin-top:10px; }
+        .projectListMetaCards { display:grid !important; grid-template-columns:1fr; gap:8px; }
+        .projectListMetaCards .tile { padding:10px !important; min-height:auto; }
+        .projectListActions { display:grid !important; grid-template-columns:1fr; gap:8px; }
+        .projectListActions button { width:100%; justify-content:center; }
+        .projectImageThumb { flex-basis:84px; width:84px; }
+        .projectImageThumb img { width:84px; height:64px; }
       }
     `}</style>
     <header>
@@ -2323,7 +2398,7 @@ function App() {
       </Section>}
 
       {tab==='prosjektliste' && <Section title="Prosjektliste">
-        <div className="cards" style={{ marginBottom:'16px' }}>
+        <div className="cards projectListHeaderCards">
           <div className="tile"><b>{projectListStats.total}</b><span>Prosjekter totalt</span></div>
           <div className="tile"><b>{projectListStats.visible}</b><span>Vises med filter</span></div>
           <div className="tile"><b>{projectListStats.unread}</b><span>Uleste kundemeldinger</span></div>
@@ -2335,7 +2410,7 @@ function App() {
           <Select label="Statusfilter" value={projectStatusFilter} onChange={setProjectStatusFilter} options={['alle','open','progress','done','locked']}/>
         </Grid>
 
-        <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', margin:'14px 0 16px' }}>
+        <div className="projectListToolbar">
           <button onClick={() => loadProjects(authUser, true)}>Oppdater liste</button>
           <button type="button" className={projectUnreadOnly ? '' : 'secondary'} onClick={()=>setProjectUnreadOnly(v=>!v)}>
             {projectUnreadOnly ? 'Vis alle prosjekter' : 'Vis kun uleste'}
@@ -2347,28 +2422,45 @@ function App() {
         {projects.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen prosjekter hentet ennå.</p>}
         {projects.length > 0 && filteredProjectListRows.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen prosjekter matcher søket eller filteret.</p>}
 
-        {filteredProjectListRows.map(({ row:p, listProject, listStatus, unreadForAdminInList, latestMessage })=>{
+        {filteredProjectListRows.map(({ row:p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary })=>{
           const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(', ');
-          return <div className="item" key={p.id} style={unreadForAdminInList > 0 ? { borderColor:'#fecaca', background:'#fff7f7' } : undefined}>
-            <div style={{ display:'flex', justifyContent:'space-between', gap:'12px', flexWrap:'wrap', alignItems:'flex-start' }}>
+          return <div className="item projectListCard" key={p.id} style={unreadForAdminInList > 0 ? { borderColor:'#fecaca', background:'#fff7f7' } : undefined}>
+            <div className="projectListCardTop">
               <div>
-                <b>{p.title || listProject.projectName || 'Uten navn'}</b>
+                <b style={{ fontSize:'18px' }}>{p.title || listProject.projectName || 'Uten navn'}</b>
                 {listProject.customer && <p style={{ margin:'6px 0 0' }}><b>Kunde:</b> {listProject.customer}</p>}
                 {locationLine && <small>{locationLine}</small>}
               </div>
-              <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', justifyContent:'flex-end' }}>
+              <div className="projectListBadges">
                 <span className={`statusBadge status-${listStatus.tone}`} style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:700, border:'1px solid #dbe7ec', width:'fit-content', ...statusStyle(listStatus.tone) }}>{listStatus.icon} {listStatus.label}</span>
                 {unreadForAdminInList > 0 && <span style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:800, border:'1px solid #fecaca', background:'#fef2f2', color:'#991b1b', width:'fit-content' }}>💬 {unreadForAdminInList} ulest</span>}
+                {imageSummary.total > 0 && <span className="projectMiniBadge">📷 {imageSummary.total} bilder</span>}
               </div>
             </div>
 
-            <div className="cards" style={{ marginTop:'12px' }}>
+            <div className="cards projectListMetaCards">
               <div className="tile"><b>Oppdatert</b><span>{new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</span></div>
               <div className="tile"><b>Chat</b><span>{latestMessage?.created ? `Siste: ${new Date(latestMessage.created).toLocaleString('no-NO')}` : 'Ingen meldinger'}</span></div>
               <div className="tile"><b>Ansvarlig</b><span>{listProject.responsible || 'Ikke fylt ut'}</span></div>
             </div>
 
-            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginTop:'12px' }}>
+            {imageSummary.total > 0 && <div>
+              <div className="projectImageCounts">
+                {imageSummary.photos > 0 && <span className="projectMiniBadge">📁 Bilder: {imageSummary.photos}</span>}
+                {imageSummary.checklist > 0 && <span className="projectMiniBadge">✅ Sjekkliste: {imageSummary.checklist}</span>}
+                {imageSummary.install > 0 && <span className="projectMiniBadge">🧰 Fag/utstyr: {imageSummary.install}</span>}
+                {imageSummary.chat > 0 && <span className="projectMiniBadge">💬 Chat: {imageSummary.chat}</span>}
+              </div>
+              <div className="projectImageStrip" aria-label="Bildeoversikt for prosjekt">
+                {imageSummary.previews.map((img, index) => <div className="projectImageThumb" key={`${p.id}-img-${index}`}>
+                  <img src={img.url} alt={img.label || img.source || 'Prosjektbilde'}/>
+                  <small>{img.source}</small>
+                </div>)}
+                {imageSummary.total > imageSummary.previews.length && <div className="projectImageThumb" style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'58px', border:'1px dashed #c7d6dd', borderRadius:'12px', background:'#f8fafc', fontWeight:800 }}>+{imageSummary.total - imageSummary.previews.length}</div>}
+              </div>
+            </div>}
+
+            <div className="projectListActions">
               <button onClick={()=>openProjectById(p.id)}>Åpne prosjekt</button>
               <button className="secondary" onClick={()=>openProjectById(p.id, 'chat')}>Åpne chat</button>
               <button className="secondary" onClick={()=>deleteProject(p.id)}>Slett</button>
