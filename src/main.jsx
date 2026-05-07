@@ -1,2255 +1,2055 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+// Generated complete main.jsx from the latest live source.
+// Admin: old FDV-register UI removed; Produktmaster is now the active admin document register.
+import React, * as ReactNS from 'react';
 import { createRoot } from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 import { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck } from 'lucide-react';
 import './style.css';
+import { jsx, jsxs } from 'react/jsx-runtime';
 
-const supabase = createClient(
-  'https://dqffxflaoyarbxyiyhop.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE'
-);
-
-const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
-
-const productSections = [
-  { title: 'Avretting / støpeprodukter', items: ['Sopro VS582 Avretting','Sopro 3.50 Avretting','Sopro HF-S 563 Avretting','Sopro FS 5® Avretting','Sopro RDS 960 - Ekspansjonsbånd','Sopro Classic EM Hurtigstøp','Sopro RAM 3® reparasjon og støpemørtel','Sopro RS 462 reparasjonsmørtel','Sopro Rapidur M5® hurtigstøp'] },
-  { title: 'Primer / forsterkningsduk', items: ['Sopro PG-X 1188','Sopro EPG 1522 - 2 Komponent Epoxy primer','Sopro HPS 673 - spesial primer ikke sugende','Sopro GD 749 - primer sugende underlag','Sopro SG 874 Dampsperre-Primer'] },
-  { title: 'Membransystem / tetting', items: ['Sopro FDK 1-K 1180 membranlim','Sopro FDF 527 smøremembran lys grå','Sopro DSF 623 RS - 1K sementbasert membran','AEB 815 Tetteduk','Sopro BBM 134 Slukmansjett','Sopro FDB 524 selvklebende tettebånd','Sopro AEB 816 Tettebånd','Sopro AEB 821 Hjørnemansjett innerhjørne','Sopro AEB 822 Hjørnemansjett ytterhjørne','Sopro AEB 825 Rørmansjett Ø10-24mm','Sopro AEB 826 Rørmansjett Ø32-55mm','Sopro AEB 827 Rørmansjett Ø75-110mm','Sopro AEB 828 Rørmansjett Ø110-140mm'] },
-  { title: 'Limprodukter / festeprodukter', items: ['Sopro’s No.1 400 Flislim','Sopro’s No.1 403 Silver Hurtig flislim','Sopro FKM XL 444 Støvredusert flislim','Sopro FKM 5555 Hurtig flislim','Sopro FF 450 - Sigefri flislim','Soudal Fix All HT','Soudal Fix All Turbo'] },
-  { title: 'Fugemasse / silikon', items: ['Sopro DFH Bruksklar fugemasse','Sopro DFX epoxyfug','Sopro DF 10® Designfug','Sopro FL plus Fugemasse','Sopro Sanitær Silikon','Sopro Ceramic Silikon'] }
-];
-
-const surfaces = ['Veggflis 1','Veggflis 2','Veggflis 3','Gulvflis 1','Gulvflis 2','Gulvflis 3','Mosaikkfliser vegg','Mosaikkfliser gulv','Dekorfliser'];
-const imageCats = ['Før arbeid','Underlag','Avretting/støp','Primer','Membran','Sluk og mansjetter','Rørgjennomføringer','Flislegging','Fuging/silikon','Ferdig resultat'];
-const roles = ['Eier / administrator','Ansatt','Underleverandør','Kun lesetilgang'];
-const installCats = ['Rørlegger','Tømrer/Snekker','Maler','Andre'];
-
-const accessRoleInfo = [
-  { role: 'Eier / administrator', text: 'Full tilgang til prosjekt, rapport, firmaprofil, prosjektliste, deling og brukergodkjenning.' },
-  { role: 'Ansatt', text: 'Kan normalt opprette, endre og dokumentere prosjekter for firmaet.' },
-  { role: 'Underleverandør', text: 'Anbefales for fag som skal bidra med dokumentasjon, bilder, sjekklister eller utstyr på prosjektet.' },
-  { role: 'Kun lesetilgang', text: 'Kunde/byggherre får egen kundelink med rapport, tilbud/kontrakt og chat.' }
-];
-
-const checklistTemplate = [
-  {
-    category: 'Tildekning/forarbeid',
-    items: [
-      'Underlag kontrollert',
-      'Fall kontrollert',
-      'Sluk korrekt montert',
-      'Terskel og høyder kontrollert'
-    ]
-  },
-  {
-    category: 'Avretting / underlag',
-    items: [
-      'Det er avrettet på tregulv/spon eller betong',
-      'Alle sprekker og krakeleringer er fjernet',
-      'Overflatestyrken er kontrollert med rissprøve',
-      'Vedheft mellom råbetong og pusslag er kontrollert med bankeprøve',
-      'Underlaget er fritt for olje, fett, støv, skitt, mørtelrester, løs betong og lignende',
-      'Trekk i rommet er kontrollert',
-      'Gulvvarme er slått av',
-      'Restfukt/RF er kontrollert iht. krav før videre belegning/membran'
-    ]
-  },
-  {
-    category: 'Primer / underlag',
-    items: [
-      'Riktig primer valgt',
-      'Primer påført',
-      'Tørketid fulgt'
-    ]
-  },
-  {
-    category: 'Membran / tetting',
-    items: [
-      'Membranløsning kontrollert',
-      'Tettebånd montert',
-      'Slukmansjett montert',
-      'Rørmansjetter montert',
-      'Trykktesting av membran',
-      'Minimum 5 cm overlapp på skjøter med tetningsduk/tettebånd er kontrollert',
-      'Riktig membrantykkelse på vegger og gulv iht. Sopro anvisninger og myndighetskrav er kontrollert'
-    ]
-  },
-  {
-    category: 'Flislegging / flislim',
-    items: [
-      'Fliser montert iht. plan',
-      'Limdekning mellom fliser og underlag er kontrollert',
-      'Stikkprøve/slakting av flis er utført mens flislim fortsatt er vått'
-    ]
-  },
-  {
-    category: 'Fuging / silikon',
-    items: [
-      'Fugemasse er blandet/rørt opp med korrekt vanntilsetning iht. datablad',
-      'Fugene er helt fylt opp før rengjøring',
-      'Fugene er jevne, glatte, ensartet og uten hull og sprekker etter rengjøring',
-      'Fugeslør er vasket av med svamp og rent vann',
-      'Silikon utført'
-    ]
-  },
-  {
-    category: 'Sluttkontroll',
-    items: [
-      'Visuell kontroll utført',
-      'Bilder tatt',
-      'Dokumentasjon komplett'
-    ]
-  }
-];
-
-const emptyTilbud = () => ({
-  enabled:false,
-  files: [],
-  tillegg:'',
-  fradrag:'',
-  kommentar:''
-});
-
-const emptyOvertagelse = () => ({
-  enabled:false,
-  dato: new Date().toISOString().slice(0,10),
-  kommentar:'',
-  signUtførende:'',
-  signKunde:'',
-  signUtførendeImage:'',
-  signKundeImage:''
-});
-
-const emptyProject = () => ({
-  responsible:'', projectName:'', address:'', postnr:'', city:'', customer:'', customerEmail:'', date:new Date().toISOString().slice(0,10), notes:'',
-  fall:'', fallDusj:'', fallUtenfor:'', sluk:'', terskel:'', membran:'', prosjekteringKommentar:'',
-  prosjekteringPunkter: [],
-  locked:false, status:'active', lockedAt:'', lockedBy:''
-});
-
-const emptyProjectLog = () => ({
-  enabled:false,
-  draft:'',
-  messages:[],
-  lastReadByAdmin:'',
-  lastReadByCustomer:''
-});
-
-const normalizeProjectLog = (log = {}) => ({
-  ...emptyProjectLog(),
-  ...(log || {}),
-  messages: Array.isArray(log?.messages) ? log.messages : []
-});
-
-function App() {
-  const [tab, setTab] = useState('prosjekt');
-  const [company, setCompany] = useState({ companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
-  const [user, setUser] = useState({ name:'', email:'', role:'Eier / administrator' });
-  const [project, setProject] = useState(emptyProject());
-  const [checked, setChecked] = useState({});
-  const [productDocs, setProductDocs] = useState({});
-  const [manualProducts, setManualProducts] = useState({});
-  const [other, setOther] = useState({});
-  const [surf, setSurf] = useState({});
-  const [photos, setPhotos] = useState([]);
-  const [access, setAccess] = useState([]);
-  const [inst, setInst] = useState([]);
-  const [files, setFiles] = useState([]);
-  const [checklist, setChecklist] = useState({});
-  const [tilbud, setTilbud] = useState(emptyTilbud());
-  const [overtagelse, setOvertagelse] = useState(emptyOvertagelse());
-  const [chatUploadFile, setChatUploadFile] = useState(null);
-  const [customerChatUploadFile, setCustomerChatUploadFile] = useState(null);
-
-  const [projectLog, setProjectLog] = useState(emptyProjectLog());
-  const [customerTab, setCustomerTab] = useState('rapport');
-  const [internalNotes, setInternalNotes] = useState('');
-  const [projects, setProjects] = useState([]);
-  const [projectId, setProjectId] = useState(null);
-  const [mobileCreatingProject, setMobileCreatingProject] = useState(false);
-  const [authUser, setAuthUser] = useState(null);
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [passwordRecovery, setPasswordRecovery] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [newPasswordRepeat, setNewPasswordRepeat] = useState('');
-  const [authLoading, setAuthLoading] = useState(true);
-  const [profile, setProfile] = useState(null);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [adminUsers, setAdminUsers] = useState([]);
-  const [adminLoading, setAdminLoading] = useState(false);
-  const [projectSearch, setProjectSearch] = useState('');
-  const [projectStatusFilter, setProjectStatusFilter] = useState('alle');
-  const [projectUnreadOnly, setProjectUnreadOnly] = useState(false);
-  const [fdvRegister, setFdvRegister] = useState([]);
-  const [fdvLoading, setFdvLoading] = useState(false);
-  const [productMaster, setProductMaster] = useState([]);
-  const [productMasterLoading, setProductMasterLoading] = useState(false);
-  const latestStateRef = useRef({});
-  const lastChatMessageCountRef = useRef(0);
-  const lastChatRefreshAtRef = useRef(0);
-
-  useEffect(() => {
-    latestStateRef.current = {
-      company, user, project, checked, productDocs, manualProducts, other, surf, photos,
-      access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes
-    };
-  }, [company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes]);
-
-
-  useEffect(() => {
-    const savedEmail = window.localStorage.getItem('expoProffDokAuthEmail');
-    if (savedEmail) setAuthEmail(savedEmail);
-  }, []);
-
-  const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({
-    section:s.title,
-    item:i,
-    fdvUrl: productDocs[i]?.fdvUrl || '',
-    databladUrl: productDocs[i]?.databladUrl || '',
-    dopUrl: productDocs[i]?.dopUrl || '',
-    epdUrl: productDocs[i]?.epdUrl || '',
-    sikkerhetsdatabladUrl: productDocs[i]?.sikkerhetsdatabladUrl || '',
-    documentFileUrl: productDocs[i]?.documentFileUrl || '',
-    comment: productDocs[i]?.comment || ''
-  }))), [checked, productDocs]);
-  const manualSelected = useMemo(() => {
-    if (Array.isArray(manualProducts)) {
-      return manualProducts.filter(p => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment) || hasValue(p.trade));
-    }
-    return Object.entries(manualProducts || {}).flatMap(([section, products]) =>
-      (products || [])
-        .filter(p => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment))
-        .map(p => ({ ...p, section }))
-    );
-  }, [manualProducts]);
-  const fdvRegisterByProduct = useMemo(() => {
-    const map = {};
-    (fdvRegister || []).forEach(row => {
-      if (row?.product_name) map[row.product_name] = row;
-    });
-    return map;
-  }, [fdvRegister]);
-
-  const productMasterByProduct = useMemo(() => {
-    const map = {};
-    const scoreRow = (row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].filter(hasValue).length;
-    const addKey = (key, row) => {
-      const cleanKey = String(key || '').trim();
-      if (!cleanKey) return;
-      if (!map[cleanKey] || scoreRow(row) > scoreRow(map[cleanKey])) map[cleanKey] = row;
-    };
-    (productMaster || []).forEach(row => {
-      addKey(row?.app_match_name, row);
-      addKey(row?.product_family, row);
-      addKey(row?.product_name, row);
-    });
-    return map;
-  }, [productMaster]);
-
-  const productMasterStats = useMemo(() => {
-    const rows = productMaster || [];
-    const withDocs = rows.filter(row => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].some(hasValue)).length;
-    const appMatches = rows.filter(row => row?.used_in_app_standard_list || hasValue(row?.app_match_name)).length;
-    return { total: rows.length, withDocs, appMatches };
-  }, [productMaster]);
-  const name = company.companyName || 'Expo Proffsenter';
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const accessMode = urlParams.get('access') || urlParams.get('role') || (urlParams.has('project') ? 'kunde' : '');
-  const isAdminProjectLink = urlParams.has('project') && accessMode === 'admin';
-  const isUnderleverandorView = urlParams.has('project') && accessMode === 'underleverandor';
-  const isReadOnly = urlParams.has('project') && !isUnderleverandorView && !isAdminProjectLink;
-  const isAdminUser = !!authUser && (
-    profile?.is_admin === true ||
-    profile?.role === 'admin' ||
-    authUser.email === 'kenneth@ringside.no' ||
-    (!!company.email && authUser.email === company.email)
+const import_react = { default: React, ...ReactNS };
+const import_client = { createRoot };
+const import_supabase_js = { createClient };
+const import_lucide_react = { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck };
+const import_jsx_runtime = { jsx, jsxs };
+  var supabase = (0, import_supabase_js.createClient)(
+    "https://dqffxflaoyarbxyiyhop.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
   );
-
-  const projectIsLocked = (p = project) => p?.locked === true || p?.locked === 'true' || p?.status === 'locked' || p?.status === 'Avsluttet';
-  const applyLockState = (baseProject, sourceProject = {}) => ({
-    ...baseProject,
-    locked: projectIsLocked(sourceProject),
-    status: projectIsLocked(sourceProject) ? 'locked' : (sourceProject.status || baseProject.status || 'active'),
-    lockedAt: sourceProject.lockedAt || '',
-    lockedBy: sourceProject.lockedBy || ''
+  var uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+  var productSections = [
+    { title: "Avretting / st\xF8peprodukter", items: ["Sopro VS582 Avretting", "Sopro 3.50 Avretting", "Sopro HF-S 563 Avretting", "Sopro FS 5\xAE Avretting", "Sopro RDS 960 - Ekspansjonsb\xE5nd", "Sopro Classic EM Hurtigst\xF8p", "Sopro RAM 3\xAE reparasjon og st\xF8pem\xF8rtel", "Sopro RS 462 reparasjonsm\xF8rtel", "Sopro Rapidur M5\xAE hurtigst\xF8p"] },
+    { title: "Primer / forsterkningsduk", items: ["Sopro PG-X 1188", "Sopro EPG 1522 - 2 Komponent Epoxy primer", "Sopro HPS 673 - spesial primer ikke sugende", "Sopro GD 749 - primer sugende underlag", "Sopro SG 874 Dampsperre-Primer"] },
+    { title: "Membransystem / tetting", items: ["Sopro FDK 1-K 1180 membranlim", "Sopro FDF 527 sm\xF8remembran lys gr\xE5", "Sopro DSF 623 RS - 1K sementbasert membran", "AEB 815 Tetteduk", "Sopro BBM 134 Slukmansjett", "Sopro FDB 524 selvklebende tetteb\xE5nd", "Sopro AEB 816 Tetteb\xE5nd", "Sopro AEB 821 Hj\xF8rnemansjett innerhj\xF8rne", "Sopro AEB 822 Hj\xF8rnemansjett ytterhj\xF8rne", "Sopro AEB 825 R\xF8rmansjett \xD810-24mm", "Sopro AEB 826 R\xF8rmansjett \xD832-55mm", "Sopro AEB 827 R\xF8rmansjett \xD875-110mm", "Sopro AEB 828 R\xF8rmansjett \xD8110-140mm"] },
+    { title: "Limprodukter / festeprodukter", items: ["Sopro\u2019s No.1 400 Flislim", "Sopro\u2019s No.1 403 Silver Hurtig flislim", "Sopro FKM XL 444 St\xF8vredusert flislim", "Sopro FKM 5555 Hurtig flislim", "Sopro FF 450 - Sigefri flislim", "Soudal Fix All HT", "Soudal Fix All Turbo"] },
+    { title: "Fugemasse / silikon", items: ["Sopro DFH Bruksklar fugemasse", "Sopro DFX epoxyfug", "Sopro DF 10\xAE Designfug", "Sopro FL plus Fugemasse", "Sopro Sanit\xE6r Silikon", "Sopro Ceramic Silikon"] }
+  ];
+  var surfaces = ["Veggflis 1", "Veggflis 2", "Veggflis 3", "Gulvflis 1", "Gulvflis 2", "Gulvflis 3", "Mosaikkfliser vegg", "Mosaikkfliser gulv", "Dekorfliser"];
+  var imageCats = ["F\xF8r arbeid", "Underlag", "Avretting/st\xF8p", "Primer", "Membran", "Sluk og mansjetter", "R\xF8rgjennomf\xF8ringer", "Flislegging", "Fuging/silikon", "Ferdig resultat"];
+  var roles = ["Eier / administrator", "Ansatt", "Underleverand\xF8r", "Kun lesetilgang"];
+  var installCats = ["R\xF8rlegger", "T\xF8mrer/Snekker", "Maler", "Andre"];
+  var accessRoleInfo = [
+    { role: "Eier / administrator", text: "Full tilgang til prosjekt, rapport, firmaprofil, prosjektliste, deling og brukergodkjenning." },
+    { role: "Ansatt", text: "Kan normalt opprette, endre og dokumentere prosjekter for firmaet." },
+    { role: "Underleverand\xF8r", text: "Anbefales for fag som skal bidra med dokumentasjon, bilder, sjekklister eller utstyr p\xE5 prosjektet." },
+    { role: "Kun lesetilgang", text: "Kunde/byggherre f\xE5r egen kundelink med rapport, tilbud/kontrakt og chat." }
+  ];
+  var checklistTemplate = [
+    {
+      category: "Tildekning/forarbeid",
+      items: [
+        "Underlag kontrollert",
+        "Fall kontrollert",
+        "Sluk korrekt montert",
+        "Terskel og h\xF8yder kontrollert"
+      ]
+    },
+    {
+      category: "Avretting / underlag",
+      items: [
+        "Det er avrettet p\xE5 tregulv/spon eller betong",
+        "Alle sprekker og krakeleringer er fjernet",
+        "Overflatestyrken er kontrollert med risspr\xF8ve",
+        "Vedheft mellom r\xE5betong og pusslag er kontrollert med bankepr\xF8ve",
+        "Underlaget er fritt for olje, fett, st\xF8v, skitt, m\xF8rtelrester, l\xF8s betong og lignende",
+        "Trekk i rommet er kontrollert",
+        "Gulvvarme er sl\xE5tt av",
+        "Restfukt/RF er kontrollert iht. krav f\xF8r videre belegning/membran"
+      ]
+    },
+    {
+      category: "Primer / underlag",
+      items: [
+        "Riktig primer valgt",
+        "Primer p\xE5f\xF8rt",
+        "T\xF8rketid fulgt"
+      ]
+    },
+    {
+      category: "Membran / tetting",
+      items: [
+        "Membranl\xF8sning kontrollert",
+        "Tetteb\xE5nd montert",
+        "Slukmansjett montert",
+        "R\xF8rmansjetter montert",
+        "Trykktesting av membran",
+        "Minimum 5 cm overlapp p\xE5 skj\xF8ter med tetningsduk/tetteb\xE5nd er kontrollert",
+        "Riktig membrantykkelse p\xE5 vegger og gulv iht. Sopro anvisninger og myndighetskrav er kontrollert"
+      ]
+    },
+    {
+      category: "Flislegging / flislim",
+      items: [
+        "Fliser montert iht. plan",
+        "Limdekning mellom fliser og underlag er kontrollert",
+        "Stikkpr\xF8ve/slakting av flis er utf\xF8rt mens flislim fortsatt er v\xE5tt"
+      ]
+    },
+    {
+      category: "Fuging / silikon",
+      items: [
+        "Fugemasse er blandet/r\xF8rt opp med korrekt vanntilsetning iht. datablad",
+        "Fugene er helt fylt opp f\xF8r rengj\xF8ring",
+        "Fugene er jevne, glatte, ensartet og uten hull og sprekker etter rengj\xF8ring",
+        "Fugesl\xF8r er vasket av med svamp og rent vann",
+        "Silikon utf\xF8rt"
+      ]
+    },
+    {
+      category: "Sluttkontroll",
+      items: [
+        "Visuell kontroll utf\xF8rt",
+        "Bilder tatt",
+        "Dokumentasjon komplett"
+      ]
+    }
+  ];
+  var emptyTilbud = () => ({
+    enabled: false,
+    files: [],
+    tillegg: "",
+    fradrag: "",
+    kommentar: ""
   });
-  const isProjectLocked = projectIsLocked(project);
-  const projectHasOvertagelse = (o = overtagelse) =>
-    !!o?.enabled || hasValue(o?.dato) || hasValue(o?.kommentar) || hasValue(o?.signUtførende) || hasValue(o?.signKunde) || hasValue(o?.signUtførendeImage) || hasValue(o?.signKundeImage);
-  const projectStatusInfo = (p = project, o = overtagelse) => {
-    const locked = projectIsLocked(p);
-    if (locked && projectHasOvertagelse(o)) return { label:'Ferdigstilt', icon:'✅', tone:'done' };
-    if (locked) return { label:'Avsluttet / låst', icon:'🔒', tone:'locked' };
-    if (p?.projectName || p?.address || p?.customer || projectHasOvertagelse(o)) return { label:'Pågår', icon:'🟡', tone:'progress' };
-    return { label:'Åpen', icon:'🟢', tone:'open' };
-  };
-  const currentStatus = projectStatusInfo(project, overtagelse);
-  const statusStyle = (tone) => ({
-    background: tone === 'done' ? '#ecfdf5' : tone === 'locked' ? '#f8fafc' : tone === 'progress' ? '#fffbeb' : '#eff6ff',
-    color: tone === 'done' ? '#065f46' : tone === 'locked' ? '#334155' : tone === 'progress' ? '#92400e' : '#075985'
+  var emptyOvertagelse = () => ({
+    enabled: false,
+    dato: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+    kommentar: "",
+    signUtf\u00F8rende: "",
+    signKunde: "",
+    signUtf\u00F8rendeImage: "",
+    signKundeImage: ""
   });
-  const chatMessages = projectLog?.messages || [];
-  const customerChatCount = chatMessages.filter(m => m.role === 'kunde').length;
-  const totalChatCount = chatMessages.length;
-  const latestChatMessage = chatMessages.length ? chatMessages[chatMessages.length - 1] : null;
-  const lastReadByAdmin = projectLog?.lastReadByAdmin || '';
-  const lastReadByCustomer = projectLog?.lastReadByCustomer || '';
-  const unreadForAdmin = chatMessages.filter(m => m.role === 'kunde' && (!lastReadByAdmin || (m.created || '') > lastReadByAdmin)).length;
-  const unreadForCustomer = chatMessages.filter(m => m.role !== 'kunde' && (!lastReadByCustomer || (m.created || '') > lastReadByCustomer)).length;
-  const rowIsLocked = (row) => row?.locked === true || row?.locked === 'true' || projectIsLocked(row?.data?.project || {});
-  const projectFromRow = (row, fallbackProject = project) => {
-    const dataProject = row?.data?.project || {};
-    const lockedValue = rowIsLocked(row);
-    return {
-      ...emptyProject(),
-      ...dataProject,
-      ...fallbackProject,
-      locked: lockedValue,
-      status: lockedValue ? 'locked' : (dataProject.status || fallbackProject.status || 'active'),
-      lockedAt: row?.locked_at || dataProject.lockedAt || fallbackProject.lockedAt || '',
-      lockedBy: row?.locked_by || dataProject.lockedBy || fallbackProject.lockedBy || ''
+  var emptyProject = () => ({
+    responsible: "",
+    projectName: "",
+    address: "",
+    postnr: "",
+    city: "",
+    customer: "",
+    customerEmail: "",
+    date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+    notes: "",
+    fall: "",
+    fallDusj: "",
+    fallUtenfor: "",
+    sluk: "",
+    terskel: "",
+    membran: "",
+    prosjekteringKommentar: "",
+    prosjekteringPunkter: [],
+    locked: false,
+    status: "active",
+    lockedAt: "",
+    lockedBy: ""
+  });
+  var emptyProjectLog = () => ({
+    enabled: false,
+    draft: "",
+    messages: [],
+    lastReadByAdmin: "",
+    lastReadByCustomer: ""
+  });
+  var normalizeProjectLog = (log = {}) => ({
+    ...emptyProjectLog(),
+    ...log || {},
+    messages: Array.isArray(log?.messages) ? log.messages : []
+  });
+  function App() {
+    const [tab, setTab] = (0, import_react.useState)("prosjekt");
+    const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
+    const [user, setUser] = (0, import_react.useState)({ name: "", email: "", role: "Eier / administrator" });
+    const [project, setProject] = (0, import_react.useState)(emptyProject());
+    const [checked, setChecked] = (0, import_react.useState)({});
+    const [productDocs, setProductDocs] = (0, import_react.useState)({});
+    const [manualProducts, setManualProducts] = (0, import_react.useState)({});
+    const [other, setOther] = (0, import_react.useState)({});
+    const [surf, setSurf] = (0, import_react.useState)({});
+    const [photos, setPhotos] = (0, import_react.useState)([]);
+    const [access, setAccess] = (0, import_react.useState)([]);
+    const [inst, setInst] = (0, import_react.useState)([]);
+    const [files, setFiles] = (0, import_react.useState)([]);
+    const [checklist, setChecklist] = (0, import_react.useState)({});
+    const [tilbud, setTilbud] = (0, import_react.useState)(emptyTilbud());
+    const [overtagelse, setOvertagelse] = (0, import_react.useState)(emptyOvertagelse());
+    const [chatUploadFile, setChatUploadFile] = (0, import_react.useState)(null);
+    const [customerChatUploadFile, setCustomerChatUploadFile] = (0, import_react.useState)(null);
+    const [projectLog, setProjectLog] = (0, import_react.useState)(emptyProjectLog());
+    const [customerTab, setCustomerTab] = (0, import_react.useState)("rapport");
+    const [internalNotes, setInternalNotes] = (0, import_react.useState)("");
+    const [projects, setProjects] = (0, import_react.useState)([]);
+    const [projectId, setProjectId] = (0, import_react.useState)(null);
+    const [mobileCreatingProject, setMobileCreatingProject] = (0, import_react.useState)(false);
+    const [authUser, setAuthUser] = (0, import_react.useState)(null);
+    const [authEmail, setAuthEmail] = (0, import_react.useState)("");
+    const [authPassword, setAuthPassword] = (0, import_react.useState)("");
+    const [passwordRecovery, setPasswordRecovery] = (0, import_react.useState)(false);
+    const [newPassword, setNewPassword] = (0, import_react.useState)("");
+    const [newPasswordRepeat, setNewPasswordRepeat] = (0, import_react.useState)("");
+    const [authLoading, setAuthLoading] = (0, import_react.useState)(true);
+    const [profile, setProfile] = (0, import_react.useState)(null);
+    const [profileLoading, setProfileLoading] = (0, import_react.useState)(false);
+    const [adminUsers, setAdminUsers] = (0, import_react.useState)([]);
+    const [adminLoading, setAdminLoading] = (0, import_react.useState)(false);
+    const [projectSearch, setProjectSearch] = (0, import_react.useState)("");
+    const [projectStatusFilter, setProjectStatusFilter] = (0, import_react.useState)("alle");
+    const [projectUnreadOnly, setProjectUnreadOnly] = (0, import_react.useState)(false);
+    const [fdvRegister, setFdvRegister] = (0, import_react.useState)([]);
+    const [fdvLoading, setFdvLoading] = (0, import_react.useState)(false);
+    const [productMaster, setProductMaster] = (0, import_react.useState)([]);
+    const [productMasterLoading, setProductMasterLoading] = (0, import_react.useState)(false);
+    const latestStateRef = (0, import_react.useRef)({});
+    const lastChatMessageCountRef = (0, import_react.useRef)(0);
+    const lastChatRefreshAtRef = (0, import_react.useRef)(0);
+    (0, import_react.useEffect)(() => {
+      latestStateRef.current = {
+        company,
+        user,
+        project,
+        checked,
+        productDocs,
+        manualProducts,
+        other,
+        surf,
+        photos,
+        access,
+        inst,
+        files,
+        checklist,
+        tilbud,
+        overtagelse,
+        projectLog,
+        internalNotes
+      };
+    }, [company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes]);
+    (0, import_react.useEffect)(() => {
+      const savedEmail = window.localStorage.getItem("expoProffDokAuthEmail");
+      if (savedEmail) setAuthEmail(savedEmail);
+    }, []);
+    const selected = (0, import_react.useMemo)(() => productSections.flatMap((s) => s.items.filter((i) => checked[i]).map((i) => ({
+      section: s.title,
+      item: i,
+      fdvUrl: productDocs[i]?.fdvUrl || "",
+      databladUrl: productDocs[i]?.databladUrl || "",
+      dopUrl: productDocs[i]?.dopUrl || "",
+      epdUrl: productDocs[i]?.epdUrl || "",
+      sikkerhetsdatabladUrl: productDocs[i]?.sikkerhetsdatabladUrl || "",
+      documentFileUrl: productDocs[i]?.documentFileUrl || "",
+      comment: productDocs[i]?.comment || ""
+    }))), [checked, productDocs]);
+    const manualSelected = (0, import_react.useMemo)(() => {
+      if (Array.isArray(manualProducts)) {
+        return manualProducts.filter((p) => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment) || hasValue(p.trade));
+      }
+      return Object.entries(manualProducts || {}).flatMap(
+        ([section, products]) => (products || []).filter((p) => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment)).map((p) => ({ ...p, section }))
+      );
+    }, [manualProducts]);
+    const fdvRegisterByProduct = (0, import_react.useMemo)(() => {
+      const map = {};
+      (fdvRegister || []).forEach((row) => {
+        if (row?.product_name) map[row.product_name] = row;
+      });
+      return map;
+    }, [fdvRegister]);
+    const productMasterByProduct = (0, import_react.useMemo)(() => {
+      const map = {};
+      const scoreRow = (row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].filter(hasValue).length;
+      const addKey = (key, row) => {
+        const cleanKey = String(key || "").trim();
+        if (!cleanKey) return;
+        if (!map[cleanKey] || scoreRow(row) > scoreRow(map[cleanKey])) map[cleanKey] = row;
+      };
+      (productMaster || []).forEach((row) => {
+        addKey(row?.app_match_name, row);
+        addKey(row?.product_family, row);
+        addKey(row?.product_name, row);
+      });
+      return map;
+    }, [productMaster]);
+    const productMasterStats = (0, import_react.useMemo)(() => {
+      const rows = productMaster || [];
+      const withDocs = rows.filter((row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].some(hasValue)).length;
+      const appMatches = rows.filter((row) => row?.used_in_app_standard_list || hasValue(row?.app_match_name)).length;
+      return { total: rows.length, withDocs, appMatches };
+    }, [productMaster]);
+    const name = company.companyName || "Expo Proffsenter";
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessMode = urlParams.get("access") || urlParams.get("role") || (urlParams.has("project") ? "kunde" : "");
+    const isAdminProjectLink = urlParams.has("project") && accessMode === "admin";
+    const isUnderleverandorView = urlParams.has("project") && accessMode === "underleverandor";
+    const isReadOnly = urlParams.has("project") && !isUnderleverandorView && !isAdminProjectLink;
+    const isAdminUser = !!authUser && (profile?.is_admin === true || profile?.role === "admin" || authUser.email === "kenneth@ringside.no" || !!company.email && authUser.email === company.email);
+    const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
+    const applyLockState = (baseProject, sourceProject = {}) => ({
+      ...baseProject,
+      locked: projectIsLocked(sourceProject),
+      status: projectIsLocked(sourceProject) ? "locked" : sourceProject.status || baseProject.status || "active",
+      lockedAt: sourceProject.lockedAt || "",
+      lockedBy: sourceProject.lockedBy || ""
+    });
+    const isProjectLocked = projectIsLocked(project);
+    const projectHasOvertagelse = (o = overtagelse) => !!o?.enabled || hasValue(o?.dato) || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
+    const projectStatusInfo = (p = project, o = overtagelse) => {
+      const locked = projectIsLocked(p);
+      if (locked && projectHasOvertagelse(o)) return { label: "Ferdigstilt", icon: "\u2705", tone: "done" };
+      if (locked) return { label: "Avsluttet / l\xE5st", icon: "\u{1F512}", tone: "locked" };
+      if (p?.projectName || p?.address || p?.customer || projectHasOvertagelse(o)) return { label: "P\xE5g\xE5r", icon: "\u{1F7E1}", tone: "progress" };
+      return { label: "\xC5pen", icon: "\u{1F7E2}", tone: "open" };
     };
-  };
-  const dataFromRow = (row, fallbackData = {}) => ({
-    ...(row?.data || fallbackData || {}),
-    project: projectFromRow(row, (row?.data || fallbackData || {}).project || emptyProject())
-  });
-
-  const projectListRows = useMemo(() => {
-    return (projects || []).map(row => {
-      const data = row.data || {};
-      const listProject = projectFromRow(row, data.project || {});
-      const listStatus = projectStatusInfo(listProject, data.overtagelse || {});
-      const listLog = normalizeProjectLog(data.projectLog);
-      const messages = listLog.messages || [];
-      const unreadForAdminInList = messages.filter(m => m.role === 'kunde' && (!listLog.lastReadByAdmin || (m.created || '') > listLog.lastReadByAdmin)).length;
-      const latestMessage = messages.length ? messages[messages.length - 1] : null;
-
-      const photoImages = Array.isArray(data.photos) ? data.photos.filter(photo => photo?.url).map(photo => ({
-        url: photo.url,
-        label: photo.cat || photo.name || 'Prosjektbilde',
-        source: 'Bilder'
-      })) : [];
-
-      const checklistImages = [];
-      Object.entries(data.checklist || {}).forEach(([category, items]) => {
-        Object.entries(items || {}).forEach(([item, value]) => {
-          (value?.photos || []).forEach(photo => {
-            if (photo?.url) checklistImages.push({
-              url: photo.url,
-              label: `${category} · ${item}`,
-              source: 'Sjekkliste'
+    const currentStatus = projectStatusInfo(project, overtagelse);
+    const statusStyle = (tone) => ({
+      background: tone === "done" ? "#ecfdf5" : tone === "locked" ? "#f8fafc" : tone === "progress" ? "#fffbeb" : "#eff6ff",
+      color: tone === "done" ? "#065f46" : tone === "locked" ? "#334155" : tone === "progress" ? "#92400e" : "#075985"
+    });
+    const chatMessages = projectLog?.messages || [];
+    const customerChatCount = chatMessages.filter((m) => m.role === "kunde").length;
+    const totalChatCount = chatMessages.length;
+    const latestChatMessage = chatMessages.length ? chatMessages[chatMessages.length - 1] : null;
+    const lastReadByAdmin = projectLog?.lastReadByAdmin || "";
+    const lastReadByCustomer = projectLog?.lastReadByCustomer || "";
+    const unreadForAdmin = chatMessages.filter((m) => m.role === "kunde" && (!lastReadByAdmin || (m.created || "") > lastReadByAdmin)).length;
+    const unreadForCustomer = chatMessages.filter((m) => m.role !== "kunde" && (!lastReadByCustomer || (m.created || "") > lastReadByCustomer)).length;
+    const rowIsLocked = (row) => row?.locked === true || row?.locked === "true" || projectIsLocked(row?.data?.project || {});
+    const projectFromRow = (row, fallbackProject = project) => {
+      const dataProject = row?.data?.project || {};
+      const lockedValue = rowIsLocked(row);
+      return {
+        ...emptyProject(),
+        ...dataProject,
+        ...fallbackProject,
+        locked: lockedValue,
+        status: lockedValue ? "locked" : dataProject.status || fallbackProject.status || "active",
+        lockedAt: row?.locked_at || dataProject.lockedAt || fallbackProject.lockedAt || "",
+        lockedBy: row?.locked_by || dataProject.lockedBy || fallbackProject.lockedBy || ""
+      };
+    };
+    const dataFromRow = (row, fallbackData = {}) => ({
+      ...row?.data || fallbackData || {},
+      project: projectFromRow(row, (row?.data || fallbackData || {}).project || emptyProject())
+    });
+    const projectListRows = (0, import_react.useMemo)(() => {
+      return (projects || []).map((row) => {
+        const data = row.data || {};
+        const listProject = projectFromRow(row, data.project || {});
+        const listStatus = projectStatusInfo(listProject, data.overtagelse || {});
+        const listLog = normalizeProjectLog(data.projectLog);
+        const messages = listLog.messages || [];
+        const unreadForAdminInList = messages.filter((m) => m.role === "kunde" && (!listLog.lastReadByAdmin || (m.created || "") > listLog.lastReadByAdmin)).length;
+        const latestMessage = messages.length ? messages[messages.length - 1] : null;
+        const photoImages = Array.isArray(data.photos) ? data.photos.filter((photo) => photo?.url).map((photo) => ({
+          url: photo.url,
+          label: photo.cat || photo.name || "Prosjektbilde",
+          source: "Bilder"
+        })) : [];
+        const checklistImages = [];
+        Object.entries(data.checklist || {}).forEach(([category, items]) => {
+          Object.entries(items || {}).forEach(([item, value]) => {
+            (value?.photos || []).forEach((photo) => {
+              if (photo?.url) checklistImages.push({
+                url: photo.url,
+                label: `${category} \xB7 ${item}`,
+                source: "Sjekkliste"
+              });
             });
           });
         });
-      });
-
-      const installImages = [];
-      (Array.isArray(data.inst) ? data.inst : []).forEach(entry => {
-        (entry?.photos || []).forEach(photo => {
-          if (photo?.url) installImages.push({
-            url: photo.url,
-            label: entry.name || entry.category || photo.name || 'Fag/utstyr',
-            source: 'Fag/utstyr'
+        const installImages = [];
+        (Array.isArray(data.inst) ? data.inst : []).forEach((entry) => {
+          (entry?.photos || []).forEach((photo) => {
+            if (photo?.url) installImages.push({
+              url: photo.url,
+              label: entry.name || entry.category || photo.name || "Fag/utstyr",
+              source: "Fag/utstyr"
+            });
           });
         });
-      });
-
-      const chatImages = messages.filter(message => message?.imageUrl).map(message => ({
-        url: message.imageUrl,
-        label: message.imageName || message.text || 'Chatbilde',
-        source: 'Chat'
-      }));
-
-      const allProjectImages = [...photoImages, ...checklistImages, ...installImages, ...chatImages];
-      const imageSummary = {
-        total: allProjectImages.length,
-        photos: photoImages.length,
-        checklist: checklistImages.length,
-        install: installImages.length,
-        chat: chatImages.length,
-        previews: allProjectImages.slice(0, 4)
-      };
-
-      const searchable = [
-        row.title,
-        listProject.projectName,
-        listProject.customer,
-        listProject.address,
-        listProject.city,
-        listProject.postnr,
-        listProject.customerEmail,
-        listProject.responsible
-      ].filter(Boolean).join(' ').toLowerCase();
-      return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, searchable };
-    });
-  }, [projects]);
-
-  const filteredProjectListRows = useMemo(() => {
-    const term = (projectSearch || '').trim().toLowerCase();
-    return projectListRows.filter(item => {
-      if (term && !item.searchable.includes(term)) return false;
-      if (projectUnreadOnly && item.unreadForAdminInList <= 0) return false;
-      if (projectStatusFilter !== 'alle' && item.listStatus.tone !== projectStatusFilter) return false;
-      return true;
-    });
-  }, [projectListRows, projectSearch, projectStatusFilter, projectUnreadOnly]);
-
-  const activeMobileProjectRows = useMemo(() => {
-    return filteredProjectListRows.filter(item => item.listStatus.tone !== 'done' && item.listStatus.tone !== 'locked');
-  }, [filteredProjectListRows]);
-
-  const projectListStats = useMemo(() => {
-    const total = projectListRows.length;
-    const unread = projectListRows.reduce((sum, item) => sum + item.unreadForAdminInList, 0);
-    const active = projectListRows.filter(item => item.listStatus.tone === 'progress' || item.listStatus.tone === 'open').length;
-    const finished = projectListRows.filter(item => item.listStatus.tone === 'done' || item.listStatus.tone === 'locked').length;
-    return { total, unread, active, finished, visible: filteredProjectListRows.length };
-  }, [projectListRows, filteredProjectListRows]);
-
-  const tabs = [
-    ['prosjekt','Prosjekt'], ['firma','Firmaprofil'], ['prosjektering','Prosjektering'],
-    ['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['tilgang','Tilgang'],
-    ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister'], ['tilbud','Tilbud/kontrakt'], ['overtagelse','Overtagelse'],
-    ['chat', unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : (totalChatCount > 0 ? `Chat (${totalChatCount})` : 'Chat')],
-    ['internt','Interne notater'], ['prosjektliste','Prosjektliste'], ['rapport','Rapport'],
-    ...(isAdminUser && !isReadOnly ? [['admin','Admin']] : [])
-  ];
-
-  const currentTabIndex = tabs.findIndex(([id]) => id === tab);
-  const previousTab = currentTabIndex > 0 ? tabs[currentTabIndex - 1] : null;
-  const nextTab = currentTabIndex >= 0 && currentTabIndex < tabs.length - 1 ? tabs[currentTabIndex + 1] : null;
-  const goToTab = (id) => {
-    if (!id) return;
-    setTab(id);
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
-  };
-
-  const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes });
-  const unpackData = (data, preserveDraft = false) => {
-    setCompany(data.company || { companyName:'Expo Proffsenter', address:'', orgNumber:'', phone:'', email:'', website:'', logoUrl:'' });
-    setUser(data.user || { name:'', email:'', role:'Eier / administrator' });
-    setProject({ ...emptyProject(), ...(data.project || {}) });
-    setChecked(data.checked || {});
-    setProductDocs(data.productDocs || {});
-    if (Array.isArray(data.manualProducts)) {
-      const migratedManual = {};
-      data.manualProducts.forEach(p => {
-        const section = p.trade || 'Andre produkter';
-        migratedManual[section] = [...(migratedManual[section] || []), { ...p, trade: undefined }];
-      });
-      setManualProducts(migratedManual);
-    } else {
-      setManualProducts(data.manualProducts || {});
-    }
-    setOther(data.other || {});
-    setSurf(data.surf || {});
-    setPhotos(data.photos || []);
-    setAccess(data.access || []);
-    setInst(data.inst || []);
-    setFiles(data.files || []);
-    setChecklist(data.checklist || {});
-    setTilbud(data.tilbud || emptyTilbud());
-    setOvertagelse(data.overtagelse || emptyOvertagelse());
-
-    const incomingLog = normalizeProjectLog(data.projectLog);
-    setProjectLog(prev => ({
-      ...incomingLog,
-      draft: preserveDraft ? (prev?.draft || '') : (incomingLog.draft || '')
-    }));
-
-    setInternalNotes(data.internalNotes || '');
-  };
-
-  const loadProjects = async (currentUser = authUser, notify = false) => {
-    if (!currentUser) {
-      setProjects([]);
-      if (notify) alert('Du må være logget inn for å hente prosjektliste.');
-      return;
-    }
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .order('updated_at', { ascending:false });
-    if (error) { console.error(error); return alert('Kunne ikke hente prosjektliste: ' + error.message); }
-    setProjects(data || []);
-    if (notify) alert(`Prosjektliste oppdatert. Fant ${(data || []).length} prosjekt${(data || []).length === 1 ? '' : 'er'}.`);
-  };
-
-  const openProjectById = async (id, targetTab = 'rapport') => {
-    const { data, error } = await supabase.from('projects').select('*').eq('id', id).single();
-    if (error || !data) { console.error(error); return alert('Kunne ikke åpne prosjekt: ' + (error?.message || 'Fant ikke prosjekt')); }
-    unpackData(dataFromRow(data));
-    setProjectId(data.id);
-    setMobileCreatingProject(false);
-    setTab(targetTab);
-  };
-
-  const refreshProjectFromCloud = async (silent = false, fullRefresh = false) => {
-    if (!projectId) return;
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .maybeSingle();
-
-    if (error || !data) {
-      console.error(error);
-      if (!silent) alert('Kunne ikke oppdatere prosjektdata: ' + (error?.message || 'Fant ikke prosjekt'));
-      return;
-    }
-
-    const cloudData = dataFromRow(data);
-    const incomingLog = normalizeProjectLog(cloudData.projectLog);
-    const isChatRefresh = !fullRefresh && (silent || tab === 'chat' || customerTab === 'chat' || isReadOnly);
-
-    if (isChatRefresh) {
-      const incomingCount = (incomingLog.messages || []).length;
-      setProjectLog(prev => {
-        const currentDraft = prev?.draft || '';
-        const currentCount = (prev?.messages || []).length;
-        if (incomingCount > currentCount && !silent) {
-          // manuell Oppdater chat skal bare oppdatere, ikke lage ekstra støy
-        }
-        return {
-          ...incomingLog,
-          draft: currentDraft
+        const chatImages = messages.filter((message) => message?.imageUrl).map((message) => ({
+          url: message.imageUrl,
+          label: message.imageName || message.text || "Chatbilde",
+          source: "Chat"
+        }));
+        const allProjectImages = [...photoImages, ...checklistImages, ...installImages, ...chatImages];
+        const imageSummary = {
+          total: allProjectImages.length,
+          photos: photoImages.length,
+          checklist: checklistImages.length,
+          install: installImages.length,
+          chat: chatImages.length,
+          previews: allProjectImages.slice(0, 4)
         };
+        const searchable = [
+          row.title,
+          listProject.projectName,
+          listProject.customer,
+          listProject.address,
+          listProject.city,
+          listProject.postnr,
+          listProject.customerEmail,
+          listProject.responsible
+        ].filter(Boolean).join(" ").toLowerCase();
+        return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, searchable };
       });
-      lastChatMessageCountRef.current = incomingCount;
+    }, [projects]);
+    const filteredProjectListRows = (0, import_react.useMemo)(() => {
+      const term = (projectSearch || "").trim().toLowerCase();
+      return projectListRows.filter((item) => {
+        if (term && !item.searchable.includes(term)) return false;
+        if (projectUnreadOnly && item.unreadForAdminInList <= 0) return false;
+        if (projectStatusFilter !== "alle" && item.listStatus.tone !== projectStatusFilter) return false;
+        return true;
+      });
+    }, [projectListRows, projectSearch, projectStatusFilter, projectUnreadOnly]);
+    const activeMobileProjectRows = (0, import_react.useMemo)(() => {
+      return filteredProjectListRows.filter((item) => item.listStatus.tone !== "done" && item.listStatus.tone !== "locked");
+    }, [filteredProjectListRows]);
+    const projectListStats = (0, import_react.useMemo)(() => {
+      const total = projectListRows.length;
+      const unread = projectListRows.reduce((sum, item) => sum + item.unreadForAdminInList, 0);
+      const active = projectListRows.filter((item) => item.listStatus.tone === "progress" || item.listStatus.tone === "open").length;
+      const finished = projectListRows.filter((item) => item.listStatus.tone === "done" || item.listStatus.tone === "locked").length;
+      return { total, unread, active, finished, visible: filteredProjectListRows.length };
+    }, [projectListRows, filteredProjectListRows]);
+    const tabs = [
+      ["prosjekt", "Prosjekt"],
+      ["firma", "Firmaprofil"],
+      ["prosjektering", "Prosjektering"],
+      ["produkter", "Produkter"],
+      ["overflater", "Overflater"],
+      ["bilder", "Bilder"],
+      ["tilgang", "Tilgang"],
+      ["installasjoner", "Fag/utstyr"],
+      ["sjekklister", "Sjekklister"],
+      ["tilbud", "Tilbud/kontrakt"],
+      ["overtagelse", "Overtagelse"],
+      ["chat", unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : totalChatCount > 0 ? `Chat (${totalChatCount})` : "Chat"],
+      ["internt", "Interne notater"],
+      ["prosjektliste", "Prosjektliste"],
+      ["rapport", "Rapport"],
+      ...isAdminUser && !isReadOnly ? [["admin", "Admin"]] : []
+    ];
+    const currentTabIndex = tabs.findIndex(([id]) => id === tab);
+    const previousTab = currentTabIndex > 0 ? tabs[currentTabIndex - 1] : null;
+    const nextTab = currentTabIndex >= 0 && currentTabIndex < tabs.length - 1 ? tabs[currentTabIndex + 1] : null;
+    const goToTab = (id) => {
+      if (!id) return;
+      setTab(id);
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+    };
+    const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes });
+    const unpackData = (data, preserveDraft = false) => {
+      setCompany(data.company || { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
+      setUser(data.user || { name: "", email: "", role: "Eier / administrator" });
+      setProject({ ...emptyProject(), ...data.project || {} });
+      setChecked(data.checked || {});
+      setProductDocs(data.productDocs || {});
+      if (Array.isArray(data.manualProducts)) {
+        const migratedManual = {};
+        data.manualProducts.forEach((p) => {
+          const section = p.trade || "Andre produkter";
+          migratedManual[section] = [...migratedManual[section] || [], { ...p, trade: void 0 }];
+        });
+        setManualProducts(migratedManual);
+      } else {
+        setManualProducts(data.manualProducts || {});
+      }
+      setOther(data.other || {});
+      setSurf(data.surf || {});
+      setPhotos(data.photos || []);
+      setAccess(data.access || []);
+      setInst(data.inst || []);
+      setFiles(data.files || []);
+      setChecklist(data.checklist || {});
+      setTilbud(data.tilbud || emptyTilbud());
+      setOvertagelse(data.overtagelse || emptyOvertagelse());
+      const incomingLog = normalizeProjectLog(data.projectLog);
+      setProjectLog((prev) => ({
+        ...incomingLog,
+        draft: preserveDraft ? prev?.draft || "" : incomingLog.draft || ""
+      }));
+      setInternalNotes(data.internalNotes || "");
+    };
+    const loadProjects = async (currentUser = authUser, notify = false) => {
+      if (!currentUser) {
+        setProjects([]);
+        if (notify) alert("Du m\xE5 v\xE6re logget inn for \xE5 hente prosjektliste.");
+        return;
+      }
+      const { data, error } = await supabase.from("projects").select("*").eq("user_id", currentUser.id).order("updated_at", { ascending: false });
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke hente prosjektliste: " + error.message);
+      }
+      setProjects(data || []);
+      if (notify) alert(`Prosjektliste oppdatert. Fant ${(data || []).length} prosjekt${(data || []).length === 1 ? "" : "er"}.`);
+    };
+    const openProjectById = async (id, targetTab = "rapport") => {
+      const { data, error } = await supabase.from("projects").select("*").eq("id", id).single();
+      if (error || !data) {
+        console.error(error);
+        return alert("Kunne ikke \xE5pne prosjekt: " + (error?.message || "Fant ikke prosjekt"));
+      }
+      unpackData(dataFromRow(data));
+      setProjectId(data.id);
+      setMobileCreatingProject(false);
+      setTab(targetTab);
+    };
+    const refreshProjectFromCloud = async (silent = false, fullRefresh = false) => {
+      if (!projectId) return;
+      const { data, error } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+      if (error || !data) {
+        console.error(error);
+        if (!silent) alert("Kunne ikke oppdatere prosjektdata: " + (error?.message || "Fant ikke prosjekt"));
+        return;
+      }
+      const cloudData = dataFromRow(data);
+      const incomingLog = normalizeProjectLog(cloudData.projectLog);
+      const isChatRefresh = !fullRefresh && (silent || tab === "chat" || customerTab === "chat" || isReadOnly);
+      if (isChatRefresh) {
+        const incomingCount = (incomingLog.messages || []).length;
+        setProjectLog((prev) => {
+          const currentDraft = prev?.draft || "";
+          const currentCount = (prev?.messages || []).length;
+          if (incomingCount > currentCount && !silent) {
+          }
+          return {
+            ...incomingLog,
+            draft: currentDraft
+          };
+        });
+        lastChatMessageCountRef.current = incomingCount;
+        lastChatRefreshAtRef.current = Date.now();
+        setProjectId(data.id);
+        if (!silent) alert("Chat oppdatert.");
+        return;
+      }
+      unpackData(cloudData, true);
+      lastChatMessageCountRef.current = (incomingLog.messages || []).length;
       lastChatRefreshAtRef.current = Date.now();
       setProjectId(data.id);
-      if (!silent) alert('Chat oppdatert.');
-      return;
-    }
-
-    unpackData(cloudData, true);
-    lastChatMessageCountRef.current = (incomingLog.messages || []).length;
-    lastChatRefreshAtRef.current = Date.now();
-    setProjectId(data.id);
-    if (!silent) alert('Prosjektdata oppdatert.');
-  };
-
-  const applyProfile = (row) => {
-    if (!row) return;
-    setProfile(row);
-    setCompany(c => ({
-      ...c,
-      companyName: row.company_name || c.companyName || 'Expo Proffsenter',
-      orgNumber: row.org_number || '',
-      address: row.address || '',
-      phone: row.phone || '',
-      email: row.email || '',
-      website: row.website || '',
-      logoUrl: row.logo_url || c.logoUrl || '',
-    }));
-  };
-
-  const ensureProfile = async (sessionUser) => {
-    if (!sessionUser) return null;
-    setProfileLoading(true);
-
-    let { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', sessionUser.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error(error);
-      alert('Kunne ikke hente brukerprofil: ' + error.message);
-      setProfileLoading(false);
-      return null;
-    }
-
-    if (!data) {
-      const { data: inserted, error: insertError } = await supabase
-        .from('profiles')
-        .insert({ id: sessionUser.id, email: sessionUser.email, approved: false })
-        .select('*')
-        .single();
-
-      if (insertError) {
-        console.error(insertError);
-        alert('Kunne ikke opprette brukerprofil: ' + insertError.message);
+      if (!silent) alert("Prosjektdata oppdatert.");
+    };
+    const applyProfile = (row) => {
+      if (!row) return;
+      setProfile(row);
+      setCompany((c) => ({
+        ...c,
+        companyName: row.company_name || c.companyName || "Expo Proffsenter",
+        orgNumber: row.org_number || "",
+        address: row.address || "",
+        phone: row.phone || "",
+        email: row.email || "",
+        website: row.website || "",
+        logoUrl: row.logo_url || c.logoUrl || ""
+      }));
+    };
+    const ensureProfile = async (sessionUser) => {
+      if (!sessionUser) return null;
+      setProfileLoading(true);
+      let { data, error } = await supabase.from("profiles").select("*").eq("id", sessionUser.id).maybeSingle();
+      if (error) {
+        console.error(error);
+        alert("Kunne ikke hente brukerprofil: " + error.message);
         setProfileLoading(false);
         return null;
       }
-      data = inserted;
-    }
-
-    applyProfile(data);
-    setProfileLoading(false);
-    return data;
-  };
-
-  const handleAuthUser = async (sessionUser) => {
-    setAuthUser(sessionUser);
-    if (!sessionUser) {
-      setProjects([]);
-      setProfile(null);
+      if (!data) {
+        const { data: inserted, error: insertError } = await supabase.from("profiles").insert({ id: sessionUser.id, email: sessionUser.email, approved: false }).select("*").single();
+        if (insertError) {
+          console.error(insertError);
+          alert("Kunne ikke opprette brukerprofil: " + insertError.message);
+          setProfileLoading(false);
+          return null;
+        }
+        data = inserted;
+      }
+      applyProfile(data);
       setProfileLoading(false);
-      return;
-    }
-    const row = await ensureProfile(sessionUser);
-    if (row?.approved) loadProjects(sessionUser);
-  };
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
-    const id = params.get('project');
-    const isRecoveryLink = params.get('type') === 'recovery' || hashParams.get('type') === 'recovery';
-
-    if (isRecoveryLink) {
-      setPasswordRecovery(true);
-    }
-
-    if (id && !isRecoveryLink) {
-      openProjectById(id);
-      if ((params.get('access') || params.get('role')) === 'underleverandor') setTab('produkter');
-      if ((params.get('access') || params.get('role')) !== 'admin') {
-        setAuthLoading(false);
+      return data;
+    };
+    const handleAuthUser = async (sessionUser) => {
+      setAuthUser(sessionUser);
+      if (!sessionUser) {
+        setProjects([]);
+        setProfile(null);
+        setProfileLoading(false);
         return;
       }
-    }
-
-    supabase.auth.getSession().then(({ data }) => {
-      handleAuthUser(data.session?.user || null).finally(() => setAuthLoading(false));
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (_event === 'PASSWORD_RECOVERY') {
+      const row = await ensureProfile(sessionUser);
+      if (row?.approved) loadProjects(sessionUser);
+    };
+    (0, import_react.useEffect)(() => {
+      const params = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
+      const id = params.get("project");
+      const isRecoveryLink = params.get("type") === "recovery" || hashParams.get("type") === "recovery";
+      if (isRecoveryLink) {
         setPasswordRecovery(true);
       }
-      handleAuthUser(session?.user || null);
-    });
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!projectId) return;
-    const chatVisible = isReadOnly || tab === 'chat' || customerTab === 'chat';
-    if (!chatVisible) return;
-
-    let cancelled = false;
-
-    const applyChatData = (row) => {
-      if (!row || cancelled) return;
-      const cloudData = dataFromRow(row);
-      const incomingLog = normalizeProjectLog(cloudData.projectLog);
-      const incomingCount = (incomingLog.messages || []).length;
-
-      setProjectLog(prev => ({
-        ...incomingLog,
-        draft: prev?.draft || ''
-      }));
-
-      lastChatMessageCountRef.current = incomingCount;
-      lastChatRefreshAtRef.current = Date.now();
-      setProjectId(row.id);
-    };
-
-    const channel = supabase
-      .channel(`project-chat-${projectId}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'projects', filter: `id=eq.${projectId}` },
-        payload => applyChatData(payload.new)
-      )
-      .subscribe();
-
-    // Hent én gang med en gang når chat åpnes, og behold skrivefeltet.
-    refreshProjectFromCloud(true);
-
-    // Fallback polling hvis realtime er treg/blokkert i nettleser.
-    const timer = window.setInterval(() => {
-      refreshProjectFromCloud(true);
-    }, 5000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(timer);
-      supabase.removeChannel(channel);
-    };
-  }, [projectId, isReadOnly, tab, customerTab]);
-
-  useEffect(() => {
-    if (!isReadOnly) {
-      loadFdvRegister(false);
-      loadProductMaster(false);
-    }
-  }, [isReadOnly]);
-
-
-  const createNewProject = () => {
-    const hasContent =
-      projectId ||
-      project.projectName ||
-      project.address ||
-      project.postnr ||
-      project.city ||
-      project.customer ||
-      project.customerEmail ||
-      project.notes ||
-      project.fall ||
-      project.fallDusj ||
-      project.fallUtenfor ||
-      project.sluk ||
-      project.terskel ||
-      project.membran ||
-      project.prosjekteringKommentar ||
-      (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length ||
-      Object.keys(checked || {}).length ||
-      Object.keys(productDocs || {}).length ||
-      (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some(list => (list || []).length)) ||
-      Object.keys(other || {}).length ||
-      Object.keys(surf || {}).length ||
-      (photos || []).length ||
-      (access || []).length ||
-      (inst || []).length ||
-      (files || []).length ||
-      Object.keys(checklist || {}).length ||
-      tilbud.enabled ||
-      tilbud.tillegg ||
-      tilbud.fradrag ||
-      tilbud.kommentar ||
-      (tilbud.files || []).length ||
-      overtagelse.enabled ||
-      overtagelse.kommentar ||
-      overtagelse.signUtførende ||
-      overtagelse.signKunde ||
-      overtagelse.signUtførendeImage ||
-      overtagelse.signKundeImage ||
-      projectLog.enabled ||
-      projectLog.draft ||
-      (projectLog.messages || []).length ||
-      internalNotes;
-
-    if (hasContent && !window.confirm('Starte nytt prosjekt? Ulagrede endringer vil gå tapt.')) return;
-
-    setProject(emptyProject());
-    setChecked({});
-    setProductDocs({});
-    setManualProducts({});
-    setOther({});
-    setSurf({});
-    setPhotos([]);
-    setAccess([]);
-    setInst([]);
-    setFiles([]);
-    setChecklist({});
-    setTilbud(emptyTilbud());
-    setOvertagelse(emptyOvertagelse());
-    setProjectLog(emptyProjectLog());
-    setInternalNotes('');
-    setProjectId(null);
-    setMobileCreatingProject(true);
-    setTab('prosjekt');
-
-    window.history.replaceState({}, document.title, window.location.pathname);
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
-  };
-
-  const addProsjekteringPunkt = () => {
-    setProject(p => ({
-      ...p,
-      prosjekteringPunkter: [
-        ...(Array.isArray(p.prosjekteringPunkter) ? p.prosjekteringPunkter : []),
-        { id: uid(), title: '', value: '' }
-      ]
-    }));
-  };
-
-  const updateProsjekteringPunkt = (id, patch) => {
-    setProject(p => ({
-      ...p,
-      prosjekteringPunkter: (Array.isArray(p.prosjekteringPunkter) ? p.prosjekteringPunkter : []).map(point =>
-        point.id === id ? { ...point, ...patch } : point
-      )
-    }));
-  };
-
-  const removeProsjekteringPunkt = (id) => {
-    setProject(p => ({
-      ...p,
-      prosjekteringPunkter: (Array.isArray(p.prosjekteringPunkter) ? p.prosjekteringPunkter : []).filter(point => point.id !== id)
-    }));
-  };
-
-  const updateProductDoc = (productName, patch) => {
-    setProductDocs(prev => ({
-      ...prev,
-      [productName]: {
-        ...(prev[productName] || {}),
-        ...patch
+      if (id && !isRecoveryLink) {
+        openProjectById(id);
+        if ((params.get("access") || params.get("role")) === "underleverandor") setTab("produkter");
+        if ((params.get("access") || params.get("role")) !== "admin") {
+          setAuthLoading(false);
+          return;
+        }
       }
-    }));
-  };
-
-
-  const toggleProductChecked = (productName, isChecked) => {
-    setChecked(prev => ({ ...prev, [productName]: isChecked }));
-
-    if (!isChecked) return;
-
-    const masterRow = productMasterByProduct[productName];
-    const registerRow = fdvRegisterByProduct[productName];
-    const autoDocs = {
-      fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || '',
-      databladUrl: masterRow?.datablad_url || '',
-      dopUrl: masterRow?.dop_url || '',
-      epdUrl: masterRow?.epd_url || '',
-      sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || '',
-      documentFileUrl: masterRow?.document_file_url || '',
-      fdvSource: masterRow ? 'product-master' : (registerRow ? 'admin-register' : '')
+      supabase.auth.getSession().then(({ data }) => {
+        handleAuthUser(data.session?.user || null).finally(() => setAuthLoading(false));
+      });
+      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (_event === "PASSWORD_RECOVERY") {
+          setPasswordRecovery(true);
+        }
+        handleAuthUser(session?.user || null);
+      });
+      return () => listener.subscription.unsubscribe();
+    }, []);
+    (0, import_react.useEffect)(() => {
+      if (!projectId) return;
+      const chatVisible = isReadOnly || tab === "chat" || customerTab === "chat";
+      if (!chatVisible) return;
+      let cancelled = false;
+      const applyChatData = (row) => {
+        if (!row || cancelled) return;
+        const cloudData = dataFromRow(row);
+        const incomingLog = normalizeProjectLog(cloudData.projectLog);
+        const incomingCount = (incomingLog.messages || []).length;
+        setProjectLog((prev) => ({
+          ...incomingLog,
+          draft: prev?.draft || ""
+        }));
+        lastChatMessageCountRef.current = incomingCount;
+        lastChatRefreshAtRef.current = Date.now();
+        setProjectId(row.id);
+      };
+      const channel = supabase.channel(`project-chat-${projectId}`).on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "projects", filter: `id=eq.${projectId}` },
+        (payload) => applyChatData(payload.new)
+      ).subscribe();
+      refreshProjectFromCloud(true);
+      const timer = window.setInterval(() => {
+        refreshProjectFromCloud(true);
+      }, 5e3);
+      return () => {
+        cancelled = true;
+        window.clearInterval(timer);
+        supabase.removeChannel(channel);
+      };
+    }, [projectId, isReadOnly, tab, customerTab]);
+    (0, import_react.useEffect)(() => {
+      if (!isReadOnly) {
+        loadFdvRegister(false);
+        loadProductMaster(false);
+      }
+    }, [isReadOnly]);
+    const createNewProject = () => {
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.notes || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
+      setProject(emptyProject());
+      setChecked({});
+      setProductDocs({});
+      setManualProducts({});
+      setOther({});
+      setSurf({});
+      setPhotos([]);
+      setAccess([]);
+      setInst([]);
+      setFiles([]);
+      setChecklist({});
+      setTilbud(emptyTilbud());
+      setOvertagelse(emptyOvertagelse());
+      setProjectLog(emptyProjectLog());
+      setInternalNotes("");
+      setProjectId(null);
+      setMobileCreatingProject(true);
+      setTab("prosjekt");
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
     };
-
-    if (!Object.values(autoDocs).some(hasValue)) return;
-
-    setProductDocs(prev => {
-      const current = prev[productName] || {};
-      return {
+    const addProsjekteringPunkt = () => {
+      setProject((p) => ({
+        ...p,
+        prosjekteringPunkter: [
+          ...Array.isArray(p.prosjekteringPunkter) ? p.prosjekteringPunkter : [],
+          { id: uid(), title: "", value: "" }
+        ]
+      }));
+    };
+    const updateProsjekteringPunkt = (id, patch) => {
+      setProject((p) => ({
+        ...p,
+        prosjekteringPunkter: (Array.isArray(p.prosjekteringPunkter) ? p.prosjekteringPunkter : []).map(
+          (point) => point.id === id ? { ...point, ...patch } : point
+        )
+      }));
+    };
+    const removeProsjekteringPunkt = (id) => {
+      setProject((p) => ({
+        ...p,
+        prosjekteringPunkter: (Array.isArray(p.prosjekteringPunkter) ? p.prosjekteringPunkter : []).filter((point) => point.id !== id)
+      }));
+    };
+    const updateProductDoc = (productName, patch) => {
+      setProductDocs((prev) => ({
         ...prev,
         [productName]: {
-          ...current,
-          fdvUrl: hasValue(current.fdvUrl) ? current.fdvUrl : autoDocs.fdvUrl,
-          databladUrl: hasValue(current.databladUrl) ? current.databladUrl : autoDocs.databladUrl,
-          dopUrl: hasValue(current.dopUrl) ? current.dopUrl : autoDocs.dopUrl,
-          epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
-          sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
-          documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
-          fdvSource: current.fdvSource || autoDocs.fdvSource
-        }
-      };
-    });
-  };
-
-  const addManualProduct = (section) => {
-    setManualProducts(prev => ({
-      ...(prev || {}),
-      [section]: [
-        ...((prev || {})[section] || []),
-        { id: uid(), name:'', fdvUrl:'', comment:'' }
-      ]
-    }));
-  };
-
-  const updateManualProduct = (section, id, patch) => {
-    setManualProducts(prev => ({
-      ...(prev || {}),
-      [section]: ((prev || {})[section] || []).map(p => p.id === id ? { ...p, ...patch } : p)
-    }));
-  };
-
-  const removeManualProduct = (section, id) => {
-    setManualProducts(prev => ({
-      ...(prev || {}),
-      [section]: ((prev || {})[section] || []).filter(p => p.id !== id)
-    }));
-  };
-
-  const markChatAsRead = async (reader = 'admin') => {
-    if (!projectId) return;
-    const timestamp = new Date().toISOString();
-    const key = reader === 'customer' ? 'lastReadByCustomer' : 'lastReadByAdmin';
-
-    let nextLogForSave = null;
-    setProjectLog(prev => {
-      const normalized = normalizeProjectLog(prev);
-      nextLogForSave = { ...normalized, [key]: timestamp };
-      return nextLogForSave;
-    });
-
-    try {
-      const { data: existing, error: fetchError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('id', projectId)
-        .maybeSingle();
-
-      if (fetchError || !existing) {
-        if (fetchError) console.warn('Kunne ikke markere chat som lest:', fetchError.message);
-        return;
-      }
-
-      const existingData = dataFromRow(existing);
-      const existingLog = normalizeProjectLog(existingData.projectLog);
-      const cleanData = JSON.parse(JSON.stringify({
-        ...existingData,
-        projectLog: {
-          ...existingLog,
-          [key]: timestamp,
-          draft: ''
+          ...prev[productName] || {},
+          ...patch
         }
       }));
-
-      const { error } = await supabase
-        .from('projects')
-        .update({
-          data: cleanData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', projectId);
-
-      if (error) console.warn('Kunne ikke markere chat som lest:', error.message);
-    } catch (error) {
-      console.warn('Kunne ikke markere chat som lest:', error);
-    }
-  };
-
-  const notifyChatMessage = async ({ toEmail, direction, message }) => {
-    if (!toEmail || !message?.text) return;
-
-    try {
-      const { error } = await supabase.functions.invoke('smart-worker', {
-        body: {
-          toEmail,
-          direction,
-          projectId,
-          projectName: project.projectName || project.address || 'Prosjekt',
-          customerName: project.customer || 'Kunde',
-          customerEmail: project.customerEmail || '',
-          companyName: company.companyName || name || 'Expo ProffDok',
-          fromName: message.by || 'Ukjent',
-          message: message.text,
-          projectLink: projectId ? makeProjectLink(projectId, direction === 'to_owner' ? 'admin' : 'kunde') : ''
-        }
+    };
+    const toggleProductChecked = (productName, isChecked) => {
+      setChecked((prev) => ({ ...prev, [productName]: isChecked }));
+      if (!isChecked) return;
+      const masterRow = productMasterByProduct[productName];
+      const registerRow = fdvRegisterByProduct[productName];
+      const autoDocs = {
+        fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || "",
+        databladUrl: masterRow?.datablad_url || "",
+        dopUrl: masterRow?.dop_url || "",
+        epdUrl: masterRow?.epd_url || "",
+        sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || "",
+        documentFileUrl: masterRow?.document_file_url || "",
+        fdvSource: masterRow ? "product-master" : registerRow ? "admin-register" : ""
+      };
+      if (!Object.values(autoDocs).some(hasValue)) return;
+      setProductDocs((prev) => {
+        const current = prev[productName] || {};
+        return {
+          ...prev,
+          [productName]: {
+            ...current,
+            fdvUrl: hasValue(current.fdvUrl) ? current.fdvUrl : autoDocs.fdvUrl,
+            databladUrl: hasValue(current.databladUrl) ? current.databladUrl : autoDocs.databladUrl,
+            dopUrl: hasValue(current.dopUrl) ? current.dopUrl : autoDocs.dopUrl,
+            epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
+            sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
+            documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
+            fdvSource: current.fdvSource || autoDocs.fdvSource
+          }
+        };
       });
-
-      if (error) {
-        console.warn('E-postvarsling kunne ikke sendes:', error.message);
+    };
+    const addManualProduct = (section) => {
+      setManualProducts((prev) => ({
+        ...prev || {},
+        [section]: [
+          ...(prev || {})[section] || [],
+          { id: uid(), name: "", fdvUrl: "", comment: "" }
+        ]
+      }));
+    };
+    const updateManualProduct = (section, id, patch) => {
+      setManualProducts((prev) => ({
+        ...prev || {},
+        [section]: ((prev || {})[section] || []).map((p) => p.id === id ? { ...p, ...patch } : p)
+      }));
+    };
+    const removeManualProduct = (section, id) => {
+      setManualProducts((prev) => ({
+        ...prev || {},
+        [section]: ((prev || {})[section] || []).filter((p) => p.id !== id)
+      }));
+    };
+    const markChatAsRead = async (reader = "admin") => {
+      if (!projectId) return;
+      const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+      const key = reader === "customer" ? "lastReadByCustomer" : "lastReadByAdmin";
+      let nextLogForSave = null;
+      setProjectLog((prev) => {
+        const normalized = normalizeProjectLog(prev);
+        nextLogForSave = { ...normalized, [key]: timestamp };
+        return nextLogForSave;
+      });
+      try {
+        const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        if (fetchError || !existing) {
+          if (fetchError) console.warn("Kunne ikke markere chat som lest:", fetchError.message);
+          return;
+        }
+        const existingData = dataFromRow(existing);
+        const existingLog = normalizeProjectLog(existingData.projectLog);
+        const cleanData = JSON.parse(JSON.stringify({
+          ...existingData,
+          projectLog: {
+            ...existingLog,
+            [key]: timestamp,
+            draft: ""
+          }
+        }));
+        const { error } = await supabase.from("projects").update({
+          data: cleanData,
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        }).eq("id", projectId);
+        if (error) console.warn("Kunne ikke markere chat som lest:", error.message);
+      } catch (error) {
+        console.warn("Kunne ikke markere chat som lest:", error);
       }
-    } catch (error) {
-      console.warn('E-postvarsling kunne ikke sendes:', error);
-    }
-  };
-
-  const ownerNotificationEmail = () =>
-    user.email || authUser?.email || company.email || profile?.email || '';
-
-  const addProjectLogMessage = async () => {
-    if (!projectId) return alert('Prosjektet må lagres før chatmelding med bilde kan lagres på prosjektet.');
-
-    const text = (projectLog.draft || '').trim();
-    if (!text && !chatUploadFile) return alert('Skriv en melding eller velg et bilde først.');
-
-    let uploadedImage = null;
-    if (chatUploadFile) {
-      uploadedImage = await uploadChatImage(chatUploadFile, projectId, 'admin');
-      if (!uploadedImage) return;
-    }
-
-    const message = {
-      id: uid(),
-      text,
-      by: user.name || authUser?.email || 'Utførende',
-      role: 'utførende',
-      created: new Date().toISOString(),
-      imageUrl: uploadedImage?.imageUrl || '',
-      imageName: uploadedImage?.imageName || '',
-      imagePath: uploadedImage?.imagePath || ''
     };
-
-    const { data: existing, error: fetchError } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .maybeSingle();
-
-    if (fetchError || !existing) {
-      console.error(fetchError);
-      return alert('Kunne ikke hente prosjekt før melding ble lagret: ' + (fetchError?.message || 'Fant ikke prosjekt'));
-    }
-
-    if (rowIsLocked(existing)) {
-      return alert('Prosjektet er låst og chatmeldingen kan ikke lagres. Lås opp prosjektet først.');
-    }
-
-    const existingData = dataFromRow(existing);
-    const existingLog = normalizeProjectLog(existingData.projectLog);
-    const updatedLog = {
-      ...existingLog,
-      draft: '',
-      lastReadByAdmin: new Date().toISOString(),
-      messages: [...(existingLog.messages || []), message]
+    const notifyChatMessage = async ({ toEmail, direction, message }) => {
+      if (!toEmail || !message?.text) return;
+      try {
+        const { error } = await supabase.functions.invoke("smart-worker", {
+          body: {
+            toEmail,
+            direction,
+            projectId,
+            projectName: project.projectName || project.address || "Prosjekt",
+            customerName: project.customer || "Kunde",
+            customerEmail: project.customerEmail || "",
+            companyName: company.companyName || name || "Expo ProffDok",
+            fromName: message.by || "Ukjent",
+            message: message.text,
+            projectLink: projectId ? makeProjectLink(projectId, direction === "to_owner" ? "admin" : "kunde") : ""
+          }
+        });
+        if (error) {
+          console.warn("E-postvarsling kunne ikke sendes:", error.message);
+        }
+      } catch (error) {
+        console.warn("E-postvarsling kunne ikke sendes:", error);
+      }
     };
-
-    const cleanData = JSON.parse(JSON.stringify({
-      ...existingData,
-      project: { ...emptyProject(), ...(existingData.project || {}), ...project },
-      projectLog: updatedLog,
-      internalNotes
-    }));
-
-    const { data: updatedRow, error } = await supabase
-      .from('projects')
-      .update({
-        data: cleanData,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', projectId)
-      .select('*')
-      .maybeSingle();
-
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke lagre chatmelding på prosjektet: ' + error.message);
-    }
-
-    setChatUploadFile(null);
-    const fileInput = document.getElementById('admin-chat-image-input');
-    if (fileInput) fileInput.value = '';
-
-    if (updatedRow) {
-      unpackData(dataFromRow(updatedRow));
-      setProjectId(updatedRow.id);
-    } else {
-      setProjectLog(updatedLog);
-    }
-
-    await notifyChatMessage({
-      toEmail: project.customerEmail,
-      direction: 'to_customer',
-      message
-    });
-
-    alert(project.customerEmail ? '✔ Melding sendt og lagret på prosjektet. E-postvarsling forsøkt sendt til kunde.' : '✔ Melding lagret på prosjektet. Legg inn kunde e-post for e-postvarsling.');
-  };
-
-  const removeProjectLogMessage = (id) => {
-    setProjectLog(prev => ({
-      ...prev,
-      messages: (prev.messages || []).filter(m => m.id !== id)
-    }));
-  };
-
-  const saveCustomerChatMessage = async () => {
-    if (!projectId) return alert('Prosjektet mangler ID.');
-    const text = (projectLog.draft || '').trim();
-    if (!text && !customerChatUploadFile) return alert('Skriv en melding eller velg et bilde først.');
-
-    let uploadedImage = null;
-    if (customerChatUploadFile) {
-      uploadedImage = await uploadChatImage(customerChatUploadFile, projectId, 'kunde');
-      if (!uploadedImage) return;
-    }
-
-    const message = {
-      id: uid(),
-      text,
-      by: project.customer || 'Kunde',
-      role: 'kunde',
-      created: new Date().toISOString(),
-      imageUrl: uploadedImage?.imageUrl || '',
-      imageName: uploadedImage?.imageName || '',
-      imagePath: uploadedImage?.imagePath || ''
-    };
-
-    const { data: existing, error: fetchError } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .maybeSingle();
-
-    if (fetchError || !existing) {
-      console.error(fetchError);
-      return alert('Kunne ikke hente prosjekt før melding ble lagret: ' + (fetchError?.message || 'Fant ikke prosjekt'));
-    }
-
-    if (rowIsLocked(existing)) {
-      return alert('Prosjektet er låst og chatmeldingen kan ikke lagres. Kontakt prosjektansvarlig hvis noe må korrigeres.');
-    }
-
-    const existingData = dataFromRow(existing);
-    const existingLog = normalizeProjectLog(existingData.projectLog);
-    const updatedLog = {
-      ...existingLog,
-      draft: '',
-      lastReadByCustomer: new Date().toISOString(),
-      messages: [...(existingLog.messages || []), message]
-    };
-
-    const cleanData = JSON.parse(JSON.stringify({
-      ...existingData,
-      projectLog: updatedLog
-    }));
-
-    const { data: updatedRow, error } = await supabase
-      .from('projects')
-      .update({
-        data: cleanData,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', projectId)
-      .select('*')
-      .maybeSingle();
-
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke lagre melding: ' + error.message);
-    }
-
-    setCustomerChatUploadFile(null);
-    const fileInput = document.getElementById('customer-chat-image-input');
-    if (fileInput) fileInput.value = '';
-
-    if (updatedRow) {
-      unpackData(dataFromRow(updatedRow));
-      setProjectId(updatedRow.id);
-    } else {
-      setProjectLog(updatedLog);
-    }
-
-    await notifyChatMessage({
-      toEmail: ownerNotificationEmail(),
-      direction: 'to_owner',
-      message
-    });
-
-    alert(ownerNotificationEmail() ? '✔ Melding sendt og lagret på prosjektet. E-postvarsling forsøkt sendt til utførende.' : '✔ Melding sendt og lagret på prosjektet.');
-  };
-
-  const saveProject = async () => {
-    if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
-
-    // Bruk nåværende React-state som kilde. Dette er spesielt viktig når gamle prosjekter
-    // redigeres og chat-refresh kjører i bakgrunnen.
-    const snapshot = {
-      ...(latestStateRef.current || {}),
-      company, user, project, checked, productDocs, manualProducts, other, surf, photos,
-      access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes
-    };
-
-    const makeCleanData = (projectOverride = snapshot.project, projectLogOverride = snapshot.projectLog) => JSON.parse(JSON.stringify({
-      company: snapshot.company,
-      user: snapshot.user,
-      project: { ...emptyProject(), ...projectOverride },
-      checked: snapshot.checked,
-      productDocs: snapshot.productDocs,
-      manualProducts: snapshot.manualProducts,
-      other: snapshot.other,
-      surf: snapshot.surf,
-      photos: snapshot.photos,
-      access: snapshot.access,
-      inst: snapshot.inst,
-      files: snapshot.files,
-      checklist: snapshot.checklist,
-      tilbud: snapshot.tilbud,
-      overtagelse: snapshot.overtagelse,
-      projectLog: projectLogOverride,
-      internalNotes: snapshot.internalNotes
-    }));
-
-    if (projectId) {
-      const { data: existing, error: fetchError } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('id', projectId)
-        .maybeSingle();
-
-      if (fetchError) {
+    const ownerNotificationEmail = () => user.email || authUser?.email || company.email || profile?.email || "";
+    const addProjectLogMessage = async () => {
+      if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r chatmelding med bilde kan lagres p\xE5 prosjektet.");
+      const text = (projectLog.draft || "").trim();
+      if (!text && !chatUploadFile) return alert("Skriv en melding eller velg et bilde f\xF8rst.");
+      let uploadedImage = null;
+      if (chatUploadFile) {
+        uploadedImage = await uploadChatImage(chatUploadFile, projectId, "admin");
+        if (!uploadedImage) return;
+      }
+      const message = {
+        id: uid(),
+        text,
+        by: user.name || authUser?.email || "Utf\xF8rende",
+        role: "utf\xF8rende",
+        created: (/* @__PURE__ */ new Date()).toISOString(),
+        imageUrl: uploadedImage?.imageUrl || "",
+        imageName: uploadedImage?.imageName || "",
+        imagePath: uploadedImage?.imagePath || ""
+      };
+      const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+      if (fetchError || !existing) {
         console.error(fetchError);
-        return alert('Kunne ikke kontrollere prosjektstatus: ' + fetchError.message);
+        return alert("Kunne ikke hente prosjekt f\xF8r melding ble lagret: " + (fetchError?.message || "Fant ikke prosjekt"));
       }
-
-      if (!existing) {
-        return alert('Fant ikke prosjektet. Åpne prosjektet på nytt fra prosjektlisten.');
+      if (rowIsLocked(existing)) {
+        return alert("Prosjektet er l\xE5st og chatmeldingen kan ikke lagres. L\xE5s opp prosjektet f\xF8rst.");
       }
-
-      const existingProject = projectFromRow(existing, existing?.data?.project || {});
+      const existingData = dataFromRow(existing);
+      const existingLog = normalizeProjectLog(existingData.projectLog);
+      const updatedLog = {
+        ...existingLog,
+        draft: "",
+        lastReadByAdmin: (/* @__PURE__ */ new Date()).toISOString(),
+        messages: [...existingLog.messages || [], message]
+      };
+      const cleanData = JSON.parse(JSON.stringify({
+        ...existingData,
+        project: { ...emptyProject(), ...existingData.project || {}, ...project },
+        projectLog: updatedLog,
+        internalNotes
+      }));
+      const { data: updatedRow, error } = await supabase.from("projects").update({
+        data: cleanData,
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      }).eq("id", projectId).select("*").maybeSingle();
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke lagre chatmelding p\xE5 prosjektet: " + error.message);
+      }
+      setChatUploadFile(null);
+      const fileInput = document.getElementById("admin-chat-image-input");
+      if (fileInput) fileInput.value = "";
+      if (updatedRow) {
+        unpackData(dataFromRow(updatedRow));
+        setProjectId(updatedRow.id);
+      } else {
+        setProjectLog(updatedLog);
+      }
+      await notifyChatMessage({
+        toEmail: project.customerEmail,
+        direction: "to_customer",
+        message
+      });
+      alert(project.customerEmail ? "\u2714 Melding sendt og lagret p\xE5 prosjektet. E-postvarsling fors\xF8kt sendt til kunde." : "\u2714 Melding lagret p\xE5 prosjektet. Legg inn kunde e-post for e-postvarsling.");
+    };
+    const removeProjectLogMessage = (id) => {
+      setProjectLog((prev) => ({
+        ...prev,
+        messages: (prev.messages || []).filter((m) => m.id !== id)
+      }));
+    };
+    const saveCustomerChatMessage = async () => {
+      if (!projectId) return alert("Prosjektet mangler ID.");
+      const text = (projectLog.draft || "").trim();
+      if (!text && !customerChatUploadFile) return alert("Skriv en melding eller velg et bilde f\xF8rst.");
+      let uploadedImage = null;
+      if (customerChatUploadFile) {
+        uploadedImage = await uploadChatImage(customerChatUploadFile, projectId, "kunde");
+        if (!uploadedImage) return;
+      }
+      const message = {
+        id: uid(),
+        text,
+        by: project.customer || "Kunde",
+        role: "kunde",
+        created: (/* @__PURE__ */ new Date()).toISOString(),
+        imageUrl: uploadedImage?.imageUrl || "",
+        imageName: uploadedImage?.imageName || "",
+        imagePath: uploadedImage?.imagePath || ""
+      };
+      const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+      if (fetchError || !existing) {
+        console.error(fetchError);
+        return alert("Kunne ikke hente prosjekt f\xF8r melding ble lagret: " + (fetchError?.message || "Fant ikke prosjekt"));
+      }
+      if (rowIsLocked(existing)) {
+        return alert("Prosjektet er l\xE5st og chatmeldingen kan ikke lagres. Kontakt prosjektansvarlig hvis noe m\xE5 korrigeres.");
+      }
+      const existingData = dataFromRow(existing);
+      const existingLog = normalizeProjectLog(existingData.projectLog);
+      const updatedLog = {
+        ...existingLog,
+        draft: "",
+        lastReadByCustomer: (/* @__PURE__ */ new Date()).toISOString(),
+        messages: [...existingLog.messages || [], message]
+      };
+      const cleanData = JSON.parse(JSON.stringify({
+        ...existingData,
+        projectLog: updatedLog
+      }));
+      const { data: updatedRow, error } = await supabase.from("projects").update({
+        data: cleanData,
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      }).eq("id", projectId).select("*").maybeSingle();
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke lagre melding: " + error.message);
+      }
+      setCustomerChatUploadFile(null);
+      const fileInput = document.getElementById("customer-chat-image-input");
+      if (fileInput) fileInput.value = "";
+      if (updatedRow) {
+        unpackData(dataFromRow(updatedRow));
+        setProjectId(updatedRow.id);
+      } else {
+        setProjectLog(updatedLog);
+      }
+      await notifyChatMessage({
+        toEmail: ownerNotificationEmail(),
+        direction: "to_owner",
+        message
+      });
+      alert(ownerNotificationEmail() ? "\u2714 Melding sendt og lagret p\xE5 prosjektet. E-postvarsling fors\xF8kt sendt til utf\xF8rende." : "\u2714 Melding sendt og lagret p\xE5 prosjektet.");
+    };
+    const saveProject = async () => {
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
+      const snapshot = {
+        ...latestStateRef.current || {},
+        company,
+        user,
+        project,
+        checked,
+        productDocs,
+        manualProducts,
+        other,
+        surf,
+        photos,
+        access,
+        inst,
+        files,
+        checklist,
+        tilbud,
+        overtagelse,
+        projectLog,
+        internalNotes
+      };
+      const makeCleanData = (projectOverride = snapshot.project, projectLogOverride = snapshot.projectLog) => JSON.parse(JSON.stringify({
+        company: snapshot.company,
+        user: snapshot.user,
+        project: { ...emptyProject(), ...projectOverride },
+        checked: snapshot.checked,
+        productDocs: snapshot.productDocs,
+        manualProducts: snapshot.manualProducts,
+        other: snapshot.other,
+        surf: snapshot.surf,
+        photos: snapshot.photos,
+        access: snapshot.access,
+        inst: snapshot.inst,
+        files: snapshot.files,
+        checklist: snapshot.checklist,
+        tilbud: snapshot.tilbud,
+        overtagelse: snapshot.overtagelse,
+        projectLog: projectLogOverride,
+        internalNotes: snapshot.internalNotes
+      }));
+      if (projectId) {
+        const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        if (fetchError) {
+          console.error(fetchError);
+          return alert("Kunne ikke kontrollere prosjektstatus: " + fetchError.message);
+        }
+        if (!existing) {
+          return alert("Fant ikke prosjektet. \xC5pne prosjektet p\xE5 nytt fra prosjektlisten.");
+        }
+        const existingProject = projectFromRow(existing, existing?.data?.project || {});
+        if (rowIsLocked(existing) || isProjectLocked) {
+          const lockedProject = existingProject;
+          setProject(lockedProject);
+          return alert("Prosjektet er l\xE5st. L\xE5s opp prosjektet f\xF8r du lagrer endringer.");
+        }
+        const saveProjectData = {
+          ...emptyProject(),
+          ...snapshot.project || {},
+          locked: false,
+          status: "active",
+          lockedAt: "",
+          lockedBy: ""
+        };
+        const saveProjectLog = {
+          ...normalizeProjectLog(snapshot.projectLog),
+          draft: ""
+        };
+        const cleanData = makeCleanData(saveProjectData, saveProjectLog);
+        const payload = {
+          title: saveProjectData.projectName || saveProjectData.address || "Uten navn",
+          data: cleanData,
+          user_id: existing.user_id || authUser.id,
+          share_enabled: true,
+          locked: false,
+          locked_at: null,
+          locked_by: "",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        let updatedRow = null;
+        const updateResult = await supabase.from("projects").update(payload).eq("id", projectId).select("*").maybeSingle();
+        if (updateResult.error) {
+          console.error(updateResult.error);
+          return alert("Kunne ikke oppdatere prosjekt i sky: " + updateResult.error.message);
+        }
+        updatedRow = updateResult.data || null;
+        if (!updatedRow) {
+          const verifyResult = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+          if (verifyResult.error) {
+            console.error(verifyResult.error);
+          } else {
+            updatedRow = verifyResult.data || null;
+          }
+        }
+        const matchesSavedProject = (row) => {
+          const saved = row?.data?.project || {};
+          return (saved.projectName || "") === (saveProjectData.projectName || "") && (saved.address || "") === (saveProjectData.address || "") && (saved.postnr || "") === (saveProjectData.postnr || "") && (saved.city || "") === (saveProjectData.city || "") && (saved.customer || "") === (saveProjectData.customer || "") && (saved.customerEmail || "") === (saveProjectData.customerEmail || "") && (saved.notes || "") === (saveProjectData.notes || "");
+        };
+        if (updatedRow && matchesSavedProject(updatedRow)) {
+          unpackData(dataFromRow(updatedRow), false);
+          setProjectId(updatedRow.id);
+          await loadProjects(authUser);
+          return alert("\u2714 Prosjekt oppdatert og bekreftet lagret");
+        }
+        const shouldCopy = window.confirm(
+          "Prosjektet ble ikke oppdatert i gammel rad. Dette skyldes sannsynligvis Supabase-policy/eierskap p\xE5 gamle prosjekter.\n\nVil du lagre dette som en ny oppdatert kopi n\xE5, slik at endringene ikke g\xE5r tapt?"
+        );
+        if (!shouldCopy) {
+          setProject(saveProjectData);
+          setProjectLog(saveProjectLog);
+          latestStateRef.current = { ...snapshot, project: saveProjectData, projectLog: saveProjectLog };
+          return alert("Endringene st\xE5r fortsatt p\xE5 skjermen, men er ikke bekreftet lagret i Supabase.");
+        }
+        const copyPayload = {
+          title: saveProjectData.projectName || saveProjectData.address || "Uten navn",
+          data: cleanData,
+          user_id: authUser.id,
+          share_enabled: true,
+          locked: false,
+          locked_at: null,
+          locked_by: "",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        const { data: copyRow, error: copyError } = await supabase.from("projects").insert(copyPayload).select().single();
+        if (copyError) {
+          console.error(copyError);
+          return alert("Kunne ikke lagre kopi heller: " + copyError.message);
+        }
+        setProjectId(copyRow.id);
+        unpackData(dataFromRow(copyRow), false);
+        await loadProjects(authUser);
+        return alert("\u2714 Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.");
+      } else {
+        const newProjectData = {
+          ...emptyProject(),
+          ...snapshot.project || {},
+          locked: false,
+          status: "active",
+          lockedAt: "",
+          lockedBy: ""
+        };
+        const newProjectLog = {
+          ...normalizeProjectLog(snapshot.projectLog),
+          draft: ""
+        };
+        const payload = {
+          title: newProjectData.projectName || newProjectData.address || "Uten navn",
+          data: makeCleanData(newProjectData, newProjectLog),
+          user_id: authUser.id,
+          share_enabled: true,
+          locked: false,
+          locked_at: null,
+          locked_by: "",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        const { data, error } = await supabase.from("projects").insert(payload).select().single();
+        if (error) {
+          console.error(error);
+          return alert("Kunne ikke lagre i sky: " + error.message);
+        }
+        setProjectId(data.id);
+        setMobileCreatingProject(false);
+        unpackData(dataFromRow(data), false);
+        alert("\u2714 Prosjekt lagret");
+      }
+      loadProjects(authUser);
+    };
+    const saveSharedProject = async () => {
+      if (!projectId) return alert("Prosjektet mangler ID og kan ikke lagres fra delingslink.");
+      const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+      if (fetchError || !existing) {
+        console.error(fetchError);
+        return alert("Kunne ikke kontrollere prosjektstatus f\xF8r lagring: " + (fetchError?.message || "Fant ikke prosjekt"));
+      }
+      const existingProject = projectFromRow(existing, existing.data?.project || {});
       if (rowIsLocked(existing) || isProjectLocked) {
         const lockedProject = existingProject;
         setProject(lockedProject);
-        return alert('Prosjektet er låst. Lås opp prosjektet før du lagrer endringer.');
+        return alert("Prosjektet er l\xE5st og kan ikke endres. Kontakt prosjektansvarlig hvis noe m\xE5 korrigeres.");
       }
-
-      const saveProjectData = {
+      const safeProject = {
         ...emptyProject(),
-        ...(snapshot.project || {}),
+        ...project,
         locked: false,
-        status: 'active',
-        lockedAt: '',
-        lockedBy: ''
+        status: "active",
+        lockedAt: "",
+        lockedBy: ""
       };
-
-      const saveProjectLog = {
-        ...(normalizeProjectLog(snapshot.projectLog)),
-        draft: ''
-      };
-
-      const cleanData = makeCleanData(saveProjectData, saveProjectLog);
+      const cleanData = JSON.parse(JSON.stringify({
+        company,
+        user,
+        project: safeProject,
+        checked,
+        productDocs,
+        manualProducts,
+        other,
+        surf,
+        photos,
+        access,
+        inst,
+        files,
+        checklist,
+        tilbud,
+        overtagelse,
+        projectLog,
+        internalNotes
+      }));
       const payload = {
-        title: saveProjectData.projectName || saveProjectData.address || 'Uten navn',
+        title: safeProject.projectName || safeProject.address || "Uten navn",
         data: cleanData,
-        user_id: existing.user_id || authUser.id,
         share_enabled: true,
         locked: false,
         locked_at: null,
-        locked_by: '',
-        updated_at: new Date().toISOString()
+        locked_by: "",
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
       };
-
-      // 1) Prøv vanlig oppdatering og be Supabase returnere raden.
-      let updatedRow = null;
-      const updateResult = await supabase
-        .from('projects')
-        .update(payload)
-        .eq('id', projectId)
-        .select('*')
-        .maybeSingle();
-
-      if (updateResult.error) {
-        console.error(updateResult.error);
-        return alert('Kunne ikke oppdatere prosjekt i sky: ' + updateResult.error.message);
+      const { error } = await supabase.from("projects").update(payload).eq("id", projectId);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke lagre fra delingslink. Sjekk Supabase-policy for delt tilgang: " + error.message);
       }
-
-      updatedRow = updateResult.data || null;
-
-      // 2) Hvis Supabase ikke returnerer rad, kan RLS ha stoppet retur selv om update ble sendt.
-      // Hent prosjektet på nytt og sjekk.
+      setProject(safeProject);
+      alert("\u2714 Bidrag lagret p\xE5 prosjektet " + (/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO"));
+    };
+    const setProjectLockedState = async (locked) => {
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 endre prosjektstatus.");
+      if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r det kan l\xE5ses eller l\xE5ses opp.");
+      const message = locked ? "Vil du avslutte og l\xE5se prosjektet? Ingen kan lagre endringer f\xF8r prosjektet l\xE5ses opp igjen." : "Vil du l\xE5se opp prosjektet slik at endringer kan lagres igjen?";
+      if (!window.confirm(message)) return;
+      const { data, error } = await supabase.rpc("set_project_lock", {
+        p_project_id: projectId,
+        p_locked: !!locked,
+        p_locked_by: authUser.email || user.email || user.name || "Ukjent"
+      });
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke oppdatere prosjektstatus: " + error.message);
+      }
+      const updatedRow = Array.isArray(data) ? data[0] : data;
       if (!updatedRow) {
-        const verifyResult = await supabase
-          .from('projects')
-          .select('*')
-          .eq('id', projectId)
-          .maybeSingle();
-
-        if (verifyResult.error) {
-          console.error(verifyResult.error);
-        } else {
-          updatedRow = verifyResult.data || null;
-        }
+        return alert("Prosjektstatus ble ikke oppdatert. \xC5pne prosjektet p\xE5 nytt og pr\xF8v igjen.");
       }
-
-      const matchesSavedProject = (row) => {
-        const saved = row?.data?.project || {};
-        return (
-          (saved.projectName || '') === (saveProjectData.projectName || '') &&
-          (saved.address || '') === (saveProjectData.address || '') &&
-          (saved.postnr || '') === (saveProjectData.postnr || '') &&
-          (saved.city || '') === (saveProjectData.city || '') &&
-          (saved.customer || '') === (saveProjectData.customer || '') &&
-          (saved.customerEmail || '') === (saveProjectData.customerEmail || '') &&
-          (saved.notes || '') === (saveProjectData.notes || '')
-        );
-      };
-
-      if (updatedRow && matchesSavedProject(updatedRow)) {
-        unpackData(dataFromRow(updatedRow), false);
-        setProjectId(updatedRow.id);
-        await loadProjects(authUser);
-        return alert('✔ Prosjekt oppdatert og bekreftet lagret');
+      const updatedData = dataFromRow(updatedRow, updatedRow.data || packData());
+      unpackData(updatedData);
+      alert(locked ? "\u{1F512} Prosjektet er avsluttet og l\xE5st." : "\u{1F513} Prosjektet er l\xE5st opp igjen.");
+      loadProjects(authUser);
+    };
+    const saveAsNewProject = async () => {
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
+      const unlockedProject = { ...emptyProject(), ...project, locked: false, status: "active", lockedAt: "", lockedBy: "" };
+      const payload = { title: unlockedProject.projectName || unlockedProject.address || "Uten navn", data: { company, user, project: unlockedProject, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes }, user_id: authUser.id, share_enabled: true, locked: false, locked_at: null, locked_by: "", updated_at: (/* @__PURE__ */ new Date()).toISOString() };
+      const { data, error } = await supabase.from("projects").insert(payload).select().single();
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke lagre som nytt prosjekt: " + error.message);
       }
-
-      // 3) Fallback for gamle prosjekter: prøv å lagre samme prosjekt som ny rad,
-      // slik at endringene ikke går tapt dersom gammel rad eies av en annen bruker/policy.
-      const shouldCopy = window.confirm(
-        'Prosjektet ble ikke oppdatert i gammel rad. Dette skyldes sannsynligvis Supabase-policy/eierskap på gamle prosjekter.\n\nVil du lagre dette som en ny oppdatert kopi nå, slik at endringene ikke går tapt?'
-      );
-
-      if (!shouldCopy) {
-        setProject(saveProjectData);
-        setProjectLog(saveProjectLog);
-        latestStateRef.current = { ...snapshot, project: saveProjectData, projectLog: saveProjectLog };
-        return alert('Endringene står fortsatt på skjermen, men er ikke bekreftet lagret i Supabase.');
-      }
-
-      const copyPayload = {
-        title: saveProjectData.projectName || saveProjectData.address || 'Uten navn',
-        data: cleanData,
-        user_id: authUser.id,
-        share_enabled: true,
-        locked: false,
-        locked_at: null,
-        locked_by: '',
-        updated_at: new Date().toISOString()
-      };
-
-      const { data: copyRow, error: copyError } = await supabase
-        .from('projects')
-        .insert(copyPayload)
-        .select()
-        .single();
-
-      if (copyError) {
-        console.error(copyError);
-        return alert('Kunne ikke lagre kopi heller: ' + copyError.message);
-      }
-
-      setProjectId(copyRow.id);
-      unpackData(dataFromRow(copyRow), false);
-      await loadProjects(authUser);
-      return alert('✔ Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.');
-    } else {
-      const newProjectData = {
-        ...emptyProject(),
-        ...(snapshot.project || {}),
-        locked: false,
-        status: 'active',
-        lockedAt: '',
-        lockedBy: ''
-      };
-      const newProjectLog = {
-        ...(normalizeProjectLog(snapshot.projectLog)),
-        draft: ''
-      };
-      const payload = {
-        title: newProjectData.projectName || newProjectData.address || 'Uten navn',
-        data: makeCleanData(newProjectData, newProjectLog),
-        user_id: authUser.id,
-        share_enabled: true,
-        locked: false,
-        locked_at: null,
-        locked_by: '',
-        updated_at: new Date().toISOString()
-      };
-      const { data, error } = await supabase.from('projects').insert(payload).select().single();
-      if (error) { console.error(error); return alert('Kunne ikke lagre i sky: ' + error.message); }
       setProjectId(data.id);
       setMobileCreatingProject(false);
-      unpackData(dataFromRow(data), false);
-      alert('✔ Prosjekt lagret');
-    }
-    loadProjects(authUser);
-  };
-
-
-  const saveSharedProject = async () => {
-    if (!projectId) return alert('Prosjektet mangler ID og kan ikke lagres fra delingslink.');
-
-    const { data: existing, error: fetchError } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .maybeSingle();
-
-    if (fetchError || !existing) {
-      console.error(fetchError);
-      return alert('Kunne ikke kontrollere prosjektstatus før lagring: ' + (fetchError?.message || 'Fant ikke prosjekt'));
-    }
-
-    const existingProject = projectFromRow(existing, existing.data?.project || {});
-    if (rowIsLocked(existing) || isProjectLocked) {
-      const lockedProject = existingProject;
-      setProject(lockedProject);
-      return alert('Prosjektet er låst og kan ikke endres. Kontakt prosjektansvarlig hvis noe må korrigeres.');
-    }
-
-    const safeProject = {
-      ...emptyProject(),
-      ...project,
-      locked: false,
-      status: 'active',
-      lockedAt: '',
-      lockedBy: ''
+      alert("\u2714 Kopi lagret");
+      loadProjects(authUser);
     };
-
-    const cleanData = JSON.parse(JSON.stringify({
-      company, user, project: safeProject,
-      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes
-    }));
-
-    const payload = {
-      title: safeProject.projectName || safeProject.address || 'Uten navn',
-      data: cleanData,
-      share_enabled: true,
-      locked: false,
-      locked_at: null,
-      locked_by: '',
-      updated_at: new Date().toISOString()
+    const deleteProject = async (id) => {
+      if (!window.confirm("Er du sikker p\xE5 at du vil slette prosjektet?")) return;
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 slette prosjekt.");
+      const { data, error } = await supabase.from("projects").delete().eq("id", id).select("id");
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke slette prosjekt: " + error.message);
+      }
+      if (!data || data.length === 0) {
+        return alert("Prosjektet ble ikke slettet. Det skyldes sannsynligvis tilgang/eierskap p\xE5 gammel prosjektrad i Supabase.");
+      }
+      setProjects((prev) => (prev || []).filter((p) => p.id !== id));
+      if (id === projectId) {
+        setProjectId(null);
+        setMobileCreatingProject(false);
+        setTab("prosjekt");
+      }
+      await loadProjects(authUser);
+      alert("Prosjekt slettet.");
     };
-
-    const { error } = await supabase.from('projects').update(payload).eq('id', projectId);
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke lagre fra delingslink. Sjekk Supabase-policy for delt tilgang: ' + error.message);
-    }
-    setProject(safeProject);
-    alert('✔ Bidrag lagret på prosjektet ' + new Date().toLocaleTimeString('no-NO'));
-  };
-
-
-  const setProjectLockedState = async (locked) => {
-    if (!authUser) return alert('Du må være logget inn for å endre prosjektstatus.');
-    if (!projectId) return alert('Prosjektet må lagres før det kan låses eller låses opp.');
-
-    const message = locked
-      ? 'Vil du avslutte og låse prosjektet? Ingen kan lagre endringer før prosjektet låses opp igjen.'
-      : 'Vil du låse opp prosjektet slik at endringer kan lagres igjen?';
-    if (!window.confirm(message)) return;
-
-    const { data, error } = await supabase.rpc('set_project_lock', {
-      p_project_id: projectId,
-      p_locked: !!locked,
-      p_locked_by: authUser.email || user.email || user.name || 'Ukjent'
-    });
-
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke oppdatere prosjektstatus: ' + error.message);
-    }
-
-    const updatedRow = Array.isArray(data) ? data[0] : data;
-    if (!updatedRow) {
-      return alert('Prosjektstatus ble ikke oppdatert. Åpne prosjektet på nytt og prøv igjen.');
-    }
-
-    const updatedData = dataFromRow(updatedRow, updatedRow.data || packData());
-    unpackData(updatedData);
-    alert(locked ? '🔒 Prosjektet er avsluttet og låst.' : '🔓 Prosjektet er låst opp igjen.');
-    loadProjects(authUser);
-  };
-
-  const saveAsNewProject = async () => {
-    if (!authUser) return alert('Du må være logget inn for å lagre prosjekt.');
-    const unlockedProject = { ...emptyProject(), ...project, locked:false, status:'active', lockedAt:'', lockedBy:'' };
-    const payload = { title: unlockedProject.projectName || unlockedProject.address || 'Uten navn', data: { company, user, project: unlockedProject, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes }, user_id: authUser.id, share_enabled: true, locked:false, locked_at:null, locked_by:'', updated_at: new Date().toISOString() };
-    const { data, error } = await supabase.from('projects').insert(payload).select().single();
-    if (error) { console.error(error); return alert('Kunne ikke lagre som nytt prosjekt: ' + error.message); }
-    setProjectId(data.id);
-    setMobileCreatingProject(false);
-    alert('✔ Kopi lagret');
-    loadProjects(authUser);
-  };
-
-  const deleteProject = async (id) => {
-    if (!window.confirm('Er du sikker på at du vil slette prosjektet?')) return;
-    if (!authUser) return alert('Du må være logget inn for å slette prosjekt.');
-
-    const { data, error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', id)
-      .select('id');
-
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke slette prosjekt: ' + error.message);
-    }
-
-    if (!data || data.length === 0) {
-      return alert('Prosjektet ble ikke slettet. Det skyldes sannsynligvis tilgang/eierskap på gammel prosjektrad i Supabase.');
-    }
-
-    setProjects(prev => (prev || []).filter(p => p.id !== id));
-    if (id === projectId) {
+    const saveProjectForLink = async () => {
+      if (projectId) return projectId;
+      if (!authUser) {
+        alert("Du m\xE5 v\xE6re logget inn for \xE5 lage delingslink.");
+        return null;
+      }
+      const newProjectData = {
+        ...emptyProject(),
+        ...project,
+        locked: false,
+        status: "active",
+        lockedAt: "",
+        lockedBy: ""
+      };
+      const cleanData = JSON.parse(JSON.stringify({
+        company,
+        user,
+        project: newProjectData,
+        checked,
+        productDocs,
+        manualProducts,
+        other,
+        surf,
+        photos,
+        access,
+        inst,
+        files,
+        checklist,
+        tilbud,
+        overtagelse,
+        projectLog,
+        internalNotes
+      }));
+      const payload = {
+        title: newProjectData.projectName || newProjectData.address || "Uten navn",
+        data: cleanData,
+        user_id: authUser.id,
+        share_enabled: true,
+        locked: false,
+        locked_at: null,
+        locked_by: "",
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      };
+      const { data, error } = await supabase.from("projects").insert(payload).select().single();
+      if (error) {
+        console.error(error);
+        alert("Kunne ikke lagre prosjekt f\xF8r deling: " + error.message);
+        return null;
+      }
+      setProjectId(data.id);
+      setMobileCreatingProject(false);
+      setProject(newProjectData);
+      loadProjects(authUser);
+      return data.id;
+    };
+    const makeProjectLink = (id, role = "kunde") => {
+      if (role === "admin") {
+        return `${window.location.origin}${window.location.pathname}?project=${id}&role=admin`;
+      }
+      const roleParam = role === "Underleverand\xF8r" ? "underleverandor" : "kunde";
+      return roleParam === "underleverandor" ? `${window.location.origin}${window.location.pathname}?project=${id}&access=underleverandor` : `${window.location.origin}${window.location.pathname}?project=${id}&role=kunde`;
+    };
+    const copyLinkToClipboard = async (link, successMessage) => {
+      try {
+        await navigator.clipboard.writeText(link);
+        alert(successMessage);
+      } catch {
+        prompt("Kopier denne linken:", link);
+      }
+    };
+    const shareProject = async () => {
+      const id = await saveProjectForLink();
+      if (!id) return;
+      await copyLinkToClipboard(makeProjectLink(id, "kunde"), "Kundelink kopiert.");
+    };
+    const copyAccessLink = async (role = "kunde") => {
+      const id = await saveProjectForLink();
+      if (!id) return;
+      const roleParam = role === "Underleverand\xF8r" ? "underleverandor" : "kunde";
+      await copyLinkToClipboard(
+        makeProjectLink(id, role),
+        roleParam === "underleverandor" ? "Underentrepren\xF8r-link kopiert." : "Kundelink kopiert."
+      );
+    };
+    const completeOvertagelseAndLock = async () => {
+      if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r overtagelse kan fullf\xF8res.");
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 fullf\xF8re overtagelse.");
+      const utf\u00F8rendeSigned = hasValue(overtagelse.signUtf\u00F8rende) || hasValue(overtagelse.signUtf\u00F8rendeImage);
+      const kundeSigned = hasValue(overtagelse.signKunde) || hasValue(overtagelse.signKundeImage);
+      if (!utf\u00F8rendeSigned || !kundeSigned) {
+        return alert("B\xE5de utf\xF8rende og kunde m\xE5 signere f\xF8r overtagelse kan fullf\xF8res.");
+      }
+      const completedOvertagelse = {
+        ...emptyOvertagelse(),
+        ...overtagelse,
+        enabled: true,
+        dato: overtagelse.dato || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)
+      };
+      const cleanData = JSON.parse(JSON.stringify({
+        company,
+        user,
+        project: { ...emptyProject(), ...project, locked: false, status: "active", lockedAt: "", lockedBy: "" },
+        checked,
+        productDocs,
+        manualProducts,
+        other,
+        surf,
+        photos,
+        access,
+        inst,
+        files,
+        checklist,
+        tilbud,
+        overtagelse: completedOvertagelse,
+        projectLog,
+        internalNotes
+      }));
+      const { error: saveError } = await supabase.from("projects").update({
+        data: cleanData,
+        title: project.projectName || project.address || "Uten navn",
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      }).eq("id", projectId).eq("user_id", authUser.id);
+      if (saveError) {
+        console.error(saveError);
+        return alert("Kunne ikke lagre overtagelse f\xF8r l\xE5sing: " + saveError.message);
+      }
+      setOvertagelse(completedOvertagelse);
+      await setProjectLockedState(true);
+    };
+    const uploadLogo = async (file) => {
+      if (!authUser || !file) return;
+      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `logos/${authUser.id}/${Date.now()}-${cleanName}`;
+      const { error } = await supabase.storage.from("project-images").upload(path, file, { cacheControl: "3600", upsert: true });
+      if (error) return alert("Kunne ikke laste opp logo: " + error.message);
+      const { data } = supabase.storage.from("project-images").getPublicUrl(path);
+      setCompany((c) => ({ ...c, logoUrl: data.publicUrl }));
+      alert("Logo lastet opp. Husk \xE5 trykke Lagre firmaprofil.");
+    };
+    const saveProfile = async () => {
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn.");
+      const payload = {
+        id: authUser.id,
+        email: company.email || authUser.email,
+        company_name: company.companyName || "",
+        org_number: company.orgNumber || "",
+        address: company.address || "",
+        phone: company.phone || "",
+        website: company.website || "",
+        logo_url: company.logoUrl || ""
+      };
+      const { error } = await supabase.from("profiles").update(payload).eq("id", authUser.id);
+      if (error) return alert("Kunne ikke lagre firmaprofil: " + error.message);
+      const row = { ...profile || {}, ...payload };
+      applyProfile(row);
+      alert("Firmaprofil lagret");
+    };
+    const loadAdminUsers = async () => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      setAdminLoading(true);
+      const { data, error } = await supabase.from("profiles").select("id,email,approved,company_name,created_at").order("created_at", { ascending: false });
+      setAdminLoading(false);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke hente brukere. Sjekk at Supabase-policy tillater admin \xE5 lese profiles.");
+      }
+      setAdminUsers(data || []);
+    };
+    const approveAdminUser = async (id) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      const { error } = await supabase.from("profiles").update({ approved: true }).eq("id", id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke godkjenne bruker: " + error.message);
+      }
+      alert("Bruker er godkjent.");
+      loadAdminUsers();
+    };
+    const revokeAdminUser = async (id) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      if (!window.confirm("Vil du fjerne godkjenning for denne brukeren?")) return;
+      const { error } = await supabase.from("profiles").update({ approved: false }).eq("id", id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke fjerne godkjenning: " + error.message);
+      }
+      alert("Godkjenning er fjernet.");
+      loadAdminUsers();
+    };
+    const loadFdvRegister = async (notify = false) => {
+      setFdvLoading(true);
+      const { data, error } = await supabase.from("fdv_register").select("*").order("section", { ascending: true }).order("product_name", { ascending: true });
+      setFdvLoading(false);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke hente FDV-register. Kj\xF8r SQL-oppsettet f\xF8rst og sjekk Supabase-policy: " + error.message);
+      }
+      setFdvRegister(data || []);
+      if (notify) alert(`FDV-register oppdatert. Fant ${(data || []).length} produkter.`);
+    };
+    const seedFdvRegister = async () => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til FDV-register.");
+      if (!window.confirm("Vil du legge inn alle standardproduktene i FDV-registeret? Eksisterende produkter oppdateres ikke, men manglende produkter legges til.")) return;
+      setFdvLoading(true);
+      const rows = productSections.flatMap((section) => section.items.map((productName) => ({
+        section: section.title,
+        product_name: productName,
+        fdv_url: "",
+        comment: "",
+        active: true,
+        updated_by: authUser?.email || ""
+      })));
+      const { error } = await supabase.from("fdv_register").upsert(rows, { onConflict: "product_name" });
+      setFdvLoading(false);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke opprette standardprodukter i FDV-register: " + error.message);
+      }
+      await loadFdvRegister(false);
+      alert("FDV-register er klargjort med standardprodukter.");
+    };
+    const saveFdvRegisterRow = async (row) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til FDV-register.");
+      if (!row?.product_name) return alert("Produktnavn mangler.");
+      const payload = {
+        section: row.section || "",
+        product_name: row.product_name,
+        fdv_url: row.fdv_url || "",
+        comment: row.comment || "",
+        active: row.active !== false,
+        updated_by: authUser?.email || ""
+      };
+      const { data, error } = await supabase.from("fdv_register").upsert(payload, { onConflict: "product_name" }).select("*").single();
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke lagre FDV-produkt: " + error.message);
+      }
+      setFdvRegister((prev) => {
+        const exists = (prev || []).some((x) => x.product_name === data.product_name);
+        return exists ? prev.map((x) => x.product_name === data.product_name ? data : x) : [...prev || [], data].sort((a, b) => `${a.section}${a.product_name}`.localeCompare(`${b.section}${b.product_name}`));
+      });
+      alert("FDV-produkt lagret.");
+    };
+    const updateFdvRegisterLocal = (productName, patch) => {
+      setFdvRegister((prev) => {
+        const list = prev || [];
+        const exists = list.some((row) => row.product_name === productName);
+        if (!exists) return [...list, { product_name: productName, section: patch.section || "", fdv_url: "", comment: "", active: true, ...patch }];
+        return list.map((row) => row.product_name === productName ? { ...row, ...patch } : row);
+      });
+    };
+    const loadProductMaster = async (notify = false) => {
+      setProductMasterLoading(true);
+      const { data, error } = await supabase.from("product_document_master").select("*").order("category", { ascending: true }).order("product_family", { ascending: true }).order("product_name", { ascending: true });
+      setProductMasterLoading(false);
+      if (error) {
+        console.warn("Kunne ikke hente produktmaster:", error.message);
+        if (notify) alert("Kunne ikke hente produktmaster. Sjekk at SQL-filen er kj\xF8rt i Supabase: " + error.message);
+        return;
+      }
+      setProductMaster(data || []);
+      if (notify) alert(`Produktmaster oppdatert. Fant ${(data || []).length} produkter/varianter.`);
+    };
+    const updateProductMasterLocal = (productNo, patch) => {
+      setProductMaster((prev) => (prev || []).map((row) => row.product_no === productNo ? { ...row, ...patch } : row));
+    };
+    const saveProductMasterRow = async (row) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til produktmaster.");
+      if (!row?.product_no) return alert("Varenummer mangler.");
+      const payload = {
+        fdv_url: row.fdv_url || "",
+        datablad_url: row.datablad_url || "",
+        dop_url: row.dop_url || "",
+        epd_url: row.epd_url || "",
+        sikkerhetsdatablad_url: row.sikkerhetsdatablad_url || "",
+        document_file_url: row.document_file_url || "",
+        comment: row.comment || "",
+        active: row.active !== false
+      };
+      const { data, error } = await supabase.from("product_document_master").update(payload).eq("product_no", row.product_no).select("*").single();
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke lagre produktmaster-rad: " + error.message);
+      }
+      setProductMaster((prev) => (prev || []).map((x) => x.product_no === data.product_no ? data : x));
+      alert("Produktdokumentasjon lagret.");
+    };
+    const signIn = async () => {
+      const cleanEmail = authEmail.trim();
+      if (!cleanEmail || !authPassword) return alert("Fyll inn e-post og passord.");
+      window.localStorage.setItem("expoProffDokAuthEmail", cleanEmail);
+      const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: authPassword });
+      if (error) return alert("Kunne ikke logge inn: " + error.message);
+    };
+    const signUp = async () => {
+      const cleanEmail = authEmail.trim();
+      if (!cleanEmail || !authPassword) return alert("Fyll inn e-post og passord.");
+      window.localStorage.setItem("expoProffDokAuthEmail", cleanEmail);
+      const { error } = await supabase.auth.signUp({ email: cleanEmail, password: authPassword });
+      if (error) return alert("Kunne ikke opprette bruker: " + error.message);
+      alert("Bruker opprettet. Kontoen m\xE5 godkjennes f\xF8r appen kan brukes.");
+    };
+    const resetPassword = async () => {
+      const cleanEmail = authEmail.trim();
+      if (!cleanEmail) return alert("Skriv inn e-postadressen din f\xF8rst.");
+      window.localStorage.setItem("expoProffDokAuthEmail", cleanEmail);
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: "https://expo-proffdok.vercel.app"
+      });
+      if (error) return alert("Kunne ikke sende tilbakestilling: " + error.message);
+      alert("E-post for tilbakestilling av passord er sendt. Sjekk innboksen din.");
+    };
+    const completePasswordReset = async () => {
+      if (!newPassword || !newPasswordRepeat) return alert("Skriv inn nytt passord to ganger.");
+      if (newPassword !== newPasswordRepeat) return alert("Passordene er ikke like.");
+      if (newPassword.length < 6) return alert("Passordet m\xE5 v\xE6re minst 6 tegn.");
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) return alert("Kunne ikke oppdatere passord: " + error.message);
+      setNewPassword("");
+      setNewPasswordRepeat("");
+      setPasswordRecovery(false);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      await supabase.auth.signOut();
+      setAuthUser(null);
+      setProfile(null);
+      setProjects([]);
+      setTab("prosjekt");
+      alert("Passordet er oppdatert. Logg inn p\xE5 nytt.");
+    };
+    const signOut = async () => {
+      await supabase.auth.signOut();
       setProjectId(null);
       setMobileCreatingProject(false);
-      setTab('prosjekt');
-    }
-    await loadProjects(authUser);
-    alert('Prosjekt slettet.');
-  };
-
-  const saveProjectForLink = async () => {
-    if (projectId) return projectId;
-    if (!authUser) {
-      alert('Du må være logget inn for å lage delingslink.');
-      return null;
-    }
-
-    const newProjectData = {
-      ...emptyProject(),
-      ...project,
-      locked: false,
-      status: 'active',
-      lockedAt: '',
-      lockedBy: ''
+      setProjects([]);
+      setProfile(null);
+      setTab("prosjekt");
     };
-
-    const cleanData = JSON.parse(JSON.stringify({
-      company, user, project: newProjectData,
-      checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes
-    }));
-
-    const payload = {
-      title: newProjectData.projectName || newProjectData.address || 'Uten navn',
-      data: cleanData,
-      user_id: authUser.id,
-      share_enabled: true,
-      locked: false,
-      locked_at: null,
-      locked_by: '',
-      updated_at: new Date().toISOString()
+    const printReport = () => {
+      setTab("rapport");
+      setTimeout(() => window.print(), 400);
     };
-
-    const { data, error } = await supabase.from('projects').insert(payload).select().single();
-    if (error) {
-      console.error(error);
-      alert('Kunne ikke lagre prosjekt før deling: ' + error.message);
-      return null;
-    }
-
-    setProjectId(data.id);
-    setMobileCreatingProject(false);
-    setProject(newProjectData);
-    loadProjects(authUser);
-    return data.id;
-  };
-
-  const makeProjectLink = (id, role = 'kunde') => {
-    if (role === 'admin') {
-      return `${window.location.origin}${window.location.pathname}?project=${id}&role=admin`;
-    }
-    const roleParam = role === 'Underleverandør' ? 'underleverandor' : 'kunde';
-    return roleParam === 'underleverandor'
-      ? `${window.location.origin}${window.location.pathname}?project=${id}&access=underleverandor`
-      : `${window.location.origin}${window.location.pathname}?project=${id}&role=kunde`;
-  };
-
-  const copyLinkToClipboard = async (link, successMessage) => {
-    try {
-      await navigator.clipboard.writeText(link);
-      alert(successMessage);
-    } catch {
-      prompt('Kopier denne linken:', link);
-    }
-  };
-
-  const shareProject = async () => {
-    const id = await saveProjectForLink();
-    if (!id) return;
-    await copyLinkToClipboard(makeProjectLink(id, 'kunde'), 'Kundelink kopiert.');
-  };
-
-
-  const copyAccessLink = async (role = 'kunde') => {
-    const id = await saveProjectForLink();
-    if (!id) return;
-    const roleParam = role === 'Underleverandør' ? 'underleverandor' : 'kunde';
-    await copyLinkToClipboard(
-      makeProjectLink(id, role),
-      roleParam === 'underleverandor' ? 'Underentreprenør-link kopiert.' : 'Kundelink kopiert.'
-    );
-  };
-
-  const completeOvertagelseAndLock = async () => {
-    if (!projectId) return alert('Prosjektet må lagres før overtagelse kan fullføres.');
-    if (!authUser) return alert('Du må være logget inn for å fullføre overtagelse.');
-    const utførendeSigned = hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signUtførendeImage);
-    const kundeSigned = hasValue(overtagelse.signKunde) || hasValue(overtagelse.signKundeImage);
-    if (!utførendeSigned || !kundeSigned) {
-      return alert('Både utførende og kunde må signere før overtagelse kan fullføres.');
-    }
-
-    const completedOvertagelse = {
-      ...emptyOvertagelse(),
-      ...overtagelse,
-      enabled: true,
-      dato: overtagelse.dato || new Date().toISOString().slice(0,10)
-    };
-
-    const cleanData = JSON.parse(JSON.stringify({
-      company,
-      user,
-      project: { ...emptyProject(), ...project, locked: false, status: 'active', lockedAt: '', lockedBy: '' },
-      checked,
-      productDocs,
-      manualProducts,
-      other,
-      surf,
-      photos,
-      access,
-      inst,
-      files,
-      checklist,
-      tilbud,
-      overtagelse: completedOvertagelse,
-      projectLog,
-      internalNotes
-    }));
-
-    const { error: saveError } = await supabase
-      .from('projects')
-      .update({
-        data: cleanData,
-        title: project.projectName || project.address || 'Uten navn',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', projectId)
-      .eq('user_id', authUser.id);
-
-    if (saveError) {
-      console.error(saveError);
-      return alert('Kunne ikke lagre overtagelse før låsing: ' + saveError.message);
-    }
-
-    setOvertagelse(completedOvertagelse);
-    await setProjectLockedState(true);
-  };
-
-  const uploadLogo = async (file) => {
-    if (!authUser || !file) return;
-    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
-    const path = `logos/${authUser.id}/${Date.now()}-${cleanName}`;
-    const { error } = await supabase.storage
-      .from('project-images')
-      .upload(path, file, { cacheControl: '3600', upsert: true });
-    if (error) return alert('Kunne ikke laste opp logo: ' + error.message);
-    const { data } = supabase.storage.from('project-images').getPublicUrl(path);
-    setCompany(c => ({ ...c, logoUrl: data.publicUrl }));
-    alert('Logo lastet opp. Husk å trykke Lagre firmaprofil.');
-  };
-
-  const saveProfile = async () => {
-    if (!authUser) return alert('Du må være logget inn.');
-
-    const payload = {
-      id: authUser.id,
-      email: company.email || authUser.email,
-      company_name: company.companyName || '',
-      org_number: company.orgNumber || '',
-      address: company.address || '',
-      phone: company.phone || '',
-      website: company.website || '',
-      logo_url: company.logoUrl || '',
-    };
-
-    const { error } = await supabase
-      .from('profiles')
-      .update(payload)
-      .eq('id', authUser.id);
-
-    if (error) return alert('Kunne ikke lagre firmaprofil: ' + error.message);
-
-    const row = { ...(profile || {}), ...payload };
-    applyProfile(row);
-    alert('Firmaprofil lagret');
-  };
-
-  const loadAdminUsers = async () => {
-    if (!isAdminUser) return alert('Du har ikke tilgang til admin.');
-    setAdminLoading(true);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id,email,approved,company_name,created_at')
-      .order('created_at', { ascending:false });
-    setAdminLoading(false);
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke hente brukere. Sjekk at Supabase-policy tillater admin å lese profiles.');
-    }
-    setAdminUsers(data || []);
-  };
-
-  const approveAdminUser = async (id) => {
-    if (!isAdminUser) return alert('Du har ikke tilgang til admin.');
-    const { error } = await supabase
-      .from('profiles')
-      .update({ approved: true })
-      .eq('id', id);
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke godkjenne bruker: ' + error.message);
-    }
-    alert('Bruker er godkjent.');
-    loadAdminUsers();
-  };
-
-  const revokeAdminUser = async (id) => {
-    if (!isAdminUser) return alert('Du har ikke tilgang til admin.');
-    if (!window.confirm('Vil du fjerne godkjenning for denne brukeren?')) return;
-    const { error } = await supabase
-      .from('profiles')
-      .update({ approved: false })
-      .eq('id', id);
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke fjerne godkjenning: ' + error.message);
-    }
-    alert('Godkjenning er fjernet.');
-    loadAdminUsers();
-  };
-
-
-  const loadFdvRegister = async (notify = false) => {
-    setFdvLoading(true);
-    const { data, error } = await supabase
-      .from('fdv_register')
-      .select('*')
-      .order('section', { ascending:true })
-      .order('product_name', { ascending:true });
-    setFdvLoading(false);
-
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke hente FDV-register. Kjør SQL-oppsettet først og sjekk Supabase-policy: ' + error.message);
-    }
-
-    setFdvRegister(data || []);
-    if (notify) alert(`FDV-register oppdatert. Fant ${(data || []).length} produkter.`);
-  };
-
-  const seedFdvRegister = async () => {
-    if (!isAdminUser) return alert('Du har ikke tilgang til FDV-register.');
-    if (!window.confirm('Vil du legge inn alle standardproduktene i FDV-registeret? Eksisterende produkter oppdateres ikke, men manglende produkter legges til.')) return;
-
-    setFdvLoading(true);
-    const rows = productSections.flatMap(section => section.items.map(productName => ({
-      section: section.title,
-      product_name: productName,
-      fdv_url: '',
-      comment: '',
-      active: true,
-      updated_by: authUser?.email || ''
-    })));
-
-    const { error } = await supabase
-      .from('fdv_register')
-      .upsert(rows, { onConflict: 'product_name' });
-    setFdvLoading(false);
-
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke opprette standardprodukter i FDV-register: ' + error.message);
-    }
-
-    await loadFdvRegister(false);
-    alert('FDV-register er klargjort med standardprodukter.');
-  };
-
-  const saveFdvRegisterRow = async (row) => {
-    if (!isAdminUser) return alert('Du har ikke tilgang til FDV-register.');
-    if (!row?.product_name) return alert('Produktnavn mangler.');
-
-    const payload = {
-      section: row.section || '',
-      product_name: row.product_name,
-      fdv_url: row.fdv_url || '',
-      comment: row.comment || '',
-      active: row.active !== false,
-      updated_by: authUser?.email || ''
-    };
-
-    const { data, error } = await supabase
-      .from('fdv_register')
-      .upsert(payload, { onConflict: 'product_name' })
-      .select('*')
-      .single();
-
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke lagre FDV-produkt: ' + error.message);
-    }
-
-    setFdvRegister(prev => {
-      const exists = (prev || []).some(x => x.product_name === data.product_name);
-      return exists
-        ? prev.map(x => x.product_name === data.product_name ? data : x)
-        : [...(prev || []), data].sort((a,b) => `${a.section}${a.product_name}`.localeCompare(`${b.section}${b.product_name}`));
-    });
-    alert('FDV-produkt lagret.');
-  };
-
-  const updateFdvRegisterLocal = (productName, patch) => {
-    setFdvRegister(prev => {
-      const list = prev || [];
-      const exists = list.some(row => row.product_name === productName);
-      if (!exists) return [...list, { product_name: productName, section: patch.section || '', fdv_url:'', comment:'', active:true, ...patch }];
-      return list.map(row => row.product_name === productName ? { ...row, ...patch } : row);
-    });
-  };
-
-  const loadProductMaster = async (notify = false) => {
-    setProductMasterLoading(true);
-    const { data, error } = await supabase
-      .from('product_document_master')
-      .select('*')
-      .order('category', { ascending:true })
-      .order('product_family', { ascending:true })
-      .order('product_name', { ascending:true });
-    setProductMasterLoading(false);
-
-    if (error) {
-      console.warn('Kunne ikke hente produktmaster:', error.message);
-      if (notify) alert('Kunne ikke hente produktmaster. Sjekk at SQL-filen er kjørt i Supabase: ' + error.message);
-      return;
-    }
-
-    setProductMaster(data || []);
-    if (notify) alert(`Produktmaster oppdatert. Fant ${(data || []).length} produkter/varianter.`);
-  };
-
-  const updateProductMasterLocal = (productNo, patch) => {
-    setProductMaster(prev => (prev || []).map(row => row.product_no === productNo ? { ...row, ...patch } : row));
-  };
-
-  const saveProductMasterRow = async (row) => {
-    if (!isAdminUser) return alert('Du har ikke tilgang til produktmaster.');
-    if (!row?.product_no) return alert('Varenummer mangler.');
-
-    const payload = {
-      fdv_url: row.fdv_url || '',
-      datablad_url: row.datablad_url || '',
-      dop_url: row.dop_url || '',
-      epd_url: row.epd_url || '',
-      sikkerhetsdatablad_url: row.sikkerhetsdatablad_url || '',
-      document_file_url: row.document_file_url || '',
-      comment: row.comment || '',
-      active: row.active !== false
-    };
-
-    const { data, error } = await supabase
-      .from('product_document_master')
-      .update(payload)
-      .eq('product_no', row.product_no)
-      .select('*')
-      .single();
-
-    if (error) {
-      console.error(error);
-      return alert('Kunne ikke lagre produktmaster-rad: ' + error.message);
-    }
-
-    setProductMaster(prev => (prev || []).map(x => x.product_no === data.product_no ? data : x));
-    alert('Produktdokumentasjon lagret.');
-  };
-
-  const signIn = async () => {
-    const cleanEmail = authEmail.trim();
-    if (!cleanEmail || !authPassword) return alert('Fyll inn e-post og passord.');
-    window.localStorage.setItem('expoProffDokAuthEmail', cleanEmail);
-    const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: authPassword });
-    if (error) return alert('Kunne ikke logge inn: ' + error.message);
-  };
-
-  const signUp = async () => {
-    const cleanEmail = authEmail.trim();
-    if (!cleanEmail || !authPassword) return alert('Fyll inn e-post og passord.');
-    window.localStorage.setItem('expoProffDokAuthEmail', cleanEmail);
-    const { error } = await supabase.auth.signUp({ email: cleanEmail, password: authPassword });
-    if (error) return alert('Kunne ikke opprette bruker: ' + error.message);
-    alert('Bruker opprettet. Kontoen må godkjennes før appen kan brukes.');
-  };
-
-  const resetPassword = async () => {
-    const cleanEmail = authEmail.trim();
-    if (!cleanEmail) return alert('Skriv inn e-postadressen din først.');
-    window.localStorage.setItem('expoProffDokAuthEmail', cleanEmail);
-    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-      redirectTo: 'https://expo-proffdok.vercel.app'
-    });
-    if (error) return alert('Kunne ikke sende tilbakestilling: ' + error.message);
-    alert('E-post for tilbakestilling av passord er sendt. Sjekk innboksen din.');
-  };
-
-  const completePasswordReset = async () => {
-    if (!newPassword || !newPasswordRepeat) return alert('Skriv inn nytt passord to ganger.');
-    if (newPassword !== newPasswordRepeat) return alert('Passordene er ikke like.');
-    if (newPassword.length < 6) return alert('Passordet må være minst 6 tegn.');
-
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) return alert('Kunne ikke oppdatere passord: ' + error.message);
-
-    setNewPassword('');
-    setNewPasswordRepeat('');
-    setPasswordRecovery(false);
-    window.history.replaceState({}, document.title, window.location.pathname);
-    await supabase.auth.signOut();
-    setAuthUser(null);
-    setProfile(null);
-    setProjects([]);
-    setTab('prosjekt');
-    alert('Passordet er oppdatert. Logg inn på nytt.');
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setProjectId(null);
-    setMobileCreatingProject(false);
-    setProjects([]);
-    setProfile(null);
-    setTab('prosjekt');
-  };
-
-  const printReport = () => {
-    setTab('rapport');
-    setTimeout(() => window.print(), 400);
-  };
-
-  const uploadImages = async (fileList, folder = 'photos') => {
-    const filesArray = Array.from(fileList || []);
-    const uploaded = [];
-
-    for (const file of filesArray) {
-      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
-      const path = `${folder}/${Date.now()}-${uid()}-${cleanName}`;
-      const { error } = await supabase.storage
-        .from('project-images')
-        .upload(path, file, { cacheControl: '3600', upsert: false });
-
-      if (error) {
-        console.error(error);
-        alert('Kunne ikke laste opp bilde: ' + error.message);
-        continue;
+    const uploadImages = async (fileList, folder = "photos") => {
+      const filesArray = Array.from(fileList || []);
+      const uploaded = [];
+      for (const file of filesArray) {
+        const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+        const path = `${folder}/${Date.now()}-${uid()}-${cleanName}`;
+        const { error } = await supabase.storage.from("project-images").upload(path, file, { cacheControl: "3600", upsert: false });
+        if (error) {
+          console.error(error);
+          alert("Kunne ikke laste opp bilde: " + error.message);
+          continue;
+        }
+        const { data } = supabase.storage.from("project-images").getPublicUrl(path);
+        uploaded.push({ id: uid(), url: data.publicUrl, path, name: file.name });
       }
-
-      const { data } = supabase.storage.from('project-images').getPublicUrl(path);
-      uploaded.push({ id: uid(), url: data.publicUrl, path, name: file.name });
-    }
-
-    return uploaded;
-  };
-
-  const addPhoto = async (cat, fl) => {
-    const imgs = await uploadImages(fl, 'photos');
-    setPhotos(p => [...p, ...imgs.map(img => ({
-      ...img,
-      cat,
-      comment: '',
-      created: new Date().toLocaleString('no-NO')
+      return uploaded;
+    };
+    const addPhoto = async (cat, fl) => {
+      const imgs = await uploadImages(fl, "photos");
+      setPhotos((p) => [...p, ...imgs.map((img) => ({
+        ...img,
+        cat,
+        comment: "",
+        created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO")
+      }))]);
+    };
+    const setChecklistValue = (category, item, patch) => {
+      setChecklist((prev) => ({
+        ...prev,
+        [category]: {
+          ...prev[category] || {},
+          [item]: {
+            ...prev[category]?.[item] || {},
+            ...patch
+          }
+        }
+      }));
+    };
+    const addChecklistPhoto = async (category, item, fl) => {
+      const imgs = await uploadImages(fl, "sjekklister");
+      if (!imgs.length) return;
+      setChecklist((prev) => ({
+        ...prev,
+        [category]: {
+          ...prev[category] || {},
+          [item]: {
+            ...prev[category]?.[item] || {},
+            photos: [...prev[category]?.[item]?.photos || [], ...imgs]
+          }
+        }
+      }));
+    };
+    const addFiles = (fl) => setFiles((p) => [...p, ...Array.from(fl || []).map((f) => ({
+      id: uid(),
+      name: f.name,
+      url: URL.createObjectURL(f),
+      by: user.name || "Ukjent",
+      created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO")
     }))]);
-  };
-
-  const setChecklistValue = (category, item, patch) => {
-    setChecklist(prev => ({
-      ...prev,
-      [category]: {
-        ...(prev[category] || {}),
-        [item]: {
-          ...(prev[category]?.[item] || {}),
-          ...patch
+    const uploadTilbudFiles = async (fileList) => {
+      const filesArray = Array.from(fileList || []);
+      const uploaded = [];
+      for (const file of filesArray) {
+        const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+        const path = `tilbud-kontrakt/${Date.now()}-${uid()}-${cleanName}`;
+        const { error } = await supabase.storage.from("project-images").upload(path, file, { cacheControl: "3600", upsert: false });
+        if (error) {
+          console.error(error);
+          alert("Kunne ikke laste opp vedlegg: " + error.message);
+          continue;
         }
+        const { data } = supabase.storage.from("project-images").getPublicUrl(path);
+        uploaded.push({
+          id: uid(),
+          url: data.publicUrl,
+          path,
+          name: file.name,
+          by: user.name || authUser?.email || "Ukjent",
+          created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO")
+        });
       }
-    }));
-  };
-
-  const addChecklistPhoto = async (category, item, fl) => {
-    const imgs = await uploadImages(fl, 'sjekklister');
-    if (!imgs.length) return;
-    setChecklist(prev => ({
-      ...prev,
-      [category]: {
-        ...(prev[category] || {}),
-        [item]: {
-          ...(prev[category]?.[item] || {}),
-          photos: [...(prev[category]?.[item]?.photos || []), ...imgs]
-        }
+      if (uploaded.length) {
+        setTilbud((t) => ({ ...emptyTilbud(), ...t, files: [...t.files || [], ...uploaded] }));
       }
-    }));
-  };
-
-  const addFiles = fl => setFiles(p => [...p, ...Array.from(fl || []).map(f => ({
-    id: uid(), name:f.name, url: URL.createObjectURL(f), by:user.name || 'Ukjent', created:new Date().toLocaleString('no-NO')
-  }))]);
-
-  const uploadTilbudFiles = async (fileList) => {
-    const filesArray = Array.from(fileList || []);
-    const uploaded = [];
-
-    for (const file of filesArray) {
-      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
-      const path = `tilbud-kontrakt/${Date.now()}-${uid()}-${cleanName}`;
-      const { error } = await supabase.storage
-        .from('project-images')
-        .upload(path, file, { cacheControl: '3600', upsert: false });
-
-      if (error) {
-        console.error(error);
-        alert('Kunne ikke laste opp vedlegg: ' + error.message);
-        continue;
+    };
+    if (authLoading && !isReadOnly && !isUnderleverandorView) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Laster..." }) }) }) });
+    }
+    if (passwordRecovery && !isReadOnly) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Expo ProffDok" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Sett nytt passord" })
+          ] })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sett nytt passord", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Skriv inn et nytt passord. Det kan ikke v\xE6re det samme som forrige passord." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              Input,
+              {
+                label: "Nytt passord",
+                type: "password",
+                value: newPassword,
+                onChange: setNewPassword,
+                autoComplete: "new-password"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              Input,
+              {
+                label: "Gjenta nytt passord",
+                type: "password",
+                value: newPasswordRepeat,
+                onChange: setNewPasswordRepeat,
+                autoComplete: "new-password",
+                onKeyDown: (e) => {
+                  if (e.key === "Enter") completePasswordReset();
+                }
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: completePasswordReset, children: "Lagre nytt passord" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: async () => {
+              setPasswordRecovery(false);
+              setNewPassword("");
+              setNewPasswordRepeat("");
+              window.history.replaceState({}, document.title, window.location.pathname);
+              await supabase.auth.signOut();
+              setAuthUser(null);
+              setProfile(null);
+            }, children: "Avbryt og g\xE5 til innlogging" })
+          ] })
+        ] }) })
+      ] });
+    }
+    if (isUnderleverandorView) {
+      const limitedTabs = [["produkter", "Produkter"], ["overflater", "Overflater"], ["bilder", "Bilder"], ["installasjoner", "Fag/utstyr"], ["sjekklister", "Sjekklister"]];
+      if (!projectId && !(project.projectName || project.address)) {
+        return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Expo ProffDok" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Laster prosjekt..." })
+            ] })
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Laster prosjekt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Henter prosjektdata..." }) }) })
+        ] });
       }
-
-      const { data } = supabase.storage.from('project-images').getPublicUrl(path);
-      uploaded.push({
-        id: uid(),
-        url: data.publicUrl,
-        path,
-        name: file.name,
-        by: user.name || authUser?.email || 'Ukjent',
-        created: new Date().toLocaleString('no-NO')
-      });
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Expo ProffDok" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+                "Underentrepren\xF8r-tilgang \xB7 ",
+                project.projectName || project.address || "Prosjekt"
+              ] })
+            ] }),
+            isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", disabled: true, children: "\u{1F512} Prosjekt l\xE5st" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveSharedProject, children: "Lagre bidrag" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: limitedTabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Begrenset tilgang", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Du har tilgang til \xE5 se produkter, overflater, bilder, fag/utstyr og sjekklister p\xE5 dette prosjektet. Du kan legge inn bilder, sjekklistepunkter, fag/utstyr og kommentarer. Prosjektinfo, prosjektering, rapport, tilbud/kontrakt og admin er skjult." }),
+            isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "\u{1F512} Prosjektet er avsluttet og l\xE5st. Nye endringer kan ikke lagres." })
+          ] }),
+          tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: productSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
+              const doc = productDocs[i] || {};
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: i })
+                ] }),
+                checked[i] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: doc.fdvUrl || "", onChange: (v) => updateProductDoc(i, { fdvUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: doc.databladUrl || "", onChange: (v) => updateProductDoc(i, { databladUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: doc.dopUrl || "", onChange: (v) => updateProductDoc(i, { dopUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: doc.epdUrl || "", onChange: (v) => updateProductDoc(i, { epdUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: doc.sikkerhetsdatabladUrl || "", onChange: (v) => updateProductDoc(i, { sikkerhetsdatabladUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: doc.comment || "", onChange: (v) => updateProductDoc(i, { comment: v }) })
+                  ] }),
+                  doc.fdvSource === "product-master" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "Dokumentlinker er hentet automatisk fra produktmaster." }),
+                  doc.fdvSource === "admin-register" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "FDV-link er hentet automatisk fra admin FDV-register." })
+                ] })
+              ] }, i);
+            }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", { children: [
+                "Andre produkter i ",
+                s.title
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk dette hvis produktet ikke ligger i standardlisten for denne kategorien." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => addManualProduct(s.title), children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+                " Legg til annet produkt"
+              ] }),
+              ((manualProducts || {})[s.title] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
+              ((manualProducts || {})[s.title] || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: p.comment || "", onChange: (v) => updateManualProduct(s.title, p.id, { comment: v }) })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeManualProduct(s.title, p.id), children: "Fjern produkt" })
+              ] }, p.id))
+            ] })
+          ] }, s.title)) }),
+          tab === "overflater" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Overflateprodukter", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
+          tab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bildedokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 16 }),
+                " ",
+                c
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde eller velg fra galleri" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
+            ] }, c)) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
+          ] }),
+          tab === "installasjoner" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Fag, deler og utstyr", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => setInst((prev) => [...prev, { id: uid(), category: "R\xF8rlegger", name: "", qty: "", supplier: "", desc: "", fdvUrl: "", photos: [], by: user.name || "Underentrepren\xF8r", created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO") }]), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+              " Legg til post"
+            ] }),
+            inst.map((x) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Kategori", value: x.category, options: installCats, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, category: v } : i)) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn/produkt", value: x.name, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, name: v } : i)) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Antall/mengde", value: x.qty, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, qty: v } : i)) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverand\xF8r", value: x.supplier, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, supplier: v } : i)) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Beskrivelse/plassering", value: x.desc, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, desc: v } : i)) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: x.fdvUrl || "", onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, fdvUrl: v } : i)) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+                " Last opp bilder",
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: async (e) => {
+                  const imgs = await uploadImages(e.target.files, "installasjoner");
+                  setInst(inst.map((i) => i.id === x.id ? { ...i, photos: [...i.photos || [], ...imgs] } : i));
+                } })
+              ] }),
+              (x.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+                "\u{1F4F7} ",
+                (x.photos || []).length,
+                " bilder lagt til"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos", children: (x.photos || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name })
+              ] }, p.id)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                "Lagt inn av ",
+                x.by,
+                " \xB7 ",
+                x.created
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setInst(inst.filter((i) => i.id !== x.id)), children: "Fjern" })
+            ] }, x.id))
+          ] }),
+          tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              ChecklistEditor,
+              {
+                checklist,
+                setChecklistValue,
+                addChecklistPhoto,
+                addFiles,
+                files,
+                setFiles
+              }
+            )
+          ] })
+        ] })
+      ] });
     }
-
-    if (uploaded.length) {
-      setTilbud(t => ({ ...emptyTilbud(), ...t, files: [...(t.files || []), ...uploaded] }));
+    if (!authUser && !isReadOnly) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Expo ProffDok" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Logg inn for \xE5 se dine prosjekter" })
+          ] })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Innlogging", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post", value: authEmail, onChange: setAuthEmail, autoComplete: "email" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              Input,
+              {
+                label: "Passord",
+                type: "password",
+                value: authPassword,
+                onChange: setAuthPassword,
+                autoComplete: "current-password",
+                onKeyDown: (e) => {
+                  if (e.key === "Enter") signIn();
+                }
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: signIn, children: "Logg inn" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signUp, children: "Opprett bruker" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: resetPassword, children: "Glemt passord?" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "E-post huskes p\xE5 denne enheten. Passord lagres ikke i appen, men nettleseren/Supabase kan holde deg innlogget trygt." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Delingslenker fungerer fortsatt uten innlogging." })
+        ] }) })
+      ] });
     }
-  };
-
-
-  if (authLoading && !isReadOnly && !isUnderleverandorView) {
-    return <div><main><section><h2>Laster...</h2></section></main></div>;
-  }
-
-  if (passwordRecovery && !isReadOnly) {
-    return <div>
-      <header>
-        <div className="head">
-          <Brand logo={company.logoUrl} name={name}/>
-          <div><h1>Expo ProffDok</h1><p>Sett nytt passord</p></div>
-        </div>
-      </header>
-      <main>
-        <Section title="Sett nytt passord" icon={<BadgeCheck/>}>
-          <p className="note">Skriv inn et nytt passord. Det kan ikke være det samme som forrige passord.</p>
-          <Grid>
-            <Input
-              label="Nytt passord"
-              type="password"
-              value={newPassword}
-              onChange={setNewPassword}
-              autoComplete="new-password"
-            />
-            <Input
-              label="Gjenta nytt passord"
-              type="password"
-              value={newPasswordRepeat}
-              onChange={setNewPasswordRepeat}
-              autoComplete="new-password"
-              onKeyDown={e => { if (e.key === 'Enter') completePasswordReset(); }}
-            />
-          </Grid>
-          <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
-            <button onClick={completePasswordReset}>Lagre nytt passord</button>
-            <button className="secondary" onClick={async()=>{ setPasswordRecovery(false); setNewPassword(''); setNewPasswordRepeat(''); window.history.replaceState({}, document.title, window.location.pathname); await supabase.auth.signOut(); setAuthUser(null); setProfile(null); }}>Avbryt og gå til innlogging</button>
-          </div>
-        </Section>
-      </main>
-    </div>;
-  }
-
-  if (isUnderleverandorView) {
-    const limitedTabs = [['produkter','Produkter'], ['overflater','Overflater'], ['bilder','Bilder'], ['installasjoner','Fag/utstyr'], ['sjekklister','Sjekklister']];
-    if (!projectId && !(project.projectName || project.address)) {
-      return <div>
-        <header><div className="head"><Brand logo={company.logoUrl} name={name}/><div><h1>Expo ProffDok</h1><p>Laster prosjekt...</p></div></div></header>
-        <main><Section title="Laster prosjekt" icon={<BadgeCheck/>}><p>Henter prosjektdata...</p></Section></main>
-      </div>;
+    if (!isReadOnly && (profileLoading || authUser && !profile)) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Expo ProffDok" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Laster brukerprofil..." })
+          ] })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Laster", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Henter brukerprofil..." }) }) })
+      ] });
     }
-    return <div>
-      <header>
-        <div className="head">
-          <Brand logo={company.logoUrl} name={name}/>
-          <div><h1>Expo ProffDok</h1><p>Underentreprenør-tilgang · {project.projectName || project.address || 'Prosjekt'}</p></div>
-          {isProjectLocked ? <button className="secondary" disabled>🔒 Prosjekt låst</button> : <button onClick={saveSharedProject}>Lagre bidrag</button>}
-        </div>
-        <nav>{limitedTabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
-      </header>
-      <main>
-        <Section title="Begrenset tilgang" icon={<BadgeCheck/>}>
-          <p className="note">Du har tilgang til å se produkter, overflater, bilder, fag/utstyr og sjekklister på dette prosjektet. Du kan legge inn bilder, sjekklistepunkter, fag/utstyr og kommentarer. Prosjektinfo, prosjektering, rapport, tilbud/kontrakt og admin er skjult.</p>{isProjectLocked && <p className="note">🔒 Prosjektet er avsluttet og låst. Nye endringer kan ikke lagres.</p>}
-        </Section>
-        {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}>
-        <p className="note">Kryss av produkter som er brukt. Når et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte på produktet.</p>
-        <div className="checklistList">{s.items.map(i=>{
-          const doc = productDocs[i] || {};
-          return <div className="item" key={i}>
-            <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-              <input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>toggleProductChecked(i, e.target.checked)}/>
-              <span style={{ margin:0 }}>{i}</span>
-            </label>
-            {checked[i] && <>
-              <Grid>
-                <Input label="FDV-/databladlink" value={doc.fdvUrl || ''} onChange={v=>updateProductDoc(i, { fdvUrl:v, fdvSource:'manual' })}/>
-                <Input label="Datablad" value={doc.databladUrl || ''} onChange={v=>updateProductDoc(i, { databladUrl:v, fdvSource:'manual' })}/>
-                <Input label="DOP" value={doc.dopUrl || ''} onChange={v=>updateProductDoc(i, { dopUrl:v, fdvSource:'manual' })}/>
-                <Input label="EPD" value={doc.epdUrl || ''} onChange={v=>updateProductDoc(i, { epdUrl:v, fdvSource:'manual' })}/>
-                <Input label="Sikkerhetsdatablad" value={doc.sikkerhetsdatabladUrl || ''} onChange={v=>updateProductDoc(i, { sikkerhetsdatabladUrl:v, fdvSource:'manual' })}/>
-                <Input label="Hvor brukt / kommentar" value={doc.comment || ''} onChange={v=>updateProductDoc(i, { comment:v })}/>
-              </Grid>
-              {doc.fdvSource === 'product-master' && <small>Dokumentlinker er hentet automatisk fra produktmaster.</small>}
-              {doc.fdvSource === 'admin-register' && <small>FDV-link er hentet automatisk fra admin FDV-register.</small>}
-            </>}
-          </div>;
-        })}</div>
-        <div className="item">
-          <h3>Andre produkter i {s.title}</h3>
-          <p className="note">Bruk dette hvis produktet ikke ligger i standardlisten for denne kategorien.</p>
-          <button type="button" onClick={()=>addManualProduct(s.title)}><Plus size={18}/> Legg til annet produkt</button>
-          {((manualProducts || {})[s.title] || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen andre produkter lagt til i denne kategorien.</p>}
-          {((manualProducts || {})[s.title] || []).map(p => <div className="item" key={p.id}>
-            <Grid>
-              <Input label="Produktnavn" value={p.name || ''} onChange={v=>updateManualProduct(s.title, p.id, { name:v })}/>
-              <Input label="FDV-/databladlink" value={p.fdvUrl || ''} onChange={v=>updateManualProduct(s.title, p.id, { fdvUrl:v })}/>
-              <Input label="Hvor brukt / kommentar" value={p.comment || ''} onChange={v=>updateManualProduct(s.title, p.id, { comment:v })}/>
-            </Grid>
-            <button type="button" className="secondary" onClick={()=>removeManualProduct(s.title, p.id)}>Fjern produkt</button>
-          </div>)}
-        </div>
-      </Section>)}
-      </>}
-        {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
-        {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>{photos.filter(p=>p.cat===c).length > 0 ? `📷 ${photos.filter(p=>p.cat===c).length} bilder lagt til` : 'Ta bilde eller velg fra galleri'}</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
-        {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',fdvUrl:'',photos:[],by:user.name||'Underentreprenør',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/><Input label="FDV-/databladlink" value={x.fdvUrl || ''} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,fdvUrl:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label>{(x.photos||[]).length > 0 && <p className="note">📷 {(x.photos||[]).length} bilder lagt til</p>}<div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
-        {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}>
-          <p className="note">Velg status per kontrollpunkt. Kategoriene kan åpnes/lukkes for mindre scrolling på mobil. Ved Avvik kan du skrive kommentar og ta bilde.</p>
-          <ChecklistEditor
-            checklist={checklist}
-            setChecklistValue={setChecklistValue}
-            addChecklistPhoto={addChecklistPhoto}
-            addFiles={addFiles}
-            files={files}
-            setFiles={setFiles}
-          />
-        </Section>}
-      </main>
-    </div>;
-  }
-
-
-  if (!authUser && !isReadOnly) {
-    return <div>
-      <header>
-        <div className="head">
-          <Brand logo={company.logoUrl} name={name}/>
-          <div><h1>Expo ProffDok</h1><p>Logg inn for å se dine prosjekter</p></div>
-        </div>
-      </header>
-      <main>
-        <Section title="Innlogging" icon={<BadgeCheck/>}>
-          <Grid>
-            <Input label="E-post" value={authEmail} onChange={setAuthEmail} autoComplete="email"/>
-            <Input
-              label="Passord"
-              type="password"
-              value={authPassword}
-              onChange={setAuthPassword}
-              autoComplete="current-password"
-              onKeyDown={e => { if (e.key === 'Enter') signIn(); }}
-            />
-          </Grid>
-          <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
-            <button onClick={signIn}>Logg inn</button>
-            <button className="secondary" onClick={signUp}>Opprett bruker</button>
-            <button className="secondary" onClick={resetPassword}>Glemt passord?</button>
-          </div>
-          <p className="note" style={{ marginTop:'16px' }}>E-post huskes på denne enheten. Passord lagres ikke i appen, men nettleseren/Supabase kan holde deg innlogget trygt.</p>
-          <p className="note">Delingslenker fungerer fortsatt uten innlogging.</p>
-        </Section>
-      </main>
-    </div>;
-  }
-
-  if (!isReadOnly && (profileLoading || (authUser && !profile))) {
-    return <div>
-      <header><div className="head"><Brand logo={company.logoUrl} name={name}/><div><h1>Expo ProffDok</h1><p>Laster brukerprofil...</p></div></div></header>
-      <main><Section title="Laster" icon={<BadgeCheck/>}><p>Henter brukerprofil...</p></Section></main>
-    </div>;
-  }
-
-  if (!isReadOnly && authUser && profile && !profile.approved) {
-    return <div>
-      <header>
-        <div className="head">
-          <Brand logo={company.logoUrl} name={name}/>
-          <div><h1>Expo ProffDok</h1><p>Venter på godkjenning</p></div>
-          <button className="secondary" onClick={signOut}>Logg ut</button>
-        </div>
-      </header>
-      <main>
-        <Section title="Konto venter på godkjenning" icon={<BadgeCheck/>}>
-          <p className="note">Brukeren <b>{authUser.email}</b> er registrert, men må godkjennes av administrator før appen kan brukes.</p>
-          <p>Fyll gjerne inn firmaprofilen under. Administrator kan deretter godkjenne deg i Supabase ved å sette <b>approved = true</b> i tabellen <b>profiles</b>.</p>
-          <Grid>
-            <Input label="Firmanavn" value={company.companyName} onChange={v=>setCompany({...company,companyName:v})}/>
-            <Input label="Org.nr" value={company.orgNumber} onChange={v=>setCompany({...company,orgNumber:v})}/>
-            <Input label="Adresse" value={company.address} onChange={v=>setCompany({...company,address:v})}/>
-            <Input label="Telefon" value={company.phone} onChange={v=>setCompany({...company,phone:v})}/>
-            <Input label="E-post" value={company.email || authUser.email} onChange={v=>setCompany({...company,email:v})}/>
-            <Input label="Hjemmeside" value={company.website || ''} onChange={v=>setCompany({...company,website:v})}/>
-          </Grid>
-          <div style={{ marginTop:'16px' }}>
-            <Brand logo={company.logoUrl} name={name}/>
-            <label className="upload"><Plus size={18}/> Last opp firmalogo<input type="file" accept="image/*" onChange={e=>uploadLogo(e.target.files?.[0])}/></label>
-          </div>
-          <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
-            <button onClick={saveProfile}>Lagre firmaprofil</button>
-            <button className="secondary" onClick={signOut}>Logg ut</button>
-          </div>
-        </Section>
-      </main>
-    </div>;
-  }
-
-  if (isReadOnly) {
-    const hasTilbudContent = hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0;
-
-    return <div>
-      <header>
-        <div className="head">
-          <Brand logo={company.logoUrl} name={name}/>
-          <div><h1>Kundetilgang</h1><p>Rapport, tilbud/kontrakt og chat{totalChatCount ? ` · ${totalChatCount} melding${totalChatCount === 1 ? '' : 'er'}` : ''}</p></div>
-          <button onClick={() => window.print()}><Download size={18}/> Lag PDF / skriv ut</button>
-        </div>
-        <nav>
-          <button className={customerTab==='rapport' ? 'on' : ''} onClick={()=>setCustomerTab('rapport')}>Rapport</button>
-          <button className={customerTab==='chat' ? 'on' : ''} onClick={()=>setCustomerTab('chat')}>Chat{unreadForCustomer > 0 ? ` (${unreadForCustomer} ulest)` : (totalChatCount ? ` (${totalChatCount})` : '')}</button>
-          <button className={customerTab==='tilbud' ? 'on' : ''} onClick={()=>setCustomerTab('tilbud')}>Tilbud/kontrakt</button>
-        </nav>
-      </header>
-      <main>
-        {customerTab==='rapport' && <CustomerReport company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>}
-
-        {customerTab==='chat' && <Section title={unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : (totalChatCount ? `Chat (${totalChatCount})` : 'Chat')} icon={<FileText/>}>
-          <p className="note">Her kan kunde sende spørsmål eller beskjeder direkte inn på prosjektet. Chatten oppdateres automatisk live, og utførende varsles på e-post når e-postvarsling er satt opp.</p>
-          <Textarea label="Ny melding fra kunde" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
-          <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
-            <label className="upload" style={{marginBottom:0}}>
-              📷 Last opp bilde
-              <input
-                id="customer-chat-image-input"
-                type="file"
-                accept="image/*"
-                onChange={e=>setCustomerChatUploadFile(e.target.files?.[0] || null)}
-              />
-              {customerChatUploadFile && <small style={{display:'block', marginTop:'6px'}}>Valgt: {customerChatUploadFile.name}</small>}
-            </label>
-            <button type="button" onClick={saveCustomerChatMessage}>Send melding</button>
-            <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
-            <button type="button" className="secondary" disabled={unreadForCustomer === 0} onClick={()=>markChatAsRead('customer')}>Marker alle som lest</button>
-          </div>
-          {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
-          {(projectLog.messages || []).slice().reverse().map(m => {
-            const isUnread = m.role !== 'kunde' && (!lastReadByCustomer || (m.created || '') > lastReadByCustomer);
-            return <div className="item" key={m.id} onClick={()=>isUnread && markChatAsRead('customer')} style={isUnread ? { borderColor:'#fecaca', background:'#fff7f7', cursor:'pointer' } : undefined}>
-            <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'}</b>
-            <small>
-              {m.created ? new Date(m.created).toLocaleString('no-NO') : ''}
-              {m.role === 'kunde' ? ((!lastReadByAdmin || (m.created || '') > lastReadByAdmin) ? ' · Ulest for admin' : ' · Lest av admin') : (isUnread ? ' · Ulest for kunde' : ' · Lest av kunde')}
-            </small>
-            <p>{m.text}</p>
-            {m.imageUrl && (
-              <div style={{ marginTop:'10px' }}>
-                <a href={m.imageUrl} target="_blank" rel="noreferrer">
-                  <img
-                    src={m.imageUrl}
-                    alt={m.imageName || 'Chat bilde'}
-                    style={{ maxWidth:'280px', width:'100%', borderRadius:'12px', border:'1px solid #dbe7ec' }}
-                  />
-                </a>
-                {m.imageName && <small style={{ display:'block', marginTop:'6px' }}>{m.imageName}</small>}
-              </div>
-            )}
-          </div>;
-          })}
-        </Section>}
-
-        {customerTab==='tilbud' && <Section title="Tilbud / kontrakt" icon={<FileText/>}>
-          {!hasTilbudContent && <p className="note">Ingen tilbud eller kontrakt er delt på dette prosjektet ennå.</p>}
-          {hasTilbudContent && <>
-            <Grid>
-              <InfoCard label="Tillegg" value={tilbud.tillegg}/>
-              <InfoCard label="Fradrag" value={tilbud.fradrag}/>
-              <InfoCard label="Avtaleendringer / kommentar" value={tilbud.kommentar}/>
-            </Grid>
-            {(tilbud.files || []).length > 0 && <div className="item">
-              <h3>Vedlegg</h3>
-              {(tilbud.files || []).map(f => <p key={f.id}><a href={f.url} target="_blank">{f.name}</a></p>)}
-            </div>}
-          </>}
-        </Section>}
-      </main>
-    </div>;
-  }
-
-
-  return <div>
-    <style>{`
+    if (!isReadOnly && authUser && profile && !profile.approved) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Expo ProffDok" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Venter p\xE5 godkjenning" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Konto venter p\xE5 godkjenning", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "Brukeren ",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: authUser.email }),
+            " er registrert, men m\xE5 godkjennes av administrator f\xF8r appen kan brukes."
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            "Fyll gjerne inn firmaprofilen under. Administrator kan deretter godkjenne deg i Supabase ved \xE5 sette ",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "approved = true" }),
+            " i tabellen ",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "profiles" }),
+            "."
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Firmanavn", value: company.companyName, onChange: (v) => setCompany({ ...company, companyName: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Org.nr", value: company.orgNumber, onChange: (v) => setCompany({ ...company, orgNumber: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Adresse", value: company.address, onChange: (v) => setCompany({ ...company, address: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Telefon", value: company.phone, onChange: (v) => setCompany({ ...company, phone: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post", value: company.email || authUser.email, onChange: (v) => setCompany({ ...company, email: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hjemmeside", value: company.website || "", onChange: (v) => setCompany({ ...company, website: v }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "16px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+              " Last opp firmalogo",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", onChange: (e) => uploadLogo(e.target.files?.[0]) })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProfile, children: "Lagre firmaprofil" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
+          ] })
+        ] }) })
+      ] });
+    }
+    if (isReadOnly) {
+      const hasTilbudContent = hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0;
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Kundetilgang" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+                "Rapport, tilbud/kontrakt og chat",
+                totalChatCount ? ` \xB7 ${totalChatCount} melding${totalChatCount === 1 ? "" : "er"}` : ""
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => window.print(), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
+              " Lag PDF / skriv ut"
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "rapport" ? "on" : "", onClick: () => setCustomerTab("rapport"), children: "Rapport" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { className: customerTab === "chat" ? "on" : "", onClick: () => setCustomerTab("chat"), children: [
+              "Chat",
+              unreadForCustomer > 0 ? ` (${unreadForCustomer} ulest)` : totalChatCount ? ` (${totalChatCount})` : ""
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "tilbud" ? "on" : "", onClick: () => setCustomerTab("tilbud"), children: "Tilbud/kontrakt" })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
+          customerTab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CustomerReport, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }),
+          customerTab === "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : totalChatCount ? `Chat (${totalChatCount})` : "Chat", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan kunde sende sp\xF8rsm\xE5l eller beskjeder direkte inn p\xE5 prosjektet. Chatten oppdateres automatisk live, og utf\xF8rende varsles p\xE5 e-post n\xE5r e-postvarsling er satt opp." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Ny melding fra kunde", value: projectLog.draft || "", onChange: (v) => setProjectLog((prev) => ({ ...prev, draft: v })) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "12px", flexWrap: "wrap" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", style: { marginBottom: 0 }, children: [
+                "\u{1F4F7} Last opp bilde",
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "input",
+                  {
+                    id: "customer-chat-image-input",
+                    type: "file",
+                    accept: "image/*",
+                    onChange: (e) => setCustomerChatUploadFile(e.target.files?.[0] || null)
+                  }
+                ),
+                customerChatUploadFile && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "6px" }, children: [
+                  "Valgt: ",
+                  customerChatUploadFile.name
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: saveCustomerChatMessage, children: "Send melding" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => refreshProjectFromCloud(false), children: "Oppdater chat" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", disabled: unreadForCustomer === 0, onClick: () => markChatAsRead("customer"), children: "Marker alle som lest" })
+            ] }),
+            (projectLog.messages || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen meldinger enn\xE5." }),
+            (projectLog.messages || []).slice().reverse().map((m) => {
+              const isUnread = m.role !== "kunde" && (!lastReadByCustomer || (m.created || "") > lastReadByCustomer);
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", onClick: () => isUnread && markChatAsRead("customer"), style: isUnread ? { borderColor: "#fecaca", background: "#fff7f7", cursor: "pointer" } : void 0, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+                  m.by || "Ukjent",
+                  " ",
+                  m.role === "kunde" ? "\xB7 Kunde" : "\xB7 Utf\xF8rende"
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                  m.created ? new Date(m.created).toLocaleString("no-NO") : "",
+                  m.role === "kunde" ? !lastReadByAdmin || (m.created || "") > lastReadByAdmin ? " \xB7 Ulest for admin" : " \xB7 Lest av admin" : isUnread ? " \xB7 Ulest for kunde" : " \xB7 Lest av kunde"
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: m.text }),
+                m.imageUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "10px" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: m.imageUrl, target: "_blank", rel: "noreferrer", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "img",
+                    {
+                      src: m.imageUrl,
+                      alt: m.imageName || "Chat bilde",
+                      style: { maxWidth: "280px", width: "100%", borderRadius: "12px", border: "1px solid #dbe7ec" }
+                    }
+                  ) }),
+                  m.imageName && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { style: { display: "block", marginTop: "6px" }, children: m.imageName })
+                ] })
+              ] }, m.id);
+            })
+          ] }),
+          customerTab === "tilbud" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilbud / kontrakt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+            !hasTilbudContent && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen tilbud eller kontrakt er delt p\xE5 dette prosjektet enn\xE5." }),
+            hasTilbudContent && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Tillegg", value: tilbud.tillegg }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Fradrag", value: tilbud.fradrag }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Avtaleendringer / kommentar", value: tilbud.kommentar })
+              ] }),
+              (tilbud.files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
+                (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", children: f.name }) }, f.id))
+              ] })
+            ] })
+          ] })
+        ] })
+      ] });
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: `
       .mobileNav { display: none; }
       .mobileNavPanel { background:#ffffff; border:1px solid #dbe7ec; border-radius:18px; padding:12px; box-shadow:0 10px 24px rgba(15,23,42,0.08); }
       .mobileNavTop { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
@@ -2583,1073 +2383,1520 @@ function App() {
         main { padding-top:10px !important; }
       }
 
-    `}</style>
-    <header>
-      <div className="head">
-        <Brand logo={company.logoUrl} name={name}/>
-        <div><h1>Expo ProffDok</h1><p>{projectId ? `${currentStatus.icon} ${currentStatus.label}` : (authUser?.email || name)}</p></div>
-        <button className="secondary" onClick={signOut}>Logg ut</button>
-        <button className="secondary" onClick={createNewProject}>+ Nytt prosjekt</button>
-        <button onClick={saveProject}>{projectId ? 'Oppdater prosjekt' : 'Lagre'}</button>
-        <button onClick={saveAsNewProject}>Lagre kopi</button>
-        <button onClick={printReport}><Download size={18}/> Lag PDF / skriv ut</button>
-        {projectId && (isProjectLocked ? <button className="secondary" onClick={()=>setProjectLockedState(false)}>🔓 Lås opp prosjekt</button> : <button className="secondary" onClick={()=>setProjectLockedState(true)}>🔒 Avslutt prosjekt</button>)}
-      </div>
-      <nav>{tabs.map(([id,l]) => <button className={tab===id?'on':''} onClick={()=>goToTab(id)} key={id}>{l}</button>)}</nav>
-      {projectId && <div className="mobileNav" style={{ maxWidth:'1180px', margin:'0 auto', padding:'0 16px 14px' }}>
-        <div className="mobileNavPanel">
-          <div className="mobileNavTop">
-            <div className="mobileNavTitle">
-              <b>Meny</b>
-              <small>{tabs.find(([id]) => id === tab)?.[1] || 'Velg side'}</small>
-            </div>
-            {projectId && <span className="mobileNavPill">{currentStatus.icon} {currentStatus.label}</span>}
-          </div>
-          <div className="mobileNavSelectWrap">
-            <select aria-label="Velg side" value={tab} onChange={e=>goToTab(e.target.value)}>
-              {tabs.map(([id,l])=><option value={id} key={id}>{l}</option>)}
-            </select>
-          </div>
-          <div className="mobileSectionChips" aria-label="Hurtigvalg seksjoner">
-            <button type="button" className={tab==='produkter' ? '' : 'secondary'} onClick={()=>goToTab('produkter')}>Produkter</button>
-            <button type="button" className={tab==='sjekklister' ? '' : 'secondary'} onClick={()=>goToTab('sjekklister')}>Sjekklister</button>
-            <button type="button" className={tab==='tilbud' ? '' : 'secondary'} onClick={()=>goToTab('tilbud')}>Tilbud</button>
-            <button type="button" className={tab==='overtagelse' ? '' : 'secondary'} onClick={()=>goToTab('overtagelse')}>Overtag.</button>
-          </div>
-          <div className="mobileNavQuick">
-            <button type="button" className="secondary" disabled={!previousTab} onClick={() => previousTab && goToTab(previousTab[0])}>← Forrige</button>
-            <button type="button" disabled={!nextTab} onClick={() => nextTab && goToTab(nextTab[0])}>Neste →</button>
-          </div>
-          <div className="mobileNavStatus">
-            {unreadForAdmin > 0 && <button type="button" className="mobileNavPill" onClick={()=>goToTab('chat')}>💬 {unreadForAdmin} ulest</button>}
-            {totalChatCount > 0 && <button type="button" className="mobileNavPill" onClick={()=>goToTab('chat')}>Chat: {totalChatCount}</button>}
-          </div>
-        </div>
-      </div>}
-    </header>
-
-    {projectId && <div className="mobileFieldBar" aria-label="Mobil arbeidsmeny">
-      <div className="mobileFieldBarInner">
-        <div className="mobileProjectLine">
-          <div className="mobileProjectLineText">
-            <b>Du jobber i</b>
-            <span>{project.projectName || project.address || 'Åpent prosjekt'}</span>
-          </div>
-          <button type="button" className="secondary" onClick={()=>{ setProjectId(null); setTab('prosjekt'); }}>Bytt</button>
-        </div>
-        <select aria-label="Velg seksjon" value={tab} onChange={e=>goToTab(e.target.value)}>
-          {tabs.map(([id,l])=><option value={id} key={'mobile-field-' + id}>{l}</option>)}
-        </select>
-      </div>
-    </div>}
-
-    <main>
-      {!projectId && !mobileCreatingProject && <section className="mobileProjectChooser">
-        <h2>Hvilket prosjekt vil du jobbe i?</h2>
-        <p className="mobileProjectChooserIntro">Velg aktivt prosjekt først. Avsluttede prosjekter ligger i prosjektlisten/arkivet.</p>
-        <Input label="Søk etter prosjekt, kunde eller adresse" value={projectSearch} onChange={setProjectSearch}/>
-        <div className="mobileProjectChooserActions">
-          <button type="button" onClick={() => loadProjects(authUser, true)}>Oppdater liste</button>
-          <button type="button" className="secondary" onClick={()=>{ createNewProject(); setTab('prosjekt'); }}>+ Nytt prosjekt</button>
-        </div>
-        <div className="mobileProjectList">
-          {activeMobileProjectRows.slice(0, 8).map(({ row:p, listProject, listStatus, unreadForAdminInList }) => {
-            const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(', ');
-            return <div className="mobileProjectPickCard" key={`mobile-pick-${p.id}`}>
-              <div className="mobileProjectPickCardTop">
-                <div>
-                  <b>{p.title || listProject.projectName || 'Uten navn'}</b>
-                  {listProject.customer && <small>Kunde: {listProject.customer}</small>}
-                  {locationLine && <small>{locationLine}</small>}
-                  {unreadForAdminInList > 0 && <small style={{ color:'#991b1b', fontWeight:900 }}>💬 {unreadForAdminInList} ulest fra kunde</small>}
-                </div>
-                <span className="mobileProjectPickStatus">{listStatus.icon} {listStatus.label}</span>
-              </div>
-              <div className="mobileProjectPickActions">
-                <button type="button" onClick={()=>openProjectById(p.id, 'prosjekt')}>Åpne</button>
-                <button type="button" className="secondary" onClick={()=>openProjectById(p.id, 'bilder')}>Bilder</button>
-                <button type="button" className="secondary" onClick={()=>openProjectById(p.id, 'sjekklister')}>Sjekklister</button>
-                <button type="button" className="secondary" onClick={()=>openProjectById(p.id, 'chat')}>Chat</button>
-              </div>
-            </div>;
-          })}
-          {projects.length === 0 && <p className="note">Ingen prosjekter hentet ennå. Trykk Oppdater liste.</p>}
-          {projects.length > 0 && activeMobileProjectRows.length === 0 && <p className="note">Ingen aktive prosjekter matcher søket. Avsluttede prosjekter finnes fortsatt i prosjektlisten/arkivet.</p>}
-        </div>
-      </section>}
-      {projectId && <div className="mobileCurrentProjectBar">
-        <b>Du jobber i</b>
-        <span>{project.projectName || project.address || 'Åpent prosjekt'}</span>
-        <div className="mobileCurrentProjectActions">
-          <button type="button" onClick={()=>{ setProjectId(null); setTab('prosjekt'); }}>Bytt prosjekt</button>
-          <button type="button" className="secondary" onClick={()=>goToTab('bilder')}>Gå til bilder</button>
-        </div>
-      </div>}
-      {projectId && <Section title={`${currentStatus.icon} Prosjektstatus: ${currentStatus.label}`} icon={<BadgeCheck/>}>
-        <div className={`statusBadge status-${currentStatus.tone}`} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'8px 12px', borderRadius:'999px', fontWeight:700, marginBottom:'10px', border:'1px solid #dbe7ec', ...statusStyle(currentStatus.tone) }}>
-          <span>{currentStatus.icon}</span><span>{currentStatus.label}</span>
-        </div>
-        <p className="note">{isProjectLocked ? `Prosjektet ble låst${project.lockedAt ? ' ' + new Date(project.lockedAt).toLocaleString('no-NO') : ''}${project.lockedBy ? ' av ' + project.lockedBy : ''}. Lås opp prosjektet hvis du trenger å gjøre endringer.` : 'Prosjektet er åpent for endringer. Når prosjektet er ferdig og overlevert kan det avsluttes og låses.'}</p>
-        {projectHasOvertagelse() && <p className="note">Overtagelse er registrert{overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString('no-NO')}` : ''}.</p>}
-        {totalChatCount > 0 && <p className="note">💬 Chat: {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt{customerChatCount > 0 ? ` · ${customerChatCount} fra kunde` : ''}{unreadForAdmin > 0 ? ` · ${unreadForAdmin} ulest` : ''}{latestChatMessage?.created ? ` · siste ${new Date(latestChatMessage.created).toLocaleString('no-NO')}` : ''}.</p>}
-      </Section>}
-      {tab==='prosjekt' && <div className={!projectId && !mobileCreatingProject ? 'desktopOnlyWhenNoProject' : ''}><Section title="Prosjektinformasjon" icon={<ClipboardCheck/>}><Grid>
-        <Input label="Prosjektansvarlig" value={project.responsible} onChange={v=>setProject({...project,responsible:v})}/>
-        <Input label="Dato" type="date" value={project.date} onChange={v=>setProject({...project,date:v})}/>
-        <Input label="Navn på prosjekt" value={project.projectName} onChange={v=>setProject({...project,projectName:v})}/>
-        <Input label="Adresse" value={project.address} onChange={v=>setProject({...project,address:v})}/>
-        <Input label="Postnr." value={project.postnr || ''} onChange={v=>setProject({...project,postnr:v})}/>
-        <Input label="Poststed / by" value={project.city || ''} onChange={v=>setProject({...project,city:v})}/>
-        <Input label="Kunde" value={project.customer} onChange={v=>setProject({...project,customer:v})}/>
-        <Input label="Kunde e-post" type="email" value={project.customerEmail || ''} onChange={v=>setProject({...project,customerEmail:v})}/>
-        <Textarea label="Notater" value={project.notes} onChange={v=>setProject({...project,notes:v})}/>
-      </Grid></Section></div>}
-
-      {tab==='firma' && <Section title="Firmaprofil" icon={<Building2/>}>
-        <p className="note">Firmaprofilen lagres på brukeren din og brukes automatisk i prosjekter og rapporter.</p>
-        <div className="two"><div className="logoBox"><Brand logo={company.logoUrl} name={name}/><label className="upload"><Plus size={18}/> Last opp firmalogo<input type="file" accept="image/*" onChange={e=>uploadLogo(e.target.files?.[0])}/></label>{company.logoUrl && <button className="secondary" onClick={()=>setCompany({...company,logoUrl:''})}>Fjern logo</button>}</div>
-        <Grid>
-          <Input label="Firmanavn" value={company.companyName} onChange={v=>setCompany({...company,companyName:v})}/>
-          <Input label="Org.nr" value={company.orgNumber} onChange={v=>setCompany({...company,orgNumber:v})}/>
-          <Input label="Adresse" value={company.address} onChange={v=>setCompany({...company,address:v})}/>
-          <Input label="Telefon" value={company.phone} onChange={v=>setCompany({...company,phone:v})}/>
-          <Input label="E-post" value={company.email} onChange={v=>setCompany({...company,email:v})}/>
-          <Input label="Hjemmeside" value={company.website} onChange={v=>setCompany({...company,website:v})}/>
-        </Grid></div><button onClick={saveProfile}>Lagre firmaprofil</button>
-      </Section>}
-
-      {tab==='innlogging' && <Section title="Innlogging og brukerprofil" icon={<BadgeCheck/>}>
-        <p className="note">Du er logget inn som <b>{authUser?.email}</b>. Prosjektlisten viser kun dine prosjekter. Delingslenker kan fortsatt åpnes av kunde uten innlogging.</p>
-        <Grid>
-          <Input label="Navn" value={user.name} onChange={v=>setUser({...user,name:v})}/>
-          <Input label="E-post i rapport" value={user.email} onChange={v=>setUser({...user,email:v})}/>
-          <Select label="Rolle" value={user.role} options={roles} onChange={v=>setUser({...user,role:v})}/>
-        </Grid>
-        <button className="secondary" onClick={signOut}>Logg ut</button>
-      </Section>}
-
-      {tab==='prosjektering' && <Section title="Prosjektering">
-        <p className="note">Angi fall som forholdstall, for eksempel 1:50 i dusjsone og 1:100 utenfor dusjsone.</p>
-        <Grid>
-          <Input label="Fall i dusjsone" value={project.fallDusj || ''} onChange={v=>setProject({...project,fallDusj:v})}/>
-          <Input label="Fall utenfor dusjsone / våtsone" value={project.fallUtenfor || ''} onChange={v=>setProject({...project,fallUtenfor:v})}/>
-          <Input label="Slukplassering" value={project.sluk} onChange={v=>setProject({...project,sluk:v})}/>
-          <Input label="Terskelhøyde" value={project.terskel} onChange={v=>setProject({...project,terskel:v})}/>
-          <Input label="Membranløsning" value={project.membran} onChange={v=>setProject({...project,membran:v})}/>
-          <Textarea label="Kommentar / avvik" value={project.prosjekteringKommentar} onChange={v=>setProject({...project,prosjekteringKommentar:v})}/>
-        </Grid>
-        <div className="item">
-          <h3>Egne prosjekteringspunkter</h3>
-          <p className="note">Legg til egne punkter som skal følge prosjektet og vises i rapporten hvis de er fylt ut.</p>
-          <button type="button" onClick={addProsjekteringPunkt}><Plus size={18}/> Legg til punkt</button>
-          {(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).map(point => <div className="item" key={point.id}>
-            <Grid>
-              <Input label="Punkt / tittel" value={point.title || ''} onChange={v=>updateProsjekteringPunkt(point.id, { title:v })}/>
-              <Input label="Verdi / beskrivelse" value={point.value || ''} onChange={v=>updateProsjekteringPunkt(point.id, { value:v })}/>
-            </Grid>
-            <button type="button" className="secondary" onClick={()=>removeProsjekteringPunkt(point.id)}>Fjern punkt</button>
-          </div>)}
-        </div>
-        <label className="upload"><Plus size={18}/> Last opp tegning / bilde<input type="file" accept="image/*" multiple onChange={e=>addPhoto('Prosjektering',e.target.files)}/></label>
-      </Section>}
-
-      {tab==='produkter' && <>{productSections.map(s=><Section title={s.title} key={s.title}>
-        <p className="note">Kryss av produkter som er brukt. Når et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte på produktet.</p>
-        <div className="checklistList">{s.items.map(i=>{
-          const doc = productDocs[i] || {};
-          return <div className="item" key={i}>
-            <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-              <input type="checkbox" style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }} checked={!!checked[i]} onChange={e=>toggleProductChecked(i, e.target.checked)}/>
-              <span style={{ margin:0 }}>{i}</span>
-            </label>
-            {checked[i] && <>
-              <Grid>
-                <Input label="FDV-/databladlink" value={doc.fdvUrl || ''} onChange={v=>updateProductDoc(i, { fdvUrl:v, fdvSource:'manual' })}/>
-                <Input label="Datablad" value={doc.databladUrl || ''} onChange={v=>updateProductDoc(i, { databladUrl:v, fdvSource:'manual' })}/>
-                <Input label="DOP" value={doc.dopUrl || ''} onChange={v=>updateProductDoc(i, { dopUrl:v, fdvSource:'manual' })}/>
-                <Input label="EPD" value={doc.epdUrl || ''} onChange={v=>updateProductDoc(i, { epdUrl:v, fdvSource:'manual' })}/>
-                <Input label="Sikkerhetsdatablad" value={doc.sikkerhetsdatabladUrl || ''} onChange={v=>updateProductDoc(i, { sikkerhetsdatabladUrl:v, fdvSource:'manual' })}/>
-                <Input label="Hvor brukt / kommentar" value={doc.comment || ''} onChange={v=>updateProductDoc(i, { comment:v })}/>
-              </Grid>
-              {doc.fdvSource === 'product-master' && <small>Dokumentlinker er hentet automatisk fra produktmaster.</small>}
-              {doc.fdvSource === 'admin-register' && <small>FDV-link er hentet automatisk fra admin FDV-register.</small>}
-            </>}
-          </div>;
-        })}</div>
-        <div className="item">
-          <h3>Andre produkter i {s.title}</h3>
-          <p className="note">Bruk dette hvis produktet ikke ligger i standardlisten for denne kategorien.</p>
-          <button type="button" onClick={()=>addManualProduct(s.title)}><Plus size={18}/> Legg til annet produkt</button>
-          {((manualProducts || {})[s.title] || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen andre produkter lagt til i denne kategorien.</p>}
-          {((manualProducts || {})[s.title] || []).map(p => <div className="item" key={p.id}>
-            <Grid>
-              <Input label="Produktnavn" value={p.name || ''} onChange={v=>updateManualProduct(s.title, p.id, { name:v })}/>
-              <Input label="FDV-/databladlink" value={p.fdvUrl || ''} onChange={v=>updateManualProduct(s.title, p.id, { fdvUrl:v })}/>
-              <Input label="Hvor brukt / kommentar" value={p.comment || ''} onChange={v=>updateManualProduct(s.title, p.id, { comment:v })}/>
-            </Grid>
-            <button type="button" className="secondary" onClick={()=>removeManualProduct(s.title, p.id)}>Fjern produkt</button>
-          </div>)}
-        </div>
-      </Section>)}
-      </>}
-
-      {tab==='overflater' && <Section title="Overflateprodukter"><Grid>{surfaces.map(f=><Input key={f} label={`${f} - produkt, farge og plassering`} value={surf[f]||''} onChange={v=>setSurf({...surf,[f]:v})}/>)}</Grid></Section>}
-
-      {tab==='bilder' && <Section title="Bildedokumentasjon" icon={<Camera/>}><div className="cards">{imageCats.map(c=><label className="tile" key={c}><b><Plus size={16}/> {c}</b><span>{photos.filter(p=>p.cat===c).length > 0 ? `📷 ${photos.filter(p=>p.cat===c).length} bilder lagt til` : 'Ta bilde eller velg fra galleri'}</span><input type="file" accept="image/*" capture="environment" multiple onChange={e=>addPhoto(c,e.target.files)}/></label>)}</div><PhotoGrid photos={photos} setPhotos={setPhotos}/></Section>}
-
-      {tab==='tilgang' && <Section title="Tilgang og deling"><p className="note">Administrer tilgang til prosjektet. Kunde får egen kundelink med rapport, tilbud/kontrakt og chat. Underentreprenører kan bidra med dokumentasjon via egen tilgang.</p><div className="cards">{accessRoleInfo.map(r=><div className="tile" key={r.role}><b>{r.role}</b><span>{r.text}</span></div>)}</div><div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}><button onClick={()=>setAccess([...access,{id:uid(),name:'',email:'',role:'Underleverandør'}])}><Plus size={18}/> Legg til person/firma</button><button className="secondary" onClick={()=>copyAccessLink('kunde')}>Del med kunde</button></div>{access.length===0 && <p className="note" style={{ marginTop:'16px' }}>Ingen ekstra tilganger er lagt til ennå.</p>}{access.map(a=><div className="item" key={a.id}><Grid><Input label="Navn/firma" value={a.name} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,name:v}:x))}/><Input label="E-post" value={a.email} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,email:v}:x))}/><Select label="Rolle" value={a.role} options={roles} onChange={v=>setAccess(access.map(x=>x.id===a.id?{...x,role:v}:x))}/></Grid><p className="note">{accessRoleInfo.find(r=>r.role===a.role)?.text || ''}</p><div style={{ display:'flex', gap:'12px', flexWrap:'wrap' }}><button className="secondary" onClick={()=>copyAccessLink(a.role)}>Del med denne personen</button><button className="secondary" onClick={()=>setAccess(access.filter(x=>x.id!==a.id))}>Fjern</button></div></div>)}</Section>}
-
-      {tab==='installasjoner' && <Section title="Fag, deler og utstyr"><button type="button" onClick={()=>setInst(prev=>[...prev,{id:uid(),category:'Rørlegger',name:'',qty:'',supplier:'',desc:'',fdvUrl:'',photos:[],by:user.name||'Ukjent',created:new Date().toLocaleString('no-NO')}])}><Plus size={18}/> Legg til post</button>{inst.map(x=><div className="item" key={x.id}><Grid><Select label="Kategori" value={x.category} options={installCats} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,category:v}:i))}/><Input label="Navn/produkt" value={x.name} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,name:v}:i))}/><Input label="Antall/mengde" value={x.qty} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,qty:v}:i))}/><Input label="Leverandør" value={x.supplier} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,supplier:v}:i))}/><Textarea label="Beskrivelse/plassering" value={x.desc} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,desc:v}:i))}/><Input label="FDV-/databladlink" value={x.fdvUrl || ''} onChange={v=>setInst(inst.map(i=>i.id===x.id?{...i,fdvUrl:v}:i))}/></Grid><label className="upload"><Plus size={18}/> Last opp bilder<input type="file" accept="image/*" multiple onChange={async e=>{const imgs = await uploadImages(e.target.files,'installasjoner'); setInst(inst.map(i=>i.id===x.id?{...i,photos:[...(i.photos||[]),...imgs]}:i));}}/></label>{(x.photos||[]).length > 0 && <p className="note">📷 {(x.photos||[]).length} bilder lagt til</p>}<div className="photos">{(x.photos||[]).map(p=><div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}</div><small>Lagt inn av {x.by} · {x.created}</small><button type="button" className="secondary" onClick={()=>setInst(inst.filter(i=>i.id!==x.id))}>Fjern</button></div>)}</Section>}
-
-      {tab==='sjekklister' && <Section title="Sjekklister og vedlegg" icon={<FileText/>}>
-          <p className="note">Velg status per kontrollpunkt. Kategoriene kan åpnes/lukkes for mindre scrolling på mobil. Ved Avvik kan du skrive kommentar og ta bilde.</p>
-          <ChecklistEditor
-            checklist={checklist}
-            setChecklistValue={setChecklistValue}
-            addChecklistPhoto={addChecklistPhoto}
-            addFiles={addFiles}
-            files={files}
-            setFiles={setFiles}
-          />
-        </Section>}
-
-      {tab==='tilbud' && <Section title="Tilbud / kontrakt" icon={<FileText/>}>
-        <p className="note">Her legger du inn tilbud, kontrakt og avtaleendringer. Kunde får se dette i kundelinken når det finnes innhold eller vedlegg. Huk av hvis sammendraget også skal med i vanlig rapport/PDF.</p>
-        <Grid>
-          <Textarea label="Tillegg" value={tilbud.tillegg || ''} onChange={v=>setTilbud({...emptyTilbud(), ...tilbud, tillegg:v})}/>
-          <Textarea label="Fradrag" value={tilbud.fradrag || ''} onChange={v=>setTilbud({...emptyTilbud(), ...tilbud, fradrag:v})}/>
-          <Textarea label="Avtaleendringer / kommentar" value={tilbud.kommentar || ''} onChange={v=>setTilbud({...emptyTilbud(), ...tilbud, kommentar:v})}/>
-          <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-            <input
-              type="checkbox"
-              style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }}
-              checked={!!tilbud.enabled}
-              onChange={e=>setTilbud({...emptyTilbud(), ...tilbud, enabled:e.target.checked})}
-            />
-            <span style={{ margin:0 }}>Ta med sammendrag i rapport</span>
-          </label>
-        </Grid>
-        <div className="item">
-          <h3>Vedlegg</h3>
-          <p className="note">Last opp tilbud, kontrakt eller andre avtaledokumenter. Vedleggene lagres på prosjektet og vises i kundelinken. Underentreprenør har ikke tilgang til tilbud/kontrakt.</p>
-          <label className="upload"><Plus size={18}/> Last opp tilbud / kontrakt<input type="file" multiple onChange={e=>uploadTilbudFiles(e.target.files)}/></label>
-          {(tilbud.files || []).length === 0 && <p className="note" style={{ marginTop:'12px' }}>Ingen tilbud eller kontrakter er lastet opp ennå.</p>}
-          {(tilbud.files || []).map(f=><div className="file" key={f.id}>
-            <b>{f.name}</b>
-            <small>Lastet opp av {f.by || 'Ukjent'} · {f.created}</small>
-            <a href={f.url} target="_blank">Åpne</a>
-            <button className="secondary" onClick={()=>setTilbud({...emptyTilbud(), ...tilbud, files:(tilbud.files || []).filter(x=>x.id!==f.id)})}>Fjern</button>
-          </div>)}
-        </div>
-      </Section>}
-
-      {tab==='overtagelse' && <Section title="Overtagelse og signering" icon={<ClipboardCheck/>}>
-        <p className="note">Bruk denne ved sluttbefaring og overlevering. Når begge signaturer er fylt ut kan prosjektet fullføres og låses.</p>
-        {isProjectLocked && <p className="note">🔒 Prosjektet er låst. Overtagelsen kan vises i rapporten, men endringer krever at prosjektet låses opp.</p>}
-        {projectHasOvertagelse() && <p className="note">✅ Overtagelse registrert{overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString('no-NO')}` : ''}.</p>}
-        <Grid>
-          <Input label="Dato for overtagelse" type="date" value={overtagelse.dato || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, dato:v})}/>
-          <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-            <input
-              type="checkbox"
-              style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }}
-              checked={!!overtagelse.enabled}
-              onChange={e=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, enabled:e.target.checked})}
-            />
-            <span style={{ margin:0 }}>Ta med overtagelse i rapport</span>
-          </label>
-          <Textarea label="Kommentar / merknader fra sluttbefaring" value={overtagelse.kommentar || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, kommentar:v})}/>
-          <div className="item">
-            <h3>Signaturer</h3>
-            <p className="note">Signer direkte på skjermen med finger på telefon eller mus på PC. Navn kan fylles ut i tillegg for tydelig dokumentasjon.</p>
-            <Grid>
-              <Input label="Navn utførende" value={overtagelse.signUtførende || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signUtførende:v})}/>
-              <Input label="Navn kunde" value={overtagelse.signKunde || ''} onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signKunde:v})}/>
-            </Grid>
-            <div className="grid" style={{ marginTop:'14px' }}>
-              <SignaturePad
-                label="Signatur utførende"
-                value={overtagelse.signUtførendeImage || ''}
-                onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signUtførendeImage:v})}
-              />
-              <SignaturePad
-                label="Signatur kunde"
-                value={overtagelse.signKundeImage || ''}
-                onChange={v=>setOvertagelse({...emptyOvertagelse(), ...overtagelse, signKundeImage:v})}
-              />
-            </div>
-          </div>
-        </Grid>
-        <div style={{ display:'flex', gap:'12px', marginTop:'16px', flexWrap:'wrap' }}>
-          <button onClick={saveProject}>Lagre overtagelse</button>
-          <button onClick={completeOvertagelseAndLock} disabled={isProjectLocked}>Fullfør overtagelse og lås prosjekt</button>
-        </div>
-      </Section>}
-
-      {tab==='chat' && <Section title={unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : (totalChatCount > 0 ? `Chat (${totalChatCount} meldinger)` : 'Chat')} icon={<FileText/>}>
-        <p className="note">Chatten oppdateres automatisk live. Nye kundemeldinger står som ulest til du svarer, klikker på meldingen eller trykker Marker alle som lest. Skrivefeltet beholdes ved refresh.</p>
-        {totalChatCount > 0 && <p className="note" style={{ fontWeight:700 }}>💬 Det finnes {totalChatCount} melding{totalChatCount === 1 ? '' : 'er'} totalt i chatten{customerChatCount > 0 ? `, hvorav ${customerChatCount} fra kunde` : ''}{unreadForAdmin > 0 ? ` · ${unreadForAdmin} ulest fra kunde` : ' · alt er lest'}.</p>}
-        {!hasValue(project.customerEmail) && <p className="note" style={{ fontWeight:700 }}>⚠️ Legg inn kunde e-post i Prosjektinformasjon for at kunde skal få e-postvarsling ved nye chatmeldinger.</p>}
-        <label className="check" style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'14px' }}>
-          <input
-            type="checkbox"
-            style={{ width:'auto', minHeight:'auto', padding:0, margin:0, flex:'0 0 auto' }}
-            checked={!!projectLog.enabled}
-            onChange={e=>setProjectLog(prev=>({...prev, enabled:e.target.checked}))}
-          />
-          <span style={{ margin:0 }}>Ta med chat i rapport</span>
-        </label>
-        <Textarea label="Ny melding" value={projectLog.draft || ''} onChange={v=>setProjectLog(prev=>({...prev, draft:v}))}/>
-        <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
-          <label className="upload" style={{marginBottom:0}}>
-  📷 Last opp bilde
-  <input
-    id="admin-chat-image-input"
-    type="file"
-    accept="image/*"
-    onChange={e=>setChatUploadFile(e.target.files?.[0] || null)}
-  />
-  {chatUploadFile && <small style={{display:'block', marginTop:'6px'}}>Valgt: {chatUploadFile.name}</small>}
-</label>
-
-<button type="button" onClick={addProjectLogMessage}>Send melding</button>
-          <button type="button" className="secondary" onClick={()=>refreshProjectFromCloud(false)}>Oppdater chat</button>
-          <button type="button" className="secondary" disabled={unreadForAdmin === 0} onClick={()=>markChatAsRead('admin')}>Marker alle som lest</button>
-          <button type="button" className="secondary" onClick={()=>setProjectLog(prev=>({...prev, draft:''}))}>Tøm skrivefelt</button>
-        </div>
-        {(projectLog.messages || []).length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen meldinger ennå.</p>}
-        {(projectLog.messages || []).slice().reverse().map(m => {
-          const isUnread = m.role === 'kunde' && (!lastReadByAdmin || (m.created || '') > lastReadByAdmin);
-          return <div className="item" key={m.id} onClick={()=>isUnread && markChatAsRead('admin')} style={isUnread ? { borderColor:'#fecaca', background:'#fff7f7', cursor:'pointer' } : undefined}>
-          <b>{m.by || 'Ukjent'} {m.role === 'kunde' ? '· Kunde' : '· Utførende'}</b>
-          <small>
-            {m.created ? new Date(m.created).toLocaleString('no-NO') : ''}
-            {m.role === 'kunde' ? (isUnread ? ' · Ulest for admin' : ' · Lest av admin') : ((!lastReadByCustomer || (m.created || '') > lastReadByCustomer) ? ' · Ulest for kunde' : ' · Lest av kunde')}
-          </small>
-          <p>{m.text}</p>
-          {m.imageUrl && (
-            <div style={{ marginTop:'10px' }}>
-              <a href={m.imageUrl} target="_blank" rel="noreferrer">
-                <img
-                  src={m.imageUrl}
-                  alt={m.imageName || 'Chat bilde'}
-                  style={{ maxWidth:'280px', width:'100%', borderRadius:'12px', border:'1px solid #dbe7ec' }}
-                />
-              </a>
-              {m.imageName && <small style={{ display:'block', marginTop:'6px' }}>{m.imageName}</small>}
-            </div>
-          )}
-          <button type="button" className="secondary" onClick={(e)=>{ e.stopPropagation(); removeProjectLogMessage(m.id); }}>Fjern melding</button>
-        </div>;
-        })}
-      </Section>}
-
-      {tab==='internt' && <Section title="Interne notater" icon={<FileText/>}>
-        <p className="note">Dette feltet er kun internt. Det vises ikke i kundelink og tas ikke med i rapport.</p>
-        <Textarea label="Interne notater" value={internalNotes || ''} onChange={setInternalNotes}/>
-        <div style={{ display:'flex', gap:'12px', marginTop:'12px', flexWrap:'wrap' }}>
-          <button type="button" onClick={saveProject}>Lagre interne notater</button>
-        </div>
-      </Section>}
-
-      {tab==='prosjektliste' && <Section title="Prosjektliste">
-        <div className="cards projectListHeaderCards">
-          <div className="tile"><b>{projectListStats.total}</b><span>Prosjekter totalt</span></div>
-          <div className="tile"><b>{projectListStats.visible}</b><span>Vises med filter</span></div>
-          <div className="tile"><b>{projectListStats.unread}</b><span>Uleste kundemeldinger</span></div>
-          <div className="tile"><b>{projectListStats.active}</b><span>Åpne / pågående</span></div>
-        </div>
-
-        <Grid>
-          <Input label="Søk i prosjektliste" value={projectSearch} onChange={setProjectSearch}/>
-          <Select label="Statusfilter" value={projectStatusFilter} onChange={setProjectStatusFilter} options={['alle','open','progress','done','locked']}/>
-        </Grid>
-
-        <div className="projectListToolbar">
-          <button onClick={() => loadProjects(authUser, true)}>Oppdater liste</button>
-          <button type="button" className={projectUnreadOnly ? '' : 'secondary'} onClick={()=>setProjectUnreadOnly(v=>!v)}>
-            {projectUnreadOnly ? 'Vis alle prosjekter' : 'Vis kun uleste'}
-          </button>
-          <button type="button" className="secondary" onClick={()=>{ setProjectSearch(''); setProjectStatusFilter('alle'); setProjectUnreadOnly(false); }}>Nullstill filter</button>
-        </div>
-
-        <p className="note">Statusfilter: open = åpen, progress = pågår, done = ferdigstilt, locked = avsluttet/låst.</p>
-        {projects.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen prosjekter hentet ennå.</p>}
-        {projects.length > 0 && filteredProjectListRows.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen prosjekter matcher søket eller filteret.</p>}
-
-        {filteredProjectListRows.map(({ row:p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary })=>{
-          const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(', ');
-          return <div className="item projectListCard" key={p.id} style={unreadForAdminInList > 0 ? { borderColor:'#fecaca', background:'#fff7f7' } : undefined}>
-            <div className="projectListCardTop">
-              <div>
-                <b style={{ fontSize:'18px' }}>{p.title || listProject.projectName || 'Uten navn'}</b>
-                {listProject.customer && <p style={{ margin:'6px 0 0' }}><b>Kunde:</b> {listProject.customer}</p>}
-                {locationLine && <small>{locationLine}</small>}
-              </div>
-              <div className="projectListBadges">
-                <span className={`statusBadge status-${listStatus.tone}`} style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:700, border:'1px solid #dbe7ec', width:'fit-content', ...statusStyle(listStatus.tone) }}>{listStatus.icon} {listStatus.label}</span>
-                {unreadForAdminInList > 0 && <span style={{ display:'inline-flex', alignItems:'center', gap:'6px', padding:'6px 10px', borderRadius:'999px', fontWeight:800, border:'1px solid #fecaca', background:'#fef2f2', color:'#991b1b', width:'fit-content' }}>💬 {unreadForAdminInList} ulest</span>}
-                {imageSummary.total > 0 && <span className="projectMiniBadge">📷 {imageSummary.total} bilder</span>}
-              </div>
-            </div>
-
-            <div className="cards projectListMetaCards">
-              <div className="tile"><b>Oppdatert</b><span>{new Date(p.updated_at || p.created_at).toLocaleString('no-NO')}</span></div>
-              <div className="tile"><b>Chat</b><span>{latestMessage?.created ? `Siste: ${new Date(latestMessage.created).toLocaleString('no-NO')}` : 'Ingen meldinger'}</span></div>
-              <div className="tile"><b>Ansvarlig</b><span>{listProject.responsible || 'Ikke fylt ut'}</span></div>
-            </div>
-
-            {imageSummary.total > 0 && <div>
-              <div className="projectImageCounts">
-                {imageSummary.photos > 0 && <span className="projectMiniBadge">📁 Bilder: {imageSummary.photos}</span>}
-                {imageSummary.checklist > 0 && <span className="projectMiniBadge">✅ Sjekkliste: {imageSummary.checklist}</span>}
-                {imageSummary.install > 0 && <span className="projectMiniBadge">🧰 Fag/utstyr: {imageSummary.install}</span>}
-                {imageSummary.chat > 0 && <span className="projectMiniBadge">💬 Chat: {imageSummary.chat}</span>}
-              </div>
-              <div className="projectImageStrip" aria-label="Bildeoversikt for prosjekt">
-                {imageSummary.previews.map((img, index) => <div className="projectImageThumb" key={`${p.id}-img-${index}`}>
-                  <img src={img.url} alt={img.label || img.source || 'Prosjektbilde'}/>
-                  <small>{img.source}</small>
-                </div>)}
-                {imageSummary.total > imageSummary.previews.length && <div className="projectImageThumb" style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'58px', border:'1px dashed #c7d6dd', borderRadius:'12px', background:'#f8fafc', fontWeight:800 }}>+{imageSummary.total - imageSummary.previews.length}</div>}
-              </div>
-            </div>}
-
-            <div className="projectListActions">
-              <button onClick={()=>openProjectById(p.id)}>📂 Åpne</button>
-              <button className="secondary" onClick={()=>openProjectById(p.id, 'chat')}>💬 Chat</button>
-              <button className="secondary" onClick={()=>deleteProject(p.id)}>🗑️ Slett</button>
-            </div>
-          </div>;
-        })}
-      </Section>}
-
-      {tab==='rapport' && <Report company={company} name={name} project={project} selected={selected} manualProducts={manualSelected} other={other} surf={surf} photos={photos} access={access} inst={inst} files={files} checklist={checklist} tilbud={tilbud} overtagelse={overtagelse} projectLog={projectLog}/>} 
-
-      {tab==='admin' && isAdminUser && <Section title="Admin" icon={<BadgeCheck/>}>
-        <p className="note">Her kan administrator godkjenne brukere og vedlikeholde felles FDV-register. FDV-linker fra registeret fylles automatisk inn når et standardprodukt krysses av i et prosjekt, men kan fortsatt overstyres manuelt per prosjekt.</p>
-
-        <div className="item">
-          <h3>Brukergodkjenning</h3>
-          <p className="note">Forutsetter at Supabase-policy tillater admin å lese og oppdatere profiles.</p>
-          <button onClick={loadAdminUsers}>{adminLoading ? 'Henter brukere...' : 'Oppdater brukerliste'}</button>
-          {adminUsers.length === 0 && <p className="note" style={{ marginTop:'16px' }}>Ingen brukere hentet ennå. Trykk Oppdater brukerliste.</p>}
-          {adminUsers.map(u => <div className="item" key={u.id}>
-            <b>{u.email || 'Ukjent e-post'}</b>
-            <small>{u.company_name ? `Firma: ${u.company_name} · ` : ''}Status: {u.approved ? 'Godkjent' : 'Venter på godkjenning'}</small>
-            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginTop:'10px' }}>
-              {!u.approved && <button onClick={()=>approveAdminUser(u.id)}>Godkjenn bruker</button>}
-              {u.approved && <button className="secondary" onClick={()=>revokeAdminUser(u.id)}>Fjern godkjenning</button>}
-            </div>
-          </div>)}
-        </div>
-
-        <div className="item">
-          <h3>Admin FDV-register</h3>
-          <p className="note">Første gang: kjør SQL-oppsettet i Supabase, trykk deretter "Opprett standardprodukter". Deretter legger du inn FDV-/databladlinker og lagrer per produkt.</p>
-          <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginBottom:'12px' }}>
-            <button type="button" onClick={()=>loadFdvRegister(true)}>{fdvLoading ? 'Henter FDV-register...' : 'Oppdater FDV-register'}</button>
-            <button type="button" className="secondary" onClick={seedFdvRegister}>Opprett standardprodukter</button>
-          </div>
-          {(fdvRegister || []).length === 0 && <p className="note">Ingen produkter i FDV-registeret ennå.</p>}
-          {productSections.map(section => {
-            const sectionRows = (fdvRegister || []).filter(row => row.section === section.title || section.items.includes(row.product_name));
-            const uniqueRows = sectionRows.length ? sectionRows : section.items.map(productName => ({ section:section.title, product_name:productName, fdv_url:'', comment:'', active:true }));
-            return <div className="item" key={'fdv-' + section.title}>
-              <h3>{section.title}</h3>
-              {uniqueRows.map(row => <div className="item" key={'fdv-row-' + row.product_name}>
-                <b>{row.product_name}</b>
-                <Grid>
-                  <Input label="FDV-/databladlink" value={row.fdv_url || ''} onChange={v=>updateFdvRegisterLocal(row.product_name, { ...row, fdv_url:v, section:row.section || section.title })}/>
-                  <Input label="Kommentar" value={row.comment || ''} onChange={v=>updateFdvRegisterLocal(row.product_name, { ...row, comment:v, section:row.section || section.title })}/>
-                </Grid>
-                <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginTop:'10px' }}>
-                  <button type="button" onClick={()=>saveFdvRegisterRow({ ...row, section:row.section || section.title })}>Lagre FDV-produkt</button>
-                  {row.updated_at && <small>Sist oppdatert: {new Date(row.updated_at).toLocaleString('no-NO')}{row.updated_by ? ` · ${row.updated_by}` : ''}</small>}
-                </div>
-              </div>)}
-            </div>;
-          })}
-        </div>
-
-        <div className="item">
-          <h3>Produktmaster fra flisLAB</h3>
-          <p className="note">Dette er produktdatabasen fra prisfilen, uten priser. Legg inn FDV, datablad, DOP, EPD og sikkerhetsdatablad her. Når et standardprodukt velges i prosjektet, henter appen dokumentlinker automatisk fra denne masteren.</p>
-          <div className="cards projectListHeaderCards">
-            <div className="tile"><b>{productMasterStats.total}</b><span>Produkter/varianter</span></div>
-            <div className="tile"><b>{productMasterStats.appMatches}</b><span>Koblet mot app</span></div>
-            <div className="tile"><b>{productMasterStats.withDocs}</b><span>Med dokumenter</span></div>
-            <div className="tile"><b>{productMasterLoading ? '...' : 'OK'}</b><span>Status</span></div>
-          </div>
-          <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginBottom:'12px' }}>
-            <button type="button" onClick={()=>loadProductMaster(true)}>{productMasterLoading ? 'Henter produktmaster...' : 'Oppdater produktmaster'}</button>
-          </div>
-          {(productMaster || []).length === 0 && <p className="note">Ingen produkter funnet i produktmaster. Kjør SQL-filen fra flisLAB-importen først.</p>}
-          {(productMaster || []).filter(row => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map(row => <div className="item" key={'pm-' + row.product_no}>
-            <b>{row.product_name}</b>
-            <small>{row.product_no} · {row.category || 'Uten kategori'}{row.app_match_name ? ` · App: ${row.app_match_name}` : ''}</small>
-            <Grid>
-              <Input label="FDV-link" value={row.fdv_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { fdv_url:v })}/>
-              <Input label="Datablad" value={row.datablad_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { datablad_url:v })}/>
-              <Input label="DOP" value={row.dop_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { dop_url:v })}/>
-              <Input label="EPD" value={row.epd_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { epd_url:v })}/>
-              <Input label="Sikkerhetsdatablad" value={row.sikkerhetsdatablad_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { sikkerhetsdatablad_url:v })}/>
-              <Input label="Vedlagt dokument / samlet PDF" value={row.document_file_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { document_file_url:v })}/>
-              <Input label="Kommentar" value={row.comment || ''} onChange={v=>updateProductMasterLocal(row.product_no, { comment:v })}/>
-            </Grid>
-            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginTop:'10px' }}>
-              <button type="button" onClick={()=>saveProductMasterRow(row)}>Lagre dokumenter</button>
-              {row.updated_at && <small>Sist oppdatert: {new Date(row.updated_at).toLocaleString('no-NO')}</small>}
-            </div>
-          </div>)}
-        </div>
-      </Section>}
-    </main>
-
-    <div className="bottomAppNav" aria-label="Hovednavigasjon mobil">
-      <button type="button" className={tab==='prosjektliste' ? 'active' : 'secondary'} onClick={()=>goToTab('prosjektliste')}><span>📁</span><span>Liste</span></button>
-      <button type="button" className={tab==='prosjekt' ? 'active' : 'secondary'} onClick={()=>goToTab('prosjekt')}><span>✏️</span><span>Info</span></button>
-      <button type="button" className={tab==='chat' ? 'active' : 'secondary'} onClick={()=>goToTab('chat')}><span>💬</span><span>{unreadForAdmin > 0 ? `${unreadForAdmin}` : 'Chat'}</span></button>
-      <button type="button" className={tab==='bilder' ? 'active' : 'secondary'} onClick={()=>goToTab('bilder')}><span>📷</span><span>Foto</span></button>
-      <button type="button" className={tab==='rapport' ? 'active' : 'secondary'} onClick={()=>goToTab('rapport')}><span>📄</span><span>PDF</span></button>
-    </div>
-
-    <div className="bottomPrevNext" style={{
-      display:'flex',
-      justifyContent:'space-between',
-      alignItems:'center',
-      gap:'12px',
-      maxWidth:'1180px',
-      margin:'18px auto 28px',
-      padding:'0 18px',
-      flexWrap:'wrap'
-    }}>
-      <button
-        type="button"
-        className="secondary"
-        disabled={!previousTab}
-        onClick={() => previousTab && goToTab(previousTab[0])}
-        style={{ flex:'1 1 150px' }}
-      >
-        ← Forrige{previousTab ? `: ${previousTab[1]}` : ''}
-      </button>
-      <button
-        type="button"
-        onClick={() => nextTab && goToTab(nextTab[0])}
-        disabled={!nextTab}
-        style={{ flex:'1 1 150px' }}
-      >
-        Neste{nextTab ? `: ${nextTab[1]}` : ''} →
-      </button>
-    </div>
-
-  </div>;
-}
-
-
-
-async function uploadChatImage(file, projectId = 'uten-prosjekt', sender = 'chat'){
-  if(!file) return null;
-
-  const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-');
-  const ext = cleanName.includes('.') ? cleanName.split('.').pop() : 'jpg';
-  const safeProjectId = String(projectId || 'uten-prosjekt').replace(/[^a-zA-Z0-9._-]/g, '-');
-  const safeSender = String(sender || 'chat').replace(/[^a-zA-Z0-9._-]/g, '-');
-  const fileName = `${safeProjectId}/${safeSender}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-  const { data, error } = await supabase.storage
-    .from('chat-images')
-    .upload(fileName, file, { cacheControl: '3600', upsert: false });
-
-  if(error){
-    console.error(error);
-    alert('Kunne ikke laste opp bilde: ' + error.message);
-    return null;
+    ` }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Expo ProffDok" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: projectId ? `${currentStatus.icon} ${currentStatus.label}` : authUser?.email || name })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectId ? "Oppdater prosjekt" : "Lagre" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre kopi" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: printReport, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
+            " Lag PDF / skriv ut"
+          ] }),
+          projectId && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
+        projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileNav", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 14px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavPanel", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavTop", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavTitle", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Meny" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: tabs.find(([id]) => id === tab)?.[1] || "Velg side" })
+            ] }),
+            projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "mobileNavPill", children: [
+              currentStatus.icon,
+              " ",
+              currentStatus.label
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileNavSelectWrap", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { "aria-label": "Velg side", value: tab, onChange: (e) => goToTab(e.target.value), children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: id, children: l }, id)) }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileSectionChips", "aria-label": "Hurtigvalg seksjoner", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: tab === "produkter" ? "" : "secondary", onClick: () => goToTab("produkter"), children: "Produkter" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: tab === "sjekklister" ? "" : "secondary", onClick: () => goToTab("sjekklister"), children: "Sjekklister" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: tab === "tilbud" ? "" : "secondary", onClick: () => goToTab("tilbud"), children: "Tilbud" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: tab === "overtagelse" ? "" : "secondary", onClick: () => goToTab("overtagelse"), children: "Overtag." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavQuick", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", disabled: !previousTab, onClick: () => previousTab && goToTab(previousTab[0]), children: "\u2190 Forrige" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !nextTab, onClick: () => nextTab && goToTab(nextTab[0]), children: "Neste \u2192" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavStatus", children: [
+            unreadForAdmin > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileNavPill", onClick: () => goToTab("chat"), children: [
+              "\u{1F4AC} ",
+              unreadForAdmin,
+              " ulest"
+            ] }),
+            totalChatCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileNavPill", onClick: () => goToTab("chat"), children: [
+              "Chat: ",
+              totalChatCount
+            ] })
+          ] })
+        ] }) })
+      ] }),
+      projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLine", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLineText", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Du jobber i" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: project.projectName || project.address || "\xC5pent prosjekt" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
+            setProjectId(null);
+            setTab("prosjekt");
+          }, children: "Bytt" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { "aria-label": "Velg seksjon", value: tab, onChange: (e) => goToTab(e.target.value), children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: id, children: l }, "mobile-field-" + id)) })
+      ] }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
+        !projectId && !mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hvilket prosjekt vil du jobbe i?" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "mobileProjectChooserIntro", children: "Velg aktivt prosjekt f\xF8rst. Avsluttede prosjekter ligger i prosjektlisten/arkivet." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "S\xF8k etter prosjekt, kunde eller adresse", value: projectSearch, onChange: setProjectSearch }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectChooserActions", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadProjects(authUser, true), children: "Oppdater liste" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
+              createNewProject();
+              setTab("prosjekt");
+            }, children: "+ Nytt prosjekt" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectList", children: [
+            activeMobileProjectRows.slice(0, 8).map(({ row: p, listProject, listStatus, unreadForAdminInList }) => {
+              const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(", ");
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectPickCard", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectPickCardTop", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.title || listProject.projectName || "Uten navn" }),
+                    listProject.customer && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                      "Kunde: ",
+                      listProject.customer
+                    ] }),
+                    locationLine && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: locationLine }),
+                    unreadForAdminInList > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { color: "#991b1b", fontWeight: 900 }, children: [
+                      "\u{1F4AC} ",
+                      unreadForAdminInList,
+                      " ulest fra kunde"
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "mobileProjectPickStatus", children: [
+                    listStatus.icon,
+                    " ",
+                    listStatus.label
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectPickActions", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => openProjectById(p.id, "prosjekt"), children: "\xC5pne" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(p.id, "bilder"), children: "Bilder" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(p.id, "sjekklister"), children: "Sjekklister" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(p.id, "chat"), children: "Chat" })
+                ] })
+              ] }, `mobile-pick-${p.id}`);
+            }),
+            projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen prosjekter hentet enn\xE5. Trykk Oppdater liste." }),
+            projects.length > 0 && activeMobileProjectRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen aktive prosjekter matcher s\xF8ket. Avsluttede prosjekter finnes fortsatt i prosjektlisten/arkivet." })
+          ] })
+        ] }),
+        projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileCurrentProjectBar", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Du jobber i" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: project.projectName || project.address || "\xC5pent prosjekt" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileCurrentProjectActions", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => {
+              setProjectId(null);
+              setTab("prosjekt");
+            }, children: "Bytt prosjekt" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("bilder"), children: "G\xE5 til bilder" })
+          ] })
+        ] }),
+        projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: `${currentStatus.icon} Prosjektstatus: ${currentStatus.label}`, icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `statusBadge status-${currentStatus.tone}`, style: { display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "999px", fontWeight: 700, marginBottom: "10px", border: "1px solid #dbe7ec", ...statusStyle(currentStatus.tone) }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: currentStatus.icon }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: currentStatus.label })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectLocked ? `Prosjektet ble l\xE5st${project.lockedAt ? " " + new Date(project.lockedAt).toLocaleString("no-NO") : ""}${project.lockedBy ? " av " + project.lockedBy : ""}. L\xE5s opp prosjektet hvis du trenger \xE5 gj\xF8re endringer.` : "Prosjektet er \xE5pent for endringer. N\xE5r prosjektet er ferdig og overlevert kan det avsluttes og l\xE5ses." }),
+          projectHasOvertagelse() && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "Overtagelse er registrert",
+            overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
+            "."
+          ] }),
+          totalChatCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "\u{1F4AC} Chat: ",
+            totalChatCount,
+            " melding",
+            totalChatCount === 1 ? "" : "er",
+            " totalt",
+            customerChatCount > 0 ? ` \xB7 ${customerChatCount} fra kunde` : "",
+            unreadForAdmin > 0 ? ` \xB7 ${unreadForAdmin} ulest` : "",
+            latestChatMessage?.created ? ` \xB7 siste ${new Date(latestChatMessage.created).toLocaleString("no-NO")}` : "",
+            "."
+          ] })
+        ] }),
+        tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Prosjektansvarlig", value: project.responsible, onChange: (v) => setProject({ ...project, responsible: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato", type: "date", value: project.date, onChange: (v) => setProject({ ...project, date: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn p\xE5 prosjekt", value: project.projectName, onChange: (v) => setProject({ ...project, projectName: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Adresse", value: project.address, onChange: (v) => setProject({ ...project, address: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Postnr.", value: project.postnr || "", onChange: (v) => setProject({ ...project, postnr: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Poststed / by", value: project.city || "", onChange: (v) => setProject({ ...project, city: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde", value: project.customer, onChange: (v) => setProject({ ...project, customer: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde e-post", type: "email", value: project.customerEmail || "", onChange: (v) => setProject({ ...project, customerEmail: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) })
+        ] }) }) }),
+        tab === "firma" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Firmaprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Building2, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Firmaprofilen lagres p\xE5 brukeren din og brukes automatisk i prosjekter og rapporter." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "two", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "logoBox", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+                " Last opp firmalogo",
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", onChange: (e) => uploadLogo(e.target.files?.[0]) })
+              ] }),
+              company.logoUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setCompany({ ...company, logoUrl: "" }), children: "Fjern logo" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Firmanavn", value: company.companyName, onChange: (v) => setCompany({ ...company, companyName: v }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Org.nr", value: company.orgNumber, onChange: (v) => setCompany({ ...company, orgNumber: v }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Adresse", value: company.address, onChange: (v) => setCompany({ ...company, address: v }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Telefon", value: company.phone, onChange: (v) => setCompany({ ...company, phone: v }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post", value: company.email, onChange: (v) => setCompany({ ...company, email: v }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hjemmeside", value: company.website, onChange: (v) => setCompany({ ...company, website: v }) })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProfile, children: "Lagre firmaprofil" })
+        ] }),
+        tab === "innlogging" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "Du er logget inn som ",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: authUser?.email }),
+            ". Prosjektlisten viser kun dine prosjekter. Delingslenker kan fortsatt \xE5pnes av kunde uten innlogging."
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn", value: user.name, onChange: (v) => setUser({ ...user, name: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post i rapport", value: user.email, onChange: (v) => setUser({ ...user, email: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle", value: user.role, options: roles, onChange: (v) => setUser({ ...user, role: v }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
+        ] }),
+        tab === "prosjektering" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektering", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Angi fall som forholdstall, for eksempel 1:50 i dusjsone og 1:100 utenfor dusjsone." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fall i dusjsone", value: project.fallDusj || "", onChange: (v) => setProject({ ...project, fallDusj: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fall utenfor dusjsone / v\xE5tsone", value: project.fallUtenfor || "", onChange: (v) => setProject({ ...project, fallUtenfor: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Slukplassering", value: project.sluk, onChange: (v) => setProject({ ...project, sluk: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Terskelh\xF8yde", value: project.terskel, onChange: (v) => setProject({ ...project, terskel: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Membranl\xF8sning", value: project.membran, onChange: (v) => setProject({ ...project, membran: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar / avvik", value: project.prosjekteringKommentar, onChange: (v) => setProject({ ...project, prosjekteringKommentar: v }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Egne prosjekteringspunkter" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Legg til egne punkter som skal f\xF8lge prosjektet og vises i rapporten hvis de er fylt ut." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: addProsjekteringPunkt, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+              " Legg til punkt"
+            ] }),
+            (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).map((point) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Punkt / tittel", value: point.title || "", onChange: (v) => updateProsjekteringPunkt(point.id, { title: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Verdi / beskrivelse", value: point.value || "", onChange: (v) => updateProsjekteringPunkt(point.id, { value: v }) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeProsjekteringPunkt(point.id), children: "Fjern punkt" })
+            ] }, point.id))
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+            " Last opp tegning / bilde",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addPhoto("Prosjektering", e.target.files) })
+          ] })
+        ] }),
+        tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: productSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
+            const doc = productDocs[i] || {};
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: i })
+              ] }),
+              checked[i] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: doc.fdvUrl || "", onChange: (v) => updateProductDoc(i, { fdvUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: doc.databladUrl || "", onChange: (v) => updateProductDoc(i, { databladUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: doc.dopUrl || "", onChange: (v) => updateProductDoc(i, { dopUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: doc.epdUrl || "", onChange: (v) => updateProductDoc(i, { epdUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: doc.sikkerhetsdatabladUrl || "", onChange: (v) => updateProductDoc(i, { sikkerhetsdatabladUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: doc.comment || "", onChange: (v) => updateProductDoc(i, { comment: v }) })
+                ] }),
+                doc.fdvSource === "product-master" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "Dokumentlinker er hentet automatisk fra produktmaster." }),
+                doc.fdvSource === "admin-register" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "FDV-link er hentet automatisk fra admin FDV-register." })
+              ] })
+            ] }, i);
+          }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", { children: [
+              "Andre produkter i ",
+              s.title
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk dette hvis produktet ikke ligger i standardlisten for denne kategorien." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => addManualProduct(s.title), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+              " Legg til annet produkt"
+            ] }),
+            ((manualProducts || {})[s.title] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
+            ((manualProducts || {})[s.title] || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: p.comment || "", onChange: (v) => updateManualProduct(s.title, p.id, { comment: v }) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeManualProduct(s.title, p.id), children: "Fjern produkt" })
+            ] }, p.id))
+          ] })
+        ] }, s.title)) }),
+        tab === "overflater" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Overflateprodukter", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
+        tab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bildedokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 16 }),
+              " ",
+              c
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde eller velg fra galleri" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
+          ] }, c)) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
+        ] }),
+        tab === "tilgang" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilgang og deling", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Administrer tilgang til prosjektet. Kunde f\xE5r egen kundelink med rapport, tilbud/kontrakt og chat. Underentrepren\xF8rer kan bidra med dokumentasjon via egen tilgang." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: accessRoleInfo.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.role }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: r.text })
+          ] }, r.role)) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => setAccess([...access, { id: uid(), name: "", email: "", role: "Underleverand\xF8r" }]), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+              " Legg til person/firma"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => copyAccessLink("kunde"), children: "Del med kunde" })
+          ] }),
+          access.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen ekstra tilganger er lagt til enn\xE5." }),
+          access.map((a) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn/firma", value: a.name, onChange: (v) => setAccess(access.map((x) => x.id === a.id ? { ...x, name: v } : x)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post", value: a.email, onChange: (v) => setAccess(access.map((x) => x.id === a.id ? { ...x, email: v } : x)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle", value: a.role, options: roles, onChange: (v) => setAccess(access.map((x) => x.id === a.id ? { ...x, role: v } : x)) })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: accessRoleInfo.find((r) => r.role === a.role)?.text || "" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => copyAccessLink(a.role), children: "Del med denne personen" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setAccess(access.filter((x) => x.id !== a.id)), children: "Fjern" })
+            ] })
+          ] }, a.id))
+        ] }),
+        tab === "installasjoner" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Fag, deler og utstyr", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => setInst((prev) => [...prev, { id: uid(), category: "R\xF8rlegger", name: "", qty: "", supplier: "", desc: "", fdvUrl: "", photos: [], by: user.name || "Ukjent", created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO") }]), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+            " Legg til post"
+          ] }),
+          inst.map((x) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Kategori", value: x.category, options: installCats, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, category: v } : i)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn/produkt", value: x.name, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, name: v } : i)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Antall/mengde", value: x.qty, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, qty: v } : i)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverand\xF8r", value: x.supplier, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, supplier: v } : i)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Beskrivelse/plassering", value: x.desc, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, desc: v } : i)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: x.fdvUrl || "", onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, fdvUrl: v } : i)) })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+              " Last opp bilder",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: async (e) => {
+                const imgs = await uploadImages(e.target.files, "installasjoner");
+                setInst(inst.map((i) => i.id === x.id ? { ...i, photos: [...i.photos || [], ...imgs] } : i));
+              } })
+            ] }),
+            (x.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+              "\u{1F4F7} ",
+              (x.photos || []).length,
+              " bilder lagt til"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos", children: (x.photos || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name })
+            ] }, p.id)) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+              "Lagt inn av ",
+              x.by,
+              " \xB7 ",
+              x.created
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setInst(inst.filter((i) => i.id !== x.id)), children: "Fjern" })
+          ] }, x.id))
+        ] }),
+        tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            ChecklistEditor,
+            {
+              checklist,
+              setChecklistValue,
+              addChecklistPhoto,
+              addFiles,
+              files,
+              setFiles
+            }
+          )
+        ] }),
+        tab === "tilbud" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilbud / kontrakt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her legger du inn tilbud, kontrakt og avtaleendringer. Kunde f\xE5r se dette i kundelinken n\xE5r det finnes innhold eller vedlegg. Huk av hvis sammendraget ogs\xE5 skal med i vanlig rapport/PDF." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Tillegg", value: tilbud.tillegg || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, tillegg: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Fradrag", value: tilbud.fradrag || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, fradrag: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Avtaleendringer / kommentar", value: tilbud.kommentar || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, kommentar: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" },
+                  checked: !!tilbud.enabled,
+                  onChange: (e) => setTilbud({ ...emptyTilbud(), ...tilbud, enabled: e.target.checked })
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Ta med sammendrag i rapport" })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Last opp tilbud, kontrakt eller andre avtaledokumenter. Vedleggene lagres p\xE5 prosjektet og vises i kundelinken. Underentrepren\xF8r har ikke tilgang til tilbud/kontrakt." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+              " Last opp tilbud / kontrakt",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", multiple: true, onChange: (e) => uploadTilbudFiles(e.target.files) })
+            ] }),
+            (tilbud.files || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen tilbud eller kontrakter er lastet opp enn\xE5." }),
+            (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: f.name }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                "Lastet opp av ",
+                f.by || "Ukjent",
+                " \xB7 ",
+                f.created
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", children: "\xC5pne" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setTilbud({ ...emptyTilbud(), ...tilbud, files: (tilbud.files || []).filter((x) => x.id !== f.id) }), children: "Fjern" })
+            ] }, f.id))
+          ] })
+        ] }),
+        tab === "overtagelse" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Overtagelse og signering", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne ved sluttbefaring og overlevering. N\xE5r begge signaturer er fylt ut kan prosjektet fullf\xF8res og l\xE5ses." }),
+          isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "\u{1F512} Prosjektet er l\xE5st. Overtagelsen kan vises i rapporten, men endringer krever at prosjektet l\xE5ses opp." }),
+          projectHasOvertagelse() && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "\u2705 Overtagelse registrert",
+            overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
+            "."
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato for overtagelse", type: "date", value: overtagelse.dato || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, dato: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" },
+                  checked: !!overtagelse.enabled,
+                  onChange: (e) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, enabled: e.target.checked })
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Ta med overtagelse i rapport" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar / merknader fra sluttbefaring", value: overtagelse.kommentar || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, kommentar: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Signaturer" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Signer direkte p\xE5 skjermen med finger p\xE5 telefon eller mus p\xE5 PC. Navn kan fylles ut i tillegg for tydelig dokumentasjon." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn utf\xF8rende", value: overtagelse.signUtf\u00F8rende || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, signUtf\u00F8rende: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn kunde", value: overtagelse.signKunde || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, signKunde: v }) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid", style: { marginTop: "14px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  SignaturePad,
+                  {
+                    label: "Signatur utf\xF8rende",
+                    value: overtagelse.signUtf\u00F8rendeImage || "",
+                    onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, signUtf\u00F8rendeImage: v })
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  SignaturePad,
+                  {
+                    label: "Signatur kunde",
+                    value: overtagelse.signKundeImage || "",
+                    onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, signKundeImage: v })
+                  }
+                )
+              ] })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: "Lagre overtagelse" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: completeOvertagelseAndLock, disabled: isProjectLocked, children: "Fullf\xF8r overtagelse og l\xE5s prosjekt" })
+          ] })
+        ] }),
+        tab === "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : totalChatCount > 0 ? `Chat (${totalChatCount} meldinger)` : "Chat", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Chatten oppdateres automatisk live. Nye kundemeldinger st\xE5r som ulest til du svarer, klikker p\xE5 meldingen eller trykker Marker alle som lest. Skrivefeltet beholdes ved refresh." }),
+          totalChatCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", style: { fontWeight: 700 }, children: [
+            "\u{1F4AC} Det finnes ",
+            totalChatCount,
+            " melding",
+            totalChatCount === 1 ? "" : "er",
+            " totalt i chatten",
+            customerChatCount > 0 ? `, hvorav ${customerChatCount} fra kunde` : "",
+            unreadForAdmin > 0 ? ` \xB7 ${unreadForAdmin} ulest fra kunde` : " \xB7 alt er lest",
+            "."
+          ] }),
+          !hasValue(project.customerEmail) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { fontWeight: 700 }, children: "\u26A0\uFE0F Legg inn kunde e-post i Prosjektinformasjon for at kunde skal f\xE5 e-postvarsling ved nye chatmeldinger." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              "input",
+              {
+                type: "checkbox",
+                style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" },
+                checked: !!projectLog.enabled,
+                onChange: (e) => setProjectLog((prev) => ({ ...prev, enabled: e.target.checked }))
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Ta med chat i rapport" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Ny melding", value: projectLog.draft || "", onChange: (v) => setProjectLog((prev) => ({ ...prev, draft: v })) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "12px", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", style: { marginBottom: 0 }, children: [
+              "\u{1F4F7} Last opp bilde",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "input",
+                {
+                  id: "admin-chat-image-input",
+                  type: "file",
+                  accept: "image/*",
+                  onChange: (e) => setChatUploadFile(e.target.files?.[0] || null)
+                }
+              ),
+              chatUploadFile && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "6px" }, children: [
+                "Valgt: ",
+                chatUploadFile.name
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: addProjectLogMessage, children: "Send melding" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => refreshProjectFromCloud(false), children: "Oppdater chat" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", disabled: unreadForAdmin === 0, onClick: () => markChatAsRead("admin"), children: "Marker alle som lest" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setProjectLog((prev) => ({ ...prev, draft: "" })), children: "T\xF8m skrivefelt" })
+          ] }),
+          (projectLog.messages || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen meldinger enn\xE5." }),
+          (projectLog.messages || []).slice().reverse().map((m) => {
+            const isUnread = m.role === "kunde" && (!lastReadByAdmin || (m.created || "") > lastReadByAdmin);
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", onClick: () => isUnread && markChatAsRead("admin"), style: isUnread ? { borderColor: "#fecaca", background: "#fff7f7", cursor: "pointer" } : void 0, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+                m.by || "Ukjent",
+                " ",
+                m.role === "kunde" ? "\xB7 Kunde" : "\xB7 Utf\xF8rende"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                m.created ? new Date(m.created).toLocaleString("no-NO") : "",
+                m.role === "kunde" ? isUnread ? " \xB7 Ulest for admin" : " \xB7 Lest av admin" : !lastReadByCustomer || (m.created || "") > lastReadByCustomer ? " \xB7 Ulest for kunde" : " \xB7 Lest av kunde"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: m.text }),
+              m.imageUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "10px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: m.imageUrl, target: "_blank", rel: "noreferrer", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "img",
+                  {
+                    src: m.imageUrl,
+                    alt: m.imageName || "Chat bilde",
+                    style: { maxWidth: "280px", width: "100%", borderRadius: "12px", border: "1px solid #dbe7ec" }
+                  }
+                ) }),
+                m.imageName && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { style: { display: "block", marginTop: "6px" }, children: m.imageName })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: (e) => {
+                e.stopPropagation();
+                removeProjectLogMessage(m.id);
+              }, children: "Fjern melding" })
+            ] }, m.id);
+          })
+        ] }),
+        tab === "internt" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Interne notater", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette feltet er kun internt. Det vises ikke i kundelink og tas ikke med i rapport." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Interne notater", value: internalNotes || "", onChange: setInternalNotes }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "12px", marginTop: "12px", flexWrap: "wrap" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: saveProject, children: "Lagre interne notater" }) })
+        ] }),
+        tab === "prosjektliste" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektliste", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.total }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Prosjekter totalt" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.visible }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Vises med filter" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.unread }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Uleste kundemeldinger" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.active }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\xC5pne / p\xE5g\xE5ende" })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "S\xF8k i prosjektliste", value: projectSearch, onChange: setProjectSearch }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "open", "progress", "done", "locked"] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListToolbar", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => loadProjects(authUser, true), children: "Oppdater liste" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectUnreadOnly ? "" : "secondary", onClick: () => setProjectUnreadOnly((v) => !v), children: projectUnreadOnly ? "Vis alle prosjekter" : "Vis kun uleste" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
+              setProjectSearch("");
+              setProjectStatusFilter("alle");
+              setProjectUnreadOnly(false);
+            }, children: "Nullstill filter" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Statusfilter: open = \xE5pen, progress = p\xE5g\xE5r, done = ferdigstilt, locked = avsluttet/l\xE5st." }),
+          projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter hentet enn\xE5." }),
+          projects.length > 0 && filteredProjectListRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter matcher s\xF8ket eller filteret." }),
+          filteredProjectListRows.map(({ row: p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary }) => {
+            const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(", ");
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item projectListCard", style: unreadForAdminInList > 0 ? { borderColor: "#fecaca", background: "#fff7f7" } : void 0, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListCardTop", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { style: { fontSize: "18px" }, children: p.title || listProject.projectName || "Uten navn" }),
+                  listProject.customer && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { style: { margin: "6px 0 0" }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Kunde:" }),
+                    " ",
+                    listProject.customer
+                  ] }),
+                  locationLine && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: locationLine })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListBadges", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: `statusBadge status-${listStatus.tone}`, style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 700, border: "1px solid #dbe7ec", width: "fit-content", ...statusStyle(listStatus.tone) }, children: [
+                    listStatus.icon,
+                    " ",
+                    listStatus.label
+                  ] }),
+                  unreadForAdminInList > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content" }, children: [
+                    "\u{1F4AC} ",
+                    unreadForAdminInList,
+                    " ulest"
+                  ] }),
+                  imageSummary.total > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
+                    "\u{1F4F7} ",
+                    imageSummary.total,
+                    " bilder"
+                  ] })
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListMetaCards", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Oppdatert" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: new Date(p.updated_at || p.created_at).toLocaleString("no-NO") })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Chat" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: latestMessage?.created ? `Siste: ${new Date(latestMessage.created).toLocaleString("no-NO")}` : "Ingen meldinger" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Ansvarlig" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: listProject.responsible || "Ikke fylt ut" })
+                ] })
+              ] }),
+              imageSummary.total > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageCounts", children: [
+                  imageSummary.photos > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
+                    "\u{1F4C1} Bilder: ",
+                    imageSummary.photos
+                  ] }),
+                  imageSummary.checklist > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
+                    "\u2705 Sjekkliste: ",
+                    imageSummary.checklist
+                  ] }),
+                  imageSummary.install > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
+                    "\u{1F9F0} Fag/utstyr: ",
+                    imageSummary.install
+                  ] }),
+                  imageSummary.chat > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
+                    "\u{1F4AC} Chat: ",
+                    imageSummary.chat
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageStrip", "aria-label": "Bildeoversikt for prosjekt", children: [
+                  imageSummary.previews.map((img, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageThumb", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: img.url, alt: img.label || img.source || "Prosjektbilde" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: img.source })
+                  ] }, `${p.id}-img-${index}`)),
+                  imageSummary.total > imageSummary.previews.length && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageThumb", style: { display: "flex", alignItems: "center", justifyContent: "center", height: "58px", border: "1px dashed #c7d6dd", borderRadius: "12px", background: "#f8fafc", fontWeight: 800 }, children: [
+                    "+",
+                    imageSummary.total - imageSummary.previews.length
+                  ] })
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListActions", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => openProjectById(p.id), children: "\u{1F4C2} \xC5pne" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "chat"), children: "\u{1F4AC} Chat" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => deleteProject(p.id), children: "\u{1F5D1}\uFE0F Slett" })
+              ] })
+            ] }, p.id);
+          })
+        ] }),
+        tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
+        tab === "admin" && isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan administrator godkjenne brukere og vedlikeholde felles FDV-register. FDV-linker fra registeret fylles automatisk inn n\xE5r et standardprodukt krysses av i et prosjekt, men kan fortsatt overstyres manuelt per prosjekt." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Forutsetter at Supabase-policy tillater admin \xE5 lese og oppdatere profiles." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
+            adminUsers.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen brukere hentet enn\xE5. Trykk Oppdater brukerliste." }),
+            adminUsers.map((u) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: u.email || "Ukjent e-post" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                u.company_name ? `Firma: ${u.company_name} \xB7 ` : "",
+                "Status: ",
+                u.approved ? "Godkjent" : "Venter p\xE5 godkjenning"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
+                !u.approved && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => approveAdminUser(u.id), children: "Godkjenn bruker" }),
+                u.approved && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => revokeAdminUser(u.id), children: "Fjern godkjenning" })
+              ] })
+            ] }, u.id))
+          ] }),
+/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Admin Produktmaster" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette er produktdatabasen fra prisfilen, uten priser. Legg inn FDV, datablad, DOP, EPD og sikkerhetsdatablad her. N\xE5r et standardprodukt velges i prosjektet, henter appen dokumentlinker automatisk fra denne masteren." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: productMasterStats.total }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Produkter/varianter" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: productMasterStats.appMatches }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Koblet mot app" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: productMasterStats.withDocs }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Med dokumenter" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: productMasterLoading ? "..." : "OK" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Status" })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadProductMaster(true), children: productMasterLoading ? "Henter produktmaster..." : "Oppdater produktmaster" }) }),
+            (productMaster || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter funnet i produktmaster. Kj\xF8r SQL-filen fra flisLAB-importen f\xF8rst." }),
+            (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: row.product_name }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                row.product_no,
+                " \xB7 ",
+                row.category || "Uten kategori",
+                row.app_match_name ? ` \xB7 App: ${row.app_match_name}` : ""
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link", value: row.fdv_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { fdv_url: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: row.datablad_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { datablad_url: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: row.dop_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { dop_url: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: row.epd_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { epd_url: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: row.sikkerhetsdatablad_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { sikkerhetsdatablad_url: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Vedlagt dokument / samlet PDF", value: row.document_file_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { document_file_url: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kommentar", value: row.comment || "", onChange: (v) => updateProductMasterLocal(row.product_no, { comment: v }) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => saveProductMasterRow(row), children: "Lagre dokumenter" }),
+                row.updated_at && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                  "Sist oppdatert: ",
+                  new Date(row.updated_at).toLocaleString("no-NO")
+                ] })
+              ] })
+            ] }, "pm-" + row.product_no))
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bottomAppNav", "aria-label": "Hovednavigasjon mobil", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: tab === "prosjektliste" ? "active" : "secondary", onClick: () => goToTab("prosjektliste"), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u{1F4C1}" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Liste" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: tab === "prosjekt" ? "active" : "secondary", onClick: () => goToTab("prosjekt"), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u270F\uFE0F" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Info" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: tab === "chat" ? "active" : "secondary", onClick: () => goToTab("chat"), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u{1F4AC}" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: unreadForAdmin > 0 ? `${unreadForAdmin}` : "Chat" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: tab === "bilder" ? "active" : "secondary", onClick: () => goToTab("bilder"), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u{1F4F7}" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Foto" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: tab === "rapport" ? "active" : "secondary", onClick: () => goToTab("rapport"), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u{1F4C4}" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "PDF" })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bottomPrevNext", style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "12px",
+        maxWidth: "1180px",
+        margin: "18px auto 28px",
+        padding: "0 18px",
+        flexWrap: "wrap"
+      }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+          "button",
+          {
+            type: "button",
+            className: "secondary",
+            disabled: !previousTab,
+            onClick: () => previousTab && goToTab(previousTab[0]),
+            style: { flex: "1 1 150px" },
+            children: [
+              "\u2190 Forrige",
+              previousTab ? `: ${previousTab[1]}` : ""
+            ]
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+          "button",
+          {
+            type: "button",
+            onClick: () => nextTab && goToTab(nextTab[0]),
+            disabled: !nextTab,
+            style: { flex: "1 1 150px" },
+            children: [
+              "Neste",
+              nextTab ? `: ${nextTab[1]}` : "",
+              " \u2192"
+            ]
+          }
+        )
+      ] })
+    ] });
   }
-
-  const { data:publicData } = supabase.storage
-    .from('chat-images')
-    .getPublicUrl(data.path);
-
-  return {
-    imageUrl: publicData.publicUrl,
-    imageName: file.name,
-    imagePath: data.path
-  };
-}
-
-function Brand({logo,name}) { return <div style={{ width:"260px", height:"80px", overflow:"hidden", display:"flex", alignItems:"center" }}><img src={logo ? logo : "/expo-logo.png"} alt={name || "Expo Proffsenter"} style={{ maxWidth:"100%", maxHeight:"100%", objectFit:"contain" }}/></div>; }
-function Section({title,icon,children}) { return <section><h2>{icon}{title}</h2>{children}</section>; }
-function Grid({children}) { return <div className="grid">{children}</div>; }
-function Input({label,value,onChange,type='text',onKeyDown,autoComplete}) { return <label><span>{label}</span><input type={type} value={value} autoComplete={autoComplete} onKeyDown={onKeyDown} onChange={e=>onChange(e.target.value)}/></label>; }
-function Textarea({label,value,onChange}) { return <label><span>{label}</span><textarea value={value} onChange={e=>onChange(e.target.value)} /></label>; }
-function Select({label,value,onChange,options}) { return <label><span>{label}</span><select value={value} onChange={e=>onChange(e.target.value)}>{options.map(o=><option key={o}>{o}</option>)}</select></label>; }
-function PhotoGrid({photos,setPhotos}) { return <div className="photos">{photos.map(p=><div className="photo" key={p.id}><img src={p.url}/><b>{p.cat}</b><small>{p.created}</small><textarea placeholder="Kommentar" value={p.comment} onChange={e=>setPhotos(photos.map(x=>x.id===p.id?{...x,comment:e.target.value}:x))}/><button className="secondary" onClick={()=>setPhotos(photos.filter(x=>x.id!==p.id))}><Trash2 size={16}/> Fjern</button></div>)}</div>; }
-
-
-function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles }) {
-  const [openCategories, setOpenCategories] = React.useState(() => ({ [checklistTemplate[0]?.category || '']: true }));
-
-  const groupStats = (group) => {
-    const total = group.items.length;
-    const done = group.items.filter(item => hasValue(checklist?.[group.category]?.[item]?.status)).length;
-    const deviations = group.items.filter(item => checklist?.[group.category]?.[item]?.status === 'Avvik').length;
-    const photos = group.items.reduce((sum, item) => sum + ((checklist?.[group.category]?.[item]?.photos || []).length), 0);
-    return { total, done, missing: Math.max(0, total - done), deviations, photos };
-  };
-
-  const totalStats = checklistTemplate.reduce((acc, group) => {
-    const stats = groupStats(group);
-    acc.total += stats.total;
-    acc.done += stats.done;
-    acc.missing += stats.missing;
-    acc.deviations += stats.deviations;
-    acc.photos += stats.photos;
-    return acc;
-  }, { total:0, done:0, missing:0, deviations:0, photos:0 });
-
-  const percent = totalStats.total ? Math.round((totalStats.done / totalStats.total) * 100) : 0;
-  const toggleCategory = (category) => setOpenCategories(prev => ({ ...prev, [category]: !prev[category] }));
-  const expandAll = () => setOpenCategories(Object.fromEntries(checklistTemplate.map(group => [group.category, true])));
-  const collapseDone = () => setOpenCategories(Object.fromEntries(checklistTemplate.map(group => {
-    const stats = groupStats(group);
-    return [group.category, stats.missing > 0 || stats.deviations > 0];
-  })));
-
-  return <>
-    <div className="checklistSummaryCard">
-      <div>
-        <b>Sjekklistefremdrift</b>
-        <p>{totalStats.done} av {totalStats.total} punkter vurdert · {percent}% ferdig</p>
-      </div>
-      <div className="checklistProgress"><span style={{ width: `${percent}%` }}/></div>
-      <div className="checklistSummaryBadges">
-        <span>✅ {totalStats.done} utfylt</span>
-        <span>⚪ {totalStats.missing} mangler</span>
-        <span>⚠️ {totalStats.deviations} avvik</span>
-        <span>📷 {totalStats.photos} bilder</span>
-      </div>
-      <div className="checklistSummaryActions">
-        <button type="button" className="secondary" onClick={expandAll}>Åpne alle</button>
-        <button type="button" className="secondary" onClick={collapseDone}>Vis det som gjenstår</button>
-      </div>
-    </div>
-
-    <div className="checklistList checklistAccordion">
-      {checklistTemplate.map(group => {
+  async function uploadChatImage(file, projectId = "uten-prosjekt", sender = "chat") {
+    if (!file) return null;
+    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+    const ext = cleanName.includes(".") ? cleanName.split(".").pop() : "jpg";
+    const safeProjectId = String(projectId || "uten-prosjekt").replace(/[^a-zA-Z0-9._-]/g, "-");
+    const safeSender = String(sender || "chat").replace(/[^a-zA-Z0-9._-]/g, "-");
+    const fileName = `${safeProjectId}/${safeSender}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { data, error } = await supabase.storage.from("chat-images").upload(fileName, file, { cacheControl: "3600", upsert: false });
+    if (error) {
+      console.error(error);
+      alert("Kunne ikke laste opp bilde: " + error.message);
+      return null;
+    }
+    const { data: publicData } = supabase.storage.from("chat-images").getPublicUrl(data.path);
+    return {
+      imageUrl: publicData.publicUrl,
+      imageName: file.name,
+      imagePath: data.path
+    };
+  }
+  function Brand({ logo, name }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: "260px", height: "80px", overflow: "hidden", display: "flex", alignItems: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: logo ? logo : "/expo-logo.png", alt: name || "Expo Proffsenter", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) });
+  }
+  function Section({ title, icon, children }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h2", { children: [
+        icon,
+        title
+      ] }),
+      children
+    ] });
+  }
+  function Grid({ children }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "grid", children });
+  }
+  function Input({ label, value, onChange, type = "text", onKeyDown, autoComplete }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type, value, autoComplete, onKeyDown, onChange: (e) => onChange(e.target.value) })
+    ] });
+  }
+  function Textarea({ label, value, onChange }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { value, onChange: (e) => onChange(e.target.value) })
+    ] });
+  }
+  function Select({ label, value, onChange, options }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value, onChange: (e) => onChange(e.target.value), children: options.map((o) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { children: o }, o)) })
+    ] });
+  }
+  function PhotoGrid({ photos, setPhotos }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos", children: photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.cat }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.created }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { placeholder: "Kommentar", value: p.comment, onChange: (e) => setPhotos(photos.map((x) => x.id === p.id ? { ...x, comment: e.target.value } : x)) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { className: "secondary", onClick: () => setPhotos(photos.filter((x) => x.id !== p.id)), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Trash2, { size: 16 }),
+        " Fjern"
+      ] })
+    ] }, p.id)) });
+  }
+  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles }) {
+    const [openCategories, setOpenCategories] = import_react.default.useState(() => ({ [checklistTemplate[0]?.category || ""]: true }));
+    const groupStats = (group) => {
+      const total = group.items.length;
+      const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
+      const deviations = group.items.filter((item) => checklist?.[group.category]?.[item]?.status === "Avvik").length;
+      const photos = group.items.reduce((sum, item) => sum + (checklist?.[group.category]?.[item]?.photos || []).length, 0);
+      return { total, done, missing: Math.max(0, total - done), deviations, photos };
+    };
+    const totalStats = checklistTemplate.reduce((acc, group) => {
+      const stats = groupStats(group);
+      acc.total += stats.total;
+      acc.done += stats.done;
+      acc.missing += stats.missing;
+      acc.deviations += stats.deviations;
+      acc.photos += stats.photos;
+      return acc;
+    }, { total: 0, done: 0, missing: 0, deviations: 0, photos: 0 });
+    const percent = totalStats.total ? Math.round(totalStats.done / totalStats.total * 100) : 0;
+    const toggleCategory = (category) => setOpenCategories((prev) => ({ ...prev, [category]: !prev[category] }));
+    const expandAll = () => setOpenCategories(Object.fromEntries(checklistTemplate.map((group) => [group.category, true])));
+    const collapseDone = () => setOpenCategories(Object.fromEntries(checklistTemplate.map((group) => {
+      const stats = groupStats(group);
+      return [group.category, stats.missing > 0 || stats.deviations > 0];
+    })));
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryCard", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Sjekklistefremdrift" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            totalStats.done,
+            " av ",
+            totalStats.total,
+            " punkter vurdert \xB7 ",
+            percent,
+            "% ferdig"
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistProgress", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { width: `${percent}%` } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryBadges", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+            "\u2705 ",
+            totalStats.done,
+            " utfylt"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+            "\u26AA ",
+            totalStats.missing,
+            " mangler"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+            "\u26A0\uFE0F ",
+            totalStats.deviations,
+            " avvik"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+            "\u{1F4F7} ",
+            totalStats.photos,
+            " bilder"
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryActions", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: expandAll, children: "\xC5pne alle" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: collapseDone, children: "Vis det som gjenst\xE5r" })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList checklistAccordion", children: checklistTemplate.map((group) => {
         const stats = groupStats(group);
         const isOpen = openCategories[group.category] !== false;
-        const groupTone = stats.deviations > 0 ? 'avvik' : stats.missing === 0 ? 'done' : stats.done > 0 ? 'progress' : 'missing';
-        return <div className={`item checklistGroup checklistGroup-${groupTone}`} key={group.category}>
-          <button type="button" className="checklistGroupHeader" onClick={()=>toggleCategory(group.category)} aria-expanded={isOpen}>
-            <span className="checklistGroupCaret" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
-            <span className="checklistGroupTitle">
-              <b>{group.category}</b>
-              <small>{stats.done}/{stats.total} utfylt{stats.deviations ? ` · ${stats.deviations} avvik` : ''}{stats.photos ? ` · ${stats.photos} bilder` : ''}</small>
-            </span>
-            <span className={`checklistGroupBadge checklistGroupBadge-${groupTone}`}>
-              {stats.deviations > 0 ? '⚠️ Avvik' : stats.missing === 0 ? '✅ Ferdig' : stats.done > 0 ? '🟡 Pågår' : '⚪ Mangler'}
-            </span>
-          </button>
-
-          {isOpen && <div className="checklistGroupBody">
-            {group.items.map(item => {
-              const value = checklist[group.category]?.[item] || {};
-              const pointTone = value.status === 'Avvik' ? 'avvik' : value.status ? 'done' : 'missing';
-              return <div className={`checklistPoint checklistPoint-${pointTone}`} key={item}>
-                <div className="checklistHeader">
-                  <div className="checklistPointTitle">
-                    <b>{item}</b>
-                    <small>{value.status || 'Ikke vurdert'}{(value.photos||[]).length > 0 ? ` · 📷 ${(value.photos||[]).length} bilder` : ''}</small>
-                  </div>
-                  <div className="checklistStatusButtons">
-                    {['Ok','Ikke aktuelt','Avvik'].map(status => <button
-                      type="button"
-                      key={status}
-                      className={value.status===status ? '' : 'secondary'}
-                      onClick={()=>setChecklistValue(group.category, item, { status })}
-                    >{status}</button>)}
-                  </div>
-                </div>
-                {(value.status || value.comment || (value.photos||[]).length>0) && <Textarea
-                  label="Kommentar"
-                  value={value.comment || ''}
-                  onChange={v=>setChecklistValue(group.category, item, { comment:v })}
-                />}
-                <label className="upload checklistUpload"><Plus size={18}/> Ta bilde / last opp bilde
-                  <input type="file" accept="image/*" multiple onChange={e=>addChecklistPhoto(group.category, item, e.target.files)}/>
-                </label>
-                {(value.photos || []).length > 0 && <div className="photos checklistPhotos">
-                  {value.photos.map(p => <div className="photo" key={p.id}><img src={p.url}/><small>{p.name}</small></div>)}
-                </div>}
-              </div>;
-            })}
-          </div>}
-        </div>;
-      })}
-    </div>
-
-    <Section title="Opplastede sjekklister / vedlegg fra andre fag" icon={<FileText/>}>
-      <label className="upload"><Plus size={18}/> Last opp sjekkliste / vedlegg<input type="file" multiple onChange={e=>addFiles(e.target.files)}/></label>
-      {files.map(f=><div className="file" key={f.id}><b>{f.name}</b><small>Lastet opp av {f.by} · {f.created}</small><a href={f.url} target="_blank">Åpne</a><button className="secondary" onClick={()=>setFiles(files.filter(x=>x.id!==f.id))}>Fjern</button></div>)}
-    </Section>
-  </>;
-}
-
-
-function ChecklistReportSection({checklist}) {
-  const rows = [];
-  Object.entries(checklist || {}).forEach(([category, items]) => {
-    Object.entries(items || {}).forEach(([item, value]) => {
-      if (value?.status || value?.comment || (value?.photos || []).length) {
-        rows.push({ category, item, ...value });
-      }
+        const groupTone = stats.deviations > 0 ? "avvik" : stats.missing === 0 ? "done" : stats.done > 0 ? "progress" : "missing";
+        return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `item checklistGroup checklistGroup-${groupTone}`, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "checklistGroupHeader", onClick: () => toggleCategory(group.category), "aria-expanded": isOpen, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "checklistGroupCaret", "aria-hidden": "true", children: isOpen ? "\u25BE" : "\u25B8" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "checklistGroupTitle", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: group.category }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                stats.done,
+                "/",
+                stats.total,
+                " utfylt",
+                stats.deviations ? ` \xB7 ${stats.deviations} avvik` : "",
+                stats.photos ? ` \xB7 ${stats.photos} bilder` : ""
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "\u26A0\uFE0F Avvik" : stats.missing === 0 ? "\u2705 Ferdig" : stats.done > 0 ? "\u{1F7E1} P\xE5g\xE5r" : "\u26AA Mangler" })
+          ] }),
+          isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.map((item) => {
+            const value = checklist[group.category]?.[item] || {};
+            const pointTone = value.status === "Avvik" ? "avvik" : value.status ? "done" : "missing";
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${pointTone}`, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistHeader", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistPointTitle", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                    value.status || "Ikke vurdert",
+                    (value.photos || []).length > 0 ? ` \xB7 \u{1F4F7} ${(value.photos || []).length} bilder` : ""
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistStatusButtons", children: ["Ok", "Ikke aktuelt", "Avvik"].map((status) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "button",
+                  {
+                    type: "button",
+                    className: value.status === status ? "" : "secondary",
+                    onClick: () => setChecklistValue(group.category, item, { status }),
+                    children: status
+                  },
+                  status
+                )) })
+              ] }),
+              (value.status || value.comment || (value.photos || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                Textarea,
+                {
+                  label: "Kommentar",
+                  value: value.comment || "",
+                  onChange: (v) => setChecklistValue(group.category, item, { comment: v })
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+                " Ta bilde / last opp bilde",
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
+              ] }),
+              (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: value.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name })
+              ] }, p.id)) })
+            ] }, item);
+          }) })
+        ] }, group.category);
+      }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Opplastede sjekklister / vedlegg fra andre fag", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+          " Last opp sjekkliste / vedlegg",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", multiple: true, onChange: (e) => addFiles(e.target.files) })
+        ] }),
+        files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: f.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+            "Lastet opp av ",
+            f.by,
+            " \xB7 ",
+            f.created
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", children: "\xC5pne" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setFiles(files.filter((x) => x.id !== f.id)), children: "Fjern" })
+        ] }, f.id))
+      ] })
+    ] });
+  }
+  function ChecklistReportSection({ checklist }) {
+    const rows = [];
+    Object.entries(checklist || {}).forEach(([category, items]) => {
+      Object.entries(items || {}).forEach(([item, value]) => {
+        if (value?.status || value?.comment || (value?.photos || []).length) {
+          rows.push({ category, item, ...value });
+        }
+      });
     });
-  });
-
-  if (!rows.length) return null;
-  const deviations = rows.filter(r => r.status === 'Avvik');
-
-  return <section>
-    <h2>Sjekkliste</h2>
-    {[...new Set(rows.map(r => r.category))].map(category => <div key={category}>
-      <h3>{category}</h3>
-      {rows.filter(r => r.category === category).map(r => <div className="checklistReportItem" key={r.category + r.item}>
-        <p><b>{r.item}</b> — {r.status || 'Ikke vurdert'}</p>
-        {r.comment && <p>{r.comment}</p>}
-        {(r.photos || []).length > 0 && <div className="photos reportPhotos">
-          {r.photos.map(p => <div className="photo" key={p.id}><img src={p.url} alt={p.name || r.item}/></div>)}
-        </div>}
-      </div>)}
-    </div>)}
-    {deviations.length > 0 && <div>
-      <h2>Avviksliste</h2>
-      {deviations.map(r => <p key={'avvik-' + r.category + r.item}><b>{r.category} / {r.item}:</b> {r.comment || 'Avvik registrert'}</p>)}
-    </div>}
-  </section>;
-}
-
-function Report({company,name,project,selected,manualProducts,other,surf,photos,access,inst,files,checklist,tilbud,overtagelse,projectLog}) {
-  const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, 'Postnr.': project.postnr, 'Poststed / by': project.city, Kunde: project.customer, 'Kunde e-post': project.customerEmail, Dato: project.date, Status: project.locked ? 'Avsluttet / låst' : 'Aktivt', Notater: project.notes };
-  const cats = [...new Set(photos.map(p=>p.cat))];
-  return <div className="report">
-    <section><div className="reportTop"><Brand logo={company.logoUrl} name={name}/><div><h2>{name}</h2>{company.address&&<p>{company.address}</p>}{company.orgNumber&&<p>Org.nr: {company.orgNumber}</p>}{company.phone&&<p>{company.phone}</p>}{company.email&&<p>{company.email}</p>}{company.website&&<p>{company.website}</p>}</div></div><h2>FDV-rapport / Prosjektdokumentasjon</h2>{project.locked && <p style={{ fontWeight:800, letterSpacing:'0.04em' }}>✅ FERDIGSTILT / LÅST</p>}<Grid>{Object.entries(projectFields).map(([k,v])=><div className="out" key={k}><b>{k}</b><p>{v || 'Ikke fylt ut'}</p></div>)}</Grid></section>
-    <section><h2>Prosjektering</h2><Grid>
-      <div className="out"><b>Fall i dusjsone</b><p>{project.fallDusj || 'Ikke oppgitt'}</p></div>
-      <div className="out"><b>Fall utenfor dusjsone / våtsone</b><p>{project.fallUtenfor || 'Ikke oppgitt'}</p></div>
-      {project.fall && <div className="out"><b>Fall mot sluk</b><p>{project.fall}</p></div>}
-      <div className="out"><b>Slukplassering</b><p>{project.sluk || 'Ikke oppgitt'}</p></div>
-      <div className="out"><b>Terskelhøyde</b><p>{project.terskel || 'Ikke oppgitt'}</p></div>
-      <div className="out"><b>Membran</b><p>{project.membran || 'Ikke oppgitt'}</p></div>
-    </Grid>
-    {(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter(p=>hasValue(p.title) || hasValue(p.value)).map(p=><div className="out" key={p.id || p.title}><b>{p.title || 'Eget punkt'}</b><p>{p.value || 'Ikke oppgitt'}</p></div>)}
-    {project.prosjekteringKommentar&&<div className="out"><b>Kommentar / avvik</b><p>{project.prosjekteringKommentar}</p></div>}</section>
-    <section><h2>Produkter / FDV</h2>{selected.map(p=><div className="out" key={p.item}><b>{p.section}</b><p>{p.item}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV</a></p>}{p.databladUrl&&<p><a href={p.databladUrl} target="_blank">Åpne datablad</a></p>}{p.dopUrl&&<p><a href={p.dopUrl} target="_blank">Åpne DOP</a></p>}{p.epdUrl&&<p><a href={p.epdUrl} target="_blank">Åpne EPD</a></p>}{p.sikkerhetsdatabladUrl&&<p><a href={p.sikkerhetsdatabladUrl} target="_blank">Åpne sikkerhetsdatablad</a></p>}{p.documentFileUrl&&<p><a href={p.documentFileUrl} target="_blank">Åpne vedlagt dokument</a></p>}</div>)}{(manualProducts || []).map(p=><div className="out" key={p.id}><b>{p.section || 'Annet produkt'}</b><p>{p.name || 'Uten produktnavn'}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV</a></p>}{p.databladUrl&&<p><a href={p.databladUrl} target="_blank">Åpne datablad</a></p>}{p.dopUrl&&<p><a href={p.dopUrl} target="_blank">Åpne DOP</a></p>}{p.epdUrl&&<p><a href={p.epdUrl} target="_blank">Åpne EPD</a></p>}{p.sikkerhetsdatabladUrl&&<p><a href={p.sikkerhetsdatabladUrl} target="_blank">Åpne sikkerhetsdatablad</a></p>}{p.documentFileUrl&&<p><a href={p.documentFileUrl} target="_blank">Åpne vedlagt dokument</a></p>}</div>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>Tidligere registrert annet produkt under {k}:</b> {v}</p>)}</section>
-    <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
-    <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
-    <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><div className="out" key={i.id}><b>{i.category}:</b><p>{i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>{i.fdvUrl&&<p><a href={i.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}</section>
-    {projectLog?.enabled && (projectLog.messages || []).length > 0 && <section>
-      <h2>Chat</h2>
-      {(projectLog.messages || []).map(m => <div className="out" key={m.id}>
-        <b>{m.by || 'Ukjent'}</b>
-        <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
-        <p>{m.text}</p>
-        {m.imageUrl && <div className="photos reportPhotos"><div className="photo"><img src={m.imageUrl} alt={m.imageName || 'Chat bilde'}/>{m.imageName && <small>{m.imageName}</small>}</div></div>}
-      </div>)}
-    </section>}
-    <ChecklistReportSection checklist={checklist}/>
-    {tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && <section>
-      <h2>Tilbud / kontrakt</h2>
-      <Grid>
-        <InfoCard label="Tillegg" value={tilbud.tillegg}/>
-        <InfoCard label="Fradrag" value={tilbud.fradrag}/>
-        <InfoCard label="Avtaleendringer / kommentar" value={tilbud.kommentar}/>
-      </Grid>
-      {(tilbud.files || []).length > 0 && <div>
-        <h3>Vedlegg</h3>
-        {(tilbud.files || []).map(f=><p key={f.id}><a href={f.url} target="_blank">{f.name}</a></p>)}
-      </div>}
-    </section>}
-    {overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtførendeImage) || hasValue(overtagelse.signKundeImage)) && <section>
-      <h2>Overtagelse</h2>
-      <Grid>
-        <InfoCard label="Dato" value={overtagelse.dato}/>
-        <InfoCard label="Kommentar / merknader" value={overtagelse.kommentar}/>
-        <SignatureCard label="Signatur utførende" name={overtagelse.signUtførende} image={overtagelse.signUtførendeImage}/>
-        <SignatureCard label="Signatur kunde" name={overtagelse.signKunde} image={overtagelse.signKundeImage}/>
-      </Grid>
-    </section>}
-        <section><h2>Sjekklister og vedlegg</h2>{files.map(f=><p key={f.id}>{f.name}</p>)}</section>
-    <section><h2>Prosjekttilgang</h2>{access.map(a=><p key={a.id}>{a.name||a.email} — {a.role}</p>)}</section>
-    <footer>Levert av Expo Proffsenter</footer>
-  </div>;
-}
-
-function hasValue(value) {
-  return value !== undefined && value !== null && String(value).trim() !== '';
-}
-
-function InfoCard({label, value}) {
-  if (!hasValue(value)) return null;
-  return <div className="out"><b>{label}</b><p>{value}</p></div>;
-}
-
-function SignatureCard({label, name, image}) {
-  if (!hasValue(name) && !hasValue(image)) return null;
-  return <div className="out">
-    <b>{label}</b>
-    {name && <p>{name}</p>}
-    {image && <img src={image} alt={label} style={{ width:'100%', maxWidth:'360px', height:'120px', objectFit:'contain', background:'#fff', border:'1px solid #dbe7ec', borderRadius:'12px', marginTop:'8px' }}/>}
-  </div>;
-}
-
-function SignaturePad({label, value, onChange}) {
-  const canvasRef = React.useRef(null);
-  const drawingRef = React.useRef(false);
-  const hasDrawnRef = React.useRef(false);
-
-  React.useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const ratio = window.devicePixelRatio || 1;
-    canvas.width = Math.max(1, Math.floor(rect.width * ratio));
-    canvas.height = Math.max(1, Math.floor(180 * ratio));
-
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-    ctx.lineWidth = 2.4;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#0f172a';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width / ratio, canvas.height / ratio);
-
-    if (value) {
-      const img = new Image();
-      img.onload = () => {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width / ratio, canvas.height / ratio);
-        ctx.drawImage(img, 0, 0, canvas.width / ratio, canvas.height / ratio);
+    if (!rows.length) return null;
+    const deviations = rows.filter((r) => r.status === "Avvik");
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekkliste" }),
+      [...new Set(rows.map((r) => r.category))].map((category) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: category }),
+        rows.filter((r) => r.category === category).map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistReportItem", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.item }),
+            " \u2014 ",
+            r.status || "Ikke vurdert"
+          ] }),
+          r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: r.comment }),
+          (r.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: r.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photo", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, alt: p.name || r.item }) }, p.id)) })
+        ] }, r.category + r.item))
+      ] }, category)),
+      deviations.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Avviksliste" }),
+        deviations.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+            r.category,
+            " / ",
+            r.item,
+            ":"
+          ] }),
+          " ",
+          r.comment || "Avvik registrert"
+        ] }, "avvik-" + r.category + r.item))
+      ] })
+    ] });
+  }
+  function Report({ company, name, project, selected, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }) {
+    const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, "Postnr.": project.postnr, "Poststed / by": project.city, Kunde: project.customer, "Kunde e-post": project.customerEmail, Dato: project.date, Status: project.locked ? "Avsluttet / l\xE5st" : "Aktivt", Notater: project.notes };
+    const cats = [...new Set(photos.map((p) => p.cat))];
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "report", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "reportTop", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: name }),
+            company.address && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: company.address }),
+            company.orgNumber && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+              "Org.nr: ",
+              company.orgNumber
+            ] }),
+            company.phone && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: company.phone }),
+            company.email && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: company.email }),
+            company.website && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: company.website })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "FDV-rapport / Prosjektdokumentasjon" }),
+        project.locked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { fontWeight: 800, letterSpacing: "0.04em" }, children: "\u2705 FERDIGSTILT / L\xC5ST" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: Object.entries(projectFields).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: k }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: v || "Ikke fylt ut" })
+        ] }, k)) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Prosjektering" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Fall i dusjsone" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: project.fallDusj || "Ikke oppgitt" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Fall utenfor dusjsone / v\xE5tsone" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: project.fallUtenfor || "Ikke oppgitt" })
+          ] }),
+          project.fall && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Fall mot sluk" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: project.fall })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Slukplassering" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: project.sluk || "Ikke oppgitt" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Terskelh\xF8yde" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: project.terskel || "Ikke oppgitt" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Membran" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: project.membran || "Ikke oppgitt" })
+          ] })
+        ] }),
+        (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter((p) => hasValue(p.title) || hasValue(p.value)).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.title || "Eget punkt" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: p.value || "Ikke oppgitt" })
+        ] }, p.id || p.title)),
+        project.prosjekteringKommentar && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Kommentar / avvik" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: project.prosjekteringKommentar })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Produkter / FDV" }),
+        selected.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.section }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: p.item }),
+          p.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Hvor brukt / kommentar:" }),
+            " ",
+            p.comment
+          ] }),
+          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV" }) }),
+          p.databladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.databladUrl, target: "_blank", children: "\xC5pne datablad" }) }),
+          p.dopUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.dopUrl, target: "_blank", children: "\xC5pne DOP" }) }),
+          p.epdUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.epdUrl, target: "_blank", children: "\xC5pne EPD" }) }),
+          p.sikkerhetsdatabladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.sikkerhetsdatabladUrl, target: "_blank", children: "\xC5pne sikkerhetsdatablad" }) }),
+          p.documentFileUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.documentFileUrl, target: "_blank", children: "\xC5pne vedlagt dokument" }) })
+        ] }, p.item)),
+        (manualProducts || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.section || "Annet produkt" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: p.name || "Uten produktnavn" }),
+          p.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Hvor brukt / kommentar:" }),
+            " ",
+            p.comment
+          ] }),
+          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV" }) }),
+          p.databladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.databladUrl, target: "_blank", children: "\xC5pne datablad" }) }),
+          p.dopUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.dopUrl, target: "_blank", children: "\xC5pne DOP" }) }),
+          p.epdUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.epdUrl, target: "_blank", children: "\xC5pne EPD" }) }),
+          p.sikkerhetsdatabladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.sikkerhetsdatabladUrl, target: "_blank", children: "\xC5pne sikkerhetsdatablad" }) }),
+          p.documentFileUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.documentFileUrl, target: "_blank", children: "\xC5pne vedlagt dokument" }) })
+        ] }, p.id)),
+        Object.entries(other).filter(([, v]) => v).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+            "Tidligere registrert annet produkt under ",
+            k,
+            ":"
+          ] }),
+          " ",
+          v
+        ] }, k))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Overflater" }),
+        Object.entries(surf).filter(([, v]) => v).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+            k,
+            ":"
+          ] }),
+          " ",
+          v
+        ] }, k))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Bildedokumentasjon" }),
+        cats.map((cat) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: cat }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: photos.filter((p) => p.cat === cat).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
+            p.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: p.comment })
+          ] }, p.id)) })
+        ] }, cat))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Fag, deler og utstyr" }),
+        inst.map((i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+            i.category,
+            ":"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            i.name,
+            " ",
+            i.qty && `\xB7 ${i.qty}`,
+            " ",
+            i.supplier && `\xB7 ${i.supplier}`,
+            " ",
+            i.desc && ` \u2014 ${i.desc}`
+          ] }),
+          i.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: i.fdvUrl, target: "_blank", children: "\xC5pne FDV/datablad" }) })
+        ] }, i.id))
+      ] }),
+      projectLog?.enabled && (projectLog.messages || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Chat" }),
+        (projectLog.messages || []).map((m) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: m.by || "Ukjent" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: m.created ? new Date(m.created).toLocaleString("no-NO") : "" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: m.text }),
+          m.imageUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: m.imageUrl, alt: m.imageName || "Chat bilde" }),
+            m.imageName && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: m.imageName })
+          ] }) })
+        ] }, m.id))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist }),
+      tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Tilbud / kontrakt" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Tillegg", value: tilbud.tillegg }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Fradrag", value: tilbud.fradrag }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Avtaleendringer / kommentar", value: tilbud.kommentar })
+        ] }),
+        (tilbud.files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
+          (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", children: f.name }) }, f.id))
+        ] })
+      ] }),
+      overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtf\u00F8rende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtf\u00F8rendeImage) || hasValue(overtagelse.signKundeImage)) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Overtagelse" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Dato", value: overtagelse.dato }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Kommentar / merknader", value: overtagelse.kommentar }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SignatureCard, { label: "Signatur utf\xF8rende", name: overtagelse.signUtf\u00F8rende, image: overtagelse.signUtf\u00F8rendeImage }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SignatureCard, { label: "Signatur kunde", name: overtagelse.signKunde, image: overtagelse.signKundeImage })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekklister og vedlegg" }),
+        files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Prosjekttilgang" }),
+        access.map((a) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+          a.name || a.email,
+          " \u2014 ",
+          a.role
+        ] }, a.id))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("footer", { children: "Levert av Expo Proffsenter" })
+    ] });
+  }
+  function hasValue(value) {
+    return value !== void 0 && value !== null && String(value).trim() !== "";
+  }
+  function InfoCard({ label, value }) {
+    if (!hasValue(value)) return null;
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: label }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: value })
+    ] });
+  }
+  function SignatureCard({ label, name, image }) {
+    if (!hasValue(name) && !hasValue(image)) return null;
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: label }),
+      name && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: name }),
+      image && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: image, alt: label, style: { width: "100%", maxWidth: "360px", height: "120px", objectFit: "contain", background: "#fff", border: "1px solid #dbe7ec", borderRadius: "12px", marginTop: "8px" } })
+    ] });
+  }
+  function SignaturePad({ label, value, onChange }) {
+    const canvasRef = import_react.default.useRef(null);
+    const drawingRef = import_react.default.useRef(false);
+    const hasDrawnRef = import_react.default.useRef(false);
+    import_react.default.useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+      canvas.height = Math.max(1, Math.floor(180 * ratio));
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.lineWidth = 2.4;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#0f172a";
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width / ratio, canvas.height / ratio);
+      if (value) {
+        const img = new Image();
+        img.onload = () => {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width / ratio, canvas.height / ratio);
+          ctx.drawImage(img, 0, 0, canvas.width / ratio, canvas.height / ratio);
+        };
+        img.src = value;
+        hasDrawnRef.current = true;
+      } else {
+        hasDrawnRef.current = false;
+      }
+    }, [value]);
+    const getPoint = (event) => {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const touch = event.touches?.[0] || event.changedTouches?.[0];
+      const source = touch || event;
+      return {
+        x: source.clientX - rect.left,
+        y: source.clientY - rect.top
       };
-      img.src = value;
-      hasDrawnRef.current = true;
-    } else {
-      hasDrawnRef.current = false;
-    }
-  }, [value]);
-
-  const getPoint = (event) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const touch = event.touches?.[0] || event.changedTouches?.[0];
-    const source = touch || event;
-    return {
-      x: source.clientX - rect.left,
-      y: source.clientY - rect.top
     };
-  };
-
-  const start = (event) => {
-    event.preventDefault();
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const p = getPoint(event);
-    drawingRef.current = true;
-    hasDrawnRef.current = true;
-    ctx.beginPath();
-    ctx.moveTo(p.x, p.y);
-  };
-
-  const move = (event) => {
-    if (!drawingRef.current) return;
-    event.preventDefault();
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const p = getPoint(event);
-    ctx.lineTo(p.x, p.y);
-    ctx.stroke();
-  };
-
-  const end = (event) => {
-    if (!drawingRef.current) return;
-    event.preventDefault();
-    drawingRef.current = false;
-    const canvas = canvasRef.current;
-    if (hasDrawnRef.current) onChange(canvas.toDataURL('image/png'));
-  };
-
-  const clear = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, rect.width, 180);
-    hasDrawnRef.current = false;
-    onChange('');
-  };
-
-  return <div className="item">
-    <b>{label}</b>
-    <canvas
-      ref={canvasRef}
-      style={{ width:'100%', height:'180px', background:'#fff', border:'1px solid #c7d6dd', borderRadius:'14px', touchAction:'none', display:'block', marginTop:'10px' }}
-      onMouseDown={start}
-      onMouseMove={move}
-      onMouseUp={end}
-      onMouseLeave={end}
-      onTouchStart={start}
-      onTouchMove={move}
-      onTouchEnd={end}
-    />
-    <div style={{ display:'flex', gap:'8px', marginTop:'10px', flexWrap:'wrap' }}>
-      <button type="button" className="secondary" onClick={clear}>Tøm signatur</button>
-    </div>
-  </div>;
-}
-
-function CustomerReport({company,name,project,selected,manualProducts,other,surf,photos,inst,files,checklist,tilbud,overtagelse,projectLog}) {
-  const projectFields = [
-    ['Prosjektansvarlig', project.responsible],
-    ['Prosjektnavn', project.projectName],
-    ['Adresse', project.address],
-    ['Postnr.', project.postnr],
-    ['Poststed / by', project.city],
-    ['Kunde', project.customer],
-    ['Kunde e-post', project.customerEmail],
-    ['Dato', project.date],
-    ['Status', project.locked ? 'Avsluttet / låst' : 'Aktivt'],
-    ['Notater', project.notes]
-  ];
-
-  const prosjektering = [
-    ['Fall i dusjsone', project.fallDusj],
-    ['Fall utenfor dusjsone / våtsone', project.fallUtenfor],
-    ...(hasValue(project.fall) ? [['Fall mot sluk', project.fall]] : []),
-    ['Slukplassering', project.sluk],
-    ['Terskelhøyde', project.terskel],
-    ['Membranløsning', project.membran],
-    ...(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : [])
-      .filter(p => hasValue(p.title) || hasValue(p.value))
-      .map(p => [p.title || 'Eget punkt', p.value]),
-    ['Kommentar / avvik', project.prosjekteringKommentar]
-  ];
-
-  const surfaceRows = Object.entries(surf || {}).filter(([,v]) => hasValue(v));
-  const otherRows = Object.entries(other || {}).filter(([,v]) => hasValue(v));
-  const photoCats = [...new Set((photos || []).map(p => p.cat).filter(Boolean))];
-
-  return <div className="report">
-    <section>
-      <div className="reportTop">
-        <Brand logo={company.logoUrl} name={name}/>
-        <div>
-          <h2>{project.projectName || 'FDV-rapport / Prosjektdokumentasjon'}</h2>
-          {project.address && <p>{project.address}</p>}
-          {project.customer && <p><b>Kunde:</b> {project.customer}</p>}
-          {company.companyName && <p><b>Utførende:</b> {company.companyName}</p>}
-          {company.orgNumber && <p>Org.nr: {company.orgNumber}</p>}
-        </div>
-      </div>
-      <h2>Prosjektinformasjon</h2>
-      {project.locked && <p style={{ fontWeight:800, letterSpacing:'0.04em' }}>✅ FERDIGSTILT / LÅST</p>}
-      <Grid>{projectFields.map(([label,value]) => <InfoCard key={label} label={label} value={value}/>)}</Grid>
-    </section>
-
-    {prosjektering.some(([,v]) => hasValue(v)) && <section>
-      <h2>Prosjektering</h2>
-      <Grid>{prosjektering.map(([label,value]) => <InfoCard key={label} label={label} value={value}/>)}</Grid>
-    </section>}
-
-    {(selected.length > 0 || (manualProducts || []).length > 0 || otherRows.length > 0) && <section>
-      <h2>Produkter / FDV</h2>
-      {selected.map(p => <div className="out" key={p.item}>
-        <b>{p.section}</b>
-        <p>{p.item}</p>
-        {p.comment && <p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}
-        {p.fdvUrl && <p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}
-      </div>)}
-      {(manualProducts || []).map(p => <div className="out" key={p.id}>
-        <b>{p.section || 'Annet produkt'}</b>
-        <p>{p.name || 'Uten produktnavn'}</p>
-        {p.comment && <p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}
-        {p.fdvUrl && <p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}
-      </div>)}
-      {otherRows.map(([k,v]) => <p key={k}><b>Tidligere registrert annet produkt under {k}:</b> {v}</p>)}
-    </section>}
-
-    {surfaceRows.length > 0 && <section>
-      <h2>Overflater</h2>
-      <Grid>{surfaceRows.map(([k,v]) => <InfoCard key={k} label={k} value={v}/>)}</Grid>
-    </section>}
-
-    {(photos || []).length > 0 && <section>
-      <h2>Bildedokumentasjon</h2>
-      {photoCats.map(cat => <div key={cat}>
-        <h3>{cat}</h3>
-        <div className="photos reportPhotos">
-          {photos.filter(p => p.cat === cat).map(p => <div className="photo" key={p.id}>
-            <img src={p.url} alt={p.cat || 'Dokumentasjonsbilde'}/>
-            {p.comment && <p>{p.comment}</p>}
-          </div>)}
-        </div>
-      </div>)}
-    </section>}
-
-    {(inst || []).length > 0 && <section>
-      <h2>Fag, deler og utstyr</h2>
-      {inst.map(i => <div className="out" key={i.id}>
-        <b>{i.category || 'Post'}</b>
-        <p>{[i.name, i.qty, i.supplier, i.desc].filter(Boolean).join(' · ')}</p>
-        {i.fdvUrl && <p><a href={i.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}
-        {(i.photos || []).length > 0 && <div className="photos reportPhotos">
-          {i.photos.map(p => <div className="photo" key={p.id}><img src={p.url} alt={p.name || 'Bilde'}/></div>)}
-        </div>}
-      </div>)}
-    </section>}
-
-    {(hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0) && <section id="kunde-tilbud">
-      <h2>Tilbud / kontrakt</h2>
-      <Grid>
-        <InfoCard label="Tillegg" value={tilbud.tillegg}/>
-        <InfoCard label="Fradrag" value={tilbud.fradrag}/>
-        <InfoCard label="Avtaleendringer / kommentar" value={tilbud.kommentar}/>
-      </Grid>
-      {(tilbud.files || []).length > 0 && <div>
-        <h3>Vedlegg</h3>
-        {(tilbud.files || []).map(f => <p key={f.id}><a href={f.url} target="_blank">{f.name}</a></p>)}
-      </div>}
-    </section>}
-
-    {overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtførendeImage) || hasValue(overtagelse.signKundeImage)) && <section>
-      <h2>Overtagelse</h2>
-      <Grid>
-        <InfoCard label="Dato" value={overtagelse.dato}/>
-        <InfoCard label="Kommentar / merknader" value={overtagelse.kommentar}/>
-        <SignatureCard label="Signatur utførende" name={overtagelse.signUtførende} image={overtagelse.signUtførendeImage}/>
-        <SignatureCard label="Signatur kunde" name={overtagelse.signKunde} image={overtagelse.signKundeImage}/>
-      </Grid>
-    </section>}
-
-    {projectLog?.enabled && (projectLog.messages || []).length > 0 && <section>
-      <h2>Chat</h2>
-      {(projectLog.messages || []).map(m => <div className="out" key={m.id}>
-        <b>{m.by || 'Ukjent'}</b>
-        <small>{m.created ? new Date(m.created).toLocaleString('no-NO') : ''}</small>
-        <p>{m.text}</p>
-        {m.imageUrl && <div className="photos reportPhotos"><div className="photo"><img src={m.imageUrl} alt={m.imageName || 'Chat bilde'}/>{m.imageName && <small>{m.imageName}</small>}</div></div>}
-      </div>)}
-    </section>}
-    <ChecklistReportSection checklist={checklist}/>
-
-    {(files || []).length > 0 && <section>
-      <h2>Sjekklister og vedlegg</h2>
-      {files.map(f => <p key={f.id}>{f.name}</p>)}
-    </section>}
-
-    <footer>Levert av Expo Proffsenter</footer>
-  </div>;
-}
-
-createRoot(document.getElementById('root')).render(<App />);
+    const start = (event) => {
+      event.preventDefault();
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      const p = getPoint(event);
+      drawingRef.current = true;
+      hasDrawnRef.current = true;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+    };
+    const move = (event) => {
+      if (!drawingRef.current) return;
+      event.preventDefault();
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      const p = getPoint(event);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    };
+    const end = (event) => {
+      if (!drawingRef.current) return;
+      event.preventDefault();
+      drawingRef.current = false;
+      const canvas = canvasRef.current;
+      if (hasDrawnRef.current) onChange(canvas.toDataURL("image/png"));
+    };
+    const clear = () => {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      const rect = canvas.getBoundingClientRect();
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, rect.width, 180);
+      hasDrawnRef.current = false;
+      onChange("");
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: label }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+        "canvas",
+        {
+          ref: canvasRef,
+          style: { width: "100%", height: "180px", background: "#fff", border: "1px solid #c7d6dd", borderRadius: "14px", touchAction: "none", display: "block", marginTop: "10px" },
+          onMouseDown: start,
+          onMouseMove: move,
+          onMouseUp: end,
+          onMouseLeave: end,
+          onTouchStart: start,
+          onTouchMove: move,
+          onTouchEnd: end
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "8px", marginTop: "10px", flexWrap: "wrap" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: clear, children: "T\xF8m signatur" }) })
+    ] });
+  }
+  function CustomerReport({ company, name, project, selected, manualProducts, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }) {
+    const projectFields = [
+      ["Prosjektansvarlig", project.responsible],
+      ["Prosjektnavn", project.projectName],
+      ["Adresse", project.address],
+      ["Postnr.", project.postnr],
+      ["Poststed / by", project.city],
+      ["Kunde", project.customer],
+      ["Kunde e-post", project.customerEmail],
+      ["Dato", project.date],
+      ["Status", project.locked ? "Avsluttet / l\xE5st" : "Aktivt"],
+      ["Notater", project.notes]
+    ];
+    const prosjektering = [
+      ["Fall i dusjsone", project.fallDusj],
+      ["Fall utenfor dusjsone / v\xE5tsone", project.fallUtenfor],
+      ...hasValue(project.fall) ? [["Fall mot sluk", project.fall]] : [],
+      ["Slukplassering", project.sluk],
+      ["Terskelh\xF8yde", project.terskel],
+      ["Membranl\xF8sning", project.membran],
+      ...(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter((p) => hasValue(p.title) || hasValue(p.value)).map((p) => [p.title || "Eget punkt", p.value]),
+      ["Kommentar / avvik", project.prosjekteringKommentar]
+    ];
+    const surfaceRows = Object.entries(surf || {}).filter(([, v]) => hasValue(v));
+    const otherRows = Object.entries(other || {}).filter(([, v]) => hasValue(v));
+    const photoCats = [...new Set((photos || []).map((p) => p.cat).filter(Boolean))];
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "report", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "reportTop", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: project.projectName || "FDV-rapport / Prosjektdokumentasjon" }),
+            project.address && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: project.address }),
+            project.customer && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Kunde:" }),
+              " ",
+              project.customer
+            ] }),
+            company.companyName && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Utf\xF8rende:" }),
+              " ",
+              company.companyName
+            ] }),
+            company.orgNumber && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+              "Org.nr: ",
+              company.orgNumber
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Prosjektinformasjon" }),
+        project.locked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { fontWeight: 800, letterSpacing: "0.04em" }, children: "\u2705 FERDIGSTILT / L\xC5ST" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: projectFields.map(([label, value]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label, value }, label)) })
+      ] }),
+      prosjektering.some(([, v]) => hasValue(v)) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Prosjektering" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: prosjektering.map(([label, value]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label, value }, label)) })
+      ] }),
+      (selected.length > 0 || (manualProducts || []).length > 0 || otherRows.length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Produkter / FDV" }),
+        selected.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.section }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: p.item }),
+          p.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Hvor brukt / kommentar:" }),
+            " ",
+            p.comment
+          ] }),
+          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV/datablad" }) })
+        ] }, p.item)),
+        (manualProducts || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.section || "Annet produkt" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: p.name || "Uten produktnavn" }),
+          p.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Hvor brukt / kommentar:" }),
+            " ",
+            p.comment
+          ] }),
+          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV/datablad" }) })
+        ] }, p.id)),
+        otherRows.map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+            "Tidligere registrert annet produkt under ",
+            k,
+            ":"
+          ] }),
+          " ",
+          v
+        ] }, k))
+      ] }),
+      surfaceRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Overflater" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaceRows.map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: k, value: v }, k)) })
+      ] }),
+      (photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Bildedokumentasjon" }),
+        photoCats.map((cat) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: cat }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: photos.filter((p) => p.cat === cat).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, alt: p.cat || "Dokumentasjonsbilde" }),
+            p.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: p.comment })
+          ] }, p.id)) })
+        ] }, cat))
+      ] }),
+      (inst || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Fag, deler og utstyr" }),
+        inst.map((i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: i.category || "Post" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: [i.name, i.qty, i.supplier, i.desc].filter(Boolean).join(" \xB7 ") }),
+          i.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: i.fdvUrl, target: "_blank", children: "\xC5pne FDV/datablad" }) }),
+          (i.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: i.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photo", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, alt: p.name || "Bilde" }) }, p.id)) })
+        ] }, i.id))
+      ] }),
+      (hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { id: "kunde-tilbud", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Tilbud / kontrakt" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Tillegg", value: tilbud.tillegg }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Fradrag", value: tilbud.fradrag }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Avtaleendringer / kommentar", value: tilbud.kommentar })
+        ] }),
+        (tilbud.files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
+          (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", children: f.name }) }, f.id))
+        ] })
+      ] }),
+      overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtf\u00F8rende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtf\u00F8rendeImage) || hasValue(overtagelse.signKundeImage)) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Overtagelse" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Dato", value: overtagelse.dato }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Kommentar / merknader", value: overtagelse.kommentar }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SignatureCard, { label: "Signatur utf\xF8rende", name: overtagelse.signUtf\u00F8rende, image: overtagelse.signUtf\u00F8rendeImage }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SignatureCard, { label: "Signatur kunde", name: overtagelse.signKunde, image: overtagelse.signKundeImage })
+        ] })
+      ] }),
+      projectLog?.enabled && (projectLog.messages || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Chat" }),
+        (projectLog.messages || []).map((m) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: m.by || "Ukjent" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: m.created ? new Date(m.created).toLocaleString("no-NO") : "" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: m.text }),
+          m.imageUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: m.imageUrl, alt: m.imageName || "Chat bilde" }),
+            m.imageName && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: m.imageName })
+          ] }) })
+        ] }, m.id))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist }),
+      (files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekklister og vedlegg" }),
+        files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("footer", { children: "Levert av Expo Proffsenter" })
+    ] });
+  }
+  (0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}));
