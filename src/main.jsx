@@ -14,7 +14,7 @@ const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 const productSections = [
   { title: 'Avretting / støpeprodukter', items: ['Sopro VS582 Avretting','Sopro 3.50 Avretting','Sopro HF-S 563 Avretting','Sopro FS 5® Avretting','Sopro RDS 960 - Ekspansjonsbånd','Sopro Classic EM Hurtigstøp','Sopro RAM 3® reparasjon og støpemørtel','Sopro RS 462 reparasjonsmørtel','Sopro Rapidur M5® hurtigstøp'] },
   { title: 'Primer / forsterkningsduk', items: ['Sopro PG-X 1188','Sopro EPG 1522 - 2 Komponent Epoxy primer','Sopro HPS 673 - spesial primer ikke sugende','Sopro GD 749 - primer sugende underlag','Sopro SG 874 Dampsperre-Primer'] },
-  { title: 'Membransystem / tetting', items: ['Sopro FDK 1-K 1180 membranlim','Sopro FDF 527 smøremembran lys grå','Sopro DSF 623 RS - 1K sementbasert membran','AEB 815 Tetteduk','Sopro BBM 134 Slukmansjett','Sopro FDB 524 selvklebende tettebånd','Sopro AEB 816 Tettebånd','Sopro AEB 821 Hjørnemansjett innerhjørne','Sopro AEB 822 Hjørnemansjett ytterhjørne','Sopro AEB 825 Rørmansjett Ø10-24mm'] },
+  { title: 'Membransystem / tetting', items: ['Sopro FDK 1-K 1180 membranlim','Sopro FDF 527 smøremembran lys grå','Sopro DSF 623 RS - 1K sementbasert membran','AEB 815 Tetteduk','Sopro BBM 134 Slukmansjett','Sopro FDB 524 selvklebende tettebånd','Sopro AEB 816 Tettebånd','Sopro AEB 821 Hjørnemansjett innerhjørne','Sopro AEB 822 Hjørnemansjett ytterhjørne','Sopro AEB 825 Rørmansjett Ø10-24mm','Sopro AEB 826 Rørmansjett Ø32-55mm','Sopro AEB 827 Rørmansjett Ø75-110mm','Sopro AEB 828 Rørmansjett Ø110-140mm'] },
   { title: 'Limprodukter / festeprodukter', items: ['Sopro’s No.1 400 Flislim','Sopro’s No.1 403 Silver Hurtig flislim','Sopro FKM XL 444 Støvredusert flislim','Sopro FKM 5555 Hurtig flislim','Sopro FF 450 - Sigefri flislim','Soudal Fix All HT','Soudal Fix All Turbo'] },
   { title: 'Fugemasse / silikon', items: ['Sopro DFH Bruksklar fugemasse','Sopro DFX epoxyfug','Sopro DF 10® Designfug','Sopro FL plus Fugemasse','Sopro Sanitær Silikon','Sopro Ceramic Silikon'] }
 ];
@@ -32,11 +32,74 @@ const accessRoleInfo = [
 ];
 
 const checklistTemplate = [
-  { category: 'Tildekning/forarbeid', items: ['Underlag kontrollert', 'Fall kontrollert', 'Sluk korrekt montert', 'Terskel og høyder kontrollert'] },
-  { category: 'Primer / underlag', items: ['Riktig primer valgt', 'Primer påført', 'Tørketid fulgt'] },
-  { category: 'Membran / tetting', items: ['Membranløsning kontrollert', 'Tettebånd montert', 'Slukmansjett montert', 'Rørmansjetter montert', 'Trykktesting av membran'] },
-  { category: 'Flislegging / fuging', items: ['Fliser montert iht. plan', 'Fuging utført', 'Silikon utført'] },
-  { category: 'Sluttkontroll', items: ['Visuell kontroll utført', 'Bilder tatt', 'Dokumentasjon komplett'] }
+  {
+    category: 'Tildekning/forarbeid',
+    items: [
+      'Underlag kontrollert',
+      'Fall kontrollert',
+      'Sluk korrekt montert',
+      'Terskel og høyder kontrollert'
+    ]
+  },
+  {
+    category: 'Avretting / underlag',
+    items: [
+      'Det er avrettet på tregulv/spon eller betong',
+      'Alle sprekker og krakeleringer er fjernet',
+      'Overflatestyrken er kontrollert med rissprøve',
+      'Vedheft mellom råbetong og pusslag er kontrollert med bankeprøve',
+      'Underlaget er fritt for olje, fett, støv, skitt, mørtelrester, løs betong og lignende',
+      'Trekk i rommet er kontrollert',
+      'Gulvvarme er slått av',
+      'Restfukt/RF er kontrollert iht. krav før videre belegning/membran'
+    ]
+  },
+  {
+    category: 'Primer / underlag',
+    items: [
+      'Riktig primer valgt',
+      'Primer påført',
+      'Tørketid fulgt'
+    ]
+  },
+  {
+    category: 'Membran / tetting',
+    items: [
+      'Membranløsning kontrollert',
+      'Tettebånd montert',
+      'Slukmansjett montert',
+      'Rørmansjetter montert',
+      'Trykktesting av membran',
+      'Minimum 5 cm overlapp på skjøter med tetningsduk/tettebånd er kontrollert',
+      'Riktig membrantykkelse på vegger og gulv iht. Sopro anvisninger og myndighetskrav er kontrollert'
+    ]
+  },
+  {
+    category: 'Flislegging / flislim',
+    items: [
+      'Fliser montert iht. plan',
+      'Limdekning mellom fliser og underlag er kontrollert',
+      'Stikkprøve/slakting av flis er utført mens flislim fortsatt er vått'
+    ]
+  },
+  {
+    category: 'Fuging / silikon',
+    items: [
+      'Fugemasse er blandet/rørt opp med korrekt vanntilsetning iht. datablad',
+      'Fugene er helt fylt opp før rengjøring',
+      'Fugene er jevne, glatte, ensartet og uten hull og sprekker etter rengjøring',
+      'Fugeslør er vasket av med svamp og rent vann',
+      'Silikon utført'
+    ]
+  },
+  {
+    category: 'Sluttkontroll',
+    items: [
+      'Visuell kontroll utført',
+      'Bilder tatt',
+      'Dokumentasjon komplett'
+    ]
+  }
 ];
 
 const emptyTilbud = () => ({
@@ -298,6 +361,10 @@ function App() {
       return true;
     });
   }, [projectListRows, projectSearch, projectStatusFilter, projectUnreadOnly]);
+
+  const activeMobileProjectRows = useMemo(() => {
+    return filteredProjectListRows.filter(item => item.listStatus.tone !== 'done' && item.listStatus.tone !== 'locked');
+  }, [filteredProjectListRows]);
 
   const projectListStats = useMemo(() => {
     const total = projectListRows.length;
@@ -1302,10 +1369,30 @@ function App() {
   const deleteProject = async (id) => {
     if (!window.confirm('Er du sikker på at du vil slette prosjektet?')) return;
     if (!authUser) return alert('Du må være logget inn for å slette prosjekt.');
-    const { error } = await supabase.from('projects').delete().eq('id', id).eq('user_id', authUser.id);
-    if (error) { console.error(error); return alert('Kunne ikke slette prosjekt: ' + error.message); }
-    if (id === projectId) setProjectId(null);
-    loadProjects(authUser);
+
+    const { data, error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id)
+      .select('id');
+
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke slette prosjekt: ' + error.message);
+    }
+
+    if (!data || data.length === 0) {
+      return alert('Prosjektet ble ikke slettet. Det skyldes sannsynligvis tilgang/eierskap på gammel prosjektrad i Supabase.');
+    }
+
+    setProjects(prev => (prev || []).filter(p => p.id !== id));
+    if (id === projectId) {
+      setProjectId(null);
+      setMobileCreatingProject(false);
+      setTab('prosjekt');
+    }
+    await loadProjects(authUser);
+    alert('Prosjekt slettet.');
   };
 
   const saveProjectForLink = async () => {
@@ -2270,7 +2357,8 @@ function App() {
       .checklistSummaryActions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
       .checklistAccordion { display:grid; gap:12px; }
       .checklistGroup { padding:0 !important; overflow:hidden; border-radius:18px !important; }
-      .checklistGroupHeader { width:100%; border:0 !important; background:#ffffff !important; color:#0f172a !important; box-shadow:none !important; display:flex !important; justify-content:space-between !important; align-items:center !important; gap:12px !important; padding:14px !important; text-align:left !important; min-height:64px !important; }
+      .checklistGroupHeader { width:100%; border:0 !important; background:#ffffff !important; color:#0f172a !important; box-shadow:none !important; display:grid !important; grid-template-columns:auto minmax(0,1fr) auto !important; align-items:center !important; gap:10px !important; padding:14px !important; text-align:left !important; min-height:64px !important; cursor:pointer; }
+      .checklistGroupCaret { display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:999px; background:#f8fafc; border:1px solid #dbe7ec; font-size:18px; font-weight:900; }
       .checklistGroupTitle { display:flex; flex-direction:column; gap:3px; min-width:0; }
       .checklistGroupTitle b { font-size:18px; line-height:1.2; }
       .checklistGroupTitle small { color:#64748b; font-weight:700; }
@@ -2292,7 +2380,9 @@ function App() {
         .checklistSummaryBadges span { justify-content:center !important; font-size:12.5px !important; padding:7px 6px !important; }
         .checklistSummaryActions { display:grid !important; grid-template-columns:1fr 1fr !important; gap:6px !important; }
         .checklistSummaryActions button { width:100% !important; font-size:13px !important; }
-        .checklistGroupHeader { padding:12px !important; min-height:62px !important; }
+        .checklistGroupHeader { grid-template-columns:auto 1fr !important; padding:12px !important; min-height:64px !important; gap:8px !important; align-items:start !important; }
+        .checklistGroupCaret { width:34px !important; height:34px !important; font-size:20px !important; margin-top:1px !important; }
+        .checklistGroupBadge { grid-column:2 !important; justify-self:start !important; margin-top:4px !important; max-width:100% !important; white-space:normal !important; }
         .checklistGroupTitle b { font-size:16.5px !important; }
         .checklistGroupTitle small { font-size:12.5px !important; }
         .checklistGroupBadge { font-size:11.5px !important; padding:5px 7px !important; }
@@ -2302,6 +2392,18 @@ function App() {
         .checklistStatusButtons { display:grid !important; grid-template-columns:1fr 1fr 1fr !important; gap:6px !important; }
         .checklistStatusButtons button { width:100% !important; min-height:40px !important; padding:7px 4px !important; font-size:12.5px !important; }
         .checklistUpload { width:100% !important; justify-content:center !important; margin-top:8px !important; }
+      }
+
+
+      /* iPhone Safari safe-area: avoid bottom browser toolbar */
+      @media screen and (max-width:700px) {
+        .bottomPrevNext {
+          padding-bottom:calc(110px + env(safe-area-inset-bottom)) !important;
+          margin-bottom:0 !important;
+        }
+        main {
+          padding-bottom:calc(120px + env(safe-area-inset-bottom)) !important;
+        }
       }
 
       /* Mobile UX fase 3: sticky feltapp-meny */
@@ -2433,14 +2535,14 @@ function App() {
     <main>
       {!projectId && !mobileCreatingProject && <section className="mobileProjectChooser">
         <h2>Hvilket prosjekt vil du jobbe i?</h2>
-        <p className="mobileProjectChooserIntro">Velg prosjekt først. Deretter kan du ta bilder, fylle ut sjekklister, skrive i chat eller lage rapport.</p>
+        <p className="mobileProjectChooserIntro">Velg aktivt prosjekt først. Avsluttede prosjekter ligger i prosjektlisten/arkivet.</p>
         <Input label="Søk etter prosjekt, kunde eller adresse" value={projectSearch} onChange={setProjectSearch}/>
         <div className="mobileProjectChooserActions">
           <button type="button" onClick={() => loadProjects(authUser, true)}>Oppdater liste</button>
           <button type="button" className="secondary" onClick={()=>{ createNewProject(); setTab('prosjekt'); }}>+ Nytt prosjekt</button>
         </div>
         <div className="mobileProjectList">
-          {filteredProjectListRows.slice(0, 8).map(({ row:p, listProject, listStatus, unreadForAdminInList }) => {
+          {activeMobileProjectRows.slice(0, 8).map(({ row:p, listProject, listStatus, unreadForAdminInList }) => {
             const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(', ');
             return <div className="mobileProjectPickCard" key={`mobile-pick-${p.id}`}>
               <div className="mobileProjectPickCardTop">
@@ -2461,7 +2563,7 @@ function App() {
             </div>;
           })}
           {projects.length === 0 && <p className="note">Ingen prosjekter hentet ennå. Trykk Oppdater liste.</p>}
-          {projects.length > 0 && filteredProjectListRows.length === 0 && <p className="note">Ingen prosjekter matcher søket.</p>}
+          {projects.length > 0 && activeMobileProjectRows.length === 0 && <p className="note">Ingen aktive prosjekter matcher søket. Avsluttede prosjekter finnes fortsatt i prosjektlisten/arkivet.</p>}
         </div>
       </section>}
       {projectId && <div className="mobileCurrentProjectBar">
@@ -2992,8 +3094,9 @@ function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addF
         const groupTone = stats.deviations > 0 ? 'avvik' : stats.missing === 0 ? 'done' : stats.done > 0 ? 'progress' : 'missing';
         return <div className={`item checklistGroup checklistGroup-${groupTone}`} key={group.category}>
           <button type="button" className="checklistGroupHeader" onClick={()=>toggleCategory(group.category)} aria-expanded={isOpen}>
+            <span className="checklistGroupCaret" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
             <span className="checklistGroupTitle">
-              <b>{isOpen ? '▾' : '▸'} {group.category}</b>
+              <b>{group.category}</b>
               <small>{stats.done}/{stats.total} utfylt{stats.deviations ? ` · ${stats.deviations} avvik` : ''}{stats.photos ? ` · ${stats.photos} bilder` : ''}</small>
             </span>
             <span className={`checklistGroupBadge checklistGroupBadge-${groupTone}`}>
