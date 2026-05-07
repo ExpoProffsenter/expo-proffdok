@@ -26,6 +26,26 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     if (lower.includes("ringside") || lower.endsWith("/expo-logo.png") || lower.endsWith("expo-logo.png")) return "";
     return logo;
   };
+  function isLikelyProductPageUrl(value) {
+    const url = String(value || "").trim().toLowerCase();
+    if (!url) return false;
+    if (url.includes("/produkt-detalj/") || url.includes("/product-detail/")) return true;
+    if (url.includes("sopro.com") && !url.includes(".pdf") && !url.includes("download") && !url.includes("media")) return true;
+    return false;
+  }
+  function productDocumentLinks(product = {}) {
+    const fdvUrl = product.fdvUrl || "";
+    const productPageUrl = product.productPageUrl || (isLikelyProductPageUrl(fdvUrl) ? fdvUrl : "");
+    const links = [];
+    if (fdvUrl && !isLikelyProductPageUrl(fdvUrl)) links.push(["Åpne FDV", fdvUrl]);
+    if (product.databladUrl) links.push(["Åpne datablad", product.databladUrl]);
+    if (product.dopUrl) links.push(["Åpne DOP", product.dopUrl]);
+    if (product.epdUrl) links.push(["Åpne EPD", product.epdUrl]);
+    if (product.sikkerhetsdatabladUrl) links.push(["Åpne sikkerhetsdatablad", product.sikkerhetsdatabladUrl]);
+    if (product.documentFileUrl) links.push(["Åpne vedlagt dokument", product.documentFileUrl]);
+    if (productPageUrl) links.push(["Åpne produktside", productPageUrl]);
+    return links;
+  }
   var normalizeDocKey = (value) => String(value || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[®™©]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
   var productSections = [
     { title: "Avretting / st\xF8peprodukter", items: ["Sopro VS582 Avretting", "Sopro 3.50 Avretting", "Sopro HF-S 563 Avretting", "Sopro FS 5\xAE Avretting", "Sopro RDS 960 - Ekspansjonsb\xE5nd", "Sopro Classic EM Hurtigst\xF8p", "Sopro RAM 3\xAE reparasjon og st\xF8pem\xF8rtel", "Sopro RS 462 reparasjonsm\xF8rtel", "Sopro Rapidur M5\xAE hurtigst\xF8p"] },
@@ -258,7 +278,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }, [fdvRegister]);
     const productMasterByProduct = (0, import_react.useMemo)(() => {
       const map = {};
-      const scoreRow = (row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].filter(hasValue).length;
+      const scoreRow = (row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url, row?.product_page_url, row?.product_url].filter(hasValue).length;
       const addKey = (key, row) => {
         const cleanKey = String(key || "").trim();
         if (!cleanKey) return;
@@ -278,13 +298,17 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const getAutoDocsForProduct = (productName) => {
       const masterRow = findProductMasterRow(productName);
       const registerRow = findFdvRegisterRow(productName);
+      const masterFdvUrl = masterRow?.fdv_url || "";
+      const registerFdvUrl = registerRow?.fdv_url || "";
+      const productPageUrl = masterRow?.product_page_url || masterRow?.product_url || (isLikelyProductPageUrl(masterFdvUrl) ? masterFdvUrl : isLikelyProductPageUrl(registerFdvUrl) ? registerFdvUrl : "");
       return {
-        fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || "",
+        fdvUrl: !isLikelyProductPageUrl(masterFdvUrl) ? masterFdvUrl : !isLikelyProductPageUrl(registerFdvUrl) ? registerFdvUrl : "",
         databladUrl: masterRow?.datablad_url || "",
         dopUrl: masterRow?.dop_url || "",
         epdUrl: masterRow?.epd_url || "",
         sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || "",
         documentFileUrl: masterRow?.document_file_url || "",
+        productPageUrl,
         fdvSource: masterRow ? "product-master" : registerRow ? "admin-register" : ""
       };
     };
@@ -298,6 +322,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
         sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
         documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
+        productPageUrl: hasValue(current.productPageUrl) ? current.productPageUrl : autoDocs.productPageUrl,
         fdvSource: current.fdvSource || autoDocs.fdvSource
       };
     };
@@ -313,12 +338,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         epdUrl: doc.epdUrl || "",
         sikkerhetsdatabladUrl: doc.sikkerhetsdatabladUrl || "",
         documentFileUrl: doc.documentFileUrl || "",
+        productPageUrl: doc.productPageUrl || (isLikelyProductPageUrl(doc.fdvUrl) ? doc.fdvUrl : ""),
         comment: doc.comment || ""
       };
     })), [checked, productDocs, productMasterByProduct, fdvRegisterByProduct]);
     const productMasterStats = (0, import_react.useMemo)(() => {
       const rows = productMaster || [];
-      const withDocs = rows.filter((row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].some(hasValue)).length;
+      const withDocs = rows.filter((row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url, row?.product_page_url, row?.product_url].some(hasValue)).length;
       const appMatches = rows.filter((row) => row?.used_in_app_standard_list || hasValue(row?.app_match_name)).length;
       return { total: rows.length, withDocs, appMatches };
     }, [productMaster]);
@@ -331,9 +357,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         checkedNames.forEach((productName) => {
           const current = next[productName] || {};
           const merged = mergeProductDocs(productName, current);
-          const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+          const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl, merged.productPageUrl].some(hasValue);
           if (!hasAutoDocs) return;
-          const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "fdvSource"];
+          const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "productPageUrl", "fdvSource"];
           if (keys.some((key) => (current[key] || "") !== (merged[key] || ""))) {
             next[productName] = merged;
             changed = true;
@@ -776,7 +802,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setProductDocs((prev) => {
         const current = prev[productName] || {};
         const merged = mergeProductDocs(productName, current);
-        const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+        const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl, merged.productPageUrl].some(hasValue);
         if (!hasAutoDocs) return prev;
         return {
           ...prev,
@@ -1576,12 +1602,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       checkedNames.forEach((productName) => {
         const current = nextProductDocs[productName] || {};
         const merged = mergeProductDocs(productName, current);
-        const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+        const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl, merged.productPageUrl].some(hasValue);
         if (!hasAutoDocs) {
           missingCount += 1;
           return;
         }
-        const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "fdvSource"];
+        const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "productPageUrl", "fdvSource"];
         const changed = keys.some((key) => (current[key] || "") !== (merged[key] || ""));
         if (changed) updatedCount += 1;
         nextProductDocs[productName] = merged;
@@ -1867,7 +1893,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 ] }),
                 checked[i] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: doc.fdvUrl || "", onChange: (v) => updateProductDoc(i, { fdvUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link (direkte dokument)", value: doc.fdvUrl || "", onChange: (v) => updateProductDoc(i, { fdvUrl: v, fdvSource: "manual" }) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: doc.databladUrl || "", onChange: (v) => updateProductDoc(i, { databladUrl: v, fdvSource: "manual" }) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: doc.dopUrl || "", onChange: (v) => updateProductDoc(i, { dopUrl: v, fdvSource: "manual" }) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: doc.epdUrl || "", onChange: (v) => updateProductDoc(i, { epdUrl: v, fdvSource: "manual" }) }),
@@ -1893,7 +1919,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               ((manualProducts || {})[s.title] || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link (direkte dokument)", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: p.comment || "", onChange: (v) => updateManualProduct(s.title, p.id, { comment: v }) })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeManualProduct(s.title, p.id), children: "Fjern produkt" })
@@ -1925,7 +1951,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Antall/mengde", value: x.qty, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, qty: v } : i)) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverand\xF8r", value: x.supplier, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, supplier: v } : i)) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Beskrivelse/plassering", value: x.desc, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, desc: v } : i)) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: x.fdvUrl || "", onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, fdvUrl: v } : i)) })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link (direkte dokument)", value: x.fdvUrl || "", onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, fdvUrl: v } : i)) })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
@@ -2736,7 +2762,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               ] }),
               checked[i] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: doc.fdvUrl || "", onChange: (v) => updateProductDoc(i, { fdvUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link (direkte dokument)", value: doc.fdvUrl || "", onChange: (v) => updateProductDoc(i, { fdvUrl: v, fdvSource: "manual" }) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: doc.databladUrl || "", onChange: (v) => updateProductDoc(i, { databladUrl: v, fdvSource: "manual" }) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: doc.dopUrl || "", onChange: (v) => updateProductDoc(i, { dopUrl: v, fdvSource: "manual" }) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: doc.epdUrl || "", onChange: (v) => updateProductDoc(i, { epdUrl: v, fdvSource: "manual" }) }),
@@ -2762,7 +2788,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ((manualProducts || {})[s.title] || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link (direkte dokument)", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: p.comment || "", onChange: (v) => updateManualProduct(s.title, p.id, { comment: v }) })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeManualProduct(s.title, p.id), children: "Fjern produkt" })
@@ -2821,7 +2847,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Antall/mengde", value: x.qty, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, qty: v } : i)) }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverand\xF8r", value: x.supplier, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, supplier: v } : i)) }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Beskrivelse/plassering", value: x.desc, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, desc: v } : i)) }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: x.fdvUrl || "", onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, fdvUrl: v } : i)) })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link (direkte dokument)", value: x.fdvUrl || "", onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, fdvUrl: v } : i)) })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
@@ -3221,7 +3247,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 row.app_match_name ? ` \xB7 App: ${row.app_match_name}` : ""
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link", value: row.fdv_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { fdv_url: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link (direkte dokument)", value: row.fdv_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { fdv_url: v }) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: row.datablad_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { datablad_url: v }) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: row.dop_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { dop_url: v }) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: row.epd_url || "", onChange: (v) => updateProductMasterLocal(row.product_no, { epd_url: v }) }),
@@ -3632,12 +3658,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             " ",
             p.comment
           ] }),
-          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV" }) }),
-          p.databladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.databladUrl, target: "_blank", children: "\xC5pne datablad" }) }),
-          p.dopUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.dopUrl, target: "_blank", children: "\xC5pne DOP" }) }),
-          p.epdUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.epdUrl, target: "_blank", children: "\xC5pne EPD" }) }),
-          p.sikkerhetsdatabladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.sikkerhetsdatabladUrl, target: "_blank", children: "\xC5pne sikkerhetsdatablad" }) }),
-          p.documentFileUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.documentFileUrl, target: "_blank", children: "\xC5pne vedlagt dokument" }) })
+          productDocumentLinks(p).map(([label, url]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: url, target: "_blank", rel: "noreferrer", children: label }) }, label + url))
         ] }, p.item)),
         (manualProducts || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.section || "Annet produkt" }),
@@ -3647,12 +3668,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             " ",
             p.comment
           ] }),
-          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV" }) }),
-          p.databladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.databladUrl, target: "_blank", children: "\xC5pne datablad" }) }),
-          p.dopUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.dopUrl, target: "_blank", children: "\xC5pne DOP" }) }),
-          p.epdUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.epdUrl, target: "_blank", children: "\xC5pne EPD" }) }),
-          p.sikkerhetsdatabladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.sikkerhetsdatabladUrl, target: "_blank", children: "\xC5pne sikkerhetsdatablad" }) }),
-          p.documentFileUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.documentFileUrl, target: "_blank", children: "\xC5pne vedlagt dokument" }) })
+          productDocumentLinks(p).map(([label, url]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: url, target: "_blank", rel: "noreferrer", children: label }) }, label + url))
         ] }, p.id)),
         Object.entries(other).filter(([, v]) => v).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
@@ -3934,7 +3950,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             " ",
             p.comment
           ] }),
-          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV/datablad" }) })
+          productDocumentLinks(p).map(([label, url]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: url, target: "_blank", rel: "noreferrer", children: label }) }, label + url))
         ] }, p.item)),
         (manualProducts || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.section || "Annet produkt" }),
@@ -3944,7 +3960,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             " ",
             p.comment
           ] }),
-          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV/datablad" }) })
+          productDocumentLinks(p).map(([label, url]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: url, target: "_blank", rel: "noreferrer", children: label }) }, label + url))
         ] }, p.id)),
         otherRows.map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
