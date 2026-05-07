@@ -26,6 +26,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     if (lower.includes("ringside") || lower.endsWith("/expo-logo.png") || lower.endsWith("expo-logo.png")) return "";
     return logo;
   };
+  var normalizeDocKey = (value) => String(value || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[®™©]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
   var productSections = [
     { title: "Avretting / st\xF8peprodukter", items: ["Sopro VS582 Avretting", "Sopro 3.50 Avretting", "Sopro HF-S 563 Avretting", "Sopro FS 5\xAE Avretting", "Sopro RDS 960 - Ekspansjonsb\xE5nd", "Sopro Classic EM Hurtigst\xF8p", "Sopro RAM 3\xAE reparasjon og st\xF8pem\xF8rtel", "Sopro RS 462 reparasjonsm\xF8rtel", "Sopro Rapidur M5\xAE hurtigst\xF8p"] },
     { title: "Primer / forsterkningsduk", items: ["Sopro PG-X 1188", "Sopro EPG 1522 - 2 Komponent Epoxy primer", "Sopro HPS 673 - spesial primer ikke sugende", "Sopro GD 749 - primer sugende underlag", "Sopro SG 874 Dampsperre-Primer"] },
@@ -235,17 +236,6 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const savedEmail = window.localStorage.getItem("expoProffDokAuthEmail");
       if (savedEmail) setAuthEmail(savedEmail);
     }, []);
-    const selected = (0, import_react.useMemo)(() => productSections.flatMap((s) => s.items.filter((i) => checked[i]).map((i) => ({
-      section: s.title,
-      item: i,
-      fdvUrl: productDocs[i]?.fdvUrl || "",
-      databladUrl: productDocs[i]?.databladUrl || "",
-      dopUrl: productDocs[i]?.dopUrl || "",
-      epdUrl: productDocs[i]?.epdUrl || "",
-      sikkerhetsdatabladUrl: productDocs[i]?.sikkerhetsdatabladUrl || "",
-      documentFileUrl: productDocs[i]?.documentFileUrl || "",
-      comment: productDocs[i]?.comment || ""
-    }))), [checked, productDocs]);
     const manualSelected = (0, import_react.useMemo)(() => {
       if (Array.isArray(manualProducts)) {
         return manualProducts.filter((p) => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment) || hasValue(p.trade));
@@ -256,9 +246,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }, [manualProducts]);
     const fdvRegisterByProduct = (0, import_react.useMemo)(() => {
       const map = {};
-      (fdvRegister || []).forEach((row) => {
-        if (row?.product_name) map[row.product_name] = row;
-      });
+      const addKey = (key, row) => {
+        const cleanKey = String(key || "").trim();
+        if (!cleanKey) return;
+        map[cleanKey] = row;
+        const normalizedKey = normalizeDocKey(cleanKey);
+        if (normalizedKey) map[normalizedKey] = row;
+      };
+      (fdvRegister || []).forEach((row) => addKey(row?.product_name, row));
       return map;
     }, [fdvRegister]);
     const productMasterByProduct = (0, import_react.useMemo)(() => {
@@ -268,6 +263,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         const cleanKey = String(key || "").trim();
         if (!cleanKey) return;
         if (!map[cleanKey] || scoreRow(row) > scoreRow(map[cleanKey])) map[cleanKey] = row;
+        const normalizedKey = normalizeDocKey(cleanKey);
+        if (normalizedKey && (!map[normalizedKey] || scoreRow(row) > scoreRow(map[normalizedKey]))) map[normalizedKey] = row;
       };
       (productMaster || []).forEach((row) => {
         addKey(row?.app_match_name, row);
@@ -276,12 +273,75 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
       return map;
     }, [productMaster]);
+    const findProductMasterRow = (productName) => productMasterByProduct[productName] || productMasterByProduct[normalizeDocKey(productName)] || null;
+    const findFdvRegisterRow = (productName) => fdvRegisterByProduct[productName] || fdvRegisterByProduct[normalizeDocKey(productName)] || null;
+    const getAutoDocsForProduct = (productName) => {
+      const masterRow = findProductMasterRow(productName);
+      const registerRow = findFdvRegisterRow(productName);
+      return {
+        fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || "",
+        databladUrl: masterRow?.datablad_url || "",
+        dopUrl: masterRow?.dop_url || "",
+        epdUrl: masterRow?.epd_url || "",
+        sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || "",
+        documentFileUrl: masterRow?.document_file_url || "",
+        fdvSource: masterRow ? "product-master" : registerRow ? "admin-register" : ""
+      };
+    };
+    const mergeProductDocs = (productName, current = {}) => {
+      const autoDocs = getAutoDocsForProduct(productName);
+      return {
+        ...current,
+        fdvUrl: hasValue(current.fdvUrl) ? current.fdvUrl : autoDocs.fdvUrl,
+        databladUrl: hasValue(current.databladUrl) ? current.databladUrl : autoDocs.databladUrl,
+        dopUrl: hasValue(current.dopUrl) ? current.dopUrl : autoDocs.dopUrl,
+        epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
+        sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
+        documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
+        fdvSource: current.fdvSource || autoDocs.fdvSource
+      };
+    };
+    const getProductDocForDisplay = (productName) => mergeProductDocs(productName, productDocs[productName] || {});
+    const selected = (0, import_react.useMemo)(() => productSections.flatMap((s) => s.items.filter((i) => checked[i]).map((i) => {
+      const doc = mergeProductDocs(i, productDocs[i] || {});
+      return {
+        section: s.title,
+        item: i,
+        fdvUrl: doc.fdvUrl || "",
+        databladUrl: doc.databladUrl || "",
+        dopUrl: doc.dopUrl || "",
+        epdUrl: doc.epdUrl || "",
+        sikkerhetsdatabladUrl: doc.sikkerhetsdatabladUrl || "",
+        documentFileUrl: doc.documentFileUrl || "",
+        comment: doc.comment || ""
+      };
+    })), [checked, productDocs, productMasterByProduct, fdvRegisterByProduct]);
     const productMasterStats = (0, import_react.useMemo)(() => {
       const rows = productMaster || [];
       const withDocs = rows.filter((row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].some(hasValue)).length;
       const appMatches = rows.filter((row) => row?.used_in_app_standard_list || hasValue(row?.app_match_name)).length;
       return { total: rows.length, withDocs, appMatches };
     }, [productMaster]);
+    (0, import_react.useEffect)(() => {
+      const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
+      if (!checkedNames.length) return;
+      setProductDocs((prev) => {
+        let changed = false;
+        const next = { ...prev };
+        checkedNames.forEach((productName) => {
+          const current = next[productName] || {};
+          const merged = mergeProductDocs(productName, current);
+          const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+          if (!hasAutoDocs) return;
+          const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "fdvSource"];
+          if (keys.some((key) => (current[key] || "") !== (merged[key] || ""))) {
+            next[productName] = merged;
+            changed = true;
+          }
+        });
+        return changed ? next : prev;
+      });
+    }, [checked, productMasterByProduct, fdvRegisterByProduct]);
     const name = company.companyName || "Expo Proffsenter";
     const urlParams = new URLSearchParams(window.location.search);
     const accessMode = urlParams.get("access") || urlParams.get("role") || (urlParams.has("project") ? "kunde" : "");
@@ -289,6 +349,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const isUnderleverandorView = urlParams.has("project") && accessMode === "underleverandor";
     const isReadOnly = urlParams.has("project") && !isUnderleverandorView && !isAdminProjectLink;
     const isAdminUser = !!authUser && (profile?.is_admin === true || profile?.role === "admin" || authUser.email === "kenneth@ringside.no" || !!company.email && authUser.email === company.email);
+    const canUseAdminProjectSync = !!authUser && !!profile?.approved && !isReadOnly;
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
     const applyLockState = (baseProject, sourceProject = {}) => ({
       ...baseProject,
@@ -435,7 +496,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["internt", "Interne notater"],
       ["prosjektliste", "Prosjektliste"],
       ["rapport", "Rapport"],
-      ...isAdminUser && !isReadOnly ? [["admin", "Admin"]] : []
+      ...canUseAdminProjectSync ? [["admin", "Admin"]] : []
     ];
     const currentTabIndex = tabs.findIndex(([id]) => id === tab);
     const previousTab = currentTabIndex > 0 ? tabs[currentTabIndex - 1] : null;
@@ -712,32 +773,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const toggleProductChecked = (productName, isChecked) => {
       setChecked((prev) => ({ ...prev, [productName]: isChecked }));
       if (!isChecked) return;
-      const masterRow = productMasterByProduct[productName];
-      const registerRow = fdvRegisterByProduct[productName];
-      const autoDocs = {
-        fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || "",
-        databladUrl: masterRow?.datablad_url || "",
-        dopUrl: masterRow?.dop_url || "",
-        epdUrl: masterRow?.epd_url || "",
-        sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || "",
-        documentFileUrl: masterRow?.document_file_url || "",
-        fdvSource: masterRow ? "product-master" : registerRow ? "admin-register" : ""
-      };
-      if (!Object.values(autoDocs).some(hasValue)) return;
       setProductDocs((prev) => {
         const current = prev[productName] || {};
+        const merged = mergeProductDocs(productName, current);
+        const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+        if (!hasAutoDocs) return prev;
         return {
           ...prev,
-          [productName]: {
-            ...current,
-            fdvUrl: hasValue(current.fdvUrl) ? current.fdvUrl : autoDocs.fdvUrl,
-            databladUrl: hasValue(current.databladUrl) ? current.databladUrl : autoDocs.databladUrl,
-            dopUrl: hasValue(current.dopUrl) ? current.dopUrl : autoDocs.dopUrl,
-            epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
-            sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
-            documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
-            fdvSource: current.fdvSource || autoDocs.fdvSource
-          }
+          [productName]: merged
         };
       });
     };
@@ -1524,6 +1567,68 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setProductMaster((prev) => (prev || []).map((x) => x.product_no === data.product_no ? data : x));
       alert("Produktdokumentasjon lagret.");
     };
+    const syncCurrentProjectProducts = async () => {
+      const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
+      if (!checkedNames.length) return alert("Ingen standardprodukter er valgt i dette prosjektet.");
+      let updatedCount = 0;
+      let missingCount = 0;
+      const nextProductDocs = { ...productDocs };
+      checkedNames.forEach((productName) => {
+        const current = nextProductDocs[productName] || {};
+        const merged = mergeProductDocs(productName, current);
+        const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+        if (!hasAutoDocs) {
+          missingCount += 1;
+          return;
+        }
+        const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "fdvSource"];
+        const changed = keys.some((key) => (current[key] || "") !== (merged[key] || ""));
+        if (changed) updatedCount += 1;
+        nextProductDocs[productName] = merged;
+      });
+      setProductDocs(nextProductDocs);
+      if (projectId && authUser) {
+        const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        if (fetchError || !existing) {
+          console.error(fetchError);
+          return alert("Synk er gjort på skjermen, men prosjektet kunne ikke lagres automatisk: " + (fetchError?.message || "Fant ikke prosjekt"));
+        }
+        if (rowIsLocked(existing)) return alert("Prosjektet er låst. Lås opp prosjektet før dokumentlinker synkes og lagres.");
+        const existingData = dataFromRow(existing);
+        const cleanData = JSON.parse(JSON.stringify({
+          ...existingData,
+          company,
+          user,
+          project: { ...emptyProject(), ...existingData.project || {}, ...project },
+          checked,
+          productDocs: nextProductDocs,
+          manualProducts,
+          other,
+          surf,
+          photos,
+          access,
+          inst,
+          files,
+          checklist,
+          tilbud,
+          overtagelse,
+          projectLog,
+          internalNotes
+        }));
+        const { error: updateError } = await supabase.from("projects").update({
+          data: cleanData,
+          title: project.projectName || project.address || existing.title || "Uten navn",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        }).eq("id", projectId);
+        if (updateError) {
+          console.error(updateError);
+          return alert("Synk er gjort på skjermen, men kunne ikke lagres i Supabase: " + updateError.message);
+        }
+      }
+      if (updatedCount > 0) return alert(`Synk fullført. ${updatedCount} produkt${updatedCount === 1 ? "" : "er"} fikk dokumentlinker oppdatert.${missingCount ? ` ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i produktmaster.` : ""}`);
+      if (missingCount > 0) return alert(`Synk fullført, men ingen nye dokumentlinker ble lagt til. ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i produktmaster.`);
+      alert("Synk fullført. Valgte produkter hadde allerede dokumentlinker.");
+    };
     const signIn = async () => {
       const cleanEmail = authEmail.trim();
       if (!cleanEmail || !authPassword) return alert("Fyll inn e-post og passord.");
@@ -1754,7 +1859,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: productSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
-              const doc = productDocs[i] || {};
+              const doc = getProductDocForDisplay(i);
               return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
@@ -2623,7 +2728,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: productSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
-            const doc = productDocs[i] || {};
+            const doc = getProductDocForDisplay(i);
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
@@ -3058,8 +3163,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           })
         ] }),
         tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
-        tab === "admin" && isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan administrator godkjenne brukere og vedlikeholde felles FDV-register. FDV-linker fra registeret fylles automatisk inn n\xE5r et standardprodukt krysses av i et prosjekt, men kan fortsatt overstyres manuelt per prosjekt." }),
+        tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan hovedadministrator godkjenne brukere, vedlikeholde produktmaster og synke dokumentlinker på prosjektet." : "Her kan godkjente brukere synke valgte produkter i prosjektet mot produktmaster. Brukergodkjenning og redigering av produktmaster er kun for hovedadministrator." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Prosjektsynk mot produktmaster" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne på eksisterende prosjekter hvis FDV, datablad, DOP eller EPD ikke vises på allerede valgte produkter. Synken fyller inn manglende dokumentlinker fra produktmaster uten å overskrive manuelle endringer." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: syncCurrentProjectProducts, disabled: !projectId, children: projectId ? "Synk dette prosjektet" : "Åpne eller lagre prosjekt først" })
+          ] }),
+          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Forutsetter at Supabase-policy tillater admin \xE5 lese og oppdatere profiles." }),
@@ -3126,6 +3237,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 ] })
               ] })
             ] }, "pm-" + row.product_no))
+          ] })
           ] })
         ] })
       ] }),
