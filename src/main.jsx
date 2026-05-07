@@ -17,6 +17,15 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
   );
   var uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+  var DEFAULT_EXPO_COMPANY = { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" };
+  var DEFAULT_EXPO_LOGO_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="520" height="160" viewBox="0 0 520 160"><rect width="520" height="160" rx="24" fill="#ffffff"/><text x="32" y="72" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="800" fill="#082f3a">Expo</text><text x="32" y="118" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="800" fill="#00cfd6">Proffsenter</text></svg>`)}`;
+  var cleanLogoUrl = (value) => {
+    const logo = String(value || "").trim();
+    if (!logo) return "";
+    const lower = logo.toLowerCase();
+    if (lower.includes("ringside") || lower.endsWith("/expo-logo.png") || lower.endsWith("expo-logo.png")) return "";
+    return logo;
+  };
   var productSections = [
     { title: "Avretting / st\xF8peprodukter", items: ["Sopro VS582 Avretting", "Sopro 3.50 Avretting", "Sopro HF-S 563 Avretting", "Sopro FS 5\xAE Avretting", "Sopro RDS 960 - Ekspansjonsb\xE5nd", "Sopro Classic EM Hurtigst\xF8p", "Sopro RAM 3\xAE reparasjon og st\xF8pem\xF8rtel", "Sopro RS 462 reparasjonsm\xF8rtel", "Sopro Rapidur M5\xAE hurtigst\xF8p"] },
     { title: "Primer / forsterkningsduk", items: ["Sopro PG-X 1188", "Sopro EPG 1522 - 2 Komponent Epoxy primer", "Sopro HPS 673 - spesial primer ikke sugende", "Sopro GD 749 - primer sugende underlag", "Sopro SG 874 Dampsperre-Primer"] },
@@ -155,70 +164,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     ...log || {},
     messages: Array.isArray(log?.messages) ? log.messages : []
   });
-  var safeArray = (value) => Array.isArray(value) ? value : [];
-  var normalizeDocKey = (value) => String(value || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[®™©]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
-  var normalizeManualProductsBySection = (value = {}) => {
-    const result = {};
-    const addProduct = (section, product) => {
-      if (!product || typeof product !== "object") product = { name: String(product || "") };
-      const cleanSection = String(section || product?.section || product?.trade || "Andre produkter").trim() || "Andre produkter";
-      const cleanProduct = {
-        id: product?.id || uid(),
-        name: product?.name || product?.product_name || product?.title || "",
-        fdvUrl: product?.fdvUrl || product?.fdv_url || product?.url || "",
-        comment: product?.comment || product?.notes || ""
-      };
-      result[cleanSection] = [...result[cleanSection] || [], cleanProduct];
-    };
-    if (Array.isArray(value)) {
-      value.forEach((product) => addProduct(product?.section || product?.trade || "Andre produkter", product || {}));
-      return result;
-    }
-    Object.entries(value || {}).forEach(([section, products]) => {
-      if (Array.isArray(products)) {
-        products.forEach((product) => addProduct(section, product || {}));
-      } else if (products && typeof products === "object") {
-        addProduct(section, products);
-      }
-    });
-    return result;
-  };
-  var normalizeChecklistValue = (value) => {
-    if (!value || typeof value !== "object") {
-      return { status: typeof value === "string" ? value : "", comment: "", photos: [] };
-    }
-    return {
-      ...value,
-      status: value.status || "",
-      comment: value.comment || "",
-      photos: safeArray(value.photos)
-    };
-  };
-  class AppErrorBoundary extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = { error: null };
-    }
-    static getDerivedStateFromError(error) {
-      return { error };
-    }
-    componentDidCatch(error, info) {
-      console.error("Expo ProffDok stoppet av en visningsfeil:", error, info);
-    }
-    render() {
-      if (this.state.error) {
-        return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Noe stoppet visningen" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Appen traff en gammel eller uventet prosjektdatastruktur. Prøv Oppdater prosjektliste / åpne prosjektet på nytt. Meldingen under gjør at feilen kan spores uten hvit skjerm." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", { style: { whiteSpace: "pre-wrap", fontSize: "12px", background: "#f8fafc", padding: "12px", borderRadius: "12px", border: "1px solid #dbe7ec" }, children: String(this.state.error?.message || this.state.error || "Ukjent feil") })
-        ] }) });
-      }
-      return this.props.children;
-    }
-  }
   function App() {
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
-    const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
+    const [company, setCompany] = (0, import_react.useState)(DEFAULT_EXPO_COMPANY);
     const [user, setUser] = (0, import_react.useState)({ name: "", email: "", role: "Eier / administrator" });
     const [project, setProject] = (0, import_react.useState)(emptyProject());
     const [checked, setChecked] = (0, import_react.useState)({});
@@ -298,24 +246,18 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       documentFileUrl: productDocs[i]?.documentFileUrl || "",
       comment: productDocs[i]?.comment || ""
     }))), [checked, productDocs]);
-    const manualProductsBySection = (0, import_react.useMemo)(() => normalizeManualProductsBySection(manualProducts), [manualProducts]);
-    const getManualProductsForSection = (section) => manualProductsBySection[section] || [];
     const manualSelected = (0, import_react.useMemo)(() => {
-      return Object.entries(manualProductsBySection || {}).flatMap(
+      if (Array.isArray(manualProducts)) {
+        return manualProducts.filter((p) => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment) || hasValue(p.trade));
+      }
+      return Object.entries(manualProducts || {}).flatMap(
         ([section, products]) => (products || []).filter((p) => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment)).map((p) => ({ ...p, section }))
       );
-    }, [manualProductsBySection]);
+    }, [manualProducts]);
     const fdvRegisterByProduct = (0, import_react.useMemo)(() => {
       const map = {};
-      const addKey = (key, row) => {
-        const cleanKey = String(key || "").trim();
-        if (!cleanKey) return;
-        map[cleanKey] = row;
-        const normalizedKey = normalizeDocKey(cleanKey);
-        if (normalizedKey) map[normalizedKey] = row;
-      };
       (fdvRegister || []).forEach((row) => {
-        addKey(row?.product_name, row);
+        if (row?.product_name) map[row.product_name] = row;
       });
       return map;
     }, [fdvRegister]);
@@ -326,8 +268,6 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         const cleanKey = String(key || "").trim();
         if (!cleanKey) return;
         if (!map[cleanKey] || scoreRow(row) > scoreRow(map[cleanKey])) map[cleanKey] = row;
-        const normalizedKey = normalizeDocKey(cleanKey);
-        if (normalizedKey && (!map[normalizedKey] || scoreRow(row) > scoreRow(map[normalizedKey]))) map[normalizedKey] = row;
       };
       (productMaster || []).forEach((row) => {
         addKey(row?.app_match_name, row);
@@ -336,69 +276,6 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
       return map;
     }, [productMaster]);
-    const findProductMasterRow = (productName) => productMasterByProduct[productName] || productMasterByProduct[normalizeDocKey(productName)] || null;
-    const findFdvRegisterRow = (productName) => fdvRegisterByProduct[productName] || fdvRegisterByProduct[normalizeDocKey(productName)] || null;
-    const getAutoDocsForProduct = (productName) => {
-      const masterRow = findProductMasterRow(productName);
-      const registerRow = findFdvRegisterRow(productName);
-      return {
-        fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || "",
-        databladUrl: masterRow?.datablad_url || "",
-        dopUrl: masterRow?.dop_url || "",
-        epdUrl: masterRow?.epd_url || "",
-        sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || "",
-        documentFileUrl: masterRow?.document_file_url || "",
-        fdvSource: masterRow ? "product-master" : registerRow ? "admin-register" : ""
-      };
-    };
-    const mergeProductDocs = (productName, current = {}) => {
-      const autoDocs = getAutoDocsForProduct(productName);
-      return {
-        ...current,
-        fdvUrl: hasValue(current.fdvUrl) ? current.fdvUrl : autoDocs.fdvUrl,
-        databladUrl: hasValue(current.databladUrl) ? current.databladUrl : autoDocs.databladUrl,
-        dopUrl: hasValue(current.dopUrl) ? current.dopUrl : autoDocs.dopUrl,
-        epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
-        sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
-        documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
-        fdvSource: current.fdvSource || autoDocs.fdvSource
-      };
-    };
-    const getProductDocForDisplay = (productName) => mergeProductDocs(productName, productDocs[productName] || {});
-    const selectedWithAutoDocs = (0, import_react.useMemo)(() => productSections.flatMap((s) => s.items.filter((i) => checked[i]).map((i) => {
-      const doc = mergeProductDocs(i, productDocs[i] || {});
-      return {
-        section: s.title,
-        item: i,
-        fdvUrl: doc.fdvUrl || "",
-        databladUrl: doc.databladUrl || "",
-        dopUrl: doc.dopUrl || "",
-        epdUrl: doc.epdUrl || "",
-        sikkerhetsdatabladUrl: doc.sikkerhetsdatabladUrl || "",
-        documentFileUrl: doc.documentFileUrl || "",
-        comment: doc.comment || ""
-      };
-    })), [checked, productDocs, productMasterByProduct, fdvRegisterByProduct]);
-    (0, import_react.useEffect)(() => {
-      const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
-      if (!checkedNames.length) return;
-      let changed = false;
-      setProductDocs((prev) => {
-        const next = { ...prev };
-        checkedNames.forEach((productName) => {
-          const current = next[productName] || {};
-          const merged = mergeProductDocs(productName, current);
-          const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
-          if (!hasAutoDocs) return;
-          const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "fdvSource"];
-          if (keys.some((key) => (current[key] || "") !== (merged[key] || ""))) {
-            next[productName] = merged;
-            changed = true;
-          }
-        });
-        return changed ? next : prev;
-      });
-    }, [checked, productMasterByProduct, fdvRegisterByProduct]);
     const productMasterStats = (0, import_react.useMemo)(() => {
       const rows = productMaster || [];
       const withDocs = rows.filter((row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].some(hasValue)).length;
@@ -411,9 +288,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const isAdminProjectLink = urlParams.has("project") && accessMode === "admin";
     const isUnderleverandorView = urlParams.has("project") && accessMode === "underleverandor";
     const isReadOnly = urlParams.has("project") && !isUnderleverandorView && !isAdminProjectLink;
-    const isMainAdminUser = !!authUser && (profile?.is_admin === true || profile?.role === "admin" || authUser.email === "kenneth@ringside.no" || !!company.email && authUser.email === company.email);
-    const canUseProductAdmin = !!authUser && profile?.approved === true && !isReadOnly;
-    const isAdminUser = isMainAdminUser || canUseProductAdmin;
+    const isAdminUser = !!authUser && (profile?.is_admin === true || profile?.role === "admin" || authUser.email === "kenneth@ringside.no" || !!company.email && authUser.email === company.email);
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
     const applyLockState = (baseProject, sourceProject = {}) => ({
       ...baseProject,
@@ -572,7 +447,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     };
     const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes });
     const unpackData = (data, preserveDraft = false) => {
-      setCompany(data.company || { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
+      setCompany(data.company ? { ...DEFAULT_EXPO_COMPANY, ...data.company, logoUrl: cleanLogoUrl(data.company.logoUrl) } : DEFAULT_EXPO_COMPANY);
       setUser(data.user || { name: "", email: "", role: "Eier / administrator" });
       setProject({ ...emptyProject(), ...data.project || {} });
       setChecked(data.checked || {});
@@ -666,15 +541,15 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const applyProfile = (row) => {
       if (!row) return;
       setProfile(row);
-      setCompany((c) => ({
-        ...c,
-        companyName: row.company_name || c.companyName || "Expo Proffsenter",
+      setCompany(() => ({
+        ...DEFAULT_EXPO_COMPANY,
+        companyName: row.company_name || "Expo Proffsenter",
         orgNumber: row.org_number || "",
         address: row.address || "",
         phone: row.phone || "",
         email: row.email || "",
         website: row.website || "",
-        logoUrl: row.logo_url || c.logoUrl || ""
+        logoUrl: cleanLogoUrl(row.logo_url)
       }));
     };
     const ensureProfile = async (sessionUser) => {
@@ -837,46 +712,55 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const toggleProductChecked = (productName, isChecked) => {
       setChecked((prev) => ({ ...prev, [productName]: isChecked }));
       if (!isChecked) return;
+      const masterRow = productMasterByProduct[productName];
+      const registerRow = fdvRegisterByProduct[productName];
+      const autoDocs = {
+        fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || "",
+        databladUrl: masterRow?.datablad_url || "",
+        dopUrl: masterRow?.dop_url || "",
+        epdUrl: masterRow?.epd_url || "",
+        sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || "",
+        documentFileUrl: masterRow?.document_file_url || "",
+        fdvSource: masterRow ? "product-master" : registerRow ? "admin-register" : ""
+      };
+      if (!Object.values(autoDocs).some(hasValue)) return;
       setProductDocs((prev) => {
         const current = prev[productName] || {};
-        const merged = mergeProductDocs(productName, current);
-        const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
-        if (!hasAutoDocs) return prev;
         return {
           ...prev,
-          [productName]: merged
+          [productName]: {
+            ...current,
+            fdvUrl: hasValue(current.fdvUrl) ? current.fdvUrl : autoDocs.fdvUrl,
+            databladUrl: hasValue(current.databladUrl) ? current.databladUrl : autoDocs.databladUrl,
+            dopUrl: hasValue(current.dopUrl) ? current.dopUrl : autoDocs.dopUrl,
+            epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
+            sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
+            documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
+            fdvSource: current.fdvSource || autoDocs.fdvSource
+          }
         };
       });
     };
     const addManualProduct = (section) => {
-      setManualProducts((prev) => {
-        const normalized = normalizeManualProductsBySection(prev);
-        return {
-          ...normalized,
-          [section]: [
-            ...normalized[section] || [],
-            { id: uid(), name: "", fdvUrl: "", comment: "" }
-          ]
-        };
-      });
+      setManualProducts((prev) => ({
+        ...prev || {},
+        [section]: [
+          ...(prev || {})[section] || [],
+          { id: uid(), name: "", fdvUrl: "", comment: "" }
+        ]
+      }));
     };
     const updateManualProduct = (section, id, patch) => {
-      setManualProducts((prev) => {
-        const normalized = normalizeManualProductsBySection(prev);
-        return {
-          ...normalized,
-          [section]: (normalized[section] || []).map((p) => p.id === id ? { ...p, ...patch } : p)
-        };
-      });
+      setManualProducts((prev) => ({
+        ...prev || {},
+        [section]: ((prev || {})[section] || []).map((p) => p.id === id ? { ...p, ...patch } : p)
+      }));
     };
     const removeManualProduct = (section, id) => {
-      setManualProducts((prev) => {
-        const normalized = normalizeManualProductsBySection(prev);
-        return {
-          ...normalized,
-          [section]: (normalized[section] || []).filter((p) => p.id !== id)
-        };
-      });
+      setManualProducts((prev) => ({
+        ...prev || {},
+        [section]: ((prev || {})[section] || []).filter((p) => p.id !== id)
+      }));
     };
     const markChatAsRead = async (reader = "admin") => {
       if (!projectId) return;
@@ -1502,7 +1386,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         address: company.address || "",
         phone: company.phone || "",
         website: company.website || "",
-        logo_url: company.logoUrl || ""
+        logo_url: cleanLogoUrl(company.logoUrl) || ""
       };
       const { error } = await supabase.from("profiles").update(payload).eq("id", authUser.id);
       if (error) return alert("Kunne ikke lagre firmaprofil: " + error.message);
@@ -1511,7 +1395,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       alert("Firmaprofil lagret");
     };
     const loadAdminUsers = async () => {
-      if (!isMainAdminUser) return alert("Du har ikke tilgang til hovedadmin.");
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
       setAdminLoading(true);
       const { data, error } = await supabase.from("profiles").select("id,email,approved,company_name,created_at").order("created_at", { ascending: false });
       setAdminLoading(false);
@@ -1522,7 +1406,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setAdminUsers(data || []);
     };
     const approveAdminUser = async (id) => {
-      if (!isMainAdminUser) return alert("Du har ikke tilgang til hovedadmin.");
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
       const { error } = await supabase.from("profiles").update({ approved: true }).eq("id", id);
       if (error) {
         console.error(error);
@@ -1532,7 +1416,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       loadAdminUsers();
     };
     const revokeAdminUser = async (id) => {
-      if (!isMainAdminUser) return alert("Du har ikke tilgang til hovedadmin.");
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
       if (!window.confirm("Vil du fjerne godkjenning for denne brukeren?")) return;
       const { error } = await supabase.from("profiles").update({ approved: false }).eq("id", id);
       if (error) {
@@ -1554,7 +1438,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (notify) alert(`FDV-register oppdatert. Fant ${(data || []).length} produkter.`);
     };
     const seedFdvRegister = async () => {
-      if (!isMainAdminUser) return alert("Du har ikke tilgang til FDV-register.");
+      if (!isAdminUser) return alert("Du har ikke tilgang til FDV-register.");
       if (!window.confirm("Vil du legge inn alle standardproduktene i FDV-registeret? Eksisterende produkter oppdateres ikke, men manglende produkter legges til.")) return;
       setFdvLoading(true);
       const rows = productSections.flatMap((section) => section.items.map((productName) => ({
@@ -1575,7 +1459,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       alert("FDV-register er klargjort med standardprodukter.");
     };
     const saveFdvRegisterRow = async (row) => {
-      if (!isMainAdminUser) return alert("Du har ikke tilgang til FDV-register.");
+      if (!isAdminUser) return alert("Du har ikke tilgang til FDV-register.");
       if (!row?.product_name) return alert("Produktnavn mangler.");
       const payload = {
         section: row.section || "",
@@ -1620,7 +1504,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setProductMaster((prev) => (prev || []).map((row) => row.product_no === productNo ? { ...row, ...patch } : row));
     };
     const saveProductMasterRow = async (row) => {
-      if (!isMainAdminUser) return alert("Du har ikke tilgang til å endre produktmaster.");
+      if (!isAdminUser) return alert("Du har ikke tilgang til produktmaster.");
       if (!row?.product_no) return alert("Varenummer mangler.");
       const payload = {
         fdv_url: row.fdv_url || "",
@@ -1870,7 +1754,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: productSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
-              const doc = getProductDocForDisplay(i);
+              const doc = productDocs[i] || {};
               return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
@@ -1900,8 +1784,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
                 " Legg til annet produkt"
               ] }),
-              getManualProductsForSection(s.title).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
-              getManualProductsForSection(s.title).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              ((manualProducts || {})[s.title] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
+              ((manualProducts || {})[s.title] || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
@@ -2103,7 +1987,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
-          customerTab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CustomerReport, { company, name, project, selected: selectedWithAutoDocs, manualProducts: manualSelected, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }),
+          customerTab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CustomerReport, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }),
           customerTab === "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : totalChatCount ? `Chat (${totalChatCount})` : "Chat", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan kunde sende sp\xF8rsm\xE5l eller beskjeder direkte inn p\xE5 prosjektet. Chatten oppdateres automatisk live, og utf\xF8rende varsles p\xE5 e-post n\xE5r e-postvarsling er satt opp." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Ny melding fra kunde", value: projectLog.draft || "", onChange: (v) => setProjectLog((prev) => ({ ...prev, draft: v })) }),
@@ -2739,7 +2623,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: productSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
-            const doc = getProductDocForDisplay(i);
+            const doc = productDocs[i] || {};
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
@@ -2769,8 +2653,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
               " Legg til annet produkt"
             ] }),
-            getManualProductsForSection(s.title).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
-            getManualProductsForSection(s.title).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            ((manualProducts || {})[s.title] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
+            ((manualProducts || {})[s.title] || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
@@ -3173,10 +3057,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] }, p.id);
           })
         ] }),
-        tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected: selectedWithAutoDocs, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
+        tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
         tab === "admin" && isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan brukere synke valgt prosjekt mot produktmaster. Hovedadministratorer kan i tillegg godkjenne brukere og vedlikeholde dokumentlinker i produktmaster." }),
-          isMainAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan administrator godkjenne brukere og vedlikeholde felles FDV-register. FDV-linker fra registeret fylles automatisk inn n\xE5r et standardprodukt krysses av i et prosjekt, men kan fortsatt overstyres manuelt per prosjekt." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Forutsetter at Supabase-policy tillater admin \xE5 lese og oppdatere profiles." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
@@ -3215,38 +3099,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Status" })
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadProductMaster(true), children: productMasterLoading ? "Henter produktmaster..." : "Oppdater produktmaster" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
-                const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
-                if (!checkedNames.length) return alert("Ingen standardprodukter er valgt i dette prosjektet.");
-                const matchedNames = [];
-                const missingNames = [];
-                setProductDocs((prev) => {
-                  const next = { ...prev };
-                  checkedNames.forEach((productName) => {
-                    const merged = mergeProductDocs(productName, next[productName] || {});
-                    const hasDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
-                    if (!hasDocs) {
-                      missingNames.push(productName);
-                      return;
-                    }
-                    next[productName] = merged;
-                    matchedNames.push(productName);
-                  });
-                  return next;
-                });
-                if (matchedNames.length) {
-                  const missingText = missingNames.length ? ` ${missingNames.length} valgt${missingNames.length === 1 ? "" : "e"} produkt${missingNames.length === 1 ? "" : "er"} manglet dokumentmatch.` : "";
-                  alert(`Synk fullført. ${matchedNames.length} produkt${matchedNames.length === 1 ? "" : "er"} ble koblet mot dokumentlinker.${missingText} Husk å trykke Oppdater prosjekt for å lagre.`);
-                } else {
-                  alert("Ingen dokumentlinker ble funnet for valgte produkter. Sjekk app_match_name i produktmaster.");
-                }
-              }, children: "Synk dette prosjektet" })
-            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadProductMaster(true), children: productMasterLoading ? "Henter produktmaster..." : "Oppdater produktmaster" }) }),
             (productMaster || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter funnet i produktmaster. Kj\xF8r SQL-filen fra flisLAB-importen f\xF8rst." }),
-            !isMainAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Du har tilgang til å hente produktmaster og synke dette prosjektet. Redigering av selve produktmasteren og brukergodkjenning er forbeholdt hovedadministrator." }),
-            isMainAdminUser && (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: row.product_name }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                 row.product_no,
@@ -3358,7 +3213,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     };
   }
   function Brand({ logo, name }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: "260px", height: "80px", overflow: "hidden", display: "flex", alignItems: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: logo ? logo : "/expo-logo.png", alt: name || "Expo Proffsenter", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) });
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: "260px", height: "80px", overflow: "hidden", display: "flex", alignItems: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: cleanLogoUrl(logo) || DEFAULT_EXPO_LOGO_SVG, alt: name || "Expo Proffsenter", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) });
   }
   function Section({ title, icon, children }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
@@ -3406,9 +3261,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [openCategories, setOpenCategories] = import_react.default.useState(() => ({ [checklistTemplate[0]?.category || ""]: true }));
     const groupStats = (group) => {
       const total = group.items.length;
-      const done = group.items.filter((item) => hasValue(normalizeChecklistValue(checklist?.[group.category]?.[item]).status)).length;
-      const deviations = group.items.filter((item) => normalizeChecklistValue(checklist?.[group.category]?.[item]).status === "Avvik").length;
-      const photos = group.items.reduce((sum, item) => sum + normalizeChecklistValue(checklist?.[group.category]?.[item]).photos.length, 0);
+      const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
+      const deviations = group.items.filter((item) => checklist?.[group.category]?.[item]?.status === "Avvik").length;
+      const photos = group.items.reduce((sum, item) => sum + (checklist?.[group.category]?.[item]?.photos || []).length, 0);
       return { total, done, missing: Math.max(0, total - done), deviations, photos };
     };
     const totalStats = checklistTemplate.reduce((acc, group) => {
@@ -3489,7 +3344,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "\u26A0\uFE0F Avvik" : stats.missing === 0 ? "\u2705 Ferdig" : stats.done > 0 ? "\u{1F7E1} P\xE5g\xE5r" : "\u26AA Mangler" })
           ] }),
           isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.map((item) => {
-            const value = normalizeChecklistValue(checklist?.[group.category]?.[item]);
+            const value = checklist[group.category]?.[item] || {};
             const pointTone = value.status === "Avvik" ? "avvik" : value.status ? "done" : "missing";
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${pointTone}`, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistHeader", children: [
@@ -3524,7 +3379,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 " Ta bilde / last opp bilde",
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
               ] }),
-              (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: safeArray(value.photos).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+              (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: value.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name })
               ] }, p.id)) })
@@ -3538,7 +3393,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           " Last opp sjekkliste / vedlegg",
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", multiple: true, onChange: (e) => addFiles(e.target.files) })
         ] }),
-        safeArray(files).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
+        files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: f.name }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
             "Lastet opp av ",
@@ -3773,7 +3628,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekklister og vedlegg" }),
-        safeArray(files).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
+        files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Prosjekttilgang" }),
@@ -4046,11 +3901,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         ] }, m.id))
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist }),
-      safeArray(files).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+      (files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekklister og vedlegg" }),
-        safeArray(files).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
+        files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("footer", { children: "Levert av Expo Proffsenter" })
     ] });
   }
-  (0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppErrorBoundary, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}) }));
+  (0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}));
