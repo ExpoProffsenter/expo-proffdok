@@ -183,6 +183,8 @@ function App() {
   const [projectUnreadOnly, setProjectUnreadOnly] = useState(false);
   const [fdvRegister, setFdvRegister] = useState([]);
   const [fdvLoading, setFdvLoading] = useState(false);
+  const [productMaster, setProductMaster] = useState([]);
+  const [productMasterLoading, setProductMasterLoading] = useState(false);
   const latestStateRef = useRef({});
   const lastChatMessageCountRef = useRef(0);
   const lastChatRefreshAtRef = useRef(0);
@@ -200,7 +202,17 @@ function App() {
     if (savedEmail) setAuthEmail(savedEmail);
   }, []);
 
-  const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({ section:s.title, item:i, fdvUrl: productDocs[i]?.fdvUrl || '', comment: productDocs[i]?.comment || '' }))), [checked, productDocs]);
+  const selected = useMemo(() => productSections.flatMap(s => s.items.filter(i => checked[i]).map(i => ({
+    section:s.title,
+    item:i,
+    fdvUrl: productDocs[i]?.fdvUrl || '',
+    databladUrl: productDocs[i]?.databladUrl || '',
+    dopUrl: productDocs[i]?.dopUrl || '',
+    epdUrl: productDocs[i]?.epdUrl || '',
+    sikkerhetsdatabladUrl: productDocs[i]?.sikkerhetsdatabladUrl || '',
+    documentFileUrl: productDocs[i]?.documentFileUrl || '',
+    comment: productDocs[i]?.comment || ''
+  }))), [checked, productDocs]);
   const manualSelected = useMemo(() => {
     if (Array.isArray(manualProducts)) {
       return manualProducts.filter(p => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment) || hasValue(p.trade));
@@ -218,6 +230,29 @@ function App() {
     });
     return map;
   }, [fdvRegister]);
+
+  const productMasterByProduct = useMemo(() => {
+    const map = {};
+    const scoreRow = (row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].filter(hasValue).length;
+    const addKey = (key, row) => {
+      const cleanKey = String(key || '').trim();
+      if (!cleanKey) return;
+      if (!map[cleanKey] || scoreRow(row) > scoreRow(map[cleanKey])) map[cleanKey] = row;
+    };
+    (productMaster || []).forEach(row => {
+      addKey(row?.app_match_name, row);
+      addKey(row?.product_family, row);
+      addKey(row?.product_name, row);
+    });
+    return map;
+  }, [productMaster]);
+
+  const productMasterStats = useMemo(() => {
+    const rows = productMaster || [];
+    const withDocs = rows.filter(row => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].some(hasValue)).length;
+    const appMatches = rows.filter(row => row?.used_in_app_standard_list || hasValue(row?.app_match_name)).length;
+    return { total: rows.length, withDocs, appMatches };
+  }, [productMaster]);
   const name = company.companyName || 'Expo Proffsenter';
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -646,6 +681,7 @@ function App() {
   useEffect(() => {
     if (!isReadOnly) {
       loadFdvRegister(false);
+      loadProductMaster(false);
     }
   }, [isReadOnly]);
 
@@ -761,18 +797,33 @@ function App() {
 
     if (!isChecked) return;
 
+    const masterRow = productMasterByProduct[productName];
     const registerRow = fdvRegisterByProduct[productName];
-    if (!registerRow?.fdv_url) return;
+    const autoDocs = {
+      fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || '',
+      databladUrl: masterRow?.datablad_url || '',
+      dopUrl: masterRow?.dop_url || '',
+      epdUrl: masterRow?.epd_url || '',
+      sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || '',
+      documentFileUrl: masterRow?.document_file_url || '',
+      fdvSource: masterRow ? 'product-master' : (registerRow ? 'admin-register' : '')
+    };
+
+    if (!Object.values(autoDocs).some(hasValue)) return;
 
     setProductDocs(prev => {
       const current = prev[productName] || {};
-      if (hasValue(current.fdvUrl)) return prev;
       return {
         ...prev,
         [productName]: {
           ...current,
-          fdvUrl: registerRow.fdv_url,
-          fdvSource: 'admin-register'
+          fdvUrl: hasValue(current.fdvUrl) ? current.fdvUrl : autoDocs.fdvUrl,
+          databladUrl: hasValue(current.databladUrl) ? current.databladUrl : autoDocs.databladUrl,
+          dopUrl: hasValue(current.dopUrl) ? current.dopUrl : autoDocs.dopUrl,
+          epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
+          sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
+          documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
+          fdvSource: current.fdvSource || autoDocs.fdvSource
         }
       };
     });
@@ -1704,6 +1755,61 @@ function App() {
     });
   };
 
+  const loadProductMaster = async (notify = false) => {
+    setProductMasterLoading(true);
+    const { data, error } = await supabase
+      .from('product_document_master')
+      .select('*')
+      .order('category', { ascending:true })
+      .order('product_family', { ascending:true })
+      .order('product_name', { ascending:true });
+    setProductMasterLoading(false);
+
+    if (error) {
+      console.warn('Kunne ikke hente produktmaster:', error.message);
+      if (notify) alert('Kunne ikke hente produktmaster. Sjekk at SQL-filen er kjørt i Supabase: ' + error.message);
+      return;
+    }
+
+    setProductMaster(data || []);
+    if (notify) alert(`Produktmaster oppdatert. Fant ${(data || []).length} produkter/varianter.`);
+  };
+
+  const updateProductMasterLocal = (productNo, patch) => {
+    setProductMaster(prev => (prev || []).map(row => row.product_no === productNo ? { ...row, ...patch } : row));
+  };
+
+  const saveProductMasterRow = async (row) => {
+    if (!isAdminUser) return alert('Du har ikke tilgang til produktmaster.');
+    if (!row?.product_no) return alert('Varenummer mangler.');
+
+    const payload = {
+      fdv_url: row.fdv_url || '',
+      datablad_url: row.datablad_url || '',
+      dop_url: row.dop_url || '',
+      epd_url: row.epd_url || '',
+      sikkerhetsdatablad_url: row.sikkerhetsdatablad_url || '',
+      document_file_url: row.document_file_url || '',
+      comment: row.comment || '',
+      active: row.active !== false
+    };
+
+    const { data, error } = await supabase
+      .from('product_document_master')
+      .update(payload)
+      .eq('product_no', row.product_no)
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error(error);
+      return alert('Kunne ikke lagre produktmaster-rad: ' + error.message);
+    }
+
+    setProductMaster(prev => (prev || []).map(x => x.product_no === data.product_no ? data : x));
+    alert('Produktdokumentasjon lagret.');
+  };
+
   const signIn = async () => {
     const cleanEmail = authEmail.trim();
     if (!cleanEmail || !authPassword) return alert('Fyll inn e-post og passord.');
@@ -1940,8 +2046,13 @@ function App() {
             {checked[i] && <>
               <Grid>
                 <Input label="FDV-/databladlink" value={doc.fdvUrl || ''} onChange={v=>updateProductDoc(i, { fdvUrl:v, fdvSource:'manual' })}/>
+                <Input label="Datablad" value={doc.databladUrl || ''} onChange={v=>updateProductDoc(i, { databladUrl:v, fdvSource:'manual' })}/>
+                <Input label="DOP" value={doc.dopUrl || ''} onChange={v=>updateProductDoc(i, { dopUrl:v, fdvSource:'manual' })}/>
+                <Input label="EPD" value={doc.epdUrl || ''} onChange={v=>updateProductDoc(i, { epdUrl:v, fdvSource:'manual' })}/>
+                <Input label="Sikkerhetsdatablad" value={doc.sikkerhetsdatabladUrl || ''} onChange={v=>updateProductDoc(i, { sikkerhetsdatabladUrl:v, fdvSource:'manual' })}/>
                 <Input label="Hvor brukt / kommentar" value={doc.comment || ''} onChange={v=>updateProductDoc(i, { comment:v })}/>
               </Grid>
+              {doc.fdvSource === 'product-master' && <small>Dokumentlinker er hentet automatisk fra produktmaster.</small>}
               {doc.fdvSource === 'admin-register' && <small>FDV-link er hentet automatisk fra admin FDV-register.</small>}
             </>}
           </div>;
@@ -2654,8 +2765,13 @@ function App() {
             {checked[i] && <>
               <Grid>
                 <Input label="FDV-/databladlink" value={doc.fdvUrl || ''} onChange={v=>updateProductDoc(i, { fdvUrl:v, fdvSource:'manual' })}/>
+                <Input label="Datablad" value={doc.databladUrl || ''} onChange={v=>updateProductDoc(i, { databladUrl:v, fdvSource:'manual' })}/>
+                <Input label="DOP" value={doc.dopUrl || ''} onChange={v=>updateProductDoc(i, { dopUrl:v, fdvSource:'manual' })}/>
+                <Input label="EPD" value={doc.epdUrl || ''} onChange={v=>updateProductDoc(i, { epdUrl:v, fdvSource:'manual' })}/>
+                <Input label="Sikkerhetsdatablad" value={doc.sikkerhetsdatabladUrl || ''} onChange={v=>updateProductDoc(i, { sikkerhetsdatabladUrl:v, fdvSource:'manual' })}/>
                 <Input label="Hvor brukt / kommentar" value={doc.comment || ''} onChange={v=>updateProductDoc(i, { comment:v })}/>
               </Grid>
+              {doc.fdvSource === 'product-master' && <small>Dokumentlinker er hentet automatisk fra produktmaster.</small>}
               {doc.fdvSource === 'admin-register' && <small>FDV-link er hentet automatisk fra admin FDV-register.</small>}
             </>}
           </div>;
@@ -2955,6 +3071,38 @@ function App() {
             </div>;
           })}
         </div>
+
+        <div className="item">
+          <h3>Produktmaster fra flisLAB</h3>
+          <p className="note">Dette er produktdatabasen fra prisfilen, uten priser. Legg inn FDV, datablad, DOP, EPD og sikkerhetsdatablad her. Når et standardprodukt velges i prosjektet, henter appen dokumentlinker automatisk fra denne masteren.</p>
+          <div className="cards projectListHeaderCards">
+            <div className="tile"><b>{productMasterStats.total}</b><span>Produkter/varianter</span></div>
+            <div className="tile"><b>{productMasterStats.appMatches}</b><span>Koblet mot app</span></div>
+            <div className="tile"><b>{productMasterStats.withDocs}</b><span>Med dokumenter</span></div>
+            <div className="tile"><b>{productMasterLoading ? '...' : 'OK'}</b><span>Status</span></div>
+          </div>
+          <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginBottom:'12px' }}>
+            <button type="button" onClick={()=>loadProductMaster(true)}>{productMasterLoading ? 'Henter produktmaster...' : 'Oppdater produktmaster'}</button>
+          </div>
+          {(productMaster || []).length === 0 && <p className="note">Ingen produkter funnet i produktmaster. Kjør SQL-filen fra flisLAB-importen først.</p>}
+          {(productMaster || []).filter(row => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map(row => <div className="item" key={'pm-' + row.product_no}>
+            <b>{row.product_name}</b>
+            <small>{row.product_no} · {row.category || 'Uten kategori'}{row.app_match_name ? ` · App: ${row.app_match_name}` : ''}</small>
+            <Grid>
+              <Input label="FDV-link" value={row.fdv_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { fdv_url:v })}/>
+              <Input label="Datablad" value={row.datablad_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { datablad_url:v })}/>
+              <Input label="DOP" value={row.dop_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { dop_url:v })}/>
+              <Input label="EPD" value={row.epd_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { epd_url:v })}/>
+              <Input label="Sikkerhetsdatablad" value={row.sikkerhetsdatablad_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { sikkerhetsdatablad_url:v })}/>
+              <Input label="Vedlagt dokument / samlet PDF" value={row.document_file_url || ''} onChange={v=>updateProductMasterLocal(row.product_no, { document_file_url:v })}/>
+              <Input label="Kommentar" value={row.comment || ''} onChange={v=>updateProductMasterLocal(row.product_no, { comment:v })}/>
+            </Grid>
+            <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', marginTop:'10px' }}>
+              <button type="button" onClick={()=>saveProductMasterRow(row)}>Lagre dokumenter</button>
+              {row.updated_at && <small>Sist oppdatert: {new Date(row.updated_at).toLocaleString('no-NO')}</small>}
+            </div>
+          </div>)}
+        </div>
       </Section>}
     </main>
 
@@ -3196,7 +3344,7 @@ function Report({company,name,project,selected,manualProducts,other,surf,photos,
     </Grid>
     {(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter(p=>hasValue(p.title) || hasValue(p.value)).map(p=><div className="out" key={p.id || p.title}><b>{p.title || 'Eget punkt'}</b><p>{p.value || 'Ikke oppgitt'}</p></div>)}
     {project.prosjekteringKommentar&&<div className="out"><b>Kommentar / avvik</b><p>{project.prosjekteringKommentar}</p></div>}</section>
-    <section><h2>Produkter / FDV</h2>{selected.map(p=><div className="out" key={p.item}><b>{p.section}</b><p>{p.item}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{(manualProducts || []).map(p=><div className="out" key={p.id}><b>{p.section || 'Annet produkt'}</b><p>{p.name || 'Uten produktnavn'}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>Tidligere registrert annet produkt under {k}:</b> {v}</p>)}</section>
+    <section><h2>Produkter / FDV</h2>{selected.map(p=><div className="out" key={p.item}><b>{p.section}</b><p>{p.item}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV</a></p>}{p.databladUrl&&<p><a href={p.databladUrl} target="_blank">Åpne datablad</a></p>}{p.dopUrl&&<p><a href={p.dopUrl} target="_blank">Åpne DOP</a></p>}{p.epdUrl&&<p><a href={p.epdUrl} target="_blank">Åpne EPD</a></p>}{p.sikkerhetsdatabladUrl&&<p><a href={p.sikkerhetsdatabladUrl} target="_blank">Åpne sikkerhetsdatablad</a></p>}{p.documentFileUrl&&<p><a href={p.documentFileUrl} target="_blank">Åpne vedlagt dokument</a></p>}</div>)}{(manualProducts || []).map(p=><div className="out" key={p.id}><b>{p.section || 'Annet produkt'}</b><p>{p.name || 'Uten produktnavn'}</p>{p.comment&&<p><b>Hvor brukt / kommentar:</b> {p.comment}</p>}{p.fdvUrl&&<p><a href={p.fdvUrl} target="_blank">Åpne FDV</a></p>}{p.databladUrl&&<p><a href={p.databladUrl} target="_blank">Åpne datablad</a></p>}{p.dopUrl&&<p><a href={p.dopUrl} target="_blank">Åpne DOP</a></p>}{p.epdUrl&&<p><a href={p.epdUrl} target="_blank">Åpne EPD</a></p>}{p.sikkerhetsdatabladUrl&&<p><a href={p.sikkerhetsdatabladUrl} target="_blank">Åpne sikkerhetsdatablad</a></p>}{p.documentFileUrl&&<p><a href={p.documentFileUrl} target="_blank">Åpne vedlagt dokument</a></p>}</div>)}{Object.entries(other).filter(([,v])=>v).map(([k,v])=><p key={k}><b>Tidligere registrert annet produkt under {k}:</b> {v}</p>)}</section>
     <section><h2>Overflater</h2>{Object.entries(surf).filter(([,v])=>v).map(([k,v])=><p key={k}><b>{k}:</b> {v}</p>)}</section>
     <section><h2>Bildedokumentasjon</h2>{cats.map(cat=><div key={cat}><h3>{cat}</h3><div className="photos reportPhotos">{photos.filter(p=>p.cat===cat).map(p=><div className="photo" key={p.id}><img src={p.url}/>{p.comment&&<p>{p.comment}</p>}</div>)}</div></div>)}</section>
     <section><h2>Fag, deler og utstyr</h2>{inst.map(i=><div className="out" key={i.id}><b>{i.category}:</b><p>{i.name} {i.qty&&`· ${i.qty}`} {i.supplier&&`· ${i.supplier}`} {i.desc&&` — ${i.desc}`}</p>{i.fdvUrl&&<p><a href={i.fdvUrl} target="_blank">Åpne FDV/datablad</a></p>}</div>)}</section>
