@@ -5,13 +5,13 @@ import { createRoot } from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 import { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck } from 'lucide-react';
 import './style.css';
-import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import { jsx, jsxs } from 'react/jsx-runtime';
 
 const import_react = { default: React, ...ReactNS };
 const import_client = { createRoot };
 const import_supabase_js = { createClient };
 const import_lucide_react = { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck };
-const import_jsx_runtime = { jsx, jsxs, Fragment };
+const import_jsx_runtime = { jsx, jsxs };
   var supabase = (0, import_supabase_js.createClient)(
     "https://dqffxflaoyarbxyiyhop.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
@@ -19,10 +19,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
   var productSections = [
     { title: "Avretting / st\xF8peprodukter", items: ["Sopro VS582 Avretting", "Sopro 3.50 Avretting", "Sopro HF-S 563 Avretting", "Sopro FS 5\xAE Avretting", "Sopro RDS 960 - Ekspansjonsb\xE5nd", "Sopro Classic EM Hurtigst\xF8p", "Sopro RAM 3\xAE reparasjon og st\xF8pem\xF8rtel", "Sopro RS 462 reparasjonsm\xF8rtel", "Sopro Rapidur M5\xAE hurtigst\xF8p"] },
-    { title: "Underlag / Plater", items: ["Kryssfiner / v\xE5tromsfiner", "Tetti Finerpanel 15mm", "Tetti Finerpanel 18mm", "Tetti V\xE5tromsplate 6mm", "Tetti V\xE5tromsplate 10mm", "Tetti V\xE5tromsplate 12mm", "Tetti V\xE5tromsplate 20mm", "Tetti V\xE5tromsplate 30mm", "Tetti V\xE5tromsplate 50mm", "Tetti Hj\xF8rnekasse", "Tetti Veggnisje", "Tetti kasse for vegghengt toalett", "Tetti monteringslim", "Soudal Fix All HT", "Soudal Fix All Turbo"] },
     { title: "Primer / forsterkningsduk", items: ["Sopro PG-X 1188", "Sopro EPG 1522 - 2 Komponent Epoxy primer", "Sopro HPS 673 - spesial primer ikke sugende", "Sopro GD 749 - primer sugende underlag", "Sopro SG 874 Dampsperre-Primer"] },
     { title: "Membransystem / tetting", items: ["Sopro FDK 1-K 1180 membranlim", "Sopro FDF 527 sm\xF8remembran lys gr\xE5", "Sopro DSF 623 RS - 1K sementbasert membran", "AEB 815 Tetteduk", "Sopro BBM 134 Slukmansjett", "Sopro FDB 524 selvklebende tetteb\xE5nd", "Sopro AEB 816 Tetteb\xE5nd", "Sopro AEB 821 Hj\xF8rnemansjett innerhj\xF8rne", "Sopro AEB 822 Hj\xF8rnemansjett ytterhj\xF8rne", "Sopro AEB 825 R\xF8rmansjett \xD810-24mm", "Sopro AEB 826 R\xF8rmansjett \xD832-55mm", "Sopro AEB 827 R\xF8rmansjett \xD875-110mm", "Sopro AEB 828 R\xF8rmansjett \xD8110-140mm"] },
-    { title: "Limprodukter / festeprodukter", items: ["Sopro\u2019s No.1 400 Flislim", "Sopro\u2019s No.1 403 Silver Hurtig flislim", "Sopro FKM XL 444 St\xF8vredusert flislim", "Sopro FKM 5555 Hurtig flislim", "Sopro FF 450 - Sigefri flislim"] },
+    { title: "Limprodukter / festeprodukter", items: ["Sopro\u2019s No.1 400 Flislim", "Sopro\u2019s No.1 403 Silver Hurtig flislim", "Sopro FKM XL 444 St\xF8vredusert flislim", "Sopro FKM 5555 Hurtig flislim", "Sopro FF 450 - Sigefri flislim", "Soudal Fix All HT", "Soudal Fix All Turbo"] },
     { title: "Fugemasse / silikon", items: ["Sopro DFH Bruksklar fugemasse", "Sopro DFX epoxyfug", "Sopro DF 10\xAE Designfug", "Sopro FL plus Fugemasse", "Sopro Sanit\xE6r Silikon", "Sopro Ceramic Silikon"] }
   ];
   var surfaces = ["Veggflis 1", "Veggflis 2", "Veggflis 3", "Gulvflis 1", "Gulvflis 2", "Gulvflis 3", "Mosaikkfliser vegg", "Mosaikkfliser gulv", "Dekorfliser"];
@@ -303,6 +302,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const isUnderleverandorView = urlParams.has("project") && accessMode === "underleverandor";
     const isReadOnly = urlParams.has("project") && !isUnderleverandorView && !isAdminProjectLink;
     const isAdminUser = !!authUser && (profile?.is_admin === true || profile?.role === "admin" || authUser.email === "kenneth@ringside.no" || !!company.email && authUser.email === company.email);
+    const canUseAdminProjectSync = !!authUser && !!profile?.approved && !isReadOnly;
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
     const applyLockState = (baseProject, sourceProject = {}) => ({
       ...baseProject,
@@ -449,7 +449,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["internt", "Interne notater"],
       ["prosjektliste", "Prosjektliste"],
       ["rapport", "Rapport"],
-      ...isAdminUser && !isReadOnly ? [["admin", "Admin"]] : []
+      ...canUseAdminProjectSync ? [["admin", "Admin"]] : []
     ];
     const currentTabIndex = tabs.findIndex(([id]) => id === tab);
     const previousTab = currentTabIndex > 0 ? tabs[currentTabIndex - 1] : null;
@@ -1546,6 +1546,68 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
       setProductMaster((prev) => (prev || []).map((x) => x.product_no === data.product_no ? data : x));
       alert("Produktdokumentasjon lagret.");
+    };
+    const syncCurrentProjectProducts = async () => {
+      const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
+      if (!checkedNames.length) return alert("Ingen standardprodukter er valgt i dette prosjektet.");
+      let updatedCount = 0;
+      let missingCount = 0;
+      const nextProductDocs = { ...productDocs };
+      checkedNames.forEach((productName) => {
+        const current = nextProductDocs[productName] || {};
+        const merged = mergeProductDocs(productName, current);
+        const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+        if (!hasAutoDocs) {
+          missingCount += 1;
+          return;
+        }
+        const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "fdvSource"];
+        const changed = keys.some((key) => (current[key] || "") !== (merged[key] || ""));
+        if (changed) updatedCount += 1;
+        nextProductDocs[productName] = merged;
+      });
+      setProductDocs(nextProductDocs);
+      if (projectId && authUser) {
+        const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        if (fetchError || !existing) {
+          console.error(fetchError);
+          return alert("Synk er gjort på skjermen, men prosjektet kunne ikke lagres automatisk: " + (fetchError?.message || "Fant ikke prosjekt"));
+        }
+        if (rowIsLocked(existing)) return alert("Prosjektet er låst. Lås opp prosjektet før dokumentlinker synkes og lagres.");
+        const existingData = dataFromRow(existing);
+        const cleanData = JSON.parse(JSON.stringify({
+          ...existingData,
+          company,
+          user,
+          project: { ...emptyProject(), ...existingData.project || {}, ...project },
+          checked,
+          productDocs: nextProductDocs,
+          manualProducts,
+          other,
+          surf,
+          photos,
+          access,
+          inst,
+          files,
+          checklist,
+          tilbud,
+          overtagelse,
+          projectLog,
+          internalNotes
+        }));
+        const { error: updateError } = await supabase.from("projects").update({
+          data: cleanData,
+          title: project.projectName || project.address || existing.title || "Uten navn",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        }).eq("id", projectId);
+        if (updateError) {
+          console.error(updateError);
+          return alert("Synk er gjort på skjermen, men kunne ikke lagres i Supabase: " + updateError.message);
+        }
+      }
+      if (updatedCount > 0) return alert(`Synk fullført. ${updatedCount} produkt${updatedCount === 1 ? "" : "er"} fikk dokumentlinker oppdatert.${missingCount ? ` ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i produktmaster.` : ""}`);
+      if (missingCount > 0) return alert(`Synk fullført, men ingen nye dokumentlinker ble lagt til. ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i produktmaster.`);
+      alert("Synk fullført. Valgte produkter hadde allerede dokumentlinker.");
     };
     const signIn = async () => {
       const cleanEmail = authEmail.trim();
@@ -3081,9 +3143,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           })
         ] }),
         tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
-        tab === "admin" && isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan administrator godkjenne brukere og vedlikeholde felles FDV-register. FDV-linker fra registeret fylles automatisk inn n\xE5r et standardprodukt krysses av i et prosjekt, men kan fortsatt overstyres manuelt per prosjekt." }),
+        tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan administrator godkjenne brukere, vedlikeholde produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Prosjektsynk" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Henter FDV, datablad, DOP, EPD og sikkerhetsdatablad fra produktmaster for valgte produkter i dette prosjektet." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => syncCurrentProjectProducts(), children: "Synk dette prosjektet" })
+          ] }),
+          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Forutsetter at Supabase-policy tillater admin \xE5 lese og oppdatere profiles." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
@@ -3101,7 +3168,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               ] })
             ] }, u.id))
           ] }),
-/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Admin Produktmaster" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette er produktdatabasen fra prisfilen, uten priser. Legg inn FDV, datablad, DOP, EPD og sikkerhetsdatablad her. N\xE5r et standardprodukt velges i prosjektet, henter appen dokumentlinker automatisk fra denne masteren." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", children: [
