@@ -156,6 +156,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     messages: Array.isArray(log?.messages) ? log.messages : []
   });
   var safeArray = (value) => Array.isArray(value) ? value : [];
+  var normalizeDocKey = (value) => String(value || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[®™©]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
   var normalizeManualProductsBySection = (value = {}) => {
     const result = {};
     const addProduct = (section, product) => {
@@ -306,8 +307,15 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }, [manualProductsBySection]);
     const fdvRegisterByProduct = (0, import_react.useMemo)(() => {
       const map = {};
+      const addKey = (key, row) => {
+        const cleanKey = String(key || "").trim();
+        if (!cleanKey) return;
+        map[cleanKey] = row;
+        const normalizedKey = normalizeDocKey(cleanKey);
+        if (normalizedKey) map[normalizedKey] = row;
+      };
       (fdvRegister || []).forEach((row) => {
-        if (row?.product_name) map[row.product_name] = row;
+        addKey(row?.product_name, row);
       });
       return map;
     }, [fdvRegister]);
@@ -318,6 +326,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         const cleanKey = String(key || "").trim();
         if (!cleanKey) return;
         if (!map[cleanKey] || scoreRow(row) > scoreRow(map[cleanKey])) map[cleanKey] = row;
+        const normalizedKey = normalizeDocKey(cleanKey);
+        if (normalizedKey && (!map[normalizedKey] || scoreRow(row) > scoreRow(map[normalizedKey]))) map[normalizedKey] = row;
       };
       (productMaster || []).forEach((row) => {
         addKey(row?.app_match_name, row);
@@ -326,6 +336,69 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
       return map;
     }, [productMaster]);
+    const findProductMasterRow = (productName) => productMasterByProduct[productName] || productMasterByProduct[normalizeDocKey(productName)] || null;
+    const findFdvRegisterRow = (productName) => fdvRegisterByProduct[productName] || fdvRegisterByProduct[normalizeDocKey(productName)] || null;
+    const getAutoDocsForProduct = (productName) => {
+      const masterRow = findProductMasterRow(productName);
+      const registerRow = findFdvRegisterRow(productName);
+      return {
+        fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || "",
+        databladUrl: masterRow?.datablad_url || "",
+        dopUrl: masterRow?.dop_url || "",
+        epdUrl: masterRow?.epd_url || "",
+        sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || "",
+        documentFileUrl: masterRow?.document_file_url || "",
+        fdvSource: masterRow ? "product-master" : registerRow ? "admin-register" : ""
+      };
+    };
+    const mergeProductDocs = (productName, current = {}) => {
+      const autoDocs = getAutoDocsForProduct(productName);
+      return {
+        ...current,
+        fdvUrl: hasValue(current.fdvUrl) ? current.fdvUrl : autoDocs.fdvUrl,
+        databladUrl: hasValue(current.databladUrl) ? current.databladUrl : autoDocs.databladUrl,
+        dopUrl: hasValue(current.dopUrl) ? current.dopUrl : autoDocs.dopUrl,
+        epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
+        sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
+        documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
+        fdvSource: current.fdvSource || autoDocs.fdvSource
+      };
+    };
+    const getProductDocForDisplay = (productName) => mergeProductDocs(productName, productDocs[productName] || {});
+    const selectedWithAutoDocs = (0, import_react.useMemo)(() => productSections.flatMap((s) => s.items.filter((i) => checked[i]).map((i) => {
+      const doc = mergeProductDocs(i, productDocs[i] || {});
+      return {
+        section: s.title,
+        item: i,
+        fdvUrl: doc.fdvUrl || "",
+        databladUrl: doc.databladUrl || "",
+        dopUrl: doc.dopUrl || "",
+        epdUrl: doc.epdUrl || "",
+        sikkerhetsdatabladUrl: doc.sikkerhetsdatabladUrl || "",
+        documentFileUrl: doc.documentFileUrl || "",
+        comment: doc.comment || ""
+      };
+    })), [checked, productDocs, productMasterByProduct, fdvRegisterByProduct]);
+    (0, import_react.useEffect)(() => {
+      const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
+      if (!checkedNames.length) return;
+      let changed = false;
+      setProductDocs((prev) => {
+        const next = { ...prev };
+        checkedNames.forEach((productName) => {
+          const current = next[productName] || {};
+          const merged = mergeProductDocs(productName, current);
+          const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+          if (!hasAutoDocs) return;
+          const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "fdvSource"];
+          if (keys.some((key) => (current[key] || "") !== (merged[key] || ""))) {
+            next[productName] = merged;
+            changed = true;
+          }
+        });
+        return changed ? next : prev;
+      });
+    }, [checked, productMasterByProduct, fdvRegisterByProduct]);
     const productMasterStats = (0, import_react.useMemo)(() => {
       const rows = productMaster || [];
       const withDocs = rows.filter((row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].some(hasValue)).length;
@@ -762,32 +835,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const toggleProductChecked = (productName, isChecked) => {
       setChecked((prev) => ({ ...prev, [productName]: isChecked }));
       if (!isChecked) return;
-      const masterRow = productMasterByProduct[productName];
-      const registerRow = fdvRegisterByProduct[productName];
-      const autoDocs = {
-        fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || "",
-        databladUrl: masterRow?.datablad_url || "",
-        dopUrl: masterRow?.dop_url || "",
-        epdUrl: masterRow?.epd_url || "",
-        sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || "",
-        documentFileUrl: masterRow?.document_file_url || "",
-        fdvSource: masterRow ? "product-master" : registerRow ? "admin-register" : ""
-      };
-      if (!Object.values(autoDocs).some(hasValue)) return;
       setProductDocs((prev) => {
         const current = prev[productName] || {};
+        const merged = mergeProductDocs(productName, current);
+        const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+        if (!hasAutoDocs) return prev;
         return {
           ...prev,
-          [productName]: {
-            ...current,
-            fdvUrl: hasValue(current.fdvUrl) ? current.fdvUrl : autoDocs.fdvUrl,
-            databladUrl: hasValue(current.databladUrl) ? current.databladUrl : autoDocs.databladUrl,
-            dopUrl: hasValue(current.dopUrl) ? current.dopUrl : autoDocs.dopUrl,
-            epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
-            sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
-            documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
-            fdvSource: current.fdvSource || autoDocs.fdvSource
-          }
+          [productName]: merged
         };
       });
     };
@@ -1813,7 +1868,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: productSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
-              const doc = productDocs[i] || {};
+              const doc = getProductDocForDisplay(i);
               return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
@@ -2046,7 +2101,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
-          customerTab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CustomerReport, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }),
+          customerTab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CustomerReport, { company, name, project, selected: selectedWithAutoDocs, manualProducts: manualSelected, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }),
           customerTab === "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : totalChatCount ? `Chat (${totalChatCount})` : "Chat", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan kunde sende sp\xF8rsm\xE5l eller beskjeder direkte inn p\xE5 prosjektet. Chatten oppdateres automatisk live, og utf\xF8rende varsles p\xE5 e-post n\xE5r e-postvarsling er satt opp." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Ny melding fra kunde", value: projectLog.draft || "", onChange: (v) => setProjectLog((prev) => ({ ...prev, draft: v })) }),
@@ -2682,7 +2737,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: productSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
-            const doc = productDocs[i] || {};
+            const doc = getProductDocForDisplay(i);
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
@@ -3116,7 +3171,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] }, p.id);
           })
         ] }),
-        tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
+        tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected: selectedWithAutoDocs, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
         tab === "admin" && isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan administrator godkjenne brukere og vedlikeholde felles FDV-register. FDV-linker fra registeret fylles automatisk inn n\xE5r et standardprodukt krysses av i et prosjekt, men kan fortsatt overstyres manuelt per prosjekt." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
@@ -3158,7 +3213,26 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Status" })
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadProductMaster(true), children: productMasterLoading ? "Henter produktmaster..." : "Oppdater produktmaster" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadProductMaster(true), children: productMasterLoading ? "Henter produktmaster..." : "Oppdater produktmaster" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
+                const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
+                if (!checkedNames.length) return alert("Ingen standardprodukter er valgt i dette prosjektet.");
+                let count = 0;
+                setProductDocs((prev) => {
+                  const next = { ...prev };
+                  checkedNames.forEach((productName) => {
+                    const merged = mergeProductDocs(productName, next[productName] || {});
+                    const hasDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+                    if (!hasDocs) return;
+                    next[productName] = merged;
+                    count += 1;
+                  });
+                  return next;
+                });
+                alert(count ? `Synket dokumentlinker for ${count} valgte produkt${count === 1 ? "" : "er"}. Husk å trykke Oppdater prosjekt for å lagre på prosjektet.` : "Fant ingen dokumentlinker for valgte produkter. Sjekk app_match_name i produktmaster.");
+              }, children: "Synk dette prosjektet" })
+            ] }),
             (productMaster || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter funnet i produktmaster. Kj\xF8r SQL-filen fra flisLAB-importen f\xF8rst." }),
             (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: row.product_name }),
