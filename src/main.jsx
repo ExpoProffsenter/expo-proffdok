@@ -411,7 +411,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const isAdminProjectLink = urlParams.has("project") && accessMode === "admin";
     const isUnderleverandorView = urlParams.has("project") && accessMode === "underleverandor";
     const isReadOnly = urlParams.has("project") && !isUnderleverandorView && !isAdminProjectLink;
-    const isAdminUser = !!authUser && (profile?.is_admin === true || profile?.role === "admin" || authUser.email === "kenneth@ringside.no" || !!company.email && authUser.email === company.email);
+    const isMainAdminUser = !!authUser && (profile?.is_admin === true || profile?.role === "admin" || authUser.email === "kenneth@ringside.no" || !!company.email && authUser.email === company.email);
+    const canUseProductAdmin = !!authUser && profile?.approved === true && !isReadOnly;
+    const isAdminUser = isMainAdminUser || canUseProductAdmin;
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
     const applyLockState = (baseProject, sourceProject = {}) => ({
       ...baseProject,
@@ -1509,7 +1511,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       alert("Firmaprofil lagret");
     };
     const loadAdminUsers = async () => {
-      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      if (!isMainAdminUser) return alert("Du har ikke tilgang til hovedadmin.");
       setAdminLoading(true);
       const { data, error } = await supabase.from("profiles").select("id,email,approved,company_name,created_at").order("created_at", { ascending: false });
       setAdminLoading(false);
@@ -1520,7 +1522,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setAdminUsers(data || []);
     };
     const approveAdminUser = async (id) => {
-      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      if (!isMainAdminUser) return alert("Du har ikke tilgang til hovedadmin.");
       const { error } = await supabase.from("profiles").update({ approved: true }).eq("id", id);
       if (error) {
         console.error(error);
@@ -1530,7 +1532,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       loadAdminUsers();
     };
     const revokeAdminUser = async (id) => {
-      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      if (!isMainAdminUser) return alert("Du har ikke tilgang til hovedadmin.");
       if (!window.confirm("Vil du fjerne godkjenning for denne brukeren?")) return;
       const { error } = await supabase.from("profiles").update({ approved: false }).eq("id", id);
       if (error) {
@@ -1552,7 +1554,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (notify) alert(`FDV-register oppdatert. Fant ${(data || []).length} produkter.`);
     };
     const seedFdvRegister = async () => {
-      if (!isAdminUser) return alert("Du har ikke tilgang til FDV-register.");
+      if (!isMainAdminUser) return alert("Du har ikke tilgang til FDV-register.");
       if (!window.confirm("Vil du legge inn alle standardproduktene i FDV-registeret? Eksisterende produkter oppdateres ikke, men manglende produkter legges til.")) return;
       setFdvLoading(true);
       const rows = productSections.flatMap((section) => section.items.map((productName) => ({
@@ -1573,7 +1575,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       alert("FDV-register er klargjort med standardprodukter.");
     };
     const saveFdvRegisterRow = async (row) => {
-      if (!isAdminUser) return alert("Du har ikke tilgang til FDV-register.");
+      if (!isMainAdminUser) return alert("Du har ikke tilgang til FDV-register.");
       if (!row?.product_name) return alert("Produktnavn mangler.");
       const payload = {
         section: row.section || "",
@@ -1618,7 +1620,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setProductMaster((prev) => (prev || []).map((row) => row.product_no === productNo ? { ...row, ...patch } : row));
     };
     const saveProductMasterRow = async (row) => {
-      if (!isAdminUser) return alert("Du har ikke tilgang til produktmaster.");
+      if (!isMainAdminUser) return alert("Du har ikke tilgang til å endre produktmaster.");
       if (!row?.product_no) return alert("Varenummer mangler.");
       const payload = {
         fdv_url: row.fdv_url || "",
@@ -3173,8 +3175,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         ] }),
         tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected: selectedWithAutoDocs, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
         tab === "admin" && isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan administrator godkjenne brukere og vedlikeholde felles FDV-register. FDV-linker fra registeret fylles automatisk inn n\xE5r et standardprodukt krysses av i et prosjekt, men kan fortsatt overstyres manuelt per prosjekt." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan brukere synke valgt prosjekt mot produktmaster. Hovedadministratorer kan i tillegg godkjenne brukere og vedlikeholde dokumentlinker i produktmaster." }),
+          isMainAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Forutsetter at Supabase-policy tillater admin \xE5 lese og oppdatere profiles." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
@@ -3218,23 +3220,33 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
                 const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
                 if (!checkedNames.length) return alert("Ingen standardprodukter er valgt i dette prosjektet.");
-                let count = 0;
+                const matchedNames = [];
+                const missingNames = [];
                 setProductDocs((prev) => {
                   const next = { ...prev };
                   checkedNames.forEach((productName) => {
                     const merged = mergeProductDocs(productName, next[productName] || {});
                     const hasDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
-                    if (!hasDocs) return;
+                    if (!hasDocs) {
+                      missingNames.push(productName);
+                      return;
+                    }
                     next[productName] = merged;
-                    count += 1;
+                    matchedNames.push(productName);
                   });
                   return next;
                 });
-                alert(count ? `Synket dokumentlinker for ${count} valgte produkt${count === 1 ? "" : "er"}. Husk å trykke Oppdater prosjekt for å lagre på prosjektet.` : "Fant ingen dokumentlinker for valgte produkter. Sjekk app_match_name i produktmaster.");
+                if (matchedNames.length) {
+                  const missingText = missingNames.length ? ` ${missingNames.length} valgt${missingNames.length === 1 ? "" : "e"} produkt${missingNames.length === 1 ? "" : "er"} manglet dokumentmatch.` : "";
+                  alert(`Synk fullført. ${matchedNames.length} produkt${matchedNames.length === 1 ? "" : "er"} ble koblet mot dokumentlinker.${missingText} Husk å trykke Oppdater prosjekt for å lagre.`);
+                } else {
+                  alert("Ingen dokumentlinker ble funnet for valgte produkter. Sjekk app_match_name i produktmaster.");
+                }
               }, children: "Synk dette prosjektet" })
             ] }),
             (productMaster || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter funnet i produktmaster. Kj\xF8r SQL-filen fra flisLAB-importen f\xF8rst." }),
-            (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            !isMainAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Du har tilgang til å hente produktmaster og synke dette prosjektet. Redigering av selve produktmasteren og brukergodkjenning er forbeholdt hovedadministrator." }),
+            isMainAdminUser && (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: row.product_name }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                 row.product_no,
