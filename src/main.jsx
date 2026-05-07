@@ -1549,66 +1549,74 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       alert("Produktdokumentasjon lagret.");
     };
     const syncCurrentProjectProducts = async () => {
-      const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
-      if (!checkedNames.length) return alert("Ingen standardprodukter er valgt i dette prosjektet.");
-      let updatedCount = 0;
-      let missingCount = 0;
-      const nextProductDocs = { ...productDocs };
-      checkedNames.forEach((productName) => {
-        const current = nextProductDocs[productName] || {};
-        const merged = mergeProductDocs(productName, current);
-        const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
-        if (!hasAutoDocs) {
-          missingCount += 1;
-          return;
+      try {
+        const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
+        if (!checkedNames.length) return alert("Ingen standardprodukter er valgt i dette prosjektet.");
+        let updatedCount = 0;
+        let missingCount = 0;
+        const nextProductDocs = { ...productDocs };
+        checkedNames.forEach((productName) => {
+          const current = nextProductDocs[productName] || {};
+          const merged = mergeProductDocs(productName, current);
+          const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+          if (!hasAutoDocs) {
+            missingCount += 1;
+            return;
+          }
+          const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "fdvSource"];
+          const changed = keys.some((key) => (current[key] || "") !== (merged[key] || ""));
+          if (changed) updatedCount += 1;
+          nextProductDocs[productName] = merged;
+        });
+        setProductDocs(nextProductDocs);
+        let savedToCloud = false;
+        if (projectId && authUser) {
+          const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+          if (fetchError || !existing) {
+            console.error(fetchError);
+            return alert("Synk er gjort på skjermen, men prosjektet kunne ikke lagres automatisk: " + (fetchError?.message || "Fant ikke prosjekt"));
+          }
+          if (rowIsLocked(existing)) return alert("Prosjektet er låst. Lås opp prosjektet før dokumentlinker synkes og lagres.");
+          const existingData = dataFromRow(existing);
+          const cleanData = JSON.parse(JSON.stringify({
+            ...existingData,
+            company,
+            user,
+            project: { ...emptyProject(), ...existingData.project || {}, ...project },
+            checked,
+            productDocs: nextProductDocs,
+            manualProducts,
+            other,
+            surf,
+            photos,
+            access,
+            inst,
+            files,
+            checklist,
+            tilbud,
+            overtagelse,
+            projectLog,
+            internalNotes
+          }));
+          const { error: updateError } = await supabase.from("projects").update({
+            data: cleanData,
+            title: project.projectName || project.address || existing.title || "Uten navn",
+            updated_at: (/* @__PURE__ */ new Date()).toISOString()
+          }).eq("id", projectId);
+          if (updateError) {
+            console.error(updateError);
+            return alert("Synk er gjort på skjermen, men kunne ikke lagres i Supabase: " + updateError.message);
+          }
+          savedToCloud = true;
         }
-        const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "fdvSource"];
-        const changed = keys.some((key) => (current[key] || "") !== (merged[key] || ""));
-        if (changed) updatedCount += 1;
-        nextProductDocs[productName] = merged;
-      });
-      setProductDocs(nextProductDocs);
-      if (projectId && authUser) {
-        const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
-        if (fetchError || !existing) {
-          console.error(fetchError);
-          return alert("Synk er gjort på skjermen, men prosjektet kunne ikke lagres automatisk: " + (fetchError?.message || "Fant ikke prosjekt"));
-        }
-        if (rowIsLocked(existing)) return alert("Prosjektet er låst. Lås opp prosjektet før dokumentlinker synkes og lagres.");
-        const existingData = dataFromRow(existing);
-        const cleanData = JSON.parse(JSON.stringify({
-          ...existingData,
-          company,
-          user,
-          project: { ...emptyProject(), ...existingData.project || {}, ...project },
-          checked,
-          productDocs: nextProductDocs,
-          manualProducts,
-          other,
-          surf,
-          photos,
-          access,
-          inst,
-          files,
-          checklist,
-          tilbud,
-          overtagelse,
-          projectLog,
-          internalNotes
-        }));
-        const { error: updateError } = await supabase.from("projects").update({
-          data: cleanData,
-          title: project.projectName || project.address || existing.title || "Uten navn",
-          updated_at: (/* @__PURE__ */ new Date()).toISOString()
-        }).eq("id", projectId);
-        if (updateError) {
-          console.error(updateError);
-          return alert("Synk er gjort på skjermen, men kunne ikke lagres i Supabase: " + updateError.message);
-        }
+        const saveText = savedToCloud ? " Prosjektet er lagret." : " Trykk Lagre / oppdater prosjekt for å lagre endringen.";
+        if (updatedCount > 0) return alert(`Synk fullført. ${updatedCount} produkt${updatedCount === 1 ? "" : "er"} fikk dokumentlinker oppdatert.${missingCount ? ` ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i produktmaster.` : ""}${saveText}`);
+        if (missingCount > 0) return alert(`Synk fullført, men ingen nye dokumentlinker ble lagt til. ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i produktmaster.${saveText}`);
+        return alert("Synk fullført. Valgte produkter hadde allerede dokumentlinker." + saveText);
+      } catch (error) {
+        console.error("Prosjektsynk feilet:", error);
+        return alert("Kunne ikke synke prosjektet. Feil: " + (error?.message || String(error)));
       }
-      if (updatedCount > 0) return alert(`Synk fullført. ${updatedCount} produkt${updatedCount === 1 ? "" : "er"} fikk dokumentlinker oppdatert.${missingCount ? ` ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i produktmaster.` : ""}`);
-      if (missingCount > 0) return alert(`Synk fullført, men ingen nye dokumentlinker ble lagt til. ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i produktmaster.`);
-      alert("Synk fullført. Valgte produkter hadde allerede dokumentlinker.");
     };
     const signIn = async () => {
       const cleanEmail = authEmail.trim();
@@ -2488,7 +2496,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectId ? "Oppdater prosjekt" : "Lagre" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectId ? "Oppdater prosjekt" : "Lagre / oppdater prosjekt" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre kopi" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: printReport, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
