@@ -155,15 +155,17 @@ const import_jsx_runtime = { jsx, jsxs };
     ...log || {},
     messages: Array.isArray(log?.messages) ? log.messages : []
   });
+  var safeArray = (value) => Array.isArray(value) ? value : [];
   var normalizeManualProductsBySection = (value = {}) => {
     const result = {};
     const addProduct = (section, product) => {
+      if (!product || typeof product !== "object") product = { name: String(product || "") };
       const cleanSection = String(section || product?.section || product?.trade || "Andre produkter").trim() || "Andre produkter";
       const cleanProduct = {
         id: product?.id || uid(),
-        name: product?.name || product?.product_name || "",
-        fdvUrl: product?.fdvUrl || product?.fdv_url || "",
-        comment: product?.comment || ""
+        name: product?.name || product?.product_name || product?.title || "",
+        fdvUrl: product?.fdvUrl || product?.fdv_url || product?.url || "",
+        comment: product?.comment || product?.notes || ""
       };
       result[cleanSection] = [...result[cleanSection] || [], cleanProduct];
     };
@@ -174,10 +176,45 @@ const import_jsx_runtime = { jsx, jsxs };
     Object.entries(value || {}).forEach(([section, products]) => {
       if (Array.isArray(products)) {
         products.forEach((product) => addProduct(section, product || {}));
+      } else if (products && typeof products === "object") {
+        addProduct(section, products);
       }
     });
     return result;
   };
+  var normalizeChecklistValue = (value) => {
+    if (!value || typeof value !== "object") {
+      return { status: typeof value === "string" ? value : "", comment: "", photos: [] };
+    }
+    return {
+      ...value,
+      status: value.status || "",
+      comment: value.comment || "",
+      photos: safeArray(value.photos)
+    };
+  };
+  class AppErrorBoundary extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = { error: null };
+    }
+    static getDerivedStateFromError(error) {
+      return { error };
+    }
+    componentDidCatch(error, info) {
+      console.error("Expo ProffDok stoppet av en visningsfeil:", error, info);
+    }
+    render() {
+      if (this.state.error) {
+        return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Noe stoppet visningen" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Appen traff en gammel eller uventet prosjektdatastruktur. Prøv Oppdater prosjektliste / åpne prosjektet på nytt. Meldingen under gjør at feilen kan spores uten hvit skjerm." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", { style: { whiteSpace: "pre-wrap", fontSize: "12px", background: "#f8fafc", padding: "12px", borderRadius: "12px", border: "1px solid #dbe7ec" }, children: String(this.state.error?.message || this.state.error || "Ukjent feil") })
+        ] }) });
+      }
+      return this.props.children;
+    }
+  }
   function App() {
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
     const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
@@ -3283,9 +3320,9 @@ const import_jsx_runtime = { jsx, jsxs };
     const [openCategories, setOpenCategories] = import_react.default.useState(() => ({ [checklistTemplate[0]?.category || ""]: true }));
     const groupStats = (group) => {
       const total = group.items.length;
-      const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
-      const deviations = group.items.filter((item) => checklist?.[group.category]?.[item]?.status === "Avvik").length;
-      const photos = group.items.reduce((sum, item) => sum + (checklist?.[group.category]?.[item]?.photos || []).length, 0);
+      const done = group.items.filter((item) => hasValue(normalizeChecklistValue(checklist?.[group.category]?.[item]).status)).length;
+      const deviations = group.items.filter((item) => normalizeChecklistValue(checklist?.[group.category]?.[item]).status === "Avvik").length;
+      const photos = group.items.reduce((sum, item) => sum + normalizeChecklistValue(checklist?.[group.category]?.[item]).photos.length, 0);
       return { total, done, missing: Math.max(0, total - done), deviations, photos };
     };
     const totalStats = checklistTemplate.reduce((acc, group) => {
@@ -3366,7 +3403,7 @@ const import_jsx_runtime = { jsx, jsxs };
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "\u26A0\uFE0F Avvik" : stats.missing === 0 ? "\u2705 Ferdig" : stats.done > 0 ? "\u{1F7E1} P\xE5g\xE5r" : "\u26AA Mangler" })
           ] }),
           isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.map((item) => {
-            const value = checklist[group.category]?.[item] || {};
+            const value = normalizeChecklistValue(checklist?.[group.category]?.[item]);
             const pointTone = value.status === "Avvik" ? "avvik" : value.status ? "done" : "missing";
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${pointTone}`, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistHeader", children: [
@@ -3401,7 +3438,7 @@ const import_jsx_runtime = { jsx, jsxs };
                 " Ta bilde / last opp bilde",
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
               ] }),
-              (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: value.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+              (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: safeArray(value.photos).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name })
               ] }, p.id)) })
@@ -3415,7 +3452,7 @@ const import_jsx_runtime = { jsx, jsxs };
           " Last opp sjekkliste / vedlegg",
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", multiple: true, onChange: (e) => addFiles(e.target.files) })
         ] }),
-        files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
+        safeArray(files).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: f.name }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
             "Lastet opp av ",
@@ -3650,7 +3687,7 @@ const import_jsx_runtime = { jsx, jsxs };
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekklister og vedlegg" }),
-        files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
+        safeArray(files).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Prosjekttilgang" }),
@@ -3923,11 +3960,11 @@ const import_jsx_runtime = { jsx, jsxs };
         ] }, m.id))
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist }),
-      (files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+      safeArray(files).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekklister og vedlegg" }),
-        files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
+        safeArray(files).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("footer", { children: "Levert av Expo Proffsenter" })
     ] });
   }
-  (0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}));
+  (0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppErrorBoundary, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}) }));
