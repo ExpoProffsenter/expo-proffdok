@@ -156,6 +156,29 @@ const import_jsx_runtime = { jsx, jsxs };
     ...log || {},
     messages: Array.isArray(log?.messages) ? log.messages : []
   });
+  var normalizeManualProductsBySection = (value = {}) => {
+    const result = {};
+    const addProduct = (section, product) => {
+      const cleanSection = String(section || product?.section || product?.trade || "Andre produkter").trim() || "Andre produkter";
+      const cleanProduct = {
+        id: product?.id || uid(),
+        name: product?.name || product?.product_name || "",
+        fdvUrl: product?.fdvUrl || product?.fdv_url || "",
+        comment: product?.comment || ""
+      };
+      result[cleanSection] = [...result[cleanSection] || [], cleanProduct];
+    };
+    if (Array.isArray(value)) {
+      value.forEach((product) => addProduct(product?.section || product?.trade || "Andre produkter", product || {}));
+      return result;
+    }
+    Object.entries(value || {}).forEach(([section, products]) => {
+      if (Array.isArray(products)) {
+        products.forEach((product) => addProduct(section, product || {}));
+      }
+    });
+    return result;
+  };
   function App() {
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
     const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
@@ -238,14 +261,13 @@ const import_jsx_runtime = { jsx, jsxs };
       documentFileUrl: productDocs[i]?.documentFileUrl || "",
       comment: productDocs[i]?.comment || ""
     }))), [checked, productDocs]);
+    const manualProductsBySection = (0, import_react.useMemo)(() => normalizeManualProductsBySection(manualProducts), [manualProducts]);
+    const getManualProductsForSection = (section) => manualProductsBySection[section] || [];
     const manualSelected = (0, import_react.useMemo)(() => {
-      if (Array.isArray(manualProducts)) {
-        return manualProducts.filter((p) => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment) || hasValue(p.trade));
-      }
-      return Object.entries(manualProducts || {}).flatMap(
+      return Object.entries(manualProductsBySection || {}).flatMap(
         ([section, products]) => (products || []).filter((p) => hasValue(p.name) || hasValue(p.fdvUrl) || hasValue(p.comment)).map((p) => ({ ...p, section }))
       );
-    }, [manualProducts]);
+    }, [manualProductsBySection]);
     const fdvRegisterByProduct = (0, import_react.useMemo)(() => {
       const map = {};
       (fdvRegister || []).forEach((row) => {
@@ -734,25 +756,34 @@ const import_jsx_runtime = { jsx, jsxs };
       });
     };
     const addManualProduct = (section) => {
-      setManualProducts((prev) => ({
-        ...prev || {},
-        [section]: [
-          ...(prev || {})[section] || [],
-          { id: uid(), name: "", fdvUrl: "", comment: "" }
-        ]
-      }));
+      setManualProducts((prev) => {
+        const normalized = normalizeManualProductsBySection(prev);
+        return {
+          ...normalized,
+          [section]: [
+            ...normalized[section] || [],
+            { id: uid(), name: "", fdvUrl: "", comment: "" }
+          ]
+        };
+      });
     };
     const updateManualProduct = (section, id, patch) => {
-      setManualProducts((prev) => ({
-        ...prev || {},
-        [section]: ((prev || {})[section] || []).map((p) => p.id === id ? { ...p, ...patch } : p)
-      }));
+      setManualProducts((prev) => {
+        const normalized = normalizeManualProductsBySection(prev);
+        return {
+          ...normalized,
+          [section]: (normalized[section] || []).map((p) => p.id === id ? { ...p, ...patch } : p)
+        };
+      });
     };
     const removeManualProduct = (section, id) => {
-      setManualProducts((prev) => ({
-        ...prev || {},
-        [section]: ((prev || {})[section] || []).filter((p) => p.id !== id)
-      }));
+      setManualProducts((prev) => {
+        const normalized = normalizeManualProductsBySection(prev);
+        return {
+          ...normalized,
+          [section]: (normalized[section] || []).filter((p) => p.id !== id)
+        };
+      });
     };
     const markChatAsRead = async (reader = "admin") => {
       if (!projectId) return;
@@ -1776,8 +1807,8 @@ const import_jsx_runtime = { jsx, jsxs };
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
                 " Legg til annet produkt"
               ] }),
-              ((manualProducts || {})[s.title] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
-              ((manualProducts || {})[s.title] || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              getManualProductsForSection(s.title).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
+              getManualProductsForSection(s.title).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
@@ -2645,8 +2676,8 @@ const import_jsx_runtime = { jsx, jsxs };
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
               " Legg til annet produkt"
             ] }),
-            ((manualProducts || {})[s.title] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
-            ((manualProducts || {})[s.title] || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            getManualProductsForSection(s.title).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
+            getManualProductsForSection(s.title).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
