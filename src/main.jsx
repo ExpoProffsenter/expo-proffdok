@@ -206,6 +206,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [customerTab, setCustomerTab] = (0, import_react.useState)("rapport");
     const [internalNotes, setInternalNotes] = (0, import_react.useState)("");
     const [lightboxImage, setLightboxImage] = (0, import_react.useState)(null);
+    const [accessEmailMessage, setAccessEmailMessage] = (0, import_react.useState)("Hei, du har fått tilgang til prosjektet. Klikk på linken i denne e-posten for å åpne prosjektet.");
     const [projects, setProjects] = (0, import_react.useState)([]);
     const [projectId, setProjectId] = (0, import_react.useState)(null);
     const [mobileCreatingProject, setMobileCreatingProject] = (0, import_react.useState)(false);
@@ -1360,6 +1361,41 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         roleParam === "underleverandor" ? "Underentrepren\xF8r-link kopiert." : "Kundelink kopiert."
       );
     };
+    const sendAccessEmail = async ({ role = "kunde", toEmail = "", recipientName = "" } = {}) => {
+      const cleanEmail = String(toEmail || "").trim();
+      if (!cleanEmail) return alert("Legg inn e-postadresse før du sender tilgang.");
+      const id = await saveProjectForLink();
+      if (!id) return;
+      const roleParam = role === "Underleverand\xF8r" ? "underleverandor" : "kunde";
+      const link = makeProjectLink(id, role);
+      try {
+        const { error } = await supabase.functions.invoke("smart-worker", {
+          body: {
+            toEmail: cleanEmail,
+            direction: roleParam === "underleverandor" ? "access_underleverandor" : "access_kunde",
+            accessRole: roleParam === "underleverandor" ? "underentreprenør" : "kunde",
+            projectId: id,
+            projectName: project.projectName || project.address || "Prosjekt",
+            customerName: recipientName || project.customer || "Mottaker",
+            customerEmail: project.customerEmail || "",
+            companyName: company.companyName || name || "Expo ProffDok",
+            fromName: user.name || authUser?.email || "Prosjektleder",
+            message: accessEmailMessage || "Du har fått tilgang til prosjektet.",
+            projectLink: link,
+            subject: `Tilgang til prosjekt: ${project.projectName || project.address || "Prosjekt"}`
+          }
+        });
+        if (error) {
+          console.warn("Tilgangs-e-post kunne ikke sendes:", error.message);
+          await copyLinkToClipboard(link, "E-post kunne ikke sendes, men linken er kopiert.");
+          return;
+        }
+        alert("✔ E-post med tilgangslink er sendt.");
+      } catch (error) {
+        console.warn("Tilgangs-e-post kunne ikke sendes:", error);
+        await copyLinkToClipboard(link, "E-post kunne ikke sendes, men linken er kopiert.");
+      }
+    };
     const completeOvertagelseAndLock = async () => {
       if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r overtagelse kan fullf\xF8res.");
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 fullf\xF8re overtagelse.");
@@ -1914,7 +1950,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 c
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde eller velg fra galleri" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
             ] }, c)) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
           ] }),
@@ -2807,12 +2843,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               c
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde eller velg fra galleri" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
           ] }, c)) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
         ] }),
         tab === "tilgang" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilgang og deling", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Administrer tilgang til prosjektet. Kunde f\xE5r egen kundelink med rapport, tilbud/kontrakt og chat. Underentrepren\xF8rer kan bidra med dokumentasjon via egen tilgang." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Melding i e-post med tilgangslink", value: accessEmailMessage, onChange: setAccessEmailMessage }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: accessRoleInfo.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.role }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: r.text })
@@ -2822,7 +2859,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
               " Legg til person/firma"
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => copyAccessLink("kunde"), children: "Del med kunde" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => copyAccessLink("kunde"), children: "Kopier kundelink" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => sendAccessEmail({ role: "kunde", toEmail: project.customerEmail, recipientName: project.customer }), children: "Send kundelink på e-post" })
           ] }),
           access.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen ekstra tilganger er lagt til enn\xE5." }),
           access.map((a) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
@@ -2833,7 +2871,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: accessRoleInfo.find((r) => r.role === a.role)?.text || "" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => copyAccessLink(a.role), children: "Del med denne personen" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => copyAccessLink(a.role), children: "Kopier link" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => sendAccessEmail({ role: a.role, toEmail: a.email, recipientName: a.name }), children: "Send e-post med link" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setAccess(access.filter((x) => x.id !== a.id)), children: "Fjern" })
             ] })
           ] }, a.id))
