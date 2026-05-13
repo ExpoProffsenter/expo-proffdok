@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 5 v2: klikkbar bildevisning i stor modal.
 // FASE 5 v1: prosjektinformasjon/beskrivelse + synlig prosjektinfo i delingslenker.
 // Admin: old FDV-register UI removed; Produktmaster is now the active admin document register.
 import React, * as ReactNS from 'react';
@@ -204,6 +205,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [projectLog, setProjectLog] = (0, import_react.useState)(emptyProjectLog());
     const [customerTab, setCustomerTab] = (0, import_react.useState)("rapport");
     const [internalNotes, setInternalNotes] = (0, import_react.useState)("");
+    const [lightboxImage, setLightboxImage] = (0, import_react.useState)(null);
     const [projects, setProjects] = (0, import_react.useState)([]);
     const [projectId, setProjectId] = (0, import_react.useState)(null);
     const [mobileCreatingProject, setMobileCreatingProject] = (0, import_react.useState)(false);
@@ -228,6 +230,15 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const latestStateRef = (0, import_react.useRef)({});
     const lastChatMessageCountRef = (0, import_react.useRef)(0);
     const lastChatRefreshAtRef = (0, import_react.useRef)(0);
+    const openImageLightboxFromClick = (event) => {
+      const target = event?.target;
+      if (!target || target.tagName !== "IMG") return;
+      const imageContainer = target.closest?.(".photo, .projectImageThumb");
+      if (!imageContainer) return;
+      const src = target.getAttribute("src");
+      if (!src) return;
+      setLightboxImage({ src, alt: target.getAttribute("alt") || "Bilde" });
+    };
     (0, import_react.useEffect)(() => {
       latestStateRef.current = {
         company,
@@ -2158,7 +2169,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         ] })
       ] });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { onClick: openImageLightboxFromClick, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: `
       .mobileNav { display: none; }
       .mobileNavPanel { background:#ffffff; border:1px solid #dbe7ec; border-radius:18px; padding:12px; box-shadow:0 10px 24px rgba(15,23,42,0.08); }
@@ -2186,6 +2197,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       .projectImageThumb small { display:block; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; }
       .projectImageCounts { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
       .projectMiniBadge { display:inline-flex; align-items:center; gap:5px; padding:5px 8px; border-radius:999px; border:1px solid #dbe7ec; background:#f8fafc; font-size:12px; font-weight:700; }
+
+      .imageLightboxOverlay { position:fixed; inset:0; z-index:9999; background:rgba(2, 6, 23, 0.86); display:flex; align-items:center; justify-content:center; padding:18px; }
+      .imageLightboxInner { width:min(1100px, 100%); max-height:92vh; display:grid; gap:12px; }
+      .imageLightboxTop { display:flex; justify-content:flex-end; }
+      .imageLightboxClose { background:#ffffff; color:#0f172a; border:1px solid rgba(255,255,255,0.6); box-shadow:none; }
+      .imageLightboxImage { width:100%; max-height:82vh; object-fit:contain; border-radius:16px; background:#ffffff; }
+      .photo img, .projectImageThumb img { cursor: zoom-in; }
       @media screen and (max-width: 700px) {
         header nav { display: none !important; }
         .mobileNav { display: block !important; }
@@ -2494,6 +2512,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
 
     ` }),
+      lightboxImage && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "imageLightboxOverlay", onClick: (event) => {
+        event.stopPropagation();
+        setLightboxImage(null);
+      }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "imageLightboxInner", onClick: (event) => event.stopPropagation(), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "imageLightboxTop", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "imageLightboxClose", onClick: () => setLightboxImage(null), children: "Lukk bilde" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { className: "imageLightboxImage", src: lightboxImage.src, alt: lightboxImage.alt })
+      ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
