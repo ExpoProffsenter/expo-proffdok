@@ -2826,6 +2826,18 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: `
 
       .pdfSafeLink a { font-weight: 700; }
+
+      .collapsePanel { border:1px solid #dbe7ec; border-radius:18px; background:#ffffff; margin:12px 0; overflow:hidden; }
+      .collapsePanel summary { cursor:pointer; list-style:none; padding:14px 16px; font-weight:900; color:#0f172a; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+      .collapsePanel summary::-webkit-details-marker { display:none; }
+      .collapsePanel summary::after { content:"▼"; font-size:13px; color:#64748b; transition:transform .15s ease; }
+      .collapsePanel[open] summary::after { transform:rotate(180deg); }
+      .collapsePanelBody { padding:0 16px 16px; border-top:1px solid #edf3f7; }
+      @media screen and (max-width:700px) {
+        .collapsePanel { border-radius:16px !important; margin:10px 0 !important; }
+        .collapsePanel summary { padding:12px 13px !important; font-size:15px !important; }
+        .collapsePanelBody { padding:0 12px 12px !important; }
+      }
       .pdfSafeUrl { display:block; color:#334155; font-size:10px; line-height:1.25; overflow-wrap:anywhere; word-break:break-word; margin-top:2px; }
       @media print {
         .pdfSafeLink a { color:#0645ad !important; text-decoration:underline !important; }
@@ -3452,33 +3464,38 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           ] }, item.id)) })
         ] }),
         projectId && !isProjectLocked && projectGuideItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Prosjektet ser klart ut", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Basisinfo, prosjektbeskrivelse, produkter, bilder, sjekkliste, kunde e-post og overtagelse er registrert. Kontroller rapporten før prosjektet avsluttes." }) }),
-        tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Prosjektansvarlig", value: project.responsible, onChange: (v) => setProject({ ...project, responsible: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato", type: "date", value: project.date, onChange: (v) => setProject({ ...project, date: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn p\xE5 prosjekt", value: project.projectName, onChange: (v) => setProject({ ...project, projectName: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Adresse", value: project.address, onChange: (v) => setProject({ ...project, address: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Postnr.", value: project.postnr || "", onChange: (v) => setProject({ ...project, postnr: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Poststed / by", value: project.city || "", onChange: (v) => setProject({ ...project, city: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde", value: project.customer, onChange: (v) => setProject({ ...project, customer: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde e-post", type: "email", value: project.customerEmail || "", onChange: (v) => setProject({ ...project, customerEmail: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) })
-        ] }) }) }),
+        tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsiblePanel, { title: "Prosjekt- og kundeinfo", defaultOpen: !prosjektinfoIsFilled, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Prosjektansvarlig", value: project.responsible, onChange: (v) => setProject({ ...project, responsible: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato", type: "date", value: project.date, onChange: (v) => setProject({ ...project, date: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn p\xE5 prosjekt", value: project.projectName, onChange: (v) => setProject({ ...project, projectName: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Adresse", value: project.address, onChange: (v) => setProject({ ...project, address: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Postnr.", value: project.postnr || "", onChange: (v) => setProject({ ...project, postnr: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Poststed / by", value: project.city || "", onChange: (v) => setProject({ ...project, city: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde", value: project.customer, onChange: (v) => setProject({ ...project, customer: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde e-post", type: "email", value: project.customerEmail || "", onChange: (v) => setProject({ ...project, customerEmail: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) })
+          ] }) }),
+          prosjektinfoIsFilled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjekt- og kundeinfo er fylt ut. Åpne feltet hvis noe skal endres." })
+        ] }) }),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektinformasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Standardtekster" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsiblePanel, { title: "Standardtekster", defaultOpen: !project.projectDescription, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Trykk på en mal for å legge den inn nederst i prosjektbeskrivelsen. Teksten kan redigeres fritt etterpå." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "10px" }, children: projectDescriptionTemplates.map((template) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => appendProjectDescriptionTemplate(template.text), children: template.label }, template.label)) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Beskrivelse / nødvendig prosjektinformasjon", value: project.projectDescription || "", onChange: (v) => setProject({ ...project, projectDescription: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "center", marginTop: "12px" }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.projectInfoIncludeInReport, onChange: (e) => setProject({ ...project, projectInfoIncludeInReport: e.target.checked }), style: { width: "auto" } }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ta med prosjektinformasjon/beskrivelse i rapport/PDF" })
-          ] })
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsiblePanel, { title: "Portal/PDF-innstillinger", defaultOpen: !portalPdfInfoIsFilled, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Beskrivelse / nødvendig prosjektinformasjon", value: project.projectDescription || "", onChange: (v) => setProject({ ...project, projectDescription: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "center", marginTop: "12px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.projectInfoIncludeInReport, onChange: (e) => setProject({ ...project, projectInfoIncludeInReport: e.target.checked }), style: { width: "auto" } }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ta med prosjektinformasjon/beskrivelse i rapport/PDF" })
+            ] })
+          ] }) })
         ] }),
         tab === "firma" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Firmaprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Building2, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Firmaprofilen lagres p\xE5 brukeren din og brukes automatisk i prosjekter og rapporter." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsiblePanel, { title: "Firmainfo", defaultOpen: !firmainfoIsFilled, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "two", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "logoBox", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
@@ -3499,6 +3516,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProfile, children: "Lagre firmaprofil" })
+          ] }) }),
+          firmainfoIsFilled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Firmainfo er allerede satt opp. Åpne feltet hvis du skal endre logo eller firmaopplysninger." })
         ] }),
         tab === "innlogging" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
@@ -4153,6 +4172,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   }
   function Brand({ logo, name }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: "260px", height: "80px", overflow: "hidden", display: "flex", alignItems: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: logo ? logo : "/expo-logo.png", alt: name || "Expo Proffsenter", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) });
+  }
+  function CollapsiblePanel({ title, defaultOpen = true, children }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", { className: "collapsePanel", open: defaultOpen, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("summary", { children: title }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "collapsePanelBody", children })
+    ] });
   }
   function Section({ title, icon, children }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
