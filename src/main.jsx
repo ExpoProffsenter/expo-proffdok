@@ -167,6 +167,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     prosjekteringPunkter: [],
     locked: false,
     status: "active",
+    workflowStatus: "Pågår",
     lockedAt: "",
     lockedBy: ""
   });
@@ -351,17 +352,32 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     });
     const isProjectLocked = projectIsLocked(project);
     const projectHasOvertagelse = (o = overtagelse) => !!o?.enabled || hasValue(o?.dato) || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
-    const projectStatusInfo = (p = project, o = overtagelse) => {
-      const locked = projectIsLocked(p);
-      if (locked && projectHasOvertagelse(o)) return { label: "Ferdigstilt", icon: "\u2705", tone: "done" };
-      if (locked) return { label: "Avsluttet / l\xE5st", icon: "\u{1F512}", tone: "locked" };
-      if (p?.projectName || p?.address || p?.customer || projectHasOvertagelse(o)) return { label: "P\xE5g\xE5r", icon: "\u{1F7E1}", tone: "progress" };
-      return { label: "\xC5pen", icon: "\u{1F7E2}", tone: "open" };
+    const workflowStatusOptions = ["Utkast", "Pågår", "Avventer", "Klar for kunde", "Avvik åpent", "Ferdigstilt"];
+    const getOpenDeviationCount = (sourceChecklist = checklist) => Object.values(sourceChecklist || {}).flatMap((items) => Object.values(items || {})).filter((value) => value?.status === "Avvik").length;
+    const workflowStatusInfo = (status) => {
+      const cleanStatus = workflowStatusOptions.includes(status) ? status : "Pågår";
+      const map = {
+        "Utkast": { label: "Utkast", icon: "⚪", tone: "draft" },
+        "Pågår": { label: "Pågår", icon: "🟡", tone: "progress" },
+        "Avventer": { label: "Avventer", icon: "⏸️", tone: "waiting" },
+        "Klar for kunde": { label: "Klar for kunde", icon: "🔵", tone: "customer_ready" },
+        "Avvik åpent": { label: "Avvik åpent", icon: "🔴", tone: "deviation" },
+        "Ferdigstilt": { label: "Ferdigstilt", icon: "✅", tone: "done" }
+      };
+      return map[cleanStatus] || map["Pågår"];
     };
-    const currentStatus = projectStatusInfo(project, overtagelse);
+    const projectStatusInfo = (p = project, o = overtagelse, openDeviationCount = 0) => {
+      const locked = projectIsLocked(p);
+      if (locked && projectHasOvertagelse(o)) return { label: "Ferdigstilt", icon: "✅", tone: "done" };
+      if (locked) return { label: "Avsluttet / låst", icon: "🔒", tone: "locked" };
+      if (openDeviationCount > 0) return { label: "Avvik åpent", icon: "🔴", tone: "deviation" };
+      if (p?.workflowStatus) return workflowStatusInfo(p.workflowStatus);
+      if (p?.projectName || p?.address || p?.customer || projectHasOvertagelse(o)) return workflowStatusInfo("Pågår");
+      return workflowStatusInfo("Utkast");
+    };
     const statusStyle = (tone) => ({
-      background: tone === "done" ? "#ecfdf5" : tone === "locked" ? "#f8fafc" : tone === "progress" ? "#fffbeb" : "#eff6ff",
-      color: tone === "done" ? "#065f46" : tone === "locked" ? "#334155" : tone === "progress" ? "#92400e" : "#075985"
+      background: tone === "done" ? "#ecfdf5" : tone === "locked" ? "#f8fafc" : tone === "deviation" ? "#fef2f2" : tone === "customer_ready" ? "#eff6ff" : tone === "waiting" ? "#f8fafc" : tone === "draft" ? "#f8fafc" : "#fffbeb",
+      color: tone === "done" ? "#065f46" : tone === "locked" ? "#334155" : tone === "deviation" ? "#991b1b" : tone === "customer_ready" ? "#075985" : tone === "waiting" ? "#475569" : tone === "draft" ? "#475569" : "#92400e"
     });
     const chatMessages = projectLog?.messages || [];
     const customerChatCount = chatMessages.filter((m) => m.role === "kunde").length;
@@ -377,11 +393,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const checklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
       const checklistDone = checklistValues.filter((value) => hasValue(value?.status)).length;
       const checklistAvvik = checklistValues.filter((value) => value?.status === "Avvik").length;
+      const openDeviationCount = checklistAvvik;
       const hasProjectBasics = [project.projectName, project.address, project.customer].some(hasValue);
       const hasDescription = hasValue(project.projectDescription);
       const hasCustomerEmail = hasValue(project.customerEmail);
       const hasOvertagelse = projectHasOvertagelse(overtagelse);
-      return { productCount, photoCount, checklistDone, checklistAvvik, hasProjectBasics, hasDescription, hasCustomerEmail, hasOvertagelse };
+      return { productCount, photoCount, checklistDone, checklistAvvik, openDeviationCount, hasProjectBasics, hasDescription, hasCustomerEmail, hasOvertagelse };
     }, [selected, manualSelected, photos, checklist, project, overtagelse]);
     const projectGuideItems = (0, import_react.useMemo)(() => {
       const items = [];
@@ -394,6 +411,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (!projectGuideStats.hasOvertagelse) items.push({ id: "overtagelse", label: "Registrer overtagelse når prosjektet er ferdig", tab: "overtagelse", tone: "neutral" });
       return items.slice(0, 5);
     }, [projectGuideStats]);
+    const currentStatus = projectStatusInfo(project, overtagelse, projectGuideStats.openDeviationCount);
+    const suggestedWorkflowStatus = projectGuideStats.openDeviationCount > 0 ? "Avvik åpent" : projectGuideStats.hasOvertagelse ? "Ferdigstilt" : projectGuideStats.productCount > 0 && projectGuideStats.photoCount > 0 && projectGuideStats.checklistDone > 0 ? "Klar for kunde" : projectGuideStats.hasProjectBasics ? "Pågår" : "Utkast";
     const rowIsLocked = (row) => row?.locked === true || row?.locked === "true" || projectIsLocked(row?.data?.project || {});
     const projectFromRow = (row, fallbackProject = project) => {
       const dataProject = row?.data?.project || {};
@@ -416,7 +435,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       return (projects || []).map((row) => {
         const data = row.data || {};
         const listProject = projectFromRow(row, data.project || {});
-        const listStatus = projectStatusInfo(listProject, data.overtagelse || {});
+        const listStatus = projectStatusInfo(listProject, data.overtagelse || {}, getOpenDeviationCount(data.checklist));
         const listLog = normalizeProjectLog(data.projectLog);
         const messages = listLog.messages || [];
         const unreadForAdminInList = messages.filter((m) => m.role === "kunde" && (!listLog.lastReadByAdmin || (m.created || "") > listLog.lastReadByAdmin)).length;
@@ -3372,7 +3391,16 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: currentStatus.icon }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: currentStatus.label })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectLocked ? `Prosjektet ble l\xE5st${project.lockedAt ? " " + new Date(project.lockedAt).toLocaleString("no-NO") : ""}${project.lockedBy ? " av " + project.lockedBy : ""}. L\xE5s opp prosjektet hvis du trenger \xE5 gj\xF8re endringer.` : "Prosjektet er \xE5pent for endringer. N\xE5r prosjektet er ferdig og overlevert kan det avsluttes og l\xE5ses." }),
+          !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { margin: "10px 0" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Arbeidsstatus", value: project.workflowStatus || "Pågår", options: workflowStatusOptions, onChange: (v) => setProject({ ...project, workflowStatus: v }) }),
+            suggestedWorkflowStatus !== (project.workflowStatus || "Pågår") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+              "Forslag basert på prosjektet: ",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: suggestedWorkflowStatus }),
+              "."
+            ] }),
+            suggestedWorkflowStatus !== (project.workflowStatus || "Pågår") && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setProject({ ...project, workflowStatus: suggestedWorkflowStatus }), children: "Bruk foreslått status" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectLocked ? `Prosjektet ble l\xE5st${project.lockedAt ? " " + new Date(project.lockedAt).toLocaleString("no-NO") : ""}${project.lockedBy ? " av " + project.lockedBy : ""}. L\xE5s opp prosjektet hvis du trenger \xE5 gj\xF8re endringer.` : "Prosjektet er åpent for endringer. Bruk arbeidsstatus for å vise om prosjektet er utkast, pågår, avventer, klart for kunde eller har åpne avvik." }),
           projectHasOvertagelse() && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "Overtagelse er registrert",
             overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
@@ -3852,7 +3880,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item projectListSearchPanel", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk etter prosjekt, kunde, adresse eller ansvarlig", value: projectSearch, onChange: setProjectSearch }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "open", "progress", "done", "locked"] })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "draft", "progress", "waiting", "customer_ready", "deviation", "done", "locked"] })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListToolbar", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => loadProjects(authUser, true), children: "Oppdater" }),
