@@ -252,6 +252,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [fdvLoading, setFdvLoading] = (0, import_react.useState)(false);
     const [productMaster, setProductMaster] = (0, import_react.useState)([]);
     const [productMasterLoading, setProductMasterLoading] = (0, import_react.useState)(false);
+    const [showOpenDeviationsOnly, setShowOpenDeviationsOnly] = (0, import_react.useState)(false);
     const latestStateRef = (0, import_react.useRef)({});
     const lastChatMessageCountRef = (0, import_react.useRef)(0);
     const lastChatRefreshAtRef = (0, import_react.useRef)(0);
@@ -416,6 +417,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }, [projectGuideStats]);
     const currentStatus = projectStatusInfo(project, overtagelse, projectGuideStats.openDeviationCount);
     const suggestedWorkflowStatus = projectGuideStats.openDeviationCount > 0 ? "Avvik åpent" : projectGuideStats.hasOvertagelse ? "Ferdigstilt" : projectGuideStats.productCount > 0 && projectGuideStats.photoCount > 0 && projectGuideStats.checklistDone > 0 ? "Klar for kunde" : projectGuideStats.hasProjectBasics ? "Pågår" : "Utkast";
+    const openActiveDeviations = () => {
+      setShowOpenDeviationsOnly(true);
+      goToTab("sjekklister");
+      setTimeout(() => {
+        const checklistSection = document.querySelector(".activeDeviationFocus") || document.querySelector(".checklistAccordion");
+        if (checklistSection) checklistSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 140);
+    };
     const rowIsLocked = (row) => row?.locked === true || row?.locked === "true" || projectIsLocked(row?.data?.project || {});
     const projectFromRow = (row, fallbackProject = project) => {
       const dataProject = row?.data?.project || {};
@@ -2584,7 +2593,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 addFiles,
                 files,
                 setFiles,
-                closedByName: user.name || authUser?.email || "Utførende"
+                closedByName: user.name || authUser?.email || "Utførende",
+                showOpenDeviationsOnly,
+                setShowOpenDeviationsOnly
               }
             )
           ] })
@@ -3450,6 +3461,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: currentStatus.icon }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: currentStatus.label })
           ] }),
+          projectGuideStats.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "activeDeviationFocus item", style: { margin: "10px 0", borderColor: "#fecaca", background: "#fff7f7" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+              "Prosjektet har ",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectGuideStats.openDeviationCount }),
+              " åpne avvik som bør følges opp før prosjektet settes klart for kunde."
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: openActiveDeviations, children: "Se aktive avvik" })
+          ] }),
           !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { margin: "10px 0" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Arbeidsstatus", value: project.workflowStatus || "Pågår", options: workflowStatusOptions, onChange: (v) => setProject({ ...project, workflowStatus: v }) }),
             suggestedWorkflowStatus !== (project.workflowStatus || "Pågår") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
@@ -4270,8 +4289,18 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektleder har ikke lagt inn egen prosjektbeskrivelse ennå." })
     ] });
   }
-  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende" }) {
+  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null }) {
     const [openCategories, setOpenCategories] = import_react.default.useState(() => ({ [checklistTemplate[0]?.category || ""]: true }));
+    import_react.default.useEffect(() => {
+      if (!showOpenDeviationsOnly) return;
+      const openGroups = Object.fromEntries(checklistTemplate.map((group) => [
+        group.category,
+        group.items.some((item) => checklist?.[group.category]?.[item]?.status === "Avvik")
+      ]));
+      setOpenCategories(openGroups);
+    }, [showOpenDeviationsOnly, checklist]);
+    const groupHasOpenDeviation = (group) => group.items.some((item) => checklist?.[group.category]?.[item]?.status === "Avvik");
+    const visibleChecklistGroups = showOpenDeviationsOnly ? checklistTemplate.filter(groupHasOpenDeviation) : checklistTemplate;
     const groupStats = (group) => {
       const total = group.items.length;
       const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
@@ -4359,10 +4388,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryActions", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: expandAll, children: "\xC5pne alle" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: collapseDone, children: "Vis det som gjenst\xE5r" })
-        ] })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: collapseDone, children: "Vis det som gjenst\xE5r" }),
+          totalStats.deviations > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setShowOpenDeviationsOnly && setShowOpenDeviationsOnly(!showOpenDeviationsOnly), children: showOpenDeviationsOnly ? "Vis alle punkter" : "Vis bare åpne avvik" })
+        ] }),
+        showOpenDeviationsOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Viser bare sjekkpunkter med åpne avvik. Trykk ‘Vis alle punkter’ for normal sjekkliste." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList checklistAccordion", children: checklistTemplate.map((group) => {
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList checklistAccordion", children: visibleChecklistGroups.map((group) => {
         const stats = groupStats(group);
         const isOpen = openCategories[group.category] !== false;
         const groupTone = stats.deviations > 0 ? "avvik" : stats.missing === 0 ? "done" : stats.done > 0 ? "progress" : "missing";
@@ -4382,7 +4413,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "\u26A0\uFE0F Avvik" : stats.missing === 0 ? "\u2705 Ferdig" : stats.done > 0 ? "\u{1F7E1} P\xE5g\xE5r" : "\u26AA Mangler" })
           ] }),
-          isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.map((item) => {
+          isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.filter((item) => !showOpenDeviationsOnly || checklist?.[group.category]?.[item]?.status === "Avvik").map((item) => {
             const value = checklist[group.category]?.[item] || {};
             const pointTone = value.status === "Avvik" ? "avvik" : value.status === "Lukket avvik" ? "done" : value.status ? "done" : "missing";
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${pointTone}`, children: [
