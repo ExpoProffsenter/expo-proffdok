@@ -153,6 +153,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     city: "",
     customer: "",
     customerEmail: "",
+    customerPhone: "",
     date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
     notes: "",
     projectDescription: "",
@@ -397,8 +398,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const hasProjectBasics = [project.projectName, project.address, project.customer].some(hasValue);
       const hasDescription = hasValue(project.projectDescription);
       const hasCustomerEmail = hasValue(project.customerEmail);
+      const hasCustomerPhone = hasValue(project.customerPhone);
       const hasOvertagelse = projectHasOvertagelse(overtagelse);
-      return { productCount, photoCount, checklistDone, checklistAvvik, openDeviationCount, hasProjectBasics, hasDescription, hasCustomerEmail, hasOvertagelse };
+      return { productCount, photoCount, checklistDone, checklistAvvik, openDeviationCount, hasProjectBasics, hasDescription, hasCustomerEmail, hasCustomerPhone, hasOvertagelse };
     }, [selected, manualSelected, photos, checklist, project, overtagelse]);
     const projectGuideItems = (0, import_react.useMemo)(() => {
       const items = [];
@@ -408,6 +410,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (projectGuideStats.photoCount === 0) items.push({ id: "bilder", label: "Legg til bildedokumentasjon", tab: "bilder", tone: "warning" });
       if (projectGuideStats.checklistDone === 0) items.push({ id: "sjekklister", label: "Start sjekklistekontroll", tab: "sjekklister", tone: "info" });
       if (!projectGuideStats.hasCustomerEmail) items.push({ id: "kunde", label: "Legg inn kunde e-post for deling/varsling", tab: "prosjekt", tone: "info" });
+      if (!projectGuideStats.hasCustomerPhone) items.push({ id: "kunde-tlf", label: "Legg inn kunde telefonnummer for enklere oppfølging", tab: "prosjekt", tone: "info" });
       if (!projectGuideStats.hasOvertagelse) items.push({ id: "overtagelse", label: "Registrer overtagelse når prosjektet er ferdig", tab: "overtagelse", tone: "neutral" });
       return items.slice(0, 5);
     }, [projectGuideStats]);
@@ -489,6 +492,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           listProject.city,
           listProject.postnr,
           listProject.customerEmail,
+          listProject.customerPhone,
           listProject.responsible
         ].filter(Boolean).join(" ").toLowerCase();
         return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, searchable };
@@ -764,7 +768,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
     }, [isReadOnly]);
     const createNewProject = () => {
-      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
       setProject(emptyProject());
       setChecked({});
@@ -1171,7 +1175,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         }
         const matchesSavedProject = (row) => {
           const saved = row?.data?.project || {};
-          return (saved.projectName || "") === (saveProjectData.projectName || "") && (saved.address || "") === (saveProjectData.address || "") && (saved.postnr || "") === (saveProjectData.postnr || "") && (saved.city || "") === (saveProjectData.city || "") && (saved.customer || "") === (saveProjectData.customer || "") && (saved.customerEmail || "") === (saveProjectData.customerEmail || "") && (saved.notes || "") === (saveProjectData.notes || "");
+          return (saved.projectName || "") === (saveProjectData.projectName || "") && (saved.address || "") === (saveProjectData.address || "") && (saved.postnr || "") === (saveProjectData.postnr || "") && (saved.city || "") === (saveProjectData.city || "") && (saved.customer || "") === (saveProjectData.customer || "") && (saved.customerEmail || "") === (saveProjectData.customerEmail || "") && (saved.customerPhone || "") === (saveProjectData.customerPhone || "") && (saved.notes || "") === (saveProjectData.notes || "");
         };
         if (updatedRow && matchesSavedProject(updatedRow)) {
           unpackData(dataFromRow(updatedRow), false);
@@ -1325,7 +1329,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const saveAsNewProject = async () => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
       const projectTitle = project.projectName || project.address || project.customer || "Uten navn";
-      const hasProjectContent = projectId || project.projectName || project.address || project.customer || project.customerEmail || project.notes || project.projectDescription || Object.keys(checked || {}).length || (photos || []).length || Object.keys(checklist || {}).length || (inst || []).length || (files || []).length || (projectLog?.messages || []).length;
+      const hasProjectContent = projectId || project.projectName || project.address || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || Object.keys(checked || {}).length || (photos || []).length || Object.keys(checklist || {}).length || (inst || []).length || (files || []).length || (projectLog?.messages || []).length;
       if (!hasProjectContent) return alert("Det finnes ikke nok prosjektinnhold til \xE5 lagre en kopi enn\xE5.");
       const confirmText = projectId
         ? `Lagre en NY kopi av prosjektet "${projectTitle}"?\n\nDette lager en separat prosjektrad. Bruk heller "Oppdater prosjekt" hvis du bare skal lagre vanlige endringer p\xE5 dagens prosjekt.`
@@ -2161,6 +2165,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           "Poststed / by": project.city,
           "Kunde": project.customer,
           "Kunde e-post": project.customerEmail,
+          "Kunde telefon": project.customerPhone,
           "Dato": project.date,
           "Status": project.locked ? "Avsluttet / låst" : "Aktivt",
           "Notater": project.notes
@@ -2721,6 +2726,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 project.customer && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
                   "Kunde: ",
                   project.customer
+                ] }),
+                project.customerPhone && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+                  "Tlf: ",
+                  project.customerPhone
                 ] })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: `statusBadge status-${currentStatus.tone}`, style: { display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "999px", fontWeight: 700, border: "1px solid #dbe7ec", ...statusStyle(currentStatus.tone) }, children: [
@@ -3452,6 +3461,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Poststed / by", value: project.city || "", onChange: (v) => setProject({ ...project, city: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde", value: project.customer, onChange: (v) => setProject({ ...project, customer: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde e-post", type: "email", value: project.customerEmail || "", onChange: (v) => setProject({ ...project, customerEmail: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) })
         ] }) }) }),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
@@ -3917,6 +3927,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                     " ",
                     listProject.customer
                   ] }),
+                  listProject.customerPhone && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["☎ ", listProject.customerPhone] }),
                   locationLine && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["📍 ", locationLine] })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListBadges", children: [
@@ -4191,6 +4202,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["Adresse", [project?.address, project?.postnr, project?.city].filter(Boolean).join(" ")],
       ["Prosjektansvarlig", project?.responsible],
       ["Kunde", project?.customer],
+      ["Kunde e-post", project?.customerEmail],
+      ["Kunde telefon", project?.customerPhone],
       ["Dato", project?.date]
     ].filter(([, value]) => hasValue(value));
     const hasDescription = hasValue(project?.projectDescription);
@@ -4438,7 +4451,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     ] });
   }
   function Report({ company, name, project, selected, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }) {
-    const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, "Postnr.": project.postnr, "Poststed / by": project.city, Kunde: project.customer, "Kunde e-post": project.customerEmail, Dato: project.date, Status: project.locked ? "Avsluttet / l\xE5st" : "Aktivt", Notater: project.notes };
+    const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, "Postnr.": project.postnr, "Poststed / by": project.city, Kunde: project.customer, "Kunde e-post": project.customerEmail, "Kunde telefon": project.customerPhone, Dato: project.date, Status: project.locked ? "Avsluttet / l\xE5st" : "Aktivt", Notater: project.notes };
     const cats = [...new Set(photos.map((p) => p.cat))];
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "report", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
@@ -4781,6 +4794,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["Poststed / by", project.city],
       ["Kunde", project.customer],
       ["Kunde e-post", project.customerEmail],
+      ["Kunde telefon", project.customerPhone],
       ["Dato", project.date],
       ["Status", project.locked ? "Avsluttet / l\xE5st" : "Aktivt"],
       ["Notater", project.notes]
