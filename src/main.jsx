@@ -183,6 +183,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     });
     return result;
   };
+
+  var CopyrightFooter = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "© 2026 Expo Proffsenter – Expo ProffDok" }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "Alle rettigheter forbeholdt." })
+  ] });
   function App() {
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
     const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
@@ -1819,7 +1824,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
     };
     if (authLoading && !isReadOnly && !isUnderleverandorView) {
-      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Laster..." }) }) }) });
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Laster..." }) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})
+      ] });
     }
     if (passwordRecovery && !isReadOnly) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -1870,7 +1878,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             }, children: "Avbryt og g\xE5 til innlogging" })
           ] })
         ] }) })
-      ] });
+      
+        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
     }
     if (isUnderleverandorView) {
       const limitedTabs = [["prosjektinfo", "Prosjektinformasjon"], ["produkter", "Produkter"], ["overflater", "Overflater"], ["bilder", "Bilder"], ["installasjoner", "Fag/utstyr"], ["sjekklister", "Sjekklister"]];
@@ -1884,7 +1893,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] })
           ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Laster prosjekt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Henter prosjektdata..." }) }) })
-        ] });
+        
+        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
       }
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
@@ -2019,7 +2029,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             )
           ] })
         ] })
-      ] });
+      
+        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
     }
     if (!authUser && !isReadOnly) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -2055,7 +2066,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "E-post huskes p\xE5 denne enheten. Passord lagres ikke i appen, men nettleseren/Supabase kan holde deg innlogget trygt." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Delingslenker fungerer fortsatt uten innlogging." })
         ] }) })
-      ] });
+      
+        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
     }
     if (!isReadOnly && (profileLoading || authUser && !profile)) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -2067,7 +2079,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           ] })
         ] }) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Laster", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Henter brukerprofil..." }) }) })
-      ] });
+      
+        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
     }
     if (!isReadOnly && authUser && profile && !profile.approved) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -2113,7 +2126,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
           ] })
         ] }) })
-      ] });
+      
+        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
     }
     if (isReadOnly) {
       const hasTilbudContent = hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0;
@@ -2213,7 +2227,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] })
           ] })
         ] })
-      ] });
+      
+        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
     }
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { onClick: openImageLightboxFromClick, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: `
@@ -3378,7 +3393,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           }
         )
       ] })
-    ] });
+    
+        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
   }
   async function uploadChatImage(file, projectId = "uten-prosjekt", sender = "chat") {
     if (!file) return null;
