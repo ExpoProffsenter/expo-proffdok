@@ -184,10 +184,26 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     return result;
   };
 
-  var CopyrightFooter = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "© 2026 Expo Proffsenter – Expo ProffDok" }),
-    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "Alle rettigheter forbeholdt." })
-  ] });
+  var CopyrightFooter = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", {
+    style: {
+      display: "block",
+      width: "100%",
+      maxWidth: "1180px",
+      margin: "32px auto 0",
+      padding: "18px 12px calc(18px + env(safe-area-inset-bottom))",
+      textAlign: "center",
+      fontSize: "12px",
+      lineHeight: "1.45",
+      color: "#64748b",
+      borderTop: "1px solid #e2e8f0",
+      boxSizing: "border-box",
+      clear: "both"
+    },
+    children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "© 2026 Expo Proffsenter – Expo ProffDok" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "Alle rettigheter forbeholdt." })
+    ]
+  });
   function App() {
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
     const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
@@ -3863,10 +3879,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           a.role
         ] }, a.id))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", { children: [
-  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "© 2026 Expo Proffsenter – Expo ProffDok" }),
-  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "Alle rettigheter forbeholdt." })
-] })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})
     ] });
   }
   function hasValue(value) {
@@ -4137,10 +4150,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekklister og vedlegg" }),
         files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "© 2026 Expo Proffsenter – Expo ProffDok" }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "Alle rettigheter forbeholdt." })
-      ] })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})
     ] });
   }
   (0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}));
