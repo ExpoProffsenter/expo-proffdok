@@ -2638,6 +2638,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }
     if (isReadOnly) {
       const hasTilbudContent = hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0;
+      const customerPortalProductCount = [...selected || [], ...manualSelected || []].length;
+      const customerPortalPhotoCount = (photos || []).length;
+      const customerPortalChecklistDone = Object.values(checklist || {}).reduce((sum, items) => sum + Object.values(items || {}).filter((value) => value?.status === "OK" || value?.status === "Utført").length, 0);
+      const customerPortalChecklistAvvik = Object.values(checklist || {}).reduce((sum, items) => sum + Object.values(items || {}).filter((value) => value?.status === "Avvik").length, 0);
+      const customerPortalAddress = [project.address, project.postnr, project.city].filter(Boolean).join(", ");
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
@@ -2665,6 +2670,34 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: project.projectName || project.address || "Prosjektoversikt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", alignItems: "flex-start" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: 0 }, children: customerPortalAddress || project.customer || "Prosjektdokumentasjon" }),
+                project.customer && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+                  "Kunde: ",
+                  project.customer
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: `statusBadge status-${currentStatus.tone}`, style: { display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "999px", fontWeight: 700, border: "1px solid #dbe7ec", ...statusStyle(currentStatus.tone) }, children: [
+                currentStatus.icon,
+                " ",
+                currentStatus.label
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Produkter dokumentert", value: customerPortalProductCount ? `${customerPortalProductCount} produkter` : "Ikke valgt ennå" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Bildedokumentasjon", value: customerPortalPhotoCount ? `${customerPortalPhotoCount} bilder` : "Ingen bilder ennå" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Sjekkliste", value: customerPortalChecklistAvvik ? `${customerPortalChecklistAvvik} avvik registrert` : customerPortalChecklistDone ? `${customerPortalChecklistDone} punkt utført` : "Ikke utfylt ennå" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Chat", value: unreadForCustomer > 0 ? `${unreadForCustomer} ulest` : totalChatCount ? `${totalChatCount} meldinger` : "Ingen meldinger" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setCustomerTab("rapport"), children: "Se rapport" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadClickablePdfReport, children: "Last ned PDF" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: unreadForCustomer > 0 ? "" : "secondary", onClick: () => setCustomerTab("chat"), children: unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : "Åpne chat" }),
+              hasTilbudContent && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("tilbud"), children: "Tilbud/kontrakt" })
+            ] })
+          ] }),
           customerTab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationReadOnly, { project }),
           customerTab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CustomerReport, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }),
           customerTab === "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : totalChatCount ? `Chat (${totalChatCount})` : "Chat", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
