@@ -1255,17 +1255,55 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     };
     const saveAsNewProject = async () => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
+      const projectTitle = project.projectName || project.address || project.customer || "Uten navn";
+      const hasProjectContent = projectId || project.projectName || project.address || project.customer || project.customerEmail || project.notes || project.projectDescription || Object.keys(checked || {}).length || (photos || []).length || Object.keys(checklist || {}).length || (inst || []).length || (files || []).length || (projectLog?.messages || []).length;
+      if (!hasProjectContent) return alert("Det finnes ikke nok prosjektinnhold til \xE5 lagre en kopi enn\xE5.");
+      const confirmText = projectId
+        ? `Lagre en NY kopi av prosjektet "${projectTitle}"?\n\nDette lager en separat prosjektrad. Bruk heller "Oppdater prosjekt" hvis du bare skal lagre vanlige endringer p\xE5 dagens prosjekt.`
+        : `Dette prosjektet er ikke lagret fra f\xF8r. Vanlig valg er "Lagre / oppdater prosjekt".\n\nVil du likevel lagre dette som en egen kopi?`;
+      if (!window.confirm(confirmText)) return;
+      if (isProjectLocked && !window.confirm("Prosjektet du kopierer er l\xE5st. Kopien blir opprettet som \xE5pen/ul\xE5st slik at den kan redigeres. Fortsette?")) return;
       const unlockedProject = { ...emptyProject(), ...project, locked: false, status: "active", lockedAt: "", lockedBy: "" };
-      const payload = { title: unlockedProject.projectName || unlockedProject.address || "Uten navn", data: { company, user, project: unlockedProject, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes }, user_id: authUser.id, share_enabled: true, locked: false, locked_at: null, locked_by: "", updated_at: (/* @__PURE__ */ new Date()).toISOString() };
+      const cleanProjectLog = { ...normalizeProjectLog(projectLog), draft: "" };
+      const cleanData = JSON.parse(JSON.stringify({
+        company,
+        user,
+        project: unlockedProject,
+        checked,
+        productDocs,
+        manualProducts,
+        other,
+        surf,
+        photos,
+        access,
+        inst,
+        files,
+        checklist,
+        tilbud,
+        overtagelse,
+        projectLog: cleanProjectLog,
+        internalNotes
+      }));
+      const payload = {
+        title: projectTitle,
+        data: cleanData,
+        user_id: authUser.id,
+        share_enabled: true,
+        locked: false,
+        locked_at: null,
+        locked_by: "",
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      };
       const { data, error } = await supabase.from("projects").insert(payload).select().single();
       if (error) {
         console.error(error);
-        return alert("Kunne ikke lagre som nytt prosjekt: " + error.message);
+        return alert("Kunne ikke lagre som ny kopi: " + error.message);
       }
       setProjectId(data.id);
       setMobileCreatingProject(false);
-      alert("\u2714 Kopi lagret");
-      loadProjects(authUser);
+      unpackData(dataFromRow(data), false);
+      await loadProjects(authUser);
+      alert(`\u2714 Kopi lagret. Du jobber n\xE5 i den nye kopien av "${projectTitle}".`);
     };
     const deleteProject = async (id) => {
       if (!window.confirm("Er du sikker p\xE5 at du vil slette prosjektet?")) return;
@@ -3103,7 +3141,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectId ? "Oppdater prosjekt" : "Lagre / oppdater prosjekt" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre kopi" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
             " Last ned PDF"
