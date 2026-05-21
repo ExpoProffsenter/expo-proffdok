@@ -2222,12 +2222,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         const deviations = [];
         Object.entries(checklist || {}).forEach(([category, items]) => {
           Object.entries(items || {}).forEach(([item, value]) => {
-            if (value?.status === "Avvik") deviations.push({ category, item, comment: value?.comment || "" });
+            if (value?.status === "Avvik" || value?.status === "Lukket avvik") deviations.push({ category, item, status: value?.status || "", comment: value?.comment || "", closeComment: value?.closeComment || "", closedBy: value?.closedBy || "", closedAt: value?.closedAt || "" });
           });
         });
         if (deviations.length) {
           addSectionTitle("Avviksliste");
-          deviations.forEach((d) => addParagraph(`${d.category} / ${d.item}: ${d.comment || "Avvik registrert"}`));
+          deviations.forEach((d) => addParagraph(`${d.category} / ${d.item}: ${d.status === "Lukket avvik" ? "Avvik lukket ✅" : "Åpent avvik"}${d.comment ? " — " + d.comment : ""}${d.status === "Lukket avvik" ? `${d.closeComment ? " — Lukking: " + d.closeComment : ""}${d.closedBy ? " — Lukket av " + d.closedBy : ""}${d.closedAt ? " — " + new Date(d.closedAt).toLocaleString("no-NO") : ""}` : ""}`));
         }
 
         if (tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0)) {
@@ -2559,7 +2559,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 addChecklistPhoto,
                 addFiles,
                 files,
-                setFiles
+                setFiles,
+                closedByName: user.name || authUser?.email || "Utførende"
               }
             )
           ] })
@@ -3084,6 +3085,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         .checklistUpload { width:100% !important; justify-content:center !important; margin-top:8px !important; }
       }
 
+
+
+      .deviationCloseBox, .deviationClosedBox { border:1px solid #dbe7ec; border-radius:14px; padding:12px; margin:10px 0; background:#f8fafc; }
+      .deviationCloseBox { border-color:#fecaca; background:#fff7f7; }
+      .deviationClosedBox { border-color:#bbf7d0; background:#ecfdf5; }
+      .deviationClosedBox b { color:#065f46; }
 
       /* iPhone Safari safe-area: avoid bottom browser toolbar */
       @media screen and (max-width:700px) {
@@ -3636,7 +3643,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               addChecklistPhoto,
               addFiles,
               files,
-              setFiles
+              setFiles,
+              closedByName: user.name || authUser?.email || "Utførende"
             }
           )
         ] }),
@@ -4166,14 +4174,15 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektleder har ikke lagt inn egen prosjektbeskrivelse ennå." })
     ] });
   }
-  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles }) {
+  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende" }) {
     const [openCategories, setOpenCategories] = import_react.default.useState(() => ({ [checklistTemplate[0]?.category || ""]: true }));
     const groupStats = (group) => {
       const total = group.items.length;
       const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
       const deviations = group.items.filter((item) => checklist?.[group.category]?.[item]?.status === "Avvik").length;
+      const closedDeviations = group.items.filter((item) => checklist?.[group.category]?.[item]?.status === "Lukket avvik").length;
       const photos = group.items.reduce((sum, item) => sum + (checklist?.[group.category]?.[item]?.photos || []).length, 0);
-      return { total, done, missing: Math.max(0, total - done), deviations, photos };
+      return { total, done, missing: Math.max(0, total - done), deviations, closedDeviations, photos };
     };
     const totalStats = checklistTemplate.reduce((acc, group) => {
       const stats = groupStats(group);
@@ -4181,9 +4190,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       acc.done += stats.done;
       acc.missing += stats.missing;
       acc.deviations += stats.deviations;
+      acc.closedDeviations += stats.closedDeviations;
       acc.photos += stats.photos;
       return acc;
-    }, { total: 0, done: 0, missing: 0, deviations: 0, photos: 0 });
+    }, { total: 0, done: 0, missing: 0, deviations: 0, closedDeviations: 0, photos: 0 });
     const percent = totalStats.total ? Math.round(totalStats.done / totalStats.total * 100) : 0;
     const toggleCategory = (category) => setOpenCategories((prev) => ({ ...prev, [category]: !prev[category] }));
     const expandAll = () => setOpenCategories(Object.fromEntries(checklistTemplate.map((group) => [group.category, true])));
@@ -4191,6 +4201,25 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const stats = groupStats(group);
       return [group.category, stats.missing > 0 || stats.deviations > 0];
     })));
+    const closeDeviation = (category, item, value = {}) => {
+      const closeComment = window.prompt("Kommentar til lukking av avvik:", value.closeComment || "Utført/kontrollert og lukket.");
+      if (closeComment === null) return;
+      setChecklistValue(category, item, {
+        status: "Lukket avvik",
+        closedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        closedBy: closedByName || "Utførende",
+        closeComment: closeComment.trim()
+      });
+    };
+    const reopenDeviation = (category, item) => {
+      if (!window.confirm("Vil du åpne avviket igjen?")) return;
+      setChecklistValue(category, item, {
+        status: "Avvik",
+        closedAt: "",
+        closedBy: "",
+        closeComment: ""
+      });
+    };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryCard", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -4219,7 +4248,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
             "\u26A0\uFE0F ",
             totalStats.deviations,
-            " avvik"
+            " åpne avvik"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+            "\u2705 ",
+            totalStats.closedDeviations,
+            " lukket"
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
             "\u{1F4F7} ",
@@ -4254,7 +4288,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           ] }),
           isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.map((item) => {
             const value = checklist[group.category]?.[item] || {};
-            const pointTone = value.status === "Avvik" ? "avvik" : value.status ? "done" : "missing";
+            const pointTone = value.status === "Avvik" ? "avvik" : value.status === "Lukket avvik" ? "done" : value.status ? "done" : "missing";
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${pointTone}`, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistHeader", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistPointTitle", children: [
@@ -4283,6 +4317,19 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                   onChange: (v) => setChecklistValue(group.category, item, { comment: v })
                 }
               ),
+              value.status === "Avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "deviationCloseBox", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Avviket er åpent. Lukk det når tiltak er utført og kontrollert." }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => closeDeviation(group.category, item, value), children: "✅ Lukk avvik" })
+              ] }),
+              value.status === "Lukket avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "deviationClosedBox", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "✅ Avvik lukket" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+                  value.closeComment || "Avviket er lukket.",
+                  value.closedBy ? ` Lukket av ${value.closedBy}.` : "",
+                  value.closedAt ? ` ${new Date(value.closedAt).toLocaleString("no-NO")}.` : ""
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => reopenDeviation(group.category, item), children: "Åpne avvik igjen" })
+              ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
                 " Ta bilde / last opp bilde",
@@ -4326,7 +4373,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
     });
     if (!rows.length) return null;
-    const deviations = rows.filter((r) => r.status === "Avvik");
+    const deviations = rows.filter((r) => r.status === "Avvik" || r.status === "Lukket avvik");
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekkliste" }),
       [...new Set(rows.map((r) => r.category))].map((category) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -4338,6 +4385,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             r.status || "Ikke vurdert"
           ] }),
           r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: r.comment }),
+          r.status === "Lukket avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Avvik lukket: " }),
+            r.closeComment || "Lukket",
+            r.closedBy ? ` · Lukket av ${r.closedBy}` : "",
+            r.closedAt ? ` · ${new Date(r.closedAt).toLocaleString("no-NO")}` : ""
+          ] }),
           (r.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: r.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photo", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, alt: p.name || r.item }) }, p.id)) })
         ] }, r.category + r.item))
       ] }, category)),
@@ -4351,7 +4404,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ":"
           ] }),
           " ",
-          r.comment || "Avvik registrert"
+          r.status === "Lukket avvik" ? `✅ Lukket avvik – ${r.closeComment || r.comment || "Lukket"}${r.closedBy ? ` · Lukket av ${r.closedBy}` : ""}${r.closedAt ? ` · ${new Date(r.closedAt).toLocaleString("no-NO")}` : ""}` : r.comment || "Avvik registrert"
         ] }, "avvik-" + r.category + r.item))
       ] })
     ] });
