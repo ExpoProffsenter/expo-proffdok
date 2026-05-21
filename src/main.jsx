@@ -244,6 +244,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [profile, setProfile] = (0, import_react.useState)(null);
     const [profileLoading, setProfileLoading] = (0, import_react.useState)(false);
     const [adminUsers, setAdminUsers] = (0, import_react.useState)([]);
+    const [adminUserFilter, setAdminUserFilter] = (0, import_react.useState)("pending");
     const [adminLoading, setAdminLoading] = (0, import_react.useState)(false);
     const [projectSearch, setProjectSearch] = (0, import_react.useState)("");
     const [projectStatusFilter, setProjectStatusFilter] = (0, import_react.useState)("alle");
@@ -336,6 +337,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const appMatches = rows.filter((row) => row?.used_in_app_standard_list || hasValue(row?.app_match_name)).length;
       return { total: rows.length, withDocs, appMatches };
     }, [productMaster]);
+    const pendingAdminUsers = (0, import_react.useMemo)(() => (adminUsers || []).filter((u) => !u?.approved), [adminUsers]);
+    const visibleAdminUsers = (0, import_react.useMemo)(() => adminUserFilter === "all" ? adminUsers || [] : pendingAdminUsers, [adminUsers, pendingAdminUsers, adminUserFilter]);
     const name = company.companyName || "Expo Proffsenter";
     const urlParams = new URLSearchParams(window.location.search);
     const accessMode = urlParams.get("access") || urlParams.get("role") || (urlParams.has("project") ? "kunde" : "");
@@ -4115,9 +4118,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Forutsetter at Supabase-policy tillater admin \xE5 lese og oppdatere profiles." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", margin: "12px 0" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "pending" ? "" : "secondary", onClick: () => setAdminUserFilter("pending"), children: `Nye brukere (${pendingAdminUsers.length})` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "all" ? "" : "secondary", onClick: () => setAdminUserFilter("all"), children: `Alle brukere (${adminUsers.length})` })
+            ] }),
             adminUsers.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen brukere hentet enn\xE5. Trykk Oppdater brukerliste." }),
-            adminUsers.map((u) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            adminUsers.length > 0 && visibleAdminUsers.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: adminUserFilter === "pending" ? "Ingen nye brukere venter p\xE5 godkjenning." : "Ingen brukere \xE5 vise." }),
+            visibleAdminUsers.map((u) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: u.email || "Ukjent e-post" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                 u.company_name ? `Firma: ${u.company_name} \xB7 ` : "",
