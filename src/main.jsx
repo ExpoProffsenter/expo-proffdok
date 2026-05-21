@@ -3587,52 +3587,66 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "12px", marginTop: "12px", flexWrap: "wrap" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: saveProject, children: "Lagre interne notater" }) })
         ] }),
         tab === "prosjektliste" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektliste", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her får du rask oversikt over aktive prosjekter, uleste kundemeldinger, bildedokumentasjon og snarveier til de vanligste arbeidsflatene." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.total }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Prosjekter totalt" })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.visible }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Vises med filter" })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.unread }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Uleste kundemeldinger" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Totalt" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.active }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\xC5pne / p\xE5g\xE5ende" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Aktive" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.unread }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ulest chat" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectListStats.finished }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Arkiv" })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "S\xF8k i prosjektliste", value: projectSearch, onChange: setProjectSearch }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "open", "progress", "done", "locked"] })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item projectListSearchPanel", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk etter prosjekt, kunde, adresse eller ansvarlig", value: projectSearch, onChange: setProjectSearch }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "open", "progress", "done", "locked"] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListToolbar", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => loadProjects(authUser, true), children: "Oppdater" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectUnreadOnly ? "" : "secondary", onClick: () => setProjectUnreadOnly((v) => !v), children: projectUnreadOnly ? "Vis alle" : "Kun uleste" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "alle" ? "secondary" : "", onClick: () => setProjectStatusFilter("alle"), children: "Alle" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "progress" || projectStatusFilter === "open" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "progress" || projectStatusFilter === "open" ? "alle" : "progress"), children: "Aktive" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "done" || projectStatusFilter === "locked" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "done" || projectStatusFilter === "locked" ? "alle" : "done"), children: "Arkiv" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
+                setProjectSearch("");
+                setProjectStatusFilter("alle");
+                setProjectUnreadOnly(false);
+              }, children: "Nullstill" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+              "Viser ",
+              projectListStats.visible,
+              " av ",
+              projectListStats.total,
+              " prosjekter. Status: Åpen, Pågår, Ferdigstilt eller Avsluttet/låst."
+            ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListToolbar", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => loadProjects(authUser, true), children: "Oppdater liste" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectUnreadOnly ? "" : "secondary", onClick: () => setProjectUnreadOnly((v) => !v), children: projectUnreadOnly ? "Vis alle prosjekter" : "Vis kun uleste" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
-              setProjectSearch("");
-              setProjectStatusFilter("alle");
-              setProjectUnreadOnly(false);
-            }, children: "Nullstill filter" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Statusfilter: open = \xE5pen, progress = p\xE5g\xE5r, done = ferdigstilt, locked = avsluttet/l\xE5st." }),
-          projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter hentet enn\xE5." }),
-          projects.length > 0 && filteredProjectListRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter matcher s\xF8ket eller filteret." }),
+          projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter hentet ennå. Trykk Oppdater." }),
+          projects.length > 0 && filteredProjectListRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter matcher søket eller filteret." }),
           filteredProjectListRows.map(({ row: p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary }) => {
             const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(", ");
+            const updatedLabel = p.updated_at || p.created_at ? new Date(p.updated_at || p.created_at).toLocaleString("no-NO") : "Ukjent";
+            const latestChatLabel = latestMessage?.created ? new Date(latestMessage.created).toLocaleString("no-NO") : "Ingen meldinger";
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item projectListCard", style: unreadForAdminInList > 0 ? { borderColor: "#fecaca", background: "#fff7f7" } : void 0, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListCardTop", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { style: { fontSize: "18px" }, children: p.title || listProject.projectName || "Uten navn" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListTitleBlock", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { style: { fontSize: "19px" }, children: p.title || listProject.projectName || "Uten navn" }),
                   listProject.customer && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { style: { margin: "6px 0 0" }, children: [
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Kunde:" }),
                     " ",
                     listProject.customer
                   ] }),
-                  locationLine && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: locationLine })
+                  locationLine && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["📍 ", locationLine] })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListBadges", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: `statusBadge status-${listStatus.tone}`, style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 700, border: "1px solid #dbe7ec", width: "fit-content", ...statusStyle(listStatus.tone) }, children: [
@@ -3641,12 +3655,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                     listStatus.label
                   ] }),
                   unreadForAdminInList > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content" }, children: [
-                    "\u{1F4AC} ",
+                    "💬 ",
                     unreadForAdminInList,
                     " ulest"
                   ] }),
                   imageSummary.total > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
-                    "\u{1F4F7} ",
+                    "📷 ",
                     imageSummary.total,
                     " bilder"
                   ] })
@@ -3655,11 +3669,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListMetaCards", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Oppdatert" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: new Date(p.updated_at || p.created_at).toLocaleString("no-NO") })
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: updatedLabel })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Chat" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: latestMessage?.created ? `Siste: ${new Date(latestMessage.created).toLocaleString("no-NO")}` : "Ingen meldinger" })
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Siste chat" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: latestChatLabel })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Ansvarlig" }),
@@ -3668,22 +3682,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               ] }),
               imageSummary.total > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageCounts", children: [
-                  imageSummary.photos > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
-                    "\u{1F4C1} Bilder: ",
-                    imageSummary.photos
-                  ] }),
-                  imageSummary.checklist > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
-                    "\u2705 Sjekkliste: ",
-                    imageSummary.checklist
-                  ] }),
-                  imageSummary.install > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
-                    "\u{1F9F0} Fag/utstyr: ",
-                    imageSummary.install
-                  ] }),
-                  imageSummary.chat > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
-                    "\u{1F4AC} Chat: ",
-                    imageSummary.chat
-                  ] })
+                  imageSummary.photos > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: ["📁 Bilder: ", imageSummary.photos] }),
+                  imageSummary.checklist > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: ["✅ Sjekkliste: ", imageSummary.checklist] }),
+                  imageSummary.install > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: ["🧰 Fag/utstyr: ", imageSummary.install] }),
+                  imageSummary.chat > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: ["💬 Chat: ", imageSummary.chat] })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageStrip", "aria-label": "Bildeoversikt for prosjekt", children: [
                   imageSummary.previews.map((img, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageThumb", children: [
@@ -3696,10 +3698,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                   ] })
                 ] })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListActions", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => openProjectById(p.id), children: "\u{1F4C2} \xC5pne" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "chat"), children: "\u{1F4AC} Chat" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => deleteProject(p.id), children: "\u{1F5D1}\uFE0F Slett" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListActions projectListActionsV2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => openProjectById(p.id, "prosjekt"), children: "📂 Åpne" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "bilder"), children: "📷 Bilder" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "sjekklister"), children: "✅ Sjekklister" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "rapport"), children: "📄 Rapport" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: unreadForAdminInList > 0 ? "" : "secondary", onClick: () => openProjectById(p.id, "chat"), children: unreadForAdminInList > 0 ? `💬 Chat (${unreadForAdminInList})` : "💬 Chat" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => deleteProject(p.id), children: "🗑️ Slett" })
               ] })
             ] }, p.id);
           })
