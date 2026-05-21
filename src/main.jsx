@@ -183,27 +183,6 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     });
     return result;
   };
-
-  var CopyrightFooter = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", {
-    style: {
-      display: "block",
-      width: "100%",
-      maxWidth: "1180px",
-      margin: "32px auto 0",
-      padding: "18px 12px calc(18px + env(safe-area-inset-bottom))",
-      textAlign: "center",
-      fontSize: "12px",
-      lineHeight: "1.45",
-      color: "#64748b",
-      borderTop: "1px solid #e2e8f0",
-      boxSizing: "border-box",
-      clear: "both"
-    },
-    children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "© 2026 Expo Proffsenter – Expo ProffDok" }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "Alle rettigheter forbeholdt." })
-    ]
-  });
   function App() {
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
     const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
@@ -1840,10 +1819,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
     };
     if (authLoading && !isReadOnly && !isUnderleverandorView) {
-      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Laster..." }) }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})
-      ] });
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Laster..." }) }) }) });
     }
     if (passwordRecovery && !isReadOnly) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -1894,8 +1870,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             }, children: "Avbryt og g\xE5 til innlogging" })
           ] })
         ] }) })
-      
-        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
+      ] });
     }
     if (isUnderleverandorView) {
       const limitedTabs = [["prosjektinfo", "Prosjektinformasjon"], ["produkter", "Produkter"], ["overflater", "Overflater"], ["bilder", "Bilder"], ["installasjoner", "Fag/utstyr"], ["sjekklister", "Sjekklister"]];
@@ -1909,8 +1884,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] })
           ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Laster prosjekt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Henter prosjektdata..." }) }) })
-        
-        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
+        ] });
       }
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
@@ -2045,8 +2019,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             )
           ] })
         ] })
-      
-        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
+      ] });
     }
     if (!authUser && !isReadOnly) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -2082,8 +2055,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "E-post huskes p\xE5 denne enheten. Passord lagres ikke i appen, men nettleseren/Supabase kan holde deg innlogget trygt." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Delingslenker fungerer fortsatt uten innlogging." })
         ] }) })
-      
-        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
+      ] });
     }
     if (!isReadOnly && (profileLoading || authUser && !profile)) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -2095,8 +2067,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           ] })
         ] }) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Laster", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Henter brukerprofil..." }) }) })
-      
-        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
+      ] });
     }
     if (!isReadOnly && authUser && profile && !profile.approved) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -2142,8 +2113,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
           ] })
         ] }) })
-      
-        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
+      ] });
     }
     if (isReadOnly) {
       const hasTilbudContent = hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0;
@@ -2238,16 +2208,23 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               ] }),
               (tilbud.files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
-                (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", children: f.name }) }, f.id))
+                (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", children: f.name }) }, f.id))
               ] })
             ] })
           ] })
         ] })
-      
-        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
+      ] });
     }
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { onClick: openImageLightboxFromClick, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: `
+
+      .pdfSafeLink a { font-weight: 700; }
+      .pdfSafeUrl { display:block; color:#334155; font-size:10px; line-height:1.25; overflow-wrap:anywhere; word-break:break-word; margin-top:2px; }
+      @media print {
+        .pdfSafeLink a { color:#0645ad !important; text-decoration:underline !important; }
+        .pdfSafeUrl { display:block !important; color:#334155 !important; font-size:9px !important; }
+      }
+
       .mobileNav { display: none; }
       .mobileNavPanel { background:#ffffff; border:1px solid #dbe7ec; border-radius:18px; padding:12px; box-shadow:0 10px 24px rgba(15,23,42,0.08); }
       .mobileNavTop { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
@@ -3008,7 +2985,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 " \xB7 ",
                 f.created
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", children: "\xC5pne" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", children: "\xC5pne" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setTilbud({ ...emptyTilbud(), ...tilbud, files: (tilbud.files || []).filter((x) => x.id !== f.id) }), children: "Fjern" })
             ] }, f.id))
           ] })
@@ -3409,8 +3386,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           }
         )
       ] })
-    
-        ,/* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})] });
+    ] });
   }
   async function uploadChatImage(file, projectId = "uten-prosjekt", sender = "chat") {
     if (!file) return null;
@@ -3638,7 +3614,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             " \xB7 ",
             f.created
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", children: "\xC5pne" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", children: "\xC5pne" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setFiles(files.filter((x) => x.id !== f.id)), children: "Fjern" })
         ] }, f.id))
       ] })
@@ -3761,12 +3737,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             " ",
             p.comment
           ] }),
-          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV" }) }),
-          p.databladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.databladUrl, target: "_blank", children: "\xC5pne datablad" }) }),
-          p.dopUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.dopUrl, target: "_blank", children: "\xC5pne DOP" }) }),
-          p.epdUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.epdUrl, target: "_blank", children: "\xC5pne EPD" }) }),
-          p.sikkerhetsdatabladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.sikkerhetsdatabladUrl, target: "_blank", children: "\xC5pne sikkerhetsdatablad" }) }),
-          p.documentFileUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.documentFileUrl, target: "_blank", children: "\xC5pne vedlagt dokument" }) })
+          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.fdvUrl, children: "\xC5pne FDV" }),
+          p.databladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.databladUrl, children: "\xC5pne datablad" }),
+          p.dopUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.dopUrl, children: "\xC5pne DOP" }),
+          p.epdUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.epdUrl, children: "\xC5pne EPD" }),
+          p.sikkerhetsdatabladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.sikkerhetsdatabladUrl, children: "\xC5pne sikkerhetsdatablad" }),
+          p.documentFileUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.documentFileUrl, children: "\xC5pne vedlagt dokument" })
         ] }, p.item)),
         (manualProducts || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.section || "Annet produkt" }),
@@ -3776,12 +3752,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             " ",
             p.comment
           ] }),
-          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV" }) }),
-          p.databladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.databladUrl, target: "_blank", children: "\xC5pne datablad" }) }),
-          p.dopUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.dopUrl, target: "_blank", children: "\xC5pne DOP" }) }),
-          p.epdUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.epdUrl, target: "_blank", children: "\xC5pne EPD" }) }),
-          p.sikkerhetsdatabladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.sikkerhetsdatabladUrl, target: "_blank", children: "\xC5pne sikkerhetsdatablad" }) }),
-          p.documentFileUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.documentFileUrl, target: "_blank", children: "\xC5pne vedlagt dokument" }) })
+          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.fdvUrl, children: "\xC5pne FDV" }),
+          p.databladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.databladUrl, children: "\xC5pne datablad" }),
+          p.dopUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.dopUrl, children: "\xC5pne DOP" }),
+          p.epdUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.epdUrl, children: "\xC5pne EPD" }),
+          p.sikkerhetsdatabladUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.sikkerhetsdatabladUrl, children: "\xC5pne sikkerhetsdatablad" }),
+          p.documentFileUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.documentFileUrl, children: "\xC5pne vedlagt dokument" })
         ] }, p.id)),
         Object.entries(other).filter(([, v]) => v).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
@@ -3830,7 +3806,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             " ",
             i.desc && ` \u2014 ${i.desc}`
           ] }),
-          i.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: i.fdvUrl, target: "_blank", children: "\xC5pne FDV/datablad" }) })
+          i.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: i.fdvUrl, children: "\xC5pne FDV/datablad" })
         ] }, i.id))
       ] }),
       projectLog?.enabled && (projectLog.messages || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
@@ -3855,7 +3831,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         ] }),
         (tilbud.files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
-          (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", children: f.name }) }, f.id))
+          (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", children: f.name }) }, f.id))
         ] })
       ] }),
       overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtf\u00F8rende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtf\u00F8rendeImage) || hasValue(overtagelse.signKundeImage)) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
@@ -3879,9 +3855,32 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           a.role
         ] }, a.id))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", { children: [
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "© 2026 Expo Proffsenter – Expo ProffDok" }),
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "Alle rettigheter forbeholdt." })
+] })
     ] });
   }
+
+  function normalizeExternalUrl(value) {
+    if (value === void 0 || value === null) return "";
+    const raw = String(value).trim();
+    if (!raw) return "";
+    if (/^(https?:|mailto:|tel:)/i.test(raw)) return raw;
+    if (raw.startsWith("//")) return "https:" + raw;
+    if (/^[a-z0-9.-]+\.[a-z]{2,}([/:?#].*)?$/i.test(raw)) return "https://" + raw;
+    return raw;
+  }
+  function PdfSafeLink({ href, children }) {
+    const url = normalizeExternalUrl(href);
+    if (!url) return null;
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "pdfSafeLink", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: url, target: "_blank", rel: "noopener noreferrer", children }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "pdfSafeUrl", style: { display: "block", color: "#334155", fontSize: "10px", lineHeight: 1.25, overflowWrap: "anywhere", wordBreak: "break-word", marginTop: "2px" }, children: url })
+    ] });
+  }
+
   function hasValue(value) {
     return value !== void 0 && value !== null && String(value).trim() !== "";
   }
@@ -4067,7 +4066,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             " ",
             p.comment
           ] }),
-          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV/datablad" }) })
+          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.fdvUrl, children: "\xC5pne FDV/datablad" })
         ] }, p.item)),
         (manualProducts || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.section || "Annet produkt" }),
@@ -4077,7 +4076,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             " ",
             p.comment
           ] }),
-          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: p.fdvUrl, target: "_blank", children: "\xC5pne FDV/datablad" }) })
+          p.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: p.fdvUrl, children: "\xC5pne FDV/datablad" })
         ] }, p.id)),
         otherRows.map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
@@ -4108,7 +4107,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         inst.map((i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: i.category || "Post" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: [i.name, i.qty, i.supplier, i.desc].filter(Boolean).join(" \xB7 ") }),
-          i.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: i.fdvUrl, target: "_blank", children: "\xC5pne FDV/datablad" }) }),
+          i.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: i.fdvUrl, children: "\xC5pne FDV/datablad" }),
           (i.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: i.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photo", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, alt: p.name || "Bilde" }) }, p.id)) })
         ] }, i.id))
       ] }),
@@ -4121,7 +4120,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         ] }),
         (tilbud.files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
-          (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", children: f.name }) }, f.id))
+          (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", children: f.name }) }, f.id))
         ] })
       ] }),
       overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtf\u00F8rende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtf\u00F8rendeImage) || hasValue(overtagelse.signKundeImage)) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
@@ -4150,7 +4149,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekklister og vedlegg" }),
         files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CopyrightFooter, {})
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("footer", { children: "Levert av Expo Proffsenter" })
     ] });
   }
   (0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}));
