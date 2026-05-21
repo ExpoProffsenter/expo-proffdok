@@ -3847,7 +3847,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           a.role
         ] }, a.id))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("footer", { children: "Levert av Expo Proffsenter" })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", { children: [
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "© 2026 Expo Proffsenter – Expo ProffDok" }),
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "Alle rettigheter forbeholdt." })
+] })
     ] });
   }
   function hasValue(value) {
