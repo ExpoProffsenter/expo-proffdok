@@ -31,6 +31,28 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var imageCats = ["F\xF8r arbeid", "Underlag", "Avretting/st\xF8p", "Primer", "Membran", "Sluk og mansjetter", "R\xF8rgjennomf\xF8ringer", "Flislegging", "Fuging/silikon", "Ferdig resultat"];
   var roles = ["Eier / administrator", "Ansatt", "Underleverand\xF8r", "Kun lesetilgang"];
   var installCats = ["R\xF8rlegger", "T\xF8mrer/Snekker", "Maler", "Andre"];
+  var projectDescriptionTemplates = [
+    {
+      label: "Våtrom / bad",
+      text: "Prosjektet gjelder rehabilitering/oppbygging av våtrom. Arbeidet dokumenteres med prosjektinformasjon, produkter, bildedokumentasjon, sjekklister og FDV-rapport. Utførende og eventuelle underentreprenører skal følge gjeldende krav, produktanvisninger og avtalt arbeidsomfang."
+    },
+    {
+      label: "Flisarbeid",
+      text: "Prosjektet omfatter flisarbeid med tilhørende underlag, primer, membran/tetting, flislim, fug og silikon der dette er aktuelt. Valgte produkter og kontrollpunkter dokumenteres fortløpende i Expo ProffDok."
+    },
+    {
+      label: "Underentreprenør-info",
+      text: "Underentreprenør skal legge inn relevant dokumentasjon for eget arbeid, inkludert produkter/utstyr, bilder, sjekklistepunkter og eventuelle kommentarer eller avvik. Endringer eller forhold som kan påvirke fremdrift, kvalitet eller sluttresultat skal meldes til prosjektansvarlig."
+    },
+    {
+      label: "Kundeinfo",
+      text: "Kunde kan følge prosjektet via kundelenke med tilgang til prosjektinformasjon, rapport/PDF, tilbud/kontrakt og chat. Spørsmål, avklaringer og eventuelle kommentarer kan sendes direkte i prosjektchatten."
+    },
+    {
+      label: "Avvik / merknad",
+      text: "Eventuelle avvik eller merknader dokumenteres med beskrivelse, bilde der det er relevant, og videre tiltak/avklaring. Avvik lukkes ikke før nødvendige tiltak er utført eller avklart med prosjektansvarlig/kunde."
+    }
+  ];
   var accessRoleInfo = [
     { role: "Eier / administrator", text: "Full tilgang til prosjekt, rapport, firmaprofil, prosjektliste, deling og brukergodkjenning." },
     { role: "Ansatt", text: "Kan normalt opprette, endre og dokumentere prosjekter for firmaet." },
@@ -486,6 +508,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }
   }, 80);
 };
+    const appendProjectDescriptionTemplate = (templateText) => {
+      const currentText = project.projectDescription || "";
+      const separator = currentText.trim() ? "\n\n" : "";
+      setProject({ ...project, projectDescription: `${currentText}${separator}${templateText}` });
+    };
     const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes });
     const unpackData = (data, preserveDraft = false) => {
       setCompany(data.company || { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
@@ -3293,6 +3320,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         ] }) }) }),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektinformasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Standardtekster" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Trykk på en mal for å legge den inn nederst i prosjektbeskrivelsen. Teksten kan redigeres fritt etterpå." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "10px" }, children: projectDescriptionTemplates.map((template) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => appendProjectDescriptionTemplate(template.text), children: template.label }, template.label)) })
+          ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Beskrivelse / nødvendig prosjektinformasjon", value: project.projectDescription || "", onChange: (v) => setProject({ ...project, projectDescription: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "center", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.projectInfoIncludeInReport, onChange: (e) => setProject({ ...project, projectInfoIncludeInReport: e.target.checked }), style: { width: "auto" } }),
