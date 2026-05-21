@@ -472,10 +472,20 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const previousTab = currentTabIndex > 0 ? tabs[currentTabIndex - 1] : null;
     const nextTab = currentTabIndex >= 0 && currentTabIndex < tabs.length - 1 ? tabs[currentTabIndex + 1] : null;
     const goToTab = (id) => {
-      if (!id) return;
-      setTab(id);
-      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
-    };
+  if (!id) return;
+  setTab(id);
+
+  setTimeout(() => {
+    if (window.innerWidth <= 700) {
+      const main = document.querySelector("main");
+      if (main) {
+        main.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, 80);
+};
     const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes });
     const unpackData = (data, preserveDraft = false) => {
       setCompany(data.company || { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
