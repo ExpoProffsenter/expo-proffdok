@@ -3021,6 +3021,70 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         main { padding-top:10px !important; }
       }
 
+
+      /* FASE 6 v2: mobile top actions - make all critical header buttons available in portrait */
+      @media screen and (max-width: 700px) {
+        header .head {
+          display:grid !important;
+          grid-template-columns:92px minmax(0, 1fr) !important;
+          gap:8px !important;
+          align-items:center !important;
+          padding:8px 10px 10px !important;
+        }
+        header .head > div:first-child {
+          grid-column:1 !important;
+          width:92px !important;
+          height:38px !important;
+          flex:0 0 92px !important;
+          min-width:0 !important;
+        }
+        header .head > div:nth-child(2) {
+          grid-column:2 !important;
+          min-width:0 !important;
+        }
+        header .head h1 {
+          font-size:17px !important;
+          line-height:1.1 !important;
+          margin:0 !important;
+          white-space:nowrap !important;
+          overflow:hidden !important;
+          text-overflow:ellipsis !important;
+        }
+        header .head p {
+          max-width:100% !important;
+          font-size:12px !important;
+          margin:2px 0 0 !important;
+          white-space:nowrap !important;
+          overflow:hidden !important;
+          text-overflow:ellipsis !important;
+        }
+        header .head > button,
+        header .head > button:nth-of-type(1),
+        header .head > button:nth-of-type(2),
+        header .head > button:nth-of-type(3),
+        header .head > button:nth-of-type(4),
+        header .head > button:nth-of-type(5),
+        header .head > button:nth-of-type(6),
+        header .head > button:nth-of-type(7) {
+          display:inline-flex !important;
+          width:100% !important;
+          min-height:38px !important;
+          padding:7px 8px !important;
+          border-radius:12px !important;
+          font-size:12.5px !important;
+          line-height:1.1 !important;
+          justify-content:center !important;
+          align-items:center !important;
+          gap:5px !important;
+          white-space:normal !important;
+        }
+        header .head > button svg {
+          width:15px !important;
+          height:15px !important;
+          flex:0 0 auto !important;
+        }
+      }
+
     ` }),
       lightboxImage && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "imageLightboxOverlay", onClick: (event) => {
         event.stopPropagation();
