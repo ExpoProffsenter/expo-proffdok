@@ -1888,6 +1888,307 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setTab("rapport");
       setTimeout(() => writePrintableReport(printWindow), 650);
     };
+
+    const downloadClickablePdfReport = async () => {
+      try {
+        const module = await import("https://esm.sh/jspdf@2.5.1");
+        const JsPDF = module.jsPDF || module.default?.jsPDF;
+        if (!JsPDF) throw new Error("Kunne ikke laste PDF-motor.");
+        const doc = new JsPDF({ unit: "mm", format: "a4", compress: true });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 14;
+        const contentWidth = pageWidth - margin * 2;
+        let y = 16;
+
+        const safeText = (value) => value === void 0 || value === null ? "" : String(value);
+        const filenameSafe = (value) => safeText(value || "FDV-rapport").replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 80) || "FDV-rapport";
+        const normalizePdfUrl = (value) => normalizeExternalUrl(value);
+        const ensureSpace = (height = 8) => {
+          if (y + height <= pageHeight - 18) return;
+          doc.addPage();
+          y = 16;
+        };
+        const addSectionTitle = (title) => {
+          ensureSpace(16);
+          y += 2;
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(15);
+          doc.setTextColor(15, 23, 42);
+          doc.text(safeText(title), margin, y);
+          y += 3;
+          doc.setDrawColor(15, 23, 42);
+          doc.setLineWidth(0.25);
+          doc.line(margin, y, pageWidth - margin, y);
+          y += 7;
+        };
+        const addSubTitle = (title) => {
+          ensureSpace(8);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(11);
+          doc.setTextColor(15, 23, 42);
+          doc.text(safeText(title), margin, y);
+          y += 5;
+        };
+        const addParagraph = (value, opts = {}) => {
+          const textValue = safeText(value).trim();
+          if (!textValue) return;
+          const size = opts.size || 9.5;
+          const lineHeight = opts.lineHeight || 5;
+          doc.setFont("helvetica", opts.bold ? "bold" : "normal");
+          doc.setFontSize(size);
+          doc.setTextColor(opts.color || 15, opts.color ? 69 : 23, opts.color ? 135 : 42);
+          const lines = doc.splitTextToSize(textValue, opts.width || contentWidth);
+          ensureSpace(lines.length * lineHeight + 2);
+          doc.text(lines, opts.x || margin, y);
+          y += lines.length * lineHeight;
+        };
+        const addKeyValue = (label, value) => {
+          const cleanValue = safeText(value).trim() || "Ikke fylt ut";
+          ensureSpace(10);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8.5);
+          doc.setTextColor(15, 23, 42);
+          doc.text(safeText(label), margin, y);
+          y += 4;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9.5);
+          const lines = doc.splitTextToSize(cleanValue, contentWidth);
+          doc.text(lines, margin, y);
+          y += Math.max(5, lines.length * 5);
+        };
+        const addLink = (label, href) => {
+          const url = normalizePdfUrl(href);
+          if (!url) return;
+          ensureSpace(12);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(9.5);
+          doc.setTextColor(0, 84, 180);
+          if (typeof doc.textWithLink === "function") {
+            doc.textWithLink(safeText(label), margin, y, { url });
+          } else {
+            doc.text(safeText(label), margin, y);
+            doc.link(margin, y - 4, Math.min(contentWidth, safeText(label).length * 2.2), 5, { url });
+          }
+          y += 4;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7.2);
+          doc.setTextColor(51, 65, 85);
+          const urlLines = doc.splitTextToSize(url, contentWidth);
+          ensureSpace(urlLines.length * 3.6 + 1);
+          doc.text(urlLines, margin, y);
+          y += urlLines.length * 3.6 + 2;
+        };
+        const addDivider = () => {
+          ensureSpace(4);
+          doc.setDrawColor(226, 232, 240);
+          doc.line(margin, y, pageWidth - margin, y);
+          y += 5;
+        };
+        const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        const getImageInfo = (dataUrl) => new Promise((resolve) => {
+          const image = new window.Image();
+          image.onload = () => resolve({ width: image.width || 1, height: image.height || 1 });
+          image.onerror = () => resolve({ width: 1, height: 1 });
+          image.src = dataUrl;
+        });
+        const addImageFromUrl = async (url, caption = "") => {
+          const cleanUrl = normalizePdfUrl(url);
+          if (!cleanUrl) return;
+          try {
+            const response = await fetch(cleanUrl, { mode: "cors" });
+            if (!response.ok) throw new Error("Bilde kunne ikke hentes.");
+            const blob = await response.blob();
+            const dataUrl = await blobToDataUrl(blob);
+            const info = await getImageInfo(dataUrl);
+            const maxW = Math.min(82, contentWidth);
+            const maxH = 62;
+            let w = maxW;
+            let h = w * (info.height / info.width);
+            if (h > maxH) {
+              h = maxH;
+              w = h * (info.width / info.height);
+            }
+            ensureSpace(h + 12);
+            doc.addImage(dataUrl, undefined, margin, y, w, h);
+            y += h + 4;
+            if (caption) addParagraph(caption, { size: 8.2, lineHeight: 4 });
+          } catch (error) {
+            addParagraph(`Bilde kunne ikke bygges inn i PDF: ${cleanUrl}`, { size: 8.2, lineHeight: 4 });
+          }
+        };
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(15, 23, 42);
+        doc.text("FDV-rapport / Prosjektdokumentasjon", margin, y);
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.text(new Date().toLocaleString("no-NO"), margin, y);
+        y += 8;
+
+        if (company.logoUrl) {
+          await addImageFromUrl(company.logoUrl, "");
+        }
+
+        addSectionTitle("Firma");
+        addKeyValue("Firma", name || company.companyName || "Expo ProffDok");
+        addKeyValue("Adresse", company.address);
+        addKeyValue("Org.nr", company.orgNumber);
+        addKeyValue("Telefon", company.phone);
+        addKeyValue("E-post", company.email);
+        addKeyValue("Nettside", company.website);
+
+        addSectionTitle("Prosjekt");
+        const projectFields = {
+          "Prosjektansvarlig": project.responsible,
+          "Prosjektnavn": project.projectName,
+          "Adresse": project.address,
+          "Postnr.": project.postnr,
+          "Poststed / by": project.city,
+          "Kunde": project.customer,
+          "Kunde e-post": project.customerEmail,
+          "Dato": project.date,
+          "Status": project.locked ? "Avsluttet / låst" : "Aktivt",
+          "Notater": project.notes
+        };
+        Object.entries(projectFields).forEach(([label, value]) => addKeyValue(label, value));
+
+        if (project.projectInfoIncludeInReport && hasValue(project.projectDescription)) {
+          addSectionTitle("Prosjektinformasjon/beskrivelse");
+          addParagraph(project.projectDescription);
+        }
+
+        addSectionTitle("Prosjektering");
+        addKeyValue("Fall i dusjsone", project.fallDusj || "Ikke oppgitt");
+        addKeyValue("Fall utenfor dusjsone / våtsone", project.fallUtenfor || "Ikke oppgitt");
+        if (project.fall) addKeyValue("Fall mot sluk", project.fall);
+        addKeyValue("Slukplassering", project.sluk || "Ikke oppgitt");
+        addKeyValue("Terskelhøyde", project.terskel || "Ikke oppgitt");
+        addKeyValue("Membran", project.membran || "Ikke oppgitt");
+        (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter((p) => hasValue(p.title) || hasValue(p.value)).forEach((p) => addKeyValue(p.title || "Eget punkt", p.value || "Ikke oppgitt"));
+        if (project.prosjekteringKommentar) addKeyValue("Kommentar / avvik", project.prosjekteringKommentar);
+
+        addSectionTitle("Produkter / FDV");
+        const allProducts = [...selected || [], ...manualSelected || []];
+        if (!allProducts.length) {
+          addParagraph("Ingen produkter er valgt.");
+        }
+        allProducts.forEach((p) => {
+          addSubTitle(p.section || "Annet produkt");
+          addParagraph(p.item || p.name || "Uten produktnavn");
+          if (p.comment) addParagraph(`Hvor brukt / kommentar: ${p.comment}`);
+          addLink("Åpne FDV", p.fdvUrl);
+          addLink("Åpne datablad", p.databladUrl);
+          addLink("Åpne DOP", p.dopUrl);
+          addLink("Åpne EPD", p.epdUrl);
+          addLink("Åpne sikkerhetsdatablad", p.sikkerhetsdatabladUrl);
+          addLink("Åpne vedlagt dokument", p.documentFileUrl);
+          addDivider();
+        });
+        Object.entries(other || {}).filter(([, v]) => v).forEach(([k, v]) => addParagraph(`Tidligere registrert annet produkt under ${k}: ${v}`));
+
+        addSectionTitle("Overflater");
+        const surfaceEntries = Object.entries(surf || {}).filter(([, v]) => v);
+        if (!surfaceEntries.length) addParagraph("Ingen overflater er fylt ut.");
+        surfaceEntries.forEach(([k, v]) => addKeyValue(k, v));
+
+        addSectionTitle("Bildedokumentasjon");
+        const photoCats = [...new Set((photos || []).map((photo) => photo.cat).filter(Boolean))];
+        if (!photoCats.length) addParagraph("Ingen bilder er lagt til.");
+        for (const cat of photoCats) {
+          addSubTitle(cat);
+          for (const photo of (photos || []).filter((item) => item.cat === cat)) {
+            await addImageFromUrl(photo.url, photo.comment || photo.name || "");
+          }
+        }
+
+        addSectionTitle("Fag, deler og utstyr");
+        if (!(inst || []).length) addParagraph("Ingen fag-/utstyrsposter er lagt til.");
+        for (const item of inst || []) {
+          addSubTitle(item.category || "Fag/utstyr");
+          addParagraph([item.name, item.qty, item.supplier, item.desc].filter(Boolean).join(" · "));
+          addLink("Åpne FDV/datablad", item.fdvUrl);
+          for (const photo of item.photos || []) {
+            await addImageFromUrl(photo.url, photo.name || "");
+          }
+          addDivider();
+        }
+
+        addSectionTitle("Sjekkliste");
+        Object.entries(checklist || {}).forEach(([category, items]) => {
+          addSubTitle(category);
+          Object.entries(items || {}).forEach(([item, value]) => {
+            const status = value?.status || "";
+            const comment = value?.comment || "";
+            addParagraph(`${item}${status ? " — " + status : ""}${comment ? " — " + comment : ""}`);
+          });
+        });
+
+        const deviations = [];
+        Object.entries(checklist || {}).forEach(([category, items]) => {
+          Object.entries(items || {}).forEach(([item, value]) => {
+            if (value?.status === "Avvik") deviations.push({ category, item, comment: value?.comment || "" });
+          });
+        });
+        if (deviations.length) {
+          addSectionTitle("Avviksliste");
+          deviations.forEach((d) => addParagraph(`${d.category} / ${d.item}: ${d.comment || "Avvik registrert"}`));
+        }
+
+        if (tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0)) {
+          addSectionTitle("Tilbud / kontrakt");
+          addKeyValue("Tillegg", tilbud.tillegg);
+          addKeyValue("Fradrag", tilbud.fradrag);
+          addKeyValue("Avtaleendringer / kommentar", tilbud.kommentar);
+          (tilbud.files || []).forEach((file) => addLink(file.name || "Vedlegg", file.url));
+        }
+
+        if (overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtførendeImage) || hasValue(overtagelse.signKundeImage))) {
+          addSectionTitle("Overtagelse");
+          addKeyValue("Dato", overtagelse.dato);
+          addKeyValue("Kommentar / merknader", overtagelse.kommentar);
+          addKeyValue("Signatur utførende", overtagelse.signUtførende);
+          if (overtagelse.signUtførendeImage) await addImageFromUrl(overtagelse.signUtførendeImage, "Signatur utførende");
+          addKeyValue("Signatur kunde", overtagelse.signKunde);
+          if (overtagelse.signKundeImage) await addImageFromUrl(overtagelse.signKundeImage, "Signatur kunde");
+        }
+
+        addSectionTitle("Sjekklister og vedlegg");
+        if (!(files || []).length) addParagraph("Ingen vedlegg er lagt til.");
+        (files || []).forEach((file) => {
+          addParagraph(file.name || "Vedlegg");
+          addLink(file.name || "Åpne vedlegg", file.url);
+        });
+
+        addSectionTitle("Prosjekttilgang");
+        if (!(access || []).length) addParagraph("Ingen ekstra prosjekttilganger er lagt til.");
+        (access || []).forEach((a) => addParagraph(`${a.name || a.email || "Ukjent"} — ${a.role || ""}`));
+
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i += 1) {
+          doc.setPage(i);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7);
+          doc.setTextColor(100, 116, 139);
+          doc.text("Expo ProffDok rapport", pageWidth / 2, 7, { align: "center" });
+          doc.text(`${i}/${pageCount}`, pageWidth - margin, pageHeight - 7, { align: "right" });
+          doc.text("© 2026 Expo Proffsenter – Expo ProffDok. Alle rettigheter forbeholdt.", pageWidth / 2, pageHeight - 7, { align: "center" });
+        }
+
+        doc.save(`${filenameSafe(project.projectName || project.address || project.customer || "FDV-rapport")}.pdf`);
+      } catch (error) {
+        console.error("Kunne ikke lage PDF med klikkbare lenker:", error);
+        alert("Kunne ikke lage PDF med klikkbare lenker. Bruk vanlig utskrift som fallback. Feil: " + (error?.message || String(error)));
+      }
+    };
+
     const uploadImages = async (fileList, folder = "photos") => {
       const filesArray = Array.from(fileList || []);
       const uploaded = [];
@@ -2283,9 +2584,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 totalChatCount ? ` \xB7 ${totalChatCount} melding${totalChatCount === 1 ? "" : "er"}` : ""
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: printVisibleReport, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
-              " Lag PDF / skriv ut"
+              " Last ned PDF"
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { children: [
@@ -2739,9 +3040,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectId ? "Oppdater prosjekt" : "Lagre / oppdater prosjekt" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre kopi" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: printReport, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
-            " Lag PDF / skriv ut"
+            " Last ned PDF"
           ] }),
           projectId && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
         ] }),
