@@ -371,6 +371,29 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const lastReadByCustomer = projectLog?.lastReadByCustomer || "";
     const unreadForAdmin = chatMessages.filter((m) => m.role === "kunde" && (!lastReadByAdmin || (m.created || "") > lastReadByAdmin)).length;
     const unreadForCustomer = chatMessages.filter((m) => m.role !== "kunde" && (!lastReadByCustomer || (m.created || "") > lastReadByCustomer)).length;
+    const projectGuideStats = (0, import_react.useMemo)(() => {
+      const productCount = (selected || []).length + (manualSelected || []).length;
+      const photoCount = (photos || []).filter((photo) => photo?.url).length;
+      const checklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
+      const checklistDone = checklistValues.filter((value) => hasValue(value?.status)).length;
+      const checklistAvvik = checklistValues.filter((value) => value?.status === "Avvik").length;
+      const hasProjectBasics = [project.projectName, project.address, project.customer].some(hasValue);
+      const hasDescription = hasValue(project.projectDescription);
+      const hasCustomerEmail = hasValue(project.customerEmail);
+      const hasOvertagelse = projectHasOvertagelse(overtagelse);
+      return { productCount, photoCount, checklistDone, checklistAvvik, hasProjectBasics, hasDescription, hasCustomerEmail, hasOvertagelse };
+    }, [selected, manualSelected, photos, checklist, project, overtagelse]);
+    const projectGuideItems = (0, import_react.useMemo)(() => {
+      const items = [];
+      if (!projectGuideStats.hasProjectBasics) items.push({ id: "basis", label: "Fyll inn prosjekt, adresse og kunde", tab: "prosjekt", tone: "warning" });
+      if (!projectGuideStats.hasDescription) items.push({ id: "info", label: "Legg inn kort prosjektbeskrivelse", tab: "prosjektinfo", tone: "info" });
+      if (projectGuideStats.productCount === 0) items.push({ id: "produkter", label: "Velg produkter for FDV/rapport", tab: "produkter", tone: "warning" });
+      if (projectGuideStats.photoCount === 0) items.push({ id: "bilder", label: "Legg til bildedokumentasjon", tab: "bilder", tone: "warning" });
+      if (projectGuideStats.checklistDone === 0) items.push({ id: "sjekklister", label: "Start sjekklistekontroll", tab: "sjekklister", tone: "info" });
+      if (!projectGuideStats.hasCustomerEmail) items.push({ id: "kunde", label: "Legg inn kunde e-post for deling/varsling", tab: "prosjekt", tone: "info" });
+      if (!projectGuideStats.hasOvertagelse) items.push({ id: "overtagelse", label: "Registrer overtagelse når prosjektet er ferdig", tab: "overtagelse", tone: "neutral" });
+      return items.slice(0, 5);
+    }, [projectGuideStats]);
     const rowIsLocked = (row) => row?.locked === true || row?.locked === "true" || projectIsLocked(row?.data?.project || {});
     const projectFromRow = (row, fallbackProject = project) => {
       const dataProject = row?.data?.project || {};
@@ -2474,6 +2497,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           ] }, s.title)) }),
           tab === "overflater" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Overflateprodukter", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
           tab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bildedokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
+            photos.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen bilder er lagt til ennå. Start gjerne med Før arbeid, Underlag og Ferdig resultat for en ryddig rapport." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 16 }),
@@ -2805,6 +2829,25 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       .projectImageThumb small { display:block; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:11px; }
       .projectImageCounts { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
       .projectMiniBadge { display:inline-flex; align-items:center; gap:5px; padding:5px 8px; border-radius:999px; border:1px solid #dbe7ec; background:#f8fafc; font-size:12px; font-weight:700; }
+      .guideGrid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; margin-top:12px; }
+      .guideCard { border:1px solid #dbe7ec; background:#f8fafc; border-radius:16px; padding:12px; }
+      .guideCard b { display:block; font-size:18px; color:#0f172a; margin-bottom:3px; }
+      .guideCard span { display:block; color:#64748b; font-size:13px; line-height:1.35; }
+      .guideSteps { display:grid; gap:8px; margin-top:12px; }
+      .guideStep { display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid #dbe7ec; background:#ffffff; border-radius:14px; padding:10px; }
+      .guideStepText { min-width:0; }
+      .guideStepText b { display:block; font-size:14px; line-height:1.25; color:#0f172a; }
+      .guideStepText small { display:block; color:#64748b; margin-top:2px; }
+      .guideStep button { flex:0 0 auto; }
+
+      @media screen and (max-width: 700px) {
+        .guideGrid { grid-template-columns:1fr 1fr !important; gap:8px !important; }
+        .guideCard { padding:10px !important; border-radius:14px !important; }
+        .guideCard b { font-size:16px !important; }
+        .guideCard span { font-size:12.5px !important; }
+        .guideStep { display:grid !important; grid-template-columns:1fr !important; gap:8px !important; padding:10px !important; }
+        .guideStep button { width:100% !important; justify-content:center !important; }
+      }
 
       .imageLightboxOverlay { position:fixed; inset:0; z-index:9999; background:rgba(2, 6, 23, 0.86); display:flex; align-items:center; justify-content:center; padding:18px; }
       .imageLightboxInner { width:min(1100px, 100%); max-height:92vh; display:grid; gap:12px; }
@@ -3340,6 +3383,31 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             "."
           ] })
         ] }),
+        projectId && !isProjectLocked && projectGuideItems.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Neste steg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette er en enkel sjekkliste som hjelper deg å få prosjektet klart for deling, rapport og overlevering." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideGrid", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectGuideStats.productCount }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "produkter valgt" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectGuideStats.photoCount }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "bilder lagt til" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectGuideStats.checklistDone }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: projectGuideStats.checklistAvvik > 0 ? `${projectGuideStats.checklistAvvik} avvik registrert` : "sjekkpunkter utfylt" })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "guideSteps", children: projectGuideItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `guideStep guideStep-${item.tone}`, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideStepText", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.label }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "Trykk for å gå direkte til riktig seksjon." })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab(item.tab), children: "Åpne" })
+          ] }, item.id)) })
+        ] }),
+        projectId && !isProjectLocked && projectGuideItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Prosjektet ser klart ut", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Basisinfo, prosjektbeskrivelse, produkter, bilder, sjekkliste, kunde e-post og overtagelse er registrert. Kontroller rapporten før prosjektet avsluttes." }) }),
         tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Prosjektansvarlig", value: project.responsible, onChange: (v) => setProject({ ...project, responsible: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato", type: "date", value: project.date, onChange: (v) => setProject({ ...project, date: v }) }),
