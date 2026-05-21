@@ -2699,7 +2699,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Kundetilgang" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-                "Rapport, tilbud/kontrakt og chat",
+                "Rapport, prosjektchat og dokumentasjon",
                 totalChatCount ? ` \xB7 ${totalChatCount} melding${totalChatCount === 1 ? "" : "er"}` : ""
               ] })
             ] }),
@@ -2738,23 +2738,24 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 currentStatus.label
               ] })
             ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note customerChatFocusNote", children: "All kommunikasjon tas i prosjektchatten, slik at meldinger og bilder lagres på prosjektet." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Produkter dokumentert", value: customerPortalProductCount ? `${customerPortalProductCount} produkter` : "Ikke valgt ennå" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Bildedokumentasjon", value: customerPortalPhotoCount ? `${customerPortalPhotoCount} bilder` : "Ingen bilder ennå" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Sjekkliste", value: customerPortalChecklistAvvik ? `${customerPortalChecklistAvvik} avvik registrert` : customerPortalChecklistDone ? `${customerPortalChecklistDone} punkt utført` : "Ikke utfylt ennå" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Chat", value: unreadForCustomer > 0 ? `${unreadForCustomer} ulest` : totalChatCount ? `${totalChatCount} meldinger` : "Ingen meldinger" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setCustomerTab("rapport"), children: "Se rapport" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setCustomerTab("chat"), children: unreadForCustomer > 0 ? `Åpne chat (${unreadForCustomer} ulest)` : "Åpne prosjektchat" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("rapport"), children: "Se rapport" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadClickablePdfReport, children: "Last ned PDF" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: unreadForCustomer > 0 ? "" : "secondary", onClick: () => setCustomerTab("chat"), children: unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : "Åpne chat" }),
               hasTilbudContent && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("tilbud"), children: "Tilbud/kontrakt" })
             ] })
           ] }),
           customerTab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationReadOnly, { project }),
           customerTab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CustomerReport, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }),
           customerTab === "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : totalChatCount ? `Chat (${totalChatCount})` : "Chat", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan kunde sende sp\xF8rsm\xE5l eller beskjeder direkte inn p\xE5 prosjektet. Chatten oppdateres automatisk live, og utf\xF8rende varsles p\xE5 e-post n\xE5r e-postvarsling er satt opp." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Send spørsmål, beskjeder og bilder her. Alt lagres på prosjektet." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Ny melding fra kunde", value: projectLog.draft || "", onChange: (v) => setProjectLog((prev) => ({ ...prev, draft: v })) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "12px", flexWrap: "wrap" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", style: { marginBottom: 0 }, children: [
@@ -3270,6 +3271,44 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           height:15px !important;
           flex:0 0 auto !important;
         }
+      }
+
+
+      /* FASE 6.11 compact + chat-fokus: kun visuell komprimering */
+      .customerChatFocusNote {
+        margin: 8px 0 10px !important;
+        padding: 9px 11px;
+        border: 1px solid #dbe7ec;
+        border-radius: 14px;
+        background: #f8fafc;
+        font-weight: 800;
+      }
+      .customerPortalActions button:first-child {
+        font-weight: 900;
+      }
+      @media screen and (max-width:700px) {
+        main { padding-top: 8px !important; }
+        section { padding: 11px !important; margin: 8px auto !important; border-radius: 16px !important; }
+        section h2 { font-size: 19px !important; margin-bottom: 8px !important; }
+        h3 { font-size: 16px !important; margin: 8px 0 6px !important; }
+        .note { font-size: 13px !important; line-height: 1.38 !important; margin: 6px 0 !important; }
+        .grid { gap: 8px !important; }
+        .item, .out { padding: 9px !important; margin: 7px 0 !important; border-radius: 14px !important; }
+        .tile { padding: 8px !important; border-radius: 14px !important; }
+        .cards { gap: 7px !important; }
+        input, textarea, select { min-height: 40px !important; }
+        textarea { min-height: 74px !important; }
+        button, .upload { min-height: 39px !important; padding: 8px 10px !important; }
+        .collapsibleBlock { margin: 7px 0 !important; }
+        .collapsibleBlock summary { min-height: 42px !important; padding: 9px 11px !important; }
+        .collapsibleBlockBody { padding: 0 10px 10px !important; }
+        .projectListCard { padding: 10px !important; margin: 8px 0 !important; }
+        .projectListActions { margin-top: 8px !important; }
+        .projectListMetaCards { margin-top: 7px !important; }
+        .customerPortalActions { display:grid !important; grid-template-columns:1fr 1fr !important; gap:7px !important; }
+        .customerPortalActions button { width:100% !important; }
+        .customerPortalActions button:first-child { grid-column:1 / -1; min-height:44px !important; }
+        .customerChatFocusNote { font-size:13px !important; line-height:1.35 !important; }
       }
 
     ` }),
