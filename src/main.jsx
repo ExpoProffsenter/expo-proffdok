@@ -1019,11 +1019,54 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
       alert(project.customerEmail ? "\u2714 Melding sendt og lagret p\xE5 prosjektet. E-postvarsling fors\xF8kt sendt til kunde." : "\u2714 Melding lagret p\xE5 prosjektet. Legg inn kunde e-post for e-postvarsling.");
     };
-    const removeProjectLogMessage = (id) => {
-      setProjectLog((prev) => ({
-        ...prev,
-        messages: (prev.messages || []).filter((m) => m.id !== id)
+    const removeProjectLogMessage = async (id) => {
+      if (!id) return;
+      if (!window.confirm("Vil du fjerne denne chatmeldingen fra prosjektet?")) return;
+      if (!projectId) {
+        setProjectLog((prev) => ({
+          ...prev,
+          messages: (prev.messages || []).filter((m) => m.id !== id)
+        }));
+        return;
+      }
+      const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+      if (fetchError || !existing) {
+        console.error(fetchError);
+        return alert("Kunne ikke hente prosjekt før meldingen ble fjernet: " + (fetchError?.message || "Fant ikke prosjekt"));
+      }
+      if (rowIsLocked(existing)) {
+        return alert("Prosjektet er låst. Lås opp prosjektet før chatmeldinger kan fjernes.");
+      }
+      const existingData = dataFromRow(existing);
+      const existingLog = normalizeProjectLog(existingData.projectLog);
+      const updatedLog = {
+        ...existingLog,
+        draft: projectLog?.draft || existingLog.draft || "",
+        messages: (existingLog.messages || []).filter((m) => m.id !== id)
+      };
+      if ((existingLog.messages || []).length === updatedLog.messages.length) {
+        return alert("Fant ikke meldingen i lagret prosjektdata. Oppdater chat og prøv igjen.");
+      }
+      const cleanData = JSON.parse(JSON.stringify({
+        ...existingData,
+        projectLog: updatedLog
       }));
+      const { data: updatedRow, error } = await supabase.from("projects").update({
+        data: cleanData,
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      }).eq("id", projectId).select("*").maybeSingle();
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke fjerne chatmelding fra prosjektet: " + error.message);
+      }
+      if (updatedRow) {
+        unpackData(dataFromRow(updatedRow), true);
+        setProjectId(updatedRow.id);
+      } else {
+        setProjectLog(updatedLog);
+      }
+      await loadProjects(authUser);
+      alert("Chatmelding fjernet fra prosjektet.");
     };
     const saveCustomerChatMessage = async () => {
       if (!projectId) return alert("Prosjektet mangler ID.");
