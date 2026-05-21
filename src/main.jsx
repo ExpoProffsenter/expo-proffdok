@@ -3750,7 +3750,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               addFiles,
               files,
               setFiles,
-              closedByName: user.name || authUser?.email || "Utførende"
+              closedByName: user.name || authUser?.email || "Utførende",
+              showOpenDeviationsOnly,
+              setShowOpenDeviationsOnly
             }
           )
         ] }),
