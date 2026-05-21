@@ -1729,9 +1729,164 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setProfile(null);
       setTab("prosjekt");
     };
+    const writePrintableReport = (printWindow, title = "Expo ProffDok rapport") => {
+      const reportNode = document.querySelector(".report");
+      if (!reportNode) {
+        if (printWindow && !printWindow.closed) printWindow.close();
+        alert("Rapporten er ikke klar ennå. Prøv igjen om et øyeblikk.");
+        return;
+      }
+
+      const reportClone = reportNode.cloneNode(true);
+      reportClone.querySelectorAll("a[href]").forEach((link) => {
+        const normalizedHref = normalizeExternalUrl(link.getAttribute("href"));
+        if (!normalizedHref) return;
+        link.setAttribute("href", normalizedHref);
+        link.setAttribute("target", "_blank");
+        link.setAttribute("rel", "noopener noreferrer");
+      });
+
+      const inlineStyles = Array.from(document.querySelectorAll("style")).map((style) => style.innerHTML).join("\n");
+      const reportHtml = reportClone.outerHTML;
+
+      const printDocument = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${title}</title>
+  <style>
+    ${inlineStyles}
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #ffffff;
+      color: #0f172a;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .report {
+      max-width: 920px;
+      margin: 0 auto;
+      background: #ffffff;
+    }
+    section {
+      border: 1px solid #dbe7ec;
+      border-radius: 18px;
+      padding: 18px;
+      margin: 0 0 18px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    h2 {
+      margin: 0 0 12px;
+      border-bottom: 1px solid #0f172a;
+      padding-bottom: 8px;
+      font-size: 22px;
+    }
+    h3 { margin: 14px 0 8px; }
+    .out {
+      border: 1px solid #dbe7ec;
+      border-radius: 14px;
+      padding: 10px;
+      margin: 8px 0;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .reportTop {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .photos {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .photo img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+    a[href] {
+      color: #0645ad !important;
+      text-decoration: underline !important;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .pdfSafeUrl {
+      display: block !important;
+      color: #334155 !important;
+      font-size: 10px !important;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      margin-top: 2px;
+    }
+    footer {
+      text-align: center;
+      color: #64748b;
+      font-size: 12px;
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+    button, nav, .mobileFieldBar, .mobileNav, .mobileCurrentProjectBar, .bottomAppNav {
+      display: none !important;
+    }
+    @media print {
+      body { padding: 0; }
+      a[href] {
+        color: #0645ad !important;
+        text-decoration: underline !important;
+      }
+      .pdfSafeUrl {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  ${reportHtml}
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.focus();
+        window.print();
+      }, 250);
+    };
+  </script>
+</body>
+</html>`;
+
+      printWindow.document.open();
+      printWindow.document.write(printDocument);
+      printWindow.document.close();
+    };
+
+    const printVisibleReport = () => {
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        alert("Nettleseren blokkerte utskriftsvinduet. Tillat popup-vinduer og prøv igjen.");
+        return;
+      }
+      setTimeout(() => writePrintableReport(printWindow), 150);
+    };
+
     const printReport = () => {
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        alert("Nettleseren blokkerte utskriftsvinduet. Tillat popup-vinduer og prøv igjen.");
+        return;
+      }
       setTab("rapport");
-      setTimeout(() => window.print(), 400);
+      setTimeout(() => writePrintableReport(printWindow), 650);
     };
     const uploadImages = async (fileList, folder = "photos") => {
       const filesArray = Array.from(fileList || []);
@@ -2128,7 +2283,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 totalChatCount ? ` \xB7 ${totalChatCount} melding${totalChatCount === 1 ? "" : "er"}` : ""
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => window.print(), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: printVisibleReport, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
               " Lag PDF / skriv ut"
             ] })
