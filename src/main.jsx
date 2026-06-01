@@ -1,6 +1,7 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
 // FASE 7 Deploy 3C: Avvikshistorikk i rapport/PDF med original avvikstekst og lukkekommentar.
+// FASE 7 Deploy 4B: Profesjonell rapportvisning med fremhevede sjekkpunkter og rapportsammendrag.
 // FASE 7 Deploy 3D: Randomisert garantinummer og registrering i Supabase warranty_registry.
 // FASE 7 Deploy 3B: Mobiljustering av sjekklister, bilder og statusknapper uten logikkendringer.
 // FASE 7 Deploy 3: Profesjonelt garantibevis i PDF, arkiveringsvarsel og krav om nedlastet sluttrapport.
@@ -2539,6 +2540,105 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           doc.line(margin, y, pageWidth - margin, y);
           y += 5;
         };
+
+        const statusVisual = (status = "") => {
+          const clean = String(status || "").toLowerCase();
+          if (clean === "avvik") return { label: "AVVIK", bg: [254, 242, 242], border: [248, 113, 113], text: [153, 27, 27] };
+          if (clean === "lukket avvik") return { label: "LUKKET", bg: [236, 253, 245], border: [74, 222, 128], text: [6, 95, 70] };
+          if (clean === "ikke aktuelt") return { label: "IKKE AKTUELT", bg: [248, 250, 252], border: [203, 213, 225], text: [71, 85, 105] };
+          if (clean === "ok" || clean === "utført" || clean === "utfort") return { label: "OK", bg: [236, 253, 245], border: [74, 222, 128], text: [6, 95, 70] };
+          return { label: status || "IKKE VURDERT", bg: [255, 251, 235], border: [251, 191, 36], text: [146, 64, 14] };
+        };
+        const drawMetricCard = (x, yPos, w, h, label, value, tone = "neutral") => {
+          const bg = tone === "green" ? [236, 253, 245] : tone === "red" ? [254, 242, 242] : tone === "blue" ? [239, 246, 255] : [248, 250, 252];
+          const borderColor = tone === "green" ? [74, 222, 128] : tone === "red" ? [248, 113, 113] : tone === "blue" ? [147, 197, 253] : [203, 213, 225];
+          const textColor = tone === "green" ? [6, 95, 70] : tone === "red" ? [153, 27, 27] : tone === "blue" ? [30, 64, 175] : [15, 23, 42];
+          doc.setDrawColor(...borderColor);
+          doc.setFillColor(...bg);
+          doc.roundedRect(x, yPos, w, h, 2.5, 2.5, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(13);
+          doc.setTextColor(...textColor);
+          doc.text(safeText(value), x + 5, yPos + 9);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7.4);
+          doc.setTextColor(71, 85, 105);
+          doc.text(doc.splitTextToSize(safeText(label), w - 10), x + 5, yPos + 15);
+        };
+        const addReportSummary = () => {
+          const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
+          const assessed = entries.filter((value) => hasValue(value?.status));
+          const okTotal = assessed.filter((value) => ["ok", "utført", "utfort"].includes(String(value?.status || "").toLowerCase())).length;
+          const notRelevantTotal = assessed.filter((value) => String(value?.status || "").toLowerCase() === "ikke aktuelt").length;
+          const openDeviationTotal = assessed.filter((value) => value?.status === "Avvik").length;
+          const closedDeviationTotal = assessed.filter((value) => value?.status === "Lukket avvik").length;
+          const photoTotal = (photos || []).filter((photo) => hasValue(photo?.url)).length;
+          const productTotal = (selected || []).length + (manualSelected || []).length;
+          addSectionTitle("Rapportsammendrag");
+          const passed = openDeviationTotal === 0;
+          ensureSpace(26);
+          doc.setDrawColor(...(passed ? [74, 222, 128] : [248, 113, 113]));
+          doc.setFillColor(...(passed ? [236, 253, 245] : [254, 242, 242]));
+          doc.roundedRect(margin, y, contentWidth, 22, 3, 3, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(13);
+          doc.setTextColor(...(passed ? [6, 95, 70] : [153, 27, 27]));
+          doc.text(passed ? "KONTROLL DOKUMENTERT" : "KONTROLL MED ÅPNE AVVIK", margin + 6, y + 9);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.2);
+          doc.setTextColor(51, 65, 85);
+          doc.text(passed ? "Prosjektet har ingen åpne avvik i rapportgrunnlaget." : "Prosjektet har åpne avvik som må følges opp.", margin + 6, y + 16);
+          y += 28;
+          const gap = 4;
+          const cardW = (contentWidth - gap * 3) / 4;
+          ensureSpace(24);
+          drawMetricCard(margin, y, cardW, 20, "Godkjente punkter", String(okTotal), "green");
+          drawMetricCard(margin + (cardW + gap), y, cardW, 20, "Ikke aktuelle", String(notRelevantTotal), "neutral");
+          drawMetricCard(margin + (cardW + gap) * 2, y, cardW, 20, "Åpne avvik", String(openDeviationTotal), openDeviationTotal ? "red" : "green");
+          drawMetricCard(margin + (cardW + gap) * 3, y, cardW, 20, "Bilder", String(photoTotal), "blue");
+          y += 26;
+          addParagraph(`Produkter dokumentert: ${productTotal}. Lukkede avvik: ${closedDeviationTotal}. Rapporten bygger på registrerte produkter, bilder, sjekklister, avvikshistorikk og signert overtakelse der dette er registrert.`, { size: 8.5, lineHeight: 4.4 });
+        };
+        const addChecklistStatusCard = (category, item, value = {}) => {
+          const status = value?.status || "";
+          const comment = value?.comment || "";
+          const closeComment = value?.closeComment || "";
+          const visual = statusVisual(status);
+          const textLines = doc.splitTextToSize(safeText(item), contentWidth - 48);
+          const commentLines = comment ? doc.splitTextToSize(`Kommentar: ${comment}`, contentWidth - 16) : [];
+          const closeLines = status === "Lukket avvik" && closeComment ? doc.splitTextToSize(`Lukket: ${closeComment}`, contentWidth - 16) : [];
+          const boxH = Math.max(13, 8 + textLines.length * 4.2 + commentLines.length * 3.8 + closeLines.length * 3.8);
+          ensureSpace(boxH + 3);
+          doc.setDrawColor(...visual.border);
+          doc.setFillColor(...visual.bg);
+          doc.roundedRect(margin, y, contentWidth, boxH, 2.5, 2.5, "FD");
+          doc.setDrawColor(...visual.border);
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(margin + 4, y + 4, 32, 7, 2, 2, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(6.8);
+          doc.setTextColor(...visual.text);
+          doc.text(visual.label, margin + 20, y + 8.8, { align: "center" });
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8.7);
+          doc.setTextColor(15, 23, 42);
+          doc.text(textLines, margin + 42, y + 7.5);
+          let yy = y + 7.5 + textLines.length * 4.2;
+          if (commentLines.length) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.5);
+            doc.setTextColor(71, 85, 105);
+            doc.text(commentLines, margin + 8, yy + 2);
+            yy += commentLines.length * 3.8;
+          }
+          if (closeLines.length) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.5);
+            doc.setTextColor(6, 95, 70);
+            doc.text(closeLines, margin + 8, yy + 3);
+          }
+          y += boxH + 3;
+        };
         const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result);
@@ -2583,7 +2683,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           const selectedSystem = warrantyReadiness.selectedSystem;
           const guaranteeNumber = warranty?.guaranteeNumber || "Tildeles ved utstedelse";
           const overtagelseDate = overtagelse?.dato || project?.date || "";
-          const issuedText = warranty?.issued && warranty?.issuedAt ? new Date(warranty.issuedAt).toLocaleString("no-NO") : "Ikke utstedt";
+          const issuedDate = warranty?.issuedAt ? new Date(warranty.issuedAt) : /* @__PURE__ */ new Date();
+          const issuedDateText = warranty?.issued && warranty?.issuedAt ? issuedDate.toLocaleDateString("no-NO") : "Ikke utstedt";
           const reportText = warranty?.reportGeneratedAt ? new Date(warranty.reportGeneratedAt).toLocaleString("no-NO") : "Genereres nå";
           const warrantyValidTo = (() => {
             const sourceDate = overtagelseDate || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
@@ -2592,94 +2693,296 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             d.setFullYear(d.getFullYear() + 12);
             return d.toISOString().slice(0, 10);
           })();
+          const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(selectedSystem.sintefUrl)}&size=180&margin=1`;
+          const darkBlue = [12, 42, 82];
+          const blue = [20, 86, 160];
+          const lightBlue = [239, 246, 255];
+          const green = [22, 163, 74];
+          const gray = [100, 116, 139];
+          const border = [214, 226, 236];
+          const pageBottom = pageHeight - 16;
+          const resetPage = () => {
+            y = 16;
+            doc.setDrawColor(...border);
+            doc.setFillColor(255, 255, 255);
+          };
+          const drawFooterBand = (pageLabel = "Garantisertifikat") => {
+            doc.setFillColor(...darkBlue);
+            doc.rect(0, pageHeight - 14, pageWidth, 14, "F");
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            doc.setTextColor(255, 255, 255);
+            doc.text(`Expo ProffDok • ${pageLabel}`, margin, pageHeight - 6);
+          };
+          const addImageFit = async (url, x, yy, maxW, maxH) => {
+            const cleanUrl = normalizePdfUrl(url);
+            if (!cleanUrl) return false;
+            try {
+              const response = await fetch(cleanUrl, { mode: "cors" });
+              if (!response.ok) throw new Error("Kunne ikke hente bilde.");
+              const blob = await response.blob();
+              const dataUrl = await blobToDataUrl(blob);
+              const info = await getImageInfo(dataUrl);
+              let w = maxW;
+              let h = w * (info.height / info.width);
+              if (h > maxH) {
+                h = maxH;
+                w = h * (info.width / info.height);
+              }
+              doc.addImage(dataUrl, undefined, x, yy, w, h);
+              return true;
+            } catch (error) {
+              return false;
+            }
+          };
+          const drawHeader = async (title = "GARANTIDOKUMENTASJON") => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8.5);
+            doc.setTextColor(...blue);
+            doc.text(title, margin, 17);
+            doc.setDrawColor(...blue);
+            doc.setLineWidth(0.35);
+            doc.line(margin, 21, pageWidth - margin, 21);
+            y = 31;
+          };
+          const drawInfoCard = (x, yy, w, h, label, value) => {
+            doc.setDrawColor(...border);
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(x, yy, w, h, 2.5, 2.5, "FD");
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.2);
+            doc.setTextColor(...gray);
+            doc.text(safeText(label), x + 4, yy + 6);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8.8);
+            doc.setTextColor(15, 23, 42);
+            const lines = doc.splitTextToSize(safeText(value || "Ikke oppgitt"), w - 8);
+            doc.text(lines.slice(0, 2), x + 4, yy + 11);
+          };
+          const drawCheckCard = (label, text) => {
+            const h = 18;
+            doc.setDrawColor(...border);
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(margin, y, contentWidth, h, 2.5, 2.5, "FD");
+            doc.setDrawColor(...green);
+            doc.setFillColor(240, 253, 244);
+            doc.circle(margin + 8, y + 9, 3.2, "FD");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(...darkBlue);
+            doc.text("OK", margin + 5.6, y + 10.1);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8.8);
+            doc.setTextColor(15, 23, 42);
+            doc.text(safeText(label), margin + 17, y + 7.3);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.8);
+            doc.setTextColor(51, 65, 85);
+            doc.text(doc.splitTextToSize(safeText(text), contentWidth - 24), margin + 17, y + 12.2);
+            y += h + 4;
+          };
+          const drawNoteBox = (text) => {
+            const lines = doc.splitTextToSize(safeText(text), contentWidth - 18);
+            const h = Math.max(18, lines.length * 4 + 10);
+            doc.setDrawColor(191, 219, 254);
+            doc.setFillColor(...lightBlue);
+            doc.roundedRect(margin, y, contentWidth, h, 2.5, 2.5, "FD");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(...blue);
+            doc.text("i", margin + 7, y + 10);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(30, 64, 105);
+            doc.text(lines, margin + 15, y + 8);
+            y += h + 7;
+          };
+          const drawTerm = (heading, body) => {
+            if (y > pageBottom - 28) {
+              doc.addPage();
+              resetPage();
+              drawHeader("GARANTIDOKUMENTASJON");
+            }
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9.2);
+            doc.setTextColor(...darkBlue);
+            doc.text(safeText(heading), margin, y);
+            y += 4.5;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8.2);
+            doc.setTextColor(31, 41, 55);
+            const lines = doc.splitTextToSize(safeText(body), contentWidth);
+            doc.text(lines, margin, y);
+            y += lines.length * 4.2 + 5;
+          };
 
           doc.addPage();
-          y = 18;
-          if (company.logoUrl) {
-            await addImageFromUrl(company.logoUrl, "");
-            y = Math.max(y, 36);
-          } else {
+          resetPage();
+
+          doc.setFillColor(248, 250, 252);
+          doc.rect(0, 0, pageWidth, pageHeight, "F");
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 22, 4, 4, "F");
+
+          const logoOk = company.logoUrl ? await addImageFit(company.logoUrl, margin, 20, 48, 18) : false;
+          if (!logoOk) {
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(15);
-            doc.setTextColor(15, 23, 42);
-            doc.text(name || "Expo Proffsenter", margin, y);
-            y += 8;
+            doc.setFontSize(13);
+            doc.setTextColor(...darkBlue);
+            doc.text(name || company.companyName || "Utførende firma", margin, 28);
           }
+          doc.setDrawColor(203, 213, 225);
+          doc.line(pageWidth / 2, 19, pageWidth / 2, 39);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(15);
+          doc.setTextColor(...darkBlue);
+          doc.text("Expo ProffDok", pageWidth - margin, 27, { align: "right" });
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7.5);
+          doc.setTextColor(...gray);
+          doc.text("Prosjektdokumentasjon", pageWidth - margin, 32, { align: "right" });
 
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(22);
-          doc.setTextColor(15, 23, 42);
-          doc.text("12 ÅRS DOKUMENTERT", margin, y);
-          y += 9;
-          doc.text("TETTHETSGARANTI", margin, y);
-          y += 9;
+          doc.setFontSize(8);
+          doc.setTextColor(255, 255, 255);
+          doc.setFillColor(...darkBlue);
+          doc.roundedRect(pageWidth / 2 - 21, 48, 42, 8, 2, 2, "F");
+          doc.text("GARANTISERTIFIKAT", pageWidth / 2, 53.5, { align: "center" });
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(24);
+          doc.setTextColor(...darkBlue);
+          doc.text("12 ÅRS", pageWidth / 2, 78, { align: "center" });
+          doc.setFontSize(20);
+          doc.text("DOKUMENTERT", pageWidth / 2, 90, { align: "center" });
+          doc.text("TETTHETSGARANTI", pageWidth / 2, 102, { align: "center" });
+          doc.setFontSize(12);
+          doc.setTextColor(...blue);
+          doc.text(project.projectName || "Prosjekt", pageWidth / 2, 114, { align: "center" });
+
+          const cardTop = 128;
+          const cardGap = 4;
+          const cardW = (contentWidth - cardGap) / 2;
+          drawInfoCard(margin, cardTop, cardW, 22, "Utstedt til", project.customer || "Ikke oppgitt");
+          drawInfoCard(margin + cardW + cardGap, cardTop, cardW, 22, "Utført av", `${name || company.companyName || "Ikke oppgitt"}${company.orgNumber ? "\nOrg.nr. " + company.orgNumber : ""}`);
+          drawInfoCard(margin, cardTop + 26, cardW, 22, "Adresse", [project.address, project.postnr, project.city].filter(Boolean).join(", "));
+          drawInfoCard(margin + cardW + cardGap, cardTop + 26, cardW, 22, "Garantinummer", guaranteeNumber);
+          drawInfoCard(margin, cardTop + 52, cardW, 22, "Utstedelsesdato", issuedDateText);
+          drawInfoCard(margin + cardW + cardGap, cardTop + 52, cardW, 22, "Gyldig til", warrantyValidTo || "12 år fra overtakelse");
+
+          const qrY = cardTop + 82;
+          await addImageFit(qrUrl, margin + 2, qrY, 24, 24);
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(10);
+          doc.setFontSize(8);
           doc.setTextColor(51, 65, 85);
-          doc.text("Garantibevis generert i Expo ProffDok", margin, y);
-          y += 12;
+          doc.text(doc.splitTextToSize("Skann QR-koden for å åpne SINTEF Teknisk Godkjenning for valgt membransystem.", contentWidth - 36), margin + 32, qrY + 7);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(...blue);
+          doc.text(selectedSystem.sintefApproval, margin + 32, qrY + 20);
 
-          doc.setDrawColor(15, 23, 42);
-          doc.setLineWidth(0.5);
-          doc.line(margin, y, pageWidth - margin, y);
-          y += 10;
-
-          addSectionTitle("Garantibevis");
-          addKeyValue("Garantinummer", guaranteeNumber);
-          addKeyValue("Status", warranty?.issued ? "Utstedt" : "Ikke utstedt / utkast");
-          addKeyValue("Utstedt dato", issuedText);
-          addKeyValue("Overtakelsesdato", overtagelseDate || "Ikke registrert");
-          addKeyValue("Garantiperiode", warrantyValidTo ? `12 år fra overtakelse, til ${warrantyValidTo}` : "12 år fra signert overtakelse");
-          addKeyValue("Kunde", project.customer);
-          addKeyValue("Adresse", [project.address, project.postnr, project.city].filter(Boolean).join(", "));
-          addKeyValue("Prosjekt", project.projectName);
-          addKeyValue("Utførende firma", name || company.companyName || "Ikke oppgitt");
-          addKeyValue("Organisasjonsnummer", company.orgNumber);
-          addKeyValue("Membransystem", selectedSystem.product);
-          addKeyValue("Teknisk godkjenning", selectedSystem.sintefApproval);
-          addLink(`Åpne ${selectedSystem.sintefApproval}`, selectedSystem.sintefUrl);
-
-          addSectionTitle("Dokumentasjonsgrunnlag");
-          [
-            ["Overtagelse signert", warrantyReadiness.overtagelseSigned],
-            ["Ingen åpne avvik ved utstedelse", warrantyReadiness.openDeviationCount === 0],
-            ["Sjekklister fullført", warrantyReadiness.checklistComplete],
-            ["Garantipunkter fullført", warrantyReadiness.systemChecklistComplete],
-            ["Bildedokumentasjon registrert", warrantyReadiness.hasPhotos],
-            ["Godkjent Sopro-system valgt", warrantyReadiness.approvedSoproSystemSelected],
-            ["Komplett PDF-rapport generert", true]
-          ].forEach(([label, ok]) => addParagraph(`${ok ? "✓" : "–"} ${label}`));
-
-          addSectionTitle("Arkivering av dokumentasjon");
-          addParagraph("Denne garantien bygger på dokumentasjon registrert i Expo ProffDok på tidspunktet garantien ble utstedt.");
-          addParagraph("Utførende firma er ansvarlig for å laste ned og oppbevare komplett sluttrapport, inkludert bilder, sjekklister, produktdokumentasjon og garantibevis.");
-          addParagraph("Expo ProffDok fungerer som dokumentasjonsplattform, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata.");
-          addKeyValue("Sist genererte rapport", reportText);
+          drawFooterBand("Garantisertifikat");
 
           doc.addPage();
-          y = 18;
-          addSectionTitle("Garantivilkår");
-          const terms = [
-            ["1. Garantien", "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok. Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse."],
-            ["2. Hvem garantien gjelder for", "Garantien gjelder for den aktuelle boligen og følger eiendommen ved et eventuelt salg innen garantiperioden."],
-            ["3. Garantigiver", "Garantien utstedes av det utførende firmaet som er angitt i garantibeviset. Expo ProffDok fungerer som dokumentasjonsplattform og lagringssystem for prosjektets dokumentasjon."],
-            ["4. Hva garantien omfatter", "Garantien omfatter dokumenterte feil i membransystemets tetthet når disse skyldes utførelse eller installasjon av det dokumenterte systemet. Garantien omfatter nødvendig utbedring av dokumenterte tetthetsskader innenfor garantiperioden."],
-            ["5. Forutsetninger", "Garantien forutsetter normal bruk, normalt vedlikehold og at senere arbeider ikke har påvirket konstruksjonen eller membransystemets funksjon. Nye arbeider som berører membransystemet må utføres av kvalifisert personell."],
-            ["6. Begrensninger", "Garantien omfatter ikke mekanisk skade, påboring eller inngrep i konstruksjonen, skader som følge av brann, naturhendelser eller andre ytre forhold, manglende vedlikehold eller arbeider utført av andre etter overtakelse."],
-            ["7. Varsling", "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget."],
-            ["8. Dokumentasjon", "Garantibeviset er gyldig sammen med prosjektets komplette dokumentasjon, inkludert bilder, sjekklister, produktdokumentasjon og signert overtakelse. Utførende firma må selv oppbevare komplett PDF-rapport i eget arkiv."],
-            ["9. Tvister", "Eventuelle uenigheter om garantien behandles etter alminnelige regler for kontraktsforholdet mellom kunde og utførende firma."],
-            ["10. Personopplysninger", "Prosjektdata og personopplysninger behandles som del av dokumentasjonen i Expo ProffDok. Utførende firma er ansvarlig for forsvarlig oppbevaring av nedlastet dokumentasjon."]
-          ];
-          terms.forEach(([title, body]) => {
-            addSubTitle(title);
-            addParagraph(body);
-          });
+          resetPage();
+          await drawHeader("GARANTIDOKUMENTASJON");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(16);
+          doc.setTextColor(...darkBlue);
+          doc.text("1. DOKUMENTASJONSGRUNNLAG", margin, y);
+          y += 9;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(31, 41, 55);
+          doc.text("Denne garantien er basert på følgende dokumentasjon og kontroller i prosjektet:", margin, y);
+          y += 10;
+          drawCheckCard("Overtagelse signert", "Prosjektet er overtatt og signert av kunde og utførende.");
+          drawCheckCard("Ingen åpne avvik", "Alle avvik er lukket eller avklart før garantien er utstedt.");
+          drawCheckCard("Sjekklister fullført", "Ordinære sjekklister og systemspesifikke garantipunkter er kontrollert.");
+          drawCheckCard("Bildedokumentasjon registrert", "Bilder av relevante arbeidsoperasjoner er registrert i prosjektet.");
+          drawCheckCard("Godkjent Sopro-system valgt", `${selectedSystem.product} er dokumentert med ${selectedSystem.sintefApproval}.`);
+          drawCheckCard("Komplett PDF-rapport generert", "Sluttrapport med sjekklister, bilder, produktdokumentasjon og garantibevis er generert.");
+          drawNoteBox("Garantien gjelder kun for det dokumenterte arbeidet i dette prosjektet og forutsetter normal bruk og vedlikehold i henhold til FDV-dokumentasjonen.");
+          addSubTitle("Arkivering av dokumentasjon");
+          addParagraph("Utførende firma er ansvarlig for å laste ned og oppbevare komplett sluttrapport, inkludert bilder, sjekklister, produktdokumentasjon og garantibevis. Expo ProffDok fungerer som dokumentasjonsplattform, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata.");
+          addKeyValue("Sist genererte rapport", reportText);
+          drawFooterBand("Dokumentasjonsgrunnlag");
 
-          addSectionTitle("Signatur / bekreftelse");
-          addKeyValue("Utførende firma", name || company.companyName || "");
-          addKeyValue("Dato", warranty?.issuedAt ? new Date(warranty.issuedAt).toLocaleDateString("no-NO") : "");
-          addParagraph("Dette garantibeviset er automatisk generert basert på registrert prosjektdata, signert overtakelse, sjekklister og bildedokumentasjon i Expo ProffDok.");
+          doc.addPage();
+          resetPage();
+          await drawHeader("GARANTIDOKUMENTASJON");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(16);
+          doc.setTextColor(...darkBlue);
+          doc.text("2. GARANTIVILKÅR", margin, y);
+          y += 9;
+          drawTerm("Garantien", "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok. Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse.");
+          drawTerm("Hvem garantien gjelder for", "Garantien gjelder for den aktuelle boligen og følger eiendommen ved et eventuelt salg innen garantiperioden.");
+          drawTerm("Garantigiver", "Garantien utstedes av det utførende firmaet som er angitt i garantibeviset. Expo ProffDok fungerer som dokumentasjonsplattform for prosjektets dokumentasjon.");
+          drawTerm("Hva garantien omfatter", "Garantien omfatter dokumenterte feil i membransystemets tetthet når disse skyldes utførelse eller installasjon av det dokumenterte systemet.");
+          drawTerm("Hva garantien ikke omfatter", "Garantien omfatter ikke mekanisk skade, påboring eller inngrep i konstruksjonen, skader som følge av brann, naturhendelser eller andre ytre forhold, manglende vedlikehold eller arbeider utført av andre etter overtakelse.");
+          drawTerm("Varsling", "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget.");
+          drawTerm("Dokumentasjon og arkiv", "Garantibeviset er gyldig sammen med prosjektets komplette dokumentasjon, inkludert bilder, sjekklister, produktdokumentasjon og signert overtakelse. Utførende firma må selv oppbevare komplett PDF-rapport i eget arkiv.");
+          drawFooterBand("Garantivilkår");
+
+          doc.addPage();
+          resetPage();
+          await drawHeader("GARANTIDOKUMENTASJON");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(16);
+          doc.setTextColor(...darkBlue);
+          doc.text("3. BEKREFTELSE", margin, y);
+          y += 8;
+          addParagraph("Denne garantien er utstedt elektronisk og bygger på registrert prosjektdata, signert overtakelse, sjekklister og bildedokumentasjon i Expo ProffDok.");
+
+          const tableY = y + 4;
+          const rowH = 10;
+          const labelW = 48;
+          const tableRows = [
+            ["Utførende firma", name || company.companyName || ""],
+            ["Org.nr.", company.orgNumber || ""],
+            ["Dato", issuedDateText],
+            ["Kontaktperson", project.responsible || user.name || authUser?.email || ""],
+            ["Telefon", company.phone || ""],
+            ["E-post", company.email || ""]
+          ];
+          doc.setDrawColor(...border);
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(margin, tableY, contentWidth, tableRows.length * rowH, 2.5, 2.5, "FD");
+          tableRows.forEach(([label, value], index) => {
+            const yy = tableY + index * rowH;
+            if (index > 0) doc.line(margin, yy, pageWidth - margin, yy);
+            doc.line(margin + labelW, yy, margin + labelW, yy + rowH);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(...darkBlue);
+            doc.text(label, margin + 4, yy + 6.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(31, 41, 55);
+            doc.text(doc.splitTextToSize(safeText(value || "Ikke oppgitt"), contentWidth - labelW - 8), margin + labelW + 4, yy + 6.5);
+          });
+          y = tableY + tableRows.length * rowH + 14;
+
+          doc.setDrawColor(...border);
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(margin, y, contentWidth, 34, 2.5, 2.5, "FD");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(51, 65, 85);
+          doc.text(`Bekreftet av ${name || company.companyName || "utførende firma"}`, pageWidth / 2, y + 8, { align: "center" });
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(14);
+          doc.setTextColor(...blue);
+          doc.text(project.responsible || user.name || "Elektronisk utstedt", pageWidth / 2, y + 20, { align: "center" });
+          doc.setDrawColor(148, 163, 184);
+          doc.line(margin + 36, y + 24, pageWidth - margin - 36, y + 24);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7.5);
+          doc.setTextColor(...gray);
+          doc.text("Elektronisk bekreftelse", pageWidth / 2, y + 29, { align: "center" });
+          y += 44;
+
+          drawNoteBox("Takk for tilliten. Ta vare på garantidokumentet sammen med komplett FDV-rapport og øvrig prosjektdokumentasjon.");
+          drawFooterBand("Bekreftelse");
         };
         doc.setFont("helvetica", "bold");
         doc.setFontSize(18);
@@ -2718,6 +3021,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           "Notater": project.notes
         };
         Object.entries(projectFields).forEach(([label, value]) => addKeyValue(label, value));
+
+        addReportSummary();
 
         if (project.projectInfoIncludeInReport && hasValue(project.projectDescription)) {
           addSectionTitle("Prosjektinformasjon/beskrivelse");
@@ -2780,13 +3085,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           addDivider();
         }
 
-        addSectionTitle("Sjekkliste");
+        addSectionTitle("Sjekkliste / utførte kontroller");
+        addParagraph("Kontrollpunktene under viser registrert status for prosjektet. Godkjente punkter er fremhevet for å gi en tydelig dokumentasjon av utført kontroll.", { size: 8.5, lineHeight: 4.3 });
         Object.entries(checklist || {}).forEach(([category, items]) => {
           addSubTitle(category);
           Object.entries(items || {}).forEach(([item, value]) => {
-            const status = value?.status || "";
-            const comment = value?.comment || "";
-            addParagraph(`${item}${status ? " — " + status : ""}${comment ? " — " + comment : ""}`);
+            addChecklistStatusCard(category, item, value || {});
           });
         });
 
