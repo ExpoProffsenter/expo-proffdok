@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
+// FASE 7 Deploy 3: Profesjonelt garantibevis i PDF, arkiveringsvarsel og krav om nedlastet sluttrapport.
 // FASE 7 Deploy 2F: Garantipunkter flettet inn i riktig sjekklisteflyt, uten doble sjekkpunkter.
 // FASE 7 Deploy 2E: Redusert overlapp mellom generelle punkter og Sopro garantipunkter.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett og flyttet garanti-fane.
@@ -153,9 +154,28 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     signKundeImage: ""
   });
   var soproWarrantySystems = [
-    { id: "sopro-aeb-815", label: "Sopro AEB 815 – SINTEF TG 20918", product: "Sopro AEB 815", sintefApproval: "SINTEF TG 20918" },
-    { id: "sopro-fdf-525-527", label: "Sopro FDF 525/527 – SINTEF TG 20987", product: "Sopro FDF 525/527", sintefApproval: "SINTEF TG 20987" }
+    { id: "sopro-aeb-815", label: "Sopro AEB 815 – SINTEF TG 20918", product: "Sopro AEB 815", sintefApproval: "SINTEF TG 20918", sintefUrl: "https://www.sintefcertification.no/Product/Index/20918" },
+    { id: "sopro-fdf-525-527", label: "Sopro FDF 525/527 – SINTEF TG 20987", product: "Sopro FDF 525/527", sintefApproval: "SINTEF TG 20987", sintefUrl: "https://www.sintefcertification.no/Product/Index/20987" }
   ];
+  var warrantyArchiveNotice = "Viktig: Last alltid ned og lagre komplett PDF-rapport på egen maskin, server eller annet sikkert arkiv når prosjektet er ferdig. Expo ProffDok er en dokumentasjonsplattform, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata i hele garanti- eller byggets levetid.";
+  var warrantyTermsText = [
+    "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok.",
+    "Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse.",
+    "Garantien gjelder for den aktuelle boligen og følger eiendommen ved et eventuelt salg innen garantiperioden.",
+    "Garantien utstedes av det utførende firmaet som er angitt i garantibeviset. Expo ProffDok fungerer som dokumentasjonsplattform og lagringssystem for prosjektets dokumentasjon.",
+    "Garantien omfatter dokumenterte feil i membransystemets tetthet når disse skyldes utførelse eller installasjon av det dokumenterte systemet.",
+    "Garantien forutsetter normal bruk, normalt vedlikehold og at senere arbeider ikke har påvirket konstruksjonen eller membransystemets funksjon.",
+    "Garantien omfatter ikke mekanisk skade, påboring eller inngrep i konstruksjonen, skader som følge av brann, naturhendelser eller andre ytre forhold, manglende vedlikehold eller arbeider utført av andre etter overtakelse.",
+    "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget.",
+    "Garantibeviset er gyldig sammen med komplett prosjektdokumentasjon lagret og/eller arkivert av utførende firma, inkludert bilder, sjekklister, produktdokumentasjon og signert overtakelse."
+  ];
+  var makeWarrantyNumber = (projectId = "", project = {}) => {
+    const year = (/* @__PURE__ */ new Date()).getFullYear();
+    const seed = `${projectId || project?.projectName || project?.address || "prosjekt"}-${year}`;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i += 1) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+    return `EPD-${year}-${String(hash % 1e6).padStart(6, "0")}`;
+  };
   var soproSystemChecklistTemplates = {
     "sopro-aeb-815": [
       {
@@ -344,7 +364,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     system: "",
     sintefApproval: "",
     durationYears: 12,
-    status: "draft"
+    status: "draft",
+    guaranteeNumber: "",
+    reportGeneratedAt: null,
+    reportGeneratedFileName: ""
   });
   var emptyProject = () => ({
     responsible: "",
@@ -656,6 +679,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const systemChecklistDone = systemPointStatus.done;
       const systemChecklistComplete = !approvedSoproSystemSelected ? false : systemPointStatus.complete;
       const hasPhotos = (photos || []).some((photo) => hasValue(photo?.url));
+      const reportGenerated = !!warranty?.reportGeneratedAt;
       const missing = [];
       if (!overtagelseSigned) missing.push("Overtagelse må være aktivert og signert av både utførende og kunde.");
       if (openDeviationCount > 0) missing.push("Alle åpne avvik må lukkes før garanti kan utstedes.");
@@ -663,6 +687,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (approvedSoproSystemSelected && !systemChecklistComplete) missing.push("Alle kontrollpunkter for valgt Sopro-system må være fullført.");
       if (!hasPhotos) missing.push("Bildedokumentasjon må være lastet opp.");
       if (!approvedSoproSystemSelected) missing.push("Godkjent Sopro-system må velges.");
+      if (!reportGenerated) missing.push("Komplett PDF-rapport må genereres og lastes ned før garanti kan utstedes.");
       return {
         overtagelseSigned,
         openDeviationCount,
@@ -676,6 +701,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         missingSystemChecklistPoints: systemPointStatus.missing,
         systemChecklistPoints: systemPointStatus.points,
         hasPhotos,
+        reportGenerated,
         approvedSoproSystemSelected,
         selectedSystem,
         missing,
@@ -686,18 +712,21 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (!warranty?.enabled) return alert("Aktiver garantien først.");
       if (!warrantyReadiness.ready) return alert("Garantien kan ikke utstedes ennå. Se listen over mangler.");
       const selectedSystem = warrantyReadiness.selectedSystem;
+      const issuedAt = (/* @__PURE__ */ new Date()).toISOString();
+      const guaranteeNumber = warranty?.guaranteeNumber || makeWarrantyNumber(projectId, project);
       setWarranty({
         ...emptyWarranty(),
         ...warranty,
         enabled: true,
         issued: true,
-        issuedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        issuedAt,
         system: selectedSystem?.id || warranty.system,
         sintefApproval: selectedSystem?.sintefApproval || warranty.sintefApproval || "",
         durationYears: 12,
+        guaranteeNumber,
         status: "issued"
       });
-      alert("✔ 12 års dokumentert tetthetsgaranti er markert som utstedt. Husk å lagre/oppdatere prosjektet.");
+      alert("✔ 12 års dokumentert tetthetsgaranti er markert som utstedt. Last ned endelig komplett PDF-rapport og lagre den på egen maskin/arkiv. Husk deretter å lagre/oppdatere prosjektet.");
     };
     const currentStatus = projectStatusInfo(project, overtagelse, projectGuideStats.openDeviationCount);
     const suggestedWorkflowStatus = projectGuideStats.openDeviationCount > 0 ? "Avvik åpent" : projectGuideStats.hasOvertagelse ? "Ferdigstilt" : projectGuideStats.productCount > 0 && projectGuideStats.photoCount > 0 && projectGuideStats.checklistDone > 0 ? "Klar for kunde" : projectGuideStats.hasProjectBasics ? "Pågår" : "Utkast";
@@ -2363,6 +2392,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
 
     const downloadClickablePdfReport = async () => {
       try {
+        const archiveConfirmed = window.confirm("Viktig før nedlasting:\n\nNår prosjektet er ferdig skal komplett PDF-rapport lagres lokalt hos utførende firma, og gjerne også oversendes kunde. Expo ProffDok benytter skylagring, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata i hele garanti- eller byggets levetid.\n\nVil du fortsette og generere komplett PDF-rapport nå?");
+        if (!archiveConfirmed) return;
         const module = await import("https://esm.sh/jspdf@2.5.1");
         const JsPDF = module.jsPDF || module.default?.jsPDF;
         if (!JsPDF) throw new Error("Kunne ikke laste PDF-motor.");
@@ -2495,6 +2526,110 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           }
         };
 
+
+        const addWarrantyCertificatePages = async () => {
+          if (!warranty?.enabled || !warrantyReadiness?.selectedSystem) return;
+          const selectedSystem = warrantyReadiness.selectedSystem;
+          const guaranteeNumber = warranty?.guaranteeNumber || makeWarrantyNumber(projectId, project);
+          const overtagelseDate = overtagelse?.dato || project?.date || "";
+          const issuedText = warranty?.issued && warranty?.issuedAt ? new Date(warranty.issuedAt).toLocaleString("no-NO") : "Ikke utstedt";
+          const reportText = warranty?.reportGeneratedAt ? new Date(warranty.reportGeneratedAt).toLocaleString("no-NO") : "Genereres nå";
+          const warrantyValidTo = (() => {
+            const sourceDate = overtagelseDate || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+            const d = new Date(sourceDate);
+            if (Number.isNaN(d.getTime())) return "";
+            d.setFullYear(d.getFullYear() + 12);
+            return d.toISOString().slice(0, 10);
+          })();
+
+          doc.addPage();
+          y = 18;
+          if (company.logoUrl) {
+            await addImageFromUrl(company.logoUrl, "");
+            y = Math.max(y, 36);
+          } else {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(15);
+            doc.setTextColor(15, 23, 42);
+            doc.text(name || "Expo Proffsenter", margin, y);
+            y += 8;
+          }
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(22);
+          doc.setTextColor(15, 23, 42);
+          doc.text("12 ÅRS DOKUMENTERT", margin, y);
+          y += 9;
+          doc.text("TETTHETSGARANTI", margin, y);
+          y += 9;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(10);
+          doc.setTextColor(51, 65, 85);
+          doc.text("Garantibevis generert i Expo ProffDok", margin, y);
+          y += 12;
+
+          doc.setDrawColor(15, 23, 42);
+          doc.setLineWidth(0.5);
+          doc.line(margin, y, pageWidth - margin, y);
+          y += 10;
+
+          addSectionTitle("Garantibevis");
+          addKeyValue("Garantinummer", guaranteeNumber);
+          addKeyValue("Status", warranty?.issued ? "Utstedt" : "Ikke utstedt / utkast");
+          addKeyValue("Utstedt dato", issuedText);
+          addKeyValue("Overtakelsesdato", overtagelseDate || "Ikke registrert");
+          addKeyValue("Garantiperiode", warrantyValidTo ? `12 år fra overtakelse, til ${warrantyValidTo}` : "12 år fra signert overtakelse");
+          addKeyValue("Kunde", project.customer);
+          addKeyValue("Adresse", [project.address, project.postnr, project.city].filter(Boolean).join(", "));
+          addKeyValue("Prosjekt", project.projectName);
+          addKeyValue("Utførende firma", name || company.companyName || "Ikke oppgitt");
+          addKeyValue("Organisasjonsnummer", company.orgNumber);
+          addKeyValue("Membransystem", selectedSystem.product);
+          addKeyValue("Teknisk godkjenning", selectedSystem.sintefApproval);
+          addLink(`Åpne ${selectedSystem.sintefApproval}`, selectedSystem.sintefUrl);
+
+          addSectionTitle("Dokumentasjonsgrunnlag");
+          [
+            ["Overtagelse signert", warrantyReadiness.overtagelseSigned],
+            ["Ingen åpne avvik ved utstedelse", warrantyReadiness.openDeviationCount === 0],
+            ["Sjekklister fullført", warrantyReadiness.checklistComplete],
+            ["Garantipunkter fullført", warrantyReadiness.systemChecklistComplete],
+            ["Bildedokumentasjon registrert", warrantyReadiness.hasPhotos],
+            ["Godkjent Sopro-system valgt", warrantyReadiness.approvedSoproSystemSelected],
+            ["Komplett PDF-rapport generert", true]
+          ].forEach(([label, ok]) => addParagraph(`${ok ? "✓" : "–"} ${label}`));
+
+          addSectionTitle("Arkivering av dokumentasjon");
+          addParagraph("Denne garantien bygger på dokumentasjon registrert i Expo ProffDok på tidspunktet garantien ble utstedt.");
+          addParagraph("Utførende firma er ansvarlig for å laste ned og oppbevare komplett sluttrapport, inkludert bilder, sjekklister, produktdokumentasjon og garantibevis.");
+          addParagraph("Expo ProffDok fungerer som dokumentasjonsplattform, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata.");
+          addKeyValue("Sist genererte rapport", reportText);
+
+          doc.addPage();
+          y = 18;
+          addSectionTitle("Garantivilkår");
+          const terms = [
+            ["1. Garantien", "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok. Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse."],
+            ["2. Hvem garantien gjelder for", "Garantien gjelder for den aktuelle boligen og følger eiendommen ved et eventuelt salg innen garantiperioden."],
+            ["3. Garantigiver", "Garantien utstedes av det utførende firmaet som er angitt i garantibeviset. Expo ProffDok fungerer som dokumentasjonsplattform og lagringssystem for prosjektets dokumentasjon."],
+            ["4. Hva garantien omfatter", "Garantien omfatter dokumenterte feil i membransystemets tetthet når disse skyldes utførelse eller installasjon av det dokumenterte systemet. Garantien omfatter nødvendig utbedring av dokumenterte tetthetsskader innenfor garantiperioden."],
+            ["5. Forutsetninger", "Garantien forutsetter normal bruk, normalt vedlikehold og at senere arbeider ikke har påvirket konstruksjonen eller membransystemets funksjon. Nye arbeider som berører membransystemet må utføres av kvalifisert personell."],
+            ["6. Begrensninger", "Garantien omfatter ikke mekanisk skade, påboring eller inngrep i konstruksjonen, skader som følge av brann, naturhendelser eller andre ytre forhold, manglende vedlikehold eller arbeider utført av andre etter overtakelse."],
+            ["7. Varsling", "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget."],
+            ["8. Dokumentasjon", "Garantibeviset er gyldig sammen med prosjektets komplette dokumentasjon, inkludert bilder, sjekklister, produktdokumentasjon og signert overtakelse. Utførende firma må selv oppbevare komplett PDF-rapport i eget arkiv."],
+            ["9. Tvister", "Eventuelle uenigheter om garantien behandles etter alminnelige regler for kontraktsforholdet mellom kunde og utførende firma."],
+            ["10. Personopplysninger", "Prosjektdata og personopplysninger behandles som del av dokumentasjonen i Expo ProffDok. Utførende firma er ansvarlig for forsvarlig oppbevaring av nedlastet dokumentasjon."]
+          ];
+          terms.forEach(([title, body]) => {
+            addSubTitle(title);
+            addParagraph(body);
+          });
+
+          addSectionTitle("Signatur / bekreftelse");
+          addKeyValue("Utførende firma", name || company.companyName || "");
+          addKeyValue("Dato", warranty?.issuedAt ? new Date(warranty.issuedAt).toLocaleDateString("no-NO") : "");
+          addParagraph("Dette garantibeviset er automatisk generert basert på registrert prosjektdata, signert overtakelse, sjekklister og bildedokumentasjon i Expo ProffDok.");
+        };
         doc.setFont("helvetica", "bold");
         doc.setFontSize(18);
         doc.setTextColor(15, 23, 42);
@@ -2644,6 +2779,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         if (!(access || []).length) addParagraph("Ingen ekstra prosjekttilganger er lagt til.");
         (access || []).forEach((a) => addParagraph(`${a.name || a.email || "Ukjent"} — ${a.role || ""}`));
 
+        await addWarrantyCertificatePages();
+
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i += 1) {
           doc.setPage(i);
@@ -2655,7 +2792,20 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           doc.text("© 2026 Expo Proffsenter – Expo ProffDok. Alle rettigheter forbeholdt.", pageWidth / 2, pageHeight - 7, { align: "center" });
         }
 
-        doc.save(`${filenameSafe(project.projectName || project.address || project.customer || "FDV-rapport")}.pdf`);
+        const generatedFileName = `${filenameSafe(project.projectName || project.address || project.customer || "FDV-rapport")}.pdf`;
+        doc.save(generatedFileName);
+        if (warranty?.enabled) {
+          const reportGeneratedAt = (/* @__PURE__ */ new Date()).toISOString();
+          setWarranty((prev) => ({
+            ...emptyWarranty(),
+            ...prev,
+            reportGeneratedAt,
+            reportGeneratedFileName: generatedFileName,
+            guaranteeNumber: prev?.guaranteeNumber || makeWarrantyNumber(projectId, project),
+            status: prev?.issued ? "issued" : "report_generated"
+          }));
+          alert("PDF er generert. Husk å lagre filen på egen maskin/server. Garantimodulen er oppdatert med at komplett rapport er generert – husk å lagre/oppdatere prosjektet.");
+        }
       } catch (error) {
         console.error("Kunne ikke lage PDF med klikkbare lenker:", error);
         alert("Kunne ikke lage PDF med klikkbare lenker. Bruk vanlig utskrift som fallback. Feil: " + (error?.message || String(error)));
@@ -4752,6 +4902,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.openDeviationCount === 0 ? "✅ Ingen åpne avvik" : `⚠️ ${readiness?.openDeviationCount || 0} åpne avvik` }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.checklistComplete ? "✅ Sjekklister fullført" : `⚠️ ${readiness?.checklistDone || 0}/${readiness?.checklistTotal || 0} sjekklistepunkter` }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.hasPhotos ? "✅ Bilder lastet opp" : "⚠️ Bilder mangler" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.reportGenerated ? "✅ Komplett PDF generert" : "⚠️ Komplett PDF må lastes ned" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.approvedSoproSystemSelected ? "✅ Sopro-system valgt" : "⚠️ Sopro-system mangler" }),
             readiness?.approvedSoproSystemSelected && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.systemChecklistComplete ? "✅ Sopro-punkter fullført" : `⚠️ ${readiness?.systemChecklistDone || 0}/${readiness?.systemChecklistTotal || 0} Sopro-punkter` })
           ] }),
@@ -4767,11 +4918,16 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Grunnlag for garantien" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Garantien bygger på dokumentert utførelse med valgt Sopro-system, fullførte sjekklister, lukket avvikshåndtering, bildedokumentasjon og signert overtagelse. De systemspesifikke Sopro-sjekklistene er koblet til valgt system. Garantibevis og garantivilkår lages i senere deploy med egne formuleringer for Expo ProffDok." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "PDF og garantibevis endres ikke i Deploy 2. Dette er bevisst for å bevare eksisterende PDF-funksjonalitet." })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Garantien bygger på dokumentert utførelse med valgt Sopro-system, fullførte sjekklister, lukket avvikshåndtering, bildedokumentasjon, signert overtagelse og nedlastet komplett PDF-rapport. Garantibevis og garantivilkår legges automatisk bakerst i den komplette PDF-rapporten når garanti er aktivert." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: warrantyArchiveNotice }),
+          warranty?.reportGeneratedAt && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "Sist genererte komplette PDF-rapport: ",
+            new Date(warranty.reportGeneratedAt).toLocaleString("no-NO"),
+            warranty?.reportGeneratedFileName ? ` · ${warranty.reportGeneratedFileName}` : ""
+          ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready, onClick: issueWarranty, children: issued ? "Oppdater garantistatus" : "Utsted garanti" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready, onClick: issueWarranty, children: issued ? "Oppdater garantistatus" : "Utsted 12 års tetthetsgaranti" }),
           issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setWarranty({ ...emptyWarranty(), ...warranty, issued: false, issuedAt: null, status: "draft" }), children: "Trekk tilbake utstedelse" })
         ] })
       ] })
