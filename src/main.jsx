@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 7 Deploy 6: Rapportdesign Premium Final – profesjonelle sjekkpunkter, signaturfelt, garantibadge, større QR og dokumentbrikker.
 // FASE 7 Deploy 5B: Rapportdesign Premium 2.0 – kompakte produktkort, bedre bildegaleri, skjult tom prosjekttilgang og beholdt funksjonalitet.
 // FASE 7 Deploy 5C: Produkt/FDV i kompakte dokumentbrikker uten tekstbryting i PDF.
 // FASE 7 Deploy 5: Rapportdesign Premium – bilder uten filnavn, profesjonelle sjekkpunkter, overtagelsesboks og logo på garantibevis.
@@ -2792,8 +2793,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           };
           const commentLines = product.comment ? doc.splitTextToSize(`Kommentar: ${product.comment}`, contentWidth - 16) : [];
           const nameLines = doc.splitTextToSize(safeText(productName), contentWidth - 16).slice(0, 2);
-          const docsRows = links.length ? Math.ceil(links.length / 4) : 1;
-          const boxH = Math.max(29, 21 + nameLines.length * 4.4 + commentLines.length * 3.8 + docsRows * 7.0);
+          const docsRows = links.length ? links.length : 1;
+          const boxH = Math.max(31, 22 + nameLines.length * 4.4 + commentLines.length * 3.8 + docsRows * 6.8);
           ensureSpace(boxH + 5);
 
           doc.setDrawColor(214, 226, 236);
@@ -2823,27 +2824,27 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
 
           if (links.length) {
             const gap = 2.2;
-            const maxPerRow = 4;
-            const chipW = (contentWidth - 12 - gap * (maxPerRow - 1)) / maxPerRow;
+            const maxPerRow = 1;
+            const chipW = contentWidth - 12;
             links.forEach((option, index) => {
               const url = normalizePdfUrl(product?.[option.field]);
               if (!url) return;
               const row = Math.floor(index / maxPerRow);
               const col = index % maxPerRow;
               const x = margin + 6 + col * (chipW + gap);
-              const chipY = yy + row * 7.0;
+              const chipY = yy + row * 6.8;
               const label = shortDocLabel(option.label);
               doc.setDrawColor(191, 219, 254);
               doc.setFillColor(239, 246, 255);
-              doc.roundedRect(x, chipY - 4.4, chipW, 5.8, 1.7, 1.7, "FD");
+              doc.roundedRect(x, chipY - 4.6, chipW, 5.9, 1.7, 1.7, "FD");
               doc.setFont("helvetica", "bold");
               doc.setFontSize(6.8);
               doc.setTextColor(0, 84, 180);
               if (typeof doc.textWithLink === "function") {
-                doc.textWithLink(label, x + 2.2, chipY, { url });
+                doc.textWithLink(label, x + 3.0, chipY, { url });
               } else {
-                doc.text(label, x + 2.2, chipY);
-                doc.link(x + 2.2, chipY - 3.8, Math.min(chipW - 4, label.length * 1.55), 4.5, { url });
+                doc.text(label, x + 3.0, chipY);
+                doc.link(x + 3.0, chipY - 3.8, Math.min(chipW - 6, label.length * 1.55), 4.5, { url });
               }
             });
           } else {
@@ -2888,6 +2889,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           drawMetricCard(margin + (cardW + gap) * 3, y, cardW, 20, "Bilder", String(photoTotal), "blue");
           y += 26;
           addParagraph(`Produkter dokumentert: ${productTotal}. Lukkede avvik: ${closedDeviationTotal}. Rapporten bygger på registrerte produkter, bilder, sjekklister, avvikshistorikk og signert overtakelse der dette er registrert.`, { size: 8.5, lineHeight: 4.4 });
+          if (warranty?.issued) addParagraph(`✓ 12 års dokumentert tetthetsgaranti er utstedt. Garantinummer: ${warranty.guaranteeNumber || "Ikke oppgitt"}.`, { size: 8.5, lineHeight: 4.4, bold: true });
         };
         const addChecklistCategoryTitle = (category, count = 0) => {
           if (y > pageHeight - 54) {
@@ -2932,11 +2934,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           doc.setFont("helvetica", "bold");
           doc.setFontSize(7.0);
           doc.setTextColor(...visual.text);
-          doc.text(isOk ? "OK" : visual.label.slice(0, 1), margin + 8, y + 10.1, { align: "center" });
+          doc.setFontSize(isOk ? 9.0 : 7.0);
+          doc.text(isOk ? "✓" : visual.label.slice(0, 1), margin + 8, y + 10.1, { align: "center" });
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.1);
+          doc.setFontSize(9.4);
           doc.setTextColor(15, 23, 42);
-          doc.text(textLines, margin + 17, y + 8.5);
+          doc.text(textLines, margin + 17, y + 8.7);
           let yy = y + 9 + textLines.length * 4.6;
           if (commentLines.length) {
             doc.setFont("helvetica", "normal");
@@ -3002,6 +3005,43 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           } catch (error) {
             addParagraph(`Bilde kunne ikke bygges inn i PDF: ${cleanUrl}`, { size: 8.2, lineHeight: 4 });
           }
+        };
+
+        const drawSignatureBlock = async (label, signerName, imageUrl, x, yy, w, h = 44) => {
+          doc.setDrawColor(203, 213, 225);
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(x, yy, w, h, 2.8, 2.8, "FD");
+          const image = imageUrl ? await loadPdfImage(imageUrl) : null;
+          const imageAreaX = x + 5;
+          const imageAreaY = yy + 5;
+          const imageAreaW = w - 10;
+          const imageAreaH = h - 19;
+          if (image && !image.error) {
+            let imgW = imageAreaW;
+            let imgH = imgW * (image.height / image.width);
+            if (imgH > imageAreaH) {
+              imgH = imageAreaH;
+              imgW = imgH * (image.width / image.height);
+            }
+            const imgX = imageAreaX + (imageAreaW - imgW) / 2;
+            const imgY = imageAreaY + (imageAreaH - imgH) / 2;
+            doc.addImage(image.dataUrl, image.format || "PNG", imgX, imgY, imgW, imgH);
+          } else {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.2);
+            doc.setTextColor(148, 163, 184);
+            doc.text("Ingen signaturbilde", x + w / 2, yy + 18, { align: "center" });
+          }
+          doc.setDrawColor(100, 116, 139);
+          doc.line(x + 8, yy + h - 13, x + w - 8, yy + h - 13);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8.0);
+          doc.setTextColor(15, 23, 42);
+          doc.text(safeText(signerName || "Ikke oppgitt"), x + w / 2, yy + h - 8, { align: "center" });
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(6.8);
+          doc.setTextColor(100, 116, 139);
+          doc.text(safeText(label), x + w / 2, yy + h - 3.5, { align: "center" });
         };
 
         const loadPdfImage = async (url) => {
@@ -3255,18 +3295,26 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.roundedRect(pageWidth / 2 - 21, 48, 42, 8, 2, 2, "F");
           doc.text("GARANTISERTIFIKAT", pageWidth / 2, 53.5, { align: "center" });
 
+          doc.setDrawColor(74, 222, 128);
+          doc.setFillColor(236, 253, 245);
+          doc.roundedRect(pageWidth / 2 - 20, 60, 40, 8, 2, 2, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7.6);
+          doc.setTextColor(6, 95, 70);
+          doc.text(warranty?.issued ? "✓ GARANTI AKTIV" : "GARANTI KLAR", pageWidth / 2, 65.3, { align: "center" });
+
           doc.setFont("helvetica", "bold");
           doc.setFontSize(24);
           doc.setTextColor(...darkBlue);
-          doc.text("12 ÅRS", pageWidth / 2, 78, { align: "center" });
+          doc.text("12 ÅRS", pageWidth / 2, 82, { align: "center" });
           doc.setFontSize(20);
-          doc.text("DOKUMENTERT", pageWidth / 2, 90, { align: "center" });
-          doc.text("TETTHETSGARANTI", pageWidth / 2, 102, { align: "center" });
+          doc.text("DOKUMENTERT", pageWidth / 2, 94, { align: "center" });
+          doc.text("TETTHETSGARANTI", pageWidth / 2, 106, { align: "center" });
           doc.setFontSize(12);
           doc.setTextColor(...blue);
-          doc.text(project.projectName || "Prosjekt", pageWidth / 2, 114, { align: "center" });
+          doc.text(project.projectName || "Prosjekt", pageWidth / 2, 118, { align: "center" });
 
-          const cardTop = 128;
+          const cardTop = 130;
           const cardGap = 4;
           const cardW = (contentWidth - cardGap) / 2;
           drawInfoCard(margin, cardTop, cardW, 22, "Utstedt til", project.customer || "Ikke oppgitt");
@@ -3277,14 +3325,18 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawInfoCard(margin + cardW + cardGap, cardTop + 52, cardW, 22, "Gyldig til", warrantyValidTo || "12 år fra overtakelse");
 
           const qrY = cardTop + 82;
-          await addImageFit(qrUrl, margin + 2, qrY, 24, 24);
+          await addImageFit(qrUrl, margin + 2, qrY, 34, 34);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(51, 65, 85);
-          doc.text(doc.splitTextToSize("Skann QR-koden for å åpne SINTEF Teknisk Godkjenning for valgt membransystem.", contentWidth - 36), margin + 32, qrY + 7);
+          doc.text(doc.splitTextToSize("Skann QR-koden for å åpne/verifisere SINTEF Teknisk Godkjenning for valgt membransystem.", contentWidth - 48), margin + 42, qrY + 7);
           doc.setFont("helvetica", "bold");
           doc.setTextColor(...blue);
-          doc.text(selectedSystem.sintefApproval, margin + 32, qrY + 20);
+          doc.text(selectedSystem.sintefApproval, margin + 42, qrY + 20);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7.2);
+          doc.setTextColor(...gray);
+          doc.text("Verifiser dokumentasjon", margin + 42, qrY + 28);
 
           drawFooterBand("Garantisertifikat");
 
@@ -3536,9 +3588,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           y += 27;
           drawInfoCardPdf(margin, y, signW, 22, "Utførende", overtagelse.signUtførende || project.responsible || user.name || "Ikke oppgitt");
           drawInfoCardPdf(margin + signW + signGap, y, signW, 22, "Kunde", overtagelse.signKunde || project.customer || "Ikke oppgitt");
-          y += 28;
-          if (overtagelse.signUtførendeImage) await addImageFromUrl(overtagelse.signUtførendeImage, "Signatur utførende");
-          if (overtagelse.signKundeImage) await addImageFromUrl(overtagelse.signKundeImage, "Signatur kunde");
+          y += 30;
+          ensureSpace(50);
+          await drawSignatureBlock("Signatur utførende", overtagelse.signUtførende || project.responsible || user.name || "Utførende", overtagelse.signUtførendeImage, margin, y, signW, 46);
+          await drawSignatureBlock("Signatur kunde", overtagelse.signKunde || project.customer || "Kunde", overtagelse.signKundeImage, margin + signW + signGap, y, signW, 46);
+          y += 54;
         }
 
         addSectionTitle("Sjekklister og vedlegg");
