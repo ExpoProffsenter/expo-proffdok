@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
 // FASE 7 Deploy 2C: Tydelig merking av Sopro garantipunkter og egen garantifremdrift.
 // FASE 7 Deploy 2: Dynamiske Sopro-sjekklister koblet til garantimotor.
 // FASE 7 Deploy 1: Garantimodul og datamodell for 12 års dokumentert tetthetsgaranti.
@@ -263,10 +264,32 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       percent: total ? Math.round(done / total * 100) : 0
     };
   };
-  var getActiveChecklistTemplate = (warranty = {}) => [
+  var dedupeChecklistTemplate = (groups = []) => {
+    const seenCategories = new Set();
+    const result = [];
+    (groups || []).forEach((group) => {
+      const category = String(group?.category || "");
+      if (!category) return;
+      let target = result.find((entry) => entry.category === category);
+      if (!target) {
+        target = { category, items: [] };
+        result.push(target);
+        seenCategories.add(category);
+      }
+      const seenItems = new Set(target.items || []);
+      (group.items || []).forEach((item) => {
+        if (!seenItems.has(item)) {
+          target.items.push(item);
+          seenItems.add(item);
+        }
+      });
+    });
+    return result;
+  };
+  var getActiveChecklistTemplate = (warranty = {}) => dedupeChecklistTemplate([
     ...checklistTemplate,
-    ...getSoproChecklistTemplate(warranty?.system)
-  ];
+    ...warranty?.enabled ? getSoproChecklistTemplate(warranty?.system) : []
+  ]);
   var emptyWarranty = () => ({
     enabled: false,
     issued: false,
@@ -751,6 +774,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const tabs = [
       ["prosjekt", "Prosjekt"],
       ["prosjektinfo", "Prosjektinformasjon/beskrivelse"],
+      ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
       ["firma", "Firmaprofil"],
       ["prosjektering", "Prosjektering"],
       ["produkter", "Produkter"],
@@ -764,7 +788,6 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["chat", unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : totalChatCount > 0 ? `Chat (${totalChatCount})` : "Chat"],
       ["internt", "Interne notater"],
       ["prosjektliste", "Prosjektliste"],
-      ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
       ["rapport", "Rapport"],
       ...canUseAdminProjectSync ? [["admin", "Admin"]] : []
     ];
@@ -3841,7 +3864,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde", value: project.customer, onChange: (v) => setProject({ ...project, customer: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde e-post", type: "email", value: project.customerEmail || "", onChange: (v) => setProject({ ...project, customerEmail: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems })
         ] }) }) }) }),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektinformasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
@@ -4559,6 +4583,59 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   function Brand({ logo, name }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: "260px", height: "80px", overflow: "hidden", display: "flex", alignItems: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: logo ? logo : "/expo-logo.png", alt: name || "Expo Proffsenter", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) });
   }
+  function ProjectWarrantySetup({ warranty, setWarranty, systems }) {
+    const enabled = !!warranty?.enabled;
+    const selectedSystem = systems.find((item) => item.id === warranty?.system);
+    const setEnabled = (value) => {
+      setWarranty({
+        ...emptyWarranty(),
+        ...warranty,
+        enabled: !!value,
+        system: value ? warranty?.system || "" : "",
+        sintefApproval: value ? warranty?.sintefApproval || selectedSystem?.sintefApproval || "" : "",
+        issued: value ? !!warranty?.issued : false,
+        issuedAt: value ? warranty?.issuedAt || null : null,
+        status: value ? warranty?.status || "draft" : "draft"
+      });
+    };
+    const updateSystem = (systemId) => {
+      const system = systems.find((item) => item.id === systemId);
+      setWarranty({
+        ...emptyWarranty(),
+        ...warranty,
+        enabled: true,
+        system: system?.id || "",
+        sintefApproval: system?.sintefApproval || "",
+        status: warranty?.issued ? "issued" : "draft"
+      });
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item warrantyProjectSetup", style: { gridColumn: "1 / -1" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "12 års dokumentert tetthetsgaranti" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg tidlig om prosjektet skal omfattes av 12 års dokumentert tetthetsgaranti. Hvis Ja velges aktiveres garantikravene og riktig Sopro-sjekkliste automatisk." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "radio", name: "projectWarrantyChoice", checked: enabled, onChange: () => setEnabled(true), style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 } }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ja" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "radio", name: "projectWarrantyChoice", checked: !enabled, onChange: () => setEnabled(false), style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 } }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Nei" })
+        ] })
+      ] }),
+      enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "12px" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Velg membransystem", value: warranty?.system || "", options: ["", ...systems.map((item) => item.id)], optionLabels: { "": "Velg Sopro-system", ...Object.fromEntries(systems.map((item) => [item.id, item.label])) }, onChange: updateSystem }),
+        selectedSystem && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", style: { marginTop: "8px" }, children: [
+          "Valgt system: ",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: selectedSystem.product }),
+          " · ",
+          selectedSystem.sintefApproval,
+          ". Garantikravene vises automatisk i Sjekklister og Garanti."
+        ] })
+      ] }),
+      !enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "8px" }, children: "Garantien er ikke aktivert. Prosjektet kan fortsatt dokumenteres som vanlig." })
+    ] });
+  }
+
   function WarrantyPanel({ warranty, setWarranty, readiness, issueWarranty, systems, goToTab }) {
     const selectedSystem = systems.find((item) => item.id === warranty?.system);
     const goToWarrantyPoint = (point) => {
@@ -4591,7 +4668,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantien er valgfri og kan bare utstedes når overtagelse er signert, alle avvik er lukket, sjekklister er fullført, bildedokumentasjon er lastet opp og godkjent Sopro-system er valgt." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "10px" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 }, checked: enabled, onChange: (e) => setWarranty({ ...emptyWarranty(), ...warranty, enabled: e.target.checked, status: issued ? "issued" : "draft" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 }, checked: enabled, onChange: (e) => setWarranty({ ...emptyWarranty(), ...warranty, enabled: e.target.checked, system: e.target.checked ? warranty?.system || "" : "", sintefApproval: e.target.checked ? warranty?.sintefApproval || "" : "", issued: e.target.checked ? issued : false, issuedAt: e.target.checked ? warranty?.issuedAt || null : null, status: e.target.checked ? issued ? "issued" : "draft" : "draft" }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Aktiver 12 års dokumentert tetthetsgaranti for dette prosjektet" })
         ] }),
         !enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantien er ikke aktivert. Prosjektet kan fortsatt dokumenteres som vanlig uten garanti." })
