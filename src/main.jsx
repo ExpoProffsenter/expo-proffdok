@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 7 Deploy 5: Rapportdesign Premium – bilder uten filnavn, profesjonelle sjekkpunkter, overtagelsesboks og logo på garantibevis.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
 // FASE 7 Deploy 3C: Avvikshistorikk i rapport/PDF med original avvikstekst og lukkekommentar.
 // FASE 7 Deploy 4C: Bedre luft/sideskift i PDF-sjekklister og korrigert QR-lenke til SINTEF.
@@ -2783,49 +2784,54 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           const sectionName = product.section || "Annet produkt";
           const links = productReportDocumentOptions.filter((option) => shouldIncludeProductReportDoc(product, option));
           const commentLines = product.comment ? doc.splitTextToSize(`Hvor brukt / kommentar: ${product.comment}`, contentWidth - 14) : [];
-          const boxH = Math.max(22, 16 + commentLines.length * 4 + links.length * 5.8);
-          ensureSpace(boxH + 6);
+          const boxH = Math.max(24, 18 + commentLines.length * 4 + Math.ceil(Math.max(links.length, 1) / 2) * 6.5);
+          ensureSpace(boxH + 7);
           doc.setDrawColor(214, 226, 236);
           doc.setFillColor(255, 255, 255);
-          doc.roundedRect(margin, y, contentWidth, boxH, 2.5, 2.5, "FD");
+          doc.roundedRect(margin, y, contentWidth, boxH, 3, 3, "FD");
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(margin + 3, y + 3, contentWidth - 6, 11, 2.5, 2.5, "F");
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(8);
+          doc.setFontSize(7.8);
           doc.setTextColor(20, 86, 160);
-          doc.text(safeText(sectionName), margin + 5, y + 6.5);
+          doc.text(safeText(sectionName), margin + 6, y + 10);
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(10);
+          doc.setFontSize(9.6);
           doc.setTextColor(15, 23, 42);
-          doc.text(doc.splitTextToSize(safeText(productName), contentWidth - 10).slice(0, 2), margin + 5, y + 12.5);
-          let yy = y + 18;
+          doc.text(doc.splitTextToSize(safeText(productName), contentWidth - 12).slice(0, 2), margin + 6, y + 19);
+          let yy = y + 25;
           if (commentLines.length) {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.6);
+            doc.setFontSize(7.5);
             doc.setTextColor(71, 85, 105);
-            doc.text(commentLines, margin + 5, yy);
+            doc.text(commentLines, margin + 6, yy);
             yy += commentLines.length * 4 + 1;
           }
           if (links.length) {
-            links.forEach((option) => {
+            links.forEach((option, index) => {
               const url = normalizePdfUrl(product?.[option.field]);
               if (!url) return;
+              const colW = (contentWidth - 16) / 2;
+              const x = margin + 6 + (index % 2) * (colW + 4);
+              if (index > 0 && index % 2 === 0) yy += 6.5;
               doc.setFont("helvetica", "bold");
-              doc.setFontSize(8);
+              doc.setFontSize(7.8);
               doc.setTextColor(0, 84, 180);
+              const linkLabel = `${option.label} tilgjengelig`;
               if (typeof doc.textWithLink === "function") {
-                doc.textWithLink(`Åpne ${option.label}`, margin + 5, yy, { url });
+                doc.textWithLink(linkLabel, x, yy, { url });
               } else {
-                doc.text(`Åpne ${option.label}`, margin + 5, yy);
-                doc.link(margin + 5, yy - 4, 35, 5, { url });
+                doc.text(linkLabel, x, yy);
+                doc.link(x, yy - 4, Math.min(colW, linkLabel.length * 2.1), 5, { url });
               }
-              yy += 5.8;
             });
           } else {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7.5);
             doc.setTextColor(100, 116, 139);
-            doc.text("Ingen produktdokumenter valgt for visning i rapport.", margin + 5, yy);
+            doc.text("Ingen produktdokumenter valgt for visning i rapport.", margin + 6, yy);
           }
-          y += boxH + 5;
+          y += boxH + 6;
         };
         const addReportSummary = () => {
           const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
@@ -2889,26 +2895,27 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           const comment = value?.comment || "";
           const closeComment = value?.closeComment || "";
           const visual = statusVisual(status);
-          const textLines = doc.splitTextToSize(safeText(item), contentWidth - 54);
+          const textLines = doc.splitTextToSize(safeText(item), contentWidth - 34);
           const commentLines = comment ? doc.splitTextToSize(`Kommentar: ${comment}`, contentWidth - 18) : [];
           const closeLines = status === "Lukket avvik" && closeComment ? doc.splitTextToSize(`Lukket: ${closeComment}`, contentWidth - 18) : [];
-          const boxH = Math.max(16, 10 + textLines.length * 4.4 + commentLines.length * 4.0 + closeLines.length * 4.0);
-          ensureSpace(boxH + 7);
+          const boxH = Math.max(18, 12 + textLines.length * 4.6 + commentLines.length * 4.0 + closeLines.length * 4.0);
+          ensureSpace(boxH + 9);
           doc.setDrawColor(...visual.border);
           doc.setFillColor(...visual.bg);
-          doc.roundedRect(margin, y, contentWidth, boxH, 3, 3, "FD");
+          doc.roundedRect(margin, y, contentWidth, boxH, 3.2, 3.2, "FD");
+          const isOk = ["ok", "utført", "utfort", "lukket avvik"].includes(String(status || "").toLowerCase());
           doc.setDrawColor(...visual.border);
           doc.setFillColor(255, 255, 255);
-          doc.roundedRect(margin + 5, y + 4.5, 34, 8, 2, 2, "FD");
+          doc.circle(margin + 8, y + 9, 3.6, "FD");
           doc.setFont("helvetica", "bold");
           doc.setFontSize(7.0);
           doc.setTextColor(...visual.text);
-          doc.text(visual.label, margin + 22, y + 9.7, { align: "center" });
+          doc.text(isOk ? "OK" : visual.label.slice(0, 1), margin + 8, y + 10.1, { align: "center" });
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.0);
+          doc.setFontSize(9.1);
           doc.setTextColor(15, 23, 42);
-          doc.text(textLines, margin + 45, y + 8.5);
-          let yy = y + 9 + textLines.length * 4.4;
+          doc.text(textLines, margin + 17, y + 8.5);
+          let yy = y + 9 + textLines.length * 4.6;
           if (commentLines.length) {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7.7);
@@ -2922,7 +2929,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             doc.setTextColor(6, 95, 70);
             doc.text(closeLines, margin + 9, yy + 3);
           }
-          y += boxH + 5;
+          y += boxH + 7;
         };
 
 const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
@@ -2992,12 +2999,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         const drawImageGalleryCard = async (photo, x, yy, w, h) => {
           doc.setDrawColor(214, 226, 236);
           doc.setFillColor(255, 255, 255);
-          doc.roundedRect(x, yy, w, h, 2.5, 2.5, "FD");
-          const caption = safeText(photo.comment || photo.name || "Bilde").slice(0, 80);
+          doc.roundedRect(x, yy, w, h, 3, 3, "FD");
+          const caption = safeText(photo.comment || photo._reportCaption || "Dokumentert bilde").slice(0, 80);
           const image = await loadPdfImage(photo.url);
           if (image && !image.error) {
             const imageMaxW = w - 8;
-            const imageMaxH = h - 17;
+            const imageMaxH = h - 18;
             let imgW = imageMaxW;
             let imgH = imgW * (image.height / image.width);
             if (imgH > imageMaxH) {
@@ -3007,7 +3014,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             doc.addImage(image.dataUrl, image.format || "PNG", x + 4, yy + 4, imgW, imgH);
           } else {
             doc.setFillColor(248, 250, 252);
-            doc.roundedRect(x + 4, yy + 4, w - 8, h - 17, 2, 2, "F");
+            doc.roundedRect(x + 4, yy + 4, w - 8, h - 18, 2, 2, "F");
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7.2);
             doc.setTextColor(100, 116, 139);
@@ -3041,8 +3048,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           const cardH = 64;
           for (let i = 0; i < items.length; i += 2) {
             ensureSpace(cardH + 7);
-            await drawImageGalleryCard(items[i], margin, y, cardW, cardH);
-            if (items[i + 1]) await drawImageGalleryCard(items[i + 1], margin + cardW + gap, y, cardW, cardH);
+            await drawImageGalleryCard({ ...items[i], _reportCaption: `${category} – bilde ${i + 1}` }, margin, y, cardW, cardH);
+            if (items[i + 1]) await drawImageGalleryCard({ ...items[i + 1], _reportCaption: `${category} – bilde ${i + 2}` }, margin + cardW + gap, y, cardW, cardH);
             y += cardH + 6;
           }
         };
@@ -3194,7 +3201,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.setFillColor(255, 255, 255);
           doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 22, 4, 4, "F");
 
-          const logoOk = company.logoUrl ? await addImageFit(company.logoUrl, margin, 20, 48, 18) : false;
+          const logoSource = company.logoUrl || "/expo-logo.png";
+          const logoOk = logoSource ? await addImageFit(logoSource, margin, 20, 48, 18) : false;
           if (!logoOk) {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(13);
@@ -3478,12 +3486,30 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         }
 
         if (overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtførendeImage) || hasValue(overtagelse.signKundeImage))) {
-          addSectionTitle("Overtagelse");
-          addKeyValue("Dato", overtagelse.dato);
-          addKeyValue("Kommentar / merknader", overtagelse.kommentar);
-          addKeyValue("Signatur utførende", overtagelse.signUtførende);
+          addSectionPageBreak("Overtagelse");
+          const hasRemarks = hasValue(overtagelse.kommentar) && !/^ingen\s*(bemerkninger|merknader)?$/i.test(String(overtagelse.kommentar).trim());
+          ensureSpace(54);
+          doc.setDrawColor(...(hasRemarks ? [251, 191, 36] : [74, 222, 128]));
+          doc.setFillColor(...(hasRemarks ? [255, 251, 235] : [236, 253, 245]));
+          doc.roundedRect(margin, y, contentWidth, 28, 3, 3, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(13);
+          doc.setTextColor(...(hasRemarks ? [146, 64, 14] : [6, 95, 70]));
+          doc.text(hasRemarks ? "OVERTATT MED MERKNAD" : "OVERTATT UTEN MERKNAD", margin + 6, y + 11);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.3);
+          doc.setTextColor(51, 65, 85);
+          doc.text(doc.splitTextToSize(hasRemarks ? overtagelse.kommentar : "Prosjektet er registrert overtatt av kunde og utførende.", contentWidth - 12), margin + 6, y + 19);
+          y += 34;
+          const signGap = 5;
+          const signW = (contentWidth - signGap) / 2;
+          drawInfoCardPdf(margin, y, signW, 22, "Dato", overtagelse.dato || "Ikke oppgitt");
+          drawInfoCardPdf(margin + signW + signGap, y, signW, 22, "Status", hasRemarks ? "Overtatt med merknad" : "Overtatt uten merknad");
+          y += 27;
+          drawInfoCardPdf(margin, y, signW, 22, "Utførende", overtagelse.signUtførende || project.responsible || user.name || "Ikke oppgitt");
+          drawInfoCardPdf(margin + signW + signGap, y, signW, 22, "Kunde", overtagelse.signKunde || project.customer || "Ikke oppgitt");
+          y += 28;
           if (overtagelse.signUtførendeImage) await addImageFromUrl(overtagelse.signUtførendeImage, "Signatur utførende");
-          addKeyValue("Signatur kunde", overtagelse.signKunde);
           if (overtagelse.signKundeImage) await addImageFromUrl(overtagelse.signKundeImage, "Signatur kunde");
         }
 
