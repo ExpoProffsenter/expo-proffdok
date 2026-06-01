@@ -2,6 +2,7 @@
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
 // FASE 7 Deploy 3C: Avvikshistorikk i rapport/PDF med original avvikstekst og lukkekommentar.
 // FASE 7 Deploy 4C: Bedre luft/sideskift i PDF-sjekklister og korrigert QR-lenke til SINTEF.
+// FASE 7 Deploy 4D: Prosjektinfo i profesjonelle bokser og valgfri produktdokumentasjon i PDF.
 // FASE 7 Deploy 4B: Profesjonell rapportvisning med fremhevede sjekkpunkter og rapportsammendrag.
 // FASE 7 Deploy 3D: Randomisert garantinummer og registrering i Supabase warranty_registry.
 // FASE 7 Deploy 3B: Mobiljustering av sjekklister, bilder og statusknapper uten logikkendringer.
@@ -427,6 +428,23 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     ...log || {},
     messages: Array.isArray(log?.messages) ? log.messages : []
   });
+
+  var productReportDocumentOptions = [
+    { key: "Fdv", field: "fdvUrl", label: "FDV" },
+    { key: "Datablad", field: "databladUrl", label: "Datablad" },
+    { key: "Dop", field: "dopUrl", label: "DOP" },
+    { key: "Epd", field: "epdUrl", label: "EPD" },
+    { key: "Sikkerhetsdatablad", field: "sikkerhetsdatabladUrl", label: "Sikkerhetsdatablad" },
+    { key: "DocumentFile", field: "documentFileUrl", label: "Produkt-/leverandørside" }
+  ];
+  var hasProductReportChoice = (doc = {}) => productReportDocumentOptions.some((option) => doc?.[`include${option.key}InReport`] === true || doc?.[`include${option.key}InReport`] === false);
+  var shouldIncludeProductReportDoc = (doc = {}, option) => {
+    if (!doc || !option || !hasValue(doc?.[option.field])) return false;
+    const choiceKey = `include${option.key}InReport`;
+    if (hasProductReportChoice(doc)) return doc?.[choiceKey] === true;
+    return option.field === "fdvUrl" || option.field === "documentFileUrl";
+  };
+
   var normalizeManualProductsBySection = (value = {}) => {
     const result = {};
     const addProduct = (section, product) => {
@@ -2566,6 +2584,84 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           doc.setTextColor(71, 85, 105);
           doc.text(doc.splitTextToSize(safeText(label), w - 10), x + 5, yPos + 15);
         };
+        const drawInfoCardPdf = (x, yPos, w, h, label, value) => {
+          doc.setDrawColor(214, 226, 236);
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(x, yPos, w, h, 2.5, 2.5, "FD");
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7.3);
+          doc.setTextColor(100, 116, 139);
+          doc.text(safeText(label), x + 4, yPos + 6);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8.7);
+          doc.setTextColor(15, 23, 42);
+          const lines = doc.splitTextToSize(safeText(value || "Ikke oppgitt"), w - 8);
+          doc.text(lines.slice(0, 3), x + 4, yPos + 11.5);
+        };
+        const addInfoGridSection = (title, entries = []) => {
+          const visibleEntries = entries.filter(([_, value]) => hasValue(value));
+          if (!visibleEntries.length) return;
+          addSectionTitle(title);
+          const gap = 5;
+          const cardW = (contentWidth - gap) / 2;
+          const cardH = 20;
+          visibleEntries.forEach(([label, value], index) => {
+            if (index % 2 === 0) ensureSpace(cardH + 8);
+            const x = index % 2 === 0 ? margin : margin + cardW + gap;
+            drawInfoCardPdf(x, y, cardW, cardH, label, value);
+            if (index % 2 === 1) y += cardH + 5;
+          });
+          if (visibleEntries.length % 2 === 1) y += cardH + 5;
+        };
+        const addProductReportCard = (product) => {
+          const productName = product.item || product.name || "Uten produktnavn";
+          const sectionName = product.section || "Annet produkt";
+          const links = productReportDocumentOptions.filter((option) => shouldIncludeProductReportDoc(product, option));
+          const commentLines = product.comment ? doc.splitTextToSize(`Hvor brukt / kommentar: ${product.comment}`, contentWidth - 14) : [];
+          const boxH = Math.max(22, 16 + commentLines.length * 4 + links.length * 5.8);
+          ensureSpace(boxH + 6);
+          doc.setDrawColor(214, 226, 236);
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(margin, y, contentWidth, boxH, 2.5, 2.5, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setTextColor(20, 86, 160);
+          doc.text(safeText(sectionName), margin + 5, y + 6.5);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          doc.setTextColor(15, 23, 42);
+          doc.text(doc.splitTextToSize(safeText(productName), contentWidth - 10).slice(0, 2), margin + 5, y + 12.5);
+          let yy = y + 18;
+          if (commentLines.length) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.6);
+            doc.setTextColor(71, 85, 105);
+            doc.text(commentLines, margin + 5, yy);
+            yy += commentLines.length * 4 + 1;
+          }
+          if (links.length) {
+            links.forEach((option) => {
+              const url = normalizePdfUrl(product?.[option.field]);
+              if (!url) return;
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(8);
+              doc.setTextColor(0, 84, 180);
+              if (typeof doc.textWithLink === "function") {
+                doc.textWithLink(`Åpne ${option.label}`, margin + 5, yy, { url });
+              } else {
+                doc.text(`Åpne ${option.label}`, margin + 5, yy);
+                doc.link(margin + 5, yy - 4, 35, 5, { url });
+              }
+              yy += 5.8;
+            });
+          } else {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.5);
+            doc.setTextColor(100, 116, 139);
+            doc.text("Ingen produktdokumenter valgt for visning i rapport.", margin + 5, yy);
+          }
+          y += boxH + 5;
+        };
         const addReportSummary = () => {
           const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
           const assessed = entries.filter((value) => hasValue(value?.status));
@@ -3023,29 +3119,26 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           await addImageFromUrl(company.logoUrl, "");
         }
 
-        addSectionTitle("Firma");
-        addKeyValue("Firma", name || company.companyName || "Expo ProffDok");
-        addKeyValue("Adresse", company.address);
-        addKeyValue("Org.nr", company.orgNumber);
-        addKeyValue("Telefon", company.phone);
-        addKeyValue("E-post", company.email);
-        addKeyValue("Nettside", company.website);
+        addInfoGridSection("Firma", [
+          ["Firma", name || company.companyName || "Expo ProffDok"],
+          ["Adresse", company.address],
+          ["Org.nr", company.orgNumber],
+          ["Telefon", company.phone],
+          ["E-post", company.email],
+          ["Nettside", company.website]
+        ]);
 
-        addSectionTitle("Prosjekt");
-        const projectFields = {
-          "Prosjektansvarlig": project.responsible,
-          "Prosjektnavn": project.projectName,
-          "Adresse": project.address,
-          "Postnr.": project.postnr,
-          "Poststed / by": project.city,
-          "Kunde": project.customer,
-          "Kunde e-post": project.customerEmail,
-          "Kunde telefon": project.customerPhone,
-          "Dato": project.date,
-          "Status": project.locked ? "Avsluttet / låst" : "Aktivt",
-          "Notater": project.notes
-        };
-        Object.entries(projectFields).forEach(([label, value]) => addKeyValue(label, value));
+        addInfoGridSection("Kunde og prosjekt", [
+          ["Prosjektansvarlig", project.responsible],
+          ["Prosjektnavn", project.projectName],
+          ["Adresse", [project.address, project.postnr, project.city].filter(Boolean).join(", ")],
+          ["Kunde", project.customer],
+          ["Kunde e-post", project.customerEmail],
+          ["Kunde telefon", project.customerPhone],
+          ["Dato", project.date],
+          ["Status", project.locked ? "Avsluttet / låst" : "Aktivt"],
+          ["Notater", project.notes]
+        ]);
 
         addReportSummary();
 
@@ -3054,33 +3147,24 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           addParagraph(project.projectDescription);
         }
 
-        addSectionTitle("Prosjektering");
-        addKeyValue("Fall i dusjsone", project.fallDusj || "Ikke oppgitt");
-        addKeyValue("Fall utenfor dusjsone / våtsone", project.fallUtenfor || "Ikke oppgitt");
-        if (project.fall) addKeyValue("Fall mot sluk", project.fall);
-        addKeyValue("Slukplassering", project.sluk || "Ikke oppgitt");
-        addKeyValue("Terskelhøyde", project.terskel || "Ikke oppgitt");
-        addKeyValue("Membran", project.membran || "Ikke oppgitt");
-        (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter((p) => hasValue(p.title) || hasValue(p.value)).forEach((p) => addKeyValue(p.title || "Eget punkt", p.value || "Ikke oppgitt"));
-        if (project.prosjekteringKommentar) addKeyValue("Kommentar / avvik", project.prosjekteringKommentar);
+        const prosjekteringEntries = [
+          ["Fall i dusjsone", project.fallDusj],
+          ["Fall utenfor dusjsone / våtsone", project.fallUtenfor],
+          ["Fall mot sluk", project.fall],
+          ["Slukplassering", project.sluk],
+          ["Terskelhøyde", project.terskel],
+          ["Membran", project.membran],
+          ...((Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter((p) => hasValue(p.title) || hasValue(p.value)).map((p) => [p.title || "Eget punkt", p.value])),
+          ["Kommentar / avvik", project.prosjekteringKommentar]
+        ];
+        addInfoGridSection("Prosjektering", prosjekteringEntries);
 
         addSectionTitle("Produkter / FDV");
         const allProducts = [...selected || [], ...manualSelected || []];
         if (!allProducts.length) {
           addParagraph("Ingen produkter er valgt.");
         }
-        allProducts.forEach((p) => {
-          addSubTitle(p.section || "Annet produkt");
-          addParagraph(p.item || p.name || "Uten produktnavn");
-          if (p.comment) addParagraph(`Hvor brukt / kommentar: ${p.comment}`);
-          addLink("Åpne FDV", p.fdvUrl);
-          addLink("Åpne datablad", p.databladUrl);
-          addLink("Åpne DOP", p.dopUrl);
-          addLink("Åpne EPD", p.epdUrl);
-          addLink("Åpne sikkerhetsdatablad", p.sikkerhetsdatabladUrl);
-          addLink("Åpne vedlagt dokument", p.documentFileUrl);
-          addDivider();
-        });
+        allProducts.forEach((p) => addProductReportCard(p));
         Object.entries(other || {}).filter(([, v]) => v).forEach(([k, v]) => addParagraph(`Tidligere registrert annet produkt under ${k}: ${v}`));
 
         addSectionTitle("Overflater");
@@ -3400,6 +3484,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: doc.sikkerhetsdatabladUrl || "", onChange: (v) => updateProductDoc(i, { sikkerhetsdatabladUrl: v, fdvSource: "manual" }) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: doc.comment || "", onChange: (v) => updateProductDoc(i, { comment: v }) })
                   ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProductReportDocumentSelector, { doc, productName: i, updateProductDoc }),
                   doc.fdvSource === "product-master" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "Dokumentlinker er hentet automatisk fra produktmaster." }),
                   doc.fdvSource === "admin-register" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "FDV-link er hentet automatisk fra admin FDV-register." })
                 ] })
@@ -5498,6 +5583,24 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
   function Grid({ children }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "grid", children });
   }
+  function ProductReportDocumentSelector({ doc = {}, productName, updateProductDoc }) {
+    const availableOptions = productReportDocumentOptions.filter((option) => hasValue(doc?.[option.field]));
+    if (!availableOptions.length) return null;
+    const hasChoice = hasProductReportChoice(doc);
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#f8fafc", borderStyle: "dashed", marginTop: "10px" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Dokumenter som skal vises i rapport" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av kun dokumentene som er relevante for kunden. Lenker beholdes i prosjektet selv om de ikke vises i PDF." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px" }, children: availableOptions.map((option) => {
+        const choiceKey = `include${option.key}InReport`;
+        const checkedValue = hasChoice ? doc?.[choiceKey] === true : option.field === "fdvUrl" || option.field === "documentFileUrl";
+        return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "inline-flex", alignItems: "center", gap: "7px", width: "auto", margin: 0 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 }, checked: checkedValue, onChange: (e) => updateProductDoc(productName, { [choiceKey]: e.target.checked }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: option.label })
+        ] }, option.key);
+      }) })
+    ] });
+  }
+
   function Input({ label, value, onChange, type = "text", onKeyDown, autoComplete, disabled = false }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
