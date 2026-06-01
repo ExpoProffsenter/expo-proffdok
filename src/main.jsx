@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 7 Deploy 2: Dynamiske Sopro-sjekklister koblet til garantimotor.
 // FASE 7 Deploy 1: Garantimodul og datamodell for 12 års dokumentert tetthetsgaranti.
 // FASE 5 v2: klikkbar bildevisning i stor modal.
 // FASE 5 v1: prosjektinformasjon/beskrivelse + synlig prosjektinfo i delingslenker.
@@ -149,6 +150,90 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var soproWarrantySystems = [
     { id: "sopro-aeb-815", label: "Sopro AEB 815 – SINTEF TG 20918", product: "Sopro AEB 815", sintefApproval: "SINTEF TG 20918" },
     { id: "sopro-fdf-525-527", label: "Sopro FDF 525/527 – SINTEF TG 20987", product: "Sopro FDF 525/527", sintefApproval: "SINTEF TG 20987" }
+  ];
+  var soproSystemChecklistTemplates = {
+    "sopro-aeb-815": [
+      {
+        category: "Sopro AEB 815 / TG 20918 – Underlag",
+        items: [
+          "Underlaget er rengjort og tørt før montering av foliemembran",
+          "Fuktinnhold i betong er kontrollert og er ikke over 85 % RF",
+          "Underlaget er primet med Sopro Primer iht. monteringsanvisning"
+        ]
+      },
+      {
+        category: "Sopro AEB 815 / TG 20918 – Foliemembran",
+        items: [
+          "Sopro AEB 815 foliemembran er montert iht. leverandørens monteringsanvisning",
+          "Folieskjøter er limt med Sopro FDK 1-K 1180 / Sopro FDK 415 eller annet godkjent systemlim",
+          "Tettebånd er montert i alle overganger mellom gulv og vegg, hjørner, folieskjøter og tilslutninger",
+          "Innvendige og utvendige hjørner er utført med Sopro systemdetaljer"
+        ]
+      },
+      {
+        category: "Sopro AEB 815 / TG 20918 – Rør og sluk",
+        items: [
+          "Rørmansjetter er montert på alle rørgjennomføringer og veggbokser",
+          "Rør og veggbokser er rengjort før mansjetter er montert",
+          "Slukmansjett er montert iht. leverandørens monteringsanvisning",
+          "Klemring/limflens er kontrollert og utført iht. valgt sluktype",
+          "Sluk og mansjett er dokumentert med bilde før flislegging"
+        ]
+      },
+      {
+        category: "Sopro AEB 815 / TG 20918 – Tetthetskontroll",
+        items: [
+          "Tetthetskontroll/vanntetthetstest av membransystemet er vurdert/utført før overflatebelegg",
+          "Bildedokumentasjon av membransystem, skjøter, mansjetter og sluk foreligger"
+        ]
+      }
+    ],
+    "sopro-fdf-525-527": [
+      {
+        category: "Sopro FDF 525/527 / TG 20987 – Underlag",
+        items: [
+          "Underlaget er rengjort og tørt før påføring av membran",
+          "Fuktinnhold i betong er kontrollert og er ikke over 85 % RF",
+          "Primer er påført iht. valgt Sopro-system og underlag"
+        ]
+      },
+      {
+        category: "Sopro FDF 525/527 / TG 20987 – Membran",
+        items: [
+          "Minimum to strøk Sopro FDF 525/527 membran er påført",
+          "Membrantykkelse på gulv er minimum 1,0 mm",
+          "Membrantykkelse på vegg er minimum 0,5 mm",
+          "Primer og membran er overflatetørr før neste lag er påført",
+          "Brukstemperatur minimum +10 °C er ivaretatt"
+        ]
+      },
+      {
+        category: "Sopro FDF 525/527 / TG 20987 – Overganger og gjennomføringer",
+        items: [
+          "Fiberremse/tettebånd er montert i plateskjøter, overganger og tilslutninger",
+          "Innvendige og utvendige hjørner er forsterket med Sopro hjørnemansjetter",
+          "Rørmansjetter er montert på alle rørgjennomføringer med riktig dimensjon",
+          "Rør er rengjort før mansjett er montert",
+          "Tekstilsjikt på mansjetter er fullstendig dekket med Sopro FDF 525/527",
+          "Membran er ført litt forbi mansjett og ut på rør/veggboks"
+        ]
+      },
+      {
+        category: "Sopro FDF 525/527 / TG 20987 – Sluk og tetthetskontroll",
+        items: [
+          "Slukmansjett er montert med Sopro FDF 525/527 iht. valgt sluktype",
+          "Det er påført minst to strøk Sopro FDF 525/527 over slukmansjett",
+          "Klemring/limflens er kontrollert og dokumentert",
+          "Sluk og mansjett er dokumentert med bilde før flislegging",
+          "Tetthetskontroll/vanntetthetstest av membransystemet er vurdert/utført før overflatebelegg"
+        ]
+      }
+    ]
+  };
+  var getSoproChecklistTemplate = (systemId) => soproSystemChecklistTemplates[systemId] || [];
+  var getActiveChecklistTemplate = (warranty = {}) => [
+    ...checklistTemplate,
+    ...getSoproChecklistTemplate(warranty?.system)
   ];
   var emptyWarranty = () => ({
     enabled: false,
@@ -454,17 +539,27 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const kundeSigned = hasValue(overtagelse?.signKunde) || hasValue(overtagelse?.signKundeImage);
       const overtagelseSigned = !!overtagelse?.enabled && utførendeSigned && kundeSigned;
       const openDeviationCount = getOpenDeviationCount(checklist);
-      const checklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
-      const checklistTotal = checklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
-      const checklistDone = checklistValues.filter((value) => hasValue(value?.status)).length;
-      const checklistComplete = checklistTotal > 0 && checklistDone >= checklistTotal;
-      const hasPhotos = (photos || []).some((photo) => hasValue(photo?.url));
       const selectedSystem = soproWarrantySystems.find((item) => item.id === warranty?.system);
       const approvedSoproSystemSelected = !!selectedSystem;
+      const activeChecklistTemplate = getActiveChecklistTemplate(warranty);
+      const checklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
+      const checklistTotal = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
+      const checklistDone = activeChecklistTemplate.reduce((sum, group) => {
+        return sum + (group.items || []).filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
+      }, 0);
+      const checklistComplete = checklistTotal > 0 && checklistDone >= checklistTotal;
+      const systemChecklistTemplate = getSoproChecklistTemplate(warranty?.system);
+      const systemChecklistTotal = systemChecklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
+      const systemChecklistDone = systemChecklistTemplate.reduce((sum, group) => {
+        return sum + (group.items || []).filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
+      }, 0);
+      const systemChecklistComplete = !approvedSoproSystemSelected ? false : systemChecklistTotal > 0 && systemChecklistDone >= systemChecklistTotal;
+      const hasPhotos = (photos || []).some((photo) => hasValue(photo?.url));
       const missing = [];
       if (!overtagelseSigned) missing.push("Overtagelse må være aktivert og signert av både utførende og kunde.");
       if (openDeviationCount > 0) missing.push("Alle åpne avvik må lukkes før garanti kan utstedes.");
-      if (!checklistComplete) missing.push("Alle sjekklistepunkter må ha status.");
+      if (!checklistComplete) missing.push("Alle ordinære sjekklister og systemspesifikke Sopro-punkter må ha status.");
+      if (approvedSoproSystemSelected && !systemChecklistComplete) missing.push("Alle kontrollpunkter for valgt Sopro-system må være fullført.");
       if (!hasPhotos) missing.push("Bildedokumentasjon må være lastet opp.");
       if (!approvedSoproSystemSelected) missing.push("Godkjent Sopro-system må velges.");
       return {
@@ -473,6 +568,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         checklistTotal,
         checklistDone,
         checklistComplete,
+        systemChecklistTotal,
+        systemChecklistDone,
+        systemChecklistComplete,
         hasPhotos,
         approvedSoproSystemSelected,
         selectedSystem,
@@ -2745,7 +2843,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 setFiles,
                 closedByName: user.name || authUser?.email || "Utførende",
                 showOpenDeviationsOnly,
-                setShowOpenDeviationsOnly
+                setShowOpenDeviationsOnly,
+                warranty
               }
             )
           ] })
@@ -3915,7 +4014,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               setFiles,
               closedByName: user.name || authUser?.email || "Utførende",
               showOpenDeviationsOnly,
-              setShowOpenDeviationsOnly
+              setShowOpenDeviationsOnly,
+              warranty
             }
           )
         ] }),
@@ -4441,6 +4541,17 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Garantiperiode", value: "12 år", onChange: () => {}, disabled: true }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Status", value: issued ? "Utstedt" : readiness?.ready ? "Klar til utstedelse" : "Ikke klar", onChange: () => {}, disabled: true })
         ] }),
+        selectedSystem && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Systemspesifikke Sopro-kontrollpunkter" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "Valgt system legger automatisk inn egne kontrollpunkter i fanen Sjekklister. Disse må fullføres før garantien kan utstedes. Status: ",
+            readiness?.systemChecklistDone || 0,
+            " av ",
+            readiness?.systemChecklistTotal || 0,
+            " punkter fullført."
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: selectedSystem.id === "sopro-aeb-815" ? "Grunnlaget er Sopro AEB 815 foliemembran med SINTEF TG 20918." : "Grunnlaget er Sopro FDF 525/527 smøremembran med SINTEF TG 20987." })
+        ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: readiness?.ready ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fecaca", background: "#fff7f7" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: readiness?.ready ? "Klar til garanti" : "Ikke klar til garanti" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryBadges", children: [
@@ -4448,7 +4559,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.openDeviationCount === 0 ? "✅ Ingen åpne avvik" : `⚠️ ${readiness?.openDeviationCount || 0} åpne avvik` }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.checklistComplete ? "✅ Sjekklister fullført" : `⚠️ ${readiness?.checklistDone || 0}/${readiness?.checklistTotal || 0} sjekklistepunkter` }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.hasPhotos ? "✅ Bilder lastet opp" : "⚠️ Bilder mangler" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.approvedSoproSystemSelected ? "✅ Sopro-system valgt" : "⚠️ Sopro-system mangler" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.approvedSoproSystemSelected ? "✅ Sopro-system valgt" : "⚠️ Sopro-system mangler" }),
+            readiness?.approvedSoproSystemSelected && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.systemChecklistComplete ? "✅ Sopro-punkter fullført" : `⚠️ ${readiness?.systemChecklistDone || 0}/${readiness?.systemChecklistTotal || 0} Sopro-punkter` })
           ] }),
           (readiness?.missing || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Mangler før garanti kan utstedes:" }),
@@ -4462,8 +4574,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Grunnlag for garantien" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Garantien bygger på dokumentert utførelse med valgt Sopro-system, fullførte sjekklister, lukket avvikshåndtering, bildedokumentasjon og signert overtagelse. Garantibevis og garantivilkår lages i senere deploy med egne formuleringer for Expo ProffDok." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "PDF og garantibevis endres ikke i Deploy 1. Dette er bevisst for å bevare eksisterende PDF-funksjonalitet." })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Garantien bygger på dokumentert utførelse med valgt Sopro-system, fullførte sjekklister, lukket avvikshåndtering, bildedokumentasjon og signert overtagelse. De systemspesifikke Sopro-sjekklistene er koblet til valgt system. Garantibevis og garantivilkår lages i senere deploy med egne formuleringer for Expo ProffDok." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "PDF og garantibevis endres ikke i Deploy 2. Dette er bevisst for å bevare eksisterende PDF-funksjonalitet." })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready, onClick: issueWarranty, children: issued ? "Oppdater garantistatus" : "Utsted garanti" }),
@@ -4540,18 +4652,19 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektleder har ikke lagt inn egen prosjektbeskrivelse ennå." })
     ] });
   }
-  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null }) {
-    const [openCategories, setOpenCategories] = import_react.default.useState(() => ({ [checklistTemplate[0]?.category || ""]: true }));
+  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {} }) {
+    const activeChecklistTemplate = getActiveChecklistTemplate(warranty);
+    const [openCategories, setOpenCategories] = import_react.default.useState(() => ({ [activeChecklistTemplate[0]?.category || ""]: true }));
     import_react.default.useEffect(() => {
       if (!showOpenDeviationsOnly) return;
-      const openGroups = Object.fromEntries(checklistTemplate.map((group) => [
+      const openGroups = Object.fromEntries(activeChecklistTemplate.map((group) => [
         group.category,
         group.items.some((item) => checklist?.[group.category]?.[item]?.status === "Avvik")
       ]));
       setOpenCategories(openGroups);
     }, [showOpenDeviationsOnly, checklist]);
     const groupHasOpenDeviation = (group) => group.items.some((item) => checklist?.[group.category]?.[item]?.status === "Avvik");
-    const visibleChecklistGroups = showOpenDeviationsOnly ? checklistTemplate.filter(groupHasOpenDeviation) : checklistTemplate;
+    const visibleChecklistGroups = showOpenDeviationsOnly ? activeChecklistTemplate.filter(groupHasOpenDeviation) : activeChecklistTemplate;
     const groupStats = (group) => {
       const total = group.items.length;
       const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
@@ -4560,7 +4673,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const photos = group.items.reduce((sum, item) => sum + (checklist?.[group.category]?.[item]?.photos || []).length, 0);
       return { total, done, missing: Math.max(0, total - done), deviations, closedDeviations, photos };
     };
-    const totalStats = checklistTemplate.reduce((acc, group) => {
+    const totalStats = activeChecklistTemplate.reduce((acc, group) => {
       const stats = groupStats(group);
       acc.total += stats.total;
       acc.done += stats.done;
@@ -4572,8 +4685,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }, { total: 0, done: 0, missing: 0, deviations: 0, closedDeviations: 0, photos: 0 });
     const percent = totalStats.total ? Math.round(totalStats.done / totalStats.total * 100) : 0;
     const toggleCategory = (category) => setOpenCategories((prev) => ({ ...prev, [category]: !prev[category] }));
-    const expandAll = () => setOpenCategories(Object.fromEntries(checklistTemplate.map((group) => [group.category, true])));
-    const collapseDone = () => setOpenCategories(Object.fromEntries(checklistTemplate.map((group) => {
+    const expandAll = () => setOpenCategories(Object.fromEntries(activeChecklistTemplate.map((group) => [group.category, true])));
+    const collapseDone = () => setOpenCategories(Object.fromEntries(activeChecklistTemplate.map((group) => {
       const stats = groupStats(group);
       return [group.category, stats.missing > 0 || stats.deviations > 0];
     })));
