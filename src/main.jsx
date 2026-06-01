@@ -6,6 +6,7 @@
 // FASE 7 Deploy 4F: Rapportdesign 2.0 med forside, bedre sideskift og bildegalleri.
 // FASE 7 Deploy 4H: Garantidokument synlig i arkiverte/låste prosjekter.
 // FASE 7 Deploy 4I: Tillater utstedelse av garanti i låst/arkivert prosjekt og lagrer garantidokument permanent.
+// FASE 7 Deploy 4J: PDF-fremdrift/statusindikator og tydeligere garantiutstedt-handling.
 // FASE 7 Deploy 4G: PDF-bildefiks for SVG/BMP/ukjente bildeformater ved PDF-generering.
 // FASE 7 Deploy 4E: Autolagring av sjekklistestatus og automatisk hopp til neste sjekkpunkt.
 // FASE 7 Deploy 4D: Profesjonell prosjektinfo i PDF og rapportvalg for produktdokumentasjon.
@@ -2535,10 +2536,48 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setTimeout(() => writePrintableReport(printWindow), 650);
     };
 
+    const setPdfProgress = (message = "Genererer rapport…", subMessage = "") => {
+      let overlay = document.getElementById("expo-pdf-progress-overlay");
+      if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "expo-pdf-progress-overlay";
+        overlay.setAttribute("role", "status");
+        overlay.setAttribute("aria-live", "polite");
+        overlay.style.position = "fixed";
+        overlay.style.inset = "0";
+        overlay.style.zIndex = "99999";
+        overlay.style.background = "rgba(15, 23, 42, 0.58)";
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.padding = "18px";
+        document.body.appendChild(overlay);
+      }
+      overlay.innerHTML = `
+        <div style="width:min(420px, calc(100vw - 32px)); background:#ffffff; border-radius:18px; box-shadow:0 24px 70px rgba(15,23,42,.28); padding:22px; font-family:Arial, Helvetica, sans-serif; color:#0f172a;">
+          <div style="display:flex; gap:14px; align-items:center;">
+            <div style="width:34px; height:34px; border:4px solid #dbeafe; border-top-color:#1456a0; border-radius:50%; animation:expoPdfSpin .8s linear infinite;"></div>
+            <div>
+              <div style="font-weight:800; font-size:16px;">${message}</div>
+              <div style="font-size:13px; color:#475569; margin-top:4px;">${subMessage || "Dette kan ta litt tid ved mange bilder."}</div>
+            </div>
+          </div>
+          <style>@keyframes expoPdfSpin{to{transform:rotate(360deg)}}</style>
+        </div>`;
+    };
+    const clearPdfProgress = (delay = 0) => {
+      window.setTimeout(() => {
+        const overlay = document.getElementById("expo-pdf-progress-overlay");
+        if (overlay) overlay.remove();
+      }, delay);
+    };
+
     const downloadClickablePdfReport = async () => {
       try {
         const archiveConfirmed = window.confirm("Viktig før nedlasting:\n\nNår prosjektet er ferdig skal komplett PDF-rapport lagres lokalt hos utførende firma, og gjerne også oversendes kunde. Expo ProffDok benytter skylagring, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata i hele garanti- eller byggets levetid.\n\nVil du fortsette og generere komplett PDF-rapport nå?");
         if (!archiveConfirmed) return;
+        setPdfProgress("Genererer rapport…", "Starter PDF-motor og klargjør rapporten.");
+        await new Promise((resolve) => setTimeout(resolve, 60));
         const module = await import("https://esm.sh/jspdf@2.5.1");
         const JsPDF = module.jsPDF || module.default?.jsPDF;
         if (!JsPDF) throw new Error("Kunne ikke laste PDF-motor.");
@@ -3315,8 +3354,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawNoteBox("Takk for tilliten. Ta vare på garantidokumentet sammen med komplett FDV-rapport og øvrig prosjektdokumentasjon.");
           drawFooterBand("Bekreftelse");
         };
+        setPdfProgress("Bygger forside…", "Klargjør rapportforside og prosjektstatus.");
         await addCoverPage();
 
+        setPdfProgress("Legger inn prosjektinformasjon…", "Firma, kunde, prosjekt og prosjektering.");
         addInfoGridSection("Firma", [
           ["Firma", name || company.companyName || "Expo ProffDok"],
           ["Adresse", company.address],
@@ -3357,6 +3398,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ];
         addInfoGridSection("Prosjektering", prosjekteringEntries);
 
+        setPdfProgress("Legger inn produkter og FDV…", "Bygger produktkort og valgte dokumentlenker.");
         addSectionPageBreak("Produkter / FDV");
         const allProducts = [...selected || [], ...manualSelected || []];
         if (!allProducts.length) {
@@ -3370,6 +3412,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         if (!surfaceEntries.length) addParagraph("Ingen overflater er fylt ut.");
         surfaceEntries.forEach(([k, v]) => addKeyValue(k, v));
 
+        setPdfProgress("Samler bilder…", "Laster inn og konverterer bilder til PDF-format.");
         addSectionPageBreak("Bildedokumentasjon");
         const photoCats = [...new Set((photos || []).map((photo) => photo.cat).filter(Boolean))];
         if (!photoCats.length) addParagraph("Ingen bilder er lagt til.");
@@ -3389,6 +3432,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           addDivider();
         }
 
+        setPdfProgress("Bygger sjekklister…", "Fremhever OK-punkter, avvik og kommentarer.");
         addSectionPageBreak("Sjekkliste / utførte kontroller");
         addParagraph("Kontrollpunktene under viser registrert status for prosjektet. Godkjente punkter er fremhevet for å gi en tydelig dokumentasjon av utført kontroll.", { size: 8.5, lineHeight: 4.3 });
         Object.entries(checklist || {}).forEach(([category, items]) => {
@@ -3454,8 +3498,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         if (!(access || []).length) addParagraph("Ingen ekstra prosjekttilganger er lagt til.");
         (access || []).forEach((a) => addParagraph(`${a.name || a.email || "Ukjent"} — ${a.role || ""}`));
 
+        setPdfProgress("Oppretter garantidokument…", "Legger inn garantisertifikat, vilkår og QR-kode der garanti er aktivert.");
         await addWarrantyCertificatePages();
 
+        setPdfProgress("Klargjør PDF…", "Setter sidetall, bunntekst og filnavn.");
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i += 1) {
           doc.setPage(i);
@@ -3469,6 +3515,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
 
         const generatedFileName = `${filenameSafe(project.projectName || project.address || project.customer || "FDV-rapport")}.pdf`;
         doc.save(generatedFileName);
+        setPdfProgress("✅ Rapport klar", "PDF-en er generert og lastes ned.");
+        clearPdfProgress(1400);
         if (warranty?.enabled) {
           const reportGeneratedAt = (/* @__PURE__ */ new Date()).toISOString();
           setWarranty((prev) => ({
@@ -3482,6 +3530,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           alert("PDF er generert. Husk å lagre filen på egen maskin/server. Garantimodulen er oppdatert med at komplett rapport er generert – husk å lagre/oppdatere prosjektet.");
         }
       } catch (error) {
+        clearPdfProgress(0);
         console.error("Kunne ikke lage PDF med klikkbare lenker:", error);
         alert("Kunne ikke lage PDF med klikkbare lenker. Bruk vanlig utskrift som fallback. Feil: " + (error?.message || String(error)));
       }
@@ -5862,7 +5911,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready || issued, onClick: issueWarranty, children: issued ? "Garanti utstedt" : isProjectLocked ? "Utsted garanti i arkivert prosjekt" : "Utsted 12 års tetthetsgaranti" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready || issued, onClick: issueWarranty, children: issued ? "✅ Garanti utstedt" : isProjectLocked ? "Utsted garanti i arkivert prosjekt" : "Utsted 12 års tetthetsgaranti" }),
+          issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadClickablePdfReport, children: "⬇ Last ned garantibevis / komplett PDF" }),
           issued && !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setWarranty({ ...emptyWarranty(), ...warranty, issued: false, issuedAt: null, status: "draft" }), children: "Trekk tilbake utstedelse" })
         ] })
       ] })
