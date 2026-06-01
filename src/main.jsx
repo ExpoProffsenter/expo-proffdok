@@ -5,6 +5,7 @@
 // FASE 7 Deploy 4D: Prosjektinfo i profesjonelle bokser og valgfri produktdokumentasjon i PDF.
 // FASE 7 Deploy 4F: Rapportdesign 2.0 med forside, bedre sideskift og bildegalleri.
 // FASE 7 Deploy 4H: Garantidokument synlig i arkiverte/låste prosjekter.
+// FASE 7 Deploy 4I: Tillater utstedelse av garanti i låst/arkivert prosjekt og lagrer garantidokument permanent.
 // FASE 7 Deploy 4G: PDF-bildefiks for SVG/BMP/ukjente bildeformater ved PDF-generering.
 // FASE 7 Deploy 4E: Autolagring av sjekklistestatus og automatisk hopp til neste sjekkpunkt.
 // FASE 7 Deploy 4D: Profesjonell prosjektinfo i PDF og rapportvalg for produktdokumentasjon.
@@ -792,7 +793,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         break;
       }
       if (!registrySaved) return alert("Kunne ikke registrere garantien i garantiregisteret. Garantien er ikke utstedt. Feil: " + registryErrorMessage);
-      setWarranty({
+      const nextWarranty = {
         ...emptyWarranty(),
         ...warranty,
         enabled: true,
@@ -803,8 +804,74 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         durationYears: 12,
         guaranteeNumber,
         status: "issued"
-      });
-      alert(`✔ 12 års dokumentert tetthetsgaranti er registrert og utstedt med garantinummer ${guaranteeNumber}. Last ned endelig komplett PDF-rapport og lagre den på egen maskin/arkiv. Husk deretter å lagre/oppdatere prosjektet.`);
+      };
+      setWarranty(nextWarranty);
+
+      let projectSaved = false;
+      let projectSaveError = "";
+      if (projectId) {
+        try {
+          const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+          if (fetchError || !existing) {
+            projectSaveError = fetchError?.message || "Fant ikke prosjekt";
+          } else {
+            const existingData = dataFromRow(existing);
+            const existingProject = existingData.project || {};
+            const nextData = JSON.parse(JSON.stringify({
+              ...existingData,
+              company,
+              user,
+              project: {
+                ...emptyProject(),
+                ...existingProject,
+                ...project,
+                locked: existing.locked === true || existingProject.locked === true || project.locked === true,
+                status: existing.locked === true || existingProject.locked === true || project.locked === true ? "locked" : project.status || existingProject.status || "active",
+                lockedAt: existing.locked_at || existingProject.lockedAt || project.lockedAt || "",
+                lockedBy: existing.locked_by || existingProject.lockedBy || project.lockedBy || ""
+              },
+              checked,
+              productDocs,
+              manualProducts,
+              other,
+              surf,
+              photos,
+              access,
+              inst,
+              files,
+              checklist,
+              tilbud,
+              overtagelse,
+              warranty: nextWarranty,
+              projectLog,
+              internalNotes
+            }));
+            const { data: updatedRow, error: updateError } = await supabase.from("projects").update({
+              data: nextData,
+              title: project.projectName || project.address || existing.title || "Uten navn",
+              updated_at: (/* @__PURE__ */ new Date()).toISOString()
+            }).eq("id", projectId).select("*").maybeSingle();
+            if (updateError) {
+              projectSaveError = updateError.message || String(updateError);
+            } else {
+              projectSaved = true;
+              if (updatedRow) {
+                unpackData(dataFromRow(updatedRow), true);
+                setProjectId(updatedRow.id);
+              }
+              await loadProjects(authUser);
+            }
+          }
+        } catch (error) {
+          projectSaveError = error?.message || String(error);
+        }
+      }
+
+      if (projectId && !projectSaved) {
+        alert(`✔ Garantien er registrert i garantiregisteret med garantinummer ${guaranteeNumber}, men den ble ikke lagret tilbake på prosjektet automatisk. Feil: ${projectSaveError}. Lås opp prosjektet, trykk Oppdater prosjekt, og kontakt support hvis garantidokumentet fortsatt ikke vises.`);
+      } else {
+        alert(`✔ 12 års dokumentert tetthetsgaranti er registrert, utstedt og lagret på prosjektet med garantinummer ${guaranteeNumber}. Den skal nå vises i Garanti-fanen og i PDF også når prosjektet er arkivert/låst.`);
+      }
     };
     const currentStatus = projectStatusInfo(project, overtagelse, projectGuideStats.openDeviationCount);
     const suggestedWorkflowStatus = projectGuideStats.openDeviationCount > 0 ? "Avvik åpent" : projectGuideStats.hasOvertagelse ? "Ferdigstilt" : projectGuideStats.productCount > 0 && projectGuideStats.photoCount > 0 && projectGuideStats.checklistDone > 0 ? "Klar for kunde" : projectGuideStats.hasProjectBasics ? "Pågår" : "Utkast";
@@ -5795,7 +5862,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready || isProjectLocked || issued, onClick: issueWarranty, children: issued ? "Garanti utstedt" : "Utsted 12 års tetthetsgaranti" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready || issued, onClick: issueWarranty, children: issued ? "Garanti utstedt" : isProjectLocked ? "Utsted garanti i arkivert prosjekt" : "Utsted 12 års tetthetsgaranti" }),
           issued && !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setWarranty({ ...emptyWarranty(), ...warranty, issued: false, issuedAt: null, status: "draft" }), children: "Trekk tilbake utstedelse" })
         ] })
       ] })
