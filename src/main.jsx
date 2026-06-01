@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 7 Deploy 5B: Rapportdesign Premium 2.0 – kompakte produktkort, bedre bildegaleri, skjult tom prosjekttilgang og beholdt funksjonalitet.
+// FASE 7 Deploy 5C: Produkt/FDV i kompakte dokumentbrikker uten tekstbryting i PDF.
 // FASE 7 Deploy 5: Rapportdesign Premium – bilder uten filnavn, profesjonelle sjekkpunkter, overtagelsesboks og logo på garantibevis.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
 // FASE 7 Deploy 3C: Avvikshistorikk i rapport/PDF med original avvikstekst og lukkekommentar.
@@ -2784,65 +2785,75 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           const productName = product.item || product.name || "Uten produktnavn";
           const sectionName = product.section || "Annet produkt";
           const links = productReportDocumentOptions.filter((option) => shouldIncludeProductReportDoc(product, option));
+          const shortDocLabel = (label = "") => {
+            if (/produkt|leverand/i.test(label)) return "Produktside";
+            if (/sikkerhet/i.test(label)) return "Sikkerhetsblad";
+            return label;
+          };
           const commentLines = product.comment ? doc.splitTextToSize(`Kommentar: ${product.comment}`, contentWidth - 16) : [];
-          const chipRows = Math.max(1, links.length);
           const nameLines = doc.splitTextToSize(safeText(productName), contentWidth - 16).slice(0, 2);
-          const boxH = Math.max(30, 23 + nameLines.length * 4.5 + commentLines.length * 3.8 + chipRows * 6.2);
-          ensureSpace(boxH + 6);
+          const docsRows = links.length ? Math.ceil(links.length / 4) : 1;
+          const boxH = Math.max(29, 21 + nameLines.length * 4.4 + commentLines.length * 3.8 + docsRows * 7.0);
+          ensureSpace(boxH + 5);
 
           doc.setDrawColor(214, 226, 236);
           doc.setFillColor(255, 255, 255);
           doc.roundedRect(margin, y, contentWidth, boxH, 3.2, 3.2, "FD");
 
           doc.setFillColor(248, 250, 252);
-          doc.roundedRect(margin + 3, y + 3, contentWidth - 6, 10, 2.4, 2.4, "F");
+          doc.roundedRect(margin + 3, y + 3, contentWidth - 6, 9.5, 2.4, 2.4, "F");
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(7.4);
+          doc.setFontSize(7.2);
           doc.setTextColor(20, 86, 160);
-          doc.text(doc.splitTextToSize(safeText(sectionName), contentWidth - 12).slice(0, 1), margin + 6, y + 9.4);
+          doc.text(doc.splitTextToSize(safeText(sectionName), contentWidth - 12).slice(0, 1), margin + 6, y + 9.1);
 
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.4);
+          doc.setFontSize(9.3);
           doc.setTextColor(15, 23, 42);
-          doc.text(nameLines, margin + 6, y + 18.5);
+          doc.text(nameLines, margin + 6, y + 18.2);
 
-          let yy = y + 18.5 + nameLines.length * 4.6 + 1;
+          let yy = y + 18.2 + nameLines.length * 4.5 + 0.5;
           if (commentLines.length) {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.2);
+            doc.setFontSize(7.1);
             doc.setTextColor(71, 85, 105);
             doc.text(commentLines, margin + 6, yy);
             yy += commentLines.length * 3.8 + 1.5;
           }
 
           if (links.length) {
-            links.forEach((option) => {
+            const gap = 2.2;
+            const maxPerRow = 4;
+            const chipW = (contentWidth - 12 - gap * (maxPerRow - 1)) / maxPerRow;
+            links.forEach((option, index) => {
               const url = normalizePdfUrl(product?.[option.field]);
               if (!url) return;
-              ensureSpace(7);
-              const label = `${option.label}: tilgjengelig`;
+              const row = Math.floor(index / maxPerRow);
+              const col = index % maxPerRow;
+              const x = margin + 6 + col * (chipW + gap);
+              const chipY = yy + row * 7.0;
+              const label = shortDocLabel(option.label);
               doc.setDrawColor(191, 219, 254);
               doc.setFillColor(239, 246, 255);
-              doc.roundedRect(margin + 6, yy - 4.2, contentWidth - 12, 5.6, 1.6, 1.6, "FD");
+              doc.roundedRect(x, chipY - 4.4, chipW, 5.8, 1.7, 1.7, "FD");
               doc.setFont("helvetica", "bold");
-              doc.setFontSize(7.0);
+              doc.setFontSize(6.8);
               doc.setTextColor(0, 84, 180);
               if (typeof doc.textWithLink === "function") {
-                doc.textWithLink(label, margin + 9, yy, { url });
+                doc.textWithLink(label, x + 2.2, chipY, { url });
               } else {
-                doc.text(label, margin + 9, yy);
-                doc.link(margin + 9, yy - 3.8, Math.min(contentWidth - 20, label.length * 1.7), 4.5, { url });
+                doc.text(label, x + 2.2, chipY);
+                doc.link(x + 2.2, chipY - 3.8, Math.min(chipW - 4, label.length * 1.55), 4.5, { url });
               }
-              yy += 6.2;
             });
           } else {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.2);
+            doc.setFontSize(7.1);
             doc.setTextColor(100, 116, 139);
             doc.text("Ingen produktdokumenter valgt for visning i rapport.", margin + 6, yy);
           }
 
-          y += boxH + 5;
+          y += boxH + 4.5;
         };
         const addReportSummary = () => {
           const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
