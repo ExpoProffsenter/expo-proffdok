@@ -3,6 +3,7 @@
 // FASE 7 Deploy 3C: Avvikshistorikk i rapport/PDF med original avvikstekst og lukkekommentar.
 // FASE 7 Deploy 4C: Bedre luft/sideskift i PDF-sjekklister og korrigert QR-lenke til SINTEF.
 // FASE 7 Deploy 4D: Prosjektinfo i profesjonelle bokser og valgfri produktdokumentasjon i PDF.
+// FASE 7 Deploy 4F: Rapportdesign 2.0 med forside, bedre sideskift og bildegalleri.
 // FASE 7 Deploy 4E: Autolagring av sjekklistestatus og automatisk hopp til neste sjekkpunkt.
 // FASE 7 Deploy 4D: Profesjonell prosjektinfo i PDF og rapportvalg for produktdokumentasjon.
 // FASE 7 Deploy 4C: Rapportluft, bedre sideskift og korrigerte SINTEF QR-lenker.
@@ -2500,6 +2501,58 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           doc.line(margin, y, pageWidth - margin, y);
           y += 7;
         };
+        const addSectionPageBreak = (title) => {
+          if (y > 24) {
+            doc.addPage();
+            y = 16;
+          }
+          addSectionTitle(title);
+        };
+        const addCoverPage = async () => {
+          const generatedAt = new Date().toLocaleString("no-NO");
+          doc.setFillColor(248, 250, 252);
+          doc.rect(0, 0, pageWidth, pageHeight, "F");
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(10, 10, pageWidth - 20, pageHeight - 26, 4, 4, "F");
+          if (company.logoUrl) {
+            try { await addImageFromUrl(company.logoUrl, ""); } catch (e) {}
+            y = 36;
+          }
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(22);
+          doc.setTextColor(12, 42, 82);
+          doc.text("FDV-RAPPORT", pageWidth / 2, 58, { align: "center" });
+          doc.setFontSize(15);
+          doc.text("PROSJEKTDOKUMENTASJON", pageWidth / 2, 69, { align: "center" });
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(10);
+          doc.setTextColor(71, 85, 105);
+          doc.text(project.projectName || project.address || "Prosjekt", pageWidth / 2, 82, { align: "center" });
+          const cardY = 102;
+          const cardW = (contentWidth - 5) / 2;
+          drawInfoCardPdf(margin, cardY, cardW, 22, "Kunde", project.customer || "Ikke oppgitt");
+          drawInfoCardPdf(margin + cardW + 5, cardY, cardW, 22, "Adresse", [project.address, project.postnr, project.city].filter(Boolean).join(", "));
+          drawInfoCardPdf(margin, cardY + 27, cardW, 22, "Utførende firma", name || company.companyName || "Expo ProffDok");
+          drawInfoCardPdf(margin + cardW + 5, cardY + 27, cardW, 22, "Rapport generert", generatedAt);
+          const openDeviationTotal = getOpenDeviationCount(checklist);
+          doc.setDrawColor(...(openDeviationTotal ? [248, 113, 113] : [74, 222, 128]));
+          doc.setFillColor(...(openDeviationTotal ? [254, 242, 242] : [236, 253, 245]));
+          doc.roundedRect(margin, 170, contentWidth, 25, 3, 3, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(13);
+          doc.setTextColor(...(openDeviationTotal ? [153, 27, 27] : [6, 95, 70]));
+          doc.text(openDeviationTotal ? "KONTROLL MED ÅPNE AVVIK" : "KONTROLL DOKUMENTERT", margin + 6, 180);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(51, 65, 85);
+          doc.text(openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : "Prosjektet har ingen åpne avvik i rapportgrunnlaget.", margin + 6, 188);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(100, 116, 139);
+          doc.text("© 2026 Expo Proffsenter – Expo ProffDok", pageWidth / 2, pageHeight - 20, { align: "center" });
+          doc.addPage();
+          y = 16;
+        };
         const addSubTitle = (title) => {
           ensureSpace(8);
           doc.setFont("helvetica", "bold");
@@ -2799,6 +2852,78 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             if (caption) addParagraph(caption, { size: 8.2, lineHeight: 4 });
           } catch (error) {
             addParagraph(`Bilde kunne ikke bygges inn i PDF: ${cleanUrl}`, { size: 8.2, lineHeight: 4 });
+          }
+        };
+
+        const loadPdfImage = async (url) => {
+          const cleanUrl = normalizePdfUrl(url);
+          if (!cleanUrl) return null;
+          try {
+            const response = await fetch(cleanUrl, { mode: "cors" });
+            if (!response.ok) throw new Error("Bilde kunne ikke hentes.");
+            const blob = await response.blob();
+            const dataUrl = await blobToDataUrl(blob);
+            const info = await getImageInfo(dataUrl);
+            return { dataUrl, ...info, url: cleanUrl };
+          } catch (error) {
+            return { error: true, url: cleanUrl };
+          }
+        };
+        const drawImageGalleryCard = async (photo, x, yy, w, h) => {
+          doc.setDrawColor(214, 226, 236);
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(x, yy, w, h, 2.5, 2.5, "FD");
+          const caption = safeText(photo.comment || photo.name || "Bilde").slice(0, 80);
+          const image = await loadPdfImage(photo.url);
+          if (image && !image.error) {
+            const imageMaxW = w - 8;
+            const imageMaxH = h - 17;
+            let imgW = imageMaxW;
+            let imgH = imgW * (image.height / image.width);
+            if (imgH > imageMaxH) {
+              imgH = imageMaxH;
+              imgW = imgH * (image.width / image.height);
+            }
+            doc.addImage(image.dataUrl, undefined, x + 4, yy + 4, imgW, imgH);
+          } else {
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(x + 4, yy + 4, w - 8, h - 17, 2, 2, "F");
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.2);
+            doc.setTextColor(100, 116, 139);
+            doc.text(doc.splitTextToSize("Bilde kunne ikke bygges inn i PDF", w - 12), x + 6, yy + 14);
+          }
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7.5);
+          doc.setTextColor(15, 23, 42);
+          doc.text(doc.splitTextToSize(caption, w - 8).slice(0, 2), x + 4, yy + h - 8);
+        };
+        const addImageGalleryCategory = async (category, items = []) => {
+          if (!items.length) return;
+          if (y > pageHeight - 66) {
+            doc.addPage();
+            y = 16;
+          }
+          doc.setDrawColor(191, 219, 254);
+          doc.setFillColor(239, 246, 255);
+          doc.roundedRect(margin, y, contentWidth, 12, 2.5, 2.5, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10.5);
+          doc.setTextColor(12, 42, 82);
+          doc.text(safeText(category), margin + 5, y + 7.7);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7.4);
+          doc.setTextColor(71, 85, 105);
+          doc.text(`${items.length} bilde${items.length === 1 ? "" : "r"}`, pageWidth - margin - 5, y + 7.7, { align: "right" });
+          y += 17;
+          const gap = 5;
+          const cardW = (contentWidth - gap) / 2;
+          const cardH = 64;
+          for (let i = 0; i < items.length; i += 2) {
+            ensureSpace(cardH + 7);
+            await drawImageGalleryCard(items[i], margin, y, cardW, cardH);
+            if (items[i + 1]) await drawImageGalleryCard(items[i + 1], margin + cardW + gap, y, cardW, cardH);
+            y += cardH + 6;
           }
         };
 
@@ -3109,19 +3234,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawNoteBox("Takk for tilliten. Ta vare på garantidokumentet sammen med komplett FDV-rapport og øvrig prosjektdokumentasjon.");
           drawFooterBand("Bekreftelse");
         };
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.setTextColor(15, 23, 42);
-        doc.text("FDV-rapport / Prosjektdokumentasjon", margin, y);
-        y += 8;
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.text(new Date().toLocaleString("no-NO"), margin, y);
-        y += 8;
-
-        if (company.logoUrl) {
-          await addImageFromUrl(company.logoUrl, "");
-        }
+        await addCoverPage();
 
         addInfoGridSection("Firma", [
           ["Firma", name || company.companyName || "Expo ProffDok"],
@@ -3163,7 +3276,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ];
         addInfoGridSection("Prosjektering", prosjekteringEntries);
 
-        addSectionTitle("Produkter / FDV");
+        addSectionPageBreak("Produkter / FDV");
         const allProducts = [...selected || [], ...manualSelected || []];
         if (!allProducts.length) {
           addParagraph("Ingen produkter er valgt.");
@@ -3176,14 +3289,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         if (!surfaceEntries.length) addParagraph("Ingen overflater er fylt ut.");
         surfaceEntries.forEach(([k, v]) => addKeyValue(k, v));
 
-        addSectionTitle("Bildedokumentasjon");
+        addSectionPageBreak("Bildedokumentasjon");
         const photoCats = [...new Set((photos || []).map((photo) => photo.cat).filter(Boolean))];
         if (!photoCats.length) addParagraph("Ingen bilder er lagt til.");
         for (const cat of photoCats) {
-          addSubTitle(cat);
-          for (const photo of (photos || []).filter((item) => item.cat === cat)) {
-            await addImageFromUrl(photo.url, photo.comment || photo.name || "");
-          }
+          await addImageGalleryCategory(cat, (photos || []).filter((item) => item.cat === cat));
         }
 
         addSectionTitle("Fag, deler og utstyr");
@@ -3198,7 +3308,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           addDivider();
         }
 
-        addSectionTitle("Sjekkliste / utførte kontroller");
+        addSectionPageBreak("Sjekkliste / utførte kontroller");
         addParagraph("Kontrollpunktene under viser registrert status for prosjektet. Godkjente punkter er fremhevet for å gi en tydelig dokumentasjon av utført kontroll.", { size: 8.5, lineHeight: 4.3 });
         Object.entries(checklist || {}).forEach(([category, items]) => {
           const itemEntries = Object.entries(items || {});
