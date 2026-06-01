@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
+// FASE 7 Deploy 3C: Avvikshistorikk i rapport/PDF med original avvikstekst og lukkekommentar.
 // FASE 7 Deploy 3B: Mobiljustering av sjekklister, bilder og statusknapper uten logikkendringer.
 // FASE 7 Deploy 3: Profesjonelt garantibevis i PDF, arkiveringsvarsel og krav om nedlastet sluttrapport.
 // FASE 7 Deploy 2F: Garantipunkter flettet inn i riktig sjekklisteflyt, uten doble sjekkpunkter.
@@ -2748,7 +2749,21 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         });
         if (deviations.length) {
           addSectionTitle("Avviksliste");
-          deviations.forEach((d) => addParagraph(`${d.category} / ${d.item}: ${d.status === "Lukket avvik" ? "Avvik lukket ✅" : "Åpent avvik"}${d.comment ? " — " + d.comment : ""}${d.status === "Lukket avvik" ? `${d.closeComment ? " — Lukking: " + d.closeComment : ""}${d.closedBy ? " — Lukket av " + d.closedBy : ""}${d.closedAt ? " — " + new Date(d.closedAt).toLocaleString("no-NO") : ""}` : ""}`));
+          const openDeviationTotal = deviations.filter((d) => d.status === "Avvik").length;
+          const closedDeviationTotal = deviations.filter((d) => d.status === "Lukket avvik").length;
+          addParagraph(`Avviksoppsummering: ${openDeviationTotal} åpne avvik · ${closedDeviationTotal} lukkede avvik`, { bold: true });
+          deviations.forEach((d) => {
+            addSubTitle(`${d.status === "Lukket avvik" ? "✅ Lukket avvik" : "⚠️ Åpent avvik"} – ${d.category} / ${d.item}`);
+            if (d.comment) addKeyValue("Opprinnelig avvik", d.comment);
+            if (d.status === "Lukket avvik") {
+              addKeyValue("Utbedring / lukkekommentar", d.closeComment || "Lukket uten egen lukkekommentar");
+              addKeyValue("Lukket av", d.closedBy || "Ikke oppgitt");
+              addKeyValue("Lukket dato", d.closedAt ? new Date(d.closedAt).toLocaleString("no-NO") : "Ikke oppgitt");
+            } else if (!d.comment) {
+              addParagraph("Avvik registrert uten kommentar.");
+            }
+            addDivider();
+          });
         }
 
         if (tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0)) {
@@ -5372,6 +5387,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     });
     if (!rows.length) return null;
     const deviations = rows.filter((r) => r.status === "Avvik" || r.status === "Lukket avvik");
+    const openDeviationTotal = deviations.filter((r) => r.status === "Avvik").length;
+    const closedDeviationTotal = deviations.filter((r) => r.status === "Lukket avvik").length;
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekkliste" }),
       [...new Set(rows.map((r) => r.category))].map((category) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -5379,13 +5396,16 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         rows.filter((r) => r.category === category).map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistReportItem", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.item }),
-            " \u2014 ",
+            " — ",
             r.status || "Ikke vurdert"
           ] }),
-          r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: r.comment }),
+          r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.status === "Lukket avvik" ? "Opprinnelig avvik: " : "Kommentar: " }),
+            r.comment
+          ] }),
           r.status === "Lukket avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Avvik lukket: " }),
-            r.closeComment || "Lukket",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Utbedring / lukkekommentar: " }),
+            r.closeComment || "Lukket uten egen lukkekommentar",
             r.closedBy ? ` · Lukket av ${r.closedBy}` : "",
             r.closedAt ? ` · ${new Date(r.closedAt).toLocaleString("no-NO")}` : ""
           ] }),
@@ -5394,15 +5414,31 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ] }, category)),
       deviations.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Avviksliste" }),
-        deviations.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
-            r.category,
-            " / ",
-            r.item,
-            ":"
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Avviksoppsummering: " }),
+          `${openDeviationTotal} åpne avvik · ${closedDeviationTotal} lukkede avvik`
+        ] }),
+        deviations.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistReportItem", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+              r.status === "Lukket avvik" ? "✅ Lukket avvik" : "⚠️ Åpent avvik",
+              " – ",
+              r.category,
+              " / ",
+              r.item
+            ] })
           ] }),
-          " ",
-          r.status === "Lukket avvik" ? `✅ Lukket avvik – ${r.closeComment || r.comment || "Lukket"}${r.closedBy ? ` · Lukket av ${r.closedBy}` : ""}${r.closedAt ? ` · ${new Date(r.closedAt).toLocaleString("no-NO")}` : ""}` : r.comment || "Avvik registrert"
+          r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Opprinnelig avvik: " }),
+            r.comment
+          ] }),
+          r.status === "Lukket avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Utbedring / lukkekommentar: " }),
+            r.closeComment || "Lukket uten egen lukkekommentar",
+            r.closedBy ? ` · Lukket av ${r.closedBy}` : "",
+            r.closedAt ? ` · ${new Date(r.closedAt).toLocaleString("no-NO")}` : ""
+          ] }),
+          r.status !== "Lukket avvik" && !r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Avvik registrert uten kommentar." })
         ] }, "avvik-" + r.category + r.item))
       ] })
     ] });
