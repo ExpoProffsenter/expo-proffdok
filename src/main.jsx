@@ -3,6 +3,9 @@
 // FASE 7 Deploy 3C: Avvikshistorikk i rapport/PDF med original avvikstekst og lukkekommentar.
 // FASE 7 Deploy 4C: Bedre luft/sideskift i PDF-sjekklister og korrigert QR-lenke til SINTEF.
 // FASE 7 Deploy 4D: Prosjektinfo i profesjonelle bokser og valgfri produktdokumentasjon i PDF.
+// FASE 7 Deploy 4E: Autolagring av sjekklistestatus og automatisk hopp til neste sjekkpunkt.
+// FASE 7 Deploy 4D: Profesjonell prosjektinfo i PDF og rapportvalg for produktdokumentasjon.
+// FASE 7 Deploy 4C: Rapportluft, bedre sideskift og korrigerte SINTEF QR-lenker.
 // FASE 7 Deploy 4B: Profesjonell rapportvisning med fremhevede sjekkpunkter og rapportsammendrag.
 // FASE 7 Deploy 3D: Randomisert garantinummer og registrering i Supabase warranty_registry.
 // FASE 7 Deploy 3B: Mobiljustering av sjekklister, bilder og statusknapper uten logikkendringer.
@@ -516,6 +519,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [productMaster, setProductMaster] = (0, import_react.useState)([]);
     const [productMasterLoading, setProductMasterLoading] = (0, import_react.useState)(false);
     const [showOpenDeviationsOnly, setShowOpenDeviationsOnly] = (0, import_react.useState)(false);
+    const [checklistSaveStatus, setChecklistSaveStatus] = (0, import_react.useState)("");
     const latestStateRef = (0, import_react.useRef)({});
     const lastChatMessageCountRef = (0, import_react.useRef)(0);
     const lastChatRefreshAtRef = (0, import_react.useRef)(0);
@@ -3318,18 +3322,83 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO")
       }))]);
     };
-    const setChecklistValue = (category, item, patch) => {
-      setChecklist((prev) => ({
-        ...prev,
-        [category]: {
-          ...prev[category] || {},
-          [item]: {
-            ...prev[category]?.[item] || {},
-            ...patch
-          }
+    const autoSaveChecklistToCloud = async (nextChecklist) => {
+      if (!authUser || !projectId || isReadOnly) return;
+      setChecklistSaveStatus("Lagrer sjekkliste …");
+      try {
+        const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        if (fetchError || !existing) {
+          setChecklistSaveStatus("Kunne ikke autolagre sjekkliste");
+          console.warn("Autolagring sjekkliste feilet:", fetchError?.message || "Fant ikke prosjekt");
+          return;
         }
-      }));
+        if (rowIsLocked(existing) || isProjectLocked) {
+          setChecklistSaveStatus("Prosjektet er låst – ikke lagret");
+          return;
+        }
+        const existingData = dataFromRow(existing);
+        const snapshot = latestStateRef.current || {};
+        const cleanData = JSON.parse(JSON.stringify({
+          ...existingData,
+          company: snapshot.company || company,
+          user: snapshot.user || user,
+          project: { ...emptyProject(), ...existingData.project || {}, ...snapshot.project || project },
+          checked: snapshot.checked || checked,
+          productDocs: snapshot.productDocs || productDocs,
+          manualProducts: snapshot.manualProducts || manualProducts,
+          other: snapshot.other || other,
+          surf: snapshot.surf || surf,
+          photos: snapshot.photos || photos,
+          access: snapshot.access || access,
+          inst: snapshot.inst || inst,
+          files: snapshot.files || files,
+          checklist: nextChecklist,
+          tilbud: snapshot.tilbud || tilbud,
+          overtagelse: snapshot.overtagelse || overtagelse,
+          warranty: snapshot.warranty || warranty,
+          projectLog: snapshot.projectLog || projectLog,
+          internalNotes: snapshot.internalNotes || internalNotes
+        }));
+        const { error: updateError } = await supabase.from("projects").update({
+          data: cleanData,
+          title: (snapshot.project || project)?.projectName || (snapshot.project || project)?.address || existing.title || "Uten navn",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        }).eq("id", projectId);
+        if (updateError) {
+          setChecklistSaveStatus("Kunne ikke autolagre sjekkliste");
+          console.warn("Autolagring sjekkliste feilet:", updateError.message);
+          return;
+        }
+        latestStateRef.current = { ...snapshot, checklist: nextChecklist };
+        setChecklistSaveStatus(`Sjekkliste lagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+      } catch (error) {
+        console.warn("Autolagring sjekkliste feilet:", error);
+        setChecklistSaveStatus("Kunne ikke autolagre sjekkliste");
+      }
     };
+    const setChecklistValue = (category, item, patch, options = {}) => {
+      let nextChecklistSnapshot = null;
+      setChecklist((prev) => {
+        const nextChecklist = {
+          ...prev,
+          [category]: {
+            ...prev[category] || {},
+            [item]: {
+              ...prev[category]?.[item] || {},
+              ...patch
+            }
+          }
+        };
+        nextChecklistSnapshot = nextChecklist;
+        return nextChecklist;
+      });
+      if (options.autoSave) {
+        setTimeout(() => {
+          if (nextChecklistSnapshot) autoSaveChecklistToCloud(nextChecklistSnapshot);
+        }, 0);
+      }
+    };
+    const saveChecklistNow = () => autoSaveChecklistToCloud(checklist);
     const addChecklistPhoto = async (category, item, fl) => {
       const imgs = await uploadImages(fl, "sjekklister");
       if (!imgs.length) return;
@@ -3579,7 +3648,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 closedByName: user.name || authUser?.email || "Utførende",
                 showOpenDeviationsOnly,
                 setShowOpenDeviationsOnly,
-                warranty
+                warranty,
+                onSaveChecklistNow: saveChecklistNow,
+                checklistSaveStatus
               }
             )
           ] })
@@ -5650,7 +5721,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektleder har ikke lagt inn egen prosjektbeskrivelse ennå." })
     ] });
   }
-  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {} }) {
+  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, onSaveChecklistNow = null, checklistSaveStatus = "" }) {
     const activeChecklistTemplate = getActiveChecklistTemplate(warranty);
     const [openCategories, setOpenCategories] = import_react.default.useState(() => ({ [activeChecklistTemplate[0]?.category || ""]: true }));
     import_react.default.useEffect(() => {
@@ -5663,6 +5734,21 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     }, [showOpenDeviationsOnly, checklist]);
     const groupHasOpenDeviation = (group) => group.items.some((item) => checklist?.[group.category]?.[item]?.status === "Avvik");
     const visibleChecklistGroups = showOpenDeviationsOnly ? activeChecklistTemplate.filter(groupHasOpenDeviation) : activeChecklistTemplate;
+    const flatChecklistPoints = activeChecklistTemplate.flatMap((group) => (group.items || []).map((item) => ({ category: group.category, item, anchorId: checklistPointAnchor(group.category, item) })));
+    const scrollToNextChecklistPoint = (category, item) => {
+      const index = flatChecklistPoints.findIndex((point) => point.category === category && point.item === item);
+      const nextPoint = flatChecklistPoints[index + 1];
+      if (!nextPoint) return;
+      setOpenCategories((prev) => ({ ...prev, [nextPoint.category]: true }));
+      window.setTimeout(() => {
+        const el = document.getElementById(nextPoint.anchorId);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 140);
+    };
+    const handleStatusClick = (category, item, status) => {
+      setChecklistValue(category, item, { status }, { autoSave: true });
+      if (status !== "Avvik") scrollToNextChecklistPoint(category, item);
+    };
     const groupStats = (group) => {
       const total = group.items.length;
       const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
@@ -5753,7 +5839,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: collapseDone, children: "Vis det som gjenst\xE5r" }),
           totalStats.deviations > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setShowOpenDeviationsOnly && setShowOpenDeviationsOnly(!showOpenDeviationsOnly), children: showOpenDeviationsOnly ? "Vis alle punkter" : "Vis bare åpne avvik" })
         ] }),
-        showOpenDeviationsOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Viser bare sjekkpunkter med åpne avvik. Trykk ‘Vis alle punkter’ for normal sjekkliste." })
+        showOpenDeviationsOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Viser bare sjekkpunkter med åpne avvik. Trykk ‘Vis alle punkter’ for normal sjekkliste." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryActions", style: { marginTop: "10px" }, children: [
+          onSaveChecklistNow && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: onSaveChecklistNow, children: "Lagre sjekkliste nå" }),
+          checklistSaveStatus && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "note", children: checklistSaveStatus })
+        ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList checklistAccordion", children: visibleChecklistGroups.map((group) => {
         const stats = groupStats(group);
@@ -5799,7 +5889,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   {
                     type: "button",
                     className: value.status === status ? "" : "secondary",
-                    onClick: () => setChecklistValue(group.category, item, { status }),
+                    onClick: () => handleStatusClick(group.category, item, status),
                     children: status
                   },
                   status
