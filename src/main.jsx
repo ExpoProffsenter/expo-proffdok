@@ -1,5 +1,8 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
+// FASE 7 Deploy 2F: Garantipunkter flettet inn i riktig sjekklisteflyt, uten doble sjekkpunkter.
+// FASE 7 Deploy 2E: Redusert overlapp mellom generelle punkter og Sopro garantipunkter.
+// FASE 7 Deploy 2D: Garanti som prosjektoppsett og flyttet garanti-fane.
 // FASE 7 Deploy 2C: Tydelig merking av Sopro garantipunkter og egen garantifremdrift.
 // FASE 7 Deploy 2: Dynamiske Sopro-sjekklister koblet til garantimotor.
 // FASE 7 Deploy 1: Garantimodul og datamodell for 12 års dokumentert tetthetsgaranti.
@@ -307,10 +310,33 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       items: (group.items || []).filter((item) => !warrantyOverlapGenericItems.has(item))
     })).filter((group) => (group.items || []).length > 0);
   };
-  var getActiveChecklistTemplate = (warranty = {}) => dedupeChecklistTemplate([
-    ...getBaseChecklistTemplateForWarranty(warranty),
-    ...warranty?.enabled ? getSoproChecklistTemplate(warranty?.system) : []
-  ]);
+  var getActiveChecklistTemplate = (warranty = {}) => {
+    const baseTemplate = getBaseChecklistTemplateForWarranty(warranty);
+    const soproTemplate = warranty?.enabled ? getSoproChecklistTemplate(warranty?.system) : [];
+    if (!soproTemplate.length) return dedupeChecklistTemplate(baseTemplate);
+    const soproUnderlag = soproTemplate.filter((group) => /Underlag/i.test(group.category));
+    const soproMembran = soproTemplate.filter((group) => /Foliemembran|Membran/i.test(group.category));
+    const soproOverganger = soproTemplate.filter((group) => /Overganger|Rør og sluk|Sluk og tetthetskontroll/i.test(group.category));
+    const soproTetthet = soproTemplate.filter((group) => /Tetthetskontroll/i.test(group.category) && !/Sluk og tetthetskontroll/i.test(group.category));
+    const soproInserted = new Set();
+    const markInserted = (groups = []) => groups.filter((group) => {
+      if (!group || soproInserted.has(group.category)) return false;
+      soproInserted.add(group.category);
+      return true;
+    });
+    const result = [];
+    (baseTemplate || []).forEach((group) => {
+      result.push(group);
+      if (group.category === "Avretting / underlag") result.push(...markInserted(soproUnderlag));
+      if (group.category === "Membran / tetting") {
+        result.push(...markInserted(soproMembran));
+        result.push(...markInserted(soproOverganger));
+        result.push(...markInserted(soproTetthet));
+      }
+    });
+    result.push(...markInserted(soproTemplate));
+    return dedupeChecklistTemplate(result);
+  };
   var emptyWarranty = () => ({
     enabled: false,
     issued: false,
