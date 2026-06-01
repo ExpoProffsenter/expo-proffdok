@@ -4,6 +4,7 @@
 // FASE 7 Deploy 4C: Bedre luft/sideskift i PDF-sjekklister og korrigert QR-lenke til SINTEF.
 // FASE 7 Deploy 4D: Prosjektinfo i profesjonelle bokser og valgfri produktdokumentasjon i PDF.
 // FASE 7 Deploy 4F: Rapportdesign 2.0 med forside, bedre sideskift og bildegalleri.
+// FASE 7 Deploy 4G: PDF-bildefiks for SVG/BMP/ukjente bildeformater ved PDF-generering.
 // FASE 7 Deploy 4E: Autolagring av sjekklistestatus og automatisk hopp til neste sjekkpunkt.
 // FASE 7 Deploy 4D: Profesjonell prosjektinfo i PDF og rapportvalg for produktdokumentasjon.
 // FASE 7 Deploy 4C: Rapportluft, bedre sideskift og korrigerte SINTEF QR-lenker.
@@ -2825,10 +2826,22 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         });
         const getImageInfo = (dataUrl) => new Promise((resolve) => {
           const image = new window.Image();
-          image.onload = () => resolve({ width: image.width || 1, height: image.height || 1 });
-          image.onerror = () => resolve({ width: 1, height: 1 });
+          image.onload = () => resolve({ width: image.width || 1, height: image.height || 1, image });
+          image.onerror = () => resolve({ width: 1, height: 1, image: null });
           image.src = dataUrl;
         });
+        const normalizeImageForJsPdf = async (dataUrl) => {
+          const info = await getImageInfo(dataUrl);
+          if (!info.image) throw new Error("Bildeformat støttes ikke i PDF.");
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, info.width || 1);
+          canvas.height = Math.max(1, info.height || 1);
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(info.image, 0, 0, canvas.width, canvas.height);
+          return { dataUrl: canvas.toDataURL("image/png"), width: canvas.width, height: canvas.height, format: "PNG" };
+        };
         const addImageFromUrl = async (url, caption = "") => {
           const cleanUrl = normalizePdfUrl(url);
           if (!cleanUrl) return;
@@ -2836,8 +2849,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             const response = await fetch(cleanUrl, { mode: "cors" });
             if (!response.ok) throw new Error("Bilde kunne ikke hentes.");
             const blob = await response.blob();
-            const dataUrl = await blobToDataUrl(blob);
-            const info = await getImageInfo(dataUrl);
+            const rawDataUrl = await blobToDataUrl(blob);
+            const info = await normalizeImageForJsPdf(rawDataUrl);
             const maxW = Math.min(82, contentWidth);
             const maxH = 62;
             let w = maxW;
@@ -2847,7 +2860,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               w = h * (info.width / info.height);
             }
             ensureSpace(h + 12);
-            doc.addImage(dataUrl, undefined, margin, y, w, h);
+            doc.addImage(info.dataUrl, info.format, margin, y, w, h);
             y += h + 4;
             if (caption) addParagraph(caption, { size: 8.2, lineHeight: 4 });
           } catch (error) {
@@ -2862,9 +2875,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             const response = await fetch(cleanUrl, { mode: "cors" });
             if (!response.ok) throw new Error("Bilde kunne ikke hentes.");
             const blob = await response.blob();
-            const dataUrl = await blobToDataUrl(blob);
-            const info = await getImageInfo(dataUrl);
-            return { dataUrl, ...info, url: cleanUrl };
+            const rawDataUrl = await blobToDataUrl(blob);
+            const info = await normalizeImageForJsPdf(rawDataUrl);
+            return { ...info, url: cleanUrl };
           } catch (error) {
             return { error: true, url: cleanUrl };
           }
@@ -2884,7 +2897,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               imgH = imageMaxH;
               imgW = imgH * (image.width / image.height);
             }
-            doc.addImage(image.dataUrl, undefined, x + 4, yy + 4, imgW, imgH);
+            doc.addImage(image.dataUrl, image.format || "PNG", x + 4, yy + 4, imgW, imgH);
           } else {
             doc.setFillColor(248, 250, 252);
             doc.roundedRect(x + 4, yy + 4, w - 8, h - 17, 2, 2, "F");
@@ -2971,15 +2984,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               const response = await fetch(cleanUrl, { mode: "cors" });
               if (!response.ok) throw new Error("Kunne ikke hente bilde.");
               const blob = await response.blob();
-              const dataUrl = await blobToDataUrl(blob);
-              const info = await getImageInfo(dataUrl);
+              const rawDataUrl = await blobToDataUrl(blob);
+              const info = await normalizeImageForJsPdf(rawDataUrl);
               let w = maxW;
               let h = w * (info.height / info.width);
               if (h > maxH) {
                 h = maxH;
                 w = h * (info.width / info.height);
               }
-              doc.addImage(dataUrl, undefined, x, yy, w, h);
+              doc.addImage(info.dataUrl, info.format || "PNG", x, yy, w, h);
               return true;
             } catch (error) {
               return false;
