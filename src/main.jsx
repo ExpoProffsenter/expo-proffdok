@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 7 Deploy 5B: Rapportdesign Premium 2.0 – kompakte produktkort, bedre bildegaleri, skjult tom prosjekttilgang og beholdt funksjonalitet.
 // FASE 7 Deploy 5: Rapportdesign Premium – bilder uten filnavn, profesjonelle sjekkpunkter, overtagelsesboks og logo på garantibevis.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
 // FASE 7 Deploy 3C: Avvikshistorikk i rapport/PDF med original avvikstekst og lukkekommentar.
@@ -2783,55 +2784,65 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           const productName = product.item || product.name || "Uten produktnavn";
           const sectionName = product.section || "Annet produkt";
           const links = productReportDocumentOptions.filter((option) => shouldIncludeProductReportDoc(product, option));
-          const commentLines = product.comment ? doc.splitTextToSize(`Hvor brukt / kommentar: ${product.comment}`, contentWidth - 14) : [];
-          const boxH = Math.max(24, 18 + commentLines.length * 4 + Math.ceil(Math.max(links.length, 1) / 2) * 6.5);
-          ensureSpace(boxH + 7);
+          const commentLines = product.comment ? doc.splitTextToSize(`Kommentar: ${product.comment}`, contentWidth - 16) : [];
+          const chipRows = Math.max(1, links.length);
+          const nameLines = doc.splitTextToSize(safeText(productName), contentWidth - 16).slice(0, 2);
+          const boxH = Math.max(30, 23 + nameLines.length * 4.5 + commentLines.length * 3.8 + chipRows * 6.2);
+          ensureSpace(boxH + 6);
+
           doc.setDrawColor(214, 226, 236);
           doc.setFillColor(255, 255, 255);
-          doc.roundedRect(margin, y, contentWidth, boxH, 3, 3, "FD");
+          doc.roundedRect(margin, y, contentWidth, boxH, 3.2, 3.2, "FD");
+
           doc.setFillColor(248, 250, 252);
-          doc.roundedRect(margin + 3, y + 3, contentWidth - 6, 11, 2.5, 2.5, "F");
+          doc.roundedRect(margin + 3, y + 3, contentWidth - 6, 10, 2.4, 2.4, "F");
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(7.8);
+          doc.setFontSize(7.4);
           doc.setTextColor(20, 86, 160);
-          doc.text(safeText(sectionName), margin + 6, y + 10);
+          doc.text(doc.splitTextToSize(safeText(sectionName), contentWidth - 12).slice(0, 1), margin + 6, y + 9.4);
+
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.6);
+          doc.setFontSize(9.4);
           doc.setTextColor(15, 23, 42);
-          doc.text(doc.splitTextToSize(safeText(productName), contentWidth - 12).slice(0, 2), margin + 6, y + 19);
-          let yy = y + 25;
+          doc.text(nameLines, margin + 6, y + 18.5);
+
+          let yy = y + 18.5 + nameLines.length * 4.6 + 1;
           if (commentLines.length) {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.5);
+            doc.setFontSize(7.2);
             doc.setTextColor(71, 85, 105);
             doc.text(commentLines, margin + 6, yy);
-            yy += commentLines.length * 4 + 1;
+            yy += commentLines.length * 3.8 + 1.5;
           }
+
           if (links.length) {
-            links.forEach((option, index) => {
+            links.forEach((option) => {
               const url = normalizePdfUrl(product?.[option.field]);
               if (!url) return;
-              const colW = (contentWidth - 16) / 2;
-              const x = margin + 6 + (index % 2) * (colW + 4);
-              if (index > 0 && index % 2 === 0) yy += 6.5;
+              ensureSpace(7);
+              const label = `${option.label}: tilgjengelig`;
+              doc.setDrawColor(191, 219, 254);
+              doc.setFillColor(239, 246, 255);
+              doc.roundedRect(margin + 6, yy - 4.2, contentWidth - 12, 5.6, 1.6, 1.6, "FD");
               doc.setFont("helvetica", "bold");
-              doc.setFontSize(7.8);
+              doc.setFontSize(7.0);
               doc.setTextColor(0, 84, 180);
-              const linkLabel = `${option.label} tilgjengelig`;
               if (typeof doc.textWithLink === "function") {
-                doc.textWithLink(linkLabel, x, yy, { url });
+                doc.textWithLink(label, margin + 9, yy, { url });
               } else {
-                doc.text(linkLabel, x, yy);
-                doc.link(x, yy - 4, Math.min(colW, linkLabel.length * 2.1), 5, { url });
+                doc.text(label, margin + 9, yy);
+                doc.link(margin + 9, yy - 3.8, Math.min(contentWidth - 20, label.length * 1.7), 4.5, { url });
               }
+              yy += 6.2;
             });
           } else {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.5);
+            doc.setFontSize(7.2);
             doc.setTextColor(100, 116, 139);
             doc.text("Ingen produktdokumenter valgt for visning i rapport.", margin + 6, yy);
           }
-          y += boxH + 6;
+
+          y += boxH + 5;
         };
         const addReportSummary = () => {
           const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
@@ -3002,28 +3013,34 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.roundedRect(x, yy, w, h, 3, 3, "FD");
           const caption = safeText(photo.comment || photo._reportCaption || "Dokumentert bilde").slice(0, 80);
           const image = await loadPdfImage(photo.url);
+          const imageAreaX = x + 4;
+          const imageAreaY = yy + 4;
+          const imageAreaW = w - 8;
+          const imageAreaH = h - 14;
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(imageAreaX, imageAreaY, imageAreaW, imageAreaH, 2, 2, "F");
           if (image && !image.error) {
-            const imageMaxW = w - 8;
-            const imageMaxH = h - 18;
+            const imageMaxW = imageAreaW - 2;
+            const imageMaxH = imageAreaH - 2;
             let imgW = imageMaxW;
             let imgH = imgW * (image.height / image.width);
             if (imgH > imageMaxH) {
               imgH = imageMaxH;
               imgW = imgH * (image.width / image.height);
             }
-            doc.addImage(image.dataUrl, image.format || "PNG", x + 4, yy + 4, imgW, imgH);
+            const imgX = imageAreaX + (imageAreaW - imgW) / 2;
+            const imgY = imageAreaY + (imageAreaH - imgH) / 2;
+            doc.addImage(image.dataUrl, image.format || "PNG", imgX, imgY, imgW, imgH);
           } else {
-            doc.setFillColor(248, 250, 252);
-            doc.roundedRect(x + 4, yy + 4, w - 8, h - 18, 2, 2, "F");
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.2);
+            doc.setFontSize(7.0);
             doc.setTextColor(100, 116, 139);
-            doc.text(doc.splitTextToSize("Bilde kunne ikke bygges inn i PDF", w - 12), x + 6, yy + 14);
+            doc.text(doc.splitTextToSize("Bilde kunne ikke bygges inn i PDF", imageAreaW - 8), imageAreaX + 4, imageAreaY + 12);
           }
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(7.5);
+          doc.setFontSize(7.2);
           doc.setTextColor(15, 23, 42);
-          doc.text(doc.splitTextToSize(caption, w - 8).slice(0, 2), x + 4, yy + h - 8);
+          doc.text(doc.splitTextToSize(caption, w - 8).slice(0, 1), x + 4, yy + h - 4.8);
         };
         const addImageGalleryCategory = async (category, items = []) => {
           if (!items.length) return;
@@ -3045,7 +3062,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           y += 17;
           const gap = 5;
           const cardW = (contentWidth - gap) / 2;
-          const cardH = 64;
+          const cardH = 50;
           for (let i = 0; i < items.length; i += 2) {
             ensureSpace(cardH + 7);
             await drawImageGalleryCard({ ...items[i], _reportCaption: `${category} – bilde ${i + 1}` }, margin, y, cardW, cardH);
@@ -3520,9 +3537,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           addLink(file.name || "Åpne vedlegg", file.url);
         });
 
-        addSectionTitle("Prosjekttilgang");
-        if (!(access || []).length) addParagraph("Ingen ekstra prosjekttilganger er lagt til.");
-        (access || []).forEach((a) => addParagraph(`${a.name || a.email || "Ukjent"} — ${a.role || ""}`));
+        const visibleAccess = (access || []).filter((a) => hasValue(a?.name) || hasValue(a?.email));
+        if (visibleAccess.length) {
+          addSectionTitle("Prosjekttilgang");
+          visibleAccess.forEach((a) => addParagraph(`${a.name || a.email} — ${a.role || "Tilgang"}`));
+        }
 
         setPdfProgress("Oppretter garantidokument…", "Legger inn garantisertifikat, vilkår og QR-kode der garanti er aktivert.");
         await addWarrantyCertificatePages();
