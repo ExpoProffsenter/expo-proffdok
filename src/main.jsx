@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 7 Deploy 2C: Tydelig merking av Sopro garantipunkter og egen garantifremdrift.
 // FASE 7 Deploy 2: Dynamiske Sopro-sjekklister koblet til garantimotor.
 // FASE 7 Deploy 1: Garantimodul og datamodell for 12 års dokumentert tetthetsgaranti.
 // FASE 5 v2: klikkbar bildevisning i stor modal.
@@ -231,6 +232,37 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     ]
   };
   var getSoproChecklistTemplate = (systemId) => soproSystemChecklistTemplates[systemId] || [];
+  var isSoproWarrantyCategory = (category = "") => String(category || "").startsWith("Sopro ");
+  var isSoproWarrantyPoint = (category = "") => isSoproWarrantyCategory(category);
+  var checklistPointAnchor = (category = "", item = "") => {
+    const clean = `${category}-${item}`.toLowerCase().replace(/[åä]/g, "a").replace(/[øö]/g, "o").replace(/[æ]/g, "ae").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return `checkpunkt-${clean || "punkt"}`;
+  };
+  var getSoproWarrantyPointStatus = (checklist = {}, systemId = "") => {
+    const template = getSoproChecklistTemplate(systemId);
+    const points = template.flatMap((group) => (group.items || []).map((item) => {
+      const value = checklist?.[group.category]?.[item] || {};
+      const done = hasValue(value?.status);
+      return {
+        category: group.category,
+        item,
+        status: value?.status || "",
+        done,
+        anchorId: checklistPointAnchor(group.category, item)
+      };
+    }));
+    const total = points.length;
+    const done = points.filter((point) => point.done).length;
+    const missing = points.filter((point) => !point.done);
+    return {
+      points,
+      missing,
+      total,
+      done,
+      complete: total > 0 && done >= total,
+      percent: total ? Math.round(done / total * 100) : 0
+    };
+  };
   var getActiveChecklistTemplate = (warranty = {}) => [
     ...checklistTemplate,
     ...getSoproChecklistTemplate(warranty?.system)
@@ -548,12 +580,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         return sum + (group.items || []).filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
       }, 0);
       const checklistComplete = checklistTotal > 0 && checklistDone >= checklistTotal;
+      const systemPointStatus = getSoproWarrantyPointStatus(checklist, warranty?.system);
       const systemChecklistTemplate = getSoproChecklistTemplate(warranty?.system);
-      const systemChecklistTotal = systemChecklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
-      const systemChecklistDone = systemChecklistTemplate.reduce((sum, group) => {
-        return sum + (group.items || []).filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
-      }, 0);
-      const systemChecklistComplete = !approvedSoproSystemSelected ? false : systemChecklistTotal > 0 && systemChecklistDone >= systemChecklistTotal;
+      const systemChecklistTotal = systemPointStatus.total;
+      const systemChecklistDone = systemPointStatus.done;
+      const systemChecklistComplete = !approvedSoproSystemSelected ? false : systemPointStatus.complete;
       const hasPhotos = (photos || []).some((photo) => hasValue(photo?.url));
       const missing = [];
       if (!overtagelseSigned) missing.push("Overtagelse må være aktivert og signert av både utførende og kunde.");
@@ -571,6 +602,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         systemChecklistTotal,
         systemChecklistDone,
         systemChecklistComplete,
+        systemChecklistPercent: systemPointStatus.percent,
+        missingSystemChecklistPoints: systemPointStatus.missing,
+        systemChecklistPoints: systemPointStatus.points,
         hasPhotos,
         approvedSoproSystemSelected,
         selectedSystem,
@@ -3364,6 +3398,16 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       .checklistPoint-done { border-color:#bbf7d0; }
       .checklistPointTitle { display:flex; flex-direction:column; gap:3px; min-width:0; }
       .checklistPointTitle small { color:#64748b; font-weight:700; }
+      .checklistWarrantyPoint { border-color:#bfdbfe; background:#eff6ff; }
+      .checklistWarrantyPoint.checklistPoint-done { border-color:#93c5fd; background:#eff6ff; }
+      .warrantyPointBadge { display:inline-flex; align-items:center; width:max-content; gap:5px; padding:4px 8px; border-radius:999px; border:1px solid #bfdbfe; background:#dbeafe; color:#1e3a8a; font-size:11px; font-weight:900; letter-spacing:.02em; text-transform:uppercase; }
+      .warrantyProgressCard { border-color:#bfdbfe !important; background:#eff6ff !important; }
+      .warrantyProgress span { background:#1d4ed8 !important; }
+      .warrantyMissingList { margin-top:12px; }
+      .warrantyMissingButtons { display:grid; gap:8px; margin-top:8px; }
+      .warrantyJumpButton { justify-content:flex-start !important; text-align:left !important; white-space:normal !important; }
+      .checklistPointFocus { outline:4px solid #facc15; box-shadow:0 0 0 6px rgba(250,204,21,0.25); transition:outline .2s ease, box-shadow .2s ease; }
+
       @media screen and (max-width:700px) {
         .checklistSummaryCard { padding:12px !important; border-radius:16px !important; margin:10px 0 12px !important; }
         .checklistSummaryCard b { font-size:17px !important; }
@@ -3379,6 +3423,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         .checklistGroupBadge { font-size:11.5px !important; padding:5px 7px !important; }
         .checklistGroupBody { padding:0 10px 10px !important; gap:8px !important; }
         .checklistPoint { padding:10px !important; border-radius:15px !important; }
+        .warrantyPointBadge { font-size:10.5px !important; padding:4px 7px !important; }
+        .warrantyMissingButtons { gap:6px !important; }
+        .warrantyJumpButton { width:100% !important; }
+
         .checklistHeader { display:grid !important; gap:8px !important; }
         .checklistStatusButtons { display:grid !important; grid-template-columns:1fr 1fr 1fr !important; gap:6px !important; }
         .checklistStatusButtons button { width:100% !important; min-height:40px !important; padding:7px 4px !important; font-size:12.5px !important; }
@@ -4342,7 +4390,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] }, p.id);
           })
         ] }),
-        tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems }),
+        tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab }),
                 tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan administrator godkjenne brukere, vedlikeholde produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
@@ -4511,8 +4559,22 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   function Brand({ logo, name }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: "260px", height: "80px", overflow: "hidden", display: "flex", alignItems: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: logo ? logo : "/expo-logo.png", alt: name || "Expo Proffsenter", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) });
   }
-  function WarrantyPanel({ warranty, setWarranty, readiness, issueWarranty, systems }) {
+  function WarrantyPanel({ warranty, setWarranty, readiness, issueWarranty, systems, goToTab }) {
     const selectedSystem = systems.find((item) => item.id === warranty?.system);
+    const goToWarrantyPoint = (point) => {
+      if (!point) return;
+      if (typeof goToTab === "function") goToTab("sjekklister");
+      window.setTimeout(() => {
+        const el = document.getElementById(point.anchorId || checklistPointAnchor(point.category, point.item));
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("checklistPointFocus");
+          window.setTimeout(() => el.classList.remove("checklistPointFocus"), 2200);
+        } else {
+          alert("Gå til fanen Sjekklister og åpne riktig Sopro-kategori.");
+        }
+      }, 220);
+    };
     const updateSystem = (systemId) => {
       const system = systems.find((item) => item.id === systemId);
       setWarranty({
@@ -4541,16 +4603,23 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Garantiperiode", value: "12 år", onChange: () => {}, disabled: true }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Status", value: issued ? "Utstedt" : readiness?.ready ? "Klar til utstedelse" : "Ikke klar", onChange: () => {}, disabled: true })
         ] }),
-        selectedSystem && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Systemspesifikke Sopro-kontrollpunkter" }),
+        selectedSystem && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item warrantyProgressCard", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "🛡️ Garantipunkter for valgt Sopro-system" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
-            "Valgt system legger automatisk inn egne kontrollpunkter i fanen Sjekklister. Disse må fullføres før garantien kan utstedes. Status: ",
+            "Valgt system legger automatisk inn egne kontrollpunkter nederst i fanen Sjekklister. Punktene beholdes adskilt fra den generelle dokumentasjonen og merkes med 🛡️ Garantipunkt. Status: ",
             readiness?.systemChecklistDone || 0,
             " av ",
             readiness?.systemChecklistTotal || 0,
-            " punkter fullført."
+            " garantipunkter fullført · ",
+            readiness?.systemChecklistPercent || 0,
+            "%."
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: selectedSystem.id === "sopro-aeb-815" ? "Grunnlaget er Sopro AEB 815 foliemembran med SINTEF TG 20918." : "Grunnlaget er Sopro FDF 525/527 smøremembran med SINTEF TG 20987." })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistProgress warrantyProgress", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { width: `${readiness?.systemChecklistPercent || 0}%` } }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: selectedSystem.id === "sopro-aeb-815" ? "Grunnlaget er Sopro AEB 815 foliemembran med SINTEF TG 20918." : "Grunnlaget er Sopro FDF 525/527 smøremembran med SINTEF TG 20987." }),
+          (readiness?.missingSystemChecklistPoints || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "warrantyMissingList", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Manglende garantipunkter:" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "warrantyMissingButtons", children: readiness.missingSystemChecklistPoints.map((point) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary warrantyJumpButton", onClick: () => goToWarrantyPoint(point), children: `Gå til: ${point.item}` }, point.anchorId)) })
+          ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: readiness?.ready ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fecaca", background: "#fff7f7" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: readiness?.ready ? "Klar til garanti" : "Ikke klar til garanti" }),
@@ -4765,7 +4834,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "checklistGroupHeader", onClick: () => toggleCategory(group.category), "aria-expanded": isOpen, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "checklistGroupCaret", "aria-hidden": "true", children: isOpen ? "\u25BE" : "\u25B8" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "checklistGroupTitle", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: group.category }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+                isSoproWarrantyCategory(group.category) ? "🛡️ " : "",
+                group.category
+              ] }),
+              isSoproWarrantyCategory(group.category) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "12 ÅRS GARANTI" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                 stats.done,
                 "/",
@@ -4780,10 +4853,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.filter((item) => !showOpenDeviationsOnly || checklist?.[group.category]?.[item]?.status === "Avvik").map((item) => {
             const value = checklist[group.category]?.[item] || {};
             const pointTone = value.status === "Avvik" ? "avvik" : value.status === "Lukket avvik" ? "done" : value.status ? "done" : "missing";
-            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${pointTone}`, children: [
+            const warrantyPoint = isSoproWarrantyPoint(group.category);
+            const anchorId = checklistPointAnchor(group.category, item);
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { id: anchorId, className: `checklistPoint checklistPoint-${pointTone}${warrantyPoint ? " checklistWarrantyPoint" : ""}`, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistHeader", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistPointTitle", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item }),
+                  warrantyPoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "🛡️ Garantipunkt" }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                     value.status || "Ikke vurdert",
                     (value.photos || []).length > 0 ? ` \xB7 \u{1F4F7} ${(value.photos || []).length} bilder` : ""
