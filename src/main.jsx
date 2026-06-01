@@ -1,6 +1,7 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
 // FASE 7 Deploy 3C: Avvikshistorikk i rapport/PDF med original avvikstekst og lukkekommentar.
+// FASE 7 Deploy 4C: Bedre luft/sideskift i PDF-sjekklister og korrigert QR-lenke til SINTEF.
 // FASE 7 Deploy 4B: Profesjonell rapportvisning med fremhevede sjekkpunkter og rapportsammendrag.
 // FASE 7 Deploy 3D: Randomisert garantinummer og registrering i Supabase warranty_registry.
 // FASE 7 Deploy 3B: Mobiljustering av sjekklister, bilder og statusknapper uten logikkendringer.
@@ -158,8 +159,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     signKundeImage: ""
   });
   var soproWarrantySystems = [
-    { id: "sopro-aeb-815", label: "Sopro AEB 815 – SINTEF TG 20918", product: "Sopro AEB 815", sintefApproval: "SINTEF TG 20918", sintefUrl: "https://www.sintefcertification.no/Product/Index/20918" },
-    { id: "sopro-fdf-525-527", label: "Sopro FDF 525/527 – SINTEF TG 20987", product: "Sopro FDF 525/527", sintefApproval: "SINTEF TG 20987", sintefUrl: "https://www.sintefcertification.no/Product/Index/20987" }
+    { id: "sopro-aeb-815", label: "Sopro AEB 815 – SINTEF TG 20918", product: "Sopro AEB 815", sintefApproval: "SINTEF TG 20918", sintefUrl: "https://www.sintefcertification.no/Product/Index/11729" },
+    { id: "sopro-fdf-525-527", label: "Sopro FDF 525/527 – SINTEF TG 20987", product: "Sopro FDF 525/527", sintefApproval: "SINTEF TG 20987", sintefUrl: "https://www.sintefcertification.no/Product/Index/12275" }
   ];
   var warrantyArchiveNotice = "Viktig: Last alltid ned og lagre komplett PDF-rapport på egen maskin, server eller annet sikkert arkiv når prosjektet er ferdig. Expo ProffDok er en dokumentasjonsplattform, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata i hele garanti- eller byggets levetid.";
   var warrantyTermsText = [
@@ -2599,47 +2600,71 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           y += 26;
           addParagraph(`Produkter dokumentert: ${productTotal}. Lukkede avvik: ${closedDeviationTotal}. Rapporten bygger på registrerte produkter, bilder, sjekklister, avvikshistorikk og signert overtakelse der dette er registrert.`, { size: 8.5, lineHeight: 4.4 });
         };
+        const addChecklistCategoryTitle = (category, count = 0) => {
+          if (y > pageHeight - 54) {
+            doc.addPage();
+            y = 16;
+          } else {
+            y += 4;
+          }
+          ensureSpace(18);
+          doc.setDrawColor(191, 219, 254);
+          doc.setFillColor(239, 246, 255);
+          doc.roundedRect(margin, y, contentWidth, 12, 2.5, 2.5, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10.5);
+          doc.setTextColor(12, 42, 82);
+          doc.text(safeText(category), margin + 5, y + 7.7);
+          if (count) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.4);
+            doc.setTextColor(71, 85, 105);
+            doc.text(`${count} punkt`, pageWidth - margin - 5, y + 7.7, { align: "right" });
+          }
+          y += 17;
+        };
         const addChecklistStatusCard = (category, item, value = {}) => {
           const status = value?.status || "";
           const comment = value?.comment || "";
           const closeComment = value?.closeComment || "";
           const visual = statusVisual(status);
-          const textLines = doc.splitTextToSize(safeText(item), contentWidth - 48);
-          const commentLines = comment ? doc.splitTextToSize(`Kommentar: ${comment}`, contentWidth - 16) : [];
-          const closeLines = status === "Lukket avvik" && closeComment ? doc.splitTextToSize(`Lukket: ${closeComment}`, contentWidth - 16) : [];
-          const boxH = Math.max(13, 8 + textLines.length * 4.2 + commentLines.length * 3.8 + closeLines.length * 3.8);
-          ensureSpace(boxH + 3);
+          const textLines = doc.splitTextToSize(safeText(item), contentWidth - 54);
+          const commentLines = comment ? doc.splitTextToSize(`Kommentar: ${comment}`, contentWidth - 18) : [];
+          const closeLines = status === "Lukket avvik" && closeComment ? doc.splitTextToSize(`Lukket: ${closeComment}`, contentWidth - 18) : [];
+          const boxH = Math.max(16, 10 + textLines.length * 4.4 + commentLines.length * 4.0 + closeLines.length * 4.0);
+          ensureSpace(boxH + 7);
           doc.setDrawColor(...visual.border);
           doc.setFillColor(...visual.bg);
-          doc.roundedRect(margin, y, contentWidth, boxH, 2.5, 2.5, "FD");
+          doc.roundedRect(margin, y, contentWidth, boxH, 3, 3, "FD");
           doc.setDrawColor(...visual.border);
           doc.setFillColor(255, 255, 255);
-          doc.roundedRect(margin + 4, y + 4, 32, 7, 2, 2, "FD");
+          doc.roundedRect(margin + 5, y + 4.5, 34, 8, 2, 2, "FD");
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(6.8);
+          doc.setFontSize(7.0);
           doc.setTextColor(...visual.text);
-          doc.text(visual.label, margin + 20, y + 8.8, { align: "center" });
+          doc.text(visual.label, margin + 22, y + 9.7, { align: "center" });
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(8.7);
+          doc.setFontSize(9.0);
           doc.setTextColor(15, 23, 42);
-          doc.text(textLines, margin + 42, y + 7.5);
-          let yy = y + 7.5 + textLines.length * 4.2;
+          doc.text(textLines, margin + 45, y + 8.5);
+          let yy = y + 9 + textLines.length * 4.4;
           if (commentLines.length) {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.5);
+            doc.setFontSize(7.7);
             doc.setTextColor(71, 85, 105);
-            doc.text(commentLines, margin + 8, yy + 2);
-            yy += commentLines.length * 3.8;
+            doc.text(commentLines, margin + 9, yy + 2);
+            yy += commentLines.length * 4.0;
           }
           if (closeLines.length) {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.5);
+            doc.setFontSize(7.7);
             doc.setTextColor(6, 95, 70);
-            doc.text(closeLines, margin + 8, yy + 3);
+            doc.text(closeLines, margin + 9, yy + 3);
           }
-          y += boxH + 3;
+          y += boxH + 5;
         };
-        const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
+
+const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result);
           reader.onerror = reject;
@@ -3088,8 +3113,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         addSectionTitle("Sjekkliste / utførte kontroller");
         addParagraph("Kontrollpunktene under viser registrert status for prosjektet. Godkjente punkter er fremhevet for å gi en tydelig dokumentasjon av utført kontroll.", { size: 8.5, lineHeight: 4.3 });
         Object.entries(checklist || {}).forEach(([category, items]) => {
-          addSubTitle(category);
-          Object.entries(items || {}).forEach(([item, value]) => {
+          const itemEntries = Object.entries(items || {});
+          if (!itemEntries.length) return;
+          addChecklistCategoryTitle(category, itemEntries.length);
+          itemEntries.forEach(([item, value]) => {
             addChecklistStatusCard(category, item, value || {});
           });
         });
