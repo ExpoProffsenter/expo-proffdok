@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 7 Deploy 1: Garantimodul og datamodell for 12 års dokumentert tetthetsgaranti.
 // FASE 5 v2: klikkbar bildevisning i stor modal.
 // FASE 5 v1: prosjektinformasjon/beskrivelse + synlig prosjektinfo i delingslenker.
 // Admin: old FDV-register UI removed; Produktmaster is now the active admin document register.
@@ -145,6 +146,19 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     signUtf\u00F8rendeImage: "",
     signKundeImage: ""
   });
+  var soproWarrantySystems = [
+    { id: "sopro-aeb-815", label: "Sopro AEB 815 – SINTEF TG 20918", product: "Sopro AEB 815", sintefApproval: "SINTEF TG 20918" },
+    { id: "sopro-fdf-525-527", label: "Sopro FDF 525/527 – SINTEF TG 20987", product: "Sopro FDF 525/527", sintefApproval: "SINTEF TG 20987" }
+  ];
+  var emptyWarranty = () => ({
+    enabled: false,
+    issued: false,
+    issuedAt: null,
+    system: "",
+    sintefApproval: "",
+    durationYears: 12,
+    status: "draft"
+  });
   var emptyProject = () => ({
     responsible: "",
     projectName: "",
@@ -224,6 +238,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [checklist, setChecklist] = (0, import_react.useState)({});
     const [tilbud, setTilbud] = (0, import_react.useState)(emptyTilbud());
     const [overtagelse, setOvertagelse] = (0, import_react.useState)(emptyOvertagelse());
+    const [warranty, setWarranty] = (0, import_react.useState)(emptyWarranty());
     const [chatUploadFile, setChatUploadFile] = (0, import_react.useState)(null);
     const [customerChatUploadFile, setCustomerChatUploadFile] = (0, import_react.useState)(null);
     const [projectLog, setProjectLog] = (0, import_react.useState)(emptyProjectLog());
@@ -283,10 +298,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         checklist,
         tilbud,
         overtagelse,
+        warranty,
         projectLog,
         internalNotes
       };
-    }, [company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes]);
+    }, [company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes]);
     (0, import_react.useEffect)(() => {
       const savedEmail = window.localStorage.getItem("expoProffDokAuthEmail");
       if (savedEmail) setAuthEmail(savedEmail);
@@ -433,6 +449,54 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (!projectGuideStats.hasOvertagelse) items.push({ id: "overtagelse", label: "Registrer overtagelse når prosjektet er ferdig", tab: "overtagelse", tone: "neutral" });
       return items.slice(0, 5);
     }, [projectGuideStats]);
+    const warrantyReadiness = (0, import_react.useMemo)(() => {
+      const utførendeSigned = hasValue(overtagelse?.signUtførende) || hasValue(overtagelse?.signUtførendeImage);
+      const kundeSigned = hasValue(overtagelse?.signKunde) || hasValue(overtagelse?.signKundeImage);
+      const overtagelseSigned = !!overtagelse?.enabled && utførendeSigned && kundeSigned;
+      const openDeviationCount = getOpenDeviationCount(checklist);
+      const checklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
+      const checklistTotal = checklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
+      const checklistDone = checklistValues.filter((value) => hasValue(value?.status)).length;
+      const checklistComplete = checklistTotal > 0 && checklistDone >= checklistTotal;
+      const hasPhotos = (photos || []).some((photo) => hasValue(photo?.url));
+      const selectedSystem = soproWarrantySystems.find((item) => item.id === warranty?.system);
+      const approvedSoproSystemSelected = !!selectedSystem;
+      const missing = [];
+      if (!overtagelseSigned) missing.push("Overtagelse må være aktivert og signert av både utførende og kunde.");
+      if (openDeviationCount > 0) missing.push("Alle åpne avvik må lukkes før garanti kan utstedes.");
+      if (!checklistComplete) missing.push("Alle sjekklistepunkter må ha status.");
+      if (!hasPhotos) missing.push("Bildedokumentasjon må være lastet opp.");
+      if (!approvedSoproSystemSelected) missing.push("Godkjent Sopro-system må velges.");
+      return {
+        overtagelseSigned,
+        openDeviationCount,
+        checklistTotal,
+        checklistDone,
+        checklistComplete,
+        hasPhotos,
+        approvedSoproSystemSelected,
+        selectedSystem,
+        missing,
+        ready: missing.length === 0
+      };
+    }, [overtagelse, checklist, photos, warranty]);
+    const issueWarranty = () => {
+      if (!warranty?.enabled) return alert("Aktiver garantien først.");
+      if (!warrantyReadiness.ready) return alert("Garantien kan ikke utstedes ennå. Se listen over mangler.");
+      const selectedSystem = warrantyReadiness.selectedSystem;
+      setWarranty({
+        ...emptyWarranty(),
+        ...warranty,
+        enabled: true,
+        issued: true,
+        issuedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        system: selectedSystem?.id || warranty.system,
+        sintefApproval: selectedSystem?.sintefApproval || warranty.sintefApproval || "",
+        durationYears: 12,
+        status: "issued"
+      });
+      alert("✔ 12 års dokumentert tetthetsgaranti er markert som utstedt. Husk å lagre/oppdatere prosjektet.");
+    };
     const currentStatus = projectStatusInfo(project, overtagelse, projectGuideStats.openDeviationCount);
     const suggestedWorkflowStatus = projectGuideStats.openDeviationCount > 0 ? "Avvik åpent" : projectGuideStats.hasOvertagelse ? "Ferdigstilt" : projectGuideStats.productCount > 0 && projectGuideStats.photoCount > 0 && projectGuideStats.checklistDone > 0 ? "Klar for kunde" : projectGuideStats.hasProjectBasics ? "Pågår" : "Utkast";
     const openActiveDeviations = () => {
@@ -568,6 +632,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["chat", unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : totalChatCount > 0 ? `Chat (${totalChatCount})` : "Chat"],
       ["internt", "Interne notater"],
       ["prosjektliste", "Prosjektliste"],
+      ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
       ["rapport", "Rapport"],
       ...canUseAdminProjectSync ? [["admin", "Admin"]] : []
     ];
@@ -594,7 +659,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const separator = currentText.trim() ? "\n\n" : "";
       setProject({ ...project, projectDescription: `${currentText}${separator}${templateText}` });
     };
-    const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog, internalNotes });
+    const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes });
     const unpackData = (data, preserveDraft = false) => {
       setCompany(data.company || { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
       setUser(data.user || { name: "", email: "", role: "Eier / administrator" });
@@ -620,6 +685,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setChecklist(data.checklist || {});
       setTilbud(data.tilbud || emptyTilbud());
       setOvertagelse(data.overtagelse || emptyOvertagelse());
+      setWarranty({ ...emptyWarranty(), ...data.warranty || {} });
       const incomingLog = normalizeProjectLog(data.projectLog);
       setProjectLog((prev) => ({
         ...incomingLog,
@@ -810,7 +876,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
     }, [isReadOnly]);
     const createNewProject = () => {
-      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
       setProject(emptyProject());
       setChecked({});
@@ -825,6 +891,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setChecklist({});
       setTilbud(emptyTilbud());
       setOvertagelse(emptyOvertagelse());
+      setWarranty(emptyWarranty());
       setProjectLog(emptyProjectLog());
       setInternalNotes("");
       setProjectId(null);
@@ -1183,6 +1250,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         checklist,
         tilbud,
         overtagelse,
+        warranty,
         projectLog,
         internalNotes
       };
@@ -1202,6 +1270,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         checklist: snapshot.checklist,
         tilbud: snapshot.tilbud,
         overtagelse: snapshot.overtagelse,
+        warranty: snapshot.warranty || emptyWarranty(),
         projectLog: projectLogOverride,
         internalNotes: snapshot.internalNotes
       }));
@@ -1368,6 +1437,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         checklist,
         tilbud,
         overtagelse,
+        warranty,
         projectLog,
         internalNotes
       }));
@@ -1439,6 +1509,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         checklist,
         tilbud,
         overtagelse,
+        warranty,
         projectLog: cleanProjectLog,
         internalNotes
       }));
@@ -1513,6 +1584,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         checklist,
         tilbud,
         overtagelse,
+        warranty,
         projectLog,
         internalNotes
       }));
@@ -1632,6 +1704,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         checklist,
         tilbud,
         overtagelse: completedOvertagelse,
+        warranty,
         projectLog,
         internalNotes
       }));
@@ -1852,6 +1925,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             checklist,
             tilbud,
             overtagelse,
+            warranty,
             projectLog,
             internalNotes
           }));
@@ -4168,7 +4242,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] }, p.id);
           })
         ] }),
-        tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
+        tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems }),
+                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan administrator godkjenne brukere, vedlikeholde produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
@@ -4336,6 +4411,68 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   function Brand({ logo, name }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: "260px", height: "80px", overflow: "hidden", display: "flex", alignItems: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: logo ? logo : "/expo-logo.png", alt: name || "Expo Proffsenter", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) });
   }
+  function WarrantyPanel({ warranty, setWarranty, readiness, issueWarranty, systems }) {
+    const selectedSystem = systems.find((item) => item.id === warranty?.system);
+    const updateSystem = (systemId) => {
+      const system = systems.find((item) => item.id === systemId);
+      setWarranty({
+        ...emptyWarranty(),
+        ...warranty,
+        system: system?.id || "",
+        sintefApproval: system?.sintefApproval || "",
+        status: warranty?.issued ? "issued" : "draft"
+      });
+    };
+    const enabled = !!warranty?.enabled;
+    const issued = !!warranty?.issued;
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "12 års dokumentert tetthetsgaranti", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantien er valgfri og kan bare utstedes når overtagelse er signert, alle avvik er lukket, sjekklister er fullført, bildedokumentasjon er lastet opp og godkjent Sopro-system er valgt." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "10px" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 }, checked: enabled, onChange: (e) => setWarranty({ ...emptyWarranty(), ...warranty, enabled: e.target.checked, status: issued ? "issued" : "draft" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Aktiver 12 års dokumentert tetthetsgaranti for dette prosjektet" })
+        ] }),
+        !enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantien er ikke aktivert. Prosjektet kan fortsatt dokumenteres som vanlig uten garanti." })
+      ] }),
+      enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Godkjent Sopro-system", value: warranty?.system || "", options: ["", ...systems.map((item) => item.id)], optionLabels: { "": "Velg Sopro-system", ...Object.fromEntries(systems.map((item) => [item.id, item.label])) }, onChange: updateSystem }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "SINTEF Teknisk Godkjenning", value: selectedSystem?.sintefApproval || warranty?.sintefApproval || "", onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, sintefApproval: v }), disabled: true }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Garantiperiode", value: "12 år", onChange: () => {}, disabled: true }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Status", value: issued ? "Utstedt" : readiness?.ready ? "Klar til utstedelse" : "Ikke klar", onChange: () => {}, disabled: true })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: readiness?.ready ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fecaca", background: "#fff7f7" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: readiness?.ready ? "Klar til garanti" : "Ikke klar til garanti" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryBadges", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.overtagelseSigned ? "✅ Overtagelse signert" : "⚠️ Overtagelse mangler" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.openDeviationCount === 0 ? "✅ Ingen åpne avvik" : `⚠️ ${readiness?.openDeviationCount || 0} åpne avvik` }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.checklistComplete ? "✅ Sjekklister fullført" : `⚠️ ${readiness?.checklistDone || 0}/${readiness?.checklistTotal || 0} sjekklistepunkter` }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.hasPhotos ? "✅ Bilder lastet opp" : "⚠️ Bilder mangler" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.approvedSoproSystemSelected ? "✅ Sopro-system valgt" : "⚠️ Sopro-system mangler" })
+          ] }),
+          (readiness?.missing || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "12px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Mangler før garanti kan utstedes:" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", { children: readiness.missing.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: item }, item)) })
+          ] }),
+          issued && warranty?.issuedAt && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "Garantien er markert som utstedt ",
+            new Date(warranty.issuedAt).toLocaleString("no-NO"),
+            "."
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Grunnlag for garantien" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Garantien bygger på dokumentert utførelse med valgt Sopro-system, fullførte sjekklister, lukket avvikshåndtering, bildedokumentasjon og signert overtagelse. Garantibevis og garantivilkår lages i senere deploy med egne formuleringer for Expo ProffDok." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "PDF og garantibevis endres ikke i Deploy 1. Dette er bevisst for å bevare eksisterende PDF-funksjonalitet." })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready, onClick: issueWarranty, children: issued ? "Oppdater garantistatus" : "Utsted garanti" }),
+          issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setWarranty({ ...emptyWarranty(), ...warranty, issued: false, issuedAt: null, status: "draft" }), children: "Trekk tilbake utstedelse" })
+        ] })
+      ] })
+    ] });
+  }
+
   function Section({ title, icon, children }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h2", { children: [
@@ -4354,10 +4491,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   function Grid({ children }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "grid", children });
   }
-  function Input({ label, value, onChange, type = "text", onKeyDown, autoComplete }) {
+  function Input({ label, value, onChange, type = "text", onKeyDown, autoComplete, disabled = false }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type, value, autoComplete, onKeyDown, onChange: (e) => onChange(e.target.value) })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type, value, autoComplete, onKeyDown, disabled, onChange: (e) => !disabled && onChange(e.target.value) })
     ] });
   }
   function Textarea({ label, value, onChange }) {
@@ -4366,10 +4503,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { value, onChange: (e) => onChange(e.target.value) })
     ] });
   }
-  function Select({ label, value, onChange, options }) {
+  function Select({ label, value, onChange, options, optionLabels = {} }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value, onChange: (e) => onChange(e.target.value), children: options.map((o) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { children: o }, o)) })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value, onChange: (e) => onChange(e.target.value), children: options.map((o) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: o, children: optionLabels[o] || o }, o)) })
     ] });
   }
   function PhotoGrid({ photos, setPhotos }) {
