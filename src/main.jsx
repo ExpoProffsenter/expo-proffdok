@@ -5553,7 +5553,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }, p.id);
           })
         ] }),
-        tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked }),
+        tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
                 tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan administrator godkjenne brukere, vedlikeholde produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
@@ -5775,7 +5775,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     ] });
   }
 
-  function WarrantyPanel({ warranty, setWarranty, readiness, issueWarranty, systems, goToTab, project = {}, company = {}, name = "Expo ProffDok", overtagelse = {}, isProjectLocked = false }) {
+  function WarrantyPanel({ warranty, setWarranty, readiness, issueWarranty, systems, goToTab, project = {}, company = {}, name = "Expo ProffDok", overtagelse = {}, isProjectLocked = false, downloadClickablePdfReport = null }) {
     const selectedSystem = systems.find((item) => item.id === warranty?.system);
     const goToWarrantyPoint = (point) => {
       if (!point) return;
@@ -5912,7 +5912,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready || issued, onClick: issueWarranty, children: issued ? "✅ Garanti utstedt" : isProjectLocked ? "Utsted garanti i arkivert prosjekt" : "Utsted 12 års tetthetsgaranti" }),
-          issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadClickablePdfReport, children: "⬇ Last ned garantibevis / komplett PDF" }),
+          issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => { if (typeof downloadClickablePdfReport === "function") downloadClickablePdfReport(); else alert("PDF-funksjonen er ikke klar. Gå til Rapport-fanen og trykk Last ned PDF."); }, children: "⬇ Last ned garantibevis / komplett PDF" }),
           issued && !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setWarranty({ ...emptyWarranty(), ...warranty, issued: false, issuedAt: null, status: "draft" }), children: "Trekk tilbake utstedelse" })
         ] })
       ] })
