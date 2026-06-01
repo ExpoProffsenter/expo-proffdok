@@ -626,7 +626,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setProjects(data || []);
       if (notify) alert(`Prosjektliste oppdatert. Fant ${(data || []).length} prosjekt${(data || []).length === 1 ? "" : "er"}.`);
     };
-    const openProjectById = async (id, targetTab = "rapport") => {
+    const openProjectById = async (id, targetTab = "rapport", options = {}) => {
       const { data, error } = await supabase.from("projects").select("*").eq("id", id).single();
       if (error || !data) {
         console.error(error);
@@ -635,7 +635,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       unpackData(dataFromRow(data));
       setProjectId(data.id);
       setMobileCreatingProject(false);
+      setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
       setTab(targetTab);
+      if (options.showOpenDeviationsOnly) {
+        setTimeout(() => {
+          const checklistSection = document.querySelector(".activeDeviationFocus") || document.querySelector(".checklistAccordion");
+          if (checklistSection) checklistSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 350);
+      }
     };
     const refreshProjectFromCloud = async (silent = false, fullRefresh = false) => {
       if (!projectId) return;
@@ -4060,12 +4067,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                     " ",
                     listStatus.label
                   ] }),
-                  unreadForAdminInList > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content" }, children: [
+                  unreadForAdminInList > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => openProjectById(p.id, "chat"), style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content", minHeight: "auto", boxShadow: "none" }, children: [
                     "💬 ",
                     unreadForAdminInList,
                     " ulest"
                   ] }),
-                  openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content" }, children: [
+                  openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => openProjectById(p.id, "sjekklister", { showOpenDeviationsOnly: true }), style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content", minHeight: "auto", boxShadow: "none" }, children: [
                     "⚠️ ",
                     openDeviationCount,
                     " åpne avvik"
@@ -4083,10 +4090,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                 ] })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageCounts", style: { marginTop: "12px" }, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: ["📦 Produkter: ", productSummary.total] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", style: openDeviationCount > 0 ? { borderColor: "#fecaca", background: "#fef2f2", color: "#991b1b" } : void 0, children: ["⚠️ Åpne avvik: ", openDeviationCount] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: ["📷 Bilder: ", imageSummary.total] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", style: unreadForAdminInList > 0 ? { borderColor: "#fecaca", background: "#fef2f2", color: "#991b1b" } : void 0, children: ["💬 Ulest chat: ", unreadForAdminInList] })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "produkter"), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none" }, children: ["📦 Produkter: ", productSummary.total] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "sjekklister", { showOpenDeviationsOnly: openDeviationCount > 0 }), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none", ...(openDeviationCount > 0 ? { borderColor: "#fecaca", background: "#fef2f2", color: "#991b1b" } : {}) }, children: ["⚠️ Åpne avvik: ", openDeviationCount] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "bilder"), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none" }, children: ["📷 Bilder: ", imageSummary.total] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "projectMiniBadge", onClick: () => openProjectById(p.id, "chat"), style: { cursor: "pointer", minHeight: "auto", boxShadow: "none", ...(unreadForAdminInList > 0 ? { borderColor: "#fecaca", background: "#fef2f2", color: "#991b1b" } : {}) }, children: ["💬 Ulest chat: ", unreadForAdminInList] })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListMetaCards", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
@@ -4122,6 +4129,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListActions projectListActionsV2", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => openProjectById(p.id, "prosjekt"), children: "📂 Åpne" }),
+                openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => openProjectById(p.id, "sjekklister", { showOpenDeviationsOnly: true }), children: ["⚠️ Avvik (", openDeviationCount, ")"] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "produkter"), children: "📦 Produkter" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "bilder"), children: "📷 Bilder" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "sjekklister"), children: "✅ Sjekklister" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => openProjectById(p.id, "rapport"), children: "📄 Rapport" }),
