@@ -455,6 +455,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         const messages = listLog.messages || [];
         const unreadForAdminInList = messages.filter((m) => m.role === "kunde" && (!listLog.lastReadByAdmin || (m.created || "") > listLog.lastReadByAdmin)).length;
         const latestMessage = messages.length ? messages[messages.length - 1] : null;
+        const openDeviationCount = getOpenDeviationCount(data.checklist);
+        const checkedProductCount = Object.values(data.checked || {}).filter(Boolean).length;
+        const manualProductCount = Object.values(normalizeManualProductsBySection(data.manualProducts || {})).flat().filter((p) => hasValue(p?.name) || hasValue(p?.fdvUrl) || hasValue(p?.comment)).length;
+        const productSummary = {
+          total: checkedProductCount + manualProductCount,
+          standard: checkedProductCount,
+          manual: manualProductCount
+        };
         const photoImages = Array.isArray(data.photos) ? data.photos.filter((photo) => photo?.url).map((photo) => ({
           url: photo.url,
           label: photo.cat || photo.name || "Prosjektbilde",
@@ -507,7 +515,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           listProject.customerPhone,
           listProject.responsible
         ].filter(Boolean).join(" ").toLowerCase();
-        return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, searchable };
+        return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, searchable };
       });
     }, [projects]);
     const filteredProjectListRows = (0, import_react.useMemo)(() => {
@@ -4030,7 +4038,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           ] }),
           projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter hentet ennå. Trykk Oppdater." }),
           projects.length > 0 && filteredProjectListRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter matcher søket eller filteret." }),
-          filteredProjectListRows.map(({ row: p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary }) => {
+          filteredProjectListRows.map(({ row: p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary }) => {
             const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(", ");
             const updatedLabel = p.updated_at || p.created_at ? new Date(p.updated_at || p.created_at).toLocaleString("no-NO") : "Ukjent";
             const latestChatLabel = latestMessage?.created ? new Date(latestMessage.created).toLocaleString("no-NO") : "Ingen meldinger";
@@ -4057,12 +4065,28 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
                     unreadForAdminInList,
                     " ulest"
                   ] }),
+                  openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content" }, children: [
+                    "⚠️ ",
+                    openDeviationCount,
+                    " åpne avvik"
+                  ] }),
+                  productSummary.total > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
+                    "📦 ",
+                    productSummary.total,
+                    " produkter"
+                  ] }),
                   imageSummary.total > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: [
                     "📷 ",
                     imageSummary.total,
                     " bilder"
                   ] })
                 ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectImageCounts", style: { marginTop: "12px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: ["📦 Produkter: ", productSummary.total] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", style: openDeviationCount > 0 ? { borderColor: "#fecaca", background: "#fef2f2", color: "#991b1b" } : void 0, children: ["⚠️ Åpne avvik: ", openDeviationCount] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", children: ["📷 Bilder: ", imageSummary.total] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", style: unreadForAdminInList > 0 ? { borderColor: "#fecaca", background: "#fef2f2", color: "#991b1b" } : void 0, children: ["💬 Ulest chat: ", unreadForAdminInList] })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListMetaCards", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
