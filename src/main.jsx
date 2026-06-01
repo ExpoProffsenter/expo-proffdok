@@ -286,8 +286,29 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     });
     return result;
   };
+  var warrantyOverlapGenericItems = new Set([
+    "Restfukt/RF er kontrollert iht. krav før videre belegning/membran",
+    "Riktig primer valgt",
+    "Primer påført",
+    "Tørketid fulgt",
+    "Membranløsning kontrollert",
+    "Tettebånd montert",
+    "Slukmansjett montert",
+    "Rørmansjetter montert",
+    "Trykktesting av membran",
+    "Minimum 5 cm overlapp på skjøter med tetningsduk/tettebånd er kontrollert",
+    "Riktig membrantykkelse på vegger og gulv iht. Sopro anvisninger og myndighetskrav er kontrollert"
+  ]);
+  var getBaseChecklistTemplateForWarranty = (warranty = {}) => {
+    const warrantyActive = !!warranty?.enabled && !!warranty?.system;
+    if (!warrantyActive) return checklistTemplate;
+    return checklistTemplate.map((group) => ({
+      ...group,
+      items: (group.items || []).filter((item) => !warrantyOverlapGenericItems.has(item))
+    })).filter((group) => (group.items || []).length > 0);
+  };
   var getActiveChecklistTemplate = (warranty = {}) => dedupeChecklistTemplate([
-    ...checklistTemplate,
+    ...getBaseChecklistTemplateForWarranty(warranty),
     ...warranty?.enabled ? getSoproChecklistTemplate(warranty?.system) : []
   ]);
   var emptyWarranty = () => ({
@@ -4683,7 +4704,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         selectedSystem && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item warrantyProgressCard", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "🛡️ Garantipunkter for valgt Sopro-system" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
-            "Valgt system legger automatisk inn egne kontrollpunkter nederst i fanen Sjekklister. Punktene beholdes adskilt fra den generelle dokumentasjonen og merkes med 🛡️ Garantipunkt. Status: ",
+            "Valgt system legger automatisk inn egne kontrollpunkter i fanen Sjekklister. Overlappende generelle membran-/primerpunkter skjules i visningen når garanti er aktivert, slik at samme kontroll ikke må vurderes to ganger. Punktene merkes med 🛡️ Garantipunkt. Status: ",
             readiness?.systemChecklistDone || 0,
             " av ",
             readiness?.systemChecklistTotal || 0,
