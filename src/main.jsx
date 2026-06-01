@@ -396,7 +396,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const productCount = (selected || []).length + (manualSelected || []).length;
       const photoCount = (photos || []).filter((photo) => photo?.url).length;
       const checklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
+      const checklistTotal = checklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
       const checklistDone = checklistValues.filter((value) => hasValue(value?.status)).length;
+      const checklistMissing = Math.max(0, checklistTotal - checklistDone);
       const checklistAvvik = checklistValues.filter((value) => value?.status === "Avvik").length;
       const openDeviationCount = checklistAvvik;
       const hasProjectBasics = [project.projectName, project.address, project.customer].some(hasValue);
@@ -404,7 +406,20 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const hasCustomerEmail = hasValue(project.customerEmail);
       const hasCustomerPhone = hasValue(project.customerPhone);
       const hasOvertagelse = projectHasOvertagelse(overtagelse);
-      return { productCount, photoCount, checklistDone, checklistAvvik, openDeviationCount, hasProjectBasics, hasDescription, hasCustomerEmail, hasCustomerPhone, hasOvertagelse };
+      const completionChecks = [
+        hasProjectBasics,
+        hasDescription,
+        productCount > 0,
+        photoCount > 0,
+        checklistDone > 0,
+        checklistMissing === 0 && checklistTotal > 0,
+        openDeviationCount === 0,
+        hasCustomerEmail,
+        hasCustomerPhone,
+        hasOvertagelse
+      ];
+      const completionPercent = Math.round(completionChecks.filter(Boolean).length / completionChecks.length * 100);
+      return { productCount, photoCount, checklistTotal, checklistDone, checklistMissing, checklistAvvik, openDeviationCount, hasProjectBasics, hasDescription, hasCustomerEmail, hasCustomerPhone, hasOvertagelse, completionPercent };
     }, [selected, manualSelected, photos, checklist, project, overtagelse]);
     const projectGuideItems = (0, import_react.useMemo)(() => {
       const items = [];
@@ -3557,9 +3572,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             "."
           ] })
         ] }),
-        projectId && !isProjectLocked && projectGuideItems.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Neste steg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette er en enkel sjekkliste som hjelper deg å få prosjektet klart for deling, rapport og overlevering." }),
+        projectId && !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hva mangler på prosjektet?", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Denne oversikten viser hva som er på plass og hva som bør kontrolleres før rapport, PDF og overtagelse." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideGrid", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: `${projectGuideStats.completionPercent}%` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "ferdigstillelse" })
+            ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectGuideStats.productCount }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "produkter valgt" })
@@ -3570,18 +3589,27 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectGuideStats.checklistDone }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: projectGuideStats.checklistAvvik > 0 ? `${projectGuideStats.checklistAvvik} avvik registrert` : "sjekkpunkter utfylt" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: projectGuideStats.checklistMissing > 0 ? `${projectGuideStats.checklistMissing} sjekkpunkt gjenstår` : "sjekklister ferdig" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectGuideStats.openDeviationCount }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: projectGuideStats.openDeviationCount > 0 ? "åpne avvik" : "ingen åpne avvik" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: projectGuideStats.hasOvertagelse ? "Ja" : "Nei" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "overtagelse registrert" })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "guideSteps", children: projectGuideItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `guideStep guideStep-${item.tone}`, children: [
+          projectGuideStats.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektet har åpne avvik. Lukk avvikene når tiltak er utført og kontrollert." }),
+          projectGuideItems.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "guideSteps", children: projectGuideItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `guideStep guideStep-${item.tone}`, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideStepText", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.label }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "Trykk for å gå direkte til riktig seksjon." })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab(item.tab), children: "Åpne" })
-          ] }, item.id)) })
+          ] }, item.id)) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektet ser komplett ut. Kontroller rapporten før prosjektet avsluttes." }),
+          projectGuideStats.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openActiveDeviations, children: "Se aktive avvik" })
         ] }),
-        projectId && !isProjectLocked && projectGuideItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Prosjektet ser klart ut", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Basisinfo, prosjektbeskrivelse, produkter, bilder, sjekkliste, kunde e-post og overtagelse er registrert. Kontroller rapporten før prosjektet avsluttes." }) }),
         tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Prosjekt- og kundeinfo", defaultOpen: !(hasValue(project.projectName) && hasValue(project.customer) && hasValue(project.customerEmail || project.customerPhone)), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Prosjektansvarlig", value: project.responsible, onChange: (v) => setProject({ ...project, responsible: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato", type: "date", value: project.date, onChange: (v) => setProject({ ...project, date: v }) }),
