@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
+// FASE 7 Deploy 3B: Mobiljustering av sjekklister, bilder og statusknapper uten logikkendringer.
 // FASE 7 Deploy 3: Profesjonelt garantibevis i PDF, arkiveringsvarsel og krav om nedlastet sluttrapport.
 // FASE 7 Deploy 2F: Garantipunkter flettet inn i riktig sjekklisteflyt, uten doble sjekkpunkter.
 // FASE 7 Deploy 2E: Redusert overlapp mellom generelle punkter og Sopro garantipunkter.
@@ -3839,7 +3840,157 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         .customerChatFocusNote { font-size:13px !important; line-height:1.35 !important; }
       }
 
-    ` }),
+    
+
+      /* FASE 7 Deploy 3B: mobiljustering av sjekklister */
+      @media screen and (max-width: 700px) {
+        html, body, #root {
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+        }
+
+        main,
+        section,
+        .checklistList,
+        .checklistAccordion,
+        .checklistGroup,
+        .checklistGroupBody,
+        .checklistPoint,
+        .checklistHeader,
+        .checklistPointTitle,
+        .checklistSummaryCard {
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          box-sizing: border-box !important;
+          overflow-x: hidden !important;
+        }
+
+        .checklistAccordion {
+          display: block !important;
+          padding: 0 !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+        }
+
+        .checklistGroup {
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+          padding: 0 !important;
+          border-radius: 16px !important;
+        }
+
+        .checklistGroupHeader {
+          width: 100% !important;
+          max-width: 100% !important;
+          display: grid !important;
+          grid-template-columns: auto minmax(0, 1fr) !important;
+          gap: 8px !important;
+          align-items: start !important;
+          text-align: left !important;
+          white-space: normal !important;
+          overflow: hidden !important;
+        }
+
+        .checklistGroupBadge {
+          grid-column: 2 !important;
+          justify-self: start !important;
+          max-width: 100% !important;
+          white-space: normal !important;
+        }
+
+        .checklistGroupTitle,
+        .checklistGroupTitle b,
+        .checklistGroupTitle small,
+        .checklistPointTitle,
+        .checklistPointTitle b,
+        .checklistPointTitle small,
+        .warrantyPointBadge {
+          max-width: 100% !important;
+          overflow-wrap: anywhere !important;
+          word-break: break-word !important;
+          white-space: normal !important;
+        }
+
+        .checklistGroupBody {
+          padding: 8px !important;
+        }
+
+        .checklistPoint {
+          padding: 12px !important;
+          margin: 10px 0 !important;
+          border-radius: 16px !important;
+        }
+
+        .checklistHeader {
+          display: block !important;
+        }
+
+        .checklistStatusButtons {
+          width: 100% !important;
+          max-width: 100% !important;
+          display: grid !important;
+          grid-template-columns: 1fr 1fr !important;
+          gap: 8px !important;
+          margin-top: 10px !important;
+          overflow: hidden !important;
+        }
+
+        .checklistStatusButtons button {
+          width: 100% !important;
+          min-width: 0 !important;
+          max-width: 100% !important;
+          white-space: normal !important;
+          overflow-wrap: anywhere !important;
+        }
+
+        .checklistStatusButtons button:nth-child(3) {
+          grid-column: 1 / -1 !important;
+        }
+
+        .checklistUpload {
+          width: 100% !important;
+          max-width: 100% !important;
+          display: flex !important;
+          justify-content: center !important;
+          text-align: center !important;
+          overflow: hidden !important;
+        }
+
+        .checklistPhotos,
+        .checklistPhotos .photo,
+        .checklistPhotos img,
+        .checklistPhotos small {
+          max-width: 100% !important;
+          min-width: 0 !important;
+          box-sizing: border-box !important;
+          overflow-wrap: anywhere !important;
+          word-break: break-word !important;
+        }
+
+        .checklistPhotos {
+          display: grid !important;
+          grid-template-columns: 1fr !important;
+          gap: 8px !important;
+          overflow-x: hidden !important;
+        }
+
+        .checklistPhotos .photo img {
+          width: 100% !important;
+          height: auto !important;
+          object-fit: contain !important;
+        }
+
+        .deviationCloseBox,
+        .deviationClosedBox {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          overflow-x: hidden !important;
+        }
+      }
+
+` }),
       lightboxImage && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "imageLightboxOverlay", onClick: (event) => {
         event.stopPropagation();
         setLightboxImage(null);
