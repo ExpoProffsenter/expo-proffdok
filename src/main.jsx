@@ -1,6 +1,7 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett, fane flyttet og ekstra deduplisering av garantipunkter.
 // FASE 7 Deploy 3C: Avvikshistorikk i rapport/PDF med original avvikstekst og lukkekommentar.
+// FASE 7 Deploy 3D: Randomisert garantinummer og registrering i Supabase warranty_registry.
 // FASE 7 Deploy 3B: Mobiljustering av sjekklister, bilder og statusknapper uten logikkendringer.
 // FASE 7 Deploy 3: Profesjonelt garantibevis i PDF, arkiveringsvarsel og krav om nedlastet sluttrapport.
 // FASE 7 Deploy 2F: Garantipunkter flettet inn i riktig sjekklisteflyt, uten doble sjekkpunkter.
@@ -171,12 +172,26 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget.",
     "Garantibeviset er gyldig sammen med komplett prosjektdokumentasjon lagret og/eller arkivert av utførende firma, inkludert bilder, sjekklister, produktdokumentasjon og signert overtakelse."
   ];
-  var makeWarrantyNumber = (projectId = "", project = {}) => {
-    const year = (/* @__PURE__ */ new Date()).getFullYear();
-    const seed = `${projectId || project?.projectName || project?.address || "prosjekt"}-${year}`;
-    let hash = 0;
-    for (let i = 0; i < seed.length; i += 1) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-    return `EPD-${year}-${String(hash % 1e6).padStart(6, "0")}`;
+  var randomWarrantyCode = (length = 6) => {
+    const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const values = new Uint32Array(length);
+    if (window?.crypto?.getRandomValues) {
+      window.crypto.getRandomValues(values);
+    } else {
+      for (let i = 0; i < length; i += 1) values[i] = Math.floor(Math.random() * 1e9);
+    }
+    return Array.from(values).map((value) => alphabet[value % alphabet.length]).join("");
+  };
+  var makeWarrantyNumber = () => {
+    const year = String((/* @__PURE__ */ new Date()).getFullYear()).slice(-2);
+    return `EPD-${year}-${randomWarrantyCode(6)}`;
+  };
+  var makeWarrantyValidUntil = (overtagelseDato = "") => {
+    const sourceDate = overtagelseDato || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    const d = new Date(sourceDate);
+    if (Number.isNaN(d.getTime())) return null;
+    d.setFullYear(d.getFullYear() + 12);
+    return d.toISOString().slice(0, 10);
   };
   var soproSystemChecklistTemplates = {
     "sopro-aeb-815": [
@@ -710,12 +725,46 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         ready: missing.length === 0
       };
     }, [overtagelse, checklist, photos, warranty]);
-    const issueWarranty = () => {
+    const issueWarranty = async () => {
       if (!warranty?.enabled) return alert("Aktiver garantien først.");
+      if (warranty?.issued && warranty?.guaranteeNumber) return alert(`Garantien er allerede utstedt med garantinummer ${warranty.guaranteeNumber}.`);
       if (!warrantyReadiness.ready) return alert("Garantien kan ikke utstedes ennå. Se listen over mangler.");
       const selectedSystem = warrantyReadiness.selectedSystem;
       const issuedAt = (/* @__PURE__ */ new Date()).toISOString();
-      const guaranteeNumber = warranty?.guaranteeNumber || makeWarrantyNumber(projectId, project);
+      const validUntil = makeWarrantyValidUntil(overtagelse?.dato || project?.date || "");
+      let guaranteeNumber = warranty?.guaranteeNumber || "";
+      let registrySaved = false;
+      let registryErrorMessage = "";
+      for (let attempt = 0; attempt < 10 && !registrySaved; attempt += 1) {
+        guaranteeNumber = guaranteeNumber || makeWarrantyNumber();
+        const { error } = await supabase.from("warranty_registry").insert({
+          guarantee_number: guaranteeNumber,
+          project_id: projectId || null,
+          project_name: project.projectName || project.address || "",
+          customer_name: project.customer || "",
+          property_address: [project.address, project.postnr, project.city].filter(Boolean).join(", "),
+          company_name: name || company.companyName || "",
+          company_orgnr: company.orgNumber || "",
+          sopro_system: selectedSystem?.product || "",
+          sintef_tg: selectedSystem?.sintefApproval || "",
+          warranty_period_years: 12,
+          issued_at: issuedAt,
+          valid_until: validUntil,
+          status: "issued",
+          pdf_generated: !!warranty?.reportGeneratedAt
+        });
+        if (!error) {
+          registrySaved = true;
+          break;
+        }
+        registryErrorMessage = error.message || String(error);
+        if (error.code === "23505" || /duplicate|unique/i.test(registryErrorMessage)) {
+          guaranteeNumber = "";
+          continue;
+        }
+        break;
+      }
+      if (!registrySaved) return alert("Kunne ikke registrere garantien i garantiregisteret. Garantien er ikke utstedt. Feil: " + registryErrorMessage);
       setWarranty({
         ...emptyWarranty(),
         ...warranty,
@@ -728,7 +777,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         guaranteeNumber,
         status: "issued"
       });
-      alert("✔ 12 års dokumentert tetthetsgaranti er markert som utstedt. Last ned endelig komplett PDF-rapport og lagre den på egen maskin/arkiv. Husk deretter å lagre/oppdatere prosjektet.");
+      alert(`✔ 12 års dokumentert tetthetsgaranti er registrert og utstedt med garantinummer ${guaranteeNumber}. Last ned endelig komplett PDF-rapport og lagre den på egen maskin/arkiv. Husk deretter å lagre/oppdatere prosjektet.`);
     };
     const currentStatus = projectStatusInfo(project, overtagelse, projectGuideStats.openDeviationCount);
     const suggestedWorkflowStatus = projectGuideStats.openDeviationCount > 0 ? "Avvik åpent" : projectGuideStats.hasOvertagelse ? "Ferdigstilt" : projectGuideStats.productCount > 0 && projectGuideStats.photoCount > 0 && projectGuideStats.checklistDone > 0 ? "Klar for kunde" : projectGuideStats.hasProjectBasics ? "Pågår" : "Utkast";
@@ -2532,7 +2581,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         const addWarrantyCertificatePages = async () => {
           if (!warranty?.enabled || !warrantyReadiness?.selectedSystem) return;
           const selectedSystem = warrantyReadiness.selectedSystem;
-          const guaranteeNumber = warranty?.guaranteeNumber || makeWarrantyNumber(projectId, project);
+          const guaranteeNumber = warranty?.guaranteeNumber || "Tildeles ved utstedelse";
           const overtagelseDate = overtagelse?.dato || project?.date || "";
           const issuedText = warranty?.issued && warranty?.issuedAt ? new Date(warranty.issuedAt).toLocaleString("no-NO") : "Ikke utstedt";
           const reportText = warranty?.reportGeneratedAt ? new Date(warranty.reportGeneratedAt).toLocaleString("no-NO") : "Genereres nå";
@@ -2817,7 +2866,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             ...prev,
             reportGeneratedAt,
             reportGeneratedFileName: generatedFileName,
-            guaranteeNumber: prev?.guaranteeNumber || makeWarrantyNumber(projectId, project),
+            guaranteeNumber: prev?.guaranteeNumber || "",
             status: prev?.issued ? "issued" : "report_generated"
           }));
           alert("PDF er generert. Husk å lagre filen på egen maskin/server. Garantimodulen er oppdatert med at komplett rapport er generert – husk å lagre/oppdatere prosjektet.");
