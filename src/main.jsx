@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 8 Deploy 5: Autolagring av sjekklister, garantibadge i prosjektliste og løftet garantisertifikat.
 // FASE 8 Deploy 4.1: Kundeportal viser ordinære sjekklister og garantipunkter separat uten dobbelttelling.
 // FASE 8 Deploy 4: Automatisk kundeutsendelse ved ferdigstillelse/låsing + manuell sendeknapp.
  // FASE 8 Deploy 3.1: Fikset sjekklistestatus i kundeportal – teller alle dokumenterte kontrollpunkter.
@@ -545,6 +546,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [productMasterLoading, setProductMasterLoading] = (0, import_react.useState)(false);
     const [showOpenDeviationsOnly, setShowOpenDeviationsOnly] = (0, import_react.useState)(false);
     const [checklistSaveStatus, setChecklistSaveStatus] = (0, import_react.useState)("");
+    const checklistAutoSaveTimerRef = (0, import_react.useRef)(null);
     const latestStateRef = (0, import_react.useRef)({});
     const lastChatMessageCountRef = (0, import_react.useRef)(0);
     const lastChatRefreshAtRef = (0, import_react.useRef)(0);
@@ -933,6 +935,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const projectListRows = (0, import_react.useMemo)(() => {
       return (projects || []).map((row) => {
         const data = row.data || {};
+        const listWarranty = { ...emptyWarranty(), ...data.warranty || {} };
         const listProject = projectFromRow(row, data.project || {});
         const listStatus = projectStatusInfo(listProject, data.overtagelse || {}, getOpenDeviationCount(data.checklist));
         const listLog = normalizeProjectLog(data.projectLog);
@@ -997,9 +1000,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           listProject.postnr,
           listProject.customerEmail,
           listProject.customerPhone,
-          listProject.responsible
+          listProject.responsible,
+          listWarranty?.enabled ? "garanti 12 år" : "",
+          listWarranty?.guaranteeNumber || ""
         ].filter(Boolean).join(" ").toLowerCase();
-        return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, searchable };
+        return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, listWarranty, searchable };
       });
     }, [projects]);
     const filteredProjectListRows = (0, import_react.useMemo)(() => {
@@ -3385,7 +3390,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 22, 4, 4, "F");
 
           const logoSource = company.logoUrl || "/expo-logo.png";
-          const logoOk = logoSource ? await addImageFit(logoSource, margin, 20, 48, 18) : false;
+          const logoOk = logoSource ? await addImageFit(logoSource, margin, 17, 60, 24) : false;
           if (!logoOk) {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(13);
@@ -3438,8 +3443,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawInfoCard(margin + cardW + cardGap, cardTop + 26, cardW, 22, "Garantinummer", guaranteeNumber);
           drawInfoCard(margin, cardTop + 52, cardW, 22, "Utstedelsesdato", issuedDateText);
           drawInfoCard(margin + cardW + cardGap, cardTop + 52, cardW, 22, "Gyldig til", warrantyValidTo || "12 år fra overtakelse");
+          drawInfoCard(margin, cardTop + 78, contentWidth, 22, "Godkjent membransystem", `${selectedSystem.product} · ${selectedSystem.sintefApproval}`);
 
-          const qrY = cardTop + 82;
+          const qrY = cardTop + 108;
           await addImageFit(qrUrl, margin + 2, qrY, 34, 34);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
@@ -3842,13 +3848,21 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           return;
         }
         latestStateRef.current = { ...snapshot, checklist: nextChecklist };
-        setChecklistSaveStatus(`Sjekkliste lagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+        setChecklistSaveStatus(`Autolagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
       } catch (error) {
         console.warn("Autolagring sjekkliste feilet:", error);
         setChecklistSaveStatus("Kunne ikke autolagre sjekkliste");
       }
     };
-    const setChecklistValue = (category, item, patch, options = {}) => {
+    const scheduleChecklistAutoSave = (nextChecklist, delay = 650) => {
+      if (!nextChecklist) return;
+      if (checklistAutoSaveTimerRef.current) window.clearTimeout(checklistAutoSaveTimerRef.current);
+      setChecklistSaveStatus("Autolagring venter …");
+      checklistAutoSaveTimerRef.current = window.setTimeout(() => {
+        autoSaveChecklistToCloud(nextChecklist);
+      }, delay);
+    };
+    const setChecklistValue = (category, item, patch, options = { autoSave: true }) => {
       let nextChecklistSnapshot = null;
       setChecklist((prev) => {
         const nextChecklist = {
@@ -3864,26 +3878,30 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         nextChecklistSnapshot = nextChecklist;
         return nextChecklist;
       });
-      if (options.autoSave) {
-        setTimeout(() => {
-          if (nextChecklistSnapshot) autoSaveChecklistToCloud(nextChecklistSnapshot);
-        }, 0);
+      if (options.autoSave !== false) {
+        scheduleChecklistAutoSave(nextChecklistSnapshot, options.delay || 650);
       }
     };
     const saveChecklistNow = () => autoSaveChecklistToCloud(checklist);
     const addChecklistPhoto = async (category, item, fl) => {
       const imgs = await uploadImages(fl, "sjekklister");
       if (!imgs.length) return;
-      setChecklist((prev) => ({
-        ...prev,
-        [category]: {
-          ...prev[category] || {},
-          [item]: {
-            ...prev[category]?.[item] || {},
-            photos: [...prev[category]?.[item]?.photos || [], ...imgs]
+      let nextChecklistSnapshot = null;
+      setChecklist((prev) => {
+        const nextChecklist = {
+          ...prev,
+          [category]: {
+            ...prev[category] || {},
+            [item]: {
+              ...prev[category]?.[item] || {},
+              photos: [...prev[category]?.[item]?.photos || [], ...imgs]
+            }
           }
-        }
-      }));
+        };
+        nextChecklistSnapshot = nextChecklist;
+        return nextChecklist;
+      });
+      scheduleChecklistAutoSave(nextChecklistSnapshot, 250);
     };
     const addFiles = (fl) => setFiles((p) => [...p, ...Array.from(fl || []).map((f) => ({
       id: uid(),
@@ -5823,7 +5841,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter hentet ennå. Trykk Oppdater." }),
           projects.length > 0 && filteredProjectListRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter matcher søket eller filteret." }),
-          filteredProjectListRows.map(({ row: p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary }) => {
+          filteredProjectListRows.map(({ row: p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, listWarranty }) => {
             const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(", ");
             const updatedLabel = p.updated_at || p.created_at ? new Date(p.updated_at || p.created_at).toLocaleString("no-NO") : "Ukjent";
             const latestChatLabel = latestMessage?.created ? new Date(latestMessage.created).toLocaleString("no-NO") : "Ingen meldinger";
@@ -5844,6 +5862,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                     listStatus.icon,
                     " ",
                     listStatus.label
+                  ] }),
+                  listWarranty?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", style: { borderColor: listWarranty?.issued ? "#86efac" : "#fde68a", background: listWarranty?.issued ? "#ecfdf5" : "#fffbeb", color: listWarranty?.issued ? "#065f46" : "#92400e", fontWeight: 800 }, children: [
+                    listWarranty?.issued ? "🛡️ Garanti 12 år" : "🛡️ Garanti aktiv",
+                    listWarranty?.guaranteeNumber ? ` · ${listWarranty.guaranteeNumber}` : ""
                   ] }),
                   unreadForAdminInList > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => openProjectById(p.id, "chat"), style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content", minHeight: "auto", boxShadow: "none" }, children: [
                     "💬 ",
@@ -6584,8 +6606,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }),
         showOpenDeviationsOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Viser bare sjekkpunkter med åpne avvik. Trykk ‘Vis alle punkter’ for normal sjekkliste." }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryActions", style: { marginTop: "10px" }, children: [
-          onSaveChecklistNow && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: onSaveChecklistNow, children: "Lagre sjekkliste nå" }),
-          checklistSaveStatus && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "note", children: checklistSaveStatus })
+          onSaveChecklistNow && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: onSaveChecklistNow, children: "Lagre nå" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "note", children: checklistSaveStatus || "Autolagring aktiv" })
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList checklistAccordion", children: visibleChecklistGroups.map((group) => {
