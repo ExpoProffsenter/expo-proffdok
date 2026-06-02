@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 1.3: Endret dokumentert tetthetsgaranti fra 12 til 15 år og samlet garantiperiode i konstant.
 // FASE 8 Deploy 5.1: Mobilforbedring for sjekklister + autolagring av bildedokumentasjon ved opplasting.
 // FASE 8 Deploy 5: Autolagring av sjekklister, garantibadge i prosjektliste og løftet garantisertifikat.
 // FASE 8 Deploy 4.1: Kundeportal viser ordinære sjekklister og garantipunkter separat uten dobbelttelling.
@@ -8,7 +9,7 @@
 // FASE 8 Deploy 3: Kundeportal Dashboard – startside for kundeportal med tydelig prosjektstatus, garanti, dokumentasjonsoversikt og hurtighandlinger.
 // FASE 8 Deploy 2: Kundeportal 2.0 – profesjonell kundevisning med oversikt, dokumentasjon, bilder, produkter, garanti og rapport.
 // FASE 8 Deploy 1.1: Garantivilkår bekreftes i Overtagelse + rettet garantisertifikat-layout.
-// FASE 8 Deploy 1: Brukerveiledning i app + garantivilkår 12 år med PDF, kvittering/signering og garantikrav.
+// FASE 8 Deploy 1: Brukerveiledning i app + garantivilkår 15 år med PDF, kvittering/signering og garantikrav.
 // FASE 7 Deploy 6: Rapportdesign Premium Final – profesjonelle sjekkpunkter, signaturfelt, garantibadge, større QR og dokumentbrikker.
 // FASE 7 Deploy 5B: Rapportdesign Premium 2.0 – kompakte produktkort, bedre bildegaleri, skjult tom prosjekttilgang og beholdt funksjonalitet.
 // FASE 7 Deploy 5C: Produkt/FDV i kompakte dokumentbrikker uten tekstbryting i PDF.
@@ -34,7 +35,7 @@
 // FASE 7 Deploy 2D: Garanti som prosjektoppsett og flyttet garanti-fane.
 // FASE 7 Deploy 2C: Tydelig merking av Sopro garantipunkter og egen garantifremdrift.
 // FASE 7 Deploy 2: Dynamiske Sopro-sjekklister koblet til garantimotor.
-// FASE 7 Deploy 1: Garantimodul og datamodell for 12 års dokumentert tetthetsgaranti.
+// FASE 7 Deploy 1: Garantimodul og datamodell for 15 års dokumentert tetthetsgaranti.
 // FASE 5 v2: klikkbar bildevisning i stor modal.
 // FASE 5 v1: prosjektinformasjon/beskrivelse + synlig prosjektinfo i delingslenker.
 // Admin: old FDV-register UI removed; Produktmaster is now the active admin document register.
@@ -55,6 +56,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
   );
   var uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+  var WARRANTY_YEARS = 15;
   var productSections = [
     { title: "Avretting / st\xF8peprodukter", items: ["Sopro VS582 Avretting", "Sopro 3.50 Avretting", "Sopro HF-S 563 Avretting", "Sopro FS 5\xAE Avretting", "Sopro RDS 960 - Ekspansjonsb\xE5nd", "Sopro Classic EM Hurtigst\xF8p", "Sopro RAM 3\xAE reparasjon og st\xF8pem\xF8rtel", "Sopro RS 462 reparasjonsm\xF8rtel", "Sopro Rapidur M5\xAE hurtigst\xF8p"] },
     { title: "Underlag / Plater", items: ["Kryssfiner / v\xE5tromsfiner", "Tetti Finerpanel 15mm", "Tetti Finerpanel 18mm", "Tetti V\xE5tromsplate 6mm", "Tetti V\xE5tromsplate 10mm", "Tetti V\xE5tromsplate 12mm", "Tetti V\xE5tromsplate 20mm", "Tetti V\xE5tromsplate 30mm", "Tetti V\xE5tromsplate 50mm", "Tetti Hj\xF8rnekasse", "Tetti Veggnisje", "Tetti kasse for vegghengt toalett", "Tetti monteringslim", "Soudal Fix All HT", "Soudal Fix All Turbo"] },
@@ -303,7 +305,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var adminGuidePdfPath = "/Expo_ProffDok_Adminveiledning.pdf";
   var warrantyTermsPdfFileName = "Expo_ProffDok_Garantivilkar_12_aar.pdf";
   var warrantyTermsText = [
-    "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok. Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse, forutsatt at arbeidene er utført i henhold til gjeldende krav, produsentens anvisninger og prosjektets dokumenterte sjekklister.",
+    "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok. Garantien gjelder tettheten i det dokumenterte membransystemet i 15 år fra dato for signert overtakelse, forutsatt at arbeidene er utført i henhold til gjeldende krav, produsentens anvisninger og prosjektets dokumenterte sjekklister.",
     "Garantien gjelder for den aktuelle boligen og følger eiendommen ved et eventuelt eierskifte innen garantiperioden. Ny eier overtar de samme rettigheter og forpliktelser som opprinnelig eier.",
     "Garantien utstedes av det utførende firmaet som er angitt i garantibeviset. Expo ProffDok fungerer som dokumentasjonsplattform og arkiv for prosjektets dokumentasjon, men er ikke part i garantiforholdet.",
     "Garantien forutsetter at prosjektet er dokumentert i Expo ProffDok, at nødvendige sjekklister er gjennomført, at bildedokumentasjon er registrert, at overtakelse er signert, at godkjent Sopro-system er benyttet og at senere arbeider ikke har skadet membransystemet.",
@@ -330,7 +332,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const sourceDate = overtagelseDato || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
     const d = new Date(sourceDate);
     if (Number.isNaN(d.getTime())) return null;
-    d.setFullYear(d.getFullYear() + 12);
+    d.setFullYear(d.getFullYear() + WARRANTY_YEARS);
     return d.toISOString().slice(0, 10);
   };
   var soproSystemChecklistTemplates = {
@@ -520,7 +522,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     issuedAt: null,
     system: "",
     sintefApproval: "",
-    durationYears: 12,
+    durationYears: WARRANTY_YEARS,
     status: "draft",
     guaranteeNumber: "",
     reportGeneratedAt: null,
@@ -871,7 +873,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const reportGenerated = !!warranty?.reportGeneratedAt;
       const termsAccepted = !!warranty?.termsAccepted || (!!warranty?.enabled && overtagelseSigned);
       const missing = [];
-      if (!termsAccepted) missing.push("Kunde må bekrefte mottak og aksept av garantivilkår 12 år.");
+      if (!termsAccepted) missing.push("Kunde må bekrefte mottak og aksept av garantivilkår 15 år.");
       if (!overtagelseSigned) missing.push("Overtagelse må være aktivert og signert av både utførende og kunde.");
       if (openDeviationCount > 0) missing.push("Alle åpne avvik må lukkes før garanti kan utstedes.");
       if (!checklistComplete) missing.push("Alle ordinære sjekklister og systemspesifikke Sopro-punkter må ha status.");
@@ -922,7 +924,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           company_orgnr: company.orgNumber || "",
           sopro_system: selectedSystem?.product || "",
           sintef_tg: selectedSystem?.sintefApproval || "",
-          warranty_period_years: 12,
+          warranty_period_years: WARRANTY_YEARS,
           issued_at: issuedAt,
           valid_until: validUntil,
           status: "issued",
@@ -948,7 +950,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         issuedAt,
         system: selectedSystem?.id || warranty.system,
         sintefApproval: selectedSystem?.sintefApproval || warranty.sintefApproval || "",
-        durationYears: 12,
+        durationYears: WARRANTY_YEARS,
         guaranteeNumber,
         status: "issued"
       };
@@ -1018,7 +1020,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (projectId && !projectSaved) {
         alert(`✔ Garantien er registrert i garantiregisteret med garantinummer ${guaranteeNumber}, men den ble ikke lagret tilbake på prosjektet automatisk. Feil: ${projectSaveError}. Lås opp prosjektet, trykk Oppdater prosjekt, og kontakt support hvis garantidokumentet fortsatt ikke vises.`);
       } else {
-        alert(`✔ 12 års dokumentert tetthetsgaranti er registrert, utstedt og lagret på prosjektet med garantinummer ${guaranteeNumber}. Den skal nå vises i Garanti-fanen og i PDF også når prosjektet er arkivert/låst.`);
+        alert(`✔ 15 års dokumentert tetthetsgaranti er registrert, utstedt og lagret på prosjektet med garantinummer ${guaranteeNumber}. Den skal nå vises i Garanti-fanen og i PDF også når prosjektet er arkivert/låst.`);
       }
     };
     const currentStatus = projectStatusInfo(project, overtagelse, projectGuideStats.openDeviationCount);
@@ -1118,7 +1120,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           listProject.customerEmail,
           listProject.customerPhone,
           listProject.responsible,
-          listWarranty?.enabled ? "garanti 12 år" : "",
+          listWarranty?.enabled ? "garanti 15 år" : "",
           listWarranty?.guaranteeNumber || ""
         ].filter(Boolean).join(" ").toLowerCase();
         return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, listWarranty, searchable };
@@ -2229,7 +2231,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const customerLink = makeProjectLink(projectId, "kunde");
       const projectTitle = project.projectName || project.address || "prosjektet";
       const warrantyLine = warranty?.issued
-        ? `\n• Garantibevis${warranty?.guaranteeNumber ? ` (${warranty.guaranteeNumber})` : ""}\n• Garantivilkår 12 år`
+        ? `\n• Garantibevis${warranty?.guaranteeNumber ? ` (${warranty.guaranteeNumber})` : ""}\n• Garantivilkår 15 år`
         : warranty?.enabled
           ? "\n• Garantiinformasjon oppdateres når garantien er utstedt"
           : "";
@@ -3141,7 +3143,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
           drawMetricCard(margin + (cardW + gap) * 3, y, cardW, 20, "Bilder", String(photoTotal), "blue");
           y += 26;
           addParagraph(`Produkter dokumentert: ${productTotal}. Lukkede avvik: ${closedDeviationTotal}. Rapporten bygger på registrerte produkter, bilder, sjekklister, avvikshistorikk og signert overtakelse der dette er registrert.`, { size: 8.5, lineHeight: 4.4 });
-          if (warranty?.issued) addParagraph(`✓ 12 års dokumentert tetthetsgaranti er utstedt. Garantinummer: ${warranty.guaranteeNumber || "Ikke oppgitt"}.`, { size: 8.5, lineHeight: 4.4, bold: true });
+          if (warranty?.issued) addParagraph(`✓ 15 års dokumentert tetthetsgaranti er utstedt. Garantinummer: ${warranty.guaranteeNumber || "Ikke oppgitt"}.`, { size: 8.5, lineHeight: 4.4, bold: true });
         };
         const addChecklistCategoryTitle = (category, count = 0) => {
           if (y > pageHeight - 54) {
@@ -3387,7 +3389,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             const sourceDate = overtagelseDate || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
             const d = new Date(sourceDate);
             if (Number.isNaN(d.getTime())) return "";
-            d.setFullYear(d.getFullYear() + 12);
+            d.setFullYear(d.getFullYear() + WARRANTY_YEARS);
             return d.toISOString().slice(0, 10);
           })();
           const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(selectedSystem.sintefUrl)}&size=180&margin=1`;
@@ -3559,7 +3561,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.setFont("helvetica", "bold");
           doc.setFontSize(24);
           doc.setTextColor(...darkBlue);
-          doc.text("12 ÅRS", pageWidth / 2, 82, { align: "center" });
+          doc.text("15 ÅRS", pageWidth / 2, 82, { align: "center" });
           doc.setFontSize(20);
           doc.text("DOKUMENTERT", pageWidth / 2, 94, { align: "center" });
           doc.text("TETTHETSGARANTI", pageWidth / 2, 106, { align: "center" });
@@ -3575,7 +3577,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawInfoCard(margin, cardTop + 26, cardW, 22, "Adresse", [project.address, project.postnr, project.city].filter(Boolean).join(", "));
           drawInfoCard(margin + cardW + cardGap, cardTop + 26, cardW, 22, "Garantinummer", guaranteeNumber);
           drawInfoCard(margin, cardTop + 52, cardW, 22, "Utstedelsesdato", issuedDateText);
-          drawInfoCard(margin + cardW + cardGap, cardTop + 52, cardW, 22, "Gyldig til", warrantyValidTo || "12 år fra overtakelse");
+          drawInfoCard(margin + cardW + cardGap, cardTop + 52, cardW, 22, "Gyldig til", warrantyValidTo || "15 år fra overtakelse");
           drawInfoCard(margin, cardTop + 78, contentWidth, 22, "Godkjent membransystem", `${selectedSystem.product} · ${selectedSystem.sintefApproval}`);
 
           const qrY = cardTop + 108;
@@ -3628,7 +3630,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.setTextColor(...darkBlue);
           doc.text("2. GARANTIVILKÅR", margin, y);
           y += 9;
-          drawTerm("Garantien", "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok. Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse, forutsatt at arbeidene er utført i henhold til gjeldende krav, produsentens anvisninger og prosjektets dokumenterte sjekklister.");
+          drawTerm("Garantien", "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok. Garantien gjelder tettheten i det dokumenterte membransystemet i 15 år fra dato for signert overtakelse, forutsatt at arbeidene er utført i henhold til gjeldende krav, produsentens anvisninger og prosjektets dokumenterte sjekklister.");
           drawTerm("Hvem garantien gjelder for", "Garantien gjelder for den aktuelle boligen og følger eiendommen ved et eventuelt eierskifte innen garantiperioden. Ny eier overtar de samme rettigheter og forpliktelser som opprinnelig eier.");
           drawTerm("Garantigiver", "Garantien utstedes av det utførende firmaet som er angitt i garantibeviset. Expo ProffDok fungerer som dokumentasjonsplattform og arkiv for prosjektets dokumentasjon, men er ikke part i garantiforholdet.");
           drawTerm("Forutsetninger for garantien", "Garantien forutsetter at prosjektet er dokumentert i Expo ProffDok, at nødvendige sjekklister er gjennomført, at bildedokumentasjon er registrert, at overtakelse er signert, at godkjent Sopro-system er benyttet og at senere arbeider ikke har skadet membransystemet.");
@@ -3855,7 +3857,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawInfoCardPdf(margin + signW + signGap, y, signW, 22, "Kunde", overtagelse.signKunde || project.customer || "Ikke oppgitt");
           y += 27;
           if (warranty?.enabled) {
-            drawInfoCardPdf(margin, y, contentWidth, 22, "Garantivilkår 12 år", warranty?.termsAccepted ? `Mottatt og akseptert av ${warranty?.termsAcceptedBy || warranty?.termsReceiptName || "kunde"}${warranty?.termsAcceptedAt ? " " + new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Ikke bekreftet");
+            drawInfoCardPdf(margin, y, contentWidth, 22, "Garantivilkår 15 år", warranty?.termsAccepted ? `Mottatt og akseptert av ${warranty?.termsAcceptedBy || warranty?.termsReceiptName || "kunde"}${warranty?.termsAcceptedAt ? " " + new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Ikke bekreftet");
             y += 30;
           } else {
             y += 3;
@@ -4511,7 +4513,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalWarrantyIssued = !!warranty?.issued;
       const customerPortalWarrantySystem = warrantyReadiness?.selectedSystem;
       const customerPortalWarrantyTermsAccepted = !!warrantyReadiness?.termsAccepted;
-      const customerPortalWarrantyStatusText = customerPortalWarrantyIssued ? `12 års dokumentert tetthetsgaranti er utstedt${warranty?.guaranteeNumber ? ` – ${warranty.guaranteeNumber}` : ""}.` : customerPortalWarrantyActive ? "Garanti er aktivert, men ikke utstedt ennå." : "Garanti er ikke aktivert for dette prosjektet.";
+      const customerPortalWarrantyStatusText = customerPortalWarrantyIssued ? `15 års dokumentert tetthetsgaranti er utstedt${warranty?.guaranteeNumber ? ` – ${warranty.guaranteeNumber}` : ""}.` : customerPortalWarrantyActive ? "Garanti er aktivert, men ikke utstedt ennå." : "Garanti er ikke aktivert for dette prosjektet.";
       const customerPortalDocumentationReady = customerPortalProductCount > 0 || customerPortalPhotoCount > 0 || customerPortalChecklistDone > 0 || !!overtagelse?.enabled || customerPortalWarrantyActive;
       const customerPortalCompletionItems = [
         { label: "Prosjektinformasjon", done: hasValue(project.projectName) || hasValue(project.address) || hasValue(project.customer) },
@@ -4523,7 +4525,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         { label: "Garanti", done: customerPortalWarrantyIssued || !customerPortalWarrantyActive }
       ];
       const customerPortalCompletionPercent = Math.round(customerPortalCompletionItems.filter((item) => item.done).length / customerPortalCompletionItems.length * 100);
-      const customerPortalPrimaryStatus = customerPortalWarrantyIssued ? "12 års garanti aktiv" : currentStatus.label;
+      const customerPortalPrimaryStatus = customerPortalWarrantyIssued ? "15 års garanti aktiv" : currentStatus.label;
       const customerPortalNextAction = customerPortalWarrantyIssued ? "Last ned komplett rapport eller se garantidokumentasjonen." : customerPortalWarrantyActive ? "Garanti er aktivert og oppdateres når alle krav er fullført." : "Se rapport, bilder og produktdokumentasjon.";
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
@@ -5902,7 +5904,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar / merknader fra sluttbefaring", value: overtagelse.kommentar || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, kommentar: v }) }),
             warranty?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: warranty?.termsAccepted ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fde68a", background: "#fffbeb" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📑 Garantivilkår 12 år" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📑 Garantivilkår 15 år" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantivilkår aksepteres automatisk når kunden signerer overtagelsen og prosjektet fullføres. Kunden trenger derfor ikke signere eller krysse av et eget sted." }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Mottaker", value: warranty?.termsReceiptName || overtagelse.signKunde || project.customer || "Kunde", disabled: true, onChange: () => {} }),
@@ -6101,7 +6103,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                     listStatus.label
                   ] }),
                   listWarranty?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "projectMiniBadge", style: { borderColor: listWarranty?.issued ? "#86efac" : "#fde68a", background: listWarranty?.issued ? "#ecfdf5" : "#fffbeb", color: listWarranty?.issued ? "#065f46" : "#92400e", fontWeight: 800 }, children: [
-                    listWarranty?.issued ? "🛡️ Garanti 12 år" : "🛡️ Garanti aktiv",
+                    listWarranty?.issued ? "🛡️ Garanti 15 år" : "🛡️ Garanti aktiv",
                     listWarranty?.guaranteeNumber ? ` · ${listWarranty.guaranteeNumber}` : ""
                   ] }),
                   unreadForAdminInList > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => openProjectById(p.id, "chat"), style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 800, border: "1px solid #fecaca", background: "#fef2f2", color: "#991b1b", width: "fit-content", minHeight: "auto", boxShadow: "none" }, children: [
@@ -6374,8 +6376,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       });
     };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item warrantyProjectSetup", style: { gridColumn: "1 / -1" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "12 års dokumentert tetthetsgaranti" }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg tidlig om prosjektet skal omfattes av 12 års dokumentert tetthetsgaranti. Hvis Ja velges aktiveres garantikravene og riktig Sopro-sjekkliste automatisk." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "15 års dokumentert tetthetsgaranti" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg tidlig om prosjektet skal omfattes av 15 års dokumentert tetthetsgaranti. Hvis Ja velges aktiveres garantikravene og riktig Sopro-sjekkliste automatisk." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "radio", name: "projectWarrantyChoice", checked: enabled, onChange: () => setEnabled(true), style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 } }),
@@ -6446,11 +6448,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         const addText = (text, opts = {}) => { doc.setFont("helvetica", opts.bold ? "bold" : "normal"); doc.setFontSize(opts.size || 9); doc.setTextColor(31, 41, 55); const lines = doc.splitTextToSize(String(text || ""), contentWidth); if (y + lines.length * 4.6 > pageHeight - 18) { doc.addPage(); y = 18; } doc.text(lines, margin, y); y += lines.length * 4.6 + 4; };
         const addSection = (heading, body) => { addTitle(heading, 12); addText(body); };
         doc.setFillColor(248, 250, 252); doc.rect(0, 0, pageWidth, pageHeight, "F"); doc.setFillColor(255,255,255); doc.roundedRect(9, 9, pageWidth-18, pageHeight-18, 4, 4, "F");
-        addTitle("Garantivilkår – 12 års dokumentert tetthetsgaranti", 18);
+        addTitle("Garantivilkår – 15 års dokumentert tetthetsgaranti", 18);
         addText(`Prosjekt: ${project?.projectName || project?.address || "Ikke oppgitt"}`, { bold: true });
         addText(`Kunde: ${project?.customer || "Ikke oppgitt"} · Utførende: ${name || company?.companyName || "Ikke oppgitt"}`);
         addText(`System: ${selectedSystem ? selectedSystem.product + " · " + selectedSystem.sintefApproval : warranty?.sintefApproval || "Ikke valgt"}`);
-        addSection("1. Garantien", "Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtagelse. Garantien gjelder kun for det arbeidet som er dokumentert i Expo ProffDok.");
+        addSection("1. Garantien", "Garantien gjelder tettheten i det dokumenterte membransystemet i 15 år fra dato for signert overtagelse. Garantien gjelder kun for det arbeidet som er dokumentert i Expo ProffDok.");
         addSection("2. Forutsetninger", "Garantien forutsetter at godkjent Sopro-system er valgt, sjekklister og garantipunkter er fullført, nødvendig bildedokumentasjon foreligger, alle avvik er lukket og komplett sluttrapport er generert og arkivert.");
         addSection("3. Hva garantien omfatter", "Garantien omfatter dokumenterte feil i membransystemets tetthet når feilen skyldes utførelse eller installasjon av det dokumenterte systemet.");
         addSection("4. Hva garantien ikke omfatter", "Garantien omfatter ikke mekanisk skade, påboring, inngrep i konstruksjonen, skader etter overtagelse, brann, naturhendelser, manglende vedlikehold eller arbeider utført av andre etter overtagelse.");
@@ -6461,7 +6463,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         addText(`Rolle: ${warranty?.termsReceiptRole || "Kunde"}     Dato: ${warranty?.termsAcceptedAt ? new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : "________________"}`);
         addText("Signatur: _______________________________________________");
         const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i += 1) { doc.setPage(i); doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(100,116,139); doc.text("Expo ProffDok · Garantivilkår 12 år", pageWidth / 2, pageHeight - 8, { align: "center" }); doc.text(`${i}/${pageCount}`, pageWidth - margin, pageHeight - 8, { align: "right" }); }
+        for (let i = 1; i <= pageCount; i += 1) { doc.setPage(i); doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(100,116,139); doc.text("Expo ProffDok · Garantivilkår 15 år", pageWidth / 2, pageHeight - 8, { align: "center" }); doc.text(`${i}/${pageCount}`, pageWidth - margin, pageHeight - 8, { align: "right" }); }
         doc.save(warrantyTermsPdfFileName);
       } catch (error) {
         alert("Kunne ikke lage garantivilkår-PDF: " + (error?.message || String(error)));
@@ -6472,12 +6474,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       if (!receiptName) return alert("Fyll inn navn på den som bekrefter mottak av garantivilkår.");
       setWarranty({ ...emptyWarranty(), ...warranty, termsAccepted: true, termsAcceptedAt: new Date().toISOString(), termsAcceptedBy: receiptName, termsReceiptName: receiptName, termsReceiptRole: warranty?.termsReceiptRole || "Kunde" });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "12 års dokumentert tetthetsgaranti", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "15 års dokumentert tetthetsgaranti", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantien er valgfri og kan bare utstedes når overtagelse er signert, alle avvik er lukket, sjekklister er fullført, bildedokumentasjon er lastet opp og godkjent Sopro-system er valgt." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "10px" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 }, checked: enabled, disabled: !warrantyCanEdit, onChange: (e) => setWarranty({ ...emptyWarranty(), ...warranty, enabled: e.target.checked, system: e.target.checked ? warranty?.system || "" : "", sintefApproval: e.target.checked ? warranty?.sintefApproval || "" : "", issued: e.target.checked ? issued : false, issuedAt: e.target.checked ? warranty?.issuedAt || null : null, status: e.target.checked ? issued ? "issued" : "draft" : "draft" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Aktiver 12 års dokumentert tetthetsgaranti for dette prosjektet" })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Aktiver 15 års dokumentert tetthetsgaranti for dette prosjektet" })
         ] }),
         !enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantien er ikke aktivert. Prosjektet kan fortsatt dokumenteres som vanlig uten garanti." })
       ] }),
@@ -6485,11 +6487,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Godkjent Sopro-system", value: warranty?.system || "", disabled: !warrantyCanEdit, options: ["", ...systems.map((item) => item.id)], optionLabels: { "": "Velg Sopro-system", ...Object.fromEntries(systems.map((item) => [item.id, item.label])) }, onChange: updateSystem }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "SINTEF Teknisk Godkjenning", value: selectedSystem?.sintefApproval || warranty?.sintefApproval || "", onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, sintefApproval: v }), disabled: true }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Garantiperiode", value: "12 år", onChange: () => {}, disabled: true }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Garantiperiode", value: "15 år", onChange: () => {}, disabled: true }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Status", value: warrantyStatusText, onChange: () => {}, disabled: true })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: warranty?.termsAccepted ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fde68a", background: "#fffbeb" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📑 Garantivilkår 12 år" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📑 Garantivilkår 15 år" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantivilkår aksepteres automatisk når kunden signerer overtagelsen og prosjektet fullføres. Kunden trenger ikke signere eller bekrefte vilkår et eget sted." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Mottaker", value: warranty?.termsReceiptName || overtagelse?.signKunde || project?.customer || "Kunde", disabled: true, onChange: () => {} }),
@@ -6518,7 +6520,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Gyldig til" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: warrantyValidUntil || "12 år fra overtakelse" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: warrantyValidUntil || "15 år fra overtakelse" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Prosjekt" }),
@@ -6590,7 +6592,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready || issued, onClick: issueWarranty, children: issued ? "✅ Garanti utstedt" : isProjectLocked ? "Utsted garanti i arkivert prosjekt" : "Utsted 12 års tetthetsgaranti" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready || issued, onClick: issueWarranty, children: issued ? "✅ Garanti utstedt" : isProjectLocked ? "Utsted garanti i arkivert prosjekt" : "Utsted 15 års tetthetsgaranti" }),
           issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => { if (typeof downloadClickablePdfReport === "function") downloadClickablePdfReport(); else alert("PDF-funksjonen er ikke klar. Gå til Rapport-fanen og trykk Last ned PDF."); }, children: "⬇ Last ned garantibevis / komplett PDF" }),
           issued && !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setWarranty({ ...emptyWarranty(), ...warranty, issued: false, issuedAt: null, status: "draft" }), children: "Trekk tilbake utstedelse" })
         ] })
@@ -6628,7 +6630,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Anbefalt arbeidsflyt" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Opprett prosjekt og fyll inn kunde/adresse før arbeid starter." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Velg garanti tidlig hvis prosjektet skal omfattes av 12 års dokumentert tetthetsgaranti." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Velg garanti tidlig hvis prosjektet skal omfattes av 15 års dokumentert tetthetsgaranti." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Registrer produkter, bilder og sjekklister fortløpende." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Lukk avvik før overtagelse og generer komplett PDF-rapport." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Lagre alltid ferdig PDF i eget arkivsystem." })
@@ -6863,7 +6865,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 isSoproWarrantyCategory(group.category) ? "🛡️ " : "",
                 group.category
               ] }),
-              isSoproWarrantyCategory(group.category) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "12 ÅRS GARANTI" }),
+              isSoproWarrantyCategory(group.category) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "15 ÅRS GARANTI" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                 stats.done,
                 "/",
