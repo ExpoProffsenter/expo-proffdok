@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
-// FASE 8 Deploy 3.1: Fikset sjekklistestatus i kundeportal – teller alle dokumenterte kontrollpunkter.
+// FASE 8 Deploy 4: Automatisk kundeutsendelse ved ferdigstillelse/låsing + manuell sendeknapp.
+ // FASE 8 Deploy 3.1: Fikset sjekklistestatus i kundeportal – teller alle dokumenterte kontrollpunkter.
 // FASE 8 Deploy 3.2: Sjekkliste/statuslogikk korrigert i kundeportal og prosjektoversikt.
 // FASE 8 Deploy 3: Kundeportal Dashboard – startside for kundeportal med tydelig prosjektstatus, garanti, dokumentasjonsoversikt og hurtighandlinger.
 // FASE 8 Deploy 2: Kundeportal 2.0 – profesjonell kundevisning med oversikt, dokumentasjon, bilder, produkter, garanti og rapport.
@@ -2078,6 +2079,80 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         await copyLinkToClipboard(link, "E-post kunne ikke sendes, men linken er kopiert.");
       }
     };
+
+    const sendProjectCompletionEmailToCustomer = async ({ askFirst = true, silent = false } = {}) => {
+      const cleanEmail = String(project.customerEmail || "").trim();
+      if (!cleanEmail) {
+        if (!silent) alert("Kunde e-post mangler. Legg inn kunde e-post før dokumentasjonen kan sendes automatisk.");
+        return false;
+      }
+      if (!projectId) {
+        if (!silent) alert("Prosjektet må lagres før dokumentasjon kan sendes til kunde.");
+        return false;
+      }
+      const customerLink = makeProjectLink(projectId, "kunde");
+      const projectTitle = project.projectName || project.address || "prosjektet";
+      const warrantyLine = warranty?.issued
+        ? `\n• Garantibevis${warranty?.guaranteeNumber ? ` (${warranty.guaranteeNumber})` : ""}\n• Garantivilkår 12 år`
+        : warranty?.enabled
+          ? "\n• Garantiinformasjon oppdateres når garantien er utstedt"
+          : "";
+      const emailBody = `Hei ${project.customer || "kunde"}
+
+Prosjektet er nå ferdigstilt, og dokumentasjonen er tilgjengelig i kundeportalen.
+
+Du finner blant annet:
+
+• Sluttrapport
+• Bildedokumentasjon
+• Produktoversikt
+• FDV- og produktdokumentasjon${warrantyLine}
+
+Åpne kundeportalen:
+${customerLink}
+
+Med vennlig hilsen
+
+${company.companyName || name || "Expo ProffDok"}
+${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post: " + company.email : ""}`;
+
+      if (askFirst) {
+        const shouldSend = window.confirm(
+          `Prosjektet er klart til å låses.\n\nVil du sende ferdigmelding og kundeportal-link automatisk til:\n${cleanEmail}\n\nTrykk OK for å sende, eller Avbryt for å låse uten å sende e-post.`
+        );
+        if (!shouldSend) return false;
+      }
+
+      try {
+        const { error } = await supabase.functions.invoke("smart-worker", {
+          body: {
+            toEmail: cleanEmail,
+            direction: "project_completed_customer",
+            projectId,
+            projectName: project.projectName || project.address || "Prosjekt",
+            customerName: project.customer || "Kunde",
+            customerEmail: cleanEmail,
+            companyName: company.companyName || name || "Expo ProffDok",
+            fromName: user.name || authUser?.email || "Prosjektleder",
+            message: emailBody,
+            projectLink: customerLink,
+            subject: `Prosjektdokumentasjon er klar – ${projectTitle}`
+          }
+        });
+        if (error) {
+          console.warn("Ferdigmelding kunne ikke sendes:", error.message);
+          if (!silent) alert("Prosjektet kan låses, men e-post kunne ikke sendes automatisk. Feil: " + error.message);
+          return false;
+        }
+        if (!silent) alert("✔ Ferdigmelding med kundeportal-link er sendt til kunde.");
+        return true;
+      } catch (error) {
+        console.warn("Ferdigmelding kunne ikke sendes:", error);
+        if (!silent) alert("Prosjektet kan låses, men e-post kunne ikke sendes automatisk. Feil: " + (error?.message || String(error)));
+        return false;
+      }
+    };
+
     const completeOvertagelseAndLock = async () => {
       if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r overtagelse kan fullf\xF8res.");
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 fullf\xF8re overtagelse.");
@@ -2103,6 +2178,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         termsReceiptRole: warranty?.termsReceiptRole || "Kunde"
       } : warranty;
       if (warranty?.enabled) setWarranty(completedWarranty);
+      const shouldOfferCompletionEmail = !!project.customerEmail;
+      const completionEmailAccepted = shouldOfferCompletionEmail ? await sendProjectCompletionEmailToCustomer({ askFirst: true, silent: false }) : false;
+      if (!shouldOfferCompletionEmail) {
+        alert("Kunde e-post mangler. Prosjektet låses uten automatisk kundeutsendelse.");
+      }
       const cleanData = JSON.parse(JSON.stringify({
         company,
         user,
@@ -5589,7 +5669,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: "Lagre overtagelse" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: completeOvertagelseAndLock, disabled: isProjectLocked, children: "Fullf\xF8r overtagelse og l\xE5s prosjekt" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: completeOvertagelseAndLock, disabled: isProjectLocked, children: "Fullf\xF8r overtagelse og l\xE5s prosjekt" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => sendProjectCompletionEmailToCustomer({ askFirst: true, silent: false }), disabled: !projectId || !project.customerEmail, children: "Send dokumentasjon til kunde" })
           ] })
         ] }),
         tab === "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : totalChatCount > 0 ? `Chat (${totalChatCount} meldinger)` : "Chat", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
