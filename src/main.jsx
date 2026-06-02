@@ -740,7 +740,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const systemChecklistComplete = !approvedSoproSystemSelected ? false : systemPointStatus.complete;
       const hasPhotos = (photos || []).some((photo) => hasValue(photo?.url));
       const reportGenerated = !!warranty?.reportGeneratedAt;
-      const termsAccepted = !!warranty?.termsAccepted;
+      const termsAccepted = !!warranty?.termsAccepted || (!!warranty?.enabled && overtagelseSigned);
       const missing = [];
       if (!termsAccepted) missing.push("Kunde må bekrefte mottak og aksept av garantivilkår 12 år.");
       if (!overtagelseSigned) missing.push("Overtagelse må være aktivert og signert av både utførende og kunde.");
@@ -2077,15 +2077,23 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (!utf\u00F8rendeSigned || !kundeSigned) {
         return alert("B\xE5de utf\xF8rende og kunde m\xE5 signere f\xF8r overtagelse kan fullf\xF8res.");
       }
-      if (warranty?.enabled && !warranty?.termsAccepted) {
-        return alert("Kunde m\xE5 bekrefte mottak og aksept av garantivilk\xE5r 12 \xE5r f\xF8r overtagelse kan fullf\xF8res p\xE5 garantiprosjekt.");
-      }
       const completedOvertagelse = {
         ...emptyOvertagelse(),
         ...overtagelse,
         enabled: true,
         dato: overtagelse.dato || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)
       };
+      const completedWarranty = warranty?.enabled ? {
+        ...emptyWarranty(),
+        ...warranty,
+        enabled: true,
+        termsAccepted: true,
+        termsAcceptedAt: warranty?.termsAcceptedAt || (/* @__PURE__ */ new Date()).toISOString(),
+        termsAcceptedBy: warranty?.termsAcceptedBy || completedOvertagelse.signKunde || project.customer || "Kunde",
+        termsReceiptName: warranty?.termsReceiptName || completedOvertagelse.signKunde || project.customer || "Kunde",
+        termsReceiptRole: warranty?.termsReceiptRole || "Kunde"
+      } : warranty;
+      if (warranty?.enabled) setWarranty(completedWarranty);
       const cleanData = JSON.parse(JSON.stringify({
         company,
         user,
@@ -2102,7 +2110,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         checklist,
         tilbud,
         overtagelse: completedOvertagelse,
-        warranty,
+        warranty: completedWarranty,
         projectLog,
         internalNotes
       }));
@@ -5430,30 +5438,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar / merknader fra sluttbefaring", value: overtagelse.kommentar || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, kommentar: v }) }),
             warranty?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: warranty?.termsAccepted ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fde68a", background: "#fffbeb" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📑 Garantivilkår 12 år" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kunden skal bekrefte mottak og aksept av garantivilkår før overtagelse fullføres og før garantien kan utstedes." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantivilkår aksepteres automatisk når kunden signerer overtagelsen og prosjektet fullføres. Kunden trenger derfor ikke signere eller krysse av et eget sted." }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn på mottaker", value: warranty?.termsReceiptName || overtagelse.signKunde || project.customer || "", disabled: warranty?.issued || isProjectLocked, onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, termsReceiptName: v, termsAccepted: false, termsAcceptedAt: "", termsAcceptedBy: "" }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle", value: warranty?.termsReceiptRole || "Kunde", disabled: warranty?.issued || isProjectLocked, options: ["Kunde", "Tiltakshaver", "Representant", "Annet"], onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, termsReceiptRole: v }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kvitteringsstatus", value: warranty?.termsAccepted ? `Bekreftet ${warranty?.termsAcceptedAt ? new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Ikke bekreftet", disabled: true, onChange: () => {} }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Bekreftet av", value: warranty?.termsAcceptedBy || "", disabled: true, onChange: () => {} })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Mottaker", value: warranty?.termsReceiptName || overtagelse.signKunde || project.customer || "Kunde", disabled: true, onChange: () => {} }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Status", value: warranty?.termsAccepted ? `Bekreftet sammen med overtagelse${warranty?.termsAcceptedAt ? " " + new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Bekreftes automatisk ved fullført overtagelse", disabled: true, onChange: () => {} })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "flex-start", gap: "10px", marginTop: "10px" }, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: "3px 0 0", flex: "0 0 auto" }, checked: !!warranty?.termsAccepted, disabled: warranty?.issued || isProjectLocked, onChange: (e) => {
-                  const receiptName = (warranty?.termsReceiptName || overtagelse.signKunde || project.customer || "").trim();
-                  if (e.target.checked && !receiptName) {
-                    alert("Fyll inn navn på kunden/representanten som bekrefter garantivilkår.");
-                    return;
-                  }
-                  setWarranty({ ...emptyWarranty(), ...warranty, termsAccepted: e.target.checked, termsAcceptedAt: e.target.checked ? new Date().toISOString() : "", termsAcceptedBy: e.target.checked ? receiptName : "", termsReceiptName: receiptName, termsReceiptRole: warranty?.termsReceiptRole || "Kunde" });
-                } }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Kunde bekrefter å ha mottatt, lest og akseptert garantivilkår for 12 års dokumentert tetthetsgaranti." })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", style: { fontWeight: 700 }, children: [
+                warranty?.termsAccepted ? "✅ Garantivilkår er bekreftet sammen med overtagelsen." : "ℹ️ Når kunden signerer overtagelsen, lagres mottak og aksept av garantivilkår automatisk på prosjektet."
               ] }),
-              warranty?.termsAccepted && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", style: { fontWeight: 700 }, children: [
-                "✅ Garantivilkår bekreftet av ",
-                warranty?.termsAcceptedBy || warranty?.termsReceiptName || "kunde",
-                warranty?.termsAcceptedAt ? ` ${new Date(warranty.termsAcceptedAt).toLocaleString("no-NO")}` : "",
-                ". Husk å lagre overtagelsen."
-              ] })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { className: "secondary", href: `/${warrantyTermsPdfFileName}`, target: "_blank", rel: "noopener noreferrer", style: { display: "inline-block", textDecoration: "none", marginTop: "8px" }, children: "Åpne garantivilkår PDF" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Signaturer" }),
@@ -6027,17 +6020,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: warranty?.termsAccepted ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fde68a", background: "#fffbeb" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📑 Garantivilkår 12 år" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kunde skal motta og akseptere garantivilkårene før 12 års dokumentert tetthetsgaranti kan utstedes. Kvitteringen lagres på prosjektet." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantivilkår aksepteres automatisk når kunden signerer overtagelsen og prosjektet fullføres. Kunden trenger ikke signere eller bekrefte vilkår et eget sted." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn på mottaker", value: warranty?.termsReceiptName || project?.customer || "", disabled: issued, onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, termsReceiptName: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle", value: warranty?.termsReceiptRole || "Kunde", disabled: issued, options: ["Kunde", "Tiltakshaver", "Representant", "Annet"], onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, termsReceiptRole: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kvitteringsstatus", value: warranty?.termsAccepted ? `Bekreftet ${warranty?.termsAcceptedAt ? new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Ikke bekreftet", disabled: true, onChange: () => {} }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Bekreftet av", value: warranty?.termsAcceptedBy || "", disabled: true, onChange: () => {} })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Mottaker", value: warranty?.termsReceiptName || overtagelse?.signKunde || project?.customer || "Kunde", disabled: true, onChange: () => {} }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kvitteringsstatus", value: warranty?.termsAccepted || readiness?.termsAccepted ? `Bekreftet sammen med overtagelse${warranty?.termsAcceptedAt ? " " + new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Bekreftes automatisk ved fullført overtagelse", disabled: true, onChange: () => {} })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadWarrantyTermsPdf, children: "⬇ Last ned garantivilkår PDF" }),
-            !warranty?.termsAccepted && !issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: acceptWarrantyTerms, children: "✅ Kunde har mottatt og akseptert vilkår" }),
-            warranty?.termsAccepted && !issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setWarranty({ ...emptyWarranty(), ...warranty, termsAccepted: false, termsAcceptedAt: "", termsAcceptedBy: "" }), children: "Angre kvittering" })
+            !(warranty?.termsAccepted || readiness?.termsAccepted) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => goToTab && goToTab("overtagelse"), children: "Gå til overtagelse for signering" })
           ] })
         ] }),
         (issued || isProjectLocked) && enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item warrantyArchiveCard", style: { borderColor: issued ? "#bbf7d0" : "#cbd5e1", background: issued ? "#ecfdf5" : "#f8fafc" }, children: [
