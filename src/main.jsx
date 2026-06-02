@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 8 Deploy 4.1: Kundeportal viser ordinære sjekklister og garantipunkter separat uten dobbelttelling.
 // FASE 8 Deploy 4: Automatisk kundeutsendelse ved ferdigstillelse/låsing + manuell sendeknapp.
  // FASE 8 Deploy 3.1: Fikset sjekklistestatus i kundeportal – teller alle dokumenterte kontrollpunkter.
 // FASE 8 Deploy 3.2: Sjekkliste/statuslogikk korrigert i kundeportal og prosjektoversikt.
@@ -4227,12 +4228,28 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalProductCount = [...selected || [], ...manualSelected || []].length;
       const customerPortalPhotoCount = (photos || []).filter((photo) => hasValue(photo?.url)).length;
       const customerPortalChecklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
-      const customerPortalChecklistDone = customerPortalChecklistValues.filter((value) => hasValue(value?.status)).length;
       const customerPortalChecklistAvvik = customerPortalChecklistValues.filter((value) => value?.status === "Avvik").length;
       const customerPortalChecklistClosedAvvik = customerPortalChecklistValues.filter((value) => value?.status === "Lukket avvik").length;
-      const customerPortalChecklistTotal = getActiveChecklistTemplate(warranty).reduce((sum, group) => sum + (group.items || []).length, 0);
-      const customerPortalChecklistMissing = Math.max(0, customerPortalChecklistTotal - customerPortalChecklistDone);
-      const customerPortalChecklistStatusText = customerPortalChecklistDone ? `${customerPortalChecklistDone}${customerPortalChecklistTotal ? ` av ${customerPortalChecklistTotal}` : ""} kontrollpunkter dokumentert${customerPortalChecklistAvvik ? ` · ${customerPortalChecklistAvvik} åpne avvik` : customerPortalChecklistMissing ? ` · ${customerPortalChecklistMissing} gjenstår` : ""}` : "Ikke utfylt ennå";
+      const countChecklistTemplateStatus = (template = []) => {
+        const total = (template || []).reduce((sum, group) => sum + (group.items || []).length, 0);
+        const done = (template || []).reduce((sum, group) => {
+          return sum + (group.items || []).filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
+        }, 0);
+        return { total, done, missing: Math.max(0, total - done), complete: total > 0 && done >= total };
+      };
+      const customerPortalBaseChecklistStats = countChecklistTemplateStatus(getBaseChecklistTemplateForWarranty(warranty));
+      const customerPortalSoproChecklistStats = countChecklistTemplateStatus(warranty?.enabled ? getSoproChecklistTemplate(warranty?.system) : []);
+      const customerPortalActiveChecklistStats = countChecklistTemplateStatus(getActiveChecklistTemplate(warranty));
+      const customerPortalChecklistTotal = customerPortalActiveChecklistStats.total;
+      const customerPortalChecklistDone = customerPortalActiveChecklistStats.done;
+      const customerPortalChecklistMissing = customerPortalActiveChecklistStats.missing;
+      const customerPortalChecklistComplete = customerPortalActiveChecklistStats.complete;
+      const customerPortalSoproChecklistTotal = customerPortalSoproChecklistStats.total;
+      const customerPortalSoproChecklistDone = customerPortalSoproChecklistStats.done;
+      const customerPortalSoproChecklistComplete = customerPortalSoproChecklistStats.complete;
+      const customerPortalBaseChecklistText = customerPortalBaseChecklistStats.done ? `${customerPortalBaseChecklistStats.done} av ${customerPortalBaseChecklistStats.total} ordinære kontrollpunkter` : "Ordinære sjekklister ikke utfylt ennå";
+      const customerPortalSoproChecklistText = customerPortalSoproChecklistTotal ? `Garantipunkter: ${customerPortalSoproChecklistDone} av ${customerPortalSoproChecklistTotal}` : "";
+      const customerPortalChecklistStatusText = customerPortalChecklistDone ? `${customerPortalBaseChecklistText}${customerPortalSoproChecklistText ? ` · ${customerPortalSoproChecklistText}` : ""}${customerPortalChecklistAvvik ? ` · ${customerPortalChecklistAvvik} åpne avvik` : customerPortalChecklistMissing ? ` · ${customerPortalChecklistMissing} gjenstår` : ""}` : "Ikke utfylt ennå";
       const customerPortalAddress = [project.address, project.postnr, project.city].filter(Boolean).join(", ");
       const customerPortalProducts = [...selected || [], ...manualSelected || []];
       const customerPortalPhotos = (photos || []).filter((photo) => hasValue(photo?.url));
@@ -4246,7 +4263,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         { label: "Prosjektinformasjon", done: hasValue(project.projectName) || hasValue(project.address) || hasValue(project.customer) },
         { label: "Produkter", done: customerPortalProductCount > 0 },
         { label: "Bilder", done: customerPortalPhotoCount > 0 },
-        { label: "Sjekklister", done: customerPortalChecklistDone > 0 && customerPortalChecklistMissing === 0 && customerPortalChecklistAvvik === 0 },
+        { label: "Sjekklister", done: customerPortalChecklistComplete && customerPortalChecklistAvvik === 0 },
+        ...(customerPortalWarrantyActive && customerPortalSoproChecklistTotal ? [{ label: "Garantipunkter", done: customerPortalSoproChecklistComplete && customerPortalChecklistAvvik === 0 }] : []),
         { label: "Overtagelse", done: !!overtagelse?.enabled },
         { label: "Garanti", done: customerPortalWarrantyIssued || !customerPortalWarrantyActive }
       ];
