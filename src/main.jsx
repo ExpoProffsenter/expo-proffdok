@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 8 Deploy 1.1: Garantivilkår bekreftes i Overtagelse + rettet garantisertifikat-layout.
 // FASE 8 Deploy 1: Brukerveiledning i app + garantivilkår 12 år med PDF, kvittering/signering og garantikrav.
 // FASE 7 Deploy 6: Rapportdesign Premium Final – profesjonelle sjekkpunkter, signaturfelt, garantibadge, større QR og dokumentbrikker.
 // FASE 7 Deploy 5B: Rapportdesign Premium 2.0 – kompakte produktkort, bedre bildegaleri, skjult tom prosjekttilgang og beholdt funksjonalitet.
@@ -2076,6 +2077,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (!utf\u00F8rendeSigned || !kundeSigned) {
         return alert("B\xE5de utf\xF8rende og kunde m\xE5 signere f\xF8r overtagelse kan fullf\xF8res.");
       }
+      if (warranty?.enabled && !warranty?.termsAccepted) {
+        return alert("Kunde m\xE5 bekrefte mottak og aksept av garantivilk\xE5r 12 \xE5r f\xF8r overtagelse kan fullf\xF8res p\xE5 garantiprosjekt.");
+      }
       const completedOvertagelse = {
         ...emptyOvertagelse(),
         ...overtagelse,
@@ -3310,11 +3314,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
 
           doc.setDrawColor(74, 222, 128);
           doc.setFillColor(236, 253, 245);
-          doc.roundedRect(pageWidth / 2 - 20, 60, 40, 8, 2, 2, "FD");
+          doc.roundedRect(pageWidth / 2 - 23, 60, 46, 8, 2, 2, "FD");
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(7.6);
+          doc.setFontSize(7.0);
           doc.setTextColor(6, 95, 70);
-          doc.text(warranty?.issued ? "✓ GARANTI AKTIV" : "GARANTI KLAR", pageWidth / 2, 65.3, { align: "center" });
+          doc.text(warranty?.issued ? "GARANTI AKTIV" : "GARANTI KLAR", pageWidth / 2, 65.3, { align: "center" });
 
           doc.setFont("helvetica", "bold");
           doc.setFontSize(24);
@@ -3602,7 +3606,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           y += 27;
           drawInfoCardPdf(margin, y, signW, 22, "Utførende", overtagelse.signUtførende || project.responsible || user.name || "Ikke oppgitt");
           drawInfoCardPdf(margin + signW + signGap, y, signW, 22, "Kunde", overtagelse.signKunde || project.customer || "Ikke oppgitt");
-          y += 30;
+          y += 27;
+          if (warranty?.enabled) {
+            drawInfoCardPdf(margin, y, contentWidth, 22, "Garantivilkår 12 år", warranty?.termsAccepted ? `Mottatt og akseptert av ${warranty?.termsAcceptedBy || warranty?.termsReceiptName || "kunde"}${warranty?.termsAcceptedAt ? " " + new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Ikke bekreftet");
+            y += 30;
+          } else {
+            y += 3;
+          }
           ensureSpace(50);
           await drawSignatureBlock("Signatur utførende", overtagelse.signUtførende || project.responsible || user.name || "Utførende", overtagelse.signUtførendeImage, margin, y, signW, 46);
           await drawSignatureBlock("Signatur kunde", overtagelse.signKunde || project.customer || "Kunde", overtagelse.signKundeImage, margin + signW + signGap, y, signW, 46);
@@ -5418,6 +5428,33 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Ta med overtagelse i rapport" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar / merknader fra sluttbefaring", value: overtagelse.kommentar || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, kommentar: v }) }),
+            warranty?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: warranty?.termsAccepted ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fde68a", background: "#fffbeb" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📑 Garantivilkår 12 år" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kunden skal bekrefte mottak og aksept av garantivilkår før overtagelse fullføres og før garantien kan utstedes." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn på mottaker", value: warranty?.termsReceiptName || overtagelse.signKunde || project.customer || "", disabled: warranty?.issued || isProjectLocked, onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, termsReceiptName: v, termsAccepted: false, termsAcceptedAt: "", termsAcceptedBy: "" }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle", value: warranty?.termsReceiptRole || "Kunde", disabled: warranty?.issued || isProjectLocked, options: ["Kunde", "Tiltakshaver", "Representant", "Annet"], onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, termsReceiptRole: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kvitteringsstatus", value: warranty?.termsAccepted ? `Bekreftet ${warranty?.termsAcceptedAt ? new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Ikke bekreftet", disabled: true, onChange: () => {} }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Bekreftet av", value: warranty?.termsAcceptedBy || "", disabled: true, onChange: () => {} })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "flex-start", gap: "10px", marginTop: "10px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: "3px 0 0", flex: "0 0 auto" }, checked: !!warranty?.termsAccepted, disabled: warranty?.issued || isProjectLocked, onChange: (e) => {
+                  const receiptName = (warranty?.termsReceiptName || overtagelse.signKunde || project.customer || "").trim();
+                  if (e.target.checked && !receiptName) {
+                    alert("Fyll inn navn på kunden/representanten som bekrefter garantivilkår.");
+                    return;
+                  }
+                  setWarranty({ ...emptyWarranty(), ...warranty, termsAccepted: e.target.checked, termsAcceptedAt: e.target.checked ? new Date().toISOString() : "", termsAcceptedBy: e.target.checked ? receiptName : "", termsReceiptName: receiptName, termsReceiptRole: warranty?.termsReceiptRole || "Kunde" });
+                } }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Kunde bekrefter å ha mottatt, lest og akseptert garantivilkår for 12 års dokumentert tetthetsgaranti." })
+              ] }),
+              warranty?.termsAccepted && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", style: { fontWeight: 700 }, children: [
+                "✅ Garantivilkår bekreftet av ",
+                warranty?.termsAcceptedBy || warranty?.termsReceiptName || "kunde",
+                warranty?.termsAcceptedAt ? ` ${new Date(warranty.termsAcceptedAt).toLocaleString("no-NO")}` : "",
+                ". Husk å lagre overtagelsen."
+              ] })
+            ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Signaturer" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Signer direkte p\xE5 skjermen med finger p\xE5 telefon eller mus p\xE5 PC. Navn kan fylles ut i tillegg for tydelig dokumentasjon." }),
