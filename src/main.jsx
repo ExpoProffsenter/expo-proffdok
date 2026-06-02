@@ -303,15 +303,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var adminGuidePdfPath = "/Expo_ProffDok_Adminveiledning.pdf";
   var warrantyTermsPdfFileName = "Expo_ProffDok_Garantivilkar_12_aar.pdf";
   var warrantyTermsText = [
-    "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok.",
-    "Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse.",
-    "Garantien gjelder for den aktuelle boligen og følger eiendommen ved et eventuelt salg innen garantiperioden.",
-    "Garantien utstedes av det utførende firmaet som er angitt i garantibeviset. Expo ProffDok fungerer som dokumentasjonsplattform og lagringssystem for prosjektets dokumentasjon.",
-    "Garantien omfatter dokumenterte feil i membransystemets tetthet når disse skyldes utførelse eller installasjon av det dokumenterte systemet.",
-    "Garantien forutsetter normal bruk, normalt vedlikehold og at senere arbeider ikke har påvirket konstruksjonen eller membransystemets funksjon.",
-    "Garantien omfatter ikke mekanisk skade, påboring eller inngrep i konstruksjonen, skader som følge av brann, naturhendelser eller andre ytre forhold, manglende vedlikehold eller arbeider utført av andre etter overtakelse.",
-    "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget.",
-    "Garantibeviset er gyldig sammen med komplett prosjektdokumentasjon lagret og/eller arkivert av utførende firma, inkludert bilder, sjekklister, produktdokumentasjon og signert overtakelse."
+    "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok. Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse, forutsatt at arbeidene er utført i henhold til gjeldende krav, produsentens anvisninger og prosjektets dokumenterte sjekklister.",
+    "Garantien gjelder for den aktuelle boligen og følger eiendommen ved et eventuelt eierskifte innen garantiperioden. Ny eier overtar de samme rettigheter og forpliktelser som opprinnelig eier.",
+    "Garantien utstedes av det utførende firmaet som er angitt i garantibeviset. Expo ProffDok fungerer som dokumentasjonsplattform og arkiv for prosjektets dokumentasjon, men er ikke part i garantiforholdet.",
+    "Garantien forutsetter at prosjektet er dokumentert i Expo ProffDok, at nødvendige sjekklister er gjennomført, at bildedokumentasjon er registrert, at overtakelse er signert, at godkjent Sopro-system er benyttet og at senere arbeider ikke har skadet membransystemet.",
+    "Garantien omfatter dokumenterte feil i membransystemets tetthet når disse skyldes utførelse eller installasjon av det dokumenterte systemet. Garantien gjelder de områdene som omfattes av prosjektets dokumentasjon.",
+    "Garantien omfatter ikke mekanisk skade, hulltaking eller inngrep etter overtakelse, manglende vedlikehold, setningsskader i bygget, frostskader, brann- eller vannskader fra andre kilder, naturhendelser eller arbeider utført av andre etter overtakelse.",
+    "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget. Reklamasjonen bør inneholde en beskrivelse av forholdet, bilder og relevant dokumentasjon.",
+    "Garantibeviset er kun gyldig sammen med prosjektets komplette dokumentasjon, inkludert bilder, sjekklister, produktdokumentasjon og signert overtakelse. Det anbefales at boligeier oppbevarer rapporten som en del av boligens FDV-dokumentasjon."
   ];
   var randomWarrantyCode = (length = 6) => {
     const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -3496,22 +3495,23 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             y += h + 7;
           };
           const drawTerm = (heading, body) => {
-            if (y > pageBottom - 28) {
+            if (y > pageBottom - 34) {
               doc.addPage();
               resetPage();
               drawHeader("GARANTIDOKUMENTASJON");
             }
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(9.2);
+            doc.setFontSize(10.2);
             doc.setTextColor(...darkBlue);
             doc.text(safeText(heading), margin, y);
-            y += 4.5;
+            y += 5.3;
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(8.2);
+            doc.setFontSize(9.1);
             doc.setTextColor(31, 41, 55);
             const lines = doc.splitTextToSize(safeText(body), contentWidth);
+            ensureSpace(lines.length * 4.8 + 8);
             doc.text(lines, margin, y);
-            y += lines.length * 4.2 + 5;
+            y += lines.length * 4.8 + 7;
           };
 
           doc.addPage();
@@ -3628,13 +3628,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.setTextColor(...darkBlue);
           doc.text("2. GARANTIVILKÅR", margin, y);
           y += 9;
-          drawTerm("Garantien", "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok. Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse.");
-          drawTerm("Hvem garantien gjelder for", "Garantien gjelder for den aktuelle boligen og følger eiendommen ved et eventuelt salg innen garantiperioden.");
-          drawTerm("Garantigiver", "Garantien utstedes av det utførende firmaet som er angitt i garantibeviset. Expo ProffDok fungerer som dokumentasjonsplattform for prosjektets dokumentasjon.");
-          drawTerm("Hva garantien omfatter", "Garantien omfatter dokumenterte feil i membransystemets tetthet når disse skyldes utførelse eller installasjon av det dokumenterte systemet.");
-          drawTerm("Hva garantien ikke omfatter", "Garantien omfatter ikke mekanisk skade, påboring eller inngrep i konstruksjonen, skader som følge av brann, naturhendelser eller andre ytre forhold, manglende vedlikehold eller arbeider utført av andre etter overtakelse.");
-          drawTerm("Varsling", "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget.");
-          drawTerm("Dokumentasjon og arkiv", "Garantibeviset er gyldig sammen med prosjektets komplette dokumentasjon, inkludert bilder, sjekklister, produktdokumentasjon og signert overtakelse. Utførende firma må selv oppbevare komplett PDF-rapport i eget arkiv.");
+          drawTerm("Garantien", "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok. Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse, forutsatt at arbeidene er utført i henhold til gjeldende krav, produsentens anvisninger og prosjektets dokumenterte sjekklister.");
+          drawTerm("Hvem garantien gjelder for", "Garantien gjelder for den aktuelle boligen og følger eiendommen ved et eventuelt eierskifte innen garantiperioden. Ny eier overtar de samme rettigheter og forpliktelser som opprinnelig eier.");
+          drawTerm("Garantigiver", "Garantien utstedes av det utførende firmaet som er angitt i garantibeviset. Expo ProffDok fungerer som dokumentasjonsplattform og arkiv for prosjektets dokumentasjon, men er ikke part i garantiforholdet.");
+          drawTerm("Forutsetninger for garantien", "Garantien forutsetter at prosjektet er dokumentert i Expo ProffDok, at nødvendige sjekklister er gjennomført, at bildedokumentasjon er registrert, at overtakelse er signert, at godkjent Sopro-system er benyttet og at senere arbeider ikke har skadet membransystemet.");
+          drawTerm("Hva garantien omfatter", "Garantien omfatter dokumenterte feil i membransystemets tetthet når disse skyldes utførelse eller installasjon av det dokumenterte systemet. Garantien gjelder de områdene som omfattes av prosjektets dokumentasjon.");
+          drawTerm("Hva garantien ikke omfatter", "Garantien omfatter ikke mekanisk skade, hulltaking eller inngrep etter overtakelse, manglende vedlikehold, setningsskader i bygget, frostskader, brann- eller vannskader fra andre kilder, naturhendelser eller arbeider utført av andre etter overtakelse.");
+          drawTerm("Reklamasjon og varsling", "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget. Reklamasjonen bør inneholde en beskrivelse av forholdet, bilder og relevant dokumentasjon.");
+          drawTerm("Dokumentasjon og arkiv", "Garantibeviset er kun gyldig sammen med prosjektets komplette dokumentasjon, inkludert bilder, sjekklister, produktdokumentasjon og signert overtakelse. Det anbefales at boligeier oppbevarer rapporten som en del av boligens FDV-dokumentasjon.");
           drawFooterBand("Garantivilkår");
 
           doc.addPage();
@@ -6604,7 +6605,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her finner du brukerveiledning, admin-veiledning og anbefalte arbeidsrutiner for Expo ProffDok." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her finner du brukerveiledning, admin-veiledning og anbefalte arbeidsrutiner for Expo ProffDok. PDF-filene bør ligge i public-mappen i appen, slik at de kan åpnes direkte fra Vercel." }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📖 Brukerveiledning v1.0" }),
