@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 8 Deploy 2: Kundeportal 2.0 – profesjonell kundevisning med oversikt, dokumentasjon, bilder, produkter, garanti og rapport.
 // FASE 8 Deploy 1.1: Garantivilkår bekreftes i Overtagelse + rettet garantisertifikat-layout.
 // FASE 8 Deploy 1: Brukerveiledning i app + garantivilkår 12 år med PDF, kvittering/signering og garantikrav.
 // FASE 7 Deploy 6: Rapportdesign Premium Final – profesjonelle sjekkpunkter, signaturfelt, garantibadge, større QR og dokumentbrikker.
@@ -4140,14 +4141,22 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalChecklistDone = Object.values(checklist || {}).reduce((sum, items) => sum + Object.values(items || {}).filter((value) => value?.status === "OK" || value?.status === "Utført").length, 0);
       const customerPortalChecklistAvvik = Object.values(checklist || {}).reduce((sum, items) => sum + Object.values(items || {}).filter((value) => value?.status === "Avvik").length, 0);
       const customerPortalAddress = [project.address, project.postnr, project.city].filter(Boolean).join(", ");
+      const customerPortalProducts = [...selected || [], ...manualSelected || []];
+      const customerPortalPhotos = (photos || []).filter((photo) => hasValue(photo?.url));
+      const customerPortalWarrantyActive = !!warranty?.enabled;
+      const customerPortalWarrantyIssued = !!warranty?.issued;
+      const customerPortalWarrantySystem = warrantyReadiness?.selectedSystem;
+      const customerPortalWarrantyTermsAccepted = !!warrantyReadiness?.termsAccepted;
+      const customerPortalWarrantyStatusText = customerPortalWarrantyIssued ? `12 års dokumentert tetthetsgaranti er utstedt${warranty?.guaranteeNumber ? ` – ${warranty.guaranteeNumber}` : ""}.` : customerPortalWarrantyActive ? "Garanti er aktivert, men ikke utstedt ennå." : "Garanti er ikke aktivert for dette prosjektet.";
+      const customerPortalDocumentationReady = customerPortalProductCount > 0 || customerPortalPhotoCount > 0 || customerPortalChecklistDone > 0 || !!overtagelse?.enabled || customerPortalWarrantyActive;
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Kundetilgang" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Kundeportal" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-                "Rapport, prosjektchat og dokumentasjon",
+                "Her finner du komplett prosjektdokumentasjon, garanti, bilder, produkter og rapport",
                 totalChatCount ? ` \xB7 ${totalChatCount} melding${totalChatCount === 1 ? "" : "er"}` : ""
               ] })
             ] }),
@@ -4158,6 +4167,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "rapport" ? "on" : "", onClick: () => setCustomerTab("rapport"), children: "Rapport" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "dokumentasjon" ? "on" : "", onClick: () => setCustomerTab("dokumentasjon"), children: "Dokumentasjon" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "garanti" ? "on" : "", onClick: () => setCustomerTab("garanti"), children: customerPortalWarrantyIssued ? "Garanti ✓" : "Garanti" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "bilder" ? "on" : "", onClick: () => setCustomerTab("bilder"), children: customerPortalPhotoCount ? `Bilder (${customerPortalPhotoCount})` : "Bilder" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "produkter" ? "on" : "", onClick: () => setCustomerTab("produkter"), children: customerPortalProductCount ? `Produkter (${customerPortalProductCount})` : "Produkter" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "prosjektinfo" ? "on" : "", onClick: () => setCustomerTab("prosjektinfo"), children: "Prosjektinformasjon" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { className: customerTab === "chat" ? "on" : "", onClick: () => setCustomerTab("chat"), children: [
               "Chat",
@@ -4196,11 +4209,63 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setCustomerTab("chat"), children: unreadForCustomer > 0 ? `Åpne chat (${unreadForCustomer} ulest)` : "Åpne prosjektchat" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("rapport"), children: "Se rapport" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("dokumentasjon"), children: "Se dokumentasjon" }),
+              customerPortalWarrantyActive && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("garanti"), children: "Se garanti" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadClickablePdfReport, children: "Last ned PDF" }),
               hasTilbudContent && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("tilbud"), children: "Tilbud/kontrakt" })
             ] })
           ] }),
           customerTab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationReadOnly, { project }),
+          customerTab === "dokumentasjon" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: customerPortalDocumentationReady ? "Her vises samlet dokumentasjon som er registrert på prosjektet." : "Det er foreløpig lite dokumentasjon registrert på prosjektet." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Produkter", value: customerPortalProductCount ? `${customerPortalProductCount} produkter registrert` : "Ingen produkter registrert" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Bilder", value: customerPortalPhotoCount ? `${customerPortalPhotoCount} bilder lastet opp` : "Ingen bilder lastet opp" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Kontroller", value: customerPortalChecklistAvvik ? `${customerPortalChecklistAvvik} åpne avvik` : customerPortalChecklistDone ? `${customerPortalChecklistDone} kontrollpunkter utført` : "Ikke registrert" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Overtagelse", value: overtagelse?.enabled ? `Registrert ${overtagelse?.dato || ""}` : "Ikke registrert" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setCustomerTab("bilder"), children: "Åpne bilder" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("produkter"), children: "Åpne produkter" }),
+              customerPortalWarrantyActive && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("garanti"), children: "Åpne garanti" })
+            ] })
+          ] }),
+          customerTab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Garanti", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: customerPortalWarrantyStatusText }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Garantistatus", value: customerPortalWarrantyIssued ? "Utstedt" : customerPortalWarrantyActive ? "Aktivert" : "Ikke aktivert" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Garantinummer", value: warranty?.guaranteeNumber || "Tildeles ved utstedelse" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "System", value: customerPortalWarrantySystem ? `${customerPortalWarrantySystem.product} – ${customerPortalWarrantySystem.sintefApproval}` : warranty?.sintefApproval || "Ikke valgt" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Garantivilkår", value: customerPortalWarrantyTermsAccepted ? "Akseptert ved signert overtagelse" : customerPortalWarrantyActive ? "Aksepteres ved overtagelse" : "Ikke aktuelt" })
+            ] }),
+            customerPortalWarrantySystem?.sintefUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: customerPortalWarrantySystem.sintefUrl, target: "_blank", rel: "noopener noreferrer", children: "Åpne SINTEF Teknisk Godkjenning" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { className: "upload", href: `/${warrantyTermsPdfFileName}`, target: "_blank", rel: "noopener noreferrer", children: "Last ned garantivilkår PDF" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadClickablePdfReport, children: "Last ned komplett rapport" })
+            ] })
+          ] }),
+          customerTab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bilder", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
+            customerPortalPhotos.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen bilder er delt på prosjektet ennå." }),
+            customerPortalPhotos.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos", children: customerPortalPhotos.map((photo) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: photo.url, target: "_blank", rel: "noopener noreferrer", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: photo.url, alt: photo.comment || photo.cat || "Prosjektbilde" }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: photo.cat || "Prosjektbilde" }),
+              (photo.comment || photo.name) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: photo.comment || photo.name })
+            ] }, photo.id || photo.url)) })
+          ] }),
+          customerTab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Produkter og FDV", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Building2, {}), children: [
+            customerPortalProducts.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter er registrert på prosjektet ennå." }),
+            customerPortalProducts.map((product) => {
+              const productName = product.item || product.name || "Produkt";
+              const docLinks = productReportDocumentOptions.filter((option) => shouldIncludeProductReportDoc(product, option));
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: productName }),
+                product.section && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: product.section }),
+                product.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: product.comment }),
+                docLinks.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen dokumentlenker valgt for kunden." }),
+                docLinks.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "8px" }, children: docLinks.map((option) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { className: "upload", href: normalizeExternalUrl(product?.[option.field]), target: "_blank", rel: "noopener noreferrer", children: option.label }, option.field)) })
+              ] }, product.id || productName);
+            })
+          ] }),
           customerTab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CustomerReport, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }),
           customerTab === "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : totalChatCount ? `Chat (${totalChatCount})` : "Chat", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Send spørsmål, beskjeder og bilder her. Alt lagres på prosjektet." }),
