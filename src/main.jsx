@@ -64,6 +64,119 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     { title: "Fugemasse / silikon", items: ["Sopro DFH Bruksklar fugemasse", "Sopro DFX epoxyfug", "Sopro DF 10\xAE Designfug", "Sopro FL plus Fugemasse", "Sopro Sanit\xE6r Silikon", "Sopro Ceramic Silikon"] }
   ];
   var surfaces = ["Veggflis 1", "Veggflis 2", "Veggflis 3", "Gulvflis 1", "Gulvflis 2", "Gulvflis 3", "Mosaikkfliser vegg", "Mosaikkfliser gulv", "Dekorfliser"];
+  var bathroomEquipmentSections = [
+    { title: "Overflater", items: [
+      { key: "takoverflate", label: "Takoverflate" },
+      { key: "veggpanelPlater", label: "Veggpanel / plater" },
+      { key: "overflateAnnet", label: "Annet overflateprodukt" }
+    ] },
+    { title: "Baderomsinnredning", items: [
+      { key: "servantskap", label: "Servantskap" },
+      { key: "hoyskap", label: "Høyskap" },
+      { key: "speil", label: "Speil" },
+      { key: "speilskap", label: "Speilskap" },
+      { key: "benkeplate", label: "Benkeplate" },
+      { key: "sittebenk", label: "Sittebenk" },
+      { key: "innredningAnnet", label: "Annet" }
+    ] },
+    { title: "Sanitærutstyr", items: [
+      { key: "servant", label: "Servant" },
+      { key: "utslagsvask", label: "Utslagsvask" },
+      { key: "dusjvegg", label: "Dusjvegg" },
+      { key: "dusjdor", label: "Dusjdør" },
+      { key: "badekar", label: "Badekar" },
+      { key: "slukrist", label: "Slukrist" },
+      { key: "sanitaerAnnet", label: "Annet" }
+    ] },
+    { title: "Armaturer", items: [
+      { key: "servantarmatur", label: "Servantarmatur" },
+      { key: "dusjbatteri", label: "Dusjbatteri" },
+      { key: "takdusj", label: "Takdusj" },
+      { key: "handdusj", label: "Hånddusj" },
+      { key: "badekarbatteri", label: "Badekarbatteri" },
+      { key: "armaturTilbehor", label: "Tilbehør" },
+      { key: "armaturAnnet", label: "Annet" }
+    ] },
+    { title: "Elektriske komponenter", items: [
+      { key: "varmekabler", label: "Varmekabler" },
+      { key: "termostat", label: "Termostat" },
+      { key: "ventilasjonsvifte", label: "Ventilasjonsvifte" },
+      { key: "downlights", label: "Downlights" },
+      { key: "speillys", label: "Speillys" },
+      { key: "stikkontakter", label: "Stikkontakter" },
+      { key: "dimmer", label: "Dimmer" },
+      { key: "elektroAnnet", label: "Annet" }
+    ] },
+    { title: "Annet", items: [
+      { key: "annetProdukt1", label: "Annet produkt / løsning" },
+      { key: "annetProdukt2", label: "Annet produkt / løsning 2" },
+      { key: "annetProdukt3", label: "Annet produkt / løsning 3" }
+    ] }
+  ];
+  var emptyBathroomEquipment = () => ({});
+  var equipmentValue = (equipment = {}, key = "", field = "") => equipment?.[`${key}_${field}`] || "";
+  var equipmentHasGenericContent = (equipment = {}, key = "") => ["product", "supplier", "fdvUrl", "certificateUrl", "comment"].some((field) => hasValue(equipmentValue(equipment, key, field)));
+  var wcHasContent = (equipment = {}) => ["wcType", "wcProduct", "wcSupplier", "wcCistern", "wcFlushPlate", "wcFdvUrl", "wcCertificateUrl", "wcComment"].some((field) => hasValue(equipment?.[field]));
+  var buildBathroomEquipmentReportGroups = (surf = {}, bathroomEquipment = {}) => {
+    const groups = [];
+    const pushGroup = (title) => {
+      let group = groups.find((entry) => entry.title === title);
+      if (!group) {
+        group = { title, items: [] };
+        groups.push(group);
+      }
+      return group;
+    };
+    const surfaceRows = Object.entries(surf || {}).filter(([, value]) => hasValue(value));
+    const surfaceExtras = (bathroomEquipmentSections.find((section) => section.title === "Overflater")?.items || []).filter((item) => equipmentHasGenericContent(bathroomEquipment, item.key));
+    if (surfaceRows.length || surfaceExtras.length) {
+      const group = pushGroup("Overflater");
+      surfaceRows.forEach(([label, value]) => group.items.push({ title: label, entries: [["Produkt / beskrivelse", value]], links: [] }));
+      surfaceExtras.forEach((item) => {
+        const entries = [
+          ["Produkt / beskrivelse", equipmentValue(bathroomEquipment, item.key, "product")],
+          ["Leverandør", equipmentValue(bathroomEquipment, item.key, "supplier")],
+          ["Kommentar", equipmentValue(bathroomEquipment, item.key, "comment")]
+        ].filter(([, value]) => hasValue(value));
+        const links = [
+          { label: "FDV", url: equipmentValue(bathroomEquipment, item.key, "fdvUrl") },
+          { label: "Produktsertifikat", url: equipmentValue(bathroomEquipment, item.key, "certificateUrl") }
+        ].filter((link) => hasValue(link.url));
+        group.items.push({ title: item.label, entries, links });
+      });
+    }
+    if (wcHasContent(bathroomEquipment)) {
+      const type = bathroomEquipment.wcType || "";
+      const entries = [
+        ["Type", type],
+        ["Produkt / modell", bathroomEquipment.wcProduct],
+        ["Leverandør", bathroomEquipment.wcSupplier],
+        ...type === "Vegghengt" ? [["Sisterne", bathroomEquipment.wcCistern], ["Betjeningsplate / trykknapp", bathroomEquipment.wcFlushPlate]] : [],
+        ["Kommentar", bathroomEquipment.wcComment]
+      ].filter(([, value]) => hasValue(value));
+      const links = [
+        { label: "FDV", url: bathroomEquipment.wcFdvUrl },
+        { label: "Produktsertifikat", url: bathroomEquipment.wcCertificateUrl }
+      ].filter((link) => hasValue(link.url));
+      pushGroup("Sanitærutstyr").items.push({ title: "WC", entries, links });
+    }
+    bathroomEquipmentSections.filter((section) => section.title !== "Overflater").forEach((section) => {
+      const group = pushGroup(section.title);
+      section.items.filter((item) => equipmentHasGenericContent(bathroomEquipment, item.key)).forEach((item) => {
+        const entries = [
+          ["Produkt / beskrivelse", equipmentValue(bathroomEquipment, item.key, "product")],
+          ["Leverandør", equipmentValue(bathroomEquipment, item.key, "supplier")],
+          ["Kommentar", equipmentValue(bathroomEquipment, item.key, "comment")]
+        ].filter(([, value]) => hasValue(value));
+        const links = [
+          { label: "FDV", url: equipmentValue(bathroomEquipment, item.key, "fdvUrl") },
+          { label: "Produktsertifikat", url: equipmentValue(bathroomEquipment, item.key, "certificateUrl") }
+        ].filter((link) => hasValue(link.url));
+        group.items.push({ title: item.label, entries, links });
+      });
+    });
+    return groups.filter((group) => group.items.length > 0);
+  };
   var imageCats = ["F\xF8r arbeid", "Underlag", "Avretting/st\xF8p", "Primer", "Membran", "Sluk og mansjetter", "R\xF8rgjennomf\xF8ringer", "Flislegging", "Fuging/silikon", "Ferdig resultat"];
   var roles = ["Eier / administrator", "Ansatt", "Underleverand\xF8r", "Kun lesetilgang"];
   var installCats = ["R\xF8rlegger", "T\xF8mrer/Snekker", "Maler", "Andre"];
@@ -508,6 +621,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [manualProducts, setManualProducts] = (0, import_react.useState)({});
     const [other, setOther] = (0, import_react.useState)({});
     const [surf, setSurf] = (0, import_react.useState)({});
+    const [bathroomEquipment, setBathroomEquipment] = (0, import_react.useState)(emptyBathroomEquipment());
     const [photos, setPhotos] = (0, import_react.useState)([]);
     const [access, setAccess] = (0, import_react.useState)([]);
     const [inst, setInst] = (0, import_react.useState)([]);
@@ -571,6 +685,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         manualProducts,
         other,
         surf,
+        bathroomEquipment,
         photos,
         access,
         inst,
@@ -582,7 +697,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         projectLog,
         internalNotes
       };
-    }, [company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes]);
+    }, [company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes]);
     (0, import_react.useEffect)(() => {
       const savedEmail = window.localStorage.getItem("expoProffDokAuthEmail");
       if (savedEmail) setAuthEmail(savedEmail);
@@ -868,6 +983,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
               manualProducts,
               other,
               surf,
+              bathroomEquipment,
               photos,
               access,
               inst,
@@ -1035,7 +1151,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["firma", "Firmaprofil"],
       ["prosjektering", "Prosjektering"],
       ["produkter", "Produkter"],
-      ["overflater", "Overflater"],
+      ["overflater", "Overflater og innredning"],
       ["bilder", "Bilder"],
       ["tilgang", "Tilgang"],
       ["installasjoner", "Fag/utstyr"],
@@ -1078,7 +1194,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const separator = currentText.trim() ? "\n\n" : "";
       setProject({ ...project, projectDescription: `${currentText}${separator}${templateText}` });
     };
-    const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes });
+    const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes });
     const unpackData = (data, preserveDraft = false) => {
       setCompany(data.company || { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
       setUser(data.user || { name: "", email: "", role: "Eier / administrator" });
@@ -1097,6 +1213,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
       setOther(data.other || {});
       setSurf(data.surf || {});
+      setBathroomEquipment(data.bathroomEquipment || emptyBathroomEquipment());
       setPhotos(data.photos || []);
       setAccess(data.access || []);
       setInst(data.inst || []);
@@ -1295,7 +1412,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
     }, [isReadOnly]);
     const createNewProject = () => {
-      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
       setProject(emptyProject());
       setChecked({});
@@ -1303,6 +1420,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setManualProducts({});
       setOther({});
       setSurf({});
+      setBathroomEquipment(emptyBathroomEquipment());
       setPhotos([]);
       setAccess([]);
       setInst([]);
@@ -1662,6 +1780,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         manualProducts,
         other,
         surf,
+        bathroomEquipment,
         photos,
         access,
         inst,
@@ -1682,6 +1801,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         manualProducts: snapshot.manualProducts,
         other: snapshot.other,
         surf: snapshot.surf,
+        bathroomEquipment: snapshot.bathroomEquipment || bathroomEquipment,
         photos: snapshot.photos,
         access: snapshot.access,
         inst: snapshot.inst,
@@ -1849,6 +1969,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         manualProducts,
         other,
         surf,
+        bathroomEquipment,
         photos,
         access,
         inst,
@@ -1921,6 +2042,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         manualProducts,
         other,
         surf,
+        bathroomEquipment,
         photos,
         access,
         inst,
@@ -1996,6 +2118,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         manualProducts,
         other,
         surf,
+        bathroomEquipment,
         photos,
         access,
         inst,
@@ -2206,6 +2329,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
         manualProducts,
         other,
         surf,
+        bathroomEquipment,
         photos,
         access,
         inst,
@@ -2427,6 +2551,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
             manualProducts,
             other,
             surf,
+            bathroomEquipment,
             photos,
             access,
             inst,
@@ -3625,10 +3750,19 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         allProducts.forEach((p) => addProductReportCard(p));
         Object.entries(other || {}).filter(([, v]) => v).forEach(([k, v]) => addParagraph(`Tidligere registrert annet produkt under ${k}: ${v}`));
 
-        addSectionTitle("Overflater");
-        const surfaceEntries = Object.entries(surf || {}).filter(([, v]) => v);
-        if (!surfaceEntries.length) addParagraph("Ingen overflater er fylt ut.");
-        surfaceEntries.forEach(([k, v]) => addKeyValue(k, v));
+        const bathroomEquipmentGroupsForPdf = buildBathroomEquipmentReportGroups(surf, bathroomEquipment);
+        if (bathroomEquipmentGroupsForPdf.length) {
+          addSectionTitle("Overflater og innredning");
+          bathroomEquipmentGroupsForPdf.forEach((group) => {
+            addSubTitle(group.title);
+            group.items.forEach((item) => {
+              addSubTitle(item.title);
+              (item.entries || []).forEach(([label, value]) => addKeyValue(label, value));
+              (item.links || []).forEach((link) => addLink(link.label, link.url));
+              addDivider();
+            });
+          });
+        }
 
         setPdfProgress("Samler bilder…", "Laster inn og konverterer bilder til PDF-format.");
         addSectionPageBreak("Bildedokumentasjon");
@@ -3825,6 +3959,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           manualProducts: snapshot.manualProducts || manualProducts,
           other: snapshot.other || other,
           surf: snapshot.surf || surf,
+          bathroomEquipment: snapshot.bathroomEquipment || bathroomEquipment,
           photos: nextPhotos,
           access: snapshot.access || access,
           inst: snapshot.inst || inst,
@@ -3895,6 +4030,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           manualProducts: snapshot.manualProducts || manualProducts,
           other: snapshot.other || other,
           surf: snapshot.surf || surf,
+          bathroomEquipment: snapshot.bathroomEquipment || bathroomEquipment,
           photos: snapshot.photos || photos,
           access: snapshot.access || access,
           inst: snapshot.inst || inst,
@@ -4005,6 +4141,36 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         setTilbud((t) => ({ ...emptyTilbud(), ...t, files: [...t.files || [], ...uploaded] }));
       }
     };
+    const updateBathroomEquipment = (patch = {}) => setBathroomEquipment((prev) => ({ ...prev || {}, ...patch }));
+    const renderEquipmentItem = (item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: item.label }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produkt / beskrivelse", value: equipmentValue(bathroomEquipment, item.key, "product"), onChange: (v) => updateBathroomEquipment({ [`${item.key}_product`]: v }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverandør", value: equipmentValue(bathroomEquipment, item.key, "supplier"), onChange: (v) => updateBathroomEquipment({ [`${item.key}_supplier`]: v }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link", value: equipmentValue(bathroomEquipment, item.key, "fdvUrl"), onChange: (v) => updateBathroomEquipment({ [`${item.key}_fdvUrl`]: v }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktsertifikat-link", value: equipmentValue(bathroomEquipment, item.key, "certificateUrl"), onChange: (v) => updateBathroomEquipment({ [`${item.key}_certificateUrl`]: v }) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar", value: equipmentValue(bathroomEquipment, item.key, "comment"), onChange: (v) => updateBathroomEquipment({ [`${item.key}_comment`]: v }) })
+    ] }, item.key);
+    const renderOverflaterOgInnredning = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Overflater og innredning", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dokumenter synlige overflater, innredning, sanitærutstyr, armaturer, elektriske komponenter og annet utstyr. Bare utfylte punkter tas med i rapport/PDF." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Eksisterende overflatefelter", defaultOpen: Object.values(surf || {}).some(hasValue), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "WC / toalett", defaultOpen: wcHasContent(bathroomEquipment), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "WC" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type WC", value: bathroomEquipment.wcType || "", onChange: (v) => updateBathroomEquipment({ wcType: v }), options: ["", "Vegghengt", "Gulvstående"], optionLabels: { "": "Velg type" } }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "WC-produkt / modell", value: bathroomEquipment.wcProduct || "", onChange: (v) => updateBathroomEquipment({ wcProduct: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverandør", value: bathroomEquipment.wcSupplier || "", onChange: (v) => updateBathroomEquipment({ wcSupplier: v }) }),
+          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sisterne", value: bathroomEquipment.wcCistern || "", onChange: (v) => updateBathroomEquipment({ wcCistern: v }) }),
+          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Betjeningsplate / trykknapp", value: bathroomEquipment.wcFlushPlate || "", onChange: (v) => updateBathroomEquipment({ wcFlushPlate: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link", value: bathroomEquipment.wcFdvUrl || "", onChange: (v) => updateBathroomEquipment({ wcFdvUrl: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktsertifikat-link", value: bathroomEquipment.wcCertificateUrl || "", onChange: (v) => updateBathroomEquipment({ wcCertificateUrl: v }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar", value: bathroomEquipment.wcComment || "", onChange: (v) => updateBathroomEquipment({ wcComment: v }) })
+      ] }) }),
+      bathroomEquipmentSections.map((section) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: section.title, defaultOpen: section.items.some((item) => equipmentHasGenericContent(bathroomEquipment, item.key)), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: section.items.map((item) => renderEquipmentItem(item)) }) }, section.title))
+    ] });
+
     if (authLoading && !isReadOnly && !isUnderleverandorView) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Laster..." }) }) }) });
     }
@@ -4060,7 +4226,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] });
     }
     if (isUnderleverandorView) {
-      const limitedTabs = [["prosjektinfo", "Prosjektinformasjon"], ["produkter", "Produkter"], ["overflater", "Overflater"], ["bilder", "Bilder"], ["installasjoner", "Fag/utstyr"], ["sjekklister", "Sjekklister"]];
+      const limitedTabs = [["prosjektinfo", "Prosjektinformasjon"], ["produkter", "Produkter"], ["overflater", "Overflater og innredning"], ["bilder", "Bilder"], ["installasjoner", "Fag/utstyr"], ["sjekklister", "Sjekklister"]];
       if (!projectId && !(project.projectName || project.address)) {
         return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
@@ -4139,7 +4305,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] }, p.id))
             ] })
           ] }, s.title)) }),
-          tab === "overflater" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Overflateprodukter", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
+          tab === "overflater" && renderOverflaterOgInnredning(),
           tab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bildedokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
             photos.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen bilder er lagt til ennå. Start gjerne med Før arbeid, Underlag og Ferdig resultat for en ryddig rapport." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", children: [
@@ -4498,7 +4664,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] }, product.id || productName);
             })
           ] }),
-          customerTab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CustomerReport, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }),
+          customerTab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CustomerReport, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, inst, files, checklist, tilbud, overtagelse, projectLog }),
           customerTab === "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: unreadForCustomer > 0 ? `Chat (${unreadForCustomer} ulest)` : totalChatCount ? `Chat (${totalChatCount})` : "Chat", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Send spørsmål, beskjeder og bilder her. Alt lagres på prosjektet." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Ny melding fra kunde", value: projectLog.draft || "", onChange: (v) => setProjectLog((prev) => ({ ...prev, draft: v })) }),
@@ -5568,7 +5734,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }, p.id))
           ] })
         ] }, s.title)) }),
-        tab === "overflater" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Overflateprodukter", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
+        tab === "overflater" && renderOverflaterOgInnredning(),
         tab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bildedokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards imageUploadTiles", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
@@ -6011,7 +6177,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           })
         ] }),
         tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
-                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
+                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { userGuidePdfPath, adminGuidePdfPath }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan administrator godkjenne brukere, vedlikeholde produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
@@ -6855,7 +7021,28 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] })
     ] });
   }
-  function Report({ company, name, project, selected, manualProducts, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }) {
+  function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
+    const groups = buildBathroomEquipmentReportGroups(surf, bathroomEquipment);
+    if (!groups.length) return null;
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Overflater og innredning" }),
+      groups.map((group) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: group.title }),
+        group.items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.title }),
+          item.entries.map(([label, value]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
+              label,
+              ": "
+            ] }),
+            value
+          ] }, label)),
+          item.links.map((link) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: link.url, children: link.label }, link.label))
+        ] }, item.title))
+      ] }, group.title))
+    ] });
+  }
+  function Report({ company, name, project, selected, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }) {
     const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, "Postnr.": project.postnr, "Poststed / by": project.city, Kunde: project.customer, "Kunde e-post": project.customerEmail, "Kunde telefon": project.customerPhone, Dato: project.date, Status: project.locked ? "Avsluttet / l\xE5st" : "Aktivt", Notater: project.notes };
     const cats = [...new Set(photos.map((p) => p.cat))];
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "report", children: [
@@ -6964,17 +7151,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           v
         ] }, k))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Overflater" }),
-        Object.entries(surf).filter(([, v]) => v).map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
-            k,
-            ":"
-          ] }),
-          " ",
-          v
-        ] }, k))
-      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BathroomEquipmentReportSection, { surf, bathroomEquipment }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Bildedokumentasjon" }),
         cats.map((cat) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -7190,7 +7367,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "8px", marginTop: "10px", flexWrap: "wrap" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: clear, children: "T\xF8m signatur" }) })
     ] });
   }
-  function CustomerReport({ company, name, project, selected, manualProducts, other, surf, photos, inst, files, checklist, tilbud, overtagelse, projectLog }) {
+  function CustomerReport({ company, name, project, selected, manualProducts, other, surf, bathroomEquipment, photos, inst, files, checklist, tilbud, overtagelse, projectLog }) {
     const projectFields = [
       ["Prosjektansvarlig", project.responsible],
       ["Prosjektnavn", project.projectName],
@@ -7284,10 +7461,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           v
         ] }, k))
       ] }),
-      surfaceRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Overflater" }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaceRows.map(([k, v]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: k, value: v }, k)) })
-      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(BathroomEquipmentReportSection, { surf, bathroomEquipment }),
       (photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Bildedokumentasjon" }),
         photoCats.map((cat) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
