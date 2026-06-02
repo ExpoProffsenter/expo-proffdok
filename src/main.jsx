@@ -4154,7 +4154,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     ] }, item.key);
     const renderOverflaterOgInnredning = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Overflater og innredning", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dokumenter synlige overflater, innredning, sanitærutstyr, armaturer, elektriske komponenter og annet utstyr. Bare utfylte punkter tas med i rapport/PDF." }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Eksisterende overflatefelter", defaultOpen: Object.values(surf || {}).some(hasValue), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Fliser og overflater", defaultOpen: Object.values(surf || {}).some(hasValue), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "WC / toalett", defaultOpen: wcHasContent(bathroomEquipment), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "WC" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
