@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 8 Deploy 3.1: Fikset sjekklistestatus i kundeportal – teller alle dokumenterte kontrollpunkter.
+// FASE 8 Deploy 3.2: Sjekkliste/statuslogikk korrigert i kundeportal og prosjektoversikt.
 // FASE 8 Deploy 3: Kundeportal Dashboard – startside for kundeportal med tydelig prosjektstatus, garanti, dokumentasjonsoversikt og hurtighandlinger.
 // FASE 8 Deploy 2: Kundeportal 2.0 – profesjonell kundevisning med oversikt, dokumentasjon, bilder, produkter, garanti og rapport.
 // FASE 8 Deploy 1.1: Garantivilkår bekreftes i Overtagelse + rettet garantisertifikat-layout.
@@ -716,11 +717,16 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (!projectGuideStats.hasDescription) items.push({ id: "info", label: "Legg inn kort prosjektbeskrivelse", tab: "prosjektinfo", tone: "info" });
       if (projectGuideStats.productCount === 0) items.push({ id: "produkter", label: "Velg produkter for FDV/rapport", tab: "produkter", tone: "warning" });
       if (projectGuideStats.photoCount === 0) items.push({ id: "bilder", label: "Legg til bildedokumentasjon", tab: "bilder", tone: "warning" });
-      if (projectGuideStats.checklistDone === 0) items.push({ id: "sjekklister", label: "Start sjekklistekontroll", tab: "sjekklister", tone: "info" });
+      if (projectGuideStats.checklistDone === 0) {
+        items.push({ id: "sjekklister-start", label: "Start sjekklistekontroll", tab: "sjekklister", tone: "info" });
+      } else if (projectGuideStats.checklistMissing > 0) {
+        items.push({ id: "sjekklister-mangler", label: `Fullfør ${projectGuideStats.checklistMissing} gjenstående sjekkpunkt`, tab: "sjekklister", tone: "warning" });
+      }
+      if (projectGuideStats.openDeviationCount > 0) items.push({ id: "avvik-apne", label: `Lukk ${projectGuideStats.openDeviationCount} åpne avvik`, tab: "sjekklister", tone: "warning" });
       if (!projectGuideStats.hasCustomerEmail) items.push({ id: "kunde", label: "Legg inn kunde e-post for deling/varsling", tab: "prosjekt", tone: "info" });
       if (!projectGuideStats.hasCustomerPhone) items.push({ id: "kunde-tlf", label: "Legg inn kunde telefonnummer for enklere oppfølging", tab: "prosjekt", tone: "info" });
       if (!projectGuideStats.hasOvertagelse) items.push({ id: "overtagelse", label: "Registrer overtagelse når prosjektet er ferdig", tab: "overtagelse", tone: "neutral" });
-      return items.slice(0, 5);
+      return items.slice(0, 6);
     }, [projectGuideStats]);
     const warrantyReadiness = (0, import_react.useMemo)(() => {
       const utførendeSigned = hasValue(overtagelse?.signUtførende) || hasValue(overtagelse?.signUtførendeImage);
@@ -4144,6 +4150,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalChecklistDone = customerPortalChecklistValues.filter((value) => hasValue(value?.status)).length;
       const customerPortalChecklistAvvik = customerPortalChecklistValues.filter((value) => value?.status === "Avvik").length;
       const customerPortalChecklistClosedAvvik = customerPortalChecklistValues.filter((value) => value?.status === "Lukket avvik").length;
+      const customerPortalChecklistTotal = getActiveChecklistTemplate(warranty).reduce((sum, group) => sum + (group.items || []).length, 0);
+      const customerPortalChecklistMissing = Math.max(0, customerPortalChecklistTotal - customerPortalChecklistDone);
+      const customerPortalChecklistStatusText = customerPortalChecklistDone ? `${customerPortalChecklistDone}${customerPortalChecklistTotal ? ` av ${customerPortalChecklistTotal}` : ""} kontrollpunkter dokumentert${customerPortalChecklistAvvik ? ` · ${customerPortalChecklistAvvik} åpne avvik` : customerPortalChecklistMissing ? ` · ${customerPortalChecklistMissing} gjenstår` : ""}` : "Ikke utfylt ennå";
       const customerPortalAddress = [project.address, project.postnr, project.city].filter(Boolean).join(", ");
       const customerPortalProducts = [...selected || [], ...manualSelected || []];
       const customerPortalPhotos = (photos || []).filter((photo) => hasValue(photo?.url));
@@ -4157,7 +4166,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         { label: "Prosjektinformasjon", done: hasValue(project.projectName) || hasValue(project.address) || hasValue(project.customer) },
         { label: "Produkter", done: customerPortalProductCount > 0 },
         { label: "Bilder", done: customerPortalPhotoCount > 0 },
-        { label: "Sjekklister", done: customerPortalChecklistDone > 0 },
+        { label: "Sjekklister", done: customerPortalChecklistDone > 0 && customerPortalChecklistMissing === 0 && customerPortalChecklistAvvik === 0 },
         { label: "Overtagelse", done: !!overtagelse?.enabled },
         { label: "Garanti", done: customerPortalWarrantyIssued || !customerPortalWarrantyActive }
       ];
@@ -4219,7 +4228,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Produkter dokumentert", value: customerPortalProductCount ? `${customerPortalProductCount} produkter` : "Ikke valgt ennå" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Bildedokumentasjon", value: customerPortalPhotoCount ? `${customerPortalPhotoCount} bilder` : "Ingen bilder ennå" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Sjekklister", value: customerPortalChecklistAvvik ? `${customerPortalChecklistAvvik} åpne avvik registrert` : customerPortalChecklistDone ? `${customerPortalChecklistDone} kontrollpunkter dokumentert${customerPortalChecklistClosedAvvik ? ` · ${customerPortalChecklistClosedAvvik} lukket avvik` : ""}` : "Ikke utfylt ennå" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Sjekklister", value: customerPortalChecklistStatusText }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Chat", value: unreadForCustomer > 0 ? `${unreadForCustomer} ulest` : totalChatCount ? `${totalChatCount} meldinger` : "Ingen meldinger" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
