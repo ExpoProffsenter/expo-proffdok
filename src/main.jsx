@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 8 Deploy 5.1: Mobilforbedring for sjekklister + autolagring av bildedokumentasjon ved opplasting.
 // FASE 8 Deploy 5: Autolagring av sjekklister, garantibadge i prosjektliste og løftet garantisertifikat.
 // FASE 8 Deploy 4.1: Kundeportal viser ordinære sjekklister og garantipunkter separat uten dobbelttelling.
 // FASE 8 Deploy 4: Automatisk kundeutsendelse ved ferdigstillelse/låsing + manuell sendeknapp.
@@ -546,6 +547,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [productMasterLoading, setProductMasterLoading] = (0, import_react.useState)(false);
     const [showOpenDeviationsOnly, setShowOpenDeviationsOnly] = (0, import_react.useState)(false);
     const [checklistSaveStatus, setChecklistSaveStatus] = (0, import_react.useState)("");
+    const [photoSaveStatus, setPhotoSaveStatus] = (0, import_react.useState)("");
     const checklistAutoSaveTimerRef = (0, import_react.useRef)(null);
     const latestStateRef = (0, import_react.useRef)({});
     const lastChatMessageCountRef = (0, import_react.useRef)(0);
@@ -1054,16 +1056,22 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   if (!id) return;
   setTab(id);
 
-  setTimeout(() => {
-    if (window.innerWidth <= 700) {
-      const main = document.querySelector("main");
-      if (main) {
-        main.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    } else {
+  const scrollToMobileTarget = () => {
+    if (window.innerWidth > 700) {
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
     }
-  }, 80);
+    const target =
+      id === "sjekklister"
+        ? document.querySelector(".checklistSummaryCard") || document.querySelector(".checklistAccordion") || document.querySelector("main")
+        : id === "bilder"
+          ? document.querySelector(".imageUploadTiles") || document.querySelector("main")
+          : document.querySelector("main");
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  setTimeout(scrollToMobileTarget, 90);
+  if (id === "sjekklister" || id === "bilder") setTimeout(scrollToMobileTarget, 320);
 };
     const appendProjectDescriptionTemplate = (templateText) => {
       const currentText = project.projectDescription || "";
@@ -3791,14 +3799,75 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       }
       return uploaded;
     };
+    const autoSavePhotosToCloud = async (nextPhotos) => {
+      if (!authUser || !projectId || isReadOnly) return;
+      setPhotoSaveStatus("Lagrer bilder …");
+      try {
+        const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        if (fetchError || !existing) {
+          setPhotoSaveStatus("Kunne ikke autolagre bilder");
+          console.warn("Autolagring bilder feilet:", fetchError?.message || "Fant ikke prosjekt");
+          return;
+        }
+        if (rowIsLocked(existing) || isProjectLocked) {
+          setPhotoSaveStatus("Prosjektet er låst – bilder ikke lagret");
+          return;
+        }
+        const existingData = dataFromRow(existing);
+        const snapshot = latestStateRef.current || {};
+        const cleanData = JSON.parse(JSON.stringify({
+          ...existingData,
+          company: snapshot.company || company,
+          user: snapshot.user || user,
+          project: { ...emptyProject(), ...existingData.project || {}, ...snapshot.project || project },
+          checked: snapshot.checked || checked,
+          productDocs: snapshot.productDocs || productDocs,
+          manualProducts: snapshot.manualProducts || manualProducts,
+          other: snapshot.other || other,
+          surf: snapshot.surf || surf,
+          photos: nextPhotos,
+          access: snapshot.access || access,
+          inst: snapshot.inst || inst,
+          files: snapshot.files || files,
+          checklist: snapshot.checklist || checklist,
+          tilbud: snapshot.tilbud || tilbud,
+          overtagelse: snapshot.overtagelse || overtagelse,
+          warranty: snapshot.warranty || warranty,
+          projectLog: snapshot.projectLog || projectLog,
+          internalNotes: snapshot.internalNotes || internalNotes
+        }));
+        const { error: updateError } = await supabase.from("projects").update({
+          data: cleanData,
+          title: (snapshot.project || project)?.projectName || (snapshot.project || project)?.address || existing.title || "Uten navn",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        }).eq("id", projectId);
+        if (updateError) {
+          setPhotoSaveStatus("Kunne ikke autolagre bilder");
+          console.warn("Autolagring bilder feilet:", updateError.message);
+          return;
+        }
+        latestStateRef.current = { ...snapshot, photos: nextPhotos };
+        setPhotoSaveStatus(`Bilder autolagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+      } catch (error) {
+        console.warn("Autolagring bilder feilet:", error);
+        setPhotoSaveStatus("Kunne ikke autolagre bilder");
+      }
+    };
     const addPhoto = async (cat, fl) => {
       const imgs = await uploadImages(fl, "photos");
-      setPhotos((p) => [...p, ...imgs.map((img) => ({
+      if (!imgs.length) return;
+      const newPhotos = imgs.map((img) => ({
         ...img,
         cat,
         comment: "",
         created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO")
-      }))]);
+      }));
+      let nextPhotosSnapshot = null;
+      setPhotos((p) => {
+        nextPhotosSnapshot = [...p, ...newPhotos];
+        return nextPhotosSnapshot;
+      });
+      setTimeout(() => autoSavePhotosToCloud(nextPhotosSnapshot), 120);
     };
     const autoSaveChecklistToCloud = async (nextChecklist) => {
       if (!authUser || !projectId || isReadOnly) return;
@@ -5501,7 +5570,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }, s.title)) }),
         tab === "overflater" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Overflateprodukter", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
         tab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bildedokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards imageUploadTiles", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 16 }),
               " ",
@@ -5510,6 +5579,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde eller velg fra galleri" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
           ] }, c)) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: photoSaveStatus || "Bilder autolagres ved opplasting når prosjektet er lagret i skyen." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
         ] }),
         tab === "tilgang" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilgang og deling", children: [
@@ -6507,8 +6577,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       setOpenCategories((prev) => ({ ...prev, [nextPoint.category]: true }));
       window.setTimeout(() => {
         const el = document.getElementById(nextPoint.anchorId);
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 140);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: window.innerWidth <= 700 ? "start" : "center" });
+          el.classList.add("checklistPointFocus");
+          window.setTimeout(() => el.classList.remove("checklistPointFocus"), 1600);
+        }
+      }, 160);
     };
     const handleStatusClick = (category, item, status) => {
       setChecklistValue(category, item, { status }, { autoSave: true });
