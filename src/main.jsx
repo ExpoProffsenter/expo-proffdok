@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 8 Deploy 3: Kundeportal Dashboard – startside for kundeportal med tydelig prosjektstatus, garanti, dokumentasjonsoversikt og hurtighandlinger.
 // FASE 8 Deploy 2: Kundeportal 2.0 – profesjonell kundevisning med oversikt, dokumentasjon, bilder, produkter, garanti og rapport.
 // FASE 8 Deploy 1.1: Garantivilkår bekreftes i Overtagelse + rettet garantisertifikat-layout.
 // FASE 8 Deploy 1: Brukerveiledning i app + garantivilkår 12 år med PDF, kvittering/signering og garantikrav.
@@ -512,7 +513,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [chatUploadFile, setChatUploadFile] = (0, import_react.useState)(null);
     const [customerChatUploadFile, setCustomerChatUploadFile] = (0, import_react.useState)(null);
     const [projectLog, setProjectLog] = (0, import_react.useState)(emptyProjectLog());
-    const [customerTab, setCustomerTab] = (0, import_react.useState)("rapport");
+    const [customerTab, setCustomerTab] = (0, import_react.useState)("oversikt");
     const [internalNotes, setInternalNotes] = (0, import_react.useState)("");
     const [lightboxImage, setLightboxImage] = (0, import_react.useState)(null);
     const [accessEmailMessage, setAccessEmailMessage] = (0, import_react.useState)("Hei, du har fått tilgang til prosjektet. Klikk på linken i denne e-posten for å åpne prosjektet.");
@@ -4149,6 +4150,17 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalWarrantyTermsAccepted = !!warrantyReadiness?.termsAccepted;
       const customerPortalWarrantyStatusText = customerPortalWarrantyIssued ? `12 års dokumentert tetthetsgaranti er utstedt${warranty?.guaranteeNumber ? ` – ${warranty.guaranteeNumber}` : ""}.` : customerPortalWarrantyActive ? "Garanti er aktivert, men ikke utstedt ennå." : "Garanti er ikke aktivert for dette prosjektet.";
       const customerPortalDocumentationReady = customerPortalProductCount > 0 || customerPortalPhotoCount > 0 || customerPortalChecklistDone > 0 || !!overtagelse?.enabled || customerPortalWarrantyActive;
+      const customerPortalCompletionItems = [
+        { label: "Prosjektinformasjon", done: hasValue(project.projectName) || hasValue(project.address) || hasValue(project.customer) },
+        { label: "Produkter", done: customerPortalProductCount > 0 },
+        { label: "Bilder", done: customerPortalPhotoCount > 0 },
+        { label: "Sjekklister", done: customerPortalChecklistDone > 0 },
+        { label: "Overtagelse", done: !!overtagelse?.enabled },
+        { label: "Garanti", done: customerPortalWarrantyIssued || !customerPortalWarrantyActive }
+      ];
+      const customerPortalCompletionPercent = Math.round(customerPortalCompletionItems.filter((item) => item.done).length / customerPortalCompletionItems.length * 100);
+      const customerPortalPrimaryStatus = customerPortalWarrantyIssued ? "12 års garanti aktiv" : currentStatus.label;
+      const customerPortalNextAction = customerPortalWarrantyIssued ? "Last ned komplett rapport eller se garantidokumentasjonen." : customerPortalWarrantyActive ? "Garanti er aktivert og oppdateres når alle krav er fullført." : "Se rapport, bilder og produktdokumentasjon.";
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
@@ -4166,6 +4178,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "oversikt" ? "on" : "", onClick: () => setCustomerTab("oversikt"), children: "Oversikt" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "rapport" ? "on" : "", onClick: () => setCustomerTab("rapport"), children: "Rapport" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "dokumentasjon" ? "on" : "", onClick: () => setCustomerTab("dokumentasjon"), children: "Dokumentasjon" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: customerTab === "garanti" ? "on" : "", onClick: () => setCustomerTab("garanti"), children: customerPortalWarrantyIssued ? "Garanti ✓" : "Garanti" }),
@@ -4216,6 +4229,28 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] })
           ] }),
           customerTab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationReadOnly, { project }),
+          customerTab === "oversikt" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Kundeportal dashboard", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette er kundens samlede oversikt over prosjektstatus, dokumentasjon, garanti og neste steg." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Prosjektstatus", value: customerPortalPrimaryStatus }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Dokumentasjon", value: `${customerPortalCompletionPercent}% komplett` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Garanti", value: customerPortalWarrantyStatusText }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Neste steg", value: customerPortalNextAction })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "14px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Dokumentasjonsstatus" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "8px", marginTop: "10px" }, children: customerPortalCompletionItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { border: "1px solid #dbe7ec", borderRadius: "12px", padding: "10px", background: item.done ? "#ecfdf5" : "#f8fafc", color: item.done ? "#065f46" : "#475569", fontWeight: 700 }, children: [
+                item.done ? "✅ " : "○ ",
+                item.label
+              ] }, item.label)) })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: downloadClickablePdfReport, children: "Last ned komplett rapport" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("garanti"), children: "Se garanti" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("bilder"), children: "Se bilder" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("produkter"), children: "Se produkter" })
+            ] })
+          ] }),
           customerTab === "dokumentasjon" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: customerPortalDocumentationReady ? "Her vises samlet dokumentasjon som er registrert på prosjektet." : "Det er foreløpig lite dokumentasjon registrert på prosjektet." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
