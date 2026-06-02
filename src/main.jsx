@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 8 Deploy 1: Brukerveiledning i app + garantivilkår 12 år med PDF, kvittering/signering og garantikrav.
 // FASE 7 Deploy 6: Rapportdesign Premium Final – profesjonelle sjekkpunkter, signaturfelt, garantibadge, større QR og dokumentbrikker.
 // FASE 7 Deploy 5B: Rapportdesign Premium 2.0 – kompakte produktkort, bedre bildegaleri, skjult tom prosjekttilgang og beholdt funksjonalitet.
 // FASE 7 Deploy 5C: Produkt/FDV i kompakte dokumentbrikker uten tekstbryting i PDF.
@@ -176,6 +177,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     { id: "sopro-fdf-525-527", label: "Sopro FDF 525/527 – SINTEF TG 20987", product: "Sopro FDF 525/527", sintefApproval: "SINTEF TG 20987", sintefUrl: "https://www.sintefcertification.no/Product/Index/12275" }
   ];
   var warrantyArchiveNotice = "Viktig: Last alltid ned og lagre komplett PDF-rapport på egen maskin, server eller annet sikkert arkiv når prosjektet er ferdig. Expo ProffDok er en dokumentasjonsplattform, men kan ikke garantere ubegrenset lagringstid eller tilgjengelighet av prosjektdata i hele garanti- eller byggets levetid.";
+  var userGuidePdfPath = "/Expo_ProffDok_Brukerveiledning.pdf";
+  var adminGuidePdfPath = "/Expo_ProffDok_Adminveiledning.pdf";
+  var warrantyTermsPdfFileName = "Expo_ProffDok_Garantivilkar_12_aar.pdf";
   var warrantyTermsText = [
     "Denne garantien dokumenterer at våtrommet er utført med et godkjent Sopro membransystem og at arbeidet er dokumentert gjennom Expo ProffDok.",
     "Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtakelse.",
@@ -399,7 +403,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     status: "draft",
     guaranteeNumber: "",
     reportGeneratedAt: null,
-    reportGeneratedFileName: ""
+    reportGeneratedFileName: "",
+    termsAccepted: false,
+    termsAcceptedAt: "",
+    termsAcceptedBy: "",
+    termsReceiptName: "",
+    termsReceiptRole: "Kunde"
   });
   var emptyProject = () => ({
     responsible: "",
@@ -730,7 +739,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const systemChecklistComplete = !approvedSoproSystemSelected ? false : systemPointStatus.complete;
       const hasPhotos = (photos || []).some((photo) => hasValue(photo?.url));
       const reportGenerated = !!warranty?.reportGeneratedAt;
+      const termsAccepted = !!warranty?.termsAccepted;
       const missing = [];
+      if (!termsAccepted) missing.push("Kunde må bekrefte mottak og aksept av garantivilkår 12 år.");
       if (!overtagelseSigned) missing.push("Overtagelse må være aktivert og signert av både utførende og kunde.");
       if (openDeviationCount > 0) missing.push("Alle åpne avvik må lukkes før garanti kan utstedes.");
       if (!checklistComplete) missing.push("Alle ordinære sjekklister og systemspesifikke Sopro-punkter må ha status.");
@@ -752,6 +763,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         systemChecklistPoints: systemPointStatus.points,
         hasPhotos,
         reportGenerated,
+        termsAccepted,
         approvedSoproSystemSelected,
         selectedSystem,
         missing,
@@ -1015,6 +1027,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["internt", "Interne notater"],
       ["prosjektliste", "Prosjektliste"],
       ["rapport", "Rapport"],
+      ["hjelp", "Hjelp"],
       ...canUseAdminProjectSync ? [["admin", "Admin"]] : []
     ];
     const currentTabIndex = tabs.findIndex(([id]) => id === tab);
@@ -3358,6 +3371,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawCheckCard("Sjekklister fullført", "Ordinære sjekklister og systemspesifikke garantipunkter er kontrollert.");
           drawCheckCard("Bildedokumentasjon registrert", "Bilder av relevante arbeidsoperasjoner er registrert i prosjektet.");
           drawCheckCard("Godkjent Sopro-system valgt", `${selectedSystem.product} er dokumentert med ${selectedSystem.sintefApproval}.`);
+          drawCheckCard("Garantivilkår mottatt", warranty?.termsAccepted ? `Kunde/representant har bekreftet mottak og aksept av garantivilkår. Bekreftet av ${warranty?.termsAcceptedBy || "ikke oppgitt"}.` : "Garantivilkår er vedlagt, men kvittering er ikke registrert.");
           drawCheckCard("Komplett PDF-rapport generert", "Sluttrapport med sjekklister, bilder, produktdokumentasjon og garantibevis er generert.");
           drawNoteBox("Garantien gjelder kun for det dokumenterte arbeidet i dette prosjektet og forutsetter normal bruk og vedlikehold i henhold til FDV-dokumentasjonen.");
           addSubTitle("Arkivering av dokumentasjon");
@@ -5665,6 +5679,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }),
         tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
                 tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
+                tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { userGuidePdfPath, adminGuidePdfPath }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan administrator godkjenne brukere, vedlikeholde produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
@@ -5916,6 +5931,47 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     const warrantyValidUntil = makeWarrantyValidUntil(overtagelse?.dato || project?.date || "");
     const warrantyStatusText = issued ? (warrantyValidUntil && new Date(warrantyValidUntil) < /* @__PURE__ */ new Date() ? "Utgått" : "Gyldig") : readiness?.ready ? "Klar til utstedelse" : "Ikke utstedt";
     const warrantyCanEdit = !isProjectLocked && !issued;
+    const downloadWarrantyTermsPdf = async () => {
+      try {
+        const module = await import("https://esm.sh/jspdf@2.5.1");
+        const JsPDF = module.jsPDF || module.default?.jsPDF;
+        if (!JsPDF) throw new Error("Kunne ikke laste PDF-motor.");
+        const doc = new JsPDF({ unit: "mm", format: "a4", compress: true });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 16;
+        const contentWidth = pageWidth - margin * 2;
+        let y = 18;
+        const addTitle = (text, size = 18) => { doc.setFont("helvetica", "bold"); doc.setFontSize(size); doc.setTextColor(12, 42, 82); doc.text(text, margin, y); y += size === 18 ? 12 : 8; };
+        const addText = (text, opts = {}) => { doc.setFont("helvetica", opts.bold ? "bold" : "normal"); doc.setFontSize(opts.size || 9); doc.setTextColor(31, 41, 55); const lines = doc.splitTextToSize(String(text || ""), contentWidth); if (y + lines.length * 4.6 > pageHeight - 18) { doc.addPage(); y = 18; } doc.text(lines, margin, y); y += lines.length * 4.6 + 4; };
+        const addSection = (heading, body) => { addTitle(heading, 12); addText(body); };
+        doc.setFillColor(248, 250, 252); doc.rect(0, 0, pageWidth, pageHeight, "F"); doc.setFillColor(255,255,255); doc.roundedRect(9, 9, pageWidth-18, pageHeight-18, 4, 4, "F");
+        addTitle("Garantivilkår – 12 års dokumentert tetthetsgaranti", 18);
+        addText(`Prosjekt: ${project?.projectName || project?.address || "Ikke oppgitt"}`, { bold: true });
+        addText(`Kunde: ${project?.customer || "Ikke oppgitt"} · Utførende: ${name || company?.companyName || "Ikke oppgitt"}`);
+        addText(`System: ${selectedSystem ? selectedSystem.product + " · " + selectedSystem.sintefApproval : warranty?.sintefApproval || "Ikke valgt"}`);
+        addSection("1. Garantien", "Garantien gjelder tettheten i det dokumenterte membransystemet i 12 år fra dato for signert overtagelse. Garantien gjelder kun for det arbeidet som er dokumentert i Expo ProffDok.");
+        addSection("2. Forutsetninger", "Garantien forutsetter at godkjent Sopro-system er valgt, sjekklister og garantipunkter er fullført, nødvendig bildedokumentasjon foreligger, alle avvik er lukket og komplett sluttrapport er generert og arkivert.");
+        addSection("3. Hva garantien omfatter", "Garantien omfatter dokumenterte feil i membransystemets tetthet når feilen skyldes utførelse eller installasjon av det dokumenterte systemet.");
+        addSection("4. Hva garantien ikke omfatter", "Garantien omfatter ikke mekanisk skade, påboring, inngrep i konstruksjonen, skader etter overtagelse, brann, naturhendelser, manglende vedlikehold eller arbeider utført av andre etter overtagelse.");
+        addSection("5. Varsling", "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget.");
+        addSection("6. Dokumentasjon og arkiv", "Garantibeviset er gyldig sammen med komplett prosjekt­dokumentasjon, inkludert bilder, sjekklister, produktdokumentasjon og signert overtagelse. Utførende firma er ansvarlig for langsiktig arkivering.");
+        addTitle("Kvittering for mottak", 12);
+        addText(`Mottatt og akseptert av: ${warranty?.termsReceiptName || warranty?.termsAcceptedBy || "________________________"}`);
+        addText(`Rolle: ${warranty?.termsReceiptRole || "Kunde"}     Dato: ${warranty?.termsAcceptedAt ? new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : "________________"}`);
+        addText("Signatur: _______________________________________________");
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i += 1) { doc.setPage(i); doc.setFont("helvetica", "normal"); doc.setFontSize(7); doc.setTextColor(100,116,139); doc.text("Expo ProffDok · Garantivilkår 12 år", pageWidth / 2, pageHeight - 8, { align: "center" }); doc.text(`${i}/${pageCount}`, pageWidth - margin, pageHeight - 8, { align: "right" }); }
+        doc.save(warrantyTermsPdfFileName);
+      } catch (error) {
+        alert("Kunne ikke lage garantivilkår-PDF: " + (error?.message || String(error)));
+      }
+    };
+    const acceptWarrantyTerms = () => {
+      const receiptName = (warranty?.termsReceiptName || project?.customer || "").trim();
+      if (!receiptName) return alert("Fyll inn navn på den som bekrefter mottak av garantivilkår.");
+      setWarranty({ ...emptyWarranty(), ...warranty, termsAccepted: true, termsAcceptedAt: new Date().toISOString(), termsAcceptedBy: receiptName, termsReceiptName: receiptName, termsReceiptRole: warranty?.termsReceiptRole || "Kunde" });
+    };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "12 års dokumentert tetthetsgaranti", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantien er valgfri og kan bare utstedes når overtagelse er signert, alle avvik er lukket, sjekklister er fullført, bildedokumentasjon er lastet opp og godkjent Sopro-system er valgt." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
@@ -5931,6 +5987,21 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "SINTEF Teknisk Godkjenning", value: selectedSystem?.sintefApproval || warranty?.sintefApproval || "", onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, sintefApproval: v }), disabled: true }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Garantiperiode", value: "12 år", onChange: () => {}, disabled: true }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Status", value: warrantyStatusText, onChange: () => {}, disabled: true })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: warranty?.termsAccepted ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fde68a", background: "#fffbeb" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📑 Garantivilkår 12 år" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kunde skal motta og akseptere garantivilkårene før 12 års dokumentert tetthetsgaranti kan utstedes. Kvitteringen lagres på prosjektet." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn på mottaker", value: warranty?.termsReceiptName || project?.customer || "", disabled: issued, onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, termsReceiptName: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle", value: warranty?.termsReceiptRole || "Kunde", disabled: issued, options: ["Kunde", "Tiltakshaver", "Representant", "Annet"], onChange: (v) => setWarranty({ ...emptyWarranty(), ...warranty, termsReceiptRole: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kvitteringsstatus", value: warranty?.termsAccepted ? `Bekreftet ${warranty?.termsAcceptedAt ? new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Ikke bekreftet", disabled: true, onChange: () => {} }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Bekreftet av", value: warranty?.termsAcceptedBy || "", disabled: true, onChange: () => {} })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadWarrantyTermsPdf, children: "⬇ Last ned garantivilkår PDF" }),
+            !warranty?.termsAccepted && !issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: acceptWarrantyTerms, children: "✅ Kunde har mottatt og akseptert vilkår" }),
+            warranty?.termsAccepted && !issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setWarranty({ ...emptyWarranty(), ...warranty, termsAccepted: false, termsAcceptedAt: "", termsAcceptedBy: "" }), children: "Angre kvittering" })
+          ] })
         ] }),
         (issued || isProjectLocked) && enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item warrantyArchiveCard", style: { borderColor: issued ? "#bbf7d0" : "#cbd5e1", background: issued ? "#ecfdf5" : "#f8fafc" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📄 Garantidokument i arkiv" }),
@@ -5997,6 +6068,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.checklistComplete ? "✅ Sjekklister fullført" : `⚠️ ${readiness?.checklistDone || 0}/${readiness?.checklistTotal || 0} sjekklistepunkter` }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.hasPhotos ? "✅ Bilder lastet opp" : "⚠️ Bilder mangler" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.reportGenerated ? "✅ Komplett PDF generert" : "⚠️ Komplett PDF må lastes ned" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.termsAccepted ? "✅ Vilkår akseptert" : "⚠️ Garantivilkår mangler" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.approvedSoproSystemSelected ? "✅ Sopro-system valgt" : "⚠️ Sopro-system mangler" }),
             readiness?.approvedSoproSystemSelected && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.systemChecklistComplete ? "✅ Sopro-punkter fullført" : `⚠️ ${readiness?.systemChecklistDone || 0}/${readiness?.systemChecklistTotal || 0} Sopro-punkter` })
           ] }),
@@ -6024,6 +6096,46 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", disabled: !readiness?.ready || issued, onClick: issueWarranty, children: issued ? "✅ Garanti utstedt" : isProjectLocked ? "Utsted garanti i arkivert prosjekt" : "Utsted 12 års tetthetsgaranti" }),
           issued && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => { if (typeof downloadClickablePdfReport === "function") downloadClickablePdfReport(); else alert("PDF-funksjonen er ikke klar. Gå til Rapport-fanen og trykk Last ned PDF."); }, children: "⬇ Last ned garantibevis / komplett PDF" }),
           issued && !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setWarranty({ ...emptyWarranty(), ...warranty, issued: false, issuedAt: null, status: "draft" }), children: "Trekk tilbake utstedelse" })
+        ] })
+      ] })
+    ] });
+  }
+
+  function HelpCenter({ userGuidePdfPath: guidePath = userGuidePdfPath, adminGuidePdfPath: adminPath = adminGuidePdfPath }) {
+    const openPdf = (url) => {
+      if (!url) return;
+      window.open(url, "_blank", "noopener,noreferrer");
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her finner du brukerveiledning, admin-veiledning og anbefalte arbeidsrutiner for Expo ProffDok. PDF-filene bør ligge i public-mappen i appen, slik at de kan åpnes direkte fra Vercel." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📖 Brukerveiledning v1.0" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Komplett brukerveiledning for ordinære brukere, prosjektledere, utførende og dokumentasjonsansvarlige." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => openPdf(guidePath), children: "Åpne PDF" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: guidePath, download: true, style: { display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "10px 14px", borderRadius: "12px", border: "1px solid #cbd5e1", textDecoration: "none", fontWeight: 800, color: "#1456a0", background: "#fff" }, children: "Last ned" })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "🛠️ Admin-veiledning" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Kort veiledning for administratorer. Brukes ved godkjenning av brukere, produktmaster og systemadministrasjon." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openPdf(adminPath), children: "Åpne når klar" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "note", children: "Kommer som egen PDF." })
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Anbefalt arbeidsflyt" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Opprett prosjekt og fyll inn kunde/adresse før arbeid starter." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Velg garanti tidlig hvis prosjektet skal omfattes av 12 års dokumentert tetthetsgaranti." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Registrer produkter, bilder og sjekklister fortløpende." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Lukk avvik før overtagelse og generer komplett PDF-rapport." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Lagre alltid ferdig PDF i eget arkivsystem." })
+          ] })
         ] })
       ] })
     ] });
