@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 8 Deploy 3.1: Fikset sjekklistestatus i kundeportal – teller alle dokumenterte kontrollpunkter.
 // FASE 8 Deploy 3: Kundeportal Dashboard – startside for kundeportal med tydelig prosjektstatus, garanti, dokumentasjonsoversikt og hurtighandlinger.
 // FASE 8 Deploy 2: Kundeportal 2.0 – profesjonell kundevisning med oversikt, dokumentasjon, bilder, produkter, garanti og rapport.
 // FASE 8 Deploy 1.1: Garantivilkår bekreftes i Overtagelse + rettet garantisertifikat-layout.
@@ -4138,9 +4139,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     if (isReadOnly) {
       const hasTilbudContent = hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0;
       const customerPortalProductCount = [...selected || [], ...manualSelected || []].length;
-      const customerPortalPhotoCount = (photos || []).length;
-      const customerPortalChecklistDone = Object.values(checklist || {}).reduce((sum, items) => sum + Object.values(items || {}).filter((value) => value?.status === "OK" || value?.status === "Utført").length, 0);
-      const customerPortalChecklistAvvik = Object.values(checklist || {}).reduce((sum, items) => sum + Object.values(items || {}).filter((value) => value?.status === "Avvik").length, 0);
+      const customerPortalPhotoCount = (photos || []).filter((photo) => hasValue(photo?.url)).length;
+      const customerPortalChecklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
+      const customerPortalChecklistDone = customerPortalChecklistValues.filter((value) => hasValue(value?.status)).length;
+      const customerPortalChecklistAvvik = customerPortalChecklistValues.filter((value) => value?.status === "Avvik").length;
+      const customerPortalChecklistClosedAvvik = customerPortalChecklistValues.filter((value) => value?.status === "Lukket avvik").length;
       const customerPortalAddress = [project.address, project.postnr, project.city].filter(Boolean).join(", ");
       const customerPortalProducts = [...selected || [], ...manualSelected || []];
       const customerPortalPhotos = (photos || []).filter((photo) => hasValue(photo?.url));
@@ -4216,7 +4219,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Produkter dokumentert", value: customerPortalProductCount ? `${customerPortalProductCount} produkter` : "Ikke valgt ennå" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Bildedokumentasjon", value: customerPortalPhotoCount ? `${customerPortalPhotoCount} bilder` : "Ingen bilder ennå" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Sjekkliste", value: customerPortalChecklistAvvik ? `${customerPortalChecklistAvvik} avvik registrert` : customerPortalChecklistDone ? `${customerPortalChecklistDone} punkt utført` : "Ikke utfylt ennå" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Sjekklister", value: customerPortalChecklistAvvik ? `${customerPortalChecklistAvvik} åpne avvik registrert` : customerPortalChecklistDone ? `${customerPortalChecklistDone} kontrollpunkter dokumentert${customerPortalChecklistClosedAvvik ? ` · ${customerPortalChecklistClosedAvvik} lukket avvik` : ""}` : "Ikke utfylt ennå" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Chat", value: unreadForCustomer > 0 ? `${unreadForCustomer} ulest` : totalChatCount ? `${totalChatCount} meldinger` : "Ingen meldinger" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
