@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 2.4: Sopro garantikontrollpunkter fra Produktmaster kobles inn i aktive garantisjekklister.
 // FASE 9 Deploy 2.3: Produktmaster-kontrollpunkter presisert og begrenset til Sopro garantikontrollpunkter.
 // FASE 9 Deploy 2.3A: Admin-fanen er kun for ekte admin + tydeliggjort at kontrollpunkt-tall gjelder Produktmaster-punkter.
 // FASE 9 Deploy 2.2: Produktmaster kontrollpunkter skjules bak vis/rediger-knapp + kan opprettes samtidig med nytt produkt.
@@ -635,16 +636,16 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     };
   };
   var dedupeChecklistTemplate = (groups = []) => {
-    const seenCategories = new Set();
     const result = [];
     (groups || []).forEach((group) => {
       const category = String(group?.category || "");
       if (!category) return;
       let target = result.find((entry) => entry.category === category);
       if (!target) {
-        target = { category, items: [] };
+        target = { category, items: [], requirements: { ...group?.requirements || {} } };
         result.push(target);
-        seenCategories.add(category);
+      } else if (group?.requirements) {
+        target.requirements = { ...target.requirements || {}, ...group.requirements };
       }
       const seenItems = new Set(target.items || []);
       (group.items || []).forEach((item) => {
@@ -677,10 +678,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       items: (group.items || []).filter((item) => !warrantyOverlapGenericItems.has(item))
     })).filter((group) => (group.items || []).length > 0);
   };
-  var getActiveChecklistTemplate = (warranty = {}) => {
+  var getActiveChecklistTemplate = (warranty = {}, extraSoproProductTemplate = []) => {
     const baseTemplate = getBaseChecklistTemplateForWarranty(warranty);
     const soproTemplate = warranty?.enabled ? getSoproChecklistTemplate(warranty?.system) : [];
-    if (!soproTemplate.length) return dedupeChecklistTemplate(baseTemplate);
+    const extraTemplate = warranty?.enabled ? extraSoproProductTemplate || [] : [];
+    if (!soproTemplate.length && !extraTemplate.length) return dedupeChecklistTemplate(baseTemplate);
     const soproUnderlag = soproTemplate.filter((group) => /Underlag/i.test(group.category));
     const soproMembran = soproTemplate.filter((group) => /Foliemembran|Membran/i.test(group.category));
     const soproOverganger = soproTemplate.filter((group) => /Overganger|Rør og sluk|Sluk og tetthetskontroll/i.test(group.category));
@@ -702,7 +704,77 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
     });
     result.push(...markInserted(soproTemplate));
+    result.push(...markInserted(extraTemplate));
     return dedupeChecklistTemplate(result);
+  };
+  var buildSelectedSoproProductChecklistTemplate = ({
+    warranty = {},
+    selectedProducts = [],
+    productMasterByProduct = {},
+    productMasterCheckpointsByProduct = {}
+  } = {}) => {
+    if (!warranty?.enabled || !warranty?.system) return [];
+    const warrantySystem = warranty.system;
+    const groups = [];
+    const usedCategories = new Set();
+    (selectedProducts || []).forEach((product) => {
+      const productName = product?.item || product?.name || "";
+      const masterRow = productMasterByProduct?.[productName];
+      if (!masterRow || !isSoproGuaranteeProductMasterRow(masterRow)) return;
+      const productNo = String(masterRow.product_no || "").trim();
+      if (!productNo) return;
+      const checkpoints = (productMasterCheckpointsByProduct?.[productNo] || []).filter((checkpoint) => {
+        if (checkpoint?.checkpoint_type && checkpoint.checkpoint_type !== "garanti") return false;
+        const system = checkpoint?.guarantee_system || "all";
+        return system === "all" || system === warrantySystem;
+      });
+      if (!checkpoints.length) return;
+      let category = `Sopro garantikontrollpunkter – ${productDisplayNameFromMaster(masterRow) || productName}`;
+      let suffix = 2;
+      while (usedCategories.has(category)) {
+        category = `Sopro garantikontrollpunkter – ${productDisplayNameFromMaster(masterRow) || productName} (${suffix})`;
+        suffix += 1;
+      }
+      usedCategories.add(category);
+      const requirements = {};
+      const items = [];
+      checkpoints.forEach((checkpoint) => {
+        const checkpointText = String(checkpoint?.checkpoint_text || "").trim();
+        if (!checkpointText || items.includes(checkpointText)) return;
+        items.push(checkpointText);
+        requirements[checkpointText] = {
+          image_required: !!checkpoint.image_required,
+          comment_required: !!checkpoint.comment_required,
+          product_no: productNo,
+          product_name: productDisplayNameFromMaster(masterRow) || productName,
+          guarantee_system: checkpoint.guarantee_system || "all"
+        };
+      });
+      if (items.length) groups.push({ category, items, requirements });
+    });
+    return groups;
+  };
+  var getDynamicSoproWarrantyRequirementStatus = (checklist = {}, dynamicTemplate = []) => {
+    const missing = [];
+    const points = [];
+    (dynamicTemplate || []).forEach((group) => {
+      (group.items || []).forEach((item) => {
+        const value = checklist?.[group.category]?.[item] || {};
+        const req = group.requirements?.[item] || {};
+        const statusDone = hasValue(value?.status);
+        const imageDone = !req.image_required || (value?.photos || []).some((photo) => hasValue(photo?.url));
+        const commentDone = !req.comment_required || hasValue(value?.comment);
+        const done = statusDone && imageDone && commentDone;
+        const point = { category: group.category, item, status: value?.status || "", done, statusDone, imageDone, commentDone, requirement: req, anchorId: checklistPointAnchor(group.category, item) };
+        points.push(point);
+        if (!done) {
+          if (!statusDone) missing.push(`${group.category}: ${item} må ha status.`);
+          if (!imageDone) missing.push(`${group.category}: ${item} krever bildedokumentasjon.`);
+          if (!commentDone) missing.push(`${group.category}: ${item} krever kommentar.`);
+        }
+      });
+    });
+    return { points, missing, total: points.length, done: points.filter((point) => point.done).length, complete: points.length === 0 || missing.length === 0, percent: points.length ? Math.round(points.filter((point) => point.done).length / points.length * 100) : 100 };
   };
   var emptyWarranty = () => ({
     enabled: false,
@@ -956,6 +1028,15 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       return map;
     }, [productMasterCheckpoints]);
 
+    const selectedSoproProductChecklistTemplate = (0, import_react.useMemo)(() => buildSelectedSoproProductChecklistTemplate({
+      warranty,
+      selectedProducts: selected,
+      productMasterByProduct,
+      productMasterCheckpointsByProduct
+    }), [warranty, selected, productMasterByProduct, productMasterCheckpointsByProduct]);
+    const activeChecklistTemplate = (0, import_react.useMemo)(() => getActiveChecklistTemplate(warranty, selectedSoproProductChecklistTemplate), [warranty, selectedSoproProductChecklistTemplate]);
+    const dynamicSoproWarrantyRequirementStatus = (0, import_react.useMemo)(() => getDynamicSoproWarrantyRequirementStatus(checklist, selectedSoproProductChecklistTemplate), [checklist, selectedSoproProductChecklistTemplate]);
+
     const toggleProductCheckpointPanel = (productNo) => {
       const key = String(productNo || "").trim();
       if (!key) return;
@@ -1021,7 +1102,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const productCount = (selected || []).length + (manualSelected || []).length;
       const photoCount = (photos || []).filter((photo) => photo?.url).length;
       const checklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
-      const checklistTotal = checklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
+      const checklistTotal = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
       const checklistDone = checklistValues.filter((value) => hasValue(value?.status)).length;
       const checklistMissing = Math.max(0, checklistTotal - checklistDone);
       const checklistAvvik = checklistValues.filter((value) => value?.status === "Avvik").length;
@@ -1045,7 +1126,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ];
       const completionPercent = Math.round(completionChecks.filter(Boolean).length / completionChecks.length * 100);
       return { productCount, photoCount, checklistTotal, checklistDone, checklistMissing, checklistAvvik, openDeviationCount, hasProjectBasics, hasDescription, hasCustomerEmail, hasCustomerPhone, hasOvertagelse, completionPercent };
-    }, [selected, manualSelected, photos, checklist, project, overtagelse]);
+    }, [selected, manualSelected, photos, checklist, project, overtagelse, activeChecklistTemplate]);
     const projectGuideItems = (0, import_react.useMemo)(() => {
       const items = [];
       if (!projectGuideStats.hasProjectBasics) items.push({ id: "basis", label: "Fyll inn prosjekt, adresse og kunde", tab: "prosjekt", tone: "warning" });
@@ -1070,7 +1151,6 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const openDeviationCount = getOpenDeviationCount(checklist);
       const selectedSystem = soproWarrantySystems.find((item) => item.id === warranty?.system);
       const approvedSoproSystemSelected = !!selectedSystem;
-      const activeChecklistTemplate = getActiveChecklistTemplate(warranty);
       const checklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
       const checklistTotal = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
       const checklistDone = activeChecklistTemplate.reduce((sum, group) => {
@@ -1078,10 +1158,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }, 0);
       const checklistComplete = checklistTotal > 0 && checklistDone >= checklistTotal;
       const systemPointStatus = getSoproWarrantyPointStatus(checklist, warranty?.system);
+      const dynamicPointStatus = dynamicSoproWarrantyRequirementStatus;
       const systemChecklistTemplate = getSoproChecklistTemplate(warranty?.system);
-      const systemChecklistTotal = systemPointStatus.total;
-      const systemChecklistDone = systemPointStatus.done;
-      const systemChecklistComplete = !approvedSoproSystemSelected ? false : systemPointStatus.complete;
+      const systemChecklistTotal = systemPointStatus.total + dynamicPointStatus.total;
+      const systemChecklistDone = systemPointStatus.done + dynamicPointStatus.done;
+      const systemChecklistComplete = !approvedSoproSystemSelected ? false : systemPointStatus.complete && dynamicPointStatus.complete;
       const hasPhotos = (photos || []).some((photo) => hasValue(photo?.url));
       const reportGenerated = !!warranty?.reportGeneratedAt;
       const termsAccepted = !!warranty?.termsAccepted || (!!warranty?.enabled && overtagelseSigned);
@@ -1090,7 +1171,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (!overtagelseSigned) missing.push("Overtagelse må være aktivert og signert av både utførende og kunde.");
       if (openDeviationCount > 0) missing.push("Alle åpne avvik må lukkes før garanti kan utstedes.");
       if (!checklistComplete) missing.push("Alle ordinære sjekklister og systemspesifikke Sopro-punkter må ha status.");
-      if (approvedSoproSystemSelected && !systemChecklistComplete) missing.push("Alle kontrollpunkter for valgt Sopro-system må være fullført.");
+      if (approvedSoproSystemSelected && !systemChecklistComplete) missing.push("Alle kontrollpunkter for valgt Sopro-system og valgte Sopro-produkter må være fullført.");
+      dynamicPointStatus.missing.forEach((message) => missing.push(message));
       if (!hasPhotos) missing.push("Bildedokumentasjon må være lastet opp.");
       if (!approvedSoproSystemSelected) missing.push("Godkjent Sopro-system må velges.");
       if (!reportGenerated) missing.push("Komplett PDF-rapport må genereres og lastes ned før garanti kan utstedes.");
@@ -1103,9 +1185,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         systemChecklistTotal,
         systemChecklistDone,
         systemChecklistComplete,
-        systemChecklistPercent: systemPointStatus.percent,
-        missingSystemChecklistPoints: systemPointStatus.missing,
-        systemChecklistPoints: systemPointStatus.points,
+        systemChecklistPercent: systemChecklistTotal ? Math.round(systemChecklistDone / systemChecklistTotal * 100) : systemPointStatus.percent,
+        missingSystemChecklistPoints: [...systemPointStatus.missing, ...dynamicPointStatus.points.filter((point) => !point.done)],
+        systemChecklistPoints: [...systemPointStatus.points, ...dynamicPointStatus.points],
         hasPhotos,
         reportGenerated,
         termsAccepted,
@@ -1114,7 +1196,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         missing,
         ready: missing.length === 0
       };
-    }, [overtagelse, checklist, photos, warranty]);
+    }, [overtagelse, checklist, photos, warranty, activeChecklistTemplate, dynamicSoproWarrantyRequirementStatus]);
     const issueWarranty = async () => {
       if (isProjectLocked) return alert("Prosjektet er låst og fungerer som arkiv. Garanti kan ikke utstedes eller endres etter låsing.");
       if (!warranty?.enabled) return alert("Aktiver garantien først.");
@@ -4786,6 +4868,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 showOpenDeviationsOnly,
                 setShowOpenDeviationsOnly,
                 warranty,
+                activeChecklistTemplate,
                 onSaveChecklistNow: saveChecklistNow,
                 checklistSaveStatus
               }
@@ -4904,7 +4987,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       };
       const customerPortalBaseChecklistStats = countChecklistTemplateStatus(getBaseChecklistTemplateForWarranty(warranty));
       const customerPortalSoproChecklistStats = countChecklistTemplateStatus(warranty?.enabled ? getSoproChecklistTemplate(warranty?.system) : []);
-      const customerPortalActiveChecklistStats = countChecklistTemplateStatus(getActiveChecklistTemplate(warranty));
+      const customerPortalActiveChecklistStats = countChecklistTemplateStatus(activeChecklistTemplate);
       const customerPortalChecklistTotal = customerPortalActiveChecklistStats.total;
       const customerPortalChecklistDone = customerPortalActiveChecklistStats.done;
       const customerPortalChecklistMissing = customerPortalActiveChecklistStats.missing;
@@ -6244,7 +6327,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               closedByName: user.name || authUser?.email || "Utførende",
               showOpenDeviationsOnly,
               setShowOpenDeviationsOnly,
-              warranty
+              warranty,
+              activeChecklistTemplate
             }
           )
         ] }),
@@ -7230,8 +7314,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektleder har ikke lagt inn egen prosjektbeskrivelse ennå." })
     ] });
   }
-  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, onSaveChecklistNow = null, checklistSaveStatus = "" }) {
-    const activeChecklistTemplate = getActiveChecklistTemplate(warranty);
+  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, onSaveChecklistNow = null, checklistSaveStatus = "" }) {
+    const activeChecklistTemplate = providedActiveChecklistTemplate || getActiveChecklistTemplate(warranty);
     const [openCategories, setOpenCategories] = import_react.default.useState(() => ({ [activeChecklistTemplate[0]?.category || ""]: true }));
     import_react.default.useEffect(() => {
       if (!showOpenDeviationsOnly) return;
@@ -7386,12 +7470,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             const value = checklist[group.category]?.[item] || {};
             const pointTone = value.status === "Avvik" ? "avvik" : value.status === "Lukket avvik" ? "done" : value.status ? "done" : "missing";
             const warrantyPoint = isSoproWarrantyPoint(group.category);
+            const pointRequirement = group.requirements?.[item] || {};
             const anchorId = checklistPointAnchor(group.category, item);
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { id: anchorId, className: `checklistPoint checklistPoint-${pointTone}${warrantyPoint ? " checklistWarrantyPoint" : ""}`, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistHeader", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistPointTitle", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item }),
                   warrantyPoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "🛡️ Garantipunkt" }),
+                  pointRequirement.image_required && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "📷 Bilde påkrevd" }),
+                  pointRequirement.comment_required && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "✍️ Kommentar påkrevd" }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                     value.status || "Ikke vurdert",
                     (value.photos || []).length > 0 ? ` \xB7 \u{1F4F7} ${(value.photos || []).length} bilder` : ""
