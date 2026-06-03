@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.3: Skjuler lagre/kopi/PDF-knapper før prosjekt er åpnet eller nytt prosjekt er startet.
 // FASE 10 Deploy 1.2: Mobil sjekkliste åpner første uferdige punkt + fjernet teknisk hjelpetekst.
 // FASE 10 Deploy 1.1: Mobil åpningsside + forbedret mobilscroll ved fanebytte.
  // FASE 10 Deploy 1.0: Fjernet synlig utvikler-/backendtekst fra brukerflater og feilmeldinger.
@@ -1057,6 +1058,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
 
     const pendingAdminUsers = (0, import_react.useMemo)(() => (adminUsers || []).filter((u) => !u?.approved && !u?.deactivated), [adminUsers]);
     const visibleAdminUsers = (0, import_react.useMemo)(() => adminUserFilter === "all" ? adminUsers || [] : pendingAdminUsers, [adminUsers, pendingAdminUsers, adminUserFilter]);
+    const hasActiveProjectWorkspace = !!projectId || !!mobileCreatingProject;
     const name = company.companyName || "Expo Proffsenter";
     const urlParams = new URLSearchParams(window.location.search);
     const accessMode = urlParams.get("access") || urlParams.get("role") || (urlParams.has("project") ? "kunde" : "");
@@ -6076,9 +6078,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectId ? "Oppdater prosjekt" : "Lagre / oppdater prosjekt" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
+          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
+          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
+          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
             " Last ned PDF"
           ] }),
