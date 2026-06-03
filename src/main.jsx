@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 1.5: Justert Produktmaster-checkbox og mer luft i produktkort i rapport/PDF.
 // FASE 9 Deploy 1.4: Produktmaster kan opprette nye produkter for Produkter-fanen + Sopro tekstpresisering mansjetter/tettebånd.
 // FASE 9 Deploy 1.3: Endret dokumentert tetthetsgaranti fra 12 til 15 år og samlet garantiperiode i konstant.
 // FASE 8 Deploy 5.1: Mobilforbedring for sjekklister + autolagring av bildedokumentasjon ved opplasting.
@@ -3127,7 +3128,8 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
           const commentLines = product.comment ? doc.splitTextToSize(`Kommentar: ${product.comment}`, contentWidth - 16) : [];
           const nameLines = doc.splitTextToSize(safeText(productName), contentWidth - 16).slice(0, 2);
           const docsRows = links.length ? links.length : 1;
-          const boxH = Math.max(31, 22 + nameLines.length * 4.4 + commentLines.length * 3.8 + docsRows * 6.8);
+          const productNameToDocsGap = commentLines.length ? 2.0 : 5.0;
+          const boxH = Math.max(34, 24 + nameLines.length * 4.4 + commentLines.length * 3.8 + productNameToDocsGap + docsRows * 6.8);
           ensureSpace(boxH + 5);
 
           doc.setDrawColor(214, 226, 236);
@@ -3146,7 +3148,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
           doc.setTextColor(15, 23, 42);
           doc.text(nameLines, margin + 6, y + 18.2);
 
-          let yy = y + 18.2 + nameLines.length * 4.5 + 0.5;
+          let yy = y + 18.2 + nameLines.length * 4.5 + productNameToDocsGap;
           if (commentLines.length) {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7.1);
@@ -6330,9 +6332,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produkt-/leverandørside", value: newProductMaster.document_file_url || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, document_file_url: v })) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kommentar", value: newProductMaster.comment || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, comment: v })) })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { marginTop: "10px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { marginTop: "12px", display: "flex", alignItems: "center", gap: "10px", width: "fit-content", padding: "8px 0" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.showInProducts, onChange: (e) => setNewProductMaster((p) => ({ ...p, showInProducts: e.target.checked })) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Vis produktet i Produkter-fanen" })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { lineHeight: "1.2" }, children: "Vis produktet i Produkter-fanen" })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: createProductMasterRow, children: "Lagre nytt produkt" }),
