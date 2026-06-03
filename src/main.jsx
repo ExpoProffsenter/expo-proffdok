@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 2.5: Alle garantipunkter krever bilde og kommentar + fikset avhuking for Sopro garantikontrollpunkt ved nytt produkt.
 // FASE 9 Deploy 2.4: Sopro garantikontrollpunkter fra Produktmaster kobles inn i aktive garantisjekklister.
 // FASE 9 Deploy 2.3: Produktmaster-kontrollpunkter presisert og begrenset til Sopro garantikontrollpunkter.
 // FASE 9 Deploy 2.3A: Admin-fanen er kun for ekte admin + tydeliggjort at kontrollpunkt-tall gjelder Produktmaster-punkter.
@@ -199,8 +200,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     createCheckpoint: false,
     checkpoint_text: "",
     checkpoint_type: "garanti",
-    image_required: false,
-    comment_required: false,
+    image_required: true,
+    comment_required: true,
     guarantee_system: "all",
     sort_order: 0
   });
@@ -223,8 +224,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     product_no: productNo,
     checkpoint_text: "",
     checkpoint_type: "garanti",
-    image_required: false,
-    comment_required: false,
+    image_required: true,
+    comment_required: true,
     guarantee_system: "all",
     sort_order: 0
   });
@@ -614,12 +615,18 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const template = getSoproChecklistTemplate(systemId);
     const points = template.flatMap((group) => (group.items || []).map((item) => {
       const value = checklist?.[group.category]?.[item] || {};
-      const done = hasValue(value?.status);
+      const statusDone = hasValue(value?.status);
+      const imageDone = (value?.photos || []).some((photo) => hasValue(photo?.url));
+      const commentDone = hasValue(value?.comment);
+      const done = statusDone && imageDone && commentDone;
       return {
         category: group.category,
         item,
         status: value?.status || "",
         done,
+        statusDone,
+        imageDone,
+        commentDone,
         anchorId: checklistPointAnchor(group.category, item)
       };
     }));
@@ -743,8 +750,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         if (!checkpointText || items.includes(checkpointText)) return;
         items.push(checkpointText);
         requirements[checkpointText] = {
-          image_required: !!checkpoint.image_required,
-          comment_required: !!checkpoint.comment_required,
+          image_required: true,
+          comment_required: true,
           product_no: productNo,
           product_name: productDisplayNameFromMaster(masterRow) || productName,
           guarantee_system: checkpoint.guarantee_system || "all"
@@ -2823,8 +2830,8 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
         product_no: productNo,
         checkpoint_text: checkpointText,
         checkpoint_type: productCheckpointTypeOptions.includes(draft.checkpoint_type) ? draft.checkpoint_type : "standard",
-        image_required: !!draft.image_required,
-        comment_required: !!draft.comment_required,
+        image_required: true,
+        comment_required: true,
         guarantee_system: productCheckpointSystemOptions.includes(draft.guarantee_system) ? draft.guarantee_system : "all",
         sort_order: Number.isFinite(Number(draft.sort_order)) ? Number(draft.sort_order) : 0
       };
@@ -2911,8 +2918,8 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
           product_no: productNo,
           checkpoint_text: String(newProductMaster.checkpoint_text || "").trim(),
           checkpoint_type: productCheckpointTypeOptions.includes(newProductMaster.checkpoint_type) ? newProductMaster.checkpoint_type : "standard",
-          image_required: !!newProductMaster.image_required,
-          comment_required: !!newProductMaster.comment_required,
+          image_required: true,
+          comment_required: true,
           guarantee_system: productCheckpointSystemOptions.includes(newProductMaster.guarantee_system) ? newProductMaster.guarantee_system : "all",
           sort_order: Number.isFinite(Number(newProductMaster.sort_order)) ? Number(newProductMaster.sort_order) : 0
         };
@@ -6753,11 +6760,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "12px", background: "#f8fafc" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "10px", width: "fit-content" }, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.createCheckpoint, disabled: !isSoproGuaranteeProductMasterRow(newProductMaster), onChange: (e) => setNewProductMaster((p) => ({ ...p, createCheckpoint: e.target.checked })) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.createCheckpoint, onChange: (e) => setNewProductMaster((p) => ({ ...p, createCheckpoint: e.target.checked, image_required: e.target.checked ? true : p.image_required, comment_required: e.target.checked ? true : p.comment_required })) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Legg til Sopro garantikontrollpunkt samtidig" })
                 ] }),
                 newProductMaster.createCheckpoint && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Fragment, { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "8px" }, children: "Garantikontrollpunktet lagres på Sopro-produktet i Produktmaster. Dette er foreløpig kun admin-data og påvirker ikke eksisterende prosjekter eller sjekklister før vi eksplisitt kobler det mot garantimotoren." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "8px" }, children: "Garantikontrollpunktet lagres på Sopro-produktet i Produktmaster og kobles inn i garantisjekklisten når garantien er aktivert og produktet er valgt. Alle garantipunkter krever bilde og kommentar uansett om garantien er 10, 12 eller 15 år." }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Garantikontrollpunkttekst", value: newProductMaster.checkpoint_text || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, checkpoint_text: v })) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type", value: newProductMaster.checkpoint_type || "standard", options: productCheckpointTypeOptions, optionLabels: productCheckpointTypeLabels, onChange: (v) => setNewProductMaster((p) => ({ ...p, checkpoint_type: v })) }),
@@ -6766,11 +6773,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   ] }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "center", marginTop: "10px" }, children: [
                     /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px", width: "fit-content" }, children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.image_required, onChange: (e) => setNewProductMaster((p) => ({ ...p, image_required: e.target.checked })) }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: true, disabled: true, onChange: () => {} }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Bilde påkrevd" })
                     ] }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px", width: "fit-content" }, children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.comment_required, onChange: (e) => setNewProductMaster((p) => ({ ...p, comment_required: e.target.checked })) }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: true, disabled: true, onChange: () => {} }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Kommentar påkrevd" })
                     ] })
                   ] })
@@ -6818,8 +6825,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                       productCheckpointTypeLabels[checkpoint.checkpoint_type] || checkpoint.checkpoint_type || "Standard kontrollpunkt",
                       " · ",
                       productCheckpointSystemLabels[checkpoint.guarantee_system] || checkpoint.guarantee_system || "Alle systemer",
-                      checkpoint.image_required ? " · Bilde påkrevd" : "",
-                      checkpoint.comment_required ? " · Kommentar påkrevd" : "",
+                      " · Bilde påkrevd",
+                      " · Kommentar påkrevd",
                       Number(checkpoint.sort_order || 0) ? ` · Sortering ${checkpoint.sort_order}` : ""
                     ] }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", style: { marginTop: "8px" }, onClick: () => deleteProductMasterCheckpoint(checkpoint), children: "Slett garantikontrollpunkt" })
@@ -7470,7 +7477,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             const value = checklist[group.category]?.[item] || {};
             const pointTone = value.status === "Avvik" ? "avvik" : value.status === "Lukket avvik" ? "done" : value.status ? "done" : "missing";
             const warrantyPoint = isSoproWarrantyPoint(group.category);
-            const pointRequirement = group.requirements?.[item] || {};
+            const pointRequirement = warrantyPoint ? { ...group.requirements?.[item] || {}, image_required: true, comment_required: true } : group.requirements?.[item] || {};
             const anchorId = checklistPointAnchor(group.category, item);
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { id: anchorId, className: `checklistPoint checklistPoint-${pointTone}${warrantyPoint ? " checklistWarrantyPoint" : ""}`, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistHeader", children: [
