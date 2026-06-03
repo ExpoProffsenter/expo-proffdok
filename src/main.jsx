@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 1.8: Nøytral garantiheading før aktivering, fortsatt valgbar 10/12/15 år.
 // FASE 9 Deploy 1.7: Valgbar garantiperiode 10/12/15 år og skjult intern Produktmaster-notat.
 // FASE 9 Deploy 1.6: Låste prosjekter fryses som arkiv og mottar ikke nye dokumentlenker/produktmaster-synk.
 // FASE 9 Deploy 1.5: Justert Produktmaster-checkbox og mer luft i produktkort i rapport/PDF.
@@ -6613,7 +6614,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       if (!receiptName) return alert("Fyll inn navn på den som bekrefter mottak av garantivilkår.");
       setWarranty({ ...emptyWarranty(), ...warranty, termsAccepted: true, termsAcceptedAt: new Date().toISOString(), termsAcceptedBy: receiptName, termsReceiptName: receiptName, termsReceiptRole: warranty?.termsReceiptRole || "Kunde" });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: `${warrantyYears} års dokumentert tetthetsgaranti`, icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: enabled ? `${warrantyYears} års dokumentert tetthetsgaranti` : "Dokumentert tetthetsgaranti", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantien er valgfri og kan bare utstedes når overtagelse er signert, alle avvik er lukket, sjekklister er fullført, bildedokumentasjon er lastet opp og godkjent Sopro-system er valgt." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "10px" }, children: [
