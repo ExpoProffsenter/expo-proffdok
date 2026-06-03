@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.11: Søkefelt i Admin Produktmaster for rask filtrering av produkter.
 // FASE 10 Deploy 1.10: Produktmaster styrer fargevalg for fug og silikon; Sopro-lister brukes kun som fallback.
 // FASE 10 Deploy 1.8: Sopro-baserte fargekoder for fug og silikon + PDF viser produktdokumenter med innhold som standard.
 // FASE 10 Deploy 1.7: Produktdokumenter med innhold vises som standard i PDF + fargevalg for fug og silikon.
@@ -1091,6 +1092,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [openProductCheckpointPanels, setOpenProductCheckpointPanels] = (0, import_react.useState)({});
     const [newProductCheckpoints, setNewProductCheckpoints] = (0, import_react.useState)({});
     const [newProductMaster, setNewProductMaster] = (0, import_react.useState)(emptyNewProductMaster());
+    const [productMasterSearch, setProductMasterSearch] = (0, import_react.useState)("");
     const [showOpenDeviationsOnly, setShowOpenDeviationsOnly] = (0, import_react.useState)(false);
     const [checklistSaveStatus, setChecklistSaveStatus] = (0, import_react.useState)("");
     const [photoSaveStatus, setPhotoSaveStatus] = (0, import_react.useState)("");
@@ -1213,6 +1215,26 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const appMatches = rows.filter((row) => row?.used_in_app_standard_list || hasValue(row?.app_match_name)).length;
       return { total: rows.length, withDocs, appMatches };
     }, [productMaster]);
+    const visibleProductMasterRows = (0, import_react.useMemo)(() => {
+      const baseRows = (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url) || hasValue(row.sikkerhetsdatablad_url) || hasValue(row.document_file_url));
+      const search = String(productMasterSearch || "").trim().toLowerCase();
+      if (!search) return baseRows;
+      return baseRows.filter((row) => [
+        row.product_no,
+        row.product_name,
+        row.product_family,
+        row.category,
+        row.app_match_name,
+        row.color_code,
+        row.comment,
+        row.fdv_url,
+        row.datablad_url,
+        row.dop_url,
+        row.epd_url,
+        row.sikkerhetsdatablad_url,
+        row.document_file_url
+      ].filter(Boolean).join(" ").toLowerCase().includes(search));
+    }, [productMaster, productMasterSearch]);
     const productMasterCheckpointsByProduct = (0, import_react.useMemo)(() => {
       const map = {};
       (productMasterCheckpoints || []).forEach((checkpoint) => {
@@ -7183,6 +7205,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadProductMaster(true), children: productMasterLoading ? "Henter produktmaster..." : "Oppdater produktmaster" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => loadProductMasterCheckpoints(true), children: productMasterCheckpointLoading ? "Henter garantikontrollpunkter..." : "Oppdater garantikontrollpunkter" })
             ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#f8fafc" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk i Produktmaster", value: productMasterSearch, placeholder: "Søk på varenummer, produktnavn, kategori, farge eller dokumentlink", onChange: setProductMasterSearch }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", style: { marginTop: "8px" }, children: [
+                "Viser ",
+                visibleProductMasterRows.length,
+                " av ",
+                (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url) || hasValue(row.sikkerhetsdatablad_url) || hasValue(row.document_file_url)).length,
+                " produkter/varianter."
+              ] })
+            ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "+ Legg til nytt produkt i Produktmaster" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne for nye produkter, for eksempel nye Sopro-silikoner, fuger eller systemprodukter. Hvis 'Vis i Produkter-fanen' er huket av, blir produktet tilgjengelig i valgt produktkategori uten kodeendring. Farger kan legges inn i feltet Fargekoder / varianter, for eksempel: 10 Hvit; 15 Grå; 34 Bahamabeige. Garantikontrollpunkter skal kun brukes for Sopro-produkter som inngår i garantiordningen." }),
@@ -7235,7 +7267,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] }),
                 ] }),
             (productMaster || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter funnet i produktmaster. Kontakt systemansvarlig hvis produktlisten mangler." }),
-            (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            (productMaster || []).length > 0 && visibleProductMasterRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter matcher søket." }),
+            visibleProductMasterRows.map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: row.product_name }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                 row.product_no,
