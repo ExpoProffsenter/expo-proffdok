@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 1.9: Premium kontrollprotokoll i rapport/PDF med kompakte sjekkpunkter og bildedokumentasjon under sjekkpunkt.
 // FASE 9 Deploy 1.8: Nøytral garantiheading før aktivering, fortsatt valgbar 10/12/15 år.
 // FASE 9 Deploy 1.7: Valgbar garantiperiode 10/12/15 år og skjult intern Produktmaster-notat.
 // FASE 9 Deploy 1.6: Låste prosjekter fryses som arkiv og mottar ikke nye dokumentlenker/produktmaster-synk.
@@ -3274,47 +3275,104 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
           }
           y += 17;
         };
-        const addChecklistStatusCard = (category, item, value = {}) => {
+        const addChecklistStatusCard = async (category, item, value = {}) => {
           const status = value?.status || "";
           const comment = value?.comment || "";
           const closeComment = value?.closeComment || "";
+          const pointPhotos = (value?.photos || []).filter((photo) => hasValue(photo?.url));
           const visual = statusVisual(status);
-          const textLines = doc.splitTextToSize(safeText(item), contentWidth - 34);
-          const commentLines = comment ? doc.splitTextToSize(`Kommentar: ${comment}`, contentWidth - 18) : [];
-          const closeLines = status === "Lukket avvik" && closeComment ? doc.splitTextToSize(`Lukket: ${closeComment}`, contentWidth - 18) : [];
-          const boxH = Math.max(18, 12 + textLines.length * 4.6 + commentLines.length * 4.0 + closeLines.length * 4.0);
-          ensureSpace(boxH + 9);
-          doc.setDrawColor(...visual.border);
-          doc.setFillColor(...visual.bg);
-          doc.roundedRect(margin, y, contentWidth, boxH, 3.2, 3.2, "FD");
-          const isOk = ["ok", "utført", "utfort", "lukket avvik"].includes(String(status || "").toLowerCase());
-          doc.setDrawColor(...visual.border);
-          doc.setFillColor(255, 255, 255);
-          doc.circle(margin + 8, y + 9, 3.6, "FD");
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(7.0);
-          doc.setTextColor(...visual.text);
-          doc.setFontSize(isOk ? 9.0 : 7.0);
-          doc.text(isOk ? "✓" : visual.label.slice(0, 1), margin + 8, y + 10.1, { align: "center" });
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.4);
-          doc.setTextColor(15, 23, 42);
-          doc.text(textLines, margin + 17, y + 8.7);
-          let yy = y + 9 + textLines.length * 4.6;
-          if (commentLines.length) {
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.7);
-            doc.setTextColor(71, 85, 105);
-            doc.text(commentLines, margin + 9, yy + 2);
-            yy += commentLines.length * 4.0;
+          const cleanStatus = String(status || "").toLowerCase();
+          const isOpenDeviation = cleanStatus === "avvik";
+          const isClosedDeviation = cleanStatus === "lukket avvik";
+          const isNotRelevant = cleanStatus === "ikke aktuelt";
+          const isOk = ["ok", "utført", "utfort"].includes(cleanStatus);
+          const statusLabel = isOk ? "OK" : isClosedDeviation ? "LUKKET AVVIK" : isOpenDeviation ? "ÅPENT AVVIK" : isNotRelevant ? "IKKE AKTUELT" : (status || "IKKE VURDERT");
+          const textLines = doc.splitTextToSize(safeText(item), contentWidth - 38);
+          const commentLabel = isOpenDeviation || isClosedDeviation ? "Opprinnelig avvik" : "Kommentar";
+          const commentLines = comment ? doc.splitTextToSize(`${commentLabel}: ${comment}`, contentWidth - 20) : [];
+          const closeLines = isClosedDeviation && closeComment ? doc.splitTextToSize(`Utbedring / lukkekommentar: ${closeComment}`, contentWidth - 20) : [];
+          const isCompact = isOk || isNotRelevant;
+          const rowH = isCompact
+            ? Math.max(10.5, 7.2 + textLines.length * 4.2)
+            : Math.max(18, 12 + textLines.length * 4.5 + commentLines.length * 3.8 + closeLines.length * 3.8);
+          ensureSpace(rowH + (pointPhotos.length ? 49 : 4));
+
+          if (isCompact) {
+            const iconColor = isOk ? [22, 163, 74] : [100, 116, 139];
+            doc.setDrawColor(226, 232, 240);
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(margin, y, contentWidth, rowH, 2.2, 2.2, "FD");
+            doc.setDrawColor(...iconColor);
+            doc.setFillColor(isOk ? 236 : 248, isOk ? 253 : 250, isOk ? 245 : 252);
+            doc.circle(margin + 5.3, y + rowH / 2, 2.7, "FD");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7.5);
+            doc.setTextColor(...iconColor);
+            doc.text(isOk ? "✓" : "–", margin + 5.3, y + rowH / 2 + 1.1, { align: "center" });
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8.8);
+            doc.setTextColor(15, 23, 42);
+            doc.text(textLines, margin + 12, y + 6.8);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(6.4);
+            doc.setTextColor(...iconColor);
+            doc.text(statusLabel, pageWidth - margin - 4, y + 6.8, { align: "right" });
+            y += rowH + 2.8;
+          } else {
+            doc.setDrawColor(...visual.border);
+            doc.setFillColor(...visual.bg);
+            doc.roundedRect(margin, y, contentWidth, rowH, 3.0, 3.0, "FD");
+            doc.setDrawColor(...visual.border);
+            doc.setFillColor(255, 255, 255);
+            doc.circle(margin + 7, y + 8.7, 3.4, "FD");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7.0);
+            doc.setTextColor(...visual.text);
+            doc.text(isClosedDeviation ? "✓" : visual.label.slice(0, 1), margin + 7, y + 9.8, { align: "center" });
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9.2);
+            doc.setTextColor(15, 23, 42);
+            doc.text(textLines, margin + 15, y + 8.4);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(6.6);
+            doc.setTextColor(...visual.text);
+            doc.text(statusLabel, pageWidth - margin - 5, y + 8.4, { align: "right" });
+            let yy = y + 9 + textLines.length * 4.4;
+            if (commentLines.length) {
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(7.5);
+              doc.setTextColor(71, 85, 105);
+              doc.text(commentLines, margin + 9, yy + 2);
+              yy += commentLines.length * 3.8;
+            }
+            if (closeLines.length) {
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(7.5);
+              doc.setTextColor(6, 95, 70);
+              doc.text(closeLines, margin + 9, yy + 3);
+            }
+            y += rowH + 4.5;
           }
-          if (closeLines.length) {
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.7);
-            doc.setTextColor(6, 95, 70);
-            doc.text(closeLines, margin + 9, yy + 3);
+
+          if (pointPhotos.length) {
+            ensureSpace(48);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7.6);
+            doc.setTextColor(12, 42, 82);
+            doc.text(`Bildedokumentasjon (${pointPhotos.length})`, margin + 12, y + 2);
+            y += 5;
+            const gap = 4;
+            const cardW = (contentWidth - 18 - gap) / 2;
+            const cardH = 38;
+            for (let i = 0; i < pointPhotos.length; i += 2) {
+              ensureSpace(cardH + 6);
+              await drawImageGalleryCard({ ...pointPhotos[i], _reportCaption: pointPhotos[i]?.name || `${item} – bilde ${i + 1}` }, margin + 12, y, cardW, cardH);
+              if (pointPhotos[i + 1]) {
+                await drawImageGalleryCard({ ...pointPhotos[i + 1], _reportCaption: pointPhotos[i + 1]?.name || `${item} – bilde ${i + 2}` }, margin + 12 + cardW + gap, y, cardW, cardH);
+              }
+              y += cardH + 5;
+            }
           }
-          y += boxH + 7;
         };
 
 const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
@@ -3896,14 +3954,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         setPdfProgress("Bygger sjekklister…", "Fremhever OK-punkter, avvik og kommentarer.");
         addSectionPageBreak("Sjekkliste / utførte kontroller");
         addParagraph("Kontrollpunktene under viser registrert status for prosjektet. Godkjente punkter er fremhevet for å gi en tydelig dokumentasjon av utført kontroll.", { size: 8.5, lineHeight: 4.3 });
-        Object.entries(checklist || {}).forEach(([category, items]) => {
+        for (const [category, items] of Object.entries(checklist || {})) {
           const itemEntries = Object.entries(items || {});
-          if (!itemEntries.length) return;
+          if (!itemEntries.length) continue;
           addChecklistCategoryTitle(category, itemEntries.length);
-          itemEntries.forEach(([item, value]) => {
-            addChecklistStatusCard(category, item, value || {});
-          });
-        });
+          for (const [item, value] of itemEntries) {
+            await addChecklistStatusCard(category, item, value || {});
+          }
+        }
 
         const deviations = [];
         Object.entries(checklist || {}).forEach(([category, items]) => {
@@ -7107,33 +7165,96 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       });
     });
     if (!rows.length) return null;
+
+    const statusMeta = (status = "") => {
+      const clean = String(status || "").toLowerCase();
+      if (clean === "avvik") return { icon: "!", label: "Åpent avvik", color: "#991b1b", bg: "#fef2f2", border: "#f87171" };
+      if (clean === "lukket avvik") return { icon: "✓", label: "Lukket avvik", color: "#065f46", bg: "#ecfdf5", border: "#4ade80" };
+      if (clean === "ikke aktuelt") return { icon: "–", label: "Ikke aktuelt", color: "#475569", bg: "#f8fafc", border: "#cbd5e1" };
+      if (clean === "ok" || clean === "utført" || clean === "utfort") return { icon: "✓", label: "OK", color: "#047857", bg: "#ffffff", border: "#e2e8f0" };
+      return { icon: "?", label: status || "Ikke vurdert", color: "#92400e", bg: "#fffbeb", border: "#fbbf24" };
+    };
+
     const deviations = rows.filter((r) => r.status === "Avvik" || r.status === "Lukket avvik");
     const openDeviationTotal = deviations.filter((r) => r.status === "Avvik").length;
     const closedDeviationTotal = deviations.filter((r) => r.status === "Lukket avvik").length;
+    const categories = [...new Set(rows.map((r) => r.category))];
+
+    const itemStyle = (meta) => ({
+      border: `1px solid ${meta.border}`,
+      background: meta.bg,
+      borderRadius: 12,
+      padding: "10px 12px",
+      margin: "8px 0 10px",
+      breakInside: "avoid",
+      pageBreakInside: "avoid"
+    });
+    const iconStyle = (meta) => ({
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: 24,
+      height: 24,
+      borderRadius: 999,
+      border: `1px solid ${meta.color}`,
+      color: meta.color,
+      fontWeight: 800,
+      marginRight: 10,
+      flex: "0 0 auto"
+    });
+
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekkliste" }),
-      [...new Set(rows.map((r) => r.category))].map((category) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: category }),
-        rows.filter((r) => r.category === category).map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistReportItem", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.item }),
-            " — ",
-            r.status || "Ikke vurdert"
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekkliste / utførte kontroller" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kontrollpunktene under viser registrert status for prosjektet. Bilder som er lagt inn på et sjekkpunkt vises direkte under punktet." }),
+      categories.map((category) => {
+        const categoryRows = rows.filter((r) => r.category === category);
+        return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: 18 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, padding: "10px 14px", marginBottom: 8 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { margin: 0, color: "#0c2a52" }, children: category }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { color: "#475569" }, children: [
+              categoryRows.length,
+              " punkt"
+            ] })
           ] }),
-          r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.status === "Lukket avvik" ? "Opprinnelig avvik: " : "Kommentar: " }),
-            r.comment
-          ] }),
-          r.status === "Lukket avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Utbedring / lukkekommentar: " }),
-            r.closeComment || "Lukket uten egen lukkekommentar",
-            r.closedBy ? ` · Lukket av ${r.closedBy}` : "",
-            r.closedAt ? ` · ${new Date(r.closedAt).toLocaleString("no-NO")}` : ""
-          ] }),
-          (r.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: r.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photo", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, alt: p.name || r.item }) }, p.id)) })
-        ] }, r.category + r.item))
-      ] }, category)),
-      deviations.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          categoryRows.map((r) => {
+            const meta = statusMeta(r.status);
+            const hasPhotos = (r.photos || []).length > 0;
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: itemStyle(meta), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "flex-start", gap: 0 }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: iconStyle(meta), children: meta.icon }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { flex: 1 }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.item }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { style: { color: meta.color, fontWeight: 800, whiteSpace: "nowrap" }, children: meta.label })
+                  ] }),
+                  r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { style: { margin: "6px 0 0" }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.status === "Avvik" || r.status === "Lukket avvik" ? "Opprinnelig avvik: " : "Kommentar: " }),
+                    r.comment
+                  ] }),
+                  r.status === "Lukket avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { style: { margin: "6px 0 0", color: "#065f46" }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Utbedring / lukkekommentar: " }),
+                    r.closeComment || "Lukket uten egen lukkekommentar",
+                    r.closedBy ? ` · Lukket av ${r.closedBy}` : "",
+                    r.closedAt ? ` · ${new Date(r.closedAt).toLocaleString("no-NO")}` : ""
+                  ] }),
+                  hasPhotos && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: 10 }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", color: "#0c2a52", fontWeight: 800, marginBottom: 6 }, children: [
+                      "📷 Bildedokumentasjon (",
+                      (r.photos || []).length,
+                      ")"
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: (r.photos || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, alt: p.name || r.item }),
+                      p.name && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name })
+                    ] }, p.id || p.url)) })
+                  ] })
+                ] })
+              ] })
+            ] }, r.category + r.item);
+          })
+        ] }, category);
+      }),
+      deviations.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: 22 }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Avviksliste" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Avviksoppsummering: " }),
@@ -7164,7 +7285,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] })
     ] });
   }
-  function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
+function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
     const groups = buildBathroomEquipmentReportGroups(surf, bathroomEquipment);
     if (!groups.length) return null;
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
