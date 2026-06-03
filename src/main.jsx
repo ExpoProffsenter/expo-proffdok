@@ -1466,7 +1466,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       return { active, deviations, unreadProjects, readyForCustomer };
     }, [projectListRows]);
     const tabs = [
-      ["prosjekt", "Prosjekt"],
+      ["prosjekt", "Startside"],
       ["prosjektinfo", "Prosjektinformasjon/beskrivelse"],
       ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
       ["firma", "Firmaprofil"],
