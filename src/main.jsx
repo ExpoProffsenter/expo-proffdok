@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.10: Produktmaster styrer fargevalg for fug og silikon; Sopro-lister brukes kun som fallback.
 // FASE 10 Deploy 1.8: Sopro-baserte fargekoder for fug og silikon + PDF viser produktdokumenter med innhold som standard.
 // FASE 10 Deploy 1.7: Produktdokumenter med innhold vises som standard i PDF + fargevalg for fug og silikon.
 // FASE 10 Deploy 1.5: Ren startvisning når ingen prosjekt er valgt; prosjektdata vises først etter valgt/opprettet prosjekt.
@@ -371,6 +372,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     return /fug|silikon|silicon|df\s*10|dfx|dfh|fl\s*plus|nsm|ceramic|keramik|marmor|sanit[æae]r|ssi|ksi|msi/.test(text);
   };
   var normalizeColorCodeLabel = (value = "") => String(value || "").trim().replace(/\s+/g, " ");
+  var splitColorCodeOptions = (value = "") => String(value || "")
+    .split(/[;\n|,]+/)
+    .map((entry) => normalizeColorCodeLabel(entry))
+    .filter(Boolean);
   var normalizeColorSortKey = (value = "") => {
     const clean = normalizeColorCodeLabel(value);
     const codeMatch = clean.match(/^(\d{2,3})\b/) || clean.match(/(\d{2,3})\s*$/);
@@ -1186,7 +1191,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         if (rowText === cleanProduct) return true;
         if (rowText.includes(cleanProduct) || cleanProduct.includes(rowText)) return true;
         return productWords.length && productWords.some((word) => rowText.includes(word));
-      }).map((row) => normalizeColorCodeLabel(row?.color_code)).filter(hasValue);
+      }).flatMap((row) => splitColorCodeOptions(row?.color_code)).filter(hasValue);
       const getBaseColorOptions = () => {
         if (/df\s*10|df10|designfug/.test(cleanProduct)) return soproDf10ColorOptions;
         if (/fl\s*plus|flexfuge/.test(cleanProduct)) return soproFlPlusColorOptions;
@@ -1195,9 +1200,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         if (/silikon|silicon|sanit[æae]r|ssi|ceramic|keramik|ksi|msi/.test(cleanProduct)) return soproSanitarySiliconeColorOptions;
         return soproColorCodeFallbackOptions;
       };
-      const baseOptions = getBaseColorOptions();
       const selectedValue = normalizeColorCodeLabel(productDocs?.[productName]?.colorCode || "");
-      const options = uniqueColorOptions([...baseOptions, ...masterColors, selectedValue]);
+      const sourceOptions = masterColors.length ? masterColors : getBaseColorOptions();
+      const options = uniqueColorOptions([...sourceOptions, selectedValue]);
       const emptyOption = [""];
       const sortedOptions = options.filter(Boolean).sort((a, b) => normalizeColorSortKey(a) - normalizeColorSortKey(b) || a.localeCompare(b, "no"));
       return [...emptyOption, ...sortedOptions];
@@ -7180,13 +7185,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "+ Legg til nytt produkt i Produktmaster" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne for nye produkter, for eksempel nye Sopro-silikoner, fuger eller systemprodukter. Hvis 'Vis i Produkter-fanen' er huket av, blir produktet tilgjengelig i valgt produktkategori uten kodeendring. Garantikontrollpunkter skal kun brukes for Sopro-produkter som inngår i garantiordningen." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne for nye produkter, for eksempel nye Sopro-silikoner, fuger eller systemprodukter. Hvis 'Vis i Produkter-fanen' er huket av, blir produktet tilgjengelig i valgt produktkategori uten kodeendring. Farger kan legges inn i feltet Fargekoder / varianter, for eksempel: 10 Hvit; 15 Grå; 34 Bahamabeige. Garantikontrollpunkter skal kun brukes for Sopro-produkter som inngår i garantiordningen." }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Varenummer", value: newProductMaster.product_no || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, product_no: v })) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: newProductMaster.product_name || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, product_name: v })) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktfamilie", value: newProductMaster.product_family || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, product_family: v })) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Vis i produktkategori", value: newProductMaster.category || "Fugemasse / silikon", options: productCategoryOptions, onChange: (v) => setNewProductMaster((p) => ({ ...p, category: v })) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fargekode / variant", value: newProductMaster.color_code || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, color_code: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fargekoder / varianter (skill med semikolon)", value: newProductMaster.color_code || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, color_code: v })) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link", value: newProductMaster.fdv_url || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, fdv_url: v })) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: newProductMaster.datablad_url || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, datablad_url: v })) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: newProductMaster.dop_url || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, dop_url: v })) }),
