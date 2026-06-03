@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 1.4: Produktmaster kan opprette nye produkter for Produkter-fanen + Sopro tekstpresisering mansjetter/tettebånd.
 // FASE 9 Deploy 1.3: Endret dokumentert tetthetsgaranti fra 12 til 15 år og samlet garantiperiode i konstant.
 // FASE 8 Deploy 5.1: Mobilforbedring for sjekklister + autolagring av bildedokumentasjon ved opplasting.
 // FASE 8 Deploy 5: Autolagring av sjekklister, garantibadge i prosjektliste og løftet garantisertifikat.
@@ -63,8 +64,50 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     { title: "Primer / forsterkningsduk", items: ["Sopro PG-X 1188", "Sopro EPG 1522 - 2 Komponent Epoxy primer", "Sopro HPS 673 - spesial primer ikke sugende", "Sopro GD 749 - primer sugende underlag", "Sopro SG 874 Dampsperre-Primer"] },
     { title: "Membransystem / tetting", items: ["Sopro FDK 1-K 1180 membranlim", "Sopro FDF 527 sm\xF8remembran lys gr\xE5", "Sopro DSF 623 RS - 1K sementbasert membran", "AEB 815 Tetteduk", "Sopro BBM 134 Slukmansjett", "Sopro FDB 524 selvklebende tetteb\xE5nd", "Sopro AEB 816 Tetteb\xE5nd", "Sopro AEB 821 Hj\xF8rnemansjett innerhj\xF8rne", "Sopro AEB 822 Hj\xF8rnemansjett ytterhj\xF8rne", "Sopro AEB 825 R\xF8rmansjett \xD810-24mm", "Sopro AEB 826 R\xF8rmansjett \xD832-55mm", "Sopro AEB 827 R\xF8rmansjett \xD875-110mm", "Sopro AEB 828 R\xF8rmansjett \xD8110-140mm"] },
     { title: "Limprodukter / festeprodukter", items: ["Sopro\u2019s No.1 400 Flislim", "Sopro\u2019s No.1 403 Silver Hurtig flislim", "Sopro FKM XL 444 St\xF8vredusert flislim", "Sopro FKM 5555 Hurtig flislim", "Sopro FF 450 - Sigefri flislim"] },
-    { title: "Fugemasse / silikon", items: ["Sopro DFH Bruksklar fugemasse", "Sopro DFX epoxyfug", "Sopro DF 10\xAE Designfug", "Sopro FL plus Fugemasse", "Sopro Sanit\xE6r Silikon", "Sopro Ceramic Silikon"] }
+    { title: "Fugemasse / silikon", items: ["Sopro DFH Bruksklar fugemasse", "Sopro DFX epoxyfug", "Sopro DF 10\xAE Designfug", "Sopro FL plus Fugemasse", "Sopro Sanit\xE6r Silikon", "Sopro Ceramic Silikon", "Sopro NSM Neutralsilikon Matt"] }
   ];
+  var productCategoryOptions = productSections.map((section) => section.title);
+  var emptyNewProductMaster = () => ({
+    product_no: "",
+    product_name: "",
+    product_family: "",
+    category: "Fugemasse / silikon",
+    color_code: "",
+    fdv_url: "",
+    datablad_url: "",
+    dop_url: "",
+    epd_url: "",
+    sikkerhetsdatablad_url: "",
+    document_file_url: "",
+    comment: "",
+    showInProducts: true
+  });
+  var formatProductMasterComment = (row = {}) => {
+    const parts = [];
+    if (hasValue(row.color_code)) parts.push(`Fargekode: ${row.color_code}`);
+    if (hasValue(row.comment)) parts.push(row.comment);
+    return parts.join("\n");
+  };
+  var productDisplayNameFromMaster = (row = {}) => String(row.app_match_name || row.product_name || "").trim();
+  var buildProductSectionsWithMaster = (baseSections = [], masterRows = []) => {
+    const sections = (baseSections || []).map((section) => ({ ...section, items: [...section.items || []] }));
+    const ensureSection = (title = "Andre produkter") => {
+      const cleanTitle = String(title || "Andre produkter").trim() || "Andre produkter";
+      let section = sections.find((entry) => entry.title === cleanTitle);
+      if (!section) {
+        section = { title: cleanTitle, items: [] };
+        sections.push(section);
+      }
+      return section;
+    };
+    (masterRows || []).filter((row) => row?.active !== false && (row?.used_in_app_standard_list || hasValue(row?.app_match_name))).forEach((row) => {
+      const productName = productDisplayNameFromMaster(row);
+      if (!productName) return;
+      const section = ensureSection(row.category || row.product_family || "Andre produkter");
+      if (!section.items.includes(productName)) section.items.push(productName);
+    });
+    return sections;
+  };
   var surfaces = ["Veggflis 1", "Veggflis 2", "Veggflis 3", "Gulvflis 1", "Gulvflis 2", "Gulvflis 3", "Mosaikkfliser vegg", "Mosaikkfliser gulv", "Dekorfliser"];
   var bathroomEquipmentSections = [
     { title: "Overflater", items: [
@@ -350,14 +393,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         items: [
           "Sopro AEB 815 foliemembran er montert iht. leverandørens monteringsanvisning",
           "Folieskjøter er limt med Sopro FDK 1-K 1180 / Sopro FDK 415 eller annet godkjent systemlim",
-          "Tettebånd er montert i alle overganger mellom gulv og vegg, hjørner, folieskjøter og tilslutninger",
+          "Sopro tettebånd er montert i alle overganger mellom gulv og vegg, hjørner, folieskjøter og tilslutninger",
           "Innvendige og utvendige hjørner er utført med Sopro systemdetaljer"
         ]
       },
       {
         category: "Sopro AEB 815 / TG 20918 – Rør og sluk",
         items: [
-          "Rørmansjetter er montert på alle rørgjennomføringer og veggbokser",
+          "Sopro rørmansjetter er montert på alle rørgjennomføringer og veggbokser",
           "Rør og veggbokser er rengjort før mansjetter er montert",
           "Slukmansjett er montert iht. leverandørens monteringsanvisning",
           "Klemring/limflens er kontrollert og utført iht. valgt sluktype",
@@ -394,9 +437,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       {
         category: "Sopro FDF 525/527 / TG 20987 – Overganger og gjennomføringer",
         items: [
-          "Fiberremse/tettebånd er montert i plateskjøter, overganger og tilslutninger",
+          "Sopro tettebånd/fiberremse er montert i plateskjøter, overganger og tilslutninger",
           "Innvendige og utvendige hjørner er forsterket med Sopro hjørnemansjetter",
-          "Rørmansjetter er montert på alle rørgjennomføringer med riktig dimensjon",
+          "Sopro rørmansjetter er montert på alle rørgjennomføringer med riktig dimensjon",
           "Rør er rengjort før mansjett er montert",
           "Tekstilsjikt på mansjetter er fullstendig dekket med Sopro FDF 525/527",
           "Membran er ført litt forbi mansjett og ut på rør/veggboks"
@@ -474,9 +517,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     "Primer påført",
     "Tørketid fulgt",
     "Membranløsning kontrollert",
-    "Tettebånd montert",
+    "Sopro tettebånd montert",
     "Slukmansjett montert",
-    "Rørmansjetter montert",
+    "Sopro rørmansjetter montert",
     "Trykktesting av membran",
     "Minimum 5 cm overlapp på skjøter med tetningsduk/tettebånd er kontrollert",
     "Riktig membrantykkelse på vegger og gulv iht. Sopro anvisninger og myndighetskrav er kontrollert"
@@ -660,6 +703,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [fdvLoading, setFdvLoading] = (0, import_react.useState)(false);
     const [productMaster, setProductMaster] = (0, import_react.useState)([]);
     const [productMasterLoading, setProductMasterLoading] = (0, import_react.useState)(false);
+    const [newProductMaster, setNewProductMaster] = (0, import_react.useState)(emptyNewProductMaster());
     const [showOpenDeviationsOnly, setShowOpenDeviationsOnly] = (0, import_react.useState)(false);
     const [checklistSaveStatus, setChecklistSaveStatus] = (0, import_react.useState)("");
     const [photoSaveStatus, setPhotoSaveStatus] = (0, import_react.useState)("");
@@ -703,7 +747,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const savedEmail = window.localStorage.getItem("expoProffDokAuthEmail");
       if (savedEmail) setAuthEmail(savedEmail);
     }, []);
-    const selected = (0, import_react.useMemo)(() => productSections.flatMap((s) => s.items.filter((i) => checked[i]).map((i) => ({
+    const effectiveProductSections = (0, import_react.useMemo)(() => buildProductSectionsWithMaster(productSections, productMaster), [productMaster]);
+    const selected = (0, import_react.useMemo)(() => effectiveProductSections.flatMap((s) => s.items.filter((i) => checked[i]).map((i) => ({
       section: s.title,
       item: i,
       fdvUrl: productDocs[i]?.fdvUrl || "",
@@ -2512,9 +2557,43 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       setProductMaster((prev) => (prev || []).map((x) => x.product_no === data.product_no ? data : x));
       alert("Produktdokumentasjon lagret.");
     };
+    const createProductMasterRow = async () => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til produktmaster.");
+      const productNo = String(newProductMaster.product_no || "").trim();
+      const productName = String(newProductMaster.product_name || "").trim();
+      if (!productNo) return alert("Varenummer mangler.");
+      if (!productName) return alert("Produktnavn mangler.");
+      const payload = {
+        product_no: productNo,
+        product_name: productName,
+        product_family: newProductMaster.product_family || productName,
+        category: newProductMaster.category || "Andre produkter",
+        app_match_name: newProductMaster.showInProducts ? productName : "",
+        used_in_app_standard_list: !!newProductMaster.showInProducts,
+        fdv_url: newProductMaster.fdv_url || "",
+        datablad_url: newProductMaster.datablad_url || "",
+        dop_url: newProductMaster.dop_url || "",
+        epd_url: newProductMaster.epd_url || "",
+        sikkerhetsdatablad_url: newProductMaster.sikkerhetsdatablad_url || "",
+        document_file_url: newProductMaster.document_file_url || "",
+        comment: formatProductMasterComment(newProductMaster),
+        active: true
+      };
+      const { data, error } = await supabase.from("product_document_master").upsert(payload, { onConflict: "product_no" }).select("*").single();
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke opprette produkt i Produktmaster: " + error.message);
+      }
+      setProductMaster((prev) => {
+        const exists = (prev || []).some((row) => row.product_no === data.product_no);
+        return exists ? (prev || []).map((row) => row.product_no === data.product_no ? data : row) : [data, ...prev || []];
+      });
+      setNewProductMaster(emptyNewProductMaster());
+      alert("✔ Produktet er lagret i Produktmaster" + (payload.used_in_app_standard_list ? " og vil vises i Produkter-fanen etter oppdatering." : "."));
+    };
     const syncCurrentProjectProducts = async () => {
       try {
-        const checkedNames = productSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
+        const checkedNames = effectiveProductSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
         if (!checkedNames.length) return alert("Ingen standardprodukter er valgt i dette prosjektet.");
         let updatedCount = 0;
         let missingCount = 0;
@@ -4263,7 +4342,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "\u{1F512} Prosjektet er avsluttet og l\xE5st. Nye endringer kan ikke lagres." })
           ] }),
           tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationReadOnly, { project }),
-          tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: productSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
+          tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: effectiveProductSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
               const doc = productDocs[i] || {};
@@ -5693,7 +5772,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addPhoto("Prosjektering", e.target.files) })
           ] })
         ] }),
-        tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: productSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
+        tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: effectiveProductSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
             const doc = productDocs[i] || {};
@@ -6234,6 +6313,33 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadProductMaster(true), children: productMasterLoading ? "Henter produktmaster..." : "Oppdater produktmaster" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "+ Legg til nytt produkt i Produktmaster" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne for nye produkter, for eksempel nye silikoner, fuger eller systemprodukter. Hvis 'Vis i Produkter-fanen' er huket av, blir produktet tilgjengelig i valgt produktkategori uten kodeendring." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Varenummer", value: newProductMaster.product_no || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, product_no: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: newProductMaster.product_name || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, product_name: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktfamilie", value: newProductMaster.product_family || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, product_family: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Vis i produktkategori", value: newProductMaster.category || "Fugemasse / silikon", options: productCategoryOptions, onChange: (v) => setNewProductMaster((p) => ({ ...p, category: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fargekode / variant", value: newProductMaster.color_code || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, color_code: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link", value: newProductMaster.fdv_url || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, fdv_url: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: newProductMaster.datablad_url || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, datablad_url: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: newProductMaster.dop_url || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, dop_url: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: newProductMaster.epd_url || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, epd_url: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: newProductMaster.sikkerhetsdatablad_url || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, sikkerhetsdatablad_url: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produkt-/leverandørside", value: newProductMaster.document_file_url || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, document_file_url: v })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kommentar", value: newProductMaster.comment || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, comment: v })) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { marginTop: "10px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.showInProducts, onChange: (e) => setNewProductMaster((p) => ({ ...p, showInProducts: e.target.checked })) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Vis produktet i Produkter-fanen" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: createProductMasterRow, children: "Lagre nytt produkt" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setNewProductMaster(emptyNewProductMaster()), children: "Tøm skjema" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "10px" }, children: "Sjekkpunkter/garantipunkter fra Produktmaster bør bygges som egen tabell i neste deploy, slik at de kan aktiveres uten å bruke kommentarfeltet som teknisk lagring." })
+            ] }),
             (productMaster || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter funnet i produktmaster. Kj\xF8r SQL-filen fra flisLAB-importen f\xF8rst." }),
             (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: row.product_name }),
