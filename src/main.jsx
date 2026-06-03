@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 2.3: Produktmaster-kontrollpunkter presisert og begrenset til Sopro garantikontrollpunkter.
 // FASE 9 Deploy 2.3A: Admin-fanen er kun for ekte admin + tydeliggjort at kontrollpunkt-tall gjelder Produktmaster-punkter.
 // FASE 9 Deploy 2.2: Produktmaster kontrollpunkter skjules bak vis/rediger-knapp + kan opprettes samtidig med nytt produkt.
 // FASE 9 Deploy 2.1: Admin Produktmaster kan hente, vise, opprette og slette produktbaserte kontrollpunkter uten å påvirke sjekklister/garanti.
@@ -196,20 +197,31 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     showInProducts: true,
     createCheckpoint: false,
     checkpoint_text: "",
-    checkpoint_type: "standard",
+    checkpoint_type: "garanti",
     image_required: false,
     comment_required: false,
     guarantee_system: "all",
     sort_order: 0
   });
   var productCheckpointTypeOptions = ["standard", "garanti"];
-  var productCheckpointTypeLabels = { standard: "Standard kontrollpunkt", garanti: "Garantipunkt" };
+  var productCheckpointTypeLabels = { standard: "Ordinært kontrollpunkt", garanti: "Garantikontrollpunkt" };
   var productCheckpointSystemOptions = ["all", "sopro-aeb-815", "sopro-fdf-525-527"];
   var productCheckpointSystemLabels = { all: "Alle systemer", "sopro-aeb-815": "Sopro AEB 815", "sopro-fdf-525-527": "Sopro FDF 525/527" };
+  var isSoproGuaranteeProductMasterRow = (row = {}) => {
+    const text = [
+      row.product_no,
+      row.product_name,
+      row.product_family,
+      row.category,
+      row.app_match_name,
+      row.comment
+    ].filter(Boolean).join(" ").toLowerCase();
+    return /sopro|\baeb\b|\bfdf\b|\bfdk\b|\bfdb\b|\bbbm\b|\bdsf\b|pg-x|hps|gd 749|sg 874|nsm|dfh|dfx|df 10|fl plus|sanit[æae]r silikon|ceramic silikon|tetteb[åa]nd|r[øo]rmansjett|slukmansjett|hj[øo]rnemansjett|membran/.test(text);
+  };
   var emptyNewProductCheckpoint = (productNo = "") => ({
     product_no: productNo,
     checkpoint_text: "",
-    checkpoint_type: "standard",
+    checkpoint_type: "garanti",
     image_required: false,
     comment_required: false,
     guarantee_system: "all",
@@ -2703,7 +2715,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
         return;
       }
       setProductMasterCheckpoints(data || []);
-      if (notify) alert(`Kontrollpunkter oppdatert. Fant ${(data || []).length} kontrollpunkt${(data || []).length === 1 ? "" : "er"}.`);
+      if (notify) alert(`Sopro garantikontrollpunkter oppdatert. Fant ${(data || []).length} punkt${(data || []).length === 1 ? "" : "er"}.`);
     };
     const productCheckpointDraft = (productNo) => newProductCheckpoints?.[productNo] || emptyNewProductCheckpoint(productNo);
     const updateProductCheckpointDraft = (productNo, patch) => {
@@ -2719,6 +2731,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
     };
     const createProductMasterCheckpoint = async (row) => {
       if (!isAdminUser) return alert("Du har ikke tilgang til produktmaster.");
+      if (!isSoproGuaranteeProductMasterRow(row)) return alert("Garantikontrollpunkter brukes kun for Sopro-produkter som inngår i garantisystemet.");
       const productNo = String(row?.product_no || "").trim();
       if (!productNo) return alert("Varenummer mangler.");
       const draft = productCheckpointDraft(productNo);
@@ -2740,19 +2753,19 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       }
       setProductMasterCheckpoints((prev) => [...prev || [], data]);
       setNewProductCheckpoints((prev) => ({ ...prev || {}, [productNo]: emptyNewProductCheckpoint(productNo) }));
-      alert("✔ Kontrollpunkt lagret på produktet.");
+      alert("✔ Sopro garantikontrollpunkt lagret på produktet.");
     };
     const deleteProductMasterCheckpoint = async (checkpoint) => {
       if (!isAdminUser) return alert("Du har ikke tilgang til produktmaster.");
       if (!checkpoint?.id) return alert("Kontrollpunkt mangler ID.");
-      if (!window.confirm("Vil du slette dette kontrollpunktet fra Produktmaster? Dette påvirker ikke eksisterende prosjekter.")) return;
+      if (!window.confirm("Vil du slette dette Sopro garantikontrollpunktet fra Produktmaster? Dette påvirker ikke eksisterende prosjekter.")) return;
       const { error } = await supabase.from("product_master_checkpoints").delete().eq("id", checkpoint.id);
       if (error) {
         console.error(error);
         return alert("Kunne ikke slette kontrollpunkt: " + error.message);
       }
       setProductMasterCheckpoints((prev) => (prev || []).filter((item) => item.id !== checkpoint.id));
-      alert("Kontrollpunkt slettet.");
+      alert("Sopro garantikontrollpunkt slettet.");
     };
     const updateProductMasterLocal = (productNo, patch) => {
       setProductMaster((prev) => (prev || []).map((row) => row.product_no === productNo ? { ...row, ...patch } : row));
@@ -2784,6 +2797,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       const productName = String(newProductMaster.product_name || "").trim();
       if (!productNo) return alert("Varenummer mangler.");
       if (!productName) return alert("Produktnavn mangler.");
+      if (newProductMaster.createCheckpoint && !isSoproGuaranteeProductMasterRow(newProductMaster)) return alert("Garantikontrollpunkt kan kun legges til samtidig for Sopro-produkter som inngår i garantisystemet. Fjern avhukingen eller skriv inn et Sopro-produkt.");
       const payload = {
         product_no: productNo,
         product_name: productName,
@@ -2831,7 +2845,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
         }
       }
       setNewProductMaster(emptyNewProductMaster());
-      alert("✔ Produktet er lagret i Produktmaster" + (payload.used_in_app_standard_list ? " og vil vises i Produkter-fanen etter oppdatering." : ".") + (checkpointCreated ? " Kontrollpunktet er også lagret." : ""));
+      alert("✔ Produktet er lagret i Produktmaster" + (payload.used_in_app_standard_list ? " og vil vises i Produkter-fanen etter oppdatering." : ".") + (checkpointCreated ? " Sopro garantikontrollpunkt er også lagret." : ""));
     };
     const syncCurrentProjectProducts = async () => {
       try {
@@ -6630,11 +6644,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "12px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadProductMaster(true), children: productMasterLoading ? "Henter produktmaster..." : "Oppdater produktmaster" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => loadProductMasterCheckpoints(true), children: productMasterCheckpointLoading ? "Henter kontrollpunkter..." : "Oppdater kontrollpunkter" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => loadProductMasterCheckpoints(true), children: productMasterCheckpointLoading ? "Henter garantikontrollpunkter..." : "Oppdater garantikontrollpunkter" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "+ Legg til nytt produkt i Produktmaster" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne for nye produkter, for eksempel nye silikoner, fuger eller systemprodukter. Hvis 'Vis i Produkter-fanen' er huket av, blir produktet tilgjengelig i valgt produktkategori uten kodeendring." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne for nye produkter, for eksempel nye Sopro-silikoner, fuger eller systemprodukter. Hvis 'Vis i Produkter-fanen' er huket av, blir produktet tilgjengelig i valgt produktkategori uten kodeendring. Garantikontrollpunkter skal kun brukes for Sopro-produkter som inngår i garantiordningen." }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Varenummer", value: newProductMaster.product_no || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, product_no: v })) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: newProductMaster.product_name || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, product_name: v })) }),
@@ -6655,13 +6669,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "12px", background: "#f8fafc" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "10px", width: "fit-content" }, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.createCheckpoint, onChange: (e) => setNewProductMaster((p) => ({ ...p, createCheckpoint: e.target.checked })) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Legg til kontrollpunkt samtidig" })
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.createCheckpoint, disabled: !isSoproGuaranteeProductMasterRow(newProductMaster), onChange: (e) => setNewProductMaster((p) => ({ ...p, createCheckpoint: e.target.checked })) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Legg til Sopro garantikontrollpunkt samtidig" })
                 ] }),
                 newProductMaster.createCheckpoint && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Fragment, { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "8px" }, children: "Kontrollpunktet lagres på produktet i Produktmaster. Det påvirker ikke eksisterende prosjekter før vi senere kobler produktkontrollpunkter mot sjekklistene." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "8px" }, children: "Garantikontrollpunktet lagres på Sopro-produktet i Produktmaster. Dette er foreløpig kun admin-data og påvirker ikke eksisterende prosjekter eller sjekklister før vi eksplisitt kobler det mot garantimotoren." }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kontrollpunkttekst", value: newProductMaster.checkpoint_text || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, checkpoint_text: v })) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Garantikontrollpunkttekst", value: newProductMaster.checkpoint_text || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, checkpoint_text: v })) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type", value: newProductMaster.checkpoint_type || "standard", options: productCheckpointTypeOptions, optionLabels: productCheckpointTypeLabels, onChange: (v) => setNewProductMaster((p) => ({ ...p, checkpoint_type: v })) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "System", value: newProductMaster.guarantee_system || "all", options: productCheckpointSystemOptions, optionLabels: productCheckpointSystemLabels, onChange: (v) => setNewProductMaster((p) => ({ ...p, guarantee_system: v })) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sortering", type: "number", value: newProductMaster.sort_order || 0, onChange: (v) => setNewProductMaster((p) => ({ ...p, sort_order: v })) })
@@ -6708,12 +6722,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   new Date(row.updated_at).toLocaleString("no-NO")
                 ] })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px" }, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => toggleProductCheckpointPanel(row.product_no), children: `${openProductCheckpointPanels?.[row.product_no] ? "Skjul" : "Vis / rediger"} Produktmaster-punkter (${(productMasterCheckpointsByProduct[row.product_no] || []).length})` }),
+              (isSoproGuaranteeProductMasterRow(row) || (productMasterCheckpointsByProduct[row.product_no] || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => toggleProductCheckpointPanel(row.product_no), children: `${openProductCheckpointPanels?.[row.product_no] ? "Skjul" : "Vis / rediger"} Sopro garantikontrollpunkter (${(productMasterCheckpointsByProduct[row.product_no] || []).length})` }),
                 openProductCheckpointPanels?.[row.product_no] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "10px", background: "#f8fafc" }, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "0 0 6px" }, children: "Produktmaster-kontrollpunkter" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan admin knytte nye produktbaserte kontrollpunkter til produktet. Tallet på knappen gjelder kun punkter som er lagret i Produktmaster-tabellen. Innebygde standardpunkter og Sopro-garantipunkter som allerede ligger i appen telles ikke her." }),
-                  (productMasterCheckpointsByProduct[row.product_no] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen Produktmaster-kontrollpunkter registrert på dette produktet ennå. Produktet kan likevel være dekket av innebygde standardpunkter eller Sopro-garantipunkter i appen." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "0 0 6px" }, children: "Sopro garantikontrollpunkter" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan admin registrere ekstra Sopro garantikontrollpunkter som senere kan kobles mot garantimotoren. Tallet på knappen gjelder kun punkter som er lagret i Produktmaster-tabellen. Innebygde Sopro-garantipunkter som allerede ligger i appen telles ikke her." }),
+                  (productMasterCheckpointsByProduct[row.product_no] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen ekstra Sopro garantikontrollpunkter registrert på dette produktet ennå. Produktet kan likevel være dekket av innebygde Sopro-garantipunkter i appen." }),
                   (productMasterCheckpointsByProduct[row.product_no] || []).map((checkpoint) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", style: { marginTop: "8px" }, children: [
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: checkpoint.checkpoint_text }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
@@ -6724,11 +6738,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                       checkpoint.comment_required ? " · Kommentar påkrevd" : "",
                       Number(checkpoint.sort_order || 0) ? ` · Sortering ${checkpoint.sort_order}` : ""
                     ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", style: { marginTop: "8px" }, onClick: () => deleteProductMasterCheckpoint(checkpoint), children: "Slett kontrollpunkt" })
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", style: { marginTop: "8px" }, onClick: () => deleteProductMasterCheckpoint(checkpoint), children: "Slett garantikontrollpunkt" })
                   ] }, checkpoint.id || `${row.product_no}-${checkpoint.checkpoint_text}`)),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "14px 0 8px" }, children: "+ Legg til kontrollpunkt" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "14px 0 8px" }, children: "+ Legg til Sopro garantikontrollpunkt" }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kontrollpunkttekst", value: productCheckpointDraft(row.product_no).checkpoint_text || "", onChange: (v) => updateProductCheckpointDraft(row.product_no, { checkpoint_text: v }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Garantikontrollpunkttekst", value: productCheckpointDraft(row.product_no).checkpoint_text || "", onChange: (v) => updateProductCheckpointDraft(row.product_no, { checkpoint_text: v }) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type", value: productCheckpointDraft(row.product_no).checkpoint_type || "standard", options: productCheckpointTypeOptions, optionLabels: productCheckpointTypeLabels, onChange: (v) => updateProductCheckpointDraft(row.product_no, { checkpoint_type: v }) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "System", value: productCheckpointDraft(row.product_no).guarantee_system || "all", options: productCheckpointSystemOptions, optionLabels: productCheckpointSystemLabels, onChange: (v) => updateProductCheckpointDraft(row.product_no, { guarantee_system: v }) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sortering", type: "number", value: productCheckpointDraft(row.product_no).sort_order || 0, onChange: (v) => updateProductCheckpointDraft(row.product_no, { sort_order: v }) })
@@ -6742,7 +6756,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!productCheckpointDraft(row.product_no).comment_required, onChange: (e) => updateProductCheckpointDraft(row.product_no, { comment_required: e.target.checked }) }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Kommentar påkrevd" })
                     ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => createProductMasterCheckpoint(row), children: "Lagre kontrollpunkt" })
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => createProductMasterCheckpoint(row), children: "Lagre garantikontrollpunkt" })
                   ] })
                 ] })
               ] })
