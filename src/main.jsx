@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.8: Sopro-baserte fargekoder for fug og silikon + PDF viser produktdokumenter med innhold som standard.
 // FASE 10 Deploy 1.7: Produktdokumenter med innhold vises som standard i PDF + fargevalg for fug og silikon.
 // FASE 10 Deploy 1.5: Ren startvisning når ingen prosjekt er valgt; prosjektdata vises først etter valgt/opprettet prosjekt.
 // FASE 10 Deploy 1.4: Skjuler Forrige/Neste før prosjekt er valgt eller nytt prosjekt er startet.
@@ -247,28 +248,75 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var productDisplayNameFromMaster = (row = {}) => String(row.app_match_name || row.product_name || "").trim();
   var soproColorCodeFallbackOptions = [
     "",
-    "Hvit",
-    "Sølvgrå",
-    "Lysegrå",
-    "Grå",
-    "Betonggrå",
-    "Manhattan",
-    "Antrasitt",
-    "Sort",
-    "Bahama Beige",
-    "Jasmin",
-    "Pergamon",
-    "Sandgrå",
-    "Mellomgrå",
-    "Naturgrå",
-    "Basalt",
+    "Transparent 00",
+    "Hvit 10",
+    "Betonggrå 14",
+    "Grå 15",
+    "Lysegrå 16",
+    "Sølvgrå 17",
+    "Sandgrå 18",
+    "Steingrå 22",
+    "Matt hvit 26",
+    "Pergament 27",
+    "Jasmine 28",
+    "Lys beige 29",
+    "Beige 32",
+    "Jurabeige 33",
+    "Bahamabeige 34",
+    "Karamell 38",
+    "Sahara 40",
+    "Kastanje 50",
+    "Brun 52",
+    "Mahogni 55",
+    "Balibrun 59",
+    "Ibenholt 62",
+    "Basalt 64",
+    "Antrasitt 66",
+    "Manhattan 77",
+    "Aqua 86",
+    "Sort 90",
+    "Signalrød 91",
+    "Vinrød 92",
+    "Dypsort 96",
+    "Dypblå 98",
+    "Gjennomsiktig 99",
+    "Annen fargekode – skriv i kommentar"
+  ];
+  var soproMatteSiliconeColorOptions = [
+    "",
+    "Sølvgrå 17",
+    "Grå 15",
+    "Sandgrå 18",
+    "Steingrå 22",
+    "Betonggrå 14",
+    "Antrasitt 66",
+    "Matt hvit 26",
+    "Lys beige 29",
+    "Beige 32",
     "Annen fargekode – skriv i kommentar"
   ];
   var productSupportsColorChoice = (productName = "", sectionName = "") => {
     const text = `${productName} ${sectionName}`.toLowerCase();
-    return /fug|silikon|silicon|df\s*10|dfx|dfh|fl\s*plus|nsm|ceramic|sanit[æae]r/.test(text);
+    return /fug|silikon|silicon|df\s*10|dfx|dfh|fl\s*plus|nsm|ceramic|keramik|marmor|sanit[æae]r|ssi|ksi|msi/.test(text);
   };
-  var normalizeColorCodeLabel = (value = "") => String(value || "").trim();
+  var normalizeColorCodeLabel = (value = "") => String(value || "").trim().replace(/\s+/g, " ");
+  var normalizeColorSortKey = (value = "") => {
+    const clean = normalizeColorCodeLabel(value);
+    const codeMatch = clean.match(/(\d{2,3})\s*$/);
+    return codeMatch ? Number(codeMatch[1]) : 9999;
+  };
+  var uniqueColorOptions = (values = []) => {
+    const seen = new Set();
+    const result = [];
+    (values || []).forEach((value) => {
+      const clean = normalizeColorCodeLabel(value);
+      const key = clean.toLowerCase();
+      if (!clean || seen.has(key)) return;
+      seen.add(key);
+      result.push(clean);
+    });
+    return result;
+  };
   var buildProductSectionsWithMaster = (baseSections = [], masterRows = []) => {
     const sections = (baseSections || []).map((section) => ({ ...section, items: [...section.items || []] }));
     const ensureSection = (title = "Andre produkter") => {
@@ -1068,7 +1116,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         if (rowText.includes(cleanProduct) || cleanProduct.includes(rowText)) return true;
         return productWords.length && productWords.some((word) => rowText.includes(word));
       }).map((row) => normalizeColorCodeLabel(row?.color_code)).filter(hasValue);
-      return Array.from(new Set([...soproColorCodeFallbackOptions, ...masterColors]));
+      const baseOptions = /nsm|matt/.test(cleanProduct) ? soproMatteSiliconeColorOptions : soproColorCodeFallbackOptions;
+      const selectedValue = normalizeColorCodeLabel(productDocs?.[productName]?.colorCode || "");
+      const options = uniqueColorOptions([...baseOptions, ...masterColors, selectedValue]);
+      const emptyOption = options.includes("") ? [""] : [""];
+      const sortedOptions = options.filter(Boolean).sort((a, b) => normalizeColorSortKey(a) - normalizeColorSortKey(b) || a.localeCompare(b, "no"));
+      return [...emptyOption, ...sortedOptions];
     };
     const productMasterStats = (0, import_react.useMemo)(() => {
       const rows = productMaster || [];
