@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.5: Ren startvisning når ingen prosjekt er valgt; prosjektdata vises først etter valgt/opprettet prosjekt.
 // FASE 10 Deploy 1.4: Skjuler Forrige/Neste før prosjekt er valgt eller nytt prosjekt er startet.
 // FASE 10 Deploy 1.3: Skjuler lagre/kopi/PDF-knapper før prosjekt er åpnet eller nytt prosjekt er startet.
 // FASE 10 Deploy 1.2: Mobil sjekkliste åpner første uferdige punkt + fjernet teknisk hjelpetekst.
@@ -5494,6 +5495,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       .mobileProjectChooser,
       .mobileCurrentProjectBar { display:none !important; }
       .desktopOnlyWhenNoProject { display:block !important; }
+
+      .desktopNoProjectWelcome { max-width:1180px; margin:28px auto; }
+      .desktopNoProjectHero { background:linear-gradient(135deg,#12384a,#1f4e6a); border-radius:28px; padding:34px; color:#fff; }
+      .desktopNoProjectHero h2 { color:#fff; font-size:34px; margin:10px 0 8px; }
+      .desktopNoProjectHero .note { color:rgba(255,255,255,.82); font-size:16px; max-width:720px; }
+      .desktopNoProjectHero .secondary { background:#fff; }
       @media screen and (min-width: 701px) {
         .mobileProjectChooser,
         .mobileCurrentProjectBar { display:none !important; }
@@ -6323,7 +6330,31 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }, item.id)) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektet ser komplett ut. Kontroller rapporten før prosjektet avsluttes." }),
           projectGuideStats.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openActiveDeviations, children: "Se aktive avvik" })
         ] }),
-        tab === "prosjekt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Prosjekt- og kundeinfo", defaultOpen: !(hasValue(project.projectName) && hasValue(project.customer) && hasValue(project.customerEmail || project.customerPhone)), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+        tab === "prosjekt" && (!hasActiveProjectWorkspace ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "desktopOnlyWhenNoProject desktopNoProjectWelcome", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "desktopNoProjectHero", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Velg eller opprett prosjekt" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen prosjekt er valgt. Start et nytt prosjekt, eller åpne et eksisterende prosjekt fra prosjektlisten før du fyller inn prosjektinformasjon." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "16px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { createNewProject(); setTab("prosjekt"); }, children: "+ Nytt prosjekt" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideGrid", style: { marginTop: "18px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.active }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "aktive prosjekter" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.unread }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "uleste chat" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.deviations }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "med avvik" })
+            ] })
+          ] })
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Prosjekt- og kundeinfo", defaultOpen: !(hasValue(project.projectName) && hasValue(project.customer) && hasValue(project.customerEmail || project.customerPhone)), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Prosjektansvarlig", value: project.responsible, onChange: (v) => setProject({ ...project, responsible: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato", type: "date", value: project.date, onChange: (v) => setProject({ ...project, date: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn p\xE5 prosjekt", value: project.projectName, onChange: (v) => setProject({ ...project, projectName: v }) }),
@@ -6335,7 +6366,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems })
-        ] }) }) }) }),
+        ] }) }) }) })),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektinformasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Standardtekster", defaultOpen: !hasValue(project.projectDescription), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
