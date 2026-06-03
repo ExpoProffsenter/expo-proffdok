@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 2.0: Tydelig grønn hake i rapportstatus + appikon/manifest for mobil-hjemskjerm.
 // FASE 9 Deploy 1.9: Premium kontrollprotokoll i rapport/PDF med kompakte sjekkpunkter og bildedokumentasjon under sjekkpunkt.
 // FASE 9 Deploy 1.8: Nøytral garantiheading før aktivering, fortsatt valgbar 10/12/15 år.
 // FASE 9 Deploy 1.7: Valgbar garantiperiode 10/12/15 år og skjult intern Produktmaster-notat.
@@ -62,6 +63,103 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
   );
   var uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+  var EXPO_PROFFDOK_APP_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <defs>
+      <linearGradient id="g" x1="56" y1="56" x2="456" y2="456" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#08d5d8"/>
+        <stop offset="1" stop-color="#0c2a52"/>
+      </linearGradient>
+    </defs>
+    <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#g)"/>
+    <rect x="54" y="54" width="404" height="404" rx="92" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="10"/>
+    <text x="256" y="224" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="86" font-weight="900" fill="#fff">EXPO</text>
+    <text x="256" y="310" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="82" font-weight="900" fill="#fff">PD</text>
+    <path d="M174 354l44 44 120-132" fill="none" stroke="#fff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+  var expoProffDokIconDataUrl = () => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(EXPO_PROFFDOK_APP_ICON_SVG)}`;
+  var ensureExpoProffDokHeadTag = (selector, createNode, patchNode) => {
+    if (typeof document === "undefined") return null;
+    let node = document.head.querySelector(selector);
+    if (!node) {
+      node = createNode();
+      document.head.appendChild(node);
+    }
+    if (patchNode) patchNode(node);
+    return node;
+  };
+  var ensureExpoProffDokAppBranding = () => {
+    if (typeof document === "undefined") return;
+    const title = "Expo ProffDok";
+    const iconUrl = expoProffDokIconDataUrl();
+    document.title = title;
+    ensureExpoProffDokHeadTag('meta[name="application-name"]', () => {
+      const meta = document.createElement("meta");
+      meta.setAttribute("name", "application-name");
+      return meta;
+    }, (meta) => meta.setAttribute("content", title));
+    ensureExpoProffDokHeadTag('meta[name="apple-mobile-web-app-title"]', () => {
+      const meta = document.createElement("meta");
+      meta.setAttribute("name", "apple-mobile-web-app-title");
+      return meta;
+    }, (meta) => meta.setAttribute("content", title));
+    ensureExpoProffDokHeadTag('meta[name="apple-mobile-web-app-capable"]', () => {
+      const meta = document.createElement("meta");
+      meta.setAttribute("name", "apple-mobile-web-app-capable");
+      return meta;
+    }, (meta) => meta.setAttribute("content", "yes"));
+    ensureExpoProffDokHeadTag('meta[name="mobile-web-app-capable"]', () => {
+      const meta = document.createElement("meta");
+      meta.setAttribute("name", "mobile-web-app-capable");
+      return meta;
+    }, (meta) => meta.setAttribute("content", "yes"));
+    ensureExpoProffDokHeadTag('meta[name="theme-color"]', () => {
+      const meta = document.createElement("meta");
+      meta.setAttribute("name", "theme-color");
+      return meta;
+    }, (meta) => meta.setAttribute("content", "#08d5d8"));
+    ensureExpoProffDokHeadTag('link[rel="icon"][data-expo-proffdok="true"]', () => {
+      const link = document.createElement("link");
+      link.setAttribute("rel", "icon");
+      link.setAttribute("type", "image/svg+xml");
+      link.setAttribute("data-expo-proffdok", "true");
+      return link;
+    }, (link) => link.setAttribute("href", iconUrl));
+    ensureExpoProffDokHeadTag('link[rel="apple-touch-icon"][data-expo-proffdok="true"]', () => {
+      const link = document.createElement("link");
+      link.setAttribute("rel", "apple-touch-icon");
+      link.setAttribute("sizes", "512x512");
+      link.setAttribute("data-expo-proffdok", "true");
+      return link;
+    }, (link) => link.setAttribute("href", iconUrl));
+    try {
+      const manifest = {
+        name: "Expo ProffDok",
+        short_name: "ProffDok",
+        description: "Prosjektdokumentasjon og FDV for våtrom",
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: "#08d5d8",
+        icons: [
+          { src: iconUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+        ]
+      };
+      const manifestUrl = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" }));
+      ensureExpoProffDokHeadTag('link[rel="manifest"][data-expo-proffdok="true"]', () => {
+        const link = document.createElement("link");
+        link.setAttribute("rel", "manifest");
+        link.setAttribute("data-expo-proffdok", "true");
+        return link;
+      }, (link) => {
+        const previous = link.getAttribute("href");
+        if (previous && previous.startsWith("blob:")) URL.revokeObjectURL(previous);
+        link.setAttribute("href", manifestUrl);
+      });
+    } catch (error) {
+      console.warn("Kunne ikke sette appmanifest:", error);
+    }
+  };
   var WARRANTY_YEAR_OPTIONS = [10, 12, 15];
   var WARRANTY_YEARS = 15;
   var getWarrantyYears = (warrantyConfig = {}) => {
@@ -668,6 +766,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     return result;
   };
   function App() {
+    (0, import_react.useEffect)(() => {
+      ensureExpoProffDokAppBranding();
+    }, []);
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
     const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
     const [user, setUser] = (0, import_react.useState)({ name: "", email: "", role: "Eier / administrator" });
@@ -3304,11 +3405,11 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
             doc.roundedRect(margin, y, contentWidth, rowH, 2.2, 2.2, "FD");
             doc.setDrawColor(...iconColor);
             doc.setFillColor(isOk ? 236 : 248, isOk ? 253 : 250, isOk ? 245 : 252);
-            doc.circle(margin + 5.3, y + rowH / 2, 2.7, "FD");
+            doc.circle(margin + 5.3, y + rowH / 2, 3.0, "FD");
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(7.5);
+            doc.setFontSize(isOk ? 8.8 : 7.5);
             doc.setTextColor(...iconColor);
-            doc.text(isOk ? "✓" : "–", margin + 5.3, y + rowH / 2 + 1.1, { align: "center" });
+            doc.text(isOk ? "✓" : "–", margin + 5.3, y + rowH / 2 + 1.2, { align: "center" });
             doc.setFont("helvetica", "bold");
             doc.setFontSize(8.8);
             doc.setTextColor(15, 23, 42);
@@ -7196,9 +7297,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       width: 24,
       height: 24,
       borderRadius: 999,
-      border: `1px solid ${meta.color}`,
+      border: `1.5px solid ${meta.color}`,
+      background: meta.label === "OK" ? "#ecfdf5" : "#ffffff",
       color: meta.color,
-      fontWeight: 800,
+      fontWeight: 900,
+      fontSize: 16,
+      lineHeight: 1,
       marginRight: 10,
       flex: "0 0 auto"
     });
