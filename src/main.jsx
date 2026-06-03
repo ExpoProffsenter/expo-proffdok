@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.7: Produktdokumenter med innhold vises som standard i PDF + fargevalg for fug og silikon.
 // FASE 10 Deploy 1.5: Ren startvisning når ingen prosjekt er valgt; prosjektdata vises først etter valgt/opprettet prosjekt.
 // FASE 10 Deploy 1.4: Skjuler Forrige/Neste før prosjekt er valgt eller nytt prosjekt er startet.
 // FASE 10 Deploy 1.3: Skjuler lagre/kopi/PDF-knapper før prosjekt er åpnet eller nytt prosjekt er startet.
@@ -244,6 +245,30 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     return parts.join("\n");
   };
   var productDisplayNameFromMaster = (row = {}) => String(row.app_match_name || row.product_name || "").trim();
+  var soproColorCodeFallbackOptions = [
+    "",
+    "Hvit",
+    "Sølvgrå",
+    "Lysegrå",
+    "Grå",
+    "Betonggrå",
+    "Manhattan",
+    "Antrasitt",
+    "Sort",
+    "Bahama Beige",
+    "Jasmin",
+    "Pergamon",
+    "Sandgrå",
+    "Mellomgrå",
+    "Naturgrå",
+    "Basalt",
+    "Annen fargekode – skriv i kommentar"
+  ];
+  var productSupportsColorChoice = (productName = "", sectionName = "") => {
+    const text = `${productName} ${sectionName}`.toLowerCase();
+    return /fug|silikon|silicon|df\s*10|dfx|dfh|fl\s*plus|nsm|ceramic|sanit[æae]r/.test(text);
+  };
+  var normalizeColorCodeLabel = (value = "") => String(value || "").trim();
   var buildProductSectionsWithMaster = (baseSections = [], masterRows = []) => {
     const sections = (baseSections || []).map((section) => ({ ...section, items: [...section.items || []] }));
     const ensureSection = (title = "Andre produkter") => {
@@ -403,7 +428,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }
   ];
   var accessRoleInfo = [
-    { role: "Eier / administrator", text: "Full tilgang til prosjekt, rapport, firmaprofil, prosjektliste og deling." },
+    { role: "Eier / administrator", text: "Full tilgang til prosjekt, rapport, firmaprofil, prosjektliste, deling og brukergodkjenning." },
     { role: "Ansatt", text: "Kan normalt opprette, endre og dokumentere prosjekter for firmaet." },
     { role: "Underleverand\xF8r", text: "Anbefales for fag som skal bidra med dokumentasjon, bilder, sjekklister eller utstyr p\xE5 prosjektet." },
     { role: "Kun lesetilgang", text: "Kunde/byggherre f\xE5r egen kundelink med rapport, tilbud/kontrakt og chat." }
@@ -860,8 +885,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var shouldIncludeProductReportDoc = (doc = {}, option) => {
     if (!doc || !option || !hasValue(doc?.[option.field])) return false;
     const choiceKey = `include${option.key}InReport`;
-    if (hasProductReportChoice(doc)) return doc?.[choiceKey] === true;
-    return option.field === "fdvUrl" || option.field === "documentFileUrl";
+    return doc?.[choiceKey] !== false;
   };
 
   var normalizeManualProductsBySection = (value = {}) => {
@@ -996,6 +1020,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       epdUrl: productDocs[i]?.epdUrl || "",
       sikkerhetsdatabladUrl: productDocs[i]?.sikkerhetsdatabladUrl || "",
       documentFileUrl: productDocs[i]?.documentFileUrl || "",
+      colorCode: productDocs[i]?.colorCode || productDocs[i]?.colourCode || productDocs[i]?.fargekode || "",
       comment: productDocs[i]?.comment || ""
     }))), [checked, productDocs]);
     const manualProductsBySection = (0, import_react.useMemo)(() => normalizeManualProductsBySection(manualProducts), [manualProducts]);
@@ -1027,6 +1052,24 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
       return map;
     }, [productMaster]);
+    const getProductColorOptions = (productName = "", sectionName = "") => {
+      if (!productSupportsColorChoice(productName, sectionName)) return [];
+      const cleanProduct = String(productName || "").toLowerCase();
+      const productWords = cleanProduct.split(/\s+/).filter((word) => word.length > 2);
+      const masterColors = (productMaster || []).filter((row) => {
+        const rowText = [
+          row?.app_match_name,
+          row?.product_name,
+          row?.product_family,
+          row?.category
+        ].filter(Boolean).join(" ").toLowerCase();
+        if (!rowText) return false;
+        if (rowText === cleanProduct) return true;
+        if (rowText.includes(cleanProduct) || cleanProduct.includes(rowText)) return true;
+        return productWords.length && productWords.some((word) => rowText.includes(word));
+      }).map((row) => normalizeColorCodeLabel(row?.color_code)).filter(hasValue);
+      return Array.from(new Set([...soproColorCodeFallbackOptions, ...masterColors]));
+    };
     const productMasterStats = (0, import_react.useMemo)(() => {
       const rows = productMaster || [];
       const withDocs = rows.filter((row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].some(hasValue)).length;
@@ -1466,7 +1509,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       return { active, deviations, unreadProjects, readyForCustomer };
     }, [projectListRows]);
     const tabs = [
-      ["prosjekt", "Startside"],
+      ["prosjekt", "Prosjekt"],
       ["prosjektinfo", "Prosjektinformasjon/beskrivelse"],
       ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
       ["firma", "Firmaprofil"],
@@ -3528,11 +3571,12 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
             if (/sikkerhet/i.test(label)) return "Sikkerhetsblad";
             return label;
           };
+          const colorLines = product.colorCode ? doc.splitTextToSize(`Fargekode: ${product.colorCode}`, contentWidth - 16) : [];
           const commentLines = product.comment ? doc.splitTextToSize(`Kommentar: ${product.comment}`, contentWidth - 16) : [];
           const nameLines = doc.splitTextToSize(safeText(productName), contentWidth - 16).slice(0, 2);
           const docsRows = links.length ? links.length : 1;
           const productNameToDocsGap = commentLines.length ? 2.0 : 5.0;
-          const boxH = Math.max(34, 24 + nameLines.length * 4.4 + commentLines.length * 3.8 + productNameToDocsGap + docsRows * 6.8);
+          const boxH = Math.max(34, 24 + nameLines.length * 4.4 + colorLines.length * 3.8 + commentLines.length * 3.8 + productNameToDocsGap + docsRows * 6.8);
           ensureSpace(boxH + 5);
 
           doc.setDrawColor(214, 226, 236);
@@ -3552,6 +3596,13 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
           doc.text(nameLines, margin + 6, y + 18.2);
 
           let yy = y + 18.2 + nameLines.length * 4.5 + productNameToDocsGap;
+          if (colorLines.length) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7.2);
+            doc.setTextColor(15, 23, 42);
+            doc.text(colorLines, margin + 6, yy);
+            yy += colorLines.length * 3.8 + 1.2;
+          }
           if (commentLines.length) {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7.1);
@@ -4824,6 +4875,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: doc.dopUrl || "", onChange: (v) => updateProductDoc(i, { dopUrl: v, fdvSource: "manual" }) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: doc.epdUrl || "", onChange: (v) => updateProductDoc(i, { epdUrl: v, fdvSource: "manual" }) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: doc.sikkerhetsdatabladUrl || "", onChange: (v) => updateProductDoc(i, { sikkerhetsdatabladUrl: v, fdvSource: "manual" }) }),
+                    productSupportsColorChoice(i, s.title) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Fargekode", value: doc.colorCode || "", onChange: (v) => updateProductDoc(i, { colorCode: v }), options: getProductColorOptions(i, s.title) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: doc.comment || "", onChange: (v) => updateProductDoc(i, { comment: v }) })
                   ] }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProductReportDocumentSelector, { doc, productName: i, updateProductDoc }),
@@ -6462,8 +6514,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: doc.dopUrl || "", onChange: (v) => updateProductDoc(i, { dopUrl: v, fdvSource: "manual" }) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: doc.epdUrl || "", onChange: (v) => updateProductDoc(i, { epdUrl: v, fdvSource: "manual" }) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: doc.sikkerhetsdatabladUrl || "", onChange: (v) => updateProductDoc(i, { sikkerhetsdatabladUrl: v, fdvSource: "manual" }) }),
+                    productSupportsColorChoice(i, s.title) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Fargekode", value: doc.colorCode || "", onChange: (v) => updateProductDoc(i, { colorCode: v }), options: getProductColorOptions(i, s.title) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: doc.comment || "", onChange: (v) => updateProductDoc(i, { comment: v }) })
                 ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProductReportDocumentSelector, { doc, productName: i, updateProductDoc }),
                 doc.fdvSource === "product-master" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "Dokumentlinker er hentet automatisk fra produktmaster." }),
                 doc.fdvSource === "admin-register" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "FDV-link er hentet automatisk fra admin FDV-register." })
               ] })
@@ -7518,7 +7572,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av kun dokumentene som er relevante for kunden. Lenker beholdes i prosjektet selv om de ikke vises i PDF." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px" }, children: availableOptions.map((option) => {
         const choiceKey = `include${option.key}InReport`;
-        const checkedValue = hasChoice ? doc?.[choiceKey] === true : option.field === "fdvUrl" || option.field === "documentFileUrl";
+        const checkedValue = doc?.[choiceKey] !== false;
         return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "inline-flex", alignItems: "center", gap: "7px", width: "auto", margin: 0 }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0 }, checked: checkedValue, onChange: (e) => updateProductDoc(productName, { [choiceKey]: e.target.checked }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: option.label })
