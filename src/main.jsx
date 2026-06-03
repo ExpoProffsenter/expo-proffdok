@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 2.7: Deaktiverte brukere holdes utenfor Nye brukere + reaktiveringsknapp i Admin.
 // FASE 9 Deploy 2.6: Admin-veiledning under Hjelp vises kun for admin-brukere.
 // FASE 9 Deploy 2.5: Alle garantipunkter krever bilde og kommentar + fikset avhuking for Sopro garantikontrollpunkt ved nytt produkt.
 // FASE 9 Deploy 2.4: Sopro garantikontrollpunkter fra Produktmaster kobles inn i aktive garantisjekklister.
@@ -1051,7 +1052,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setOpenProductCheckpointPanels((prev) => ({ ...prev || {}, [key]: !prev?.[key] }));
     };
 
-    const pendingAdminUsers = (0, import_react.useMemo)(() => (adminUsers || []).filter((u) => !u?.approved), [adminUsers]);
+    const pendingAdminUsers = (0, import_react.useMemo)(() => (adminUsers || []).filter((u) => !u?.approved && !u?.deactivated), [adminUsers]);
     const visibleAdminUsers = (0, import_react.useMemo)(() => adminUserFilter === "all" ? adminUsers || [] : pendingAdminUsers, [adminUsers, pendingAdminUsers, adminUserFilter]);
     const name = company.companyName || "Expo Proffsenter";
     const urlParams = new URLSearchParams(window.location.search);
@@ -2710,15 +2711,26 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       alert("Bruker er godkjent.");
       loadAdminUsers();
     };
-    const revokeAdminUser = async (id) => {
+    const deactivateAdminUser = async (id) => {
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
-      if (!window.confirm("Vil du fjerne godkjenning for denne brukeren?")) return;
-      const { error } = await supabase.from("profiles").update({ approved: false }).eq("id", id);
+      if (!window.confirm("Vil du deaktivere denne brukeren? Brukeren vises ikke som ny bruker for godkjenning, men beholdes i historikken.")) return;
+      const { error } = await supabase.from("profiles").update({ approved: false, deactivated: true }).eq("id", id);
       if (error) {
         console.error(error);
-        return alert("Kunne ikke fjerne godkjenning: " + error.message);
+        return alert("Kunne ikke deaktivere bruker: " + error.message + "\n\nSjekk at kolonnen deactivated finnes i profiles-tabellen.");
       }
-      alert("Godkjenning er fjernet.");
+      alert("Bruker er deaktivert.");
+      loadAdminUsers();
+    };
+    const reactivateAdminUser = async (id) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      if (!window.confirm("Vil du reaktivere denne brukeren og legge den tilbake som venter på godkjenning?")) return;
+      const { error } = await supabase.from("profiles").update({ approved: false, deactivated: false }).eq("id", id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke reaktivere bruker: " + error.message);
+      }
+      alert("Bruker er reaktivert og ligger nå som venter på godkjenning.");
       loadAdminUsers();
     };
     const loadFdvRegister = async (notify = false) => {
@@ -6705,11 +6717,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                 u.company_name ? `Firma: ${u.company_name} \xB7 ` : "",
                 "Status: ",
-                u.approved ? "Godkjent" : "Venter p\xE5 godkjenning"
+                u.deactivated ? "Deaktivert" : u.approved ? "Godkjent" : "Venter p\xE5 godkjenning"
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
-                !u.approved && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => approveAdminUser(u.id), children: "Godkjenn bruker" }),
-                u.approved && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => revokeAdminUser(u.id), children: "Fjern godkjenning" })
+                !u.approved && !u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => approveAdminUser(u.id), children: "Godkjenn bruker" }),
+                u.approved && !u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => deactivateAdminUser(u.id), children: "Deaktiver bruker" }),
+                u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => reactivateAdminUser(u.id), children: "Reaktiver bruker" })
               ] })
             ] }, u.id))
           ] }),
