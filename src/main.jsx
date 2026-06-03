@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.12: Sammenleggbar Nytt produkt i Admin Produktmaster.
 // FASE 10 Deploy 1.11: Søkefelt i Admin Produktmaster for rask filtrering av produkter.
 // FASE 10 Deploy 1.10: Produktmaster styrer fargevalg for fug og silikon; Sopro-lister brukes kun som fallback.
 // FASE 10 Deploy 1.8: Sopro-baserte fargekoder for fug og silikon + PDF viser produktdokumenter med innhold som standard.
@@ -1093,6 +1094,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [newProductCheckpoints, setNewProductCheckpoints] = (0, import_react.useState)({});
     const [newProductMaster, setNewProductMaster] = (0, import_react.useState)(emptyNewProductMaster());
     const [productMasterSearch, setProductMasterSearch] = (0, import_react.useState)("");
+    const [showNewProductMasterForm, setShowNewProductMasterForm] = (0, import_react.useState)(false);
     const [showOpenDeviationsOnly, setShowOpenDeviationsOnly] = (0, import_react.useState)(false);
     const [checklistSaveStatus, setChecklistSaveStatus] = (0, import_react.useState)("");
     const [photoSaveStatus, setPhotoSaveStatus] = (0, import_react.useState)("");
@@ -7216,8 +7218,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "+ Legg til nytt produkt i Produktmaster" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne for nye produkter, for eksempel nye Sopro-silikoner, fuger eller systemprodukter. Hvis 'Vis i Produkter-fanen' er huket av, blir produktet tilgjengelig i valgt produktkategori uten kodeendring. Farger kan legges inn i feltet Fargekoder / varianter, for eksempel: 10 Hvit; 15 Grå; 34 Bahamabeige. Garantikontrollpunkter skal kun brukes for Sopro-produkter som inngår i garantiordningen." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", style: { width: "100%", justifyContent: "space-between", textAlign: "left", fontWeight: 900, fontSize: "18px" }, onClick: () => setShowNewProductMasterForm((value) => !value), children: showNewProductMasterForm ? "▼ Nytt produkt" : "▶ Nytt produkt" }),
+              showNewProductMasterForm && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Bruk denne for nye produkter, for eksempel nye Sopro-silikoner, fuger eller systemprodukter. Hvis 'Vis i Produkter-fanen' er huket av, blir produktet tilgjengelig i valgt produktkategori uten kodeendring. Farger kan legges inn i feltet Fargekoder / varianter, for eksempel: 10 Hvit; 15 Grå; 34 Bahamabeige. Garantikontrollpunkter skal kun brukes for Sopro-produkter som inngår i garantiordningen." }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Varenummer", value: newProductMaster.product_no || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, product_no: v })) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: newProductMaster.product_name || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, product_name: v })) }),
@@ -7265,6 +7268,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: createProductMasterRow, children: "Lagre nytt produkt" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setNewProductMaster(emptyNewProductMaster()), children: "Tøm skjema" })
               ] }),
+                ] })
                 ] }),
             (productMaster || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter funnet i produktmaster. Kontakt systemansvarlig hvis produktlisten mangler." }),
             (productMaster || []).length > 0 && visibleProductMasterRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter matcher søket." }),
