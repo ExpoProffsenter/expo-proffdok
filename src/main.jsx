@@ -246,54 +246,125 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     return parts.join("\n");
   };
   var productDisplayNameFromMaster = (row = {}) => String(row.app_match_name || row.product_name || "").trim();
-  var soproColorCodeFallbackOptions = [
-    "",
-    "Transparent 00",
-    "Hvit 10",
-    "Betonggrå 14",
-    "Grå 15",
-    "Lysegrå 16",
-    "Sølvgrå 17",
-    "Sandgrå 18",
-    "Steingrå 22",
-    "Matt hvit 26",
-    "Pergament 27",
-    "Jasmine 28",
-    "Lys beige 29",
-    "Beige 32",
-    "Jurabeige 33",
-    "Bahamabeige 34",
-    "Karamell 38",
-    "Sahara 40",
-    "Kastanje 50",
-    "Brun 52",
-    "Mahogni 55",
-    "Balibrun 59",
-    "Ibenholt 62",
-    "Basalt 64",
-    "Antrasitt 66",
-    "Manhattan 77",
-    "Aqua 86",
-    "Sort 90",
-    "Signalrød 91",
-    "Vinrød 92",
-    "Dypsort 96",
-    "Dypblå 98",
-    "Gjennomsiktig 99",
+  var soproDf10ColorOptions = [
+    "10 Hvit",
+    "14 Betonggrå",
+    "15 Grå",
+    "16 Lysegrå",
+    "17 Sølvgrå",
+    "18 Sandgrå",
+    "22 Steingrå",
+    "27 Pergamon",
+    "28 Jasmine",
+    "29 Lys beige",
+    "32 Beige",
+    "33 Jurabeige",
+    "34 Bahamabeige",
+    "38 Karamell",
+    "40 Sahara",
+    "50 Kastanje",
+    "52 Brun",
+    "55 Mahogni",
+    "59 Balibrun",
+    "62 Ibenholt",
+    "64 Basalt",
+    "66 Antrasitt",
+    "77 Manhattan",
+    "90 Sort",
+    "91 Signalrød",
+    "92 Vinrød",
+    "98 Dypblå",
+    "Annen fargekode – skriv i kommentar"
+  ];
+  var soproFlPlusColorOptions = [
+    "10 Hvit",
+    "14 Betonggrå",
+    "15 Grå",
+    "16 Lysegrå",
+    "17 Sølvgrå",
+    "18 Sandgrå",
+    "22 Steingrå",
+    "28 Jasmine",
+    "29 Lys beige",
+    "33 Jurabeige",
+    "34 Bahamabeige",
+    "52 Brun",
+    "59 Balibrun",
+    "64 Basalt",
+    "66 Antrasitt",
+    "90 Sort",
+    "Annen fargekode – skriv i kommentar"
+  ];
+  var soproDfxColorOptions = [
+    "10 Hvit",
+    "14 Betonggrå",
+    "15 Grå",
+    "16 Lys grå",
+    "17 Sølv grå",
+    "18 Sand grå",
+    "22 Stein grå",
+    "27 Pergament",
+    "29 Lys beige",
+    "32 Beige",
+    "33 Jura beige",
+    "40 Sahara",
+    "52 Brun",
+    "59 Bali brun",
+    "64 Basalt",
+    "66 Antrasitt",
+    "77 Manhattan",
+    "86 Aqua",
+    "90 Svart",
+    "99 Gjennomsiktig",
+    "Annen fargekode – skriv i kommentar"
+  ];
+  var soproSanitarySiliconeColorOptions = [
+    "00 Transparent",
+    "10 Hvit",
+    "14 Betonggrå",
+    "15 Grå",
+    "16 Lysegrå",
+    "17 Sølvgrå",
+    "18 Sandgrå",
+    "22 Steingrå",
+    "27 Pergament",
+    "28 Jasmine",
+    "29 Lys beige",
+    "32 Beige",
+    "33 Jurabeige",
+    "34 Bahamabeige",
+    "38 Karamell",
+    "40 Sahara",
+    "50 Kastanje",
+    "52 Brun",
+    "55 Mahogni",
+    "59 Balibrun",
+    "62 Ibenholt",
+    "64 Basalt",
+    "66 Antrasitt",
+    "77 Manhattan",
+    "86 Aqua",
+    "90 Sort",
+    "91 Signalrød",
+    "92 Vinrød",
+    "96 Dypsort",
+    "98 Dypblå",
     "Annen fargekode – skriv i kommentar"
   ];
   var soproMatteSiliconeColorOptions = [
-    "",
-    "Sølvgrå 17",
-    "Grå 15",
-    "Sandgrå 18",
-    "Steingrå 22",
-    "Betonggrå 14",
-    "Antrasitt 66",
-    "Matt hvit 26",
-    "Lys beige 29",
-    "Beige 32",
+    "14 Betonggrå",
+    "15 Grå",
+    "17 Sølvgrå",
+    "18 Sandgrå",
+    "22 Steingrå",
+    "26 Matt hvit",
+    "29 Lysebeige",
+    "32 Beige",
+    "66 Antrasitt",
     "Annen fargekode – skriv i kommentar"
+  ];
+  var soproColorCodeFallbackOptions = [
+    ...soproSanitarySiliconeColorOptions
   ];
   var productSupportsColorChoice = (productName = "", sectionName = "") => {
     const text = `${productName} ${sectionName}`.toLowerCase();
@@ -302,7 +373,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var normalizeColorCodeLabel = (value = "") => String(value || "").trim().replace(/\s+/g, " ");
   var normalizeColorSortKey = (value = "") => {
     const clean = normalizeColorCodeLabel(value);
-    const codeMatch = clean.match(/(\d{2,3})\s*$/);
+    const codeMatch = clean.match(/^(\d{2,3})\b/) || clean.match(/(\d{2,3})\s*$/);
     return codeMatch ? Number(codeMatch[1]) : 9999;
   };
   var uniqueColorOptions = (values = []) => {
@@ -1116,10 +1187,18 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         if (rowText.includes(cleanProduct) || cleanProduct.includes(rowText)) return true;
         return productWords.length && productWords.some((word) => rowText.includes(word));
       }).map((row) => normalizeColorCodeLabel(row?.color_code)).filter(hasValue);
-      const baseOptions = /nsm|matt/.test(cleanProduct) ? soproMatteSiliconeColorOptions : soproColorCodeFallbackOptions;
+      const getBaseColorOptions = () => {
+        if (/df\s*10|df10|designfug/.test(cleanProduct)) return soproDf10ColorOptions;
+        if (/fl\s*plus|flexfuge/.test(cleanProduct)) return soproFlPlusColorOptions;
+        if (/dfx|epoxy|epoksi/.test(cleanProduct)) return soproDfxColorOptions;
+        if (/nsm|matt|neutral/.test(cleanProduct)) return soproMatteSiliconeColorOptions;
+        if (/silikon|silicon|sanit[æae]r|ssi|ceramic|keramik|ksi|msi/.test(cleanProduct)) return soproSanitarySiliconeColorOptions;
+        return soproColorCodeFallbackOptions;
+      };
+      const baseOptions = getBaseColorOptions();
       const selectedValue = normalizeColorCodeLabel(productDocs?.[productName]?.colorCode || "");
       const options = uniqueColorOptions([...baseOptions, ...masterColors, selectedValue]);
-      const emptyOption = options.includes("") ? [""] : [""];
+      const emptyOption = [""];
       const sortedOptions = options.filter(Boolean).sort((a, b) => normalizeColorSortKey(a) - normalizeColorSortKey(b) || a.localeCompare(b, "no"));
       return [...emptyOption, ...sortedOptions];
     };
