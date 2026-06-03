@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.2: Mobil sjekkliste åpner første uferdige punkt + fjernet teknisk hjelpetekst.
 // FASE 10 Deploy 1.1: Mobil åpningsside + forbedret mobilscroll ved fanebytte.
  // FASE 10 Deploy 1.0: Fjernet synlig utvikler-/backendtekst fra brukerflater og feilmeldinger.
 // FASE 9 Deploy 2.7: Deaktiverte brukere holdes utenfor Nye brukere + reaktiveringsknapp i Admin.
@@ -4858,7 +4859,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 c
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde eller velg fra galleri" }),
-             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
+             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
             ] }, c)) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
           ] }),
@@ -7423,7 +7424,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdmin ? "Her finner du brukerveiledning, admin-veiledning og anbefalte arbeidsrutiner for Expo ProffDok. PDF-filene bør ligge i public-mappen i appen, slik at de kan åpnes direkte fra Vercel." : "Her finner du brukerveiledning og anbefalte arbeidsrutiner for Expo ProffDok. PDF-filen bør ligge i public-mappen i appen, slik at den kan åpnes direkte fra Vercel." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdmin ? "Her finner du brukerveiledning, admin-veiledning og anbefalte arbeidsrutiner for Expo ProffDok." : "Her finner du brukerveiledning og anbefalte arbeidsrutiner for Expo ProffDok." }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📖 Brukerveiledning v1.0" }),
@@ -7543,7 +7544,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
   }
   function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, onSaveChecklistNow = null, checklistSaveStatus = "" }) {
     const activeChecklistTemplate = providedActiveChecklistTemplate || getActiveChecklistTemplate(warranty);
-    const [openCategories, setOpenCategories] = import_react.default.useState(() => ({ [activeChecklistTemplate[0]?.category || ""]: true }));
+    const [openCategories, setOpenCategories] = import_react.default.useState(() => {
+      const firstMissingGroup = activeChecklistTemplate.find((group) => (group.items || []).some((item) => !hasValue(checklist?.[group.category]?.[item]?.status)));
+      return { [firstMissingGroup?.category || activeChecklistTemplate[0]?.category || ""]: true };
+    });
+    const mobileInitialChecklistJumpRef = import_react.default.useRef(false);
     import_react.default.useEffect(() => {
       if (!showOpenDeviationsOnly) return;
       const openGroups = Object.fromEntries(activeChecklistTemplate.map((group) => [
@@ -7555,19 +7560,32 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     const groupHasOpenDeviation = (group) => group.items.some((item) => checklist?.[group.category]?.[item]?.status === "Avvik");
     const visibleChecklistGroups = showOpenDeviationsOnly ? activeChecklistTemplate.filter(groupHasOpenDeviation) : activeChecklistTemplate;
     const flatChecklistPoints = activeChecklistTemplate.flatMap((group) => (group.items || []).map((item) => ({ category: group.category, item, anchorId: checklistPointAnchor(group.category, item) })));
-    const scrollToNextChecklistPoint = (category, item) => {
-      const index = flatChecklistPoints.findIndex((point) => point.category === category && point.item === item);
-      const nextPoint = flatChecklistPoints[index + 1];
-      if (!nextPoint) return;
-      setOpenCategories((prev) => ({ ...prev, [nextPoint.category]: true }));
+    const firstIncompletePoint = flatChecklistPoints.find((point) => !hasValue(checklist?.[point.category]?.[point.item]?.status));
+    const scrollToChecklistPoint = (point, block = "start") => {
+      if (!point) return;
+      setOpenCategories((prev) => ({ ...prev, [point.category]: true }));
       window.setTimeout(() => {
-        const el = document.getElementById(nextPoint.anchorId);
+        const el = document.getElementById(point.anchorId);
         if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: window.innerWidth <= 700 ? "start" : "center" });
+          el.scrollIntoView({ behavior: "smooth", block: window.innerWidth <= 700 ? block : "center" });
           el.classList.add("checklistPointFocus");
           window.setTimeout(() => el.classList.remove("checklistPointFocus"), 1600);
         }
-      }, 160);
+      }, 180);
+    };
+    import_react.default.useEffect(() => {
+      if (mobileInitialChecklistJumpRef.current) return;
+      if (showOpenDeviationsOnly) return;
+      if (typeof window === "undefined" || window.innerWidth > 700) return;
+      if (!firstIncompletePoint) return;
+      mobileInitialChecklistJumpRef.current = true;
+      scrollToChecklistPoint(firstIncompletePoint, "start");
+    }, [firstIncompletePoint?.anchorId, showOpenDeviationsOnly]);
+    const scrollToNextChecklistPoint = (category, item) => {
+      const index = flatChecklistPoints.findIndex((point) => point.category === category && point.item === item);
+      const nextPoint = flatChecklistPoints.slice(index + 1).find((point) => !hasValue(checklist?.[point.category]?.[point.item]?.status)) || flatChecklistPoints[index + 1];
+      if (!nextPoint) return;
+      scrollToChecklistPoint(nextPoint, "start");
     };
     const handleStatusClick = (category, item, status) => {
       setChecklistValue(category, item, { status }, { autoSave: true });
@@ -7659,6 +7677,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryActions", children: [
+          firstIncompletePoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => scrollToChecklistPoint(firstIncompletePoint, "start"), children: "Gå til neste punkt" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: expandAll, children: "\xC5pne alle" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: collapseDone, children: "Vis det som gjenst\xE5r" }),
           totalStats.deviations > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setShowOpenDeviationsOnly && setShowOpenDeviationsOnly(!showOpenDeviationsOnly), children: showOpenDeviationsOnly ? "Vis alle punkter" : "Vis bare åpne avvik" })
@@ -7746,7 +7765,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
                 " Ta bilde / last opp bilde",
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
               ] }),
               (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: value.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
