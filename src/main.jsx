@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 2.6: Admin-veiledning under Hjelp vises kun for admin-brukere.
 // FASE 9 Deploy 2.5: Alle garantipunkter krever bilde og kommentar + fikset avhuking for Sopro garantikontrollpunkt ved nytt produkt.
 // FASE 9 Deploy 2.4: Sopro garantikontrollpunkter fra Produktmaster kobles inn i aktive garantisjekklister.
 // FASE 9 Deploy 2.3: Produktmaster-kontrollpunkter presisert og begrenset til Sopro garantikontrollpunkter.
@@ -6681,7 +6682,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }),
         tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
                 tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
-                tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { userGuidePdfPath, adminGuidePdfPath }),
+                tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { userGuidePdfPath, adminGuidePdfPath, isAdmin: isAdminUser }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan administrator godkjenne brukere, vedlikeholde produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
@@ -7196,14 +7197,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     ] });
   }
 
-  function HelpCenter({ userGuidePdfPath: guidePath = userGuidePdfPath, adminGuidePdfPath: adminPath = adminGuidePdfPath }) {
+  function HelpCenter({ userGuidePdfPath: guidePath = userGuidePdfPath, adminGuidePdfPath: adminPath = adminGuidePdfPath, isAdmin = false }) {
     const openPdf = (url) => {
       if (!url) return;
       window.open(url, "_blank", "noopener,noreferrer");
     };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her finner du brukerveiledning, admin-veiledning og anbefalte arbeidsrutiner for Expo ProffDok. PDF-filene bør ligge i public-mappen i appen, slik at de kan åpnes direkte fra Vercel." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdmin ? "Her finner du brukerveiledning, admin-veiledning og anbefalte arbeidsrutiner for Expo ProffDok. PDF-filene bør ligge i public-mappen i appen, slik at de kan åpnes direkte fra Vercel." : "Her finner du brukerveiledning og anbefalte arbeidsrutiner for Expo ProffDok. PDF-filen bør ligge i public-mappen i appen, slik at den kan åpnes direkte fra Vercel." }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📖 Brukerveiledning v1.0" }),
@@ -7213,12 +7214,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: guidePath, download: true, style: { display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "10px 14px", borderRadius: "12px", border: "1px solid #cbd5e1", textDecoration: "none", fontWeight: 800, color: "#1456a0", background: "#fff" }, children: "Last ned" })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          isAdmin && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "🛠️ Admin-veiledning" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Kort veiledning for administratorer. Brukes ved godkjenning av brukere, produktmaster og systemadministrasjon." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Kort veiledning for administratorer. Brukes ved godkjenning av brukere, produktmaster, garantikontrollpunkter og systemadministrasjon." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openPdf(adminPath), children: "Åpne når klar" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "note", children: "Kommer som egen PDF." })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openPdf(adminPath), children: "Åpne PDF" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: adminPath, download: true, style: { display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "10px 14px", borderRadius: "12px", border: "1px solid #cbd5e1", textDecoration: "none", fontWeight: 800, color: "#1456a0", background: "#fff" }, children: "Last ned" })
             ] })
           ] })
         ] }),
