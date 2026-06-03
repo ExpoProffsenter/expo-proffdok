@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 1.6: Låste prosjekter fryses som arkiv og mottar ikke nye dokumentlenker/produktmaster-synk.
 // FASE 9 Deploy 1.5: Justert Produktmaster-checkbox og mer luft i produktkort i rapport/PDF.
 // FASE 9 Deploy 1.4: Produktmaster kan opprette nye produkter for Produkter-fanen + Sopro tekstpresisering mansjetter/tettebånd.
 // FASE 9 Deploy 1.3: Endret dokumentert tetthetsgaranti fra 12 til 15 år og samlet garantiperiode i konstant.
@@ -949,6 +950,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       };
     }, [overtagelse, checklist, photos, warranty]);
     const issueWarranty = async () => {
+      if (isProjectLocked) return alert("Prosjektet er låst og fungerer som arkiv. Garanti kan ikke utstedes eller endres etter låsing.");
       if (!warranty?.enabled) return alert("Aktiver garantien først.");
       if (warranty?.issued && warranty?.guaranteeNumber) return alert(`Garantien er allerede utstedt med garantinummer ${warranty.guaranteeNumber}.`);
       if (!warrantyReadiness.ready) return alert("Garantien kan ikke utstedes ennå. Se listen over mangler.");
@@ -1517,6 +1519,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }));
     };
     const toggleProductChecked = (productName, isChecked) => {
+      if (isProjectLocked) return alert("Prosjektet er låst og fungerer som arkiv. Produkter og dokumentasjon kan ikke endres.");
       setChecked((prev) => ({ ...prev, [productName]: isChecked }));
       if (!isChecked) return;
       const masterRow = productMasterByProduct[productName];
@@ -2594,8 +2597,25 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
     };
     const syncCurrentProjectProducts = async () => {
       try {
+        if (isProjectLocked) return alert("Prosjektet er låst og fungerer som arkiv. Produktdokumentasjon kan ikke oppdateres fra Produktmaster.");
         const checkedNames = effectiveProductSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
         if (!checkedNames.length) return alert("Ingen standardprodukter er valgt i dette prosjektet.");
+
+        let existingRowForSave = null;
+        if (projectId && authUser) {
+          const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+          if (fetchError || !existing) {
+            console.error(fetchError);
+            return alert("Produktdokumentasjon ble ikke oppdatert fordi prosjektet ikke kunne kontrolleres: " + (fetchError?.message || "Fant ikke prosjekt"));
+          }
+          if (rowIsLocked(existing)) {
+            const lockedProject = projectFromRow(existing, existing?.data?.project || {});
+            setProject(lockedProject);
+            return alert("Prosjektet er låst og fungerer som arkiv. Dokumentlenker fra Produktmaster kan ikke synkes inn i låste prosjekter.");
+          }
+          existingRowForSave = existing;
+        }
+
         let updatedCount = 0;
         let missingCount = 0;
         const nextProductDocs = { ...productDocs };
@@ -2612,16 +2632,11 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
           if (changed) updatedCount += 1;
           nextProductDocs[productName] = merged;
         });
+
         setProductDocs(nextProductDocs);
         let savedToCloud = false;
-        if (projectId && authUser) {
-          const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
-          if (fetchError || !existing) {
-            console.error(fetchError);
-            return alert("Synk er gjort på skjermen, men prosjektet kunne ikke lagres automatisk: " + (fetchError?.message || "Fant ikke prosjekt"));
-          }
-          if (rowIsLocked(existing)) return alert("Prosjektet er låst. Lås opp prosjektet før dokumentlinker synkes og lagres.");
-          const existingData = dataFromRow(existing);
+        if (projectId && authUser && existingRowForSave) {
+          const existingData = dataFromRow(existingRowForSave);
           const cleanData = JSON.parse(JSON.stringify({
             ...existingData,
             company,
@@ -2646,22 +2661,22 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
           }));
           const { error: updateError } = await supabase.from("projects").update({
             data: cleanData,
-            title: project.projectName || project.address || existing.title || "Uten navn",
+            title: project.projectName || project.address || existingRowForSave.title || "Uten navn",
             updated_at: (/* @__PURE__ */ new Date()).toISOString()
           }).eq("id", projectId);
           if (updateError) {
             console.error(updateError);
-            return alert("Synk er gjort på skjermen, men kunne ikke lagres i Supabase: " + updateError.message);
+            return alert("Dokumentoppdatering er gjort på skjermen, men kunne ikke lagres i Supabase: " + updateError.message);
           }
           savedToCloud = true;
         }
         const saveText = savedToCloud ? " Prosjektet er lagret." : " Trykk Lagre / oppdater prosjekt for å lagre endringen.";
-        if (updatedCount > 0) return alert(`Synk fullført. ${updatedCount} produkt${updatedCount === 1 ? "" : "er"} fikk dokumentlinker oppdatert.${missingCount ? ` ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i produktmaster.` : ""}${saveText}`);
-        if (missingCount > 0) return alert(`Synk fullført, men ingen nye dokumentlinker ble lagt til. ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i produktmaster.${saveText}`);
-        return alert("Synk fullført. Valgte produkter hadde allerede dokumentlinker." + saveText);
+        if (updatedCount > 0) return alert(`Dokumentoppdatering fullført. ${updatedCount} produkt${updatedCount === 1 ? "" : "er"} fikk dokumentlinker oppdatert.${missingCount ? ` ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i Produktmaster.` : ""}${saveText}`);
+        if (missingCount > 0) return alert(`Dokumentoppdatering fullført, men ingen nye dokumentlinker ble lagt til. ${missingCount} valgt${missingCount === 1 ? "" : "e"} produkt${missingCount === 1 ? "" : "er"} manglet match i Produktmaster.${saveText}`);
+        return alert("Dokumentoppdatering fullført. Valgte produkter hadde allerede dokumentlinker." + saveText);
       } catch (error) {
-        console.error("Prosjektsynk feilet:", error);
-        return alert("Kunne ikke synke prosjektet. Feil: " + (error?.message || String(error)));
+        console.error("Dokumentoppdatering feilet:", error);
+        return alert("Kunne ikke oppdatere produktdokumentasjon. Feil: " + (error?.message || String(error)));
       }
     };
     const signIn = async () => {
@@ -3982,16 +3997,20 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         setPdfProgress("✅ Rapport klar", "PDF-en er generert og lastes ned.");
         clearPdfProgress(1400);
         if (warranty?.enabled) {
-          const reportGeneratedAt = (/* @__PURE__ */ new Date()).toISOString();
-          setWarranty((prev) => ({
-            ...emptyWarranty(),
-            ...prev,
-            reportGeneratedAt,
-            reportGeneratedFileName: generatedFileName,
-            guaranteeNumber: prev?.guaranteeNumber || "",
-            status: prev?.issued ? "issued" : "report_generated"
-          }));
-          alert("PDF er generert. Husk å lagre filen på egen maskin/server. Garantimodulen er oppdatert med at komplett rapport er generert – husk å lagre/oppdatere prosjektet.");
+          if (isProjectLocked) {
+            alert("PDF er generert fra låst/arkivert prosjekt. Prosjektets lagrede dokumentasjon og garantistatus er ikke endret.");
+          } else {
+            const reportGeneratedAt = (/* @__PURE__ */ new Date()).toISOString();
+            setWarranty((prev) => ({
+              ...emptyWarranty(),
+              ...prev,
+              reportGeneratedAt,
+              reportGeneratedFileName: generatedFileName,
+              guaranteeNumber: prev?.guaranteeNumber || "",
+              status: prev?.issued ? "issued" : "report_generated"
+            }));
+            alert("PDF er generert. Husk å lagre filen på egen maskin/server. Garantimodulen er oppdatert med at komplett rapport er generert – husk å lagre/oppdatere prosjektet.");
+          }
         }
       } catch (error) {
         clearPdfProgress(0);
@@ -6266,9 +6285,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan administrator godkjenne brukere, vedlikeholde produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Prosjektsynk" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Henter FDV, datablad, DOP, EPD og sikkerhetsdatablad fra produktmaster for valgte produkter i dette prosjektet." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => syncCurrentProjectProducts(), children: "Synk dette prosjektet" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Dokumentoppdatering" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Denne funksjonen oppdaterer FDV, datablad, DOP, EPD og sikkerhetsdatablad for produkter som legges inn i prosjekter. Låste prosjekter fungerer som arkiv og oppdateres ikke." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => syncCurrentProjectProducts(), children: "Oppdater produktdokumentasjon" })
           ] }),
           isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
