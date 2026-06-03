@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 2.2: Produktmaster kontrollpunkter skjules bak vis/rediger-knapp + kan opprettes samtidig med nytt produkt.
 // FASE 9 Deploy 2.1: Admin Produktmaster kan hente, vise, opprette og slette produktbaserte kontrollpunkter uten å påvirke sjekklister/garanti.
 // FASE 9 Deploy 2.0: Tydelig grønn hake i rapportstatus + appikon/manifest for mobil-hjemskjerm.
 // FASE 9 Deploy 1.9: Premium kontrollprotokoll i rapport/PDF med kompakte sjekkpunkter og bildedokumentasjon under sjekkpunkt.
@@ -191,7 +192,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     sikkerhetsdatablad_url: "",
     document_file_url: "",
     comment: "",
-    showInProducts: true
+    showInProducts: true,
+    createCheckpoint: false,
+    checkpoint_text: "",
+    checkpoint_type: "standard",
+    image_required: false,
+    comment_required: false,
+    guarantee_system: "all",
+    sort_order: 0
   });
   var productCheckpointTypeOptions = ["standard", "garanti"];
   var productCheckpointTypeLabels = { standard: "Standard kontrollpunkt", garanti: "Garantipunkt" };
@@ -832,6 +840,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [productMasterLoading, setProductMasterLoading] = (0, import_react.useState)(false);
     const [productMasterCheckpoints, setProductMasterCheckpoints] = (0, import_react.useState)([]);
     const [productMasterCheckpointLoading, setProductMasterCheckpointLoading] = (0, import_react.useState)(false);
+    const [openProductCheckpointPanels, setOpenProductCheckpointPanels] = (0, import_react.useState)({});
     const [newProductCheckpoints, setNewProductCheckpoints] = (0, import_react.useState)({});
     const [newProductMaster, setNewProductMaster] = (0, import_react.useState)(emptyNewProductMaster());
     const [showOpenDeviationsOnly, setShowOpenDeviationsOnly] = (0, import_react.useState)(false);
@@ -933,6 +942,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
       return map;
     }, [productMasterCheckpoints]);
+
+    const toggleProductCheckpointPanel = (productNo) => {
+      const key = String(productNo || "").trim();
+      if (!key) return;
+      setOpenProductCheckpointPanels((prev) => ({ ...prev || {}, [key]: !prev?.[key] }));
+    };
 
     const pendingAdminUsers = (0, import_react.useMemo)(() => (adminUsers || []).filter((u) => !u?.approved), [adminUsers]);
     const visibleAdminUsers = (0, import_react.useMemo)(() => adminUserFilter === "all" ? adminUsers || [] : pendingAdminUsers, [adminUsers, pendingAdminUsers, adminUserFilter]);
@@ -2793,8 +2808,29 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
         const exists = (prev || []).some((row) => row.product_no === data.product_no);
         return exists ? (prev || []).map((row) => row.product_no === data.product_no ? data : row) : [data, ...prev || []];
       });
+      let checkpointCreated = false;
+      if (newProductMaster.createCheckpoint && hasValue(newProductMaster.checkpoint_text)) {
+        const checkpointPayload = {
+          product_no: productNo,
+          checkpoint_text: String(newProductMaster.checkpoint_text || "").trim(),
+          checkpoint_type: productCheckpointTypeOptions.includes(newProductMaster.checkpoint_type) ? newProductMaster.checkpoint_type : "standard",
+          image_required: !!newProductMaster.image_required,
+          comment_required: !!newProductMaster.comment_required,
+          guarantee_system: productCheckpointSystemOptions.includes(newProductMaster.guarantee_system) ? newProductMaster.guarantee_system : "all",
+          sort_order: Number.isFinite(Number(newProductMaster.sort_order)) ? Number(newProductMaster.sort_order) : 0
+        };
+        const { data: checkpointData, error: checkpointError } = await supabase.from("product_master_checkpoints").insert(checkpointPayload).select("*").single();
+        if (checkpointError) {
+          console.error(checkpointError);
+          alert("Produktet ble lagret, men kontrollpunktet kunne ikke lagres: " + checkpointError.message);
+        } else if (checkpointData) {
+          checkpointCreated = true;
+          setProductMasterCheckpoints((prev) => [...prev || [], checkpointData]);
+          setOpenProductCheckpointPanels((prev) => ({ ...prev || {}, [productNo]: true }));
+        }
+      }
       setNewProductMaster(emptyNewProductMaster());
-      alert("✔ Produktet er lagret i Produktmaster" + (payload.used_in_app_standard_list ? " og vil vises i Produkter-fanen etter oppdatering." : "."));
+      alert("✔ Produktet er lagret i Produktmaster" + (payload.used_in_app_standard_list ? " og vil vises i Produkter-fanen etter oppdatering." : ".") + (checkpointCreated ? " Kontrollpunktet er også lagret." : ""));
     };
     const syncCurrentProjectProducts = async () => {
       try {
@@ -6616,6 +6652,31 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.showInProducts, onChange: (e) => setNewProductMaster((p) => ({ ...p, showInProducts: e.target.checked })) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { lineHeight: "1.2" }, children: "Vis produktet i Produkter-fanen" })
               ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "12px", background: "#f8fafc" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "10px", width: "fit-content" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.createCheckpoint, onChange: (e) => setNewProductMaster((p) => ({ ...p, createCheckpoint: e.target.checked })) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Legg til kontrollpunkt samtidig" })
+                ] }),
+                newProductMaster.createCheckpoint && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Fragment, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "8px" }, children: "Kontrollpunktet lagres på produktet i Produktmaster. Det påvirker ikke eksisterende prosjekter før vi senere kobler produktkontrollpunkter mot sjekklistene." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kontrollpunkttekst", value: newProductMaster.checkpoint_text || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, checkpoint_text: v })) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type", value: newProductMaster.checkpoint_type || "standard", options: productCheckpointTypeOptions, optionLabels: productCheckpointTypeLabels, onChange: (v) => setNewProductMaster((p) => ({ ...p, checkpoint_type: v })) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "System", value: newProductMaster.guarantee_system || "all", options: productCheckpointSystemOptions, optionLabels: productCheckpointSystemLabels, onChange: (v) => setNewProductMaster((p) => ({ ...p, guarantee_system: v })) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sortering", type: "number", value: newProductMaster.sort_order || 0, onChange: (v) => setNewProductMaster((p) => ({ ...p, sort_order: v })) })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "center", marginTop: "10px" }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px", width: "fit-content" }, children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.image_required, onChange: (e) => setNewProductMaster((p) => ({ ...p, image_required: e.target.checked })) }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Bilde påkrevd" })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px", width: "fit-content" }, children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!newProductMaster.comment_required, onChange: (e) => setNewProductMaster((p) => ({ ...p, comment_required: e.target.checked })) }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Kommentar påkrevd" })
+                    ] })
+                  ] })
+                ] })
+              ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: createProductMasterRow, children: "Lagre nytt produkt" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setNewProductMaster(emptyNewProductMaster()), children: "Tøm skjema" })
@@ -6646,39 +6707,42 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   new Date(row.updated_at).toLocaleString("no-NO")
                 ] })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "14px", background: "#f8fafc" }, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "0 0 6px" }, children: "Kontrollpunkter fra Produktmaster" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan admin knytte kontrollpunkter til produktet. I denne deployen lagres punktene kun i Produktmaster og påvirker ikke prosjektets sjekklister, garanti eller rapport." }),
-                (productMasterCheckpointsByProduct[row.product_no] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen kontrollpunkter registrert på dette produktet ennå." }),
-                (productMasterCheckpointsByProduct[row.product_no] || []).map((checkpoint) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", style: { marginTop: "8px" }, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: checkpoint.checkpoint_text }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
-                    productCheckpointTypeLabels[checkpoint.checkpoint_type] || checkpoint.checkpoint_type || "Standard kontrollpunkt",
-                    " · ",
-                    productCheckpointSystemLabels[checkpoint.guarantee_system] || checkpoint.guarantee_system || "Alle systemer",
-                    checkpoint.image_required ? " · Bilde påkrevd" : "",
-                    checkpoint.comment_required ? " · Kommentar påkrevd" : "",
-                    Number(checkpoint.sort_order || 0) ? ` · Sortering ${checkpoint.sort_order}` : ""
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => toggleProductCheckpointPanel(row.product_no), children: `${openProductCheckpointPanels?.[row.product_no] ? "Skjul" : "Vis / rediger"} kontrollpunkter (${(productMasterCheckpointsByProduct[row.product_no] || []).length})` }),
+                openProductCheckpointPanels?.[row.product_no] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "10px", background: "#f8fafc" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "0 0 6px" }, children: "Kontrollpunkter fra Produktmaster" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan admin knytte kontrollpunkter til produktet. Punktene lagres kun i Produktmaster og påvirker ikke prosjektets sjekklister, garanti eller rapport før dette kobles i en senere deploy." }),
+                  (productMasterCheckpointsByProduct[row.product_no] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen kontrollpunkter registrert på dette produktet ennå." }),
+                  (productMasterCheckpointsByProduct[row.product_no] || []).map((checkpoint) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", style: { marginTop: "8px" }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: checkpoint.checkpoint_text }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                      productCheckpointTypeLabels[checkpoint.checkpoint_type] || checkpoint.checkpoint_type || "Standard kontrollpunkt",
+                      " · ",
+                      productCheckpointSystemLabels[checkpoint.guarantee_system] || checkpoint.guarantee_system || "Alle systemer",
+                      checkpoint.image_required ? " · Bilde påkrevd" : "",
+                      checkpoint.comment_required ? " · Kommentar påkrevd" : "",
+                      Number(checkpoint.sort_order || 0) ? ` · Sortering ${checkpoint.sort_order}` : ""
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", style: { marginTop: "8px" }, onClick: () => deleteProductMasterCheckpoint(checkpoint), children: "Slett kontrollpunkt" })
+                  ] }, checkpoint.id || `${row.product_no}-${checkpoint.checkpoint_text}`)),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "14px 0 8px" }, children: "+ Legg til kontrollpunkt" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kontrollpunkttekst", value: productCheckpointDraft(row.product_no).checkpoint_text || "", onChange: (v) => updateProductCheckpointDraft(row.product_no, { checkpoint_text: v }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type", value: productCheckpointDraft(row.product_no).checkpoint_type || "standard", options: productCheckpointTypeOptions, optionLabels: productCheckpointTypeLabels, onChange: (v) => updateProductCheckpointDraft(row.product_no, { checkpoint_type: v }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "System", value: productCheckpointDraft(row.product_no).guarantee_system || "all", options: productCheckpointSystemOptions, optionLabels: productCheckpointSystemLabels, onChange: (v) => updateProductCheckpointDraft(row.product_no, { guarantee_system: v }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sortering", type: "number", value: productCheckpointDraft(row.product_no).sort_order || 0, onChange: (v) => updateProductCheckpointDraft(row.product_no, { sort_order: v }) })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", style: { marginTop: "8px" }, onClick: () => deleteProductMasterCheckpoint(checkpoint), children: "Slett kontrollpunkt" })
-                ] }, checkpoint.id || `${row.product_no}-${checkpoint.checkpoint_text}`)),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "14px 0 8px" }, children: "+ Legg til kontrollpunkt" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kontrollpunkttekst", value: productCheckpointDraft(row.product_no).checkpoint_text || "", onChange: (v) => updateProductCheckpointDraft(row.product_no, { checkpoint_text: v }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type", value: productCheckpointDraft(row.product_no).checkpoint_type || "standard", options: productCheckpointTypeOptions, optionLabels: productCheckpointTypeLabels, onChange: (v) => updateProductCheckpointDraft(row.product_no, { checkpoint_type: v }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "System", value: productCheckpointDraft(row.product_no).guarantee_system || "all", options: productCheckpointSystemOptions, optionLabels: productCheckpointSystemLabels, onChange: (v) => updateProductCheckpointDraft(row.product_no, { guarantee_system: v }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sortering", type: "number", value: productCheckpointDraft(row.product_no).sort_order || 0, onChange: (v) => updateProductCheckpointDraft(row.product_no, { sort_order: v }) })
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "center", marginTop: "10px" }, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px", width: "fit-content" }, children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!productCheckpointDraft(row.product_no).image_required, onChange: (e) => updateProductCheckpointDraft(row.product_no, { image_required: e.target.checked }) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Bilde påkrevd" })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px", width: "fit-content" }, children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!productCheckpointDraft(row.product_no).comment_required, onChange: (e) => updateProductCheckpointDraft(row.product_no, { comment_required: e.target.checked }) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Kommentar påkrevd" })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => createProductMasterCheckpoint(row), children: "Lagre kontrollpunkt" })
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "16px", flexWrap: "wrap", alignItems: "center", marginTop: "10px" }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px", width: "fit-content" }, children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!productCheckpointDraft(row.product_no).image_required, onChange: (e) => updateProductCheckpointDraft(row.product_no, { image_required: e.target.checked }) }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Bilde påkrevd" })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px", width: "fit-content" }, children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!productCheckpointDraft(row.product_no).comment_required, onChange: (e) => updateProductCheckpointDraft(row.product_no, { comment_required: e.target.checked }) }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Kommentar påkrevd" })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => createProductMasterCheckpoint(row), children: "Lagre kontrollpunkt" })
+                  ] })
                 ] })
               ] })
             ] }, "pm-" + row.product_no))
