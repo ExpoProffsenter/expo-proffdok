@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
-// FASE 10 Deploy 1.0: Fjernet synlig utvikler-/backendtekst fra brukerflater og feilmeldinger.
+// FASE 10 Deploy 1.1: Mobil åpningsside + forbedret mobilscroll ved fanebytte.
+ // FASE 10 Deploy 1.0: Fjernet synlig utvikler-/backendtekst fra brukerflater og feilmeldinger.
 // FASE 9 Deploy 2.7: Deaktiverte brukere holdes utenfor Nye brukere + reaktiveringsknapp i Admin.
 // FASE 9 Deploy 2.6: Admin-veiledning under Hjelp vises kun for admin-brukere.
 // FASE 9 Deploy 2.5: Alle garantipunkter krever bilde og kommentar + fikset avhuking for Sopro garantikontrollpunkt ved nytt produkt.
@@ -1452,6 +1453,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const finished = projectListRows.filter((item) => item.listStatus.tone === "done" || item.listStatus.tone === "locked").length;
       return { total, unread, active, finished, visible: filteredProjectListRows.length };
     }, [projectListRows, filteredProjectListRows]);
+    const mobileHomeStats = (0, import_react.useMemo)(() => {
+      const active = projectListRows.filter((item) => item.listStatus.tone !== "done" && item.listStatus.tone !== "locked").length;
+      const deviations = projectListRows.filter((item) => item.openDeviationCount > 0).length;
+      const unreadProjects = projectListRows.filter((item) => item.unreadForAdminInList > 0).length;
+      const readyForCustomer = projectListRows.filter((item) => item.listStatus.tone === "customer_ready").length;
+      return { active, deviations, unreadProjects, readyForCustomer };
+    }, [projectListRows]);
     const tabs = [
       ["prosjekt", "Prosjekt"],
       ["prosjektinfo", "Prosjektinformasjon/beskrivelse"],
@@ -1476,27 +1484,45 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const currentTabIndex = tabs.findIndex(([id]) => id === tab);
     const previousTab = currentTabIndex > 0 ? tabs[currentTabIndex - 1] : null;
     const nextTab = currentTabIndex >= 0 && currentTabIndex < tabs.length - 1 ? tabs[currentTabIndex + 1] : null;
+    const scrollToMobileTabTarget = (id) => {
+      if (!id) return;
+      if (typeof window === "undefined" || typeof document === "undefined") return;
+      if (window.innerWidth > 700) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      const targetMap = {
+        prosjekt: ".mobileCurrentProjectBar, .desktopOnlyWhenNoProject section, main",
+        prosjektinfo: ".projectInfoSection, section, main",
+        garanti: ".warrantyStatusCard, section, main",
+        firma: ".logoBox, section, main",
+        prosjektering: ".prosjekteringSection, section, main",
+        produkter: ".productQuickStart, .checklistList, section, main",
+        overflater: ".bathroomEquipmentQuickStart, section, main",
+        bilder: ".imageUploadTiles, .photos, section, main",
+        tilgang: ".accessQuickStart, section, main",
+        installasjoner: ".installQuickStart, section, main",
+        sjekklister: ".checklistSummaryCard, .checklistAccordion, section, main",
+        tilbud: ".contractQuickStart, section, main",
+        overtagelse: ".handoverQuickStart, section, main",
+        chat: ".chatQuickStart, .chatMessages, section, main",
+        internt: ".internalNotesQuickStart, section, main",
+        prosjektliste: ".projectListToolbar, .projectListCard, section, main",
+        rapport: ".report, section, main",
+        hjelp: ".helpQuickStart, section, main",
+        admin: ".adminQuickStart, section, main"
+      };
+      const selector = targetMap[id] || "main";
+      const target = selector.split(",").map((part) => document.querySelector(part.trim())).find(Boolean) || document.querySelector("main");
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
     const goToTab = (id) => {
-  if (!id) return;
-  setTab(id);
-
-  const scrollToMobileTarget = () => {
-    if (window.innerWidth > 700) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-    const target =
-      id === "sjekklister"
-        ? document.querySelector(".checklistSummaryCard") || document.querySelector(".checklistAccordion") || document.querySelector("main")
-        : id === "bilder"
-          ? document.querySelector(".imageUploadTiles") || document.querySelector("main")
-          : document.querySelector("main");
-    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  setTimeout(scrollToMobileTarget, 90);
-  if (id === "sjekklister" || id === "bilder") setTimeout(scrollToMobileTarget, 320);
-};
+      if (!id) return;
+      setTab(id);
+      setTimeout(() => scrollToMobileTabTarget(id), 90);
+      setTimeout(() => scrollToMobileTabTarget(id), 320);
+    };
     const appendProjectDescriptionTemplate = (templateText) => {
       const currentText = project.projectDescription || "";
       const separator = currentText.trim() ? "\n\n" : "";
@@ -1562,6 +1588,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setMobileCreatingProject(false);
       setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
       setTab(targetTab);
+      setTimeout(() => scrollToMobileTabTarget(targetTab), 180);
+      setTimeout(() => scrollToMobileTabTarget(targetTab), 420);
       if (options.showOpenDeviationsOnly) {
         setTimeout(() => {
           const checklistSection = document.querySelector(".activeDeviationFocus") || document.querySelector(".checklistAccordion");
@@ -5492,6 +5520,140 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       }
 
 
+
+      /* FASE 10 Deploy 1.1: proff mobil åpningsside */
+      @media screen and (max-width: 700px) {
+        .mobileProjectChooser {
+          background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%) !important;
+          border: 1px solid #dbe7ec !important;
+          box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08) !important;
+        }
+        .mobileHomeHero {
+          border-radius: 22px;
+          padding: 18px;
+          background: linear-gradient(135deg, #082f3a 0%, #0c4a6e 100%);
+          color: #ffffff;
+          box-shadow: 0 18px 42px rgba(8, 47, 58, 0.18);
+        }
+        .mobileHomeEyebrow {
+          display: inline-flex;
+          align-items: center;
+          padding: 5px 9px;
+          border-radius: 999px;
+          background: rgba(255,255,255,0.14);
+          border: 1px solid rgba(255,255,255,0.2);
+          font-size: 12px;
+          font-weight: 900;
+          letter-spacing: .04em;
+          text-transform: uppercase;
+          margin-bottom: 10px;
+        }
+        .mobileHomeHero h2 {
+          color: #ffffff !important;
+          margin: 0 0 8px !important;
+          font-size: 25px !important;
+          line-height: 1.08 !important;
+        }
+        .mobileHomeHero p {
+          color: rgba(255,255,255,0.86) !important;
+          margin: 0 0 14px !important;
+          font-size: 14px !important;
+          line-height: 1.45 !important;
+        }
+        .mobileHomeActions {
+          display: grid;
+          grid-template-columns: 1.4fr .8fr;
+          gap: 8px;
+        }
+        .mobileHomeActions button {
+          width: 100% !important;
+          min-height: 46px !important;
+        }
+        .mobileHomeStats {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 7px;
+          margin-top: 12px;
+        }
+        .mobileHomeStatCard {
+          background: #ffffff !important;
+          color: #0f172a !important;
+          border: 1px solid #dbe7ec !important;
+          border-radius: 16px !important;
+          box-shadow: none !important;
+          padding: 9px 5px !important;
+          min-height: 64px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 2px !important;
+        }
+        .mobileHomeStatCard b {
+          font-size: 19px !important;
+          line-height: 1 !important;
+          color: #082f3a !important;
+        }
+        .mobileHomeStatCard span {
+          font-size: 10.5px !important;
+          line-height: 1.1 !important;
+          color: #64748b !important;
+          font-weight: 900 !important;
+        }
+        .mobileHomeSearchCard {
+          margin-top: 12px;
+          border: 1px solid #dbe7ec;
+          background: #ffffff;
+          border-radius: 18px;
+          padding: 12px;
+        }
+        .mobileHomeSearchCard label {
+          margin-bottom: 0 !important;
+        }
+        .mobileHomeFilterRow {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 7px;
+          margin-top: 10px;
+        }
+        .mobileHomeFilterRow button {
+          min-height: 38px !important;
+          padding: 7px 5px !important;
+          font-size: 13px !important;
+        }
+        .mobileProjectPickMeta {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-top: 10px;
+        }
+        .mobileProjectPickMeta span {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          padding: 5px 7px;
+          border-radius: 999px;
+          border: 1px solid #dbe7ec;
+          background: #ffffff;
+          color: #334155;
+          font-size: 11px;
+          font-weight: 900;
+        }
+        .mobileProjectPickMeta .mobileProjectPickAlert {
+          border-color: #fecaca;
+          background: #fef2f2;
+          color: #991b1b;
+        }
+        .mobileProjectPickActions {
+          grid-template-columns: 1.2fr 1fr 1fr 1fr !important;
+        }
+        .mobileProjectPickActions button {
+          font-size: 12.5px !important;
+          min-height: 40px !important;
+        }
+      }
+
+
       /* Mobile UX fase 4: feltapp-sjekklister */
       .checklistSummaryCard {
         border:1px solid #dbe7ec;
@@ -5973,18 +6135,50 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
         !projectId && !mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hvilket prosjekt vil du jobbe i?" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "mobileProjectChooserIntro", children: "Velg aktivt prosjekt f\xF8rst. Avsluttede prosjekter ligger i prosjektlisten/arkivet." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "S\xF8k etter prosjekt, kunde eller adresse", value: projectSearch, onChange: setProjectSearch }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectChooserActions", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadProjects(authUser, true), children: "Oppdater liste" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
-              createNewProject();
-              setTab("prosjekt");
-            }, children: "+ Nytt prosjekt" })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hva skal du dokumentere nå?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Start et nytt prosjekt eller fortsett der du slapp. Denne startsiden vises kun på mobil." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeActions", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => {
+                createNewProject();
+                setTab("prosjekt");
+                setTimeout(() => scrollToMobileTabTarget("prosjekt"), 120);
+              }, children: "+ Nytt prosjekt" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => loadProjects(authUser, true), children: "Oppdater" })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeStats", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileHomeStatCard", onClick: () => setProjectStatusFilter("alle"), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.active }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "aktive" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileHomeStatCard", onClick: () => setProjectUnreadOnly((value) => !value), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.unreadProjects }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "ulest chat" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileHomeStatCard", onClick: () => setProjectStatusFilter("deviation"), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.deviations }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "med avvik" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileHomeStatCard", onClick: () => setProjectStatusFilter("customer_ready"), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.readyForCustomer }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "klar kunde" })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeSearchCard", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk prosjekt, kunde eller adresse", value: projectSearch, onChange: setProjectSearch }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeFilterRow", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "alle" && !projectUnreadOnly ? "" : "secondary", onClick: () => {
+                setProjectStatusFilter("alle");
+                setProjectUnreadOnly(false);
+              }, children: "Alle" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectUnreadOnly ? "" : "secondary", onClick: () => setProjectUnreadOnly((value) => !value), children: "Ulest" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "deviation" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "deviation" ? "alle" : "deviation"), children: "Avvik" })
+            ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectList", children: [
-            activeMobileProjectRows.slice(0, 8).map(({ row: p, listProject, listStatus, unreadForAdminInList }) => {
+            filteredProjectListRows.filter((item) => item.listStatus.tone !== "done" && item.listStatus.tone !== "locked").slice(0, 8).map(({ row: p, listProject, listStatus, unreadForAdminInList, openDeviationCount, productSummary, imageSummary }) => {
               const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(", ");
               return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectPickCard", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectPickCardTop", children: [
@@ -5994,12 +6188,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                       "Kunde: ",
                       listProject.customer
                     ] }),
-                    locationLine && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: locationLine }),
-                    unreadForAdminInList > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { color: "#991b1b", fontWeight: 900 }, children: [
-                      "\u{1F4AC} ",
-                      unreadForAdminInList,
-                      " ulest fra kunde"
-                    ] })
+                    locationLine && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: locationLine })
                   ] }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "mobileProjectPickStatus", children: [
                     listStatus.icon,
@@ -6007,16 +6196,38 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                     listStatus.label
                   ] })
                 ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectPickMeta", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                    "📷 ",
+                    imageSummary.total,
+                    " bilder"
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                    "📦 ",
+                    productSummary.total,
+                    " produkter"
+                  ] }),
+                  unreadForAdminInList > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "mobileProjectPickAlert", children: [
+                    "💬 ",
+                    unreadForAdminInList,
+                    " ulest"
+                  ] }),
+                  openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "mobileProjectPickAlert", children: [
+                    "⚠️ ",
+                    openDeviationCount,
+                    " avvik"
+                  ] })
+                ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectPickActions", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => openProjectById(p.id, "prosjekt"), children: "\xC5pne" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => openProjectById(p.id, "prosjekt"), children: "Åpne" }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(p.id, "bilder"), children: "Bilder" }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(p.id, "sjekklister"), children: "Sjekklister" }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(p.id, "chat"), children: "Chat" })
                 ] })
               ] }, `mobile-pick-${p.id}`);
             }),
-            projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen prosjekter hentet enn\xE5. Trykk Oppdater liste." }),
-            projects.length > 0 && activeMobileProjectRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen aktive prosjekter matcher s\xF8ket. Avsluttede prosjekter finnes fortsatt i prosjektlisten/arkivet." })
+            projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen prosjekter hentet ennå. Trykk Oppdater." }),
+            projects.length > 0 && filteredProjectListRows.filter((item) => item.listStatus.tone !== "done" && item.listStatus.tone !== "locked").length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen aktive prosjekter matcher søket eller filteret. Avsluttede prosjekter ligger i prosjektlisten." })
           ] })
         ] }),
         projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileCurrentProjectBar", children: [
