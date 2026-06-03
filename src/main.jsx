@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.0: Fjernet synlig utvikler-/backendtekst fra brukerflater og feilmeldinger.
 // FASE 9 Deploy 2.7: Deaktiverte brukere holdes utenfor Nye brukere + reaktiveringsknapp i Admin.
 // FASE 9 Deploy 2.6: Admin-veiledning under Hjelp vises kun for admin-brukere.
 // FASE 9 Deploy 2.5: Alle garantipunkter krever bilde og kommentar + fikset avhuking for Sopro garantikontrollpunkt ved nytt produkt.
@@ -42,7 +43,7 @@
 // FASE 7 Deploy 4D: Profesjonell prosjektinfo i PDF og rapportvalg for produktdokumentasjon.
 // FASE 7 Deploy 4C: Rapportluft, bedre sideskift og korrigerte SINTEF QR-lenker.
 // FASE 7 Deploy 4B: Profesjonell rapportvisning med fremhevede sjekkpunkter og rapportsammendrag.
-// FASE 7 Deploy 3D: Randomisert garantinummer og registrering i Supabase warranty_registry.
+// FASE 7 Deploy 3D: Randomisert garantinummer og registrering i garantiregister.
 // FASE 7 Deploy 3B: Mobiljustering av sjekklister, bilder og statusknapper uten logikkendringer.
 // FASE 7 Deploy 3: Profesjonelt garantibevis i PDF, arkiveringsvarsel og krav om nedlastet sluttrapport.
 // FASE 7 Deploy 2F: Garantipunkter flettet inn i riktig sjekklisteflyt, uten doble sjekkpunkter.
@@ -2186,13 +2187,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           return alert("\u2714 Prosjekt oppdatert og bekreftet lagret");
         }
         const shouldCopy = window.confirm(
-          "Prosjektet ble ikke oppdatert i gammel rad. Dette skyldes sannsynligvis Supabase-policy/eierskap p\xE5 gamle prosjekter.\n\nVil du lagre dette som en ny oppdatert kopi n\xE5, slik at endringene ikke g\xE5r tapt?"
+          "Prosjektet ble ikke oppdatert automatisk. Dette kan skyldes tilgang til et eldre prosjekt.\n\nVil du lagre dette som en ny oppdatert kopi n\xE5, slik at endringene ikke g\xE5r tapt?"
         );
         if (!shouldCopy) {
           setProject(saveProjectData);
           setProjectLog(saveProjectLog);
           latestStateRef.current = { ...snapshot, project: saveProjectData, projectLog: saveProjectLog };
-          return alert("Endringene st\xE5r fortsatt p\xE5 skjermen, men er ikke bekreftet lagret i Supabase.");
+          return alert("Endringene st\xE5r fortsatt p\xE5 skjermen, men er ikke bekreftet lagret.");
         }
         const copyPayload = {
           title: saveProjectData.projectName || saveProjectData.address || "Uten navn",
@@ -2302,7 +2303,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const { error } = await supabase.from("projects").update(payload).eq("id", projectId);
       if (error) {
         console.error(error);
-        return alert("Kunne ikke lagre fra delingslink. Sjekk Supabase-policy for delt tilgang: " + error.message);
+        return alert("Kunne ikke lagre fra delingslink. Kontakt prosjektansvarlig hvis feilen vedvarer. Feil: " + error.message);
       }
       setProject(safeProject);
       alert("\u2714 Bidrag lagret p\xE5 prosjektet " + (/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO"));
@@ -2393,7 +2394,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         return alert("Kunne ikke slette prosjekt: " + error.message);
       }
       if (!data || data.length === 0) {
-        return alert("Prosjektet ble ikke slettet. Det skyldes sannsynligvis tilgang/eierskap p\xE5 gammel prosjektrad i Supabase.");
+        return alert("Prosjektet ble ikke slettet. Dette skyldes sannsynligvis tilgang til en eldre prosjektrad.");
       }
       setProjects((prev) => (prev || []).filter((p) => p.id !== id));
       if (id === projectId) {
@@ -2697,7 +2698,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       setAdminLoading(false);
       if (error) {
         console.error(error);
-        return alert("Kunne ikke hente brukere. Sjekk at Supabase-policy tillater admin \xE5 lese profiles.");
+        return alert("Kunne ikke hente brukere. Kontakt systemansvarlig hvis feilen vedvarer.");
       }
       setAdminUsers(data || []);
     };
@@ -2717,7 +2718,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       const { error } = await supabase.from("profiles").update({ approved: false, deactivated: true }).eq("id", id);
       if (error) {
         console.error(error);
-        return alert("Kunne ikke deaktivere bruker: " + error.message + "\n\nSjekk at kolonnen deactivated finnes i profiles-tabellen.");
+        return alert("Kunne ikke deaktivere bruker: " + error.message);
       }
       alert("Bruker er deaktivert.");
       loadAdminUsers();
@@ -2739,7 +2740,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       setFdvLoading(false);
       if (error) {
         console.error(error);
-        return alert("Kunne ikke hente FDV-register. Kj\xF8r SQL-oppsettet f\xF8rst og sjekk Supabase-policy: " + error.message);
+        return alert("Kunne ikke hente FDV-register. Kontakt systemansvarlig hvis feilen vedvarer. Feil: " + error.message);
       }
       setFdvRegister(data || []);
       if (notify) alert(`FDV-register oppdatert. Fant ${(data || []).length} produkter.`);
@@ -2801,7 +2802,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       setProductMasterLoading(false);
       if (error) {
         console.warn("Kunne ikke hente produktmaster:", error.message);
-        if (notify) alert("Kunne ikke hente produktmaster. Sjekk at SQL-filen er kj\xF8rt i Supabase: " + error.message);
+        if (notify) alert("Kunne ikke hente produktmaster. Kontakt systemansvarlig hvis feilen vedvarer. Feil: " + error.message);
         return;
       }
       setProductMaster(data || []);
@@ -2813,7 +2814,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       setProductMasterCheckpointLoading(false);
       if (error) {
         console.warn("Kunne ikke hente produktkontrollpunkter:", error.message);
-        if (notify) alert("Kunne ikke hente kontrollpunkter fra Produktmaster. Sjekk tabell/RLS i Supabase: " + error.message);
+        if (notify) alert("Kunne ikke hente kontrollpunkter fra Produktmaster. Kontakt systemansvarlig hvis feilen vedvarer. Feil: " + error.message);
         return;
       }
       setProductMasterCheckpoints(data || []);
@@ -3020,7 +3021,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
           }).eq("id", projectId);
           if (updateError) {
             console.error(updateError);
-            return alert("Dokumentoppdatering er gjort på skjermen, men kunne ikke lagres i Supabase: " + updateError.message);
+            return alert("Dokumentoppdatering er gjort på skjermen, men kunne ikke lagres automatisk: " + updateError.message);
           }
           savedToCloud = true;
         }
@@ -4928,7 +4929,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signUp, children: "Opprett bruker" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: resetPassword, children: "Glemt passord?" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "E-post huskes p\xE5 denne enheten. Passord lagres ikke i appen, men nettleseren/Supabase kan holde deg innlogget trygt." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "E-post huskes p\xE5 denne enheten. Passord lagres ikke i appen. Nettleseren kan likevel holde deg innlogget på en trygg måte." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Delingslenker fungerer fortsatt uten innlogging." })
         ] }) })
       ] });
@@ -4961,13 +4962,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: authUser.email }),
             " er registrert, men m\xE5 godkjennes av administrator f\xF8r appen kan brukes."
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-            "Fyll gjerne inn firmaprofilen under. Administrator kan deretter godkjenne deg i Supabase ved \xE5 sette ",
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "approved = true" }),
-            " i tabellen ",
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "profiles" }),
-            "."
-          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Fyll gjerne inn firmaprofilen under. Administrator kan deretter godkjenne kontoen din." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Firmanavn", value: company.companyName, onChange: (v) => setCompany({ ...company, companyName: v }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Org.nr", value: company.orgNumber, onChange: (v) => setCompany({ ...company, orgNumber: v }) }),
@@ -6704,7 +6699,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Forutsetter at Supabase-policy tillater admin \xE5 lese og oppdatere profiles." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kun administrator kan godkjenne, deaktivere og reaktivere brukere." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", margin: "12px 0" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "pending" ? "" : "secondary", onClick: () => setAdminUserFilter("pending"), children: `Nye brukere (${pendingAdminUsers.length})` }),
@@ -6728,7 +6723,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Admin Produktmaster" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette er produktdatabasen fra prisfilen, uten priser. Legg inn FDV, datablad, DOP, EPD og sikkerhetsdatablad her. N\xE5r et standardprodukt velges i prosjektet, henter appen dokumentlinker automatisk fra denne masteren." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette er produktregisteret for dokumentasjon. Legg inn FDV, datablad, DOP, EPD og sikkerhetsdatablad her. N\xE5r et standardprodukt velges i prosjektet, henter appen dokumentlinker automatisk fra registeret." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: productMasterStats.total }),
@@ -6802,7 +6797,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setNewProductMaster(emptyNewProductMaster()), children: "Tøm skjema" })
               ] }),
                 ] }),
-            (productMaster || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter funnet i produktmaster. Kj\xF8r SQL-filen fra flisLAB-importen f\xF8rst." }),
+            (productMaster || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen produkter funnet i produktmaster. Kontakt systemansvarlig hvis produktlisten mangler." }),
             (productMaster || []).filter((row) => row.used_in_app_standard_list || hasValue(row.app_match_name) || hasValue(row.fdv_url) || hasValue(row.datablad_url) || hasValue(row.dop_url) || hasValue(row.epd_url)).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: row.product_name }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
@@ -6831,7 +6826,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => toggleProductCheckpointPanel(row.product_no), children: `${openProductCheckpointPanels?.[row.product_no] ? "Skjul" : "Vis / rediger"} Sopro garantikontrollpunkter (${(productMasterCheckpointsByProduct[row.product_no] || []).length})` }),
                 openProductCheckpointPanels?.[row.product_no] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "10px", background: "#f8fafc" }, children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "0 0 6px" }, children: "Sopro garantikontrollpunkter" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan admin registrere ekstra Sopro garantikontrollpunkter som senere kan kobles mot garantimotoren. Tallet på knappen gjelder kun punkter som er lagret i Produktmaster-tabellen. Innebygde Sopro-garantipunkter som allerede ligger i appen telles ikke her." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan admin registrere ekstra Sopro garantikontrollpunkter som senere kan kobles mot garantimotoren. Tallet på knappen gjelder kun ekstra punkter som er registrert på produktet. Innebygde Sopro-garantipunkter som allerede ligger i appen telles ikke her." }),
                   (productMasterCheckpointsByProduct[row.product_no] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen ekstra Sopro garantikontrollpunkter registrert på dette produktet ennå. Produktet kan likevel være dekket av innebygde Sopro-garantipunkter i appen." }),
                   (productMasterCheckpointsByProduct[row.product_no] || []).map((checkpoint) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", style: { marginTop: "8px" }, children: [
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: checkpoint.checkpoint_text }),
