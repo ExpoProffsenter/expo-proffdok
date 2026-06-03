@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 9 Deploy 2.3A: Admin-fanen er kun for ekte admin + tydeliggjort at kontrollpunkt-tall gjelder Produktmaster-punkter.
 // FASE 9 Deploy 2.2: Produktmaster kontrollpunkter skjules bak vis/rediger-knapp + kan opprettes samtidig med nytt produkt.
 // FASE 9 Deploy 2.1: Admin Produktmaster kan hente, vise, opprette og slette produktbaserte kontrollpunkter uten å påvirke sjekklister/garanti.
 // FASE 9 Deploy 2.0: Tydelig grønn hake i rapportstatus + appikon/manifest for mobil-hjemskjerm.
@@ -957,8 +958,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const isAdminProjectLink = urlParams.has("project") && accessMode === "admin";
     const isUnderleverandorView = urlParams.has("project") && accessMode === "underleverandor";
     const isReadOnly = urlParams.has("project") && !isUnderleverandorView && !isAdminProjectLink;
-    const isAdminUser = !!authUser && (profile?.is_admin === true || profile?.role === "admin" || authUser.email === "kenneth@ringside.no" || !!company.email && authUser.email === company.email);
-    const canUseAdminProjectSync = !!authUser && !!profile?.approved && !isReadOnly;
+    const isAdminUser = !!authUser && (profile?.is_admin === true || profile?.role === "admin");
+    const canUseAdminProjectSync = !!authUser && !!profile?.approved && isAdminUser && !isReadOnly;
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
     const applyLockState = (baseProject, sourceProject = {}) => ({
       ...baseProject,
@@ -6708,11 +6709,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 ] })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px" }, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => toggleProductCheckpointPanel(row.product_no), children: `${openProductCheckpointPanels?.[row.product_no] ? "Skjul" : "Vis / rediger"} kontrollpunkter (${(productMasterCheckpointsByProduct[row.product_no] || []).length})` }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => toggleProductCheckpointPanel(row.product_no), children: `${openProductCheckpointPanels?.[row.product_no] ? "Skjul" : "Vis / rediger"} Produktmaster-punkter (${(productMasterCheckpointsByProduct[row.product_no] || []).length})` }),
                 openProductCheckpointPanels?.[row.product_no] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "10px", background: "#f8fafc" }, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "0 0 6px" }, children: "Kontrollpunkter fra Produktmaster" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan admin knytte kontrollpunkter til produktet. Punktene lagres kun i Produktmaster og påvirker ikke prosjektets sjekklister, garanti eller rapport før dette kobles i en senere deploy." }),
-                  (productMasterCheckpointsByProduct[row.product_no] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen kontrollpunkter registrert på dette produktet ennå." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "0 0 6px" }, children: "Produktmaster-kontrollpunkter" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan admin knytte nye produktbaserte kontrollpunkter til produktet. Tallet på knappen gjelder kun punkter som er lagret i Produktmaster-tabellen. Innebygde standardpunkter og Sopro-garantipunkter som allerede ligger i appen telles ikke her." }),
+                  (productMasterCheckpointsByProduct[row.product_no] || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen Produktmaster-kontrollpunkter registrert på dette produktet ennå. Produktet kan likevel være dekket av innebygde standardpunkter eller Sopro-garantipunkter i appen." }),
                   (productMasterCheckpointsByProduct[row.product_no] || []).map((checkpoint) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", style: { marginTop: "8px" }, children: [
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: checkpoint.checkpoint_text }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
