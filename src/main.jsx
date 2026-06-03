@@ -403,7 +403,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }
   ];
   var accessRoleInfo = [
-    { role: "Eier / administrator", text: "Full tilgang til prosjekt, rapport, firmaprofil, prosjektliste, deling og brukergodkjenning." },
+    { role: "Eier / administrator", text: "Full tilgang til prosjekt, rapport, firmaprofil, prosjektliste og deling." },
     { role: "Ansatt", text: "Kan normalt opprette, endre og dokumentere prosjekter for firmaet." },
     { role: "Underleverand\xF8r", text: "Anbefales for fag som skal bidra med dokumentasjon, bilder, sjekklister eller utstyr p\xE5 prosjektet." },
     { role: "Kun lesetilgang", text: "Kunde/byggherre f\xE5r egen kundelink med rapport, tilbud/kontrakt og chat." }
