@@ -1736,6 +1736,22 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const finished = projectListRows.filter((item) => item.listStatus.tone === "done" || item.listStatus.tone === "locked").length;
       return { total, unread, active, finished, visible: filteredProjectListRows.length };
     }, [projectListRows, filteredProjectListRows]);
+    const registeredCompanyOptions = (0, import_react.useMemo)(() => {
+      const companies = new Map();
+      const addCompany = (value) => {
+        const clean = String(value || "").trim();
+        if (!clean) return;
+        companies.set(clean.toLowerCase(), clean);
+      };
+      (adminUsers || []).forEach((u) => addCompany(u?.company_name));
+      (projectListRows || []).forEach((item) => {
+        const dataCompany = item?.row?.data?.company || {};
+        addCompany(dataCompany.companyName || dataCompany.company_name || item?.listProject?.companyName);
+      });
+      addCompany(profile?.company_name);
+      addCompany(company?.companyName);
+      return ["", ...Array.from(companies.values()).sort((a, b) => a.localeCompare(b, "no"))];
+    }, [adminUsers, projectListRows, profile?.company_name, company?.companyName]);
     const supportCompanies = (0, import_react.useMemo)(() => {
       const map = new Map();
       const ensure = (companyName) => {
@@ -3375,16 +3391,18 @@ Endringen lagres umiddelbart.`)) return;
       await loadAdminUsers();
       alert(`✔ Firmarolle oppdatert. ${userEmail} er nå ${roleLabel}.`);
     };
-    const updateAdminUserCompanyName = async (userRow) => {
+    const updateAdminUserCompanyName = async (userRow, nextCompanyValue = "") => {
       if (!isAdminUser) return alert("Du har ikke tilgang til systemadmin.");
       if (!userRow?.id) return;
       const userEmail = userRow.email || "brukeren";
-      const current = userRow.company_name || "";
-      const nextCompany = window.prompt(`Skriv inn firmanavn for ${userEmail}:`, current);
-      if (nextCompany === null) return;
-      const cleanCompany = String(nextCompany || "").trim();
-      if (!window.confirm(`Vil du sette firma for ${userEmail} til:
-${cleanCompany || "(tomt)"}?
+      const current = String(userRow.company_name || "").trim();
+      const cleanCompany = String(nextCompanyValue || "").trim();
+      if (cleanCompany === current) return;
+      if (cleanCompany && !registeredCompanyOptions.includes(cleanCompany)) {
+        return alert("Firma må velges fra registrerte firmaer. Oppdater brukerliste/supportdata hvis firmaet mangler.");
+      }
+      if (!window.confirm(`Vil du flytte ${userEmail} til firma:
+${cleanCompany || "(ikke valgt)"}?
 
 Endringen lagres umiddelbart.`)) return;
       const { error } = await supabase.from("profiles").update({ company_name: cleanCompany }).eq("id", userRow.id);
@@ -8120,10 +8138,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px", marginTop: "10px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Firmarolle", value: u.company_role === "firmaadmin" ? "firmaadmin" : "ansatt", options: ["ansatt", "firmaadmin"], onChange: (v) => updateAdminUserCompanyRole(u, v) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { children: "Firma" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", style: { width: "100%" }, onClick: () => updateAdminUserCompanyName(u), children: u.company_name || "Sett firma" })
-                ] })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, {
+                  label: "Firma",
+                  value: registeredCompanyOptions.includes(u.company_name || "") ? u.company_name || "" : "",
+                  options: registeredCompanyOptions,
+                  optionLabels: { "": u.company_name ? `${u.company_name} (ikke i registrerte firmaer)` : "Velg firma" },
+                  onChange: (v) => updateAdminUserCompanyName(u, v)
+                })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
                 !u.approved && !u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => approveAdminUser(u.id), children: "Godkjenn bruker" }),
