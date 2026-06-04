@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11C/11D + 11B.4: Fjerner forvirrende lokal kladd-dialog for systemadmin og forkaster kladd ved Avbryt.
 // FASE 11C/11D + 11B.3: Trygg lokal kladd for systemadmin, Support Dashboard og e-postinvitasjon.
 // FASE 11B.2: Systemadmin kan administrere firma, firmarolle og systemadmin-status på brukere.
 // FASE 11B.1: Tydelig bekreftelse/varsel ved firmaadmin-endringer av brukerroller og status.
@@ -2047,10 +2048,16 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           if (!raw) continue;
           const saved = JSON.parse(raw);
           if (!saved?.data || !hasMeaningfulProjectDraftContent(saved.data)) continue;
-          if (isSystemAdminUser && saved.projectOwnerId && saved.projectOwnerId !== authUser.id) {
+
+          // Systemadmin jobber ofte i supportmodus på andre firmaers prosjekter.
+          // For å unngå lokale kladder fra supportarbeid, forkastes disse automatisk.
+          // Prosjektene ligger uansett lagret i skyen.
+          if (isSystemAdminUser) {
             window.localStorage.removeItem(key);
+            setProjectAutoSaveStatus("Lokal supportkladd ble forkastet automatisk");
             continue;
           }
+
           const savedTime = saved.savedAt ? new Date(saved.savedAt).toLocaleString("no-NO") : "tidligere";
           const savedTitle = saved.projectTitle || saved?.data?.project?.projectName || saved?.data?.project?.address || "Uten navn";
           const savedCompany = saved.projectCompanyName || saved?.data?.company?.companyName || "ukjent firma";
@@ -2059,10 +2066,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
 Prosjekt: ${savedTitle}
 Firma: ${savedCompany}
 
-Vil du gjenopprette den?`)) {
-            if (window.confirm("Vil du forkaste denne lokale kladden slik at den ikke vises igjen?")) {
-              window.localStorage.removeItem(key);
-            }
+Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
+            window.localStorage.removeItem(key);
+            setProjectAutoSaveStatus("Lokal kladd forkastet");
+            alert("Lokal kladd er forkastet og vil ikke vises igjen.");
             continue;
           }
           unpackData(saved.data, true);
