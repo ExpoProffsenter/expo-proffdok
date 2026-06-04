@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.14: Robust autolagring med lokal nødlagring og debouncet skylagring.
 // FASE 10 Deploy 1.13: Låste prosjekter sperrer lokale produkt- og bildeendringer med tydelig beskjed.
 // FASE 10 Deploy 1.12: Sammenleggbar Nytt produkt i Admin Produktmaster.
 // FASE 10 Deploy 1.11: Søkefelt i Admin Produktmaster for rask filtrering av produkter.
@@ -1099,7 +1100,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [showOpenDeviationsOnly, setShowOpenDeviationsOnly] = (0, import_react.useState)(false);
     const [checklistSaveStatus, setChecklistSaveStatus] = (0, import_react.useState)("");
     const [photoSaveStatus, setPhotoSaveStatus] = (0, import_react.useState)("");
+    const [projectAutoSaveStatus, setProjectAutoSaveStatus] = (0, import_react.useState)("");
+    const [localDraftRestoreChecked, setLocalDraftRestoreChecked] = (0, import_react.useState)(false);
     const checklistAutoSaveTimerRef = (0, import_react.useRef)(null);
+    const localDraftTimerRef = (0, import_react.useRef)(null);
+    const cloudAutoSaveTimerRef = (0, import_react.useRef)(null);
+    const restoredDraftKeysRef = (0, import_react.useRef)(new Set());
     const latestStateRef = (0, import_react.useRef)({});
     const lastChatMessageCountRef = (0, import_react.useRef)(0);
     const lastChatRefreshAtRef = (0, import_react.useRef)(0);
@@ -1744,7 +1750,70 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const separator = currentText.trim() ? "\n\n" : "";
       setProject({ ...project, projectDescription: `${currentText}${separator}${templateText}` });
     };
-    const packData = () => ({ company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes });
+    const buildProjectSnapshot = (override = {}) => ({
+      company: override.company || company,
+      user: override.user || user,
+      project: override.project || project,
+      checked: override.checked || checked,
+      productDocs: override.productDocs || productDocs,
+      manualProducts: override.manualProducts || manualProducts,
+      other: override.other || other,
+      surf: override.surf || surf,
+      bathroomEquipment: override.bathroomEquipment || bathroomEquipment,
+      photos: override.photos || photos,
+      access: override.access || access,
+      inst: override.inst || inst,
+      files: override.files || files,
+      checklist: override.checklist || checklist,
+      tilbud: override.tilbud || tilbud,
+      overtagelse: override.overtagelse || overtagelse,
+      warranty: override.warranty || warranty,
+      projectLog: override.projectLog || projectLog,
+      internalNotes: override.internalNotes || internalNotes
+    });
+    const packData = () => buildProjectSnapshot();
+    const hasMeaningfulProjectDraftContent = (snapshot = buildProjectSnapshot()) => {
+      const p = snapshot.project || {};
+      return !!(
+        p.projectName || p.address || p.postnr || p.city || p.customer || p.customerEmail || p.customerPhone || p.notes || p.projectDescription ||
+        p.fall || p.fallDusj || p.fallUtenfor || p.sluk || p.terskel || p.membran || p.prosjekteringKommentar ||
+        Object.keys(snapshot.checked || {}).length || Object.keys(snapshot.productDocs || {}).length ||
+        Object.values(normalizeManualProductsBySection(snapshot.manualProducts || {})).some((list) => (list || []).some((item) => hasValue(item?.name) || hasValue(item?.fdvUrl) || hasValue(item?.comment))) ||
+        Object.keys(snapshot.other || {}).length || Object.keys(snapshot.surf || {}).length || Object.values(snapshot.bathroomEquipment || {}).some(hasValue) ||
+        (snapshot.photos || []).length || (snapshot.access || []).length || (snapshot.inst || []).length || (snapshot.files || []).length ||
+        Object.keys(snapshot.checklist || {}).length || snapshot.tilbud?.enabled || hasValue(snapshot.tilbud?.tillegg) || hasValue(snapshot.tilbud?.fradrag) || hasValue(snapshot.tilbud?.kommentar) || (snapshot.tilbud?.files || []).length ||
+        snapshot.overtagelse?.enabled || hasValue(snapshot.overtagelse?.kommentar) || hasValue(snapshot.overtagelse?.signUtførende) || hasValue(snapshot.overtagelse?.signKunde) || hasValue(snapshot.overtagelse?.signUtførendeImage) || hasValue(snapshot.overtagelse?.signKundeImage) ||
+        snapshot.warranty?.enabled || snapshot.warranty?.issued || hasValue(snapshot.warranty?.system) ||
+        snapshot.projectLog?.enabled || hasValue(snapshot.projectLog?.draft) || (snapshot.projectLog?.messages || []).length || hasValue(snapshot.internalNotes)
+      );
+    };
+    const localDraftStorageKey = (id = projectId) => authUser?.id ? `expoProffDokDraft:${authUser.id}:${id || "new"}` : "";
+    const saveLocalDraftNow = (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
+      if (!authUser || isReadOnly || !profile?.approved) return;
+      if (!projectId && !mobileCreatingProject && !hasMeaningfulProjectDraftContent(snapshot)) return;
+      const key = localDraftStorageKey(projectId);
+      if (!key) return;
+      try {
+        window.localStorage.setItem(key, JSON.stringify({
+          savedAt: (/* @__PURE__ */ new Date()).toISOString(),
+          projectId: projectId || null,
+          mobileCreatingProject: !!mobileCreatingProject,
+          data: snapshot
+        }));
+        setProjectAutoSaveStatus(`Lagret lokalt ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+      } catch (error) {
+        console.warn("Lokal nødlagring feilet:", error);
+        setProjectAutoSaveStatus("Kunne ikke lagre lokalt");
+      }
+    };
+    const clearLocalDraft = (id = projectId) => {
+      if (!authUser?.id) return;
+      try {
+        window.localStorage.removeItem(`expoProffDokDraft:${authUser.id}:${id || "new"}`);
+      } catch (error) {
+        console.warn("Kunne ikke fjerne lokal kladd:", error);
+      }
+    };
     const unpackData = (data, preserveDraft = false) => {
       setCompany(data.company || { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
       setUser(data.user || { name: "", email: "", role: "Eier / administrator" });
@@ -1779,6 +1848,116 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }));
       setInternalNotes(data.internalNotes || "");
     };
+    const autoSaveProjectToCloud = async (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
+      if (!authUser || !projectId || isReadOnly || isProjectLocked) return;
+      setProjectAutoSaveStatus("Autolagrer …");
+      try {
+        const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        if (fetchError || !existing) {
+          console.warn("Autolagring prosjekt feilet:", fetchError?.message || "Fant ikke prosjekt");
+          setProjectAutoSaveStatus("Kunne ikke autolagre");
+          return;
+        }
+        if (rowIsLocked(existing)) {
+          setProjectAutoSaveStatus("Prosjektet er låst – ikke autolagret");
+          return;
+        }
+        const existingData = dataFromRow(existing);
+        const projectForSave = { ...emptyProject(), ...existingData.project || {}, ...snapshot.project || {}, locked: false, status: "active", lockedAt: "", lockedBy: "" };
+        const cleanData = JSON.parse(JSON.stringify({
+          ...existingData,
+          company: snapshot.company,
+          user: snapshot.user,
+          project: projectForSave,
+          checked: snapshot.checked,
+          productDocs: snapshot.productDocs,
+          manualProducts: snapshot.manualProducts,
+          other: snapshot.other,
+          surf: snapshot.surf,
+          bathroomEquipment: snapshot.bathroomEquipment,
+          photos: snapshot.photos,
+          access: snapshot.access,
+          inst: snapshot.inst,
+          files: snapshot.files,
+          checklist: snapshot.checklist,
+          tilbud: snapshot.tilbud,
+          overtagelse: snapshot.overtagelse,
+          warranty: snapshot.warranty,
+          projectLog: { ...normalizeProjectLog(snapshot.projectLog), draft: snapshot.projectLog?.draft || "" },
+          internalNotes: snapshot.internalNotes
+        }));
+        const { error: updateError } = await supabase.from("projects").update({
+          data: cleanData,
+          title: projectForSave.projectName || projectForSave.address || existing.title || "Uten navn",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        }).eq("id", projectId);
+        if (updateError) {
+          console.warn("Autolagring prosjekt feilet:", updateError.message);
+          setProjectAutoSaveStatus("Kunne ikke autolagre");
+          return;
+        }
+        setProjectAutoSaveStatus(`Autolagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+      } catch (error) {
+        console.warn("Autolagring prosjekt feilet:", error);
+        setProjectAutoSaveStatus("Kunne ikke autolagre");
+      }
+    };
+    const scheduleProjectAutoSave = (snapshot = latestStateRef.current || buildProjectSnapshot(), delay = 1800) => {
+      if (!authUser || isReadOnly || !profile?.approved) return;
+      if (!projectId && !mobileCreatingProject && !hasMeaningfulProjectDraftContent(snapshot)) return;
+      if (localDraftTimerRef.current) window.clearTimeout(localDraftTimerRef.current);
+      localDraftTimerRef.current = window.setTimeout(() => saveLocalDraftNow(snapshot), 180);
+      if (!projectId || isProjectLocked) return;
+      if (cloudAutoSaveTimerRef.current) window.clearTimeout(cloudAutoSaveTimerRef.current);
+      cloudAutoSaveTimerRef.current = window.setTimeout(() => autoSaveProjectToCloud(snapshot), delay);
+    };
+    (0, import_react.useEffect)(() => {
+      const snapshot = buildProjectSnapshot();
+      scheduleProjectAutoSave(snapshot, 2200);
+      return () => {
+        if (localDraftTimerRef.current) window.clearTimeout(localDraftTimerRef.current);
+        if (cloudAutoSaveTimerRef.current) window.clearTimeout(cloudAutoSaveTimerRef.current);
+      };
+    }, [company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes, projectId, mobileCreatingProject, authUser?.id, profile?.approved, isReadOnly, isProjectLocked]);
+    (0, import_react.useEffect)(() => {
+      const handleBeforeUnload = () => saveLocalDraftNow(latestStateRef.current || buildProjectSnapshot());
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === "hidden") saveLocalDraftNow(latestStateRef.current || buildProjectSnapshot());
+      };
+      window.addEventListener("beforeunload", handleBeforeUnload);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      return () => {
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
+    }, [authUser?.id, projectId, mobileCreatingProject, isReadOnly, profile?.approved]);
+    (0, import_react.useEffect)(() => {
+      if (!authUser || !profile?.approved || isReadOnly || localDraftRestoreChecked) return;
+      setLocalDraftRestoreChecked(true);
+      const keys = [localDraftStorageKey(projectId), localDraftStorageKey(null)].filter(Boolean);
+      for (const key of keys) {
+        if (restoredDraftKeysRef.current.has(key)) continue;
+        restoredDraftKeysRef.current.add(key);
+        try {
+          const raw = window.localStorage.getItem(key);
+          if (!raw) continue;
+          const saved = JSON.parse(raw);
+          if (!saved?.data || !hasMeaningfulProjectDraftContent(saved.data)) continue;
+          const savedTime = saved.savedAt ? new Date(saved.savedAt).toLocaleString("no-NO") : "tidligere";
+          if (!window.confirm(`Det finnes en lokalt lagret kladd fra ${savedTime}.
+
+Vil du gjenopprette den?`)) continue;
+          unpackData(saved.data, true);
+          setProjectId(saved.projectId || null);
+          setMobileCreatingProject(!saved.projectId);
+          setTab("prosjekt");
+          setProjectAutoSaveStatus(`Gjenopprettet lokal kladd ${savedTime}`);
+          break;
+        } catch (error) {
+          console.warn("Kunne ikke lese lokal kladd:", error);
+        }
+      }
+    }, [authUser?.id, profile?.approved, isReadOnly, localDraftRestoreChecked]);
     const loadProjects = async (currentUser = authUser, notify = false) => {
       if (!currentUser) {
         setProjects([]);
@@ -1801,6 +1980,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
       unpackData(dataFromRow(data));
       setProjectId(data.id);
+      setLocalDraftRestoreChecked(false);
       setMobileCreatingProject(false);
       setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
       setTab(targetTab);
@@ -1986,6 +2166,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setInternalNotes("");
       setProjectId(null);
       setMobileCreatingProject(true);
+      setLocalDraftRestoreChecked(false);
       setTab("prosjekt");
       window.history.replaceState({}, document.title, window.location.pathname);
       setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
@@ -6325,6 +6506,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           projectId && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
+        hasActiveProjectWorkspace && projectAutoSaveStatus && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "note", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 10px" }, children: `Autolagring: ${projectAutoSaveStatus}` }),
         projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileNav", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 14px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavPanel", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavTop", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavTitle", children: [
