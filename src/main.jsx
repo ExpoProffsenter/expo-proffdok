@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11C.4: Smart Produktmaster-synk oppdaterer aktive prosjekter, men låste/arkiverte prosjekter røres ikke.
 // FASE 11C.1: Kollapsbare Systemadmin-seksjoner for mindre scrolling, spesielt Produktmaster.
 // FASE 11C/11D + 11B.4: Fjerner forvirrende lokal kladd-dialog for systemadmin og forkaster kladd ved Avbryt.
 // FASE 11C/11D + 11B.3: Trygg lokal kladd for systemadmin, Support Dashboard og e-postinvitasjon.
@@ -3694,8 +3695,14 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         console.error(error);
         return alert("Kunne ikke lagre produktmaster-rad: " + error.message);
       }
-      setProductMaster((prev) => (prev || []).map((x) => x.product_no === data.product_no ? data : x));
-      alert("Produktdokumentasjon lagret.");
+      const nextMasterRows = (productMaster || []).map((x) => x.product_no === data.product_no ? data : x);
+      setProductMaster(nextMasterRows);
+      const namesForSync = productNamesForMasterRow(data);
+      if (window.confirm("Produktdokumentasjon er lagret i Produktmaster.\n\nVil du også synke aktive prosjekter som bruker dette produktet?\n\nLåste og arkiverte prosjekter blir ikke endret.")) {
+        await syncActiveProjectsWithProductMaster({ askFirst: false, productNames: namesForSync, masterRows: nextMasterRows });
+      } else {
+        alert("Produktdokumentasjon lagret i Produktmaster. Aktive prosjekter ble ikke synket nå.");
+      }
     };
     const createProductMasterRow = async () => {
       if (!isAdminUser) return alert("Du har ikke tilgang til produktmaster.");
@@ -3725,10 +3732,11 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         console.error(error);
         return alert("Kunne ikke opprette produkt i Produktmaster: " + error.message);
       }
-      setProductMaster((prev) => {
-        const exists = (prev || []).some((row) => row.product_no === data.product_no);
-        return exists ? (prev || []).map((row) => row.product_no === data.product_no ? data : row) : [data, ...prev || []];
-      });
+      const nextMasterRowsAfterCreate = (() => {
+        const exists = (productMaster || []).some((row) => row.product_no === data.product_no);
+        return exists ? (productMaster || []).map((row) => row.product_no === data.product_no ? data : row) : [data, ...productMaster || []];
+      })();
+      setProductMaster(nextMasterRowsAfterCreate);
       let checkpointCreated = false;
       if (newProductMaster.createCheckpoint && hasValue(newProductMaster.checkpoint_text)) {
         const checkpointPayload = {
@@ -3751,10 +3759,144 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         }
       }
       setNewProductMaster(emptyNewProductMaster());
-      alert("✔ Produktet er lagret i Produktmaster" + (payload.used_in_app_standard_list ? " og vil vises i Produkter-fanen etter oppdatering." : ".") + (checkpointCreated ? " Sopro garantikontrollpunkt er også lagret." : ""));
+      const createMessage = "✔ Produktet er lagret i Produktmaster" + (payload.used_in_app_standard_list ? " og vil vises i Produkter-fanen etter oppdatering." : ".") + (checkpointCreated ? " Sopro garantikontrollpunkt er også lagret." : "");
+      if (window.confirm(createMessage + "\n\nVil du også synke aktive prosjekter som bruker dette produktet?\n\nLåste og arkiverte prosjekter blir ikke endret.")) {
+        await syncActiveProjectsWithProductMaster({ askFirst: false, productNames: productNamesForMasterRow(data), masterRows: nextMasterRowsAfterCreate });
+      } else {
+        alert(createMessage + "\n\nAktive prosjekter ble ikke synket nå.");
+      }
     };
+    const productMasterRowsWithOverride = (overrideRows = productMaster) => Array.isArray(overrideRows) ? overrideRows : productMaster || [];
+
+    const buildProductMasterMapFromRows = (rows = productMaster) => {
+      const map = {};
+      const scoreRow = (row) => [row?.fdv_url, row?.datablad_url, row?.dop_url, row?.epd_url, row?.sikkerhetsdatablad_url, row?.document_file_url].filter(hasValue).length;
+      const addKey = (key, row) => {
+        const cleanKey = String(key || "").trim();
+        if (!cleanKey) return;
+        if (!map[cleanKey] || scoreRow(row) > scoreRow(map[cleanKey])) map[cleanKey] = row;
+      };
+      (rows || []).forEach((row) => {
+        addKey(row?.app_match_name, row);
+        addKey(row?.product_family, row);
+        addKey(row?.product_name, row);
+      });
+      return map;
+    };
+
+    const mergeProductDocsFromMaster = (productName, current = {}, rows = productMaster) => {
+      const masterMap = buildProductMasterMapFromRows(rows);
+      const masterRow = masterMap[productName] || {};
+      const next = { ...current };
+      if (hasValue(masterRow.fdv_url)) next.fdvUrl = masterRow.fdv_url;
+      if (hasValue(masterRow.datablad_url)) next.databladUrl = masterRow.datablad_url;
+      if (hasValue(masterRow.dop_url)) next.dopUrl = masterRow.dop_url;
+      if (hasValue(masterRow.epd_url)) next.epdUrl = masterRow.epd_url;
+      if (hasValue(masterRow.sikkerhetsdatablad_url)) next.sikkerhetsdatabladUrl = masterRow.sikkerhetsdatablad_url;
+      if (hasValue(masterRow.document_file_url)) next.documentFileUrl = masterRow.document_file_url;
+      if ([masterRow.fdv_url, masterRow.datablad_url, masterRow.dop_url, masterRow.epd_url, masterRow.sikkerhetsdatablad_url, masterRow.document_file_url].some(hasValue)) next.fdvSource = "product-master";
+      return next;
+    };
+
+    const productNamesForMasterRow = (row = {}) => [row.app_match_name, row.product_name, row.product_family].filter(hasValue).map((value) => String(value).trim());
+
+    const syncActiveProjectsWithProductMaster = async ({ askFirst = true, productNames = null, masterRows = productMaster } = {}) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til Produktmaster-synk.");
+      const filterNames = Array.isArray(productNames) && productNames.length ? new Set(productNames.filter(hasValue).map((name) => String(name).trim())) : null;
+      const filterText = filterNames ? `\n\nSynken begrenses til produkt: ${Array.from(filterNames).join(", ")}` : "";
+      if (askFirst && !window.confirm(`Vil du synke aktive prosjekter med Produktmaster?\n\nDette oppdaterer FDV, datablad, DOP, EPD, sikkerhetsdatablad og produkt-/leverandørside på produkter som allerede er valgt i aktive prosjekter.\n\nLåste og arkiverte prosjekter blir ikke endret.${filterText}`)) return;
+      try {
+        const { data: rows, error } = await supabase.from("projects").select("*").order("updated_at", { ascending: false });
+        if (error) {
+          console.error(error);
+          return alert("Kunne ikke hente prosjekter for synk: " + error.message);
+        }
+
+        let checkedProjectCount = 0;
+        let updatedProjectCount = 0;
+        let updatedProductCount = 0;
+        let skippedLockedCount = 0;
+        let skippedNoProductsCount = 0;
+        let missingMasterCount = 0;
+        let failedCount = 0;
+        const rowsToRefresh = [];
+
+        for (const row of rows || []) {
+          if (rowIsLocked(row)) {
+            skippedLockedCount += 1;
+            continue;
+          }
+          const existingData = dataFromRow(row);
+          if (projectIsLocked(existingData.project)) {
+            skippedLockedCount += 1;
+            continue;
+          }
+          checkedProjectCount += 1;
+          const rowChecked = existingData.checked || {};
+          const selectedNames = Object.keys(rowChecked).filter((name) => rowChecked?.[name]);
+          const namesToSync = filterNames ? selectedNames.filter((name) => filterNames.has(String(name).trim())) : selectedNames;
+          if (!namesToSync.length) {
+            skippedNoProductsCount += 1;
+            continue;
+          }
+
+          const nextProductDocs = { ...existingData.productDocs || {} };
+          let projectChanged = false;
+
+          namesToSync.forEach((productName) => {
+            const current = nextProductDocs[productName] || {};
+            const merged = mergeProductDocsFromMaster(productName, current, masterRows);
+            const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
+            if (!hasAutoDocs) {
+              missingMasterCount += 1;
+              return;
+            }
+            const keys = ["fdvUrl", "databladUrl", "dopUrl", "epdUrl", "sikkerhetsdatabladUrl", "documentFileUrl", "fdvSource"];
+            const changed = keys.some((key) => (current[key] || "") !== (merged[key] || ""));
+            if (!changed) return;
+            nextProductDocs[productName] = merged;
+            projectChanged = true;
+            updatedProductCount += 1;
+          });
+
+          if (!projectChanged) continue;
+
+          const cleanData = JSON.parse(JSON.stringify({
+            ...existingData,
+            productDocs: nextProductDocs,
+            project: { ...emptyProject(), ...existingData.project || {}, locked: false, status: existingData.project?.status || "active", lockedAt: "", lockedBy: "" }
+          }));
+
+          const { error: updateError } = await supabase.from("projects").update({
+            data: cleanData,
+            title: existingData.project?.projectName || existingData.project?.address || row.title || "Uten navn",
+            updated_at: (/* @__PURE__ */ new Date()).toISOString()
+          }).eq("id", row.id);
+
+          if (updateError) {
+            console.error(updateError);
+            failedCount += 1;
+          } else {
+            updatedProjectCount += 1;
+            rowsToRefresh.push(row.id);
+          }
+        }
+
+        await loadProjects(authUser);
+        if (projectId && rowsToRefresh.includes(projectId)) {
+          await refreshProjectFromCloud(true, true);
+        }
+
+        return alert(`Synk mot Produktmaster fullført.\n\nAktive prosjekter kontrollert: ${checkedProjectCount}\nProsjekter oppdatert: ${updatedProjectCount}\nProduktlinjer oppdatert: ${updatedProductCount}\nLåste/arkiverte prosjekter hoppet over: ${skippedLockedCount}\nAktive prosjekter uten aktuelle produkter: ${skippedNoProductsCount}\nProduktvalg uten dokumenttreff i Produktmaster: ${missingMasterCount}\nFeil: ${failedCount}`);
+      } catch (error) {
+        console.error("Synk mot Produktmaster feilet:", error);
+        return alert("Kunne ikke synke aktive prosjekter med Produktmaster. Feil: " + (error?.message || String(error)));
+      }
+    };
+
     const syncCurrentProjectProducts = async () => {
       try {
+        if (!projectId) return alert("Åpne et prosjekt først hvis du vil synke kun dette prosjektet.");
         if (isProjectLocked) return alert("Prosjektet er låst og fungerer som arkiv. Produktdokumentasjon kan ikke oppdateres fra Produktmaster.");
         const checkedNames = effectiveProductSections.flatMap((section) => section.items).filter((name) => checked?.[name]);
         if (!checkedNames.length) return alert("Ingen standardprodukter er valgt i dette prosjektet.");
@@ -3779,7 +3921,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         const nextProductDocs = { ...productDocs };
         checkedNames.forEach((productName) => {
           const current = nextProductDocs[productName] || {};
-          const merged = mergeProductDocs(productName, current);
+          const merged = mergeProductDocsFromMaster(productName, current, productMaster);
           const hasAutoDocs = [merged.fdvUrl, merged.databladUrl, merged.dopUrl, merged.epdUrl, merged.sikkerhetsdatabladUrl, merged.documentFileUrl].some(hasValue);
           if (!hasAutoDocs) {
             missingCount += 1;
@@ -7872,13 +8014,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { userGuidePdfPath, adminGuidePdfPath, isAdmin: isAdminUser }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
-            adminAccordionButton("dokument", "Dokumentoppdatering", "FDV, datablad, DOP, EPD"),
+            adminAccordionButton("dokument", "Synk produktdokumenter", "Aktive prosjekter"),
             adminSectionIsOpen("dokument") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Dokumentoppdatering" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Denne funksjonen oppdaterer FDV, datablad, DOP, EPD og sikkerhetsdatablad for produkter som legges inn i prosjekter. Låste prosjekter fungerer som arkiv og oppdateres ikke." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => syncCurrentProjectProducts(), children: "Oppdater produktdokumentasjon" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Synk produktdokumenter" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Oppdaterer FDV, datablad, DOP, EPD, sikkerhetsdatablad og produkt-/leverandørside på produkter som allerede er valgt i aktive prosjekter. Låste og arkiverte prosjekter blir ikke endret." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => syncActiveProjectsWithProductMaster(), children: "Synk aktive prosjekter med Produktmaster" }),
+              projectId && !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => syncCurrentProjectProducts(), children: "Synk kun åpnet prosjekt" })
+            ] })
           ] })
           ] }),
           isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
