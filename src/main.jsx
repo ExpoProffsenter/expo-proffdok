@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11A.1: Systemadmin-rolle styrer Admin/Systemadmin, Produktmaster og brukergodkjenning.
 // FASE 10 Deploy 1.18: Forbedret prosjekteringsfane med tydelig opplastingsinfo og kategoriserte egne punkter.
 // FASE 10 Deploy 1.17: Fikset kollaps i ordinær Produkter-visning.
 // FASE 10 Deploy 1.16: Sammenleggbare produktkategorier og låst produktvisning viser kun brukte produkter.
@@ -1283,8 +1284,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const isAdminProjectLink = urlParams.has("project") && accessMode === "admin";
     const isUnderleverandorView = urlParams.has("project") && accessMode === "underleverandor";
     const isReadOnly = urlParams.has("project") && !isUnderleverandorView && !isAdminProjectLink;
-    const isAdminUser = !!authUser && (profile?.is_admin === true || profile?.role === "admin");
-    const canUseAdminProjectSync = !!authUser && !!profile?.approved && isAdminUser && !isReadOnly;
+    const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
+    const isAdminUser = isSystemAdminUser;
+    const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly;
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
     const applyLockState = (baseProject, sourceProject = {}) => ({
       ...baseProject,
@@ -1706,7 +1708,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["prosjektliste", "Prosjektliste"],
       ["rapport", "Rapport"],
       ["hjelp", "Hjelp"],
-      ...canUseAdminProjectSync ? [["admin", "Admin"]] : []
+      ...canUseAdminProjectSync ? [["admin", "Systemadmin"]] : []
     ];
     const currentTabIndex = tabs.findIndex(([id]) => id === tab);
     const previousTab = currentTabIndex > 0 ? tabs[currentTabIndex - 1] : null;
@@ -3128,7 +3130,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
     const loadAdminUsers = async () => {
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
       setAdminLoading(true);
-      const { data, error } = await supabase.from("profiles").select("id,email,approved,company_name,created_at").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("profiles").select("id,email,approved,deactivated,company_name,company_role,system_role,role,is_admin,created_at").order("created_at", { ascending: false });
       setAdminLoading(false);
       if (error) {
         console.error(error);
@@ -3138,7 +3140,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
     };
     const approveAdminUser = async (id) => {
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
-      const { error } = await supabase.from("profiles").update({ approved: true }).eq("id", id);
+      const { error } = await supabase.from("profiles").update({ approved: true, deactivated: false }).eq("id", id);
       if (error) {
         console.error(error);
         return alert("Kunne ikke godkjenne bruker: " + error.message);
@@ -7461,6 +7463,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: u.email || "Ukjent e-post" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                 u.company_name ? `Firma: ${u.company_name} \xB7 ` : "",
+                u.system_role === "systemadmin" ? "Systemadmin \xB7 " : u.company_role ? `Rolle: ${u.company_role} \xB7 ` : "",
                 "Status: ",
                 u.deactivated ? "Deaktivert" : u.approved ? "Godkjent" : "Venter p\xE5 godkjenning"
               ] }),
