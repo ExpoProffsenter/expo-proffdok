@@ -1,4 +1,6 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.18: Forbedret prosjekteringsfane med tydelig opplastingsinfo og kategoriserte egne punkter.
+// FASE 10 Deploy 1.17: Fikset kollaps i ordinær Produkter-visning.
 // FASE 10 Deploy 1.16: Sammenleggbare produktkategorier og låst produktvisning viser kun brukte produkter.
 // FASE 10 Deploy 1.15: Veiledning for å legge appen på hjemskjerm på innlogging og Hjelp.
 // FASE 10 Deploy 1.14: Robust autolagring med lokal nødlagring og debouncet skylagring.
@@ -2179,7 +2181,7 @@ Vil du gjenopprette den?`)) continue;
         ...p,
         prosjekteringPunkter: [
           ...Array.isArray(p.prosjekteringPunkter) ? p.prosjekteringPunkter : [],
-          { id: uid(), title: "", value: "" }
+          { id: uid(), category: "Annet", title: "", value: "" }
         ]
       }));
     };
@@ -4687,7 +4689,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ["Slukplassering", project.sluk],
           ["Terskelhøyde", project.terskel],
           ["Membran", project.membran],
-          ...((Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter((p) => hasValue(p.title) || hasValue(p.value)).map((p) => [p.title || "Eget punkt", p.value])),
+          ...((Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter((p) => hasValue(p.title) || hasValue(p.value)).map((p) => [`${p.category || "Annet"}: ${p.title || "Eget punkt"}`, p.value])),
           ["Kommentar / avvik", project.prosjekteringKommentar]
         ];
         addInfoGridSection("Prosjektering", prosjekteringEntries);
@@ -6867,7 +6869,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
         ] }),
         tab === "prosjektering" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektering", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Angi fall som forholdstall, for eksempel 1:50 i dusjsone og 1:100 utenfor dusjsone." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Angi fall som forholdstall, for eksempel 1:50 i dusjsone og 1:100 utenfor dusjsone. Prosjektering brukes til tekniske forutsetninger, fall, sluk, våtsone og membranløsning." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Hva bør dokumenteres her?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Falltegning eller bilde/skjermbilde som viser fallforhold på badet." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Plassering av sluk, terskel, våtsone og eventuelle nisjer eller spesielle løsninger." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Valgt membranløsning og andre tekniske avklaringer som bør følge prosjektet." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Tilbud og kontrakter lastes opp i fanen Tilbud/kontrakt, ikke her." })
+            ] })
+          ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fall i dusjsone", value: project.fallDusj || "", onChange: (v) => setProject({ ...project, fallDusj: v }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fall utenfor dusjsone / v\xE5tsone", value: project.fallUtenfor || "", onChange: (v) => setProject({ ...project, fallUtenfor: v }) }),
@@ -6878,23 +6889,28 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Egne prosjekteringspunkter" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Legg til egne punkter som skal f\xF8lge prosjektet og vises i rapporten hvis de er fylt ut." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Legg til egne prosjekteringspunkter under riktig tema. Bruk Annet for spesielle løsninger eller avklaringer som ikke passer i standardfeltene." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: addProsjekteringPunkt, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
               " Legg til punkt"
             ] }),
             (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).map((point) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Tema", value: point.category || "Annet", options: ["Fall", "Sluk", "Membran", "Tegning", "Våtsone", "Terskel", "Annet"], onChange: (v) => updateProsjekteringPunkt(point.id, { category: v }) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Punkt / tittel", value: point.title || "", onChange: (v) => updateProsjekteringPunkt(point.id, { title: v }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Verdi / beskrivelse", value: point.value || "", onChange: (v) => updateProsjekteringPunkt(point.id, { value: v }) })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Beskrivelse / kommentar", value: point.value || "", onChange: (v) => updateProsjekteringPunkt(point.id, { value: v }) })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeProsjekteringPunkt(point.id), children: "Fjern punkt" })
             ] }, point.id))
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
-            " Last opp tegning / bilde",
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addPhoto("Prosjektering", e.target.files) })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Tegninger og prosjekteringsgrunnlag" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Last opp bilde eller skjermbilde av falltegning, slukplassering, våtsonekart, membranprinsipp eller annen relevant prosjekteringsinfo. Tilbud og kontrakt skal fortsatt lastes opp i fanen Tilbud/kontrakt." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+              " Last opp tegning / bilde",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addPhoto("Prosjektering", e.target.files) })
+            ] })
           ] })
         ] }),
         tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: effectiveProductSections.map((s) => {
@@ -8562,7 +8578,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
           ] })
         ] }),
         (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter((p) => hasValue(p.title) || hasValue(p.value)).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.title || "Eget punkt" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: `${p.category || "Annet"}: ${p.title || "Eget punkt"}` }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: p.value || "Ikke oppgitt" })
         ] }, p.id || p.title)),
         project.prosjekteringKommentar && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
@@ -8849,7 +8865,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
       ["Slukplassering", project.sluk],
       ["Terskelh\xF8yde", project.terskel],
       ["Membranl\xF8sning", project.membran],
-      ...(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter((p) => hasValue(p.title) || hasValue(p.value)).map((p) => [p.title || "Eget punkt", p.value]),
+      ...(Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).filter((p) => hasValue(p.title) || hasValue(p.value)).map((p) => [`${p.category || "Annet"}: ${p.title || "Eget punkt"}`, p.value]),
       ["Kommentar / avvik", project.prosjekteringKommentar]
     ];
     const surfaceRows = Object.entries(surf || {}).filter(([, v]) => hasValue(v));
