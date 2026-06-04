@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11C/11D + 11B.3: Trygg lokal kladd for systemadmin, Support Dashboard og e-postinvitasjon.
 // FASE 11B.2: Systemadmin kan administrere firma, firmarolle og systemadmin-status på brukere.
 // FASE 11B.1: Tydelig bekreftelse/varsel ved firmaadmin-endringer av brukerroller og status.
 // FASE 11B Deploy 1: Supportmodus for systemadmin med firmasøk, prosjektsøk og hurtigåpning av prosjekter.
@@ -1080,6 +1081,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [accessEmailMessage, setAccessEmailMessage] = (0, import_react.useState)("Hei, du har fått tilgang til prosjektet. Klikk på linken i denne e-posten for å åpne prosjektet.");
     const [projects, setProjects] = (0, import_react.useState)([]);
     const [projectId, setProjectId] = (0, import_react.useState)(null);
+    const [currentProjectOwnerId, setCurrentProjectOwnerId] = (0, import_react.useState)("");
     const [mobileCreatingProject, setMobileCreatingProject] = (0, import_react.useState)(false);
     const [authUser, setAuthUser] = (0, import_react.useState)(null);
     const [authEmail, setAuthEmail] = (0, import_react.useState)("");
@@ -1877,8 +1879,17 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       );
     };
     const localDraftStorageKey = (id = projectId) => authUser?.id ? `expoProffDokDraft:${authUser.id}:${id || "new"}` : "";
+    const isSupportProjectDraft = (id = projectId, ownerId = currentProjectOwnerId) => {
+      if (!isSystemAdminUser || !authUser?.id || !id) return false;
+      return !!ownerId && ownerId !== authUser.id;
+    };
+    const shouldSkipLocalDraftForSupport = (id = projectId, ownerId = currentProjectOwnerId) => isSupportProjectDraft(id, ownerId);
     const saveLocalDraftNow = (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
       if (!authUser || isReadOnly || !profile?.approved) return;
+      if (shouldSkipLocalDraftForSupport(projectId, currentProjectOwnerId)) {
+        setProjectAutoSaveStatus("Supportprosjekt – lokal kladd er ikke lagret");
+        return;
+      }
       if (!projectId && !mobileCreatingProject && !hasMeaningfulProjectDraftContent(snapshot)) return;
       const key = localDraftStorageKey(projectId);
       if (!key) return;
@@ -1886,6 +1897,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         window.localStorage.setItem(key, JSON.stringify({
           savedAt: (/* @__PURE__ */ new Date()).toISOString(),
           projectId: projectId || null,
+          projectOwnerId: currentProjectOwnerId || authUser?.id || "",
+          projectCompanyName: snapshot?.company?.companyName || "",
+          projectTitle: snapshot?.project?.projectName || snapshot?.project?.address || "Uten navn",
           mobileCreatingProject: !!mobileCreatingProject,
           data: snapshot
         }));
@@ -1993,6 +2007,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     };
     const scheduleProjectAutoSave = (snapshot = latestStateRef.current || buildProjectSnapshot(), delay = 1800) => {
       if (!authUser || isReadOnly || !profile?.approved) return;
+      if (shouldSkipLocalDraftForSupport(projectId, currentProjectOwnerId)) return;
       if (!projectId && !mobileCreatingProject && !hasMeaningfulProjectDraftContent(snapshot)) return;
       if (localDraftTimerRef.current) window.clearTimeout(localDraftTimerRef.current);
       localDraftTimerRef.current = window.setTimeout(() => saveLocalDraftNow(snapshot), 180);
@@ -2007,7 +2022,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         if (localDraftTimerRef.current) window.clearTimeout(localDraftTimerRef.current);
         if (cloudAutoSaveTimerRef.current) window.clearTimeout(cloudAutoSaveTimerRef.current);
       };
-    }, [company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes, projectId, mobileCreatingProject, authUser?.id, profile?.approved, isReadOnly, isProjectLocked]);
+    }, [company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes, projectId, currentProjectOwnerId, mobileCreatingProject, authUser?.id, profile?.approved, isReadOnly, isProjectLocked]);
     (0, import_react.useEffect)(() => {
       const handleBeforeUnload = () => saveLocalDraftNow(latestStateRef.current || buildProjectSnapshot());
       const handleVisibilityChange = () => {
@@ -2019,7 +2034,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         window.removeEventListener("beforeunload", handleBeforeUnload);
         document.removeEventListener("visibilitychange", handleVisibilityChange);
       };
-    }, [authUser?.id, projectId, mobileCreatingProject, isReadOnly, profile?.approved]);
+    }, [authUser?.id, projectId, currentProjectOwnerId, mobileCreatingProject, isReadOnly, profile?.approved]);
     (0, import_react.useEffect)(() => {
       if (!authUser || !profile?.approved || isReadOnly || localDraftRestoreChecked) return;
       setLocalDraftRestoreChecked(true);
@@ -2032,12 +2047,27 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           if (!raw) continue;
           const saved = JSON.parse(raw);
           if (!saved?.data || !hasMeaningfulProjectDraftContent(saved.data)) continue;
+          if (isSystemAdminUser && saved.projectOwnerId && saved.projectOwnerId !== authUser.id) {
+            window.localStorage.removeItem(key);
+            continue;
+          }
           const savedTime = saved.savedAt ? new Date(saved.savedAt).toLocaleString("no-NO") : "tidligere";
+          const savedTitle = saved.projectTitle || saved?.data?.project?.projectName || saved?.data?.project?.address || "Uten navn";
+          const savedCompany = saved.projectCompanyName || saved?.data?.company?.companyName || "ukjent firma";
           if (!window.confirm(`Det finnes en lokalt lagret kladd fra ${savedTime}.
 
-Vil du gjenopprette den?`)) continue;
+Prosjekt: ${savedTitle}
+Firma: ${savedCompany}
+
+Vil du gjenopprette den?`)) {
+            if (window.confirm("Vil du forkaste denne lokale kladden slik at den ikke vises igjen?")) {
+              window.localStorage.removeItem(key);
+            }
+            continue;
+          }
           unpackData(saved.data, true);
           setProjectId(saved.projectId || null);
+          setCurrentProjectOwnerId(saved.projectOwnerId || authUser?.id || "");
           setMobileCreatingProject(!saved.projectId);
           setTab("prosjekt");
           setProjectAutoSaveStatus(`Gjenopprettet lokal kladd ${savedTime}`);
@@ -2046,7 +2076,7 @@ Vil du gjenopprette den?`)) continue;
           console.warn("Kunne ikke lese lokal kladd:", error);
         }
       }
-    }, [authUser?.id, profile?.approved, isReadOnly, localDraftRestoreChecked]);
+    }, [authUser?.id, profile?.approved, isReadOnly, localDraftRestoreChecked, isSystemAdminUser]);
     const loadProjects = async (currentUser = authUser, notify = false) => {
       if (!currentUser) {
         setProjects([]);
@@ -2083,6 +2113,7 @@ Vil du gjenopprette den?`)) continue;
       }
       unpackData(dataFromRow(data));
       setProjectId(data.id);
+      setCurrentProjectOwnerId(data.user_id || "");
       setLocalDraftRestoreChecked(false);
       setMobileCreatingProject(false);
       setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
@@ -2295,6 +2326,7 @@ Vil du gjenopprette den?`)) continue;
       setProjectLog(emptyProjectLog());
       setInternalNotes("");
       setProjectId(null);
+      setCurrentProjectOwnerId(authUser?.id || "");
       setMobileCreatingProject(true);
       setLocalDraftRestoreChecked(false);
       setTab("prosjekt");
@@ -2770,6 +2802,7 @@ Vil du gjenopprette den?`)) continue;
           return alert("Kunne ikke lagre kopi heller: " + copyError.message);
         }
         setProjectId(copyRow.id);
+        setCurrentProjectOwnerId(copyRow.user_id || authUser.id);
         unpackData(dataFromRow(copyRow), false);
         await loadProjects(authUser);
         return alert("\u2714 Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.");
@@ -2802,6 +2835,7 @@ Vil du gjenopprette den?`)) continue;
           return alert("Kunne ikke lagre i sky: " + error.message);
         }
         setProjectId(data.id);
+        setCurrentProjectOwnerId(data.user_id || authUser.id);
         setMobileCreatingProject(false);
         unpackData(dataFromRow(data), false);
         alert("\u2714 Prosjekt lagret");
@@ -2958,6 +2992,7 @@ Vil du gjenopprette den?`)) continue;
       setProjects((prev) => (prev || []).filter((p) => p.id !== id));
       if (id === projectId) {
         setProjectId(null);
+        setCurrentProjectOwnerId("");
         setMobileCreatingProject(false);
         setTab("prosjekt");
       }
@@ -3415,10 +3450,31 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         console.error(error);
         return alert("Kunne ikke lagre invitasjon: " + error.message);
       }
+      let invitationEmailSent = false;
+      if (!existingProfile?.id) {
+        try {
+          const invitationLink = `${window.location.origin}${window.location.pathname}`;
+          const { error: inviteMailError } = await supabase.functions.invoke("smart-worker", {
+            body: {
+              toEmail: cleanEmail,
+              direction: "company_user_invite",
+              companyName: companyNameForInvite,
+              fromName: profile?.email || authUser?.email || "Firmaadministrator",
+              message: `Du er invitert til ${companyNameForInvite} i Expo ProffDok. Opprett bruker med denne e-postadressen for å få tilgang til firmaet.`,
+              projectLink: invitationLink,
+              subject: `Invitasjon til Expo ProffDok – ${companyNameForInvite}`
+            }
+          });
+          invitationEmailSent = !inviteMailError;
+          if (inviteMailError) console.warn("Invitasjons-e-post kunne ikke sendes:", inviteMailError.message);
+        } catch (emailError) {
+          console.warn("Invitasjons-e-post kunne ikke sendes:", emailError);
+        }
+      }
       setNewEmployeeEmail("");
       setNewEmployeeRole("ansatt");
       await loadCompanyAdminData(false);
-      alert(existingProfile?.id ? "✔ Brukeren er lagt til i firmaet." : "✔ Invitasjon er registrert. Be brukeren opprette konto med samme e-postadresse.");
+      alert(existingProfile?.id ? "✔ Brukeren er lagt til i firmaet." : invitationEmailSent ? "✔ Invitasjon er registrert og e-post er forsøkt sendt til brukeren." : "✔ Invitasjon er registrert. E-post kunne ikke bekreftes sendt, så be brukeren opprette konto med samme e-postadresse.");
     };
     const updateCompanyUserRole = async (userRow, role) => {
       if (!isCompanyAdminUser) return alert("Du har ikke tilgang til firmaadministrasjon.");
