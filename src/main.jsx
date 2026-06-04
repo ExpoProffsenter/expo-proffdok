@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.13: Låste prosjekter sperrer lokale produkt- og bildeendringer med tydelig beskjed.
 // FASE 10 Deploy 1.12: Sammenleggbar Nytt produkt i Admin Produktmaster.
 // FASE 10 Deploy 1.11: Søkefelt i Admin Produktmaster for rask filtrering av produkter.
 // FASE 10 Deploy 1.10: Produktmaster styrer fargevalg for fug og silikon; Sopro-lister brukes kun som fallback.
@@ -1282,6 +1283,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       lockedBy: sourceProject.lockedBy || ""
     });
     const isProjectLocked = projectIsLocked(project);
+    const lockedProjectMessage = "Prosjektet er arkivert/låst og kan ikke endres. Lås opp prosjektet før du gjør endringer.";
+    const notifyLockedProject = () => {
+      alert(lockedProjectMessage);
+      return false;
+    };
+    const canEditProject = () => !isProjectLocked || notifyLockedProject();
     const projectHasOvertagelse = (o = overtagelse) => !!o?.enabled || hasValue(o?.dato) || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
     const workflowStatusOptions = ["Utkast", "Pågår", "Avventer", "Klar for kunde", "Avvik åpent", "Ferdigstilt"];
     const getOpenDeviationCount = (sourceChecklist = checklist) => Object.values(sourceChecklist || {}).flatMap((items) => Object.values(items || {})).filter((value) => value?.status === "Avvik").length;
@@ -2007,6 +2014,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }));
     };
     const updateProductDoc = (productName, patch) => {
+      if (!canEditProject()) return;
       setProductDocs((prev) => ({
         ...prev,
         [productName]: {
@@ -2016,7 +2024,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }));
     };
     const toggleProductChecked = (productName, isChecked) => {
-      if (isProjectLocked) return alert("Prosjektet er låst og fungerer som arkiv. Produkter og dokumentasjon kan ikke endres.");
+      if (!canEditProject()) return;
       setChecked((prev) => ({ ...prev, [productName]: isChecked }));
       if (!isChecked) return;
       const masterRow = productMasterByProduct[productName];
@@ -2049,6 +2057,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
     };
     const addManualProduct = (section) => {
+      if (!canEditProject()) return;
       setManualProducts((prev) => {
         const normalized = normalizeManualProductsBySection(prev);
         return {
@@ -2061,6 +2070,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
     };
     const updateManualProduct = (section, id, patch) => {
+      if (!canEditProject()) return;
       setManualProducts((prev) => {
         const normalized = normalizeManualProductsBySection(prev);
         return {
@@ -2070,6 +2080,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
     };
     const removeManualProduct = (section, id) => {
+      if (!canEditProject()) return;
       setManualProducts((prev) => {
         const normalized = normalizeManualProductsBySection(prev);
         return {
@@ -4677,6 +4688,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     };
 
     const uploadImages = async (fileList, folder = "photos") => {
+      if (isProjectLocked) {
+        notifyLockedProject();
+        return [];
+      }
       const filesArray = Array.from(fileList || []);
       const uploaded = [];
       for (const file of filesArray) {
@@ -4749,6 +4764,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       }
     };
     const addPhoto = async (cat, fl) => {
+      if (!canEditProject()) return;
       const imgs = await uploadImages(fl, "photos");
       if (!imgs.length) return;
       const newPhotos = imgs.map((img) => ({
@@ -5022,22 +5038,23 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectInformationReadOnly, { project }),
           tab === "produkter" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_jsx_runtime.Fragment, { children: effectiveProductSections.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: s.title, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kryss av produkter som er brukt. N\xE5r et produkt er valgt, kan du legge inn FDV-/databladlink og hvor produktet er brukt direkte p\xE5 produktet." }),
+            isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { color: "#991b1b", fontWeight: 700 }, children: "🔒 Prosjektet er arkivert/låst. Produkter kan ikke legges til, fjernes eller endres før prosjektet låses opp." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList", children: s.items.map((i) => {
               const doc = productDocs[i] || {};
               return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", disabled: isProjectLocked, style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: i })
                 ] }),
                 checked[i] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: doc.fdvUrl || "", onChange: (v) => updateProductDoc(i, { fdvUrl: v, fdvSource: "manual" }) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: doc.databladUrl || "", onChange: (v) => updateProductDoc(i, { databladUrl: v, fdvSource: "manual" }) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: doc.dopUrl || "", onChange: (v) => updateProductDoc(i, { dopUrl: v, fdvSource: "manual" }) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: doc.epdUrl || "", onChange: (v) => updateProductDoc(i, { epdUrl: v, fdvSource: "manual" }) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: doc.sikkerhetsdatabladUrl || "", onChange: (v) => updateProductDoc(i, { sikkerhetsdatabladUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: doc.fdvUrl || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { fdvUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: doc.databladUrl || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { databladUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: doc.dopUrl || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { dopUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: doc.epdUrl || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { epdUrl: v, fdvSource: "manual" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: doc.sikkerhetsdatabladUrl || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { sikkerhetsdatabladUrl: v, fdvSource: "manual" }) }),
                     productSupportsColorChoice(i, s.title) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Fargekode", value: doc.colorCode || "", onChange: (v) => updateProductDoc(i, { colorCode: v }), options: getProductColorOptions(i, s.title) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: doc.comment || "", onChange: (v) => updateProductDoc(i, { comment: v }) })
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: doc.comment || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { comment: v }) })
                   ] }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProductReportDocumentSelector, { doc, productName: i, updateProductDoc }),
                   doc.fdvSource === "product-master" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "Dokumentlinker er hentet automatisk fra produktmaster." }),
@@ -5058,11 +5075,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               getManualProductsForSection(s.title).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
               getManualProductsForSection(s.title).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: p.comment || "", onChange: (v) => updateManualProduct(s.title, p.id, { comment: v }) })
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", disabled: isProjectLocked, onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", disabled: isProjectLocked, onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: p.comment || "", disabled: isProjectLocked, onChange: (v) => updateManualProduct(s.title, p.id, { comment: v }) })
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeManualProduct(s.title, p.id), children: "Fjern produkt" })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", disabled: isProjectLocked, onClick: () => removeManualProduct(s.title, p.id), children: "Fjern produkt" })
               ] }, p.id))
             ] })
           ] }, s.title)) }),
@@ -5076,7 +5093,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 c
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde eller velg fra galleri" }),
-             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
+             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, disabled: isProjectLocked, onChange: (e) => addPhoto(c, e.target.files) })
             ] }, c)) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
           ] }),
@@ -6665,18 +6682,18 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             const doc = productDocs[i] || {};
             return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", disabled: isProjectLocked, style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!checked[i], onChange: (e) => toggleProductChecked(i, e.target.checked) }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: i })
               ] }),
               checked[i] && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: doc.fdvUrl || "", onChange: (v) => updateProductDoc(i, { fdvUrl: v, fdvSource: "manual" }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: doc.databladUrl || "", onChange: (v) => updateProductDoc(i, { databladUrl: v, fdvSource: "manual" }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: doc.dopUrl || "", onChange: (v) => updateProductDoc(i, { dopUrl: v, fdvSource: "manual" }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: doc.epdUrl || "", onChange: (v) => updateProductDoc(i, { epdUrl: v, fdvSource: "manual" }) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: doc.sikkerhetsdatabladUrl || "", onChange: (v) => updateProductDoc(i, { sikkerhetsdatabladUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: doc.fdvUrl || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { fdvUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Datablad", value: doc.databladUrl || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { databladUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "DOP", value: doc.dopUrl || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { dopUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "EPD", value: doc.epdUrl || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { epdUrl: v, fdvSource: "manual" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sikkerhetsdatablad", value: doc.sikkerhetsdatabladUrl || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { sikkerhetsdatabladUrl: v, fdvSource: "manual" }) }),
                     productSupportsColorChoice(i, s.title) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Fargekode", value: doc.colorCode || "", onChange: (v) => updateProductDoc(i, { colorCode: v }), options: getProductColorOptions(i, s.title) }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: doc.comment || "", onChange: (v) => updateProductDoc(i, { comment: v }) })
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: doc.comment || "", disabled: isProjectLocked, onChange: (v) => updateProductDoc(i, { comment: v }) })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProductReportDocumentSelector, { doc, productName: i, updateProductDoc }),
                 doc.fdvSource === "product-master" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "Dokumentlinker er hentet automatisk fra produktmaster." }),
@@ -6697,11 +6714,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             getManualProductsForSection(s.title).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen andre produkter lagt til i denne kategorien." }),
             getManualProductsForSection(s.title).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: p.comment || "", onChange: (v) => updateManualProduct(s.title, p.id, { comment: v }) })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktnavn", value: p.name || "", disabled: isProjectLocked, onChange: (v) => updateManualProduct(s.title, p.id, { name: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: p.fdvUrl || "", disabled: isProjectLocked, onChange: (v) => updateManualProduct(s.title, p.id, { fdvUrl: v }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Hvor brukt / kommentar", value: p.comment || "", disabled: isProjectLocked, onChange: (v) => updateManualProduct(s.title, p.id, { comment: v }) })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeManualProduct(s.title, p.id), children: "Fjern produkt" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", disabled: isProjectLocked, onClick: () => removeManualProduct(s.title, p.id), children: "Fjern produkt" })
             ] }, p.id))
           ] })
         ] }, s.title)) }),
