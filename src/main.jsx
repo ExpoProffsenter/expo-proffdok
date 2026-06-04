@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11A.2: Firma-fane for firmaadmin med invitasjon, brukeradministrasjon og firmaprosjektvisning.
 // FASE 11A.1: Systemadmin-rolle styrer Admin/Systemadmin, Produktmaster og brukergodkjenning.
 // FASE 10 Deploy 1.18: Forbedret prosjekteringsfane med tydelig opplastingsinfo og kategoriserte egne punkter.
 // FASE 10 Deploy 1.17: Fikset kollaps i ordinær Produkter-visning.
@@ -1088,6 +1089,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [adminUsers, setAdminUsers] = (0, import_react.useState)([]);
     const [adminUserFilter, setAdminUserFilter] = (0, import_react.useState)("pending");
     const [adminLoading, setAdminLoading] = (0, import_react.useState)(false);
+    const [companyUsers, setCompanyUsers] = (0, import_react.useState)([]);
+    const [companyInvites, setCompanyInvites] = (0, import_react.useState)([]);
+    const [companyAdminLoading, setCompanyAdminLoading] = (0, import_react.useState)(false);
+    const [newEmployeeEmail, setNewEmployeeEmail] = (0, import_react.useState)("");
+    const [newEmployeeRole, setNewEmployeeRole] = (0, import_react.useState)("ansatt");
     const [projectSearch, setProjectSearch] = (0, import_react.useState)("");
     const [projectStatusFilter, setProjectStatusFilter] = (0, import_react.useState)("alle");
     const [projectUnreadOnly, setProjectUnreadOnly] = (0, import_react.useState)(false);
@@ -1285,6 +1291,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const isUnderleverandorView = urlParams.has("project") && accessMode === "underleverandor";
     const isReadOnly = urlParams.has("project") && !isUnderleverandorView && !isAdminProjectLink;
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
+    const isCompanyAdminUser = !!authUser && !!profile?.approved && !profile?.deactivated && (profile?.company_role === "firmaadmin" || isSystemAdminUser);
+    const currentCompanyName = String(profile?.company_name || company?.companyName || "").trim();
     const isAdminUser = isSystemAdminUser;
     const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly;
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
@@ -1694,6 +1702,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["prosjektinfo", "Prosjektinformasjon/beskrivelse"],
       ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
       ["firma", "Firmaprofil"],
+      ...isCompanyAdminUser ? [["firmaadmin", "Firma"]] : [],
       ["prosjektering", "Prosjektering"],
       ["produkter", "Produkter"],
       ["overflater", "Overflater og innredning"],
@@ -1725,6 +1734,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         prosjektinfo: ".projectInfoSection, section, main",
         garanti: ".warrantyStatusCard, section, main",
         firma: ".logoBox, section, main",
+        firmaadmin: ".companyAdminQuickStart, section, main",
         prosjektering: ".prosjekteringSection, section, main",
         produkter: ".productQuickStart, .checklistList, section, main",
         overflater: ".bathroomEquipmentQuickStart, section, main",
@@ -1971,13 +1981,24 @@ Vil du gjenopprette den?`)) continue;
         if (notify) alert("Du m\xE5 v\xE6re logget inn for \xE5 hente prosjektliste.");
         return;
       }
-      const { data, error } = await supabase.from("projects").select("*").eq("user_id", currentUser.id).order("updated_at", { ascending: false });
+      let query = supabase.from("projects").select("*").order("updated_at", { ascending: false });
+      if (!isSystemAdminUser && !isCompanyAdminUser) {
+        query = query.eq("user_id", currentUser.id);
+      }
+      const { data, error } = await query;
       if (error) {
         console.error(error);
         return alert("Kunne ikke hente prosjektliste: " + error.message);
       }
-      setProjects(data || []);
-      if (notify) alert(`Prosjektliste oppdatert. Fant ${(data || []).length} prosjekt${(data || []).length === 1 ? "" : "er"}.`);
+      const rows = data || [];
+      const filteredRows = isCompanyAdminUser && !isSystemAdminUser && currentCompanyName
+        ? rows.filter((row) => {
+            const projectCompanyName = String(row?.data?.company?.companyName || row?.data?.company?.company_name || "").trim();
+            return row.user_id === currentUser.id || projectCompanyName === currentCompanyName;
+          })
+        : rows;
+      setProjects(filteredRows);
+      if (notify) alert(`Prosjektliste oppdatert. Fant ${filteredRows.length} prosjekt${filteredRows.length === 1 ? "" : "er"}.`);
     };
     const openProjectById = async (id, targetTab = "rapport", options = {}) => {
       const { data, error } = await supabase.from("projects").select("*").eq("id", id).single();
@@ -2069,6 +2090,27 @@ Vil du gjenopprette den?`)) continue;
         }
         data = inserted;
       }
+      try {
+        const inviteEmail = String(sessionUser.email || "").trim().toLowerCase();
+        if (inviteEmail) {
+          const { data: invite } = await supabase.from("company_user_invites").select("*").eq("email", inviteEmail).in("status", ["pending", "active"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
+          if (invite?.company_name && (!data.company_name || data.approved === false || data.deactivated === true)) {
+            const invitedRole = invite.company_role === "firmaadmin" ? "firmaadmin" : "ansatt";
+            const { data: updatedProfile, error: inviteUpdateError } = await supabase.from("profiles").update({
+              company_name: invite.company_name,
+              company_role: invitedRole,
+              approved: true,
+              deactivated: false
+            }).eq("id", sessionUser.id).select("*").maybeSingle();
+            if (!inviteUpdateError && updatedProfile) {
+              data = updatedProfile;
+              await supabase.from("company_user_invites").update({ status: "accepted", accepted_at: (/* @__PURE__ */ new Date()).toISOString() }).eq("id", invite.id);
+            }
+          }
+        }
+      } catch (inviteError) {
+        console.warn("Kunne ikke kontrollere firmainvitasjon:", inviteError);
+      }
       applyProfile(data);
       setProfileLoading(false);
       return data;
@@ -2151,6 +2193,12 @@ Vil du gjenopprette den?`)) continue;
         loadProductMasterCheckpoints(false);
       }
     }, [isReadOnly]);
+    (0, import_react.useEffect)(() => {
+      if (authUser && profile?.approved) {
+        loadProjects(authUser);
+      }
+    }, [authUser?.id, profile?.approved, profile?.company_name, profile?.company_role, profile?.system_role]);
+
     const createNewProject = () => {
       const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
@@ -3170,6 +3218,97 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       alert("Bruker er reaktivert og ligger nå som venter på godkjenning.");
       loadAdminUsers();
     };
+    const loadCompanyAdminData = async (notify = false) => {
+      if (!isCompanyAdminUser) return alert("Du har ikke tilgang til firmaadministrasjon.");
+      const companyNameForQuery = currentCompanyName;
+      if (!companyNameForQuery) return alert("Firmaprofil mangler firmanavn. Legg inn firmanavn i Firmaprofil først.");
+      setCompanyAdminLoading(true);
+      const [{ data: usersData, error: usersError }, { data: invitesData, error: invitesError }] = await Promise.all([
+        supabase.from("profiles").select("id,email,approved,deactivated,company_name,company_role,system_role,created_at").eq("company_name", companyNameForQuery).order("created_at", { ascending: false }),
+        supabase.from("company_user_invites").select("*").eq("company_name", companyNameForQuery).order("created_at", { ascending: false })
+      ]);
+      setCompanyAdminLoading(false);
+      if (usersError) {
+        console.error(usersError);
+        return alert("Kunne ikke hente brukere i firmaet: " + usersError.message);
+      }
+      if (invitesError) {
+        console.warn("Kunne ikke hente invitasjoner:", invitesError.message);
+      }
+      const safeUsers = (usersData || []).filter((u) => isSystemAdminUser || u.system_role !== "systemadmin");
+      setCompanyUsers(safeUsers);
+      setCompanyInvites(invitesData || []);
+      if (notify) alert(`Firmaoversikt oppdatert. Fant ${safeUsers.length} bruker${safeUsers.length === 1 ? "" : "e"}.`);
+    };
+    const inviteCompanyEmployee = async () => {
+      if (!isCompanyAdminUser) return alert("Du har ikke tilgang til firmaadministrasjon.");
+      const companyNameForInvite = currentCompanyName;
+      if (!companyNameForInvite) return alert("Firmaprofil mangler firmanavn. Legg inn firmanavn i Firmaprofil først.");
+      const cleanEmail = String(newEmployeeEmail || "").trim().toLowerCase();
+      if (!cleanEmail || !cleanEmail.includes("@")) return alert("Skriv inn en gyldig e-postadresse.");
+      const cleanRole = newEmployeeRole === "firmaadmin" ? "firmaadmin" : "ansatt";
+      const { data: existingProfile, error: existingError } = await supabase.from("profiles").select("id,email,company_name,company_role,system_role").eq("email", cleanEmail).maybeSingle();
+      if (existingError) {
+        console.warn("Kunne ikke sjekke eksisterende bruker:", existingError.message);
+      }
+      if (existingProfile?.system_role === "systemadmin" && !isSystemAdminUser) {
+        return alert("Denne brukeren er systemadministrator og kan ikke administreres fra firma.");
+      }
+      if (existingProfile?.id) {
+        const { error: updateError } = await supabase.from("profiles").update({
+          company_name: companyNameForInvite,
+          company_role: cleanRole,
+          approved: true,
+          deactivated: false
+        }).eq("id", existingProfile.id);
+        if (updateError) {
+          console.error(updateError);
+          return alert("Kunne ikke legge eksisterende bruker til firmaet: " + updateError.message);
+        }
+      }
+      const { error } = await supabase.from("company_user_invites").upsert({
+        email: cleanEmail,
+        company_name: companyNameForInvite,
+        company_role: cleanRole,
+        status: existingProfile?.id ? "accepted" : "pending",
+        invited_by: authUser?.email || profile?.email || ""
+      }, { onConflict: "email,company_name" });
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke lagre invitasjon: " + error.message);
+      }
+      setNewEmployeeEmail("");
+      setNewEmployeeRole("ansatt");
+      await loadCompanyAdminData(false);
+      alert(existingProfile?.id ? "✔ Brukeren er lagt til i firmaet." : "✔ Invitasjon er registrert. Be brukeren opprette konto med samme e-postadresse.");
+    };
+    const updateCompanyUserRole = async (userRow, role) => {
+      if (!isCompanyAdminUser) return alert("Du har ikke tilgang til firmaadministrasjon.");
+      if (!userRow?.id) return;
+      if (userRow.system_role === "systemadmin" && !isSystemAdminUser) return alert("Systemadministrator kan ikke endres fra firma.");
+      const cleanRole = role === "firmaadmin" ? "firmaadmin" : "ansatt";
+      const { error } = await supabase.from("profiles").update({ company_role: cleanRole }).eq("id", userRow.id).eq("company_name", currentCompanyName);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke endre rolle: " + error.message);
+      }
+      await loadCompanyAdminData(false);
+    };
+    const setCompanyUserDeactivated = async (userRow, deactivated) => {
+      if (!isCompanyAdminUser) return alert("Du har ikke tilgang til firmaadministrasjon.");
+      if (!userRow?.id) return;
+      if (userRow.id === authUser?.id && deactivated) return alert("Du kan ikke deaktivere din egen bruker.");
+      if (userRow.system_role === "systemadmin" && !isSystemAdminUser) return alert("Systemadministrator kan ikke deaktiveres fra firma.");
+      const message = deactivated ? "Vil du deaktivere denne brukeren i firmaet? Prosjekthistorikk beholdes." : "Vil du reaktivere denne brukeren?";
+      if (!window.confirm(message)) return;
+      const { error } = await supabase.from("profiles").update({ approved: !deactivated, deactivated: !!deactivated }).eq("id", userRow.id).eq("company_name", currentCompanyName);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke oppdatere bruker: " + error.message);
+      }
+      await loadCompanyAdminData(false);
+    };
+
     const loadFdvRegister = async (notify = false) => {
       setFdvLoading(true);
       const { data, error } = await supabase.from("fdv_register").select("*").order("section", { ascending: true }).order("product_name", { ascending: true });
@@ -7439,11 +7578,72 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }, p.id);
           })
         ] }),
-        tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
+        tab === "firmaadmin" && isCompanyAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Firma", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Building2, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item companyAdminQuickStart", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Firmaadministrasjon" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+              "Her kan firmaadmin administrere ansatte i ",
+              currentCompanyName || "eget firma",
+              ". Firmaadmin kan ikke endre Produktmaster eller systeminnstillinger."
+            ] }),
+            !currentCompanyName && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { color: "#991b1b" }, children: "Firmaprofil mangler firmanavn. Gå til Firmaprofil og lagre firmanavn før du legger til ansatte." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadCompanyAdminData(true), children: companyAdminLoading ? "Henter firmaoversikt..." : "Oppdater firmaoversikt" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Legg til ansatt" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Legg inn e-postadressen til den ansatte. Hvis brukeren ikke finnes ennå, må vedkommende opprette konto med samme e-postadresse etterpå." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post", value: newEmployeeEmail, placeholder: "navn@firma.no", onChange: setNewEmployeeEmail }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+                "Rolle",
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", { value: newEmployeeRole, onChange: (e) => setNewEmployeeRole(e.target.value), children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "ansatt", children: "Ansatt" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "firmaadmin", children: "Firmaadmin" })
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: inviteCompanyEmployee, children: "Legg til / inviter bruker" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukere i firma" }),
+            companyUsers.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen brukere hentet ennå. Trykk Oppdater firmaoversikt." }),
+            companyUsers.map((u) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: u.email || "Ukjent e-post" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                "Rolle: ",
+                u.system_role === "systemadmin" ? "Systemadmin" : u.company_role === "firmaadmin" ? "Firmaadmin" : "Ansatt",
+                " · Status: ",
+                u.deactivated ? "Deaktivert" : u.approved ? "Aktiv" : "Venter"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }, children: [
+                u.system_role !== "systemadmin" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", { value: u.company_role === "firmaadmin" ? "firmaadmin" : "ansatt", onChange: (e) => updateCompanyUserRole(u, e.target.value), style: { maxWidth: "220px" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "ansatt", children: "Ansatt" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "firmaadmin", children: "Firmaadmin" })
+                ] }),
+                !u.deactivated && u.id !== authUser?.id && u.system_role !== "systemadmin" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCompanyUserDeactivated(u, true), children: "Deaktiver" }),
+                u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setCompanyUserDeactivated(u, false), children: "Reaktiver" })
+              ] })
+            ] }, u.id))
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Invitasjoner" }),
+            companyInvites.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen invitasjoner hentet ennå." }),
+            companyInvites.map((invite) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: invite.email }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                "Rolle: ",
+                invite.company_role === "firmaadmin" ? "Firmaadmin" : "Ansatt",
+                " · Status: ",
+                invite.status || "pending"
+              ] })
+            ] }, invite.id || invite.email))
+          ] })
+        ] }),
+                tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
                 tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { userGuidePdfPath, adminGuidePdfPath, isAdmin: isAdminUser }),
-        tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Admin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan administrator godkjenne brukere, vedlikeholde produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
+        tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Dokumentoppdatering" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Denne funksjonen oppdaterer FDV, datablad, DOP, EPD og sikkerhetsdatablad for produkter som legges inn i prosjekter. Låste prosjekter fungerer som arkiv og oppdateres ikke." }),
@@ -7451,7 +7651,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kun administrator kan godkjenne, deaktivere og reaktivere brukere." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kun systemadministrator kan godkjenne, deaktivere og reaktivere brukere." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", margin: "12px 0" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "pending" ? "" : "secondary", onClick: () => setAdminUserFilter("pending"), children: `Nye brukere (${pendingAdminUsers.length})` }),
