@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11C.1: Kollapsbare Systemadmin-seksjoner for mindre scrolling, spesielt Produktmaster.
 // FASE 11C/11D + 11B.4: Fjerner forvirrende lokal kladd-dialog for systemadmin og forkaster kladd ved Avbryt.
 // FASE 11C/11D + 11B.3: Trygg lokal kladd for systemadmin, Support Dashboard og e-postinvitasjon.
 // FASE 11B.2: Systemadmin kan administrere firma, firmarolle og systemadmin-status på brukere.
@@ -1118,6 +1119,25 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [newProductMaster, setNewProductMaster] = (0, import_react.useState)(emptyNewProductMaster());
     const [productMasterSearch, setProductMasterSearch] = (0, import_react.useState)("");
     const [showNewProductMasterForm, setShowNewProductMasterForm] = (0, import_react.useState)(false);
+    const [openAdminSections, setOpenAdminSections] = (0, import_react.useState)({
+      dokument: false,
+      support: false,
+      brukere: false,
+      produktmaster: false
+    });
+    const toggleAdminSection = (key) => setOpenAdminSections((prev) => ({ ...prev || {}, [key]: !prev?.[key] }));
+    const adminSectionIsOpen = (key) => key === "produktmaster" && hasValue(productMasterSearch) ? true : !!openAdminSections?.[key];
+    const adminAccordionButton = (key, title, subtitle = "") => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+      type: "button",
+      className: "secondary",
+      style: { width: "100%", justifyContent: "space-between", textAlign: "left", fontWeight: 900, fontSize: "18px", marginBottom: adminSectionIsOpen(key) ? "12px" : "0" },
+      onClick: () => toggleAdminSection(key),
+      children: [
+        adminSectionIsOpen(key) ? `▼ ${title}` : `▶ ${title}`,
+        subtitle ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "13px", fontWeight: 700, color: "#64748b" }, children: subtitle }) : null
+      ]
+    });
+
     const [openProductSections, setOpenProductSections] = (0, import_react.useState)({});
     const [showOpenDeviationsOnly, setShowOpenDeviationsOnly] = (0, import_react.useState)(false);
     const [checklistSaveStatus, setChecklistSaveStatus] = (0, import_react.useState)("");
@@ -7853,12 +7873,17 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { userGuidePdfPath, adminGuidePdfPath, isAdmin: isAdminUser }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke dette prosjektet mot dokumentlinker." : "Her kan du synke dette prosjektet mot produktmasteren uten tilgang til hovedadmin-funksjoner." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
+            adminAccordionButton("dokument", "Dokumentoppdatering", "FDV, datablad, DOP, EPD"),
+            adminSectionIsOpen("dokument") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Dokumentoppdatering" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Denne funksjonen oppdaterer FDV, datablad, DOP, EPD og sikkerhetsdatablad for produkter som legges inn i prosjekter. Låste prosjekter fungerer som arkiv og oppdateres ikke." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => syncCurrentProjectProducts(), children: "Oppdater produktdokumentasjon" })
+          ] })
           ] }),
-          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
+            adminAccordionButton("support", "Supportmodus", `${supportCompanies.length} firma · ${supportProjects.length} prosjekter`),
+            adminSectionIsOpen("support") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Supportmodus" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Brukes av systemadministrator for å finne firmaer og åpne prosjekter ved support. Firmaadmin hos kunde får ikke tilgang til dette området." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", margin: "12px 0" }, children: [
@@ -7926,8 +7951,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 ] })
               ] }, item.row.id);
             })
+          ] })
           ] }),
-          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
+            adminAccordionButton("brukere", "Brukere og roller", `${visibleAdminUsers.length} vises`),
+            adminSectionIsOpen("brukere") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kun systemadministrator kan godkjenne, deaktivere, reaktivere og korrigere firma-/rolleoppsett. Endringer i rolle og firma lagres direkte etter bekreftelse." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", margin: "12px 0" }, children: [
@@ -7961,8 +7989,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setAdminUserSystemAdmin(u, true), children: "Gjør til systemadmin" })
               ] })
             ] }, u.id))
+          ] })
           ] }),
-          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
+            adminAccordionButton("produktmaster", "Produktmaster", `${visibleProductMasterRows.length} / ${productMasterStats.total || 0}`),
+            adminSectionIsOpen("produktmaster") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Admin Produktmaster" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette er produktregisteret for dokumentasjon. Legg inn FDV, datablad, DOP, EPD og sikkerhetsdatablad her. N\xE5r et standardprodukt velges i prosjektet, henter appen dokumentlinker automatisk fra registeret." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", children: [
@@ -8115,6 +8146,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 ] })
               ] })
             ] }, "pm-" + row.product_no))
+          ] })
           ] })
         ] })
       ] }),
