@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11C.8: Ren startside ved innlogging/utlogging. Systemadmin starter ikke i gammel support-/adminvisning.
 // FASE 11C.7: Supportmodus viser prosjekter direkte under valgt firma (accordion).
 // FASE 11C.6: Systemadmin brukersøk, statusfilter og firmafilter for skalerbar brukeradministrasjon.
 // FASE 11C.4: Smart Produktmaster-synk oppdaterer aktive prosjekter, men låste/arkiverte prosjekter røres ikke.
@@ -2305,8 +2306,33 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
       setProfileLoading(false);
       return data;
     };
+    const resetToCleanStartPage = () => {
+      setTab("prosjekt");
+      setSupportCompanySearch("");
+      setSupportProjectSearch("");
+      setSupportSelectedCompany("");
+      setOpenSupportCompany("");
+      setAdminUserSearch("");
+      setAdminUserCompanyFilter("");
+      setAdminUserFilter("pending");
+      setProductMasterSearch("");
+      setShowNewProductMasterForm(false);
+      setOpenAdminSections({
+        dokument: false,
+        support: false,
+        brukere: false,
+        produktmaster: false
+      });
+      try {
+        window.localStorage.removeItem("expoProffDokActiveTab");
+        window.localStorage.removeItem("activeTab");
+      } catch (error) {
+        console.warn("Kunne ikke rydde siste aktive fane:", error);
+      }
+    };
     const handleAuthUser = async (sessionUser) => {
       setAuthUser(sessionUser);
+      resetToCleanStartPage();
       if (!sessionUser) {
         setProjects([]);
         setProfile(null);
@@ -4082,10 +4108,12 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
     const signOut = async () => {
       await supabase.auth.signOut();
       setProjectId(null);
+      setCurrentProjectOwnerId("");
       setMobileCreatingProject(false);
       setProjects([]);
       setProfile(null);
-      setTab("prosjekt");
+      resetToCleanStartPage();
+      window.history.replaceState({}, document.title, window.location.pathname);
     };
     const writePrintableReport = (printWindow, title = "Expo ProffDok rapport") => {
       const reportNode = document.querySelector(".report");
