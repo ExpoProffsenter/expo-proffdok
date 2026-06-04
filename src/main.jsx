@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 10 Deploy 1.15: Veiledning for å legge appen på hjemskjerm på innlogging og Hjelp.
 // FASE 10 Deploy 1.14: Robust autolagring med lokal nødlagring og debouncet skylagring.
 // FASE 10 Deploy 1.13: Låste prosjekter sperrer lokale produkt- og bildeendringer med tydelig beskjed.
 // FASE 10 Deploy 1.12: Sammenleggbar Nytt produkt i Admin Produktmaster.
@@ -5374,7 +5375,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: resetPassword, children: "Glemt passord?" })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "E-post huskes p\xE5 denne enheten. Passord lagres ikke i appen. Nettleseren kan likevel holde deg innlogget på en trygg måte." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Delingslenker fungerer fortsatt uten innlogging." })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Delingslenker fungerer fortsatt uten innlogging." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppInstallGuide, { compact: true })
         ] }) })
       ] });
     }
@@ -7878,6 +7880,24 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     ] });
   }
 
+  function AppInstallGuide({ compact = false } = {}) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: compact ? "16px" : void 0, background: "#f8fdff" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📱 Legg Expo ProffDok på hjemskjermen" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "For rask tilgang ute på byggeplass anbefaler vi å legge Expo ProffDok på hjemskjermen på mobilen. Da kan løsningen åpnes mer som en vanlig app." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", { style: { marginTop: "8px" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "iPhone:" }),
+          " Åpne i Safari, trykk Del-knappen, velg Legg til på Hjem-skjerm og trykk Legg til."
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Android:" }),
+          " Åpne i Chrome, trykk menyen ⋮, velg Legg til på startskjermen eller Installer app, og bekreft."
+        ] }) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Tips: Bruk Safari på iPhone og Chrome på Android for best resultat." })
+    ] });
+  }
+
   function HelpCenter({ userGuidePdfPath: guidePath = userGuidePdfPath, adminGuidePdfPath: adminPath = adminGuidePdfPath, isAdmin = false }) {
     const openPdf = (url) => {
       if (!url) return;
@@ -7895,6 +7915,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: guidePath, download: true, style: { display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "10px 14px", borderRadius: "12px", border: "1px solid #cbd5e1", textDecoration: "none", fontWeight: 800, color: "#1456a0", background: "#fff" }, children: "Last ned" })
             ] })
           ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppInstallGuide, {}),
           isAdmin && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "🛠️ Admin-veiledning" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Kort veiledning for administratorer. Brukes ved godkjenning av brukere, produktmaster, garantikontrollpunkter og systemadministrasjon." }),
