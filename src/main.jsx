@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11A.3: Firmaadmin får robust tilgang til alle prosjekter i eget firma, med RLS-støtte og tydeligere firmaadministrasjon.
 // FASE 11A.2: Firma-fane for firmaadmin med invitasjon, brukeradministrasjon og firmaprosjektvisning.
 // FASE 11A.1: Systemadmin-rolle styrer Admin/Systemadmin, Produktmaster og brukergodkjenning.
 // FASE 10 Deploy 1.18: Forbedret prosjekteringsfane med tydelig opplastingsinfo og kategoriserte egne punkter.
@@ -1293,6 +1294,21 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
     const isCompanyAdminUser = !!authUser && !!profile?.approved && !profile?.deactivated && (profile?.company_role === "firmaadmin" || isSystemAdminUser);
     const currentCompanyName = String(profile?.company_name || company?.companyName || "").trim();
+    const normalizeCompanyName = (value = "") => String(value || "").trim().toLowerCase();
+    const projectCompanyNameFromRow = (row = {}) => String(
+      row?.company_name ||
+      row?.data?.company?.companyName ||
+      row?.data?.company?.company_name ||
+      row?.data?.companyName ||
+      ""
+    ).trim();
+    const projectBelongsToCurrentCompany = (row = {}, currentUser = authUser) => {
+      if (!row) return false;
+      if (isSystemAdminUser) return true;
+      if (row.user_id === currentUser?.id) return true;
+      if (!isCompanyAdminUser || !currentCompanyName) return false;
+      return normalizeCompanyName(projectCompanyNameFromRow(row)) === normalizeCompanyName(currentCompanyName);
+    };
     const isAdminUser = isSystemAdminUser;
     const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly;
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
@@ -1978,7 +1994,7 @@ Vil du gjenopprette den?`)) continue;
     const loadProjects = async (currentUser = authUser, notify = false) => {
       if (!currentUser) {
         setProjects([]);
-        if (notify) alert("Du m\xE5 v\xE6re logget inn for \xE5 hente prosjektliste.");
+        if (notify) alert("Du må være logget inn for å hente prosjektliste.");
         return;
       }
       let query = supabase.from("projects").select("*").order("updated_at", { ascending: false });
@@ -1991,15 +2007,18 @@ Vil du gjenopprette den?`)) continue;
         return alert("Kunne ikke hente prosjektliste: " + error.message);
       }
       const rows = data || [];
-      const filteredRows = isCompanyAdminUser && !isSystemAdminUser && currentCompanyName
-        ? rows.filter((row) => {
-            const projectCompanyName = String(row?.data?.company?.companyName || row?.data?.company?.company_name || "").trim();
-            return row.user_id === currentUser.id || projectCompanyName === currentCompanyName;
-          })
-        : rows;
+      const filteredRows = isSystemAdminUser
+        ? rows
+        : isCompanyAdminUser
+          ? rows.filter((row) => projectBelongsToCurrentCompany(row, currentUser))
+          : rows.filter((row) => row.user_id === currentUser.id);
       setProjects(filteredRows);
-      if (notify) alert(`Prosjektliste oppdatert. Fant ${filteredRows.length} prosjekt${filteredRows.length === 1 ? "" : "er"}.`);
+      if (notify) {
+        const companyText = isCompanyAdminUser && !isSystemAdminUser && currentCompanyName ? ` i ${currentCompanyName}` : "";
+        alert(`Prosjektliste oppdatert${companyText}. Fant ${filteredRows.length} prosjekt${filteredRows.length === 1 ? "" : "er"}.`);
+      }
     };
+
     const openProjectById = async (id, targetTab = "rapport", options = {}) => {
       const { data, error } = await supabase.from("projects").select("*").eq("id", id).single();
       if (error || !data) {
@@ -7584,7 +7603,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
               "Her kan firmaadmin administrere ansatte i ",
               currentCompanyName || "eget firma",
-              ". Firmaadmin kan ikke endre Produktmaster eller systeminnstillinger."
+              ". Firmaadmin kan administrere ansatte og se prosjekter i eget firma, men kan ikke endre Produktmaster eller systeminnstillinger."
             ] }),
             !currentCompanyName && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { color: "#991b1b" }, children: "Firmaprofil mangler firmanavn. Gå til Firmaprofil og lagre firmanavn før du legger til ansatte." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => loadCompanyAdminData(true), children: companyAdminLoading ? "Henter firmaoversikt..." : "Oppdater firmaoversikt" })
@@ -7602,7 +7621,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 ] })
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: inviteCompanyEmployee, children: "Legg til / inviter bruker" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: inviteCompanyEmployee, children: "Inviter ansatt" })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukere i firma" }),
