@@ -1,4 +1,6 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11B.2: Systemadmin kan administrere firma, firmarolle og systemadmin-status på brukere.
+// FASE 11B.1: Tydelig bekreftelse/varsel ved firmaadmin-endringer av brukerroller og status.
 // FASE 11B Deploy 1: Supportmodus for systemadmin med firmasøk, prosjektsøk og hurtigåpning av prosjekter.
 // FASE 11A.3: Firmaadmin får robust tilgang til alle prosjekter i eget firma, med RLS-støtte og tydeligere firmaadministrasjon.
 // FASE 11A.2: Firma-fane for firmaadmin med invitasjon, brukeradministrasjon og firmaprosjektvisning.
@@ -3291,6 +3293,69 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       alert("Bruker er reaktivert og ligger nå som venter på godkjenning.");
       loadAdminUsers();
     };
+    const updateAdminUserCompanyRole = async (userRow, role) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til systemadmin.");
+      if (!userRow?.id) return;
+      const cleanRole = role === "firmaadmin" ? "firmaadmin" : "ansatt";
+      const currentRole = userRow.company_role === "firmaadmin" ? "firmaadmin" : "ansatt";
+      if (cleanRole === currentRole) return;
+      const roleLabel = cleanRole === "firmaadmin" ? "Firmaadmin" : "Ansatt";
+      const userEmail = userRow.email || "brukeren";
+      if (!window.confirm(`Vil du endre firmarollen for ${userEmail} til ${roleLabel}?
+
+Endringen lagres umiddelbart.`)) return;
+      const { error } = await supabase.from("profiles").update({ company_role: cleanRole }).eq("id", userRow.id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke endre firmarolle: " + error.message);
+      }
+      await loadAdminUsers();
+      alert(`✔ Firmarolle oppdatert. ${userEmail} er nå ${roleLabel}.`);
+    };
+    const updateAdminUserCompanyName = async (userRow) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til systemadmin.");
+      if (!userRow?.id) return;
+      const userEmail = userRow.email || "brukeren";
+      const current = userRow.company_name || "";
+      const nextCompany = window.prompt(`Skriv inn firmanavn for ${userEmail}:`, current);
+      if (nextCompany === null) return;
+      const cleanCompany = String(nextCompany || "").trim();
+      if (!window.confirm(`Vil du sette firma for ${userEmail} til:
+${cleanCompany || "(tomt)"}?
+
+Endringen lagres umiddelbart.`)) return;
+      const { error } = await supabase.from("profiles").update({ company_name: cleanCompany }).eq("id", userRow.id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke endre firma: " + error.message);
+      }
+      await loadAdminUsers();
+      alert("✔ Firma oppdatert.");
+    };
+    const setAdminUserSystemAdmin = async (userRow, makeSystemAdmin) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til systemadmin.");
+      if (!userRow?.id) return;
+      const userEmail = userRow.email || "brukeren";
+      if (userRow.id === authUser?.id && !makeSystemAdmin) return alert("Du kan ikke fjerne systemadmin-rollen fra deg selv.");
+      const message = makeSystemAdmin
+        ? `Vil du gjøre ${userEmail} til SYSTEMADMIN?
+
+Systemadmin kan godkjenne brukere, endre Produktmaster og supportere alle firmaer.`
+        : `Vil du fjerne systemadmin-rollen fra ${userEmail}?
+
+Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenning.`;
+      if (!window.confirm(message)) return;
+      const payload = makeSystemAdmin
+        ? { system_role: "systemadmin", is_admin: true, role: "admin", approved: true, deactivated: false, company_role: userRow.company_role || "firmaadmin" }
+        : { system_role: null, is_admin: false, role: "user", company_role: userRow.company_role || "firmaadmin" };
+      const { error } = await supabase.from("profiles").update(payload).eq("id", userRow.id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke oppdatere systemadmin-rolle: " + error.message);
+      }
+      await loadAdminUsers();
+      alert(makeSystemAdmin ? "✔ Brukeren er nå systemadmin." : "✔ Systemadmin-rollen er fjernet.");
+    };
     const loadCompanyAdminData = async (notify = false) => {
       if (!isCompanyAdminUser) return alert("Du har ikke tilgang til firmaadministrasjon.");
       const companyNameForQuery = currentCompanyName;
@@ -3360,12 +3425,18 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       if (!userRow?.id) return;
       if (userRow.system_role === "systemadmin" && !isSystemAdminUser) return alert("Systemadministrator kan ikke endres fra firma.");
       const cleanRole = role === "firmaadmin" ? "firmaadmin" : "ansatt";
+      const currentRole = userRow.company_role === "firmaadmin" ? "firmaadmin" : "ansatt";
+      if (cleanRole === currentRole) return;
+      const roleLabel = cleanRole === "firmaadmin" ? "Firmaadmin" : "Ansatt";
+      const userEmail = userRow.email || "brukeren";
+      if (!window.confirm(`Vil du endre rollen for ${userEmail} til ${roleLabel}?\n\nEndringen lagres umiddelbart.`)) return;
       const { error } = await supabase.from("profiles").update({ company_role: cleanRole }).eq("id", userRow.id).eq("company_name", currentCompanyName);
       if (error) {
         console.error(error);
         return alert("Kunne ikke endre rolle: " + error.message);
       }
       await loadCompanyAdminData(false);
+      alert(`✔ Rolle oppdatert. ${userEmail} er nå ${roleLabel}.`);
     };
     const setCompanyUserDeactivated = async (userRow, deactivated) => {
       if (!isCompanyAdminUser) return alert("Du har ikke tilgang til firmaadministrasjon.");
@@ -3380,6 +3451,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
         return alert("Kunne ikke oppdatere bruker: " + error.message);
       }
       await loadCompanyAdminData(false);
+      alert(deactivated ? "✔ Brukeren er deaktivert." : "✔ Brukeren er reaktivert.");
     };
 
     const loadFdvRegister = async (notify = false) => {
@@ -7679,6 +7751,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukere i firma" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Endring av rolle og status lagres direkte når du bekrefter valget. Det finnes derfor ingen egen lagreknapp her." }),
             companyUsers.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen brukere hentet ennå. Trykk Oppdater firmaoversikt." }),
             companyUsers.map((u) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: u.email || "Ukjent e-post" }),
@@ -7793,7 +7866,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kun systemadministrator kan godkjenne, deaktivere og reaktivere brukere." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kun systemadministrator kan godkjenne, deaktivere, reaktivere og korrigere firma-/rolleoppsett. Endringer i rolle og firma lagres direkte etter bekreftelse." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", margin: "12px 0" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "pending" ? "" : "secondary", onClick: () => setAdminUserFilter("pending"), children: `Nye brukere (${pendingAdminUsers.length})` }),
@@ -7809,10 +7882,20 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 "Status: ",
                 u.deactivated ? "Deaktivert" : u.approved ? "Godkjent" : "Venter p\xE5 godkjenning"
               ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px", marginTop: "10px" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Firmarolle", value: u.company_role === "firmaadmin" ? "firmaadmin" : "ansatt", options: ["ansatt", "firmaadmin"], onChange: (v) => updateAdminUserCompanyRole(u, v) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { children: "Firma" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", style: { width: "100%" }, onClick: () => updateAdminUserCompanyName(u), children: u.company_name || "Sett firma" })
+                ] })
+              ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
                 !u.approved && !u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => approveAdminUser(u.id), children: "Godkjenn bruker" }),
                 u.approved && !u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => deactivateAdminUser(u.id), children: "Deaktiver bruker" }),
-                u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => reactivateAdminUser(u.id), children: "Reaktiver bruker" })
+                u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => reactivateAdminUser(u.id), children: "Reaktiver bruker" }),
+                u.system_role === "systemadmin"
+                  ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setAdminUserSystemAdmin(u, false), disabled: u.id === authUser?.id, children: u.id === authUser?.id ? "Din systemadmin-rolle" : "Fjern systemadmin" })
+                  : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setAdminUserSystemAdmin(u, true), children: "Gjør til systemadmin" })
               ] })
             ] }, u.id))
           ] }),
