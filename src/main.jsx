@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11C.7: Supportmodus viser prosjekter direkte under valgt firma (accordion).
 // FASE 11C.6: Systemadmin brukersøk, statusfilter og firmafilter for skalerbar brukeradministrasjon.
 // FASE 11C.4: Smart Produktmaster-synk oppdaterer aktive prosjekter, men låste/arkiverte prosjekter røres ikke.
 // FASE 11C.1: Kollapsbare Systemadmin-seksjoner for mindre scrolling, spesielt Produktmaster.
@@ -1112,6 +1113,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [supportCompanySearch, setSupportCompanySearch] = (0, import_react.useState)("");
     const [supportProjectSearch, setSupportProjectSearch] = (0, import_react.useState)("");
     const [supportSelectedCompany, setSupportSelectedCompany] = (0, import_react.useState)("");
+    const [openSupportCompany, setOpenSupportCompany] = (0, import_react.useState)("");
     const [fdvRegister, setFdvRegister] = (0, import_react.useState)([]);
     const [fdvLoading, setFdvLoading] = (0, import_react.useState)(false);
     const [productMaster, setProductMaster] = (0, import_react.useState)([]);
@@ -8089,7 +8091,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Brukes av systemadministrator for å finne firmaer og åpne prosjekter ved support. Firmaadmin hos kunde får ikke tilgang til dette området." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", margin: "12px 0" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { loadAdminUsers(); loadProjects(authUser, true); }, children: "Oppdater supportdata" }),
-              supportSelectedCompany && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setSupportSelectedCompany(""), children: "Vis alle firma" })
+              supportSelectedCompany && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => { setSupportSelectedCompany(""); setOpenSupportCompany(""); }, children: "Vis alle firma" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk firma", value: supportCompanySearch, placeholder: "Søk etter firmanavn", onChange: setSupportCompanySearch }),
@@ -8111,47 +8113,58 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { marginTop: "18px" }, children: "Firmaoversikt" }),
             supportCompanies.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen firma funnet ennå. Trykk Oppdater supportdata." }),
-            supportCompanies.slice(0, 20).map((entry) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: supportSelectedCompany === entry.name ? "#ecfeff" : "#fff" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: entry.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setSupportSelectedCompany(entry.name), children: "Vis prosjekter" })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
-                "Brukere: ", entry.users,
-                " · Prosjekter: ", entry.projects,
-                " · Aktive: ", entry.activeProjects,
-                " · Ulest chat: ", entry.unread
-              ] })
-            ] }, entry.name)),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { marginTop: "18px" }, children: supportSelectedCompany ? `Prosjekter hos ${supportSelectedCompany}` : "Prosjekter" }),
-            supportProjects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen prosjekter funnet i supportvisningen." }),
-            supportProjects.slice(0, 30).map((item) => {
-              const dataCompany = item?.row?.data?.company || {};
-              const companyName = dataCompany.companyName || dataCompany.company_name || "Ukjent firma";
-              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            supportCompanies.slice(0, 20).map((entry) => {
+              const entryIsOpen = openSupportCompany === entry.name;
+              const entryProjects = supportProjects.filter((item) => {
+                const dataCompany = item?.row?.data?.company || {};
+                const companyName = String(dataCompany.companyName || dataCompany.company_name || item?.listProject?.companyName || "").trim();
+                return companyName.toLowerCase() === String(entry.name || "").trim().toLowerCase();
+              }).slice(0, 30);
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: entryIsOpen ? "#ecfeff" : "#fff" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.listProject.projectName || item.row.title || "Uten navn" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block" }, children: [
-                      companyName,
-                      item.listProject.customer ? ` · Kunde: ${item.listProject.customer}` : "",
-                      item.listProject.address ? ` · ${item.listProject.address}` : ""
-                    ] })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" }, children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => openProjectById(item.row.id, "prosjekt"), children: "Åpne" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(item.row.id, "rapport"), children: "Rapport" }),
-                    item.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(item.row.id, "sjekklister", { showOpenDeviationsOnly: true }), children: "Avvik" })
-                  ] })
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: entry.name }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
+                    const nextCompany = entryIsOpen ? "" : entry.name;
+                    setOpenSupportCompany(nextCompany);
+                    setSupportSelectedCompany(nextCompany);
+                  }, children: entryIsOpen ? "Skjul prosjekter" : "Vis prosjekter" })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
-                  "Status: ", item.listStatus.label,
-                  " · Ansvarlig: ", item.listProject.responsible || "Ikke satt",
-                  " · Oppdatert: ", item.row.updated_at ? new Date(item.row.updated_at).toLocaleString("no-NO") : "ukjent",
-                  " · Ulest chat: ", item.unreadForAdminInList
+                  "Brukere: ", entry.users,
+                  " · Prosjekter: ", entry.projects,
+                  " · Aktive: ", entry.activeProjects,
+                  " · Ulest chat: ", entry.unread
+                ] }),
+                entryIsOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px", borderTop: "1px solid #dbeafe", paddingTop: "12px" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { marginTop: 0 }, children: `Prosjekter hos ${entry.name}` }),
+                  entryProjects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: supportProjectSearch ? "Ingen prosjekter matcher søket for dette firmaet." : "Ingen prosjekter funnet for dette firmaet." }),
+                  entryProjects.map((item) => {
+                    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#fff" }, children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }, children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.listProject.projectName || item.row.title || "Uten navn" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block" }, children: [
+                            item.listProject.customer ? `Kunde: ${item.listProject.customer}` : "Kunde ikke satt",
+                            item.listProject.address ? ` · ${item.listProject.address}` : ""
+                          ] })
+                        ] }),
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" }, children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => openProjectById(item.row.id, "prosjekt"), children: "Åpne" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(item.row.id, "rapport"), children: "Rapport" }),
+                          item.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(item.row.id, "sjekklister", { showOpenDeviationsOnly: true }), children: "Avvik" })
+                        ] })
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+                        "Status: ", item.listStatus.label,
+                        " · Ansvarlig: ", item.listProject.responsible || "Ikke satt",
+                        " · Oppdatert: ", item.row.updated_at ? new Date(item.row.updated_at).toLocaleString("no-NO") : "ukjent",
+                        " · Ulest chat: ", item.unreadForAdminInList
+                      ] })
+                    ] }, item.row.id);
+                  })
                 ] })
-              ] }, item.row.id);
-            })
+              ] }, entry.name);
+            }),
           ] })
           ] }),
           isAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
