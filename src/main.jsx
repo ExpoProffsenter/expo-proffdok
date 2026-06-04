@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11C.6: Systemadmin brukersøk, statusfilter og firmafilter for skalerbar brukeradministrasjon.
 // FASE 11C.4: Smart Produktmaster-synk oppdaterer aktive prosjekter, men låste/arkiverte prosjekter røres ikke.
 // FASE 11C.1: Kollapsbare Systemadmin-seksjoner for mindre scrolling, spesielt Produktmaster.
 // FASE 11C/11D + 11B.4: Fjerner forvirrende lokal kladd-dialog for systemadmin og forkaster kladd ved Avbryt.
@@ -1097,6 +1098,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [profileLoading, setProfileLoading] = (0, import_react.useState)(false);
     const [adminUsers, setAdminUsers] = (0, import_react.useState)([]);
     const [adminUserFilter, setAdminUserFilter] = (0, import_react.useState)("pending");
+    const [adminUserSearch, setAdminUserSearch] = (0, import_react.useState)("");
+    const [adminUserCompanyFilter, setAdminUserCompanyFilter] = (0, import_react.useState)("");
     const [adminLoading, setAdminLoading] = (0, import_react.useState)(false);
     const [companyUsers, setCompanyUsers] = (0, import_react.useState)([]);
     const [companyInvites, setCompanyInvites] = (0, import_react.useState)([]);
@@ -1313,7 +1316,42 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     };
 
     const pendingAdminUsers = (0, import_react.useMemo)(() => (adminUsers || []).filter((u) => !u?.approved && !u?.deactivated), [adminUsers]);
-    const visibleAdminUsers = (0, import_react.useMemo)(() => adminUserFilter === "all" ? adminUsers || [] : pendingAdminUsers, [adminUsers, pendingAdminUsers, adminUserFilter]);
+    const adminUserStats = (0, import_react.useMemo)(() => {
+      const rows = adminUsers || [];
+      return {
+        pending: rows.filter((u) => !u?.approved && !u?.deactivated).length,
+        approved: rows.filter((u) => u?.approved && !u?.deactivated).length,
+        deactivated: rows.filter((u) => u?.deactivated).length,
+        systemadmin: rows.filter((u) => u?.system_role === "systemadmin").length,
+        all: rows.length
+      };
+    }, [adminUsers]);
+    const visibleAdminUsers = (0, import_react.useMemo)(() => {
+      const search = String(adminUserSearch || "").trim().toLowerCase();
+      const companyFilter = String(adminUserCompanyFilter || "").trim().toLowerCase();
+      const matchesFilter = (u = {}) => {
+        if (adminUserFilter === "pending") return !u?.approved && !u?.deactivated;
+        if (adminUserFilter === "approved") return !!u?.approved && !u?.deactivated;
+        if (adminUserFilter === "deactivated") return !!u?.deactivated;
+        if (adminUserFilter === "systemadmin") return u?.system_role === "systemadmin";
+        return true;
+      };
+      return (adminUsers || []).filter((u) => {
+        if (!matchesFilter(u)) return false;
+        if (companyFilter && String(u?.company_name || "").trim().toLowerCase() !== companyFilter) return false;
+        if (!search) return true;
+        const text = [
+          u?.email,
+          u?.company_name,
+          u?.company_role,
+          u?.system_role,
+          u?.role,
+          u?.approved ? "godkjent" : "venter",
+          u?.deactivated ? "deaktivert" : "aktiv"
+        ].filter(Boolean).join(" ").toLowerCase();
+        return text.includes(search);
+      });
+    }, [adminUsers, adminUserFilter, adminUserSearch, adminUserCompanyFilter]);
     const hasActiveProjectWorkspace = !!projectId || !!mobileCreatingProject;
     const name = company.companyName || "Expo Proffsenter";
     const urlParams = new URLSearchParams(window.location.search);
@@ -8123,11 +8161,22 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kun systemadministrator kan godkjenne, deaktivere, reaktivere og korrigere firma-/rolleoppsett. Endringer i rolle og firma lagres direkte etter bekreftelse." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", margin: "12px 0" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "pending" ? "" : "secondary", onClick: () => setAdminUserFilter("pending"), children: `Nye brukere (${pendingAdminUsers.length})` }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "all" ? "" : "secondary", onClick: () => setAdminUserFilter("all"), children: `Alle brukere (${adminUsers.length})` })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "pending" ? "" : "secondary", onClick: () => setAdminUserFilter("pending"), children: `Nye (${adminUserStats.pending})` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "approved" ? "" : "secondary", onClick: () => setAdminUserFilter("approved"), children: `Godkjente (${adminUserStats.approved})` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "deactivated" ? "" : "secondary", onClick: () => setAdminUserFilter("deactivated"), children: `Deaktiverte (${adminUserStats.deactivated})` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "systemadmin" ? "" : "secondary", onClick: () => setAdminUserFilter("systemadmin"), children: `Systemadmin (${adminUserStats.systemadmin})` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "all" ? "" : "secondary", onClick: () => setAdminUserFilter("all"), children: `Alle (${adminUserStats.all})` })
             ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "10px", margin: "12px 0" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { children: "Søk bruker" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { value: adminUserSearch, onChange: (e) => setAdminUserSearch(e.target.value), placeholder: "Søk e-post, firma eller rolle" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Filtrer firma", value: adminUserCompanyFilter, options: registeredCompanyOptions, optionLabels: { "": "Alle firma" }, onChange: (v) => setAdminUserCompanyFilter(v) })
+            ] }),
+            adminUsers.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: `${visibleAdminUsers.length} av ${adminUsers.length} brukere vises.` }),
             adminUsers.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen brukere hentet enn\xE5. Trykk Oppdater brukerliste." }),
-            adminUsers.length > 0 && visibleAdminUsers.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: adminUserFilter === "pending" ? "Ingen nye brukere venter p\xE5 godkjenning." : "Ingen brukere \xE5 vise." }),
+            adminUsers.length > 0 && visibleAdminUsers.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen brukere matcher valgt søk/filter." }),
             visibleAdminUsers.map((u) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: u.email || "Ukjent e-post" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
