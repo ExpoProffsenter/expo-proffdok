@@ -9074,7 +9074,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       });
     };
     const enabled = !!warranty?.enabled;
-    const issued = !!warranty?.issued;
+    // FASE 11D.8.1 HOTFIX:
+    // Noen eksisterende prosjekter kan ha garantinummer/status lagret, selv om issued-flagget ikke er satt.
+    // Visningen skal derfor tolke garanti som utstedt når issued=true, status=issued eller garantinummer finnes.
+    const issued = !!warranty?.issued || warranty?.status === "issued" || hasValue(warranty?.guaranteeNumber);
     const warrantyYears = getWarrantyYears(warranty);
     const warrantyValidUntil = makeWarrantyValidUntil(overtagelse?.dato || project?.date || "", warranty);
     const warrantyStatusText = issued ? (warrantyValidUntil && new Date(warrantyValidUntil) < /* @__PURE__ */ new Date() ? "Utgått" : "Gyldig") : readiness?.ready ? "Klar til utstedelse" : "Ikke utstedt";
