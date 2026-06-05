@@ -1,4 +1,6 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.6: Beholder aktiv fane i løpende økt, men starter rent ved faktisk innlogging/utlogging.
+// FASE 11D.5: Flere egne produkter under alle grupper i Overflater og innredning.
 // FASE 11D.4: Trygg bildeopplasting, stabil input/accordion og bildemerknad om sjekkpunktbilder.
 // FASE 11D.3: Ryddigere visning av ventende firmainvitasjoner under Firma-fanen.
 // FASE 11D.2: Brukervilkår i Hjelp, egen akseptstatus og systemadmin-oversikt.
@@ -490,6 +492,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var emptyBathroomEquipment = () => ({});
   var equipmentValue = (equipment = {}, key = "", field = "") => equipment?.[`${key}_${field}`] || "";
   var equipmentHasGenericContent = (equipment = {}, key = "") => ["product", "supplier", "fdvUrl", "certificateUrl", "comment"].some((field) => hasValue(equipmentValue(equipment, key, field)));
+  var equipmentSectionStorageKey = (title = "") => `custom_${String(title || "annet").toLowerCase().replace(/[åä]/g, "a").replace(/[øö]/g, "o").replace(/[æ]/g, "ae").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "")}`;
+  var equipmentCustomItemsForSection = (equipment = {}, title = "") => {
+    const value = equipment?.[equipmentSectionStorageKey(title)];
+    return Array.isArray(value) ? value : [];
+  };
+  var equipmentCustomItemHasContent = (item = {}) => ["product", "supplier", "fdvUrl", "certificateUrl", "comment"].some((field) => hasValue(item?.[field]));
   var wcHasContent = (equipment = {}) => ["wcType", "wcProduct", "wcSupplier", "wcCistern", "wcFlushPlate", "wcFdvUrl", "wcCertificateUrl", "wcComment"].some((field) => hasValue(equipment?.[field]));
   var buildBathroomEquipmentReportGroups = (surf = {}, bathroomEquipment = {}) => {
     const groups = [];
@@ -503,7 +511,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     };
     const surfaceRows = Object.entries(surf || {}).filter(([, value]) => hasValue(value));
     const surfaceExtras = (bathroomEquipmentSections.find((section) => section.title === "Overflater")?.items || []).filter((item) => equipmentHasGenericContent(bathroomEquipment, item.key));
-    if (surfaceRows.length || surfaceExtras.length) {
+    const surfaceCustomExtras = equipmentCustomItemsForSection(bathroomEquipment, "Overflater").filter(equipmentCustomItemHasContent);
+    if (surfaceRows.length || surfaceExtras.length || surfaceCustomExtras.length) {
       const group = pushGroup("Overflater");
       surfaceRows.forEach(([label, value]) => group.items.push({ title: label, entries: [["Produkt / beskrivelse", value]], links: [] }));
       surfaceExtras.forEach((item) => {
@@ -517,6 +526,18 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           { label: "Produktsertifikat", url: equipmentValue(bathroomEquipment, item.key, "certificateUrl") }
         ].filter((link) => hasValue(link.url));
         group.items.push({ title: item.label, entries, links });
+      });
+      surfaceCustomExtras.forEach((customItem, index) => {
+        const entries = [
+          ["Produkt / beskrivelse", customItem.product],
+          ["Leverandør", customItem.supplier],
+          ["Kommentar", customItem.comment]
+        ].filter(([, value]) => hasValue(value));
+        const links = [
+          { label: "FDV", url: customItem.fdvUrl },
+          { label: "Produktsertifikat", url: customItem.certificateUrl }
+        ].filter((link) => hasValue(link.url));
+        group.items.push({ title: customItem.title || `Eget produkt ${index + 1}`, entries, links });
       });
     }
     if (wcHasContent(bathroomEquipment)) {
@@ -547,6 +568,18 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           { label: "Produktsertifikat", url: equipmentValue(bathroomEquipment, item.key, "certificateUrl") }
         ].filter((link) => hasValue(link.url));
         group.items.push({ title: item.label, entries, links });
+      });
+      equipmentCustomItemsForSection(bathroomEquipment, section.title).filter(equipmentCustomItemHasContent).forEach((customItem, index) => {
+        const entries = [
+          ["Produkt / beskrivelse", customItem.product],
+          ["Leverandør", customItem.supplier],
+          ["Kommentar", customItem.comment]
+        ].filter(([, value]) => hasValue(value));
+        const links = [
+          { label: "FDV", url: customItem.fdvUrl },
+          { label: "Produktsertifikat", url: customItem.certificateUrl }
+        ].filter((link) => hasValue(link.url));
+        group.items.push({ title: customItem.title || `Eget produkt ${index + 1}`, entries, links });
       });
     });
     return groups.filter((group) => group.items.length > 0);
@@ -1223,6 +1256,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const latestStateRef = (0, import_react.useRef)({});
     const lastChatMessageCountRef = (0, import_react.useRef)(0);
     const lastChatRefreshAtRef = (0, import_react.useRef)(0);
+    const previousAuthUserIdRef = (0, import_react.useRef)(null);
     const openImageLightboxFromClick = (event) => {
       const target = event?.target;
       if (!target || target.tagName !== "IMG") return;
@@ -2481,17 +2515,27 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
       }
     };
     const handleAuthUser = async (sessionUser) => {
+      const nextUserId = sessionUser?.id || null;
+      const previousUserId = previousAuthUserIdRef.current;
+      const isNewLoginOrLogout = previousUserId !== nextUserId;
+      previousAuthUserIdRef.current = nextUserId;
       setAuthUser(sessionUser);
-      resetToCleanStartPage();
-      setTermsAccepted(false);
-      setTermsAcceptanceRecord(null);
-      setTermsReadConfirmed(false);
-      setTermsError("");
+      if (isNewLoginOrLogout) {
+        resetToCleanStartPage();
+        setTermsAccepted(false);
+        setTermsAcceptanceRecord(null);
+        setTermsReadConfirmed(false);
+        setTermsError("");
+      }
       if (!sessionUser) {
         setProjects([]);
         setAdminTermsAcceptances([]);
         setProfile(null);
         setProfileLoading(false);
+        setTermsAccepted(false);
+        setTermsAcceptanceRecord(null);
+        setTermsReadConfirmed(false);
+        setTermsError("");
         setTermsLoading(false);
         return;
       }
@@ -5894,6 +5938,43 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar", value: equipmentValue(bathroomEquipment, item.key, "comment"), onChange: (v) => updateBathroomEquipment({ [`${item.key}_comment`]: v }) })
     ] }, item.key);
+    const addCustomEquipmentItem = (sectionTitle) => {
+      const storageKey = equipmentSectionStorageKey(sectionTitle);
+      const current = equipmentCustomItemsForSection(bathroomEquipment, sectionTitle);
+      updateBathroomEquipment({ [storageKey]: [...current, { id: uid(), title: "", product: "", supplier: "", fdvUrl: "", certificateUrl: "", comment: "" }] });
+    };
+    const updateCustomEquipmentItem = (sectionTitle, id, patch) => {
+      const storageKey = equipmentSectionStorageKey(sectionTitle);
+      const current = equipmentCustomItemsForSection(bathroomEquipment, sectionTitle);
+      updateBathroomEquipment({ [storageKey]: current.map((item) => item.id === id ? { ...item, ...patch } : item) });
+    };
+    const removeCustomEquipmentItem = (sectionTitle, id) => {
+      const storageKey = equipmentSectionStorageKey(sectionTitle);
+      const current = equipmentCustomItemsForSection(bathroomEquipment, sectionTitle);
+      updateBathroomEquipment({ [storageKey]: current.filter((item) => item.id !== id) });
+    };
+    const renderCustomEquipmentSection = (sectionTitle) => {
+      const customItems = equipmentCustomItemsForSection(bathroomEquipment, sectionTitle);
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Egne produkter / annet" }),
+        customItems.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Legg til egne produkter dersom standardpunktene ikke dekker alt som skal dokumenteres." }),
+        customItems.map((customItem, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", style: { marginTop: "12px" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: `Eget produkt ${index + 1}` }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeCustomEquipmentItem(sectionTitle, customItem.id), children: "Fjern" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Tittel / type", value: customItem.title || "", onChange: (v) => updateCustomEquipmentItem(sectionTitle, customItem.id, { title: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produkt / beskrivelse", value: customItem.product || "", onChange: (v) => updateCustomEquipmentItem(sectionTitle, customItem.id, { product: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverandør", value: customItem.supplier || "", onChange: (v) => updateCustomEquipmentItem(sectionTitle, customItem.id, { supplier: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link", value: customItem.fdvUrl || "", onChange: (v) => updateCustomEquipmentItem(sectionTitle, customItem.id, { fdvUrl: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktsertifikat-link", value: customItem.certificateUrl || "", onChange: (v) => updateCustomEquipmentItem(sectionTitle, customItem.id, { certificateUrl: v }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar", value: customItem.comment || "", onChange: (v) => updateCustomEquipmentItem(sectionTitle, customItem.id, { comment: v }) })
+        ] }, customItem.id)),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => addCustomEquipmentItem(sectionTitle), children: "+ Legg til eget produkt" })
+      ] });
+    };
     const renderOverflaterOgInnredning = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Overflater og innredning", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dokumenter synlige overflater, innredning, sanitærutstyr, armaturer, elektriske komponenter og annet utstyr. Bare utfylte punkter tas med i rapport/PDF." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Fliser og overflater", defaultOpen: Object.values(surf || {}).some(hasValue), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
@@ -5910,7 +5991,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar", value: bathroomEquipment.wcComment || "", onChange: (v) => updateBathroomEquipment({ wcComment: v }) })
       ] }) }),
-      bathroomEquipmentSections.map((section) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: section.title, defaultOpen: section.items.some((item) => equipmentHasGenericContent(bathroomEquipment, item.key)), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: section.items.map((item) => renderEquipmentItem(item)) }) }, section.title))
+      bathroomEquipmentSections.map((section) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: section.title, defaultOpen: section.items.some((item) => equipmentHasGenericContent(bathroomEquipment, item.key)) || equipmentCustomItemsForSection(bathroomEquipment, section.title).some(equipmentCustomItemHasContent), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards", children: [
+        ...section.items.map((item) => renderEquipmentItem(item)),
+        renderCustomEquipmentSection(section.title)
+      ] }) }, section.title))
     ] });
 
     if (authLoading && !isReadOnly && !isUnderleverandorView) {
