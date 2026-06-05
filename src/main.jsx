@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.3: Ryddigere visning av ventende firmainvitasjoner under Firma-fanen.
 // FASE 11D.2: Brukervilkår i Hjelp, egen akseptstatus og systemadmin-oversikt.
 // FASE 11D.1: Obligatoriske brukervilkår/personvern ved første innlogging, med versjonsstyrt aksept.
 // FASE 11C.8: Ren startside ved innlogging/utlogging. Systemadmin starter ikke i gammel support-/adminvisning.
@@ -8284,16 +8285,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] })
             ] }, u.id))
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Invitasjoner" }),
-            companyInvites.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen invitasjoner hentet ennå." }),
-            companyInvites.map((invite) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+          (companyInvites || []).filter((invite) => (invite?.status || "pending") === "pending").length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Inviterte brukere" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Brukere som er invitert, men som ikke har registrert seg eller blitt aktivert i firmaet ennå." }),
+            (companyInvites || []).filter((invite) => (invite?.status || "pending") === "pending").map((invite) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: invite.email }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                 "Rolle: ",
                 invite.company_role === "firmaadmin" ? "Firmaadmin" : "Ansatt",
-                " · Status: ",
-                invite.status || "pending"
+                " · Status: Venter på registrering"
               ] })
             ] }, invite.id || invite.email))
           ] })
