@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.9 RAPPORTSTABILISERING: Kun PDF/rapportvisning – bilder, vedlegg, telefonfelt, QR og forside. Ingen endring i lagring/garanti/logikk.
 // FASE 11D.8.6 NØD-HOTFIX: Reverterer ustabil registry-sjekk, beholder WC/FDV, og stopper lokal kladd-popup helt.
 // FASE 11D.8.4 HOTFIX: WC splittet i veggskål/sisterne/trykknapp med egen FDV og produktsertifikat + smart lokal kladd.
 // FASE 11D.8.2 HOTFIX: WC splittet i veggskål, sisterne og trykknapp med egne leverandørfelt uten SQL-endringer.
@@ -4688,6 +4689,20 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         const safeText = (value) => value === void 0 || value === null ? "" : String(value);
         const filenameSafe = (value) => safeText(value || "FDV-rapport").replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 80) || "FDV-rapport";
         const normalizePdfUrl = (value) => normalizeExternalUrl(value);
+        const isLikelyRawFileName = (value = "") => /^image[a-f0-9-]{8,}\.(jpe?g|png|webp|heic|heif)$/i.test(safeText(value).trim()) || /^[a-f0-9-]{16,}\.(jpe?g|png|webp|heic|heif)$/i.test(safeText(value).trim());
+        const cleanPdfCaption = (caption = "", fallback = "Dokumentert bilde") => {
+          const clean = safeText(caption).trim();
+          if (!clean || isLikelyRawFileName(clean)) return fallback;
+          return clean;
+        };
+        const cleanCompanyPhoneForReport = (value = "") => {
+          const clean = safeText(value).trim();
+          if (!clean) return "";
+          if (/^\d{4}\s+[A-Za-zÆØÅæøå .-]+$/.test(clean)) return "";
+          if (/@/.test(clean) || /www\.|https?:\/\//i.test(clean)) return "";
+          return clean;
+        };
+        const companyPhoneForReport = cleanCompanyPhoneForReport(company.phone);
         const ensureSpace = (height = 8) => {
           if (y + height <= pageHeight - 18) return;
           doc.addPage();
@@ -4715,42 +4730,68 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         };
         const addCoverPage = async () => {
           const generatedAt = new Date().toLocaleString("no-NO");
+          const openDeviationTotal = getOpenDeviationCount(checklist);
+          const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
+          const assessed = entries.filter((value) => hasValue(value?.status));
+          const okTotal = assessed.filter((value) => ["ok", "utført", "utfort"].includes(String(value?.status || "").toLowerCase())).length;
+          const photoTotal = (photos || []).filter((photo) => hasValue(photo?.url)).length;
+          const productTotal = (selected || []).length + (manualSelected || []).length;
           doc.setFillColor(248, 250, 252);
           doc.rect(0, 0, pageWidth, pageHeight, "F");
           doc.setFillColor(255, 255, 255);
           doc.roundedRect(10, 10, pageWidth - 20, pageHeight - 26, 4, 4, "F");
           if (company.logoUrl) {
-            try { await addImageFromUrl(company.logoUrl, ""); } catch (e) {}
-            y = 36;
+            const logoImage = await loadPdfImage(company.logoUrl);
+            if (logoImage && !logoImage.error) {
+              let logoW = 58;
+              let logoH = logoW * (logoImage.height / logoImage.width);
+              if (logoH > 22) {
+                logoH = 22;
+                logoW = logoH * (logoImage.width / logoImage.height);
+              }
+              doc.addImage(logoImage.dataUrl, logoImage.format || "PNG", margin, 19, logoW, logoH);
+            }
           }
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(22);
+          doc.setFontSize(23);
           doc.setTextColor(12, 42, 82);
-          doc.text("FDV-RAPPORT", pageWidth / 2, 58, { align: "center" });
+          doc.text("FDV-RAPPORT", pageWidth / 2, 56, { align: "center" });
           doc.setFontSize(15);
-          doc.text("PROSJEKTDOKUMENTASJON", pageWidth / 2, 69, { align: "center" });
+          doc.text("PROSJEKTDOKUMENTASJON", pageWidth / 2, 68, { align: "center" });
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(10);
+          doc.setFontSize(10.5);
           doc.setTextColor(71, 85, 105);
-          doc.text(project.projectName || project.address || "Prosjekt", pageWidth / 2, 82, { align: "center" });
+          doc.text(doc.splitTextToSize(project.projectName || project.address || "Prosjekt", 140), pageWidth / 2, 82, { align: "center" });
           const cardY = 102;
           const cardW = (contentWidth - 5) / 2;
           drawInfoCardPdf(margin, cardY, cardW, 22, "Kunde", project.customer || "Ikke oppgitt");
           drawInfoCardPdf(margin + cardW + 5, cardY, cardW, 22, "Adresse", [project.address, project.postnr, project.city].filter(Boolean).join(", "));
           drawInfoCardPdf(margin, cardY + 27, cardW, 22, "Utførende firma", name || company.companyName || "Expo ProffDok");
           drawInfoCardPdf(margin + cardW + 5, cardY + 27, cardW, 22, "Rapport generert", generatedAt);
-          const openDeviationTotal = getOpenDeviationCount(checklist);
+          const metricGap = 4;
+          const metricW = (contentWidth - metricGap * 3) / 4;
+          const metricY = 158;
+          drawMetricCard(margin, metricY, metricW, 20, "Sjekkpunkter OK", String(okTotal), "green");
+          drawMetricCard(margin + (metricW + metricGap), metricY, metricW, 20, "Bilder", String(photoTotal), "blue");
+          drawMetricCard(margin + (metricW + metricGap) * 2, metricY, metricW, 20, "Produkter", String(productTotal), "neutral");
+          drawMetricCard(margin + (metricW + metricGap) * 3, metricY, metricW, 20, "Åpne avvik", String(openDeviationTotal), openDeviationTotal ? "red" : "green");
           doc.setDrawColor(...(openDeviationTotal ? [248, 113, 113] : [74, 222, 128]));
           doc.setFillColor(...(openDeviationTotal ? [254, 242, 242] : [236, 253, 245]));
-          doc.roundedRect(margin, 170, contentWidth, 25, 3, 3, "FD");
+          doc.roundedRect(margin, 190, contentWidth, warranty?.issued ? 36 : 25, 3, 3, "FD");
           doc.setFont("helvetica", "bold");
           doc.setFontSize(13);
           doc.setTextColor(...(openDeviationTotal ? [153, 27, 27] : [6, 95, 70]));
-          doc.text(openDeviationTotal ? "KONTROLL MED ÅPNE AVVIK" : "KONTROLL DOKUMENTERT", margin + 6, 180);
+          doc.text(openDeviationTotal ? "KONTROLL MED ÅPNE AVVIK" : "KONTROLL DOKUMENTERT", margin + 6, 200);
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.5);
+          doc.setFontSize(9);
           doc.setTextColor(51, 65, 85);
-          doc.text(openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : "Prosjektet har ingen åpne avvik i rapportgrunnlaget.", margin + 6, 188);
+          doc.text(openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : "Prosjektet har ingen åpne avvik i rapportgrunnlaget.", margin + 6, 208);
+          if (warranty?.issued) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(12, 42, 82);
+            doc.text(`${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti er utstedt${warranty?.guaranteeNumber ? ` · ${warranty.guaranteeNumber}` : ""}.`, margin + 6, 219);
+          }
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(100, 116, 139);
@@ -4818,14 +4859,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
             doc.text(safeText(label), margin, y);
             doc.link(margin, y - 4, Math.min(contentWidth, safeText(label).length * 2.2), 5, { url });
           }
-          y += 4;
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.2);
-          doc.setTextColor(51, 65, 85);
-          const urlLines = doc.splitTextToSize(url, contentWidth);
-          ensureSpace(urlLines.length * 3.6 + 1);
-          doc.text(urlLines, margin, y);
-          y += urlLines.length * 4.0 + 2;
+          y += 6;
         };
         const addAttachmentList = (title, attachmentList = [], emptyMessage = "Ingen vedlegg er lagt til.") => {
           const visibleAttachments = (attachmentList || []).filter((file) => hasValue(file?.name) || hasValue(file?.url));
@@ -4836,7 +4870,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           }
           visibleAttachments.forEach((file, index) => {
             const fileName = safeText(file?.name || `Vedlegg ${index + 1}`);
-            const fileMeta = [file?.by ? `Lastet opp av ${file.by}` : "", file?.created || ""].filter(Boolean).join(" · ");
+            const fileMeta = [file?._sourceLabel || "Vedlegg", file?.by ? `Lastet opp av ${file.by}` : "", file?.created || ""].filter(Boolean).join(" · ");
             ensureSpace(18);
             doc.setDrawColor(214, 226, 236);
             doc.setFillColor(248, 250, 252);
@@ -5148,9 +5182,9 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
             const cardH = 38;
             for (let i = 0; i < pointPhotos.length; i += 2) {
               ensureSpace(cardH + 6);
-              await drawImageGalleryCard({ ...pointPhotos[i], _reportCaption: pointPhotos[i]?.name || `${item} – bilde ${i + 1}` }, margin + 12, y, cardW, cardH);
+              await drawImageGalleryCard({ ...pointPhotos[i], _reportCaption: `${item} – bilde ${i + 1}` }, margin + 12, y, cardW, cardH);
               if (pointPhotos[i + 1]) {
-                await drawImageGalleryCard({ ...pointPhotos[i + 1], _reportCaption: pointPhotos[i + 1]?.name || `${item} – bilde ${i + 2}` }, margin + 12 + cardW + gap, y, cardW, cardH);
+                await drawImageGalleryCard({ ...pointPhotos[i + 1], _reportCaption: `${item} – bilde ${i + 2}` }, margin + 12 + cardW + gap, y, cardW, cardH);
               }
               y += cardH + 5;
             }
@@ -5264,7 +5298,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.setDrawColor(214, 226, 236);
           doc.setFillColor(255, 255, 255);
           doc.roundedRect(x, yy, w, h, 3, 3, "FD");
-          const caption = safeText(photo.comment || photo._reportCaption || "Dokumentert bilde").slice(0, 80);
+          const caption = cleanPdfCaption(photo.comment || photo._reportCaption || photo.name, photo._reportCaption || "Dokumentert bilde").slice(0, 80);
           const image = await loadPdfImage(photo.url);
           const imageAreaX = x + 4;
           const imageAreaY = yy + 4;
@@ -5354,6 +5388,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             return d.toISOString().slice(0, 10);
           })();
           const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(selectedSystem.sintefUrl)}&size=180&margin=1`;
+          const qrFallbackUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=1&data=${encodeURIComponent(selectedSystem.sintefUrl)}`;
           const darkBlue = [12, 42, 82];
           const blue = [20, 86, 160];
           const lightBlue = [239, 246, 255];
@@ -5542,7 +5577,17 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawInfoCard(margin, cardTop + 78, contentWidth, 22, "Godkjent membransystem", `${selectedSystem.product} · ${selectedSystem.sintefApproval}`);
 
           const qrY = cardTop + 108;
-          await addImageFit(qrUrl, margin + 2, qrY, 34, 34);
+          const qrDrawn = await addImageFit(qrUrl, margin + 2, qrY, 34, 34) || await addImageFit(qrFallbackUrl, margin + 2, qrY, 34, 34);
+          if (!qrDrawn) {
+            doc.setDrawColor(...border);
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(margin + 2, qrY, 34, 34, 2.5, 2.5, "FD");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7);
+            doc.setTextColor(...blue);
+            doc.text("QR", margin + 19, qrY + 15, { align: "center" });
+            doc.text("ikke lastet", margin + 19, qrY + 22, { align: "center" });
+          }
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8);
           doc.setTextColor(51, 65, 85);
@@ -5619,7 +5664,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ["Org.nr.", company.orgNumber || ""],
             ["Dato", issuedDateText],
             ["Kontaktperson", project.responsible || user.name || authUser?.email || ""],
-            ["Telefon", company.phone || ""],
+            ["Telefon", companyPhoneForReport || ""],
             ["E-post", company.email || ""]
           ];
           doc.setDrawColor(...border);
@@ -5669,7 +5714,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ["Firma", name || company.companyName || "Expo ProffDok"],
           ["Adresse", company.address],
           ["Org.nr", company.orgNumber],
-          ["Telefon", company.phone],
+          ["Telefon", companyPhoneForReport],
           ["E-post", company.email],
           ["Nettside", company.website]
         ]);
@@ -5739,11 +5784,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         addSectionTitle("Fag, deler og utstyr");
         if (!(inst || []).length) addParagraph("Ingen fag-/utstyrsposter er lagt til.");
         for (const item of inst || []) {
-          addSubTitle(item.category || "Fag/utstyr");
+          const sectionTitle = item.category || "Fag/utstyr";
+          addSubTitle(sectionTitle);
           addParagraph([item.name, item.qty, item.supplier, item.desc].filter(Boolean).join(" · "));
           addLink("Åpne FDV/datablad", item.fdvUrl);
-          for (const photo of item.photos || []) {
-            await addImageFromUrl(photo.url, photo.name || "");
+          const installPhotos = (item.photos || []).filter((photo) => hasValue(photo?.url));
+          if (installPhotos.length) {
+            const galleryTitle = [sectionTitle, item.name || item.supplier || "bilder"].filter(Boolean).join(" – ");
+            await addImageGalleryCategory(galleryTitle, installPhotos.map((photo, index) => ({ ...photo, _reportCaption: `${galleryTitle} – bilde ${index + 1}` })));
           }
           addDivider();
         }
