@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.4: Trygg bildeopplasting, stabil input/accordion og bildemerknad om sjekkpunktbilder.
 // FASE 11D.3: Ryddigere visning av ventende firmainvitasjoner under Firma-fanen.
 // FASE 11D.2: Brukervilkår i Hjelp, egen akseptstatus og systemadmin-oversikt.
 // FASE 11D.1: Obligatoriske brukervilkår/personvern ved første innlogging, med versjonsstyrt aksept.
@@ -1034,6 +1035,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     notes: "",
     projectDescription: "",
     projectInfoIncludeInReport: false,
+    checklistPhotosNote: false,
     fall: "",
     fallDusj: "",
     fallUtenfor: "",
@@ -1102,6 +1104,19 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   function App() {
     (0, import_react.useEffect)(() => {
       ensureExpoProffDokAppBranding();
+    }, []);
+    (0, import_react.useEffect)(() => {
+      const preventFileDropNavigation = (event) => {
+        const hasFiles = Array.from(event?.dataTransfer?.types || []).includes("Files");
+        if (!hasFiles) return;
+        event.preventDefault();
+      };
+      window.addEventListener("dragover", preventFileDropNavigation);
+      window.addEventListener("drop", preventFileDropNavigation);
+      return () => {
+        window.removeEventListener("dragover", preventFileDropNavigation);
+        window.removeEventListener("drop", preventFileDropNavigation);
+      };
     }, []);
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
     const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
@@ -2562,7 +2577,7 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
     }, [authUser?.id, profile?.approved, profile?.company_name, profile?.company_role, profile?.system_role]);
 
     const createNewProject = () => {
-      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
       setProject(emptyProject());
       setChecked({});
@@ -5721,6 +5736,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       });
       setTimeout(() => autoSavePhotosToCloud(nextPhotosSnapshot), 120);
     };
+    const stopFileDragNavigation = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    const handlePhotoTileDrop = (cat, event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const droppedFiles = event?.dataTransfer?.files;
+      if (droppedFiles && droppedFiles.length) addPhoto(cat, droppedFiles);
+    };
     const autoSaveChecklistToCloud = async (nextChecklist) => {
       if (!authUser || !projectId || isReadOnly) return;
       setChecklistSaveStatus("Lagrer sjekkliste …");
@@ -6062,14 +6087,25 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         tab === "overflater" && renderOverflaterOgInnredning(),
           tab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bildedokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
             photos.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen bilder er lagt til ennå. Start gjerne med Før arbeid, Underlag og Ferdig resultat for en ryddig rapport." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "item", style: { display: "flex", alignItems: "flex-start", gap: "10px", cursor: isProjectLocked ? "not-allowed" : "pointer" }, onClick: (e) => e.stopPropagation(), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.checklistPhotosNote, disabled: isProjectLocked, onClick: (e) => e.stopPropagation(), onChange: (e) => {
+                if (!canEditProject()) return;
+                setProject({ ...project, checklistPhotosNote: e.target.checked });
+              }, style: { width: "20px", height: "20px", marginTop: "2px" } }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Flere bilder ligger under sjekkpunkt i sjekkliste" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "note", children: "Bruk denne når bildene hovedsakelig er dokumentert direkte på kontrollpunktene." })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards imageUploadTiles", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", onDragOver: stopFileDragNavigation, onDragEnter: stopFileDragNavigation, onDrop: (e) => handlePhotoTileDrop(c, e), children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 16 }),
                 " ",
                 c
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde eller velg fra galleri" }),
-             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, disabled: isProjectLocked, onChange: (e) => addPhoto(c, e.target.files) })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde, velg fra galleri eller dra bilde hit" }),
+             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, disabled: isProjectLocked, onClick: (e) => e.stopPropagation(), onChange: (e) => addPhoto(c, e.target.files) })
             ] }, c)) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
           ] }),
@@ -7796,14 +7832,25 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         }) }),
         tab === "overflater" && renderOverflaterOgInnredning(),
         tab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bildedokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards imageUploadTiles", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "item", style: { display: "flex", alignItems: "flex-start", gap: "10px", cursor: isProjectLocked ? "not-allowed" : "pointer" }, onClick: (e) => e.stopPropagation(), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.checklistPhotosNote, disabled: isProjectLocked, onClick: (e) => e.stopPropagation(), onChange: (e) => {
+              if (!canEditProject()) return;
+              setProject({ ...project, checklistPhotosNote: e.target.checked });
+            }, style: { width: "20px", height: "20px", marginTop: "2px" } }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Flere bilder ligger under sjekkpunkt i sjekkliste" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "note", children: "Bruk denne når bildene hovedsakelig er dokumentert direkte på kontrollpunktene, slik at Bilder-fanen ikke må duplisere alt." })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards imageUploadTiles", children: imageCats.map((c) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "tile", onDragOver: stopFileDragNavigation, onDragEnter: stopFileDragNavigation, onDrop: (e) => handlePhotoTileDrop(c, e), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 16 }),
               " ",
               c
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde eller velg fra galleri" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addPhoto(c, e.target.files) })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde, velg fra galleri eller dra bilde hit" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, disabled: isProjectLocked, onClick: (e) => e.stopPropagation(), onChange: (e) => addPhoto(c, e.target.files) })
           ] }, c)) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: photoSaveStatus || "Bilder autolagres ved opplasting når prosjektet er lagret i skyen." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
@@ -9072,30 +9119,33 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     ] });
   }
 
+  function stopInteractivePropagation(event) {
+    event.stopPropagation();
+  }
   function Input({ label, value, onChange, type = "text", onKeyDown, autoComplete, disabled = false }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { onClick: stopInteractivePropagation, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type, value, autoComplete, onKeyDown, disabled, onChange: (e) => !disabled && onChange(e.target.value) })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type, value, autoComplete, onKeyDown, disabled, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => !disabled && onChange(e.target.value) })
     ] });
   }
   function Textarea({ label, value, onChange }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { onClick: stopInteractivePropagation, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { value, onChange: (e) => onChange(e.target.value) })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { value, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => onChange(e.target.value) })
     ] });
   }
   function Select({ label, value, onChange, options, optionLabels = {} }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { onClick: stopInteractivePropagation, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value, onChange: (e) => onChange(e.target.value), children: options.map((o) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: o, children: optionLabels[o] || o }, o)) })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => onChange(e.target.value), children: options.map((o) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: o, children: optionLabels[o] || o }, o)) })
     ] });
   }
   function PhotoGrid({ photos, setPhotos }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos", children: photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, draggable: false }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.cat }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.created }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { placeholder: "Kommentar", value: p.comment, onChange: (e) => setPhotos(photos.map((x) => x.id === p.id ? { ...x, comment: e.target.value } : x)) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { placeholder: "Kommentar", value: p.comment, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => setPhotos(photos.map((x) => x.id === p.id ? { ...x, comment: e.target.value } : x)) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { className: "secondary", onClick: () => setPhotos(photos.filter((x) => x.id !== p.id)), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Trash2, { size: 16 }),
         " Fjern"
