@@ -8094,7 +8094,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar / merknader fra sluttbefaring", value: overtagelse.kommentar || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, kommentar: v }) }),
             warranty?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: warranty?.termsAccepted ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fde68a", background: "#fffbeb" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: `📑 Garantivilkår ${warrantyYears} år` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: `📑 Garantivilkår ${getWarrantyYears(warranty)} år` }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Garantivilkår aksepteres automatisk når kunden signerer overtagelsen og prosjektet fullføres. Kunden trenger derfor ikke signere eller krysse av et eget sted." }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Mottaker", value: warranty?.termsReceiptName || overtagelse.signKunde || project.customer || "Kunde", disabled: true, onChange: () => {} }),
