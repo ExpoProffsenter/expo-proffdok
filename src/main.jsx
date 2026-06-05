@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.2: Brukervilkår i Hjelp, egen akseptstatus og systemadmin-oversikt.
 // FASE 11D.1: Obligatoriske brukervilkår/personvern ved første innlogging, med versjonsstyrt aksept.
 // FASE 11C.8: Ren startside ved innlogging/utlogging. Systemadmin starter ikke i gammel support-/adminvisning.
 // FASE 11C.7: Supportmodus viser prosjekter direkte under valgt firma (accordion).
@@ -1140,11 +1141,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [profile, setProfile] = (0, import_react.useState)(null);
     const [profileLoading, setProfileLoading] = (0, import_react.useState)(false);
     const [termsAccepted, setTermsAccepted] = (0, import_react.useState)(false);
+    const [termsAcceptanceRecord, setTermsAcceptanceRecord] = (0, import_react.useState)(null);
     const [termsLoading, setTermsLoading] = (0, import_react.useState)(false);
     const [termsAccepting, setTermsAccepting] = (0, import_react.useState)(false);
     const [termsError, setTermsError] = (0, import_react.useState)("");
     const [termsReadConfirmed, setTermsReadConfirmed] = (0, import_react.useState)(false);
     const [adminUsers, setAdminUsers] = (0, import_react.useState)([]);
+    const [adminTermsAcceptances, setAdminTermsAcceptances] = (0, import_react.useState)([]);
     const [adminUserFilter, setAdminUserFilter] = (0, import_react.useState)("pending");
     const [adminUserSearch, setAdminUserSearch] = (0, import_react.useState)("");
     const [adminUserCompanyFilter, setAdminUserCompanyFilter] = (0, import_react.useState)("");
@@ -1401,6 +1404,24 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         return text.includes(search);
       });
     }, [adminUsers, adminUserFilter, adminUserSearch, adminUserCompanyFilter]);
+    const adminTermsAcceptanceByUser = (0, import_react.useMemo)(() => {
+      const map = {};
+      (adminTermsAcceptances || []).forEach((row) => {
+        if (!row?.user_id) return;
+        const current = map[row.user_id];
+        if (!current || String(row.accepted_at || "") > String(current.accepted_at || "")) map[row.user_id] = row;
+      });
+      return map;
+    }, [adminTermsAcceptances]);
+    const termsAcceptedCount = (0, import_react.useMemo)(() => Object.keys(adminTermsAcceptanceByUser || {}).length, [adminTermsAcceptanceByUser]);
+    const formatTermsAcceptedAt = (value = "") => {
+      if (!value) return "";
+      try {
+        return new Date(value).toLocaleString("no-NO", { dateStyle: "short", timeStyle: "short" });
+      } catch {
+        return value;
+      }
+    };
     const hasActiveProjectWorkspace = !!projectId || !!mobileCreatingProject;
     const name = company.companyName || "Expo Proffsenter";
     const urlParams = new URLSearchParams(window.location.search);
@@ -2387,7 +2408,7 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
       try {
         const { data, error } = await supabase
           .from("user_terms_acceptance")
-          .select("id,version,accepted_at")
+          .select("id,user_id,email,version,accepted_at,user_agent")
           .eq("user_id", userId)
           .eq("version", EXPO_PROFFDOK_TERMS_VERSION)
           .maybeSingle();
@@ -2399,10 +2420,12 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
         }
         const accepted = !!data;
         setTermsAccepted(accepted);
+        setTermsAcceptanceRecord(data || null);
         return accepted;
       } catch (error) {
         console.error("Kunne ikke kontrollere brukervilkår:", error);
         setTermsAccepted(false);
+        setTermsAcceptanceRecord(null);
         setTermsError("Kunne ikke kontrollere brukervilkår. Prøv å laste siden på nytt.");
         return false;
       } finally {
@@ -2415,19 +2438,22 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
       setTermsAccepting(true);
       setTermsError("");
       try {
-        const { error } = await supabase.from("user_terms_acceptance").upsert({
+        const acceptedAt = (/* @__PURE__ */ new Date()).toISOString();
+        const acceptancePayload = {
           user_id: authUser.id,
           email: authUser.email || profile?.email || "",
           version: EXPO_PROFFDOK_TERMS_VERSION,
-          accepted_at: (/* @__PURE__ */ new Date()).toISOString(),
+          accepted_at: acceptedAt,
           user_agent: typeof navigator !== "undefined" ? navigator.userAgent : ""
-        }, { onConflict: "user_id,version" });
+        };
+        const { error } = await supabase.from("user_terms_acceptance").upsert(acceptancePayload, { onConflict: "user_id,version" });
         if (error) {
           console.error("Kunne ikke lagre godkjenning av vilkår:", error);
           setTermsError("Kunne ikke lagre godkjenning. Prøv igjen eller kontakt systemadministrator.");
           return;
         }
         setTermsAccepted(true);
+        setTermsAcceptanceRecord(acceptancePayload);
         setTermsReadConfirmed(false);
         resetToCleanStartPage();
         if (authUser && profile?.approved) await loadProjects(authUser);
@@ -2442,10 +2468,12 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
       setAuthUser(sessionUser);
       resetToCleanStartPage();
       setTermsAccepted(false);
+      setTermsAcceptanceRecord(null);
       setTermsReadConfirmed(false);
       setTermsError("");
       if (!sessionUser) {
         setProjects([]);
+        setAdminTermsAcceptances([]);
         setProfile(null);
         setProfileLoading(false);
         setTermsLoading(false);
@@ -3515,13 +3543,20 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
     const loadAdminUsers = async () => {
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
       setAdminLoading(true);
-      const { data, error } = await supabase.from("profiles").select("id,email,approved,deactivated,company_name,company_role,system_role,role,is_admin,created_at").order("created_at", { ascending: false });
+      const [{ data, error }, { data: termsData, error: termsFetchError }] = await Promise.all([
+        supabase.from("profiles").select("id,email,approved,deactivated,company_name,company_role,system_role,role,is_admin,created_at").order("created_at", { ascending: false }),
+        supabase.from("user_terms_acceptance").select("id,user_id,email,version,accepted_at").eq("version", EXPO_PROFFDOK_TERMS_VERSION).order("accepted_at", { ascending: false })
+      ]);
       setAdminLoading(false);
       if (error) {
         console.error(error);
         return alert("Kunne ikke hente brukere. Kontakt systemansvarlig hvis feilen vedvarer.");
       }
+      if (termsFetchError) {
+        console.warn("Kunne ikke hente brukervilkårstatus:", termsFetchError.message);
+      }
       setAdminUsers(data || []);
+      setAdminTermsAcceptances(termsFetchError ? [] : termsData || []);
     };
     const approveAdminUser = async (id) => {
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
@@ -8265,7 +8300,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }),
                 tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
                 tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
-                tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { userGuidePdfPath, adminGuidePdfPath, isAdmin: isAdminUser }),
+                tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { userGuidePdfPath, adminGuidePdfPath, isAdmin: isAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
@@ -8382,7 +8417,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Filtrer firma", value: adminUserCompanyFilter, options: registeredCompanyOptions, optionLabels: { "": "Alle firma" }, onChange: (v) => setAdminUserCompanyFilter(v) })
             ] }),
-            adminUsers.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: `${visibleAdminUsers.length} av ${adminUsers.length} brukere vises.` }),
+            adminUsers.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: `${visibleAdminUsers.length} av ${adminUsers.length} brukere vises. Brukervilkår v${EXPO_PROFFDOK_TERMS_VERSION}: ${termsAcceptedCount} godkjent.` }),
             adminUsers.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen brukere hentet enn\xE5. Trykk Oppdater brukerliste." }),
             adminUsers.length > 0 && visibleAdminUsers.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen brukere matcher valgt søk/filter." }),
             visibleAdminUsers.map((u) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
@@ -8392,6 +8427,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 u.system_role === "systemadmin" ? "Systemadmin \xB7 " : u.company_role ? `Rolle: ${u.company_role} \xB7 ` : "",
                 "Status: ",
                 u.deactivated ? "Deaktivert" : u.approved ? "Godkjent" : "Venter p\xE5 godkjenning"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "4px", color: adminTermsAcceptanceByUser[u.id] ? "#065f46" : "#9a3412", fontWeight: 800 }, children: [
+                "Brukervilkår v",
+                EXPO_PROFFDOK_TERMS_VERSION,
+                ": ",
+                adminTermsAcceptanceByUser[u.id] ? `Godkjent ${formatTermsAcceptedAt(adminTermsAcceptanceByUser[u.id].accepted_at)}` : "Ikke godkjent"
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px", marginTop: "10px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Firmarolle", value: u.company_role === "firmaadmin" ? "firmaadmin" : "ansatt", options: ["ansatt", "firmaadmin"], onChange: (v) => updateAdminUserCompanyRole(u, v) }),
@@ -8932,7 +8973,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     ] });
   }
 
-  function HelpCenter({ userGuidePdfPath: guidePath = userGuidePdfPath, adminGuidePdfPath: adminPath = adminGuidePdfPath, isAdmin = false }) {
+  function HelpCenter({ userGuidePdfPath: guidePath = userGuidePdfPath, adminGuidePdfPath: adminPath = adminGuidePdfPath, isAdmin = false, termsAccepted = false, termsAcceptanceRecord = null, authUser = null, formatTermsAcceptedAt = (value) => value || "" }) {
     const openPdf = (url) => {
       if (!url) return;
       window.open(url, "_blank", "noopener,noreferrer");
@@ -8947,6 +8988,28 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => openPdf(guidePath), children: "Åpne PDF" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: guidePath, download: true, style: { display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "10px 14px", borderRadius: "12px", border: "1px solid #cbd5e1", textDecoration: "none", fontWeight: 800, color: "#1456a0", background: "#fff" }, children: "Last ned" })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📄 Brukervilkår og personvern" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+              "Gjeldende versjon: ",
+              EXPO_PROFFDOK_TERMS_VERSION,
+              ". Brukeren må godkjenne disse ved første innlogging eller når vilkårene oppdateres."
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", style: { maxHeight: "280px", overflowY: "auto", background: "#f8fafc" }, children: expoProffDokTermsSections.map((section) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: "12px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: section.title }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "4px" }, children: section.text })
+            ] }, section.title)) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: termsAccepted ? "#ecfdf5" : "#fff7ed", borderColor: termsAccepted ? "#bbf7d0" : "#fed7aa" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: termsAccepted ? "✅ Godkjent av innlogget bruker" : "⚠️ Ikke godkjent i denne økten" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "6px" }, children: [
+                "Bruker: ",
+                authUser?.email || termsAcceptanceRecord?.email || "Ukjent",
+                " · Versjon: ",
+                termsAcceptanceRecord?.version || EXPO_PROFFDOK_TERMS_VERSION,
+                termsAcceptanceRecord?.accepted_at ? ` · Godkjent: ${formatTermsAcceptedAt(termsAcceptanceRecord.accepted_at)}` : ""
+              ] })
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppInstallGuide, {}),
