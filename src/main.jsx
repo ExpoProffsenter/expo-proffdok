@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.8.5 HOTFIX: Garantiutstedelse vises robust også når registry er lagret, men prosjektflagget mangler.
 // FASE 11D.8.4 HOTFIX: WC splittet i veggskål/sisterne/trykknapp med egen FDV og produktsertifikat + smart lokal kladd.
 // FASE 11D.8.2 HOTFIX: WC splittet i veggskål, sisterne og trykknapp med egne leverandørfelt uten SQL-endringer.
 // FASE 11D.8 RAPPORT-HOTFIX: Permanente vedlegg i PDF, bedre bildefallback/klikkbare filer og større rapporttekst.
@@ -1219,6 +1220,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [tilbud, setTilbud] = (0, import_react.useState)(emptyTilbud());
     const [overtagelse, setOvertagelse] = (0, import_react.useState)(emptyOvertagelse());
     const [warranty, setWarranty] = (0, import_react.useState)(emptyWarranty());
+    const [warrantyRegistryIssued, setWarrantyRegistryIssued] = (0, import_react.useState)(null);
     const [chatUploadFile, setChatUploadFile] = (0, import_react.useState)(null);
     const [customerChatUploadFile, setCustomerChatUploadFile] = (0, import_react.useState)(null);
     const [projectLog, setProjectLog] = (0, import_react.useState)(emptyProjectLog());
@@ -1738,7 +1740,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const issueWarranty = async () => {
       if (isProjectLocked) return alert("Prosjektet er låst og fungerer som arkiv. Garanti kan ikke utstedes eller endres etter låsing.");
       if (!warranty?.enabled) return alert("Aktiver garantien først.");
-      if (warranty?.issued && warranty?.guaranteeNumber) return alert(`Garantien er allerede utstedt med garantinummer ${warranty.guaranteeNumber}.`);
+      if ((warranty?.issued && warranty?.guaranteeNumber) || warrantyRegistryIssued?.guarantee_number) return alert(`Garantien er allerede utstedt med garantinummer ${warranty?.guaranteeNumber || warrantyRegistryIssued?.guarantee_number}.`);
       if (!warrantyReadiness.ready) return alert("Garantien kan ikke utstedes ennå. Se listen over mangler.");
       const selectedSystem = warrantyReadiness.selectedSystem;
       const issuedAt = (/* @__PURE__ */ new Date()).toISOString();
@@ -2728,6 +2730,50 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
         loadProductMasterCheckpoints(false);
       }
     }, [isReadOnly]);
+    (0, import_react.useEffect)(() => {
+      let cancelled = false;
+      const reconcileIssuedWarrantyFromRegistry = async () => {
+        if (!projectId || !warranty?.enabled) {
+          setWarrantyRegistryIssued(null);
+          return;
+        }
+        try {
+          const { data, error } = await supabase
+            .from("warranty_registry")
+            .select("guarantee_number,issued_at,valid_until,status,sopro_system,sintef_tg,warranty_period_years")
+            .eq("project_id", projectId)
+            .eq("status", "issued")
+            .order("issued_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (cancelled) return;
+          if (error) {
+            console.warn("Kunne ikke kontrollere garantiregister:", error.message);
+            return;
+          }
+          setWarrantyRegistryIssued(data || null);
+          if (data?.guarantee_number && !(warranty?.issued || warranty?.status === "issued" || hasValue(warranty?.guaranteeNumber))) {
+            setWarranty((prev) => ({
+              ...emptyWarranty(),
+              ...prev,
+              enabled: true,
+              issued: true,
+              status: "issued",
+              issuedAt: prev?.issuedAt || data.issued_at || new Date().toISOString(),
+              guaranteeNumber: prev?.guaranteeNumber || data.guarantee_number || "",
+              sintefApproval: prev?.sintefApproval || data.sintef_tg || "",
+              durationYears: Number(data.warranty_period_years || prev?.durationYears || WARRANTY_YEARS)
+            }));
+          }
+        } catch (error) {
+          if (!cancelled) console.warn("Kunne ikke kontrollere garantiregister:", error);
+        }
+      };
+      reconcileIssuedWarrantyFromRegistry();
+      return () => {
+        cancelled = true;
+      };
+    }, [projectId, warranty?.enabled, warranty?.issued, warranty?.status, warranty?.guaranteeNumber]);
     (0, import_react.useEffect)(() => {
       if (authUser && profile?.approved) {
         loadProjects(authUser);
@@ -5355,7 +5401,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         const addWarrantyCertificatePages = async () => {
           if (!warranty?.enabled || !warrantyReadiness?.selectedSystem) return;
           const selectedSystem = warrantyReadiness.selectedSystem;
-          const guaranteeNumber = warranty?.guaranteeNumber || "Tildeles ved utstedelse";
+          const guaranteeNumber = warranty?.guaranteeNumber || warrantyRegistryIssued?.guarantee_number || "Tildeles ved utstedelse";
           const overtagelseDate = overtagelse?.dato || project?.date || "";
           const issuedDate = warranty?.issuedAt ? new Date(warranty.issuedAt) : /* @__PURE__ */ new Date();
           const issuedDateText = warranty?.issued && warranty?.issuedAt ? issuedDate.toLocaleDateString("no-NO") : "Ikke utstedt";
@@ -6782,7 +6828,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: customerPortalWarrantyStatusText }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Garantistatus", value: customerPortalWarrantyIssued ? "Utstedt" : customerPortalWarrantyActive ? "Aktivert" : "Ikke aktivert" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Garantinummer", value: warranty?.guaranteeNumber || "Tildeles ved utstedelse" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Garantinummer", value: warranty?.guaranteeNumber || warrantyRegistryIssued?.guarantee_number || "Tildeles ved utstedelse" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "System", value: customerPortalWarrantySystem ? `${customerPortalWarrantySystem.product} – ${customerPortalWarrantySystem.sintefApproval}` : warranty?.sintefApproval || "Ikke valgt" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Garantivilkår", value: customerPortalWarrantyTermsAccepted ? "Akseptert ved signert overtagelse" : customerPortalWarrantyActive ? "Aksepteres ved overtagelse" : "Ikke aktuelt" })
             ] }),
@@ -9152,7 +9198,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     // FASE 11D.8.1 HOTFIX:
     // Noen eksisterende prosjekter kan ha garantinummer/status lagret, selv om issued-flagget ikke er satt.
     // Visningen skal derfor tolke garanti som utstedt når issued=true, status=issued eller garantinummer finnes.
-    const issued = !!warranty?.issued || warranty?.status === "issued" || hasValue(warranty?.guaranteeNumber);
+    const issued = !!warranty?.issued || warranty?.status === "issued" || hasValue(warranty?.guaranteeNumber) || !!warrantyRegistryIssued?.guarantee_number;
     const warrantyYears = getWarrantyYears(warranty);
     const warrantyValidUntil = makeWarrantyValidUntil(overtagelse?.dato || project?.date || "", warranty);
     const warrantyStatusText = issued ? (warrantyValidUntil && new Date(warrantyValidUntil) < /* @__PURE__ */ new Date() ? "Utgått" : "Gyldig") : readiness?.ready ? "Klar til utstedelse" : "Ikke utstedt";
@@ -9232,7 +9278,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           issued && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Garantinummer" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: warranty?.guaranteeNumber || "Ikke tildelt" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: warranty?.guaranteeNumber || warrantyRegistryIssued?.guarantee_number || "Ikke tildelt" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Status" }),
