@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 12.2 RAPPORTDESIGN: Rydder tegnsett i PDF-vedlegg og forbedrer produktkort i rapport/PDF. Kun rapportvisning, ingen endring i garanti/låsing/autolagring/database.
 // FASE 12.1 RAPPORTSTABILISERING: Rydder PDF/rapportvisning av vedlegg, dokumentfiler, sjekkpunktbilder, fag/utstyr-bilder, telefonfelt og QR uten å endre garanti/låsing/autolagring/database.
 // FASE 11D.9 RAPPORTSTABILISERING: Kun PDF/rapportvisning – bilder, vedlegg, telefonfelt, QR og forside. Ingen endring i lagring/garanti/logikk.
 // FASE 11D.8.6 NØD-HOTFIX: Reverterer ustabil registry-sjekk, beholder WC/FDV, og stopper lokal kladd-popup helt.
@@ -4687,7 +4688,20 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         const contentWidth = pageWidth - margin * 2;
         let y = 16;
 
-        const safeText = (value) => value === void 0 || value === null ? "" : String(value);
+        const cleanReportText = (value) => {
+          let text = value === void 0 || value === null ? "" : String(value);
+          try {
+            text = text.normalize("NFC");
+          } catch {}
+          // jsPDF standardfont støtter ikke enkelte emoji/symboler. Disse ble vist som Ø=ÜÄ i PDF.
+          text = text
+            .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+            .replace(/Ø=ÜÄ\s*/g, "")
+            .replace(/['\u0013]\s*/g, "")
+            .replace(/\s+/g, " ");
+          return text.trim();
+        };
+        const safeText = (value) => cleanReportText(value);
         const filenameSafe = (value) => safeText(value || "FDV-rapport").replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 80) || "FDV-rapport";
         const normalizePdfUrl = (value) => normalizeExternalUrl(value);
         const isLikelyRawFileName = (value = "") => /^image[a-f0-9-]{8,}\.(jpe?g|png|webp|heic|heif)$/i.test(safeText(value).trim()) || /^[a-f0-9-]{16,}\.(jpe?g|png|webp|heic|heif)$/i.test(safeText(value).trim());
@@ -4888,24 +4902,51 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           }
           visibleAttachments.forEach((file, index) => {
             const fileName = safeText(file?.name || `Vedlegg ${index + 1}`);
-            const fileMeta = [file?._sourceLabel || "Vedlegg", file?.by ? `Lastet opp av ${file.by}` : "", file?.created || ""].filter(Boolean).join(" · ");
+            const fileMeta = safeText([file?._sourceLabel || "Vedlegg", file?.by ? `Lastet opp av ${file.by}` : "", file?.created || ""].filter(Boolean).join(" · "));
             const fileUrl = storedFileUrl(file);
-            ensureSpace(20);
-            doc.setDrawColor(214, 226, 236);
+            const nameLines = doc.splitTextToSize(fileName, contentWidth - 22).slice(0, 2);
+            const metaLines = fileMeta ? doc.splitTextToSize(fileMeta, contentWidth - 22).slice(0, 2) : [];
+            const boxH = Math.max(24, 13 + nameLines.length * 4.2 + metaLines.length * 3.8 + 6);
+            ensureSpace(boxH + 5);
+            const boxY = y;
+            doc.setDrawColor(191, 219, 254);
             doc.setFillColor(248, 250, 252);
-            doc.roundedRect(margin, y, contentWidth, 16, 2.5, 2.5, "FD");
+            doc.roundedRect(margin, boxY, contentWidth, boxH, 3, 3, "FD");
+            doc.setFillColor(239, 246, 255);
+            doc.roundedRect(margin + 4, boxY + 4, 12, 12, 2.2, 2.2, "F");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7.8);
+            doc.setTextColor(20, 86, 160);
+            doc.text("PDF", margin + 7.2, boxY + 11.7);
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10.2);
             doc.setTextColor(15, 23, 42);
-            doc.text(doc.splitTextToSize(`📄 ${fileName}`, contentWidth - 10).slice(0, 1), margin + 5, y + 6);
-            if (fileMeta) {
+            doc.text(nameLines, margin + 20, boxY + 8.2);
+            if (metaLines.length) {
               doc.setFont("helvetica", "normal");
-              doc.setFontSize(7.8);
+              doc.setFontSize(7.6);
               doc.setTextColor(71, 85, 105);
-              doc.text(doc.splitTextToSize(fileMeta, contentWidth - 10).slice(0, 1), margin + 5, y + 11.2);
+              doc.text(metaLines, margin + 20, boxY + 8.2 + nameLines.length * 4.3);
             }
-            y += 19;
-            addLink(`Åpne ${fileName}`, fileUrl);
+            const linkY = boxY + boxH - 4.5;
+            if (fileUrl) {
+              const linkLabel = "Åpne dokument";
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(8.4);
+              doc.setTextColor(0, 84, 180);
+              if (typeof doc.textWithLink === "function") {
+                doc.textWithLink(linkLabel, margin + 20, linkY, { url: fileUrl });
+              } else {
+                doc.text(linkLabel, margin + 20, linkY);
+                doc.link(margin + 20, linkY - 3.5, 28, 4.5, { url: fileUrl });
+              }
+            } else {
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(7.6);
+              doc.setTextColor(153, 27, 27);
+              doc.text("Dokumentlenke mangler", margin + 20, linkY);
+            }
+            y += boxH + 5;
           });
         };
 
@@ -4969,66 +5010,82 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           });
           if (visibleEntries.length % 2 === 1) y += cardH + 5;
         };
+        const addProductCategoryHeader = (category, count = 0) => {
+          if (y > pageHeight - 52) {
+            doc.addPage();
+            y = 16;
+          } else {
+            y += 3;
+          }
+          ensureSpace(15);
+          doc.setDrawColor(191, 219, 254);
+          doc.setFillColor(239, 246, 255);
+          doc.roundedRect(margin, y, contentWidth, 11, 2.5, 2.5, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10.2);
+          doc.setTextColor(12, 42, 82);
+          doc.text(doc.splitTextToSize(safeText(category), contentWidth - 25).slice(0, 1), margin + 5, y + 7.2);
+          if (count) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.2);
+            doc.setTextColor(71, 85, 105);
+            doc.text(`${count} produkt${count === 1 ? "" : "er"}`, pageWidth - margin - 5, y + 7.2, { align: "right" });
+          }
+          y += 16;
+        };
         const addProductReportCard = (product) => {
           const productName = product.item || product.name || "Uten produktnavn";
-          const sectionName = product.section || "Annet produkt";
           const links = productReportDocumentOptions.filter((option) => shouldIncludeProductReportDoc(product, option));
           const shortDocLabel = (label = "") => {
             if (/produkt|leverand/i.test(label)) return "Produktside";
             if (/sikkerhet/i.test(label)) return "Sikkerhetsblad";
             return label;
           };
-          const colorLines = product.colorCode ? doc.splitTextToSize(`Fargekode: ${product.colorCode}`, contentWidth - 16) : [];
-          const commentLines = product.comment ? doc.splitTextToSize(`Kommentar: ${product.comment}`, contentWidth - 16) : [];
-          const nameLines = doc.splitTextToSize(safeText(productName), contentWidth - 16).slice(0, 2);
-          const docsRows = links.length ? links.length : 1;
-          const productNameToDocsGap = commentLines.length ? 2.0 : 5.0;
-          const boxH = Math.max(34, 24 + nameLines.length * 4.4 + colorLines.length * 3.8 + commentLines.length * 3.8 + productNameToDocsGap + docsRows * 6.8);
+          const nameLines = doc.splitTextToSize(safeText(productName), contentWidth - 18).slice(0, 2);
+          const detailLines = [];
+          if (product.colorCode) detailLines.push(...doc.splitTextToSize(`Fargekode: ${safeText(product.colorCode)}`, contentWidth - 18));
+          if (product.comment) detailLines.push(...doc.splitTextToSize(`Kommentar: ${safeText(product.comment)}`, contentWidth - 18));
+          const chipCount = links.length || 1;
+          const chipsPerRow = 3;
+          const chipRows = Math.ceil(chipCount / chipsPerRow);
+          const boxH = Math.max(28, 16 + nameLines.length * 4.7 + Math.min(detailLines.length, 3) * 3.8 + 3 + chipRows * 7.2);
           ensureSpace(boxH + 5);
 
+          const boxY = y;
           doc.setDrawColor(214, 226, 236);
           doc.setFillColor(255, 255, 255);
-          doc.roundedRect(margin, y, contentWidth, boxH, 3.2, 3.2, "FD");
-
+          doc.roundedRect(margin, boxY, contentWidth, boxH, 3.2, 3.2, "FD");
           doc.setFillColor(248, 250, 252);
-          doc.roundedRect(margin + 3, y + 3, contentWidth - 6, 9.5, 2.4, 2.4, "F");
+          doc.roundedRect(margin + 4, boxY + 4, 10, 10, 2.2, 2.2, "F");
           doc.setFont("helvetica", "bold");
           doc.setFontSize(7.2);
           doc.setTextColor(20, 86, 160);
-          doc.text(doc.splitTextToSize(safeText(sectionName), contentWidth - 12).slice(0, 1), margin + 6, y + 9.1);
+          doc.text("FDV", margin + 5.9, boxY + 10.7);
 
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(10.3);
+          doc.setFontSize(10.2);
           doc.setTextColor(15, 23, 42);
-          doc.text(nameLines, margin + 6, y + 18.2);
+          doc.text(nameLines, margin + 18, boxY + 8.3);
 
-          let yy = y + 18.2 + nameLines.length * 4.5 + productNameToDocsGap;
-          if (colorLines.length) {
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(7.2);
-            doc.setTextColor(15, 23, 42);
-            doc.text(colorLines, margin + 6, yy);
-            yy += colorLines.length * 3.8 + 1.2;
-          }
-          if (commentLines.length) {
+          let yy = boxY + 8.3 + nameLines.length * 4.7 + 1.5;
+          if (detailLines.length) {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.1);
+            doc.setFontSize(7.2);
             doc.setTextColor(71, 85, 105);
-            doc.text(commentLines, margin + 6, yy);
-            yy += commentLines.length * 3.8 + 1.5;
+            doc.text(detailLines.slice(0, 3), margin + 18, yy);
+            yy += Math.min(detailLines.length, 3) * 3.8 + 1.5;
           }
 
           if (links.length) {
-            const gap = 2.2;
-            const maxPerRow = 1;
-            const chipW = contentWidth - 12;
+            const gap = 2.3;
+            const chipW = (contentWidth - 18 - gap * (chipsPerRow - 1)) / chipsPerRow;
             links.forEach((option, index) => {
               const url = normalizePdfUrl(product?.[option.field]);
               if (!url) return;
-              const row = Math.floor(index / maxPerRow);
-              const col = index % maxPerRow;
-              const x = margin + 6 + col * (chipW + gap);
-              const chipY = yy + row * 6.8;
+              const row = Math.floor(index / chipsPerRow);
+              const col = index % chipsPerRow;
+              const x = margin + 18 + col * (chipW + gap);
+              const chipY = yy + row * 7.2;
               const label = shortDocLabel(option.label);
               doc.setDrawColor(191, 219, 254);
               doc.setFillColor(239, 246, 255);
@@ -5037,17 +5094,17 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
               doc.setFontSize(6.8);
               doc.setTextColor(0, 84, 180);
               if (typeof doc.textWithLink === "function") {
-                doc.textWithLink(label, x + 3.0, chipY, { url });
+                doc.textWithLink(label, x + 2.4, chipY, { url });
               } else {
-                doc.text(label, x + 3.0, chipY);
-                doc.link(x + 3.0, chipY - 3.8, Math.min(chipW - 6, label.length * 1.55), 4.5, { url });
+                doc.text(label, x + 2.4, chipY);
+                doc.link(x + 2.4, chipY - 3.8, Math.min(chipW - 5, label.length * 1.55), 4.5, { url });
               }
             });
           } else {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.1);
+            doc.setFontSize(7.2);
             doc.setTextColor(100, 116, 139);
-            doc.text("Ingen produktdokumenter valgt for visning i rapport.", margin + 6, yy);
+            doc.text("Ingen produktdokumenter valgt for visning i rapport.", margin + 18, yy);
           }
 
           y += boxH + 4.5;
@@ -5814,7 +5871,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         if (!allProducts.length) {
           addParagraph("Ingen produkter er valgt.");
         }
-        allProducts.forEach((p) => addProductReportCard(p));
+        const productsBySection = allProducts.reduce((acc, product) => {
+          const section = product.section || "Andre produkter";
+          acc[section] = [...acc[section] || [], product];
+          return acc;
+        }, {});
+        Object.entries(productsBySection).forEach(([section, products]) => {
+          addProductCategoryHeader(section, products.length);
+          products.forEach((p) => addProductReportCard(p));
+        });
         Object.entries(other || {}).filter(([, v]) => v).forEach(([k, v]) => addParagraph(`Tidligere registrert annet produkt under ${k}: ${v}`));
 
         const bathroomEquipmentGroupsForPdf = buildBathroomEquipmentReportGroups(surf, bathroomEquipment);
