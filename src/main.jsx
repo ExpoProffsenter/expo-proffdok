@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.8.2 HOTFIX: WC splittet i veggskål, sisterne og trykknapp med egne leverandørfelt uten SQL-endringer.
 // FASE 11D.8 RAPPORT-HOTFIX: Permanente vedlegg i PDF, bedre bildefallback/klikkbare filer og større rapporttekst.
 // FASE 11D.7.8 HOTFIX: Garanti kan utstedes før komplett PDF er generert, slik at PDF-en inkluderer garantibeviset.
 // FASE 11D.7.7 STABILISERING: Overtagelse leses fra signaturer, Vis det som gjenstår hopper riktig, og garantipunkter krever status + bilde eller kommentar.
@@ -504,7 +505,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     return Array.isArray(value) ? value : [];
   };
   var equipmentCustomItemHasContent = (item = {}) => ["product", "supplier", "fdvUrl", "certificateUrl", "comment"].some((field) => hasValue(item?.[field]));
-  var wcHasContent = (equipment = {}) => ["wcType", "wcProduct", "wcSupplier", "wcCistern", "wcFlushPlate", "wcFdvUrl", "wcCertificateUrl", "wcComment"].some((field) => hasValue(equipment?.[field]));
+  var wcHasContent = (equipment = {}) => ["wcType", "wcProduct", "wcSupplier", "wcCistern", "wcCisternSupplier", "wcFlushPlate", "wcFlushPlateSupplier", "wcFdvUrl", "wcCertificateUrl", "wcComment"].some((field) => hasValue(equipment?.[field]));
   var buildBathroomEquipmentReportGroups = (surf = {}, bathroomEquipment = {}) => {
     const groups = [];
     const pushGroup = (title) => {
@@ -549,10 +550,15 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     if (wcHasContent(bathroomEquipment)) {
       const type = bathroomEquipment.wcType || "";
       const entries = [
-        ["Type", type],
-        ["Produkt / modell", bathroomEquipment.wcProduct],
-        ["Leverandør", bathroomEquipment.wcSupplier],
-        ...type === "Vegghengt" ? [["Sisterne", bathroomEquipment.wcCistern], ["Betjeningsplate / trykknapp", bathroomEquipment.wcFlushPlate]] : [],
+        ["Type WC", type],
+        [type === "Vegghengt" ? "Veggskål / WC-produkt" : "WC-produkt / modell", bathroomEquipment.wcProduct],
+        [type === "Vegghengt" ? "Leverandør veggskål" : "Leverandør", bathroomEquipment.wcSupplier],
+        ...type === "Vegghengt" ? [
+          ["Sisternemodell", bathroomEquipment.wcCistern],
+          ["Leverandør sisterne", bathroomEquipment.wcCisternSupplier],
+          ["Trykknappmodell", bathroomEquipment.wcFlushPlate],
+          ["Leverandør trykknapp", bathroomEquipment.wcFlushPlateSupplier]
+        ] : [],
         ["Kommentar", bathroomEquipment.wcComment]
       ].filter(([, value]) => hasValue(value));
       const links = [
@@ -6142,10 +6148,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "WC" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type WC", value: bathroomEquipment.wcType || "", onChange: (v) => updateBathroomEquipment({ wcType: v }), options: ["", "Vegghengt", "Gulvstående"], optionLabels: { "": "Velg type" } }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "WC-produkt / modell", value: bathroomEquipment.wcProduct || "", onChange: (v) => updateBathroomEquipment({ wcProduct: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverandør", value: bathroomEquipment.wcSupplier || "", onChange: (v) => updateBathroomEquipment({ wcSupplier: v }) }),
-          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sisterne", value: bathroomEquipment.wcCistern || "", onChange: (v) => updateBathroomEquipment({ wcCistern: v }) }),
-          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Betjeningsplate / trykknapp", value: bathroomEquipment.wcFlushPlate || "", onChange: (v) => updateBathroomEquipment({ wcFlushPlate: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: bathroomEquipment.wcType === "Vegghengt" ? "Veggskål / WC-produkt" : "WC-produkt / modell", value: bathroomEquipment.wcProduct || "", onChange: (v) => updateBathroomEquipment({ wcProduct: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: bathroomEquipment.wcType === "Vegghengt" ? "Leverandør veggskål" : "Leverandør", value: bathroomEquipment.wcSupplier || "", onChange: (v) => updateBathroomEquipment({ wcSupplier: v }) }),
+          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sisternemodell", value: bathroomEquipment.wcCistern || "", onChange: (v) => updateBathroomEquipment({ wcCistern: v }) }),
+          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverandør sisterne", value: bathroomEquipment.wcCisternSupplier || "", onChange: (v) => updateBathroomEquipment({ wcCisternSupplier: v }) }),
+          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Trykknappmodell", value: bathroomEquipment.wcFlushPlate || "", onChange: (v) => updateBathroomEquipment({ wcFlushPlate: v }) }),
+          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverandør trykknapp", value: bathroomEquipment.wcFlushPlateSupplier || "", onChange: (v) => updateBathroomEquipment({ wcFlushPlateSupplier: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link", value: bathroomEquipment.wcFdvUrl || "", onChange: (v) => updateBathroomEquipment({ wcFdvUrl: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktsertifikat-link", value: bathroomEquipment.wcCertificateUrl || "", onChange: (v) => updateBathroomEquipment({ wcCertificateUrl: v }) })
         ] }),
