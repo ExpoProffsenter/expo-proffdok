@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.1: Obligatoriske brukervilkår/personvern ved første innlogging, med versjonsstyrt aksept.
 // FASE 11C.8: Ren startside ved innlogging/utlogging. Systemadmin starter ikke i gammel support-/adminvisning.
 // FASE 11C.7: Supportmodus viser prosjekter direkte under valgt firma (accordion).
 // FASE 11C.6: Systemadmin brukersøk, statusfilter og firmafilter for skalerbar brukeradministrasjon.
@@ -682,6 +683,46 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     "Forhold som kan omfattes av garantien skal meldes til garantigiver uten ugrunnet opphold etter at forholdet er oppdaget. Reklamasjonen bør inneholde en beskrivelse av forholdet, bilder og relevant dokumentasjon.",
     "Garantibeviset er kun gyldig sammen med prosjektets komplette dokumentasjon, inkludert bilder, sjekklister, produktdokumentasjon og signert overtakelse. Det anbefales at boligeier oppbevarer rapporten som en del av boligens FDV-dokumentasjon."
   ];
+  var EXPO_PROFFDOK_TERMS_VERSION = "1.0";
+  var EXPO_PROFFDOK_TERMS_TITLE = `Brukervilkår og personvern – versjon ${EXPO_PROFFDOK_TERMS_VERSION}`;
+  var expoProffDokTermsSections = [
+    {
+      title: "1. Bruk av tjenesten",
+      text: "Expo ProffDok er et skybasert dokumentasjons- og kvalitetssystem for prosjekter, bilder, sjekklister, FDV, produktdokumentasjon, overtagelse, garanti og kommunikasjon. Tjenesten skal brukes på en forsvarlig og lovlig måte."
+    },
+    {
+      title: "2. Brukerens ansvar",
+      text: "Brukeren er ansvarlig for at opplysninger, bilder, dokumenter og personopplysninger som registreres i systemet er korrekte, relevante og lovlige å lagre og dele. Brukeren er også ansvarlig for tilgang som gis til kunder, ansatte og underleverandører."
+    },
+    {
+      title: "3. Prosjektdokumentasjon og lokal lagring",
+      text: "Brukeren må selv laste ned og lagre ferdige rapporter, FDV-dokumentasjon, garantibevis og øvrige prosjektdokumenter på egen PC, server eller annet sikkert arkiv. Expo ProffDok er et arbeids- og dokumentasjonsverktøy, men erstatter ikke brukerens eget arkivansvar."
+    },
+    {
+      title: "4. Ingen garanti for permanent lagring",
+      text: "Expo ProffDok arbeider for stabil drift og sikker lagring, men gir ingen garanti for ubegrenset eller permanent oppbevaring av prosjektdata, bilder, rapporter eller dokumenter. Data kan gå tapt som følge av tekniske feil, feil bruk, tredjepartsleverandører, endringer i tjenesten eller forhold utenfor vår kontroll."
+    },
+    {
+      title: "5. Personvern og GDPR",
+      text: "Tjenesten behandler personopplysninger som navn, e-postadresse, telefonnummer, firmaopplysninger, prosjektinformasjon, bilder og kommunikasjon i den grad dette er nødvendig for å levere tjenesten. Brukeren er ansvarlig for at personopplysninger som legges inn har lovlig behandlingsgrunnlag, og at kunder, ansatte og andre berørte er informert der dette er nødvendig."
+    },
+    {
+      title: "6. Sikkerhet og tilgang",
+      text: "Brukeren skal holde innloggingsinformasjon konfidensiell og sørge for at kun personer med tjenstlig behov får tilgang til prosjekter. Delingslenker og kundeportaltilganger skal brukes med forsiktighet."
+    },
+    {
+      title: "7. Garanti og ansvar",
+      text: "Eventuelle garantibevis som genereres i Expo ProffDok er dokumentasjon av arbeid og valgt garantiløsning. Selve garantiforpliktelsen ligger hos den utførende virksomheten som utsteder garantien, ikke hos Expo ProffDok som teknisk plattform."
+    },
+    {
+      title: "8. Tjenestens tilgjengelighet",
+      text: "Tjenesten leveres slik den til enhver tid foreligger. Det kan forekomme nedetid, vedlikehold, feilretting, endringer eller avvikling av funksjoner."
+    },
+    {
+      title: "9. Aksept av vilkår",
+      text: "Ved å godkjenne vilkårene bekrefter brukeren å ha lest og forstått brukervilkår og personvernpunkter, inkludert plikten til å laste ned og lagre egne rapporter og dokumenter lokalt."
+    }
+  ];
   var randomWarrantyCode = (length = 6) => {
     const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     const values = new Uint32Array(length);
@@ -1098,6 +1139,11 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [authLoading, setAuthLoading] = (0, import_react.useState)(true);
     const [profile, setProfile] = (0, import_react.useState)(null);
     const [profileLoading, setProfileLoading] = (0, import_react.useState)(false);
+    const [termsAccepted, setTermsAccepted] = (0, import_react.useState)(false);
+    const [termsLoading, setTermsLoading] = (0, import_react.useState)(false);
+    const [termsAccepting, setTermsAccepting] = (0, import_react.useState)(false);
+    const [termsError, setTermsError] = (0, import_react.useState)("");
+    const [termsReadConfirmed, setTermsReadConfirmed] = (0, import_react.useState)(false);
     const [adminUsers, setAdminUsers] = (0, import_react.useState)([]);
     const [adminUserFilter, setAdminUserFilter] = (0, import_react.useState)("pending");
     const [adminUserSearch, setAdminUserSearch] = (0, import_react.useState)("");
@@ -2330,17 +2376,88 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
         console.warn("Kunne ikke rydde siste aktive fane:", error);
       }
     };
+    const loadTermsAcceptance = async (userId) => {
+      if (!userId) {
+        setTermsAccepted(false);
+        setTermsLoading(false);
+        return false;
+      }
+      setTermsLoading(true);
+      setTermsError("");
+      try {
+        const { data, error } = await supabase
+          .from("user_terms_acceptance")
+          .select("id,version,accepted_at")
+          .eq("user_id", userId)
+          .eq("version", EXPO_PROFFDOK_TERMS_VERSION)
+          .maybeSingle();
+        if (error) {
+          console.error("Kunne ikke hente brukervilkår:", error);
+          setTermsAccepted(false);
+          setTermsError("Brukervilkår er ikke klargjort. Kontakt systemadministrator eller kjør SQL-steget for FASE 11D.1.");
+          return false;
+        }
+        const accepted = !!data;
+        setTermsAccepted(accepted);
+        return accepted;
+      } catch (error) {
+        console.error("Kunne ikke kontrollere brukervilkår:", error);
+        setTermsAccepted(false);
+        setTermsError("Kunne ikke kontrollere brukervilkår. Prøv å laste siden på nytt.");
+        return false;
+      } finally {
+        setTermsLoading(false);
+      }
+    };
+    const acceptCurrentTerms = async () => {
+      if (!authUser?.id) return alert("Du må være logget inn for å godkjenne vilkårene.");
+      if (!termsReadConfirmed) return alert("Du må bekrefte at du har lest og forstått vilkårene før du kan fortsette.");
+      setTermsAccepting(true);
+      setTermsError("");
+      try {
+        const { error } = await supabase.from("user_terms_acceptance").upsert({
+          user_id: authUser.id,
+          email: authUser.email || profile?.email || "",
+          version: EXPO_PROFFDOK_TERMS_VERSION,
+          accepted_at: (/* @__PURE__ */ new Date()).toISOString(),
+          user_agent: typeof navigator !== "undefined" ? navigator.userAgent : ""
+        }, { onConflict: "user_id,version" });
+        if (error) {
+          console.error("Kunne ikke lagre godkjenning av vilkår:", error);
+          setTermsError("Kunne ikke lagre godkjenning. Prøv igjen eller kontakt systemadministrator.");
+          return;
+        }
+        setTermsAccepted(true);
+        setTermsReadConfirmed(false);
+        resetToCleanStartPage();
+        if (authUser && profile?.approved) await loadProjects(authUser);
+      } catch (error) {
+        console.error("Kunne ikke lagre godkjenning av vilkår:", error);
+        setTermsError("Kunne ikke lagre godkjenning. Prøv igjen eller kontakt systemadministrator.");
+      } finally {
+        setTermsAccepting(false);
+      }
+    };
     const handleAuthUser = async (sessionUser) => {
       setAuthUser(sessionUser);
       resetToCleanStartPage();
+      setTermsAccepted(false);
+      setTermsReadConfirmed(false);
+      setTermsError("");
       if (!sessionUser) {
         setProjects([]);
         setProfile(null);
         setProfileLoading(false);
+        setTermsLoading(false);
         return;
       }
       const row = await ensureProfile(sessionUser);
-      if (row?.approved) loadProjects(sessionUser);
+      if (row?.approved && !row?.deactivated) {
+        await loadTermsAcceptance(sessionUser.id);
+        loadProjects(sessionUser);
+      } else {
+        setTermsLoading(false);
+      }
     };
     (0, import_react.useEffect)(() => {
       const params = new URLSearchParams(window.location.search);
@@ -4112,6 +4229,11 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       setMobileCreatingProject(false);
       setProjects([]);
       setProfile(null);
+      setTermsAccepted(false);
+      setTermsLoading(false);
+      setTermsAccepting(false);
+      setTermsError("");
+      setTermsReadConfirmed(false);
       resetToCleanStartPage();
       window.history.replaceState({}, document.title, window.location.pathname);
     };
@@ -6065,6 +6187,51 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProfile, children: "Lagre firmaprofil" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
           ] })
+        ] }) })
+      ] });
+    }
+    if (!isReadOnly && authUser && profile?.approved && !profile?.deactivated && termsLoading) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Expo ProffDok" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Kontrollerer brukervilkår" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Laster brukervilkår", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kontrollerer om brukeren allerede har godkjent gjeldende vilkår." }) }) })
+      ] });
+    }
+    if (!isReadOnly && authUser && profile?.approved && !profile?.deactivated && !termsAccepted) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Expo ProffDok" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Brukervilkår må godkjennes" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: EXPO_PROFFDOK_TERMS_TITLE, icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Før du kan bruke Expo ProffDok må du godkjenne brukervilkår og personvernpunkter. Dette gjelder også eksisterende brukere ved første innlogging etter innføring av nye vilkår." }),
+          termsError && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", style: { background: "#fef2f2", borderColor: "#fecaca" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#991b1b", fontWeight: 800 }, children: termsError }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", style: { maxHeight: "48vh", overflowY: "auto", background: "#f8fafc" }, children: expoProffDokTermsSections.map((section) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: "14px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginBottom: "6px" }, children: section.title }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { margin: 0 }, children: section.text })
+          ] }, section.title)) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", style: { background: "#fff7ed", borderColor: "#fed7aa" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { style: { margin: 0, fontWeight: 800, color: "#9a3412" }, children: [
+            "Viktig: Ferdige rapporter, FDV, garantibevis og prosjektdokumentasjon må lastes ned og lagres av brukeren på egen PC, server eller annet sikkert arkiv."
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "16px", fontWeight: 800 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: termsReadConfirmed, onChange: (e) => setTermsReadConfirmed(e.target.checked), style: { marginTop: "4px" } }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Jeg har lest og forstått brukervilkår og personvernpunkter, inkludert at jeg selv må laste ned og lagre ferdige rapporter og dokumenter." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: acceptCurrentTerms, disabled: termsAccepting || !termsReadConfirmed || !!termsError, children: termsAccepting ? "Lagrer godkjenning..." : "Godkjenn og fortsett" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Avbryt / logg ut" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "14px" }, children: "Godkjenningen lagres med bruker, e-post, versjon og tidspunkt. Ved ny versjon av vilkårene må brukeren godkjenne på nytt." })
         ] }) })
       ] });
     }
