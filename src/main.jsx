@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.7: Dra-og-slipp på bilder direkte under sjekkpunkter, med tydelig dropzone og bildestatus.
 // FASE 11D.6: Beholder aktiv fane i løpende økt, men starter rent ved faktisk innlogging/utlogging.
 // FASE 11D.5: Flere egne produkter under alle grupper i Overflater og innredning.
 // FASE 11D.4: Trygg bildeopplasting, stabil input/accordion og bildemerknad om sjekkpunktbilder.
@@ -9304,6 +9305,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       setChecklistValue(category, item, { status }, { autoSave: true });
       if (status !== "Avvik") scrollToNextChecklistPoint(category, item);
     };
+    const stopChecklistFileDragNavigation = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    const handleChecklistPhotoDrop = (category, item, event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const droppedFiles = event?.dataTransfer?.files;
+      if (droppedFiles && droppedFiles.length) addChecklistPhoto(category, item, droppedFiles);
+    };
     const groupStats = (group) => {
       const total = group.items.length;
       const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
@@ -9475,10 +9486,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => reopenDeviation(group.category, item), children: "Åpne avvik igjen" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", onClick: (e) => e.stopPropagation(), onDragOver: stopChecklistFileDragNavigation, onDragEnter: stopChecklistFileDragNavigation, onDrop: (e) => handleChecklistPhotoDrop(group.category, item, e), title: "Dra bilde hit eller klikk for å laste opp", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
-                " Ta bilde / last opp bilde",
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
+                (value.photos || []).length > 0 ? ` 📷 ${(value.photos || []).length} bilde${(value.photos || []).length === 1 ? "" : "r"} lastet opp – dra flere hit eller klikk` : " 📷 Dra bilde hit eller klikk for å laste opp",
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onClick: (e) => e.stopPropagation(), onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
               ] }),
               (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: value.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
