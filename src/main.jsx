@@ -8736,7 +8736,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Legg til Sopro garantikontrollpunkt samtidig" })
                 ] }),
                 newProductMaster.createCheckpoint && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Fragment, { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "8px" }, children: "Garantikontrollpunktet lagres på Sopro-produktet i Produktmaster og kobles inn i garantisjekklisten når garantien er aktivert og produktet er valgt. Alle garantipunkter krever bilde og kommentar uansett om garantien er 10, 12 eller 15 år." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "8px" }, children: "Garantikontrollpunktet lagres på Sopro-produktet i Produktmaster og kobles inn i garantisjekklisten når garantien er aktivert og produktet er valgt. Garantipunkter krever status og dokumentasjon med bilde eller kommentar uansett om garantien er 10, 12 eller 15 år." }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Garantikontrollpunkttekst", value: newProductMaster.checkpoint_text || "", onChange: (v) => setNewProductMaster((p) => ({ ...p, checkpoint_text: v })) }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type", value: newProductMaster.checkpoint_type || "standard", options: productCheckpointTypeOptions, optionLabels: productCheckpointTypeLabels, onChange: (v) => setNewProductMaster((p) => ({ ...p, checkpoint_type: v })) }),
@@ -9563,8 +9563,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistPointTitle", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item }),
                   warrantyPoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "🛡️ Garantipunkt" }),
-                  pointRequirement.image_required && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "📷 Bilde påkrevd" }),
-                  pointRequirement.comment_required && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "✍️ Kommentar påkrevd" }),
+                  warrantyPoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "📷/✍️ Bilde eller kommentar" }),
+                  !warrantyPoint && pointRequirement.image_required && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "📷 Bilde påkrevd" }),
+                  !warrantyPoint && pointRequirement.comment_required && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "✍️ Kommentar påkrevd" }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                     value.status || "Ikke vurdert",
                     (value.photos || []).length > 0 ? ` \xB7 \u{1F4F7} ${(value.photos || []).length} bilder` : ""
