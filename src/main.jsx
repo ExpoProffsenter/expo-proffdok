@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 12.1 RAPPORTSTABILISERING: Rydder PDF/rapportvisning av vedlegg, dokumentfiler, sjekkpunktbilder, fag/utstyr-bilder, telefonfelt og QR uten å endre garanti/låsing/autolagring/database.
 // FASE 11D.9 RAPPORTSTABILISERING: Kun PDF/rapportvisning – bilder, vedlegg, telefonfelt, QR og forside. Ingen endring i lagring/garanti/logikk.
 // FASE 11D.8.6 NØD-HOTFIX: Reverterer ustabil registry-sjekk, beholder WC/FDV, og stopper lokal kladd-popup helt.
 // FASE 11D.8.4 HOTFIX: WC splittet i veggskål/sisterne/trykknapp med egen FDV og produktsertifikat + smart lokal kladd.
@@ -4695,6 +4696,23 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           if (!clean || isLikelyRawFileName(clean)) return fallback;
           return clean;
         };
+        const storedFileUrl = (file = {}) => {
+          const rawUrl = safeText(file?.url || file?.href).trim();
+          if (rawUrl && !/^blob:/i.test(rawUrl)) return normalizePdfUrl(rawUrl);
+          const path = safeText(file?.path || file?.storagePath || file?.filePath).trim();
+          if (path) {
+            try {
+              const { data } = supabase.storage.from("project-images").getPublicUrl(path);
+              return normalizePdfUrl(data?.publicUrl || "");
+            } catch {
+              return "";
+            }
+          }
+          return "";
+        };
+        const fileIdentityText = (file = {}) => [file?.name, file?.url, file?.path, file?.type, file?.mimeType, file?.contentType].filter(Boolean).join(" ");
+        const isLikelyDocumentFile = (file = {}) => /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|csv|txt|rtf|odt|ods|odp)(\?|#|$)/i.test(fileIdentityText(file)) || /application\/(pdf|msword|vnd\.)/i.test(fileIdentityText(file));
+        const isLikelyImageFile = (file = {}) => /\.(jpe?g|png|gif|webp|bmp|svg|heic|heif)(\?|#|$)/i.test(fileIdentityText(file)) || /^image\//i.test(safeText(file?.type || file?.mimeType || file?.contentType));
         const cleanCompanyPhoneForReport = (value = "") => {
           const clean = safeText(value).trim();
           if (!clean) return "";
@@ -4862,7 +4880,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           y += 6;
         };
         const addAttachmentList = (title, attachmentList = [], emptyMessage = "Ingen vedlegg er lagt til.") => {
-          const visibleAttachments = (attachmentList || []).filter((file) => hasValue(file?.name) || hasValue(file?.url));
+          const visibleAttachments = (attachmentList || []).filter((file) => hasValue(file?.name) || hasValue(file?.url) || hasValue(file?.path));
           addSectionTitle(title);
           if (!visibleAttachments.length) {
             addParagraph(emptyMessage);
@@ -4871,22 +4889,23 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           visibleAttachments.forEach((file, index) => {
             const fileName = safeText(file?.name || `Vedlegg ${index + 1}`);
             const fileMeta = [file?._sourceLabel || "Vedlegg", file?.by ? `Lastet opp av ${file.by}` : "", file?.created || ""].filter(Boolean).join(" · ");
-            ensureSpace(18);
+            const fileUrl = storedFileUrl(file);
+            ensureSpace(20);
             doc.setDrawColor(214, 226, 236);
             doc.setFillColor(248, 250, 252);
-            doc.roundedRect(margin, y, contentWidth, 14, 2.5, 2.5, "FD");
+            doc.roundedRect(margin, y, contentWidth, 16, 2.5, 2.5, "FD");
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10.2);
             doc.setTextColor(15, 23, 42);
-            doc.text(doc.splitTextToSize(fileName, contentWidth - 10).slice(0, 1), margin + 5, y + 6);
+            doc.text(doc.splitTextToSize(`📄 ${fileName}`, contentWidth - 10).slice(0, 1), margin + 5, y + 6);
             if (fileMeta) {
               doc.setFont("helvetica", "normal");
               doc.setFontSize(7.8);
               doc.setTextColor(71, 85, 105);
-              doc.text(doc.splitTextToSize(fileMeta, contentWidth - 10).slice(0, 1), margin + 5, y + 11);
+              doc.text(doc.splitTextToSize(fileMeta, contentWidth - 10).slice(0, 1), margin + 5, y + 11.2);
             }
-            y += 17;
-            addLink(`Åpne ${fileName}`, file?.url);
+            y += 19;
+            addLink(`Åpne ${fileName}`, fileUrl);
           });
         };
 
@@ -5095,7 +5114,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           const status = value?.status || "";
           const comment = value?.comment || "";
           const closeComment = value?.closeComment || "";
-          const pointPhotos = (value?.photos || []).filter((photo) => hasValue(photo?.url));
+          const pointPhotos = (value?.photos || []).filter((photo) => (hasValue(photo?.url) || hasValue(photo?.path)) && !isLikelyDocumentFile(photo));
           const visual = statusVisual(status);
           const cleanStatus = String(status || "").toLowerCase();
           const isOpenDeviation = cleanStatus === "avvik";
@@ -5281,25 +5300,64 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         };
 
         const loadPdfImage = async (url) => {
-          const cleanUrl = normalizePdfUrl(url);
+          const cleanUrl = storedFileUrl({ url }) || normalizePdfUrl(url);
           if (!cleanUrl) return null;
+          if (isLikelyDocumentFile({ url: cleanUrl })) return { error: true, document: true, url: cleanUrl };
           try {
             const response = await fetch(cleanUrl, { mode: "cors" });
             if (!response.ok) throw new Error("Bilde kunne ikke hentes.");
             const blob = await response.blob();
+            if (blob?.type && !/^image\//i.test(blob.type)) return { error: true, document: true, contentType: blob.type, url: cleanUrl };
             const rawDataUrl = await blobToDataUrl(blob);
+            if (!/^data:image\//i.test(String(rawDataUrl || ""))) return { error: true, document: true, url: cleanUrl };
             const info = await normalizeImageForJsPdf(rawDataUrl);
             return { ...info, url: cleanUrl };
           } catch (error) {
             return { error: true, url: cleanUrl };
           }
         };
+        const drawDocumentGalleryCard = (file, x, yy, w, h) => {
+          const fileName = cleanPdfCaption(file?.name || file?._reportCaption, file?._reportCaption || "Dokumentvedlegg").slice(0, 90);
+          const fileUrl = storedFileUrl(file);
+          doc.setDrawColor(214, 226, 236);
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(x, yy, w, h, 3, 3, "FD");
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(x + 4, yy + 4, w - 8, h - 14, 2, 2, "F");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8.2);
+          doc.setTextColor(15, 23, 42);
+          doc.text("📄 Dokument vedlagt", x + 8, yy + 14);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7.2);
+          doc.setTextColor(71, 85, 105);
+          doc.text(doc.splitTextToSize(fileName, w - 16).slice(0, 2), x + 8, yy + 21);
+          if (fileUrl) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7.0);
+            doc.setTextColor(0, 84, 180);
+            if (typeof doc.textWithLink === "function") {
+              doc.textWithLink("Åpne dokument", x + 8, yy + h - 12, { url: fileUrl });
+            } else {
+              doc.text("Åpne dokument", x + 8, yy + h - 12);
+              doc.link(x + 8, yy + h - 16, 34, 5, { url: fileUrl });
+            }
+          }
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7.2);
+          doc.setTextColor(15, 23, 42);
+          doc.text(doc.splitTextToSize(fileName, w - 8).slice(0, 1), x + 4, yy + h - 4.8);
+        };
         const drawImageGalleryCard = async (photo, x, yy, w, h) => {
+          if (isLikelyDocumentFile(photo)) {
+            drawDocumentGalleryCard(photo, x, yy, w, h);
+            return;
+          }
           doc.setDrawColor(214, 226, 236);
           doc.setFillColor(255, 255, 255);
           doc.roundedRect(x, yy, w, h, 3, 3, "FD");
           const caption = cleanPdfCaption(photo.comment || photo._reportCaption || photo.name, photo._reportCaption || "Dokumentert bilde").slice(0, 80);
-          const image = await loadPdfImage(photo.url);
+          const image = await loadPdfImage(storedFileUrl(photo) || photo.url);
           const imageAreaX = x + 4;
           const imageAreaY = yy + 4;
           const imageAreaW = w - 8;
@@ -5322,7 +5380,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(7.2);
             doc.setTextColor(100, 116, 139);
-            doc.text(doc.splitTextToSize("Bilde kunne ikke bygges inn i rapporten", imageAreaW - 8), imageAreaX + 4, imageAreaY + 11);
+            doc.text(doc.splitTextToSize("Bildet kunne ikke bygges inn automatisk", imageAreaW - 8), imageAreaX + 4, imageAreaY + 11);
             const cleanPhotoUrl = normalizePdfUrl(photo?.url || "");
             if (cleanPhotoUrl && !/^blob:/i.test(cleanPhotoUrl)) {
               doc.setFont("helvetica", "bold");
@@ -5788,7 +5846,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           addSubTitle(sectionTitle);
           addParagraph([item.name, item.qty, item.supplier, item.desc].filter(Boolean).join(" · "));
           addLink("Åpne FDV/datablad", item.fdvUrl);
-          const installPhotos = (item.photos || []).filter((photo) => hasValue(photo?.url));
+          const installPhotos = (item.photos || []).filter((photo) => (hasValue(photo?.url) || hasValue(photo?.path)) && !isLikelyDocumentFile(photo));
           if (installPhotos.length) {
             const galleryTitle = [sectionTitle, item.name || item.supplier || "bilder"].filter(Boolean).join(" – ");
             await addImageGalleryCategory(galleryTitle, installPhotos.map((photo, index) => ({ ...photo, _reportCaption: `${galleryTitle} – bilde ${index + 1}` })));
@@ -5878,8 +5936,32 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           y += 54;
         }
 
+        const checklistDocumentAttachments = [];
+        Object.entries(checklist || {}).forEach(([category, items]) => {
+          Object.entries(items || {}).forEach(([item, value]) => {
+            (value?.photos || []).filter((file) => isLikelyDocumentFile(file)).forEach((file, index) => {
+              checklistDocumentAttachments.push({
+                ...file,
+                name: file?.name || `${item} – dokument ${index + 1}`,
+                _sourceLabel: `Sjekkliste: ${category} / ${item}`
+              });
+            });
+          });
+        });
+        const installDocumentAttachments = [];
+        (inst || []).forEach((entry) => {
+          (entry?.photos || []).filter((file) => isLikelyDocumentFile(file)).forEach((file, index) => {
+            installDocumentAttachments.push({
+              ...file,
+              name: file?.name || `${entry?.name || entry?.category || "Fag/utstyr"} – dokument ${index + 1}`,
+              _sourceLabel: `Fag/utstyr: ${entry?.category || "Uspesifisert"}`
+            });
+          });
+        });
         const reportAttachments = [
           ...(files || []).map((file) => ({ ...file, _sourceLabel: "Sjekklister / andre vedlegg" })),
+          ...checklistDocumentAttachments,
+          ...installDocumentAttachments,
           ...(tilbud?.files || []).map((file) => ({ ...file, _sourceLabel: "Tilbud / kontrakt" }))
         ];
         addAttachmentList("Vedlegg – opplastede filer", reportAttachments, "Ingen vedlegg er lagt til.");
@@ -10181,11 +10263,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
   function PdfSafeLink({ href, children }) {
     const url = normalizeExternalUrl(href);
     if (!url) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "pdfSafeLink", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: url, target: "_blank", rel: "noopener noreferrer", children }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "pdfSafeUrl", style: { display: "block", color: "#334155", fontSize: "10px", lineHeight: 1.25, overflowWrap: "anywhere", wordBreak: "break-word", marginTop: "2px" }, children: url })
-    ] });
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "pdfSafeLink", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: url, target: "_blank", rel: "noopener noreferrer", children }) });
   }
 
   function hasValue(value) {
