@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 12.2 RAPPORTDESIGN: Rydder tegnsett i PDF-vedlegg og forbedrer produktkort i rapport/PDF. Kun rapportvisning, ingen endring i garanti/låsing/autolagring/database.
+// FASE 12.3 RAPPORTDESIGN OVERFLATER: Gir Overflater og innredning samme kort-/seksjonslayout som produkter og sjekklister. Kun rapport/PDF-visning, ingen logikk-/databaseendring.
 // FASE 12.1 RAPPORTSTABILISERING: Rydder PDF/rapportvisning av vedlegg, dokumentfiler, sjekkpunktbilder, fag/utstyr-bilder, telefonfelt og QR uten å endre garanti/låsing/autolagring/database.
 // FASE 11D.9 RAPPORTSTABILISERING: Kun PDF/rapportvisning – bilder, vedlegg, telefonfelt, QR og forside. Ingen endring i lagring/garanti/logikk.
 // FASE 11D.8.6 NØD-HOTFIX: Reverterer ustabil registry-sjekk, beholder WC/FDV, og stopper lokal kladd-popup helt.
@@ -5109,6 +5110,89 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
 
           y += boxH + 4.5;
         };
+        const addEquipmentCategoryHeader = (category, count = 0) => {
+          if (y > pageHeight - 52) {
+            doc.addPage();
+            y = 16;
+          } else {
+            y += 3;
+          }
+          ensureSpace(15);
+          doc.setDrawColor(191, 219, 254);
+          doc.setFillColor(239, 246, 255);
+          doc.roundedRect(margin, y, contentWidth, 11, 2.5, 2.5, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10.2);
+          doc.setTextColor(12, 42, 82);
+          doc.text(doc.splitTextToSize(safeText(category), contentWidth - 25).slice(0, 1), margin + 5, y + 7.2);
+          if (count) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.2);
+            doc.setTextColor(71, 85, 105);
+            doc.text(`${count} punkt`, pageWidth - margin - 5, y + 7.2, { align: "right" });
+          }
+          y += 16;
+        };
+        const addEquipmentReportCard = (item = {}) => {
+          const title = safeText(item.title || "Uten navn");
+          const entries = (item.entries || []).filter(([, value]) => hasValue(value));
+          const links = (item.links || []).filter((link) => hasValue(link?.url));
+          const titleLines = doc.splitTextToSize(title, contentWidth - 18).slice(0, 2);
+          const entryRows = entries.map(([label, value]) => ({ label: safeText(label), value: safeText(value) })).slice(0, 6);
+          const linkRows = links.length ? 1 : 0;
+          const boxH = Math.max(25, 14 + titleLines.length * 4.7 + entryRows.length * 6.2 + linkRows * 7.2 + 3);
+          ensureSpace(boxH + 5);
+          const boxY = y;
+          doc.setDrawColor(214, 226, 236);
+          doc.setFillColor(255, 255, 255);
+          doc.roundedRect(margin, boxY, contentWidth, boxH, 3.2, 3.2, "FD");
+          doc.setFillColor(248, 250, 252);
+          doc.roundedRect(margin + 4, boxY + 4, 10, 10, 2.2, 2.2, "F");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7.2);
+          doc.setTextColor(20, 86, 160);
+          doc.text("UTS", margin + 5.6, boxY + 10.7);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10.2);
+          doc.setTextColor(15, 23, 42);
+          doc.text(titleLines, margin + 18, boxY + 8.3);
+          let yy = boxY + 8.3 + titleLines.length * 4.7 + 1.5;
+          entryRows.forEach(({ label, value }) => {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7.3);
+            doc.setTextColor(100, 116, 139);
+            doc.text(label, margin + 18, yy);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8.4);
+            doc.setTextColor(15, 23, 42);
+            const valueLines = doc.splitTextToSize(value || "Ikke oppgitt", contentWidth - 65).slice(0, 1);
+            doc.text(valueLines, margin + 62, yy);
+            yy += 6.2;
+          });
+          if (links.length) {
+            const gap = 2.3;
+            const chipW = (contentWidth - 18 - gap) / 2;
+            links.slice(0, 2).forEach((link, index) => {
+              const url = normalizePdfUrl(link.url);
+              if (!url) return;
+              const x = margin + 18 + index * (chipW + gap);
+              doc.setDrawColor(191, 219, 254);
+              doc.setFillColor(239, 246, 255);
+              doc.roundedRect(x, yy - 4.6, chipW, 5.9, 1.7, 1.7, "FD");
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(6.8);
+              doc.setTextColor(0, 84, 180);
+              const label = safeText(link.label || "Dokument");
+              if (typeof doc.textWithLink === "function") {
+                doc.textWithLink(label, x + 2.4, yy, { url });
+              } else {
+                doc.text(label, x + 2.4, yy);
+                doc.link(x + 2.4, yy - 3.8, Math.min(chipW - 5, label.length * 1.55), 4.5, { url });
+              }
+            });
+          }
+          y += boxH + 4.5;
+        };
         const addReportSummary = () => {
           const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
           const assessed = entries.filter((value) => hasValue(value?.status));
@@ -5884,15 +5968,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
 
         const bathroomEquipmentGroupsForPdf = buildBathroomEquipmentReportGroups(surf, bathroomEquipment);
         if (bathroomEquipmentGroupsForPdf.length) {
-          addSectionTitle("Overflater og innredning");
+          addSectionPageBreak("Overflater og innredning");
           bathroomEquipmentGroupsForPdf.forEach((group) => {
-            addSubTitle(group.title);
-            group.items.forEach((item) => {
-              addSubTitle(item.title);
-              (item.entries || []).forEach(([label, value]) => addKeyValue(label, value));
-              (item.links || []).forEach((link) => addLink(link.label, link.url));
-              addDivider();
-            });
+            addEquipmentCategoryHeader(group.title, (group.items || []).length);
+            (group.items || []).forEach((item) => addEquipmentReportCard(item));
           });
         }
 
@@ -10106,20 +10185,29 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
 function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
     const groups = buildBathroomEquipmentReportGroups(surf, bathroomEquipment);
     if (!groups.length) return null;
+    const categoryStyle = { border: "1px solid #bfdbfe", background: "#eff6ff", borderRadius: "12px", padding: "12px 16px", margin: "18px 0 12px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" };
+    const cardStyle = { border: "1px solid #d6e2ec", background: "#fff", borderRadius: "12px", padding: "14px 16px", margin: "10px 0", breakInside: "avoid", pageBreakInside: "avoid" };
+    const labelStyle = { fontSize: "12px", fontWeight: 800, color: "#64748b", margin: "0 0 3px" };
+    const valueStyle = { fontSize: "14px", fontWeight: 700, color: "#0f172a", margin: "0 0 8px" };
+    const linkWrapStyle = { display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "8px" };
+    const linkStyle = { display: "inline-block", border: "1px solid #bfdbfe", background: "#eff6ff", borderRadius: "999px", padding: "5px 10px", fontWeight: 800, textDecoration: "none" };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Overflater og innredning" }),
-      groups.map((group) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: group.title }),
-        group.items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.title }),
-          item.entries.map(([label, value]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
-              label,
-              ": "
-            ] }),
-            value
+      groups.map((group) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: categoryStyle, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { margin: 0 }, children: group.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { fontSize: "12px", color: "#475569", fontWeight: 700 }, children: [
+            (group.items || []).length,
+            " punkt"
+          ] })
+        ] }),
+        (group.items || []).map((item) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: cardStyle, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { margin: "0 0 10px", fontSize: "16px" }, children: item.title }),
+          (item.entries || []).map(([label, value]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: labelStyle, children: label }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: valueStyle, children: value || "Ikke oppgitt" })
           ] }, label)),
-          item.links.map((link) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: link.url, children: link.label }, link.label))
+          (item.links || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: linkWrapStyle, children: item.links.map((link) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: link.url, style: linkStyle, children: link.label }, link.label)) })
         ] }, item.title))
       ] }, group.title))
     ] });
