@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.7.7 STABILISERING: Overtagelse leses fra signaturer, Vis det som gjenstår hopper riktig, og garantipunkter krever status + bilde eller kommentar.
 // FASE 11D.7.4 HOTFIX: Garantipunkter krever status + bilde eller kommentar, og stopper auto-hopp uten dokumentasjon.
 // FASE 11D.7.2: Fikser Åpne-knapp til manglende sjekkpunkt og gir garantiprosjekt veiledning etter overtagelse.
 // FASE 11D.7: Dra-og-slipp på bilder direkte under sjekkpunkter, med tydelig dropzone og bildestatus.
@@ -1640,7 +1641,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const warrantyReadiness = (0, import_react.useMemo)(() => {
       const utførendeSigned = hasValue(overtagelse?.signUtførende) || hasValue(overtagelse?.signUtførendeImage);
       const kundeSigned = hasValue(overtagelse?.signKunde) || hasValue(overtagelse?.signKundeImage);
-      const overtagelseSigned = !!overtagelse?.enabled && utførendeSigned && kundeSigned;
+      const overtagelseSigned = utførendeSigned && kundeSigned;
       const openDeviationCount = getOpenDeviationCount(checklist);
       const selectedSystem = soproWarrantySystems.find((item) => item.id === warranty?.system);
       const approvedSoproSystemSelected = !!selectedSystem;
@@ -9441,10 +9442,18 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     const percent = totalStats.total ? Math.round(totalStats.done / totalStats.total * 100) : 0;
     const toggleCategory = (category) => setOpenCategories((prev) => ({ ...prev, [category]: !prev[category] }));
     const expandAll = () => setOpenCategories(Object.fromEntries(activeChecklistTemplate.map((group) => [group.category, true])));
-    const collapseDone = () => setOpenCategories(Object.fromEntries(activeChecklistTemplate.map((group) => {
-      const stats = groupStats(group);
-      return [group.category, stats.missing > 0 || stats.deviations > 0];
-    })));
+    const showRemainingAndJump = () => {
+      const targetPoint = firstIncompletePoint;
+      setShowOpenDeviationsOnly && setShowOpenDeviationsOnly(false);
+      setOpenCategories(Object.fromEntries(activeChecklistTemplate.map((group) => {
+        const stats = groupStats(group);
+        return [group.category, stats.missing > 0 || stats.deviations > 0 || group.category === targetPoint?.category];
+      })));
+      if (targetPoint) {
+        window.setTimeout(() => scrollToChecklistPoint(targetPoint, "start"), 260);
+      }
+    };
+    const collapseDone = showRemainingAndJump;
     const closeDeviation = (category, item, value = {}) => {
       const closeComment = window.prompt("Kommentar til lukking av avvik:", value.closeComment || "Utført/kontrollert og lukket.");
       if (closeComment === null) return;
