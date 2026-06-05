@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.7.4 HOTFIX: Garantipunkter krever status + bilde eller kommentar, og stopper auto-hopp uten dokumentasjon.
 // FASE 11D.7.2: Fikser Åpne-knapp til manglende sjekkpunkt og gir garantiprosjekt veiledning etter overtagelse.
 // FASE 11D.7: Dra-og-slipp på bilder direkte under sjekkpunkter, med tydelig dropzone og bildestatus.
 // FASE 11D.6: Beholder aktiv fane i løpende økt, men starter rent ved faktisk innlogging/utlogging.
@@ -875,7 +876,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const statusDone = hasValue(value?.status);
       const imageDone = (value?.photos || []).some((photo) => hasValue(photo?.url));
       const commentDone = hasValue(value?.comment);
-      const done = statusDone && imageDone && commentDone;
+      const documentationDone = imageDone || commentDone;
+      const done = statusDone && documentationDone;
       return {
         category: group.category,
         item,
@@ -884,6 +886,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         statusDone,
         imageDone,
         commentDone,
+        documentationDone,
         anchorId: checklistPointAnchor(group.category, item)
       };
     }));
@@ -1026,15 +1029,16 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         const value = checklist?.[group.category]?.[item] || {};
         const req = group.requirements?.[item] || {};
         const statusDone = hasValue(value?.status);
-        const imageDone = !req.image_required || (value?.photos || []).some((photo) => hasValue(photo?.url));
-        const commentDone = !req.comment_required || hasValue(value?.comment);
-        const done = statusDone && imageDone && commentDone;
-        const point = { category: group.category, item, status: value?.status || "", done, statusDone, imageDone, commentDone, requirement: req, anchorId: checklistPointAnchor(group.category, item) };
+        const imageDone = (value?.photos || []).some((photo) => hasValue(photo?.url));
+        const commentDone = hasValue(value?.comment);
+        const documentationRequired = !!req.image_required || !!req.comment_required;
+        const documentationDone = !documentationRequired || imageDone || commentDone;
+        const done = statusDone && documentationDone;
+        const point = { category: group.category, item, status: value?.status || "", done, statusDone, imageDone, commentDone, documentationDone, requirement: req, anchorId: checklistPointAnchor(group.category, item) };
         points.push(point);
         if (!done) {
           if (!statusDone) missing.push(`${group.category}: ${item} må ha status.`);
-          if (!imageDone) missing.push(`${group.category}: ${item} krever bildedokumentasjon.`);
-          if (!commentDone) missing.push(`${group.category}: ${item} krever kommentar.`);
+          if (statusDone && !documentationDone) missing.push(`${group.category}: ${item} krever bilde eller kommentar.`);
         }
       });
     });
@@ -9395,7 +9399,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       scrollToChecklistPoint(nextPoint, "start");
     };
     const handleStatusClick = (category, item, status) => {
+      const currentValue = checklist?.[category]?.[item] || {};
+      const hasWarrantyDocumentation = (currentValue?.photos || []).some((photo) => hasValue(photo?.url)) || hasValue(currentValue?.comment);
+      const isWarrantyCheckpoint = isSoproWarrantyPoint(category);
       setChecklistValue(category, item, { status }, { autoSave: true });
+      if (status !== "Avvik" && isWarrantyCheckpoint && !hasWarrantyDocumentation) {
+        alert("Garantipunktet må dokumenteres med bilde eller kommentar før du går videre til neste punkt.");
+        scrollToChecklistPoint({ category, item, anchorId: checklistPointAnchor(category, item) }, "start");
+        return;
+      }
       if (status !== "Avvik") scrollToNextChecklistPoint(category, item);
     };
     const stopChecklistFileDragNavigation = (event) => {
