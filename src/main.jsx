@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.8 RAPPORT-HOTFIX: Permanente vedlegg i PDF, bedre bildefallback/klikkbare filer og større rapporttekst.
 // FASE 11D.7.8 HOTFIX: Garanti kan utstedes før komplett PDF er generert, slik at PDF-en inkluderer garantibeviset.
 // FASE 11D.7.7 STABILISERING: Overtagelse leses fra signaturer, Vis det som gjenstår hopper riktig, og garantipunkter krever status + bilde eller kommentar.
 // FASE 11D.7.4 HOTFIX: Garantipunkter krever status + bilde eller kommentar, og stopper auto-hopp uten dokumentasjon.
@@ -4705,7 +4706,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         const addSubTitle = (title) => {
           ensureSpace(8);
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(11);
+          doc.setFontSize(12);
           doc.setTextColor(15, 23, 42);
           doc.text(safeText(title), margin, y);
           y += 5;
@@ -4713,8 +4714,8 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         const addParagraph = (value, opts = {}) => {
           const textValue = safeText(value).trim();
           if (!textValue) return;
-          const size = opts.size || 9.5;
-          const lineHeight = opts.lineHeight || 5;
+          const size = opts.size || 10.5;
+          const lineHeight = opts.lineHeight || 5.4;
           doc.setFont("helvetica", opts.bold ? "bold" : "normal");
           doc.setFontSize(size);
           doc.setTextColor(opts.color || 15, opts.color ? 69 : 23, opts.color ? 135 : 42);
@@ -4727,22 +4728,34 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           const cleanValue = safeText(value).trim() || "Ikke fylt ut";
           ensureSpace(10);
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(8.5);
+          doc.setFontSize(9.5);
           doc.setTextColor(15, 23, 42);
           doc.text(safeText(label), margin, y);
-          y += 4;
+          y += 4.5;
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(9.5);
+          doc.setFontSize(10.5);
           const lines = doc.splitTextToSize(cleanValue, contentWidth);
           doc.text(lines, margin, y);
-          y += Math.max(5, lines.length * 5);
+          y += Math.max(5.8, lines.length * 5.4);
         };
         const addLink = (label, href) => {
-          const url = normalizePdfUrl(href);
-          if (!url) return;
+          const rawHref = safeText(href).trim();
+          const isBlobUrl = /^blob:/i.test(rawHref);
+          const url = isBlobUrl ? "" : normalizePdfUrl(rawHref);
+          if (!url) {
+            if (isBlobUrl) {
+              ensureSpace(18);
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(10.2);
+              doc.setTextColor(153, 27, 27);
+              doc.text(doc.splitTextToSize(`${safeText(label)} – filen må lastes opp på nytt for å bli klikkbar i PDF.`, contentWidth), margin, y);
+              y += 10;
+            }
+            return;
+          }
           ensureSpace(12);
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.5);
+          doc.setFontSize(10.5);
           doc.setTextColor(0, 84, 180);
           if (typeof doc.textWithLink === "function") {
             doc.textWithLink(safeText(label), margin, y, { url });
@@ -4752,13 +4765,42 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           }
           y += 4;
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(7.2);
+          doc.setFontSize(8.2);
           doc.setTextColor(51, 65, 85);
           const urlLines = doc.splitTextToSize(url, contentWidth);
           ensureSpace(urlLines.length * 3.6 + 1);
           doc.text(urlLines, margin, y);
-          y += urlLines.length * 3.6 + 2;
+          y += urlLines.length * 4.0 + 2;
         };
+        const addAttachmentList = (title, attachmentList = [], emptyMessage = "Ingen vedlegg er lagt til.") => {
+          const visibleAttachments = (attachmentList || []).filter((file) => hasValue(file?.name) || hasValue(file?.url));
+          addSectionTitle(title);
+          if (!visibleAttachments.length) {
+            addParagraph(emptyMessage);
+            return;
+          }
+          visibleAttachments.forEach((file, index) => {
+            const fileName = safeText(file?.name || `Vedlegg ${index + 1}`);
+            const fileMeta = [file?.by ? `Lastet opp av ${file.by}` : "", file?.created || ""].filter(Boolean).join(" · ");
+            ensureSpace(18);
+            doc.setDrawColor(214, 226, 236);
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(margin, y, contentWidth, 14, 2.5, 2.5, "FD");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10.2);
+            doc.setTextColor(15, 23, 42);
+            doc.text(doc.splitTextToSize(fileName, contentWidth - 10).slice(0, 1), margin + 5, y + 6);
+            if (fileMeta) {
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(7.8);
+              doc.setTextColor(71, 85, 105);
+              doc.text(doc.splitTextToSize(fileMeta, contentWidth - 10).slice(0, 1), margin + 5, y + 11);
+            }
+            y += 17;
+            addLink(`Åpne ${fileName}`, file?.url);
+          });
+        };
+
         const addDivider = () => {
           ensureSpace(4);
           doc.setDrawColor(226, 232, 240);
@@ -4848,7 +4890,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           doc.text(doc.splitTextToSize(safeText(sectionName), contentWidth - 12).slice(0, 1), margin + 6, y + 9.1);
 
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.3);
+          doc.setFontSize(10.3);
           doc.setTextColor(15, 23, 42);
           doc.text(nameLines, margin + 6, y + 18.2);
 
@@ -5106,7 +5148,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             y += h + 4;
             if (caption) addParagraph(caption, { size: 8.2, lineHeight: 4 });
           } catch (error) {
-            addParagraph(`Bilde kunne ikke bygges inn i PDF: ${cleanUrl}`, { size: 8.2, lineHeight: 4 });
+            addParagraph("Bilde kunne ikke bygges inn i rapporten.", { bold: true, size: 10.2, lineHeight: 4.6 });
+            addParagraph("Originalfilen kan likevel åpnes via lenken under dersom filen fortsatt er tilgjengelig.", { size: 9.5, lineHeight: 4.4 });
+            addLink(caption ? `Åpne originalfil – ${caption}` : "Åpne originalfil", cleanUrl);
           }
         };
 
@@ -5186,10 +5230,23 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             const imgY = imageAreaY + (imageAreaH - imgH) / 2;
             doc.addImage(image.dataUrl, image.format || "PNG", imgX, imgY, imgW, imgH);
           } else {
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.0);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(7.2);
             doc.setTextColor(100, 116, 139);
-            doc.text(doc.splitTextToSize("Bilde kunne ikke bygges inn i PDF", imageAreaW - 8), imageAreaX + 4, imageAreaY + 12);
+            doc.text(doc.splitTextToSize("Bilde kunne ikke bygges inn i rapporten", imageAreaW - 8), imageAreaX + 4, imageAreaY + 11);
+            const cleanPhotoUrl = normalizePdfUrl(photo?.url || "");
+            if (cleanPhotoUrl && !/^blob:/i.test(cleanPhotoUrl)) {
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(7.0);
+              doc.setTextColor(0, 84, 180);
+              const linkText = "Åpne originalfil";
+              if (typeof doc.textWithLink === "function") {
+                doc.textWithLink(linkText, imageAreaX + 4, imageAreaY + 22, { url: cleanPhotoUrl });
+              } else {
+                doc.text(linkText, imageAreaX + 4, imageAreaY + 22);
+                doc.link(imageAreaX + 4, imageAreaY + 18, 34, 5, { url: cleanPhotoUrl });
+              }
+            }
           }
           doc.setFont("helvetica", "bold");
           doc.setFontSize(7.2);
@@ -5678,6 +5735,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           addKeyValue("Tillegg", tilbud.tillegg);
           addKeyValue("Fradrag", tilbud.fradrag);
           addKeyValue("Avtaleendringer / kommentar", tilbud.kommentar);
+          if ((tilbud.files || []).length > 0) addParagraph("Tilbuds- og kontraktsvedlegg ligger også samlet bakerst i rapporten under Vedlegg.", { size: 9.5, lineHeight: 4.6 });
           (tilbud.files || []).forEach((file) => addLink(file.name || "Vedlegg", file.url));
         }
 
@@ -5717,12 +5775,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           y += 54;
         }
 
-        addSectionTitle("Sjekklister og vedlegg");
-        if (!(files || []).length) addParagraph("Ingen vedlegg er lagt til.");
-        (files || []).forEach((file) => {
-          addParagraph(file.name || "Vedlegg");
-          addLink(file.name || "Åpne vedlegg", file.url);
-        });
+        const reportAttachments = [
+          ...(files || []).map((file) => ({ ...file, _sourceLabel: "Sjekklister / andre vedlegg" })),
+          ...(tilbud?.files || []).map((file) => ({ ...file, _sourceLabel: "Tilbud / kontrakt" }))
+        ];
+        addAttachmentList("Vedlegg – opplastede filer", reportAttachments, "Ingen vedlegg er lagt til.");
 
         const visibleAccess = (access || []).filter((a) => hasValue(a?.name) || hasValue(a?.email));
         if (visibleAccess.length) {
@@ -5979,13 +6036,31 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       });
       scheduleChecklistAutoSave(nextChecklistSnapshot, 250);
     };
-    const addFiles = (fl) => setFiles((p) => [...p, ...Array.from(fl || []).map((f) => ({
-      id: uid(),
-      name: f.name,
-      url: URL.createObjectURL(f),
-      by: user.name || "Ukjent",
-      created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO")
-    }))]);
+    const addFiles = async (fl) => {
+      if (!canEditProject()) return;
+      const filesArray = Array.from(fl || []);
+      const uploaded = [];
+      for (const file of filesArray) {
+        const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+        const path = `vedlegg/${Date.now()}-${uid()}-${cleanName}`;
+        const { error } = await supabase.storage.from("project-images").upload(path, file, { cacheControl: "3600", upsert: false });
+        if (error) {
+          console.error(error);
+          alert("Kunne ikke laste opp vedlegg: " + error.message);
+          continue;
+        }
+        const { data } = supabase.storage.from("project-images").getPublicUrl(path);
+        uploaded.push({
+          id: uid(),
+          name: file.name,
+          url: data.publicUrl,
+          path,
+          by: user.name || authUser?.email || "Ukjent",
+          created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO")
+        });
+      }
+      if (uploaded.length) setFiles((p) => [...p, ...uploaded]);
+    };
     const uploadTilbudFiles = async (fileList) => {
       const filesArray = Array.from(fileList || []);
       const uploaded = [];
