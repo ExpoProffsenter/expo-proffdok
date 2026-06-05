@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.8.4 HOTFIX: WC splittet i veggskål/sisterne/trykknapp med egen FDV og produktsertifikat + smart lokal kladd.
 // FASE 11D.8.2 HOTFIX: WC splittet i veggskål, sisterne og trykknapp med egne leverandørfelt uten SQL-endringer.
 // FASE 11D.8 RAPPORT-HOTFIX: Permanente vedlegg i PDF, bedre bildefallback/klikkbare filer og større rapporttekst.
 // FASE 11D.7.8 HOTFIX: Garanti kan utstedes før komplett PDF er generert, slik at PDF-en inkluderer garantibeviset.
@@ -505,7 +506,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     return Array.isArray(value) ? value : [];
   };
   var equipmentCustomItemHasContent = (item = {}) => ["product", "supplier", "fdvUrl", "certificateUrl", "comment"].some((field) => hasValue(item?.[field]));
-  var wcHasContent = (equipment = {}) => ["wcType", "wcProduct", "wcSupplier", "wcCistern", "wcCisternSupplier", "wcFlushPlate", "wcFlushPlateSupplier", "wcFdvUrl", "wcCertificateUrl", "wcComment"].some((field) => hasValue(equipment?.[field]));
+  var wcHasContent = (equipment = {}) => ["wcType", "wcProduct", "wcSupplier", "wcProductFdvUrl", "wcProductCertificateUrl", "wcCistern", "wcCisternSupplier", "wcCisternFdvUrl", "wcCisternCertificateUrl", "wcFlushPlate", "wcFlushPlateSupplier", "wcFlushPlateFdvUrl", "wcFlushPlateCertificateUrl", "wcFdvUrl", "wcCertificateUrl", "wcComment"].some((field) => hasValue(equipment?.[field]));
   var buildBathroomEquipmentReportGroups = (surf = {}, bathroomEquipment = {}) => {
     const groups = [];
     const pushGroup = (title) => {
@@ -549,23 +550,57 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }
     if (wcHasContent(bathroomEquipment)) {
       const type = bathroomEquipment.wcType || "";
-      const entries = [
-        ["Type WC", type],
-        [type === "Vegghengt" ? "Veggskål / WC-produkt" : "WC-produkt / modell", bathroomEquipment.wcProduct],
-        [type === "Vegghengt" ? "Leverandør veggskål" : "Leverandør", bathroomEquipment.wcSupplier],
-        ...type === "Vegghengt" ? [
-          ["Sisternemodell", bathroomEquipment.wcCistern],
-          ["Leverandør sisterne", bathroomEquipment.wcCisternSupplier],
-          ["Trykknappmodell", bathroomEquipment.wcFlushPlate],
-          ["Leverandør trykknapp", bathroomEquipment.wcFlushPlateSupplier]
-        ] : [],
-        ["Kommentar", bathroomEquipment.wcComment]
-      ].filter(([, value]) => hasValue(value));
-      const links = [
-        { label: "FDV", url: bathroomEquipment.wcFdvUrl },
-        { label: "Produktsertifikat", url: bathroomEquipment.wcCertificateUrl }
+      const group = pushGroup("Sanitærutstyr");
+      if (type) {
+        group.items.push({ title: "WC / toalett", entries: [["Type WC", type]], links: [] });
+      }
+      const wcProductLinks = [
+        { label: "FDV", url: bathroomEquipment.wcProductFdvUrl || bathroomEquipment.wcFdvUrl },
+        { label: "Produktsertifikat", url: bathroomEquipment.wcProductCertificateUrl || bathroomEquipment.wcCertificateUrl }
       ].filter((link) => hasValue(link.url));
-      pushGroup("Sanitærutstyr").items.push({ title: "WC", entries, links });
+      if (hasValue(bathroomEquipment.wcProduct) || hasValue(bathroomEquipment.wcSupplier) || wcProductLinks.length) {
+        group.items.push({
+          title: type === "Vegghengt" ? "WC – veggskål" : "WC-produkt",
+          entries: [
+            ["Produkt / modell", bathroomEquipment.wcProduct],
+            ["Leverandør", bathroomEquipment.wcSupplier]
+          ].filter(([, value]) => hasValue(value)),
+          links: wcProductLinks
+        });
+      }
+      if (type === "Vegghengt") {
+        const cisternLinks = [
+          { label: "FDV", url: bathroomEquipment.wcCisternFdvUrl },
+          { label: "Produktsertifikat", url: bathroomEquipment.wcCisternCertificateUrl }
+        ].filter((link) => hasValue(link.url));
+        if (hasValue(bathroomEquipment.wcCistern) || hasValue(bathroomEquipment.wcCisternSupplier) || cisternLinks.length) {
+          group.items.push({
+            title: "WC – sisterne",
+            entries: [
+              ["Sisternemodell", bathroomEquipment.wcCistern],
+              ["Leverandør", bathroomEquipment.wcCisternSupplier]
+            ].filter(([, value]) => hasValue(value)),
+            links: cisternLinks
+          });
+        }
+        const flushPlateLinks = [
+          { label: "FDV", url: bathroomEquipment.wcFlushPlateFdvUrl },
+          { label: "Produktsertifikat", url: bathroomEquipment.wcFlushPlateCertificateUrl }
+        ].filter((link) => hasValue(link.url));
+        if (hasValue(bathroomEquipment.wcFlushPlate) || hasValue(bathroomEquipment.wcFlushPlateSupplier) || flushPlateLinks.length) {
+          group.items.push({
+            title: "WC – trykknapp",
+            entries: [
+              ["Trykknappmodell", bathroomEquipment.wcFlushPlate],
+              ["Leverandør", bathroomEquipment.wcFlushPlateSupplier]
+            ].filter(([, value]) => hasValue(value)),
+            links: flushPlateLinks
+          });
+        }
+      }
+      if (hasValue(bathroomEquipment.wcComment)) {
+        group.items.push({ title: "WC – kommentar", entries: [["Kommentar", bathroomEquipment.wcComment]], links: [] });
+      }
     }
     bathroomEquipmentSections.filter((section) => section.title !== "Overflater").forEach((section) => {
       const group = pushGroup(section.title);
@@ -2164,6 +2199,24 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         console.warn("Kunne ikke fjerne lokal kladd:", error);
       }
     };
+    const localDraftIsNewerThanCloud = (saved = {}) => {
+      if (!saved?.projectId || !saved?.savedAt) return false;
+      const cloudRow = (projects || []).find((row) => row.id === saved.projectId);
+      if (!cloudRow?.updated_at) return true;
+      const localTime = new Date(saved.savedAt).getTime();
+      const cloudTime = new Date(cloudRow.updated_at).getTime();
+      if (!Number.isFinite(localTime) || !Number.isFinite(cloudTime)) return false;
+      return localTime > cloudTime + 3e4;
+    };
+    const localDraftHasProjectIdentity = (saved = {}) => {
+      const p = saved?.data?.project || {};
+      return [p.projectName, p.address, p.customer, p.customerEmail, p.customerPhone].some(hasValue);
+    };
+    const shouldPromptForLocalDraftRestore = (saved = {}) => {
+      if (!saved?.data || !hasMeaningfulProjectDraftContent(saved.data)) return false;
+      if (!saved.projectId) return localDraftHasProjectIdentity(saved);
+      return localDraftIsNewerThanCloud(saved);
+    };
     const unpackData = (data, preserveDraft = false) => {
       setCompany(data.company || { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
       setUser(data.user || { name: "", email: "", role: "Eier / administrator" });
@@ -2246,6 +2299,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           setProjectAutoSaveStatus("Kunne ikke autolagre");
           return;
         }
+        clearLocalDraft(projectId);
         setProjectAutoSaveStatus(`Autolagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
       } catch (error) {
         console.warn("Autolagring prosjekt feilet:", error);
@@ -2293,7 +2347,15 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           const raw = window.localStorage.getItem(key);
           if (!raw) continue;
           const saved = JSON.parse(raw);
-          if (!saved?.data || !hasMeaningfulProjectDraftContent(saved.data)) continue;
+          if (!saved?.data || !hasMeaningfulProjectDraftContent(saved.data)) {
+            window.localStorage.removeItem(key);
+            continue;
+          }
+          if (!shouldPromptForLocalDraftRestore(saved)) {
+            window.localStorage.removeItem(key);
+            setProjectAutoSaveStatus("Lokal kladd var allerede lagret i skyen og ble ryddet automatisk");
+            continue;
+          }
 
           // Systemadmin jobber ofte i supportmodus på andre firmaers prosjekter.
           // For å unngå lokale kladder fra supportarbeid, forkastes disse automatisk.
@@ -2319,6 +2381,7 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
             continue;
           }
           unpackData(saved.data, true);
+          window.localStorage.removeItem(key);
           setProjectId(saved.projectId || null);
           setCurrentProjectOwnerId(saved.projectOwnerId || authUser?.id || "");
           setMobileCreatingProject(!saved.projectId);
@@ -2329,7 +2392,7 @@ Trykk OK for å gjenopprette. Trykk Avbryt for å forkaste kladden.`)) {
           console.warn("Kunne ikke lese lokal kladd:", error);
         }
       }
-    }, [authUser?.id, profile?.approved, isReadOnly, localDraftRestoreChecked, isSystemAdminUser]);
+    }, [authUser?.id, profile?.approved, isReadOnly, localDraftRestoreChecked, isSystemAdminUser, projects]);
     const loadProjects = async (currentUser = authUser, notify = false) => {
       if (!currentUser) {
         setProjects([]);
@@ -6150,12 +6213,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type WC", value: bathroomEquipment.wcType || "", onChange: (v) => updateBathroomEquipment({ wcType: v }), options: ["", "Vegghengt", "Gulvstående"], optionLabels: { "": "Velg type" } }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: bathroomEquipment.wcType === "Vegghengt" ? "Veggskål / WC-produkt" : "WC-produkt / modell", value: bathroomEquipment.wcProduct || "", onChange: (v) => updateBathroomEquipment({ wcProduct: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: bathroomEquipment.wcType === "Vegghengt" ? "Leverandør veggskål" : "Leverandør", value: bathroomEquipment.wcSupplier || "", onChange: (v) => updateBathroomEquipment({ wcSupplier: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: bathroomEquipment.wcType === "Vegghengt" ? "FDV-link veggskål" : "FDV-link WC-produkt", value: bathroomEquipment.wcProductFdvUrl || bathroomEquipment.wcFdvUrl || "", onChange: (v) => updateBathroomEquipment({ wcProductFdvUrl: v, wcFdvUrl: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: bathroomEquipment.wcType === "Vegghengt" ? "Produktsertifikat veggskål" : "Produktsertifikat WC-produkt", value: bathroomEquipment.wcProductCertificateUrl || bathroomEquipment.wcCertificateUrl || "", onChange: (v) => updateBathroomEquipment({ wcProductCertificateUrl: v, wcCertificateUrl: v }) }),
           bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Sisternemodell", value: bathroomEquipment.wcCistern || "", onChange: (v) => updateBathroomEquipment({ wcCistern: v }) }),
           bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverandør sisterne", value: bathroomEquipment.wcCisternSupplier || "", onChange: (v) => updateBathroomEquipment({ wcCisternSupplier: v }) }),
+          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link sisterne", value: bathroomEquipment.wcCisternFdvUrl || "", onChange: (v) => updateBathroomEquipment({ wcCisternFdvUrl: v }) }),
+          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktsertifikat sisterne", value: bathroomEquipment.wcCisternCertificateUrl || "", onChange: (v) => updateBathroomEquipment({ wcCisternCertificateUrl: v }) }),
           bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Trykknappmodell", value: bathroomEquipment.wcFlushPlate || "", onChange: (v) => updateBathroomEquipment({ wcFlushPlate: v }) }),
           bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverandør trykknapp", value: bathroomEquipment.wcFlushPlateSupplier || "", onChange: (v) => updateBathroomEquipment({ wcFlushPlateSupplier: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link", value: bathroomEquipment.wcFdvUrl || "", onChange: (v) => updateBathroomEquipment({ wcFdvUrl: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktsertifikat-link", value: bathroomEquipment.wcCertificateUrl || "", onChange: (v) => updateBathroomEquipment({ wcCertificateUrl: v }) })
+          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-link trykknapp", value: bathroomEquipment.wcFlushPlateFdvUrl || "", onChange: (v) => updateBathroomEquipment({ wcFlushPlateFdvUrl: v }) }),
+          bathroomEquipment.wcType === "Vegghengt" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Produktsertifikat trykknapp", value: bathroomEquipment.wcFlushPlateCertificateUrl || "", onChange: (v) => updateBathroomEquipment({ wcFlushPlateCertificateUrl: v }) })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar", value: bathroomEquipment.wcComment || "", onChange: (v) => updateBathroomEquipment({ wcComment: v }) })
       ] }) }),
