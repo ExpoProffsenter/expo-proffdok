@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.7.8 HOTFIX: Garanti kan utstedes før komplett PDF er generert, slik at PDF-en inkluderer garantibeviset.
 // FASE 11D.7.7 STABILISERING: Overtagelse leses fra signaturer, Vis det som gjenstår hopper riktig, og garantipunkter krever status + bilde eller kommentar.
 // FASE 11D.7.4 HOTFIX: Garantipunkter krever status + bilde eller kommentar, og stopper auto-hopp uten dokumentasjon.
 // FASE 11D.7.2: Fikser Åpne-knapp til manglende sjekkpunkt og gir garantiprosjekt veiledning etter overtagelse.
@@ -1669,7 +1670,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       dynamicPointStatus.missing.forEach((message) => missing.push(message));
       if (!hasPhotos) missing.push("Bildedokumentasjon må være lastet opp.");
       if (!approvedSoproSystemSelected) missing.push("Godkjent Sopro-system må velges.");
-      if (!reportGenerated) missing.push("Komplett PDF-rapport må genereres og lastes ned før garanti kan utstedes.");
+      // For garantiprosjekter skal garantien kunne utstedes før komplett PDF genereres,
+      // slik at garantibevis og garantivilkår faktisk kommer med i den nedlastede rapporten.
       return {
         overtagelseSigned,
         openDeviationCount,
@@ -1811,7 +1813,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (projectId && !projectSaved) {
         alert(`✔ Garantien er registrert i garantiregisteret med garantinummer ${guaranteeNumber}, men den ble ikke lagret tilbake på prosjektet automatisk. Feil: ${projectSaveError}. Lås opp prosjektet, trykk Oppdater prosjekt, og kontakt support hvis garantidokumentet fortsatt ikke vises.`);
       } else {
-        alert(`✔ ${warrantyYears} års dokumentert tetthetsgaranti er registrert, utstedt og lagret på prosjektet med garantinummer ${guaranteeNumber}. Den skal nå vises i Garanti-fanen og i PDF også når prosjektet er arkivert/låst.`);
+        alert(`✔ ${warrantyYears} års dokumentert tetthetsgaranti er registrert, utstedt og lagret på prosjektet med garantinummer ${guaranteeNumber}. Last nå ned komplett PDF, slik at garantibevis og garantivilkår blir med i rapporten.`);
       }
     };
     const currentStatus = projectStatusInfo(project, overtagelse, projectGuideStats.openDeviationCount);
@@ -9135,7 +9137,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.openDeviationCount === 0 ? "✅ Ingen åpne avvik" : `⚠️ ${readiness?.openDeviationCount || 0} åpne avvik` }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.checklistComplete ? "✅ Sjekklister fullført" : `⚠️ ${readiness?.checklistDone || 0}/${readiness?.checklistTotal || 0} sjekklistepunkter` }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.hasPhotos ? "✅ Bilder lastet opp" : "⚠️ Bilder mangler" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.reportGenerated ? "✅ Komplett PDF generert" : "⚠️ Komplett PDF må lastes ned" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: issued ? readiness?.reportGenerated ? "✅ Komplett PDF generert" : "⚠️ Last ned komplett PDF nå" : "ℹ️ PDF lages etter garanti" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.termsAccepted ? "✅ Vilkår akseptert" : "⚠️ Garantivilkår mangler" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.approvedSoproSystemSelected ? "✅ Sopro-system valgt" : "⚠️ Sopro-system mangler" }),
             readiness?.approvedSoproSystemSelected && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: readiness?.systemChecklistComplete ? "✅ Sopro-punkter fullført" : `⚠️ ${readiness?.systemChecklistDone || 0}/${readiness?.systemChecklistTotal || 0} Sopro-punkter` })
@@ -9152,7 +9154,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Grunnlag for garantien" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Garantien bygger på dokumentert utførelse med valgt Sopro-system, fullførte sjekklister, lukket avvikshåndtering, bildedokumentasjon, signert overtagelse og nedlastet komplett PDF-rapport. Garantibevis og garantivilkår legges automatisk bakerst i den komplette PDF-rapporten når garanti er aktivert." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Garantien bygger på dokumentert utførelse med valgt Sopro-system, fullførte sjekklister, lukket avvikshåndtering, bildedokumentasjon og signert overtagelse. Når garantien er utstedt, legges garantibevis og garantivilkår automatisk bakerst i den komplette PDF-rapporten. Last derfor ned komplett PDF etter at garantien er utstedt." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: warrantyArchiveNotice }),
           warranty?.reportGeneratedAt && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "Sist genererte komplette PDF-rapport: ",
