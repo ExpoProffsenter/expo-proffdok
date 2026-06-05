@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 11D.7.2: Fikser Åpne-knapp til manglende sjekkpunkt og gir garantiprosjekt veiledning etter overtagelse.
 // FASE 11D.7: Dra-og-slipp på bilder direkte under sjekkpunkter, med tydelig dropzone og bildestatus.
 // FASE 11D.6: Beholder aktiv fane i løpende økt, men starter rent ved faktisk innlogging/utlogging.
 // FASE 11D.5: Flere egne produkter under alle grupper i Overflater og innredning.
@@ -1597,6 +1598,41 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (!projectGuideStats.hasOvertagelse) items.push({ id: "overtagelse", label: "Registrer overtagelse når prosjektet er ferdig", tab: "overtagelse", tone: "neutral" });
       return items.slice(0, 6);
     }, [projectGuideStats]);
+    const firstProjectGuideMissingChecklistPoint = (0, import_react.useMemo)(() => {
+      const points = activeChecklistTemplate.flatMap((group) => (group.items || []).map((item) => ({
+        category: group.category,
+        item,
+        anchorId: checklistPointAnchor(group.category, item)
+      })));
+      return points.find((point) => !hasValue(checklist?.[point.category]?.[point.item]?.status)) || null;
+    }, [activeChecklistTemplate, checklist]);
+    const openProjectGuideItem = (item) => {
+      if (!item) return;
+      if (item.id === "sjekklister-start" || item.id === "sjekklister-mangler") {
+        const targetPoint = firstProjectGuideMissingChecklistPoint;
+        try {
+          if (targetPoint) window.sessionStorage.setItem("expoProffDokChecklistJumpTarget", JSON.stringify(targetPoint));
+        } catch (error) {
+          console.warn("Kunne ikke lagre hopp til sjekkpunkt:", error);
+        }
+        setShowOpenDeviationsOnly(false);
+        goToTab("sjekklister");
+        window.setTimeout(() => {
+          const el = targetPoint?.anchorId ? document.getElementById(targetPoint.anchorId) : null;
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: window.innerWidth <= 700 ? "start" : "center" });
+            el.classList.add("checklistPointFocus");
+            window.setTimeout(() => el.classList.remove("checklistPointFocus"), 1800);
+          }
+        }, 520);
+        return;
+      }
+      if (item.id === "avvik-apne") {
+        openActiveDeviations();
+        return;
+      }
+      goToTab(item.tab);
+    };
     const warrantyReadiness = (0, import_react.useMemo)(() => {
       const utførendeSigned = hasValue(overtagelse?.signUtførende) || hasValue(overtagelse?.signUtførendeImage);
       const kundeSigned = hasValue(overtagelse?.signKunde) || hasValue(overtagelse?.signKundeImage);
@@ -3535,6 +3571,47 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
         termsReceiptRole: warranty?.termsReceiptRole || "Kunde"
       } : warranty;
       if (warranty?.enabled) setWarranty(completedWarranty);
+      if (warranty?.enabled && !warranty?.issued) {
+        const goWarrantyNow = window.confirm(
+          "Overtagelse er registrert på et garantiprosjekt.\n\nVil du gå til Garanti nå for å lage garantibevis og komplett rapport/PDF?\n\nViktig: Last ned rapporten og lagre den sikkert på egen PC/server. Prosjektet låses ikke før du er ferdig med garanti og rapport."
+        );
+        if (goWarrantyNow) {
+          setOvertagelse(completedOvertagelse);
+          const cleanDataBeforeWarranty = JSON.parse(JSON.stringify({
+            company,
+            user,
+            project: { ...emptyProject(), ...project, locked: false, status: "active", lockedAt: "", lockedBy: "" },
+            checked,
+            productDocs,
+            manualProducts,
+            other,
+            surf,
+            bathroomEquipment,
+            photos,
+            access,
+            inst,
+            files,
+            checklist,
+            tilbud,
+            overtagelse: completedOvertagelse,
+            warranty: completedWarranty,
+            projectLog,
+            internalNotes
+          }));
+          const { error: saveBeforeWarrantyError } = await supabase.from("projects").update({
+            data: cleanDataBeforeWarranty,
+            title: project.projectName || project.address || "Uten navn",
+            updated_at: (/* @__PURE__ */ new Date()).toISOString()
+          }).eq("id", projectId).eq("user_id", authUser.id);
+          if (saveBeforeWarrantyError) {
+            console.error(saveBeforeWarrantyError);
+            return alert("Kunne ikke lagre overtagelse før garanti: " + saveBeforeWarrantyError.message);
+          }
+          alert("Overtagelse er lagret. Gå videre med garantibevis og last ned komplett PDF-rapport før prosjektet låses.");
+          goToTab("garanti");
+          return;
+        }
+      }
       const shouldOfferCompletionEmail = !!project.customerEmail;
       const completionEmailAccepted = shouldOfferCompletionEmail ? await sendProjectCompletionEmailToCustomer({ askFirst: true, silent: false }) : false;
       if (!shouldOfferCompletionEmail) {
@@ -7700,7 +7777,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.label }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: "Trykk for å gå direkte til riktig seksjon." })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab(item.tab), children: "Åpne" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectGuideItem(item), children: "Åpne" })
           ] }, item.id)) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektet ser komplett ut. Kontroller rapporten før prosjektet avsluttes." }),
           projectGuideStats.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openActiveDeviations, children: "Se aktive avvik" })
         ] }),
@@ -9287,6 +9364,22 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         }
       }, 180);
     };
+    import_react.default.useEffect(() => {
+      try {
+        const rawTarget = window.sessionStorage.getItem("expoProffDokChecklistJumpTarget");
+        if (!rawTarget) return;
+        window.sessionStorage.removeItem("expoProffDokChecklistJumpTarget");
+        const targetPoint = JSON.parse(rawTarget);
+        if (!targetPoint?.category || !targetPoint?.item) return;
+        scrollToChecklistPoint({
+          category: targetPoint.category,
+          item: targetPoint.item,
+          anchorId: targetPoint.anchorId || checklistPointAnchor(targetPoint.category, targetPoint.item)
+        }, "start");
+      } catch (error) {
+        console.warn("Kunne ikke hoppe til sjekkpunkt:", error);
+      }
+    }, []);
     import_react.default.useEffect(() => {
       if (mobileInitialChecklistJumpRef.current) return;
       if (showOpenDeviationsOnly) return;
