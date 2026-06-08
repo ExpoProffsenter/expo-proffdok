@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 12.4 SYSTEMADMIN SUPPORTVISNING: Tydelig supportmodus-banner, firma-/prosjektinfo og trygg Avslutt supportmodus uten databaseendringer.
 // FASE 12.2 RAPPORTDESIGN: Rydder tegnsett i PDF-vedlegg og forbedrer produktkort i rapport/PDF. Kun rapportvisning, ingen endring i garanti/låsing/autolagring/database.
 // FASE 12.3 RAPPORTDESIGN OVERFLATER: Gir Overflater og innredning samme kort-/seksjonslayout som produkter og sjekklister. Kun rapport/PDF-visning, ingen logikk-/databaseendring.
 // FASE 12.1 RAPPORTSTABILISERING: Rydder PDF/rapportvisning av vedlegg, dokumentfiler, sjekkpunktbilder, fag/utstyr-bilder, telefonfelt og QR uten å endre garanti/låsing/autolagring/database.
@@ -2051,6 +2052,47 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         return !projectTerm || supportSearchText.includes(projectTerm);
       }).slice(0, 80);
     }, [projectListRows, supportProjectSearch, supportSelectedCompany]);
+    const currentSupportProjectRow = (0, import_react.useMemo)(() => {
+      if (!isSystemAdminUser || !projectId || !currentProjectOwnerId || currentProjectOwnerId === authUser?.id) return null;
+      return (projectListRows || []).find((item) => item?.row?.id === projectId) || null;
+    }, [isSystemAdminUser, projectId, currentProjectOwnerId, authUser?.id, projectListRows]);
+    const isSupportModeActive = !!currentSupportProjectRow;
+    const supportProjectCompanyName = String(
+      currentSupportProjectRow?.row?.data?.company?.companyName ||
+      currentSupportProjectRow?.row?.data?.company?.company_name ||
+      company?.companyName ||
+      ""
+    ).trim();
+    const supportProjectOwner = (adminUsers || []).find((entry) => entry?.id === currentProjectOwnerId);
+    const exitSupportMode = () => {
+      if (!isSupportModeActive) return;
+      setProject(emptyProject());
+      setChecked({});
+      setProductDocs({});
+      setManualProducts({});
+      setOther({});
+      setSurf({});
+      setBathroomEquipment(emptyBathroomEquipment());
+      setPhotos([]);
+      setAccess([]);
+      setInst([]);
+      setFiles([]);
+      setChecklist({});
+      setTilbud(emptyTilbud());
+      setOvertagelse(emptyOvertagelse());
+      setWarranty(emptyWarranty());
+      setProjectLog(emptyProjectLog());
+      setInternalNotes("");
+      setProjectId(null);
+      setCurrentProjectOwnerId("");
+      setMobileCreatingProject(false);
+      setLocalDraftRestoreChecked(false);
+      setShowOpenDeviationsOnly(false);
+      if (profile) applyProfile(profile);
+      setOpenAdminSections((prev) => ({ ...prev || {}, support: true }));
+      setTab("admin");
+      setTimeout(() => scrollToMobileTabTarget("admin"), 120);
+    };
     const mobileHomeStats = (0, import_react.useMemo)(() => {
       const active = projectListRows.filter((item) => item.listStatus.tone !== "done" && item.listStatus.tone !== "locked").length;
       const deviations = projectListRows.filter((item) => item.openDeviationCount > 0).length;
@@ -3749,7 +3791,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
       setAdminLoading(true);
       const [{ data, error }, { data: termsData, error: termsFetchError }] = await Promise.all([
-        supabase.from("profiles").select("id,email,approved,deactivated,company_name,company_role,system_role,role,is_admin,created_at").order("created_at", { ascending: false }),
+        supabase.from("profiles").select("id,email,approved,deactivated,company_name,company_role,system_role,role,is_admin,org_number,address,phone,website,logo_url,created_at").order("created_at", { ascending: false }),
         supabase.from("user_terms_acceptance").select("id,user_id,email,version,accepted_at").eq("version", EXPO_PROFFDOK_TERMS_VERSION).order("accepted_at", { ascending: false })
       ]);
       setAdminLoading(false);
@@ -7962,6 +8004,17 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           projectId && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
+        isSupportModeActive && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "12px 16px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "16px", display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gap: "3px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { style: { color: "#9a3412" }, children: "SYSTEMADMIN SUPPORTMODUS" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { color: "#7c2d12", fontWeight: 800 }, children: [
+              "Firma: ", supportProjectCompanyName || "Ukjent firma",
+              " · Prosjekt: ", project.projectName || project.address || "Uten navn",
+              " · Prosjekteier: ", supportProjectOwner?.email || currentProjectOwnerId || "ukjent"
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: exitSupportMode, children: "Avslutt supportmodus" })
+        ] }),
         hasActiveProjectWorkspace && projectAutoSaveStatus && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "note", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 10px" }, children: `Autolagring: ${projectAutoSaveStatus}` }),
         projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileNav", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 14px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavPanel", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavTop", children: [
@@ -8976,6 +9029,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 const companyName = String(dataCompany.companyName || dataCompany.company_name || item?.listProject?.companyName || "").trim();
                 return companyName.toLowerCase() === String(entry.name || "").trim().toLowerCase();
               }).slice(0, 30);
+              const entryUsers = (adminUsers || []).filter((userRow) => String(userRow?.company_name || "").trim().toLowerCase() === String(entry.name || "").trim().toLowerCase());
+              const entryAdmins = entryUsers.filter((userRow) => userRow?.company_role === "firmaadmin");
+              const entryProfile = entryUsers.find((userRow) => userRow?.org_number || userRow?.phone || userRow?.address || userRow?.website || userRow?.logo_url) || entryUsers[0] || {};
               return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: entryIsOpen ? "#ecfeff" : "#fff" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }, children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: entry.name }),
@@ -8990,6 +9046,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   " · Prosjekter: ", entry.projects,
                   " · Aktive: ", entry.activeProjects,
                   " · Ulest chat: ", entry.unread
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "4px", color: "#475569" }, children: [
+                  "Firmaadmin: ", entryAdmins.map((userRow) => userRow.email).filter(Boolean).join(", ") || "Ikke satt",
+                  entryProfile?.org_number ? ` · Org.nr: ${entryProfile.org_number}` : "",
+                  entryProfile?.phone ? ` · Tlf: ${entryProfile.phone}` : "",
+                  entryProfile?.address ? ` · Adresse: ${entryProfile.address}` : "",
+                  entryProfile?.website ? ` · Web: ${entryProfile.website}` : ""
                 ] }),
                 entryIsOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px", borderTop: "1px solid #dbeafe", paddingTop: "12px" }, children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { style: { marginTop: 0 }, children: `Prosjekter hos ${entry.name}` }),
@@ -9013,6 +9076,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                         "Status: ", item.listStatus.label,
                         " · Ansvarlig: ", item.listProject.responsible || "Ikke satt",
+                        " · Prosjekteier: ", (adminUsers || []).find((userRow) => userRow?.id === item.row.user_id)?.email || item.row.user_id || "ukjent",
                         " · Oppdatert: ", item.row.updated_at ? new Date(item.row.updated_at).toLocaleString("no-NO") : "ukjent",
                         " · Ulest chat: ", item.unreadForAdminInList
                       ] })
