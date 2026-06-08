@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 12.5 SYSTEMADMIN BRUKERVILKÅRSTATUS: Systemadmin matcher godkjente brukervilkår på både user_id og e-post. Ingen database-/rolle-/prosjektendringer.
 // FASE 12.4 SYSTEMADMIN SUPPORTVISNING: Tydelig supportmodus-banner, firma-/prosjektinfo og trygg Avslutt supportmodus uten databaseendringer.
 // FASE 12.2 RAPPORTDESIGN: Rydder tegnsett i PDF-vedlegg og forbedrer produktkort i rapport/PDF. Kun rapportvisning, ingen endring i garanti/låsing/autolagring/database.
 // FASE 12.3 RAPPORTDESIGN OVERFLATER: Gir Overflater og innredning samme kort-/seksjonslayout som produkter og sjekklister. Kun rapport/PDF-visning, ingen logikk-/databaseendring.
@@ -1510,6 +1511,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         return text.includes(search);
       });
     }, [adminUsers, adminUserFilter, adminUserSearch, adminUserCompanyFilter]);
+    const normalizeEmailKey = (value = "") => String(value || "").trim().toLowerCase();
     const adminTermsAcceptanceByUser = (0, import_react.useMemo)(() => {
       const map = {};
       (adminTermsAcceptances || []).forEach((row) => {
@@ -1519,7 +1521,26 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       });
       return map;
     }, [adminTermsAcceptances]);
-    const termsAcceptedCount = (0, import_react.useMemo)(() => Object.keys(adminTermsAcceptanceByUser || {}).length, [adminTermsAcceptanceByUser]);
+    const adminTermsAcceptanceByEmail = (0, import_react.useMemo)(() => {
+      const map = {};
+      (adminTermsAcceptances || []).forEach((row) => {
+        const emailKey = normalizeEmailKey(row?.email);
+        if (!emailKey) return;
+        const current = map[emailKey];
+        if (!current || String(row.accepted_at || "") > String(current.accepted_at || "")) map[emailKey] = row;
+      });
+      return map;
+    }, [adminTermsAcceptances]);
+    const getAdminTermsAcceptanceForUser = (userRow = {}) => {
+      return adminTermsAcceptanceByUser?.[userRow?.id] || adminTermsAcceptanceByEmail?.[normalizeEmailKey(userRow?.email)] || null;
+    };
+    const termsAcceptedCount = (0, import_react.useMemo)(() => {
+      const keys = new Set();
+      Object.values(adminTermsAcceptanceByUser || {}).forEach((row) => {
+        keys.add(row?.user_id || normalizeEmailKey(row?.email));
+      });
+      return keys.size;
+    }, [adminTermsAcceptanceByUser]);
     const formatTermsAcceptedAt = (value = "") => {
       if (!value) return "";
       try {
@@ -9118,11 +9139,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 "Status: ",
                 u.deactivated ? "Deaktivert" : u.approved ? "Godkjent" : "Venter p\xE5 godkjenning"
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "4px", color: adminTermsAcceptanceByUser[u.id] ? "#065f46" : "#9a3412", fontWeight: 800 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "4px", color: getAdminTermsAcceptanceForUser(u) ? "#065f46" : "#9a3412", fontWeight: 800 }, children: [
                 "Brukervilkår v",
                 EXPO_PROFFDOK_TERMS_VERSION,
                 ": ",
-                adminTermsAcceptanceByUser[u.id] ? `Godkjent ${formatTermsAcceptedAt(adminTermsAcceptanceByUser[u.id].accepted_at)}` : "Ikke godkjent"
+                getAdminTermsAcceptanceForUser(u) ? `Godkjent ${formatTermsAcceptedAt(getAdminTermsAcceptanceForUser(u).accepted_at)}` : "Ikke godkjent"
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px", marginTop: "10px" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Firmarolle", value: u.company_role === "firmaadmin" ? "firmaadmin" : "ansatt", options: ["ansatt", "firmaadmin"], onChange: (v) => updateAdminUserCompanyRole(u, v) }),
