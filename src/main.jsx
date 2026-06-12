@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.9 HOTFIX PROSJEKTLISTE: Prosjektlisten bruker nå fersk profil ved innlogging, slik at firmaadmin/systemadmin ikke faller tilbake til for smalt prosjektgrunnlag ved fanebytte/refresh. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.8 PROSJEKTLISTE RESET: Nullstiller prosjektlistesøk, statusfilter og ulestfilter ved innlogging/utlogging og når supportmodus avsluttes. Kun frontend-state, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.7 SUPPORTMODUS: Supportmodus aktiveres kun eksplisitt fra Systemadmin supportvisning. Vanlig åpning fra Prosjektliste skal aldri automatisk gi supportmodus. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.6 TILGANGS-EPOSTER: Sender med kunde, adresse, postnr/sted, kundeepost og kundetelefon til smart-worker slik at kundelink/UE-link/ferdigmelding viser tydelig prosjektinfo. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -2503,30 +2504,49 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         }
       }
     }, [authUser?.id, profile?.approved, isReadOnly, localDraftRestoreChecked, isSystemAdminUser, projects]);
-    const loadProjects = async (currentUser = authUser, notify = false) => {
+    const loadProjects = async (currentUser = authUser, notify = false, profileOverride = null) => {
       if (!currentUser) {
         setProjects([]);
         if (notify) alert("Du må være logget inn for å hente prosjektliste.");
         return;
       }
+
+      // FASE 13.9 HOTFIX:
+      // Ikke bruk kun React-state for rolle/firma her. Ved innlogging kan profile-state henge ett render
+      // etter ensureProfile(), og da ble prosjektlisten først lastet som vanlig bruker (f.eks. 27 prosjekter)
+      // før man trykket Oppdater og fikk riktig firma-/systemadminliste (f.eks. 54 prosjekter).
+      const effectiveProfile = profileOverride || profile || {};
+      const effectiveSystemAdmin = effectiveProfile?.system_role === "systemadmin";
+      const effectiveCompanyAdmin = !!effectiveProfile?.approved && !effectiveProfile?.deactivated && (effectiveProfile?.company_role === "firmaadmin" || effectiveSystemAdmin);
+      const effectiveCompanyName = String(effectiveProfile?.company_name || "").trim();
+      const normalizeCompanyForLoad = (value = "") => String(value || "").trim().toLowerCase();
+
       let query = supabase.from("projects").select("*").order("updated_at", { ascending: false });
-      if (!isSystemAdminUser && !isCompanyAdminUser) {
+      if (!effectiveSystemAdmin && !effectiveCompanyAdmin) {
         query = query.eq("user_id", currentUser.id);
       }
+
       const { data, error } = await query;
       if (error) {
         console.error(error);
         return alert("Kunne ikke hente prosjektliste: " + error.message);
       }
+
       const rows = data || [];
-      const filteredRows = isSystemAdminUser
+      const filteredRows = effectiveSystemAdmin
         ? rows
-        : isCompanyAdminUser
-          ? rows.filter((row) => projectBelongsToCurrentCompany(row, currentUser))
+        : effectiveCompanyAdmin
+          ? rows.filter((row) => {
+              if (row.user_id === currentUser.id) return true;
+              if (!effectiveCompanyName) return false;
+              const rowCompanyName = projectCompanyNameFromRow(row);
+              return normalizeCompanyForLoad(rowCompanyName) === normalizeCompanyForLoad(effectiveCompanyName);
+            })
           : rows.filter((row) => row.user_id === currentUser.id);
+
       setProjects(filteredRows);
       if (notify) {
-        const companyText = isCompanyAdminUser && !isSystemAdminUser && currentCompanyName ? ` i ${currentCompanyName}` : "";
+        const companyText = effectiveCompanyAdmin && !effectiveSystemAdmin && effectiveCompanyName ? ` i ${effectiveCompanyName}` : "";
         alert(`Prosjektliste oppdatert${companyText}. Fant ${filteredRows.length} prosjekt${filteredRows.length === 1 ? "" : "er"}.`);
       }
     };
@@ -2771,7 +2791,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const row = await ensureProfile(sessionUser);
       if (row?.approved && !row?.deactivated) {
         await loadTermsAcceptance(sessionUser.id);
-        loadProjects(sessionUser);
+        loadProjects(sessionUser, false, row);
       } else {
         setTermsLoading(false);
       }
