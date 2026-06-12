@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.4 PROSJEKTLISTE SØK: Utvider prosjektlistesøk til garantinummer, e-post, telefon, adresse, kunde, ansvarlig, firma, produkter, overflater og innredning. Kun frontend-søk/tekst, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 13.3 UNDERENTREPRENØR UX: Tydelige klikkbare accordion-rader i Overflater og innredning + hjelpetekst. Kun visuell/tekstlig endring, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 13.2 MOBILFLYT: Flytter Overtagelse etter Interne notater, legger fast mobil-chatknapp og tydeliggjør klikkbare accordion-rader. Ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 12.5 SYSTEMADMIN BRUKERVILKÅRSTATUS: Systemadmin matcher godkjente brukervilkår på både user_id og e-post. Ingen database-/rolle-/prosjektendringer.
@@ -1974,8 +1975,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           chat: chatImages.length,
           previews: allProjectImages.slice(0, 4)
         };
-        const searchable = [
+        const searchableValues = [
+          row.id,
           row.title,
+          projectCompanyNameFromRow(row),
+          data?.company?.companyName,
+          data?.company?.company_name,
           listProject.projectName,
           listProject.customer,
           listProject.address,
@@ -1984,16 +1989,31 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           listProject.customerEmail,
           listProject.customerPhone,
           listProject.responsible,
+          listProject.notes,
+          listProject.projectDescription,
           listWarranty?.enabled ? `garanti ${getWarrantyYears(listWarranty)} år` : "",
-          listWarranty?.guaranteeNumber || ""
-        ].filter(Boolean).join(" ").toLowerCase();
+          listWarranty?.guaranteeNumber || "",
+          listWarranty?.sintefApproval || "",
+          listWarranty?.system || "",
+          JSON.stringify(data?.surf || {}),
+          JSON.stringify(data?.bathroomEquipment || {}),
+          JSON.stringify(data?.access || []),
+          JSON.stringify(data?.inst || []),
+          JSON.stringify(data?.checked || {}),
+          JSON.stringify(data?.productDocs || {}),
+          JSON.stringify(data?.manualProducts || {}),
+          JSON.stringify(data?.other || {})
+        ];
+        const searchableRaw = searchableValues.filter(Boolean).join(" ").toLowerCase();
+        const searchable = `${searchableRaw} ${searchableRaw.replace(/[\s.\-+()]/g, "")}`;
         return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, listWarranty, searchable };
       });
     }, [projects]);
     const filteredProjectListRows = (0, import_react.useMemo)(() => {
       const term = (projectSearch || "").trim().toLowerCase();
+      const compactTerm = term.replace(/[\s.\-+()]/g, "");
       return projectListRows.filter((item) => {
-        if (term && !item.searchable.includes(term)) return false;
+        if (term && !item.searchable.includes(term) && (!compactTerm || !item.searchable.includes(compactTerm))) return false;
         if (projectUnreadOnly && item.unreadForAdminInList <= 0) return false;
         if (projectStatusFilter !== "alle" && item.listStatus.tone !== projectStatusFilter) return false;
         return true;
@@ -8147,7 +8167,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeSearchCard", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk prosjekt, kunde eller adresse", value: projectSearch, onChange: setProjectSearch }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk prosjekt, kunde, adresse, e-post, telefon eller garantinr.", value: projectSearch, onChange: setProjectSearch }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeFilterRow", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "alle" && !projectUnreadOnly ? "" : "secondary", onClick: () => {
                 setProjectStatusFilter("alle");
@@ -8840,7 +8860,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item projectListSearchPanel", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk etter prosjekt, kunde, adresse eller ansvarlig", value: projectSearch, onChange: setProjectSearch }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk etter prosjekt, kunde, adresse, e-post, telefon, garantinr., ansvarlig eller produkt", value: projectSearch, onChange: setProjectSearch }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "draft", "progress", "waiting", "customer_ready", "deviation", "done", "locked"], optionLabels: { alle: "Alle", draft: "Utkast", progress: "Pågår", waiting: "Avventer", customer_ready: "Klar for kunde", deviation: "Avvik åpent", done: "Ferdigstilt", locked: "Arkivert / låst" } })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListToolbar", children: [
