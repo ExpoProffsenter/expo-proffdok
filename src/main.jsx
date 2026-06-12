@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.6 TILGANGS-EPOSTER: Sender med kunde, adresse, postnr/sted, kundeepost og kundetelefon til smart-worker slik at kundelink/UE-link/ferdigmelding viser tydelig prosjektinfo. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.5 PROSJEKTLISTE/SYSTEMADMIN SØK: Felles bredt prosjektsøk med normalisering, eier/firma-felt og samme søketreff i Systemadmin supportmodus. Kun frontend-søk/visning, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 13.4 PROSJEKTLISTE SØK: Utvider prosjektlistesøk til garantinummer, e-post, telefon, adresse, kunde, ansvarlig, firma, produkter, overflater og innredning. Kun frontend-søk/tekst, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 13.3 UNDERENTREPRENØR UX: Tydelige klikkbare accordion-rader i Overflater og innredning + hjelpetekst. Kun visuell/tekstlig endring, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
@@ -3631,8 +3632,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             accessRole: roleParam === "underleverandor" ? "underentreprenør" : "kunde",
             projectId: id,
             projectName: project.projectName || project.address || "Prosjekt",
-            customerName: recipientName || project.customer || "Mottaker",
+            recipientName: recipientName || "",
+            customerName: project.customer || recipientName || "Kunde",
             customerEmail: project.customerEmail || "",
+            customerPhone: project.customerPhone || "",
+            projectAddress: project.address || "",
+            projectPostnr: project.postnr || "",
+            projectCity: project.city || "",
+            projectResponsible: project.responsible || user.name || authUser?.email || "",
             companyName: company.companyName || name || "Expo ProffDok",
             fromName: user.name || authUser?.email || "Prosjektleder",
             message: accessEmailMessage || "Du har fått tilgang til prosjektet.",
@@ -3704,6 +3711,11 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
             projectName: project.projectName || project.address || "Prosjekt",
             customerName: project.customer || "Kunde",
             customerEmail: cleanEmail,
+            customerPhone: project.customerPhone || "",
+            projectAddress: project.address || "",
+            projectPostnr: project.postnr || "",
+            projectCity: project.city || "",
+            projectResponsible: project.responsible || user.name || authUser?.email || "",
             companyName: company.companyName || name || "Expo ProffDok",
             fromName: user.name || authUser?.email || "Prosjektleder",
             message: emailBody,
