@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.5 PROSJEKTLISTE/SYSTEMADMIN SØK: Felles bredt prosjektsøk med normalisering, eier/firma-felt og samme søketreff i Systemadmin supportmodus. Kun frontend-søk/visning, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 13.4 PROSJEKTLISTE SØK: Utvider prosjektlistesøk til garantinummer, e-post, telefon, adresse, kunde, ansvarlig, firma, produkter, overflater og innredning. Kun frontend-søk/tekst, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 13.3 UNDERENTREPRENØR UX: Tydelige klikkbare accordion-rader i Overflater og innredning + hjelpetekst. Kun visuell/tekstlig endring, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 13.2 MOBILFLYT: Flytter Overtagelse etter Interne notater, legger fast mobil-chatknapp og tydeliggjør klikkbare accordion-rader. Ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
@@ -1916,6 +1917,34 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ...row?.data || fallbackData || {},
       project: projectFromRow(row, (row?.data || fallbackData || {}).project || emptyProject())
     });
+    const normalizeSearchText = (value = "") => String(value ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/æ/g, "ae")
+      .replace(/ø/g, "o")
+      .replace(/å/g, "a")
+      .replace(/Æ/g, "ae")
+      .replace(/Ø/g, "o")
+      .replace(/Å/g, "a")
+      .toLowerCase();
+    const compactSearchText = (value = "") => normalizeSearchText(value).replace(/[\s.\-+()_/:;,]/g, "");
+    const makeSearchableText = (values = []) => {
+      const raw = values.filter((value) => value !== null && value !== void 0 && value !== false).map((value) => {
+        if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
+        try { return JSON.stringify(value); } catch { return String(value); }
+      }).filter(Boolean).join(" ");
+      const normalized = normalizeSearchText(raw);
+      const compact = compactSearchText(raw);
+      return `${normalized} ${compact}`;
+    };
+    const projectMatchesSearch = (searchable = "", searchTerm = "") => {
+      const normalizedTerm = normalizeSearchText(searchTerm).trim();
+      if (!normalizedTerm) return true;
+      const compactTerm = compactSearchText(searchTerm);
+      const terms = normalizedTerm.split(/\s+/).filter(Boolean);
+      const compactTerms = terms.map(compactSearchText).filter(Boolean);
+      return terms.every((term, index) => searchable.includes(term) || (compactTerms[index] && searchable.includes(compactTerms[index]))) || (!!compactTerm && searchable.includes(compactTerm));
+    };
     const projectListRows = (0, import_react.useMemo)(() => {
       return (projects || []).map((row) => {
         const data = row.data || {};
@@ -1975,12 +2004,24 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           chat: chatImages.length,
           previews: allProjectImages.slice(0, 4)
         };
+        const projectCompanyName = projectCompanyNameFromRow(row) || data?.company?.companyName || data?.company?.company_name || "";
+        const ownerProfile = (adminUsers || []).find((userRow) => userRow?.id === row.user_id) || {};
+        const projectOwnerEmail = ownerProfile?.email || row?.data?.user?.email || row?.user?.email || "";
         const searchableValues = [
           row.id,
           row.title,
-          projectCompanyNameFromRow(row),
-          data?.company?.companyName,
-          data?.company?.company_name,
+          row.user_id,
+          row.created_at,
+          row.updated_at,
+          projectCompanyName,
+          data?.company,
+          data?.user,
+          ownerProfile?.email,
+          ownerProfile?.company_name,
+          ownerProfile?.company_role,
+          ownerProfile?.phone,
+          ownerProfile?.address,
+          listProject,
           listProject.projectName,
           listProject.customer,
           listProject.address,
@@ -1995,25 +2036,25 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           listWarranty?.guaranteeNumber || "",
           listWarranty?.sintefApproval || "",
           listWarranty?.system || "",
-          JSON.stringify(data?.surf || {}),
-          JSON.stringify(data?.bathroomEquipment || {}),
-          JSON.stringify(data?.access || []),
-          JSON.stringify(data?.inst || []),
-          JSON.stringify(data?.checked || {}),
-          JSON.stringify(data?.productDocs || {}),
-          JSON.stringify(data?.manualProducts || {}),
-          JSON.stringify(data?.other || {})
+          data?.surf || {},
+          data?.bathroomEquipment || {},
+          data?.access || [],
+          data?.inst || [],
+          data?.checked || {},
+          data?.productDocs || {},
+          data?.manualProducts || {},
+          data?.other || {},
+          data?.files || [],
+          data?.tilbud || {},
+          data?.projectLog || {}
         ];
-        const searchableRaw = searchableValues.filter(Boolean).join(" ").toLowerCase();
-        const searchable = `${searchableRaw} ${searchableRaw.replace(/[\s.\-+()]/g, "")}`;
-        return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, listWarranty, searchable };
+        const searchable = makeSearchableText(searchableValues);
+        return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, listWarranty, searchable, projectCompanyName, projectOwnerEmail };
       });
-    }, [projects]);
+    }, [projects, adminUsers]);
     const filteredProjectListRows = (0, import_react.useMemo)(() => {
-      const term = (projectSearch || "").trim().toLowerCase();
-      const compactTerm = term.replace(/[\s.\-+()]/g, "");
       return projectListRows.filter((item) => {
-        if (term && !item.searchable.includes(term) && (!compactTerm || !item.searchable.includes(compactTerm))) return false;
+        if (!projectMatchesSearch(item.searchable, projectSearch)) return false;
         if (projectUnreadOnly && item.unreadForAdminInList <= 0) return false;
         if (projectStatusFilter !== "alle" && item.listStatus.tone !== projectStatusFilter) return false;
         return true;
@@ -2074,26 +2115,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         .sort((a, b) => (b.latestUpdated || "").localeCompare(a.latestUpdated || "") || a.name.localeCompare(b.name, "no"));
     }, [adminUsers, projectListRows, supportCompanySearch]);
     const supportProjects = (0, import_react.useMemo)(() => {
-      const projectTerm = String(supportProjectSearch || "").trim().toLowerCase();
-      const selectedCompany = String(supportSelectedCompany || "").trim().toLowerCase();
+      const selectedCompany = normalizeSearchText(supportSelectedCompany).trim();
       return (projectListRows || []).filter((item) => {
-        const dataCompany = item?.row?.data?.company || {};
-        const companyName = String(dataCompany.companyName || dataCompany.company_name || item?.listProject?.companyName || "").trim();
-        if (selectedCompany && companyName.toLowerCase() !== selectedCompany) return false;
-        const supportSearchText = [
-          companyName,
-          item?.row?.title,
-          item?.listProject?.projectName,
-          item?.listProject?.customer,
-          item?.listProject?.address,
-          item?.listProject?.city,
-          item?.listProject?.postnr,
-          item?.listProject?.customerEmail,
-          item?.listProject?.responsible,
-          item?.listWarranty?.guaranteeNumber
-        ].filter(Boolean).join(" ").toLowerCase();
-        return !projectTerm || supportSearchText.includes(projectTerm);
-      }).slice(0, 80);
+        const companyName = normalizeSearchText(item?.projectCompanyName || "").trim();
+        if (selectedCompany && companyName !== selectedCompany) return false;
+        return projectMatchesSearch(item.searchable, supportProjectSearch);
+      }).slice(0, 120);
     }, [projectListRows, supportProjectSearch, supportSelectedCompany]);
     const currentSupportProjectRow = (0, import_react.useMemo)(() => {
       if (!isSystemAdminUser || !projectId || !currentProjectOwnerId || currentProjectOwnerId === authUser?.id) return null;
@@ -8885,7 +8912,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter hentet ennå. Trykk Oppdater." }),
           projects.length > 0 && filteredProjectListRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter matcher søket eller filteret." }),
-          filteredProjectListRows.map(({ row: p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, listWarranty }) => {
+          filteredProjectListRows.map(({ row: p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, listWarranty, projectCompanyName, projectOwnerEmail }) => {
             const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(", ");
             const updatedLabel = p.updated_at || p.created_at ? new Date(p.updated_at || p.created_at).toLocaleString("no-NO") : "Ukjent";
             const latestChatLabel = latestMessage?.created ? new Date(latestMessage.created).toLocaleString("no-NO") : "Ingen meldinger";
@@ -8898,8 +8925,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                     " ",
                     listProject.customer
                   ] }),
+                  projectCompanyName && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["🏢 ", projectCompanyName] }),
+                  listProject.customerEmail && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["✉ ", listProject.customerEmail] }),
                   listProject.customerPhone && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["☎ ", listProject.customerPhone] }),
-                  locationLine && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["📍 ", locationLine] })
+                  locationLine && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["📍 ", locationLine] }),
+                  isSystemAdminUser && projectOwnerEmail && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: ["👤 Prosjekteier: ", projectOwnerEmail] })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListBadges", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: `statusBadge status-${listStatus.tone}`, style: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 10px", borderRadius: "999px", fontWeight: 700, border: "1px solid #dbe7ec", width: "fit-content", ...statusStyle(listStatus.tone) }, children: [
@@ -9072,7 +9102,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk firma", value: supportCompanySearch, placeholder: "Søk etter firmanavn", onChange: setSupportCompanySearch }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk prosjekt", value: supportProjectSearch, placeholder: "Søk prosjekt, kunde, adresse, ansvarlig eller garanti", onChange: setSupportProjectSearch })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk prosjekt", value: supportProjectSearch, placeholder: "Søk prosjekt, kunde, adresse, e-post, telefon, firma, produkt eller garanti", onChange: setSupportProjectSearch })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards projectListHeaderCards", style: { marginTop: "12px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
@@ -9092,11 +9122,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             supportCompanies.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen firma funnet ennå. Trykk Oppdater supportdata." }),
             supportCompanies.slice(0, 20).map((entry) => {
               const entryIsOpen = openSupportCompany === entry.name;
-              const entryProjects = supportProjects.filter((item) => {
-                const dataCompany = item?.row?.data?.company || {};
-                const companyName = String(dataCompany.companyName || dataCompany.company_name || item?.listProject?.companyName || "").trim();
-                return companyName.toLowerCase() === String(entry.name || "").trim().toLowerCase();
-              }).slice(0, 30);
+              const entryProjects = supportProjects.filter((item) => normalizeSearchText(item?.projectCompanyName || "").trim() === normalizeSearchText(entry.name || "").trim()).slice(0, 30);
               const entryUsers = (adminUsers || []).filter((userRow) => String(userRow?.company_name || "").trim().toLowerCase() === String(entry.name || "").trim().toLowerCase());
               const entryAdmins = entryUsers.filter((userRow) => userRow?.company_role === "firmaadmin");
               const entryProfile = entryUsers.find((userRow) => userRow?.org_number || userRow?.phone || userRow?.address || userRow?.website || userRow?.logo_url) || entryUsers[0] || {};
@@ -9132,7 +9158,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.listProject.projectName || item.row.title || "Uten navn" }),
                           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block" }, children: [
                             item.listProject.customer ? `Kunde: ${item.listProject.customer}` : "Kunde ikke satt",
-                            item.listProject.address ? ` · ${item.listProject.address}` : ""
+                            item.listProject.address ? ` · ${item.listProject.address}` : "",
+                            item.listProject.customerEmail ? ` · ${item.listProject.customerEmail}` : "",
+                            item.listProject.customerPhone ? ` · ${item.listProject.customerPhone}` : "",
+                            item.listWarranty?.guaranteeNumber ? ` · Garanti: ${item.listWarranty.guaranteeNumber}` : ""
                           ] })
                         ] }),
                         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" }, children: [
