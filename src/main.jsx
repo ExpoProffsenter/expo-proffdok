@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.2 MOBILFLYT: Flytter Overtagelse etter Interne notater, legger fast mobil-chatknapp og tydeliggjør klikkbare accordion-rader. Ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 12.5 SYSTEMADMIN BRUKERVILKÅRSTATUS: Systemadmin matcher godkjente brukervilkår på både user_id og e-post. Ingen database-/rolle-/prosjektendringer.
 // FASE 12.4 SYSTEMADMIN SUPPORTVISNING: Tydelig supportmodus-banner, firma-/prosjektinfo og trygg Avslutt supportmodus uten databaseendringer.
 // FASE 12.2 RAPPORTDESIGN: Rydder tegnsett i PDF-vedlegg og forbedrer produktkort i rapport/PDF. Kun rapportvisning, ingen endring i garanti/låsing/autolagring/database.
@@ -2135,9 +2136,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["installasjoner", "Fag/utstyr"],
       ["sjekklister", "Sjekklister"],
       ["tilbud", "Tilbud/kontrakt"],
-      ["overtagelse", "Overtagelse"],
       ["chat", unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : totalChatCount > 0 ? `Chat (${totalChatCount})` : "Chat"],
       ["internt", "Interne notater"],
+      ["overtagelse", "Overtagelse"],
       ["prosjektliste", "Prosjektliste"],
       ["rapport", "Rapport"],
       ["hjelp", "Hjelp"],
@@ -7213,15 +7214,20 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       .pdfSafeLink a { font-weight: 700; }
       .pdfSafeUrl { display:block; color:#334155; font-size:10px; line-height:1.25; overflow-wrap:anywhere; word-break:break-word; margin-top:2px; }
       .collapsibleBlock { border:1px solid #dbe7ec; border-radius:16px; background:#ffffff; margin:12px 0; overflow:hidden; }
-      .collapsibleBlock summary { list-style:none; cursor:pointer; padding:13px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:900; color:#0f172a; }
+      .collapsibleBlock summary { list-style:none; cursor:pointer; padding:13px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:900; color:#0f172a; background:#f8fafc; border-bottom:1px solid transparent; user-select:none; transition:background .15s ease, border-color .15s ease, box-shadow .15s ease; }
+      .collapsibleBlock summary:hover { background:#eef7fa; box-shadow:inset 0 0 0 1px rgba(8,213,216,.18); }
+      .collapsibleBlock[open] summary { border-bottom-color:#dbe7ec; background:#f1f8fb; }
       .collapsibleBlock summary::-webkit-details-marker { display:none; }
-      .collapsibleBlock summary:after { content:'▼'; font-size:13px; color:#64748b; transition:transform .15s ease; }
+      .collapsibleBlock summary:after { content:'▼'; font-size:13px; color:#0f172a; transition:transform .15s ease; background:#ffffff; border:1px solid #cbd5e1; border-radius:999px; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 24px; }
       .collapsibleBlock:not([open]) summary:after { transform:rotate(-90deg); }
       .collapsibleBlockBody { padding:0 14px 14px; }
+      .mobileChatFab { display:none; }
       @media screen and (max-width:700px) {
         .collapsibleBlock { border-radius:15px !important; margin:10px 0 !important; }
         .collapsibleBlock summary { min-height:46px; padding:11px 12px; font-size:15px; }
         .collapsibleBlockBody { padding:0 12px 12px; }
+        .mobileChatFab { display:inline-flex !important; position:fixed; right:14px; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:90; align-items:center; justify-content:center; gap:7px; min-height:50px !important; padding:12px 16px !important; border-radius:999px !important; background:#082f3a !important; color:#fff !important; border:1px solid #082f3a !important; box-shadow:0 14px 34px rgba(15,23,42,.28); font-weight:900 !important; }
+        .mobileChatFab.hasUnread { background:#b91c1c !important; border-color:#b91c1c !important; }
       }
       @media print {
         .pdfSafeLink a { color:#0645ad !important; text-decoration:underline !important; }
@@ -9324,6 +9330,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] })
           ] })
         ] })
+      ] }),
+      projectId && tab !== "chat" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: unreadForAdmin > 0 ? "mobileChatFab hasUnread" : "mobileChatFab", onClick: () => goToTab("chat"), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "💬" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: unreadForAdmin > 0 ? `${unreadForAdmin} ulest` : totalChatCount > 0 ? `Chat ${totalChatCount}` : "Chat" })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bottomAppNav", "aria-label": "Hovednavigasjon mobil", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: tab === "prosjektliste" ? "active" : "secondary", onClick: () => goToTab("prosjektliste"), children: [
