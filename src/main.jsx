@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.3 UNDERENTREPRENØR UX: Tydelige klikkbare accordion-rader i Overflater og innredning + hjelpetekst. Kun visuell/tekstlig endring, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 13.2 MOBILFLYT: Flytter Overtagelse etter Interne notater, legger fast mobil-chatknapp og tydeliggjør klikkbare accordion-rader. Ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 12.5 SYSTEMADMIN BRUKERVILKÅRSTATUS: Systemadmin matcher godkjente brukervilkår på både user_id og e-post. Ingen database-/rolle-/prosjektendringer.
 // FASE 12.4 SYSTEMADMIN SUPPORTVISNING: Tydelig supportmodus-banner, firma-/prosjektinfo og trygg Avslutt supportmodus uten databaseendringer.
@@ -6530,6 +6531,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     };
     const renderOverflaterOgInnredning = () => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Overflater og innredning", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dokumenter synlige overflater, innredning, sanitærutstyr, armaturer, elektriske komponenter og annet utstyr. Bare utfylte punkter tas med i rapport/PDF." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note collapsibleHelp", children: "Klikk på kategoriene under for å registrere produkter, FDV-lenker og dokumentasjon. Kun utfylte punkter tas med i rapporten." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Fliser og overflater", defaultOpen: Object.values(surf || {}).some(hasValue), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: surfaces.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: `${f} - produkt, farge og plassering`, value: surf[f] || "", onChange: (v) => setSurf({ ...surf, [f]: v }) }, f)) }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "WC / toalett", defaultOpen: wcHasContent(bathroomEquipment), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "out", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "WC" }),
@@ -6625,6 +6627,23 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] });
       }
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: `
+          .collapsibleHelp { font-weight:800; background:#f8fafc; border:1px solid #dbe7ec; border-radius:14px; padding:10px 12px; }
+          .collapsibleBlock { border:1px solid #dbe7ec; border-radius:16px; background:#ffffff; margin:12px 0; overflow:hidden; }
+          .collapsibleBlock summary { list-style:none; cursor:pointer; padding:13px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:900; color:#0f172a; background:#f8fafc; border-bottom:1px solid transparent; user-select:none; transition:background .15s ease, border-color .15s ease, box-shadow .15s ease; }
+          .collapsibleBlock summary:hover { background:#eef7fa; box-shadow:inset 0 0 0 1px rgba(8,213,216,.18); }
+          .collapsibleBlock[open] summary { border-bottom-color:#dbe7ec; background:#f1f8fb; }
+          .collapsibleBlock summary::-webkit-details-marker { display:none; }
+          .collapsibleBlock summary:after { content:'▼'; font-size:13px; color:#0f172a; transition:transform .15s ease; background:#ffffff; border:1px solid #cbd5e1; border-radius:999px; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 24px; }
+          .collapsibleBlock:not([open]) summary:after { transform:rotate(-90deg); }
+          .collapsibleBlockBody { padding:0 14px 14px; }
+          @media screen and (max-width:700px) {
+            .collapsibleHelp { font-size:13px !important; line-height:1.35 !important; padding:9px 11px !important; }
+            .collapsibleBlock { border-radius:15px !important; margin:10px 0 !important; }
+            .collapsibleBlock summary { min-height:46px; padding:11px 12px; font-size:15px; }
+            .collapsibleBlockBody { padding:0 12px 12px; }
+          }
+        ` }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
@@ -7213,6 +7232,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
 
       .pdfSafeLink a { font-weight: 700; }
       .pdfSafeUrl { display:block; color:#334155; font-size:10px; line-height:1.25; overflow-wrap:anywhere; word-break:break-word; margin-top:2px; }
+      .collapsibleHelp { font-weight:800; background:#f8fafc; border:1px solid #dbe7ec; border-radius:14px; padding:10px 12px; }
       .collapsibleBlock { border:1px solid #dbe7ec; border-radius:16px; background:#ffffff; margin:12px 0; overflow:hidden; }
       .collapsibleBlock summary { list-style:none; cursor:pointer; padding:13px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:900; color:#0f172a; background:#f8fafc; border-bottom:1px solid transparent; user-select:none; transition:background .15s ease, border-color .15s ease, box-shadow .15s ease; }
       .collapsibleBlock summary:hover { background:#eef7fa; box-shadow:inset 0 0 0 1px rgba(8,213,216,.18); }
@@ -7223,6 +7243,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       .collapsibleBlockBody { padding:0 14px 14px; }
       .mobileChatFab { display:none; }
       @media screen and (max-width:700px) {
+        .collapsibleHelp { font-size:13px !important; line-height:1.35 !important; padding:9px 11px !important; }
         .collapsibleBlock { border-radius:15px !important; margin:10px 0 !important; }
         .collapsibleBlock summary { min-height:46px; padding:11px 12px; font-size:15px; }
         .collapsibleBlockBody { padding:0 12px 12px; }
