@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.8 PROSJEKTLISTE RESET: Nullstiller prosjektlistesøk, statusfilter og ulestfilter ved innlogging/utlogging og når supportmodus avsluttes. Kun frontend-state, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.7 SUPPORTMODUS: Supportmodus aktiveres kun eksplisitt fra Systemadmin supportvisning. Vanlig åpning fra Prosjektliste skal aldri automatisk gi supportmodus. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.6 TILGANGS-EPOSTER: Sender med kunde, adresse, postnr/sted, kundeepost og kundetelefon til smart-worker slik at kundelink/UE-link/ferdigmelding viser tydelig prosjektinfo. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.5 PROSJEKTLISTE/SYSTEMADMIN SØK: Felles bredt prosjektsøk med normalisering, eier/firma-felt og samme søketreff i Systemadmin supportmodus. Kun frontend-søk/visning, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
@@ -2159,6 +2160,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setProjectId(null);
       setCurrentProjectOwnerId("");
       setSupportModeExplicit(false);
+      setProjectSearch("");
+      setProjectStatusFilter("alle");
+      setProjectUnreadOnly(false);
       setMobileCreatingProject(false);
       setLocalDraftRestoreChecked(false);
       setShowOpenDeviationsOnly(false);
@@ -2651,6 +2655,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setSupportSelectedCompany("");
       setOpenSupportCompany("");
       setSupportModeExplicit(false);
+      setProjectSearch("");
+      setProjectStatusFilter("alle");
+      setProjectUnreadOnly(false);
       setAdminUserSearch("");
       setAdminUserCompanyFilter("");
       setAdminUserFilter("pending");
