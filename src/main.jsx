@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.7 SUPPORTMODUS: Supportmodus aktiveres kun eksplisitt fra Systemadmin supportvisning. Vanlig åpning fra Prosjektliste skal aldri automatisk gi supportmodus. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.6 TILGANGS-EPOSTER: Sender med kunde, adresse, postnr/sted, kundeepost og kundetelefon til smart-worker slik at kundelink/UE-link/ferdigmelding viser tydelig prosjektinfo. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.5 PROSJEKTLISTE/SYSTEMADMIN SØK: Felles bredt prosjektsøk med normalisering, eier/firma-felt og samme søketreff i Systemadmin supportmodus. Kun frontend-søk/visning, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
 // FASE 13.4 PROSJEKTLISTE SØK: Utvider prosjektlistesøk til garantinummer, e-post, telefon, adresse, kunde, ansvarlig, firma, produkter, overflater og innredning. Kun frontend-søk/tekst, ingen database-/RLS-/garanti-/låsing-/autolagringsendringer.
@@ -1241,6 +1242,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [projects, setProjects] = (0, import_react.useState)([]);
     const [projectId, setProjectId] = (0, import_react.useState)(null);
     const [currentProjectOwnerId, setCurrentProjectOwnerId] = (0, import_react.useState)("");
+    const [supportModeExplicit, setSupportModeExplicit] = (0, import_react.useState)(false);
     const [mobileCreatingProject, setMobileCreatingProject] = (0, import_react.useState)(false);
     const [authUser, setAuthUser] = (0, import_react.useState)(null);
     const [authEmail, setAuthEmail] = (0, import_react.useState)("");
@@ -2124,9 +2126,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }).slice(0, 120);
     }, [projectListRows, supportProjectSearch, supportSelectedCompany]);
     const currentSupportProjectRow = (0, import_react.useMemo)(() => {
-      if (!isSystemAdminUser || !projectId || !currentProjectOwnerId || currentProjectOwnerId === authUser?.id) return null;
+      if (!supportModeExplicit || !isSystemAdminUser || !projectId || !currentProjectOwnerId || currentProjectOwnerId === authUser?.id) return null;
       return (projectListRows || []).find((item) => item?.row?.id === projectId) || null;
-    }, [isSystemAdminUser, projectId, currentProjectOwnerId, authUser?.id, projectListRows]);
+    }, [supportModeExplicit, isSystemAdminUser, projectId, currentProjectOwnerId, authUser?.id, projectListRows]);
     const isSupportModeActive = !!currentSupportProjectRow;
     const supportProjectCompanyName = String(
       currentSupportProjectRow?.row?.data?.company?.companyName ||
@@ -2156,6 +2158,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setInternalNotes("");
       setProjectId(null);
       setCurrentProjectOwnerId("");
+      setSupportModeExplicit(false);
       setMobileCreatingProject(false);
       setLocalDraftRestoreChecked(false);
       setShowOpenDeviationsOnly(false);
@@ -2533,6 +2536,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       unpackData(dataFromRow(data));
       setProjectId(data.id);
       setCurrentProjectOwnerId(data.user_id || "");
+      setSupportModeExplicit(!!options.supportMode);
       setLocalDraftRestoreChecked(false);
       setMobileCreatingProject(false);
       setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
@@ -2646,6 +2650,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setSupportProjectSearch("");
       setSupportSelectedCompany("");
       setOpenSupportCompany("");
+      setSupportModeExplicit(false);
       setAdminUserSearch("");
       setAdminUserCompanyFilter("");
       setAdminUserFilter("pending");
@@ -2859,6 +2864,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setInternalNotes("");
       setProjectId(null);
       setCurrentProjectOwnerId(authUser?.id || "");
+      setSupportModeExplicit(false);
       setMobileCreatingProject(true);
       setLocalDraftRestoreChecked(false);
       setTab("prosjekt");
@@ -3335,6 +3341,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         }
         setProjectId(copyRow.id);
         setCurrentProjectOwnerId(copyRow.user_id || authUser.id);
+        setSupportModeExplicit(false);
         unpackData(dataFromRow(copyRow), false);
         await loadProjects(authUser);
         return alert("\u2714 Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.");
@@ -3368,6 +3375,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         }
         setProjectId(data.id);
         setCurrentProjectOwnerId(data.user_id || authUser.id);
+        setSupportModeExplicit(false);
         setMobileCreatingProject(false);
         unpackData(dataFromRow(data), false);
         alert("\u2714 Prosjekt lagret");
@@ -3525,6 +3533,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (id === projectId) {
         setProjectId(null);
         setCurrentProjectOwnerId("");
+        setSupportModeExplicit(false);
         setMobileCreatingProject(false);
         setTab("prosjekt");
       }
@@ -9177,9 +9186,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                           ] })
                         ] }),
                         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" }, children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => openProjectById(item.row.id, "prosjekt"), children: "Åpne" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(item.row.id, "rapport"), children: "Rapport" }),
-                          item.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(item.row.id, "sjekklister", { showOpenDeviationsOnly: true }), children: "Avvik" })
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => openProjectById(item.row.id, "prosjekt", { supportMode: true }), children: "Åpne" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(item.row.id, "rapport", { supportMode: true }), children: "Rapport" }),
+                          item.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openProjectById(item.row.id, "sjekklister", { showOpenDeviationsOnly: true, supportMode: true }), children: "Avvik" })
                         ] })
                       ] }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
