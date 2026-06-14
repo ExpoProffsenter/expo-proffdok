@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 13.15 PREMIUM RAPPORT UI-ONLY: Løfter PDF-rapporten med premium forside, prosjektfakta, innholdsfortegnelse, tydeligere vedlegg, dokumentnummer og dokumentasjonsstatus. Kun rapport/PDF-visning, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
+// FASE 13.15.2 HOTFIX: Gjør drawNoteBox tilgjengelig globalt i PDF-generatoren og fjerner smal scoped helper. Retter drawNoteBox not defined. Kun PDF/rapportvisning.
 // FASE 13.15.1 HOTFIX: Retter PDF-feil drawNoteBox not defined i dokumentasjonsstatus slik at klikkbare PDF-lenker genereres som før. Kun PDF/rapportvisning.
 // FASE 13.14 VEDLEGG-METADATA: Legger til fag/rolle, dokumenttype og kommentar på opplastede sjekklister/vedlegg fra andre fag, og viser dette i rapport/PDF. Kun metadata/UI for vedlegg, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.13 HOTFIX: Gjeninnfører dra-og-slipp for Opplastede sjekklister/vedlegg fra andre fag. Kun UI/opplastingshendelser, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -5862,6 +5863,26 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         };
 
 
+        // FASE 13.15.2 HOTFIX: Global PDF note box helper tilgjengelig for alle rapportseksjoner.
+        // 13.15.1 hadde fortsatt drawNoteBox definert for smalt i enkelte PDF-kjøringer/cache.
+        const drawNoteBox = (text) => {
+          const lines = doc.splitTextToSize(safeText(text), contentWidth - 18);
+          const h = Math.max(18, lines.length * 4 + 10);
+          ensureSpace(h + 4);
+          doc.setDrawColor(191, 219, 254);
+          doc.setFillColor(239, 246, 255);
+          doc.roundedRect(margin, y, contentWidth, h, 2.5, 2.5, "FD");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          doc.setTextColor(20, 86, 160);
+          doc.text("i", margin + 7, y + 10);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(30, 64, 105);
+          doc.text(lines, margin + 15, y + 8);
+          y += h + 7;
+        };
+
         const addWarrantyCertificatePages = async () => {
           if (!warranty?.enabled || !warrantyReadiness?.selectedSystem) return;
           const selectedSystem = warrantyReadiness.selectedSystem;
@@ -5965,22 +5986,6 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             doc.setTextColor(51, 65, 85);
             doc.text(doc.splitTextToSize(safeText(text), contentWidth - 24), margin + 17, y + 12.2);
             y += h + 4;
-          };
-          const drawNoteBox = (text) => {
-            const lines = doc.splitTextToSize(safeText(text), contentWidth - 18);
-            const h = Math.max(18, lines.length * 4 + 10);
-            doc.setDrawColor(191, 219, 254);
-            doc.setFillColor(...lightBlue);
-            doc.roundedRect(margin, y, contentWidth, h, 2.5, 2.5, "FD");
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(10);
-            doc.setTextColor(...blue);
-            doc.text("i", margin + 7, y + 10);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(8);
-            doc.setTextColor(30, 64, 105);
-            doc.text(lines, margin + 15, y + 8);
-            y += h + 7;
           };
           const drawTerm = (heading, body) => {
             if (y > pageBottom - 34) {
