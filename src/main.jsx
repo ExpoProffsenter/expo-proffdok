@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 14.1 ULAGREDE ENDRINGER: Legger inn prosjektDirty-varsling ved fanebytte/navigasjon, logg ut og nytt prosjekt. Kun frontend-varsel/lagreflyt, ingen database-/RLS-/rapport-/garantiendringer.
 // FASE 13.15 PREMIUM RAPPORT UI-ONLY: Løfter PDF-rapporten med premium forside, prosjektfakta, innholdsfortegnelse, tydeligere vedlegg, dokumentnummer og dokumentasjonsstatus. Kun rapport/PDF-visning, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.15.4 RAPPORTPOLERING: Fjerner dobbel Firma-tekst, rydder OK ... OK i sjekklister og fjerner UTS-prefiks i Overflater/innredning. Kun PDF/rapportvisning.
 // FASE 13.15.3 RAPPORTPOLERING: Retter forvridd forsidebilde med cover-crop, fjerner symbolfeil i sjekklistene, korter bildetekst på sjekkpunktbilder og hindrer løs seksjonstittel nederst på side. Kun PDF/rapportvisning.
@@ -1234,6 +1235,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       };
     }, []);
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
+    const [projectDirty, setProjectDirty] = (0, import_react.useState)(false);
     const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
     const [user, setUser] = (0, import_react.useState)({ name: "", email: "", role: "Eier / administrator" });
     const [project, setProject] = (0, import_react.useState)(emptyProject());
@@ -1340,6 +1342,20 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const lastChatMessageCountRef = (0, import_react.useRef)(0);
     const lastChatRefreshAtRef = (0, import_react.useRef)(0);
     const previousAuthUserIdRef = (0, import_react.useRef)(null);
+    const dirtyTrackingPausedRef = (0, import_react.useRef)(false);
+    const projectDirtyRef = (0, import_react.useRef)(false);
+    const projectDirtyInitializedRef = (0, import_react.useRef)(false);
+
+    const resetProjectDirty = () => {
+      projectDirtyRef.current = false;
+      setProjectDirty(false);
+    };
+    const markProjectDirty = () => {
+      if (dirtyTrackingPausedRef.current || isReadOnly || isProjectLocked) return;
+      if (!projectId && !mobileCreatingProject) return;
+      projectDirtyRef.current = true;
+      setProjectDirty(true);
+    };
     const openImageLightboxFromClick = (event) => {
       const target = event?.target;
       if (!target || target.tagName !== "IMG") return;
@@ -1371,6 +1387,17 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         projectLog,
         internalNotes
       };
+    }, [company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes]);
+
+    (0, import_react.useEffect)(() => {
+      projectDirtyRef.current = projectDirty;
+    }, [projectDirty]);
+    (0, import_react.useEffect)(() => {
+      if (!projectDirtyInitializedRef.current) {
+        projectDirtyInitializedRef.current = true;
+        return;
+      }
+      markProjectDirty();
     }, [company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes]);
     (0, import_react.useEffect)(() => {
       const savedEmail = window.localStorage.getItem("expoProffDokAuthEmail");
@@ -2266,8 +2293,24 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
     };
 
-    const goToTab = (id) => {
-      if (!id) return;
+    const confirmLeaveWithUnsavedChanges = async (actionLabel = "fortsette") => {
+      if (!projectDirtyRef.current) return true;
+      const saveFirst = window.confirm(`Du har ulagrede endringer i prosjektet.\n\nVil du lagre før du ${actionLabel}?\n\nOK = Lagre og fortsett\nAvbryt = Velg om du vil fortsette uten å lagre`);
+      if (saveFirst) {
+        await saveProject();
+        return true;
+      }
+      const continueWithoutSave = window.confirm("Fortsette uten å lagre endringene til skyen?");
+      if (continueWithoutSave) {
+        resetProjectDirty();
+        return true;
+      }
+      return false;
+    };
+    const goToTab = async (id) => {
+      if (!id || id === tab) return;
+      const canLeave = await confirmLeaveWithUnsavedChanges(`går til fanen "${tabs.find(([tabId]) => tabId === id)?.[1] || id}"`);
+      if (!canLeave) return;
       setTab(id);
       setTimeout(() => scrollToMobileTabTarget(id), 90);
       setTimeout(() => scrollToMobileTabTarget(id), 320);
@@ -2372,6 +2415,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       return localDraftIsNewerThanCloud(saved);
     };
     const unpackData = (data, preserveDraft = false) => {
+      dirtyTrackingPausedRef.current = true;
+      resetProjectDirty();
       setCompany(data.company || { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
       setUser(data.user || { name: "", email: "", role: "Eier / administrator" });
       setProject({ ...emptyProject(), ...data.project || {} });
@@ -2404,6 +2449,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         draft: preserveDraft ? prev?.draft || "" : incomingLog.draft || ""
       }));
       setInternalNotes(data.internalNotes || "");
+      window.setTimeout(() => {
+        dirtyTrackingPausedRef.current = false;
+        resetProjectDirty();
+      }, 0);
     };
     const autoSaveProjectToCloud = async (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
       if (!authUser || !projectId || isReadOnly || isProjectLocked) return;
@@ -2490,6 +2539,17 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         document.removeEventListener("visibilitychange", handleVisibilityChange);
       };
     }, [authUser?.id, projectId, currentProjectOwnerId, mobileCreatingProject, isReadOnly, profile?.approved]);
+
+    (0, import_react.useEffect)(() => {
+      const warnBeforeUnload = (event) => {
+        if (!projectDirtyRef.current) return;
+        event.preventDefault();
+        event.returnValue = "Du har ulagrede endringer i prosjektet.";
+        return event.returnValue;
+      };
+      window.addEventListener("beforeunload", warnBeforeUnload);
+      return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+    }, []);
     (0, import_react.useEffect)(() => {
       if (!authUser || !profile?.approved || isReadOnly || localDraftRestoreChecked) return;
       setLocalDraftRestoreChecked(true);
@@ -2594,6 +2654,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     };
 
     const openProjectById = async (id, targetTab = "rapport", options = {}) => {
+      if (projectDirtyRef.current && id !== projectId) {
+        const canLeave = await confirmLeaveWithUnsavedChanges("åpner et annet prosjekt");
+        if (!canLeave) return;
+      }
       const { data, error } = await supabase.from("projects").select("*").eq("id", id).single();
       if (error || !data) {
         console.error(error);
@@ -2911,7 +2975,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }
     }, [authUser?.id, profile?.approved, profile?.company_name, profile?.company_role, profile?.system_role]);
 
-    const createNewProject = () => {
+    const createNewProject = async () => {
+      const canLeave = await confirmLeaveWithUnsavedChanges("starter nytt prosjekt");
+      if (!canLeave) return;
       const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
       setProject(emptyProject());
@@ -2935,6 +3001,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setCurrentProjectOwnerId(authUser?.id || "");
       setSupportModeExplicit(false);
       setMobileCreatingProject(true);
+      resetProjectDirty();
       setLocalDraftRestoreChecked(false);
       setTab("prosjekt");
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -3382,6 +3449,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
           unpackData(dataFromRow(updatedRow), false);
           setProjectId(updatedRow.id);
           await loadProjects(authUser);
+          resetProjectDirty();
           return alert("\u2714 Prosjekt oppdatert og bekreftet lagret");
         }
         const shouldCopy = window.confirm(
@@ -3413,6 +3481,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         setSupportModeExplicit(false);
         unpackData(dataFromRow(copyRow), false);
         await loadProjects(authUser);
+        resetProjectDirty();
         return alert("\u2714 Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.");
       } else {
         const newProjectData = {
@@ -3447,6 +3516,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         setSupportModeExplicit(false);
         setMobileCreatingProject(false);
         unpackData(dataFromRow(data), false);
+        resetProjectDirty();
         alert("\u2714 Prosjekt lagret");
       }
       loadProjects(authUser);
@@ -3508,6 +3578,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         return alert("Kunne ikke lagre fra delingslink. Kontakt prosjektansvarlig hvis feilen vedvarer. Feil: " + error.message);
       }
       setProject(safeProject);
+      resetProjectDirty();
       alert("\u2714 Bidrag lagret p\xE5 prosjektet " + (/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO"));
     };
     const setProjectLockedState = async (locked) => {
@@ -3584,6 +3655,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setProjectId(data.id);
       setMobileCreatingProject(false);
       unpackData(dataFromRow(data), false);
+      resetProjectDirty();
       await loadProjects(authUser);
       alert(`\u2714 Kopi lagret. Du jobber n\xE5 i den nye kopien av "${projectTitle}".`);
     };
@@ -4665,6 +4737,8 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       alert("Passordet er oppdatert. Logg inn p\xE5 nytt.");
     };
     const signOut = async () => {
+      const canLeave = await confirmLeaveWithUnsavedChanges("logger ut");
+      if (!canLeave) return;
       await supabase.auth.signOut();
       setProjectId(null);
       setCurrentProjectOwnerId("");
@@ -4677,6 +4751,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       setTermsError("");
       setTermsReadConfirmed(false);
       resetToCleanStartPage();
+      resetProjectDirty();
       window.history.replaceState({}, document.title, window.location.pathname);
     };
     const writePrintableReport = (printWindow, title = "Expo ProffDok rapport") => {
@@ -8419,7 +8494,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
-          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
+          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectDirty ? "● Lagre endringer" : projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
           hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
           hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
@@ -8428,6 +8503,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           projectId && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
+        projectDirty && hasActiveProjectWorkspace && !isReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "10px 14px", background: "#fffbeb", border: "1px solid #facc15", borderRadius: "14px", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "🟡 Ulagrede endringer i prosjektet" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: saveProject, children: "Lagre nå" })
+        ] }),
         isSupportModeActive && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "12px 16px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "16px", display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gap: "3px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { style: { color: "#9a3412" }, children: "SYSTEMADMIN SUPPORTMODUS" }),
