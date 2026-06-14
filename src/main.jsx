@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 13.15 PREMIUM RAPPORT UI-ONLY: Løfter PDF-rapporten med premium forside, prosjektfakta, innholdsfortegnelse, tydeligere vedlegg, dokumentnummer og dokumentasjonsstatus. Kun rapport/PDF-visning, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
+// FASE 13.15.1 HOTFIX: Retter PDF-feil drawNoteBox not defined i dokumentasjonsstatus slik at klikkbare PDF-lenker genereres som før. Kun PDF/rapportvisning.
 // FASE 13.14 VEDLEGG-METADATA: Legger til fag/rolle, dokumenttype og kommentar på opplastede sjekklister/vedlegg fra andre fag, og viser dette i rapport/PDF. Kun metadata/UI for vedlegg, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.13 HOTFIX: Gjeninnfører dra-og-slipp for Opplastede sjekklister/vedlegg fra andre fag. Kun UI/opplastingshendelser, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.12 VEDLEGG-HOTFIX: PDF-/dokumentvedlegg i Sjekklister får robust åpne-lenke fra url/path, manglende lenke merkes tydelig, og PDF kan ikke lenger lastes opp som sjekkpunktbilde. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -6444,6 +6445,23 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         setPdfProgress("Legger inn dokumentasjonsstatus…", "Oppsummerer komplett dokumentasjonsgrad.");
         const addDocumentationStatusPage = () => {
           const status = reportDocumentationStatus();
+          const drawReportNoteBox = (text) => {
+            const lines = doc.splitTextToSize(safeText(text), contentWidth - 18);
+            const h = Math.max(18, lines.length * 4 + 10);
+            ensureSpace(h + 4);
+            doc.setDrawColor(191, 219, 254);
+            doc.setFillColor(239, 246, 255);
+            doc.roundedRect(margin, y, contentWidth, h, 2.5, 2.5, "FD");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(20, 86, 160);
+            doc.text("i", margin + 7, y + 10);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(30, 64, 105);
+            doc.text(lines, margin + 15, y + 8);
+            y += h + 7;
+          };
           doc.addPage();
           y = 16;
           addSectionTitle("Dokumentasjonsstatus");
@@ -6480,7 +6498,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           });
 
           y += 4;
-          drawNoteBox("Rapporten bør lastes ned og lagres sammen med øvrig FDV-dokumentasjon. Ved salg av boligen bør rapporten deles med ny eier, megler og/eller takstmann der dette er relevant.");
+          drawReportNoteBox("Rapporten bør lastes ned og lagres sammen med øvrig FDV-dokumentasjon. Ved salg av boligen bør rapporten deles med ny eier, megler og/eller takstmann der dette er relevant.");
         };
         addDocumentationStatusPage();
 
