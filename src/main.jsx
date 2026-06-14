@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 13.15 PREMIUM RAPPORT UI-ONLY: Løfter PDF-rapporten med premium forside, prosjektfakta, innholdsfortegnelse, tydeligere vedlegg, dokumentnummer og dokumentasjonsstatus. Kun rapport/PDF-visning, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
+// FASE 13.15.4 RAPPORTPOLERING: Fjerner dobbel Firma-tekst, rydder OK ... OK i sjekklister og fjerner UTS-prefiks i Overflater/innredning. Kun PDF/rapportvisning.
 // FASE 13.15.3 RAPPORTPOLERING: Retter forvridd forsidebilde med cover-crop, fjerner symbolfeil i sjekklistene, korter bildetekst på sjekkpunktbilder og hindrer løs seksjonstittel nederst på side. Kun PDF/rapportvisning.
 // FASE 13.15.2 HOTFIX: Gjør drawNoteBox tilgjengelig globalt i PDF-generatoren og fjerner smal scoped helper. Retter drawNoteBox not defined. Kun PDF/rapportvisning.
 // FASE 13.15.1 HOTFIX: Retter PDF-feil drawNoteBox not defined i dokumentasjonsstatus slik at klikkbare PDF-lenker genereres som før. Kun PDF/rapportvisning.
@@ -5483,36 +5484,30 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           doc.setDrawColor(214, 226, 236);
           doc.setFillColor(255, 255, 255);
           doc.roundedRect(margin, boxY, contentWidth, boxH, 3.2, 3.2, "FD");
-          doc.setFillColor(248, 250, 252);
-          doc.roundedRect(margin + 4, boxY + 4, 10, 10, 2.2, 2.2, "F");
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(7.2);
-          doc.setTextColor(20, 86, 160);
-          doc.text("UTS", margin + 5.6, boxY + 10.7);
           doc.setFont("helvetica", "bold");
           doc.setFontSize(10.2);
           doc.setTextColor(15, 23, 42);
-          doc.text(titleLines, margin + 18, boxY + 8.3);
+          doc.text(titleLines, margin + 6, boxY + 8.3);
           let yy = boxY + 8.3 + titleLines.length * 4.7 + 1.5;
           entryRows.forEach(({ label, value }) => {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(7.3);
             doc.setTextColor(100, 116, 139);
-            doc.text(label, margin + 18, yy);
+            doc.text(label, margin + 6, yy);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8.4);
             doc.setTextColor(15, 23, 42);
-            const valueLines = doc.splitTextToSize(value || "Ikke oppgitt", contentWidth - 65).slice(0, 1);
-            doc.text(valueLines, margin + 62, yy);
+            const valueLines = doc.splitTextToSize(value || "Ikke oppgitt", contentWidth - 54).slice(0, 1);
+            doc.text(valueLines, margin + 50, yy);
             yy += 6.2;
           });
           if (links.length) {
             const gap = 2.3;
-            const chipW = (contentWidth - 18 - gap) / 2;
+            const chipW = (contentWidth - 12 - gap) / 2;
             links.slice(0, 2).forEach((link, index) => {
               const url = normalizePdfUrl(link.url);
               if (!url) return;
-              const x = margin + 18 + index * (chipW + gap);
+              const x = margin + 6 + index * (chipW + gap);
               doc.setDrawColor(191, 219, 254);
               doc.setFillColor(239, 246, 255);
               doc.roundedRect(x, yy - 4.6, chipW, 5.9, 1.7, 1.7, "FD");
@@ -5626,10 +5621,8 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
             doc.setFontSize(8.8);
             doc.setTextColor(15, 23, 42);
             doc.text(textLines, margin + 12, y + 6.8);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(6.4);
-            doc.setTextColor(...iconColor);
-            doc.text(statusLabel, pageWidth - margin - 4, y + 6.8, { align: "right" });
+            // FASE 13.15.4: Ikke gjenta status på høyre side for kompakte OK/ikke-aktuelt-punkter.
+            // Venstre statusmerke er nok og hindrer "OK ... OK" i PDF-rapporten.
             y += rowH + 2.8;
           } else {
             doc.setDrawColor(...visual.border);
@@ -6283,7 +6276,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
 
         setPdfProgress("Legger inn prosjektinformasjon…", "Firma, kunde, prosjekt og prosjektering.");
         addInfoGridSection("Firma", [
-          ["Firma", name || company.companyName || "Expo ProffDok"],
+          ["Utførende firma", name || company.companyName || "Expo ProffDok"],
           ["Adresse", company.address],
           ["Org.nr", company.orgNumber],
           ["Telefon", companyPhoneForReport],
