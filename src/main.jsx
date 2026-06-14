@@ -1,5 +1,6 @@
 // Generated complete main.jsx from the latest live source.
 // FASE 13.15 PREMIUM RAPPORT UI-ONLY: Løfter PDF-rapporten med premium forside, prosjektfakta, innholdsfortegnelse, tydeligere vedlegg, dokumentnummer og dokumentasjonsstatus. Kun rapport/PDF-visning, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
+// FASE 13.15.3 RAPPORTPOLERING: Retter forvridd forsidebilde med cover-crop, fjerner symbolfeil i sjekklistene, korter bildetekst på sjekkpunktbilder og hindrer løs seksjonstittel nederst på side. Kun PDF/rapportvisning.
 // FASE 13.15.2 HOTFIX: Gjør drawNoteBox tilgjengelig globalt i PDF-generatoren og fjerner smal scoped helper. Retter drawNoteBox not defined. Kun PDF/rapportvisning.
 // FASE 13.15.1 HOTFIX: Retter PDF-feil drawNoteBox not defined i dokumentasjonsstatus slik at klikkbare PDF-lenker genereres som før. Kun PDF/rapportvisning.
 // FASE 13.14 VEDLEGG-METADATA: Legger til fag/rolle, dokumenttype og kommentar på opplastede sjekklister/vedlegg fra andre fag, og viser dette i rapport/PDF. Kun metadata/UI for vedlegg, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -4990,6 +4991,47 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           }
           addSectionTitle(title);
         };
+        const makeCoverCroppedImage = async (imageInfo, targetW, targetH) => {
+          // FASE 13.15.3: Bevar proporsjoner på forsidebildet.
+          // Bildet fyller banneret som object-fit: cover, men blir ikke strukket/forvridd.
+          if (!imageInfo?.dataUrl || !imageInfo?.width || !imageInfo?.height) return imageInfo?.dataUrl || "";
+          try {
+            const sourceImage = await new Promise((resolve) => {
+              const img = new window.Image();
+              img.onload = () => resolve(img);
+              img.onerror = () => resolve(null);
+              img.src = imageInfo.dataUrl;
+            });
+            if (!sourceImage) return imageInfo.dataUrl;
+            const sourceW = imageInfo.width || sourceImage.width || 1;
+            const sourceH = imageInfo.height || sourceImage.height || 1;
+            const targetRatio = targetW / targetH;
+            const sourceRatio = sourceW / sourceH;
+            let sx = 0;
+            let sy = 0;
+            let sw = sourceW;
+            let sh = sourceH;
+            if (sourceRatio > targetRatio) {
+              sw = sourceH * targetRatio;
+              sx = (sourceW - sw) / 2;
+            } else if (sourceRatio < targetRatio) {
+              sh = sourceW / targetRatio;
+              sy = (sourceH - sh) / 2;
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = 1600;
+            canvas.height = Math.max(1, Math.round(canvas.width / targetRatio));
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(sourceImage, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL("image/jpeg", 0.88);
+          } catch (error) {
+            console.warn("Kunne ikke beskjære forsidebilde:", error);
+            return imageInfo.dataUrl;
+          }
+        };
+
         const addCoverPage = async () => {
           const generatedAt = reportGeneratedAtLabel();
           const status = reportDocumentationStatus();
@@ -5009,7 +5051,8 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
               const imgY = 12;
               const imgW = pageWidth - 24;
               const imgH = 78;
-              doc.addImage(cover.dataUrl, cover.format || "JPEG", imgX, imgY, imgW, imgH);
+              const coverCroppedDataUrl = await makeCoverCroppedImage(cover, imgW, imgH);
+              doc.addImage(coverCroppedDataUrl, "JPEG", imgX, imgY, imgW, imgH);
               doc.setFillColor(8, 18, 30);
               doc.setGState && doc.setGState(new doc.GState({ opacity: 0.58 }));
               doc.rect(imgX, imgY, imgW, imgH, "F");
@@ -5291,6 +5334,8 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         const addInfoGridSection = (title, entries = []) => {
           const visibleEntries = entries.filter(([_, value]) => hasValue(value));
           if (!visibleEntries.length) return;
+          // FASE 13.15.3: Unngå at en seksjonstittel havner alene nederst på siden.
+          ensureSpace(42);
           addSectionTitle(title);
           const gap = 5;
           const cardW = (contentWidth - gap) / 2;
@@ -5576,7 +5621,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
             doc.setFont("helvetica", "bold");
             doc.setFontSize(isOk ? 8.8 : 7.5);
             doc.setTextColor(...iconColor);
-            doc.text(isOk ? "✓" : "–", margin + 5.3, y + rowH / 2 + 1.2, { align: "center" });
+            doc.text(isOk ? "OK" : "-", margin + 5.3, y + rowH / 2 + 1.0, { align: "center" });
             doc.setFont("helvetica", "bold");
             doc.setFontSize(8.8);
             doc.setTextColor(15, 23, 42);
@@ -5596,7 +5641,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
             doc.setFont("helvetica", "bold");
             doc.setFontSize(7.0);
             doc.setTextColor(...visual.text);
-            doc.text(isClosedDeviation ? "✓" : visual.label.slice(0, 1), margin + 7, y + 9.8, { align: "center" });
+            doc.text(isClosedDeviation ? "OK" : safeText(visual.label).slice(0, 1), margin + 7, y + 9.8, { align: "center" });
             doc.setFont("helvetica", "bold");
             doc.setFontSize(9.2);
             doc.setTextColor(15, 23, 42);
@@ -5634,9 +5679,9 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
             const cardH = 38;
             for (let i = 0; i < pointPhotos.length; i += 2) {
               ensureSpace(cardH + 6);
-              await drawImageGalleryCard({ ...pointPhotos[i], _reportCaption: `${item} – bilde ${i + 1}` }, margin + 12, y, cardW, cardH);
+              await drawImageGalleryCard({ ...pointPhotos[i], _reportCaption: `Bilde ${i + 1}` }, margin + 12, y, cardW, cardH);
               if (pointPhotos[i + 1]) {
-                await drawImageGalleryCard({ ...pointPhotos[i + 1], _reportCaption: `${item} – bilde ${i + 2}` }, margin + 12 + cardW + gap, y, cardW, cardH);
+                await drawImageGalleryCard({ ...pointPhotos[i + 1], _reportCaption: `Bilde ${i + 2}` }, margin + 12 + cardW + gap, y, cardW, cardH);
               }
               y += cardH + 5;
             }
