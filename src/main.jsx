@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.13 HOTFIX: Gjeninnfører dra-og-slipp for Opplastede sjekklister/vedlegg fra andre fag. Kun UI/opplastingshendelser, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.12 VEDLEGG-HOTFIX: PDF-/dokumentvedlegg i Sjekklister får robust åpne-lenke fra url/path, manglende lenke merkes tydelig, og PDF kan ikke lenger lastes opp som sjekkpunktbilde. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.11 HOTFIX: Retter kun popup-telling ved Oppdater prosjektliste for systemadmin. Vanlig prosjektliste viser firmascopet antall, mens Systemadmin supportmodus beholder alle prosjekter. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.10 HOTFIX PROSJEKTLISTE/SYSTEMADMIN: Vanlig Prosjektliste viser kun egne/eget firmas prosjekter også for systemadmin, mens Systemadmin > Supportmodus beholder full oversikt over alle firma/prosjekter. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -10076,6 +10077,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const droppedFiles = event?.dataTransfer?.files;
       if (droppedFiles && droppedFiles.length) addChecklistPhoto(category, item, droppedFiles);
     };
+    const handleChecklistAttachmentDrop = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const droppedFiles = event?.dataTransfer?.files;
+      if (droppedFiles && droppedFiles.length) addFiles(droppedFiles);
+    };
     const groupStats = (group) => {
       const total = group.items.length;
       const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
@@ -10270,9 +10277,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }, group.category);
       }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Opplastede sjekklister / vedlegg fra andre fag", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", onDragOver: stopChecklistFileDragNavigation, onDragEnter: stopChecklistFileDragNavigation, onDrop: handleChecklistAttachmentDrop, title: "Dra PDF, bilde eller dokument hit – eller klikk for å laste opp", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
-          " Last opp sjekkliste / vedlegg",
+          " Last opp sjekkliste / vedlegg – dra filer hit eller klikk",
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", multiple: true, onChange: (e) => addFiles(e.target.files) })
         ] }),
         files.map((f) => {
