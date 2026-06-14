@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 14.1.1 HOTFIX: Ulagrede endringer markeres ikke ved innlasting/åpning av prosjekt eller intern hydrering. Forlenger pause i dirty-tracking slik at fanebytte ikke varsler uten reell brukerendring. Kun frontend-varsling, ingen database/RLS/rapport/garanti/prosjektliste.
 // FASE 14.1 ULAGREDE ENDRINGER: Legger inn prosjektDirty-varsling ved fanebytte/navigasjon, logg ut og nytt prosjekt. Kun frontend-varsel/lagreflyt, ingen database-/RLS-/rapport-/garantiendringer.
 // FASE 13.15 PREMIUM RAPPORT UI-ONLY: Løfter PDF-rapporten med premium forside, prosjektfakta, innholdsfortegnelse, tydeligere vedlegg, dokumentnummer og dokumentasjonsstatus. Kun rapport/PDF-visning, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.15.4 RAPPORTPOLERING: Fjerner dobbel Firma-tekst, rydder OK ... OK i sjekklister og fjerner UTS-prefiks i Overflater/innredning. Kun PDF/rapportvisning.
@@ -1343,12 +1344,22 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const lastChatRefreshAtRef = (0, import_react.useRef)(0);
     const previousAuthUserIdRef = (0, import_react.useRef)(null);
     const dirtyTrackingPausedRef = (0, import_react.useRef)(false);
+    const dirtyTrackingResumeTimerRef = (0, import_react.useRef)(null);
     const projectDirtyRef = (0, import_react.useRef)(false);
     const projectDirtyInitializedRef = (0, import_react.useRef)(false);
 
     const resetProjectDirty = () => {
       projectDirtyRef.current = false;
       setProjectDirty(false);
+    };
+    const pauseDirtyTrackingBriefly = (delay = 900) => {
+      dirtyTrackingPausedRef.current = true;
+      resetProjectDirty();
+      if (dirtyTrackingResumeTimerRef.current) window.clearTimeout(dirtyTrackingResumeTimerRef.current);
+      dirtyTrackingResumeTimerRef.current = window.setTimeout(() => {
+        dirtyTrackingPausedRef.current = false;
+        resetProjectDirty();
+      }, delay);
     };
     const markProjectDirty = () => {
       if (dirtyTrackingPausedRef.current || isReadOnly || isProjectLocked) return;
@@ -2415,8 +2426,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       return localDraftIsNewerThanCloud(saved);
     };
     const unpackData = (data, preserveDraft = false) => {
-      dirtyTrackingPausedRef.current = true;
-      resetProjectDirty();
+      pauseDirtyTrackingBriefly(1200);
       setCompany(data.company || { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
       setUser(data.user || { name: "", email: "", role: "Eier / administrator" });
       setProject({ ...emptyProject(), ...data.project || {} });
@@ -2449,10 +2459,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         draft: preserveDraft ? prev?.draft || "" : incomingLog.draft || ""
       }));
       setInternalNotes(data.internalNotes || "");
-      window.setTimeout(() => {
-        dirtyTrackingPausedRef.current = false;
-        resetProjectDirty();
-      }, 0);
+      pauseDirtyTrackingBriefly(1200);
     };
     const autoSaveProjectToCloud = async (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
       if (!authUser || !projectId || isReadOnly || isProjectLocked) return;
@@ -2980,6 +2987,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (!canLeave) return;
       const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
+      pauseDirtyTrackingBriefly(1200);
       setProject(emptyProject());
       setChecked({});
       setProductDocs({});
