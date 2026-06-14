@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.10 HOTFIX PROSJEKTLISTE/SYSTEMADMIN: Vanlig Prosjektliste viser kun egne/eget firmas prosjekter også for systemadmin, mens Systemadmin > Supportmodus beholder full oversikt over alle firma/prosjekter. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.9 HOTFIX PROSJEKTLISTE: Prosjektlisten bruker nå fersk profil ved innlogging, slik at firmaadmin/systemadmin ikke faller tilbake til for smalt prosjektgrunnlag ved fanebytte/refresh. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.8 PROSJEKTLISTE RESET: Nullstiller prosjektlistesøk, statusfilter og ulestfilter ved innlogging/utlogging og når supportmodus avsluttes. Kun frontend-state, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.7 SUPPORTMODUS: Supportmodus aktiveres kun eksplisitt fra Systemadmin supportvisning. Vanlig åpning fra Prosjektliste skal aldri automatisk gi supportmodus. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -1583,6 +1584,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       if (!isCompanyAdminUser || !currentCompanyName) return false;
       return normalizeCompanyName(projectCompanyNameFromRow(row)) === normalizeCompanyName(currentCompanyName);
     };
+    const projectBelongsToCurrentCompanyForProjectList = (row = {}, currentUser = authUser) => {
+      if (!row) return false;
+      if (row.user_id === currentUser?.id) return true;
+      const ownCompanyName = String(profile?.company_name || currentCompanyName || "").trim();
+      if (!ownCompanyName) return false;
+      return normalizeCompanyName(projectCompanyNameFromRow(row)) === normalizeCompanyName(ownCompanyName);
+    };
     const isAdminUser = isSystemAdminUser;
     const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly;
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
@@ -2057,24 +2065,28 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         return { row, listProject, listStatus, listLog, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, listWarranty, searchable, projectCompanyName, projectOwnerEmail };
       });
     }, [projects, adminUsers]);
+    const ordinaryProjectListRows = (0, import_react.useMemo)(() => {
+      if (!isSystemAdminUser) return projectListRows;
+      return (projectListRows || []).filter((item) => projectBelongsToCurrentCompanyForProjectList(item?.row));
+    }, [projectListRows, isSystemAdminUser, authUser?.id, profile?.company_name, currentCompanyName]);
     const filteredProjectListRows = (0, import_react.useMemo)(() => {
-      return projectListRows.filter((item) => {
+      return ordinaryProjectListRows.filter((item) => {
         if (!projectMatchesSearch(item.searchable, projectSearch)) return false;
         if (projectUnreadOnly && item.unreadForAdminInList <= 0) return false;
         if (projectStatusFilter !== "alle" && item.listStatus.tone !== projectStatusFilter) return false;
         return true;
       });
-    }, [projectListRows, projectSearch, projectStatusFilter, projectUnreadOnly]);
+    }, [ordinaryProjectListRows, projectSearch, projectStatusFilter, projectUnreadOnly]);
     const activeMobileProjectRows = (0, import_react.useMemo)(() => {
       return filteredProjectListRows.filter((item) => item.listStatus.tone !== "done" && item.listStatus.tone !== "locked");
     }, [filteredProjectListRows]);
     const projectListStats = (0, import_react.useMemo)(() => {
-      const total = projectListRows.length;
-      const unread = projectListRows.reduce((sum, item) => sum + item.unreadForAdminInList, 0);
-      const active = projectListRows.filter((item) => item.listStatus.tone === "progress" || item.listStatus.tone === "open").length;
-      const finished = projectListRows.filter((item) => item.listStatus.tone === "done" || item.listStatus.tone === "locked").length;
+      const total = ordinaryProjectListRows.length;
+      const unread = ordinaryProjectListRows.reduce((sum, item) => sum + item.unreadForAdminInList, 0);
+      const active = ordinaryProjectListRows.filter((item) => item.listStatus.tone === "progress" || item.listStatus.tone === "open").length;
+      const finished = ordinaryProjectListRows.filter((item) => item.listStatus.tone === "done" || item.listStatus.tone === "locked").length;
       return { total, unread, active, finished, visible: filteredProjectListRows.length };
-    }, [projectListRows, filteredProjectListRows]);
+    }, [ordinaryProjectListRows, filteredProjectListRows]);
     const registeredCompanyOptions = (0, import_react.useMemo)(() => {
       const companies = new Map();
       const addCompany = (value) => {
@@ -2173,12 +2185,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setTimeout(() => scrollToMobileTabTarget("admin"), 120);
     };
     const mobileHomeStats = (0, import_react.useMemo)(() => {
-      const active = projectListRows.filter((item) => item.listStatus.tone !== "done" && item.listStatus.tone !== "locked").length;
-      const deviations = projectListRows.filter((item) => item.openDeviationCount > 0).length;
-      const unreadProjects = projectListRows.filter((item) => item.unreadForAdminInList > 0).length;
-      const readyForCustomer = projectListRows.filter((item) => item.listStatus.tone === "customer_ready").length;
+      const active = ordinaryProjectListRows.filter((item) => item.listStatus.tone !== "done" && item.listStatus.tone !== "locked").length;
+      const deviations = ordinaryProjectListRows.filter((item) => item.openDeviationCount > 0).length;
+      const unreadProjects = ordinaryProjectListRows.filter((item) => item.unreadForAdminInList > 0).length;
+      const readyForCustomer = ordinaryProjectListRows.filter((item) => item.listStatus.tone === "customer_ready").length;
       return { active, deviations, unreadProjects, readyForCustomer };
-    }, [projectListRows]);
+    }, [ordinaryProjectListRows]);
     const tabs = [
       ["prosjekt", "Startside"],
       ["prosjektinfo", "Prosjektinformasjon/beskrivelse"],
