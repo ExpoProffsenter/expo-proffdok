@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.12 VEDLEGG-HOTFIX: PDF-/dokumentvedlegg i Sjekklister får robust åpne-lenke fra url/path, manglende lenke merkes tydelig, og PDF kan ikke lenger lastes opp som sjekkpunktbilde. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.11 HOTFIX: Retter kun popup-telling ved Oppdater prosjektliste for systemadmin. Vanlig prosjektliste viser firmascopet antall, mens Systemadmin supportmodus beholder alle prosjekter. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.10 HOTFIX PROSJEKTLISTE/SYSTEMADMIN: Vanlig Prosjektliste viser kun egne/eget firmas prosjekter også for systemadmin, mens Systemadmin > Supportmodus beholder full oversikt over alle firma/prosjekter. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.9 HOTFIX PROSJEKTLISTE: Prosjektlisten bruker nå fersk profil ved innlogging, slik at firmaadmin/systemadmin ikke faller tilbake til for smalt prosjektgrunnlag ved fanebytte/refresh. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -4898,20 +4899,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           if (!clean || isLikelyRawFileName(clean)) return fallback;
           return clean;
         };
-        const storedFileUrl = (file = {}) => {
-          const rawUrl = safeText(file?.url || file?.href).trim();
-          if (rawUrl && !/^blob:/i.test(rawUrl)) return normalizePdfUrl(rawUrl);
-          const path = safeText(file?.path || file?.storagePath || file?.filePath).trim();
-          if (path) {
-            try {
-              const { data } = supabase.storage.from("project-images").getPublicUrl(path);
-              return normalizePdfUrl(data?.publicUrl || "");
-            } catch {
-              return "";
-            }
-          }
-          return "";
-        };
+        const storedFileUrl = (file = {}) => normalizePdfUrl(publicProjectFileUrl(file));
         const fileIdentityText = (file = {}) => [file?.name, file?.url, file?.path, file?.type, file?.mimeType, file?.contentType].filter(Boolean).join(" ");
         const isLikelyDocumentFile = (file = {}) => /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|csv|txt|rtf|odt|ods|odp)(\?|#|$)/i.test(fileIdentityText(file)) || /application\/(pdf|msword|vnd\.)/i.test(fileIdentityText(file));
         const isLikelyImageFile = (file = {}) => /\.(jpe?g|png|gif|webp|bmp|svg|heic|heif)(\?|#|$)/i.test(fileIdentityText(file)) || /^image\//i.test(safeText(file?.type || file?.mimeType || file?.contentType));
@@ -6351,8 +6339,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         return [];
       }
       const filesArray = Array.from(fileList || []);
+      const imageFiles = filesArray.filter((file) => {
+        const fileName = String(file?.name || "");
+        const mime = String(file?.type || "");
+        return /^image\//i.test(mime) || /\.(jpe?g|png|gif|webp|bmp|svg|heic|heif)$/i.test(fileName);
+      });
+      if (filesArray.length && imageFiles.length !== filesArray.length) {
+        alert("Kun bildefiler kan lastes opp som sjekkpunktbilder. PDF og andre dokumenter må lastes opp under ‘Opplastede sjekklister / vedlegg fra andre fag’. ");
+      }
       const uploaded = [];
-      for (const file of filesArray) {
+      for (const file of imageFiles) {
         const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
         const path = `${folder}/${Date.now()}-${uid()}-${cleanName}`;
         const { error } = await supabase.storage.from("project-images").upload(path, file, { cacheControl: "3600", upsert: false });
@@ -6571,6 +6567,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           name: file.name,
           url: data.publicUrl,
           path,
+          storagePath: path,
+          type: file.type || "",
+          mimeType: file.type || "",
+          size: file.size || 0,
           by: user.name || authUser?.email || "Ukjent",
           created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO")
         });
@@ -10275,17 +10275,20 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           " Last opp sjekkliste / vedlegg",
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", multiple: true, onChange: (e) => addFiles(e.target.files) })
         ] }),
-        files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: f.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
-            "Lastet opp av ",
-            f.by,
-            " \xB7 ",
-            f.created
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", children: "\xC5pne" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setFiles(files.filter((x) => x.id !== f.id)), children: "Fjern" })
-        ] }, f.id))
+        files.map((f) => {
+          const fileUrl = publicProjectFileUrl(f);
+          return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: f.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+              "Lastet opp av ",
+              f.by || "Ukjent",
+              " \xB7 ",
+              f.created || ""
+            ] }),
+            fileUrl ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: fileUrl, target: "_blank", rel: "noopener noreferrer", children: "\xC5pne" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { style: { color: "#991b1b", fontWeight: 800 }, children: "Dokumentlenke mangler – last opp filen på nytt" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setFiles(files.filter((x) => x.id !== f.id)), children: "Fjern" })
+          ] }, f.id);
+        })
       ] })
     ] });
   }
@@ -10642,6 +10645,21 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: "Alle rettigheter forbeholdt." })
 ] })
     ] });
+  }
+
+  function publicProjectFileUrl(file = {}) {
+    const raw = String(file?.url || file?.href || "").trim();
+    if (raw && !/^blob:/i.test(raw)) return normalizeExternalUrl(raw);
+    const path = String(file?.path || file?.storagePath || file?.filePath || "").trim();
+    if (path) {
+      try {
+        const { data } = supabase.storage.from("project-images").getPublicUrl(path);
+        return normalizeExternalUrl(data?.publicUrl || "");
+      } catch {
+        return "";
+      }
+    }
+    return "";
   }
 
   function normalizeExternalUrl(value) {
