@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 14.1.2 HOTFIX: Stabil dirty-baseline etter lagring/hydrering slik at ulagrede endringer ikke kommer tilbake etter lagring, fanebytte eller nettleserfokus. Kun frontend-varsling, ingen database/RLS/rapport/garanti/prosjektliste.
 // FASE 14.1.1 HOTFIX: Ulagrede endringer markeres ikke ved innlasting/åpning av prosjekt eller intern hydrering. Forlenger pause i dirty-tracking slik at fanebytte ikke varsler uten reell brukerendring. Kun frontend-varsling, ingen database/RLS/rapport/garanti/prosjektliste.
 // FASE 14.1 ULAGREDE ENDRINGER: Legger inn prosjektDirty-varsling ved fanebytte/navigasjon, logg ut og nytt prosjekt. Kun frontend-varsel/lagreflyt, ingen database-/RLS-/rapport-/garantiendringer.
 // FASE 13.15 PREMIUM RAPPORT UI-ONLY: Løfter PDF-rapporten med premium forside, prosjektfakta, innholdsfortegnelse, tydeligere vedlegg, dokumentnummer og dokumentasjonsstatus. Kun rapport/PDF-visning, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -1347,23 +1348,45 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const dirtyTrackingResumeTimerRef = (0, import_react.useRef)(null);
     const projectDirtyRef = (0, import_react.useRef)(false);
     const projectDirtyInitializedRef = (0, import_react.useRef)(false);
+    const dirtyBaselineRef = (0, import_react.useRef)("");
 
-    const resetProjectDirty = () => {
+    const projectDirtyFingerprint = (snapshot = {}) => {
+      try {
+        return JSON.stringify(snapshot || {});
+      } catch (error) {
+        return String(Date.now());
+      }
+    };
+    const resetProjectDirty = (snapshot = null) => {
+      const source = snapshot || latestStateRef.current || {};
+      dirtyBaselineRef.current = projectDirtyFingerprint(source);
       projectDirtyRef.current = false;
       setProjectDirty(false);
     };
     const pauseDirtyTrackingBriefly = (delay = 900) => {
       dirtyTrackingPausedRef.current = true;
-      resetProjectDirty();
+      resetProjectDirty(latestStateRef.current || {});
       if (dirtyTrackingResumeTimerRef.current) window.clearTimeout(dirtyTrackingResumeTimerRef.current);
       dirtyTrackingResumeTimerRef.current = window.setTimeout(() => {
         dirtyTrackingPausedRef.current = false;
-        resetProjectDirty();
+        resetProjectDirty(latestStateRef.current || {});
       }, delay);
     };
     const markProjectDirty = () => {
       if (dirtyTrackingPausedRef.current || isReadOnly || isProjectLocked) return;
       if (!projectId && !mobileCreatingProject) return;
+      const currentFingerprint = projectDirtyFingerprint(latestStateRef.current || {});
+      if (!dirtyBaselineRef.current) {
+        dirtyBaselineRef.current = currentFingerprint;
+        projectDirtyRef.current = false;
+        setProjectDirty(false);
+        return;
+      }
+      if (currentFingerprint === dirtyBaselineRef.current) {
+        projectDirtyRef.current = false;
+        setProjectDirty(false);
+        return;
+      }
       projectDirtyRef.current = true;
       setProjectDirty(true);
     };
