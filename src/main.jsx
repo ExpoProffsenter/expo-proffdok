@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.11 HOTFIX: Retter kun popup-telling ved Oppdater prosjektliste for systemadmin. Vanlig prosjektliste viser firmascopet antall, mens Systemadmin supportmodus beholder alle prosjekter. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.10 HOTFIX PROSJEKTLISTE/SYSTEMADMIN: Vanlig Prosjektliste viser kun egne/eget firmas prosjekter også for systemadmin, mens Systemadmin > Supportmodus beholder full oversikt over alle firma/prosjekter. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.9 HOTFIX PROSJEKTLISTE: Prosjektlisten bruker nå fersk profil ved innlogging, slik at firmaadmin/systemadmin ikke faller tilbake til for smalt prosjektgrunnlag ved fanebytte/refresh. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.8 PROSJEKTLISTE RESET: Nullstiller prosjektlistesøk, statusfilter og ulestfilter ved innlogging/utlogging og når supportmodus avsluttes. Kun frontend-state, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -2558,8 +2559,22 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
 
       setProjects(filteredRows);
       if (notify) {
-        const companyText = effectiveCompanyAdmin && !effectiveSystemAdmin && effectiveCompanyName ? ` i ${effectiveCompanyName}` : "";
-        alert(`Prosjektliste oppdatert${companyText}. Fant ${filteredRows.length} prosjekt${filteredRows.length === 1 ? "" : "er"}.`);
+        // FASE 13.11 HOTFIX:
+        // For systemadmin ligger alle prosjekter i projects-state slik at Systemadmin → Supportmodus
+        // fortsatt kan søke i alle firma. Vanlig Prosjektliste rendrer derimot kun egne/eget firmas
+        // prosjekter via ordinaryProjectListRows. Popupen må derfor telle samme scope som vanlig
+        // Prosjektliste viser, ikke alle prosjektene som er hentet til supportmodus.
+        const ordinaryVisibleRowsForAlert = effectiveSystemAdmin
+          ? filteredRows.filter((row) => {
+              if (row.user_id === currentUser.id) return true;
+              if (!effectiveCompanyName) return false;
+              const rowCompanyName = projectCompanyNameFromRow(row);
+              return normalizeCompanyForLoad(rowCompanyName) === normalizeCompanyForLoad(effectiveCompanyName);
+            })
+          : filteredRows;
+        const companyText = effectiveCompanyAdmin && effectiveCompanyName ? ` i ${effectiveCompanyName}` : "";
+        const count = ordinaryVisibleRowsForAlert.length;
+        alert(`Prosjektliste oppdatert${companyText}. Fant ${count} prosjekt${count === 1 ? "" : "er"}.`);
       }
     };
 
