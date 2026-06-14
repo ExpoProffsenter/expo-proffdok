@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.14 VEDLEGG-METADATA: Legger til fag/rolle, dokumenttype og kommentar på opplastede sjekklister/vedlegg fra andre fag, og viser dette i rapport/PDF. Kun metadata/UI for vedlegg, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.13 HOTFIX: Gjeninnfører dra-og-slipp for Opplastede sjekklister/vedlegg fra andre fag. Kun UI/opplastingshendelser, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.12 VEDLEGG-HOTFIX: PDF-/dokumentvedlegg i Sjekklister får robust åpne-lenke fra url/path, manglende lenke merkes tydelig, og PDF kan ikke lenger lastes opp som sjekkpunktbilde. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.11 HOTFIX: Retter kun popup-telling ved Oppdater prosjektliste for systemadmin. Vanlig prosjektliste viser firmascopet antall, mens Systemadmin supportmodus beholder alle prosjekter. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -652,6 +653,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   };
   var imageCats = ["F\xF8r arbeid", "Underlag", "Avretting/st\xF8p", "Primer", "Membran", "Sluk og mansjetter", "R\xF8rgjennomf\xF8ringer", "Flislegging", "Fuging/silikon", "Ferdig resultat"];
   var roles = ["Eier / administrator", "Ansatt", "Underleverand\xF8r", "Kun lesetilgang"];
+  var checklistAttachmentTradeOptions = ["Rørlegger", "Elektriker", "Tømrer", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag", "Uspesifisert"];
+  var checklistAttachmentDocumentTypeOptions = ["Sjekkliste", "Samsvarserklæring", "Kontrollerklæring", "FDV", "Sluttdokumentasjon", "Bilde-/fotodokumentasjon", "Annet dokument", "Uspesifisert"];
+  var checklistAttachmentMetaLine = (file = {}) => [
+    file.trade || file.fag || file.role || "Uspesifisert fag",
+    file.documentType || file.docType || file.typeLabel || "Uspesifisert dokumenttype",
+    file.description || file.comment || ""
+  ].filter(hasValue).join(" · ");
   var installCats = ["R\xF8rlegger", "T\xF8mrer/Snekker", "Maler", "Andre"];
   var projectDescriptionTemplates = [
     {
@@ -5079,7 +5087,8 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           }
           visibleAttachments.forEach((file, index) => {
             const fileName = safeText(file?.name || `Vedlegg ${index + 1}`);
-            const fileMeta = safeText([file?._sourceLabel || "Vedlegg", file?.by ? `Lastet opp av ${file.by}` : "", file?.created || ""].filter(Boolean).join(" · "));
+            const attachmentMeta = checklistAttachmentMetaLine(file);
+            const fileMeta = safeText([file?._sourceLabel || "Vedlegg", attachmentMeta, file?.by ? `Lastet opp av ${file.by}` : "", file?.created || ""].filter(Boolean).join(" · "));
             const fileUrl = storedFileUrl(file);
             const nameLines = doc.splitTextToSize(fileName, contentWidth - 22).slice(0, 2);
             const metaLines = fileMeta ? doc.splitTextToSize(fileMeta, contentWidth - 22).slice(0, 2) : [];
@@ -6572,6 +6581,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           type: file.type || "",
           mimeType: file.type || "",
           size: file.size || 0,
+          trade: "Uspesifisert",
+          documentType: "Sjekkliste",
+          description: "",
           by: user.name || authUser?.email || "Ukjent",
           created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO")
         });
@@ -10083,6 +10095,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const droppedFiles = event?.dataTransfer?.files;
       if (droppedFiles && droppedFiles.length) addFiles(droppedFiles);
     };
+    const updateChecklistAttachmentFile = (fileId, patch = {}) => {
+      setFiles((prev) => (prev || []).map((file) => file.id === fileId ? { ...file, ...patch } : file));
+    };
     const groupStats = (group) => {
       const total = group.items.length;
       const done = group.items.filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length;
@@ -10292,6 +10307,17 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               " \xB7 ",
               f.created || ""
             ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+                "Fag/rolle",
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value: f.trade || f.fag || f.role || "Uspesifisert", onChange: (e) => updateChecklistAttachmentFile(f.id, { trade: e.target.value }), children: checklistAttachmentTradeOptions.map((option) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: option, children: option }, option)) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+                "Dokumenttype",
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value: f.documentType || f.docType || f.typeLabel || "Sjekkliste", onChange: (e) => updateChecklistAttachmentFile(f.id, { documentType: e.target.value }), children: checklistAttachmentDocumentTypeOptions.map((option) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: option, children: option }, option)) })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kort beskrivelse / kommentar", value: f.description || f.comment || "", onChange: (v) => updateChecklistAttachmentFile(f.id, { description: v }) }),
             fileUrl ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: fileUrl, target: "_blank", rel: "noopener noreferrer", children: "\xC5pne" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { style: { color: "#991b1b", fontWeight: 800 }, children: "Dokumentlenke mangler – last opp filen på nytt" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setFiles(files.filter((x) => x.id !== f.id)), children: "Fjern" })
           ] }, f.id);
