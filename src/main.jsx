@@ -1,4 +1,5 @@
 // Generated complete main.jsx from the latest live source.
+// FASE 13.15 PREMIUM RAPPORT UI-ONLY: Løfter PDF-rapporten med premium forside, prosjektfakta, innholdsfortegnelse, tydeligere vedlegg, dokumentnummer og dokumentasjonsstatus. Kun rapport/PDF-visning, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.14 VEDLEGG-METADATA: Legger til fag/rolle, dokumenttype og kommentar på opplastede sjekklister/vedlegg fra andre fag, og viser dette i rapport/PDF. Kun metadata/UI for vedlegg, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.13 HOTFIX: Gjeninnfører dra-og-slipp for Opplastede sjekklister/vedlegg fra andre fag. Kun UI/opplastingshendelser, ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
 // FASE 13.12 VEDLEGG-HOTFIX: PDF-/dokumentvedlegg i Sjekklister får robust åpne-lenke fra url/path, manglende lenke merkes tydelig, og PDF kan ikke lenger lastes opp som sjekkpunktbilde. Ingen database-/RLS-/garanti-/låsing-/lagringsendringer.
@@ -656,8 +657,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var checklistAttachmentTradeOptions = ["Rørlegger", "Elektriker", "Tømrer", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag", "Uspesifisert"];
   var checklistAttachmentDocumentTypeOptions = ["Sjekkliste", "Samsvarserklæring", "Kontrollerklæring", "FDV", "Sluttdokumentasjon", "Bilde-/fotodokumentasjon", "Annet dokument", "Uspesifisert"];
   var checklistAttachmentMetaLine = (file = {}) => [
-    file.trade || file.fag || file.role || "Uspesifisert fag",
-    file.documentType || file.docType || file.typeLabel || "Uspesifisert dokumenttype",
+    file.trade || file.fag || file.role || "Ikke angitt fag",
+    file.documentType || file.docType || file.typeLabel || "Ikke angitt dokumenttype",
     file.description || file.comment || ""
   ].filter(hasValue).join(" · ");
   var installCats = ["R\xF8rlegger", "T\xF8mrer/Snekker", "Maler", "Andre"];
@@ -4920,6 +4921,48 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           return clean;
         };
         const companyPhoneForReport = cleanCompanyPhoneForReport(company.phone);
+        const reportAddressLine = () => [project.address, project.postnr, project.city].filter(Boolean).join(", ");
+        const reportGeneratedAtLabel = () => new Date().toLocaleString("no-NO");
+        const countReportAttachments = () => {
+          let total = Array.isArray(files) ? files.filter((file) => hasValue(file?.name) || hasValue(file?.url) || hasValue(file?.path)).length : 0;
+          Object.values(checklist || {}).forEach((items) => {
+            Object.values(items || {}).forEach((value) => {
+              total += (value?.photos || []).filter((file) => isLikelyDocumentFile(file)).length;
+            });
+          });
+          (inst || []).forEach((entry) => {
+            total += (entry?.photos || []).filter((file) => isLikelyDocumentFile(file)).length;
+          });
+          total += Array.isArray(tilbud?.files) ? tilbud.files.filter((file) => hasValue(file?.name) || hasValue(file?.url) || hasValue(file?.path)).length : 0;
+          return total;
+        };
+        const makeReportDocumentNumber = () => {
+          const guarantee = safeText(warranty?.guaranteeNumber || "").trim();
+          if (guarantee) return `${guarantee}-FDV-001`;
+          const idPart = safeText(projectId || "").trim().slice(0, 8).toUpperCase();
+          return `PROJECT-${idPart || "UTKAST"}-FDV-001`;
+        };
+        const reportDocumentationStatus = () => {
+          const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
+          const checklistTotal = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
+          const checklistDone = entries.filter((value) => hasValue(value?.status)).length;
+          const openDeviationTotal = getOpenDeviationCount(checklist);
+          const productTotal = (selected || []).length + (manualSelected || []).length;
+          const photoTotal = (photos || []).filter((photo) => hasValue(photo?.url)).length;
+          const attachmentTotal = countReportAttachments();
+          const items = [
+            { label: "Prosjektinformasjon", ok: [project.projectName, project.address, project.customer].some(hasValue), detail: "Prosjektnavn, kunde og adresse" },
+            { label: "Produkter / FDV", ok: productTotal > 0, detail: `${productTotal} produkt${productTotal === 1 ? "" : "er"} dokumentert` },
+            { label: "Bildedokumentasjon", ok: photoTotal > 0, detail: `${photoTotal} bilde${photoTotal === 1 ? "" : "r"} registrert` },
+            { label: "Sjekklister", ok: checklistTotal > 0 && checklistDone >= checklistTotal, detail: `${checklistDone}/${checklistTotal || checklistDone} kontrollpunkt vurdert` },
+            { label: "Avvik", ok: openDeviationTotal === 0, detail: openDeviationTotal ? `${openDeviationTotal} åpne avvik` : "Ingen åpne avvik" },
+            { label: "Vedlegg", ok: attachmentTotal > 0, detail: `${attachmentTotal} vedlegg` },
+            { label: "Overtagelse", ok: projectHasOvertagelse(overtagelse), detail: projectHasOvertagelse(overtagelse) ? "Registrert" : "Ikke registrert" },
+            { label: "Garanti", ok: !!warranty?.issued || !warranty?.enabled, detail: warranty?.issued ? `${getWarrantyYears(warranty)} år · ${warranty?.guaranteeNumber || "aktiv"}` : warranty?.enabled ? "Ikke utstedt" : "Ikke aktivert" }
+          ];
+          const percent = Math.round(items.filter((item) => item.ok).length / items.length * 100);
+          return { items, percent, productTotal, photoTotal, checklistTotal, checklistDone, openDeviationTotal, attachmentTotal };
+        };
         const ensureSpace = (height = 8) => {
           if (y + height <= pageHeight - 18) return;
           doc.addPage();
@@ -4946,71 +4989,104 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
           addSectionTitle(title);
         };
         const addCoverPage = async () => {
-          const generatedAt = new Date().toLocaleString("no-NO");
-          const openDeviationTotal = getOpenDeviationCount(checklist);
-          const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
-          const assessed = entries.filter((value) => hasValue(value?.status));
-          const okTotal = assessed.filter((value) => ["ok", "utført", "utfort"].includes(String(value?.status || "").toLowerCase())).length;
-          const photoTotal = (photos || []).filter((photo) => hasValue(photo?.url)).length;
-          const productTotal = (selected || []).length + (manualSelected || []).length;
-          doc.setFillColor(248, 250, 252);
+          const generatedAt = reportGeneratedAtLabel();
+          const status = reportDocumentationStatus();
+          const openDeviationTotal = status.openDeviationTotal;
+          const productTitle = project.projectName || project.address || "Prosjektdokumentasjon";
+          const addressLine = reportAddressLine();
+          const coverImage = (photos || []).slice().reverse().find((photo) => hasValue(photo?.url) && /ferdig|resultat/i.test(String(photo?.cat || photo?.name || ""))) || (photos || []).slice().reverse().find((photo) => hasValue(photo?.url));
+          doc.setFillColor(8, 18, 30);
           doc.rect(0, 0, pageWidth, pageHeight, "F");
           doc.setFillColor(255, 255, 255);
-          doc.roundedRect(10, 10, pageWidth - 20, pageHeight - 26, 4, 4, "F");
+          doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 20, 5, 5, "F");
+
+          if (coverImage?.url) {
+            const cover = await loadPdfImage(coverImage.url);
+            if (cover && !cover.error) {
+              const imgX = 12;
+              const imgY = 12;
+              const imgW = pageWidth - 24;
+              const imgH = 78;
+              doc.addImage(cover.dataUrl, cover.format || "JPEG", imgX, imgY, imgW, imgH);
+              doc.setFillColor(8, 18, 30);
+              doc.setGState && doc.setGState(new doc.GState({ opacity: 0.58 }));
+              doc.rect(imgX, imgY, imgW, imgH, "F");
+              doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
+            }
+          } else {
+            doc.setFillColor(12, 42, 82);
+            doc.roundedRect(12, 12, pageWidth - 24, 78, 3, 3, "F");
+          }
+
           if (company.logoUrl) {
             const logoImage = await loadPdfImage(company.logoUrl);
             if (logoImage && !logoImage.error) {
-              let logoW = 58;
+              let logoW = 44;
               let logoH = logoW * (logoImage.height / logoImage.width);
-              if (logoH > 22) {
-                logoH = 22;
+              if (logoH > 18) {
+                logoH = 18;
                 logoW = logoH * (logoImage.width / logoImage.height);
               }
-              doc.addImage(logoImage.dataUrl, logoImage.format || "PNG", margin, 19, logoW, logoH);
+              doc.setFillColor(255, 255, 255);
+              doc.roundedRect(margin, 18, logoW + 8, logoH + 7, 2.5, 2.5, "F");
+              doc.addImage(logoImage.dataUrl, logoImage.format || "PNG", margin + 4, 21, logoW, logoH);
             }
           }
+
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(23);
-          doc.setTextColor(12, 42, 82);
-          doc.text("FDV-RAPPORT", pageWidth / 2, 56, { align: "center" });
-          doc.setFontSize(15);
-          doc.text("PROSJEKTDOKUMENTASJON", pageWidth / 2, 68, { align: "center" });
+          doc.setFontSize(10);
+          doc.setTextColor(8, 213, 216);
+          doc.text("EXPO PROFFDOK", pageWidth - margin, 24, { align: "right" });
+          doc.setFontSize(8);
+          doc.setTextColor(226, 232, 240);
+          doc.text("FDV-rapport · prosjektdokumentasjon", pageWidth - margin, 31, { align: "right" });
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(25);
+          doc.setTextColor(255, 255, 255);
+          doc.text(doc.splitTextToSize(safeText(productTitle).toUpperCase(), pageWidth - 48).slice(0, 2), margin, 54);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10.5);
-          doc.setTextColor(71, 85, 105);
-          doc.text(doc.splitTextToSize(project.projectName || project.address || "Prosjekt", 140), pageWidth / 2, 82, { align: "center" });
-          const cardY = 102;
-          const cardW = (contentWidth - 5) / 2;
-          drawInfoCardPdf(margin, cardY, cardW, 22, "Kunde", project.customer || "Ikke oppgitt");
-          drawInfoCardPdf(margin + cardW + 5, cardY, cardW, 22, "Adresse", [project.address, project.postnr, project.city].filter(Boolean).join(", "));
-          drawInfoCardPdf(margin, cardY + 27, cardW, 22, "Utførende firma", name || company.companyName || "Expo ProffDok");
-          drawInfoCardPdf(margin + cardW + 5, cardY + 27, cardW, 22, "Rapport generert", generatedAt);
-          const metricGap = 4;
-          const metricW = (contentWidth - metricGap * 3) / 4;
-          const metricY = 158;
-          drawMetricCard(margin, metricY, metricW, 20, "Sjekkpunkter OK", String(okTotal), "green");
-          drawMetricCard(margin + (metricW + metricGap), metricY, metricW, 20, "Bilder", String(photoTotal), "blue");
-          drawMetricCard(margin + (metricW + metricGap) * 2, metricY, metricW, 20, "Produkter", String(productTotal), "neutral");
-          drawMetricCard(margin + (metricW + metricGap) * 3, metricY, metricW, 20, "Åpne avvik", String(openDeviationTotal), openDeviationTotal ? "red" : "green");
-          doc.setDrawColor(...(openDeviationTotal ? [248, 113, 113] : [74, 222, 128]));
-          doc.setFillColor(...(openDeviationTotal ? [254, 242, 242] : [236, 253, 245]));
-          doc.roundedRect(margin, 190, contentWidth, warranty?.issued ? 36 : 25, 3, 3, "FD");
+          doc.setTextColor(226, 232, 240);
+          doc.text(doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), pageWidth - 48), margin, 74);
+
+          const badgeY = 96;
+          const badgeText = warranty?.issued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti` : openDeviationTotal ? "Kontroll med åpne avvik" : "Kontroll dokumentert";
+          doc.setFillColor(...(openDeviationTotal ? [254, 242, 242] : warranty?.issued ? [236, 253, 245] : [239, 246, 255]));
+          doc.setDrawColor(...(openDeviationTotal ? [248, 113, 113] : warranty?.issued ? [74, 222, 128] : [147, 197, 253]));
+          doc.roundedRect(margin, badgeY, contentWidth, 24, 3, 3, "FD");
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(13);
-          doc.setTextColor(...(openDeviationTotal ? [153, 27, 27] : [6, 95, 70]));
-          doc.text(openDeviationTotal ? "KONTROLL MED ÅPNE AVVIK" : "KONTROLL DOKUMENTERT", margin + 6, 200);
+          doc.setFontSize(12);
+          doc.setTextColor(...(openDeviationTotal ? [153, 27, 27] : warranty?.issued ? [6, 95, 70] : [12, 42, 82]));
+          doc.text(safeText(badgeText), margin + 6, badgeY + 9);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.4);
+          doc.setTextColor(51, 65, 85);
+          const badgeSub = warranty?.issued && warranty?.guaranteeNumber ? `Garantinummer: ${warranty.guaranteeNumber}` : openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : "Prosjektet har ingen åpne avvik i rapportgrunnlaget.";
+          doc.text(safeText(badgeSub), margin + 6, badgeY + 17);
+
+          const cardY = 130;
+          const cardW = (contentWidth - 6) / 2;
+          drawInfoCardPdf(margin, cardY, cardW, 21, "Kunde", project.customer || "Ikke oppgitt");
+          drawInfoCardPdf(margin + cardW + 6, cardY, cardW, 21, "Utførende firma", name || company.companyName || "Expo ProffDok");
+          drawInfoCardPdf(margin, cardY + 26, cardW, 21, "Rapport generert", generatedAt);
+          drawInfoCardPdf(margin + cardW + 6, cardY + 26, cardW, 21, "Dokumentnummer", makeReportDocumentNumber());
+
+          const metricGap = 4;
+          const metricW = (contentWidth - metricGap * 4) / 5;
+          const metricY = 190;
+          drawMetricCard(margin, metricY, metricW, 20, "Bilder", String(status.photoTotal), "blue");
+          drawMetricCard(margin + (metricW + metricGap), metricY, metricW, 20, "Produkter", String(status.productTotal), "neutral");
+          drawMetricCard(margin + (metricW + metricGap) * 2, metricY, metricW, 20, "Kontroll", String(status.checklistDone), "green");
+          drawMetricCard(margin + (metricW + metricGap) * 3, metricY, metricW, 20, "Vedlegg", String(status.attachmentTotal), "blue");
+          drawMetricCard(margin + (metricW + metricGap) * 4, metricY, metricW, 20, "Avvik", String(openDeviationTotal), openDeviationTotal ? "red" : "green");
+
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
-          doc.setTextColor(51, 65, 85);
-          doc.text(openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : "Prosjektet har ingen åpne avvik i rapportgrunnlaget.", margin + 6, 208);
-          if (warranty?.issued) {
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(9);
-            doc.setTextColor(12, 42, 82);
-            doc.text(`${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti er utstedt${warranty?.guaranteeNumber ? ` · ${warranty.guaranteeNumber}` : ""}.`, margin + 6, 219);
-          }
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8);
+          doc.setTextColor(71, 85, 105);
+          doc.text(doc.splitTextToSize("Denne rapporten dokumenterer arbeidene som er utført i prosjektet, inkludert produkter, sjekklister, bilder, vedlegg og eventuelle garantier. Rapporten bør oppbevares som en del av boligens FDV-dokumentasjon.", contentWidth), margin, 226);
+
+          doc.setFontSize(7.8);
           doc.setTextColor(100, 116, 139);
           doc.text("© 2026 Expo Proffsenter – Expo ProffDok", pageWidth / 2, pageHeight - 20, { align: "center" });
           doc.addPage();
@@ -5085,54 +5161,83 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
             addParagraph(emptyMessage);
             return;
           }
+          const cleanMetaValue = (value = "", fallback = "Ikke angitt") => {
+            const clean = safeText(value).trim();
+            if (!clean || /^uspesifisert/i.test(clean)) return fallback;
+            return clean;
+          };
           visibleAttachments.forEach((file, index) => {
             const fileName = safeText(file?.name || `Vedlegg ${index + 1}`);
-            const attachmentMeta = checklistAttachmentMetaLine(file);
-            const fileMeta = safeText([file?._sourceLabel || "Vedlegg", attachmentMeta, file?.by ? `Lastet opp av ${file.by}` : "", file?.created || ""].filter(Boolean).join(" · "));
             const fileUrl = storedFileUrl(file);
-            const nameLines = doc.splitTextToSize(fileName, contentWidth - 22).slice(0, 2);
-            const metaLines = fileMeta ? doc.splitTextToSize(fileMeta, contentWidth - 22).slice(0, 2) : [];
-            const boxH = Math.max(24, 13 + nameLines.length * 4.2 + metaLines.length * 3.8 + 6);
-            ensureSpace(boxH + 5);
+            const sourceLabel = cleanMetaValue(file?._sourceLabel || "Vedlegg", "Vedlegg");
+            const trade = cleanMetaValue(file.trade || file.fag || file.role, "Ikke angitt");
+            const documentType = cleanMetaValue(file.documentType || file.docType || file.typeLabel, "Ikke angitt");
+            const description = cleanMetaValue(file.description || file.comment, "");
+            const uploadedBy = cleanMetaValue(file.by, "Ikke angitt");
+            const uploadedAt = cleanMetaValue(file.created ? (String(file.created).includes("T") ? new Date(file.created).toLocaleString("no-NO") : file.created) : "", "Ikke angitt");
+            const titleLabel = documentType !== "Ikke angitt" ? documentType : sourceLabel;
+            const detailRows = [
+              ["Fil", fileName],
+              ["Kategori", sourceLabel],
+              ["Fag", trade],
+              ["Dokumenttype", documentType],
+              ["Beskrivelse", description],
+              ["Opplastet av", uploadedBy],
+              ["Dato", uploadedAt]
+            ].filter(([, value]) => hasValue(value));
+            const detailLineCount = detailRows.reduce((sum, [label, value]) => sum + Math.max(1, doc.splitTextToSize(`${label}: ${value}`, contentWidth - 28).length), 0);
+            const boxH = Math.max(44, 20 + detailLineCount * 4.2 + 11);
+            ensureSpace(boxH + 6);
             const boxY = y;
             doc.setDrawColor(191, 219, 254);
             doc.setFillColor(248, 250, 252);
             doc.roundedRect(margin, boxY, contentWidth, boxH, 3, 3, "FD");
             doc.setFillColor(239, 246, 255);
-            doc.roundedRect(margin + 4, boxY + 4, 12, 12, 2.2, 2.2, "F");
+            doc.roundedRect(margin + 4, boxY + 4, 13, 13, 2.2, 2.2, "F");
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(7.8);
+            doc.setFontSize(7.2);
             doc.setTextColor(20, 86, 160);
-            doc.text("PDF", margin + 7.2, boxY + 11.7);
+            doc.text("PDF", margin + 7.2, boxY + 12.2);
+
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(10.2);
+            doc.setFontSize(11.2);
             doc.setTextColor(15, 23, 42);
-            doc.text(nameLines, margin + 20, boxY + 8.2);
-            if (metaLines.length) {
-              doc.setFont("helvetica", "normal");
-              doc.setFontSize(7.6);
-              doc.setTextColor(71, 85, 105);
-              doc.text(metaLines, margin + 20, boxY + 8.2 + nameLines.length * 4.3);
-            }
-            const linkY = boxY + boxH - 4.5;
-            if (fileUrl) {
-              const linkLabel = "Åpne dokument";
+            doc.text(doc.splitTextToSize(titleLabel, contentWidth - 26).slice(0, 1), margin + 21, boxY + 9);
+
+            let yy = boxY + 17;
+            detailRows.forEach(([label, value]) => {
+              const lines = doc.splitTextToSize(`${safeText(label)}: ${safeText(value)}`, contentWidth - 28);
               doc.setFont("helvetica", "bold");
-              doc.setFontSize(8.4);
+              doc.setFontSize(7.7);
+              doc.setTextColor(51, 65, 85);
+              const labelText = `${safeText(label)}:`;
+              doc.text(labelText, margin + 21, yy);
+              doc.setFont("helvetica", "normal");
+              doc.setTextColor(71, 85, 105);
+              const valueLines = doc.splitTextToSize(safeText(value), contentWidth - 52);
+              doc.text(valueLines, margin + 43, yy);
+              yy += Math.max(4.2, valueLines.length * 4.2);
+            });
+
+            const linkY = boxY + boxH - 5.4;
+            if (fileUrl) {
+              const linkLabel = "Åpne PDF";
+              doc.setFont("helvetica", "bold");
+              doc.setFontSize(8.8);
               doc.setTextColor(0, 84, 180);
               if (typeof doc.textWithLink === "function") {
-                doc.textWithLink(linkLabel, margin + 20, linkY, { url: fileUrl });
+                doc.textWithLink(linkLabel, margin + 21, linkY, { url: fileUrl });
               } else {
-                doc.text(linkLabel, margin + 20, linkY);
-                doc.link(margin + 20, linkY - 3.5, 28, 4.5, { url: fileUrl });
+                doc.text(linkLabel, margin + 21, linkY);
+                doc.link(margin + 21, linkY - 3.5, 22, 4.5, { url: fileUrl });
               }
             } else {
               doc.setFont("helvetica", "normal");
               doc.setFontSize(7.6);
               doc.setTextColor(153, 27, 27);
-              doc.text("Dokumentlenke mangler", margin + 20, linkY);
+              doc.text("Dokumentlenke mangler", margin + 21, linkY);
             }
-            y += boxH + 5;
+            y += boxH + 6;
           });
         };
 
@@ -6093,6 +6198,38 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         setPdfProgress("Bygger forside…", "Klargjør rapportforside og prosjektstatus.");
         await addCoverPage();
 
+        setPdfProgress("Legger inn prosjektfakta…", "Bygger prosjektfakta og innholdsfortegnelse.");
+        const reportStatusForFacts = reportDocumentationStatus();
+        addInfoGridSection("Prosjektfakta", [
+          ["Prosjektnavn", project.projectName],
+          ["Kunde", project.customer],
+          ["Adresse", reportAddressLine()],
+          ["Prosjektleder / ansvarlig", project.responsible || user.name],
+          ["Utførende firma", name || company.companyName || "Expo ProffDok"],
+          ["Oppstart / dato", project.date],
+          ["Ferdigstillelse / overtagelse", overtagelse?.dato],
+          ["Garantiperiode", warranty?.issued ? `${getWarrantyYears(warranty)} år` : warranty?.enabled ? `${getWarrantyYears(warranty)} år – ikke utstedt` : ""],
+          ["Garantinummer", warranty?.guaranteeNumber],
+          ["Dokumentnummer", makeReportDocumentNumber()],
+          ["Rapport generert", reportGeneratedAtLabel()],
+          ["Dokumentasjonsgrad", `${reportStatusForFacts.percent} %`]
+        ]);
+
+        addSectionTitle("Innhold");
+        [
+          "1. Prosjektinformasjon",
+          "2. Produkter og FDV",
+          "3. Overflater og innredning",
+          "4. Bildedokumentasjon",
+          "5. Fag, deler og utstyr",
+          "6. Sjekklister",
+          "7. Vedlegg",
+          "8. Garantisertifikat",
+          "9. Garantivilkår",
+          "10. Dokumentasjonsstatus"
+        ].forEach((line) => addParagraph(line, { size: 10, lineHeight: 5.2 }));
+        addDivider();
+
         setPdfProgress("Legger inn prosjektinformasjon…", "Firma, kunde, prosjekt og prosjektering.");
         addInfoGridSection("Firma", [
           ["Firma", name || company.companyName || "Expo ProffDok"],
@@ -6303,6 +6440,49 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
 
         setPdfProgress("Oppretter garantidokument…", "Legger inn garantisertifikat, vilkår og QR-kode der garanti er aktivert.");
         await addWarrantyCertificatePages();
+
+        setPdfProgress("Legger inn dokumentasjonsstatus…", "Oppsummerer komplett dokumentasjonsgrad.");
+        const addDocumentationStatusPage = () => {
+          const status = reportDocumentationStatus();
+          doc.addPage();
+          y = 16;
+          addSectionTitle("Dokumentasjonsstatus");
+          doc.setFillColor(12, 42, 82);
+          doc.roundedRect(margin, y, contentWidth, 32, 4, 4, "F");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(13);
+          doc.setTextColor(255, 255, 255);
+          doc.text("Dokumentasjonsgrad", margin + 8, y + 12);
+          doc.setFontSize(24);
+          doc.text(`${status.percent} %`, pageWidth - margin - 8, y + 21, { align: "right" });
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.4);
+          doc.setTextColor(226, 232, 240);
+          doc.text("Basert på registrerte produkter, bilder, sjekklister, vedlegg, overtagelse og garanti.", margin + 8, y + 23);
+          y += 42;
+
+          status.items.forEach((item) => {
+            ensureSpace(16);
+            doc.setDrawColor(item.ok ? 187 : 253, item.ok ? 247 : 186, item.ok ? 208 : 116);
+            doc.setFillColor(item.ok ? 236 : 255, item.ok ? 253 : 251, item.ok ? 245 : 235);
+            doc.roundedRect(margin, y, contentWidth, 13, 2.5, 2.5, "FD");
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9.4);
+            doc.setTextColor(item.ok ? 6 : 146, item.ok ? 95 : 64, item.ok ? 70 : 14);
+            doc.text(item.ok ? "OK" : "MÅ FØLGES OPP", margin + 5, y + 8.3);
+            doc.setTextColor(15, 23, 42);
+            doc.text(safeText(item.label), margin + 38, y + 8.3);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(71, 85, 105);
+            doc.text(doc.splitTextToSize(safeText(item.detail), contentWidth - 105).slice(0, 1), pageWidth - margin - 5, y + 8.3, { align: "right" });
+            y += 17;
+          });
+
+          y += 4;
+          drawNoteBox("Rapporten bør lastes ned og lagres sammen med øvrig FDV-dokumentasjon. Ved salg av boligen bør rapporten deles med ny eier, megler og/eller takstmann der dette er relevant.");
+        };
+        addDocumentationStatusPage();
 
         setPdfProgress("Klargjør PDF…", "Setter sidetall, bunntekst og filnavn.");
         const pageCount = doc.internal.getNumberOfPages();
