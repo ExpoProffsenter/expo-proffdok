@@ -1,3 +1,4 @@
+// FASE 14.1.3 HOTFIX: Fjerner misvisende autolagringstekst om Supportprosjekt når bruker ikke faktisk er i supportmodus. Kun frontend-statuslinje/localStorage-status, ingen database/RLS/rapport/garanti/prosjektliste.
 // Generated complete main.jsx from the latest live source.
 // FASE 14.1.2 HOTFIX: Stabil dirty-baseline etter lagring/hydrering slik at ulagrede endringer ikke kommer tilbake etter lagring, fanebytte eller nettleserfokus. Kun frontend-varsling, ingen database/RLS/rapport/garanti/prosjektliste.
 // FASE 14.1.1 HOTFIX: Ulagrede endringer markeres ikke ved innlasting/åpning av prosjekt eller intern hydrering. Forlenger pause i dirty-tracking slik at fanebytte ikke varsler uten reell brukerendring. Kun frontend-varsling, ingen database/RLS/rapport/garanti/prosjektliste.
@@ -2400,7 +2401,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const saveLocalDraftNow = (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
       if (!authUser || isReadOnly || !profile?.approved) return;
       if (shouldSkipLocalDraftForSupport(projectId, currentProjectOwnerId)) {
-        setProjectAutoSaveStatus("Supportprosjekt – lokal kladd er ikke lagret");
+        // Supportprosjekt skal ikke lage lokal kladd, men vi viser heller ikke
+        // misvisende statuslinje i ordinær prosjektvisning.
+        if (isSupportModeActive) setProjectAutoSaveStatus("Supportmodus – endringer lagres ikke som lokal kladd");
+        else setProjectAutoSaveStatus("");
         return;
       }
       if (!projectId && !mobileCreatingProject && !hasMeaningfulProjectDraftContent(snapshot)) return;
@@ -8549,7 +8553,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: exitSupportMode, children: "Avslutt supportmodus" })
         ] }),
-        hasActiveProjectWorkspace && projectAutoSaveStatus && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "note", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 10px" }, children: `Autolagring: ${projectAutoSaveStatus}` }),
+        hasActiveProjectWorkspace && projectAutoSaveStatus && !(String(projectAutoSaveStatus || "").toLowerCase().includes("supportprosjekt")) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "note", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 10px" }, children: isSupportModeActive ? projectAutoSaveStatus : `Autolagring: ${projectAutoSaveStatus}` }),
         projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileNav", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 14px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavPanel", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavTop", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavTitle", children: [
