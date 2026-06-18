@@ -1,3 +1,4 @@
+// FASE 14.1.7.6 HOTFIX: Synker ikon i faktisk sjekkpunkt-heading med premium hurtigknappikon for egne sjekkpunkter. Kun UI-ikon, ingen funksjon/logikk/database/PDF/garantiendring.
 // FASE 14.1.7.5 HOTFIX PREMIUM FAGIKONER: Bruker eksakte ikonressurser fra valgt skjermbilde for egne sjekkpunkter. Kun ikonressurser/UI, ingen funksjons-/database-/rapport-/garantiendring.
 // FASE 14.1.7.2 EGNE SJEKKPUNKTER PREMIUM NAV: Trygg hurtignavigasjon/ikoner for egne sjekkpunkter. Bruker kun activeChecklistTemplate i ChecklistEditor for å unngå hvit skjerm. Kun Sjekklister-UI, ingen database/RLS/rapport/PDF/garantiendring.
 // FASE 14.1.6 EGNE SJEKKPUNKTER: Prosjektlokale egne sjekkpunkter per fag bruker samme sjekklistemotor, status, avvik, bildeopplasting og rapportvisning. Ingen SQL/database/RLS-endring.
@@ -10735,8 +10736,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "checklistGroupHeader", onClick: () => toggleCategory(group.category), "aria-expanded": isOpen, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "checklistGroupCaret", "aria-hidden": "true", children: isOpen ? "\u25BE" : "\u25B8" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "checklistGroupTitle", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
-                isSoproWarrantyCategory(group.category) ? "🛡️ " : String(group.category || "").startsWith(customChecklistCategoryPrefix) ? `${customChecklistTradeIcon(customChecklistTradeFromCategory(group.category))} ` : "",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { style: { display: "inline-flex", alignItems: "center", gap: "8px" }, children: [
+                isSoproWarrantyCategory(group.category) ? "🛡️ " : String(group.category || "").startsWith(customChecklistCategoryPrefix) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: customChecklistTradeIconUrl(customChecklistTradeFromCategory(group.category)), alt: "", "aria-hidden": "true", style: { width: "24px", height: "24px", objectFit: "contain", display: "inline-block", flex: "0 0 auto" } }) : "",
                 group.category
               ] }),
               isSoproWarrantyCategory(group.category) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: `${getWarrantyYears(warranty)} ÅRS GARANTI` }),
