@@ -1,3 +1,4 @@
+// FASE 14.1.10D AVVIK RAPPORTVALG + NY BRUKER-VARSEL: HMS-/prosjektavvik kan velges inn i sluttrapport, sjekkpunktavvik er alltid med, og systemadmin varsles ved ny brukerregistrering. Ingen SQL/RLS-endring.
 // FASE 14.1.10A HOTFIX: Når åpne avvik vises fra prosjektliste/sjekkliste, scrolles det direkte til faktisk første åpne sjekkpunktavvik og markerer punktet. Kun sjekklistenavigasjon/UI, ingen database/garanti/rapport/PDF/chat-endring.
 // FASE 14.1.9 MALPROSJEKT-LÅS: Bruk som malprosjekt kan kun aktiveres når prosjektet er garantiprosjekt med valgt Sopro-system. Kun Prosjektinfo-UI/validering, ingen database-/rapport-/PDF-/sjekklistelogikkendring.
 // FASE 14.1.10C AVVIK TILGANG/CHAT-KLADD: Kundeportal skjuler avviksdetaljer, interne brukere kan lukke avvik, og avvik kan klargjøres som chatutkast. Ingen SQL/RLS/PDF/garantiendring.
@@ -4992,12 +4993,43 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: authPassword });
       if (error) return alert("Kunne ikke logge inn: " + error.message);
     };
+    const notifySystemAdminsAboutSignup = async (newUserEmail = "") => {
+      const cleanEmail = String(newUserEmail || "").trim();
+      if (!cleanEmail) return;
+      const notifyPayload = {
+        direction: "new_user_signup_systemadmin_notice",
+        toRole: "systemadmin",
+        newUserEmail: cleanEmail,
+        message: `Ny bruker har opprettet konto i Expo ProffDok og venter p\xE5 godkjenning: ${cleanEmail}`,
+        projectLink: `${window.location.origin}${window.location.pathname}`,
+        subject: "Ny bruker venter p\xE5 godkjenning – Expo ProffDok"
+      };
+      try {
+        const { data: systemAdmins, error: adminLookupError } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("system_role", "systemadmin")
+          .eq("approved", true)
+          .eq("deactivated", false);
+        const emails = (systemAdmins || []).map((row) => String(row?.email || "").trim()).filter(Boolean);
+        if (!adminLookupError && emails.length > 0) {
+          await Promise.all(emails.map((toEmail) => supabase.functions.invoke("smart-worker", {
+            body: { ...notifyPayload, toEmail }
+          }).catch((error) => console.warn("Varsel til systemadmin kunne ikke sendes:", error))));
+          return;
+        }
+        await supabase.functions.invoke("smart-worker", { body: notifyPayload });
+      } catch (error) {
+        console.warn("Varsel til systemadmin kunne ikke sendes:", error);
+      }
+    };
     const signUp = async () => {
       const cleanEmail = authEmail.trim();
       if (!cleanEmail || !authPassword) return alert("Fyll inn e-post og passord.");
       window.localStorage.setItem("expoProffDokAuthEmail", cleanEmail);
       const { error } = await supabase.auth.signUp({ email: cleanEmail, password: authPassword });
       if (error) return alert("Kunne ikke opprette bruker: " + error.message);
+      notifySystemAdminsAboutSignup(cleanEmail);
       alert("Bruker opprettet. Kontoen m\xE5 godkjennes f\xF8r appen kan brukes.");
     };
     const resetPassword = async () => {
@@ -6748,11 +6780,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             if (value?.status === "Avvik" || value?.status === "Lukket avvik") deviations.push({ category, item, status: value?.status || "", comment: value?.comment || "", closeComment: value?.closeComment || "", closedBy: value?.closedBy || "", closedAt: value?.closedAt || "" });
           });
         });
-        if (deviations.length) {
+        const projectDeviationsForReport = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => !!entry?.includeInReport);
+        if (deviations.length || projectDeviationsForReport.length) {
           addSectionTitle("Avviksliste");
-          const openDeviationTotal = deviations.filter((d) => d.status === "Avvik").length;
-          const closedDeviationTotal = deviations.filter((d) => d.status === "Lukket avvik").length;
+          const openDeviationTotal = deviations.filter((d) => d.status === "Avvik").length + projectDeviationsForReport.filter((d) => (d?.status || "Åpent") !== "Lukket").length;
+          const closedDeviationTotal = deviations.filter((d) => d.status === "Lukket avvik").length + projectDeviationsForReport.filter((d) => (d?.status || "Åpent") === "Lukket").length;
           addParagraph(`Avviksoppsummering: ${openDeviationTotal} åpne avvik · ${closedDeviationTotal} lukkede avvik`, { bold: true });
+          if (deviations.length) addParagraph("Sjekkpunktavvik blir alltid tatt med i rapporten.", { size: 8.5, lineHeight: 4.2 });
           deviations.forEach((d) => {
             addSubTitle(`${d.status === "Lukket avvik" ? "✅ Lukket avvik" : "⚠️ Åpent avvik"} – ${d.category} / ${d.item}`);
             if (d.comment) addKeyValue("Opprinnelig avvik", d.comment);
@@ -6763,6 +6797,25 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             } else if (!d.comment) {
               addParagraph("Avvik registrert uten kommentar.");
             }
+            addDivider();
+          });
+          projectDeviationsForReport.forEach((d) => {
+            const isClosed = (d?.status || "Åpent") === "Lukket";
+            addSubTitle(`${isClosed ? "✅ Lukket" : "⚠️ Åpent"} HMS-/prosjektavvik – ${d?.title || d?.type || "Avvik"}`);
+            addKeyValue("Type", d?.type || "Ikke oppgitt");
+            addKeyValue("Alvorlighet", d?.severity || "Ikke oppgitt");
+            addKeyValue("Status", d?.status || "Åpent");
+            addKeyValue("Ansvarlig", d?.responsible || "Ikke oppgitt");
+            addKeyValue("Frist", d?.dueDate || "Ikke oppgitt");
+            if (d?.description) addKeyValue("Beskrivelse", d.description);
+            if (d?.action) addKeyValue("Tiltak / oppfølging", d.action);
+            if (d?.affectsWarranty) addKeyValue("Påvirker garanti/sluttdokumentasjon", "Ja");
+            if (isClosed) {
+              addKeyValue("Utbedring / lukkekommentar", d?.closeComment || "Lukket uten egen lukkekommentar");
+              addKeyValue("Lukket av", d?.closedBy || "Ikke oppgitt");
+              addKeyValue("Lukket dato", d?.closedAt ? new Date(d.closedAt).toLocaleString("no-NO") : "Ikke oppgitt");
+            }
+            if ((d?.photos || []).length) addParagraph(`Bildedokumentasjon registrert: ${(d.photos || []).length} bilde${(d.photos || []).length === 1 ? "" : "r"}.`, { size: 8.5, lineHeight: 4.2 });
             addDivider();
           });
         }
@@ -10736,6 +10789,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         responsible: "",
         dueDate: "",
         affectsWarranty: false,
+        includeInReport: false,
         photos: [],
         createdAt: (/* @__PURE__ */ new Date()).toISOString(),
         closedAt: "",
@@ -10779,7 +10833,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             " åpne HMS/prosjektavvik"
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk sjekkpunktavvik for konkrete kontrollpunkter, HMS-avvik for forhold knyttet til sikkerhet, helse og arbeidsmiljø, og Annet for øvrige prosjektavvik. Avvik vises ikke i kundeportalen. Bruk eventuelt Klargjør i chat for å lage et chatutkast dersom noe skal kommuniseres videre." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk sjekkpunktavvik for konkrete kontrollpunkter, HMS-avvik for forhold knyttet til sikkerhet, helse og arbeidsmiljø, og Annet for øvrige prosjektavvik. Avvik vises ikke i kundeportalen. Sjekkpunktavvik blir alltid med i sluttrapporten. HMS-/prosjektavvik tas kun med hvis du aktivt velger «Ta med i sluttrapport». Bruk eventuelt Klargjør i chat for å lage et chatutkast dersom noe skal kommuniseres videre." }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: addProjectDeviation, children: "+ Nytt HMS/prosjektavvik" })
       ] }),
       checklistDeviationRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
@@ -10819,6 +10873,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "center", marginTop: "8px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!entry.affectsWarranty, onChange: (e) => updateProjectDeviation(entry.id, { affectsWarranty: e.target.checked }), style: { width: "auto" } }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Kan påvirke garanti/sluttdokumentasjon" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "center", marginTop: "8px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!entry.includeInReport, onChange: (e) => updateProjectDeviation(entry.id, { includeInReport: e.target.checked }), style: { width: "auto" } }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ta med i sluttrapport" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", title: "Last opp bilder til avviket", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
@@ -11249,7 +11307,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] })
     ] });
   }
-  function ChecklistReportSection({ checklist }) {
+  function ChecklistReportSection({ checklist, projectDeviations = [] }) {
     const rows = [];
     Object.entries(checklist || {}).forEach(([category, items]) => {
       Object.entries(items || {}).forEach(([item, value]) => {
@@ -11270,8 +11328,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     };
 
     const deviations = rows.filter((r) => r.status === "Avvik" || r.status === "Lukket avvik");
-    const openDeviationTotal = deviations.filter((r) => r.status === "Avvik").length;
-    const closedDeviationTotal = deviations.filter((r) => r.status === "Lukket avvik").length;
+    const projectDeviationsForReport = (Array.isArray(projectDeviations) ? projectDeviations : []).filter((entry) => !!entry?.includeInReport);
+    const openDeviationTotal = deviations.filter((r) => r.status === "Avvik").length + projectDeviationsForReport.filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
+    const closedDeviationTotal = deviations.filter((r) => r.status === "Lukket avvik").length + projectDeviationsForReport.filter((entry) => (entry?.status || "Åpent") === "Lukket").length;
     const categories = [...new Set(rows.map((r) => r.category))];
 
     const itemStyle = (meta) => ({
@@ -11351,7 +11410,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           })
         ] }, category);
       }),
-      deviations.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: 22 }, children: [
+      (deviations.length > 0 || projectDeviationsForReport.length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: 22 }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Avviksliste" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Avviksoppsummering: " }),
@@ -11378,7 +11437,22 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             r.closedAt ? ` · ${new Date(r.closedAt).toLocaleString("no-NO")}` : ""
           ] }),
           r.status !== "Lukket avvik" && !r.comment && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Avvik registrert uten kommentar." })
-        ] }, "avvik-" + r.category + r.item))
+        ] }, "avvik-" + r.category + r.item)),
+        projectDeviationsForReport.map((r) => {
+          const isClosed = (r.status || "Åpent") === "Lukket";
+          return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistReportItem", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: `${isClosed ? "✅ Lukket" : "⚠️ Åpent"} HMS-/prosjektavvik – ${r.title || r.type || "Avvik"}` })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Type/status: " }), `${r.type || "Ikke oppgitt"} · ${r.severity || "Ikke oppgitt"} · ${r.status || "Åpent"}`] }),
+            r.responsible && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Ansvarlig: " }), r.responsible] }),
+            r.dueDate && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Frist: " }), r.dueDate] }),
+            r.description && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Beskrivelse: " }), r.description] }),
+            r.action && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Tiltak / oppfølging: " }), r.action] }),
+            isClosed && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Lukkekommentar: " }), r.closeComment || "Lukket uten egen lukkekommentar"] }),
+            r.affectsWarranty && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Påvirker garanti/sluttdokumentasjon: Ja" })
+          ] }, "project-avvik-" + r.id);
+        })
       ] })
     ] });
   }
@@ -11563,7 +11637,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
           ] }) })
         ] }, m.id))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist, projectDeviations: project?.projectDeviations || [] }),
       tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Tilbud / kontrakt" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
@@ -11895,7 +11969,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
           ] }) })
         ] }, m.id))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist, projectDeviations: project?.projectDeviations || [] }),
       (files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Sjekklister og vedlegg" }),
         files.map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: f.name }, f.id))
