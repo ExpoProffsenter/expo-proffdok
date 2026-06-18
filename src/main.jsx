@@ -1,5 +1,6 @@
 // FASE 14.1.10A HOTFIX: Når åpne avvik vises fra prosjektliste/sjekkliste, scrolles det direkte til faktisk første åpne sjekkpunktavvik og markerer punktet. Kun sjekklistenavigasjon/UI, ingen database/garanti/rapport/PDF/chat-endring.
 // FASE 14.1.9 MALPROSJEKT-LÅS: Bruk som malprosjekt kan kun aktiveres når prosjektet er garantiprosjekt med valgt Sopro-system. Kun Prosjektinfo-UI/validering, ingen database-/rapport-/PDF-/sjekklistelogikkendring.
+// FASE 14.1.10C AVVIK TILGANG/CHAT-KLADD: Kundeportal skjuler avviksdetaljer, interne brukere kan lukke avvik, og avvik kan klargjøres som chatutkast. Ingen SQL/RLS/PDF/garantiendring.
 // FASE 14.1.10B AVVIKSSENTRAL: Legger til prosjektlokal Avvik-fane for sjekkpunktavvik, HMS-avvik og andre prosjektavvik. Ingen SQL/RLS/PDF/garantiendring.
 // FASE 14.1.7.6 HOTFIX: Synker ikon i faktisk sjekkpunkt-heading med premium hurtigknappikon for egne sjekkpunkter. Kun UI-ikon, ingen funksjon/logikk/database/PDF/garantiendring.
 // FASE 14.1.7.5 HOTFIX PREMIUM FAGIKONER: Bruker eksakte ikonressurser fra valgt skjermbilde for egne sjekkpunkter. Kun ikonressurser/UI, ingen funksjons-/database-/rapport-/garantiendring.
@@ -3426,6 +3427,28 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       }
     };
     const ownerNotificationEmail = () => user.email || authUser?.email || company.email || profile?.email || "";
+    const prepareDeviationChatDraft = (deviation = {}) => {
+      const type = deviation.type || (deviation.source === "checklist" ? "Sjekkpunktavvik" : "Prosjektavvik");
+      const title = deviation.title || deviation.item || "Avvik";
+      const details = [
+        `Avvik til oppfølging: ${title}`,
+        deviation.category ? `Kategori: ${deviation.category}` : "",
+        `Type: ${type}`,
+        deviation.severity ? `Alvorlighet: ${deviation.severity}` : "",
+        deviation.responsible ? `Ansvarlig: ${deviation.responsible}` : "",
+        deviation.dueDate ? `Frist: ${deviation.dueDate}` : "",
+        deviation.description ? `Beskrivelse: ${deviation.description}` : "",
+        deviation.comment ? `Kommentar: ${deviation.comment}` : "",
+        deviation.action ? `Tiltak: ${deviation.action}` : "",
+        deviation.affectsWarranty ? "Påvirker garanti/sluttdokumentasjon: Ja" : ""
+      ].filter(Boolean).join("\n");
+      setProjectLog((prev) => ({
+        ...normalizeProjectLog(prev),
+        draft: details
+      }));
+      setTab("chat");
+      setTimeout(() => scrollToMobileTabTarget("chat"), 120);
+    };
     const addProjectLogMessage = async () => {
       if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r chatmelding med bilde kan lagres p\xE5 prosjektet.");
       const text = (projectLog.draft || "").trim();
@@ -7717,7 +7740,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalSoproChecklistComplete = customerPortalSoproChecklistStats.complete;
       const customerPortalBaseChecklistText = customerPortalBaseChecklistStats.done ? `${customerPortalBaseChecklistStats.done} av ${customerPortalBaseChecklistStats.total} ordinære kontrollpunkter` : "Ordinære sjekklister ikke utfylt ennå";
       const customerPortalSoproChecklistText = customerPortalSoproChecklistTotal ? `Garantipunkter: ${customerPortalSoproChecklistDone} av ${customerPortalSoproChecklistTotal}` : "";
-      const customerPortalChecklistStatusText = customerPortalChecklistDone ? `${customerPortalBaseChecklistText}${customerPortalSoproChecklistText ? ` · ${customerPortalSoproChecklistText}` : ""}${customerPortalChecklistAvvik ? ` · ${customerPortalChecklistAvvik} åpne avvik` : customerPortalChecklistMissing ? ` · ${customerPortalChecklistMissing} gjenstår` : ""}` : "Ikke utfylt ennå";
+      const customerPortalChecklistStatusText = customerPortalChecklistDone ? `${customerPortalBaseChecklistText}${customerPortalSoproChecklistText ? ` · ${customerPortalSoproChecklistText}` : ""}${customerPortalChecklistMissing ? ` · ${customerPortalChecklistMissing} gjenstår` : ""}` : "Ikke utfylt ennå";
       const customerPortalAddress = [project.address, project.postnr, project.city].filter(Boolean).join(", ");
       const customerPortalProducts = [...selected || [], ...manualSelected || []];
       const customerPortalPhotos = (photos || []).filter((photo) => hasValue(photo?.url));
@@ -7834,7 +7857,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Produkter", value: customerPortalProductCount ? `${customerPortalProductCount} produkter registrert` : "Ingen produkter registrert" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Bilder", value: customerPortalPhotoCount ? `${customerPortalPhotoCount} bilder lastet opp` : "Ingen bilder lastet opp" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Kontroller", value: customerPortalChecklistAvvik ? `${customerPortalChecklistAvvik} åpne avvik` : customerPortalChecklistDone ? `${customerPortalChecklistDone} kontrollpunkter utført` : "Ikke registrert" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Kontroller", value: customerPortalChecklistDone ? `${customerPortalChecklistDone} kontrollpunkter utført` : "Ikke registrert" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Overtagelse", value: overtagelse?.enabled ? `Registrert ${overtagelse?.dato || ""}` : "Ikke registrert" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
@@ -9423,7 +9446,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               setShowOpenDeviationsOnly(true);
               setTab("sjekklister");
               setTimeout(() => scrollToMobileTabTarget("sjekklister"), 120);
-            }
+            },
+            onPrepareChatDraft: prepareDeviationChatDraft
           }
         ) }),
         tab === "tilbud" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilbud / kontrakt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
@@ -10674,7 +10698,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     ] });
   }
 
-  function DeviationCenter({ project, setProject, checklist = {}, activeChecklistTemplate = [], uploadImages = null, onGoToChecklistPoint = null }) {
+  function DeviationCenter({ project, setProject, checklist = {}, activeChecklistTemplate = [], uploadImages = null, onGoToChecklistPoint = null, onPrepareChatDraft = null }) {
     const projectDeviations = Array.isArray(project?.projectDeviations) ? project.projectDeviations : [];
     const checklistDeviationRows = (activeChecklistTemplate || []).flatMap((group) => (group.items || []).map((item) => {
       const value = checklist?.[group.category]?.[item] || {};
@@ -10755,7 +10779,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             " åpne HMS/prosjektavvik"
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk sjekkpunktavvik for konkrete kontrollpunkter, HMS-avvik for forhold knyttet til sikkerhet, helse og arbeidsmiljø, og Annet for øvrige prosjektavvik. HMS/SHA skal håndteres etter gjeldende rutiner i prosjektet." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk sjekkpunktavvik for konkrete kontrollpunkter, HMS-avvik for forhold knyttet til sikkerhet, helse og arbeidsmiljø, og Annet for øvrige prosjektavvik. Avvik vises ikke i kundeportalen. Bruk eventuelt Klargjør i chat for å lage et chatutkast dersom noe skal kommuniseres videre." }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: addProjectDeviation, children: "+ Nytt HMS/prosjektavvik" })
       ] }),
       checklistDeviationRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
@@ -10768,7 +10792,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: row.category }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: row.status })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => onGoToChecklistPoint && onGoToChecklistPoint(row), children: "Gå til punkt" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => onGoToChecklistPoint && onGoToChecklistPoint(row), children: "Gå til punkt" }),
+            onPrepareChatDraft && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => onPrepareChatDraft({ ...row, source: "checklist", type: "Sjekkpunktavvik", title: row.item, description: row.comment }), children: "Klargjør i chat" })
           ] }),
           row.comment ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Avvik: " }), row.comment] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Avvik registrert uten kommentar." }),
           row.closeComment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Lukket: " }), row.closeComment] }),
@@ -10811,6 +10836,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "10px" }, children: [
               !isClosed && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => closeProjectDeviation(entry), children: "✅ Lukk avvik" }),
               isClosed && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => reopenProjectDeviation(entry), children: "Åpne igjen" }),
+              onPrepareChatDraft && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => onPrepareChatDraft({ ...entry, source: "project" }), children: "Klargjør i chat" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeProjectDeviation(entry.id), children: "Fjern" })
             ] })
           ] }, entry.id);
