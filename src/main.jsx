@@ -1,4 +1,4 @@
-// FASE 14.1.7.1 HOTFIX: Reverterer kun hurtignavigasjon/ikoner fra 14.1.7 etter hvit skjerm i Sjekklister. Beholder stabil 14.1.6 med egne sjekkpunkter samme motor. Ingen database/RLS/rapport/PDF/garantiendring.
+// FASE 14.1.7.2 EGNE SJEKKPUNKTER PREMIUM NAV: Trygg hurtignavigasjon/ikoner for egne sjekkpunkter. Bruker kun activeChecklistTemplate i ChecklistEditor for å unngå hvit skjerm. Kun Sjekklister-UI, ingen database/RLS/rapport/PDF/garantiendring.
 // FASE 14.1.6 EGNE SJEKKPUNKTER: Prosjektlokale egne sjekkpunkter per fag bruker samme sjekklistemotor, status, avvik, bildeopplasting og rapportvisning. Ingen SQL/database/RLS-endring.
 // FASE 14.1.5 FIRMAPROFIL FIRMAIDENTITET: Første bruker i nytt firma blir firmaadmin når firmaprofil lagres, uten å endre eksisterende firma-/systemroller. Kun profiles-felt, ingen prosjekt/rapport/PDF/garanti/chat/autolagring.
 // FASE 14.1.3 HOTFIX: Fjerner misvisende autolagringstekst om Supportprosjekt når bruker ikke faktisk er i supportmodus. Kun frontend-statuslinje/localStorage-status, ingen database/RLS/rapport/garanti/prosjektliste.
@@ -669,6 +669,17 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var customChecklistTradeOptions = ["Rørlegger", "Tømrer", "Elektriker", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag"];
   var customChecklistCategoryPrefix = "Egne sjekkpunkter – ";
   var customChecklistCategoryFromTrade = (trade = "Annet fag") => `${customChecklistCategoryPrefix}${String(trade || "Annet fag").trim() || "Annet fag"}`;
+  var customChecklistTradeFromCategory = (category = "") => String(category || "").startsWith(customChecklistCategoryPrefix) ? String(category || "").slice(customChecklistCategoryPrefix.length) : String(category || "");
+  var customChecklistTradeIcon = (trade = "") => {
+    const text = String(trade || "").toLowerCase();
+    if (/rør|ror|vvs|sanit/.test(text)) return "🔧";
+    if (/tøm|tom|snekker/.test(text)) return "🔨";
+    if (/elektr/.test(text)) return "⚡";
+    if (/murer|flis|mur/.test(text)) return "🧱";
+    if (/maler|maling|sparkel/.test(text)) return "🖌️";
+    if (/vent|luft/.test(text)) return "🌬️";
+    return "📋";
+  };
   var normalizeCustomChecklistGroups = (groups = []) => {
     const byCategory = new Map();
     (Array.isArray(groups) ? groups : []).forEach((entry) => {
@@ -10465,6 +10476,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     }, [showOpenDeviationsOnly, checklist]);
     const groupHasOpenDeviation = (group) => group.items.some((item) => checklist?.[group.category]?.[item]?.status === "Avvik");
     const visibleChecklistGroups = showOpenDeviationsOnly ? activeChecklistTemplate.filter(groupHasOpenDeviation) : activeChecklistTemplate;
+    const customChecklistQuickGroups = activeChecklistTemplate.filter((group) => String(group?.category || "").startsWith(customChecklistCategoryPrefix) && (group.items || []).length > 0);
     const flatChecklistPoints = activeChecklistTemplate.flatMap((group) => (group.items || []).map((item) => ({ category: group.category, item, anchorId: checklistPointAnchor(group.category, item) })));
     const firstIncompletePoint = flatChecklistPoints.find((point) => !hasValue(checklist?.[point.category]?.[point.item]?.status));
     const scrollToChecklistPoint = (point, block = "start") => {
@@ -10478,6 +10490,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           window.setTimeout(() => el.classList.remove("checklistPointFocus"), 1600);
         }
       }, 180);
+    };
+    const scrollToCustomChecklistGroup = (group) => {
+      const firstItem = group?.items?.[0];
+      if (!group?.category || !firstItem) return;
+      if (setShowOpenDeviationsOnly) setShowOpenDeviationsOnly(false);
+      setOpenCategories((prev) => ({ ...prev, [group.category]: true }));
+      window.setTimeout(() => scrollToChecklistPoint({ category: group.category, item: firstItem, anchorId: checklistPointAnchor(group.category, firstItem) }, "start"), 260);
     };
     import_react.default.useEffect(() => {
       try {
@@ -10645,6 +10664,19 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "note", children: checklistSaveStatus || "Autolagring aktiv" })
         ] })
       ] }),
+      customChecklistQuickGroups.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px", background: "#f8fbff" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "📋 Egne sjekkpunkter" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Trykk på et fag for å hoppe direkte til egne sjekkpunkter i prosjektet." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px" }, children: customChecklistQuickGroups.map((group) => {
+          const trade = customChecklistTradeFromCategory(group.category);
+          const stats = groupStats(group);
+          return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "secondary", onClick: () => scrollToCustomChecklistGroup(group), style: { minWidth: "116px", minHeight: "76px", display: "grid", placeItems: "center", gap: "4px", padding: "10px 12px", borderRadius: "16px", fontWeight: 900 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "30px", lineHeight: 1 }, children: customChecklistTradeIcon(trade) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: trade }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { className: "note", children: [stats.done, "/", stats.total, " utfylt"] })
+          ] }, group.category);
+        }) })
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "Egne sjekkpunkter per fag" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Legg til prosjektspesifikke kontrollpunkter for rørlegger, tømrer, elektriker eller andre fag. Punktene bruker samme status, avvik, kommentar og bildeopplasting som øvrige sjekkpunkter, og følger med hvis prosjektet kopieres som mal." }),
@@ -10682,7 +10714,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "checklistGroupCaret", "aria-hidden": "true", children: isOpen ? "\u25BE" : "\u25B8" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "checklistGroupTitle", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
-                isSoproWarrantyCategory(group.category) ? "🛡️ " : String(group.category || "").startsWith(customChecklistCategoryPrefix) ? "🧰 " : "",
+                isSoproWarrantyCategory(group.category) ? "🛡️ " : String(group.category || "").startsWith(customChecklistCategoryPrefix) ? `${customChecklistTradeIcon(customChecklistTradeFromCategory(group.category))} ` : "",
                 group.category
               ] }),
               isSoproWarrantyCategory(group.category) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: `${getWarrantyYears(warranty)} ÅRS GARANTI` }),
