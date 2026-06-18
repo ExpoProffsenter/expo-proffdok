@@ -1,3 +1,4 @@
+// FASE 14.1.10A HOTFIX: Når åpne avvik vises fra prosjektliste/sjekkliste, scrolles det direkte til faktisk første åpne sjekkpunktavvik og markerer punktet. Kun sjekklistenavigasjon/UI, ingen database/garanti/rapport/PDF/chat-endring.
 // FASE 14.1.9 MALPROSJEKT-LÅS: Bruk som malprosjekt kan kun aktiveres når prosjektet er garantiprosjekt med valgt Sopro-system. Kun Prosjektinfo-UI/validering, ingen database-/rapport-/PDF-/sjekklistelogikkendring.
 // FASE 14.1.7.6 HOTFIX: Synker ikon i faktisk sjekkpunkt-heading med premium hurtigknappikon for egne sjekkpunkter. Kun UI-ikon, ingen funksjon/logikk/database/PDF/garantiendring.
 // FASE 14.1.7.5 HOTFIX PREMIUM FAGIKONER: Bruker eksakte ikonressurser fra valgt skjermbilde for egne sjekkpunkter. Kun ikonressurser/UI, ingen funksjons-/database-/rapport-/garantiendring.
@@ -10672,6 +10673,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     const customChecklistQuickGroups = activeChecklistTemplate.filter((group) => String(group?.category || "").startsWith(customChecklistCategoryPrefix) && (group.items || []).length > 0);
     const flatChecklistPoints = activeChecklistTemplate.flatMap((group) => (group.items || []).map((item) => ({ category: group.category, item, anchorId: checklistPointAnchor(group.category, item) })));
     const firstIncompletePoint = flatChecklistPoints.find((point) => !hasValue(checklist?.[point.category]?.[point.item]?.status));
+    const firstOpenDeviationPoint = flatChecklistPoints.find((point) => checklist?.[point.category]?.[point.item]?.status === "Avvik");
+    const openDeviationJumpRef = import_react.default.useRef(false);
     const scrollToChecklistPoint = (point, block = "start") => {
       if (!point) return;
       setOpenCategories((prev) => ({ ...prev, [point.category]: true }));
@@ -10691,6 +10694,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       setOpenCategories((prev) => ({ ...prev, [group.category]: true }));
       window.setTimeout(() => scrollToChecklistPoint({ category: group.category, item: firstItem, anchorId: checklistPointAnchor(group.category, firstItem) }, "start"), 260);
     };
+    import_react.default.useEffect(() => {
+      if (!showOpenDeviationsOnly) {
+        openDeviationJumpRef.current = false;
+        return;
+      }
+      if (openDeviationJumpRef.current || !firstOpenDeviationPoint) return;
+      openDeviationJumpRef.current = true;
+      window.setTimeout(() => scrollToChecklistPoint(firstOpenDeviationPoint, "start"), 320);
+    }, [showOpenDeviationsOnly, firstOpenDeviationPoint?.anchorId]);
     import_react.default.useEffect(() => {
       try {
         const rawTarget = window.sessionStorage.getItem("expoProffDokChecklistJumpTarget");
@@ -10804,6 +10816,19 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         closeComment: ""
       });
     };
+    const toggleOpenDeviationView = () => {
+      if (!setShowOpenDeviationsOnly) return;
+      if (showOpenDeviationsOnly) {
+        setShowOpenDeviationsOnly(false);
+        openDeviationJumpRef.current = false;
+        return;
+      }
+      setShowOpenDeviationsOnly(true);
+      if (firstOpenDeviationPoint) {
+        setOpenCategories((prev) => ({ ...prev, [firstOpenDeviationPoint.category]: true }));
+        window.setTimeout(() => scrollToChecklistPoint(firstOpenDeviationPoint, "start"), 320);
+      }
+    };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryCard", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
@@ -10849,7 +10874,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           firstIncompletePoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => scrollToChecklistPoint(firstIncompletePoint, "start"), children: "Gå til neste punkt" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: expandAll, children: "\xC5pne alle" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: collapseDone, children: "Vis det som gjenst\xE5r" }),
-          totalStats.deviations > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setShowOpenDeviationsOnly && setShowOpenDeviationsOnly(!showOpenDeviationsOnly), children: showOpenDeviationsOnly ? "Vis alle punkter" : "Vis bare åpne avvik" })
+          totalStats.deviations > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: toggleOpenDeviationView, children: showOpenDeviationsOnly ? "Vis alle punkter" : "Vis bare åpne avvik" })
         ] }),
         showOpenDeviationsOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Viser bare sjekkpunkter med åpne avvik. Trykk ‘Vis alle punkter’ for normal sjekkliste." }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryActions", style: { marginTop: "10px" }, children: [
