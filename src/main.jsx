@@ -1,5 +1,6 @@
 // FASE 14.1.7.6 HOTFIX: Synker ikon i faktisk sjekkpunkt-heading med premium hurtigknappikon for egne sjekkpunkter. Kun UI-ikon, ingen funksjon/logikk/database/PDF/garantiendring.
 // FASE 14.1.7.5 HOTFIX PREMIUM FAGIKONER: Bruker eksakte ikonressurser fra valgt skjermbilde for egne sjekkpunkter. Kun ikonressurser/UI, ingen funksjons-/database-/rapport-/garantiendring.
+// FASE 14.1.8 GARANTISTYRTE MALPROSJEKTER: Prosjekter kan merkes som mal, og garantimaler kan hentes fra forsiden. Malbruk er låst til garantiprosjekter med valgt Sopro-system. Ingen SQL/database/RLS-endring.
 // FASE 14.1.7.2 EGNE SJEKKPUNKTER PREMIUM NAV: Trygg hurtignavigasjon/ikoner for egne sjekkpunkter. Bruker kun activeChecklistTemplate i ChecklistEditor for å unngå hvit skjerm. Kun Sjekklister-UI, ingen database/RLS/rapport/PDF/garantiendring.
 // FASE 14.1.6 EGNE SJEKKPUNKTER: Prosjektlokale egne sjekkpunkter per fag bruker samme sjekklistemotor, status, avvik, bildeopplasting og rapportvisning. Ingen SQL/database/RLS-endring.
 // FASE 14.1.5 FIRMAPROFIL FIRMAIDENTITET: Første bruker i nytt firma blir firmaadmin når firmaprofil lagres, uten å endre eksisterende firma-/systemroller. Kun profiles-felt, ingen prosjekt/rapport/PDF/garanti/chat/autolagring.
@@ -1208,6 +1209,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     projectDescription: "",
     projectInfoIncludeInReport: false,
     checklistPhotosNote: false,
+    isTemplate: false,
     fall: "",
     fallDusj: "",
     fallUtenfor: "",
@@ -2263,6 +2265,13 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const finished = ordinaryProjectListRows.filter((item) => item.listStatus.tone === "done" || item.listStatus.tone === "locked").length;
       return { total, unread, active, finished, visible: filteredProjectListRows.length };
     }, [ordinaryProjectListRows, filteredProjectListRows]);
+    const warrantyTemplateProjectRows = (0, import_react.useMemo)(() => {
+      return (ordinaryProjectListRows || []).filter((item) => {
+        const rowProject = item?.row?.data?.project || {};
+        const rowWarranty = item?.row?.data?.warranty || {};
+        return !!rowProject?.isTemplate && !!rowWarranty?.enabled && !!rowWarranty?.system;
+      });
+    }, [ordinaryProjectListRows]);
     const registeredCompanyOptions = (0, import_react.useMemo)(() => {
       const companies = new Map();
       const addCompany = (value) => {
@@ -3110,7 +3119,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const createNewProject = async () => {
       const canLeave = await confirmLeaveWithUnsavedChanges("starter nytt prosjekt");
       if (!canLeave) return;
-      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
       pauseDirtyTrackingBriefly(1200);
       setProject(emptyProject());
@@ -3139,6 +3148,117 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       setTab("prosjekt");
       window.history.replaceState({}, document.title, window.location.pathname);
       setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+    };
+    const startProjectFromTemplate = async (templateItem) => {
+      if (!templateItem?.row) return;
+      const canLeave = await confirmLeaveWithUnsavedChanges("starter prosjekt fra mal");
+      if (!canLeave) return;
+      const sourceData = dataFromRow(templateItem.row, templateItem.row.data || {});
+      const sourceProject = sourceData.project || {};
+      const sourceWarranty = { ...emptyWarranty(), ...sourceData.warranty || {} };
+      if (!sourceProject?.isTemplate || !sourceWarranty?.enabled || !sourceWarranty?.system) {
+        return alert("Denne malen kan ikke brukes her. Malprosjekter er kun tilgjengelige for garantiprosjekter med valgt Sopro-system.");
+      }
+      const templateTitle = templateItem.row.title || sourceProject.projectName || sourceProject.address || "mal";
+      if (!window.confirm(`Starte nytt garantiprosjekt fra malen "${templateTitle}"?
+
+Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser blir ikke kopiert.`)) return;
+      pauseDirtyTrackingBriefly(1200);
+      const nextProject = {
+        ...emptyProject(),
+        responsible: sourceProject.responsible || user?.name || "",
+        projectName: "",
+        address: "",
+        postnr: "",
+        city: "",
+        customer: "",
+        customerEmail: "",
+        customerPhone: "",
+        date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+        notes: "",
+        projectDescription: sourceProject.projectDescription || "",
+        projectInfoIncludeInReport: !!sourceProject.projectInfoIncludeInReport,
+        checklistPhotosNote: !!sourceProject.checklistPhotosNote,
+        isTemplate: false,
+        fall: sourceProject.fall || "",
+        fallDusj: sourceProject.fallDusj || "",
+        fallUtenfor: sourceProject.fallUtenfor || "",
+        sluk: sourceProject.sluk || "",
+        terskel: sourceProject.terskel || "",
+        membran: sourceProject.membran || "",
+        prosjekteringKommentar: sourceProject.prosjekteringKommentar || "",
+        prosjekteringPunkter: Array.isArray(sourceProject.prosjekteringPunkter) ? JSON.parse(JSON.stringify(sourceProject.prosjekteringPunkter)) : [],
+        customChecklistGroups: Array.isArray(sourceProject.customChecklistGroups) ? JSON.parse(JSON.stringify(sourceProject.customChecklistGroups)) : [],
+        locked: false,
+        status: "active",
+        workflowStatus: "Pågår",
+        lockedAt: "",
+        lockedBy: ""
+      };
+      const nextWarranty = {
+        ...emptyWarranty(),
+        enabled: true,
+        system: sourceWarranty.system,
+        sintefApproval: sourceWarranty.sintefApproval || "",
+        durationYears: getWarrantyYears(sourceWarranty),
+        status: "draft",
+        issued: false,
+        issuedAt: null,
+        guaranteeNumber: "",
+        reportGeneratedAt: null,
+        reportGeneratedFileName: "",
+        termsAccepted: false,
+        termsAcceptedAt: "",
+        termsAcceptedBy: "",
+        termsReceiptName: "",
+        termsReceiptRole: "Kunde"
+      };
+      setProject(nextProject);
+      setChecked(JSON.parse(JSON.stringify(sourceData.checked || {})));
+      setProductDocs(JSON.parse(JSON.stringify(sourceData.productDocs || {})));
+      setManualProducts(JSON.parse(JSON.stringify(sourceData.manualProducts || {})));
+      setOther(JSON.parse(JSON.stringify(sourceData.other || {})));
+      setSurf(JSON.parse(JSON.stringify(sourceData.surf || {})));
+      setBathroomEquipment(JSON.parse(JSON.stringify(sourceData.bathroomEquipment || emptyBathroomEquipment())));
+      setPhotos([]);
+      setAccess([]);
+      setInst([]);
+      setFiles([]);
+      setChecklist({});
+      setTilbud(emptyTilbud());
+      setOvertagelse(emptyOvertagelse());
+      setWarranty(nextWarranty);
+      setProjectLog(emptyProjectLog());
+      setInternalNotes("");
+      setProjectId(null);
+      setCurrentProjectOwnerId(authUser?.id || "");
+      setSupportModeExplicit(false);
+      setMobileCreatingProject(true);
+      setShowOpenDeviationsOnly(false);
+      resetProjectDirty({
+        company,
+        user,
+        project: nextProject,
+        checked: sourceData.checked || {},
+        productDocs: sourceData.productDocs || {},
+        manualProducts: sourceData.manualProducts || {},
+        other: sourceData.other || {},
+        surf: sourceData.surf || {},
+        bathroomEquipment: sourceData.bathroomEquipment || emptyBathroomEquipment(),
+        photos: [],
+        access: [],
+        inst: [],
+        files: [],
+        checklist: {},
+        tilbud: emptyTilbud(),
+        overtagelse: emptyOvertagelse(),
+        warranty: nextWarranty,
+        projectLog: emptyProjectLog(),
+        internalNotes: ""
+      });
+      setTab("prosjekt");
+      setTimeout(() => scrollToMobileTabTarget("prosjekt"), 120);
+      alert("✔ Garantiprosjekt startet fra mal. Fyll inn kunde og prosjektinformasjon før du lagrer.");
     };
     const addProsjekteringPunkt = () => {
       setProject((p) => ({
@@ -8727,6 +8847,23 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => loadProjects(authUser, true), children: "Oppdater" })
             ] })
           ] }),
+          warrantyTemplateProjectRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeSearchCard", style: { marginTop: "12px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Start garantiprosjekt fra mal" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { margin: "6px 0 10px" }, children: "Malene er kun tilgjengelige for garantiprosjekter med valgt Sopro-system." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gap: "8px" }, children: warrantyTemplateProjectRows.slice(0, 6).map((item) => {
+              const templateProject = item?.row?.data?.project || {};
+              const templateWarranty = item?.row?.data?.warranty || {};
+              const systemLabel = soproWarrantySystems.find((system) => system.id === templateWarranty.system)?.product || "Sopro";
+              const customCount = Array.isArray(templateProject.customChecklistGroups) ? templateProject.customChecklistGroups.length : 0;
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "secondary", style: { justifyContent: "space-between", textAlign: "left" }, onClick: () => startProjectFromTemplate(item), children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.row.title || templateProject.projectName || "Våtromsmal" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "3px" }, children: [ systemLabel, customCount ? ` · ${customCount} egne fagpunkter` : "" ] })
+                ] }),
+                "Bruk mal"
+              ] }, item.row.id);
+            }) })
+          ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeStats", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileHomeStatCard", onClick: () => setProjectStatusFilter("alle"), children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.active }),
@@ -8908,6 +9045,23 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" })
             ] })
           ] }),
+          warrantyTemplateProjectRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "18px", background: "#f8fbff" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "Start garantiprosjekt fra mal" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her vises kun prosjekter som er merket som mal og samtidig er satt opp som garantiprosjekt med valgt Sopro-system." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gap: "10px", marginTop: "10px" }, children: warrantyTemplateProjectRows.slice(0, 8).map((item) => {
+              const templateProject = item?.row?.data?.project || {};
+              const templateWarranty = item?.row?.data?.warranty || {};
+              const systemLabel = soproWarrantySystems.find((system) => system.id === templateWarranty.system)?.product || "Sopro";
+              const customCount = Array.isArray(templateProject.customChecklistGroups) ? templateProject.customChecklistGroups.length : 0;
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "secondary", style: { justifyContent: "space-between", textAlign: "left", padding: "12px 14px" }, onClick: () => startProjectFromTemplate(item), children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.row.title || templateProject.projectName || "Våtromsmal" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { display: "block", marginTop: "3px" }, children: [ systemLabel, customCount ? ` · ${customCount} egne fagpunkter` : "" ] })
+                ] }),
+                "Bruk mal"
+              ] }, item.row.id);
+            }) })
+          ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideGrid", style: { marginTop: "18px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.active }),
@@ -8933,7 +9087,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde e-post", type: "email", value: project.customerEmail || "", onChange: (v) => setProject({ ...project, customerEmail: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "4px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.isTemplate, onChange: (e) => setProject({ ...project, isTemplate: e.target.checked }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Bruk som malprosjekt" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "note", children: "Maler kan hentes fra forsiden kun når prosjektet er satt opp som garantiprosjekt med valgt Sopro-system." })
+            ] })
+          ] })
         ] }) }) }) })),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektinformasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
