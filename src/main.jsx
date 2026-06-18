@@ -680,6 +680,17 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     if (/vent|luft/.test(text)) return "🌬️";
     return "📋";
   };
+  var customChecklistTradeSvgMarkup = (trade = "") => {
+    const text = String(trade || "").toLowerCase();
+    if (/rør|ror|vvs|sanit/.test(text)) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><g transform="rotate(-38 48 48)"><path d="M24 18c8-7 20-6 27 1l-13 13 10 10 13-13c7 9 6 22-3 30-7 7-17 9-26 5L16 80c-3 3-8 3-11 0s-3-8 0-11l16-16c-4-11-2-25 3-35z" fill="#e11d2e" stroke="#182033" stroke-width="4" stroke-linejoin="round"/><path d="M34 55l-15 15" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".75"/><path d="M47 19l-11 11" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/></g></svg>`;
+    if (/tøm|tom|snekker/.test(text)) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path d="M37 47L16 78c-2 4-1 8 3 10s8 1 10-3l20-32z" fill="#9a5a22" stroke="#182033" stroke-width="4"/><path d="M41 17c15-8 31-4 40 11l-11 8c-7-9-15-11-25-7l8 12-13 8-13-21z" fill="#cfd6dc" stroke="#182033" stroke-width="4" stroke-linejoin="round"/></svg>`;
+    if (/elektr/.test(text)) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path d="M55 5L18 55h28L38 91l41-54H51z" fill="#ffcc19" stroke="#f97316" stroke-width="5" stroke-linejoin="round"/></svg>`;
+    if (/murer|flis|mur/.test(text)) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path d="M27 66h49l8 14H16z" fill="#d6dbe0" stroke="#182033" stroke-width="4" stroke-linejoin="round"/><path d="M43 61L70 14c2-4 8-4 11-1s3 8-1 11L34 70z" fill="#cfd6dc" stroke="#182033" stroke-width="4" stroke-linejoin="round"/><path d="M38 62l15 15" stroke="#7b8794" stroke-width="4"/></svg>`;
+    if (/maler|maling|sparkel/.test(text)) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path d="M46 49l21 11-14 29-21-10z" fill="#f97316" stroke="#182033" stroke-width="4" stroke-linejoin="round"/><path d="M39 36l37 18 6-12c3-6 0-13-6-16l-11-5c-6-3-13 0-16 6z" fill="#f7b267" stroke="#182033" stroke-width="4"/><path d="M22 78c4 8 13 10 19 5l-14-7c-2-1-4 0-5 2z" fill="#ef4444"/></svg>`;
+    if (/vent|luft/.test(text)) return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="11" fill="#4b5563" stroke="#182033" stroke-width="4"/><path d="M50 11c15 4 21 16 16 28-5 11-18 10-21 2-4-10-2-23 5-30zM85 55c-8 13-21 16-31 8-9-7-4-19 5-22 11-3 22 2 26 14zM26 79c-8-13-5-27 7-32 10-4 18 6 16 16-3 11-12 18-23 16z" fill="#5f6873" stroke="#182033" stroke-width="4" stroke-linejoin="round"/></svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path d="M29 16h38v10h10v61H19V26h10z" fill="#f3f4f6" stroke="#182033" stroke-width="4" stroke-linejoin="round"/><path d="M34 12h28v18H34z" fill="#c98635" stroke="#182033" stroke-width="4" stroke-linejoin="round"/><path d="M34 47h28M34 61h28M34 75h28" stroke="#182033" stroke-width="4" stroke-linecap="round"/><path d="M23 47l5 5 7-10M23 61l5 5 7-10" stroke="#2563eb" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  };
+  var customChecklistTradeIconUrl = (trade = "") => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(customChecklistTradeSvgMarkup(trade))}`;
   var normalizeCustomChecklistGroups = (groups = []) => {
     const byCategory = new Map();
     (Array.isArray(groups) ? groups : []).forEach((entry) => {
@@ -10671,7 +10682,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           const trade = customChecklistTradeFromCategory(group.category);
           const stats = groupStats(group);
           return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "secondary", onClick: () => scrollToCustomChecklistGroup(group), style: { minWidth: "116px", minHeight: "76px", display: "grid", placeItems: "center", gap: "4px", padding: "10px 12px", borderRadius: "16px", fontWeight: 900 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "30px", lineHeight: 1 }, children: customChecklistTradeIcon(trade) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: customChecklistTradeIconUrl(trade), alt: "", "aria-hidden": "true", style: { width: "42px", height: "42px", objectFit: "contain", display: "block" } }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: trade }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { className: "note", children: [stats.done, "/", stats.total, " utfylt"] })
           ] }, group.category);
