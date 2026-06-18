@@ -1,6 +1,7 @@
 // FASE 14.1.7.6 HOTFIX: Synker ikon i faktisk sjekkpunkt-heading med premium hurtigknappikon for egne sjekkpunkter. Kun UI-ikon, ingen funksjon/logikk/database/PDF/garantiendring.
 // FASE 14.1.7.5 HOTFIX PREMIUM FAGIKONER: Bruker eksakte ikonressurser fra valgt skjermbilde for egne sjekkpunkter. Kun ikonressurser/UI, ingen funksjons-/database-/rapport-/garantiendring.
 // FASE 14.1.8 GARANTISTYRTE MALPROSJEKTER: Prosjekter kan merkes som mal, og garantimaler kan hentes fra forsiden. Malbruk er låst til garantiprosjekter med valgt Sopro-system. Ingen SQL/database/RLS-endring.
+// FASE 14.1.8.1 HOTFIX: Fjerner separat "Ta bilde"-knapp på sjekkpunktbilder slik at PC ikke viser kamerahandling og mobil ikke får dobbelt kameravalg. Kun Sjekklister-UI, ingen funksjons-/database-/garanti-/rapportendring.
 // FASE 14.1.7.2 EGNE SJEKKPUNKTER PREMIUM NAV: Trygg hurtignavigasjon/ikoner for egne sjekkpunkter. Bruker kun activeChecklistTemplate i ChecklistEditor for å unngå hvit skjerm. Kun Sjekklister-UI, ingen database/RLS/rapport/PDF/garantiendring.
 // FASE 14.1.6 EGNE SJEKKPUNKTER: Prosjektlokale egne sjekkpunkter per fag bruker samme sjekklistemotor, status, avvik, bildeopplasting og rapportvisning. Ingen SQL/database/RLS-endring.
 // FASE 14.1.5 FIRMAPROFIL FIRMAIDENTITET: Første bruker i nytt firma blir firmaadmin når firmaprofil lagres, uten å endre eksisterende firma-/systemroller. Kun profiles-felt, ingen prosjekt/rapport/PDF/garanti/chat/autolagring.
@@ -10971,11 +10972,6 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
                   (value.photos || []).length > 0 ? ` 🖼️ ${(value.photos || []).length} bilde${(value.photos || []).length === 1 ? "" : "r"} lastet opp – velg flere` : " 🖼️ Velg bilde fra bildebibliotek / dra bilde hit",
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onClick: (e) => e.stopPropagation(), onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", onClick: (e) => e.stopPropagation(), title: "Ta bilde med kamera", style: { flex: "0 1 220px" }, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, { size: 18 }),
-                  " 📷 Ta bilde",
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onClick: (e) => e.stopPropagation(), onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
                 ] })
               ] }),
               (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: value.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
