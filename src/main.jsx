@@ -1,3 +1,4 @@
+// FASE 14.1.5 FIRMAPROFIL FIRMAIDENTITET: Første bruker i nytt firma blir firmaadmin når firmaprofil lagres, uten å endre eksisterende firma-/systemroller. Kun profiles-felt, ingen prosjekt/rapport/PDF/garanti/chat/autolagring.
 // FASE 14.1.3 HOTFIX: Fjerner misvisende autolagringstekst om Supportprosjekt når bruker ikke faktisk er i supportmodus. Kun frontend-statuslinje/localStorage-status, ingen database/RLS/rapport/garanti/prosjektliste.
 // Generated complete main.jsx from the latest live source.
 // FASE 14.1.2 HOTFIX: Stabil dirty-baseline etter lagring/hydrering slik at ulagrede endringer ikke kommer tilbake etter lagring, fanebytte eller nettleserfokus. Kun frontend-varsling, ingen database/RLS/rapport/garanti/prosjektliste.
@@ -4038,6 +4039,8 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
     };
     const saveProfile = async () => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn.");
+      const existingCompanyRole = profile?.company_role || "";
+      const shouldSetFirstUserAsCompanyAdmin = !existingCompanyRole && hasValue(company.companyName);
       const payload = {
         id: authUser.id,
         email: company.email || authUser.email,
@@ -4046,12 +4049,18 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
         address: company.address || "",
         phone: company.phone || "",
         website: company.website || "",
-        logo_url: company.logoUrl || ""
+        logo_url: company.logoUrl || "",
+        ...shouldSetFirstUserAsCompanyAdmin ? { company_role: "firmaadmin" } : {}
       };
       const { error } = await supabase.from("profiles").update(payload).eq("id", authUser.id);
       if (error) return alert("Kunne ikke lagre firmaprofil: " + error.message);
       const row = { ...profile || {}, ...payload };
       applyProfile(row);
+      if (shouldSetFirstUserAsCompanyAdmin) {
+        await loadProjects(authUser, false, row);
+        alert("Firmaprofil lagret. Du er satt som firmaadmin for dette firmaet.");
+        return;
+      }
       alert("Firmaprofil lagret");
     };
     const loadAdminUsers = async () => {
