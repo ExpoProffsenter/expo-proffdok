@@ -1,3 +1,4 @@
+// FASE 14.1.10E SYSTEMADMIN-VARSEL FASTE MOTTAKERE: Nye brukerregistreringer varsles kun til kenneth@ringside.no og espen@expoproffsenter.no med samme smart-worker epostflyt som øvrige ProffDok-eposter. Viggo/andre systemadmin mottar ikke varsel. Ingen SQL/RLS/endring i godkjenning.
 // FASE 14.1.10D AVVIK RAPPORTVALG + NY BRUKER-VARSEL: HMS-/prosjektavvik kan velges inn i sluttrapport, sjekkpunktavvik er alltid med, og systemadmin varsles ved ny brukerregistrering. Ingen SQL/RLS-endring.
 // FASE 14.1.10A HOTFIX: Når åpne avvik vises fra prosjektliste/sjekkliste, scrolles det direkte til faktisk første åpne sjekkpunktavvik og markerer punktet. Kun sjekklistenavigasjon/UI, ingen database/garanti/rapport/PDF/chat-endring.
 // FASE 14.1.9 MALPROSJEKT-LÅS: Bruk som malprosjekt kan kun aktiveres når prosjektet er garantiprosjekt med valgt Sopro-system. Kun Prosjektinfo-UI/validering, ingen database-/rapport-/PDF-/sjekklistelogikkendring.
@@ -4993,34 +4994,36 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: authPassword });
       if (error) return alert("Kunne ikke logge inn: " + error.message);
     };
+    const systemAdminSignupNoticeRecipients = ["kenneth@ringside.no", "espen@expoproffsenter.no"];
     const notifySystemAdminsAboutSignup = async (newUserEmail = "") => {
-      const cleanEmail = String(newUserEmail || "").trim();
+      const cleanEmail = String(newUserEmail || "").trim().toLowerCase();
       if (!cleanEmail) return;
+      const recipients = Array.from(new Set(systemAdminSignupNoticeRecipients.map((email) => String(email || "").trim().toLowerCase()).filter(Boolean)));
+      if (!recipients.length) return;
+      const appLink = `${window.location.origin}${window.location.pathname}`;
+      const message = `Ny bruker har opprettet konto i Expo ProffDok og venter på godkjenning.
+
+Bruker: ${cleanEmail}
+
+Åpne Expo ProffDok for å godkjenne eller avvise brukeren:
+${appLink}`;
       const notifyPayload = {
         direction: "new_user_signup_systemadmin_notice",
-        toRole: "systemadmin",
         newUserEmail: cleanEmail,
-        message: `Ny bruker har opprettet konto i Expo ProffDok og venter p\xE5 godkjenning: ${cleanEmail}`,
-        projectLink: `${window.location.origin}${window.location.pathname}`,
-        subject: "Ny bruker venter p\xE5 godkjenning – Expo ProffDok"
+        message,
+        projectLink: appLink,
+        projectName: "Brukergodkjenning",
+        customerName: cleanEmail,
+        companyName: "Expo ProffDok",
+        fromName: "Expo ProffDok",
+        subject: "Ny bruker venter på godkjenning – Expo ProffDok"
       };
       try {
-        const { data: systemAdmins, error: adminLookupError } = await supabase
-          .from("profiles")
-          .select("email")
-          .eq("system_role", "systemadmin")
-          .eq("approved", true)
-          .eq("deactivated", false);
-        const emails = (systemAdmins || []).map((row) => String(row?.email || "").trim()).filter(Boolean);
-        if (!adminLookupError && emails.length > 0) {
-          await Promise.all(emails.map((toEmail) => supabase.functions.invoke("smart-worker", {
-            body: { ...notifyPayload, toEmail }
-          }).catch((error) => console.warn("Varsel til systemadmin kunne ikke sendes:", error))));
-          return;
-        }
-        await supabase.functions.invoke("smart-worker", { body: notifyPayload });
+        await Promise.all(recipients.map((toEmail) => supabase.functions.invoke("smart-worker", {
+          body: { ...notifyPayload, toEmail }
+        }).catch((error) => console.warn(`Varsel til systemadministrator ${toEmail} kunne ikke sendes:`, error))));
       } catch (error) {
-        console.warn("Varsel til systemadmin kunne ikke sendes:", error);
+        console.warn("Varsel til systemadministrator kunne ikke sendes:", error);
       }
     };
     const signUp = async () => {
