@@ -1,3 +1,4 @@
+// FASE 15.1.2 AVVIS/SLETT VENTENDE BRUKER: Systemadmin kan avvise og permanent slette ikke-godkjente brukere via Edge Function. Kun Systemadmin-UI og auth/profiles-opprydding for ventende brukere; ingen prosjekt/rapport/PDF/garanti/chat/autolagring-endring.
 // FASE 14.1.10E SYSTEMADMIN-VARSEL FASTE MOTTAKERE: Nye brukerregistreringer varsles kun til kenneth@ringside.no og espen@expoproffsenter.no med samme smart-worker epostflyt som øvrige ProffDok-eposter. Viggo/andre systemadmin mottar ikke varsel. Ingen SQL/RLS/endring i godkjenning.
 // FASE 14.1.10D AVVIK RAPPORTVALG + NY BRUKER-VARSEL: HMS-/prosjektavvik kan velges inn i sluttrapport, sjekkpunktavvik er alltid med, og systemadmin varsles ved ny brukerregistrering. Ingen SQL/RLS-endring.
 // FASE 14.1.10A HOTFIX: Når åpne avvik vises fra prosjektliste/sjekkliste, scrolles det direkte til faktisk første åpne sjekkpunktavvik og markerer punktet. Kun sjekklistenavigasjon/UI, ingen database/garanti/rapport/PDF/chat-endring.
@@ -4350,6 +4351,27 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       }
       alert("Bruker er deaktivert.");
       loadAdminUsers();
+    };
+    const rejectAndDeletePendingUser = async (userRow) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til systemadmin.");
+      if (!userRow?.id) return alert("Mangler bruker-ID.");
+      if (userRow.id === authUser?.id) return alert("Du kan ikke slette din egen bruker.");
+      if (userRow.system_role === "systemadmin") return alert("Systemadministrator kan ikke slettes her.");
+      if (userRow.approved || userRow.deactivated) return alert("Denne knappen kan kun brukes på nye brukere som venter på godkjenning.");
+      const userEmail = userRow.email || "brukeren";
+      const confirmed = window.confirm(`Vil du avvise og slette ${userEmail} permanent?
+
+Dette fjerner brukeren fra innlogging/auth, profil, brukervilkår og ventende firmainvitasjoner. Handlingen kan ikke angres.`);
+      if (!confirmed) return;
+      const { data, error } = await supabase.functions.invoke("delete-pending-user", {
+        body: { userId: userRow.id, email: userRow.email || "" }
+      });
+      if (error || data?.error) {
+        console.error(error || data?.error);
+        return alert("Kunne ikke avvise og slette bruker: " + (data?.error || error?.message || "Ukjent feil"));
+      }
+      await loadAdminUsers();
+      alert(`✔ ${userEmail} er avvist og slettet.`);
     };
     const reactivateAdminUser = async (id) => {
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
@@ -10068,6 +10090,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "10px" }, children: [
                 !u.approved && !u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => approveAdminUser(u.id), children: "Godkjenn bruker" }),
+                !u.approved && !u.deactivated && u.system_role !== "systemadmin" && u.id !== authUser?.id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => rejectAndDeletePendingUser(u), children: "Avvis og slett bruker" }),
                 u.approved && !u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => deactivateAdminUser(u.id), children: "Deaktiver bruker" }),
                 u.deactivated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => reactivateAdminUser(u.id), children: "Reaktiver bruker" }),
                 u.system_role === "systemadmin"
