@@ -1,3 +1,4 @@
+// FASE 14.1.9 MALPROSJEKT-LÅS: Bruk som malprosjekt kan kun aktiveres når prosjektet er garantiprosjekt med valgt Sopro-system. Kun Prosjektinfo-UI/validering, ingen database-/rapport-/PDF-/sjekklistelogikkendring.
 // FASE 14.1.7.6 HOTFIX: Synker ikon i faktisk sjekkpunkt-heading med premium hurtigknappikon for egne sjekkpunkter. Kun UI-ikon, ingen funksjon/logikk/database/PDF/garantiendring.
 // FASE 14.1.7.5 HOTFIX PREMIUM FAGIKONER: Bruker eksakte ikonressurser fra valgt skjermbilde for egne sjekkpunkter. Kun ikonressurser/UI, ingen funksjons-/database-/rapport-/garantiendring.
 // FASE 14.1.8 GARANTISTYRTE MALPROSJEKTER: Prosjekter kan merkes som mal, og garantimaler kan hentes fra forsiden. Malbruk er låst til garantiprosjekter med valgt Sopro-system. Ingen SQL/database/RLS-endring.
@@ -9090,7 +9091,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "4px" }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.isTemplate, onChange: (e) => setProject({ ...project, isTemplate: e.target.checked }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.isTemplate && !!warranty?.enabled && !!warranty?.system, onChange: (e) => {
+              if (e.target.checked && (!warranty?.enabled || !warranty?.system)) {
+                alert("Malprosjekt kan kun aktiveres når prosjektet er satt opp som garantiprosjekt og et godkjent Sopro-system er valgt.");
+                return;
+              }
+              setProject({ ...project, isTemplate: e.target.checked });
+            } }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Bruk som malprosjekt" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
