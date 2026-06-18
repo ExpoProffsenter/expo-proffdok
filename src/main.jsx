@@ -1,3 +1,4 @@
+// FASE 14.1.6 EGNE SJEKKPUNKTER: Prosjektlokale egne sjekkpunkter per fag bruker samme sjekklistemotor, status, avvik, bildeopplasting og rapportvisning. Ingen SQL/database/RLS-endring.
 // FASE 14.1.5 FIRMAPROFIL FIRMAIDENTITET: Første bruker i nytt firma blir firmaadmin når firmaprofil lagres, uten å endre eksisterende firma-/systemroller. Kun profiles-felt, ingen prosjekt/rapport/PDF/garanti/chat/autolagring.
 // FASE 14.1.3 HOTFIX: Fjerner misvisende autolagringstekst om Supportprosjekt når bruker ikke faktisk er i supportmodus. Kun frontend-statuslinje/localStorage-status, ingen database/RLS/rapport/garanti/prosjektliste.
 // Generated complete main.jsx from the latest live source.
@@ -664,6 +665,22 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var imageCats = ["F\xF8r arbeid", "Underlag", "Avretting/st\xF8p", "Primer", "Membran", "Sluk og mansjetter", "R\xF8rgjennomf\xF8ringer", "Flislegging", "Fuging/silikon", "Ferdig resultat"];
   var roles = ["Eier / administrator", "Ansatt", "Underleverand\xF8r", "Kun lesetilgang"];
   var checklistAttachmentTradeOptions = ["Rørlegger", "Elektriker", "Tømrer", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag", "Uspesifisert"];
+  var customChecklistTradeOptions = ["Rørlegger", "Tømrer", "Elektriker", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag"];
+  var customChecklistCategoryPrefix = "Egne sjekkpunkter – ";
+  var customChecklistCategoryFromTrade = (trade = "Annet fag") => `${customChecklistCategoryPrefix}${String(trade || "Annet fag").trim() || "Annet fag"}`;
+  var normalizeCustomChecklistGroups = (groups = []) => {
+    const byCategory = new Map();
+    (Array.isArray(groups) ? groups : []).forEach((entry) => {
+      const trade = String(entry?.trade || entry?.fag || "Annet fag").trim() || "Annet fag";
+      const text = String(entry?.text || entry?.item || entry?.title || "").trim();
+      if (!text) return;
+      const category = customChecklistCategoryFromTrade(trade);
+      if (!byCategory.has(category)) byCategory.set(category, { category, trade, items: [], requirements: {} });
+      const group = byCategory.get(category);
+      if (!group.items.includes(text)) group.items.push(text);
+    });
+    return Array.from(byCategory.values());
+  };
   var checklistAttachmentDocumentTypeOptions = ["Sjekkliste", "Samsvarserklæring", "Kontrollerklæring", "FDV", "Sluttdokumentasjon", "Bilde-/fotodokumentasjon", "Annet dokument", "Uspesifisert"];
   var checklistAttachmentMetaLine = (file = {}) => [
     file.trade || file.fag || file.role || "Ikke angitt fag",
@@ -1164,6 +1181,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     membran: "",
     prosjekteringKommentar: "",
     prosjekteringPunkter: [],
+    customChecklistGroups: [],
     locked: false,
     status: "active",
     workflowStatus: "Pågår",
@@ -1554,8 +1572,52 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       productMasterByProduct,
       productMasterCheckpointsByProduct
     }), [warranty, selected, productMasterByProduct, productMasterCheckpointsByProduct]);
-    const activeChecklistTemplate = (0, import_react.useMemo)(() => getActiveChecklistTemplate(warranty, selectedSoproProductChecklistTemplate), [warranty, selectedSoproProductChecklistTemplate]);
+    const customChecklistTemplate = (0, import_react.useMemo)(() => normalizeCustomChecklistGroups(project?.customChecklistGroups || []), [project?.customChecklistGroups]);
+    const activeChecklistTemplate = (0, import_react.useMemo)(() => dedupeChecklistTemplate([
+      ...getActiveChecklistTemplate(warranty, selectedSoproProductChecklistTemplate),
+      ...customChecklistTemplate
+    ]), [warranty, selectedSoproProductChecklistTemplate, customChecklistTemplate]);
     const dynamicSoproWarrantyRequirementStatus = (0, import_react.useMemo)(() => getDynamicSoproWarrantyRequirementStatus(checklist, selectedSoproProductChecklistTemplate), [checklist, selectedSoproProductChecklistTemplate]);
+
+    const addCustomChecklistPoint = (trade, textValue) => {
+      if (!canEditProject()) return;
+      const cleanTrade = String(trade || "Annet fag").trim() || "Annet fag";
+      const cleanText = String(textValue || "").trim();
+      if (!cleanText) return alert("Skriv inn tekst for sjekkpunktet først.");
+      const category = customChecklistCategoryFromTrade(cleanTrade);
+      if ((project?.customChecklistGroups || []).some((entry) => customChecklistCategoryFromTrade(entry?.trade) === category && String(entry?.text || "").trim().toLowerCase() === cleanText.toLowerCase())) {
+        return alert("Dette sjekkpunktet finnes allerede for valgt fag.");
+      }
+      setProject((prev) => ({
+        ...prev,
+        customChecklistGroups: [
+          ...(Array.isArray(prev?.customChecklistGroups) ? prev.customChecklistGroups : []),
+          { id: uid(), trade: cleanTrade, text: cleanText, createdAt: (/* @__PURE__ */ new Date()).toISOString() }
+        ]
+      }));
+      setShowOpenDeviationsOnly(false);
+    };
+    const removeCustomChecklistPoint = (trade, textValue) => {
+      if (!canEditProject()) return;
+      const cleanTrade = String(trade || "Annet fag").trim() || "Annet fag";
+      const cleanText = String(textValue || "").trim();
+      if (!cleanText) return;
+      if (!window.confirm(`Fjerne eget sjekkpunkt?\n\n${cleanText}`)) return;
+      const category = customChecklistCategoryFromTrade(cleanTrade);
+      setProject((prev) => ({
+        ...prev,
+        customChecklistGroups: (Array.isArray(prev?.customChecklistGroups) ? prev.customChecklistGroups : []).filter((entry) => !(customChecklistCategoryFromTrade(entry?.trade) === category && String(entry?.text || "").trim() === cleanText))
+      }));
+      setChecklist((prev) => {
+        const next = { ...prev || {} };
+        if (next[category]) {
+          next[category] = { ...next[category] };
+          delete next[category][cleanText];
+          if (!Object.keys(next[category]).length) delete next[category];
+        }
+        return next;
+      });
+    };
 
     const toggleProductCheckpointPanel = (productNo) => {
       const key = String(productNo || "").trim();
@@ -2382,7 +2444,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const p = snapshot.project || {};
       return !!(
         p.projectName || p.address || p.postnr || p.city || p.customer || p.customerEmail || p.customerPhone || p.notes || p.projectDescription ||
-        p.fall || p.fallDusj || p.fallUtenfor || p.sluk || p.terskel || p.membran || p.prosjekteringKommentar ||
+        p.fall || p.fallDusj || p.fallUtenfor || p.sluk || p.terskel || p.membran || p.prosjekteringKommentar || (Array.isArray(p.customChecklistGroups) ? p.customChecklistGroups : []).some((entry) => hasValue(entry?.text || entry?.item || entry?.title)) ||
         Object.keys(snapshot.checked || {}).length || Object.keys(snapshot.productDocs || {}).length ||
         Object.values(normalizeManualProductsBySection(snapshot.manualProducts || {})).some((list) => (list || []).some((item) => hasValue(item?.name) || hasValue(item?.fdvUrl) || hasValue(item?.comment))) ||
         Object.keys(snapshot.other || {}).length || Object.keys(snapshot.surf || {}).length || Object.values(snapshot.bathroomEquipment || {}).some(hasValue) ||
@@ -3013,7 +3075,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const createNewProject = async () => {
       const canLeave = await confirmLeaveWithUnsavedChanges("starter nytt prosjekt");
       if (!canLeave) return;
-      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
       pauseDirtyTrackingBriefly(1200);
       setProject(emptyProject());
@@ -7322,6 +7384,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 setShowOpenDeviationsOnly,
                 warranty,
                 activeChecklistTemplate,
+                customChecklistGroups: project.customChecklistGroups || [],
+                onAddCustomChecklistPoint: addCustomChecklistPoint,
+                onRemoveCustomChecklistPoint: removeCustomChecklistPoint,
                 onSaveChecklistNow: saveChecklistNow,
                 checklistSaveStatus
               }
@@ -9119,7 +9184,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               showOpenDeviationsOnly,
               setShowOpenDeviationsOnly,
               warranty,
-              activeChecklistTemplate
+              activeChecklistTemplate,
+              customChecklistGroups: project.customChecklistGroups || [],
+              onAddCustomChecklistPoint: addCustomChecklistPoint,
+              onRemoveCustomChecklistPoint: removeCustomChecklistPoint
             }
           )
         ] }),
@@ -10370,8 +10438,17 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektleder har ikke lagt inn egen prosjektbeskrivelse ennå." })
     ] });
   }
-  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, onSaveChecklistNow = null, checklistSaveStatus = "" }) {
+  function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "" }) {
     const activeChecklistTemplate = providedActiveChecklistTemplate || getActiveChecklistTemplate(warranty);
+    const [newCustomChecklistTrade, setNewCustomChecklistTrade] = import_react.default.useState(customChecklistTradeOptions[0] || "Rørlegger");
+    const [newCustomChecklistText, setNewCustomChecklistText] = import_react.default.useState("");
+    const customChecklistEntries = Array.isArray(customChecklistGroups) ? customChecklistGroups : [];
+    const submitCustomChecklistPoint = () => {
+      if (!onAddCustomChecklistPoint) return;
+      onAddCustomChecklistPoint(newCustomChecklistTrade, newCustomChecklistText);
+      setNewCustomChecklistText("");
+      setOpenCategories((prev) => ({ ...prev, [customChecklistCategoryFromTrade(newCustomChecklistTrade)]: true }));
+    };
     const [openCategories, setOpenCategories] = import_react.default.useState(() => {
       const firstMissingGroup = activeChecklistTemplate.find((group) => (group.items || []).some((item) => !hasValue(checklist?.[group.category]?.[item]?.status)));
       return { [firstMissingGroup?.category || activeChecklistTemplate[0]?.category || ""]: true };
@@ -10567,6 +10644,34 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "note", children: checklistSaveStatus || "Autolagring aktiv" })
         ] })
       ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "Egne sjekkpunkter per fag" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Legg til prosjektspesifikke kontrollpunkter for rørlegger, tømrer, elektriker eller andre fag. Punktene bruker samme status, avvik, kommentar og bildeopplasting som øvrige sjekkpunkter, og følger med hvis prosjektet kopieres som mal." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+            "Fag",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value: newCustomChecklistTrade, onChange: (e) => setNewCustomChecklistTrade(e.target.value), children: customChecklistTradeOptions.map((option) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: option, children: option }, option)) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
+            "Sjekkpunkt",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { value: newCustomChecklistText, onChange: (e) => setNewCustomChecklistText(e.target.value), placeholder: "F.eks. Bunnledning spylt og kamerakontrollert" })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: submitCustomChecklistPoint, children: "+ Legg til eget sjekkpunkt" }),
+        customChecklistEntries.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { marginTop: "12px" }, children: customChecklistEntries.map((entry) => {
+          const trade = entry?.trade || entry?.fag || "Annet fag";
+          const text = entry?.text || entry?.item || entry?.title || "";
+          if (!text) return null;
+          return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: trade }),
+              " · ",
+              text
+            ] }),
+            onRemoveCustomChecklistPoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => onRemoveCustomChecklistPoint(trade, text), children: "Fjern" })
+          ] }, entry?.id || `${trade}-${text}`);
+        }) })
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList checklistAccordion", children: visibleChecklistGroups.map((group) => {
         const stats = groupStats(group);
         const isOpen = openCategories[group.category] !== false;
@@ -10576,7 +10681,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "checklistGroupCaret", "aria-hidden": "true", children: isOpen ? "\u25BE" : "\u25B8" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "checklistGroupTitle", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { children: [
-                isSoproWarrantyCategory(group.category) ? "🛡️ " : "",
+                isSoproWarrantyCategory(group.category) ? "🛡️ " : String(group.category || "").startsWith(customChecklistCategoryPrefix) ? "🧰 " : "",
                 group.category
               ] }),
               isSoproWarrantyCategory(group.category) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: `${getWarrantyYears(warranty)} ÅRS GARANTI` }),
@@ -10605,6 +10710,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   warrantyPoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "📷/✍️ Bilde eller kommentar" }),
                   !warrantyPoint && pointRequirement.image_required && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "📷 Bilde påkrevd" }),
                   !warrantyPoint && pointRequirement.comment_required && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "✍️ Kommentar påkrevd" }),
+                  String(group.category || "").startsWith(customChecklistCategoryPrefix) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "Eget sjekkpunkt" }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                     value.status || "Ikke vurdert",
                     (value.photos || []).length > 0 ? ` \xB7 \u{1F4F7} ${(value.photos || []).length} bilder` : ""
@@ -10642,10 +10748,17 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => reopenDeviation(group.category, item), children: "Åpne avvik igjen" })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", onClick: (e) => e.stopPropagation(), onDragOver: stopChecklistFileDragNavigation, onDragEnter: stopChecklistFileDragNavigation, onDrop: (e) => handleChecklistPhotoDrop(group.category, item, e), title: "Dra bilde hit eller klikk for å laste opp", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
-                (value.photos || []).length > 0 ? ` 📷 ${(value.photos || []).length} bilde${(value.photos || []).length === 1 ? "" : "r"} lastet opp – dra flere hit eller klikk` : " 📷 Dra bilde hit eller klikk for å laste opp",
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onClick: (e) => e.stopPropagation(), onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "stretch" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", onClick: (e) => e.stopPropagation(), onDragOver: stopChecklistFileDragNavigation, onDragEnter: stopChecklistFileDragNavigation, onDrop: (e) => handleChecklistPhotoDrop(group.category, item, e), title: "Dra bilde hit eller velg bilde fra bildebibliotek", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+                  (value.photos || []).length > 0 ? ` 🖼️ ${(value.photos || []).length} bilde${(value.photos || []).length === 1 ? "" : "r"} lastet opp – velg flere` : " 🖼️ Velg bilde fra bildebibliotek / dra bilde hit",
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onClick: (e) => e.stopPropagation(), onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", onClick: (e) => e.stopPropagation(), title: "Ta bilde med kamera", style: { flex: "0 1 220px" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, { size: 18 }),
+                  " 📷 Ta bilde",
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, onClick: (e) => e.stopPropagation(), onChange: (e) => addChecklistPhoto(group.category, item, e.target.files) })
+                ] })
               ] }),
               (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: value.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
