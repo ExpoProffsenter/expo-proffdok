@@ -1,5 +1,6 @@
 // FASE 14.1.10A HOTFIX: Når åpne avvik vises fra prosjektliste/sjekkliste, scrolles det direkte til faktisk første åpne sjekkpunktavvik og markerer punktet. Kun sjekklistenavigasjon/UI, ingen database/garanti/rapport/PDF/chat-endring.
 // FASE 14.1.9 MALPROSJEKT-LÅS: Bruk som malprosjekt kan kun aktiveres når prosjektet er garantiprosjekt med valgt Sopro-system. Kun Prosjektinfo-UI/validering, ingen database-/rapport-/PDF-/sjekklistelogikkendring.
+// FASE 14.1.10B AVVIKSSENTRAL: Legger til prosjektlokal Avvik-fane for sjekkpunktavvik, HMS-avvik og andre prosjektavvik. Ingen SQL/RLS/PDF/garantiendring.
 // FASE 14.1.7.6 HOTFIX: Synker ikon i faktisk sjekkpunkt-heading med premium hurtigknappikon for egne sjekkpunkter. Kun UI-ikon, ingen funksjon/logikk/database/PDF/garantiendring.
 // FASE 14.1.7.5 HOTFIX PREMIUM FAGIKONER: Bruker eksakte ikonressurser fra valgt skjermbilde for egne sjekkpunkter. Kun ikonressurser/UI, ingen funksjons-/database-/rapport-/garantiendring.
 // FASE 14.1.8 GARANTISTYRTE MALPROSJEKTER: Prosjekter kan merkes som mal, og garantimaler kan hentes fra forsiden. Malbruk er låst til garantiprosjekter med valgt Sopro-system. Ingen SQL/database/RLS-endring.
@@ -1222,6 +1223,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     prosjekteringKommentar: "",
     prosjekteringPunkter: [],
     customChecklistGroups: [],
+    projectDeviations: [],
     locked: false,
     status: "active",
     workflowStatus: "Pågår",
@@ -2379,6 +2381,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const readyForCustomer = ordinaryProjectListRows.filter((item) => item.listStatus.tone === "customer_ready").length;
       return { active, deviations, unreadProjects, readyForCustomer };
     }, [ordinaryProjectListRows]);
+    const openProjectDeviationCount = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
     const tabs = [
       ["prosjekt", "Startside"],
       ["prosjektinfo", "Prosjektinformasjon/beskrivelse"],
@@ -2392,6 +2395,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       ["tilgang", "Tilgang"],
       ["installasjoner", "Fag/utstyr"],
       ["sjekklister", "Sjekklister"],
+      ["avvik", openProjectDeviationCount > 0 ? `Avvik (${openProjectDeviationCount})` : "Avvik"],
       ["tilbud", "Tilbud/kontrakt"],
       ["chat", unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : totalChatCount > 0 ? `Chat (${totalChatCount})` : "Chat"],
       ["internt", "Interne notater"],
@@ -2491,7 +2495,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       const p = snapshot.project || {};
       return !!(
         p.projectName || p.address || p.postnr || p.city || p.customer || p.customerEmail || p.customerPhone || p.notes || p.projectDescription ||
-        p.fall || p.fallDusj || p.fallUtenfor || p.sluk || p.terskel || p.membran || p.prosjekteringKommentar || (Array.isArray(p.customChecklistGroups) ? p.customChecklistGroups : []).some((entry) => hasValue(entry?.text || entry?.item || entry?.title)) ||
+        p.fall || p.fallDusj || p.fallUtenfor || p.sluk || p.terskel || p.membran || p.prosjekteringKommentar || (Array.isArray(p.customChecklistGroups) ? p.customChecklistGroups : []).some((entry) => hasValue(entry?.text || entry?.item || entry?.title)) || (Array.isArray(p.projectDeviations) ? p.projectDeviations : []).some((entry) => hasValue(entry?.title) || hasValue(entry?.description) || hasValue(entry?.action) || (entry?.photos || []).length) ||
         Object.keys(snapshot.checked || {}).length || Object.keys(snapshot.productDocs || {}).length ||
         Object.values(normalizeManualProductsBySection(snapshot.manualProducts || {})).some((list) => (list || []).some((item) => hasValue(item?.name) || hasValue(item?.fdvUrl) || hasValue(item?.comment))) ||
         Object.keys(snapshot.other || {}).length || Object.keys(snapshot.surf || {}).length || Object.values(snapshot.bathroomEquipment || {}).some(hasValue) ||
@@ -3122,7 +3126,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const createNewProject = async () => {
       const canLeave = await confirmLeaveWithUnsavedChanges("starter nytt prosjekt");
       if (!canLeave) return;
-      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || (Array.isArray(project.projectDeviations) ? project.projectDeviations : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
       pauseDirtyTrackingBriefly(1200);
       setProject(emptyProject());
@@ -9397,6 +9401,31 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             }
           )
         ] }),
+        tab === "avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Avvik", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          DeviationCenter,
+          {
+            project,
+            setProject,
+            checklist,
+            activeChecklistTemplate,
+            uploadImages,
+            onGoToChecklistPoint: (point) => {
+              if (!point?.category || !point?.item) return;
+              try {
+                window.sessionStorage.setItem("expoProffDokChecklistJumpTarget", JSON.stringify({
+                  category: point.category,
+                  item: point.item,
+                  anchorId: point.anchorId || checklistPointAnchor(point.category, point.item)
+                }));
+              } catch (error) {
+                console.warn("Kunne ikke lagre avvikshopp:", error);
+              }
+              setShowOpenDeviationsOnly(true);
+              setTab("sjekklister");
+              setTimeout(() => scrollToMobileTabTarget("sjekklister"), 120);
+            }
+          }
+        ) }),
         tab === "tilbud" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilbud / kontrakt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her legger du inn tilbud, kontrakt og avtaleendringer. Kunde f\xE5r se dette i kundelinken n\xE5r det finnes innhold eller vedlegg. Huk av hvis sammendraget ogs\xE5 skal med i vanlig rapport/PDF." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
@@ -10644,6 +10673,152 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Prosjektleder har ikke lagt inn egen prosjektbeskrivelse ennå." })
     ] });
   }
+
+  function DeviationCenter({ project, setProject, checklist = {}, activeChecklistTemplate = [], uploadImages = null, onGoToChecklistPoint = null }) {
+    const projectDeviations = Array.isArray(project?.projectDeviations) ? project.projectDeviations : [];
+    const checklistDeviationRows = (activeChecklistTemplate || []).flatMap((group) => (group.items || []).map((item) => {
+      const value = checklist?.[group.category]?.[item] || {};
+      if (value.status !== "Avvik" && value.status !== "Lukket avvik") return null;
+      return {
+        id: checklistPointAnchor(group.category, item),
+        category: group.category,
+        item,
+        status: value.status,
+        comment: value.comment || "",
+        closeComment: value.closeComment || "",
+        closedBy: value.closedBy || "",
+        closedAt: value.closedAt || "",
+        photos: value.photos || [],
+        anchorId: checklistPointAnchor(group.category, item)
+      };
+    }).filter(Boolean));
+    const openChecklistDeviations = checklistDeviationRows.filter((row) => row.status === "Avvik").length;
+    const openProjectDeviations = projectDeviations.filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
+    const updateProjectDeviation = (id, patch = {}) => {
+      setProject({
+        ...project,
+        projectDeviations: projectDeviations.map((entry) => entry.id === id ? { ...entry, ...patch } : entry)
+      });
+    };
+    const addProjectDeviation = () => {
+      const next = {
+        id: uid(),
+        type: "HMS",
+        severity: "Middels",
+        status: "Åpent",
+        title: "",
+        description: "",
+        action: "",
+        responsible: "",
+        dueDate: "",
+        affectsWarranty: false,
+        photos: [],
+        createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+        closedAt: "",
+        closedBy: "",
+        closeComment: ""
+      };
+      setProject({ ...project, projectDeviations: [next, ...projectDeviations] });
+    };
+    const removeProjectDeviation = (id) => {
+      if (!window.confirm("Fjerne dette avviket?")) return;
+      setProject({ ...project, projectDeviations: projectDeviations.filter((entry) => entry.id !== id) });
+    };
+    const closeProjectDeviation = (entry) => {
+      const closeComment = window.prompt("Kommentar til lukking av avvik:", entry.closeComment || "Tiltak utført og kontrollert.");
+      if (closeComment === null) return;
+      updateProjectDeviation(entry.id, {
+        status: "Lukket",
+        closedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        closedBy: project?.responsible || "Utførende",
+        closeComment: closeComment.trim()
+      });
+    };
+    const reopenProjectDeviation = (entry) => {
+      if (!window.confirm("Vil du åpne avviket igjen?")) return;
+      updateProjectDeviation(entry.id, { status: "Åpent", closedAt: "", closedBy: "", closeComment: "" });
+    };
+    const addProjectDeviationPhotos = async (entry, fileList) => {
+      if (!uploadImages) return;
+      const uploaded = await uploadImages(fileList, "avvik");
+      if (!uploaded.length) return;
+      updateProjectDeviation(entry.id, { photos: [...entry.photos || [], ...uploaded] });
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryCard activeDeviationFocus", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Avvikssentral" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            openChecklistDeviations,
+            " åpne sjekkpunktavvik · ",
+            openProjectDeviations,
+            " åpne HMS/prosjektavvik"
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk sjekkpunktavvik for konkrete kontrollpunkter, HMS-avvik for forhold knyttet til sikkerhet, helse og arbeidsmiljø, og Annet for øvrige prosjektavvik. HMS/SHA skal håndteres etter gjeldende rutiner i prosjektet." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: addProjectDeviation, children: "+ Nytt HMS/prosjektavvik" })
+      ] }),
+      checklistDeviationRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Sjekkpunktavvik" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Disse avvikene kommer direkte fra sjekklistene. Trykk Gå til punkt for å åpne riktig sjekkpunkt og lukke avviket der." }),
+        checklistDeviationRows.map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${row.status === "Avvik" ? "avvik" : "done"}`, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistHeader", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistPointTitle", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: row.item }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: row.category }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: row.status })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => onGoToChecklistPoint && onGoToChecklistPoint(row), children: "Gå til punkt" })
+          ] }),
+          row.comment ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Avvik: " }), row.comment] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Avvik registrert uten kommentar." }),
+          row.closeComment && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Lukket: " }), row.closeComment] }),
+          (row.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { className: "note", children: ["📷 ", (row.photos || []).length, " bilder"] })
+        ] }, row.id))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "HMS- og prosjektavvik" }),
+        projectDeviations.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen HMS- eller prosjektavvik er registrert." }),
+        projectDeviations.map((entry) => {
+          const isClosed = (entry.status || "Åpent") === "Lukket";
+          return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${isClosed ? "done" : "avvik"}`, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type avvik", value: entry.type || "HMS", options: ["HMS", "SHA", "Kvalitet", "Fremdrift", "Leveranse", "Kundeavklaring", "Annet"], onChange: (v) => updateProjectDeviation(entry.id, { type: v }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Alvorlighet", value: entry.severity || "Middels", options: ["Lav", "Middels", "Høy", "Kritisk"], onChange: (v) => updateProjectDeviation(entry.id, { severity: v }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Status", value: entry.status || "Åpent", options: ["Åpent", "Under behandling", "Lukket"], onChange: (v) => updateProjectDeviation(entry.id, { status: v }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Frist", type: "date", value: entry.dueDate || "", onChange: (v) => updateProjectDeviation(entry.id, { dueDate: v }) })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kort tittel", value: entry.title || "", onChange: (v) => updateProjectDeviation(entry.id, { title: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Beskrivelse av avvik", value: entry.description || "", onChange: (v) => updateProjectDeviation(entry.id, { description: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Tiltak / videre oppfølging", value: entry.action || "", onChange: (v) => updateProjectDeviation(entry.id, { action: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Ansvarlig", value: entry.responsible || "", onChange: (v) => updateProjectDeviation(entry.id, { responsible: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "center", marginTop: "8px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!entry.affectsWarranty, onChange: (e) => updateProjectDeviation(entry.id, { affectsWarranty: e.target.checked }), style: { width: "auto" } }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Kan påvirke garanti/sluttdokumentasjon" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", title: "Last opp bilder til avviket", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
+              (entry.photos || []).length > 0 ? ` 📷 ${(entry.photos || []).length} bilder – legg til flere` : " 📷 Legg til bilde",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: (e) => addProjectDeviationPhotos(entry, e.target.files) })
+            ] }),
+            (entry.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: (entry.photos || []).map((photo) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: photo.url }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: photo.name })
+            ] }, photo.id)) }),
+            isClosed && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "deviationClosedBox", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "✅ Avvik lukket" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: entry.closeComment || "Avviket er lukket." })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "10px" }, children: [
+              !isClosed && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => closeProjectDeviation(entry), children: "✅ Lukk avvik" }),
+              isClosed && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => reopenProjectDeviation(entry), children: "Åpne igjen" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeProjectDeviation(entry.id), children: "Fjern" })
+            ] })
+          ] }, entry.id);
+        })
+      ] })
+    ] });
+  }
+
   function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "" }) {
     const activeChecklistTemplate = providedActiveChecklistTemplate || getActiveChecklistTemplate(warranty);
     const [newCustomChecklistTrade, setNewCustomChecklistTrade] = import_react.default.useState(customChecklistTradeOptions[0] || "Rørlegger");
