@@ -1,6 +1,7 @@
 // FASE 15.1.6B RAPPORTPOLERING: Større forside-/sertifikatbilde uten crop/strekk, roligere tekstfelt på forside og QR flyttet bort fra sertifikatpunkter. Kun PDF-design.
 // FASE 15.1.6A RAPPORT HOTFIX: Fjerner forstyrrende vannmerke, løfter headingbilde større uten crop/strekk og flytter QR-kode slik at den ikke kolliderer med footer/tekst. Kun PDF-design.
 // FASE 15.1.5 RAPPORT HEADINGBILDE: Valgfritt headingbilde fra "Ferdig resultat" i Bilder-fanen + standard fallbackbilde. Rapportbildet vises med contain/1:1 proporsjoner uten crop eller strekk. Ingen SQL/RLS/chat/sjekkliste/garanti-logikkendring.
+// FASE 15.1.7 PREMIUM COVER FINAL: Ny roligere forside med større headingbilde, faded bakgrunn, bedre logo/tekstkontrast og mindre overlay. Kun PDF-design, ingen data-/lagrings-/garanti-/chat-/sjekklisteendring.
 // FASE 15.1.4A MOBILTEKST MALPROSJEKT CSS-ONLY: Retter kun mobil tekstflyt/checkbox-layout i garantikort og Bruk som malprosjekt. Ingen sjekkliste-, garanti-, PDF-, chat-, database- eller lagringslogikk endret.
 // FASE 15.1.2 AVVIS/SLETT VENTENDE BRUKER: Systemadmin kan avvise og permanent slette ikke-godkjente brukere via Edge Function. Kun Systemadmin-UI og auth/profiles-opprydding for ventende brukere; ingen prosjekt/rapport/PDF/garanti/chat/autolagring-endring.
 // FASE 14.1.10E SYSTEMADMIN-VARSEL FASTE MOTTAKERE: Nye brukerregistreringer varsles kun til kenneth@ringside.no og espen@expoproffsenter.no med samme smart-worker epostflyt som øvrige ProffDok-eposter. Viggo/andre systemadmin mottar ikke varsel. Ingen SQL/RLS/endring i godkjenning.
@@ -5517,6 +5518,70 @@ ${appLink}`;
           }
         };
 
+        const makeReportHeroPremiumImage = async (imageInfo, targetW, targetH) => {
+          // FASE 15.1.7: Lager et premium banner der originalbildet vises proporsjonalt 1:1,
+          // mens en svak, nedtonet bakgrunn fyller sideflatene. Hovedbildet croppes eller strekkes ikke.
+          if (!imageInfo?.dataUrl) return "";
+          try {
+            const sourceImage = await new Promise((resolve) => {
+              const img = new window.Image();
+              img.onload = () => resolve(img);
+              img.onerror = () => resolve(null);
+              img.src = imageInfo.dataUrl;
+            });
+            if (!sourceImage) return imageInfo.dataUrl;
+            const sourceW = imageInfo.width || sourceImage.width || 1;
+            const sourceH = imageInfo.height || sourceImage.height || 1;
+            const targetRatio = targetW / targetH;
+            const sourceRatio = sourceW / sourceH;
+            const canvas = document.createElement("canvas");
+            canvas.width = 1800;
+            canvas.height = Math.max(1, Math.round(canvas.width / targetRatio));
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#eef4f8";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            let coverW = canvas.width;
+            let coverH = canvas.height;
+            let coverX = 0;
+            let coverY = 0;
+            if (sourceRatio > targetRatio) {
+              coverH = canvas.height;
+              coverW = Math.round(canvas.height * sourceRatio);
+              coverX = Math.round((canvas.width - coverW) / 2);
+            } else {
+              coverW = canvas.width;
+              coverH = Math.round(canvas.width / sourceRatio);
+              coverY = Math.round((canvas.height - coverH) / 2);
+            }
+            ctx.save();
+            ctx.globalAlpha = 0.22;
+            if ("filter" in ctx) ctx.filter = "blur(18px)";
+            ctx.drawImage(sourceImage, 0, 0, sourceW, sourceH, coverX - 30, coverY - 30, coverW + 60, coverH + 60);
+            ctx.restore();
+            let containW = canvas.width;
+            let containH = canvas.height;
+            let containX = 0;
+            let containY = 0;
+            if (sourceRatio > targetRatio) {
+              containW = canvas.width;
+              containH = Math.round(canvas.width / sourceRatio);
+              containY = Math.round((canvas.height - containH) / 2);
+            } else {
+              containH = canvas.height;
+              containW = Math.round(canvas.height * sourceRatio);
+              containX = Math.round((canvas.width - containW) / 2);
+            }
+            ctx.shadowColor = "rgba(15,23,42,.22)";
+            ctx.shadowBlur = 28;
+            ctx.shadowOffsetY = 10;
+            ctx.drawImage(sourceImage, 0, 0, sourceW, sourceH, containX, containY, containW, containH);
+            return canvas.toDataURL("image/jpeg", 0.92);
+          } catch (error) {
+            console.warn("Kunne ikke lage premium headingbilde:", error);
+            return makeReportHeroContainImage(imageInfo, targetW, targetH);
+          }
+        };
+
         const addCoverPage = async () => {
           const generatedAt = reportGeneratedAtLabel();
           const status = reportDocumentationStatus();
@@ -5532,24 +5597,22 @@ ${appLink}`;
           doc.setFillColor(255, 255, 255);
           doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 20, 5, 5, "F");
 
+          const heroX = 12;
+          const heroY = 12;
+          const heroW = pageWidth - 24;
+          const heroH = 144;
           if (coverImageUrl) {
             const cover = await loadPdfImage(coverImageUrl);
             if (cover && !cover.error) {
-              const imgX = 12;
-              const imgY = 12;
-              const imgW = pageWidth - 24;
-              const imgH = 122;
-              const coverContainedDataUrl = await makeReportHeroContainImage(cover, imgW, imgH);
-              doc.addImage(coverContainedDataUrl, "JPEG", imgX, imgY, imgW, imgH);
-              doc.setFillColor(8, 18, 30);
-              doc.setGState && doc.setGState(new doc.GState({ opacity: 0.72 }));
-              doc.roundedRect(imgX + 4, imgY + 44, imgW - 8, 52, 3, 3, "F");
-              doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
+              const coverPremiumDataUrl = await makeReportHeroPremiumImage(cover, heroW, heroH);
+              doc.addImage(coverPremiumDataUrl, "JPEG", heroX, heroY, heroW, heroH);
             } else {
               doc.setFillColor(12, 42, 82);
-              doc.roundedRect(12, 12, pageWidth - 24, 96, 3, 3, "F");
+              doc.roundedRect(heroX, heroY, heroW, heroH, 3, 3, "F");
             }
           }
+          doc.setDrawColor(226, 232, 240);
+          doc.roundedRect(heroX, heroY, heroW, heroH, 3, 3, "S");
 
           if (company.logoUrl) {
             const logoImage = await loadPdfImage(company.logoUrl);
@@ -5566,24 +5629,36 @@ ${appLink}`;
             }
           }
 
+          doc.setFillColor(255, 255, 255);
+          doc.setGState && doc.setGState(new doc.GState({ opacity: 0.9 }));
+          doc.roundedRect(pageWidth - margin - 46, 18, 46, 20, 2.5, 2.5, "F");
+          doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(10);
-          doc.setTextColor(8, 213, 216);
-          doc.text("EXPO PROFFDOK", pageWidth - margin, 24, { align: "right" });
-          doc.setFontSize(8);
-          doc.setTextColor(226, 232, 240);
-          doc.text("FDV-rapport · prosjektdokumentasjon", pageWidth - margin, 31, { align: "right" });
+          doc.setFontSize(9.5);
+          doc.setTextColor(0, 127, 137);
+          doc.text("EXPO PROFFDOK", pageWidth - margin - 3, 26, { align: "right" });
+          doc.setFontSize(6.8);
+          doc.setTextColor(71, 85, 105);
+          doc.text("FDV-rapport", pageWidth - margin - 3, 33, { align: "right" });
 
+          const titleBoxY = 118;
+          const titleBoxH = 44;
+          doc.setFillColor(255, 255, 255);
+          doc.setGState && doc.setGState(new doc.GState({ opacity: 0.92 }));
+          doc.roundedRect(margin, titleBoxY, contentWidth, titleBoxH, 3, 3, "F");
+          doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
+          doc.setDrawColor(226, 232, 240);
+          doc.roundedRect(margin, titleBoxY, contentWidth, titleBoxH, 3, 3, "S");
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(21.5);
-          doc.setTextColor(255, 255, 255);
-          doc.text(doc.splitTextToSize(safeText(productTitle).toUpperCase(), pageWidth - 40).slice(0, 2), margin, 68);
+          doc.setFontSize(17.2);
+          doc.setTextColor(12, 42, 82);
+          doc.text(doc.splitTextToSize(safeText(productTitle).toUpperCase(), contentWidth - 14).slice(0, 2), margin + 7, titleBoxY + 15);
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(10.5);
-          doc.setTextColor(226, 232, 240);
-          doc.text(doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), pageWidth - 48), margin, 96);
+          doc.setFontSize(9.2);
+          doc.setTextColor(71, 85, 105);
+          doc.text(doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), contentWidth - 14).slice(0, 1), margin + 7, titleBoxY + 35);
 
-          const badgeY = 146;
+          const badgeY = 170;
           const badgeText = warranty?.issued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti` : openDeviationTotal ? "Kontroll med åpne avvik" : "Kontroll dokumentert";
           doc.setFillColor(...(openDeviationTotal ? [254, 242, 242] : warranty?.issued ? [236, 253, 245] : [239, 246, 255]));
           doc.setDrawColor(...(openDeviationTotal ? [248, 113, 113] : warranty?.issued ? [74, 222, 128] : [147, 197, 253]));
@@ -5598,16 +5673,16 @@ ${appLink}`;
           const badgeSub = warranty?.issued && warranty?.guaranteeNumber ? `Garantinummer: ${warranty.guaranteeNumber}` : openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : "Prosjektet har ingen åpne avvik i rapportgrunnlaget.";
           doc.text(safeText(badgeSub), margin + 6, badgeY + 17);
 
-          const cardY = 176;
+          const cardY = 199;
           const cardW = (contentWidth - 6) / 2;
-          drawInfoCardPdf(margin, cardY, cardW, 21, "Kunde", project.customer || "Ikke oppgitt");
-          drawInfoCardPdf(margin + cardW + 6, cardY, cardW, 21, "Utførende firma", name || company.companyName || "Expo ProffDok");
-          drawInfoCardPdf(margin, cardY + 26, cardW, 21, "Rapport generert", generatedAt);
-          drawInfoCardPdf(margin + cardW + 6, cardY + 26, cardW, 21, "Dokumentnummer", makeReportDocumentNumber());
+          drawInfoCardPdf(margin, cardY, cardW, 18, "Kunde", project.customer || "Ikke oppgitt");
+          drawInfoCardPdf(margin + cardW + 6, cardY, cardW, 18, "Utførende firma", name || company.companyName || "Expo ProffDok");
+          drawInfoCardPdf(margin, cardY + 22, cardW, 18, "Rapport generert", generatedAt);
+          drawInfoCardPdf(margin + cardW + 6, cardY + 22, cardW, 18, "Dokumentnummer", makeReportDocumentNumber());
 
           const metricGap = 4;
           const metricW = (contentWidth - metricGap * 4) / 5;
-          const metricY = 236;
+          const metricY = 248;
           drawMetricCard(margin, metricY, metricW, 20, "Bilder", String(status.photoTotal), "blue");
           drawMetricCard(margin + (metricW + metricGap), metricY, metricW, 20, "Produkter", String(status.productTotal), "neutral");
           drawMetricCard(margin + (metricW + metricGap) * 2, metricY, metricW, 20, "Kontroll", String(status.checklistDone), "green");
@@ -5617,7 +5692,7 @@ ${appLink}`;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
           doc.setTextColor(71, 85, 105);
-          doc.text(doc.splitTextToSize("Denne rapporten dokumenterer arbeidene som er utført i prosjektet, inkludert produkter, sjekklister, bilder, vedlegg og eventuelle garantier. Rapporten bør oppbevares som en del av boligens FDV-dokumentasjon.", contentWidth), margin, 263);
+          doc.text(doc.splitTextToSize("Denne rapporten dokumenterer arbeidene som er utført i prosjektet, inkludert produkter, sjekklister, bilder, vedlegg og eventuelle garantier. Rapporten bør oppbevares som en del av boligens FDV-dokumentasjon.", contentWidth), margin, 274);
 
           doc.setFontSize(7.8);
           doc.setTextColor(100, 116, 139);
@@ -7169,21 +7244,21 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 20, 5, 5, "F");
           const hero = await loadPdfImage(coverImageUrl);
           if (hero && !hero.error) {
-            const heroDataUrl = await makeReportHeroContainImage(hero, pageWidth - 24, 92);
-            doc.addImage(heroDataUrl, "JPEG", 12, 12, pageWidth - 24, 92);
+            const heroDataUrl = await makeReportHeroPremiumImage(hero, pageWidth - 24, 96);
+            doc.addImage(heroDataUrl, "JPEG", 12, 12, pageWidth - 24, 96);
           } else {
             doc.setFillColor(12, 42, 82);
             doc.roundedRect(12, 12, pageWidth - 24, 92, 3, 3, "F");
           }
           doc.setFillColor(255, 255, 255);
           doc.setGState && doc.setGState(new doc.GState({ opacity: 0.92 }));
-          doc.roundedRect(margin, 68, contentWidth, 24, 3, 3, "F");
+          doc.roundedRect(margin, 70, contentWidth, 24, 3, 3, "F");
           doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
           doc.setFont("helvetica", "bold");
           doc.setFontSize(17);
           doc.setTextColor(12, 42, 82);
-          doc.text("DOKUMENTASJONSSERTIFIKAT", pageWidth / 2, 88, { align: "center" });
-          y = 112;
+          doc.text("DOKUMENTASJONSSERTIFIKAT", pageWidth / 2, 90, { align: "center" });
+          y = 114;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
           doc.setTextColor(51, 65, 85);
@@ -7225,14 +7300,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           });
           if (qrUrl) {
             const qrImage = await loadPdfImage(qrUrl);
-            y += 8;
-            const qrSize = 24;
-            const qrY = Math.min(Math.max(y + 8, 226), pageHeight - 58);
-            if (qrImage && !qrImage.error) doc.addImage(qrImage.dataUrl, qrImage.format || "PNG", pageWidth / 2 - qrSize / 2, qrY, qrSize, qrSize);
+            const qrSize = 22;
+            const qrX = pageWidth - margin - qrSize - 6;
+            const qrY = pageHeight - 64;
+            if (qrImage && !qrImage.error) doc.addImage(qrImage.dataUrl, qrImage.format || "PNG", qrX, qrY, qrSize, qrSize);
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(8.2);
+            doc.setFontSize(7.6);
             doc.setTextColor(12, 42, 82);
-            doc.text("Skann for digital rapport", pageWidth / 2, qrY + qrSize + 7, { align: "center" });
+            doc.text("Skann for digital rapport", qrX + qrSize / 2, qrY + qrSize + 6, { align: "center" });
           }
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8.2);
