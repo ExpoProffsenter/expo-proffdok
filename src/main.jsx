@@ -1,3 +1,4 @@
+// FASE 15.1.4A MOBILTEKST MALPROSJEKT CSS-ONLY: Retter kun mobil tekstflyt/checkbox-layout i garantikort og Bruk som malprosjekt. Ingen sjekkliste-, garanti-, PDF-, chat-, database- eller lagringslogikk endret.
 // FASE 15.1.2 AVVIS/SLETT VENTENDE BRUKER: Systemadmin kan avvise og permanent slette ikke-godkjente brukere via Edge Function. Kun Systemadmin-UI og auth/profiles-opprydding for ventende brukere; ingen prosjekt/rapport/PDF/garanti/chat/autolagring-endring.
 // FASE 14.1.10E SYSTEMADMIN-VARSEL FASTE MOTTAKERE: Nye brukerregistreringer varsles kun til kenneth@ringside.no og espen@expoproffsenter.no med samme smart-worker epostflyt som øvrige ProffDok-eposter. Viggo/andre systemadmin mottar ikke varsel. Ingen SQL/RLS/endring i godkjenning.
 // FASE 14.1.10D AVVIK RAPPORTVALG + NY BRUKER-VARSEL: HMS-/prosjektavvik kan velges inn i sluttrapport, sjekkpunktavvik er alltid med, og systemadmin varsles ved ny brukerregistrering. Ingen SQL/RLS-endring.
@@ -8846,6 +8847,65 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           max-width: 100% !important;
           box-sizing: border-box !important;
           overflow-x: hidden !important;
+        }
+      }
+
+
+      /* FASE 15.1.4A: CSS-only mobilfix for garanti/malprosjekt-tekstflyt. */
+      @media screen and (max-width:700px) {
+        .warrantyProjectSetup,
+        .warrantyProjectSetup *,
+        label.check:has(input[type="checkbox"]) {
+          max-width:100% !important;
+          box-sizing:border-box !important;
+        }
+
+        .warrantyProjectSetup {
+          width:100% !important;
+          min-width:0 !important;
+          overflow:hidden !important;
+        }
+
+        .warrantyProjectSetup p,
+        .warrantyProjectSetup .note,
+        .warrantyProjectSetup span,
+        .warrantyProjectSetup small,
+        .warrantyProjectSetup b,
+        label.check:has(input[type="checkbox"]) span,
+        label.check:has(input[type="checkbox"]) small,
+        label.check:has(input[type="checkbox"]) b {
+          min-width:0 !important;
+          white-space:normal !important;
+          overflow-wrap:anywhere !important;
+          word-break:break-word !important;
+        }
+
+        .warrantyProjectSetup select {
+          width:100% !important;
+          min-width:0 !important;
+          max-width:100% !important;
+          white-space:normal !important;
+          text-overflow:ellipsis !important;
+        }
+
+        label.check:has(input[type="checkbox"]) {
+          display:grid !important;
+          grid-template-columns:34px minmax(0,1fr) !important;
+          gap:10px !important;
+          align-items:start !important;
+          width:100% !important;
+          min-width:0 !important;
+          overflow:hidden !important;
+        }
+
+        label.check:has(input[type="checkbox"]) input[type="checkbox"] {
+          width:24px !important;
+          height:24px !important;
+          min-width:24px !important;
+          max-width:24px !important;
+          min-height:24px !important;
+          margin-top:3px !important;
+          flex:0 0 24px !important;
         }
       }
 
