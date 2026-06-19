@@ -1,3 +1,4 @@
+// FASE 15.1.6B RAPPORTPOLERING: Større forside-/sertifikatbilde uten crop/strekk, roligere tekstfelt på forside og QR flyttet bort fra sertifikatpunkter. Kun PDF-design.
 // FASE 15.1.6A RAPPORT HOTFIX: Fjerner forstyrrende vannmerke, løfter headingbilde større uten crop/strekk og flytter QR-kode slik at den ikke kolliderer med footer/tekst. Kun PDF-design.
 // FASE 15.1.5 RAPPORT HEADINGBILDE: Valgfritt headingbilde fra "Ferdig resultat" i Bilder-fanen + standard fallbackbilde. Rapportbildet vises med contain/1:1 proporsjoner uten crop eller strekk. Ingen SQL/RLS/chat/sjekkliste/garanti-logikkendring.
 // FASE 15.1.4A MOBILTEKST MALPROSJEKT CSS-ONLY: Retter kun mobil tekstflyt/checkbox-layout i garantikort og Bruk som malprosjekt. Ingen sjekkliste-, garanti-, PDF-, chat-, database- eller lagringslogikk endret.
@@ -5537,12 +5538,12 @@ ${appLink}`;
               const imgX = 12;
               const imgY = 12;
               const imgW = pageWidth - 24;
-              const imgH = 96;
+              const imgH = 122;
               const coverContainedDataUrl = await makeReportHeroContainImage(cover, imgW, imgH);
               doc.addImage(coverContainedDataUrl, "JPEG", imgX, imgY, imgW, imgH);
               doc.setFillColor(8, 18, 30);
               doc.setGState && doc.setGState(new doc.GState({ opacity: 0.72 }));
-              doc.roundedRect(imgX + 4, imgY + 34, imgW - 8, 44, 3, 3, "F");
+              doc.roundedRect(imgX + 4, imgY + 44, imgW - 8, 52, 3, 3, "F");
               doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
             } else {
               doc.setFillColor(12, 42, 82);
@@ -5574,15 +5575,15 @@ ${appLink}`;
           doc.text("FDV-rapport · prosjektdokumentasjon", pageWidth - margin, 31, { align: "right" });
 
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(25);
+          doc.setFontSize(21.5);
           doc.setTextColor(255, 255, 255);
-          doc.text(doc.splitTextToSize(safeText(productTitle).toUpperCase(), pageWidth - 48).slice(0, 2), margin, 64);
+          doc.text(doc.splitTextToSize(safeText(productTitle).toUpperCase(), pageWidth - 40).slice(0, 2), margin, 68);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10.5);
           doc.setTextColor(226, 232, 240);
-          doc.text(doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), pageWidth - 48), margin, 84);
+          doc.text(doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), pageWidth - 48), margin, 96);
 
-          const badgeY = 116;
+          const badgeY = 146;
           const badgeText = warranty?.issued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti` : openDeviationTotal ? "Kontroll med åpne avvik" : "Kontroll dokumentert";
           doc.setFillColor(...(openDeviationTotal ? [254, 242, 242] : warranty?.issued ? [236, 253, 245] : [239, 246, 255]));
           doc.setDrawColor(...(openDeviationTotal ? [248, 113, 113] : warranty?.issued ? [74, 222, 128] : [147, 197, 253]));
@@ -5597,7 +5598,7 @@ ${appLink}`;
           const badgeSub = warranty?.issued && warranty?.guaranteeNumber ? `Garantinummer: ${warranty.guaranteeNumber}` : openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : "Prosjektet har ingen åpne avvik i rapportgrunnlaget.";
           doc.text(safeText(badgeSub), margin + 6, badgeY + 17);
 
-          const cardY = 148;
+          const cardY = 176;
           const cardW = (contentWidth - 6) / 2;
           drawInfoCardPdf(margin, cardY, cardW, 21, "Kunde", project.customer || "Ikke oppgitt");
           drawInfoCardPdf(margin + cardW + 6, cardY, cardW, 21, "Utførende firma", name || company.companyName || "Expo ProffDok");
@@ -5606,7 +5607,7 @@ ${appLink}`;
 
           const metricGap = 4;
           const metricW = (contentWidth - metricGap * 4) / 5;
-          const metricY = 210;
+          const metricY = 236;
           drawMetricCard(margin, metricY, metricW, 20, "Bilder", String(status.photoTotal), "blue");
           drawMetricCard(margin + (metricW + metricGap), metricY, metricW, 20, "Produkter", String(status.productTotal), "neutral");
           drawMetricCard(margin + (metricW + metricGap) * 2, metricY, metricW, 20, "Kontroll", String(status.checklistDone), "green");
@@ -5616,7 +5617,7 @@ ${appLink}`;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
           doc.setTextColor(71, 85, 105);
-          doc.text(doc.splitTextToSize("Denne rapporten dokumenterer arbeidene som er utført i prosjektet, inkludert produkter, sjekklister, bilder, vedlegg og eventuelle garantier. Rapporten bør oppbevares som en del av boligens FDV-dokumentasjon.", contentWidth), margin, 242);
+          doc.text(doc.splitTextToSize("Denne rapporten dokumenterer arbeidene som er utført i prosjektet, inkludert produkter, sjekklister, bilder, vedlegg og eventuelle garantier. Rapporten bør oppbevares som en del av boligens FDV-dokumentasjon.", contentWidth), margin, 263);
 
           doc.setFontSize(7.8);
           doc.setTextColor(100, 116, 139);
@@ -7168,21 +7169,21 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 20, 5, 5, "F");
           const hero = await loadPdfImage(coverImageUrl);
           if (hero && !hero.error) {
-            const heroDataUrl = await makeReportHeroContainImage(hero, pageWidth - 24, 72);
-            doc.addImage(heroDataUrl, "JPEG", 12, 12, pageWidth - 24, 72);
+            const heroDataUrl = await makeReportHeroContainImage(hero, pageWidth - 24, 92);
+            doc.addImage(heroDataUrl, "JPEG", 12, 12, pageWidth - 24, 92);
           } else {
             doc.setFillColor(12, 42, 82);
-            doc.roundedRect(12, 12, pageWidth - 24, 72, 3, 3, "F");
+            doc.roundedRect(12, 12, pageWidth - 24, 92, 3, 3, "F");
           }
           doc.setFillColor(255, 255, 255);
           doc.setGState && doc.setGState(new doc.GState({ opacity: 0.92 }));
-          doc.roundedRect(margin, 54, contentWidth, 24, 3, 3, "F");
+          doc.roundedRect(margin, 68, contentWidth, 24, 3, 3, "F");
           doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
           doc.setFont("helvetica", "bold");
           doc.setFontSize(17);
           doc.setTextColor(12, 42, 82);
-          doc.text("DOKUMENTASJONSSERTIFIKAT", pageWidth / 2, 74, { align: "center" });
-          y = 104;
+          doc.text("DOKUMENTASJONSSERTIFIKAT", pageWidth / 2, 88, { align: "center" });
+          y = 112;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
           doc.setTextColor(51, 65, 85);
@@ -7224,8 +7225,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           });
           if (qrUrl) {
             const qrImage = await loadPdfImage(qrUrl);
-            const qrSize = 28;
-            const qrY = Math.min(y + 4, pageHeight - 64);
+            y += 8;
+            const qrSize = 24;
+            const qrY = Math.min(Math.max(y + 8, 226), pageHeight - 58);
             if (qrImage && !qrImage.error) doc.addImage(qrImage.dataUrl, qrImage.format || "PNG", pageWidth / 2 - qrSize / 2, qrY, qrSize, qrSize);
             doc.setFont("helvetica", "bold");
             doc.setFontSize(8.2);
