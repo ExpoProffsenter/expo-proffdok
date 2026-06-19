@@ -1,3 +1,4 @@
+// FASE 15.1.5 RAPPORT HEADINGBILDE: Valgfritt headingbilde fra "Ferdig resultat" i Bilder-fanen + standard fallbackbilde. Rapportbildet vises med contain/1:1 proporsjoner uten crop eller strekk. Ingen SQL/RLS/chat/sjekkliste/garanti-logikkendring.
 // FASE 15.1.4A MOBILTEKST MALPROSJEKT CSS-ONLY: Retter kun mobil tekstflyt/checkbox-layout i garantikort og Bruk som malprosjekt. Ingen sjekkliste-, garanti-, PDF-, chat-, database- eller lagringslogikk endret.
 // FASE 15.1.2 AVVIS/SLETT VENTENDE BRUKER: Systemadmin kan avvise og permanent slette ikke-godkjente brukere via Edge Function. Kun Systemadmin-UI og auth/profiles-opprydding for ventende brukere; ingen prosjekt/rapport/PDF/garanti/chat/autolagring-endring.
 // FASE 14.1.10E SYSTEMADMIN-VARSEL FASTE MOTTAKERE: Nye brukerregistreringer varsles kun til kenneth@ringside.no og espen@expoproffsenter.no med samme smart-worker epostflyt som øvrige ProffDok-eposter. Viggo/andre systemadmin mottar ikke varsel. Ingen SQL/RLS/endring i godkjenning.
@@ -676,6 +677,59 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     return groups.filter((group) => group.items.length > 0);
   };
   var imageCats = ["F\xF8r arbeid", "Underlag", "Avretting/st\xF8p", "Primer", "Membran", "Sluk og mansjetter", "R\xF8rgjennomf\xF8ringer", "Flislegging", "Fuging/silikon", "Ferdig resultat"];
+  var DEFAULT_REPORT_HERO_IMAGE_URL = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 640">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#e8f7f8"/>
+        <stop offset="0.46" stop-color="#f8fafc"/>
+        <stop offset="1" stop-color="#dbeafe"/>
+      </linearGradient>
+      <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffffff"/>
+        <stop offset="1" stop-color="#e2e8f0"/>
+      </linearGradient>
+      <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#c9a36b"/>
+        <stop offset="1" stop-color="#8b6b3f"/>
+      </linearGradient>
+      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0f172a" flood-opacity=".18"/>
+      </filter>
+    </defs>
+    <rect width="1600" height="640" fill="url(#bg)"/>
+    <rect x="0" y="0" width="1600" height="390" fill="url(#wall)"/>
+    <g opacity=".22" stroke="#cbd5e1" stroke-width="3">
+      <path d="M0 130h1600M0 260h1600M0 390h1600M180 0v390M360 0v390M540 0v390M720 0v390M900 0v390M1080 0v390M1260 0v390M1440 0v390"/>
+    </g>
+    <rect x="0" y="390" width="1600" height="250" fill="#d8d4cc"/>
+    <g opacity=".22" stroke="#a8a29e" stroke-width="4">
+      <path d="M0 440h1600M0 500h1600M0 560h1600M160 390v250M320 390v250M480 390v250M640 390v250M800 390v250M960 390v250M1120 390v250M1280 390v250M1440 390v250"/>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="150" y="235" width="500" height="230" rx="26" fill="#ffffff"/>
+      <rect x="210" y="305" width="380" height="95" rx="48" fill="#e0f2fe"/>
+      <ellipse cx="400" cy="350" rx="115" ry="38" fill="#ffffff"/>
+      <circle cx="400" cy="350" r="20" fill="#94a3b8"/>
+      <rect x="230" y="465" width="340" height="115" rx="16" fill="url(#wood)"/>
+      <rect x="258" y="492" width="126" height="62" rx="10" fill="#a38351"/>
+      <rect x="416" y="492" width="126" height="62" rx="10" fill="#a38351"/>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="900" y="118" width="500" height="470" rx="34" fill="#ffffff"/>
+      <rect x="936" y="154" width="428" height="398" rx="24" fill="#ecfeff"/>
+      <path d="M990 455c85-120 235-125 320 0" fill="none" stroke="#0891b2" stroke-width="22" stroke-linecap="round"/>
+      <circle cx="1150" cy="252" r="66" fill="#ffffff" stroke="#cbd5e1" stroke-width="10"/>
+      <path d="M1108 370h84" stroke="#0f172a" stroke-width="12" stroke-linecap="round"/>
+    </g>
+    <g filter="url(#shadow)">
+      <rect x="695" y="115" width="110" height="410" rx="55" fill="#ffffff"/>
+      <rect x="724" y="150" width="52" height="330" rx="26" fill="#e2e8f0"/>
+    </g>
+    <text x="84" y="104" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="900" fill="#0f172a">Expo ProffDok</text>
+    <text x="84" y="154" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#0f766e">Dokumentert baderomsprosjekt</text>
+  </svg>`)}`
+  var getPhotoIdentity = (photo = {}) => String(photo?.id || photo?.path || photo?.url || "").trim();
+  var isFinishedResultPhoto = (photo = {}) => String(photo?.cat || "").trim().toLowerCase() === "ferdig resultat";
   var roles = ["Eier / administrator", "Ansatt", "Underleverand\xF8r", "Kun lesetilgang"];
   var checklistAttachmentTradeOptions = ["Rørlegger", "Elektriker", "Tømrer", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag", "Uspesifisert"];
   var customChecklistTradeOptions = ["Rørlegger", "Tømrer", "Elektriker", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag"];
@@ -1218,6 +1272,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     projectDescription: "",
     projectInfoIncludeInReport: false,
     checklistPhotosNote: false,
+    reportHeroPhotoId: "",
     isTemplate: false,
     fall: "",
     fallDusj: "",
@@ -5416,10 +5471,10 @@ ${appLink}`;
           }
           addSectionTitle(title);
         };
-        const makeCoverCroppedImage = async (imageInfo, targetW, targetH) => {
-          // FASE 13.15.3: Bevar proporsjoner på forsidebildet.
-          // Bildet fyller banneret som object-fit: cover, men blir ikke strukket/forvridd.
-          if (!imageInfo?.dataUrl || !imageInfo?.width || !imageInfo?.height) return imageInfo?.dataUrl || "";
+        const makeReportHeroContainImage = async (imageInfo, targetW, targetH) => {
+          // FASE 15.1.5: Rapportens headingbilde skal ikke croppes eller strekkes.
+          // Bildet skaleres proporsjonalt og sentreres innenfor banneret (object-fit: contain-prinsipp).
+          if (!imageInfo?.dataUrl) return "";
           try {
             const sourceImage = await new Promise((resolve) => {
               const img = new window.Image();
@@ -5432,27 +5487,29 @@ ${appLink}`;
             const sourceH = imageInfo.height || sourceImage.height || 1;
             const targetRatio = targetW / targetH;
             const sourceRatio = sourceW / sourceH;
-            let sx = 0;
-            let sy = 0;
-            let sw = sourceW;
-            let sh = sourceH;
-            if (sourceRatio > targetRatio) {
-              sw = sourceH * targetRatio;
-              sx = (sourceW - sw) / 2;
-            } else if (sourceRatio < targetRatio) {
-              sh = sourceW / targetRatio;
-              sy = (sourceH - sh) / 2;
-            }
             const canvas = document.createElement("canvas");
             canvas.width = 1600;
             canvas.height = Math.max(1, Math.round(canvas.width / targetRatio));
             const ctx = canvas.getContext("2d");
-            ctx.fillStyle = "#ffffff";
+            ctx.fillStyle = "#f1f5f9";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(sourceImage, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
-            return canvas.toDataURL("image/jpeg", 0.88);
+            let dw = canvas.width;
+            let dh = canvas.height;
+            let dx = 0;
+            let dy = 0;
+            if (sourceRatio > targetRatio) {
+              dw = canvas.width;
+              dh = Math.round(canvas.width / sourceRatio);
+              dy = Math.round((canvas.height - dh) / 2);
+            } else {
+              dh = canvas.height;
+              dw = Math.round(canvas.height * sourceRatio);
+              dx = Math.round((canvas.width - dw) / 2);
+            }
+            ctx.drawImage(sourceImage, 0, 0, sourceW, sourceH, dx, dy, dw, dh);
+            return canvas.toDataURL("image/jpeg", 0.9);
           } catch (error) {
-            console.warn("Kunne ikke beskjære forsidebilde:", error);
+            console.warn("Kunne ikke tilpasse headingbilde:", error);
             return imageInfo.dataUrl;
           }
         };
@@ -5463,29 +5520,32 @@ ${appLink}`;
           const openDeviationTotal = status.openDeviationTotal;
           const productTitle = project.projectName || project.address || "Prosjektdokumentasjon";
           const addressLine = reportAddressLine();
-          const coverImage = (photos || []).slice().reverse().find((photo) => hasValue(photo?.url) && /ferdig|resultat/i.test(String(photo?.cat || photo?.name || ""))) || (photos || []).slice().reverse().find((photo) => hasValue(photo?.url));
+          const reportHeroPhotoId = safeText(project?.reportHeroPhotoId || "").trim();
+          const selectedCoverImage = reportHeroPhotoId ? (photos || []).find((photo) => hasValue(photo?.url) && getPhotoIdentity(photo) === reportHeroPhotoId) : null;
+          const coverImage = selectedCoverImage || (photos || []).slice().reverse().find((photo) => hasValue(photo?.url) && isFinishedResultPhoto(photo)) || null;
+          const coverImageUrl = coverImage?.url || DEFAULT_REPORT_HERO_IMAGE_URL;
           doc.setFillColor(8, 18, 30);
           doc.rect(0, 0, pageWidth, pageHeight, "F");
           doc.setFillColor(255, 255, 255);
           doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 20, 5, 5, "F");
 
-          if (coverImage?.url) {
-            const cover = await loadPdfImage(coverImage.url);
+          if (coverImageUrl) {
+            const cover = await loadPdfImage(coverImageUrl);
             if (cover && !cover.error) {
               const imgX = 12;
               const imgY = 12;
               const imgW = pageWidth - 24;
               const imgH = 78;
-              const coverCroppedDataUrl = await makeCoverCroppedImage(cover, imgW, imgH);
-              doc.addImage(coverCroppedDataUrl, "JPEG", imgX, imgY, imgW, imgH);
+              const coverContainedDataUrl = await makeReportHeroContainImage(cover, imgW, imgH);
+              doc.addImage(coverContainedDataUrl, "JPEG", imgX, imgY, imgW, imgH);
               doc.setFillColor(8, 18, 30);
-              doc.setGState && doc.setGState(new doc.GState({ opacity: 0.58 }));
-              doc.rect(imgX, imgY, imgW, imgH, "F");
+              doc.setGState && doc.setGState(new doc.GState({ opacity: 0.72 }));
+              doc.roundedRect(imgX + 4, imgY + 26, imgW - 8, 42, 3, 3, "F");
               doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
+            } else {
+              doc.setFillColor(12, 42, 82);
+              doc.roundedRect(12, 12, pageWidth - 24, 78, 3, 3, "F");
             }
-          } else {
-            doc.setFillColor(12, 42, 82);
-            doc.roundedRect(12, 12, pageWidth - 24, 78, 3, 3, "F");
           }
 
           if (company.logoUrl) {
@@ -7590,7 +7650,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: photos.filter((p) => p.cat === c).length > 0 ? `\u{1F4F7} ${photos.filter((p) => p.cat === c).length} bilder lagt til` : "Ta bilde, velg fra galleri eller dra bilde hit" }),
              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", capture: "environment", multiple: true, disabled: isProjectLocked, onClick: (e) => e.stopPropagation(), onChange: (e) => addPhoto(c, e.target.files) })
             ] }, c)) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos, project, setProject, canEditProject, isProjectLocked })
           ] }),
           tab === "installasjoner" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Fag, deler og utstyr", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => setInst((prev) => [...prev, { id: uid(), category: "R\xF8rlegger", name: "", qty: "", supplier: "", desc: "", fdvUrl: "", photos: [], by: user.name || "Underentrepren\xF8r", created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO") }]), children: [
@@ -9468,7 +9528,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, disabled: isProjectLocked, onClick: (e) => e.stopPropagation(), onChange: (e) => addPhoto(c, e.target.files) })
           ] }, c)) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: photoSaveStatus || "Bilder autolagres ved opplasting når prosjektet er lagret i skyen." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos, project, setProject, canEditProject, isProjectLocked })
         ] }),
         tab === "tilgang" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilgang og deling", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Administrer tilgang til prosjektet. Kunde f\xE5r egen kundelink med rapport, tilbud/kontrakt og chat. Underentrepren\xF8rer kan bidra med dokumentasjon via egen tilgang." }),
@@ -10805,18 +10865,50 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => onChange(e.target.value), children: options.map((o) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: o, children: optionLabels[o] || o }, o)) })
     ] });
   }
-  function PhotoGrid({ photos, setPhotos }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos", children: photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, draggable: false }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.cat }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.created }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { placeholder: "Kommentar", value: p.comment, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => setPhotos(photos.map((x) => x.id === p.id ? { ...x, comment: e.target.value } : x)) }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { className: "secondary", onClick: () => setPhotos(photos.filter((x) => x.id !== p.id)), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Trash2, { size: 16 }),
-        " Fjern"
-      ] })
-    ] }, p.id)) });
+  function PhotoGrid({ photos, setPhotos, project = {}, setProject = null, canEditProject = () => true, isProjectLocked = false }) {
+    const selectedHeroPhotoId = String(project?.reportHeroPhotoId || "").trim();
+    const setReportHeroPhoto = (photo) => {
+      if (!setProject || !canEditProject()) return;
+      setProject({
+        ...project,
+        reportHeroPhotoId: getPhotoIdentity(photo)
+      });
+    };
+    const clearReportHeroPhotoIfNeeded = (photo) => {
+      if (!setProject || selectedHeroPhotoId !== getPhotoIdentity(photo)) return;
+      setProject({
+        ...project,
+        reportHeroPhotoId: ""
+      });
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos", children: photos.map((p) => {
+      const photoIdentity = getPhotoIdentity(p);
+      const canUseAsHero = isFinishedResultPhoto(p) && hasValue(p?.url);
+      const isHeroPhoto = canUseAsHero && selectedHeroPhotoId === photoIdentity;
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, draggable: false }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: p.cat }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.created }),
+        canUseAsHero && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "item", style: { display: "flex", alignItems: "flex-start", gap: "10px", margin: "8px 0", cursor: isProjectLocked ? "not-allowed" : "pointer" }, onClick: (e) => e.stopPropagation(), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "radio", name: "reportHeroPhoto", checked: isHeroPhoto, disabled: isProjectLocked, onClick: (e) => e.stopPropagation(), onChange: () => setReportHeroPhoto(p), style: { width: "18px", height: "18px", marginTop: "2px" } }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Bruk som headingbilde i rapport" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "note", children: isHeroPhoto ? "Valgt for rapportforsiden. Bildet vises proporsjonalt uten crop eller strekk." : "Gjelder kun bilder i kategorien Ferdig resultat." })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { placeholder: "Kommentar", value: p.comment, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => setPhotos(photos.map((x) => x.id === p.id ? { ...x, comment: e.target.value } : x)) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { className: "secondary", onClick: () => {
+          clearReportHeroPhotoIfNeeded(p);
+          setPhotos(photos.filter((x) => x.id !== p.id));
+        }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Trash2, { size: 16 }),
+          " Fjern"
+        ] })
+      ] }, p.id);
+    }) });
   }
+
   function ProjectInformationReadOnly({ project }) {
     const fields = [
       ["Prosjektnavn", project?.projectName],
