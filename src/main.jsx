@@ -5632,8 +5632,10 @@ ${appLink}`;
               const coverContainedDataUrl = await makeReportHeroContainImage(cover, imgW, imgH);
               doc.addImage(coverContainedDataUrl, "PNG", imgX, imgY, imgW, imgH);
               doc.setFillColor(8, 18, 30);
-              doc.setGState && doc.setGState(new doc.GState({ opacity: 0.84 }));
-              doc.roundedRect(imgX + 6, imgY + 46, imgW - 12, 46, 4, 4, "F");
+              doc.setGState && doc.setGState(new doc.GState({ opacity: 0.86 }));
+              // FASE 15.1.7C: tryggere tekstfelt på forsiden. Feltet holdes innenfor bildet,
+              // slik at lange prosjektnavn aldri flyter ut over høyre kant.
+              doc.roundedRect(imgX + 8, imgY + 45, imgW - 16, 48, 4, 4, "F");
               doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
             } else {
               doc.setFillColor(12, 42, 82);
@@ -5656,33 +5658,42 @@ ${appLink}`;
             }
           }
 
+          // FASE 15.1.7C: høyre toppmerking legges på lys bakgrunn for lesbarhet uavhengig av bilde.
+          doc.setFillColor(255, 255, 255);
+          doc.setGState && doc.setGState(new doc.GState({ opacity: 0.92 }));
+          doc.roundedRect(pageWidth - margin - 48, 18, 48, 18, 2.5, 2.5, "F");
+          doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(10);
-          doc.setTextColor(8, 213, 216);
-          doc.text("EXPO PROFFDOK", pageWidth - margin, 24, { align: "right" });
-          doc.setFontSize(8);
-          doc.setTextColor(226, 232, 240);
-          doc.text("FDV-rapport · prosjektdokumentasjon", pageWidth - margin, 31, { align: "right" });
+          doc.setFontSize(9.2);
+          doc.setTextColor(0, 163, 173);
+          doc.text("EXPO PROFFDOK", pageWidth - margin - 4, 24, { align: "right" });
+          doc.setFontSize(7);
+          doc.setTextColor(51, 65, 85);
+          doc.text("FDV-rapport", pageWidth - margin - 4, 31, { align: "right" });
 
-          const coverTextX = margin + 6;
-          const coverTitleLines = doc.splitTextToSize(safeText(productTitle).toUpperCase(), pageWidth - 50).slice(0, 2);
+          const coverTextX = margin + 7;
+          const coverTextMaxWidth = pageWidth - 58;
+          const coverTitleLines = doc.splitTextToSize(safeText(productTitle).toUpperCase(), coverTextMaxWidth).slice(0, 2);
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(21.2);
-          if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.42 }));
+          doc.setFontSize(18.2);
+          // FASE 15.1.7C: tittel skaleres tryggere og brytes innenfor tekstfeltet.
+          // Dette hindrer at lange prosjektnavn forsvinner ut av høyre kant.
+          if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.50 }));
           doc.setTextColor(0, 0, 0);
-          doc.text(coverTitleLines, coverTextX + 0.6, 68.6);
+          doc.text(coverTitleLines, coverTextX + 0.55, 66.55, { lineHeightFactor: 1.06 });
           if (doc.setGState) doc.setGState(new doc.GState({ opacity: 1 }));
           doc.setTextColor(255, 255, 255);
-          doc.text(coverTitleLines, coverTextX, 68);
-          const coverAddressLines = doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), pageWidth - 56).slice(0, 1);
+          doc.text(coverTitleLines, coverTextX, 66, { lineHeightFactor: 1.06 });
+          const coverAddressLines = doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), coverTextMaxWidth).slice(0, 1);
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(10.8);
-          if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.38 }));
+          doc.setFontSize(10.2);
+          const addressY = coverTitleLines.length > 1 ? 94 : 90;
+          if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.42 }));
           doc.setTextColor(0, 0, 0);
-          doc.text(coverAddressLines, coverTextX + 0.5, 96.5);
+          doc.text(coverAddressLines, coverTextX + 0.45, addressY + 0.45);
           if (doc.setGState) doc.setGState(new doc.GState({ opacity: 1 }));
           doc.setTextColor(241, 245, 249);
-          doc.text(coverAddressLines, coverTextX, 96);
+          doc.text(coverAddressLines, coverTextX, addressY);
 
           const badgeY = 146;
           const badgeText = warranty?.issued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti` : openDeviationTotal ? "Kontroll med åpne avvik" : "Kontroll dokumentert";
