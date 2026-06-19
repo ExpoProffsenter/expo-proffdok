@@ -5597,22 +5597,24 @@ ${appLink}`;
           doc.setFillColor(255, 255, 255);
           doc.roundedRect(8, 8, pageWidth - 16, pageHeight - 20, 5, 5, "F");
 
-          const heroX = 12;
-          const heroY = 12;
-          const heroW = pageWidth - 24;
-          const heroH = 144;
           if (coverImageUrl) {
             const cover = await loadPdfImage(coverImageUrl);
             if (cover && !cover.error) {
-              const coverPremiumDataUrl = await makeReportHeroPremiumImage(cover, heroW, heroH);
-              doc.addImage(coverPremiumDataUrl, "JPEG", heroX, heroY, heroW, heroH);
+              const imgX = 12;
+              const imgY = 12;
+              const imgW = pageWidth - 24;
+              const imgH = 122;
+              const coverContainedDataUrl = await makeReportHeroContainImage(cover, imgW, imgH);
+              doc.addImage(coverContainedDataUrl, "JPEG", imgX, imgY, imgW, imgH);
+              doc.setFillColor(8, 18, 30);
+              doc.setGState && doc.setGState(new doc.GState({ opacity: 0.72 }));
+              doc.roundedRect(imgX + 4, imgY + 44, imgW - 8, 52, 3, 3, "F");
+              doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
             } else {
               doc.setFillColor(12, 42, 82);
-              doc.roundedRect(heroX, heroY, heroW, heroH, 3, 3, "F");
+              doc.roundedRect(12, 12, pageWidth - 24, 96, 3, 3, "F");
             }
           }
-          doc.setDrawColor(226, 232, 240);
-          doc.roundedRect(heroX, heroY, heroW, heroH, 3, 3, "S");
 
           if (company.logoUrl) {
             const logoImage = await loadPdfImage(company.logoUrl);
@@ -5629,36 +5631,24 @@ ${appLink}`;
             }
           }
 
-          doc.setFillColor(255, 255, 255);
-          doc.setGState && doc.setGState(new doc.GState({ opacity: 0.9 }));
-          doc.roundedRect(pageWidth - margin - 46, 18, 46, 20, 2.5, 2.5, "F");
-          doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(9.5);
-          doc.setTextColor(0, 127, 137);
-          doc.text("EXPO PROFFDOK", pageWidth - margin - 3, 26, { align: "right" });
-          doc.setFontSize(6.8);
-          doc.setTextColor(71, 85, 105);
-          doc.text("FDV-rapport", pageWidth - margin - 3, 33, { align: "right" });
+          doc.setFontSize(10);
+          doc.setTextColor(8, 213, 216);
+          doc.text("EXPO PROFFDOK", pageWidth - margin, 24, { align: "right" });
+          doc.setFontSize(8);
+          doc.setTextColor(226, 232, 240);
+          doc.text("FDV-rapport · prosjektdokumentasjon", pageWidth - margin, 31, { align: "right" });
 
-          const titleBoxY = 118;
-          const titleBoxH = 44;
-          doc.setFillColor(255, 255, 255);
-          doc.setGState && doc.setGState(new doc.GState({ opacity: 0.92 }));
-          doc.roundedRect(margin, titleBoxY, contentWidth, titleBoxH, 3, 3, "F");
-          doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
-          doc.setDrawColor(226, 232, 240);
-          doc.roundedRect(margin, titleBoxY, contentWidth, titleBoxH, 3, 3, "S");
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(17.2);
-          doc.setTextColor(12, 42, 82);
-          doc.text(doc.splitTextToSize(safeText(productTitle).toUpperCase(), contentWidth - 14).slice(0, 2), margin + 7, titleBoxY + 15);
+          doc.setFontSize(21.5);
+          doc.setTextColor(255, 255, 255);
+          doc.text(doc.splitTextToSize(safeText(productTitle).toUpperCase(), pageWidth - 40).slice(0, 2), margin, 68);
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(9.2);
-          doc.setTextColor(71, 85, 105);
-          doc.text(doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), contentWidth - 14).slice(0, 1), margin + 7, titleBoxY + 35);
+          doc.setFontSize(10.5);
+          doc.setTextColor(226, 232, 240);
+          doc.text(doc.splitTextToSize(safeText(addressLine || project.customer || "Prosjekt"), pageWidth - 48), margin, 96);
 
-          const badgeY = 170;
+          const badgeY = 146;
           const badgeText = warranty?.issued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti` : openDeviationTotal ? "Kontroll med åpne avvik" : "Kontroll dokumentert";
           doc.setFillColor(...(openDeviationTotal ? [254, 242, 242] : warranty?.issued ? [236, 253, 245] : [239, 246, 255]));
           doc.setDrawColor(...(openDeviationTotal ? [248, 113, 113] : warranty?.issued ? [74, 222, 128] : [147, 197, 253]));
@@ -5673,16 +5663,16 @@ ${appLink}`;
           const badgeSub = warranty?.issued && warranty?.guaranteeNumber ? `Garantinummer: ${warranty.guaranteeNumber}` : openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : "Prosjektet har ingen åpne avvik i rapportgrunnlaget.";
           doc.text(safeText(badgeSub), margin + 6, badgeY + 17);
 
-          const cardY = 199;
+          const cardY = 176;
           const cardW = (contentWidth - 6) / 2;
-          drawInfoCardPdf(margin, cardY, cardW, 18, "Kunde", project.customer || "Ikke oppgitt");
-          drawInfoCardPdf(margin + cardW + 6, cardY, cardW, 18, "Utførende firma", name || company.companyName || "Expo ProffDok");
-          drawInfoCardPdf(margin, cardY + 22, cardW, 18, "Rapport generert", generatedAt);
-          drawInfoCardPdf(margin + cardW + 6, cardY + 22, cardW, 18, "Dokumentnummer", makeReportDocumentNumber());
+          drawInfoCardPdf(margin, cardY, cardW, 21, "Kunde", project.customer || "Ikke oppgitt");
+          drawInfoCardPdf(margin + cardW + 6, cardY, cardW, 21, "Utførende firma", name || company.companyName || "Expo ProffDok");
+          drawInfoCardPdf(margin, cardY + 26, cardW, 21, "Rapport generert", generatedAt);
+          drawInfoCardPdf(margin + cardW + 6, cardY + 26, cardW, 21, "Dokumentnummer", makeReportDocumentNumber());
 
           const metricGap = 4;
           const metricW = (contentWidth - metricGap * 4) / 5;
-          const metricY = 248;
+          const metricY = 236;
           drawMetricCard(margin, metricY, metricW, 20, "Bilder", String(status.photoTotal), "blue");
           drawMetricCard(margin + (metricW + metricGap), metricY, metricW, 20, "Produkter", String(status.productTotal), "neutral");
           drawMetricCard(margin + (metricW + metricGap) * 2, metricY, metricW, 20, "Kontroll", String(status.checklistDone), "green");
@@ -5692,7 +5682,7 @@ ${appLink}`;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(9);
           doc.setTextColor(71, 85, 105);
-          doc.text(doc.splitTextToSize("Denne rapporten dokumenterer arbeidene som er utført i prosjektet, inkludert produkter, sjekklister, bilder, vedlegg og eventuelle garantier. Rapporten bør oppbevares som en del av boligens FDV-dokumentasjon.", contentWidth), margin, 274);
+          doc.text(doc.splitTextToSize("Denne rapporten dokumenterer arbeidene som er utført i prosjektet, inkludert produkter, sjekklister, bilder, vedlegg og eventuelle garantier. Rapporten bør oppbevares som en del av boligens FDV-dokumentasjon.", contentWidth), margin, 263);
 
           doc.setFontSize(7.8);
           doc.setTextColor(100, 116, 139);
