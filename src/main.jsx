@@ -1,4 +1,5 @@
 // FASE 15.1.8 GARANTISPERRE EGNE SJEKKPUNKTER: Egne sjekkpunkter vises, flettes inn og kan opprettes kun når dokumentert tetthetsgaranti er aktivert og Sopro-system er valgt. Ingen SQL/PDF/chat/produkt/avvik-endring.
+// FASE 15.1.9 MAL STANDARD VÅTROM: Ferdige tilleggsfag-sjekklister under garantivalg når garanti + Sopro er valgt. Kun prosjektlokale egne sjekkpunkter, ingen SQL/PDF/chat/avvik/endring.
 // FASE 15.1.6B RAPPORTPOLERING: Større forside-/sertifikatbilde uten crop/strekk, roligere tekstfelt på forside og QR flyttet bort fra sertifikatpunkter. Kun PDF-design.
 // FASE 15.1.6A RAPPORT HOTFIX: Fjerner forstyrrende vannmerke, løfter headingbilde større uten crop/strekk og flytter QR-kode slik at den ikke kolliderer med footer/tekst. Kun PDF-design.
 // FASE 15.1.5 RAPPORT HEADINGBILDE: Valgfritt headingbilde fra "Ferdig resultat" i Bilder-fanen + standard fallbackbilde. Rapportbildet vises med contain/1:1 proporsjoner uten crop eller strekk. Ingen SQL/RLS/chat/sjekkliste/garanti-logikkendring.
@@ -737,6 +738,17 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var roles = ["Eier / administrator", "Ansatt", "Underleverand\xF8r", "Kun lesetilgang"];
   var checklistAttachmentTradeOptions = ["Rørlegger", "Elektriker", "Tømrer", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag", "Uspesifisert"];
   var customChecklistTradeOptions = ["Rørlegger", "Tømrer", "Elektriker", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag"];
+  var standardWetroomTemplateTradeOptions = ["Rørlegger", "Tømrer", "Elektriker", "Maler", "Ventilasjon", "Annet fag"];
+  var standardWetroomTemplateDefaultTrades = ["Rørlegger", "Tømrer", "Elektriker", "Maler", "Ventilasjon"];
+  var STANDARD_WETROOM_TEMPLATE_POINTS = {
+    "Rørlegger": ["Stoppekraner og avstengning er kontrollert", "Rør-i-rør / fordelerskap er kontrollert", "Rørgjennomføringer er kontrollert før tetting", "Sluk, vannlås og avløpstilkoblinger er kontrollert", "Trykkprøving / funksjonskontroll av vanninstallasjon er utført", "Lekkasjesikring / vannstopper er kontrollert der dette inngår", "Sanitærutstyr er montert og funksjonstestet"],
+    "Tømrer": ["Bjelkelag og underkonstruksjon er kontrollert", "Vegger og innkassinger er kontrollert før lukking", "Våtromsplater / underlag for membran er montert iht. anvisning", "Nisjer, sisternekasser og innbygginger er kontrollert", "Terskel, døråpning og høyder er kontrollert mot ferdig gulv"],
+    "Elektriker": ["Varmekabler er dokumentert og kontrollert før overdekking", "Termostat / følerplassering er kontrollert", "Jordfeilvern og kursopplegg er kontrollert av elektriker", "Belysning, stikk og brytere er kontrollert mot våtromskrav", "IP-grad og plassering i våtromssoner er vurdert", "Samsvarserklæring er innhentet eller etterspurt"],
+    "Maler": ["Underlag for maling er kontrollert", "Sparkling og skjøter er kontrollert", "Riktig maling / våtromssystem er benyttet der dette inngår", "Overflate og finish er visuelt kontrollert"],
+    "Ventilasjon": ["Avtrekk / ventilasjon er kontrollert", "Tilluft / luftespalte er kontrollert", "Ventil, kanal eller vifte er kontrollert etter arbeid", "Funksjonstest / luftmengde er vurdert der dette inngår"],
+    "Annet fag": ["Eget fagpunkt er vurdert og tilpasses prosjektet"]
+  };
+  var getStandardWetroomTemplatePoints = (trades = []) => (Array.isArray(trades) ? trades : []).flatMap((trade) => (STANDARD_WETROOM_TEMPLATE_POINTS[trade] || []).map((text) => ({ trade, text })));
   var customChecklistCategoryPrefix = "Egne sjekkpunkter – ";
   var customChecklistCategoryFromTrade = (trade = "Annet fag") => `${customChecklistCategoryPrefix}${String(trade || "Annet fag").trim() || "Annet fag"}`;
   var canUseCustomChecklistForWarranty = (warranty = {}) => !!warranty?.enabled && hasValue(warranty?.system);
@@ -1729,6 +1741,45 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
         }
         return next;
       });
+    };
+
+    const createStandardWetroomTemplate = (selectedTrades = []) => {
+      if (!canEditProject()) return;
+      if (!customChecklistAllowed) {
+        return alert("Mal standard våtrom kan kun brukes når dokumentert tetthetsgaranti er aktivert og Sopro-system er valgt.");
+      }
+      const trades = (Array.isArray(selectedTrades) ? selectedTrades : []).filter((trade) => standardWetroomTemplateTradeOptions.includes(trade));
+      if (!trades.length) return alert("Velg minst ett fag som skal legges til i Mal standard våtrom.");
+      const templatePoints = getStandardWetroomTemplatePoints(trades);
+      if (!templatePoints.length) return alert("Ingen sjekkpunkter å legge til for valgte fag.");
+      let addedCount = 0;
+      let skippedCount = 0;
+      setProject((prev) => {
+        const existing = Array.isArray(prev?.customChecklistGroups) ? prev.customChecklistGroups : [];
+        const existingKeys = new Set(existing.map((entry) => `${customChecklistCategoryFromTrade(entry?.trade)}|||${String(entry?.text || "").trim().toLowerCase()}`));
+        const additions = [];
+        templatePoints.forEach((point) => {
+          const cleanTrade = String(point.trade || "Annet fag").trim() || "Annet fag";
+          const cleanText = String(point.text || "").trim();
+          if (!cleanText) return;
+          const key = `${customChecklistCategoryFromTrade(cleanTrade)}|||${cleanText.toLowerCase()}`;
+          if (existingKeys.has(key)) {
+            skippedCount += 1;
+            return;
+          }
+          existingKeys.add(key);
+          additions.push({ id: uid(), trade: cleanTrade, text: cleanText, createdAt: (/* @__PURE__ */ new Date()).toISOString(), source: "Mal standard våtrom" });
+        });
+        addedCount = additions.length;
+        return { ...prev, customChecklistGroups: [...existing, ...additions] };
+      });
+      setShowOpenDeviationsOnly(false);
+      window.setTimeout(() => {
+        alert(addedCount > 0 ? `Mal standard våtrom er lagt til.
+
+${addedCount} sjekkpunkter lagt til.${skippedCount ? `
+${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle punktene fra Mal standard våtrom finnes allerede i prosjektet.");
+      }, 50);
     };
 
     const toggleProductCheckpointPanel = (productNo) => {
@@ -9625,7 +9676,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde e-post", type: "email", value: project.customerEmail || "", onChange: (v) => setProject({ ...project, customerEmail: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems, project, onCreateStandardWetroomTemplate: createStandardWetroomTemplate }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "4px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.isTemplate && !!warranty?.enabled && !!warranty?.system, onChange: (e) => {
               if (e.target.checked && (!warranty?.enabled || !warranty?.system)) {
@@ -10779,9 +10830,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
   function Brand({ logo, name }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: "260px", height: "80px", overflow: "hidden", display: "flex", alignItems: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: logo ? logo : "/expo-logo.png", alt: name || "Expo Proffsenter", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) });
   }
-  function ProjectWarrantySetup({ warranty, setWarranty, systems }) {
+  function ProjectWarrantySetup({ warranty, setWarranty, systems, project = {}, onCreateStandardWetroomTemplate = null }) {
     const enabled = !!warranty?.enabled;
     const selectedSystem = systems.find((item) => item.id === warranty?.system);
+    const standardWetroomAllowed = enabled && !!selectedSystem;
+    const [standardWetroomTrades, setStandardWetroomTrades] = import_react.default.useState(standardWetroomTemplateDefaultTrades);
+    const existingCustomChecklistCount = Array.isArray(project?.customChecklistGroups) ? project.customChecklistGroups.length : 0;
+    const toggleStandardWetroomTrade = (trade) => {
+      setStandardWetroomTrades((prev) => prev.includes(trade) ? prev.filter((item) => item !== trade) : [...prev, trade]);
+    };
     const setEnabled = (value) => {
       setWarranty({
         ...emptyWarranty(),
@@ -10829,6 +10886,23 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           " · ",
           selectedSystem.sintefApproval,
           ". Garantikravene vises automatisk i Sjekklister og Garanti."
+        ] }),
+        standardWetroomAllowed && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "14px", borderColor: "#bfdbfe", background: "#f8fbff" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📋 Mal standard våtrom" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg tilleggsfagene som inngår i våtromsprosjektet. Murer/flislegger er ikke med her, fordi ProffDok allerede har ordinære sjekklister for mur, membran og flis." }),
+          existingCustomChecklistCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { color: "#92400e" }, children: `Prosjektet har allerede ${existingCustomChecklistCount} egne sjekkpunkter. Malen legger kun til manglende punkter og sletter eller overskriver ingenting.` }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "10px", marginTop: "10px" }, children: standardWetroomTemplateTradeOptions.map((trade) => {
+            const checked = standardWetroomTrades.includes(trade);
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => toggleStandardWetroomTrade(trade), className: checked ? "" : "secondary", style: { minHeight: "58px", display: "flex", alignItems: "center", gap: "10px", justifyContent: "flex-start", textAlign: "left", padding: "12px", borderRadius: "14px", border: checked ? "1px solid #0f766e" : "1px solid #cbd5e1", background: checked ? "#ecfdf5" : "#ffffff", color: "#0f172a" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "22px", lineHeight: 1 }, children: checked ? "☑" : "☐" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: customChecklistTradeIconUrl(trade), alt: "", "aria-hidden": "true", style: { width: "34px", height: "34px", objectFit: "contain", flex: "0 0 auto" } }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 800 }, children: trade })
+            ] }, trade);
+          }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "12px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => onCreateStandardWetroomTemplate && onCreateStandardWetroomTemplate(standardWetroomTrades), disabled: !standardWetroomTrades.length, children: "Opprett Mal standard våtrom" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "note", style: { alignSelf: "center" }, children: "Punktene blir vanlige egne sjekkpunkter og kan redigeres, slettes og suppleres i Sjekklister." })
+          ] })
         ] })
       ] }),
       !enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "8px" }, children: "Garantien er ikke aktivert. Prosjektet kan fortsatt dokumenteres som vanlig." })
