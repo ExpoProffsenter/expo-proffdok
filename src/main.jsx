@@ -1,3 +1,5 @@
+// FASE 16.3B OPPRETT BRUKER KONTAKTINFO: Bygger videre på 16.3. Ny bruker må oppgi fullt navn, mobilnummer, passord og gjenta passord. Kontaktinfo lagres i Supabase Auth metadata og tas med i systemadmin-varsel. Ingen SQL/Edge/PDF/garanti/chat-endring.
+// FASE 16.3 OPPRETT BRUKER/PASSORDBEKREFTELSE: Innlogging forklarer ny bruker-flyt tydeligere, og Opprett bruker krever at passord skrives likt to ganger. Kun login-/auth-UI og frontend-validering, ingen SQL/Edge/PDF/garanti/chat-endring.
 // FASE 16.1 FAG/UTSTYR FAGKATEGORIER: Samkjører Fag/utstyr-kategorier med valgfrie sjekkpunkter for andre fag: Rørlegger, Tømrer, Elektriker, Maler, Ventilasjon og Annet fag. Kun valg-/UI-liste, ingen SQL/PDF/garanti/chat/logikkendring.
 // FASE 15.2.3 BRUKERVEILEDNING KODEKONTROLL/PRODUKSJONSTEKST: Kvalitetssikrer digital brukerveiledning mot faktisk funksjonalitet og fjerner pilot-/testpreg i brukerflater. Kun Hjelp-tekst/UI.
 // FASE 15.2.2 BRUKERVEILEDNING KVALITETSSIKRET: Kvalitetssikrer digital brukerveiledning v1.1 med juridisk nøktern chattekst, tydelig anbefaling om prosjektchat som hovedkanal og presisering av kundekommunikasjon. Kun Hjelp-tekst/UI.
@@ -1417,6 +1419,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [authUser, setAuthUser] = (0, import_react.useState)(null);
     const [authEmail, setAuthEmail] = (0, import_react.useState)("");
     const [authPassword, setAuthPassword] = (0, import_react.useState)("");
+    const [authPasswordRepeat, setAuthPasswordRepeat] = (0, import_react.useState)("");
+    const [authFullName, setAuthFullName] = (0, import_react.useState)("");
+    const [authMobile, setAuthMobile] = (0, import_react.useState)("");
     const [passwordRecovery, setPasswordRecovery] = (0, import_react.useState)(false);
     const [newPassword, setNewPassword] = (0, import_react.useState)("");
     const [newPasswordRepeat, setNewPasswordRepeat] = (0, import_react.useState)("");
@@ -5142,8 +5147,10 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       if (error) return alert("Kunne ikke logge inn: " + error.message);
     };
     const systemAdminSignupNoticeRecipients = ["kenneth@ringside.no", "espen@expoproffsenter.no"];
-    const notifySystemAdminsAboutSignup = async (newUserEmail = "") => {
+    const notifySystemAdminsAboutSignup = async (newUserEmail = "", fullName = "", mobile = "") => {
       const cleanEmail = String(newUserEmail || "").trim().toLowerCase();
+      const cleanName = String(fullName || "").trim();
+      const cleanMobile = String(mobile || "").trim();
       if (!cleanEmail) return;
       const recipients = Array.from(new Set(systemAdminSignupNoticeRecipients.map((email) => String(email || "").trim().toLowerCase()).filter(Boolean)));
       if (!recipients.length) return;
@@ -5151,16 +5158,20 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       const message = `Ny bruker har opprettet konto i Expo ProffDok og venter på godkjenning.
 
 Bruker: ${cleanEmail}
+Navn: ${cleanName || "Ikke oppgitt"}
+Mobil: ${cleanMobile || "Ikke oppgitt"}
 
 Åpne Expo ProffDok for å godkjenne eller avvise brukeren:
 ${appLink}`;
       const notifyPayload = {
         direction: "new_user_signup_systemadmin_notice",
         newUserEmail: cleanEmail,
+        newUserName: cleanName,
+        newUserMobile: cleanMobile,
         message,
         projectLink: appLink,
         projectName: "Brukergodkjenning",
-        customerName: cleanEmail,
+        customerName: cleanName || cleanEmail,
         companyName: "Expo ProffDok",
         fromName: "Expo ProffDok",
         subject: "Ny bruker venter på godkjenning – Expo ProffDok"
@@ -5175,12 +5186,28 @@ ${appLink}`;
     };
     const signUp = async () => {
       const cleanEmail = authEmail.trim();
-      if (!cleanEmail || !authPassword) return alert("Fyll inn e-post og passord.");
+      const cleanName = authFullName.trim();
+      const cleanMobile = authMobile.trim();
+      if (!cleanEmail || !cleanName || !cleanMobile || !authPassword || !authPasswordRepeat) return alert("Fyll inn fullt navn, mobilnummer, e-post, passord og gjenta passord.");
+      if (authPassword !== authPasswordRepeat) return alert("Passordene er ikke like. Skriv inn samme passord to ganger.");
+      if (authPassword.length < 6) return alert("Passordet m\xE5 v\xE6re minst 6 tegn.");
       window.localStorage.setItem("expoProffDokAuthEmail", cleanEmail);
-      const { error } = await supabase.auth.signUp({ email: cleanEmail, password: authPassword });
+      const { error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password: authPassword,
+        options: {
+          data: {
+            full_name: cleanName,
+            mobile_phone: cleanMobile
+          }
+        }
+      });
       if (error) return alert("Kunne ikke opprette bruker: " + error.message);
-      notifySystemAdminsAboutSignup(cleanEmail);
-      alert("Bruker opprettet. Kontoen m\xE5 godkjennes f\xF8r appen kan brukes.");
+      setAuthPasswordRepeat("");
+      setAuthFullName("");
+      setAuthMobile("");
+      notifySystemAdminsAboutSignup(cleanEmail, cleanName, cleanMobile);
+      alert("Bruker opprettet. Kontoen m\xE5 godkjennes av administrator f\xF8r appen kan brukes.");
     };
     const resetPassword = async () => {
       const cleanEmail = authEmail.trim();
@@ -8099,6 +8126,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Innlogging", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fullt navn (kun ved ny bruker)", value: authFullName, onChange: setAuthFullName, autoComplete: "name" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Mobilnummer (kun ved ny bruker)", value: authMobile, onChange: setAuthMobile, autoComplete: "tel" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post", value: authEmail, onChange: setAuthEmail, autoComplete: "email" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               Input,
@@ -8112,8 +8141,25 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   if (e.key === "Enter") signIn();
                 }
               }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              Input,
+              {
+                label: "Gjenta passord (kun ved ny bruker)",
+                type: "password",
+                value: authPasswordRepeat,
+                onChange: setAuthPasswordRepeat,
+                autoComplete: "new-password"
+              }
             )
           ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "note", style: { marginTop: "12px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
+            "Ny bruker? Fyll inn fullt navn, mobilnummer, e-post og passord. Skriv samme passord en gang til i feltet ",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Gjenta passord" }),
+            ", og klikk ",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Opprett bruker" }),
+            ". Kontoen m\xE5 deretter godkjennes av administrator f\xF8r du f\xE5r tilgang."
+          ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: signIn, children: "Logg inn" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signUp, children: "Opprett bruker" }),
