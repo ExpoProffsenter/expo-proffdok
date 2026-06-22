@@ -1,3 +1,4 @@
+// FASE 15.2.3 BRUKERVEILEDNING KODEKONTROLL/PRODUKSJONSTEKST: Kvalitetssikrer digital brukerveiledning mot faktisk funksjonalitet og fjerner pilot-/testpreg i brukerflater. Kun Hjelp-tekst/UI.
 // FASE 15.2.2 BRUKERVEILEDNING KVALITETSSIKRET: Kvalitetssikrer digital brukerveiledning v1.1 med juridisk nøktern chattekst, tydelig anbefaling om prosjektchat som hovedkanal og presisering av kundekommunikasjon. Kun Hjelp-tekst/UI.
 // FASE 15.2.1A DIGITAL VEILEDNING CHATTEKST: Presiserer at dagens chat er kundechat/prosjektkommunikasjon med kunde, ikke intern prosjektchat. Kun Hjelp-tekst/UI.
 // FASE 15.2.1 DIGITAL BRUKERVEILEDNING: Reorganiserer Hjelp-veiledning v1.1 i samme rekkefølge som app-fanene. Sjekkpunkter for andre fag ligger under Sjekklister. Kun Hjelp/UI-tekst, ingen funksjons-/databaseendring.
@@ -11324,13 +11325,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           "Fjern eller juster tilgang når behovet er borte."
         ],
         important: [
-          "Kunder skal ikke se interne notater eller interne avviksdetaljer.",
-          "Underentreprenører skal normalt bare se og bidra på egne relevante deler.",
+          "Kunder skal ikke se interne notater eller avviksdetaljer som ikke er ment for kundeportalen.",
+          "Underentreprenører skal normalt bare se og bidra med dokumentasjon innenfor egne relevante deler av prosjektet.",
           "Kontroller mottaker før tilgangslenker sendes."
         ],
         best: [
           "Gi tilgang tidlig slik at dokumentasjonen kommer inn underveis.",
-          "Bruk prosjektchatten fremfor SMS, telefon og e-post for sporbar kundedialog.",
+          "Bruk prosjektchatten som hovedkanal for sporbar kundedialog der dette er avtalt med kunden.",
           "Hold tilgangslisten ryddig."
         ]
       },
@@ -11543,7 +11544,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           "Legg Expo ProffDok på hjemskjermen for rask tilgang på mobil."
         ],
         important: [
-          "Digital brukerveiledning erstatter tidligere PDF-veiledning.",
+          "Digital brukerveiledning er den gjeldende veiledningen i Expo ProffDok.",
           "Kun innhold relevant for din brukerrolle vises.",
           "Veiledningen oppdateres direkte i appen når ny funksjonalitet tas i bruk."
         ],
@@ -11562,7 +11563,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           "Sjekkpunkter for andre fag kan legges inn for rørlegger, tømrer, elektriker, maler, ventilasjon og annet fag.",
           "Avvikssentral samler sjekkpunktavvik og andre prosjektavvik.",
           "Bilder fra Ferdig resultat kan brukes som headingbilde i rapporten.",
-          "Digital brukerveiledning erstatter PDF-veiledningen i Hjelp.",
+          "Digital brukerveiledning er nå den gjeldende veiledningen i Hjelp.",
           "Systemadministrator kan avvise og slette ventende brukere.",
           "Rapportdesign, mobilvisning, autolagring og e-postvarsler er forbedret."
         ],
@@ -11572,8 +11573,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           "Brukere må fortsatt laste ned og arkivere ferdig rapport lokalt."
         ],
         best: [
-          "Informer pilotbrukere om nye funksjoner før de tar dem i bruk.",
-          "Test nye arbeidsflyter i ett prosjekt før de brukes bredt.",
+          "Informer aktuelle brukere om nye funksjoner før de tas i bruk i prosjekter.",
+          "Prøv nye arbeidsflyter kontrollert i ett prosjekt før de brukes på flere kundesaker.",
           "Hold brukerveiledningen oppdatert ved nye versjoner."
         ]
       }
@@ -11609,9 +11610,9 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         purpose: "Systemadministrasjon brukes til godkjenning av brukere, rolleoppsett, support, produktmaster og kontroll av systemdata.",
         workflow: [
           "Godkjenn nye brukere manuelt i Systemadmin.",
-          "Avvis og slett testbrukere eller feilregistreringer før de tas i bruk.",
+          "Avvis og slett feilregistrerte eller uønskede ventende brukere før de tas i bruk.",
           "Kontroller firma, rolle og systemadministratorstatus før godkjenning.",
-          "Bruk supportmodus bevisst når du skal hjelpe et firma eller åpne et prosjekt på vegne av andre.",
+          "Bruk supportmodus bevisst når du skal hjelpe et firma eller åpne et prosjekt på vegne av andre brukere.",
           "Vedlikehold produktmaster og synkroniser kun aktive prosjekter der dette er riktig."
         ],
         important: [
