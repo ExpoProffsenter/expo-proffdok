@@ -1,3 +1,4 @@
+// FASE 15.1.8 GARANTISPERRE EGNE SJEKKPUNKTER: Egne sjekkpunkter vises, flettes inn og kan opprettes kun når dokumentert tetthetsgaranti er aktivert og Sopro-system er valgt. Ingen SQL/PDF/chat/produkt/avvik-endring.
 // FASE 15.1.6B RAPPORTPOLERING: Større forside-/sertifikatbilde uten crop/strekk, roligere tekstfelt på forside og QR flyttet bort fra sertifikatpunkter. Kun PDF-design.
 // FASE 15.1.6A RAPPORT HOTFIX: Fjerner forstyrrende vannmerke, løfter headingbilde større uten crop/strekk og flytter QR-kode slik at den ikke kolliderer med footer/tekst. Kun PDF-design.
 // FASE 15.1.5 RAPPORT HEADINGBILDE: Valgfritt headingbilde fra "Ferdig resultat" i Bilder-fanen + standard fallbackbilde. Rapportbildet vises med contain/1:1 proporsjoner uten crop eller strekk. Ingen SQL/RLS/chat/sjekkliste/garanti-logikkendring.
@@ -738,6 +739,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var customChecklistTradeOptions = ["Rørlegger", "Tømrer", "Elektriker", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag"];
   var customChecklistCategoryPrefix = "Egne sjekkpunkter – ";
   var customChecklistCategoryFromTrade = (trade = "Annet fag") => `${customChecklistCategoryPrefix}${String(trade || "Annet fag").trim() || "Annet fag"}`;
+  var canUseCustomChecklistForWarranty = (warranty = {}) => !!warranty?.enabled && hasValue(warranty?.system);
   var customChecklistTradeFromCategory = (category = "") => String(category || "").startsWith(customChecklistCategoryPrefix) ? String(category || "").slice(customChecklistCategoryPrefix.length) : String(category || "");
   var customChecklistTradeIcon = (trade = "") => {
     const text = String(trade || "").toLowerCase();
@@ -1677,7 +1679,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       productMasterByProduct,
       productMasterCheckpointsByProduct
     }), [warranty, selected, productMasterByProduct, productMasterCheckpointsByProduct]);
-    const customChecklistTemplate = (0, import_react.useMemo)(() => normalizeCustomChecklistGroups(project?.customChecklistGroups || []), [project?.customChecklistGroups]);
+    const customChecklistAllowed = canUseCustomChecklistForWarranty(warranty);
+    const customChecklistTemplate = (0, import_react.useMemo)(() => customChecklistAllowed ? normalizeCustomChecklistGroups(project?.customChecklistGroups || []) : [], [project?.customChecklistGroups, customChecklistAllowed]);
     const activeChecklistTemplate = (0, import_react.useMemo)(() => dedupeChecklistTemplate([
       ...getActiveChecklistTemplate(warranty, selectedSoproProductChecklistTemplate),
       ...customChecklistTemplate
@@ -1686,6 +1689,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
 
     const addCustomChecklistPoint = (trade, textValue) => {
       if (!canEditProject()) return;
+      if (!customChecklistAllowed) {
+        return alert("Egne sjekkpunkter kan kun brukes når dokumentert tetthetsgaranti er aktivert og Sopro-system er valgt.");
+      }
       const cleanTrade = String(trade || "Annet fag").trim() || "Annet fag";
       const cleanText = String(textValue || "").trim();
       if (!cleanText) return alert("Skriv inn tekst for sjekkpunktet først.");
@@ -1704,6 +1710,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     };
     const removeCustomChecklistPoint = (trade, textValue) => {
       if (!canEditProject()) return;
+      if (!customChecklistAllowed) return;
       const cleanTrade = String(trade || "Annet fag").trim() || "Annet fag";
       const cleanText = String(textValue || "").trim();
       if (!cleanText) return;
@@ -11386,10 +11393,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
 
   function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "" }) {
     const activeChecklistTemplate = providedActiveChecklistTemplate || getActiveChecklistTemplate(warranty);
+    const customChecklistAllowed = canUseCustomChecklistForWarranty(warranty);
     const [newCustomChecklistTrade, setNewCustomChecklistTrade] = import_react.default.useState(customChecklistTradeOptions[0] || "Rørlegger");
     const [newCustomChecklistText, setNewCustomChecklistText] = import_react.default.useState("");
     const customChecklistEntries = Array.isArray(customChecklistGroups) ? customChecklistGroups : [];
     const submitCustomChecklistPoint = () => {
+      if (!customChecklistAllowed) return;
       if (!onAddCustomChecklistPoint) return;
       onAddCustomChecklistPoint(newCustomChecklistTrade, newCustomChecklistText);
       setNewCustomChecklistText("");
@@ -11635,7 +11644,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }, group.category);
         }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px" }, children: [
+      customChecklistAllowed && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "Egne sjekkpunkter per fag" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Legg til prosjektspesifikke kontrollpunkter for rørlegger, tømrer, elektriker eller andre fag. Punktene bruker samme status, avvik, kommentar og bildeopplasting som øvrige sjekkpunkter, og følger med hvis prosjektet kopieres som mal." }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
