@@ -5187,7 +5187,7 @@ ${appLink}`;
       if (!cleanEmail) return alert("Skriv inn e-postadressen din f\xF8rst.");
       window.localStorage.setItem("expoProffDokAuthEmail", cleanEmail);
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-        redirectTo: "https://expo-proffdok.vercel.app"
+        redirectTo: window.location.origin
       });
       if (error) return alert("Kunne ikke sende tilbakestilling: " + error.message);
       alert("E-post for tilbakestilling av passord er sendt. Sjekk innboksen din.");
