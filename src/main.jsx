@@ -1,3 +1,5 @@
+// FASE 16.3D FIRMAINVITASJON OPPRETTBRUKERFLYT: Firmaadmin-invitasjoner åpner registreringsmodus med forhåndsutfylt e-post, og invitasjonstekst presiserer fullt navn, mobilnummer og eget passord. Bygger videre på 16.3C. Ingen SQL/Edge/PDF/garanti/chatendring.
+// FASE 16.3C HOTFIX OPPRETT BRUKER-FLYT: Skjuler ny-bruker-feltene i vanlig innlogging og viser dem kun etter at bruker velger Opprett bruker. Kun login-/auth-UI, ingen SQL/Edge/PDF/garanti/chat-endring.
 // FASE 16.3B OPPRETT BRUKER KONTAKTINFO: Bygger videre på 16.3. Ny bruker må oppgi fullt navn, mobilnummer, passord og gjenta passord. Kontaktinfo lagres i Supabase Auth metadata og tas med i systemadmin-varsel. Ingen SQL/Edge/PDF/garanti/chat-endring.
 // FASE 16.3 OPPRETT BRUKER/PASSORDBEKREFTELSE: Innlogging forklarer ny bruker-flyt tydeligere, og Opprett bruker krever at passord skrives likt to ganger. Kun login-/auth-UI og frontend-validering, ingen SQL/Edge/PDF/garanti/chat-endring.
 // FASE 16.1 FAG/UTSTYR FAGKATEGORIER: Samkjører Fag/utstyr-kategorier med valgfrie sjekkpunkter for andre fag: Rørlegger, Tømrer, Elektriker, Maler, Ventilasjon og Annet fag. Kun valg-/UI-liste, ingen SQL/PDF/garanti/chat/logikkendring.
@@ -1419,6 +1421,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [authUser, setAuthUser] = (0, import_react.useState)(null);
     const [authEmail, setAuthEmail] = (0, import_react.useState)("");
     const [authPassword, setAuthPassword] = (0, import_react.useState)("");
+    const [authMode, setAuthMode] = (0, import_react.useState)("login");
     const [authPasswordRepeat, setAuthPasswordRepeat] = (0, import_react.useState)("");
     const [authFullName, setAuthFullName] = (0, import_react.useState)("");
     const [authMobile, setAuthMobile] = (0, import_react.useState)("");
@@ -3187,6 +3190,15 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     (0, import_react.useEffect)(() => {
       const params = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
+      const inviteSignup = params.get("signup") === "1";
+      const inviteEmail = String(params.get("email") || "").trim().toLowerCase();
+      if (inviteSignup) {
+        setAuthMode("signup");
+        if (inviteEmail) {
+          setAuthEmail(inviteEmail);
+          window.localStorage.setItem("expoProffDokAuthEmail", inviteEmail);
+        }
+      }
       const id = params.get("project");
       const isRecoveryLink = params.get("type") === "recovery" || hashParams.get("type") === "recovery";
       if (isRecoveryLink) {
@@ -4641,14 +4653,14 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       let invitationEmailSent = false;
       if (!existingProfile?.id) {
         try {
-          const invitationLink = `${window.location.origin}${window.location.pathname}`;
+          const invitationLink = `${window.location.origin}${window.location.pathname}?signup=1&email=${encodeURIComponent(cleanEmail)}`;
           const { error: inviteMailError } = await supabase.functions.invoke("smart-worker", {
             body: {
               toEmail: cleanEmail,
               direction: "company_user_invite",
               companyName: companyNameForInvite,
               fromName: profile?.email || authUser?.email || "Firmaadministrator",
-              message: `Du er invitert til ${companyNameForInvite} i Expo ProffDok. Opprett bruker med denne e-postadressen for å få tilgang til firmaet.`,
+              message: `Du er invitert til ${companyNameForInvite} i Expo ProffDok. Åpne lenken, fyll inn fullt navn, mobilnummer og lag ditt eget passord. Bruk e-postadressen ${cleanEmail} når du oppretter brukeren.`,
               projectLink: invitationLink,
               subject: `Invitasjon til Expo ProffDok – ${companyNameForInvite}`
             }
@@ -5206,6 +5218,7 @@ ${appLink}`;
       setAuthPasswordRepeat("");
       setAuthFullName("");
       setAuthMobile("");
+      setAuthMode("login");
       notifySystemAdminsAboutSignup(cleanEmail, cleanName, cleanMobile);
       alert("Bruker opprettet. Kontoen m\xE5 godkjennes av administrator f\xF8r appen kan brukes.");
     };
@@ -8125,9 +8138,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] })
         ] }) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Innlogging", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          authMode === "signup" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", style: { marginBottom: "16px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Opprett ny bruker" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            "Fyll inn fullt navn, mobilnummer, e-post og passord. Kontoen m\xE5 godkjennes av administrator f\xF8r du f\xE5r tilgang."
+          ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fullt navn (kun ved ny bruker)", value: authFullName, onChange: setAuthFullName, autoComplete: "name" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Mobilnummer (kun ved ny bruker)", value: authMobile, onChange: setAuthMobile, autoComplete: "tel" }),
+            authMode === "signup" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fullt navn", value: authFullName, onChange: setAuthFullName, autoComplete: "name" }),
+            authMode === "signup" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Mobilnummer", value: authMobile, onChange: setAuthMobile, autoComplete: "tel" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post", value: authEmail, onChange: setAuthEmail, autoComplete: "email" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               Input,
@@ -8136,34 +8154,34 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 type: "password",
                 value: authPassword,
                 onChange: setAuthPassword,
-                autoComplete: "current-password",
+                autoComplete: authMode === "signup" ? "new-password" : "current-password",
                 onKeyDown: (e) => {
-                  if (e.key === "Enter") signIn();
+                  if (e.key === "Enter") authMode === "signup" ? signUp() : signIn();
                 }
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            authMode === "signup" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               Input,
               {
-                label: "Gjenta passord (kun ved ny bruker)",
+                label: "Gjenta passord",
                 type: "password",
                 value: authPasswordRepeat,
                 onChange: setAuthPasswordRepeat,
-                autoComplete: "new-password"
+                autoComplete: "new-password",
+                onKeyDown: (e) => {
+                  if (e.key === "Enter") signUp();
+                }
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "note", style: { marginTop: "12px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-            "Ny bruker? Fyll inn fullt navn, mobilnummer, e-post og passord. Skriv samme passord en gang til i feltet ",
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Gjenta passord" }),
-            ", og klikk ",
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "Opprett bruker" }),
-            ". Kontoen m\xE5 deretter godkjennes av administrator f\xF8r du f\xE5r tilgang."
-          ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: signIn, children: "Logg inn" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signUp, children: "Opprett bruker" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: resetPassword, children: "Glemt passord?" })
+          authMode === "login" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ny bruker? Klikk Opprett bruker for registrering. Kontoen må godkjennes av administrator før du får tilgang." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: authMode === "signup" ? [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: signUp, children: "Send registrering" }, "signup-submit"),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => { setAuthMode("login"); setAuthPasswordRepeat(""); }, children: "Tilbake til innlogging" }, "signup-cancel")
+          ] : [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: signIn, children: "Logg inn" }, "signin"),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setAuthMode("signup"), children: "Opprett bruker" }, "signup-mode"),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: resetPassword, children: "Glemt passord?" }, "reset")
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "E-post huskes p\xE5 denne enheten. Passord lagres ikke i appen. Nettleseren kan likevel holde deg innlogget på en trygg måte." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Delingslenker fungerer fortsatt uten innlogging." }),
@@ -10419,7 +10437,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Legg til ansatt" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Legg inn e-postadressen til den ansatte. Hvis brukeren ikke finnes ennå, må vedkommende opprette konto med samme e-postadresse etterpå." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Legg inn e-postadressen til den ansatte. Hvis brukeren ikke finnes ennå, får vedkommende invitasjon og må selv opprette bruker med fullt navn, mobilnummer og eget passord." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post", value: newEmployeeEmail, placeholder: "navn@firma.no", onChange: setNewEmployeeEmail }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { children: [
