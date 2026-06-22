@@ -1,3 +1,4 @@
+// FASE 15.2.0 DIGITAL BRUKERVEILEDNING V1.1: Erstatter PDF-lenker i Hjelp med rollebasert, tekstbasert accordion-veiledning for bruker, firmaadmin og systemadmin. Kun Hjelp-UI, ingen prosjekt/garanti/sjekkliste/PDF/chat/database-endring.
 // FASE 15.1.9A SJEKKPUNKTER ANDRE FAG: Ren tekst/layout for standardpunkter, fjerner mal-begrep og skjuler forvirrende malprosjekt-boks fra vanlig prosjektoppsett. Kun UI/tekst, ingen logikk/database/PDF-endring.
 // FASE 15.1.8 GARANTISPERRE EGNE SJEKKPUNKTER: Egne sjekkpunkter vises, flettes inn og kan opprettes kun når dokumentert tetthetsgaranti er aktivert og Sopro-system er valgt. Ingen SQL/PDF/chat/produkt/avvik-endring.
 // FASE 15.1.9 MAL STANDARD VÅTROM: Ferdige tilleggsfag-sjekklister under garantivalg når garanti + Sopro er valgt. Kun prosjektlokale egne sjekkpunkter, ingen SQL/PDF/chat/avvik/endring.
@@ -10417,7 +10418,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }),
                 tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
                 tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
-                tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { userGuidePdfPath, adminGuidePdfPath, isAdmin: isAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt }),
+                tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
@@ -11131,23 +11132,380 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     ] });
   }
 
-  function HelpCenter({ userGuidePdfPath: guidePath = userGuidePdfPath, adminGuidePdfPath: adminPath = adminGuidePdfPath, isAdmin = false, termsAccepted = false, termsAcceptanceRecord = null, authUser = null, formatTermsAcceptedAt = (value) => value || "" }) {
-    const openPdf = (url) => {
-      if (!url) return;
-      window.open(url, "_blank", "noopener,noreferrer");
+  function HelpCenter({ isAdmin = false, isCompanyAdmin = false, isSystemAdmin = false, termsAccepted = false, termsAcceptanceRecord = null, authUser = null, formatTermsAcceptedAt = (value) => value || "" }) {
+    const [openGuideKey, setOpenGuideKey] = (0, import_react.useState)("start");
+    const userGuideSections = [
+      {
+        key: "start",
+        title: "🚀 Kom i gang",
+        purpose: "Denne delen gir en trygg start for nye brukere som skal dokumentere våtromsprosjekter i Expo ProffDok.",
+        workflow: [
+          "Registrer bruker og vent på godkjenning fra administrator.",
+          "Fyll ut firmaprofil med korrekt firmanavn, kontaktinformasjon og logo.",
+          "Opprett prosjekt og legg inn kunde, adresse og prosjektansvarlig.",
+          "Velg dokumentert tetthetsgaranti og Sopro-system dersom prosjektet skal være et garantiprosjekt.",
+          "Registrer produkter, bilder, sjekklister og avvik fortløpende gjennom prosjektet.",
+          "Gjennomfør overtagelse, generer rapport og arkiver sluttdokumentasjonen."
+        ],
+        important: [
+          "Bruk personlig e-postadresse. Ikke del innlogging med andre.",
+          "Prosjektdata som kunde, adresse og firmaopplysninger brukes videre i rapport og garantidokumentasjon.",
+          "Ferdig rapport bør alltid lastes ned og lagres i bedriftens eget arkiv."
+        ],
+        best: [
+          "Start dokumentasjonen ved prosjektoppstart, ikke ved prosjektslutt.",
+          "Ta bilder og fyll ut sjekklister mens arbeidet utføres.",
+          "Bruk chatten i prosjektet fremfor SMS når avklaringer gjelder prosjektet."
+        ]
+      },
+      {
+        key: "prosjekt",
+        title: "📁 Prosjekter",
+        purpose: "Prosjektet samler all dokumentasjon, kommunikasjon, produkter, sjekklister, bilder, avvik, overtagelse og rapport på ett sted.",
+        workflow: [
+          "Opprett nytt prosjekt eller åpne et eksisterende prosjekt fra prosjektlisten.",
+          "Fyll inn prosjektnavn, kunde, adresse, kontaktinformasjon og ansvarlig.",
+          "Hold prosjektstatus oppdatert gjennom arbeidsprosessen.",
+          "Bruk låsing når prosjektet er ferdigstilt og dokumentasjonen er kontrollert.",
+          "Arkiver ferdige prosjekter slik at aktive prosjekter holdes ryddige."
+        ],
+        important: [
+          "Låste prosjekter skal ikke endres uten at det faktisk er behov for korrigering.",
+          "Produktmaster-synk skal ikke påvirke låste prosjekter.",
+          "Feil kunde- eller adresseinformasjon gir feil informasjon i rapporten."
+        ],
+        best: [
+          "Bruk tydelige prosjektnavn som gjør prosjektet lett å finne senere.",
+          "Søk på kunde, adresse, garantinummer eller ansvarlig når prosjektlisten blir lang.",
+          "Kontroller prosjektdata før rapport genereres."
+        ]
+      },
+      {
+        key: "info",
+        title: "📝 Prosjektinformasjon",
+        purpose: "Prosjektinformasjon beskriver hva som er utført og gir kunden, takstmann eller senere eier et tydelig bilde av leveransen.",
+        workflow: [
+          "Legg inn en kort og presis beskrivelse av arbeidene.",
+          "Registrer tekniske forutsetninger som fall, sluk, terskel, membran og prosjektspesifikke vurderinger.",
+          "Huk av for informasjon som skal inngå i rapporten der dette er relevant.",
+          "Oppdater teksten underveis dersom prosjektet endrer omfang."
+        ],
+        important: [
+          "Ikke skriv interne vurderinger i felt som skal vises i rapporten.",
+          "Prosjektbeskrivelsen bør stemme med tilbud, kontrakt og faktisk utførelse.",
+          "Informasjon som er relevant for kunde og FDV bør være tydelig og profesjonelt skrevet."
+        ],
+        best: [
+          "Bruk en kort prosjektbeskrivelse fremfor lange og uoversiktlige tekster.",
+          "Dokumenter beslutninger mens de fortsatt er ferske.",
+          "Bruk interne notater til informasjon kunden ikke skal se."
+        ]
+      },
+      {
+        key: "garanti",
+        title: "🛡️ Dokumentert tetthetsgaranti",
+        purpose: "Garantimodulen brukes når våtrom dokumenteres med godkjent Sopro-system og prosjektet skal få dokumentert tetthetsgaranti.",
+        workflow: [
+          "Aktiver dokumentert tetthetsgaranti i prosjektet.",
+          "Velg garantiperiode og godkjent Sopro-system.",
+          "Systemet legger automatisk inn relevante Sopro garantipunkter.",
+          "Legg til sjekkpunkter for andre fag dersom rørlegger, tømrer, elektriker, maler eller ventilasjon inngår.",
+          "Dokumenter garantipunkter med status, bilder og/eller kommentar.",
+          "Lukk alle avvik og gjennomfør overtagelse før garantisertifikat utstedes."
+        ],
+        important: [
+          "Egne sjekkpunkter er kun tilgjengelig når garanti er aktivert og Sopro-system er valgt.",
+          "Åpne avvik kan hindre garanti.",
+          "Garantien gjelder det dokumenterte arbeidet og forutsetter normal bruk og vedlikehold."
+        ],
+        best: [
+          "Aktiver garanti tidlig slik at garantipunktene kommer inn i arbeidsflyten.",
+          "Ta bilder av membran, sluk, mansjetter og rørgjennomføringer før de bygges inn.",
+          "Kontroller garantifremdriften jevnlig før overtagelse."
+        ]
+      },
+      {
+        key: "sjekklister",
+        title: "📋 Sjekklister",
+        purpose: "Sjekklistene dokumenterer at arbeidet er kontrollert, og er kjernen i kvalitetssikringen i Expo ProffDok.",
+        workflow: [
+          "Åpne sjekklistene når prosjektet er valgt.",
+          "Marker hvert punkt som OK, Ikke aktuelt eller Avvik.",
+          "Legg inn kommentar der det er behov for forklaring.",
+          "Last opp bilder direkte på relevante kontrollpunkter.",
+          "Lukk avvik når forholdet er rettet og dokumentert.",
+          "Kontroller at alle relevante punkter er vurdert før rapport og overtagelse."
+        ],
+        important: [
+          "Åpne avvik blir synlige internt og kan påvirke garanti.",
+          "Lukkede avvik beholdes som historikk i prosjektet og rapporten.",
+          "Garantipunkter kan kreve bilde eller kommentar i tillegg til status."
+        ],
+        best: [
+          "Bruk sjekklisten som arbeidsverktøy underveis, ikke som sluttkontroll alene.",
+          "Dokumenter kritiske punkter med bilder før arbeid lukkes inn.",
+          "Bruk kommentar for å forklare hvorfor et punkt eventuelt er Ikke aktuelt."
+        ]
+      },
+      {
+        key: "andreFag",
+        title: "🧰 Sjekkpunkter for andre fag",
+        purpose: "Denne funksjonen legger inn ferdige sjekkpunkter for andre fag som inngår i et garantibad.",
+        workflow: [
+          "Aktiver dokumentert tetthetsgaranti og velg Sopro-system.",
+          "Velg hvilke andre fag som inngår: rørlegger, tømrer, elektriker, maler, ventilasjon eller annet fag.",
+          "Klikk Legg til sjekkpunkter for andre fag.",
+          "Punktene blir vanlige egne sjekkpunkter som kan redigeres, slettes og suppleres.",
+          "Fyll ut status, kommentar, bilder og eventuelle avvik på samme måte som øvrige sjekkpunkter."
+        ],
+        important: [
+          "Murer/flislegger ligger ikke her fordi ProffDok allerede inneholder ordinære sjekklister for mur, membran og flis.",
+          "Funksjonen overskriver ikke eksisterende punkter og legger bare til manglende standardpunkter.",
+          "Funksjonen er skjult når prosjektet ikke er garantiprosjekt med valgt Sopro-system."
+        ],
+        best: [
+          "Velg kun fag som faktisk inngår i prosjektet.",
+          "Slett punkter som ikke er relevante før rapporten ferdigstilles.",
+          "Bruk avvik dersom et annet fag må rette eller dokumentere et forhold."
+        ]
+      },
+      {
+        key: "produkter",
+        title: "📦 Produkter og dokumentasjon",
+        purpose: "Produktfanen bygger opp prosjektets FDV-dokumentasjon med produkter, datablad, DOP, EPD, sikkerhetsblad og produktlenker.",
+        workflow: [
+          "Registrer produkter som faktisk er benyttet i prosjektet.",
+          "Bruk produktmaster der produktet finnes.",
+          "Kontroller dokumentlenker og huk av hvilke dokumenter som skal vises i rapport.",
+          "Legg til manuelle produkter dersom produktet ikke finnes i produktmaster.",
+          "Kontroller produktlisten før rapport genereres."
+        ],
+        important: [
+          "Registrer kun produkter som faktisk er brukt.",
+          "Produktdokumentasjon i rapporten kan inneholde klikkbare lenker.",
+          "Låste prosjekter skal ikke oppdateres av produktmaster-synk."
+        ],
+        best: [
+          "Registrer produkter fortløpende når de tas i bruk.",
+          "Velg kun dokumenter som er relevante for kunden i rapporten.",
+          "Bruk kommentar ved produktvalg som trenger forklaring."
+        ]
+      },
+      {
+        key: "bilder",
+        title: "📷 Bilder og ferdig resultat",
+        purpose: "Bilder dokumenterer skjulte arbeider, utførelse underveis og ferdig resultat. De gir høy dokumentasjonsverdi i rapporten.",
+        workflow: [
+          "Last opp bilder i riktig kategori, for eksempel Før arbeid, Membran, Sluk og mansjetter eller Ferdig resultat.",
+          "Ta bilder direkte fra mobilkamera der dette er naturlig.",
+          "Legg bilder direkte på sjekkpunkt når bildet dokumenterer et konkret kontrollpunkt.",
+          "Velg ett bilde fra Ferdig resultat som headingbilde i rapporten dersom ønskelig.",
+          "Skriv kort kommentar på bilder der det gir merverdi."
+        ],
+        important: [
+          "Utydelige bilder har lav dokumentasjonsverdi.",
+          "Bilder som viser personer eller private forhold bør vurderes før deling med kunde.",
+          "Headingbildet i rapporten vises proporsjonalt uten crop eller strekk."
+        ],
+        best: [
+          "Ta bilder før konstruksjoner bygges inn.",
+          "Bruk kategorien Ferdig resultat til gode sluttbilder av badet.",
+          "Ta heller for mange enn for få bilder, men rydd før rapporten ferdigstilles."
+        ]
+      },
+      {
+        key: "tilgang",
+        title: "👥 Kunde- og UE-tilganger",
+        purpose: "Tilgang styrer hvem som kan se eller bidra i prosjektet, inkludert kunde og underentreprenører.",
+        workflow: [
+          "Legg inn riktig mottaker og rolle.",
+          "Send kundelink eller underentreprenørtilgang fra prosjektet.",
+          "Kunde får tilgang til relevant prosjektinformasjon, dokumentasjon, rapport og chat.",
+          "Underentreprenør kan bidra med relevant dokumentasjon for sitt fag.",
+          "Kontroller at tilganger fjernes eller begrenses når behovet er borte."
+        ],
+        important: [
+          "Kunde skal ikke se interne avvik eller interne notater.",
+          "Underentreprenør skal kun se og håndtere relevant innhold for sin tilgang.",
+          "Delingslenker må behandles som prosjektinformasjon."
+        ],
+        best: [
+          "Gi underentreprenør tilgang tidlig nok til at dokumentasjon kan legges inn fortløpende.",
+          "Bruk tydelig melding når tilgang sendes.",
+          "Kontroller kundeinformasjon før link sendes."
+        ]
+      },
+      {
+        key: "chat",
+        title: "💬 Chat",
+        purpose: "Chatten samler prosjektkommunikasjon på ett sted og reduserer behovet for SMS, telefon og separate e-poster.",
+        workflow: [
+          "Bruk intern prosjektchat eller kundechat der det passer.",
+          "Send melding når en avklaring gjelder prosjektet.",
+          "Legg ved fil eller bilde dersom det forklarer saken bedre.",
+          "Bruk chatutkast fra avvik når et avvik bør følges opp skriftlig.",
+          "Følg opp uleste meldinger fortløpende."
+        ],
+        important: [
+          "Viktige beslutninger bør også dokumenteres i riktig fane dersom de påvirker leveransen.",
+          "Kundemeldinger kan utløse e-postvarsel.",
+          "Chat skal ikke erstatte formelle avtaledokumenter der dette er nødvendig."
+        ],
+        best: [
+          "Bruk chat fremfor SMS for prosjektavklaringer.",
+          "Skriv kort, konkret og faglig.",
+          "Oppsummer muntlige avklaringer i chatten ved behov."
+        ]
+      },
+      {
+        key: "rapport",
+        title: "📄 Rapport og overtagelse",
+        purpose: "Rapporten samler prosjektets dokumentasjon i én profesjonell PDF med prosjektinfo, produkter, bilder, sjekklister, avvik, overtagelse og eventuell garanti.",
+        workflow: [
+          "Kontroller prosjektinformasjon, produkter, bilder og sjekklister.",
+          "Velg eventuelt headingbilde fra Ferdig resultat.",
+          "Gjennomfør overtagelse med digitale signaturer.",
+          "Generer rapport og kontroller PDF-en før den deles.",
+          "Lagre rapporten i bedriftens eget arkiv.",
+          "Lås prosjektet når rapport og dokumentasjon er ferdig kontrollert."
+        ],
+        important: [
+          "Utførende firma har ansvar for langsiktig arkivering av rapport og garantidokumentasjon.",
+          "Garantisertifikat er bare gyldig sammen med komplett prosjektdokumentasjon.",
+          "Åpne avvik bør lukkes før overtagelse og rapport."
+        ],
+        best: [
+          "Generer en test-rapport før overtagelse.",
+          "Gå gjennom rapporten med kunden før signering ved behov.",
+          "Oppbevar rapporten sammen med øvrig FDV-dokumentasjon."
+        ]
+      },
+      {
+        key: "nytt",
+        title: "📢 Nytt i versjon 1.1",
+        purpose: "Versjon 1.1 samler de viktigste funksjonene som nå er en del av Expo ProffDok.",
+        workflow: [
+          "Digital brukerveiledning erstatter PDF-veiledningen i Hjelp.",
+          "Egne sjekkpunkter er låst til garantiprosjekter med valgt Sopro-system.",
+          "Sjekkpunkter for andre fag kan legges inn direkte fra garantioppsettet.",
+          "Avvikssentral gir bedre oversikt over sjekkpunktavvik og prosjektavvik.",
+          "Bilder fra Ferdig resultat kan velges som headingbilde i rapporten.",
+          "Systemadministrator kan avvise og slette ventende brukere.",
+          "Rapportdesign og mobilvisning er forbedret."
+        ],
+        important: [
+          "Ny funksjonalitet bør testes i et kontrollert prosjekt før den brukes bredt.",
+          "Brukere bør lese relevante deler av veiledningen før pilotdrift utvides.",
+          "Rapporter bør fortsatt lastes ned og lagres eksternt."
+        ],
+        best: [
+          "Bruk veiledningen som intern opplæringsstandard.",
+          "Gi tilbakemelding dersom tekst eller funksjoner bør presiseres.",
+          "Oppdater veiledningen ved hver større versjon."
+        ]
+      }
+    ];
+    const companyAdminSections = [
+      {
+        key: "firmaProfil",
+        title: "🏢 Firmaprofil",
+        purpose: "Firmaprofilen styrer firmaopplysninger og logo som brukes i prosjekter, rapporter, e-post og garantidokumentasjon.",
+        workflow: ["Kontroller firmanavn, adresse, organisasjonsnummer, telefon, e-post og nettside.", "Last opp firmalogo i god kvalitet.", "Oppdater firmaprofil ved endring av kontaktperson eller selskapsdata.", "Kontroller at rapporter viser riktig firmainformasjon."],
+        important: ["Feil firmadata kan gi feil rapport og garantibevis.", "Logo bør være tydelig og representere riktig firma.", "Første bruker i et nytt firma kan bli satt som firmaadministrator når firmaprofil opprettes."],
+        best: ["Hold firmaprofilen oppdatert før nye prosjekter opprettes.", "Bruk felles firma-e-post der dette er ønskelig.", "Kontroller firmaprofil etter større endringer i appen."]
+      },
+      {
+        key: "ansatte",
+        title: "👥 Ansatte og roller",
+        purpose: "Firmaadministrator kan invitere ansatte, styre firmaroller og deaktivere brukere i eget firma.",
+        workflow: ["Gå til Firma-fanen.", "Inviter ansatte med riktig e-postadresse.", "Velg om brukeren skal være ansatt eller firmaadministrator.", "Oppdater firmaoversikten og kontroller status.", "Deaktiver brukere som ikke lenger skal ha tilgang."],
+        important: ["Gi firmaadmin bare til personer som skal administrere ansatte og firmaoppsett.", "Systemadministrator kan ikke endres fra firmaadministrasjon.", "Deaktiverte brukere skal ikke behandles som nye ventende brukere."],
+        best: ["Rydd i brukere jevnlig.", "Bruk personlige e-postadresser der det er mulig.", "Fjern eller deaktiver brukere når ansatte slutter."]
+      },
+      {
+        key: "firmaRutiner",
+        title: "📊 Anbefalte arbeidsrutiner",
+        purpose: "Firmaadministrator bør etablere en felles arbeidsmåte slik at alle prosjekter dokumenteres likt.",
+        workflow: ["Definer når garanti skal aktiveres.", "Bestem hvilke bilder som alltid skal tas.", "Avklar hvem som kontrollerer rapport før overtagelse.", "Lag rutine for arkivering av ferdige rapporter.", "Følg opp at sjekklister og avvik brukes riktig."],
+        important: ["Expo ProffDok erstatter ikke bedriftens eget arkivansvar.", "Ulik bruk mellom ansatte gir ulik dokumentasjonskvalitet.", "Garantiprosjekter krever mer disiplinert dokumentasjon enn ordinære prosjekter."],
+        best: ["Bruk denne veiledningen i opplæring av nye ansatte.", "Ha én intern superbruker som følger opp kvalitet.", "Kontroller et utvalg rapporter jevnlig."]
+      }
+    ];
+    const systemAdminSections = [
+      {
+        key: "godkjenning",
+        title: "👤 Godkjenning av brukere",
+        purpose: "Systemadministrator godkjenner nye brukere før de får ordinær tilgang til Expo ProffDok.",
+        workflow: ["Åpne Systemadministrasjon.", "Kontroller nye brukere som venter på godkjenning.", "Kontroller firma, e-post og rolle før godkjenning.", "Godkjenn brukeren når alt er riktig.", "Avvis og slett testbrukere eller feilregistreringer."],
+        important: ["Ingen nye brukere skal godkjennes automatisk.", "Varsel om nye brukere sendes til definerte systemadministratorer.", "Testbrukere bør slettes komplett dersom de ikke skal beholdes."],
+        best: ["Behandle nye brukere fortløpende.", "Kontroller firma før godkjenning.", "Bruk avvis og slett for å unngå manuell opprydding i Supabase."]
+      },
+      {
+        key: "rollerSystem",
+        title: "🔑 Roller og rettigheter",
+        purpose: "Systemadministrator kan endre systemroller, firmaroller og brukerstatus på tvers av firmaer.",
+        workflow: ["Søk opp bruker i Systemadministrasjon.", "Kontroller aktivt firma og nåværende rolle.", "Endre firmarolle eller systemadministratorstatus der dette er nødvendig.", "Deaktiver eller reaktiver bruker ved behov.", "Kontroller at endringen gir forventet tilgang."],
+        important: ["Systemadministrator har full tilgang og bør gis svært begrenset.", "Feil rolle kan gi for bred eller for smal tilgang.", "Endringer i roller bør gjøres bevisst og dokumenteres internt."],
+        best: ["Hold antall systemadministratorer lavt.", "Bruk firmaadministrator for daglig brukeradministrasjon i firma.", "Kontroller brukerlisten jevnlig i pilotperioden."]
+      },
+      {
+        key: "produktmasterSystem",
+        title: "📦 Produktmaster og synkronisering",
+        purpose: "Produktmaster styrer standardprodukter, produktdokumentasjon og garantikontrollpunkter som kan brukes i prosjekter.",
+        workflow: ["Vedlikehold produkter, dokumentlenker og kategorier i Produktmaster.", "Legg inn FDV, datablad, DOP, EPD, sikkerhetsblad og produktside der dette finnes.", "Opprett garantikontrollpunkter kun der produktet faktisk skal påvirke garantidokumentasjon.", "Synk aktive prosjekter ved behov.", "Kontroller at låste prosjekter ikke endres."],
+        important: ["Produktmaster-synk skal ikke påvirke låste eller arkiverte prosjekter.", "Feil produktdokumentasjon kan følge mange prosjekter.", "Garantikontrollpunkter må være presise og relevante."],
+        best: ["Test nye produktmaster-endringer på et kontrollert prosjekt.", "Unngå å lage for mange nesten like produkter.", "Bruk tydelige produktnavn som brukerne kjenner igjen."]
+      },
+      {
+        key: "support",
+        title: "⚙️ Systemadministrasjon og supportmodus",
+        purpose: "Systemadministrasjon brukes til support, kontroll av firmaer, brukere, produktmaster og prosjektoversikt.",
+        workflow: ["Bruk Systemadministrasjon når du skal administrere brukere eller gi support.", "Aktiver supportmodus eksplisitt når du skal se prosjekter på tvers av firma.", "Avslutt supportmodus når supportarbeidet er ferdig.", "Bruk firma- og prosjektsøk for å finne riktig prosjekt.", "Unngå endringer i reelle prosjekter uten tydelig behov."],
+        important: ["Supportmodus skal ikke aktiveres automatisk fra vanlig prosjektliste.", "Reelle pilotprosjekter skal behandles som produksjonsdata.", "Låste prosjekter skal beskyttes foran alt annet."],
+        best: ["Bruk supportmodus kun når det er nødvendig.", "Gjør små, kontrollerte endringer.", "Avklar med prosjekteier før du endrer innhold i et reelt prosjekt."]
+      }
+    ];
+    const visibleGuideSections = [
+      ...userGuideSections,
+      ...isCompanyAdmin ? companyAdminSections : [],
+      ...isSystemAdmin ? systemAdminSections : []
+    ];
+    const guideRoleLabel = isSystemAdmin ? "Systemadministrator" : isCompanyAdmin ? "Firmaadministrator" : "Vanlig bruker";
+    const renderList = (items = []) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("ul", { style: { marginTop: "8px" }, children: items.map((item, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: item }, index)) });
+    const renderGuideSection = (section) => {
+      const isOpen = openGuideKey === section.key;
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { borderColor: isOpen ? "#08b9c3" : "#e2e8f0", background: isOpen ? "#f8feff" : "#ffffff" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setOpenGuideKey(isOpen ? "" : section.key), style: { width: "100%", justifyContent: "space-between", textAlign: "left", background: "transparent", color: "#0f172a", border: "none", padding: "0", boxShadow: "none", fontSize: "16px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", width: "100%" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: section.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 900, color: "#007f89" }, children: isOpen ? "Lukk" : "Åpne" })
+        ] }) }),
+        isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: 0 }, children: section.purpose }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Arbeidsflyt" }),
+          renderList(section.workflow),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Viktig" }),
+          renderList(section.important),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Anbefalt bruk" }),
+          renderList(section.best)
+        ] })
+      ] }, section.key);
     };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdmin ? "Her finner du brukerveiledning, admin-veiledning og anbefalte arbeidsrutiner for Expo ProffDok." : "Her finner du brukerveiledning og anbefalte arbeidsrutiner for Expo ProffDok." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item helpQuickStart", style: { background: "linear-gradient(135deg,#0f172a,#164e63)", color: "#ffffff", borderColor: "#0f766e" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0, color: "#ffffff" }, children: "📘 Digital brukerveiledning v1.1" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Komplett digital brukerveiledning for Expo ProffDok. Veiledningen er tekstbasert, mobilvennlig og viser kun innhold som er relevant for din brukerrolle." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 22.06.2026" })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#f8fafc" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "💡 Anbefalt hovedflyt" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett prosjekt → velg garanti og Sopro-system ved garantibad → legg til sjekkpunkter for andre fag → dokumenter produkter, bilder, sjekklister og avvik → gjennomfør overtagelse → generer og arkiver rapport → lås prosjekt." })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gap: "12px" }, children: visibleGuideSections.map(renderGuideSection) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📖 Brukerveiledning v1.0" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Komplett brukerveiledning for ordinære brukere, prosjektledere, utførende og dokumentasjonsansvarlige." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => openPdf(guidePath), children: "Åpne PDF" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: guidePath, download: true, style: { display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "10px 14px", borderRadius: "12px", border: "1px solid #cbd5e1", textDecoration: "none", fontWeight: 800, color: "#1456a0", background: "#fff" }, children: "Last ned" })
-            ] })
-          ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📄 Brukervilkår og personvern" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
@@ -11170,25 +11528,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppInstallGuide, {}),
-          isAdmin && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "🛠️ Admin-veiledning" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Kort veiledning for administratorer. Brukes ved godkjenning av brukere, produktmaster, garantikontrollpunkter og systemadministrasjon." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => openPdf(adminPath), children: "Åpne PDF" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: adminPath, download: true, style: { display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "10px 14px", borderRadius: "12px", border: "1px solid #cbd5e1", textDecoration: "none", fontWeight: 800, color: "#1456a0", background: "#fff" }, children: "Last ned" })
-            ] })
-          ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Anbefalt arbeidsflyt" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Opprett prosjekt og fyll inn kunde/adresse før arbeid starter." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Velg garanti tidlig hvis prosjektet skal omfattes av dokumentert tetthetsgaranti." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Registrer produkter, bilder og sjekklister fortløpende." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Lukk avvik før overtagelse og generer komplett PDF-rapport." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Lagre alltid ferdig PDF i eget arkivsystem." })
-          ] })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppInstallGuide, {})
         ] })
       ] })
     ] });
