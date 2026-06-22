@@ -1,4 +1,4 @@
-// FASE 16.3E LAG NY BRUKER TEKSTPRESISERING: Gjør registreringsmodus tydeligere med Lag ny bruker-tittel, bedre infotekst og mer intuitive knapper. Beholder all godkjenning, systemadmin-varsel og registreringslogikk fra 16.3D. Ingen SQL/Edge/PDF/garanti/chatendring.
+// FASE 16.3F REGISTRERING/GODKJENNING TYDELIG: Presiserer registreringsflyt etter ny brukerlogikk: fullt navn, mobil, e-post, passord to ganger, registrering sendes til administrator og tilgang gis først etter godkjenning. Kun tekst/knapp, ingen logikkendring.
 // FASE 16.3D FIRMAINVITASJON OPPRETTBRUKERFLYT: Firmaadmin-invitasjoner åpner registreringsmodus med forhåndsutfylt e-post, og invitasjonstekst presiserer fullt navn, mobilnummer og eget passord. Bygger videre på 16.3C. Ingen SQL/Edge/PDF/garanti/chatendring.
 // FASE 16.3C HOTFIX OPPRETT BRUKER-FLYT: Skjuler ny-bruker-feltene i vanlig innlogging og viser dem kun etter at bruker velger Opprett bruker. Kun login-/auth-UI, ingen SQL/Edge/PDF/garanti/chat-endring.
 // FASE 16.3B OPPRETT BRUKER KONTAKTINFO: Bygger videre på 16.3. Ny bruker må oppgi fullt navn, mobilnummer, passord og gjenta passord. Kontaktinfo lagres i Supabase Auth metadata og tas med i systemadmin-varsel. Ingen SQL/Edge/PDF/garanti/chat-endring.
@@ -8140,11 +8140,28 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: authMode === "signup" ? "🆕 Lag ny bruker" : "Innlogging", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           authMode === "signup" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", style: { marginBottom: "16px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "🆕 Lag ny bruker" }),
+            "For å få tilgang til prosjekter og dokumentasjon må du opprette en bruker i Expo ProffDok.",
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
-            "Opprett en ny konto i Expo ProffDok ved å fylle inn fullt navn, mobilnummer, e-postadresse og ønsket passord.",
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
-            "Kontoen må godkjennes av administrator før du får tilgang til prosjekter og dokumentasjon.",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Fyll inn:" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            "• Fullt navn",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            "• Mobilnummer",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            "• E-postadresse",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            "• Ønsket passord, skrevet inn to ganger",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Når du klikker Send registrering:" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            "1. Registreringen sendes til administrator.",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            "2. Kontoen må godkjennes før du får tilgang.",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
+            "3. Du får beskjed når kontoen er aktiv.",
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("br", {}),
             "Har du allerede en konto? Klikk Jeg har allerede en konto nedenfor."
           ] }) }),
@@ -8181,7 +8198,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           authMode === "login" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ny bruker? Klikk Opprett bruker for registrering. Kontoen må godkjennes av administrator før du får tilgang." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: authMode === "signup" ? [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: signUp, children: "Opprett bruker" }, "signup-submit"),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: signUp, children: "Send registrering" }, "signup-submit"),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => { setAuthMode("login"); setAuthPasswordRepeat(""); }, children: "Jeg har allerede en konto" }, "signup-cancel")
           ] : [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: signIn, children: "Logg inn" }, "signin"),
