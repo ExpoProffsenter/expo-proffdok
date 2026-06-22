@@ -1,5 +1,7 @@
+// FASE 15.1.9A SJEKKPUNKTER ANDRE FAG: Ren tekst/layout for standardpunkter, fjerner mal-begrep og skjuler forvirrende malprosjekt-boks fra vanlig prosjektoppsett. Kun UI/tekst, ingen logikk/database/PDF-endring.
 // FASE 15.1.8 GARANTISPERRE EGNE SJEKKPUNKTER: Egne sjekkpunkter vises, flettes inn og kan opprettes kun når dokumentert tetthetsgaranti er aktivert og Sopro-system er valgt. Ingen SQL/PDF/chat/produkt/avvik-endring.
 // FASE 15.1.9 MAL STANDARD VÅTROM: Ferdige tilleggsfag-sjekklister under garantivalg når garanti + Sopro er valgt. Kun prosjektlokale egne sjekkpunkter, ingen SQL/PDF/chat/avvik/endring.
+// FASE 15.1.9B SJEKKPUNKTER ANDRE FAG: Beholder tekst/layout fra 15.1.9A og viser kommentarfelt også for malgenererte/manuelle egne sjekkpunkter. Kun UI/sjekklistevisning, ingen SQL/PDF/chat/garanti-logikk.
 // FASE 15.1.6B RAPPORTPOLERING: Større forside-/sertifikatbilde uten crop/strekk, roligere tekstfelt på forside og QR flyttet bort fra sertifikatpunkter. Kun PDF-design.
 // FASE 15.1.6A RAPPORT HOTFIX: Fjerner forstyrrende vannmerke, løfter headingbilde større uten crop/strekk og flytter QR-kode slik at den ikke kolliderer med footer/tekst. Kun PDF-design.
 // FASE 15.1.5 RAPPORT HEADINGBILDE: Valgfritt headingbilde fra "Ferdig resultat" i Bilder-fanen + standard fallbackbilde. Rapportbildet vises med contain/1:1 proporsjoner uten crop eller strekk. Ingen SQL/RLS/chat/sjekkliste/garanti-logikkendring.
@@ -1746,10 +1748,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const createStandardWetroomTemplate = (selectedTrades = []) => {
       if (!canEditProject()) return;
       if (!customChecklistAllowed) {
-        return alert("Mal standard våtrom kan kun brukes når dokumentert tetthetsgaranti er aktivert og Sopro-system er valgt.");
+        return alert("Sjekkpunkter for andre fag kan kun legges til når dokumentert tetthetsgaranti er aktivert og Sopro-system er valgt.");
       }
       const trades = (Array.isArray(selectedTrades) ? selectedTrades : []).filter((trade) => standardWetroomTemplateTradeOptions.includes(trade));
-      if (!trades.length) return alert("Velg minst ett fag som skal legges til i Mal standard våtrom.");
+      if (!trades.length) return alert("Velg minst ett annet fag det skal legges til sjekkpunkter for.");
       const templatePoints = getStandardWetroomTemplatePoints(trades);
       if (!templatePoints.length) return alert("Ingen sjekkpunkter å legge til for valgte fag.");
       let addedCount = 0;
@@ -1768,17 +1770,17 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
             return;
           }
           existingKeys.add(key);
-          additions.push({ id: uid(), trade: cleanTrade, text: cleanText, createdAt: (/* @__PURE__ */ new Date()).toISOString(), source: "Mal standard våtrom" });
+          additions.push({ id: uid(), trade: cleanTrade, text: cleanText, createdAt: (/* @__PURE__ */ new Date()).toISOString(), source: "Sjekkpunkter for andre fag" });
         });
         addedCount = additions.length;
         return { ...prev, customChecklistGroups: [...existing, ...additions] };
       });
       setShowOpenDeviationsOnly(false);
       window.setTimeout(() => {
-        alert(addedCount > 0 ? `Mal standard våtrom er lagt til.
+        alert(addedCount > 0 ? `Sjekkpunkter for andre fag er lagt til.
 
 ${addedCount} sjekkpunkter lagt til.${skippedCount ? `
-${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle punktene fra Mal standard våtrom finnes allerede i prosjektet.");
+${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sjekkpunkter for andre fag finnes allerede i prosjektet.");
       }, 50);
     };
 
@@ -9677,7 +9679,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Notater", value: project.notes, onChange: (v) => setProject({ ...project, notes: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectWarrantySetup, { warranty, setWarranty, systems: soproWarrantySystems, project, onCreateStandardWetroomTemplate: createStandardWetroomTemplate }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "4px" }, children: [
+          false && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "4px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", checked: !!project.isTemplate && !!warranty?.enabled && !!warranty?.system, onChange: (e) => {
               if (e.target.checked && (!warranty?.enabled || !warranty?.system)) {
                 alert("Malprosjekt kan kun aktiveres når prosjektet er satt opp som garantiprosjekt og et godkjent Sopro-system er valgt.");
@@ -10888,20 +10890,20 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ". Garantikravene vises automatisk i Sjekklister og Garanti."
         ] }),
         standardWetroomAllowed && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "14px", borderColor: "#bfdbfe", background: "#f8fbff" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📋 Mal standard våtrom" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg tilleggsfagene som inngår i våtromsprosjektet. Murer/flislegger er ikke med her, fordi ProffDok allerede har ordinære sjekklister for mur, membran og flis." }),
-          existingCustomChecklistCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { color: "#92400e" }, children: `Prosjektet har allerede ${existingCustomChecklistCount} egne sjekkpunkter. Malen legger kun til manglende punkter og sletter eller overskriver ingenting.` }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "10px", marginTop: "10px" }, children: standardWetroomTemplateTradeOptions.map((trade) => {
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📋 Sjekkpunkter for andre fag" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg hvilke andre fag som inngår i våtromsprosjektet. Expo ProffDok legger automatisk inn ferdige sjekkpunkter for valgte fag. Murer/flislegger er ikke med her, fordi ProffDok allerede har ordinære sjekklister for mur, membran og flis." }),
+          existingCustomChecklistCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { color: "#92400e" }, children: `Prosjektet har allerede ${existingCustomChecklistCount} egne sjekkpunkter. Nye standardpunkter legges kun til hvis de mangler fra før. Ingenting slettes eller overskrives.` }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "10px", marginTop: "10px" }, children: standardWetroomTemplateTradeOptions.map((trade) => {
             const checked = standardWetroomTrades.includes(trade);
-            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => toggleStandardWetroomTrade(trade), className: checked ? "" : "secondary", style: { minHeight: "58px", display: "flex", alignItems: "center", gap: "10px", justifyContent: "flex-start", textAlign: "left", padding: "12px", borderRadius: "14px", border: checked ? "1px solid #0f766e" : "1px solid #cbd5e1", background: checked ? "#ecfdf5" : "#ffffff", color: "#0f172a" }, children: [
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => toggleStandardWetroomTrade(trade), className: checked ? "" : "secondary", style: { minHeight: "58px", display: "flex", alignItems: "center", gap: "10px", justifyContent: "flex-start", textAlign: "left", padding: "12px", borderRadius: "14px", border: checked ? "1px solid #0f766e" : "1px solid #cbd5e1", background: checked ? "#ecfdf5" : "#ffffff", color: "#0f172a", width: "100%", minWidth: 0, whiteSpace: "normal" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "22px", lineHeight: 1 }, children: checked ? "☑" : "☐" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: customChecklistTradeIconUrl(trade), alt: "", "aria-hidden": "true", style: { width: "34px", height: "34px", objectFit: "contain", flex: "0 0 auto" } }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 800 }, children: trade })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 800, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere" }, children: trade })
             ] }, trade);
           }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "12px" }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => onCreateStandardWetroomTemplate && onCreateStandardWetroomTemplate(standardWetroomTrades), disabled: !standardWetroomTrades.length, children: "Opprett Mal standard våtrom" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "note", style: { alignSelf: "center" }, children: "Punktene blir vanlige egne sjekkpunkter og kan redigeres, slettes og suppleres i Sjekklister." })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "12px", alignItems: "center" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => onCreateStandardWetroomTemplate && onCreateStandardWetroomTemplate(standardWetroomTrades), disabled: !standardWetroomTrades.length, children: "Legg til sjekkpunkter for andre fag" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { className: "note", style: { alignSelf: "center", flex: "1 1 260px", minWidth: 0, overflowWrap: "anywhere" }, children: "Punktene blir vanlige egne sjekkpunkter og kan redigeres, slettes og suppleres i Sjekklister." })
           ] })
         ] })
       ] }),
@@ -11801,7 +11803,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   status
                 )) })
               ] }),
-              (value.status || value.comment || (value.photos || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              (String(group.category || "").startsWith(customChecklistCategoryPrefix) || value.status || value.comment || (value.photos || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                 Textarea,
                 {
                   label: "Kommentar",
