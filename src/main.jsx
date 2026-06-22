@@ -1,3 +1,4 @@
+// FASE 16.1 FAG/UTSTYR FAGKATEGORIER: Samkjører Fag/utstyr-kategorier med valgfrie sjekkpunkter for andre fag: Rørlegger, Tømrer, Elektriker, Maler, Ventilasjon og Annet fag. Kun valg-/UI-liste, ingen SQL/PDF/garanti/chat/logikkendring.
 // FASE 15.2.3 BRUKERVEILEDNING KODEKONTROLL/PRODUKSJONSTEKST: Kvalitetssikrer digital brukerveiledning mot faktisk funksjonalitet og fjerner pilot-/testpreg i brukerflater. Kun Hjelp-tekst/UI.
 // FASE 15.2.2 BRUKERVEILEDNING KVALITETSSIKRET: Kvalitetssikrer digital brukerveiledning v1.1 med juridisk nøktern chattekst, tydelig anbefaling om prosjektchat som hovedkanal og presisering av kundekommunikasjon. Kun Hjelp-tekst/UI.
 // FASE 15.2.1A DIGITAL VEILEDNING CHATTEKST: Presiserer at dagens chat er kundechat/prosjektkommunikasjon med kunde, ikke intern prosjektchat. Kun Hjelp-tekst/UI.
@@ -810,7 +811,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     file.documentType || file.docType || file.typeLabel || "Ikke angitt dokumenttype",
     file.description || file.comment || ""
   ].filter(hasValue).join(" · ");
-  var installCats = ["R\xF8rlegger", "T\xF8mrer/Snekker", "Maler", "Andre"];
+  var installCats = ["R\xF8rlegger", "T\xF8mrer", "Elektriker", "Maler", "Ventilasjon", "Annet fag"];
   var projectDescriptionTemplates = [
     {
       label: "Våtrom / bad",
