@@ -1,3 +1,4 @@
+// FASE 16.5 DELINGSLENKER TILGANGSKODE: Kundeportal og underentreprenørportal beskyttes med separate tilgangskoder som følger Resend-epostene, gjenbrukes ved chat og maks er gyldige i 6 måneder. Brukerveiledning oppdatert. Ingen SQL/Edge/PDF/chatlogikk-endring.
 // FASE 16.4D SCROLL-RETUR PC/PRODUKTER: Forsterker scrollhukommelse ved fanebytte i nettleser og retur til appen, spesielt Produkter/egne PDF-lenker. Lagrer aktiv tab/scroll hyppigere og gjenoppretter flere ganger etter focus/visibilitychange. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.4B OVERTAGELSE KALENDER + QA: Samler 16.4 og 16.4A. Overtagelsesdato velges i kalenderfelt, men dato alene teller aldri som registrert/påbegynt overtagelse. Registrering krever signatur fra utførende og kunde + aktiv avhuking. Robust scrollhukommelse beholdes. Ingen SQL/Edge/PDF-design/databaseendring.
 // FASE 16.4A TRIPPEL QA HOTFIX: Presiserer at overtagelsesdato alene ikke er påbegynt/registrert overtagelse, og lagrer scrollposisjon også ved manuell fanebytte/blur/scroll. Ingen SQL/Edge/PDF-design/databaseendring.
@@ -837,7 +838,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     },
     {
       label: "Kundeinfo",
-      text: "Kunde kan følge prosjektet via kundelenke med tilgang til prosjektinformasjon, rapport/PDF, tilbud/kontrakt og chat. Spørsmål, avklaringer og eventuelle kommentarer kan sendes direkte i prosjektchatten."
+      text: "Kunde kan følge prosjektet via kundelenke og tilgangskode med tilgang til prosjektinformasjon, rapport/PDF, tilbud/kontrakt og chat. Spørsmål, avklaringer og eventuelle kommentarer kan sendes direkte i prosjektchatten."
     },
     {
       label: "Avvik / merknad",
@@ -848,7 +849,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     { role: "Eier / administrator", text: "Full tilgang til prosjekt, rapport, firmaprofil, prosjektliste, deling og brukergodkjenning." },
     { role: "Ansatt", text: "Kan normalt opprette, endre og dokumentere prosjekter for firmaet." },
     { role: "Underleverand\xF8r", text: "Anbefales for fag som skal bidra med dokumentasjon, bilder, sjekklister eller utstyr p\xE5 prosjektet." },
-    { role: "Kun lesetilgang", text: "Kunde/byggherre f\xE5r egen kundelink med rapport, tilbud/kontrakt og chat." }
+    { role: "Kun lesetilgang", text: "Kunde/byggherre f\xE5r egen kundelink med separat tilgangskode, rapport, tilbud/kontrakt og chat." }
   ];
   var checklistTemplate = [
     {
@@ -1418,7 +1419,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [customerTab, setCustomerTab] = (0, import_react.useState)("oversikt");
     const [internalNotes, setInternalNotes] = (0, import_react.useState)("");
     const [lightboxImage, setLightboxImage] = (0, import_react.useState)(null);
-    const [accessEmailMessage, setAccessEmailMessage] = (0, import_react.useState)("Hei, du har fått tilgang til prosjektet. Klikk på linken i denne e-posten for å åpne prosjektet.");
+    const [accessEmailMessage, setAccessEmailMessage] = (0, import_react.useState)("Hei, du har fått tilgang til prosjektet. Klikk på linken i denne e-posten og bruk tilgangskoden som står under for å åpne prosjektet.");
+    const [portalAccessInput, setPortalAccessInput] = (0, import_react.useState)("");
+    const [portalAccessGranted, setPortalAccessGranted] = (0, import_react.useState)(false);
+    const [portalAccessError, setPortalAccessError] = (0, import_react.useState)("");
     const [projects, setProjects] = (0, import_react.useState)([]);
     const [projectId, setProjectId] = (0, import_react.useState)(null);
     const [currentProjectOwnerId, setCurrentProjectOwnerId] = (0, import_react.useState)("");
@@ -1892,6 +1896,11 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const isAdminProjectLink = urlParams.has("project") && accessMode === "admin";
     const isUnderleverandorView = urlParams.has("project") && accessMode === "underleverandor";
     const isReadOnly = urlParams.has("project") && !isUnderleverandorView && !isAdminProjectLink;
+    const portalAccessRoleParam = isUnderleverandorView ? "underleverandor" : isReadOnly ? "kunde" : "";
+    const portalAccessStorageKey = projectId && portalAccessRoleParam ? `expoProffDokPortalAccess:${projectId}:${portalAccessRoleParam}` : "";
+    const portalAccessRecord = portalAccessRoleParam ? getPortalAccessRecord(project, portalAccessRoleParam) : {};
+    const portalAccessRequired = !!portalAccessRoleParam && !isAdminProjectLink;
+    const portalAccessOk = !portalAccessRequired || (portalAccessGranted && portalAccessRecordIsValid(portalAccessRecord)) || sessionPortalAccessIsVerified(portalAccessStorageKey, portalAccessRecord);
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
     const isCompanyAdminUser = !!authUser && !!profile?.approved && !profile?.deactivated && (profile?.company_role === "firmaadmin" || isSystemAdminUser);
     const currentCompanyName = String(profile?.company_name || company?.companyName || "").trim();
@@ -3304,6 +3313,12 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return () => listener.subscription.unsubscribe();
     }, []);
     (0, import_react.useEffect)(() => {
+      setPortalAccessInput("");
+      setPortalAccessGranted(false);
+      setPortalAccessError("");
+    }, [projectId, portalAccessRoleParam]);
+
+    (0, import_react.useEffect)(() => {
       if (!projectId) return;
       const chatVisible = isReadOnly || tab === "chat" || customerTab === "chat";
       if (!chatVisible) return;
@@ -3640,8 +3655,10 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
             customerEmail: project.customerEmail || "",
             companyName: company.companyName || name || "Expo ProffDok",
             fromName: message.by || "Ukjent",
-            message: message.text,
-            projectLink: projectId ? makeProjectLink(projectId, direction === "to_owner" ? "admin" : "kunde") : ""
+            message: `${message.text}${direction === "to_owner" ? "" : portalAccessLine(getPortalAccessRecord(project, "kunde"))}`,
+            projectLink: projectId ? makeProjectLink(projectId, direction === "to_owner" ? "admin" : "kunde") : "",
+            accessCode: direction === "to_owner" ? "" : getPortalAccessRecord(project, "kunde")?.code || "",
+            accessCodeExpiresAt: direction === "to_owner" ? "" : getPortalAccessRecord(project, "kunde")?.expiresAt || ""
           }
         });
         if (error) {
@@ -4246,6 +4263,165 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       loadProjects(authUser);
       return data.id;
     };
+    const portalAccessKeyForRole = (role = "kunde") => {
+      const clean = String(role || "").toLowerCase();
+      return clean === "underleverandor" || clean === "underleverandør" || clean === "underleverand\xF8r" || clean === "underleverandor" || clean === "underentreprenør" ? "underleverandor" : "kunde";
+    };
+    const portalAccessLabelForRole = (role = "kunde") => portalAccessKeyForRole(role) === "underleverandor" ? "underentreprenør" : "kunde";
+    const normalizePortalAccessCode = (value = "") => String(value || "").trim().replace(/\s+/g, "").toUpperCase();
+    const makePortalAccessCode = (length = 6) => {
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const values = new Uint32Array(length);
+      if (window?.crypto?.getRandomValues) {
+        window.crypto.getRandomValues(values);
+      } else {
+        for (let i = 0; i < length; i += 1) values[i] = Math.floor(Math.random() * 1e9);
+      }
+      return Array.from(values).map((value) => alphabet[value % alphabet.length]).join("");
+    };
+    const addMonthsIsoDateTime = (months = 6) => {
+      const d = /* @__PURE__ */ new Date();
+      d.setMonth(d.getMonth() + months);
+      return d.toISOString();
+    };
+    const formatPortalAccessExpiry = (value = "") => {
+      if (!value) return "";
+      try {
+        return new Date(value).toLocaleDateString("no-NO", { year: "numeric", month: "2-digit", day: "2-digit" });
+      } catch {
+        return value;
+      }
+    };
+    const getPortalAccessMap = (projectValue = project) => projectValue?.portalAccess && typeof projectValue.portalAccess === "object" ? projectValue.portalAccess : {};
+    const getPortalAccessRecord = (projectValue = project, role = "kunde") => {
+      const key = portalAccessKeyForRole(role);
+      const map = getPortalAccessMap(projectValue);
+      return map?.[key] || {};
+    };
+    const portalAccessRecordIsValid = (record = {}) => {
+      const code = normalizePortalAccessCode(record?.code);
+      if (!code) return false;
+      if (!record?.expiresAt) return false;
+      const expires = new Date(record.expiresAt).getTime();
+      return Number.isFinite(expires) && expires > Date.now();
+    };
+    const portalAccessLine = (record = {}) => {
+      if (!record?.code) return "";
+      return `\n\nTilgangskode: ${record.code}${record?.expiresAt ? `\nGyldig til: ${formatPortalAccessExpiry(record.expiresAt)}` : ""}`;
+    };
+    const ensurePortalAccessForProject = async ({ id, roleParam = "kunde", forceNew = false } = {}) => {
+      const targetId = id || projectId;
+      if (!targetId) return null;
+      const key = portalAccessKeyForRole(roleParam);
+      const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", targetId).maybeSingle();
+      if (fetchError || !existing) {
+        console.warn("Kunne ikke hente prosjekt for tilgangskode:", fetchError?.message || "Fant ikke prosjekt");
+        return null;
+      }
+      const existingData = dataFromRow(existing);
+      const projectData = { ...existingData.project || {} };
+      const currentMap = getPortalAccessMap(projectData);
+      const currentRecord = currentMap?.[key] || {};
+      if (!forceNew && portalAccessRecordIsValid(currentRecord)) return currentRecord;
+      const nextRecord = {
+        code: makePortalAccessCode(6),
+        createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+        expiresAt: addMonthsIsoDateTime(6),
+        role: key,
+        updatedBy: authUser?.email || profile?.email || user?.email || ""
+      };
+      const nextProject = {
+        ...projectData,
+        portalAccess: {
+          ...currentMap,
+          [key]: nextRecord
+        }
+      };
+      const cleanData = JSON.parse(JSON.stringify({
+        ...existingData,
+        project: nextProject
+      }));
+      const { error: updateError } = await supabase.from("projects").update({
+        data: cleanData,
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      }).eq("id", targetId);
+      if (updateError) {
+        console.warn("Kunne ikke lagre tilgangskode:", updateError.message);
+        return null;
+      }
+      if (targetId === projectId) {
+        setProject((prev) => ({
+          ...prev,
+          portalAccess: {
+            ...getPortalAccessMap(prev),
+            [key]: nextRecord
+          }
+        }));
+      }
+      return nextRecord;
+    };
+    const sessionPortalAccessIsVerified = (storageKey = "", record = {}) => {
+      if (!storageKey || !portalAccessRecordIsValid(record)) return false;
+      try {
+        return normalizePortalAccessCode(window.sessionStorage.getItem(storageKey) || "") === normalizePortalAccessCode(record.code);
+      } catch {
+        return false;
+      }
+    };
+    const verifyPortalAccessCode = (roleParam = "kunde") => {
+      const record = getPortalAccessRecord(project, roleParam);
+      if (!portalAccessRecordIsValid(record)) {
+        setPortalAccessError("Tilgangskoden er utløpt eller mangler. Be prosjektansvarlig sende en ny tilgang.");
+        return;
+      }
+      if (normalizePortalAccessCode(portalAccessInput) !== normalizePortalAccessCode(record.code)) {
+        setPortalAccessError("Feil tilgangskode. Kontroller koden i e-posten og prøv igjen.");
+        return;
+      }
+      const storageKey = projectId ? `expoProffDokPortalAccess:${projectId}:${portalAccessKeyForRole(roleParam)}` : "";
+      try {
+        if (storageKey) window.sessionStorage.setItem(storageKey, normalizePortalAccessCode(record.code));
+      } catch {
+      }
+      setPortalAccessGranted(true);
+      setPortalAccessError("");
+    };
+    const renderPortalAccessGate = (roleParam = "kunde") => {
+      const roleLabel = portalAccessLabelForRole(roleParam);
+      const record = getPortalAccessRecord(project, roleParam);
+      const expiresText = record?.expiresAt ? formatPortalAccessExpiry(record.expiresAt) : "";
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: roleParam === "underleverandor" ? "Underentreprenørtilgang" : "Kundeportal" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: project.projectName || project.address || "Prosjektdokumentasjon" })
+          ] })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Skriv inn tilgangskode", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "Denne delingslenken er beskyttet med egen tilgangskode for ",
+            roleLabel,
+            ". Koden står i e-posten du har mottatt fra prosjektansvarlig."
+          ] }),
+          expiresText && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "Tilgangen er gyldig til ",
+            expiresText,
+            "."
+          ] }),
+          portalAccessError && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", style: { background: "#fef2f2", borderColor: "#fecaca" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#991b1b", fontWeight: 800, margin: 0 }, children: portalAccessError }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Tilgangskode", value: portalAccessInput, onChange: (v) => {
+            setPortalAccessInput(normalizePortalAccessCode(v));
+            setPortalAccessError("");
+          }, onKeyDown: (e) => {
+            if (e.key === "Enter") verifyPortalAccessCode(roleParam);
+          } }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => verifyPortalAccessCode(roleParam), children: "Åpne tilgang" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Har du ikke kode, eller er koden utløpt, må prosjektansvarlig sende ny tilgang fra Expo ProffDok." })
+        ] }) })
+      ] });
+    };
+
     const makeProjectLink = (id, role = "kunde") => {
       if (role === "admin") {
         return `${window.location.origin}${window.location.pathname}?project=${id}&role=admin`;
@@ -4264,15 +4440,19 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
     const shareProject = async () => {
       const id = await saveProjectForLink();
       if (!id) return;
-      await copyLinkToClipboard(makeProjectLink(id, "kunde"), "Kundelink kopiert.");
+      const accessRecord = await ensurePortalAccessForProject({ id, roleParam: "kunde" });
+      const link = makeProjectLink(id, "kunde");
+      await copyLinkToClipboard(`${link}${accessRecord?.code ? `\n\nTilgangskode: ${accessRecord.code}\nGyldig til: ${formatPortalAccessExpiry(accessRecord.expiresAt)}` : ""}`, accessRecord?.code ? "Kundelink og tilgangskode kopiert." : "Kundelink kopiert.");
     };
     const copyAccessLink = async (role = "kunde") => {
       const id = await saveProjectForLink();
       if (!id) return;
       const roleParam = role === "Underleverand\xF8r" ? "underleverandor" : "kunde";
+      const accessRecord = await ensurePortalAccessForProject({ id, roleParam });
+      const link = makeProjectLink(id, role);
       await copyLinkToClipboard(
-        makeProjectLink(id, role),
-        roleParam === "underleverandor" ? "Underentrepren\xF8r-link kopiert." : "Kundelink kopiert."
+        `${link}${accessRecord?.code ? `\n\nTilgangskode: ${accessRecord.code}\nGyldig til: ${formatPortalAccessExpiry(accessRecord.expiresAt)}` : ""}`,
+        roleParam === "underleverandor" ? "Underentreprenør-link og tilgangskode kopiert." : "Kundelink og tilgangskode kopiert."
       );
     };
     const sendAccessEmail = async ({ role = "kunde", toEmail = "", recipientName = "" } = {}) => {
@@ -4282,6 +4462,8 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       if (!id) return;
       const roleParam = role === "Underleverand\xF8r" ? "underleverandor" : "kunde";
       const link = makeProjectLink(id, role);
+      const accessRecord = await ensurePortalAccessForProject({ id, roleParam });
+      const accessText = accessRecord?.code ? `\n\nTilgangskode: ${accessRecord.code}\nGyldig til: ${formatPortalAccessExpiry(accessRecord.expiresAt)}\n\nKoden er personlig for denne delingslenken og skal ikke legges i URL-en.` : "";
       try {
         const { error } = await supabase.functions.invoke("smart-worker", {
           body: {
@@ -4300,20 +4482,22 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
             projectResponsible: project.responsible || user.name || authUser?.email || "",
             companyName: company.companyName || name || "Expo ProffDok",
             fromName: user.name || authUser?.email || "Prosjektleder",
-            message: accessEmailMessage || "Du har fått tilgang til prosjektet.",
+            message: `${accessEmailMessage || "Du har fått tilgang til prosjektet."}${accessText}`,
             projectLink: link,
+            accessCode: accessRecord?.code || "",
+            accessCodeExpiresAt: accessRecord?.expiresAt || "",
             subject: `Tilgang til prosjekt: ${project.projectName || project.address || "Prosjekt"}`
           }
         });
         if (error) {
           console.warn("Tilgangs-e-post kunne ikke sendes:", error.message);
-          await copyLinkToClipboard(link, "E-post kunne ikke sendes, men linken er kopiert.");
+          await copyLinkToClipboard(`${link}${accessText}`, "E-post kunne ikke sendes, men link og tilgangskode er kopiert.");
           return;
         }
-        alert("✔ E-post med tilgangslink er sendt.");
+        alert("✔ E-post med tilgangslink og tilgangskode er sendt.");
       } catch (error) {
         console.warn("Tilgangs-e-post kunne ikke sendes:", error);
-        await copyLinkToClipboard(link, "E-post kunne ikke sendes, men linken er kopiert.");
+        await copyLinkToClipboard(`${link}${accessText}`, "E-post kunne ikke sendes, men link og tilgangskode er kopiert.");
       }
     };
 
@@ -4327,7 +4511,9 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
         if (!silent) alert("Prosjektet må lagres før dokumentasjon kan sendes til kunde.");
         return false;
       }
+      const customerAccessRecord = await ensurePortalAccessForProject({ id: projectId, roleParam: "kunde" });
       const customerLink = makeProjectLink(projectId, "kunde");
+      const customerAccessText = customerAccessRecord?.code ? `\n\nTilgangskode: ${customerAccessRecord.code}\nGyldig til: ${formatPortalAccessExpiry(customerAccessRecord.expiresAt)}\n` : "";
       const projectTitle = project.projectName || project.address || "prosjektet";
       const warrantyLine = warranty?.issued
         ? `\n• Garantibevis${warranty?.guaranteeNumber ? ` (${warranty.guaranteeNumber})` : ""}\n• Garantivilkår ${getWarrantyYears(warranty)} år`
@@ -4346,7 +4532,7 @@ Du finner blant annet:
 • FDV- og produktdokumentasjon${warrantyLine}
 
 Åpne kundeportalen:
-${customerLink}
+${customerLink}${customerAccessText}
 
 Med vennlig hilsen
 
@@ -4378,6 +4564,8 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
             fromName: user.name || authUser?.email || "Prosjektleder",
             message: emailBody,
             projectLink: customerLink,
+            accessCode: customerAccessRecord?.code || "",
+            accessCodeExpiresAt: customerAccessRecord?.expiresAt || "",
             subject: `Prosjektdokumentasjon er klar – ${projectTitle}`
           }
         });
@@ -7996,6 +8184,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Laster prosjekt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Henter prosjektdata..." }) }) })
         ] });
       }
+      if (!portalAccessOk) return renderPortalAccessGate("underleverandor");
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: `
           .collapsibleHelp { font-weight:800; background:#f8fafc; border:1px solid #dbe7ec; border-radius:14px; padding:10px 12px; }
@@ -8435,6 +8624,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalCompletionPercent = Math.round(customerPortalCompletionItems.filter((item) => item.done).length / customerPortalCompletionItems.length * 100);
       const customerPortalPrimaryStatus = customerPortalWarrantyIssued ? `${getWarrantyYears(warranty)} års garanti aktiv` : currentStatus.label;
       const customerPortalNextAction = customerPortalWarrantyIssued ? "Last ned komplett rapport eller se garantidokumentasjonen." : customerPortalWarrantyActive ? "Garanti er aktivert og oppdateres når alle krav er fullført." : "Se rapport, bilder og produktdokumentasjon.";
+      if (!portalAccessOk) return renderPortalAccessGate("kunde");
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
@@ -10065,7 +10255,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos, project, setProject, canEditProject, isProjectLocked })
         ] }),
         tab === "tilgang" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilgang og deling", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Administrer tilgang til prosjektet. Kunde f\xE5r egen kundelink med rapport, tilbud/kontrakt og chat. Underentrepren\xF8rer kan bidra med dokumentasjon via egen tilgang." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Administrer tilgang til prosjektet. Kunde får egen kundelink med tilgangskode, rapport, tilbud/kontrakt og chat. Underentreprenører får egen separat link og egen tilgangskode for bidrag til dokumentasjon." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Melding i e-post med tilgangslink", value: accessEmailMessage, onChange: setAccessEmailMessage }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: accessRoleInfo.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.role }),
@@ -11610,7 +11800,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           "Avtal gjerne med kunden i tilbud, kontrakt eller prosjektoppstart at prosjektchatten benyttes som en del av prosjektets skriftlige kommunikasjon og dokumentasjon.",
           "Kommunikasjon i prosjektchatten kan få betydning som dokumentasjon ved senere uenighet, særlig når partene har avtalt at chatten skal brukes til avklaringer, bestillinger eller endringer.",
           "Prosjektchatten erstatter ikke formelle avtaledokumenter, endringsmeldinger, sjekklister, avvik eller overtagelse der dette er nødvendig.",
-          "Kunden kan få e-postvarsel når det sendes ny relevant chatmelding."
+          "Kunden kan få e-postvarsel når det sendes ny relevant chatmelding. E-postvarsler til kunde bruker samme kundeportal-link og samme tilgangskode så lenge koden er gyldig."
         ],
         best: [
           "Benytt prosjektchatten som hovedkanal for kundekommunikasjon. All dialog samles på prosjektet, reduserer administrasjon og minsker behovet for SMS, telefoner, e-poster og andre meldingskanaler.",
