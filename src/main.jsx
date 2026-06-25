@@ -1,3 +1,4 @@
+// FASE 16.5G FIRMAPROFIL I E-POST: Sender firmalogo/brandfelt med alle smart-worker/Resend-eposter slik at e-post kan bruke utførende firmas logo når firmaprofil har logo. Fallback er Expo ProffDok/Expo Proffsenter. Ingen SQL/PDF/databaseendring.
 // FASE 16.5F SMART CHATLENKE: Chatvarsler til kunde åpner kundeportal direkte i Chat-fanen etter tilgangskode. Beholder eksisterende kunde-/UE-/Resend-/tilgangslogikk; kun URL-tab og kundeportal-navigasjon. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.5E KUNDEPORTAL STATUS TEKST-HOTFIX: Kundeportal viser ikke lenger Ferdigstilt for gamle prosjekter med gammel statuslogikk når dokumentasjon/overtagelse/garanti ikke er komplett. Kun kundeportal-tekst/status, ingen SQL/Edge/PDF/database eller øvrig funksjonalitet.
 // FASE 16.5C TILGANGSVEILEDNING/STATUSKORT: Oppdaterer Hjelp/Tilgang med tydelig kodeflyt, separat kunde-/UE-kode, statusbasert gyldighet og statuskort i Tilgang-fanen. Ingen SQL/Edge/PDF/databaseendring.
@@ -3658,7 +3659,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
             projectName: project.projectName || project.address || "Prosjekt",
             customerName: project.customer || "Kunde",
             customerEmail: project.customerEmail || "",
-            companyName: company.companyName || name || "Expo ProffDok",
+            ...emailBrandPayload(),
             fromName: message.by || "Ukjent",
             message: `${message.text}${direction === "to_owner" ? "" : portalAccessLine(getPortalAccessRecord(project, "kunde"))}`,
             projectLink: projectId ? makeProjectLink(projectId, direction === "to_owner" ? "admin" : "kunde", direction === "to_owner" ? "" : "chat") : "",
@@ -3672,6 +3673,20 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       } catch (error) {
         console.warn("E-postvarsling kunne ikke sendes:", error);
       }
+    };
+    const emailBrandPayload = () => {
+      const companyNameForEmail = company.companyName || name || "Expo ProffDok";
+      const logoUrl = String(company.logoUrl || "").trim();
+      return {
+        companyName: companyNameForEmail,
+        brandName: companyNameForEmail,
+        companyLogoUrl: logoUrl,
+        logoUrl,
+        emailLogoUrl: logoUrl,
+        platformName: "Expo ProffDok",
+        sentViaText: `Sendt via Expo ProffDok på vegne av ${companyNameForEmail}`,
+        footerCompanyText: `${companyNameForEmail} · Dokumentasjon levert gjennom Expo ProffDok`
+      };
     };
     const ownerNotificationEmail = () => user.email || authUser?.email || company.email || profile?.email || "";
     const prepareDeviationChatDraft = (deviation = {}) => {
@@ -4509,7 +4524,7 @@ ${portalAccessPolicyText(projectValue, record)}`;
             projectPostnr: project.postnr || "",
             projectCity: project.city || "",
             projectResponsible: project.responsible || user.name || authUser?.email || "",
-            companyName: company.companyName || name || "Expo ProffDok",
+            ...emailBrandPayload(),
             fromName: user.name || authUser?.email || "Prosjektleder",
             message: `${accessEmailMessage || "Du har fått tilgang til prosjektet."}${accessText}`,
             projectLink: link,
@@ -4590,7 +4605,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
             projectPostnr: project.postnr || "",
             projectCity: project.city || "",
             projectResponsible: project.responsible || user.name || authUser?.email || "",
-            companyName: company.companyName || name || "Expo ProffDok",
+            ...emailBrandPayload(),
             fromName: user.name || authUser?.email || "Prosjektleder",
             message: emailBody,
             projectLink: customerLink,
@@ -4958,6 +4973,13 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
               toEmail: cleanEmail,
               direction: "company_user_invite",
               companyName: companyNameForInvite,
+              brandName: companyNameForInvite,
+              companyLogoUrl: String(company.logoUrl || "").trim(),
+              logoUrl: String(company.logoUrl || "").trim(),
+              emailLogoUrl: String(company.logoUrl || "").trim(),
+              platformName: "Expo ProffDok",
+              sentViaText: `Sendt via Expo ProffDok på vegne av ${companyNameForInvite}`,
+              footerCompanyText: `${companyNameForInvite} · Dokumentasjon levert gjennom Expo ProffDok`,
               fromName: profile?.email || authUser?.email || "Firmaadministrator",
               message: `Du er invitert til ${companyNameForInvite} i Expo ProffDok. Åpne lenken, fyll inn fullt navn, mobilnummer og lag ditt eget passord. Bruk e-postadressen ${cleanEmail} når du oppretter brukeren.`,
               projectLink: invitationLink,
