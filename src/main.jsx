@@ -1,3 +1,5 @@
+// FASE 16.4B OVERTAGELSE KALENDER + QA: Samler 16.4 og 16.4A. Overtagelsesdato velges i kalenderfelt, men dato alene teller aldri som registrert/påbegynt overtagelse. Registrering krever signatur fra utførende og kunde + aktiv avhuking. Robust scrollhukommelse beholdes. Ingen SQL/Edge/PDF-design/databaseendring.
+// FASE 16.4A TRIPPEL QA HOTFIX: Presiserer at overtagelsesdato alene ikke er påbegynt/registrert overtagelse, og lagrer scrollposisjon også ved manuell fanebytte/blur/scroll. Ingen SQL/Edge/PDF-design/databaseendring.
 // FASE 16.4 OVERTAGELSE/STATUS/SCROLL HOTFIX: Retter overtagelse slik at den kun regnes registrert når begge parter har signert og bruker aktivt registrerer overtagelse. Strammer foreslått Ferdigstilt-status og bevarer scrollposisjon ved eksterne lenker. Ingen SQL/Edge/PDF/garanti/chat-endring.
 // FASE 16.3F REGISTRERING/GODKJENNING TYDELIG: Presiserer registreringsflyt etter ny brukerlogikk: fullt navn, mobil, e-post, passord to ganger, registrering sendes til administrator og tilgang gis først etter godkjenning. Kun tekst/knapp, ingen logikkendring.
 // FASE 16.3D FIRMAINVITASJON OPPRETTBRUKERFLYT: Firmaadmin-invitasjoner åpner registreringsmodus med forhåndsutfylt e-post, og invitasjonstekst presiserer fullt navn, mobilnummer og eget passord. Bygger videre på 16.3C. Ingen SQL/Edge/PDF/garanti/chatendring.
@@ -1932,7 +1934,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const canEditProject = () => !isProjectLocked || notifyLockedProject();
     const hasOvertagelseSignature = (name = "", image = "") => hasValue(name) || hasValue(image);
     const overtagelseIsSignedByBoth = (o = overtagelse) => hasOvertagelseSignature(o?.signUtf\u00F8rende, o?.signUtf\u00F8rendeImage) && hasOvertagelseSignature(o?.signKunde, o?.signKundeImage);
-    const overtagelseHasDraftContent = (o = overtagelse) => hasValue(o?.dato) || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
+    const overtagelseHasDraftContent = (o = overtagelse) => !!o?.enabled || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
     const projectHasOvertagelse = (o = overtagelse) => !!o?.enabled && overtagelseIsSignedByBoth(o);
     const workflowStatusOptions = ["Utkast", "Pågår", "Avventer", "Klar for kunde", "Avvik åpent", "Ferdigstilt"];
     const getOpenDeviationCount = (sourceChecklist = checklist) => Object.values(sourceChecklist || {}).flatMap((items) => Object.values(items || {})).filter((value) => value?.status === "Avvik").length;
@@ -2233,9 +2235,16 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     (0, import_react.useEffect)(() => {
       if (typeof window === "undefined" || typeof document === "undefined") return undefined;
       const key = `expoProffDokScroll:${projectId || "global"}:${tab || ""}`;
+      let scrollSaveTimer = null;
       const saveScroll = () => {
         try {
           window.sessionStorage.setItem(key, String(window.scrollY || 0));
+        } catch (error) {}
+      };
+      const saveScrollSoon = () => {
+        try {
+          if (scrollSaveTimer) window.clearTimeout(scrollSaveTimer);
+          scrollSaveTimer = window.setTimeout(saveScroll, 120);
         } catch (error) {}
       };
       const restoreScroll = () => {
@@ -2250,13 +2259,19 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         if (link) saveScroll();
       };
       const handleVisibility = () => {
-        if (!document.hidden) restoreScroll();
+        if (document.hidden) saveScroll();
+        else restoreScroll();
       };
       document.addEventListener("click", handleClick, true);
+      window.addEventListener("scroll", saveScrollSoon, { passive: true });
+      window.addEventListener("blur", saveScroll);
       window.addEventListener("focus", restoreScroll);
       document.addEventListener("visibilitychange", handleVisibility);
       return () => {
+        if (scrollSaveTimer) window.clearTimeout(scrollSaveTimer);
         document.removeEventListener("click", handleClick, true);
+        window.removeEventListener("scroll", saveScrollSoon);
+        window.removeEventListener("blur", saveScroll);
         window.removeEventListener("focus", restoreScroll);
         document.removeEventListener("visibilitychange", handleVisibility);
       };
@@ -10181,7 +10196,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] })
         ] }),
         tab === "overtagelse" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Overtagelse og signering", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne ved sluttbefaring og overlevering. Overtagelse regnes først som registrert når både utførende/entreprenør og kunde har signert, og feltet Overtagelse registrert er krysset av." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne ved sluttbefaring og overlevering. Velg ønsket overtagelsesdato i kalenderfeltet. Datoen alene registrerer ikke overtagelsen. Overtagelse regnes først som registrert når både utførende/entreprenør og kunde har signert, og feltet Overtagelse registrert er krysset av." }),
           isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "\u{1F512} Prosjektet er l\xE5st. Overtagelsen kan vises i rapporten, men endringer krever at prosjektet l\xE5ses opp." }),
           projectHasOvertagelse() ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "\u2705 Overtagelse registrert",
@@ -10189,7 +10204,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             "."
           ] }) : overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? 'Begge signaturer er fylt ut. Kryss av "Overtagelse registrert" når overleveringen faktisk er gjennomført.' : 'Overtagelse er ikke registrert. Fyll inn signatur fra både utførende/entreprenør og kunde før den kan registreres.' }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato for overtagelse", type: "date", value: overtagelse.dato || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, dato: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Velg dato for overtagelse", type: "date", value: overtagelse.dato || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, dato: v }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                 "input",
