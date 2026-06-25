@@ -1,3 +1,4 @@
+// FASE 16.4 OVERTAGELSE/STATUS/SCROLL HOTFIX: Retter overtagelse slik at den kun regnes registrert når begge parter har signert og bruker aktivt registrerer overtagelse. Strammer foreslått Ferdigstilt-status og bevarer scrollposisjon ved eksterne lenker. Ingen SQL/Edge/PDF/garanti/chat-endring.
 // FASE 16.3F REGISTRERING/GODKJENNING TYDELIG: Presiserer registreringsflyt etter ny brukerlogikk: fullt navn, mobil, e-post, passord to ganger, registrering sendes til administrator og tilgang gis først etter godkjenning. Kun tekst/knapp, ingen logikkendring.
 // FASE 16.3D FIRMAINVITASJON OPPRETTBRUKERFLYT: Firmaadmin-invitasjoner åpner registreringsmodus med forhåndsutfylt e-post, og invitasjonstekst presiserer fullt navn, mobilnummer og eget passord. Bygger videre på 16.3C. Ingen SQL/Edge/PDF/garanti/chatendring.
 // FASE 16.3C HOTFIX OPPRETT BRUKER-FLYT: Skjuler ny-bruker-feltene i vanlig innlogging og viser dem kun etter at bruker velger Opprett bruker. Kun login-/auth-UI, ingen SQL/Edge/PDF/garanti/chat-endring.
@@ -1929,7 +1930,10 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return false;
     };
     const canEditProject = () => !isProjectLocked || notifyLockedProject();
-    const projectHasOvertagelse = (o = overtagelse) => !!o?.enabled || hasValue(o?.dato) || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
+    const hasOvertagelseSignature = (name = "", image = "") => hasValue(name) || hasValue(image);
+    const overtagelseIsSignedByBoth = (o = overtagelse) => hasOvertagelseSignature(o?.signUtf\u00F8rende, o?.signUtf\u00F8rendeImage) && hasOvertagelseSignature(o?.signKunde, o?.signKundeImage);
+    const overtagelseHasDraftContent = (o = overtagelse) => hasValue(o?.dato) || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
+    const projectHasOvertagelse = (o = overtagelse) => !!o?.enabled && overtagelseIsSignedByBoth(o);
     const workflowStatusOptions = ["Utkast", "Pågår", "Avventer", "Klar for kunde", "Avvik åpent", "Ferdigstilt"];
     const getOpenDeviationCount = (sourceChecklist = checklist) => Object.values(sourceChecklist || {}).flatMap((items) => Object.values(items || {})).filter((value) => value?.status === "Avvik").length;
     const workflowStatusInfo = (status) => {
@@ -2224,7 +2228,39 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
     };
     const currentStatus = projectStatusInfo(project, overtagelse, projectGuideStats.openDeviationCount);
-    const suggestedWorkflowStatus = projectGuideStats.openDeviationCount > 0 ? "Avvik åpent" : projectGuideStats.hasOvertagelse ? "Ferdigstilt" : projectGuideStats.productCount > 0 && projectGuideStats.photoCount > 0 && projectGuideStats.checklistDone > 0 ? "Klar for kunde" : projectGuideStats.hasProjectBasics ? "Pågår" : "Utkast";
+    const projectReadyForFinishedStatus = projectGuideStats.hasOvertagelse && projectGuideStats.openDeviationCount === 0 && projectGuideStats.checklistTotal > 0 && projectGuideStats.checklistMissing === 0 && projectGuideStats.productCount > 0 && projectGuideStats.photoCount > 0;
+    const suggestedWorkflowStatus = projectGuideStats.openDeviationCount > 0 ? "Avvik åpent" : projectReadyForFinishedStatus ? "Ferdigstilt" : projectGuideStats.productCount > 0 && projectGuideStats.photoCount > 0 && projectGuideStats.checklistDone > 0 ? "Klar for kunde" : projectGuideStats.hasProjectBasics ? "Pågår" : "Utkast";
+    (0, import_react.useEffect)(() => {
+      if (typeof window === "undefined" || typeof document === "undefined") return undefined;
+      const key = `expoProffDokScroll:${projectId || "global"}:${tab || ""}`;
+      const saveScroll = () => {
+        try {
+          window.sessionStorage.setItem(key, String(window.scrollY || 0));
+        } catch (error) {}
+      };
+      const restoreScroll = () => {
+        try {
+          const raw = window.sessionStorage.getItem(key);
+          const y = raw ? Number(raw) : 0;
+          if (Number.isFinite(y) && y > 0) window.requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "auto" }));
+        } catch (error) {}
+      };
+      const handleClick = (event) => {
+        const link = event.target?.closest?.('a[target="_blank"]');
+        if (link) saveScroll();
+      };
+      const handleVisibility = () => {
+        if (!document.hidden) restoreScroll();
+      };
+      document.addEventListener("click", handleClick, true);
+      window.addEventListener("focus", restoreScroll);
+      document.addEventListener("visibilitychange", handleVisibility);
+      return () => {
+        document.removeEventListener("click", handleClick, true);
+        window.removeEventListener("focus", restoreScroll);
+        document.removeEventListener("visibilitychange", handleVisibility);
+      };
+    }, [projectId, tab]);
     const openActiveDeviations = () => {
       setShowOpenDeviationsOnly(true);
       goToTab("sjekklister");
@@ -7237,7 +7273,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           (tilbud.files || []).forEach((file) => addLink(file.name || "Vedlegg", file.url));
         }
 
-        if (overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtførende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtførendeImage) || hasValue(overtagelse.signKundeImage))) {
+        if (projectHasOvertagelse(overtagelse)) {
           addSectionPageBreak("Overtagelse");
           const hasRemarks = hasValue(overtagelse.kommentar) && !/^ingen\s*(bemerkninger|merknader)?$/i.test(String(overtagelse.kommentar).trim());
           ensureSpace(54);
@@ -8343,14 +8379,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalWarrantySystem = warrantyReadiness?.selectedSystem;
       const customerPortalWarrantyTermsAccepted = !!warrantyReadiness?.termsAccepted;
       const customerPortalWarrantyStatusText = customerPortalWarrantyIssued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti er utstedt${warranty?.guaranteeNumber ? ` – ${warranty.guaranteeNumber}` : ""}.` : customerPortalWarrantyActive ? "Garanti er aktivert, men ikke utstedt ennå." : "Garanti er ikke aktivert for dette prosjektet.";
-      const customerPortalDocumentationReady = customerPortalProductCount > 0 || customerPortalPhotoCount > 0 || customerPortalChecklistDone > 0 || !!overtagelse?.enabled || customerPortalWarrantyActive;
+      const customerPortalDocumentationReady = customerPortalProductCount > 0 || customerPortalPhotoCount > 0 || customerPortalChecklistDone > 0 || projectHasOvertagelse(overtagelse) || customerPortalWarrantyActive;
       const customerPortalCompletionItems = [
         { label: "Prosjektinformasjon", done: hasValue(project.projectName) || hasValue(project.address) || hasValue(project.customer) },
         { label: "Produkter", done: customerPortalProductCount > 0 },
         { label: "Bilder", done: customerPortalPhotoCount > 0 },
         { label: "Sjekklister", done: customerPortalChecklistComplete && customerPortalChecklistAvvik === 0 },
         ...(customerPortalWarrantyActive && customerPortalSoproChecklistTotal ? [{ label: "Garantipunkter", done: customerPortalSoproChecklistComplete && customerPortalChecklistAvvik === 0 }] : []),
-        { label: "Overtagelse", done: !!overtagelse?.enabled },
+        { label: "Overtagelse", done: projectHasOvertagelse(overtagelse) },
         { label: "Garanti", done: customerPortalWarrantyIssued || !customerPortalWarrantyActive }
       ];
       const customerPortalCompletionPercent = Math.round(customerPortalCompletionItems.filter((item) => item.done).length / customerPortalCompletionItems.length * 100);
@@ -8452,7 +8488,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Produkter", value: customerPortalProductCount ? `${customerPortalProductCount} produkter registrert` : "Ingen produkter registrert" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Bilder", value: customerPortalPhotoCount ? `${customerPortalPhotoCount} bilder lastet opp` : "Ingen bilder lastet opp" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Kontroller", value: customerPortalChecklistDone ? `${customerPortalChecklistDone} kontrollpunkter utført` : "Ikke registrert" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Overtagelse", value: overtagelse?.enabled ? `Registrert ${overtagelse?.dato || ""}` : "Ikke registrert" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Overtagelse", value: projectHasOvertagelse(overtagelse) ? `Registrert ${overtagelse?.dato || ""}` : "Ikke registrert" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => setCustomerTab("bilder"), children: "Åpne bilder" }),
@@ -9663,11 +9699,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             suggestedWorkflowStatus !== (project.workflowStatus || "Pågår") && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setProject({ ...project, workflowStatus: suggestedWorkflowStatus }), children: "Bruk foreslått status" })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectLocked ? `Prosjektet ble l\xE5st${project.lockedAt ? " " + new Date(project.lockedAt).toLocaleString("no-NO") : ""}${project.lockedBy ? " av " + project.lockedBy : ""}. L\xE5s opp prosjektet hvis du trenger \xE5 gj\xF8re endringer.` : "Prosjektet er åpent for endringer. Bruk arbeidsstatus for å vise om prosjektet er utkast, pågår, avventer, klart for kunde eller har åpne avvik." }),
-          projectHasOvertagelse() && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
-            "Overtagelse er registrert",
+          projectHasOvertagelse() ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+            "✅ Overtagelse er registrert",
             overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
             "."
-          ] }),
+          ] }) : overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? 'Overtagelse er signert av begge parter, men ikke registrert. Gå til Overtagelse og klikk "Overtagelse registrert" når overleveringen faktisk er gjennomført.' : 'Overtagelse er påbegynt, men ikke registrert. Den regnes først som registrert når både utførende og kunde har signert, og du aktivt klikker "Overtagelse registrert".'  }),
           totalChatCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "\u{1F4AC} Chat: ",
             totalChatCount,
@@ -10145,13 +10181,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] })
         ] }),
         tab === "overtagelse" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Overtagelse og signering", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne ved sluttbefaring og overlevering. N\xE5r begge signaturer er fylt ut kan prosjektet fullf\xF8res og l\xE5ses." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk denne ved sluttbefaring og overlevering. Overtagelse regnes først som registrert når både utførende/entreprenør og kunde har signert, og feltet Overtagelse registrert er krysset av." }),
           isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "\u{1F512} Prosjektet er l\xE5st. Overtagelsen kan vises i rapporten, men endringer krever at prosjektet l\xE5ses opp." }),
-          projectHasOvertagelse() && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+          projectHasOvertagelse() ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "\u2705 Overtagelse registrert",
             overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
             "."
-          ] }),
+          ] }) : overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? 'Begge signaturer er fylt ut. Kryss av "Overtagelse registrert" når overleveringen faktisk er gjennomført.' : 'Overtagelse er ikke registrert. Fyll inn signatur fra både utførende/entreprenør og kunde før den kan registreres.' }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato for overtagelse", type: "date", value: overtagelse.dato || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, dato: v }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
@@ -10160,11 +10196,17 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 {
                   type: "checkbox",
                   style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" },
-                  checked: !!overtagelse.enabled,
-                  onChange: (e) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, enabled: e.target.checked })
+                  checked: projectHasOvertagelse(overtagelse),
+                  onChange: (e) => {
+                    if (e.target.checked && !overtagelseIsSignedByBoth()) {
+                      alert("Overtagelse kan ikke registreres før både utførende/entreprenør og kunde har signert.");
+                      return;
+                    }
+                    setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, enabled: e.target.checked });
+                  }
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Ta med overtagelse i rapport" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Overtagelse registrert (krever signatur fra utførende og kunde)" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kommentar / merknader fra sluttbefaring", value: overtagelse.kommentar || "", onChange: (v) => setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, kommentar: v }) }),
             warranty?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: warranty?.termsAccepted ? { borderColor: "#bbf7d0", background: "#ecfdf5" } : { borderColor: "#fde68a", background: "#fffbeb" }, children: [
@@ -12806,7 +12848,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
           (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", children: f.name }) }, f.id))
         ] })
       ] }),
-      overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtf\u00F8rende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtf\u00F8rendeImage) || hasValue(overtagelse.signKundeImage)) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+      projectHasOvertagelse(overtagelse) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Overtagelse" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Dato", value: overtagelse.dato }),
@@ -13104,7 +13146,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
           (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", children: f.name }) }, f.id))
         ] })
       ] }),
-      overtagelse?.enabled && (hasValue(overtagelse.dato) || hasValue(overtagelse.kommentar) || hasValue(overtagelse.signUtf\u00F8rende) || hasValue(overtagelse.signKunde) || hasValue(overtagelse.signUtf\u00F8rendeImage) || hasValue(overtagelse.signKundeImage)) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+      projectHasOvertagelse(overtagelse) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Overtagelse" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Dato", value: overtagelse.dato }),
