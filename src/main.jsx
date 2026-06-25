@@ -1,3 +1,4 @@
+// FASE 16.5C TILGANGSVEILEDNING/STATUSKORT: Oppdaterer Hjelp/Tilgang med tydelig kodeflyt, separat kunde-/UE-kode, statusbasert gyldighet og statuskort i Tilgang-fanen. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.5B STATUSBASERT DELINGSTILGANG: Kundeportal og underentreprenørportal har separate tilgangskoder som følger Resend-epostene og gjenbrukes ved chat. Tilgang er gyldig så lenge prosjektet er aktivt, og i 30 dager etter låsing/arkivering. Brukerveiledning oppdatert. Ingen SQL/Edge/PDF/chatlogikk-endring.
 // FASE 16.4D SCROLL-RETUR PC/PRODUKTER: Forsterker scrollhukommelse ved fanebytte i nettleser og retur til appen, spesielt Produkter/egne PDF-lenker. Lagrer aktiv tab/scroll hyppigere og gjenoppretter flere ganger etter focus/visibilitychange. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.4B OVERTAGELSE KALENDER + QA: Samler 16.4 og 16.4A. Overtagelsesdato velges i kalenderfelt, men dato alene teller aldri som registrert/påbegynt overtagelse. Registrering krever signatur fra utførende og kunde + aktiv avhuking. Robust scrollhukommelse beholdes. Ingen SQL/Edge/PDF-design/databaseendring.
@@ -10277,7 +10278,37 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhotoGrid, { photos, setPhotos, project, setProject, canEditProject, isProjectLocked })
         ] }),
         tab === "tilgang" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilgang og deling", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Administrer tilgang til prosjektet. Kunde får egen kundelink med tilgangskode, rapport, tilbud/kontrakt og chat. Underentreprenører får egen separat link og egen tilgangskode for bidrag til dokumentasjon. Tilgangene er gyldige så lenge prosjektet er aktivt, og i 30 dager etter låsing/arkivering." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Administrer tilgang til prosjektet. Kunde får egen kundelink og egen tilgangskode. Underentreprenører får separat link og separat tilgangskode for dokumentasjon innenfor relevante deler av prosjektet. Kodene følger e-postene, ligger ikke i URL-en og gjenbrukes ved senere chatvarsler. Tilgangene er gyldige så lenge prosjektet er aktivt, og i 30 dager etter låsing/arkivering." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "cards", style: { marginTop: "12px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Kundeportal" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessRecordIsValid(getPortalAccessRecord(project, "kunde"), project) ? "🟢 Aktiv kode" : "⚪ Ingen aktiv kode" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: getPortalAccessRecord(project, "kunde")?.code ? "Tilgangskode: ••••••" : "Tilgangskode: Ikke sendt/generert ennå" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessPolicyText(project, getPortalAccessRecord(project, "kunde")) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", type: "button", onClick: async () => {
+                if (!projectId) {
+                  alert("Lagre prosjektet før du genererer tilgangskode.");
+                  return;
+                }
+                const rec = await ensurePortalAccessForProject({ roleParam: "kunde", forceNew: true });
+                if (rec?.code) alert("Ny kundekode er generert. Send kundelenke på nytt for å dele koden.");
+              }, children: "Generer ny kundekode" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Underentreprenørportal" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessRecordIsValid(getPortalAccessRecord(project, "underleverandor"), project) ? "🟢 Aktiv kode" : "⚪ Ingen aktiv kode" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: getPortalAccessRecord(project, "underleverandor")?.code ? "Tilgangskode: ••••••" : "Tilgangskode: Ikke sendt/generert ennå" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: portalAccessPolicyText(project, getPortalAccessRecord(project, "underleverandor")) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", type: "button", onClick: async () => {
+                if (!projectId) {
+                  alert("Lagre prosjektet før du genererer tilgangskode.");
+                  return;
+                }
+                const rec = await ensurePortalAccessForProject({ roleParam: "underleverandor", forceNew: true });
+                if (rec?.code) alert("Ny underentreprenørkode er generert. Send underentreprenørlenke på nytt for å dele koden.");
+              }, children: "Generer ny UE-kode" })
+            ] })
+          ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Melding i e-post med tilgangslink", value: accessEmailMessage, onChange: setAccessEmailMessage }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "cards", children: accessRoleInfo.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: r.role }),
@@ -11700,23 +11731,27 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       {
         key: "tilgang",
         title: "🔑 Tilgang",
-        purpose: "Tilgang brukes til å dele prosjektet med kunde, underentreprenører og andre som skal se eller bidra med dokumentasjon.",
+        purpose: "Tilgang brukes til å dele prosjektet med kunde, underentreprenører og andre som skal se eller bidra med dokumentasjon. Kunde og underentreprenør har separate portaler og hver sin tilgangskode.",
         workflow: [
           "Velg riktig rolle for den som skal ha tilgang.",
-          "Send kunde- eller underentreprenørlenke fra prosjektet.",
-          "Bruk kundeportal for kundeinnsyn i dokumentasjon, rapport og chat.",
-          "Bruk underentreprenørtilgang når andre fag skal bidra med dokumentasjon.",
-          "Fjern eller juster tilgang når behovet er borte."
+          "Send kunde- eller underentreprenørinvitasjon fra prosjektet.",
+          "Mottaker får e-post med personlig lenke og tilgangskode.",
+          "Kunde bruker kundeportalen for dokumentasjon, rapport, tilbud/kontrakt og chat.",
+          "Underentreprenører bruker egen portal for å bidra med bilder, dokumentasjon og relevante sjekkpunkter.",
+          "Samme tilgangskode brukes ved senere chatvarsler og nye e-poster. Det genereres ikke ny kode for hver chatmelding.",
+          "Tilgangen er gyldig så lenge prosjektet er aktivt. Etter låsing eller arkivering beholdes tilgangen i 30 dager."
         ],
         important: [
+          "Tilgangskoden sendes i e-post og skal ikke ligge i URL-en.",
           "Kunder skal ikke se interne notater eller avviksdetaljer som ikke er ment for kundeportalen.",
           "Underentreprenører skal normalt bare se og bidra med dokumentasjon innenfor egne relevante deler av prosjektet.",
-          "Kontroller mottaker før tilgangslenker sendes."
+          "Prosjektleder kan generere ny kode dersom en kode skal sperres eller sendes på nytt.",
+          "Kontroller mottakerens e-postadresse før tilgangslenker sendes."
         ],
         best: [
           "Gi tilgang tidlig slik at dokumentasjonen kommer inn underveis.",
           "Bruk prosjektchatten som hovedkanal for sporbar kundedialog der dette er avtalt med kunden.",
-          "Hold tilgangslisten ryddig."
+          "Hold tilgangslisten ryddig og fjern tilganger som ikke lenger er nødvendige."
         ]
       },
       {
