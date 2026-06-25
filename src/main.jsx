@@ -1,6 +1,7 @@
 // FASE 16.4B OVERTAGELSE KALENDER + QA: Samler 16.4 og 16.4A. Overtagelsesdato velges i kalenderfelt, men dato alene teller aldri som registrert/påbegynt overtagelse. Registrering krever signatur fra utførende og kunde + aktiv avhuking. Robust scrollhukommelse beholdes. Ingen SQL/Edge/PDF-design/databaseendring.
 // FASE 16.4A TRIPPEL QA HOTFIX: Presiserer at overtagelsesdato alene ikke er påbegynt/registrert overtagelse, og lagrer scrollposisjon også ved manuell fanebytte/blur/scroll. Ingen SQL/Edge/PDF-design/databaseendring.
 // FASE 16.4 OVERTAGELSE/STATUS/SCROLL HOTFIX: Retter overtagelse slik at den kun regnes registrert når begge parter har signert og bruker aktivt registrerer overtagelse. Strammer foreslått Ferdigstilt-status og bevarer scrollposisjon ved eksterne lenker. Ingen SQL/Edge/PDF/garanti/chat-endring.
+// FASE 16.4C ANDRE FAG TOMME STANDARDVALG: Sjekkpunkter for andre fag starter uten forhåndsvalgte fag når garanti/Sopro aktiveres. Bruker må aktivt velge fag før punkter legges til. Kun UI/defaultvalg, ingen SQL/Edge/PDF/garanti-/sjekklistelogikkendring.
 // FASE 16.3F REGISTRERING/GODKJENNING TYDELIG: Presiserer registreringsflyt etter ny brukerlogikk: fullt navn, mobil, e-post, passord to ganger, registrering sendes til administrator og tilgang gis først etter godkjenning. Kun tekst/knapp, ingen logikkendring.
 // FASE 16.3D FIRMAINVITASJON OPPRETTBRUKERFLYT: Firmaadmin-invitasjoner åpner registreringsmodus med forhåndsutfylt e-post, og invitasjonstekst presiserer fullt navn, mobilnummer og eget passord. Bygger videre på 16.3C. Ingen SQL/Edge/PDF/garanti/chatendring.
 // FASE 16.3C HOTFIX OPPRETT BRUKER-FLYT: Skjuler ny-bruker-feltene i vanlig innlogging og viser dem kun etter at bruker velger Opprett bruker. Kun login-/auth-UI, ingen SQL/Edge/PDF/garanti/chat-endring.
@@ -755,7 +756,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var checklistAttachmentTradeOptions = ["Rørlegger", "Elektriker", "Tømrer", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag", "Uspesifisert"];
   var customChecklistTradeOptions = ["Rørlegger", "Tømrer", "Elektriker", "Murer/flislegger", "Maler", "Ventilasjon", "Annet fag"];
   var standardWetroomTemplateTradeOptions = ["Rørlegger", "Tømrer", "Elektriker", "Maler", "Ventilasjon", "Annet fag"];
-  var standardWetroomTemplateDefaultTrades = ["Rørlegger", "Tømrer", "Elektriker", "Maler", "Ventilasjon"];
+  var standardWetroomTemplateDefaultTrades = [];
   var STANDARD_WETROOM_TEMPLATE_POINTS = {
     "Rørlegger": ["Stoppekraner og avstengning er kontrollert", "Rør-i-rør / fordelerskap er kontrollert", "Rørgjennomføringer er kontrollert før tetting", "Sluk, vannlås og avløpstilkoblinger er kontrollert", "Trykkprøving / funksjonskontroll av vanninstallasjon er utført", "Lekkasjesikring / vannstopper er kontrollert der dette inngår", "Sanitærutstyr er montert og funksjonstestet"],
     "Tømrer": ["Bjelkelag og underkonstruksjon er kontrollert", "Vegger og innkassinger er kontrollert før lukking", "Våtromsplater / underlag for membran er montert iht. anvisning", "Nisjer, sisternekasser og innbygginger er kontrollert", "Terskel, døråpning og høyder er kontrollert mot ferdig gulv"],
@@ -11040,7 +11041,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }),
         standardWetroomAllowed && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "14px", borderColor: "#bfdbfe", background: "#f8fbff" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "📋 Sjekkpunkter for andre fag" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg hvilke andre fag som inngår i våtromsprosjektet. Expo ProffDok legger automatisk inn ferdige sjekkpunkter for valgte fag. Murer/flislegger er ikke med her, fordi ProffDok allerede har ordinære sjekklister for mur, membran og flis." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg selv hvilke andre fag som inngår i våtromsprosjektet. Ingen fag er valgt på forhånd. Når du klikker Legg til sjekkpunkter for andre fag, legges ferdige sjekkpunkter inn for fagene du har valgt. Murer/flislegger er ikke med her, fordi ProffDok allerede har ordinære sjekklister for mur, membran og flis." }),
           existingCustomChecklistCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { color: "#92400e" }, children: `Prosjektet har allerede ${existingCustomChecklistCount} egne sjekkpunkter. Nye standardpunkter legges kun til hvis de mangler fra før. Ingenting slettes eller overskrives.` }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "10px", marginTop: "10px" }, children: standardWetroomTemplateTradeOptions.map((trade) => {
             const checked = standardWetroomTrades.includes(trade);
