@@ -1,3 +1,4 @@
+// FASE 16.5F SMART CHATLENKE: Chatvarsler til kunde åpner kundeportal direkte i Chat-fanen etter tilgangskode. Beholder eksisterende kunde-/UE-/Resend-/tilgangslogikk; kun URL-tab og kundeportal-navigasjon. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.5E KUNDEPORTAL STATUS TEKST-HOTFIX: Kundeportal viser ikke lenger Ferdigstilt for gamle prosjekter med gammel statuslogikk når dokumentasjon/overtagelse/garanti ikke er komplett. Kun kundeportal-tekst/status, ingen SQL/Edge/PDF/database eller øvrig funksjonalitet.
 // FASE 16.5C TILGANGSVEILEDNING/STATUSKORT: Oppdaterer Hjelp/Tilgang med tydelig kodeflyt, separat kunde-/UE-kode, statusbasert gyldighet og statuskort i Tilgang-fanen. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.5B STATUSBASERT DELINGSTILGANG: Kundeportal og underentreprenørportal har separate tilgangskoder som følger Resend-epostene og gjenbrukes ved chat. Tilgang er gyldig så lenge prosjektet er aktivt, og i 30 dager etter låsing/arkivering. Brukerveiledning oppdatert. Ingen SQL/Edge/PDF/chatlogikk-endring.
@@ -3295,8 +3296,12 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
       if (id && !isRecoveryLink) {
         openProjectById(id);
-        if ((params.get("access") || params.get("role")) === "underleverandor") setTab("produkter");
-        if ((params.get("access") || params.get("role")) !== "admin") {
+        const requestedTab = String(params.get("tab") || params.get("open") || "").trim().toLowerCase();
+        const linkAccessMode = params.get("access") || params.get("role");
+        if (linkAccessMode === "underleverandor") setTab(requestedTab || "produkter");
+        if (linkAccessMode === "kunde" && requestedTab) setCustomerTab(requestedTab === "chat" ? "chat" : requestedTab);
+        if (linkAccessMode === "admin" && requestedTab) setTab(requestedTab);
+        if (linkAccessMode !== "admin") {
           setAuthLoading(false);
           return;
         }
@@ -3656,7 +3661,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
             companyName: company.companyName || name || "Expo ProffDok",
             fromName: message.by || "Ukjent",
             message: `${message.text}${direction === "to_owner" ? "" : portalAccessLine(getPortalAccessRecord(project, "kunde"))}`,
-            projectLink: projectId ? makeProjectLink(projectId, direction === "to_owner" ? "admin" : "kunde") : "",
+            projectLink: projectId ? makeProjectLink(projectId, direction === "to_owner" ? "admin" : "kunde", direction === "to_owner" ? "" : "chat") : "",
             accessCode: direction === "to_owner" ? "" : getPortalAccessRecord(project, "kunde")?.code || "",
             accessCodeExpiresAt: direction === "to_owner" ? "" : getPortalAccessRecord(project, "kunde")?.expiresAt || ""
           }
@@ -4445,12 +4450,13 @@ ${portalAccessPolicyText(projectValue, record)}`;
       ] });
     };
 
-    const makeProjectLink = (id, role = "kunde") => {
+    const makeProjectLink = (id, role = "kunde", targetTab = "") => {
+      const tabSuffix = hasValue(targetTab) ? `&tab=${encodeURIComponent(String(targetTab || ""))}` : "";
       if (role === "admin") {
-        return `${window.location.origin}${window.location.pathname}?project=${id}&role=admin`;
+        return `${window.location.origin}${window.location.pathname}?project=${id}&role=admin${tabSuffix}`;
       }
-      const roleParam = role === "Underleverand\xF8r" ? "underleverandor" : "kunde";
-      return roleParam === "underleverandor" ? `${window.location.origin}${window.location.pathname}?project=${id}&access=underleverandor` : `${window.location.origin}${window.location.pathname}?project=${id}&role=kunde`;
+      const roleParam = role === "Underleverandør" ? "underleverandor" : "kunde";
+      return roleParam === "underleverandor" ? `${window.location.origin}${window.location.pathname}?project=${id}&access=underleverandor${tabSuffix}` : `${window.location.origin}${window.location.pathname}?project=${id}&role=kunde${tabSuffix}`;
     };
     const copyLinkToClipboard = async (link, successMessage) => {
       try {
