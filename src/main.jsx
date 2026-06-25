@@ -1,5 +1,6 @@
 // FASE 16.5C TILGANGSVEILEDNING/STATUSKORT: Oppdaterer Hjelp/Tilgang med tydelig kodeflyt, separat kunde-/UE-kode, statusbasert gyldighet og statuskort i Tilgang-fanen. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.5B STATUSBASERT DELINGSTILGANG: Kundeportal og underentreprenørportal har separate tilgangskoder som følger Resend-epostene og gjenbrukes ved chat. Tilgang er gyldig så lenge prosjektet er aktivt, og i 30 dager etter låsing/arkivering. Brukerveiledning oppdatert. Ingen SQL/Edge/PDF/chatlogikk-endring.
+// FASE 16.5D KUNDE/UE PORTAL BLANKSIDE HOTFIX: Flytter beregning av portalAccessOk til etter at tilgangshjelpere er initialisert, slik at kunde-/UE-lenker aldri feiler med hvit/tom side før kodefelt vises. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.4D SCROLL-RETUR PC/PRODUKTER: Forsterker scrollhukommelse ved fanebytte i nettleser og retur til appen, spesielt Produkter/egne PDF-lenker. Lagrer aktiv tab/scroll hyppigere og gjenoppretter flere ganger etter focus/visibilitychange. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.4B OVERTAGELSE KALENDER + QA: Samler 16.4 og 16.4A. Overtagelsesdato velges i kalenderfelt, men dato alene teller aldri som registrert/påbegynt overtagelse. Registrering krever signatur fra utførende og kunde + aktiv avhuking. Robust scrollhukommelse beholdes. Ingen SQL/Edge/PDF-design/databaseendring.
 // FASE 16.4A TRIPPEL QA HOTFIX: Presiserer at overtagelsesdato alene ikke er påbegynt/registrert overtagelse, og lagrer scrollposisjon også ved manuell fanebytte/blur/scroll. Ingen SQL/Edge/PDF-design/databaseendring.
@@ -1420,7 +1421,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [customerTab, setCustomerTab] = (0, import_react.useState)("oversikt");
     const [internalNotes, setInternalNotes] = (0, import_react.useState)("");
     const [lightboxImage, setLightboxImage] = (0, import_react.useState)(null);
-    const [accessEmailMessage, setAccessEmailMessage] = (0, import_react.useState)("Hei, du har fått tilgang til prosjektet. Klikk på linken i denne e-posten og bruk tilgangskoden som står under for å åpne prosjektet.");
+    const [accessEmailMessage, setAccessEmailMessage] = (0, import_react.useState)("Hei, du har fått tilgang til prosjektet. Klikk på knappen Åpne kundeportal i e-posten og bruk tilgangskoden som står under. Samme kode brukes også ved senere chatvarsler.");
     const [portalAccessInput, setPortalAccessInput] = (0, import_react.useState)("");
     const [portalAccessGranted, setPortalAccessGranted] = (0, import_react.useState)(false);
     const [portalAccessError, setPortalAccessError] = (0, import_react.useState)("");
@@ -1899,9 +1900,6 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const isReadOnly = urlParams.has("project") && !isUnderleverandorView && !isAdminProjectLink;
     const portalAccessRoleParam = isUnderleverandorView ? "underleverandor" : isReadOnly ? "kunde" : "";
     const portalAccessStorageKey = projectId && portalAccessRoleParam ? `expoProffDokPortalAccess:${projectId}:${portalAccessRoleParam}` : "";
-    const portalAccessRecord = portalAccessRoleParam ? getPortalAccessRecord(project, portalAccessRoleParam) : {};
-    const portalAccessRequired = !!portalAccessRoleParam && !isAdminProjectLink;
-    const portalAccessOk = !portalAccessRequired || (portalAccessGranted && portalAccessRecordIsValid(portalAccessRecord, project)) || sessionPortalAccessIsVerified(portalAccessStorageKey, portalAccessRecord);
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
     const isCompanyAdminUser = !!authUser && !!profile?.approved && !profile?.deactivated && (profile?.company_role === "firmaadmin" || isSystemAdminUser);
     const currentCompanyName = String(profile?.company_name || company?.companyName || "").trim();
@@ -4393,6 +4391,9 @@ ${portalAccessPolicyText(projectValue, record)}`;
         return false;
       }
     };
+    const portalAccessRecord = portalAccessRoleParam ? getPortalAccessRecord(project, portalAccessRoleParam) : {};
+    const portalAccessRequired = !!portalAccessRoleParam && !isAdminProjectLink;
+    const portalAccessOk = !portalAccessRequired || (portalAccessGranted && portalAccessRecordIsValid(portalAccessRecord, project)) || sessionPortalAccessIsVerified(portalAccessStorageKey, portalAccessRecord);
     const verifyPortalAccessCode = (roleParam = "kunde") => {
       const record = getPortalAccessRecord(project, roleParam);
       if (!portalAccessRecordIsValid(record, project)) {
@@ -10292,7 +10293,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 }
                 const rec = await ensurePortalAccessForProject({ roleParam: "kunde", forceNew: true });
                 if (rec?.code) alert("Ny kundekode er generert. Send kundelenke på nytt for å dele koden.");
-              }, children: "Generer ny kundekode" })
+              }, children: "Generer ny tilgangskode" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tile", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Underentreprenørportal" }),
@@ -10306,7 +10307,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                 }
                 const rec = await ensurePortalAccessForProject({ roleParam: "underleverandor", forceNew: true });
                 if (rec?.code) alert("Ny underentreprenørkode er generert. Send underentreprenørlenke på nytt for å dele koden.");
-              }, children: "Generer ny UE-kode" })
+              }, children: "Generer ny tilgangskode" })
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Melding i e-post med tilgangslink", value: accessEmailMessage, onChange: setAccessEmailMessage }),
