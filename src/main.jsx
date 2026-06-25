@@ -1,3 +1,4 @@
+// FASE 16.5E KUNDEPORTAL STATUS TEKST-HOTFIX: Kundeportal viser ikke lenger Ferdigstilt for gamle prosjekter med gammel statuslogikk når dokumentasjon/overtagelse/garanti ikke er komplett. Kun kundeportal-tekst/status, ingen SQL/Edge/PDF/database eller øvrig funksjonalitet.
 // FASE 16.5C TILGANGSVEILEDNING/STATUSKORT: Oppdaterer Hjelp/Tilgang med tydelig kodeflyt, separat kunde-/UE-kode, statusbasert gyldighet og statuskort i Tilgang-fanen. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.5B STATUSBASERT DELINGSTILGANG: Kundeportal og underentreprenørportal har separate tilgangskoder som følger Resend-epostene og gjenbrukes ved chat. Tilgang er gyldig så lenge prosjektet er aktivt, og i 30 dager etter låsing/arkivering. Brukerveiledning oppdatert. Ingen SQL/Edge/PDF/chatlogikk-endring.
 // FASE 16.5D KUNDE/UE PORTAL BLANKSIDE HOTFIX: Flytter beregning av portalAccessOk til etter at tilgangshjelpere er initialisert, slik at kunde-/UE-lenker aldri feiler med hvit/tom side før kodefelt vises. Ingen SQL/Edge/PDF/databaseendring.
@@ -8634,7 +8635,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalWarrantyIssued = !!warranty?.issued;
       const customerPortalWarrantySystem = warrantyReadiness?.selectedSystem;
       const customerPortalWarrantyTermsAccepted = !!warrantyReadiness?.termsAccepted;
-      const customerPortalWarrantyStatusText = customerPortalWarrantyIssued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti er utstedt${warranty?.guaranteeNumber ? ` – ${warranty.guaranteeNumber}` : ""}.` : customerPortalWarrantyActive ? "Garanti er aktivert, men ikke utstedt ennå." : "Garanti er ikke aktivert for dette prosjektet.";
+      const customerPortalWarrantyStatusText = customerPortalWarrantyIssued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti er utstedt${warranty?.guaranteeNumber ? ` – ${warranty.guaranteeNumber}` : ""}.` : customerPortalWarrantyActive ? "Tetthetsgaranti er valgt for prosjektet. Garantibevis utstedes når alle krav er oppfylt og overtagelsen er registrert." : "Garanti er ikke aktivert for dette prosjektet.";
       const customerPortalDocumentationReady = customerPortalProductCount > 0 || customerPortalPhotoCount > 0 || customerPortalChecklistDone > 0 || projectHasOvertagelse(overtagelse) || customerPortalWarrantyActive;
       const customerPortalCompletionItems = [
         { label: "Prosjektinformasjon", done: hasValue(project.projectName) || hasValue(project.address) || hasValue(project.customer) },
@@ -8646,8 +8647,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         { label: "Garanti", done: customerPortalWarrantyIssued || !customerPortalWarrantyActive }
       ];
       const customerPortalCompletionPercent = Math.round(customerPortalCompletionItems.filter((item) => item.done).length / customerPortalCompletionItems.length * 100);
-      const customerPortalPrimaryStatus = customerPortalWarrantyIssued ? `${getWarrantyYears(warranty)} års garanti aktiv` : currentStatus.label;
-      const customerPortalNextAction = customerPortalWarrantyIssued ? "Last ned komplett rapport eller se garantidokumentasjonen." : customerPortalWarrantyActive ? "Garanti er aktivert og oppdateres når alle krav er fullført." : "Se rapport, bilder og produktdokumentasjon.";
+      const customerPortalReadyForFinished = customerPortalChecklistComplete && customerPortalChecklistAvvik === 0 && projectHasOvertagelse(overtagelse) && (!customerPortalWarrantyActive || customerPortalWarrantyIssued);
+      const customerPortalStatusWasDowngradedFromOldFinished = currentStatus.label === "Ferdigstilt" && !customerPortalReadyForFinished;
+      const customerPortalDisplayStatus = customerPortalWarrantyIssued ? { label: `${getWarrantyYears(warranty)} års garanti aktiv`, icon: "✅", tone: "done" } : customerPortalStatusWasDowngradedFromOldFinished ? { label: "Pågår", icon: "🟡", tone: "progress" } : currentStatus;
+      const customerPortalPrimaryStatus = customerPortalDisplayStatus.label;
+      const customerPortalNextAction = customerPortalWarrantyIssued ? "Last ned komplett rapport eller se garantidokumentasjonen." : customerPortalChecklistMissing > 0 ? `Fullfør ${customerPortalChecklistMissing} gjenstående kontrollpunkt før prosjektet kan regnes som ferdigstilt.` : customerPortalChecklistAvvik > 0 ? "Lukk eller avklar åpne avvik før prosjektet kan ferdigstilles." : !projectHasOvertagelse(overtagelse) ? "Overtagelse må registreres når prosjektet er klart og signert av begge parter." : customerPortalWarrantyActive && !customerPortalWarrantyIssued ? "Garantibevis utstedes når alle garantikrav er oppfylt." : "Se rapport, bilder og produktdokumentasjon.";
       if (!portalAccessOk) return renderPortalAccessGate("kunde");
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
@@ -8694,10 +8698,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
                   project.customerPhone
                 ] })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: `statusBadge status-${currentStatus.tone}`, style: { display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "999px", fontWeight: 700, border: "1px solid #dbe7ec", ...statusStyle(currentStatus.tone) }, children: [
-                currentStatus.icon,
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: `statusBadge status-${customerPortalDisplayStatus.tone}`, style: { display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "999px", fontWeight: 700, border: "1px solid #dbe7ec", ...statusStyle(customerPortalDisplayStatus.tone) }, children: [
+                customerPortalDisplayStatus.icon,
                 " ",
-                currentStatus.label
+                customerPortalDisplayStatus.label
               ] })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note customerChatFocusNote", children: "All kommunikasjon tas i prosjektchatten, slik at meldinger og bilder lagres på prosjektet." }),
