@@ -1,3 +1,4 @@
+// FASE 17.1A RAPPORT BLANKSKJERM HOTFIX: Definerer trygg global overtagelsessjekk for rapportvisning slik at Rapport-fanen ikke krasjer med projectHasOvertagelse is not defined. Beholder Fase 16.4-logikk: dato alene teller ikke, overtagelse krever aktiv registrering + signatur fra begge parter. Ingen SQL/Edge/PDF-design/chat/kundeportal/UE-/garantiendring.
 // FASE 16.5G FIRMAPROFIL I E-POST: Sender firmalogo/brandfelt med alle smart-worker/Resend-eposter slik at e-post kan bruke utførende firmas logo når firmaprofil har logo. Fallback er Expo ProffDok/Expo Proffsenter. Ingen SQL/PDF/databaseendring.
 // FASE 16.5F SMART CHATLENKE: Chatvarsler til kunde åpner kundeportal direkte i Chat-fanen etter tilgangskode. Beholder eksisterende kunde-/UE-/Resend-/tilgangslogikk; kun URL-tab og kundeportal-navigasjon. Ingen SQL/Edge/PDF/databaseendring.
 // FASE 16.5E KUNDEPORTAL STATUS TEKST-HOTFIX: Kundeportal viser ikke lenger Ferdigstilt for gamle prosjekter med gammel statuslogikk når dokumentasjon/overtagelse/garanti ikke er komplett. Kun kundeportal-tekst/status, ingen SQL/Edge/PDF/database eller øvrig funksjonalitet.
@@ -13231,6 +13232,11 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
 
   function hasValue(value) {
     return value !== void 0 && value !== null && String(value).trim() !== "";
+  }
+  function projectHasOvertagelse(o = {}) {
+    const signedByUtførende = hasValue(o?.["signUtf\u00F8rende"] || o?.signUtførende || o?.signUtforende) || hasValue(o?.["signUtf\u00F8rendeImage"] || o?.signUtførendeImage || o?.signUtforendeImage);
+    const signedByKunde = hasValue(o?.signKunde) || hasValue(o?.signKundeImage);
+    return !!o?.enabled && signedByUtførende && signedByKunde;
   }
   function InfoCard({ label, value }) {
     if (!hasValue(value)) return null;
