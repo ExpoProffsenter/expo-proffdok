@@ -4,6 +4,7 @@
 // FASE 19.3 TYDELIG PUBLISERINGSBEKREFTELSE: Viser tydelig intern bekreftelse når kundelink/ny tilbudsversjon er publisert. Ingen SQL/main/Edge.
 // FASE 19.2 TRYGG REPUBLISERING: Tydeliggjør når redigert tilbud/opsjon må publiseres som ny kundelenke-versjon. Ingen SQL/main/Edge.
 // FASE 19.4B TILGANG BEFARINGSNOTAT FRA TILBUD: Viser trygg knapp for Befaringsnotat/lydnotat også i tilbudssak uten å endre tilbudsstatus ved lagring. Ingen SQL/main/CSS/Edge.
+// FASE 19.4D BEVAR BEFARINGSINFO: Viser forespørselsnotat/befaringsplan som kontekst i befaringsnotat og bruker trygge fallback-felt ved åpning fra tilbudssak. Ingen SQL/main/CSS/Edge.
 // FASE 18.19C3 HOTFIX FIRMAPROFIL EMAIL-FALLBACK: Henter firmaprofil robust via auth-id først og innlogget e-post som fallback før publish-snapshot. Ingen SQL/main/CSS.
 // FASE 18.19C2 HOTFIX FIRMAPROFILSNAPSHOT: Bruker samme profiles-felt som hovedappen, venter på auth/session og legger firmasnapshot inn i faktisk publish-payload. Ingen SQL/main/CSS.
 // FASE 18.19C1 HOTFIX PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
@@ -917,12 +918,31 @@ export default function SalesModule() {
 
   function openInspectionNote() {
     setInspectionForm({
-      customerWishes: selectedRequest?.inspectionCustomerWishes || "",
-      existingConditions: selectedRequest?.inspectionExistingConditions || "",
-      measurements: selectedRequest?.inspectionMeasurements || "",
-      observations: selectedRequest?.inspectionObservations || "",
-      photos: selectedRequest?.inspectionPhotos || [],
-      audioNotes: selectedRequest?.inspectionAudioNotes || [],
+      customerWishes:
+        selectedRequest?.inspectionCustomerWishes ||
+        selectedRequest?.customerWishes ||
+        "",
+      existingConditions:
+        selectedRequest?.inspectionExistingConditions ||
+        selectedRequest?.existingConditions ||
+        "",
+      measurements:
+        selectedRequest?.inspectionMeasurements ||
+        selectedRequest?.measurements ||
+        "",
+      observations:
+        selectedRequest?.inspectionObservations ||
+        selectedRequest?.observations ||
+        selectedRequest?.inspectionNote ||
+        "",
+      photos:
+        selectedRequest?.inspectionPhotos ||
+        selectedRequest?.photos ||
+        [],
+      audioNotes:
+        selectedRequest?.inspectionAudioNotes ||
+        selectedRequest?.audioNotes ||
+        [],
     });
     setMode("inspection-note");
   }
@@ -2523,6 +2543,33 @@ export default function SalesModule() {
             </section>
 
             <form className="sales-form-panel" onSubmit={handleSaveInspectionNote}>
+              {(selectedRequest.note || selectedRequest.surveyDate || selectedRequest.surveyNote) ? (
+                <div className="sales-form-preview" style={{ marginTop: 0, marginBottom: 22 }}>
+                  <h2>Grunnlag fra saken</h2>
+                  <div className="sales-detail-lines">
+                    {selectedRequest.note ? (
+                      <p><strong>Forespørsel:</strong> {selectedRequest.note}</p>
+                    ) : null}
+                    {selectedRequest.surveyDate ? (
+                      <span>
+                        <CalendarDays size={16} />
+                        Befaring planlagt {selectedRequest.surveyDate}
+                        {selectedRequest.surveyTime ? ` kl. ${selectedRequest.surveyTime}` : ""}
+                      </span>
+                    ) : null}
+                    {selectedRequest.surveyResponsible ? (
+                      <span>
+                        <CheckCircle2 size={16} />
+                        Ansvarlig: {selectedRequest.surveyResponsible}
+                      </span>
+                    ) : null}
+                    {selectedRequest.surveyNote ? (
+                      <p><strong>Intern merknad:</strong> {selectedRequest.surveyNote}</p>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+
               <div className="sales-form-grid">
                 <label className="sales-field sales-field-full">
                   <span>Kundens ønsker</span>
