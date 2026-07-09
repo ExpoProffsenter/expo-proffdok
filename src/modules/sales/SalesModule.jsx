@@ -204,6 +204,7 @@ export default function SalesModule() {
   const [acceptanceForm, setAcceptanceForm] = useState({
     name: "",
     confirmed: false,
+    selectedOptionIds: [],
   });
 
   const selectedRequest = useMemo(
@@ -316,6 +317,15 @@ export default function SalesModule() {
     };
   }
 
+  function toggleAcceptedOption(optionId) {
+    setAcceptanceForm((current) => ({
+      ...current,
+      selectedOptionIds: current.selectedOptionIds.includes(optionId)
+        ? current.selectedOptionIds.filter((id) => id !== optionId)
+        : [...current.selectedOptionIds, optionId],
+    }));
+  }
+
   function handleAcceptOffer(event) {
     event.preventDefault();
 
@@ -331,6 +341,11 @@ export default function SalesModule() {
             acceptedAt,
             acceptedOfferVersionId: selectedRequest.sentOfferVersionId,
             acceptedOfferVersionNumber: selectedRequest.sentOfferVersionNumber,
+            acceptedOptionIds: acceptanceForm.selectedOptionIds,
+            acceptedOptions: selectedRequest.offerOptions?.filter((option) =>
+              acceptanceForm.selectedOptionIds.includes(option.id)
+            ) || [],
+            acceptedTotal,
             status: "Akseptert",
             statusClass: "sales-status-accepted",
             nextStep: "Aktiver som prosjekt",
@@ -939,6 +954,11 @@ export default function SalesModule() {
       activeOfferVersion?.reservations || selectedRequest.offerReservations;
     const offerValidityDays =
       activeOfferVersion?.validityDays || selectedRequest.offerValidityDays || "30";
+    const selectedOptions = offerOptions.filter((option) =>
+      acceptanceForm.selectedOptionIds.includes(option.id)
+    );
+    const selectedOptionsTotal = getOfferTotal(selectedOptions);
+    const acceptedTotal = offerTotal + selectedOptionsTotal;
 
     return (
       <div className="sales-app">
@@ -1143,6 +1163,23 @@ export default function SalesModule() {
                       {formatNok(offerTotal * 0.25)}
                     </strong>
                   </div>
+                  {selectedOptionsTotal > 0 ? (
+                    <div
+                      className="sales-offer-total sales-offer-total-muted"
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr minmax(130px, auto)",
+                        alignItems: "center",
+                        columnGap: 24,
+                      }}
+                    >
+                      <span>Valgte opsjoner eks. mva.</span>
+                      <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                        {formatNok(selectedOptionsTotal)}
+                      </strong>
+                    </div>
+                  ) : null}
+
                   <div
                     className="sales-offer-total sales-offer-total-grand"
                     style={{
@@ -1165,7 +1202,7 @@ export default function SalesModule() {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {formatNok(offerTotal * 1.25)}
+                      {formatNok(acceptedTotal * 1.25)}
                     </strong>
                   </div>
                 </div>
@@ -1182,38 +1219,87 @@ export default function SalesModule() {
                 >
                   <h2>Opsjoner</h2>
                   <p>
-                    Opsjoner er ikke inkludert i hovedsummen og kan velges etter
-                    avtale.
+                    Velg opsjonene du ønsker å ta med i aksepten. Valgte opsjoner
+                    legges til totalsummen.
                   </p>
 
                   <div className="sales-option-grid">
-                    {offerOptions.map((option) => (
-                      <div className="sales-option-card" key={option.id}>
-                        {option.imageDataUrl ? (
-                          <img
-                            src={option.imageDataUrl}
-                            alt={option.imageName || option.title || "Opsjon"}
-                          />
-                        ) : null}
+                    {offerOptions.map((option) => {
+                      const isSelected = acceptanceForm.selectedOptionIds.includes(
+                        option.id
+                      );
 
-                        <div>
-                          <h3>{option.title || "Opsjon"}</h3>
-                          {option.description ? <p>{option.description}</p> : null}
-                          {option.productUrl ? (
-                            <a
-                              href={option.productUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Se produkt / dokumentasjon
-                            </a>
+                      return (
+                        <label
+                          className="sales-option-card"
+                          key={option.id}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: option.imageDataUrl
+                              ? "96px 1fr"
+                              : "1fr",
+                            gap: 14,
+                            alignItems: "start",
+                            padding: 14,
+                            border: isSelected
+                              ? "2px solid #0e9aa3"
+                              : "1px solid #d7e4ea",
+                            borderRadius: 16,
+                            background: isSelected ? "#e9fafb" : "#fff",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {option.imageDataUrl ? (
+                            <img
+                              src={option.imageDataUrl}
+                              alt={option.imageName || option.title || "Opsjon"}
+                              style={{
+                                width: 96,
+                                height: 96,
+                                objectFit: "cover",
+                                borderRadius: 12,
+                                border: "1px solid #d7e4ea",
+                              }}
+                            />
                           ) : null}
-                          <strong>
-                            {formatNok(getOfferTotal([option]))} eks. mva.
-                          </strong>
-                        </div>
-                      </div>
-                    ))}
+
+                          <div>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: 10,
+                                alignItems: "flex-start",
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleAcceptedOption(option.id)}
+                              />
+                              <div>
+                                <h3 style={{ margin: "0 0 6px" }}>
+                                  {option.title || "Opsjon"}
+                                </h3>
+                                {option.description ? <p>{option.description}</p> : null}
+                                {option.productUrl ? (
+                                  <a
+                                    href={option.productUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    onClick={(event) => event.stopPropagation()}
+                                  >
+                                    Se produkt / dokumentasjon
+                                  </a>
+                                ) : null}
+                                <strong style={{ display: "block", marginTop: 10 }}>
+                                  + {formatNok(getOfferTotal([option]))} eks. mva.
+                                </strong>
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                      );
+                    })}
                   </div>
                 </article>
               ) : null}
@@ -1250,6 +1336,20 @@ export default function SalesModule() {
                     Skriv inn fullt navn og bekreft at du aksepterer tilbudet med
                     arbeider, priser, forutsetninger og forbehold som vist over.
                   </p>
+
+                  {selectedOptions.length ? (
+                    <div className="sales-form-preview" style={{ marginTop: 18 }}>
+                      <h2>Valgte opsjoner</h2>
+                      <div className="sales-detail-lines">
+                        {selectedOptions.map((option) => (
+                          <span key={option.id}>
+                            <Plus size={16} />
+                            {option.title}: {formatNok(getOfferTotal([option]))} eks. mva.
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
 
                   <div className="sales-form-grid" style={{ marginTop: 18 }}>
                     <label className="sales-field sales-field-full">
@@ -2092,6 +2192,20 @@ export default function SalesModule() {
                       <p>
                         Aksepten gjelder tilbudsversjon v
                         {selectedRequest.acceptedOfferVersionNumber}.
+                      </p>
+                    ) : null}
+                    {selectedRequest.acceptedOptions?.length ? (
+                      <p>
+                        Valgte opsjoner:{" "}
+                        {selectedRequest.acceptedOptions
+                          .map((option) => option.title || "Opsjon")
+                          .join(", ")}.
+                      </p>
+                    ) : null}
+                    {selectedRequest.acceptedTotal ? (
+                      <p>
+                        Akseptert sum inkl. mva.:{" "}
+                        {formatNok(selectedRequest.acceptedTotal * 1.25)}
                       </p>
                     ) : null}
                     <p>
