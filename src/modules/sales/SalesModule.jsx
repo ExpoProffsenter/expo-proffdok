@@ -2101,7 +2101,7 @@ export default function SalesModule() {
                 ) : selectedRequest.status === "Tilbud" &&
                 selectedRequest.offerLines?.length ? (
                   <div className="sales-detail-lines">
-                    <p><strong>{offerTitle}</strong></p>
+                    <p><strong>{selectedRequest.offerTitle}</strong></p>
                     {selectedRequest.offerLines.map((line) => (
                       <span key={line.id}>
                         <ClipboardList size={16} />
@@ -2116,7 +2116,7 @@ export default function SalesModule() {
                       <strong>Sum inkl. mva.:</strong>{" "}
                       {formatNok((selectedRequest.offerTotal || 0) * 1.25)}
                     </p>
-                    {offerOptions.length ? (
+                    {selectedRequest.offerOptions?.length ? (
                       <p>
                         <strong>Opsjoner:</strong>{" "}
                         {selectedRequest.offerOptions.length} opsjon(er) registrert.
