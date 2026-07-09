@@ -1,3 +1,4 @@
+// FASE 18.19A KUNDEOPPLEVELSE/FIRMAPROFIL/KOPIBEKREFTELSE: Premium kundetilbud, tydelig kundelink-bekreftelse og firmaprofil-klargjøring. Ingen prosjektaktivering/main-endring.
 import {
   ArrowLeft,
   CalendarDays,
@@ -222,8 +223,51 @@ export default function SalesModule() {
     note: "",
   });
   const [customerLinkCopied, setCustomerLinkCopied] = useState(false);
+  const [companyProfile, setCompanyProfile] = useState({
+    companyName: "",
+    logoUrl: "",
+    orgNumber: "",
+    address: "",
+    phone: "",
+    website: "",
+  });
   const [publicOfferLoading, setPublicOfferLoading] = useState(false);
   const [publicOfferError, setPublicOfferError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadCompanyProfile() {
+      if (!supabase) return;
+
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData?.user;
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("company_name,logo_url,org_number,address,phone,website")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!active || error || !data) return;
+
+      setCompanyProfile({
+        companyName: data.company_name || "",
+        logoUrl: data.logo_url || "",
+        orgNumber: data.org_number || "",
+        address: data.address || "",
+        phone: data.phone || "",
+        website: data.website || "",
+      });
+    }
+
+    loadCompanyProfile();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) || null,
@@ -867,6 +911,12 @@ export default function SalesModule() {
       reservations: request.offerReservations || "",
       validity_days: Number(request.offerValidityDays || 30),
       total_ex_vat: request.offerTotal || 0,
+      company_name: companyProfile.companyName || "",
+      company_logo_url: companyProfile.logoUrl || "",
+      company_org_number: companyProfile.orgNumber || "",
+      company_address: companyProfile.address || "",
+      company_phone: companyProfile.phone || "",
+      company_website: companyProfile.website || "",
     };
   }
 
@@ -908,6 +958,33 @@ export default function SalesModule() {
       acceptedBy: offer.accepted_by,
       acceptedAt: offer.accepted_at,
       acceptedPayload: offer.accepted_payload,
+      companyName:
+        version.company_name || offer.company_name || result.company_name || "",
+      companyLogoUrl:
+        version.company_logo_url ||
+        offer.company_logo_url ||
+        result.company_logo_url ||
+        "",
+      companyOrgNumber:
+        version.company_org_number ||
+        offer.company_org_number ||
+        result.company_org_number ||
+        "",
+      companyAddress:
+        version.company_address ||
+        offer.company_address ||
+        result.company_address ||
+        "",
+      companyPhone:
+        version.company_phone ||
+        offer.company_phone ||
+        result.company_phone ||
+        "",
+      companyWebsite:
+        version.company_website ||
+        offer.company_website ||
+        result.company_website ||
+        "",
     };
   }
 
@@ -936,6 +1013,12 @@ export default function SalesModule() {
             sentOfferVersionId: data.version_id,
             sentOfferVersionNumber: data.version_number,
             publicToken: data.public_token,
+            companyName: companyProfile.companyName || item.companyName || "",
+            companyLogoUrl: companyProfile.logoUrl || item.companyLogoUrl || "",
+            companyOrgNumber: companyProfile.orgNumber || item.companyOrgNumber || "",
+            companyAddress: companyProfile.address || item.companyAddress || "",
+            companyPhone: companyProfile.phone || item.companyPhone || "",
+            companyWebsite: companyProfile.website || item.companyWebsite || "",
             status: "Tilbud",
             statusClass: "sales-status-quote",
             nextStep: "Send tilbud til kunde",
@@ -961,9 +1044,23 @@ export default function SalesModule() {
   async function copyCustomerOfferLink(requestId) {
     try {
       const link = await publishOfferAndGetLink(requestId);
-      await navigator.clipboard.writeText(link);
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = link;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        textArea.remove();
+      }
+
       setCustomerLinkCopied(true);
-      window.setTimeout(() => setCustomerLinkCopied(false), 2200);
+      window.setTimeout(() => setCustomerLinkCopied(false), 3200);
     } catch (error) {
       alert(error.message || "Kunne ikke kopiere kundelink.");
     }
@@ -1417,7 +1514,9 @@ export default function SalesModule() {
                 <ClipboardList size={22} />
               </div>
               <div className="sales-brand-copy">
-                <strong>Expo ProffDok</strong>
+                <strong>
+                  {selectedRequest.companyName || companyProfile.companyName || "Expo ProffDok"}
+                </strong>
                 <span>Digitalt tilbud</span>
               </div>
             </div>
@@ -1464,10 +1563,10 @@ export default function SalesModule() {
                     background: "#f8fbfc",
                   }}
                 >
-                  {selectedRequest.companyLogoUrl ? (
+                  {selectedRequest.companyLogoUrl || companyProfile.logoUrl ? (
                     <img
-                      src={selectedRequest.companyLogoUrl}
-                      alt={selectedRequest.companyName || "Bedriftslogo"}
+                      src={selectedRequest.companyLogoUrl || companyProfile.logoUrl}
+                      alt={selectedRequest.companyName || companyProfile.companyName || "Bedriftslogo"}
                       style={{
                         display: "block",
                         maxWidth: 190,
@@ -1485,12 +1584,27 @@ export default function SalesModule() {
                         marginBottom: 6,
                       }}
                     >
-                      {selectedRequest.companyName || "Utførende bedrift"}
+                      {selectedRequest.companyName || companyProfile.companyName || "Utførende bedrift"}
                     </strong>
                   )}
                   <span style={{ color: "#607985", fontSize: 13 }}>
                     Tilbud {selectedRequest.id} · Gyldig i {offerValidityDays} dager
                   </span>
+                  {(selectedRequest.companyOrgNumber ||
+                    selectedRequest.companyPhone ||
+                    selectedRequest.companyAddress) ? (
+                    <div className="sales-company-meta">
+                      {selectedRequest.companyOrgNumber ? (
+                        <span>Org.nr. {selectedRequest.companyOrgNumber}</span>
+                      ) : null}
+                      {selectedRequest.companyAddress ? (
+                        <span>{selectedRequest.companyAddress}</span>
+                      ) : null}
+                      {selectedRequest.companyPhone ? (
+                        <span>{selectedRequest.companyPhone}</span>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </section>
@@ -2877,8 +2991,14 @@ export default function SalesModule() {
                           onClick={() => copyCustomerOfferLink(selectedRequest.id)}
                         >
                           <ClipboardList size={18} />
-                          {customerLinkCopied ? "Kopiert" : "Kopier kundelink"}
+                          {customerLinkCopied ? "Kundelink kopiert ✓" : "Kopier kundelink"}
                         </button>
+                        {customerLinkCopied ? (
+                          <div className="sales-copy-toast" role="status" aria-live="polite">
+                            <CheckCircle2 size={18} />
+                            Kundelink er kopiert til utklippstavlen
+                          </div>
+                        ) : null}
                         <button
                           className="sales-secondary-button"
                           type="button"
