@@ -349,6 +349,135 @@ button {
   line-height: 1.6;
 }
 
+/* FASE 18.7 – Ny forespørsel */
+
+.sales-back-button,
+.sales-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 15px;
+  border: 1px solid #d7e4ea;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #10212b;
+  font-weight: 800;
+}
+
+.sales-brand-compact {
+  margin-left: auto;
+}
+
+.sales-form-hero {
+  max-width: 720px;
+}
+
+.sales-form-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 22px;
+  border: 1px solid #d7e4ea;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 16px 42px rgba(16, 33, 43, 0.07);
+}
+
+.sales-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sales-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sales-field-full {
+  grid-column: 1 / -1;
+}
+
+.sales-field span {
+  color: #455762;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.sales-field input,
+.sales-field select,
+.sales-field textarea {
+  width: 100%;
+  border: 1px solid #d7e4ea;
+  border-radius: 15px;
+  background: #ffffff;
+  color: #10212b;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.sales-field input,
+.sales-field select {
+  min-height: 48px;
+  padding: 0 14px;
+}
+
+.sales-field textarea {
+  min-height: 116px;
+  padding: 13px 14px;
+  resize: vertical;
+}
+
+.sales-field input:focus,
+.sales-field select:focus,
+.sales-field textarea:focus {
+  border-color: #1cc7cf;
+  box-shadow: 0 0 0 4px rgba(28, 199, 207, 0.16);
+}
+
+.sales-form-preview {
+  padding: 18px;
+  border: 1px dashed #bfd3dc;
+  border-radius: 20px;
+  background: #f8fbfc;
+}
+
+.sales-form-preview h2 {
+  margin: 0 0 14px;
+  font-size: 16px;
+}
+
+.sales-preview-lines {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sales-preview-lines span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  color: #455762;
+  font-size: 14px;
+}
+
+.sales-preview-lines svg {
+  flex: 0 0 auto;
+  color: #0e9aa3;
+}
+
+.sales-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 @media (max-width: 820px) {
   .sales-shell {
     padding: 18px 16px 42px;
@@ -381,6 +510,26 @@ button {
     grid-column: 1 / -1;
     padding-top: 14px;
     border-top: 1px solid #edf2f4;
+  }
+}
+
+@media (max-width: 720px) {
+  .sales-brand-compact {
+    display: none;
+  }
+
+  .sales-form-grid,
+  .sales-preview-lines {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .sales-form-actions .sales-primary-button,
+  .sales-form-actions .sales-secondary-button {
+    width: 100%;
   }
 }
 
@@ -428,5 +577,10 @@ button {
 
   .sales-request-card {
     padding: 18px;
+  }
+
+  .sales-form-panel {
+    padding: 16px;
+    border-radius: 20px;
   }
 }
