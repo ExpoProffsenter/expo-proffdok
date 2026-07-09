@@ -154,6 +154,7 @@ function getWorkflowSteps(request) {
     Befaring: "Befaring",
     Tilbud: "Tilbud",
     Akseptert: "Aksept",
+    Aktivert: "Prosjekt",
   };
 
   const activeStep = activeStepByStatus[request.status] || "Forespørsel";
@@ -206,6 +207,12 @@ export default function SalesModule() {
     confirmed: false,
     selectedOptionIds: [],
   });
+  const [projectForm, setProjectForm] = useState({
+    projectName: "",
+    projectNumber: "",
+    responsible: "",
+    note: "",
+  });
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) || null,
@@ -246,6 +253,52 @@ export default function SalesModule() {
   function goToList() {
     setMode("list");
     setSelectedRequestId(null);
+  }
+
+  function openProjectActivation() {
+    setProjectForm({
+      projectName:
+        selectedRequest?.projectName ||
+        selectedRequest?.title ||
+        "Nytt ProffDok-prosjekt",
+      projectNumber: selectedRequest?.projectNumber || "",
+      responsible: selectedRequest?.projectResponsible || "",
+      note:
+        selectedRequest?.projectNote ||
+        "Opprettes fra akseptert tilbud i Befaring / Tilbud / Aksept.",
+    });
+    setMode("project-activation");
+  }
+
+  function updateProjectForm(field, value) {
+    setProjectForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function handleActivateProject(event) {
+    event.preventDefault();
+
+    const activatedAt = new Date().toISOString();
+
+    const nextRequests = requests.map((request) =>
+      request.id === selectedRequestId
+        ? {
+            ...request,
+            projectName: projectForm.projectName.trim(),
+            projectNumber: projectForm.projectNumber.trim(),
+            projectResponsible: projectForm.responsible.trim(),
+            projectNote: projectForm.note.trim(),
+            projectActivatedAt: activatedAt,
+            status: "Aktivert",
+            statusClass: "sales-status-accepted",
+            nextStep: "Åpne ProffDok-prosjekt",
+            iconName: "home",
+          }
+        : request
+    );
+
+    setRequests(nextRequests);
+    saveRequests(nextRequests);
+    setMode("detail");
   }
 
   function buildOfferSnapshot(request) {
@@ -934,6 +987,128 @@ export default function SalesModule() {
                 <button className="sales-primary-button" type="submit">
                   <Save size={18} />
                   Lagre forespørsel
+                </button>
+              </div>
+            </form>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "project-activation" && selectedRequest) {
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <header className="sales-header">
+            <button
+              className="sales-back-button"
+              type="button"
+              onClick={() => setMode("detail")}
+            >
+              <ArrowLeft size={18} />
+              Tilbake
+            </button>
+
+            <div className="sales-brand sales-brand-compact">
+              <div className="sales-brand-mark">
+                <ClipboardList size={22} />
+              </div>
+              <div className="sales-brand-copy">
+                <strong>Expo ProffDok</strong>
+                <span>Aktiver som prosjekt</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="sales-main">
+            <section className="sales-form-hero">
+              <p className="sales-eyebrow">Aktiver som ProffDok-prosjekt</p>
+              <h1 className="sales-title">{selectedRequest.title}</h1>
+              <p className="sales-subtitle">
+                {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
+              </p>
+            </section>
+
+            <form className="sales-form-panel" onSubmit={handleActivateProject}>
+              <div className="sales-form-grid">
+                <label className="sales-field">
+                  <span>Prosjektnavn</span>
+                  <input
+                    value={projectForm.projectName}
+                    onChange={(event) =>
+                      updateProjectForm("projectName", event.target.value)
+                    }
+                    required
+                  />
+                </label>
+
+                <label className="sales-field">
+                  <span>Prosjektnummer</span>
+                  <input
+                    value={projectForm.projectNumber}
+                    onChange={(event) =>
+                      updateProjectForm("projectNumber", event.target.value)
+                    }
+                    placeholder="Valgfritt i prototype"
+                  />
+                </label>
+
+                <label className="sales-field sales-field-full">
+                  <span>Ansvarlig</span>
+                  <input
+                    value={projectForm.responsible}
+                    onChange={(event) =>
+                      updateProjectForm("responsible", event.target.value)
+                    }
+                    placeholder="Navn på ansvarlig bruker"
+                  />
+                </label>
+
+                <label className="sales-field sales-field-full">
+                  <span>Intern merknad ved aktivering</span>
+                  <textarea
+                    value={projectForm.note}
+                    onChange={(event) => updateProjectForm("note", event.target.value)}
+                    rows={4}
+                  />
+                </label>
+              </div>
+
+              <div className="sales-form-preview">
+                <h2>Data som skal følge videre</h2>
+                <div className="sales-preview-lines">
+                  <span>
+                    <ClipboardList size={16} />
+                    Kunde, adresse, telefon og e-post
+                  </span>
+                  <span>
+                    <CheckCircle2 size={16} />
+                    Akseptert tilbud og valgte opsjoner
+                  </span>
+                  <span>
+                    <Plus size={16} />
+                    Befaringsnotat og bilder
+                  </span>
+                  <span>
+                    <Home size={16} />
+                    Vanlig ProffDok-prosjekt opprettes senere i Supabase
+                  </span>
+                </div>
+              </div>
+
+              <div className="sales-form-actions">
+                <button
+                  className="sales-secondary-button"
+                  type="button"
+                  onClick={() => setMode("detail")}
+                >
+                  Avbryt
+                </button>
+
+                <button className="sales-primary-button" type="submit">
+                  <Home size={18} />
+                  Aktiver som prosjekt
                 </button>
               </div>
             </form>
@@ -2117,13 +2292,17 @@ export default function SalesModule() {
                           ? openInspectionNote
                           : selectedRequest.status === "Tilbud"
                             ? openCustomerOfferPreview
-                            : undefined
+                            : selectedRequest.status === "Akseptert"
+                              ? openProjectActivation
+                              : undefined
                   }
                 >
                   <CalendarDays size={18} />
                   {selectedRequest.status === "Tilbud"
                     ? "Vis kundens tilbud"
-                    : selectedRequest.nextStep}
+                    : selectedRequest.status === "Akseptert"
+                      ? "Aktiver som prosjekt"
+                      : selectedRequest.nextStep}
                 </button>
               </div>
             </section>
@@ -2177,7 +2356,38 @@ export default function SalesModule() {
               <article className="sales-next-card sales-detail-card-wide">
                 <span className="sales-next-label">Neste steg</span>
                 <h2>{selectedRequest.nextStep}</h2>
-                {selectedRequest.status === "Akseptert" &&
+                {selectedRequest.status === "Aktivert" &&
+                selectedRequest.projectActivatedAt ? (
+                  <div className="sales-detail-lines">
+                    <span>
+                      <Home size={16} />
+                      Aktivert som prosjekt: {selectedRequest.projectName}
+                    </span>
+                    {selectedRequest.projectNumber ? (
+                      <span>
+                        <ClipboardList size={16} />
+                        Prosjektnummer: {selectedRequest.projectNumber}
+                      </span>
+                    ) : null}
+                    {selectedRequest.projectResponsible ? (
+                      <span>
+                        <CheckCircle2 size={16} />
+                        Ansvarlig: {selectedRequest.projectResponsible}
+                      </span>
+                    ) : null}
+                    <p>
+                      Aktivert{" "}
+                      {new Date(selectedRequest.projectActivatedAt).toLocaleString(
+                        "nb-NO"
+                      )}.
+                    </p>
+                    <p>
+                      Dette er fortsatt en prototype. Endelig prosjektopprettelse
+                      skal senere kobles kontrollert mot eksisterende ProffDok-prosjekter
+                      i Supabase.
+                    </p>
+                  </div>
+                ) : selectedRequest.status === "Akseptert" &&
                 selectedRequest.acceptedBy ? (
                   <div className="sales-detail-lines">
                     <span>
@@ -2195,18 +2405,67 @@ export default function SalesModule() {
                       </p>
                     ) : null}
                     {selectedRequest.acceptedOptions?.length ? (
-                      <p>
-                        Valgte opsjoner:{" "}
-                        {selectedRequest.acceptedOptions
-                          .map((option) => option.title || "Opsjon")
-                          .join(", ")}.
-                      </p>
+                      <div style={{ marginTop: 8 }}>
+                        <p><strong>Valgte opsjoner:</strong></p>
+                        <div style={{ display: "grid", gap: 8, maxWidth: 720 }}>
+                          {selectedRequest.acceptedOptions.map((option) => (
+                            <div
+                              key={option.id}
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "28px 1fr minmax(140px, auto)",
+                                gap: 10,
+                                alignItems: "center",
+                              }}
+                            >
+                              <Plus size={16} />
+                              <span>{option.title || "Opsjon"}</span>
+                              <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                                {formatNok(getOfferTotal([option]))} eks. mva.
+                              </strong>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     ) : null}
                     {selectedRequest.acceptedTotal ? (
-                      <p>
-                        Akseptert sum inkl. mva.:{" "}
-                        {formatNok(selectedRequest.acceptedTotal * 1.25)}
-                      </p>
+                      <div
+                        style={{
+                          marginTop: 14,
+                          paddingTop: 14,
+                          borderTop: "1px solid #d7e4ea",
+                          maxWidth: 430,
+                          marginLeft: "auto",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr minmax(130px, auto)",
+                            gap: 18,
+                            alignItems: "center",
+                          }}
+                        >
+                          <span>Akseptert sum eks. mva.</span>
+                          <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                            {formatNok(selectedRequest.acceptedTotal)}
+                          </strong>
+                        </div>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr minmax(130px, auto)",
+                            gap: 18,
+                            alignItems: "center",
+                            marginTop: 6,
+                          }}
+                        >
+                          <span>Akseptert sum inkl. mva.</span>
+                          <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                            {formatNok(selectedRequest.acceptedTotal * 1.25)}
+                          </strong>
+                        </div>
+                      </div>
                     ) : null}
                     <p>
                       Neste steg er å aktivere saken som et vanlig ProffDok-prosjekt.
@@ -2216,24 +2475,77 @@ export default function SalesModule() {
                 selectedRequest.offerLines?.length ? (
                   <div className="sales-detail-lines">
                     <p><strong>{selectedRequest.offerTitle}</strong></p>
-                    {selectedRequest.offerLines.map((line) => (
-                      <span key={line.id}>
-                        <ClipboardList size={16} />
-                        {line.description}: {formatNok(getOfferTotal([line]))} eks. mva.
-                      </span>
-                    ))}
-                    <p>
-                      <strong>Sum eks. mva.:</strong>{" "}
-                      {formatNok(selectedRequest.offerTotal || 0)}
-                    </p>
-                    <p>
-                      <strong>Sum inkl. mva.:</strong>{" "}
-                      {formatNok((selectedRequest.offerTotal || 0) * 1.25)}
-                    </p>
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: 10,
+                        maxWidth: 720,
+                      }}
+                    >
+                      {selectedRequest.offerLines.map((line, index) => (
+                        <div
+                          key={line.id}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "28px 1fr minmax(140px, auto)",
+                            gap: 10,
+                            alignItems: "start",
+                          }}
+                        >
+                          <ClipboardList size={16} />
+                          <span>
+                            {index + 1}. {line.description}
+                          </span>
+                          <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                            {formatNok(getOfferTotal([line]))} eks. mva.
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: 18,
+                        paddingTop: 14,
+                        borderTop: "1px solid #d7e4ea",
+                        maxWidth: 430,
+                        marginLeft: "auto",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr minmax(130px, auto)",
+                          gap: 18,
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>Sum eks. mva.</span>
+                        <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                          {formatNok(selectedRequest.offerTotal || 0)}
+                        </strong>
+                      </div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr minmax(130px, auto)",
+                          gap: 18,
+                          alignItems: "center",
+                          marginTop: 6,
+                        }}
+                      >
+                        <span>Sum inkl. mva.</span>
+                        <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                          {formatNok((selectedRequest.offerTotal || 0) * 1.25)}
+                        </strong>
+                      </div>
+                    </div>
+
                     {selectedRequest.offerOptions?.length ? (
                       <p>
                         <strong>Opsjoner:</strong>{" "}
                         {selectedRequest.offerOptions.length} opsjon(er) registrert.
+                        Kunden velger opsjoner i kundevisningen før aksept.
                       </p>
                     ) : null}
                   </div>
