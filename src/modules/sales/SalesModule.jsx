@@ -171,6 +171,12 @@ export default function SalesModule() {
   const [mode, setMode] = useState("list");
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [form, setForm] = useState(emptyForm);
+  const [surveyForm, setSurveyForm] = useState({
+    date: "",
+    time: "",
+    responsible: "",
+    note: "",
+  });
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) || null,
@@ -211,6 +217,44 @@ export default function SalesModule() {
   function goToList() {
     setMode("list");
     setSelectedRequestId(null);
+  }
+
+  function openSurveyPlanning() {
+    setSurveyForm({
+      date: selectedRequest?.surveyDate || "",
+      time: selectedRequest?.surveyTime || "",
+      responsible: selectedRequest?.surveyResponsible || "",
+      note: selectedRequest?.surveyNote || "",
+    });
+    setMode("survey-plan");
+  }
+
+  function updateSurveyForm(field, value) {
+    setSurveyForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function handleSaveSurveyPlan(event) {
+    event.preventDefault();
+
+    const nextRequests = requests.map((request) =>
+      request.id === selectedRequestId
+        ? {
+            ...request,
+            surveyDate: surveyForm.date,
+            surveyTime: surveyForm.time,
+            surveyResponsible: surveyForm.responsible.trim(),
+            surveyNote: surveyForm.note.trim(),
+            status: "Befaring",
+            statusClass: "sales-status-survey",
+            nextStep: "Fullfør befaringsnotat",
+            iconName: "ruler",
+          }
+        : request
+    );
+
+    setRequests(nextRequests);
+    saveRequests(nextRequests);
+    setMode("detail");
   }
 
   function handleCreateRequest(event) {
@@ -406,6 +450,129 @@ export default function SalesModule() {
     );
   }
 
+  if (mode === "survey-plan" && selectedRequest) {
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <header className="sales-header">
+            <button
+              className="sales-back-button"
+              type="button"
+              onClick={() => setMode("detail")}
+            >
+              <ArrowLeft size={18} />
+              Tilbake
+            </button>
+
+            <div className="sales-brand sales-brand-compact">
+              <div className="sales-brand-mark">
+                <ClipboardList size={22} />
+              </div>
+              <div className="sales-brand-copy">
+                <strong>Expo ProffDok</strong>
+                <span>Befaring / Tilbud / Aksept</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="sales-main">
+            <section className="sales-form-hero">
+              <p className="sales-eyebrow">Planlegg befaring</p>
+              <h1 className="sales-title">{selectedRequest.title}</h1>
+              <p className="sales-subtitle">
+                {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
+              </p>
+            </section>
+
+            <form className="sales-form-panel" onSubmit={handleSaveSurveyPlan}>
+              <div className="sales-form-grid">
+                <label className="sales-field">
+                  <span>Dato</span>
+                  <input
+                    type="date"
+                    value={surveyForm.date}
+                    onChange={(event) => updateSurveyForm("date", event.target.value)}
+                    required
+                  />
+                </label>
+
+                <label className="sales-field">
+                  <span>Tidspunkt</span>
+                  <input
+                    type="time"
+                    value={surveyForm.time}
+                    onChange={(event) => updateSurveyForm("time", event.target.value)}
+                    required
+                  />
+                </label>
+
+                <label className="sales-field sales-field-full">
+                  <span>Ansvarlig</span>
+                  <input
+                    value={surveyForm.responsible}
+                    onChange={(event) =>
+                      updateSurveyForm("responsible", event.target.value)
+                    }
+                    placeholder="Navn på ansvarlig bruker"
+                    autoComplete="off"
+                    required
+                  />
+                </label>
+
+                <label className="sales-field sales-field-full">
+                  <span>Intern merknad</span>
+                  <textarea
+                    value={surveyForm.note}
+                    onChange={(event) => updateSurveyForm("note", event.target.value)}
+                    placeholder="Eksempel: Avklar parkering. Kunde ønsker vurdering av sluk og fall."
+                    rows={4}
+                  />
+                </label>
+              </div>
+
+              <div className="sales-form-preview">
+                <h2>Befaringsplan</h2>
+                <div className="sales-preview-lines">
+                  <span>
+                    <CalendarDays size={16} />
+                    {surveyForm.date || "Dato ikke valgt"}
+                  </span>
+                  <span>
+                    <ClipboardList size={16} />
+                    {surveyForm.time || "Tidspunkt ikke valgt"}
+                  </span>
+                  <span>
+                    <CheckCircle2 size={16} />
+                    {surveyForm.responsible || "Ansvarlig ikke valgt"}
+                  </span>
+                  <span>
+                    <MapPin size={16} />
+                    {selectedRequest.address}
+                  </span>
+                </div>
+              </div>
+
+              <div className="sales-form-actions">
+                <button
+                  className="sales-secondary-button"
+                  type="button"
+                  onClick={() => setMode("detail")}
+                >
+                  Avbryt
+                </button>
+
+                <button className="sales-primary-button" type="submit">
+                  <Save size={18} />
+                  Lagre befaringsplan
+                </button>
+              </div>
+            </form>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   if (mode === "detail" && selectedRequest) {
     const workflowSteps = getWorkflowSteps(selectedRequest);
 
@@ -441,7 +608,15 @@ export default function SalesModule() {
                 </p>
               </div>
 
-              <button className="sales-primary-button" type="button">
+              <button
+                className="sales-primary-button"
+                type="button"
+                onClick={
+                  selectedRequest.status === "Forespørsel"
+                    ? openSurveyPlanning
+                    : undefined
+                }
+              >
                 <CalendarDays size={18} />
                 {selectedRequest.nextStep}
               </button>
@@ -496,11 +671,27 @@ export default function SalesModule() {
               <article className="sales-next-card sales-detail-card-wide">
                 <span className="sales-next-label">Neste steg</span>
                 <h2>{selectedRequest.nextStep}</h2>
-                <p>
-                  Neste versjon av prototypen skal åpne en enkel befaringsplan med
-                  dato, tidspunkt og ansvarlig bruker. Foreløpig tester vi bare
-                  navigasjon og arbeidsflyt.
-                </p>
+                {selectedRequest.status === "Befaring" &&
+                selectedRequest.surveyDate ? (
+                  <div className="sales-detail-lines">
+                    <span>
+                      <CalendarDays size={16} />
+                      {selectedRequest.surveyDate} kl. {selectedRequest.surveyTime}
+                    </span>
+                    <span>
+                      <CheckCircle2 size={16} />
+                      Ansvarlig: {selectedRequest.surveyResponsible}
+                    </span>
+                    {selectedRequest.surveyNote ? (
+                      <p>{selectedRequest.surveyNote}</p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p>
+                    Registrer dato, tidspunkt, ansvarlig og en kort intern merknad.
+                    Når planen lagres flyttes saken til Befaring.
+                  </p>
+                )}
               </article>
             </section>
           </main>
