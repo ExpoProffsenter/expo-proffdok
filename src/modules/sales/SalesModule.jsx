@@ -715,7 +715,18 @@ export default function SalesModule() {
               </p>
             </section>
 
-            <form className="sales-form-panel" onSubmit={handleSaveOffer}>
+            <form
+              className="sales-form-panel"
+              onSubmit={handleSaveOffer}
+              onKeyDown={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  event.target.tagName !== "TEXTAREA"
+                ) {
+                  event.preventDefault();
+                }
+              }}
+            >
               <div className="sales-form-grid">
                 <label className="sales-field sales-field-full">
                   <span>Tilbudstittel</span>
@@ -1211,11 +1222,15 @@ export default function SalesModule() {
                         ? openOfferBuilder
                         : selectedRequest.status === "Befaring"
                           ? openInspectionNote
-                          : undefined
+                          : selectedRequest.status === "Tilbud"
+                            ? openOfferBuilder
+                            : undefined
                   }
                 >
                   <CalendarDays size={18} />
-                  {selectedRequest.nextStep}
+                  {selectedRequest.status === "Tilbud"
+                    ? "Rediger tilbud"
+                    : selectedRequest.nextStep}
                 </button>
               </div>
             </section>
