@@ -1,3 +1,4 @@
+// FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
 // FASE 18.19C3 HOTFIX FIRMAPROFIL EMAIL-FALLBACK: Henter firmaprofil robust via auth-id først og innlogget e-post som fallback før publish-snapshot. Ingen SQL/main/CSS.
 // FASE 18.19C2 HOTFIX FIRMAPROFILSNAPSHOT: Bruker samme profiles-felt som hovedappen, venter på auth/session og legger firmasnapshot inn i faktisk publish-payload. Ingen SQL/main/CSS.
 // FASE 18.19C1 HOTFIX PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
@@ -1634,9 +1635,9 @@ export default function SalesModule() {
     const acceptedTotal = offerTotal + selectedOptionsTotal;
 
     return (
-      <div className="sales-app">
-        <div className="sales-shell">
-          <header className="sales-header">
+      <div className="sales-app sales-customer-offer-app">
+        <div className="sales-shell sales-customer-shell">
+          <header className="sales-header sales-customer-header">
             {!selectedRequest.isPublicOffer ? (
               <button
                 className="sales-back-button"
@@ -1661,92 +1662,75 @@ export default function SalesModule() {
             </div>
           </header>
 
-          <main className="sales-main">
-            <section
-              className="sales-form-hero"
-              style={{
-                background: "#ffffff",
-                border: "1px solid #d7e4ea",
-                borderRadius: 24,
-                padding: "30px 34px",
-                boxShadow: "0 18px 45px rgba(16, 42, 55, 0.08)",
-                marginBottom: 22,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: 24,
-                  flexWrap: "wrap",
-                }}
-              >
-                <div>
-                  <p className="sales-eyebrow">Digitalt tilbud</p>
-                  <h1 className="sales-title">{offerTitle}</h1>
-                  <p className="sales-subtitle">
-                    Til {selectedRequest.customer} · {selectedRequest.address}
-                    {selectedRequest.sentOfferVersionNumber
-                      ? ` · Versjon ${selectedRequest.sentOfferVersionNumber}`
-                      : ""}
-                  </p>
-                </div>
+          <main className="sales-main sales-customer-main">
+            <section className="sales-customer-hero">
+              <div className="sales-customer-hero-content">
+                <p className="sales-eyebrow">Digitalt tilbud</p>
+                <h1 className="sales-title sales-customer-title">{offerTitle}</h1>
+                <p className="sales-subtitle sales-customer-lead">
+                  Et oversiktlig tilbud for arbeidene under. Velg eventuelle opsjoner
+                  og aksepter digitalt nederst på siden.
+                </p>
 
-                <div
-                  style={{
-                    minWidth: 220,
-                    padding: "18px 20px",
-                    border: "1px solid #d7e4ea",
-                    borderRadius: 18,
-                    background: "#f8fbfc",
-                  }}
-                >
-                  {offerCompany.logoUrl ? (
-                    <img
-                      src={offerCompany.logoUrl}
-                      alt={offerCompany.companyName || "Bedriftslogo"}
-                      style={{
-                        display: "block",
-                        maxWidth: 190,
-                        maxHeight: 64,
-                        objectFit: "contain",
-                        marginBottom: 12,
-                      }}
-                    />
-                  ) : (
-                    <strong
-                      style={{
-                        display: "block",
-                        fontSize: 18,
-                        color: "#102a37",
-                        marginBottom: 6,
-                      }}
-                    >
-                      {offerCompany.companyName || "Firmaprofil ikke registrert"}
+                <div className="sales-customer-meta-grid">
+                  <div>
+                    <span>Kunde</span>
+                    <strong>{selectedRequest.customer || "Ikke registrert"}</strong>
+                  </div>
+                  <div>
+                    <span>Prosjektadresse</span>
+                    <strong>{selectedRequest.address || "Ikke registrert"}</strong>
+                  </div>
+                  <div>
+                    <span>Tilbudsnummer</span>
+                    <strong>{selectedRequest.id}</strong>
+                  </div>
+                  <div>
+                    <span>Versjon</span>
+                    <strong>
+                      {selectedRequest.sentOfferVersionNumber
+                        ? `v${selectedRequest.sentOfferVersionNumber}`
+                        : "Ikke sendt"}
                     </strong>
-                  )}
-                  <span style={{ color: "#607985", fontSize: 13 }}>
-                    Tilbud {selectedRequest.id} · Gyldig i {offerValidityDays} dager
-                  </span>
+                  </div>
+                  <div>
+                    <span>Gyldighet</span>
+                    <strong>{offerValidityDays} dager</strong>
+                  </div>
+                </div>
+              </div>
 
+              <aside className="sales-customer-company-card">
+                {offerCompany.logoUrl ? (
+                  <img
+                    className="sales-customer-company-logo"
+                    src={offerCompany.logoUrl}
+                    alt={offerCompany.companyName || "Bedriftslogo"}
+                  />
+                ) : (
+                  <strong className="sales-customer-company-name">
+                    {offerCompany.companyName || "Firmaprofil ikke registrert"}
+                  </strong>
+                )}
+
+                <span className="sales-customer-company-label">Tilbud fra</span>
+                {offerCompany.companyName && offerCompany.logoUrl ? (
+                  <strong className="sales-customer-company-name">
+                    {offerCompany.companyName}
+                  </strong>
+                ) : null}
+
+                <div className="sales-customer-company-details">
                   {offerCompany.orgNumber ? (
-                    <span className="sales-company-meta">
-                      Org.nr. {offerCompany.orgNumber}
-                    </span>
+                    <span>Org.nr. {offerCompany.orgNumber}</span>
                   ) : null}
-
                   {[offerCompany.address, offerCompany.phone, offerCompany.email]
                     .filter(Boolean)
                     .map((value) => (
-                      <span className="sales-company-meta" key={value}>
-                        {value}
-                      </span>
+                      <span key={value}>{value}</span>
                     ))}
-
                   {offerCompany.website ? (
                     <a
-                      className="sales-company-link"
                       href={
                         /^https?:\/\//i.test(offerCompany.website)
                           ? offerCompany.website
@@ -1759,52 +1743,38 @@ export default function SalesModule() {
                     </a>
                   ) : null}
                 </div>
-              </div>
+              </aside>
             </section>
 
-            <section
-              className="sales-form-panel"
-              style={{
-                background: "transparent",
-                border: 0,
-                padding: 0,
-                boxShadow: "none",
-              }}
-            >
-              <article className="sales-detail-card sales-detail-card-wide"
-                style={{
-                  marginBottom: 16,
-                  borderRadius: 20,
-                  boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
-                }}>
-                <h2>Om tilbudet</h2>
-                <p>{offerIntro}</p>
+            <section className="sales-customer-offer-stack">
+              <article className="sales-customer-section sales-customer-intro-card">
+                <span className="sales-section-kicker">01</span>
+                <div>
+                  <h2>Om tilbudet</h2>
+                  <p>{offerIntro || "Ingen innledning registrert."}</p>
+                </div>
               </article>
 
-              <article className="sales-detail-card sales-detail-card-wide"
-                style={{
-                  marginBottom: 16,
-                  borderRadius: 20,
-                  boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
-                }}>
-                <h2>Arbeider og priser</h2>
-                <div className="sales-detail-lines">
+              <article className="sales-customer-section">
+                <div className="sales-customer-section-heading">
+                  <div>
+                    <span className="sales-section-kicker">02</span>
+                    <h2>Arbeider og priser</h2>
+                  </div>
+                  <span className="sales-customer-section-note">
+                    Alle priser er oppgitt eks. mva. per post.
+                  </span>
+                </div>
+
+                <div className="sales-customer-lines">
                   {offerLines.map((line, index) => (
-                    <div
-                      key={line.id}
-                      className="sales-customer-price-line"
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "28px 1fr minmax(150px, auto)",
-                        alignItems: "start",
-                        gap: 10,
-                      }}
-                    >
-                      <ClipboardList size={16} />
-                      <div>
-                        <span>
-                          {index + 1}. {line.description}
-                        </span>
+                    <div key={line.id} className="sales-customer-line-card">
+                      <div className="sales-customer-line-number">
+                        {String(index + 1).padStart(2, "0")}
+                      </div>
+
+                      <div className="sales-customer-line-body">
+                        <h3>{line.description}</h3>
 
                         {line.imageDataUrl || line.productUrl ? (
                           <div className="sales-customer-line-media">
@@ -1816,11 +1786,7 @@ export default function SalesModule() {
                             ) : null}
 
                             {line.productUrl ? (
-                              <a
-                                href={line.productUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
+                              <a href={line.productUrl} target="_blank" rel="noreferrer">
                                 Se produkt / dokumentasjon
                               </a>
                             ) : null}
@@ -1828,111 +1794,49 @@ export default function SalesModule() {
                         ) : null}
                       </div>
 
-                      <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                        {formatNok(getOfferTotal([line]))} eks. mva.
+                      <strong className="sales-customer-line-price">
+                        {formatNok(getOfferTotal([line]))}
+                        <span>eks. mva.</span>
                       </strong>
                     </div>
                   ))}
                 </div>
 
-                <div
-                  style={{
-                    marginTop: 24,
-                    marginLeft: "auto",
-                    maxWidth: 430,
-                    borderTop: "1px solid #d7e4ea",
-                    paddingTop: 14,
-                  }}
-                >
-                  <div
-                    className="sales-offer-total"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr minmax(130px, auto)",
-                      alignItems: "center",
-                      columnGap: 24,
-                    }}
-                  >
-                    <span>Sum eks. mva.</span>
-                    <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                      {formatNok(offerTotal)}
-                    </strong>
+                <div className="sales-customer-total-card">
+                  <div className="sales-customer-total-row">
+                    <span>Sum arbeider eks. mva.</span>
+                    <strong>{formatNok(offerTotal)}</strong>
                   </div>
-                  <div
-                    className="sales-offer-total sales-offer-total-muted"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr minmax(130px, auto)",
-                      alignItems: "center",
-                      columnGap: 24,
-                    }}
-                  >
+                  <div className="sales-customer-total-row sales-customer-total-muted">
                     <span>Mva. 25 %</span>
-                    <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                      {formatNok(offerTotal * 0.25)}
-                    </strong>
+                    <strong>{formatNok(offerTotal * 0.25)}</strong>
                   </div>
                   {selectedOptionsTotal > 0 ? (
-                    <div
-                      className="sales-offer-total sales-offer-total-muted"
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr minmax(130px, auto)",
-                        alignItems: "center",
-                        columnGap: 24,
-                      }}
-                    >
+                    <div className="sales-customer-total-row sales-customer-total-muted">
                       <span>Valgte opsjoner eks. mva.</span>
-                      <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                        {formatNok(selectedOptionsTotal)}
-                      </strong>
+                      <strong>{formatNok(selectedOptionsTotal)}</strong>
                     </div>
                   ) : null}
-
-                  <div
-                    className="sales-offer-total sales-offer-total-grand"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr minmax(130px, auto)",
-                      alignItems: "center",
-                      columnGap: 24,
-                      marginTop: 10,
-                      padding: "16px 18px",
-                      borderRadius: 16,
-                      background: "#e9fafb",
-                      border: "1px solid #8be4e8",
-                    }}
-                  >
-                    <span>Sum inkl. mva.</span>
-                    <strong
-                      style={{
-                        fontSize: 22,
-                        textAlign: "right",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {formatNok(acceptedTotal * 1.25)}
-                    </strong>
+                  <div className="sales-customer-total-row sales-customer-total-grand">
+                    <span>Total inkl. mva.</span>
+                    <strong>{formatNok(acceptedTotal * 1.25)}</strong>
                   </div>
                 </div>
               </article>
 
               {offerOptions.length ? (
-                <article
-                  className="sales-detail-card sales-detail-card-wide"
-                  style={{
-                    marginBottom: 16,
-                    borderRadius: 20,
-                    boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
-                  }}
-                >
-                  <h2>Opsjoner</h2>
-                  <p>
-                    Velg opsjonene du ønsker å ta med i aksepten. Valgte opsjoner
-                    legges til totalsummen.
-                  </p>
+                <article className="sales-customer-section">
+                  <div className="sales-customer-section-heading">
+                    <div>
+                      <span className="sales-section-kicker">03</span>
+                      <h2>Opsjoner</h2>
+                    </div>
+                    <span className="sales-customer-section-note">
+                      Valgte opsjoner legges til totalsummen før aksept.
+                    </span>
+                  </div>
 
-                  <div className="sales-option-grid">
+                  <div className="sales-customer-option-grid">
                     {offerOptions.map((option) => {
                       const isSelected = acceptanceForm.selectedOptionIds.includes(
                         option.id
@@ -1940,71 +1844,48 @@ export default function SalesModule() {
 
                       return (
                         <label
-                          className="sales-option-card"
+                          className={`sales-customer-option-card ${
+                            isSelected ? "sales-customer-option-card-selected" : ""
+                          } ${option.imageDataUrl ? "sales-customer-option-card-with-image" : ""}`}
                           key={option.id}
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: option.imageDataUrl
-                              ? "96px 1fr"
-                              : "1fr",
-                            gap: 14,
-                            alignItems: "start",
-                            padding: 14,
-                            border: isSelected
-                              ? "2px solid #0e9aa3"
-                              : "1px solid #d7e4ea",
-                            borderRadius: 16,
-                            background: isSelected ? "#e9fafb" : "#fff",
-                            cursor: "pointer",
-                          }}
                         >
                           {option.imageDataUrl ? (
                             <img
+                              className="sales-customer-option-image"
                               src={option.imageDataUrl}
                               alt={option.imageName || option.title || "Opsjon"}
-                              style={{
-                                width: 96,
-                                height: 96,
-                                objectFit: "cover",
-                                borderRadius: 12,
-                                border: "1px solid #d7e4ea",
-                              }}
                             />
                           ) : null}
 
-                          <div>
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: 10,
-                                alignItems: "flex-start",
-                              }}
-                            >
+                          <div className="sales-customer-option-content">
+                            <div className="sales-customer-option-topline">
                               <input
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => toggleAcceptedOption(option.id)}
                               />
-                              <div>
-                                <h3 style={{ margin: "0 0 6px" }}>
-                                  {option.title || "Opsjon"}
-                                </h3>
-                                {option.description ? <p>{option.description}</p> : null}
-                                {option.productUrl ? (
-                                  <a
-                                    href={option.productUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    onClick={(event) => event.stopPropagation()}
-                                  >
-                                    Se produkt / dokumentasjon
-                                  </a>
-                                ) : null}
-                                <strong style={{ display: "block", marginTop: 10 }}>
-                                  + {formatNok(getOfferTotal([option]))} eks. mva.
-                                </strong>
-                              </div>
+                              <span className="sales-customer-option-state">
+                                {isSelected ? "Valgt" : "Velg opsjon"}
+                              </span>
                             </div>
+
+                            <h3>{option.title || "Opsjon"}</h3>
+                            {option.description ? <p>{option.description}</p> : null}
+
+                            {option.productUrl ? (
+                              <a
+                                href={option.productUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={(event) => event.stopPropagation()}
+                              >
+                                Se produkt / dokumentasjon
+                              </a>
+                            ) : null}
+
+                            <strong className="sales-customer-option-price">
+                              + {formatNok(getOfferTotal([option]))} eks. mva.
+                            </strong>
                           </div>
                         </label>
                       );
@@ -2014,42 +1895,46 @@ export default function SalesModule() {
               ) : null}
 
               {offerReservations ? (
-                <article className="sales-detail-card sales-detail-card-wide"
-                style={{
-                  marginBottom: 16,
-                  borderRadius: 20,
-                  boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
-                }}>
-                  <h2>Forutsetninger og forbehold</h2>
-                  <p>{offerReservations}</p>
+                <article className="sales-customer-section sales-customer-text-section">
+                  <span className="sales-section-kicker">
+                    {offerOptions.length ? "04" : "03"}
+                  </span>
+                  <div>
+                    <h2>Forutsetninger og forbehold</h2>
+                    <p>{offerReservations}</p>
+                  </div>
                 </article>
               ) : null}
 
-              <article className="sales-detail-card sales-detail-card-wide"
-                style={{
-                  marginBottom: 16,
-                  borderRadius: 20,
-                  boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
-                }}>
-                <h2>Gyldighet</h2>
-                <p>
-                  Tilbudet er gyldig i {offerValidityDays} dager.
-                </p>
-              </article>
+              <form onSubmit={handleAcceptOffer} className="sales-customer-accept-form">
+                <article className="sales-customer-accept-card">
+                  <div className="sales-customer-accept-copy">
+                    <span className="sales-next-label">Digital aksept</span>
+                    <h2>Aksepter tilbudet</h2>
+                    <p>
+                      Skriv inn fullt navn og bekreft at du aksepterer tilbudet med
+                      arbeider, priser, forutsetninger og forbehold som vist over.
+                    </p>
+                  </div>
 
-              <form onSubmit={handleAcceptOffer}>
-                <article className="sales-next-card sales-detail-card-wide">
-                  <span className="sales-next-label">Digital aksept</span>
-                  <h2>Aksepter tilbudet</h2>
-                  <p>
-                    Skriv inn fullt navn og bekreft at du aksepterer tilbudet med
-                    arbeider, priser, forutsetninger og forbehold som vist over.
-                  </p>
+                  <div className="sales-customer-accept-summary">
+                    <div>
+                      <span>Total inkl. mva.</span>
+                      <strong>{formatNok(acceptedTotal * 1.25)}</strong>
+                    </div>
+                    {selectedOptions.length ? (
+                      <p>
+                        Inkluderer {selectedOptions.length} valgt(e) opsjon(er).
+                      </p>
+                    ) : (
+                      <p>Ingen opsjoner er valgt.</p>
+                    )}
+                  </div>
 
                   {selectedOptions.length ? (
-                    <div className="sales-form-preview" style={{ marginTop: 18 }}>
-                      <h2>Valgte opsjoner</h2>
-                      <div className="sales-detail-lines">
+                    <div className="sales-customer-selected-options">
+                      <h3>Valgte opsjoner</h3>
+                      <div>
                         {selectedOptions.map((option) => (
                           <span key={option.id}>
                             <Plus size={16} />
@@ -2060,7 +1945,7 @@ export default function SalesModule() {
                     </div>
                   ) : null}
 
-                  <div className="sales-form-grid" style={{ marginTop: 18 }}>
+                  <div className="sales-form-grid sales-customer-accept-fields">
                     <label className="sales-field sales-field-full">
                       <span>Fullt navn</span>
                       <input
@@ -2095,11 +1980,7 @@ export default function SalesModule() {
                     </label>
                   </div>
 
-                  <button
-                    className="sales-primary-button"
-                    type="submit"
-                    style={{ marginTop: 18 }}
-                  >
+                  <button className="sales-primary-button sales-customer-accept-button" type="submit">
                     <CheckCircle2 size={18} />
                     Aksepter tilbud
                   </button>
