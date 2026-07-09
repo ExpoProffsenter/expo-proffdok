@@ -2266,7 +2266,8 @@ export default function SalesModule() {
               </div>
 
               <div className="sales-hero-actions">
-                {selectedRequest.surveyDate ? (
+                {selectedRequest.surveyDate &&
+                !["Akseptert", "Aktivert"].includes(selectedRequest.status) ? (
                   <button
                     className="sales-secondary-button"
                     type="button"
@@ -2585,6 +2586,11 @@ export default function SalesModule() {
                     ) : null}
                     <p>
                       Neste steg er å aktivere saken som et vanlig ProffDok-prosjekt.
+                    </p>
+                    <p>
+                      Aksepten er låst i denne arbeidsflyten. Eventuelle endringer
+                      skal senere håndteres som revidert tilbud / ny tilbudsversjon,
+                      ikke ved å overskrive akseptert tilbud.
                     </p>
                   </div>
                 ) : selectedRequest.status === "Tilbud" &&
