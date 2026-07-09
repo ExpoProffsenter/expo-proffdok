@@ -13,7 +13,15 @@ import {
   Send,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 import "./sales.css";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
 
@@ -214,6 +222,8 @@ export default function SalesModule() {
     note: "",
   });
   const [customerLinkCopied, setCustomerLinkCopied] = useState(false);
+  const [publicOfferLoading, setPublicOfferLoading] = useState(false);
+  const [publicOfferError, setPublicOfferError] = useState("");
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) || null,
@@ -222,17 +232,13 @@ export default function SalesModule() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const customerOfferId = params.get("customerOffer");
+    const publicOfferToken = params.get("publicOffer");
 
-    if (!customerOfferId) return;
+    if (!publicOfferToken) return;
 
-    const request = requests.find((item) => item.id === customerOfferId);
-
-    if (!request) return;
-
-    openCustomerOfferFromRequestId(customerOfferId);
+    loadPublicOfferFromToken(publicOfferToken);
     window.history.replaceState({}, "", window.location.pathname);
-    // Kun første lasting av kundelink i isolert preview.
+    // Kun første lasting av offentlig kundelink i isolert preview.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -386,7 +392,7 @@ export default function SalesModule() {
     }));
   }
 
-  function handleAcceptOffer(event) {
+  async function handleAcceptOffer(event) {
     event.preventDefault();
 
     if (!acceptanceForm.confirmed || !acceptanceForm.name.trim()) return;
@@ -401,6 +407,24 @@ export default function SalesModule() {
       (activeOfferVersion?.total || selectedRequest.offerTotal || 0) +
       getOfferTotal(selectedOptions);
     const acceptedAt = new Date().toISOString();
+
+    if (selectedRequest.isPublicOffer) {
+      if (!supabase) {
+        alert("Supabase-miljøvariabler mangler i Vercel-preview.");
+        return;
+      }
+
+      const { error } = await supabase.rpc("accept_sales_offer", {
+        token: selectedRequest.publicToken,
+        accepted_name: acceptanceForm.name.trim(),
+        selected_options: selectedOptions,
+      });
+
+      if (error) {
+        alert(error.message || "Kunne ikke registrere aksept.");
+        return;
+      }
+    }
 
     const nextRequests = requests.map((request) =>
       request.id === selectedRequestId
@@ -417,7 +441,9 @@ export default function SalesModule() {
             acceptedTotal,
             status: "Akseptert",
             statusClass: "sales-status-accepted",
-            nextStep: "Aktiver som prosjekt",
+            nextStep: selectedRequest.isPublicOffer
+              ? "Tilbudet er akseptert"
+              : "Aktiver som prosjekt",
             iconName: "home",
           }
         : request
@@ -425,7 +451,7 @@ export default function SalesModule() {
 
     setRequests(nextRequests);
     saveRequests(nextRequests);
-    setMode("detail");
+    setMode(selectedRequest.isPublicOffer ? "customer-accepted" : "detail");
   }
 
   function openOfferBuilder() {
@@ -819,44 +845,167 @@ export default function SalesModule() {
     setMode("detail");
   }
 
-  function getCustomerOfferLink(requestId) {
+  function getCustomerOfferLink(token) {
     const url = new URL(window.location.href);
-    url.searchParams.set("customerOffer", requestId);
+    url.search = "";
+    url.searchParams.set("publicOffer", token);
     return url.toString();
   }
 
-  function openCustomerOfferFromRequestId(requestId) {
-    const request = requests.find((item) => item.id === requestId);
+  function buildPublishPayload(request) {
+    return {
+      offer_id: request.salesOfferId || null,
+      request_ref: request.id,
+      customer_name: request.customer,
+      customer_email: request.email,
+      customer_phone: request.phone,
+      customer_address: request.address,
+      title: request.offerTitle || request.title,
+      intro: request.offerIntro || "",
+      lines: request.offerLines || [],
+      options: request.offerOptions || [],
+      reservations: request.offerReservations || "",
+      validity_days: Number(request.offerValidityDays || 30),
+      total_ex_vat: request.offerTotal || 0,
+    };
+  }
 
-    if (!request || !request.offerLines?.length) return;
+  function mapPublicOfferToRequest(result) {
+    const offer = result?.offer;
+    const version = result?.version;
 
-    const versionedRequest = createOrReuseSentOfferVersion(request);
-    const nextRequests =
-      versionedRequest === request
-        ? requests
-        : requests.map((item) =>
-            item.id === requestId ? versionedRequest : item
-          );
+    if (!offer || !version) return null;
 
-    if (versionedRequest !== request) {
-      setRequests(nextRequests);
-      saveRequests(nextRequests);
+    return {
+      id: offer.request_ref || offer.id,
+      salesOfferId: offer.id,
+      title: version.title || offer.title,
+      offerTitle: version.title || offer.title,
+      offerIntro: version.intro || "",
+      offerLines: version.lines || [],
+      offerOptions: version.options || [],
+      offerReservations: version.reservations || "",
+      offerValidityDays: String(version.validity_days || 30),
+      offerTotal: Number(version.total_ex_vat || 0),
+      customer: offer.customer_name,
+      email: offer.customer_email,
+      phone: offer.customer_phone,
+      address: offer.customer_address,
+      status: offer.status === "accepted" ? "Akseptert" : "Tilbud",
+      statusClass:
+        offer.status === "accepted"
+          ? "sales-status-accepted"
+          : "sales-status-quote",
+      nextStep:
+        offer.status === "accepted"
+          ? "Tilbudet er akseptert"
+          : "Digital aksept",
+      iconName: offer.status === "accepted" ? "home" : "send",
+      sentOfferVersionId: version.id,
+      sentOfferVersionNumber: version.version_number,
+      publicToken: offer.public_token,
+      isPublicOffer: true,
+      acceptedBy: offer.accepted_by,
+      acceptedAt: offer.accepted_at,
+      acceptedPayload: offer.accepted_payload,
+    };
+  }
+
+  async function publishOfferAndGetLink(requestId) {
+    if (!supabase) {
+      throw new Error("Supabase-miljøvariabler mangler i Vercel-preview.");
     }
 
-    setSelectedRequestId(requestId);
-    setMode("customer-offer");
+    const request = requests.find((item) => item.id === requestId);
+
+    if (!request || !request.offerLines?.length) {
+      throw new Error("Tilbudet mangler prislinjer.");
+    }
+
+    const { data, error } = await supabase.rpc("publish_sales_offer", {
+      payload: buildPublishPayload(request),
+    });
+
+    if (error) throw error;
+
+    const nextRequests = requests.map((item) =>
+      item.id === requestId
+        ? {
+            ...item,
+            salesOfferId: data.offer_id,
+            sentOfferVersionId: data.version_id,
+            sentOfferVersionNumber: data.version_number,
+            publicToken: data.public_token,
+            status: "Tilbud",
+            statusClass: "sales-status-quote",
+            nextStep: "Send tilbud til kunde",
+          }
+        : item
+    );
+
+    setRequests(nextRequests);
+    saveRequests(nextRequests);
+
+    return getCustomerOfferLink(data.public_token);
+  }
+
+  async function openCustomerOfferFromRequestId(requestId) {
+    try {
+      const link = await publishOfferAndGetLink(requestId);
+      window.open(link, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      alert(error.message || "Kunne ikke åpne kundelink.");
+    }
   }
 
   async function copyCustomerOfferLink(requestId) {
-    const link = getCustomerOfferLink(requestId);
-
     try {
+      const link = await publishOfferAndGetLink(requestId);
       await navigator.clipboard.writeText(link);
       setCustomerLinkCopied(true);
       window.setTimeout(() => setCustomerLinkCopied(false), 2200);
-    } catch {
-      window.prompt("Kopier kundelinken:", link);
+    } catch (error) {
+      alert(error.message || "Kunne ikke kopiere kundelink.");
     }
+  }
+
+  async function loadPublicOfferFromToken(token) {
+    if (!supabase) {
+      setPublicOfferError("Supabase-miljøvariabler mangler i Vercel-preview.");
+      return;
+    }
+
+    setPublicOfferLoading(true);
+    setPublicOfferError("");
+
+    const { data, error } = await supabase.rpc("get_sales_offer_by_token", {
+      token,
+    });
+
+    setPublicOfferLoading(false);
+
+    if (error || !data) {
+      setPublicOfferError("Tilbudet finnes ikke eller lenken er ugyldig.");
+      return;
+    }
+
+    const mappedRequest = mapPublicOfferToRequest(data);
+
+    if (!mappedRequest) {
+      setPublicOfferError("Tilbudet mangler aktiv tilbudsversjon.");
+      return;
+    }
+
+    setSelectedRequestId(mappedRequest.id);
+    setRequests((current) => {
+      const exists = current.some((item) => item.id === mappedRequest.id);
+      return exists
+        ? current.map((item) =>
+            item.id === mappedRequest.id ? { ...item, ...mappedRequest } : item
+          )
+        : [mappedRequest, ...current];
+    });
+    setMode("customer-offer");
   }
 
   function handleCreateRequest(event) {
@@ -1174,6 +1323,61 @@ export default function SalesModule() {
     );
   }
 
+  if (publicOfferLoading) {
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <main className="sales-main">
+            <section className="sales-form-panel">
+              <h1 className="sales-title">Laster tilbud</h1>
+              <p className="sales-subtitle">Henter digitalt tilbud.</p>
+            </section>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (publicOfferError) {
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <main className="sales-main">
+            <section className="sales-form-panel">
+              <h1 className="sales-title">Lenken virker ikke</h1>
+              <p className="sales-subtitle">{publicOfferError}</p>
+            </section>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "customer-accepted" && selectedRequest) {
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <main className="sales-main">
+            <section className="sales-form-panel">
+              <p className="sales-eyebrow">Tilbud akseptert</p>
+              <h1 className="sales-title">Takk for aksepten</h1>
+              <p className="sales-subtitle">
+                Tilbudet er registrert som akseptert av {selectedRequest.acceptedBy}.
+              </p>
+              <div className="sales-next-card" style={{ marginTop: 22 }}>
+                <h2>{selectedRequest.offerTitle}</h2>
+                <p>
+                  Vi har registrert aksepten digitalt. Utførende bedrift følger
+                  opp saken videre.
+                </p>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   if (mode === "customer-offer" && selectedRequest) {
     const activeOfferVersion = getActiveOfferVersion(selectedRequest);
     const offerTotal = activeOfferVersion?.total || selectedRequest.offerTotal || 0;
@@ -1195,14 +1399,18 @@ export default function SalesModule() {
       <div className="sales-app">
         <div className="sales-shell">
           <header className="sales-header">
-            <button
-              className="sales-back-button"
-              type="button"
-              onClick={() => setMode("detail")}
-            >
-              <ArrowLeft size={18} />
-              Tilbake til intern visning
-            </button>
+            {!selectedRequest.isPublicOffer ? (
+              <button
+                className="sales-back-button"
+                type="button"
+                onClick={() => setMode("detail")}
+              >
+                <ArrowLeft size={18} />
+                Tilbake til intern visning
+              </button>
+            ) : (
+              <div />
+            )}
 
             <div className="sales-brand sales-brand-compact">
               <div className="sales-brand-mark">
