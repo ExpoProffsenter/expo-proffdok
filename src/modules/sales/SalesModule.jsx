@@ -2,6 +2,7 @@
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
 // FASE 19.3 TYDELIG PUBLISERINGSBEKREFTELSE: Viser tydelig intern bekreftelse når kundelink/ny tilbudsversjon er publisert. Ingen SQL/main/Edge.
 // FASE 19.2 TRYGG REPUBLISERING: Tydeliggjør når redigert tilbud/opsjon må publiseres som ny kundelenke-versjon. Ingen SQL/main/Edge.
+// FASE 19.4B TILGANG BEFARINGSNOTAT FRA TILBUD: Viser trygg knapp for Befaringsnotat/lydnotat også i tilbudssak uten å endre tilbudsstatus ved lagring. Ingen SQL/main/CSS/Edge.
 // FASE 18.19C3 HOTFIX FIRMAPROFIL EMAIL-FALLBACK: Henter firmaprofil robust via auth-id først og innlogget e-post som fallback før publish-snapshot. Ingen SQL/main/CSS.
 // FASE 18.19C2 HOTFIX FIRMAPROFILSNAPSHOT: Bruker samme profiles-felt som hovedappen, venter på auth/session og legger firmasnapshot inn i faktisk publish-payload. Ingen SQL/main/CSS.
 // FASE 18.19C1 HOTFIX PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
@@ -1073,10 +1074,14 @@ export default function SalesModule() {
             inspectionObservations: inspectionForm.observations.trim(),
             inspectionPhotos: inspectionForm.photos,
             inspectionAudioNotes: inspectionForm.audioNotes || [],
-            status: "Befaring",
-            statusClass: "sales-status-survey",
-            nextStep: "Opprett tilbud",
-            iconName: "send",
+            ...(request.status === "Forespørsel" || request.status === "Befaring"
+              ? {
+                  status: "Befaring",
+                  statusClass: "sales-status-survey",
+                  nextStep: "Opprett tilbud",
+                  iconName: "send",
+                }
+              : {}),
           }
         : request
     );
@@ -2912,6 +2917,17 @@ export default function SalesModule() {
                   >
                     <CalendarDays size={18} />
                     Legg til i Outlook
+                  </button>
+                ) : null}
+
+                {selectedRequest.status === "Tilbud" ? (
+                  <button
+                    className="sales-secondary-button"
+                    type="button"
+                    onClick={openInspectionNote}
+                  >
+                    <Ruler size={18} />
+                    Befaringsnotat / lydnotat
                   </button>
                 ) : null}
 
