@@ -238,12 +238,73 @@ export default function SalesModule() {
     setSelectedRequestId(null);
   }
 
+  function buildOfferSnapshot(request) {
+    const versionNumber = (request.offerVersions?.length || 0) + 1;
+    const createdAt = new Date().toISOString();
+
+    return {
+      id: `offer-version-${Date.now()}`,
+      versionNumber,
+      createdAt,
+      title: request.offerTitle || "",
+      intro: request.offerIntro || "",
+      lines: request.offerLines || [],
+      options: request.offerOptions || [],
+      reservations: request.offerReservations || "",
+      validityDays: request.offerValidityDays || "30",
+      total: request.offerTotal || 0,
+    };
+  }
+
+  function createOrReuseSentOfferVersion(request) {
+    if (request.sentOfferVersionId) {
+      return request;
+    }
+
+    const snapshot = buildOfferSnapshot(request);
+
+    return {
+      ...request,
+      offerVersions: [...(request.offerVersions || []), snapshot],
+      sentOfferVersionId: snapshot.id,
+      sentOfferVersionNumber: snapshot.versionNumber,
+      sentOfferAt: snapshot.createdAt,
+    };
+  }
+
   function openCustomerOfferPreview() {
-    setAcceptanceForm({
-      name: "",
-      confirmed: false,
-    });
+    if (!selectedRequest) return;
+
+    const versionedRequest = createOrReuseSentOfferVersion(selectedRequest);
+
+    if (versionedRequest !== selectedRequest) {
+      const nextRequests = requests.map((request) =>
+        request.id === selectedRequestId ? versionedRequest : request
+      );
+      setRequests(nextRequests);
+      saveRequests(nextRequests);
+    }
+
     setMode("customer-offer");
+  }
+
+  function getActiveOfferVersion(request) {
+    if (!request?.sentOfferVersionId) return null;
+    return (
+      request.offerVersions?.find(
+        (version) => version.id === request.sentOfferVersionId
+      ) || null
+    );
+  }
+
+  function createNewOfferVersionDraft(request) {
+    return {
+      ...request,
+      sentOfferVersionId: null,
+      sentOfferVersionNumber: null,
+      sentOfferAt: null,
+      nextStep: "Send tilbud til kunde",
+    };
   }
 
   function handleAcceptOffer(event) {
@@ -259,6 +320,8 @@ export default function SalesModule() {
             ...request,
             acceptedBy: acceptanceForm.name.trim(),
             acceptedAt,
+            acceptedOfferVersionId: selectedRequest.sentOfferVersionId,
+            acceptedOfferVersionNumber: selectedRequest.sentOfferVersionNumber,
             status: "Akseptert",
             statusClass: "sales-status-accepted",
             nextStep: "Aktiver som prosjekt",
@@ -437,6 +500,9 @@ export default function SalesModule() {
             offerReservations: offerForm.reservations.trim(),
             offerValidityDays: offerForm.validityDays,
             offerTotal: getOfferTotal(cleanLines),
+            sentOfferVersionId: null,
+            sentOfferVersionNumber: null,
+            sentOfferAt: null,
             status: "Tilbud",
             statusClass: "sales-status-quote",
             nextStep: "Send tilbud til kunde",
@@ -796,7 +862,16 @@ export default function SalesModule() {
   }
 
   if (mode === "customer-offer" && selectedRequest) {
-    const offerTotal = selectedRequest.offerTotal || 0;
+    const activeOfferVersion = getActiveOfferVersion(selectedRequest);
+    const offerTotal = activeOfferVersion?.total || selectedRequest.offerTotal || 0;
+    const offerTitle = activeOfferVersion?.title || selectedRequest.offerTitle;
+    const offerIntro = activeOfferVersion?.intro || selectedRequest.offerIntro;
+    const offerLines = activeOfferVersion?.lines || selectedRequest.offerLines || [];
+    const offerOptions = activeOfferVersion?.options || selectedRequest.offerOptions || [];
+    const offerReservations =
+      activeOfferVersion?.reservations || offerReservations;
+    const offerValidityDays =
+      activeOfferVersion?.validityDays || selectedRequest.offerValidityDays || "30";
 
     return (
       <div className="sales-app">
@@ -845,7 +920,7 @@ export default function SalesModule() {
               >
                 <div>
                   <p className="sales-eyebrow">Tilbud til {selectedRequest.customer}</p>
-                  <h1 className="sales-title">{selectedRequest.offerTitle}</h1>
+                  <h1 className="sales-title">{offerTitle}</h1>
                   <p className="sales-subtitle">
                     {selectedRequest.address} · Tilbud {selectedRequest.id}
                   </p>
@@ -907,7 +982,7 @@ export default function SalesModule() {
                   boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
                 }}>
                 <h2>Om tilbudet</h2>
-                <p>{selectedRequest.offerIntro}</p>
+                <p>{offerIntro}</p>
               </article>
 
               <article className="sales-detail-card sales-detail-card-wide"
@@ -918,7 +993,7 @@ export default function SalesModule() {
                 }}>
                 <h2>Arbeider og priser</h2>
                 <div className="sales-detail-lines">
-                  {selectedRequest.offerLines?.map((line, index) => (
+                  {offerLines.map((line, index) => (
                     <div
                       key={line.id}
                       style={{
@@ -1004,7 +1079,7 @@ export default function SalesModule() {
                 </div>
               </article>
 
-              {selectedRequest.offerOptions?.length ? (
+              {offerOptions.length ? (
                 <article
                   className="sales-detail-card sales-detail-card-wide"
                   style={{
@@ -1020,7 +1095,7 @@ export default function SalesModule() {
                   </p>
 
                   <div className="sales-option-grid">
-                    {selectedRequest.offerOptions.map((option) => (
+                    {offerOptions.map((option) => (
                       <div className="sales-option-card" key={option.id}>
                         {option.imageDataUrl ? (
                           <img
@@ -1042,7 +1117,7 @@ export default function SalesModule() {
                 </article>
               ) : null}
 
-              {selectedRequest.offerReservations ? (
+              {offerReservations ? (
                 <article className="sales-detail-card sales-detail-card-wide"
                 style={{
                   marginBottom: 16,
@@ -1050,7 +1125,7 @@ export default function SalesModule() {
                   boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
                 }}>
                   <h2>Forutsetninger og forbehold</h2>
-                  <p>{selectedRequest.offerReservations}</p>
+                  <p>{offerReservations}</p>
                 </article>
               ) : null}
 
@@ -1062,7 +1137,7 @@ export default function SalesModule() {
                 }}>
                 <h2>Gyldighet</h2>
                 <p>
-                  Tilbudet er gyldig i {selectedRequest.offerValidityDays || "30"} dager.
+                  Tilbudet er gyldig i {offerValidityDays} dager.
                 </p>
               </article>
 
@@ -1855,6 +1930,12 @@ export default function SalesModule() {
                       Digital aksept registrert{" "}
                       {new Date(selectedRequest.acceptedAt).toLocaleString("nb-NO")}.
                     </p>
+                    {selectedRequest.acceptedOfferVersionNumber ? (
+                      <p>
+                        Aksepten gjelder tilbudsversjon v
+                        {selectedRequest.acceptedOfferVersionNumber}.
+                      </p>
+                    ) : null}
                     <p>
                       Neste steg er å aktivere saken som et vanlig ProffDok-prosjekt.
                     </p>
@@ -1862,7 +1943,7 @@ export default function SalesModule() {
                 ) : selectedRequest.status === "Tilbud" &&
                 selectedRequest.offerLines?.length ? (
                   <div className="sales-detail-lines">
-                    <p><strong>{selectedRequest.offerTitle}</strong></p>
+                    <p><strong>{offerTitle}</strong></p>
                     {selectedRequest.offerLines.map((line) => (
                       <span key={line.id}>
                         <ClipboardList size={16} />
@@ -1877,7 +1958,7 @@ export default function SalesModule() {
                       <strong>Sum inkl. mva.:</strong>{" "}
                       {formatNok((selectedRequest.offerTotal || 0) * 1.25)}
                     </p>
-                    {selectedRequest.offerOptions?.length ? (
+                    {offerOptions.length ? (
                       <p>
                         <strong>Opsjoner:</strong>{" "}
                         {selectedRequest.offerOptions.length} opsjon(er) registrert.
