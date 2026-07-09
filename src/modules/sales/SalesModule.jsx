@@ -188,6 +188,7 @@ export default function SalesModule() {
     title: "",
     intro: "",
     lines: [{ id: "line-1", description: "", amount: "" }],
+    options: [],
     reservations: "",
     validityDays: "30",
   });
@@ -281,6 +282,9 @@ export default function SalesModule() {
         selectedRequest?.offerLines?.length
           ? selectedRequest.offerLines
           : [{ id: `line-${Date.now()}`, description: "", amount: "" }],
+      options: selectedRequest?.offerOptions?.length
+        ? selectedRequest.offerOptions
+        : [],
       reservations: selectedRequest?.offerReservations || "",
       validityDays: selectedRequest?.offerValidityDays || "30",
     });
@@ -320,6 +324,64 @@ export default function SalesModule() {
     }));
   }
 
+  function addOfferOption() {
+    setOfferForm((current) => ({
+      ...current,
+      options: [
+        ...current.options,
+        {
+          id: `option-${Date.now()}-${Math.random()}`,
+          title: "",
+          description: "",
+          amount: "",
+          imageDataUrl: "",
+          imageName: "",
+        },
+      ],
+    }));
+  }
+
+  function updateOfferOption(optionId, field, value) {
+    setOfferForm((current) => ({
+      ...current,
+      options: current.options.map((option) =>
+        option.id === optionId ? { ...option, [field]: value } : option
+      ),
+    }));
+  }
+
+  function removeOfferOption(optionId) {
+    setOfferForm((current) => ({
+      ...current,
+      options: current.options.filter((option) => option.id !== optionId),
+    }));
+  }
+
+  function handleOfferOptionImage(optionId, event) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setOfferForm((current) => ({
+        ...current,
+        options: current.options.map((option) =>
+          option.id === optionId
+            ? {
+                ...option,
+                imageDataUrl: reader.result,
+                imageName: file.name,
+              }
+            : option
+        ),
+      }));
+    };
+
+    reader.readAsDataURL(file);
+    event.target.value = "";
+  }
+
   function getOfferTotal(lines) {
     return lines.reduce((sum, line) => {
       const normalized = String(line.amount || "")
@@ -349,6 +411,21 @@ export default function SalesModule() {
       }))
       .filter((line) => line.description || line.amount);
 
+    const cleanOptions = offerForm.options
+      .map((option) => ({
+        ...option,
+        title: option.title.trim(),
+        description: option.description.trim(),
+        amount: String(option.amount || "").trim(),
+      }))
+      .filter(
+        (option) =>
+          option.title ||
+          option.description ||
+          option.amount ||
+          option.imageDataUrl
+      );
+
     const nextRequests = requests.map((request) =>
       request.id === selectedRequestId
         ? {
@@ -356,6 +433,7 @@ export default function SalesModule() {
             offerTitle: offerForm.title.trim(),
             offerIntro: offerForm.intro.trim(),
             offerLines: cleanLines,
+            offerOptions: cleanOptions,
             offerReservations: offerForm.reservations.trim(),
             offerValidityDays: offerForm.validityDays,
             offerTotal: getOfferTotal(cleanLines),
@@ -841,11 +919,23 @@ export default function SalesModule() {
                 <h2>Arbeider og priser</h2>
                 <div className="sales-detail-lines">
                   {selectedRequest.offerLines?.map((line, index) => (
-                    <span key={line.id}>
+                    <div
+                      key={line.id}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "28px 1fr minmax(150px, auto)",
+                        alignItems: "center",
+                        gap: 10,
+                      }}
+                    >
                       <ClipboardList size={16} />
-                      {index + 1}. {line.description} –{" "}
-                      <strong>{formatNok(getOfferTotal([line]))} eks. mva.</strong>
-                    </span>
+                      <span>
+                        {index + 1}. {line.description}
+                      </span>
+                      <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                        {formatNok(getOfferTotal([line]))} eks. mva.
+                      </strong>
+                    </div>
                   ))}
                 </div>
 
@@ -913,6 +1003,44 @@ export default function SalesModule() {
                   </div>
                 </div>
               </article>
+
+              {selectedRequest.offerOptions?.length ? (
+                <article
+                  className="sales-detail-card sales-detail-card-wide"
+                  style={{
+                    marginBottom: 16,
+                    borderRadius: 20,
+                    boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
+                  }}
+                >
+                  <h2>Opsjoner</h2>
+                  <p>
+                    Opsjoner er ikke inkludert i hovedsummen og kan velges etter
+                    avtale.
+                  </p>
+
+                  <div className="sales-option-grid">
+                    {selectedRequest.offerOptions.map((option) => (
+                      <div className="sales-option-card" key={option.id}>
+                        {option.imageDataUrl ? (
+                          <img
+                            src={option.imageDataUrl}
+                            alt={option.imageName || option.title || "Opsjon"}
+                          />
+                        ) : null}
+
+                        <div>
+                          <h3>{option.title || "Opsjon"}</h3>
+                          {option.description ? <p>{option.description}</p> : null}
+                          <strong>
+                            {formatNok(getOfferTotal([option]))} eks. mva.
+                          </strong>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              ) : null}
 
               {selectedRequest.offerReservations ? (
                 <article className="sales-detail-card sales-detail-card-wide"
@@ -1120,6 +1248,100 @@ export default function SalesModule() {
                   </button>
                 </div>
 
+                <div className="sales-field sales-field-full">
+                  <span>Opsjoner</span>
+
+                  {offerForm.options.length ? (
+                    <div className="sales-offer-lines">
+                      {offerForm.options.map((option, index) => (
+                        <div
+                          className="sales-offer-line"
+                          key={option.id}
+                          style={{ alignItems: "start" }}
+                        >
+                          <div className="sales-offer-line-number">O{index + 1}</div>
+
+                          <div style={{ display: "grid", gap: 10 }}>
+                            <input
+                              value={option.title}
+                              onChange={(event) =>
+                                updateOfferOption(option.id, "title", event.target.value)
+                              }
+                              placeholder="Opsjon, f.eks. Servantpakke"
+                            />
+
+                            <input
+                              value={option.description}
+                              onChange={(event) =>
+                                updateOfferOption(
+                                  option.id,
+                                  "description",
+                                  event.target.value
+                                )
+                              }
+                              placeholder="Kort beskrivelse"
+                            />
+
+                            {option.imageDataUrl ? (
+                              <div className="sales-option-image-preview">
+                                <img
+                                  src={option.imageDataUrl}
+                                  alt={option.imageName || option.title || "Opsjon"}
+                                />
+                              </div>
+                            ) : null}
+
+                            <label className="sales-secondary-button" style={{ width: "fit-content" }}>
+                              <Plus size={18} />
+                              Legg til bilde
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(event) =>
+                                  handleOfferOptionImage(option.id, event)
+                                }
+                                style={{ display: "none" }}
+                              />
+                            </label>
+                          </div>
+
+                          <input
+                            value={option.amount}
+                            onChange={(event) =>
+                              updateOfferOption(option.id, "amount", event.target.value)
+                            }
+                            placeholder="Beløp eks. mva."
+                            inputMode="decimal"
+                          />
+
+                          <button
+                            className="sales-secondary-button"
+                            type="button"
+                            onClick={() => removeOfferOption(option.id)}
+                          >
+                            Fjern
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="sales-subtitle">
+                      Ingen opsjoner lagt til. Opsjoner kan for eksempel være
+                      servant, kran, flisoppgradering eller elektrisk gulvvarme.
+                    </p>
+                  )}
+
+                  <button
+                    className="sales-secondary-button"
+                    type="button"
+                    onClick={addOfferOption}
+                    style={{ width: "fit-content", marginTop: 12 }}
+                  >
+                    <Plus size={18} />
+                    Legg til opsjon
+                  </button>
+                </div>
+
                 <label className="sales-field sales-field-full">
                   <span>Forutsetninger og forbehold</span>
                   <textarea
@@ -1158,6 +1380,10 @@ export default function SalesModule() {
                   <span>
                     <Send size={16} />
                     Gyldig i {offerForm.validityDays} dager
+                  </span>
+                  <span>
+                    <Plus size={16} />
+                    {offerForm.options.length} opsjon(er)
                   </span>
                 </div>
                 <div className="sales-offer-total">
@@ -1651,6 +1877,12 @@ export default function SalesModule() {
                       <strong>Sum inkl. mva.:</strong>{" "}
                       {formatNok((selectedRequest.offerTotal || 0) * 1.25)}
                     </p>
+                    {selectedRequest.offerOptions?.length ? (
+                      <p>
+                        <strong>Opsjoner:</strong>{" "}
+                        {selectedRequest.offerOptions.length} opsjon(er) registrert.
+                      </p>
+                    ) : null}
                   </div>
                 ) : selectedRequest.inspectionCustomerWishes ||
                 selectedRequest.inspectionExistingConditions ||
