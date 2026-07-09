@@ -2963,9 +2963,10 @@ export default function SalesModule() {
       : "Vis kundens tilbud";
     const publishLineCount = selectedRequest.offerLines?.length || 0;
     const publishOptionCount = selectedRequest.offerOptions?.length || 0;
-    const publishVersionNumber =
-      (Number(selectedRequest.sentOfferVersionNumber) || 0) +
-      (hasUnpublishedOfferChanges ? 1 : 0);
+    const publishedVersionNumber =
+      publishFeedback?.requestId === selectedRequest.id
+        ? Number(publishFeedback.versionNumber) || 0
+        : Number(selectedRequest.sentOfferVersionNumber) || 0;
     const hasInspectionContent = Boolean(
       selectedRequest.inspectionCustomerWishes ||
         selectedRequest.inspectionExistingConditions ||
@@ -3171,9 +3172,11 @@ export default function SalesModule() {
                     Tilbudslinjer: {publishLineCount} · Opsjoner:{" "}
                     {publishOptionCount} ·{" "}
                     {hasUnpublishedOfferChanges
-                      ? `Publiserer versjon v${publishVersionNumber || 1}`
-                      : selectedRequest.sentOfferVersionNumber
-                        ? `Publisert versjon v${selectedRequest.sentOfferVersionNumber}`
+                      ? publishedVersionNumber
+                        ? `Neste publisering oppretter ny versjon etter v${publishedVersionNumber}`
+                        : "Neste publisering oppretter ny tilbudsversjon"
+                      : publishedVersionNumber
+                        ? `Publisert versjon v${publishedVersionNumber}`
                         : "Ikke publisert"}
                   </div>
                 ) : null}
