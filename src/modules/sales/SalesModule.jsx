@@ -191,6 +191,10 @@ export default function SalesModule() {
     reservations: "",
     validityDays: "30",
   });
+  const [acceptanceForm, setAcceptanceForm] = useState({
+    name: "",
+    confirmed: false,
+  });
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) || null,
@@ -231,6 +235,40 @@ export default function SalesModule() {
   function goToList() {
     setMode("list");
     setSelectedRequestId(null);
+  }
+
+  function openCustomerOfferPreview() {
+    setAcceptanceForm({
+      name: "",
+      confirmed: false,
+    });
+    setMode("customer-offer");
+  }
+
+  function handleAcceptOffer(event) {
+    event.preventDefault();
+
+    if (!acceptanceForm.confirmed || !acceptanceForm.name.trim()) return;
+
+    const acceptedAt = new Date().toISOString();
+
+    const nextRequests = requests.map((request) =>
+      request.id === selectedRequestId
+        ? {
+            ...request,
+            acceptedBy: acceptanceForm.name.trim(),
+            acceptedAt,
+            status: "Akseptert",
+            statusClass: "sales-status-accepted",
+            nextStep: "Aktiver som prosjekt",
+            iconName: "home",
+          }
+        : request
+    );
+
+    setRequests(nextRequests);
+    saveRequests(nextRequests);
+    setMode("detail");
   }
 
   function openOfferBuilder() {
@@ -673,6 +711,149 @@ export default function SalesModule() {
                 </button>
               </div>
             </form>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "customer-offer" && selectedRequest) {
+    const offerTotal = selectedRequest.offerTotal || 0;
+
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <header className="sales-header">
+            <button
+              className="sales-back-button"
+              type="button"
+              onClick={() => setMode("detail")}
+            >
+              <ArrowLeft size={18} />
+              Tilbake til intern visning
+            </button>
+
+            <div className="sales-brand sales-brand-compact">
+              <div className="sales-brand-mark">
+                <ClipboardList size={22} />
+              </div>
+              <div className="sales-brand-copy">
+                <strong>Expo ProffDok</strong>
+                <span>Digitalt tilbud</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="sales-main">
+            <section className="sales-form-hero">
+              <p className="sales-eyebrow">Tilbud til {selectedRequest.customer}</p>
+              <h1 className="sales-title">{selectedRequest.offerTitle}</h1>
+              <p className="sales-subtitle">
+                {selectedRequest.address} · Tilbud {selectedRequest.id}
+              </p>
+            </section>
+
+            <section className="sales-form-panel">
+              <article className="sales-detail-card sales-detail-card-wide">
+                <h2>Om tilbudet</h2>
+                <p>{selectedRequest.offerIntro}</p>
+              </article>
+
+              <article className="sales-detail-card sales-detail-card-wide">
+                <h2>Arbeider og priser</h2>
+                <div className="sales-detail-lines">
+                  {selectedRequest.offerLines?.map((line, index) => (
+                    <span key={line.id}>
+                      <ClipboardList size={16} />
+                      {index + 1}. {line.description} –{" "}
+                      <strong>{formatNok(getOfferTotal([line]))} eks. mva.</strong>
+                    </span>
+                  ))}
+                </div>
+
+                <div className="sales-offer-total">
+                  <span>Sum eks. mva.</span>
+                  <strong>{formatNok(offerTotal)}</strong>
+                </div>
+                <div className="sales-offer-total sales-offer-total-muted">
+                  <span>Mva. 25 %</span>
+                  <strong>{formatNok(offerTotal * 0.25)}</strong>
+                </div>
+                <div className="sales-offer-total sales-offer-total-grand">
+                  <span>Sum inkl. mva.</span>
+                  <strong>{formatNok(offerTotal * 1.25)}</strong>
+                </div>
+              </article>
+
+              {selectedRequest.offerReservations ? (
+                <article className="sales-detail-card sales-detail-card-wide">
+                  <h2>Forutsetninger og forbehold</h2>
+                  <p>{selectedRequest.offerReservations}</p>
+                </article>
+              ) : null}
+
+              <article className="sales-detail-card sales-detail-card-wide">
+                <h2>Gyldighet</h2>
+                <p>
+                  Tilbudet er gyldig i {selectedRequest.offerValidityDays || "30"} dager.
+                </p>
+              </article>
+
+              <form onSubmit={handleAcceptOffer}>
+                <article className="sales-next-card sales-detail-card-wide">
+                  <span className="sales-next-label">Digital aksept</span>
+                  <h2>Aksepter tilbudet</h2>
+                  <p>
+                    Skriv inn fullt navn og bekreft at du aksepterer tilbudet med
+                    arbeider, priser, forutsetninger og forbehold som vist over.
+                  </p>
+
+                  <div className="sales-form-grid" style={{ marginTop: 18 }}>
+                    <label className="sales-field sales-field-full">
+                      <span>Fullt navn</span>
+                      <input
+                        value={acceptanceForm.name}
+                        onChange={(event) =>
+                          setAcceptanceForm((current) => ({
+                            ...current,
+                            name: event.target.value,
+                          }))
+                        }
+                        placeholder="Fullt navn"
+                        required
+                      />
+                    </label>
+
+                    <label className="sales-acceptance-check sales-field-full">
+                      <input
+                        type="checkbox"
+                        checked={acceptanceForm.confirmed}
+                        onChange={(event) =>
+                          setAcceptanceForm((current) => ({
+                            ...current,
+                            confirmed: event.target.checked,
+                          }))
+                        }
+                        required
+                      />
+                      <span>
+                        Jeg aksepterer tilbudet og bekrefter at jeg har lest
+                        tilbudets innhold, priser, forutsetninger og forbehold.
+                      </span>
+                    </label>
+                  </div>
+
+                  <button
+                    className="sales-primary-button"
+                    type="submit"
+                    style={{ marginTop: 18 }}
+                  >
+                    <CheckCircle2 size={18} />
+                    Aksepter tilbud
+                  </button>
+                </article>
+              </form>
+            </section>
           </main>
         </div>
       </div>
@@ -1214,6 +1395,17 @@ export default function SalesModule() {
                   </button>
                 ) : null}
 
+                {selectedRequest.status === "Tilbud" ? (
+                  <button
+                    className="sales-secondary-button"
+                    type="button"
+                    onClick={openOfferBuilder}
+                  >
+                    <ClipboardList size={18} />
+                    Rediger tilbud
+                  </button>
+                ) : null}
+
                 <button
                   className="sales-primary-button"
                   type="button"
@@ -1226,13 +1418,13 @@ export default function SalesModule() {
                         : selectedRequest.status === "Befaring"
                           ? openInspectionNote
                           : selectedRequest.status === "Tilbud"
-                            ? openOfferBuilder
+                            ? openCustomerOfferPreview
                             : undefined
                   }
                 >
                   <CalendarDays size={18} />
                   {selectedRequest.status === "Tilbud"
-                    ? "Rediger tilbud"
+                    ? "Vis kundens tilbud"
                     : selectedRequest.nextStep}
                 </button>
               </div>
@@ -1287,7 +1479,22 @@ export default function SalesModule() {
               <article className="sales-next-card sales-detail-card-wide">
                 <span className="sales-next-label">Neste steg</span>
                 <h2>{selectedRequest.nextStep}</h2>
-                {selectedRequest.status === "Tilbud" &&
+                {selectedRequest.status === "Akseptert" &&
+                selectedRequest.acceptedBy ? (
+                  <div className="sales-detail-lines">
+                    <span>
+                      <CheckCircle2 size={16} />
+                      Akseptert av {selectedRequest.acceptedBy}
+                    </span>
+                    <p>
+                      Digital aksept registrert{" "}
+                      {new Date(selectedRequest.acceptedAt).toLocaleString("nb-NO")}.
+                    </p>
+                    <p>
+                      Neste steg er å aktivere saken som et vanlig ProffDok-prosjekt.
+                    </p>
+                  </div>
+                ) : selectedRequest.status === "Tilbud" &&
                 selectedRequest.offerLines?.length ? (
                   <div className="sales-detail-lines">
                     <p><strong>{selectedRequest.offerTitle}</strong></p>
