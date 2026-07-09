@@ -1,4 +1,4 @@
-// FASE 18.19C PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
+// FASE 18.19C1 HOTFIX PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
 // FASE 18.19B TILBUDSLINJE ENTER/TOMLINJE HOTFIX: Enter i prisfelt oppretter/fokuserer neste linje, og tom siste linje ignoreres trygt ved lagring. Ingen SQL/main/prosjektaktivering.
 import {
   ArrowLeft,
@@ -1516,7 +1516,7 @@ export default function SalesModule() {
       website:
         selectedRequest.companyWebsite || companyProfile.website || "",
       logoUrl:
-        offerCompany.logoUrl || companyProfile.logoUrl || "",
+        selectedRequest.companyLogoUrl || companyProfile.logoUrl || "",
     };
     const activeOfferVersion = getActiveOfferVersion(selectedRequest);
     const offerTotal = activeOfferVersion?.total || selectedRequest.offerTotal || 0;
