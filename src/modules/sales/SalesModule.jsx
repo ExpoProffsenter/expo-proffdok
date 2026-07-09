@@ -1,4 +1,5 @@
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
+// FASE 19.3 TYDELIG PUBLISERINGSBEKREFTELSE: Viser tydelig intern bekreftelse når kundelink/ny tilbudsversjon er publisert. Ingen SQL/main/Edge.
 // FASE 19.2 TRYGG REPUBLISERING: Tydeliggjør når redigert tilbud/opsjon må publiseres som ny kundelenke-versjon. Ingen SQL/main/Edge.
 // FASE 18.19C3 HOTFIX FIRMAPROFIL EMAIL-FALLBACK: Henter firmaprofil robust via auth-id først og innlogget e-post som fallback før publish-snapshot. Ingen SQL/main/CSS.
 // FASE 18.19C2 HOTFIX FIRMAPROFILSNAPSHOT: Bruker samme profiles-felt som hovedappen, venter på auth/session og legger firmasnapshot inn i faktisk publish-payload. Ingen SQL/main/CSS.
@@ -270,6 +271,7 @@ export default function SalesModule() {
     note: "",
   });
   const [customerLinkCopied, setCustomerLinkCopied] = useState(false);
+  const [publishFeedback, setPublishFeedback] = useState(null);
   const [publicOfferLoading, setPublicOfferLoading] = useState(false);
   const [publicOfferError, setPublicOfferError] = useState("");
   const [companyProfile, setCompanyProfile] = useState({
@@ -460,6 +462,8 @@ export default function SalesModule() {
 
     setRequests(nextRequests);
     saveRequests(nextRequests);
+    setPublishFeedback(null);
+    setCustomerLinkCopied(false);
     setMode("detail");
   }
 
@@ -1177,7 +1181,15 @@ export default function SalesModule() {
     setRequests(nextRequests);
     saveRequests(nextRequests);
 
-    return getCustomerOfferLink(data.public_token);
+    const link = getCustomerOfferLink(data.public_token);
+    setPublishFeedback({
+      requestId,
+      versionNumber: data.version_number,
+      link,
+      publishedAt: new Date().toISOString(),
+    });
+
+    return link;
   }
 
   async function openCustomerOfferFromRequestId(requestId) {
@@ -3084,6 +3096,28 @@ export default function SalesModule() {
                               : "Kopier kundelink"}
                         </button>
                       </div>
+
+                      {publishFeedback?.requestId === selectedRequest.id ? (
+                        <div
+                          style={{
+                            marginTop: 14,
+                            padding: "14px 16px",
+                            border: "1px solid #8be4e8",
+                            borderRadius: 16,
+                            background: "#e9fafb",
+                          }}
+                        >
+                          <p style={{ margin: 0, fontWeight: 900, color: "#087b82" }}>
+                            Ny tilbudsversjon er publisert
+                          </p>
+                          <p style={{ margin: "5px 0 0" }}>
+                            Kundelinken er oppdatert.
+                            {publishFeedback.versionNumber
+                              ? ` Versjon v${publishFeedback.versionNumber} er nå tilgjengelig for kunden.`
+                              : " Nyeste tilbud er nå tilgjengelig for kunden."}
+                          </p>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div
