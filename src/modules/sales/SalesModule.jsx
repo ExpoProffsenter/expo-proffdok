@@ -1,3 +1,4 @@
+// FASE 19.6B SESSION HOTFIX: Eksplisitt persistent Supabase-auth i sales-preview, robust session-rehydrering og samme befaringsnotat etter innlogging. Ingen SQL/main/CSS/Edge.
 // FASE 19.6A PREVIEW-AUTH OG AI-UX HOTFIX: Egen kontrollert Supabase-innlogging i isolert sales-preview, tydelig AI-transkripsjonstekst og robust lydkort-UX. Beholder autentisert inspection-assistant. Ingen main/smart-worker/SQL-endring.\n// FASE 19.6 AI-BEFARINGSASSISTENT: Autentisert lydtranskripsjon og AI-forslag med eksplisitt brukergodkjenning. Ingen automatisk lagring.\n// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
 // FASE 19.4A IPHONE-KLAR LYDNOTAT BEFARING: Legger til trygg lydopptak/lydfil på befaringsnotat med iPhone-fallback via lydfilinput. Ingen AI/transkripsjon/SQL/main/Edge.
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
@@ -34,7 +35,15 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase =
   supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
+    ? createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          storage: window.localStorage,
+          storageKey: "expo-proffdok-sales-preview-auth-v1",
+        },
+      })
     : null;
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
@@ -378,8 +387,23 @@ export default function SalesModule() {
       return;
     }
 
-    setPreviewAuthSession(data.session);
+    const { data: verifiedSessionData, error: verifiedSessionError } =
+      await supabase.auth.getSession();
+    const verifiedSession = verifiedSessionData?.session || data.session;
+
+    if (verifiedSessionError || !verifiedSession?.access_token) {
+      setPreviewAuthState("error");
+      setPreviewAuthError(
+        verifiedSessionError?.message ||
+          "Innloggingen ble godkjent, men preview-sessionen kunne ikke bekreftes."
+      );
+      return;
+    }
+
+    setPreviewAuthSession(verifiedSession);
+    setPreviewAuthReady(true);
     setPreviewAuthForm((current) => ({ ...current, password: "" }));
+    setPreviewAuthError("");
     setPreviewAuthState("idle");
     await refreshCompanyProfile();
   }
