@@ -2433,9 +2433,45 @@ export default function SalesModule() {
                               }}
                             >
                               <ClipboardList size={16} />
-                              <span>
-                                {index + 1}. {line.description}
-                              </span>
+                              <div>
+                                <span>
+                                  {index + 1}. {line.description}
+                                </span>
+                                {line.imageDataUrl || line.productUrl ? (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: 10,
+                                      alignItems: "center",
+                                      marginTop: 8,
+                                      flexWrap: "wrap",
+                                    }}
+                                  >
+                                    {line.imageDataUrl ? (
+                                      <img
+                                        src={line.imageDataUrl}
+                                        alt={line.imageName || line.description || "Produktbilde"}
+                                        style={{
+                                          width: 72,
+                                          height: 72,
+                                          objectFit: "cover",
+                                          borderRadius: 10,
+                                          border: "1px solid #d7e4ea",
+                                        }}
+                                      />
+                                    ) : null}
+                                    {line.productUrl ? (
+                                      <a
+                                        href={line.productUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        Se produkt / dokumentasjon
+                                      </a>
+                                    ) : null}
+                                  </div>
+                                ) : null}
+                              </div>
                               <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                                 {formatNok(getOfferTotal([line]))} eks. mva.
                               </strong>
@@ -2460,7 +2496,46 @@ export default function SalesModule() {
                               }}
                             >
                               <Plus size={16} />
-                              <span>{option.title || "Opsjon"}</span>
+                              <div>
+                                <span>{option.title || "Opsjon"}</span>
+                                {option.description ? (
+                                  <p style={{ margin: "4px 0 0" }}>{option.description}</p>
+                                ) : null}
+                                {option.imageDataUrl || option.productUrl ? (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: 10,
+                                      alignItems: "center",
+                                      marginTop: 8,
+                                      flexWrap: "wrap",
+                                    }}
+                                  >
+                                    {option.imageDataUrl ? (
+                                      <img
+                                        src={option.imageDataUrl}
+                                        alt={option.imageName || option.title || "Opsjon"}
+                                        style={{
+                                          width: 72,
+                                          height: 72,
+                                          objectFit: "cover",
+                                          borderRadius: 10,
+                                          border: "1px solid #d7e4ea",
+                                        }}
+                                      />
+                                    ) : null}
+                                    {option.productUrl ? (
+                                      <a
+                                        href={option.productUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        Se produkt / dokumentasjon
+                                      </a>
+                                    ) : null}
+                                  </div>
+                                ) : null}
+                              </div>
                               <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                                 {formatNok(getOfferTotal([option]))} eks. mva.
                               </strong>
