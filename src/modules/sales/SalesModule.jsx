@@ -1,3 +1,4 @@
+// FASE 18.19C3 HOTFIX FIRMAPROFIL EMAIL-FALLBACK: Henter firmaprofil robust via auth-id først og innlogget e-post som fallback før publish-snapshot. Ingen SQL/main/CSS.
 // FASE 18.19C2 HOTFIX FIRMAPROFILSNAPSHOT: Bruker samme profiles-felt som hovedappen, venter på auth/session og legger firmasnapshot inn i faktisk publish-payload. Ingen SQL/main/CSS.
 // FASE 18.19C1 HOTFIX PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
 // FASE 18.19B TILBUDSLINJE ENTER/TOMLINJE HOTFIX: Enter i prisfelt oppretter/fokuserer neste linje, og tom siste linje ignoreres trygt ved lagring. Ingen SQL/main/prosjektaktivering.
@@ -297,15 +298,32 @@ export default function SalesModule() {
 
     if (!user?.id) return null;
 
-    const { data, error } = await supabase
+    const profileSelect =
+      "company_name,org_number,address,phone,email,website,logo_url";
+
+    let { data, error } = await supabase
       .from("profiles")
-      .select("company_name,org_number,address,phone,email,website,logo_url")
+      .select(profileSelect)
       .eq("id", user.id)
       .maybeSingle();
 
-    if (error || !data) return null;
+    if (error) return null;
 
-    return normalizeCompanyProfile(data, user.email || "");
+    let nextProfile = data ? normalizeCompanyProfile(data, user.email || "") : null;
+
+    if (!hasCompanyProfile(nextProfile) && user.email) {
+      const fallback = await supabase
+        .from("profiles")
+        .select(profileSelect)
+        .ilike("email", user.email)
+        .maybeSingle();
+
+      if (!fallback.error && fallback.data) {
+        nextProfile = normalizeCompanyProfile(fallback.data, user.email || "");
+      }
+    }
+
+    return hasCompanyProfile(nextProfile) ? nextProfile : null;
   }
 
   async function refreshCompanyProfile() {
