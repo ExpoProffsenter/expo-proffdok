@@ -1291,6 +1291,37 @@ export default function SalesModule() {
       throw new Error("Tilbudet mangler prislinjer.");
     }
 
+    const currentLineCount = request.offerLines?.length || 0;
+    const currentOptionCount = request.offerOptions?.length || 0;
+
+    if (request.publicToken) {
+      const { data: publishedOfferData, error: publishedOfferError } =
+        await supabase.rpc("get_sales_offer_by_token", {
+          token: request.publicToken,
+        });
+
+      if (publishedOfferError) throw publishedOfferError;
+
+      const previousOptions = Array.isArray(publishedOfferData?.version?.options)
+        ? publishedOfferData.version.options
+        : [];
+      const previousOptionCount = previousOptions.length;
+
+      if (previousOptionCount > 0 && currentOptionCount === 0) {
+        const confirmed = window.confirm(
+          `ADVARSEL: Sist publiserte tilbud hadde ${previousOptionCount} opsjon${
+            previousOptionCount === 1 ? "" : "er"
+          }, men tilbudet du nå publiserer har 0.\n\nHvis du fortsetter, publiseres en ny tilbudsversjon uten opsjoner.\n\nVil du virkelig fortsette?`
+        );
+
+        if (!confirmed) {
+          throw new Error(
+            "Publisering avbrutt. Kontroller opsjonene i Rediger tilbud."
+          );
+        }
+      }
+    }
+
     const profileForPublish = await getCompanyProfileForPublish();
 
     const { data, error } = await supabase.rpc("publish_sales_offer", {
@@ -1317,6 +1348,8 @@ export default function SalesModule() {
             status: "Tilbud",
             statusClass: "sales-status-quote",
             nextStep: "Kundelink er oppdatert",
+            lastPublishedLineCount: currentLineCount,
+            lastPublishedOptionCount: currentOptionCount,
           }
         : item
     );
@@ -2928,6 +2961,11 @@ export default function SalesModule() {
         ? "Publiser ny versjon"
         : "Publiser kundetilbud"
       : "Vis kundens tilbud";
+    const publishLineCount = selectedRequest.offerLines?.length || 0;
+    const publishOptionCount = selectedRequest.offerOptions?.length || 0;
+    const publishVersionNumber =
+      (Number(selectedRequest.sentOfferVersionNumber) || 0) +
+      (hasUnpublishedOfferChanges ? 1 : 0);
     const hasInspectionContent = Boolean(
       selectedRequest.inspectionCustomerWishes ||
         selectedRequest.inspectionExistingConditions ||
@@ -3118,6 +3156,27 @@ export default function SalesModule() {
                 <span className="sales-next-label">Neste steg</span>
                 <h2>{nextStepTitle}</h2>
                 <p style={{ marginBottom: 16 }}>{nextStepHelp}</p>
+                {selectedRequest.status === "Tilbud" ? (
+                  <div
+                    style={{
+                      marginBottom: 16,
+                      padding: "14px 16px",
+                      border: "1px solid #d7e4ea",
+                      borderRadius: 16,
+                      background: "#f8fbfc",
+                      fontWeight: 700,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Tilbudslinjer: {publishLineCount} · Opsjoner:{" "}
+                    {publishOptionCount} ·{" "}
+                    {hasUnpublishedOfferChanges
+                      ? `Publiserer versjon v${publishVersionNumber || 1}`
+                      : selectedRequest.sentOfferVersionNumber
+                        ? `Publisert versjon v${selectedRequest.sentOfferVersionNumber}`
+                        : "Ikke publisert"}
+                  </div>
+                ) : null}
                 <div
                   style={{
                     display: "flex",
