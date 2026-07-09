@@ -403,6 +403,8 @@ export default function SalesModule() {
             acceptedAt,
             acceptedOfferVersionId: selectedRequest.sentOfferVersionId,
             acceptedOfferVersionNumber: selectedRequest.sentOfferVersionNumber,
+            acceptedOfferLines:
+              activeOfferVersion?.lines || selectedRequest.offerLines || [],
             acceptedOptionIds: acceptanceForm.selectedOptionIds,
             acceptedOptions: selectedOptions,
             acceptedTotal,
@@ -2411,8 +2413,40 @@ export default function SalesModule() {
                         {selectedRequest.acceptedOfferVersionNumber}.
                       </p>
                     ) : null}
+                    {(selectedRequest.acceptedOfferLines?.length ||
+                      selectedRequest.offerLines?.length) ? (
+                      <div style={{ marginTop: 14 }}>
+                        <p><strong>Aksepterte arbeider og priser:</strong></p>
+                        <div style={{ display: "grid", gap: 8, maxWidth: 720 }}>
+                          {(
+                            selectedRequest.acceptedOfferLines ||
+                            selectedRequest.offerLines ||
+                            []
+                          ).map((line, index) => (
+                            <div
+                              key={line.id}
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "28px 1fr minmax(140px, auto)",
+                                gap: 10,
+                                alignItems: "center",
+                              }}
+                            >
+                              <ClipboardList size={16} />
+                              <span>
+                                {index + 1}. {line.description}
+                              </span>
+                              <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                                {formatNok(getOfferTotal([line]))} eks. mva.
+                              </strong>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
                     {selectedRequest.acceptedOptions?.length ? (
-                      <div style={{ marginTop: 8 }}>
+                      <div style={{ marginTop: 18 }}>
                         <p><strong>Valgte opsjoner:</strong></p>
                         <div style={{ display: "grid", gap: 8, maxWidth: 720 }}>
                           {selectedRequest.acceptedOptions.map((option) => (
