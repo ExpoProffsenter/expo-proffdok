@@ -12,7 +12,7 @@ import {
   Save,
   Send,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./sales.css";
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
@@ -213,11 +213,28 @@ export default function SalesModule() {
     responsible: "",
     note: "",
   });
+  const [customerLinkCopied, setCustomerLinkCopied] = useState(false);
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) || null,
     [requests, selectedRequestId]
   );
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const customerOfferId = params.get("customerOffer");
+
+    if (!customerOfferId) return;
+
+    const request = requests.find((item) => item.id === customerOfferId);
+
+    if (!request) return;
+
+    openCustomerOfferFromRequestId(customerOfferId);
+    window.history.replaceState({}, "", window.location.pathname);
+    // Kun første lasting av kundelink i isolert preview.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const summary = useMemo(
     () => [
@@ -338,17 +355,7 @@ export default function SalesModule() {
   function openCustomerOfferPreview() {
     if (!selectedRequest) return;
 
-    const versionedRequest = createOrReuseSentOfferVersion(selectedRequest);
-
-    if (versionedRequest !== selectedRequest) {
-      const nextRequests = requests.map((request) =>
-        request.id === selectedRequestId ? versionedRequest : request
-      );
-      setRequests(nextRequests);
-      saveRequests(nextRequests);
-    }
-
-    setMode("customer-offer");
+    openCustomerOfferFromRequestId(selectedRequest.id);
   }
 
   function getActiveOfferVersion(request) {
@@ -812,6 +819,46 @@ export default function SalesModule() {
     setMode("detail");
   }
 
+  function getCustomerOfferLink(requestId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("customerOffer", requestId);
+    return url.toString();
+  }
+
+  function openCustomerOfferFromRequestId(requestId) {
+    const request = requests.find((item) => item.id === requestId);
+
+    if (!request || !request.offerLines?.length) return;
+
+    const versionedRequest = createOrReuseSentOfferVersion(request);
+    const nextRequests =
+      versionedRequest === request
+        ? requests
+        : requests.map((item) =>
+            item.id === requestId ? versionedRequest : item
+          );
+
+    if (versionedRequest !== request) {
+      setRequests(nextRequests);
+      saveRequests(nextRequests);
+    }
+
+    setSelectedRequestId(requestId);
+    setMode("customer-offer");
+  }
+
+  async function copyCustomerOfferLink(requestId) {
+    const link = getCustomerOfferLink(requestId);
+
+    try {
+      await navigator.clipboard.writeText(link);
+      setCustomerLinkCopied(true);
+      window.setTimeout(() => setCustomerLinkCopied(false), 2200);
+    } catch {
+      window.prompt("Kopier kundelinken:", link);
+    }
+  }
+
   function handleCreateRequest(event) {
     event.preventDefault();
 
@@ -1190,10 +1237,13 @@ export default function SalesModule() {
                 }}
               >
                 <div>
-                  <p className="sales-eyebrow">Tilbud til {selectedRequest.customer}</p>
+                  <p className="sales-eyebrow">Digitalt tilbud</p>
                   <h1 className="sales-title">{offerTitle}</h1>
                   <p className="sales-subtitle">
-                    {selectedRequest.address} · Tilbud {selectedRequest.id}
+                    Til {selectedRequest.customer} · {selectedRequest.address}
+                    {selectedRequest.sentOfferVersionNumber
+                      ? ` · Versjon ${selectedRequest.sentOfferVersionNumber}`
+                      : ""}
                   </p>
                 </div>
 
@@ -1231,7 +1281,7 @@ export default function SalesModule() {
                     </strong>
                   )}
                   <span style={{ color: "#607985", fontSize: 13 }}>
-                    Tilbud utarbeidet digitalt i Expo ProffDok
+                    Tilbud {selectedRequest.id} · Gyldig i {offerValidityDays} dager
                   </span>
                 </div>
               </div>
@@ -2597,6 +2647,43 @@ export default function SalesModule() {
                 selectedRequest.offerLines?.length ? (
                   <div className="sales-detail-lines">
                     <p><strong>{selectedRequest.offerTitle}</strong></p>
+
+                    <div
+                      style={{
+                        marginTop: 14,
+                        marginBottom: 16,
+                        padding: 14,
+                        border: "1px solid #d7e4ea",
+                        borderRadius: 16,
+                        background: "#f8fbfc",
+                      }}
+                    >
+                      <p style={{ marginBottom: 10 }}>
+                        <strong>Kundelink:</strong> Kunden åpner tilbudet via egen
+                        lenke og kan velge opsjoner og akseptere digitalt.
+                      </p>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <button
+                          className="sales-secondary-button"
+                          type="button"
+                          onClick={() => copyCustomerOfferLink(selectedRequest.id)}
+                        >
+                          <ClipboardList size={18} />
+                          {customerLinkCopied ? "Kopiert" : "Kopier kundelink"}
+                        </button>
+                        <button
+                          className="sales-secondary-button"
+                          type="button"
+                          onClick={() =>
+                            openCustomerOfferFromRequestId(selectedRequest.id)
+                          }
+                        >
+                          <Send size={18} />
+                          Åpne kundelink
+                        </button>
+                      </div>
+                    </div>
+
                     <div
                       style={{
                         display: "grid",
