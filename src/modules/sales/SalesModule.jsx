@@ -5,6 +5,7 @@
 // FASE 19.2 TRYGG REPUBLISERING: Tydeliggjør når redigert tilbud/opsjon må publiseres som ny kundelenke-versjon. Ingen SQL/main/Edge.
 // FASE 19.4B TILGANG BEFARINGSNOTAT FRA TILBUD: Viser trygg knapp for Befaringsnotat/lydnotat også i tilbudssak uten å endre tilbudsstatus ved lagring. Ingen SQL/main/CSS/Edge.
 // FASE 19.4D BEVAR BEFARINGSINFO: Viser forespørselsnotat/befaringsplan som kontekst i befaringsnotat og bruker trygge fallback-felt ved åpning fra tilbudssak. Ingen SQL/main/CSS/Edge.
+// FASE 19.5 UX-FORENKLING INTERN ARBEIDSFLYT: Tydeligere primær neste-handling i intern sak, uten database/SQL/Edge/main-endring. Bevarer tilbudsversjoner, kundelink og befaringsnotat.
 // FASE 18.19C3 HOTFIX FIRMAPROFIL EMAIL-FALLBACK: Henter firmaprofil robust via auth-id først og innlogget e-post som fallback før publish-snapshot. Ingen SQL/main/CSS.
 // FASE 18.19C2 HOTFIX FIRMAPROFILSNAPSHOT: Bruker samme profiles-felt som hovedappen, venter på auth/session og legger firmasnapshot inn i faktisk publish-payload. Ingen SQL/main/CSS.
 // FASE 18.19C1 HOTFIX PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
@@ -2927,6 +2928,50 @@ export default function SalesModule() {
         ? "Publiser ny versjon"
         : "Publiser kundetilbud"
       : "Vis kundens tilbud";
+    const hasInspectionContent = Boolean(
+      selectedRequest.inspectionCustomerWishes ||
+        selectedRequest.inspectionExistingConditions ||
+        selectedRequest.inspectionMeasurements ||
+        selectedRequest.inspectionObservations ||
+        selectedRequest.inspectionPhotos?.length ||
+        selectedRequest.inspectionAudioNotes?.length
+    );
+    const nextStepTitle = (() => {
+      if (selectedRequest.status === "Forespørsel") return "Planlegg befaring";
+      if (selectedRequest.status === "Befaring" && selectedRequest.nextStep === "Opprett tilbud") return "Lag tilbud";
+      if (selectedRequest.status === "Befaring") return "Registrer befaring";
+      if (selectedRequest.status === "Tilbud" && hasUnpublishedOfferChanges) {
+        return hasPublishedCustomerOffer ? "Oppdater kundens tilbud" : "Publiser kundetilbud";
+      }
+      if (selectedRequest.status === "Tilbud") return "Kundetilbud er publisert";
+      if (selectedRequest.status === "Akseptert") return "Klar for prosjektaktivering";
+      if (selectedRequest.status === "Aktivert") return "Prosjekt aktivert";
+      return selectedRequest.nextStep || "Neste steg";
+    })();
+    const nextStepHelp = (() => {
+      if (selectedRequest.status === "Forespørsel") {
+        return "Start med å sette dato, tidspunkt og ansvarlig. Saken flyttes da videre til Befaring.";
+      }
+      if (selectedRequest.status === "Befaring" && selectedRequest.nextStep === "Opprett tilbud") {
+        return "Befaringen er registrert. Neste naturlige steg er å bygge tilbudet fra samme sak.";
+      }
+      if (selectedRequest.status === "Befaring") {
+        return "Registrer kundens ønsker, eksisterende forhold, målinger, observasjoner, bilder og eventuelle lydnotater.";
+      }
+      if (selectedRequest.status === "Tilbud" && hasUnpublishedOfferChanges) {
+        return "Tilbudet er endret internt. Kunden ser ikke endringene før du publiserer en ny versjon av kundetilbudet.";
+      }
+      if (selectedRequest.status === "Tilbud") {
+        return "Kundelinken er klar. Kunden kan åpne tilbudet, velge opsjoner og akseptere digitalt.";
+      }
+      if (selectedRequest.status === "Akseptert") {
+        return "Kunden har akseptert tilbudet. Akseptert innhold låses i denne flyten før senere prosjektaktivering.";
+      }
+      if (selectedRequest.status === "Aktivert") {
+        return "Saken er markert som aktivert i preview. Endelig integrasjon mot aktiv ProffDok-app skal gjøres kontrollert senere.";
+      }
+      return "Følg neste tydelige handling i saken.";
+    })();
 
     return (
       <div className="sales-app">
@@ -3071,7 +3116,62 @@ export default function SalesModule() {
 
               <article className="sales-next-card sales-detail-card-wide">
                 <span className="sales-next-label">Neste steg</span>
-                <h2>{selectedRequest.nextStep}</h2>
+                <h2>{nextStepTitle}</h2>
+                <p style={{ marginBottom: 16 }}>{nextStepHelp}</p>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 10,
+                    flexWrap: "wrap",
+                    marginBottom: 18,
+                  }}
+                >
+                  {selectedRequest.status === "Forespørsel" ? (
+                    <button className="sales-primary-button" type="button" onClick={openSurveyPlanning}>
+                      <CalendarDays size={18} />
+                      Planlegg befaring
+                    </button>
+                  ) : null}
+
+                  {selectedRequest.status === "Befaring" ? (
+                    <button
+                      className="sales-primary-button"
+                      type="button"
+                      onClick={selectedRequest.nextStep === "Opprett tilbud" ? openOfferBuilder : openInspectionNote}
+                    >
+                      {selectedRequest.nextStep === "Opprett tilbud" ? <ClipboardList size={18} /> : <Ruler size={18} />}
+                      {selectedRequest.nextStep === "Opprett tilbud" ? "Lag tilbud" : "Registrer befaring"}
+                    </button>
+                  ) : null}
+
+                  {selectedRequest.status === "Tilbud" ? (
+                    <>
+                      <button
+                        className={hasUnpublishedOfferChanges ? "sales-primary-button" : "sales-secondary-button"}
+                        type="button"
+                        onClick={() => openCustomerOfferFromRequestId(selectedRequest.id)}
+                      >
+                        <Send size={18} />
+                        {customerOfferActionLabel}
+                      </button>
+                      <button className="sales-secondary-button" type="button" onClick={openOfferBuilder}>
+                        <ClipboardList size={18} />
+                        Rediger tilbud
+                      </button>
+                      <button className="sales-secondary-button" type="button" onClick={openInspectionNote}>
+                        <Ruler size={18} />
+                        {hasInspectionContent ? "Se befaringsnotat" : "Legg til befaringsnotat"}
+                      </button>
+                    </>
+                  ) : null}
+
+                  {selectedRequest.status === "Akseptert" ? (
+                    <button className="sales-primary-button" type="button" onClick={openProjectActivation}>
+                      <Home size={18} />
+                      Aktiver som prosjekt
+                    </button>
+                  ) : null}
+                </div>
                 {selectedRequest.status === "Aktivert" &&
                 selectedRequest.projectActivatedAt ? (
                   <div className="sales-detail-lines">
