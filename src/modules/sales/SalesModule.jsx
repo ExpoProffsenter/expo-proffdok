@@ -187,7 +187,16 @@ export default function SalesModule() {
   const [offerForm, setOfferForm] = useState({
     title: "",
     intro: "",
-    lines: [{ id: "line-1", description: "", amount: "" }],
+    lines: [
+      {
+        id: "line-1",
+        description: "",
+        amount: "",
+        productUrl: "",
+        imageDataUrl: "",
+        imageName: "",
+      },
+    ],
     options: [],
     reservations: "",
     validityDays: "30",
@@ -344,7 +353,16 @@ export default function SalesModule() {
       lines:
         selectedRequest?.offerLines?.length
           ? selectedRequest.offerLines
-          : [{ id: `line-${Date.now()}`, description: "", amount: "" }],
+          : [
+              {
+                id: `line-${Date.now()}`,
+                description: "",
+                amount: "",
+                productUrl: "",
+                imageDataUrl: "",
+                imageName: "",
+              },
+            ],
       options: selectedRequest?.offerOptions?.length
         ? selectedRequest.offerOptions
         : [],
@@ -372,7 +390,15 @@ export default function SalesModule() {
       ...current,
       lines: [
         ...current.lines,
-        { id: `line-${Date.now()}-${Math.random()}`, description: "", amount: "" },
+        {
+          id: `line-${Date.now()}-${Math.random()}`,
+          description: "",
+          amount: "",
+          productUrl: "",
+          imageDataUrl: "",
+          imageName: "",
+          productUrl: "",
+        },
       ],
     }));
   }
@@ -384,6 +410,42 @@ export default function SalesModule() {
         current.lines.length === 1
           ? current.lines
           : current.lines.filter((line) => line.id !== lineId),
+    }));
+  }
+
+  function handleOfferLineImage(lineId, event) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setOfferForm((current) => ({
+        ...current,
+        lines: current.lines.map((line) =>
+          line.id === lineId
+            ? {
+                ...line,
+                imageDataUrl: reader.result,
+                imageName: file.name,
+              }
+            : line
+        ),
+      }));
+    };
+
+    reader.readAsDataURL(file);
+    event.target.value = "";
+  }
+
+  function removeOfferLineImage(lineId) {
+    setOfferForm((current) => ({
+      ...current,
+      lines: current.lines.map((line) =>
+        line.id === lineId
+          ? { ...line, imageDataUrl: "", imageName: "" }
+          : line
+      ),
     }));
   }
 
@@ -471,6 +533,9 @@ export default function SalesModule() {
         ...line,
         description: line.description.trim(),
         amount: String(line.amount || "").trim(),
+        productUrl: String(line.productUrl || "").trim(),
+        imageDataUrl: line.imageDataUrl || "",
+        imageName: line.imageName || "",
       }))
       .filter((line) => line.description || line.amount);
 
@@ -480,13 +545,15 @@ export default function SalesModule() {
         title: option.title.trim(),
         description: option.description.trim(),
         amount: String(option.amount || "").trim(),
+        productUrl: String(option.productUrl || "").trim(),
       }))
       .filter(
         (option) =>
           option.title ||
           option.description ||
           option.amount ||
-          option.imageDataUrl
+          option.imageDataUrl ||
+          option.productUrl
       );
 
     const nextRequests = requests.map((request) =>
@@ -869,7 +936,7 @@ export default function SalesModule() {
     const offerLines = activeOfferVersion?.lines || selectedRequest.offerLines || [];
     const offerOptions = activeOfferVersion?.options || selectedRequest.offerOptions || [];
     const offerReservations =
-      activeOfferVersion?.reservations || offerReservations;
+      activeOfferVersion?.reservations || selectedRequest.offerReservations;
     const offerValidityDays =
       activeOfferVersion?.validityDays || selectedRequest.offerValidityDays || "30";
 
@@ -996,17 +1063,42 @@ export default function SalesModule() {
                   {offerLines.map((line, index) => (
                     <div
                       key={line.id}
+                      className="sales-customer-price-line"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "28px 1fr minmax(150px, auto)",
-                        alignItems: "center",
+                        alignItems: "start",
                         gap: 10,
                       }}
                     >
                       <ClipboardList size={16} />
-                      <span>
-                        {index + 1}. {line.description}
-                      </span>
+                      <div>
+                        <span>
+                          {index + 1}. {line.description}
+                        </span>
+
+                        {line.imageDataUrl || line.productUrl ? (
+                          <div className="sales-customer-line-media">
+                            {line.imageDataUrl ? (
+                              <img
+                                src={line.imageDataUrl}
+                                alt={line.imageName || line.description || "Produktbilde"}
+                              />
+                            ) : null}
+
+                            {line.productUrl ? (
+                              <a
+                                href={line.productUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Se produkt / dokumentasjon
+                              </a>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+
                       <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                         {formatNok(getOfferTotal([line]))} eks. mva.
                       </strong>
@@ -1107,6 +1199,15 @@ export default function SalesModule() {
                         <div>
                           <h3>{option.title || "Opsjon"}</h3>
                           {option.description ? <p>{option.description}</p> : null}
+                          {option.productUrl ? (
+                            <a
+                              href={option.productUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Se produkt / dokumentasjon
+                            </a>
+                          ) : null}
                           <strong>
                             {formatNok(getOfferTotal([option]))} eks. mva.
                           </strong>
@@ -1281,14 +1382,58 @@ export default function SalesModule() {
                       <div className="sales-offer-line" key={line.id}>
                         <div className="sales-offer-line-number">{index + 1}</div>
 
-                        <input
-                          value={line.description}
-                          onChange={(event) =>
-                            updateOfferLine(line.id, "description", event.target.value)
-                          }
-                          placeholder="Beskrivelse av arbeid"
-                          required
-                        />
+                        <div style={{ display: "grid", gap: 10 }}>
+                          <input
+                            value={line.description}
+                            onChange={(event) =>
+                              updateOfferLine(
+                                line.id,
+                                "description",
+                                event.target.value
+                              )
+                            }
+                            placeholder="Beskrivelse av arbeid"
+                            required
+                          />
+
+                          <input
+                            value={line.productUrl || ""}
+                            onChange={(event) =>
+                              updateOfferLine(line.id, "productUrl", event.target.value)
+                            }
+                            placeholder="Produktlink, FDV eller inspirasjon – valgfritt"
+                            inputMode="url"
+                          />
+
+                          {line.imageDataUrl ? (
+                            <div className="sales-option-image-preview">
+                              <img
+                                src={line.imageDataUrl}
+                                alt={line.imageName || line.description || "Produktbilde"}
+                              />
+                              <button
+                                className="sales-secondary-button"
+                                type="button"
+                                onClick={() => removeOfferLineImage(line.id)}
+                              >
+                                Fjern bilde
+                              </button>
+                            </div>
+                          ) : null}
+
+                          <label className="sales-secondary-button" style={{ width: "fit-content" }}>
+                            <Plus size={18} />
+                            Legg til bilde
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(event) =>
+                                handleOfferLineImage(line.id, event)
+                              }
+                              style={{ display: "none" }}
+                            />
+                          </label>
+                        </div>
 
                         <input
                           value={line.amount}
@@ -1355,6 +1500,19 @@ export default function SalesModule() {
                                 )
                               }
                               placeholder="Kort beskrivelse"
+                            />
+
+                            <input
+                              value={option.productUrl || ""}
+                              onChange={(event) =>
+                                updateOfferOption(
+                                  option.id,
+                                  "productUrl",
+                                  event.target.value
+                                )
+                              }
+                              placeholder="Produktlink, FDV eller inspirasjon – valgfritt"
+                              inputMode="url"
                             />
 
                             {option.imageDataUrl ? (
