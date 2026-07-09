@@ -1,3 +1,4 @@
+// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
 // FASE 19.4A IPHONE-KLAR LYDNOTAT BEFARING: Legger til trygg lydopptak/lydfil på befaringsnotat med iPhone-fallback via lydfilinput. Ingen AI/transkripsjon/SQL/main/Edge.
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
 // FASE 19.3 TYDELIG PUBLISERINGSBEKREFTELSE: Viser tydelig intern bekreftelse når kundelink/ny tilbudsversjon er publisert. Ingen SQL/main/Edge.
@@ -247,6 +248,11 @@ export default function SalesModule() {
     photos: [],
     audioNotes: [],
   });
+  const [inspectionRecordingState, setInspectionRecordingState] = useState("idle");
+  const [inspectionRecordingError, setInspectionRecordingError] = useState("");
+  const inspectionRecorderRef = useRef(null);
+  const inspectionAudioStreamRef = useRef(null);
+  const inspectionAudioChunksRef = useRef([]);
   const [offerForm, setOfferForm] = useState({
     title: "",
     intro: "",
