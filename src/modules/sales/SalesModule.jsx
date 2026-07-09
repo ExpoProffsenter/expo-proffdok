@@ -1,4 +1,4 @@
-// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
+// FASE 19.6 AI-BEFARINGSASSISTENT: Autentisert lydtranskripsjon og AI-forslag med eksplisitt brukergodkjenning. Ingen automatisk lagring.\n// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
 // FASE 19.4A IPHONE-KLAR LYDNOTAT BEFARING: Legger til trygg lydopptak/lydfil på befaringsnotat med iPhone-fallback via lydfilinput. Ingen AI/transkripsjon/SQL/main/Edge.
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
 // FASE 19.3 TYDELIG PUBLISERINGSBEKREFTELSE: Viser tydelig intern bekreftelse når kundelink/ny tilbudsversjon er publisert. Ingen SQL/main/Edge.
@@ -252,6 +252,9 @@ export default function SalesModule() {
   });
   const [inspectionRecordingState, setInspectionRecordingState] = useState("idle");
   const [inspectionRecordingError, setInspectionRecordingError] = useState("");
+  const [inspectionAiState, setInspectionAiState] = useState("idle");
+  const [inspectionAiError, setInspectionAiError] = useState("");
+  const [inspectionAiProposal, setInspectionAiProposal] = useState(null);
   const inspectionRecorderRef = useRef(null);
   const inspectionAudioStreamRef = useRef(null);
   const inspectionAudioChunksRef = useRef([]);
@@ -1086,6 +1089,84 @@ export default function SalesModule() {
       ...current,
       audioNotes: (current.audioNotes || []).filter((audio) => audio.id !== audioId),
     }));
+  }
+
+  async function analyzeInspectionAudio(audio) {
+    if (!supabase || !audio?.dataUrl) return;
+
+    setInspectionAiState("working");
+    setInspectionAiError("");
+    setInspectionAiProposal(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error("Du må være innlogget for å bruke befaringsassistenten.");
+      }
+
+      const audioResponse = await fetch(audio.dataUrl);
+      const audioBlob = await audioResponse.blob();
+      const extension = audio.type?.includes("mp4")
+        ? "m4a"
+        : audio.type?.includes("mpeg")
+          ? "mp3"
+          : audio.type?.includes("wav")
+            ? "wav"
+            : "webm";
+      const audioFile = new File(
+        [audioBlob],
+        audio.name?.includes(".") ? audio.name : `befaring.${extension}`,
+        { type: audio.type || audioBlob.type || "audio/webm" }
+      );
+
+      const formData = new FormData();
+      formData.append("audio", audioFile);
+
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/inspection-assistant`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: supabaseAnonKey,
+          },
+          body: formData,
+        }
+      );
+
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result?.ok) {
+        throw new Error(result?.error || "Befaringsassistenten feilet.");
+      }
+
+      setInspectionAiProposal({
+        transcript: result.transcript || "",
+        customerWishes: result.suggestion?.customerWishes || "",
+        existingConditions: result.suggestion?.existingConditions || "",
+        measurements: result.suggestion?.measurements || "",
+        observations: result.suggestion?.professionalObservations || "",
+      });
+      setInspectionAiState("ready");
+    } catch (error) {
+      setInspectionAiError(error?.message || "Befaringsassistenten feilet.");
+      setInspectionAiState("error");
+    }
+  }
+
+  function applyInspectionAiProposal() {
+    if (!inspectionAiProposal) return;
+
+    setInspectionForm((current) => ({
+      ...current,
+      customerWishes: inspectionAiProposal.customerWishes,
+      existingConditions: inspectionAiProposal.existingConditions,
+      measurements: inspectionAiProposal.measurements,
+      observations: inspectionAiProposal.observations,
+    }));
+    setInspectionAiState("applied");
   }
 
   function handleSaveInspectionNote(event) {
@@ -2710,6 +2791,18 @@ export default function SalesModule() {
                               {audio.name || "Befaringslyd"}
                             </strong>
                             <audio controls src={audio.dataUrl} style={{ width: "100%" }} />
+                            <button
+                              type="button"
+                              className="sales-primary-button"
+                              onClick={() => analyzeInspectionAudio(audio)}
+                              disabled={inspectionAiState === "working"}
+                              style={{ marginTop: 10, width: "100%" }}
+                            >
+                              <Mic size={16} />
+                              {inspectionAiState === "working"
+                                ? "Transkriberer og strukturerer..."
+                                : "Lag AI-forslag fra lyd"}
+                            </button>
                             {audio.createdAt ? (
                               <p className="sales-subtitle" style={{ marginTop: 8 }}>
                                 Lagret {new Date(audio.createdAt).toLocaleString("nb-NO")}
@@ -2729,6 +2822,43 @@ export default function SalesModule() {
                   ) : (
                     <p className="sales-subtitle">Ingen lydnotater registrert ennå.</p>
                   )}
+
+                  {inspectionAiError ? (
+                    <div className="sales-form-preview" style={{ marginTop: 14 }}>
+                      <strong>Befaringsassistenten kunne ikke fullføre</strong>
+                      <p style={{ marginBottom: 0 }}>{inspectionAiError}</p>
+                    </div>
+                  ) : null}
+
+                  {inspectionAiProposal ? (
+                    <div className="sales-form-preview" style={{ marginTop: 14 }}>
+                      <h2>AI-forslag – kontroller før bruk</h2>
+                      <p className="sales-subtitle">
+                        Ingenting er lagt inn i befaringsfeltene eller lagret ennå.
+                      </p>
+                      <div className="sales-detail-lines">
+                        <p><strong>Kundens ønsker:</strong> {inspectionAiProposal.customerWishes || "Ikke foreslått"}</p>
+                        <p><strong>Eksisterende forhold:</strong> {inspectionAiProposal.existingConditions || "Ikke foreslått"}</p>
+                        <p><strong>Målinger:</strong> {inspectionAiProposal.measurements || "Ikke foreslått"}</p>
+                        <p><strong>Faglige observasjoner:</strong> {inspectionAiProposal.observations || "Ikke foreslått"}</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="sales-primary-button"
+                        onClick={applyInspectionAiProposal}
+                        style={{ marginTop: 12 }}
+                      >
+                        <CheckCircle2 size={18} />
+                        Bruk AI-forslag i feltene
+                      </button>
+                    </div>
+                  ) : null}
+
+                  {inspectionAiState === "applied" ? (
+                    <p className="sales-subtitle" style={{ marginTop: 10 }}>
+                      AI-forslaget er lagt i feltene. Kontroller og rediger før du lagrer befaringsnotatet.
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="sales-field sales-field-full">
