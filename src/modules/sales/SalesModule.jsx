@@ -184,6 +184,13 @@ export default function SalesModule() {
     observations: "",
     photos: [],
   });
+  const [offerForm, setOfferForm] = useState({
+    title: "",
+    intro: "",
+    lines: [{ id: "line-1", description: "", amount: "" }],
+    reservations: "",
+    validityDays: "30",
+  });
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) || null,
@@ -224,6 +231,107 @@ export default function SalesModule() {
   function goToList() {
     setMode("list");
     setSelectedRequestId(null);
+  }
+
+  function openOfferBuilder() {
+    setOfferForm({
+      title: selectedRequest?.offerTitle || `Tilbud – ${selectedRequest?.title || ""}`,
+      intro:
+        selectedRequest?.offerIntro ||
+        `Vi viser til befaring og tilbyr med dette følgende arbeider for ${selectedRequest?.customer || "kunden"}.`,
+      lines:
+        selectedRequest?.offerLines?.length
+          ? selectedRequest.offerLines
+          : [{ id: `line-${Date.now()}`, description: "", amount: "" }],
+      reservations: selectedRequest?.offerReservations || "",
+      validityDays: selectedRequest?.offerValidityDays || "30",
+    });
+    setMode("offer-builder");
+  }
+
+  function updateOfferForm(field, value) {
+    setOfferForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function updateOfferLine(lineId, field, value) {
+    setOfferForm((current) => ({
+      ...current,
+      lines: current.lines.map((line) =>
+        line.id === lineId ? { ...line, [field]: value } : line
+      ),
+    }));
+  }
+
+  function addOfferLine() {
+    setOfferForm((current) => ({
+      ...current,
+      lines: [
+        ...current.lines,
+        { id: `line-${Date.now()}-${Math.random()}`, description: "", amount: "" },
+      ],
+    }));
+  }
+
+  function removeOfferLine(lineId) {
+    setOfferForm((current) => ({
+      ...current,
+      lines:
+        current.lines.length === 1
+          ? current.lines
+          : current.lines.filter((line) => line.id !== lineId),
+    }));
+  }
+
+  function getOfferTotal(lines) {
+    return lines.reduce((sum, line) => {
+      const normalized = String(line.amount || "")
+        .replace(/\s/g, "")
+        .replace(",", ".");
+      const amount = Number(normalized);
+      return sum + (Number.isFinite(amount) ? amount : 0);
+    }, 0);
+  }
+
+  function formatNok(value) {
+    return new Intl.NumberFormat("nb-NO", {
+      style: "currency",
+      currency: "NOK",
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+
+  function handleSaveOffer(event) {
+    event.preventDefault();
+
+    const cleanLines = offerForm.lines
+      .map((line) => ({
+        ...line,
+        description: line.description.trim(),
+        amount: String(line.amount || "").trim(),
+      }))
+      .filter((line) => line.description || line.amount);
+
+    const nextRequests = requests.map((request) =>
+      request.id === selectedRequestId
+        ? {
+            ...request,
+            offerTitle: offerForm.title.trim(),
+            offerIntro: offerForm.intro.trim(),
+            offerLines: cleanLines,
+            offerReservations: offerForm.reservations.trim(),
+            offerValidityDays: offerForm.validityDays,
+            offerTotal: getOfferTotal(cleanLines),
+            status: "Tilbud",
+            statusClass: "sales-status-quote",
+            nextStep: "Send tilbud til kunde",
+            iconName: "send",
+          }
+        : request
+    );
+
+    setRequests(nextRequests);
+    saveRequests(nextRequests);
+    setMode("detail");
   }
 
   function openInspectionNote() {
@@ -562,6 +670,188 @@ export default function SalesModule() {
                 <button className="sales-primary-button" type="submit">
                   <Save size={18} />
                   Lagre forespørsel
+                </button>
+              </div>
+            </form>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "offer-builder" && selectedRequest) {
+    const offerTotal = getOfferTotal(offerForm.lines);
+
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <header className="sales-header">
+            <button
+              className="sales-back-button"
+              type="button"
+              onClick={() => setMode("detail")}
+            >
+              <ArrowLeft size={18} />
+              Tilbake
+            </button>
+
+            <div className="sales-brand sales-brand-compact">
+              <div className="sales-brand-mark">
+                <ClipboardList size={22} />
+              </div>
+              <div className="sales-brand-copy">
+                <strong>Expo ProffDok</strong>
+                <span>Befaring / Tilbud / Aksept</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="sales-main">
+            <section className="sales-form-hero">
+              <p className="sales-eyebrow">Tilbudsbygger</p>
+              <h1 className="sales-title">Opprett tilbud</h1>
+              <p className="sales-subtitle">
+                {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
+              </p>
+            </section>
+
+            <form className="sales-form-panel" onSubmit={handleSaveOffer}>
+              <div className="sales-form-grid">
+                <label className="sales-field sales-field-full">
+                  <span>Tilbudstittel</span>
+                  <input
+                    value={offerForm.title}
+                    onChange={(event) => updateOfferForm("title", event.target.value)}
+                    placeholder="Tilbud – Modernisering av bad"
+                    required
+                  />
+                </label>
+
+                <label className="sales-field sales-field-full">
+                  <span>Innledning</span>
+                  <textarea
+                    value={offerForm.intro}
+                    onChange={(event) => updateOfferForm("intro", event.target.value)}
+                    rows={4}
+                  />
+                </label>
+
+                <div className="sales-field sales-field-full">
+                  <span>Arbeider og priser</span>
+
+                  <div className="sales-offer-lines">
+                    {offerForm.lines.map((line, index) => (
+                      <div className="sales-offer-line" key={line.id}>
+                        <div className="sales-offer-line-number">{index + 1}</div>
+
+                        <input
+                          value={line.description}
+                          onChange={(event) =>
+                            updateOfferLine(line.id, "description", event.target.value)
+                          }
+                          placeholder="Beskrivelse av arbeid"
+                          required
+                        />
+
+                        <input
+                          value={line.amount}
+                          onChange={(event) =>
+                            updateOfferLine(line.id, "amount", event.target.value)
+                          }
+                          placeholder="Beløp eks. mva."
+                          inputMode="decimal"
+                          required
+                        />
+
+                        <button
+                          className="sales-secondary-button"
+                          type="button"
+                          onClick={() => removeOfferLine(line.id)}
+                          disabled={offerForm.lines.length === 1}
+                        >
+                          Fjern
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    className="sales-secondary-button"
+                    type="button"
+                    onClick={addOfferLine}
+                    style={{ width: "fit-content", marginTop: 12 }}
+                  >
+                    <Plus size={18} />
+                    Legg til arbeid
+                  </button>
+                </div>
+
+                <label className="sales-field sales-field-full">
+                  <span>Forutsetninger og forbehold</span>
+                  <textarea
+                    value={offerForm.reservations}
+                    onChange={(event) =>
+                      updateOfferForm("reservations", event.target.value)
+                    }
+                    placeholder="Eksempel: Tilbudet forutsetter at eksisterende konstruksjoner er egnet for planlagte arbeider. Skjulte forhold prises som tillegg etter avtale."
+                    rows={5}
+                  />
+                </label>
+
+                <label className="sales-field">
+                  <span>Tilbudet er gyldig i</span>
+                  <select
+                    value={offerForm.validityDays}
+                    onChange={(event) =>
+                      updateOfferForm("validityDays", event.target.value)
+                    }
+                  >
+                    <option value="14">14 dager</option>
+                    <option value="30">30 dager</option>
+                    <option value="60">60 dager</option>
+                    <option value="90">90 dager</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="sales-form-preview">
+                <h2>Tilbudsoppsummering</h2>
+                <div className="sales-preview-lines">
+                  <span>
+                    <ClipboardList size={16} />
+                    {offerForm.lines.length} arbeidspost(er)
+                  </span>
+                  <span>
+                    <Send size={16} />
+                    Gyldig i {offerForm.validityDays} dager
+                  </span>
+                </div>
+                <div className="sales-offer-total">
+                  <span>Sum eks. mva.</span>
+                  <strong>{formatNok(offerTotal)}</strong>
+                </div>
+                <div className="sales-offer-total sales-offer-total-muted">
+                  <span>Mva. 25 %</span>
+                  <strong>{formatNok(offerTotal * 0.25)}</strong>
+                </div>
+                <div className="sales-offer-total sales-offer-total-grand">
+                  <span>Sum inkl. mva.</span>
+                  <strong>{formatNok(offerTotal * 1.25)}</strong>
+                </div>
+              </div>
+
+              <div className="sales-form-actions">
+                <button
+                  className="sales-secondary-button"
+                  type="button"
+                  onClick={() => setMode("detail")}
+                >
+                  Avbryt
+                </button>
+
+                <button className="sales-primary-button" type="submit">
+                  <Save size={18} />
+                  Lagre tilbud
                 </button>
               </div>
             </form>
@@ -916,9 +1206,12 @@ export default function SalesModule() {
                   onClick={
                     selectedRequest.status === "Forespørsel"
                       ? openSurveyPlanning
-                      : selectedRequest.status === "Befaring"
-                        ? openInspectionNote
-                        : undefined
+                      : selectedRequest.status === "Befaring" &&
+                          selectedRequest.nextStep === "Opprett tilbud"
+                        ? openOfferBuilder
+                        : selectedRequest.status === "Befaring"
+                          ? openInspectionNote
+                          : undefined
                   }
                 >
                   <CalendarDays size={18} />
@@ -976,7 +1269,26 @@ export default function SalesModule() {
               <article className="sales-next-card sales-detail-card-wide">
                 <span className="sales-next-label">Neste steg</span>
                 <h2>{selectedRequest.nextStep}</h2>
-                {selectedRequest.inspectionCustomerWishes ||
+                {selectedRequest.status === "Tilbud" &&
+                selectedRequest.offerLines?.length ? (
+                  <div className="sales-detail-lines">
+                    <p><strong>{selectedRequest.offerTitle}</strong></p>
+                    {selectedRequest.offerLines.map((line) => (
+                      <span key={line.id}>
+                        <ClipboardList size={16} />
+                        {line.description}: {formatNok(getOfferTotal([line]))} eks. mva.
+                      </span>
+                    ))}
+                    <p>
+                      <strong>Sum eks. mva.:</strong>{" "}
+                      {formatNok(selectedRequest.offerTotal || 0)}
+                    </p>
+                    <p>
+                      <strong>Sum inkl. mva.:</strong>{" "}
+                      {formatNok((selectedRequest.offerTotal || 0) * 1.25)}
+                    </p>
+                  </div>
+                ) : selectedRequest.inspectionCustomerWishes ||
                 selectedRequest.inspectionExistingConditions ||
                 selectedRequest.inspectionMeasurements ||
                 selectedRequest.inspectionObservations ? (
