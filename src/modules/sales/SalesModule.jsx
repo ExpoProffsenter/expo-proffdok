@@ -719,11 +719,14 @@ export default function SalesModule() {
               className="sales-form-panel"
               onSubmit={handleSaveOffer}
               onKeyDown={(event) => {
-                if (
-                  event.key === "Enter" &&
-                  event.target.tagName !== "TEXTAREA"
-                ) {
-                  event.preventDefault();
+                if (event.key !== "Enter" || event.target.tagName === "TEXTAREA") {
+                  return;
+                }
+
+                event.preventDefault();
+
+                if (event.target.closest(".sales-offer-line")) {
+                  addOfferLine();
                 }
               }}
             >
