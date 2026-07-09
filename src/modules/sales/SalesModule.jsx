@@ -1,3 +1,4 @@
+// FASE 18.19C PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
 // FASE 18.19B TILBUDSLINJE ENTER/TOMLINJE HOTFIX: Enter i prisfelt oppretter/fokuserer neste linje, og tom siste linje ignoreres trygt ved lagring. Ingen SQL/main/prosjektaktivering.
 import {
   ArrowLeft,
@@ -225,11 +226,50 @@ export default function SalesModule() {
   const [customerLinkCopied, setCustomerLinkCopied] = useState(false);
   const [publicOfferLoading, setPublicOfferLoading] = useState(false);
   const [publicOfferError, setPublicOfferError] = useState("");
+  const [companyProfile, setCompanyProfile] = useState({
+    companyName: "",
+    orgNumber: "",
+    address: "",
+    phone: "",
+    email: "",
+    website: "",
+    logoUrl: "",
+  });
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) || null,
     [requests, selectedRequestId]
   );
+
+  useEffect(() => {
+    async function loadCompanyProfile() {
+      if (!supabase) return;
+
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData?.user;
+      if (!user?.id) return;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("company_name,org_number,address,phone,email,website,logo_url")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error || !data) return;
+
+      setCompanyProfile({
+        companyName: data.company_name || "",
+        orgNumber: data.org_number || "",
+        address: data.address || "",
+        phone: data.phone || "",
+        email: data.email || user.email || "",
+        website: data.website || "",
+        logoUrl: data.logo_url || "",
+      });
+    }
+
+    loadCompanyProfile();
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -335,7 +375,20 @@ export default function SalesModule() {
       createdAt,
       title: request.offerTitle || "",
       intro: request.offerIntro || "",
-      lines: request.offerLines || [],
+      lines: [
+        {
+          id: "__expo_company_snapshot__",
+          __companyMeta: true,
+          companyName: companyProfile.companyName || "",
+          orgNumber: companyProfile.orgNumber || "",
+          address: companyProfile.address || "",
+          phone: companyProfile.phone || "",
+          email: companyProfile.email || "",
+          website: companyProfile.website || "",
+          logoUrl: companyProfile.logoUrl || "",
+        },
+        ...(request.offerLines || []),
+      ],
       options: request.offerOptions || [],
       reservations: request.offerReservations || "",
       validityDays: request.offerValidityDays || "30",
@@ -932,13 +985,27 @@ export default function SalesModule() {
 
     if (!offer || !version) return null;
 
+    const publishedLines = Array.isArray(version.lines) ? version.lines : [];
+    const companySnapshot =
+      publishedLines.find((line) => line?.__companyMeta) || {};
+    const visibleOfferLines = publishedLines.filter(
+      (line) => !line?.__companyMeta
+    );
+
     return {
       id: offer.request_ref || offer.id,
       salesOfferId: offer.id,
       title: version.title || offer.title,
       offerTitle: version.title || offer.title,
       offerIntro: version.intro || "",
-      offerLines: version.lines || [],
+      offerLines: visibleOfferLines,
+      companyName: companySnapshot.companyName || "",
+      companyOrgNumber: companySnapshot.orgNumber || "",
+      companyAddress: companySnapshot.address || "",
+      companyPhone: companySnapshot.phone || "",
+      companyEmail: companySnapshot.email || "",
+      companyWebsite: companySnapshot.website || "",
+      companyLogoUrl: companySnapshot.logoUrl || "",
       offerOptions: version.options || [],
       offerReservations: version.reservations || "",
       offerValidityDays: String(version.validity_days || 30),
@@ -1435,6 +1502,22 @@ export default function SalesModule() {
   }
 
   if (mode === "customer-offer" && selectedRequest) {
+    const offerCompany = {
+      companyName:
+        selectedRequest.companyName || companyProfile.companyName || "",
+      orgNumber:
+        selectedRequest.companyOrgNumber || companyProfile.orgNumber || "",
+      address:
+        selectedRequest.companyAddress || companyProfile.address || "",
+      phone:
+        selectedRequest.companyPhone || companyProfile.phone || "",
+      email:
+        selectedRequest.companyEmail || companyProfile.email || "",
+      website:
+        selectedRequest.companyWebsite || companyProfile.website || "",
+      logoUrl:
+        offerCompany.logoUrl || companyProfile.logoUrl || "",
+    };
     const activeOfferVersion = getActiveOfferVersion(selectedRequest);
     const offerTotal = activeOfferVersion?.total || selectedRequest.offerTotal || 0;
     const offerTitle = activeOfferVersion?.title || selectedRequest.offerTitle;
@@ -1520,10 +1603,10 @@ export default function SalesModule() {
                     background: "#f8fbfc",
                   }}
                 >
-                  {selectedRequest.companyLogoUrl ? (
+                  {offerCompany.logoUrl ? (
                     <img
-                      src={selectedRequest.companyLogoUrl}
-                      alt={selectedRequest.companyName || "Bedriftslogo"}
+                      src={offerCompany.logoUrl}
+                      alt={offerCompany.companyName || "Bedriftslogo"}
                       style={{
                         display: "block",
                         maxWidth: 190,
@@ -1541,12 +1624,41 @@ export default function SalesModule() {
                         marginBottom: 6,
                       }}
                     >
-                      {selectedRequest.companyName || "Utførende bedrift"}
+                      {offerCompany.companyName || "Firmaprofil ikke registrert"}
                     </strong>
                   )}
                   <span style={{ color: "#607985", fontSize: 13 }}>
                     Tilbud {selectedRequest.id} · Gyldig i {offerValidityDays} dager
                   </span>
+
+                  {offerCompany.orgNumber ? (
+                    <span className="sales-company-meta">
+                      Org.nr. {offerCompany.orgNumber}
+                    </span>
+                  ) : null}
+
+                  {[offerCompany.address, offerCompany.phone, offerCompany.email]
+                    .filter(Boolean)
+                    .map((value) => (
+                      <span className="sales-company-meta" key={value}>
+                        {value}
+                      </span>
+                    ))}
+
+                  {offerCompany.website ? (
+                    <a
+                      className="sales-company-link"
+                      href={
+                        /^https?:\/\//i.test(offerCompany.website)
+                          ? offerCompany.website
+                          : `https://${offerCompany.website}`
+                      }
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {offerCompany.website}
+                    </a>
+                  ) : null}
                 </div>
               </div>
             </section>
