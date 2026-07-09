@@ -219,6 +219,49 @@ export default function SalesModule() {
     setSelectedRequestId(null);
   }
 
+  function openOutlookCalendar(request) {
+    if (!request?.surveyDate || !request?.surveyTime) return;
+
+    const start = new Date(`${request.surveyDate}T${request.surveyTime}:00`);
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+
+    const toLocalIso = (date) => {
+      const pad = (value) => String(value).padStart(2, "0");
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+        date.getDate()
+      )}T${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
+    };
+
+    const subject = `Befaring – ${request.title} – ${request.customer}`;
+    const body = [
+      `Kunde: ${request.customer}`,
+      `Telefon: ${request.phone || "Ikke registrert"}`,
+      `E-post: ${request.email || "Ikke registrert"}`,
+      `Saksnummer: ${request.id}`,
+      "",
+      request.note ? `Forespørsel: ${request.note}` : "",
+      request.surveyNote ? `Intern merknad: ${request.surveyNote}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const params = new URLSearchParams({
+      subject,
+      startdt: toLocalIso(start),
+      enddt: toLocalIso(end),
+      location: request.address || "",
+      body,
+      path: "/calendar/action/compose",
+      rru: "addevent",
+    });
+
+    window.open(
+      `https://outlook.office.com/calendar/0/deeplink/compose?${params.toString()}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  }
+
   function openSurveyPlanning() {
     setSurveyForm({
       date: selectedRequest?.surveyDate || "",
@@ -608,18 +651,31 @@ export default function SalesModule() {
                 </p>
               </div>
 
-              <button
-                className="sales-primary-button"
-                type="button"
-                onClick={
-                  selectedRequest.status === "Forespørsel"
-                    ? openSurveyPlanning
-                    : undefined
-                }
-              >
-                <CalendarDays size={18} />
-                {selectedRequest.nextStep}
-              </button>
+              <div className="sales-hero-actions">
+                {selectedRequest.surveyDate ? (
+                  <button
+                    className="sales-secondary-button"
+                    type="button"
+                    onClick={() => openOutlookCalendar(selectedRequest)}
+                  >
+                    <CalendarDays size={18} />
+                    Legg til i Outlook
+                  </button>
+                ) : null}
+
+                <button
+                  className="sales-primary-button"
+                  type="button"
+                  onClick={
+                    selectedRequest.status === "Forespørsel"
+                      ? openSurveyPlanning
+                      : undefined
+                  }
+                >
+                  <CalendarDays size={18} />
+                  {selectedRequest.nextStep}
+                </button>
+              </div>
             </section>
 
             <section className="sales-workflow" aria-label="Arbeidsflyt">
