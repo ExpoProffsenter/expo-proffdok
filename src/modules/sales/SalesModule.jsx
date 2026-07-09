@@ -13,6 +13,8 @@ import {
 import { useMemo, useState } from "react";
 import "./sales.css";
 
+const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
+
 const initialRequests = [
   {
     id: "F-2026-0041",
@@ -22,10 +24,11 @@ const initialRequests = [
     email: "ola@example.no",
     address: "Kirkeveien 12",
     source: "Telefon",
+    note: "",
     status: "Forespørsel",
     statusClass: "sales-status-new",
     nextStep: "Planlegg befaring",
-    icon: ClipboardList,
+    iconName: "clipboard",
   },
   {
     id: "F-2026-0040",
@@ -35,10 +38,11 @@ const initialRequests = [
     email: "anne@example.no",
     address: "Solfaret 8",
     source: "E-post",
+    note: "",
     status: "Befaring",
     statusClass: "sales-status-survey",
     nextStep: "Fullfør befaringsnotat",
-    icon: Ruler,
+    iconName: "ruler",
   },
   {
     id: "F-2026-0039",
@@ -48,10 +52,11 @@ const initialRequests = [
     email: "styret@example.no",
     address: "Parkveien 4",
     source: "Eksisterende kunde",
+    note: "",
     status: "Tilbud",
     statusClass: "sales-status-quote",
     nextStep: "Send tilbud til kunde",
-    icon: Send,
+    iconName: "send",
   },
   {
     id: "F-2026-0038",
@@ -61,10 +66,11 @@ const initialRequests = [
     email: "marius@example.no",
     address: "Lindeveien 22",
     source: "Nettside",
+    note: "",
     status: "Akseptert",
     statusClass: "sales-status-accepted",
     nextStep: "Aktiver som prosjekt",
-    icon: Home,
+    iconName: "home",
   },
 ];
 
@@ -89,22 +95,61 @@ const requestSources = [
   "Annet",
 ];
 
-function createRequestId(index) {
-  return `F-2026-${String(42 + index).padStart(4, "0")}`;
+const iconMap = {
+  clipboard: ClipboardList,
+  ruler: Ruler,
+  send: Send,
+  home: Home,
+};
+
+function loadRequests() {
+  try {
+    const storedRequests = window.localStorage.getItem(STORAGE_KEY);
+
+    if (!storedRequests) return initialRequests;
+
+    const parsedRequests = JSON.parse(storedRequests);
+
+    if (!Array.isArray(parsedRequests)) return initialRequests;
+
+    return parsedRequests;
+  } catch {
+    return initialRequests;
+  }
 }
 
+function saveRequests(requests) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
+  } catch {
+    // Lokal preview-lagring er kun for test.
+  }
+}
+
+function createRequestId(requests) {
+  const highestNumber = requests.reduce((highest, request) => {
+    const match = request.id?.match(/F-2026-(\d+)/);
+    if (!match) return highest;
+    return Math.max(highest, Number(match[1]));
+  }, 41);
+
+  return `F-2026-${String(highestNumber + 1).padStart(4, "0")}`;
+}
+
+const emptyForm = {
+  customer: "",
+  phone: "",
+  email: "",
+  address: "",
+  title: "Modernisering av bad",
+  source: "Telefon",
+  note: "",
+};
+
 export default function SalesModule() {
-  const [requests, setRequests] = useState(initialRequests);
+  const [requests, setRequests] = useState(loadRequests);
   const [mode, setMode] = useState("list");
-  const [form, setForm] = useState({
-    customer: "",
-    phone: "",
-    email: "",
-    address: "",
-    title: "Modernisering av bad",
-    source: "Telefon",
-    note: "",
-  });
+  const [form, setForm] = useState(emptyForm);
 
   const summary = useMemo(
     () => [
@@ -130,29 +175,18 @@ export default function SalesModule() {
   );
 
   function updateForm(field, value) {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    setForm((current) => ({ ...current, [field]: value }));
   }
 
   function resetForm() {
-    setForm({
-      customer: "",
-      phone: "",
-      email: "",
-      address: "",
-      title: "Modernisering av bad",
-      source: "Telefon",
-      note: "",
-    });
+    setForm(emptyForm);
   }
 
   function handleCreateRequest(event) {
     event.preventDefault();
 
     const nextRequest = {
-      id: createRequestId(requests.length),
+      id: createRequestId(requests),
       title: form.title,
       customer: form.customer.trim() || "Uten kundenavn",
       phone: form.phone.trim(),
@@ -163,10 +197,13 @@ export default function SalesModule() {
       status: "Forespørsel",
       statusClass: "sales-status-new",
       nextStep: "Planlegg befaring",
-      icon: ClipboardList,
+      iconName: "clipboard",
     };
 
-    setRequests((current) => [nextRequest, ...current]);
+    const nextRequests = [nextRequest, ...requests];
+
+    setRequests(nextRequests);
+    saveRequests(nextRequests);
     resetForm();
     setMode("list");
   }
@@ -212,8 +249,11 @@ export default function SalesModule() {
                   <span>Kundenavn</span>
                   <input
                     value={form.customer}
-                    onChange={(event) => updateForm("customer", event.target.value)}
+                    onChange={(event) =>
+                      updateForm("customer", event.target.value)
+                    }
                     placeholder="Ola Nordmann"
+                    autoComplete="name"
                     autoFocus
                   />
                 </label>
@@ -225,6 +265,7 @@ export default function SalesModule() {
                     onChange={(event) => updateForm("phone", event.target.value)}
                     placeholder="900 00 000"
                     inputMode="tel"
+                    autoComplete="tel"
                   />
                 </label>
 
@@ -234,7 +275,12 @@ export default function SalesModule() {
                     value={form.email}
                     onChange={(event) => updateForm("email", event.target.value)}
                     placeholder="kunde@epost.no"
-                    type="email"
+                    type="text"
+                    inputMode="email"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                   />
                 </label>
 
@@ -242,8 +288,11 @@ export default function SalesModule() {
                   <span>Adresse</span>
                   <input
                     value={form.address}
-                    onChange={(event) => updateForm("address", event.target.value)}
+                    onChange={(event) =>
+                      updateForm("address", event.target.value)
+                    }
                     placeholder="Kirkeveien 12"
+                    autoComplete="street-address"
                   />
                 </label>
 
@@ -386,10 +435,14 @@ export default function SalesModule() {
 
             <div className="sales-request-list">
               {requests.map((request) => {
-                const Icon = request.icon;
+                const Icon = iconMap[request.iconName] || ClipboardList;
 
                 return (
-                  <button className="sales-request-card" key={request.id} type="button">
+                  <button
+                    className="sales-request-card"
+                    key={request.id}
+                    type="button"
+                  >
                     <div className="sales-request-main">
                       <h3 className="sales-request-title">{request.title}</h3>
                       <p className="sales-request-customer">
