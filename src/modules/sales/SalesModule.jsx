@@ -858,17 +858,41 @@ export default function SalesModule() {
                     paddingTop: 14,
                   }}
                 >
-                  <div className="sales-offer-total">
+                  <div
+                    className="sales-offer-total"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr minmax(130px, auto)",
+                      alignItems: "center",
+                      columnGap: 24,
+                    }}
+                  >
                     <span>Sum eks. mva.</span>
-                    <strong>{formatNok(offerTotal)}</strong>
+                    <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                      {formatNok(offerTotal)}
+                    </strong>
                   </div>
-                  <div className="sales-offer-total sales-offer-total-muted">
+                  <div
+                    className="sales-offer-total sales-offer-total-muted"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr minmax(130px, auto)",
+                      alignItems: "center",
+                      columnGap: 24,
+                    }}
+                  >
                     <span>Mva. 25 %</span>
-                    <strong>{formatNok(offerTotal * 0.25)}</strong>
+                    <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                      {formatNok(offerTotal * 0.25)}
+                    </strong>
                   </div>
                   <div
                     className="sales-offer-total sales-offer-total-grand"
                     style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr minmax(130px, auto)",
+                      alignItems: "center",
+                      columnGap: 24,
                       marginTop: 10,
                       padding: "16px 18px",
                       borderRadius: 16,
@@ -877,7 +901,13 @@ export default function SalesModule() {
                     }}
                   >
                     <span>Sum inkl. mva.</span>
-                    <strong style={{ fontSize: 22 }}>
+                    <strong
+                      style={{
+                        fontSize: 22,
+                        textAlign: "right",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {formatNok(offerTotal * 1.25)}
                     </strong>
                   </div>
