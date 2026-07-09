@@ -1,4 +1,5 @@
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
+// FASE 19.2 TRYGG REPUBLISERING: Tydeliggjør når redigert tilbud/opsjon må publiseres som ny kundelenke-versjon. Ingen SQL/main/Edge.
 // FASE 18.19C3 HOTFIX FIRMAPROFIL EMAIL-FALLBACK: Henter firmaprofil robust via auth-id først og innlogget e-post som fallback før publish-snapshot. Ingen SQL/main/CSS.
 // FASE 18.19C2 HOTFIX FIRMAPROFILSNAPSHOT: Bruker samme profiles-felt som hovedappen, venter på auth/session og legger firmasnapshot inn i faktisk publish-payload. Ingen SQL/main/CSS.
 // FASE 18.19C1 HOTFIX PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
@@ -863,27 +864,36 @@ export default function SalesModule() {
           option.productUrl
       );
 
-    const nextRequests = requests.map((request) =>
-      request.id === selectedRequestId
-        ? {
-            ...request,
-            offerTitle: offerForm.title.trim(),
-            offerIntro: offerForm.intro.trim(),
-            offerLines: cleanLines,
-            offerOptions: cleanOptions,
-            offerReservations: offerForm.reservations.trim(),
-            offerValidityDays: offerForm.validityDays,
-            offerTotal: getOfferTotal(cleanLines),
-            sentOfferVersionId: null,
-            sentOfferVersionNumber: null,
-            sentOfferAt: null,
-            status: "Tilbud",
-            statusClass: "sales-status-quote",
-            nextStep: "Send tilbud til kunde",
-            iconName: "send",
-          }
-        : request
-    );
+    const nextRequests = requests.map((request) => {
+      if (request.id !== selectedRequestId) return request;
+
+      const hasPreviouslyPublishedOffer = Boolean(
+        request.publicToken ||
+          request.salesOfferId ||
+          request.sentOfferVersionId ||
+          request.sentOfferVersionNumber
+      );
+
+      return {
+        ...request,
+        offerTitle: offerForm.title.trim(),
+        offerIntro: offerForm.intro.trim(),
+        offerLines: cleanLines,
+        offerOptions: cleanOptions,
+        offerReservations: offerForm.reservations.trim(),
+        offerValidityDays: offerForm.validityDays,
+        offerTotal: getOfferTotal(cleanLines),
+        sentOfferVersionId: null,
+        sentOfferVersionNumber: null,
+        sentOfferAt: null,
+        status: "Tilbud",
+        statusClass: "sales-status-quote",
+        nextStep: hasPreviouslyPublishedOffer
+          ? "Publiser ny tilbudsversjon"
+          : "Publiser kundetilbud",
+        iconName: "send",
+      };
+    });
 
     setRequests(nextRequests);
     saveRequests(nextRequests);
@@ -1159,7 +1169,7 @@ export default function SalesModule() {
             companyLogoUrl: profileForPublish.logoUrl || item.companyLogoUrl || "",
             status: "Tilbud",
             statusClass: "sales-status-quote",
-            nextStep: "Send tilbud til kunde",
+            nextStep: "Kundelink er oppdatert",
           }
         : item
     );
@@ -2638,6 +2648,22 @@ export default function SalesModule() {
 
   if (mode === "detail" && selectedRequest) {
     const workflowSteps = getWorkflowSteps(selectedRequest);
+    const hasPublishedCustomerOffer = Boolean(
+      selectedRequest.publicToken ||
+        selectedRequest.salesOfferId ||
+        selectedRequest.sentOfferVersionId ||
+        selectedRequest.sentOfferVersionNumber
+    );
+    const hasUnpublishedOfferChanges = Boolean(
+      selectedRequest.status === "Tilbud" &&
+        selectedRequest.offerLines?.length &&
+        !selectedRequest.sentOfferVersionId
+    );
+    const customerOfferActionLabel = hasUnpublishedOfferChanges
+      ? hasPublishedCustomerOffer
+        ? "Publiser ny versjon"
+        : "Publiser kundetilbud"
+      : "Vis kundens tilbud";
 
     return (
       <div className="sales-app">
@@ -2715,7 +2741,7 @@ export default function SalesModule() {
                 >
                   <CalendarDays size={18} />
                   {selectedRequest.status === "Tilbud"
-                    ? "Vis kundens tilbud"
+                    ? customerOfferActionLabel
                     : selectedRequest.status === "Akseptert"
                       ? "Aktiver som prosjekt"
                       : selectedRequest.nextStep}
@@ -3015,27 +3041,47 @@ export default function SalesModule() {
                       }}
                     >
                       <p style={{ marginBottom: 10 }}>
-                        <strong>Kundelink:</strong> Kunden åpner tilbudet via egen
-                        lenke og kan velge opsjoner og akseptere digitalt.
+                        <strong>
+                          {hasUnpublishedOfferChanges
+                            ? hasPublishedCustomerOffer
+                              ? "Revidert tilbud klart for publisering:"
+                              : "Kundetilbud klart for publisering:"
+                            : "Kundelink:"}
+                        </strong>{" "}
+                        {hasUnpublishedOfferChanges
+                          ? "Publiser for å lage en ny tilbudsversjon på kundelinken. Kunden ser ikke endringene før dette er gjort."
+                          : "Kunden åpner tilbudet via egen lenke og kan velge opsjoner og akseptere digitalt."}
                       </p>
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                         <button
-                          className="sales-secondary-button"
-                          type="button"
-                          onClick={() => copyCustomerOfferLink(selectedRequest.id)}
-                        >
-                          <ClipboardList size={18} />
-                          {customerLinkCopied ? "Kopiert" : "Kopier kundelink"}
-                        </button>
-                        <button
-                          className="sales-secondary-button"
+                          className={
+                            hasUnpublishedOfferChanges
+                              ? "sales-primary-button"
+                              : "sales-secondary-button"
+                          }
                           type="button"
                           onClick={() =>
                             openCustomerOfferFromRequestId(selectedRequest.id)
                           }
                         >
                           <Send size={18} />
-                          Åpne kundelink
+                          {hasUnpublishedOfferChanges
+                            ? hasPublishedCustomerOffer
+                              ? "Publiser ny versjon"
+                              : "Publiser kundetilbud"
+                            : "Åpne kundelink"}
+                        </button>
+                        <button
+                          className="sales-secondary-button"
+                          type="button"
+                          onClick={() => copyCustomerOfferLink(selectedRequest.id)}
+                        >
+                          <ClipboardList size={18} />
+                          {customerLinkCopied
+                            ? "Kopiert"
+                            : hasUnpublishedOfferChanges
+                              ? "Publiser og kopier lenke"
+                              : "Kopier kundelink"}
                         </button>
                       </div>
                     </div>
