@@ -1,3 +1,4 @@
+// FASE 19.4A IPHONE-KLAR LYDNOTAT BEFARING: Legger til trygg lydopptak/lydfil på befaringsnotat med iPhone-fallback via lydfilinput. Ingen AI/transkripsjon/SQL/main/Edge.
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
 // FASE 19.3 TYDELIG PUBLISERINGSBEKREFTELSE: Viser tydelig intern bekreftelse når kundelink/ny tilbudsversjon er publisert. Ingen SQL/main/Edge.
 // FASE 19.2 TRYGG REPUBLISERING: Tydeliggjør når redigert tilbud/opsjon må publiseres som ny kundelenke-versjon. Ingen SQL/main/Edge.
@@ -15,11 +16,13 @@ import {
   MapPin,
   Phone,
   Plus,
+  Mic,
+  Square,
   Ruler,
   Save,
   Send,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import "./sales.css";
 
@@ -241,6 +244,7 @@ export default function SalesModule() {
     measurements: "",
     observations: "",
     photos: [],
+    audioNotes: [],
   });
   const [offerForm, setOfferForm] = useState({
     title: "",
@@ -911,6 +915,7 @@ export default function SalesModule() {
       measurements: selectedRequest?.inspectionMeasurements || "",
       observations: selectedRequest?.inspectionObservations || "",
       photos: selectedRequest?.inspectionPhotos || [],
+      audioNotes: selectedRequest?.inspectionAudioNotes || [],
     });
     setMode("inspection-note");
   }
@@ -950,6 +955,111 @@ export default function SalesModule() {
     }));
   }
 
+  function addInspectionAudioNoteFromBlob(blob, fallbackName = "Befaringslyd") {
+    if (!blob) return;
+
+    const maxAudioSizeBytes = 8 * 1024 * 1024;
+    if (blob.size > maxAudioSizeBytes) {
+      alert("Lydnotatet er for stort for denne previewen. Hold opptaket kortere, eller vent til serverlagring er på plass.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setInspectionForm((current) => ({
+        ...current,
+        audioNotes: [
+          ...(current.audioNotes || []),
+          {
+            id: `${Date.now()}-${Math.random()}`,
+            name: fallbackName,
+            dataUrl: reader.result,
+            type: blob.type || "audio/webm",
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      }));
+    };
+    reader.readAsDataURL(blob);
+  }
+
+  function handleInspectionAudioFiles(event) {
+    const files = Array.from(event.target.files || []);
+
+    files.forEach((file) => {
+      addInspectionAudioNoteFromBlob(file, file.name || "Befaringslyd");
+    });
+
+    event.target.value = "";
+  }
+
+  async function startInspectionAudioRecording() {
+    setInspectionRecordingError("");
+
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setInspectionRecordingError(
+        "Direkte opptak støttes ikke i denne nettleseren. Bruk knappen Ta opp / velg lydfil – den fungerer som iPhone-fallback."
+      );
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      inspectionAudioChunksRef.current = [];
+      inspectionAudioStreamRef.current = stream;
+      inspectionRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data?.size) inspectionAudioChunksRef.current.push(event.data);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(inspectionAudioChunksRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+        inspectionAudioChunksRef.current = [];
+        addInspectionAudioNoteFromBlob(blob, `Befaringslyd ${new Date().toLocaleString("nb-NO")}`);
+        inspectionAudioStreamRef.current?.getTracks?.().forEach((track) => track.stop());
+        inspectionAudioStreamRef.current = null;
+        inspectionRecorderRef.current = null;
+        setInspectionRecordingState("idle");
+      };
+
+      recorder.start();
+      setInspectionRecordingState("recording");
+    } catch (error) {
+      setInspectionRecordingError(
+        "Mikrofonen kunne ikke startes. På iPhone kan du bruke Ta opp / velg lydfil i stedet."
+      );
+      inspectionAudioStreamRef.current?.getTracks?.().forEach((track) => track.stop());
+      inspectionAudioStreamRef.current = null;
+      inspectionRecorderRef.current = null;
+      setInspectionRecordingState("idle");
+    }
+  }
+
+  function stopInspectionAudioRecording() {
+    const recorder = inspectionRecorderRef.current;
+
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+      return;
+    }
+
+    inspectionAudioStreamRef.current?.getTracks?.().forEach((track) => track.stop());
+    inspectionAudioStreamRef.current = null;
+    inspectionRecorderRef.current = null;
+    setInspectionRecordingState("idle");
+  }
+
+  function removeInspectionAudioNote(audioId) {
+    setInspectionForm((current) => ({
+      ...current,
+      audioNotes: (current.audioNotes || []).filter((audio) => audio.id !== audioId),
+    }));
+  }
+
   function handleSaveInspectionNote(event) {
     event.preventDefault();
 
@@ -962,6 +1072,7 @@ export default function SalesModule() {
             inspectionMeasurements: inspectionForm.measurements.trim(),
             inspectionObservations: inspectionForm.observations.trim(),
             inspectionPhotos: inspectionForm.photos,
+            inspectionAudioNotes: inspectionForm.audioNotes || [],
             status: "Befaring",
             statusClass: "sales-status-survey",
             nextStep: "Opprett tilbud",
@@ -2451,6 +2562,84 @@ export default function SalesModule() {
                 </label>
 
                 <div className="sales-field sales-field-full">
+                  <span>Lydnotat fra befaring</span>
+                  <p className="sales-subtitle" style={{ marginTop: 0 }}>
+                    Ta korte lydnotater på befaring. Dette er ikke AI-transkripsjon ennå; lyd lagres først som kontrollerbart vedlegg i previewen.
+                  </p>
+
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {inspectionRecordingState === "recording" ? (
+                      <button
+                        className="sales-secondary-button"
+                        type="button"
+                        onClick={stopInspectionAudioRecording}
+                        style={{ width: "fit-content" }}
+                      >
+                        <Square size={18} />
+                        Stopp opptak
+                      </button>
+                    ) : (
+                      <button
+                        className="sales-secondary-button"
+                        type="button"
+                        onClick={startInspectionAudioRecording}
+                        style={{ width: "fit-content" }}
+                      >
+                        <Mic size={18} />
+                        Start opptak
+                      </button>
+                    )}
+
+                    <label className="sales-secondary-button" style={{ width: "fit-content" }}>
+                      <Plus size={18} />
+                      Ta opp / velg lydfil
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        capture
+                        onChange={handleInspectionAudioFiles}
+                        style={{ display: "none" }}
+                      />
+                    </label>
+                  </div>
+
+                  {inspectionRecordingError ? (
+                    <p className="sales-subtitle" style={{ marginTop: 10 }}>
+                      {inspectionRecordingError}
+                    </p>
+                  ) : null}
+
+                  {(inspectionForm.audioNotes || []).length ? (
+                    <div className="sales-photo-grid">
+                      {(inspectionForm.audioNotes || []).map((audio) => (
+                        <div className="sales-photo-card" key={audio.id}>
+                          <div style={{ padding: 12 }}>
+                            <strong style={{ display: "block", marginBottom: 8 }}>
+                              {audio.name || "Befaringslyd"}
+                            </strong>
+                            <audio controls src={audio.dataUrl} style={{ width: "100%" }} />
+                            {audio.createdAt ? (
+                              <p className="sales-subtitle" style={{ marginTop: 8 }}>
+                                Lagret {new Date(audio.createdAt).toLocaleString("nb-NO")}
+                              </p>
+                            ) : null}
+                          </div>
+                          <button
+                            type="button"
+                            className="sales-secondary-button"
+                            onClick={() => removeInspectionAudioNote(audio.id)}
+                          >
+                            Fjern
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="sales-subtitle">Ingen lydnotater registrert ennå.</p>
+                  )}
+                </div>
+
+                <div className="sales-field sales-field-full">
                   <span>Bilder fra befaring</span>
                   <label className="sales-secondary-button" style={{ width: "fit-content" }}>
                     <Plus size={18} />
@@ -2506,6 +2695,10 @@ export default function SalesModule() {
                     {inspectionForm.measurements
                       ? "Målinger registrert"
                       : "Målinger ikke registrert"}
+                  </span>
+                  <span>
+                    <Mic size={16} />
+                    {(inspectionForm.audioNotes || []).length} lydnotat(er)
                   </span>
                   <span>
                     <Plus size={16} />
@@ -3197,7 +3390,8 @@ export default function SalesModule() {
                 ) : selectedRequest.inspectionCustomerWishes ||
                 selectedRequest.inspectionExistingConditions ||
                 selectedRequest.inspectionMeasurements ||
-                selectedRequest.inspectionObservations ? (
+                selectedRequest.inspectionObservations ||
+                selectedRequest.inspectionAudioNotes?.length ? (
                   <div className="sales-detail-lines">
                     {selectedRequest.inspectionCustomerWishes ? (
                       <p><strong>Kundens ønsker:</strong> {selectedRequest.inspectionCustomerWishes}</p>
@@ -3211,6 +3405,10 @@ export default function SalesModule() {
                     {selectedRequest.inspectionObservations ? (
                       <p><strong>Faglige observasjoner:</strong> {selectedRequest.inspectionObservations}</p>
                     ) : null}
+                    <span>
+                      <Mic size={16} />
+                      {(selectedRequest.inspectionAudioNotes || []).length} lydnotat(er)
+                    </span>
                     <span>
                       <Plus size={16} />
                       {(selectedRequest.inspectionPhotos || []).length} befaringsbilde(r)
