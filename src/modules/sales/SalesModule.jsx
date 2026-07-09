@@ -7,7 +7,7 @@ const requests = [
     title: "Modernisering av bad",
     customer: "Ola Nordmann",
     address: "Kirkeveien 12",
-    status: "Ny forespørsel",
+    status: "Forespørsel",
     statusClass: "sales-status-new",
     nextStep: "Planlegg befaring",
     icon: ClipboardList,
@@ -45,10 +45,10 @@ const requests = [
 ];
 
 const summary = [
-  { label: "Nye", value: 1 },
+  { label: "Forespørsler", value: 1 },
   { label: "Befaring", value: 1 },
   { label: "Tilbud", value: 1 },
-  { label: "Akseptert", value: 1 },
+  { label: "Aksept", value: 1 },
 ];
 
 export default function SalesModule() {
@@ -70,7 +70,6 @@ export default function SalesModule() {
         <main className="sales-main">
           <section className="sales-hero">
             <div>
-              <p className="sales-eyebrow">Fase 18</p>
               <h1 className="sales-title">Forespørsler</h1>
               <p className="sales-subtitle">
                 Samle kundehenvendelser, befaring, tilbud og aksept før jobben
@@ -97,9 +96,6 @@ export default function SalesModule() {
             <div className="sales-panel-header">
               <div>
                 <h2 className="sales-panel-title">Aktive forespørsler</h2>
-                <span className="sales-panel-meta">
-                  Lokale testdata. Ikke koblet til Supabase.
-                </span>
               </div>
             </div>
 
