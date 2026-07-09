@@ -1,5 +1,7 @@
 import {
   ArrowLeft,
+  CalendarDays,
+  CheckCircle2,
   ClipboardList,
   Home,
   Mail,
@@ -24,7 +26,7 @@ const initialRequests = [
     email: "ola@example.no",
     address: "Kirkeveien 12",
     source: "Telefon",
-    note: "",
+    note: "Kunden ønsker modernisering av eksisterende bad. Sluk og fall må vurderes på befaring.",
     status: "Forespørsel",
     statusClass: "sales-status-new",
     nextStep: "Planlegg befaring",
@@ -38,7 +40,7 @@ const initialRequests = [
     email: "anne@example.no",
     address: "Solfaret 8",
     source: "E-post",
-    note: "",
+    note: "Ønsker pris på flislegging i entré og vaskerom. Underlag må kontrolleres.",
     status: "Befaring",
     statusClass: "sales-status-survey",
     nextStep: "Fullfør befaringsnotat",
@@ -52,7 +54,7 @@ const initialRequests = [
     email: "styret@example.no",
     address: "Parkveien 4",
     source: "Eksisterende kunde",
-    note: "",
+    note: "Sameiet ønsker tilbud på membran og flisarbeider i felles våtrom.",
     status: "Tilbud",
     statusClass: "sales-status-quote",
     nextStep: "Send tilbud til kunde",
@@ -66,7 +68,7 @@ const initialRequests = [
     email: "marius@example.no",
     address: "Lindeveien 22",
     source: "Nettside",
-    note: "",
+    note: "Kunden ønsker ny dusjsone og vurdering av membran i eksisterende bad.",
     status: "Akseptert",
     statusClass: "sales-status-accepted",
     nextStep: "Aktiver som prosjekt",
@@ -100,6 +102,16 @@ const iconMap = {
   ruler: Ruler,
   send: Send,
   home: Home,
+};
+
+const emptyForm = {
+  customer: "",
+  phone: "",
+  email: "",
+  address: "",
+  title: "Modernisering av bad",
+  source: "Telefon",
+  note: "",
 };
 
 function loadRequests() {
@@ -136,20 +148,34 @@ function createRequestId(requests) {
   return `F-2026-${String(highestNumber + 1).padStart(4, "0")}`;
 }
 
-const emptyForm = {
-  customer: "",
-  phone: "",
-  email: "",
-  address: "",
-  title: "Modernisering av bad",
-  source: "Telefon",
-  note: "",
-};
+function getWorkflowSteps(request) {
+  const activeStepByStatus = {
+    Forespørsel: "Forespørsel",
+    Befaring: "Befaring",
+    Tilbud: "Tilbud",
+    Akseptert: "Aksept",
+  };
+
+  const activeStep = activeStepByStatus[request.status] || "Forespørsel";
+  const steps = ["Forespørsel", "Befaring", "Tilbud", "Aksept", "Prosjekt"];
+  const activeIndex = steps.indexOf(activeStep);
+
+  return steps.map((step, index) => ({
+    label: step,
+    state: index < activeIndex ? "done" : index === activeIndex ? "active" : "pending",
+  }));
+}
 
 export default function SalesModule() {
   const [requests, setRequests] = useState(loadRequests);
   const [mode, setMode] = useState("list");
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [form, setForm] = useState(emptyForm);
+
+  const selectedRequest = useMemo(
+    () => requests.find((request) => request.id === selectedRequestId) || null,
+    [requests, selectedRequestId]
+  );
 
   const summary = useMemo(
     () => [
@@ -182,6 +208,11 @@ export default function SalesModule() {
     setForm(emptyForm);
   }
 
+  function goToList() {
+    setMode("list");
+    setSelectedRequestId(null);
+  }
+
   function handleCreateRequest(event) {
     event.preventDefault();
 
@@ -205,7 +236,8 @@ export default function SalesModule() {
     setRequests(nextRequests);
     saveRequests(nextRequests);
     resetForm();
-    setMode("list");
+    setSelectedRequestId(nextRequest.id);
+    setMode("detail");
   }
 
   if (mode === "new") {
@@ -213,11 +245,7 @@ export default function SalesModule() {
       <div className="sales-app">
         <div className="sales-shell">
           <header className="sales-header">
-            <button
-              className="sales-back-button"
-              type="button"
-              onClick={() => setMode("list")}
-            >
+            <button className="sales-back-button" type="button" onClick={goToList}>
               <ArrowLeft size={18} />
               Tilbake
             </button>
@@ -249,9 +277,7 @@ export default function SalesModule() {
                   <span>Kundenavn</span>
                   <input
                     value={form.customer}
-                    onChange={(event) =>
-                      updateForm("customer", event.target.value)
-                    }
+                    onChange={(event) => updateForm("customer", event.target.value)}
                     placeholder="Ola Nordmann"
                     autoComplete="name"
                     autoFocus
@@ -288,9 +314,7 @@ export default function SalesModule() {
                   <span>Adresse</span>
                   <input
                     value={form.address}
-                    onChange={(event) =>
-                      updateForm("address", event.target.value)
-                    }
+                    onChange={(event) => updateForm("address", event.target.value)}
                     placeholder="Kirkeveien 12"
                     autoComplete="street-address"
                   />
@@ -364,7 +388,7 @@ export default function SalesModule() {
                   type="button"
                   onClick={() => {
                     resetForm();
-                    setMode("list");
+                    goToList();
                   }}
                 >
                   Avbryt
@@ -376,6 +400,109 @@ export default function SalesModule() {
                 </button>
               </div>
             </form>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "detail" && selectedRequest) {
+    const workflowSteps = getWorkflowSteps(selectedRequest);
+
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <header className="sales-header">
+            <button className="sales-back-button" type="button" onClick={goToList}>
+              <ArrowLeft size={18} />
+              Tilbake
+            </button>
+
+            <div className="sales-brand sales-brand-compact">
+              <div className="sales-brand-mark">
+                <ClipboardList size={22} />
+              </div>
+              <div className="sales-brand-copy">
+                <strong>Expo ProffDok</strong>
+                <span>Befaring / Tilbud / Aksept</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="sales-main">
+            <section className="sales-detail-hero">
+              <div>
+                <span className={`sales-status ${selectedRequest.statusClass}`}>
+                  {selectedRequest.status}
+                </span>
+                <h1 className="sales-title">{selectedRequest.title}</h1>
+                <p className="sales-subtitle">
+                  {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
+                </p>
+              </div>
+
+              <button className="sales-primary-button" type="button">
+                <CalendarDays size={18} />
+                {selectedRequest.nextStep}
+              </button>
+            </section>
+
+            <section className="sales-workflow" aria-label="Arbeidsflyt">
+              {workflowSteps.map((step) => (
+                <div className={`sales-workflow-step sales-workflow-${step.state}`} key={step.label}>
+                  <span className="sales-workflow-dot">
+                    {step.state === "done" ? <CheckCircle2 size={16} /> : null}
+                  </span>
+                  <span>{step.label}</span>
+                </div>
+              ))}
+            </section>
+
+            <section className="sales-detail-grid">
+              <article className="sales-detail-card">
+                <h2>Kunde</h2>
+                <div className="sales-detail-lines">
+                  <span>{selectedRequest.customer}</span>
+                  <span>
+                    <Phone size={16} />
+                    {selectedRequest.phone || "Telefon ikke registrert"}
+                  </span>
+                  <span>
+                    <Mail size={16} />
+                    {selectedRequest.email || "E-post ikke registrert"}
+                  </span>
+                </div>
+              </article>
+
+              <article className="sales-detail-card">
+                <h2>Sted og opprinnelse</h2>
+                <div className="sales-detail-lines">
+                  <span>
+                    <MapPin size={16} />
+                    {selectedRequest.address}
+                  </span>
+                  <span>
+                    <ClipboardList size={16} />
+                    Kom via {selectedRequest.source || "ikke registrert"}
+                  </span>
+                </div>
+              </article>
+
+              <article className="sales-detail-card sales-detail-card-wide">
+                <h2>Notat</h2>
+                <p>{selectedRequest.note || "Ingen notat registrert ennå."}</p>
+              </article>
+
+              <article className="sales-next-card sales-detail-card-wide">
+                <span className="sales-next-label">Neste steg</span>
+                <h2>{selectedRequest.nextStep}</h2>
+                <p>
+                  Neste versjon av prototypen skal åpne en enkel befaringsplan med
+                  dato, tidspunkt og ansvarlig bruker. Foreløpig tester vi bare
+                  navigasjon og arbeidsflyt.
+                </p>
+              </article>
+            </section>
           </main>
         </div>
       </div>
@@ -442,6 +569,10 @@ export default function SalesModule() {
                     className="sales-request-card"
                     key={request.id}
                     type="button"
+                    onClick={() => {
+                      setSelectedRequestId(request.id);
+                      setMode("detail");
+                    }}
                   >
                     <div className="sales-request-main">
                       <h3 className="sales-request-title">{request.title}</h3>
