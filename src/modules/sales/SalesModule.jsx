@@ -745,21 +745,99 @@ export default function SalesModule() {
           </header>
 
           <main className="sales-main">
-            <section className="sales-form-hero">
-              <p className="sales-eyebrow">Tilbud til {selectedRequest.customer}</p>
-              <h1 className="sales-title">{selectedRequest.offerTitle}</h1>
-              <p className="sales-subtitle">
-                {selectedRequest.address} · Tilbud {selectedRequest.id}
-              </p>
+            <section
+              className="sales-form-hero"
+              style={{
+                background: "#ffffff",
+                border: "1px solid #d7e4ea",
+                borderRadius: 24,
+                padding: "30px 34px",
+                boxShadow: "0 18px 45px rgba(16, 42, 55, 0.08)",
+                marginBottom: 22,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 24,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <p className="sales-eyebrow">Tilbud til {selectedRequest.customer}</p>
+                  <h1 className="sales-title">{selectedRequest.offerTitle}</h1>
+                  <p className="sales-subtitle">
+                    {selectedRequest.address} · Tilbud {selectedRequest.id}
+                  </p>
+                </div>
+
+                <div
+                  style={{
+                    minWidth: 220,
+                    padding: "18px 20px",
+                    border: "1px solid #d7e4ea",
+                    borderRadius: 18,
+                    background: "#f8fbfc",
+                  }}
+                >
+                  {selectedRequest.companyLogoUrl ? (
+                    <img
+                      src={selectedRequest.companyLogoUrl}
+                      alt={selectedRequest.companyName || "Bedriftslogo"}
+                      style={{
+                        display: "block",
+                        maxWidth: 190,
+                        maxHeight: 64,
+                        objectFit: "contain",
+                        marginBottom: 12,
+                      }}
+                    />
+                  ) : (
+                    <strong
+                      style={{
+                        display: "block",
+                        fontSize: 18,
+                        color: "#102a37",
+                        marginBottom: 6,
+                      }}
+                    >
+                      {selectedRequest.companyName || "Utførende bedrift"}
+                    </strong>
+                  )}
+                  <span style={{ color: "#607985", fontSize: 13 }}>
+                    Tilbud utarbeidet digitalt i Expo ProffDok
+                  </span>
+                </div>
+              </div>
             </section>
 
-            <section className="sales-form-panel">
-              <article className="sales-detail-card sales-detail-card-wide">
+            <section
+              className="sales-form-panel"
+              style={{
+                background: "transparent",
+                border: 0,
+                padding: 0,
+                boxShadow: "none",
+              }}
+            >
+              <article className="sales-detail-card sales-detail-card-wide"
+                style={{
+                  marginBottom: 16,
+                  borderRadius: 20,
+                  boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
+                }}>
                 <h2>Om tilbudet</h2>
                 <p>{selectedRequest.offerIntro}</p>
               </article>
 
-              <article className="sales-detail-card sales-detail-card-wide">
+              <article className="sales-detail-card sales-detail-card-wide"
+                style={{
+                  marginBottom: 16,
+                  borderRadius: 20,
+                  boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
+                }}>
                 <h2>Arbeider og priser</h2>
                 <div className="sales-detail-lines">
                   {selectedRequest.offerLines?.map((line, index) => (
@@ -771,28 +849,59 @@ export default function SalesModule() {
                   ))}
                 </div>
 
-                <div className="sales-offer-total">
-                  <span>Sum eks. mva.</span>
-                  <strong>{formatNok(offerTotal)}</strong>
-                </div>
-                <div className="sales-offer-total sales-offer-total-muted">
-                  <span>Mva. 25 %</span>
-                  <strong>{formatNok(offerTotal * 0.25)}</strong>
-                </div>
-                <div className="sales-offer-total sales-offer-total-grand">
-                  <span>Sum inkl. mva.</span>
-                  <strong>{formatNok(offerTotal * 1.25)}</strong>
+                <div
+                  style={{
+                    marginTop: 24,
+                    marginLeft: "auto",
+                    maxWidth: 430,
+                    borderTop: "1px solid #d7e4ea",
+                    paddingTop: 14,
+                  }}
+                >
+                  <div className="sales-offer-total">
+                    <span>Sum eks. mva.</span>
+                    <strong>{formatNok(offerTotal)}</strong>
+                  </div>
+                  <div className="sales-offer-total sales-offer-total-muted">
+                    <span>Mva. 25 %</span>
+                    <strong>{formatNok(offerTotal * 0.25)}</strong>
+                  </div>
+                  <div
+                    className="sales-offer-total sales-offer-total-grand"
+                    style={{
+                      marginTop: 10,
+                      padding: "16px 18px",
+                      borderRadius: 16,
+                      background: "#e9fafb",
+                      border: "1px solid #8be4e8",
+                    }}
+                  >
+                    <span>Sum inkl. mva.</span>
+                    <strong style={{ fontSize: 22 }}>
+                      {formatNok(offerTotal * 1.25)}
+                    </strong>
+                  </div>
                 </div>
               </article>
 
               {selectedRequest.offerReservations ? (
-                <article className="sales-detail-card sales-detail-card-wide">
+                <article className="sales-detail-card sales-detail-card-wide"
+                style={{
+                  marginBottom: 16,
+                  borderRadius: 20,
+                  boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
+                }}>
                   <h2>Forutsetninger og forbehold</h2>
                   <p>{selectedRequest.offerReservations}</p>
                 </article>
               ) : null}
 
-              <article className="sales-detail-card sales-detail-card-wide">
+              <article className="sales-detail-card sales-detail-card-wide"
+                style={{
+                  marginBottom: 16,
+                  borderRadius: 20,
+                  boxShadow: "0 12px 32px rgba(16, 42, 55, 0.06)",
+                }}>
                 <h2>Gyldighet</h2>
                 <p>
                   Tilbudet er gyldig i {selectedRequest.offerValidityDays || "30"} dager.
