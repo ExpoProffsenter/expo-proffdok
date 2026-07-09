@@ -1,3 +1,4 @@
+// FASE 18.19C2 HOTFIX FIRMAPROFILSNAPSHOT: Bruker samme profiles-felt som hovedappen, venter på auth/session og legger firmasnapshot inn i faktisk publish-payload. Ingen SQL/main/CSS.
 // FASE 18.19C1 HOTFIX PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
 // FASE 18.19B TILBUDSLINJE ENTER/TOMLINJE HOTFIX: Enter i prisfelt oppretter/fokuserer neste linje, og tom siste linje ignoreres trygt ved lagring. Ingen SQL/main/prosjektaktivering.
 import {
@@ -158,6 +159,48 @@ function createRequestId(requests) {
   return `F-2026-${String(highestNumber + 1).padStart(4, "0")}`;
 }
 
+function normalizeCompanyProfile(row = {}, fallbackEmail = "") {
+  return {
+    companyName: row.company_name || "",
+    orgNumber: row.org_number || "",
+    address: row.address || "",
+    phone: row.phone || "",
+    email: row.email || fallbackEmail || "",
+    website: row.website || "",
+    logoUrl: row.logo_url || "",
+  };
+}
+
+function hasCompanyProfile(profile = {}) {
+  return Boolean(
+    profile.companyName ||
+      profile.orgNumber ||
+      profile.address ||
+      profile.phone ||
+      profile.email ||
+      profile.website ||
+      profile.logoUrl
+  );
+}
+
+function createCompanySnapshot(profile = {}) {
+  return {
+    id: "__expo_company_snapshot__",
+    __companyMeta: true,
+    companyName: profile.companyName || "",
+    orgNumber: profile.orgNumber || "",
+    address: profile.address || "",
+    phone: profile.phone || "",
+    email: profile.email || "",
+    website: profile.website || "",
+    logoUrl: profile.logoUrl || "",
+  };
+}
+
+function getVisibleOfferLines(lines = []) {
+  return Array.isArray(lines) ? lines.filter((line) => !line?.__companyMeta) : [];
+}
+
 function getWorkflowSteps(request) {
   const activeStepByStatus = {
     Forespørsel: "Forespørsel",
@@ -241,34 +284,69 @@ export default function SalesModule() {
     [requests, selectedRequestId]
   );
 
-  useEffect(() => {
-    async function loadCompanyProfile() {
-      if (!supabase) return;
+  async function fetchCompanyProfile() {
+    if (!supabase) return null;
 
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData?.user;
-      if (!user?.id) return;
+    const { data: sessionData } = await supabase.auth.getSession();
+    let user = sessionData?.session?.user || null;
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("company_name,org_number,address,phone,email,website,logo_url")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (error || !data) return;
-
-      setCompanyProfile({
-        companyName: data.company_name || "",
-        orgNumber: data.org_number || "",
-        address: data.address || "",
-        phone: data.phone || "",
-        email: data.email || user.email || "",
-        website: data.website || "",
-        logoUrl: data.logo_url || "",
-      });
+    if (!user) {
+      const { data: userData } = await supabase.auth.getUser();
+      user = userData?.user || null;
     }
 
-    loadCompanyProfile();
+    if (!user?.id) return null;
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("company_name,org_number,address,phone,email,website,logo_url")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return normalizeCompanyProfile(data, user.email || "");
+  }
+
+  async function refreshCompanyProfile() {
+    const nextProfile = await fetchCompanyProfile();
+
+    if (!nextProfile) return null;
+
+    setCompanyProfile(nextProfile);
+    return nextProfile;
+  }
+
+  async function getCompanyProfileForPublish() {
+    if (hasCompanyProfile(companyProfile)) return companyProfile;
+
+    const freshProfile = await refreshCompanyProfile();
+
+    return freshProfile || companyProfile;
+  }
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadInitialCompanyProfile() {
+      const nextProfile = await fetchCompanyProfile();
+      if (active && nextProfile) setCompanyProfile(nextProfile);
+    }
+
+    loadInitialCompanyProfile();
+
+    const { data: subscription } = supabase?.auth?.onAuthStateChange?.(
+      (_event, session) => {
+        if (!session?.user?.id) return;
+        loadInitialCompanyProfile();
+      }
+    ) || { data: null };
+
+    return () => {
+      active = false;
+      subscription?.subscription?.unsubscribe?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -376,17 +454,7 @@ export default function SalesModule() {
       title: request.offerTitle || "",
       intro: request.offerIntro || "",
       lines: [
-        {
-          id: "__expo_company_snapshot__",
-          __companyMeta: true,
-          companyName: companyProfile.companyName || "",
-          orgNumber: companyProfile.orgNumber || "",
-          address: companyProfile.address || "",
-          phone: companyProfile.phone || "",
-          email: companyProfile.email || "",
-          website: companyProfile.website || "",
-          logoUrl: companyProfile.logoUrl || "",
-        },
+        createCompanySnapshot(companyProfile),
         ...(request.offerLines || []),
       ],
       options: request.offerOptions || [],
@@ -488,8 +556,9 @@ export default function SalesModule() {
             acceptedAt,
             acceptedOfferVersionId: selectedRequest.sentOfferVersionId,
             acceptedOfferVersionNumber: selectedRequest.sentOfferVersionNumber,
-            acceptedOfferLines:
-              activeOfferVersion?.lines || selectedRequest.offerLines || [],
+            acceptedOfferLines: getVisibleOfferLines(
+              activeOfferVersion?.lines || selectedRequest.offerLines || []
+            ),
             acceptedOptionIds: acceptanceForm.selectedOptionIds,
             acceptedOptions: selectedOptions,
             acceptedTotal,
@@ -961,7 +1030,7 @@ export default function SalesModule() {
     return url.toString();
   }
 
-  function buildPublishPayload(request) {
+  function buildPublishPayload(request, profileForPublish = companyProfile) {
     return {
       offer_id: request.salesOfferId || null,
       request_ref: request.id,
@@ -971,7 +1040,10 @@ export default function SalesModule() {
       customer_address: request.address,
       title: request.offerTitle || request.title,
       intro: request.offerIntro || "",
-      lines: request.offerLines || [],
+      lines: [
+        createCompanySnapshot(profileForPublish),
+        ...(request.offerLines || []),
+      ],
       options: request.offerOptions || [],
       reservations: request.offerReservations || "",
       validity_days: Number(request.offerValidityDays || 30),
@@ -988,9 +1060,7 @@ export default function SalesModule() {
     const publishedLines = Array.isArray(version.lines) ? version.lines : [];
     const companySnapshot =
       publishedLines.find((line) => line?.__companyMeta) || {};
-    const visibleOfferLines = publishedLines.filter(
-      (line) => !line?.__companyMeta
-    );
+    const visibleOfferLines = getVisibleOfferLines(publishedLines);
 
     return {
       id: offer.request_ref || offer.id,
@@ -1045,8 +1115,10 @@ export default function SalesModule() {
       throw new Error("Tilbudet mangler prislinjer.");
     }
 
+    const profileForPublish = await getCompanyProfileForPublish();
+
     const { data, error } = await supabase.rpc("publish_sales_offer", {
-      payload: buildPublishPayload(request),
+      payload: buildPublishPayload(request, profileForPublish),
     });
 
     if (error) throw error;
@@ -1059,6 +1131,13 @@ export default function SalesModule() {
             sentOfferVersionId: data.version_id,
             sentOfferVersionNumber: data.version_number,
             publicToken: data.public_token,
+            companyName: profileForPublish.companyName || item.companyName || "",
+            companyOrgNumber: profileForPublish.orgNumber || item.companyOrgNumber || "",
+            companyAddress: profileForPublish.address || item.companyAddress || "",
+            companyPhone: profileForPublish.phone || item.companyPhone || "",
+            companyEmail: profileForPublish.email || item.companyEmail || "",
+            companyWebsite: profileForPublish.website || item.companyWebsite || "",
+            companyLogoUrl: profileForPublish.logoUrl || item.companyLogoUrl || "",
             status: "Tilbud",
             statusClass: "sales-status-quote",
             nextStep: "Send tilbud til kunde",
@@ -1522,7 +1601,9 @@ export default function SalesModule() {
     const offerTotal = activeOfferVersion?.total || selectedRequest.offerTotal || 0;
     const offerTitle = activeOfferVersion?.title || selectedRequest.offerTitle;
     const offerIntro = activeOfferVersion?.intro || selectedRequest.offerIntro;
-    const offerLines = activeOfferVersion?.lines || selectedRequest.offerLines || [];
+    const offerLines = getVisibleOfferLines(
+      activeOfferVersion?.lines || selectedRequest.offerLines || []
+    );
     const offerOptions = activeOfferVersion?.options || selectedRequest.offerOptions || [];
     const offerReservations =
       activeOfferVersion?.reservations || selectedRequest.offerReservations;
