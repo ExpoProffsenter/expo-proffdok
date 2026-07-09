@@ -384,6 +384,15 @@ export default function SalesModule() {
 
     if (!acceptanceForm.confirmed || !acceptanceForm.name.trim()) return;
 
+    const activeOfferVersion = getActiveOfferVersion(selectedRequest);
+    const offerOptions =
+      activeOfferVersion?.options || selectedRequest.offerOptions || [];
+    const selectedOptions = offerOptions.filter((option) =>
+      acceptanceForm.selectedOptionIds.includes(option.id)
+    );
+    const acceptedTotal =
+      (activeOfferVersion?.total || selectedRequest.offerTotal || 0) +
+      getOfferTotal(selectedOptions);
     const acceptedAt = new Date().toISOString();
 
     const nextRequests = requests.map((request) =>
@@ -395,9 +404,7 @@ export default function SalesModule() {
             acceptedOfferVersionId: selectedRequest.sentOfferVersionId,
             acceptedOfferVersionNumber: selectedRequest.sentOfferVersionNumber,
             acceptedOptionIds: acceptanceForm.selectedOptionIds,
-            acceptedOptions: selectedRequest.offerOptions?.filter((option) =>
-              acceptanceForm.selectedOptionIds.includes(option.id)
-            ) || [],
+            acceptedOptions: selectedOptions,
             acceptedTotal,
             status: "Akseptert",
             statusClass: "sales-status-accepted",
