@@ -1,6 +1,5 @@
-// FASE 19.6C PREVIEW-AUTH RETURN HOTFIX: Lagrer godkjent Supabase-session og returpunkt i lokal preview-storage, slik at innlogging returnerer til samme befaringsnotat. Ingen SQL/main/CSS/Edge.
-// FASE 19.6B SESSION HOTFIX: Eksplisitt persistent Supabase-auth i sales-preview, robust session-rehydrering og samme befaringsnotat etter innlogging. Ingen SQL/main/CSS/Edge.
-// FASE 19.6A PREVIEW-AUTH OG AI-UX HOTFIX: Egen kontrollert Supabase-innlogging i isolert sales-preview, tydelig AI-transkripsjonstekst og robust lydkort-UX. Beholder autentisert inspection-assistant. Ingen main/smart-worker/SQL-endring.\n// FASE 19.6 AI-BEFARINGSASSISTENT: Autentisert lydtranskripsjon og AI-forslag med eksplisitt brukergodkjenning. Ingen automatisk lagring.\n// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
+// FASE 19.6D TRYGG BASELINE: Ruller tilbake preview-auth i SalesModule. Lydnotat beholdes. AI-assistent beholdes server-side, men aktiveres først når modulen kobles inn i aktiv app med eksisterende Supabase-auth og firma-/admin-tilgang.
+// FASE 19.6 AI-BEFARINGSASSISTENT: Autentisert lydtranskripsjon og AI-forslag med eksplisitt brukergodkjenning. Ingen automatisk lagring.\n// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
 // FASE 19.4A IPHONE-KLAR LYDNOTAT BEFARING: Legger til trygg lydopptak/lydfil på befaringsnotat med iPhone-fallback via lydfilinput. Ingen AI/transkripsjon/SQL/main/Edge.
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
 // FASE 19.3 TYDELIG PUBLISERINGSBEKREFTELSE: Viser tydelig intern bekreftelse når kundelink/ny tilbudsversjon er publisert. Ingen SQL/main/Edge.
@@ -36,20 +35,10 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase =
   supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-          storage: window.localStorage,
-          storageKey: "expo-proffdok-sales-preview-auth-v1",
-        },
-      })
+    ? createClient(supabaseUrl, supabaseAnonKey)
     : null;
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
-const PREVIEW_AUTH_SESSION_KEY = "expo-proffdok-sales-preview-session-fallback-v1";
-const PREVIEW_AUTH_RETURN_KEY = "expo-proffdok-sales-preview-auth-return-v1";
 
 const initialRequests = [
   {
@@ -224,102 +213,6 @@ function getVisibleOfferLines(lines = []) {
   return Array.isArray(lines) ? lines.filter((line) => !line?.__companyMeta) : [];
 }
 
-function getInspectionFormFromRequest(request = {}) {
-  return {
-    customerWishes:
-      request?.inspectionCustomerWishes ||
-      request?.customerWishes ||
-      "",
-    existingConditions:
-      request?.inspectionExistingConditions ||
-      request?.existingConditions ||
-      "",
-    measurements:
-      request?.inspectionMeasurements ||
-      request?.measurements ||
-      "",
-    observations:
-      request?.inspectionObservations ||
-      request?.observations ||
-      request?.inspectionNote ||
-      "",
-    photos:
-      request?.inspectionPhotos ||
-      request?.photos ||
-      [],
-    audioNotes:
-      request?.inspectionAudioNotes ||
-      request?.audioNotes ||
-      [],
-  };
-}
-
-function savePreviewSessionFallback(session) {
-  try {
-    if (!session?.access_token) return;
-    window.localStorage.setItem(PREVIEW_AUTH_SESSION_KEY, JSON.stringify(session));
-  } catch {
-    // Preview-fallback er kun for test av isolert sales-preview.
-  }
-}
-
-function loadPreviewSessionFallback() {
-  try {
-    const stored = window.localStorage.getItem(PREVIEW_AUTH_SESSION_KEY);
-    if (!stored) return null;
-
-    const session = JSON.parse(stored);
-    if (!session?.access_token) return null;
-
-    if (session.expires_at && session.expires_at * 1000 < Date.now()) {
-      window.localStorage.removeItem(PREVIEW_AUTH_SESSION_KEY);
-      return null;
-    }
-
-    return session;
-  } catch {
-    return null;
-  }
-}
-
-function clearPreviewSessionFallback() {
-  try {
-    window.localStorage.removeItem(PREVIEW_AUTH_SESSION_KEY);
-  } catch {
-    // Ingen handling.
-  }
-}
-
-function savePreviewAuthReturn(requestId) {
-  try {
-    if (!requestId) return;
-    window.localStorage.setItem(
-      PREVIEW_AUTH_RETURN_KEY,
-      JSON.stringify({ mode: "inspection-note", requestId })
-    );
-  } catch {
-    // Ingen handling.
-  }
-}
-
-function loadPreviewAuthReturn() {
-  try {
-    const stored = window.localStorage.getItem(PREVIEW_AUTH_RETURN_KEY);
-    if (!stored) return null;
-    return JSON.parse(stored);
-  } catch {
-    return null;
-  }
-}
-
-function clearPreviewAuthReturn() {
-  try {
-    window.localStorage.removeItem(PREVIEW_AUTH_RETURN_KEY);
-  } catch {
-    // Ingen handling.
-  }
-}
-
 function getWorkflowSteps(request) {
   const activeStepByStatus = {
     Forespørsel: "Forespørsel",
@@ -363,14 +256,6 @@ export default function SalesModule() {
   const [inspectionAiState, setInspectionAiState] = useState("idle");
   const [inspectionAiError, setInspectionAiError] = useState("");
   const [inspectionAiProposal, setInspectionAiProposal] = useState(null);
-  const [previewAuthSession, setPreviewAuthSession] = useState(null);
-  const [previewAuthReady, setPreviewAuthReady] = useState(false);
-  const [previewAuthForm, setPreviewAuthForm] = useState({
-    email: "",
-    password: "",
-  });
-  const [previewAuthState, setPreviewAuthState] = useState("idle");
-  const [previewAuthError, setPreviewAuthError] = useState("");
   const inspectionRecorderRef = useRef(null);
   const inspectionAudioStreamRef = useRef(null);
   const inspectionAudioChunksRef = useRef([]);
@@ -420,151 +305,6 @@ export default function SalesModule() {
     () => requests.find((request) => request.id === selectedRequestId) || null,
     [requests, selectedRequestId]
   );
-
-  useEffect(() => {
-    let active = true;
-
-    async function loadPreviewAuthSession() {
-      if (!supabase) {
-        if (active) setPreviewAuthReady(true);
-        return;
-      }
-
-      const { data } = await supabase.auth.getSession();
-      let session = data?.session || null;
-
-      if (!session?.access_token) {
-        const fallbackSession = loadPreviewSessionFallback();
-
-        if (fallbackSession?.access_token && fallbackSession?.refresh_token) {
-          const { data: restoredData } = await supabase.auth.setSession({
-            access_token: fallbackSession.access_token,
-            refresh_token: fallbackSession.refresh_token,
-          });
-          session = restoredData?.session || fallbackSession;
-        } else {
-          session = fallbackSession;
-        }
-      }
-
-      if (!active) return;
-
-      if (session?.access_token) savePreviewSessionFallback(session);
-      setPreviewAuthSession(session || null);
-      setPreviewAuthReady(true);
-    }
-
-    loadPreviewAuthSession();
-
-    const { data: subscription } = supabase?.auth?.onAuthStateChange?.(
-      (_event, session) => {
-        if (!active) return;
-        setPreviewAuthSession(session || null);
-        setPreviewAuthReady(true);
-        if (session?.access_token) {
-          savePreviewSessionFallback(session);
-        } else {
-          clearPreviewSessionFallback();
-        }
-        if (session?.user?.id) {
-          setPreviewAuthError("");
-          setPreviewAuthState("idle");
-        }
-      }
-    ) || { data: null };
-
-    return () => {
-      active = false;
-      subscription?.subscription?.unsubscribe?.();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!previewAuthSession?.access_token) return;
-
-    const returnTarget = loadPreviewAuthReturn();
-    if (returnTarget?.mode !== "inspection-note" || !returnTarget.requestId) return;
-
-    const request = requests.find((item) => item.id === returnTarget.requestId);
-    if (!request) return;
-
-    setSelectedRequestId(request.id);
-    setInspectionForm(getInspectionFormFromRequest(request));
-    setMode("inspection-note");
-    clearPreviewAuthReturn();
-  }, [previewAuthSession?.access_token, requests]);
-
-  function updatePreviewAuthForm(field, value) {
-    setPreviewAuthForm((current) => ({ ...current, [field]: value }));
-  }
-
-  async function handlePreviewSignIn(event) {
-    event.preventDefault();
-
-    if (!supabase) {
-      setPreviewAuthError("Supabase-miljøvariabler mangler i Vercel-preview.");
-      return;
-    }
-
-    savePreviewAuthReturn(selectedRequestId);
-    setPreviewAuthState("working");
-    setPreviewAuthError("");
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: previewAuthForm.email.trim(),
-      password: previewAuthForm.password,
-    });
-
-    if (error || !data?.session) {
-      setPreviewAuthState("error");
-      setPreviewAuthError(
-        error?.message || "Innloggingen kunne ikke fullføres."
-      );
-      return;
-    }
-
-    const { data: verifiedSessionData, error: verifiedSessionError } =
-      await supabase.auth.getSession();
-    const verifiedSession = verifiedSessionData?.session || data.session;
-
-    if (verifiedSessionError || !verifiedSession?.access_token) {
-      setPreviewAuthState("error");
-      setPreviewAuthError(
-        verifiedSessionError?.message ||
-          "Innloggingen ble godkjent, men preview-sessionen kunne ikke bekreftes."
-      );
-      return;
-    }
-
-    savePreviewSessionFallback(verifiedSession);
-    setPreviewAuthSession(verifiedSession);
-    setPreviewAuthReady(true);
-    setPreviewAuthForm((current) => ({ ...current, password: "" }));
-    setPreviewAuthError("");
-    setPreviewAuthState("idle");
-
-    if (selectedRequestId) {
-      const request = requests.find((item) => item.id === selectedRequestId);
-      if (request) {
-        setInspectionForm(getInspectionFormFromRequest(request));
-        setMode("inspection-note");
-      }
-    }
-
-    await refreshCompanyProfile();
-  }
-
-  async function handlePreviewSignOut() {
-    if (!supabase) return;
-
-    await supabase.auth.signOut();
-    clearPreviewSessionFallback();
-    clearPreviewAuthReturn();
-    setPreviewAuthSession(null);
-    setInspectionAiProposal(null);
-    setInspectionAiError("");
-    setInspectionAiState("idle");
-  }
 
   async function fetchCompanyProfile() {
     if (!supabase) return null;
@@ -1182,7 +922,33 @@ export default function SalesModule() {
   }
 
   function openInspectionNote() {
-    setInspectionForm(getInspectionFormFromRequest(selectedRequest));
+    setInspectionForm({
+      customerWishes:
+        selectedRequest?.inspectionCustomerWishes ||
+        selectedRequest?.customerWishes ||
+        "",
+      existingConditions:
+        selectedRequest?.inspectionExistingConditions ||
+        selectedRequest?.existingConditions ||
+        "",
+      measurements:
+        selectedRequest?.inspectionMeasurements ||
+        selectedRequest?.measurements ||
+        "",
+      observations:
+        selectedRequest?.inspectionObservations ||
+        selectedRequest?.observations ||
+        selectedRequest?.inspectionNote ||
+        "",
+      photos:
+        selectedRequest?.inspectionPhotos ||
+        selectedRequest?.photos ||
+        [],
+      audioNotes:
+        selectedRequest?.inspectionAudioNotes ||
+        selectedRequest?.audioNotes ||
+        [],
+    });
     setMode("inspection-note");
   }
 
@@ -1334,19 +1100,12 @@ export default function SalesModule() {
     setInspectionAiProposal(null);
 
     try {
-      let session = previewAuthSession;
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session?.access_token) {
-        const {
-          data: { session: freshSession },
-        } = await supabase.auth.getSession();
-        session = freshSession || loadPreviewSessionFallback();
-      }
-
-      if (!session?.access_token) {
-        throw new Error(
-          "Logg inn i previewen under lydnotatet før du bruker befaringsassistenten."
-        );
+        throw new Error("AI-befaringsassistent aktiveres først når modulen kjøres inne i aktiv Expo ProffDok-app med innlogget bruker.");
       }
 
       const audioResponse = await fetch(audio.dataUrl);
@@ -2979,7 +2738,7 @@ export default function SalesModule() {
                 <div className="sales-field sales-field-full">
                   <span>Lydnotat fra befaring</span>
                   <p className="sales-subtitle" style={{ marginTop: 0 }}>
-                    Ta korte lydnotater på befaring. Når du velger Lag AI-forslag fra lyd, transkriberes lydnotatet og struktureres som et forslag du må kontrollere før bruk.
+                    Ta korte lydnotater på befaring. Dette er ikke AI-transkripsjon ennå; lyd lagres først som kontrollerbart vedlegg i previewen.
                   </p>
 
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -3024,81 +2783,6 @@ export default function SalesModule() {
                     </p>
                   ) : null}
 
-                  {previewAuthReady && !previewAuthSession ? (
-                    <div className="sales-form-preview" style={{ marginTop: 14 }}>
-                      <h2>Logg inn for å bruke befaringsassistenten</h2>
-                      <p className="sales-subtitle">
-                        Sales-preview er en egen testside og har derfor egen Supabase-session. Bruk samme Expo ProffDok-bruker som i hovedappen.
-                      </p>
-                      <form
-                        onSubmit={handlePreviewSignIn}
-                        style={{ display: "grid", gap: 10, maxWidth: 520 }}
-                      >
-                        <input
-                          value={previewAuthForm.email}
-                          onChange={(event) =>
-                            updatePreviewAuthForm("email", event.target.value)
-                          }
-                          placeholder="E-post"
-                          type="email"
-                          autoComplete="username"
-                          autoCapitalize="none"
-                          autoCorrect="off"
-                          required
-                        />
-                        <input
-                          value={previewAuthForm.password}
-                          onChange={(event) =>
-                            updatePreviewAuthForm("password", event.target.value)
-                          }
-                          placeholder="Passord"
-                          type="password"
-                          autoComplete="current-password"
-                          required
-                        />
-                        <button
-                          className="sales-primary-button"
-                          type="submit"
-                          disabled={previewAuthState === "working"}
-                          style={{ width: "fit-content" }}
-                        >
-                          {previewAuthState === "working"
-                            ? "Logger inn..."
-                            : "Logg inn i preview"}
-                        </button>
-                      </form>
-                      {previewAuthError ? (
-                        <p style={{ marginBottom: 0 }}>{previewAuthError}</p>
-                      ) : null}
-                    </div>
-                  ) : previewAuthSession ? (
-                    <div
-                      className="sales-form-preview"
-                      style={{
-                        marginTop: 14,
-                        display: "flex",
-                        gap: 12,
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <div>
-                        <strong>Befaringsassistent klar</strong>
-                        <p className="sales-subtitle" style={{ margin: "4px 0 0" }}>
-                          Innlogget som {previewAuthSession.user?.email || "Expo ProffDok-bruker"}.
-                        </p>
-                      </div>
-                      <button
-                        className="sales-secondary-button"
-                        type="button"
-                        onClick={handlePreviewSignOut}
-                      >
-                        Logg ut
-                      </button>
-                    </div>
-                  ) : null}
-
                   {(inspectionForm.audioNotes || []).length ? (
                     <div className="sales-photo-grid">
                       {(inspectionForm.audioNotes || []).map((audio) => (
@@ -3108,32 +2792,12 @@ export default function SalesModule() {
                               {audio.name || "Befaringslyd"}
                             </strong>
                             <audio controls src={audio.dataUrl} style={{ width: "100%" }} />
-                            <button
-                              type="button"
-                              className="sales-primary-button"
-                              onClick={() => analyzeInspectionAudio(audio)}
-                              disabled={
-                                inspectionAiState === "working" ||
-                                !previewAuthSession
-                              }
-                              style={{
-                                marginTop: 10,
-                                width: "100%",
-                                minWidth: 0,
-                                whiteSpace: "normal",
-                                textAlign: "center",
-                                lineHeight: 1.25,
-                              }}
-                            >
-                              <Mic size={16} style={{ flex: "0 0 auto" }} />
-                              <span>
-                                {inspectionAiState === "working"
-                                  ? "Transkriberer og strukturerer..."
-                                  : previewAuthSession
-                                    ? "Lag AI-forslag fra lyd"
-                                    : "Logg inn for AI-forslag"}
-                              </span>
-                            </button>
+                            <div className="sales-form-preview" style={{ marginTop: 10 }}>
+                              <strong>AI-befaringsassistent</strong>
+                              <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
+                                Klar server-side, men aktiveres først når denne modulen kjøres inne i aktiv Expo ProffDok-app med eksisterende innlogging.
+                              </p>
+                            </div>
                             {audio.createdAt ? (
                               <p className="sales-subtitle" style={{ marginTop: 8 }}>
                                 Lagret {new Date(audio.createdAt).toLocaleString("nb-NO")}
