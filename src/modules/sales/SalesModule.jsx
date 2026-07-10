@@ -1,3 +1,4 @@
+// FASE 19.9D FUNCTION INVOKE HOTFIX: Sender lyd til inspection-assistant via den aktive Expo ProffDok Supabase-klientens functions.invoke. Fjerner avhengighet til Vite env-URL/API-key i integrert AI-kall. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9C AKTIVER AI-KNAPP I INTEGRERT MODUL: Kobler eksisterende autentiserte inspection-assistant-kall til lydkortet i aktiv Expo ProffDok-app. Ingen automatisk lagring, SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9 AUTENTISERT FEATURE-BRO: SalesModule kan bruke Supabase-klient, innlogget bruker og profil fra aktiv Expo ProffDok-app. Lokal testlagring scopes per bruker/firma. Ingen SQL, Edge Function, prosjektaktivering eller produksjonsmerge.
 // FASE 19.6E LYDNOTAT-UX: Rydder kun presentasjon og brukerflyt for lydnotat i preview. PC/Chrome er verifisert. iPhone/Safari er fortsatt ikke godkjent. Ingen endring i opptakslogikk, tilbud, opsjoner, kundelink, versjonsvakt eller Edge Function.
@@ -1147,20 +1148,16 @@ export default function SalesModule({
       const formData = new FormData();
       formData.append("audio", audioFile);
 
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/inspection-assistant`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            apikey: supabaseAnonKey,
-          },
-          body: formData,
-        }
+      const { data: result, error: invokeError } = await activeSupabase.functions.invoke(
+        "inspection-assistant",
+        { body: formData }
       );
 
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result?.ok) {
+      if (invokeError) {
+        throw new Error(invokeError.message || "Befaringsassistenten feilet.");
+      }
+
+      if (!result?.ok) {
         throw new Error(result?.error || "Befaringsassistenten feilet.");
       }
 
