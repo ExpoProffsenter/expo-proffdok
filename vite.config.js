@@ -9,6 +9,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
         salesPreview: resolve(__dirname, "sales-preview.html"),
+        aiTranscriptTest: resolve(__dirname, "ai-transcript-test.html"),
       },
     },
   },
