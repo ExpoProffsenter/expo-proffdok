@@ -1,4 +1,4 @@
-// FASE 19.8 AKTIVER AI-BEFARINGSASSISTENT I AKTIV SESSION: Kobler eksisterende autentiserte inspection-assistant-kall til hvert lydnotat i Befaringsnotat. Bruker må eksplisitt sende lyd til AI og eksplisitt godkjenne forslag før feltene fylles. Ingen automatisk lagring. Ingen SQL/main/CSS/Edge-endring.
+// FASE 19.9 AUTENTISERT FEATURE-BRO: SalesModule kan bruke Supabase-klient, innlogget bruker og profil fra aktiv Expo ProffDok-app. Lokal testlagring scopes per bruker/firma. Ingen SQL, Edge Function, prosjektaktivering eller produksjonsmerge.
 // FASE 19.6E LYDNOTAT-UX: Rydder kun presentasjon og brukerflyt for lydnotat i preview. PC/Chrome er verifisert. iPhone/Safari er fortsatt ikke godkjent. Ingen endring i opptakslogikk, tilbud, opsjoner, kundelink, versjonsvakt eller Edge Function.
 // FASE 19.6D TRYGG BASELINE: Ruller tilbake preview-auth i SalesModule. Lydnotat beholdes. AI-assistent beholdes server-side, men aktiveres først når modulen kobles inn i aktiv app med eksisterende Supabase-auth og firma-/admin-tilgang.
 // FASE 19.6 AI-BEFARINGSASSISTENT: Autentisert lydtranskripsjon og AI-forslag med eksplisitt brukergodkjenning. Ingen automatisk lagring.\n// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
@@ -139,9 +139,9 @@ const emptyForm = {
   note: "",
 };
 
-function loadRequests() {
+function loadRequests(storageKey = STORAGE_KEY) {
   try {
-    const storedRequests = window.localStorage.getItem(STORAGE_KEY);
+    const storedRequests = window.localStorage.getItem(storageKey);
 
     if (!storedRequests) return initialRequests;
 
@@ -155,9 +155,9 @@ function loadRequests() {
   }
 }
 
-function saveRequests(requests) {
+function saveRequests(requests, storageKey = STORAGE_KEY) {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
+    window.localStorage.setItem(storageKey, JSON.stringify(requests));
   } catch {
     // Lokal preview-lagring er kun for test.
   }
@@ -234,8 +234,26 @@ function getWorkflowSteps(request) {
   }));
 }
 
-export default function SalesModule() {
-  const [requests, setRequests] = useState(loadRequests);
+export default function SalesModule({
+  supabaseClient = null,
+  authUser = null,
+  profile = null,
+  integrationMode = "preview",
+} = {}) {
+  const activeSupabase = supabaseClient || supabase;
+  const salesStorageKey = useMemo(() => {
+    if (integrationMode !== "app") return STORAGE_KEY;
+
+    const companyScope = String(profile?.company_name || profile?.companyName || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    const userScope = String(authUser?.id || "anonymous");
+
+    return `${STORAGE_KEY}:${companyScope || "uten-firma"}:${userScope}`;
+  }, [integrationMode, profile?.company_name, profile?.companyName, authUser?.id]);
+  const [requests, setRequests] = useState(() => loadRequests(salesStorageKey));
   const [mode, setMode] = useState("list");
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -309,13 +327,13 @@ export default function SalesModule() {
   );
 
   async function fetchCompanyProfile() {
-    if (!supabase) return null;
+    if (!activeSupabase) return null;
 
-    const { data: sessionData } = await supabase.auth.getSession();
+    const { data: sessionData } = await activeSupabase.auth.getSession();
     let user = sessionData?.session?.user || null;
 
     if (!user) {
-      const { data: userData } = await supabase.auth.getUser();
+      const { data: userData } = await activeSupabase.auth.getUser();
       user = userData?.user || null;
     }
 
@@ -324,7 +342,7 @@ export default function SalesModule() {
     const profileSelect =
       "company_name,org_number,address,phone,email,website,logo_url";
 
-    let { data, error } = await supabase
+    let { data, error } = await activeSupabase
       .from("profiles")
       .select(profileSelect)
       .eq("id", user.id)
@@ -335,7 +353,7 @@ export default function SalesModule() {
     let nextProfile = data ? normalizeCompanyProfile(data, user.email || "") : null;
 
     if (!hasCompanyProfile(nextProfile) && user.email) {
-      const fallback = await supabase
+      const fallback = await activeSupabase
         .from("profiles")
         .select(profileSelect)
         .ilike("email", user.email)
@@ -376,7 +394,7 @@ export default function SalesModule() {
 
     loadInitialCompanyProfile();
 
-    const { data: subscription } = supabase?.auth?.onAuthStateChange?.(
+    const { data: subscription } = activeSupabase?.auth?.onAuthStateChange?.(
       (_event, session) => {
         if (!session?.user?.id) return;
         loadInitialCompanyProfile();
@@ -480,7 +498,7 @@ export default function SalesModule() {
     );
 
     setRequests(nextRequests);
-    saveRequests(nextRequests);
+    saveRequests(nextRequests, salesStorageKey);
     setPublishFeedback(null);
     setCustomerLinkCopied(false);
     setMode("detail");
@@ -574,12 +592,12 @@ export default function SalesModule() {
     const acceptedAt = new Date().toISOString();
 
     if (selectedRequest.isPublicOffer) {
-      if (!supabase) {
+      if (!activeSupabase) {
         alert("Supabase-miljøvariabler mangler i Vercel-preview.");
         return;
       }
 
-      const { error } = await supabase.rpc("accept_sales_offer", {
+      const { error } = await activeSupabase.rpc("accept_sales_offer", {
         token: selectedRequest.publicToken,
         accepted_name: acceptanceForm.name.trim(),
         selected_options: selectedOptions,
@@ -616,7 +634,7 @@ export default function SalesModule() {
     );
 
     setRequests(nextRequests);
-    saveRequests(nextRequests);
+    saveRequests(nextRequests, salesStorageKey);
     setMode(selectedRequest.isPublicOffer ? "customer-accepted" : "detail");
   }
 
@@ -919,7 +937,7 @@ export default function SalesModule() {
     });
 
     setRequests(nextRequests);
-    saveRequests(nextRequests);
+    saveRequests(nextRequests, salesStorageKey);
     setMode("detail");
   }
 
@@ -1104,10 +1122,10 @@ export default function SalesModule() {
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await activeSupabase.auth.getSession();
 
       if (!session?.access_token) {
-        throw new Error("AI-befaringsassistent aktiveres først når modulen kjøres inne i aktiv Expo ProffDok-app med innlogget bruker.");
+        throw new Error("Ingen gyldig Expo ProffDok-session ble funnet. Logg ut og inn igjen før du prøver på nytt.");
       }
 
       const audioResponse = await fetch(audio.dataUrl);
@@ -1198,7 +1216,7 @@ export default function SalesModule() {
     );
 
     setRequests(nextRequests);
-    saveRequests(nextRequests);
+    saveRequests(nextRequests, salesStorageKey);
     setMode("detail");
   }
 
@@ -1279,7 +1297,7 @@ export default function SalesModule() {
     );
 
     setRequests(nextRequests);
-    saveRequests(nextRequests);
+    saveRequests(nextRequests, salesStorageKey);
     setMode("detail");
   }
 
@@ -1365,7 +1383,7 @@ export default function SalesModule() {
   }
 
   async function publishOfferAndGetLink(requestId) {
-    if (!supabase) {
+    if (!activeSupabase) {
       throw new Error("Supabase-miljøvariabler mangler i Vercel-preview.");
     }
 
@@ -1380,7 +1398,7 @@ export default function SalesModule() {
 
     if (request.publicToken) {
       const { data: publishedOfferData, error: publishedOfferError } =
-        await supabase.rpc("get_sales_offer_by_token", {
+        await activeSupabase.rpc("get_sales_offer_by_token", {
           token: request.publicToken,
         });
 
@@ -1408,7 +1426,7 @@ export default function SalesModule() {
 
     const profileForPublish = await getCompanyProfileForPublish();
 
-    const { data, error } = await supabase.rpc("publish_sales_offer", {
+    const { data, error } = await activeSupabase.rpc("publish_sales_offer", {
       payload: buildPublishPayload(request, profileForPublish),
     });
 
@@ -1439,7 +1457,7 @@ export default function SalesModule() {
     );
 
     setRequests(nextRequests);
-    saveRequests(nextRequests);
+    saveRequests(nextRequests, salesStorageKey);
 
     const link = getCustomerOfferLink(data.public_token);
     setPublishFeedback({
@@ -1473,7 +1491,7 @@ export default function SalesModule() {
   }
 
   async function loadPublicOfferFromToken(token) {
-    if (!supabase) {
+    if (!activeSupabase) {
       setPublicOfferError("Supabase-miljøvariabler mangler i Vercel-preview.");
       return;
     }
@@ -1481,7 +1499,7 @@ export default function SalesModule() {
     setPublicOfferLoading(true);
     setPublicOfferError("");
 
-    const { data, error } = await supabase.rpc("get_sales_offer_by_token", {
+    const { data, error } = await activeSupabase.rpc("get_sales_offer_by_token", {
       token,
     });
 
@@ -1532,7 +1550,7 @@ export default function SalesModule() {
     const nextRequests = [nextRequest, ...requests];
 
     setRequests(nextRequests);
-    saveRequests(nextRequests);
+    saveRequests(nextRequests, salesStorageKey);
     resetForm();
     setSelectedRequestId(nextRequest.id);
     setMode("detail");
@@ -2817,26 +2835,9 @@ export default function SalesModule() {
                   {(inspectionForm.audioNotes || []).length ? (
                     <div className="sales-form-preview" style={{ marginTop: 14 }}>
                       <strong>AI-forslag fra lyd</strong>
-                      <p className="sales-subtitle" style={{ margin: "6px 0 12px" }}>
-                        Velg lydnotatet du vil sende til befaringsassistenten. Ingenting legges inn i feltene eller lagres automatisk.
+                      <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
+                        AI-forslag aktiveres når Befaring / Tilbud / Aksept kobles inn i den aktive Expo ProffDok-appen. Opptaket ditt er klart for avspilling og kontroll i previewen.
                       </p>
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        {(inspectionForm.audioNotes || []).map((audio, index) => (
-                          <button
-                            key={audio.id}
-                            type="button"
-                            className="sales-secondary-button"
-                            onClick={() => analyzeInspectionAudio(audio)}
-                            disabled={inspectionAiState === "working"}
-                            style={{ width: "fit-content" }}
-                          >
-                            <Mic size={18} />
-                            {inspectionAiState === "working"
-                              ? "AI analyserer lyd..."
-                              : `Send lydnotat ${index + 1} til AI`}
-                          </button>
-                        ))}
-                      </div>
                     </div>
                   ) : null}
 
