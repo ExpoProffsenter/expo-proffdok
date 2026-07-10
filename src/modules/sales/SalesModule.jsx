@@ -1,4 +1,4 @@
-// FASE 19.10 SAMLET STABILISERING: Bevarer valgt sak/visning ved fanebytte og sender AI-kall via samme-origin Vercel-proxy for å unngå browser->Supabase 403. Ingen SQL, main, CSS eller produksjonsmerge.
+// FASE 19.11 LYDNOTAT-ARBEIDSFLYT: Bevarer befaringskladd og AI-forslag per sak lokalt ved fanebytte, forklarer hva bruker skal lese inn, støtter flere nummererte lydnotater, transkripsjonsvisning og trygg legg-til/erstatt-bruk av AI-forslag. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9D FUNCTION INVOKE HOTFIX: Sender lyd til inspection-assistant via den aktive Expo ProffDok Supabase-klientens functions.invoke. Fjerner avhengighet til Vite env-URL/API-key i integrert AI-kall. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9C AKTIVER AI-KNAPP I INTEGRERT MODUL: Kobler eksisterende autentiserte inspection-assistant-kall til lydkortet i aktiv Expo ProffDok-app. Ingen automatisk lagring, SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9 AUTENTISERT FEATURE-BRO: SalesModule kan bruke Supabase-klient, innlogget bruker og profil fra aktiv Expo ProffDok-app. Lokal testlagring scopes per bruker/firma. Ingen SQL, Edge Function, prosjektaktivering eller produksjonsmerge.
@@ -44,58 +44,6 @@ const supabase =
     : null;
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
-const SALES_NAVIGATION_VERSION = 1;
-const VALID_SALES_MODES = new Set([
-  "list",
-  "new",
-  "detail",
-  "survey-plan",
-  "inspection-note",
-  "offer-builder",
-  "customer-offer",
-  "customer-accepted",
-  "project-activation",
-]);
-
-function loadSalesNavigation(storageKey) {
-  try {
-    const raw = window.sessionStorage.getItem(storageKey);
-    if (!raw) return { mode: "list", selectedRequestId: null };
-
-    const parsed = JSON.parse(raw);
-    if (
-      parsed?.version !== SALES_NAVIGATION_VERSION ||
-      !VALID_SALES_MODES.has(parsed?.mode)
-    ) {
-      return { mode: "list", selectedRequestId: null };
-    }
-
-    return {
-      mode: parsed.mode,
-      selectedRequestId:
-        typeof parsed.selectedRequestId === "string"
-          ? parsed.selectedRequestId
-          : null,
-    };
-  } catch {
-    return { mode: "list", selectedRequestId: null };
-  }
-}
-
-function saveSalesNavigation(storageKey, mode, selectedRequestId) {
-  try {
-    window.sessionStorage.setItem(
-      storageKey,
-      JSON.stringify({
-        version: SALES_NAVIGATION_VERSION,
-        mode,
-        selectedRequestId: selectedRequestId || null,
-      })
-    );
-  } catch {
-    // Navigasjonsminne er kun en UX-forbedring.
-  }
-}
 
 const initialRequests = [
   {
@@ -308,20 +256,9 @@ export default function SalesModule({
 
     return `${STORAGE_KEY}:${companyScope || "uten-firma"}:${userScope}`;
   }, [integrationMode, profile?.company_name, profile?.companyName, authUser?.id]);
-  const salesNavigationKey = `${salesStorageKey}:navigation`;
-  const initialNavigationRef = useRef(null);
-
-  if (!initialNavigationRef.current) {
-    initialNavigationRef.current = loadSalesNavigation(salesNavigationKey);
-  }
-
   const [requests, setRequests] = useState(() => loadRequests(salesStorageKey));
-  const [mode, setMode] = useState(
-    () => initialNavigationRef.current?.mode || "list"
-  );
-  const [selectedRequestId, setSelectedRequestId] = useState(
-    () => initialNavigationRef.current?.selectedRequestId || null
-  );
+  const [mode, setMode] = useState("list");
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [surveyForm, setSurveyForm] = useState({
     date: "",
@@ -342,6 +279,8 @@ export default function SalesModule({
   const [inspectionAiState, setInspectionAiState] = useState("idle");
   const [inspectionAiError, setInspectionAiError] = useState("");
   const [inspectionAiProposal, setInspectionAiProposal] = useState(null);
+  const [inspectionDraftDirty, setInspectionDraftDirty] = useState(false);
+  const [inspectionTranscriptOpenIds, setInspectionTranscriptOpenIds] = useState([]);
   const inspectionRecorderRef = useRef(null);
   const inspectionAudioStreamRef = useRef(null);
   const inspectionAudioChunksRef = useRef([]);
@@ -387,28 +326,17 @@ export default function SalesModule({
     logoUrl: "",
   });
 
-  useEffect(() => {
-    const restored = loadSalesNavigation(salesNavigationKey);
-    const requestExists = restored.selectedRequestId
-      ? requests.some((request) => request.id === restored.selectedRequestId)
-      : false;
-
-    setSelectedRequestId(requestExists ? restored.selectedRequestId : null);
-    setMode(
-      requestExists || ["list", "new"].includes(restored.mode)
-        ? restored.mode
-        : "list"
-    );
-  }, [salesNavigationKey]);
-
-  useEffect(() => {
-    saveSalesNavigation(salesNavigationKey, mode, selectedRequestId);
-  }, [salesNavigationKey, mode, selectedRequestId]);
-
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) || null,
     [requests, selectedRequestId]
   );
+
+  useEffect(() => {
+    if (mode !== "inspection-note" || !selectedRequestId) return;
+    saveInspectionDraft(inspectionForm, inspectionAiProposal);
+    // Lokal feature-kladd skal følge alle endringer i befaringsskjema/AI-forslag.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inspectionForm, inspectionAiProposal, mode, selectedRequestId]);
 
   async function fetchCompanyProfile() {
     if (!activeSupabase) return null;
@@ -1025,8 +953,50 @@ export default function SalesModule({
     setMode("detail");
   }
 
+  function getInspectionDraftKey(requestId = selectedRequestId) {
+    return `${salesStorageKey}:inspection-draft:${requestId || "uten-sak"}`;
+  }
+
+  function saveInspectionDraft(nextForm, nextProposal = inspectionAiProposal) {
+    if (!selectedRequestId) return;
+
+    try {
+      window.localStorage.setItem(
+        getInspectionDraftKey(selectedRequestId),
+        JSON.stringify({
+          form: nextForm,
+          proposal: nextProposal,
+          savedAt: new Date().toISOString(),
+        })
+      );
+    } catch {
+      // Lokal feature-kladd. Ingen database-/prosjektlagring.
+    }
+  }
+
+  function clearInspectionDraft(requestId = selectedRequestId) {
+    if (!requestId) return;
+
+    try {
+      window.localStorage.removeItem(getInspectionDraftKey(requestId));
+    } catch {
+      // Lokal feature-kladd.
+    }
+  }
+
   function openInspectionNote() {
-    setInspectionForm({
+    let draft = null;
+
+    try {
+      const storedDraft = window.localStorage.getItem(
+        getInspectionDraftKey(selectedRequest?.id)
+      );
+      draft = storedDraft ? JSON.parse(storedDraft) : null;
+    } catch {
+      draft = null;
+    }
+
+    const nextForm = draft?.form || {
       customerWishes:
         selectedRequest?.inspectionCustomerWishes ||
         selectedRequest?.customerWishes ||
@@ -1052,12 +1022,23 @@ export default function SalesModule({
         selectedRequest?.inspectionAudioNotes ||
         selectedRequest?.audioNotes ||
         [],
-    });
+    };
+
+    setInspectionForm(nextForm);
+    setInspectionAiProposal(draft?.proposal || null);
+    setInspectionAiState(draft?.proposal ? "ready" : "idle");
+    setInspectionAiError("");
+    setInspectionDraftDirty(Boolean(draft));
     setMode("inspection-note");
   }
 
   function updateInspectionForm(field, value) {
-    setInspectionForm((current) => ({ ...current, [field]: value }));
+    setInspectionForm((current) => {
+      const nextForm = { ...current, [field]: value };
+      saveInspectionDraft(nextForm);
+      return nextForm;
+    });
+    setInspectionDraftDirty(true);
   }
 
   function handleInspectionPhotos(event) {
@@ -1196,12 +1177,12 @@ export default function SalesModule({
     }));
   }
 
-  async function analyzeInspectionAudio(audio) {
-    if (!activeSupabase || !audio?.dataUrl) return;
+  async function analyzeInspectionAudio(audio, preserveExistingProposal = false) {
+    if (!activeSupabase || !audio?.dataUrl) return null;
 
     setInspectionAiState("working");
     setInspectionAiError("");
-    setInspectionAiProposal(null);
+    if (!preserveExistingProposal) setInspectionAiProposal(null);
 
     try {
       const {
@@ -1212,6 +1193,8 @@ export default function SalesModule({
         throw new Error("Ingen gyldig Expo ProffDok-session ble funnet. Logg ut og inn igjen før du prøver på nytt.");
       }
 
+      const audioResponse = await fetch(audio.dataUrl);
+      const audioBlob = await audioResponse.blob();
       const extension = audio.type?.includes("mp4")
         ? "m4a"
         : audio.type?.includes("mpeg")
@@ -1219,62 +1202,131 @@ export default function SalesModule({
           : audio.type?.includes("wav")
             ? "wav"
             : "webm";
+      const audioFile = new File(
+        [audioBlob],
+        audio.name?.includes(".") ? audio.name : `befaring.${extension}`,
+        { type: audio.type || audioBlob.type || "audio/webm" }
+      );
 
-      const audioName = audio.name?.includes(".")
-        ? audio.name
-        : `befaring.${extension}`;
+      const formData = new FormData();
+      formData.append("audio", audioFile);
 
-      const proxyResponse = await fetch("/api/inspection-assistant", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          audioDataUrl: audio.dataUrl,
-          audioName,
-          audioType: audio.type || "audio/webm",
-        }),
-      });
+      const { data: result, error: invokeError } = await activeSupabase.functions.invoke(
+        "inspection-assistant",
+        { body: formData }
+      );
 
-      const result = await proxyResponse.json().catch(() => null);
-
-      if (!proxyResponse.ok) {
-        throw new Error(
-          result?.error ||
-            `Befaringsassistenten svarte med status ${proxyResponse.status}.`
-        );
+      if (invokeError) {
+        throw new Error(invokeError.message || "Befaringsassistenten feilet.");
       }
 
       if (!result?.ok) {
         throw new Error(result?.error || "Befaringsassistenten feilet.");
       }
 
-      setInspectionAiProposal({
+      const proposal = {
         transcript: result.transcript || "",
         customerWishes: result.suggestion?.customerWishes || "",
         existingConditions: result.suggestion?.existingConditions || "",
         measurements: result.suggestion?.measurements || "",
         observations: result.suggestion?.professionalObservations || "",
-      });
+      };
+
+      setInspectionForm((current) => ({
+        ...current,
+        audioNotes: (current.audioNotes || []).map((note) =>
+          note.id === audio.id ? { ...note, transcript: proposal.transcript } : note
+        ),
+      }));
+      setInspectionAiProposal(proposal);
       setInspectionAiState("ready");
+      setInspectionDraftDirty(true);
+      return proposal;
     } catch (error) {
       setInspectionAiError(error?.message || "Befaringsassistenten feilet.");
       setInspectionAiState("error");
+      return null;
     }
   }
 
-  function applyInspectionAiProposal() {
+  function joinInspectionText(existingValue, suggestedValue) {
+    const existing = String(existingValue || "").trim();
+    const suggested = String(suggestedValue || "").trim();
+
+    if (!suggested) return existing;
+    if (!existing) return suggested;
+
+    return `${existing}\n${suggested}`;
+  }
+
+  async function analyzeAllInspectionAudio() {
+    const notes = inspectionForm.audioNotes || [];
+    if (!notes.length) return;
+
+    setInspectionAiState("working");
+    setInspectionAiError("");
+
+    const combined = {
+      transcript: "",
+      customerWishes: "",
+      existingConditions: "",
+      measurements: "",
+      observations: "",
+    };
+
+    for (const audio of notes) {
+      const proposal = await analyzeInspectionAudio(audio, true);
+      if (!proposal) return;
+
+      combined.transcript = joinInspectionText(combined.transcript, proposal.transcript);
+      combined.customerWishes = joinInspectionText(combined.customerWishes, proposal.customerWishes);
+      combined.existingConditions = joinInspectionText(combined.existingConditions, proposal.existingConditions);
+      combined.measurements = joinInspectionText(combined.measurements, proposal.measurements);
+      combined.observations = joinInspectionText(combined.observations, proposal.observations);
+    }
+
+    setInspectionAiProposal(combined);
+    setInspectionAiState("ready");
+    setInspectionDraftDirty(true);
+  }
+
+  function applyInspectionAiProposal(mode = "append") {
     if (!inspectionAiProposal) return;
 
-    setInspectionForm((current) => ({
-      ...current,
-      customerWishes: inspectionAiProposal.customerWishes,
-      existingConditions: inspectionAiProposal.existingConditions,
-      measurements: inspectionAiProposal.measurements,
-      observations: inspectionAiProposal.observations,
-    }));
+    setInspectionForm((current) => {
+      const nextForm = {
+        ...current,
+        customerWishes:
+          mode === "replace"
+            ? inspectionAiProposal.customerWishes
+            : joinInspectionText(current.customerWishes, inspectionAiProposal.customerWishes),
+        existingConditions:
+          mode === "replace"
+            ? inspectionAiProposal.existingConditions
+            : joinInspectionText(current.existingConditions, inspectionAiProposal.existingConditions),
+        measurements:
+          mode === "replace"
+            ? inspectionAiProposal.measurements
+            : joinInspectionText(current.measurements, inspectionAiProposal.measurements),
+        observations:
+          mode === "replace"
+            ? inspectionAiProposal.observations
+            : joinInspectionText(current.observations, inspectionAiProposal.observations),
+      };
+
+      saveInspectionDraft(nextForm, inspectionAiProposal);
+      return nextForm;
+    });
     setInspectionAiState("applied");
+    setInspectionDraftDirty(true);
+  }
+
+  function toggleInspectionTranscript(audioId) {
+    setInspectionTranscriptOpenIds((current) =>
+      current.includes(audioId)
+        ? current.filter((id) => id !== audioId)
+        : [...current, audioId]
+    );
   }
 
   function handleSaveInspectionNote(event) {
@@ -1304,6 +1356,10 @@ export default function SalesModule({
 
     setRequests(nextRequests);
     saveRequests(nextRequests, salesStorageKey);
+    clearInspectionDraft(selectedRequestId);
+    setInspectionAiProposal(null);
+    setInspectionAiState("idle");
+    setInspectionDraftDirty(false);
     setMode("detail");
   }
 
@@ -2845,8 +2901,19 @@ export default function SalesModule({
                 <div className="sales-field sales-field-full">
                   <span>Befaringsnotat med lyd</span>
                   <p className="sales-subtitle" style={{ marginTop: 0 }}>
-                    Ta opp et lydnotat mens du går gjennom befaringen. Du kan spille av opptaket og kontrollere innholdet før befaringsnotatet lagres.
+                    <strong>Snakk fritt mens du går gjennom befaringen.</strong>{" "}
+                    Fortell om kundens ønsker, eksisterende forhold, mål og faglige observasjoner.
+                    Befaringsassistenten sorterer innholdet i riktige felt. Du kontrollerer alltid forslaget før noe lagres.
                   </p>
+
+                  {inspectionDraftDirty ? (
+                    <div className="sales-form-preview" style={{ marginBottom: 14 }}>
+                      <strong>Ulagrede endringer</strong>
+                      <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
+                        Befaringskladden og AI-forslaget beholdes lokalt for denne saken når du går tilbake eller bytter fane. Trykk Lagre befaringsnotat når innholdet er kontrollert.
+                      </p>
+                    </div>
+                  ) : null}
 
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                     {inspectionRecordingState === "recording" ? (
@@ -2867,7 +2934,9 @@ export default function SalesModule({
                         style={{ width: "fit-content" }}
                       >
                         <Mic size={18} />
-                        Ta opp befaringsnotat
+                        {(inspectionForm.audioNotes || []).length
+                          ? "Ta opp nytt lydnotat"
+                          : "Ta opp befaringsnotat"}
                       </button>
                     )}
 
@@ -2896,13 +2965,32 @@ export default function SalesModule({
                         <div className="sales-photo-card" key={audio.id}>
                           <div style={{ padding: 12 }}>
                             <strong style={{ display: "block", marginBottom: 8 }}>
-                              Lydnotat fra befaring
+                              Lydnotat {(inspectionForm.audioNotes || []).findIndex((note) => note.id === audio.id) + 1}
                             </strong>
                             <audio controls src={audio.dataUrl} style={{ width: "100%" }} />
                             {audio.createdAt ? (
-                              <p className="sales-subtitle" style={{ marginTop: 8, marginBottom: 0 }}>
+                              <p className="sales-subtitle" style={{ marginTop: 8, marginBottom: 8 }}>
                                 Opptak lagret {new Date(audio.createdAt).toLocaleString("nb-NO")}
                               </p>
+                            ) : null}
+                            {audio.transcript ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="sales-secondary-button"
+                                  onClick={() => toggleInspectionTranscript(audio.id)}
+                                  style={{ width: "fit-content" }}
+                                >
+                                  {inspectionTranscriptOpenIds.includes(audio.id)
+                                    ? "Skjul transkripsjon"
+                                    : "Se transkripsjon"}
+                                </button>
+                                {inspectionTranscriptOpenIds.includes(audio.id) ? (
+                                  <p style={{ whiteSpace: "pre-wrap", marginBottom: 0 }}>
+                                    {audio.transcript}
+                                  </p>
+                                ) : null}
+                              </>
                             ) : null}
                           </div>
                           <button
@@ -2937,9 +3025,22 @@ export default function SalesModule({
                             <Mic size={18} />
                             {inspectionAiState === "working"
                               ? "Befaringsassistenten arbeider …"
-                              : `Send lydnotat ${index + 1} til AI`}
+                              : `Analyser lydnotat ${index + 1}`}
                           </button>
                         ))}
+                        {(inspectionForm.audioNotes || []).length > 1 ? (
+                          <button
+                            type="button"
+                            className="sales-primary-button"
+                            onClick={analyzeAllInspectionAudio}
+                            disabled={inspectionAiState === "working"}
+                          >
+                            <CheckCircle2 size={18} />
+                            {inspectionAiState === "working"
+                              ? "Befaringsassistenten arbeider …"
+                              : "Analyser alle lydnotater"}
+                          </button>
+                        ) : null}
                       </div>
                     </div>
                   ) : null}
@@ -2963,21 +3064,29 @@ export default function SalesModule({
                         <p><strong>Målinger:</strong> {inspectionAiProposal.measurements || "Ikke foreslått"}</p>
                         <p><strong>Faglige observasjoner:</strong> {inspectionAiProposal.observations || "Ikke foreslått"}</p>
                       </div>
-                      <button
-                        type="button"
-                        className="sales-primary-button"
-                        onClick={applyInspectionAiProposal}
-                        style={{ marginTop: 12 }}
-                      >
-                        <CheckCircle2 size={18} />
-                        Bruk AI-forslag i feltene
-                      </button>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+                        <button
+                          type="button"
+                          className="sales-primary-button"
+                          onClick={() => applyInspectionAiProposal("append")}
+                        >
+                          <CheckCircle2 size={18} />
+                          Legg til i eksisterende felt
+                        </button>
+                        <button
+                          type="button"
+                          className="sales-secondary-button"
+                          onClick={() => applyInspectionAiProposal("replace")}
+                        >
+                          Erstatt eksisterende innhold
+                        </button>
+                      </div>
                     </div>
                   ) : null}
 
                   {inspectionAiState === "applied" ? (
                     <p className="sales-subtitle" style={{ marginTop: 10 }}>
-                      AI-forslaget er lagt i feltene. Kontroller og rediger før du lagrer befaringsnotatet.
+                      AI-forslaget er lagt i feltene som en lokal kladd. Kontroller og rediger før du lagrer befaringsnotatet.
                     </p>
                   ) : null}
                 </div>
