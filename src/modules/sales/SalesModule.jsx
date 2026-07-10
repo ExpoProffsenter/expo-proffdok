@@ -1,3 +1,4 @@
+// FASE 19.9E JSON-LYD HOTFIX: Sender lyd som JSON/data-URL for å unngå multipart-POST som ble blokkert med 403 før Edge-koden. Ingen SQL, main, CSS eller produksjonsmerge.
 // FASE 19.9D FUNCTION INVOKE HOTFIX: Sender lyd til inspection-assistant via den aktive Expo ProffDok Supabase-klientens functions.invoke. Fjerner avhengighet til Vite env-URL/API-key i integrert AI-kall. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9C AKTIVER AI-KNAPP I INTEGRERT MODUL: Kobler eksisterende autentiserte inspection-assistant-kall til lydkortet i aktiv Expo ProffDok-app. Ingen automatisk lagring, SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9 AUTENTISERT FEATURE-BRO: SalesModule kan bruke Supabase-klient, innlogget bruker og profil fra aktiv Expo ProffDok-app. Lokal testlagring scopes per bruker/firma. Ingen SQL, Edge Function, prosjektaktivering eller produksjonsmerge.
@@ -1130,8 +1131,6 @@ export default function SalesModule({
         throw new Error("Ingen gyldig Expo ProffDok-session ble funnet. Logg ut og inn igjen før du prøver på nytt.");
       }
 
-      const audioResponse = await fetch(audio.dataUrl);
-      const audioBlob = await audioResponse.blob();
       const extension = audio.type?.includes("mp4")
         ? "m4a"
         : audio.type?.includes("mpeg")
@@ -1139,18 +1138,22 @@ export default function SalesModule({
           : audio.type?.includes("wav")
             ? "wav"
             : "webm";
-      const audioFile = new File(
-        [audioBlob],
-        audio.name?.includes(".") ? audio.name : `befaring.${extension}`,
-        { type: audio.type || audioBlob.type || "audio/webm" }
-      );
 
-      const formData = new FormData();
-      formData.append("audio", audioFile);
+      const audioName = audio.name?.includes(".")
+        ? audio.name
+        : `befaring.${extension}`;
 
+      // FASE 19.9E: Send lyd som JSON/data-URL i stedet for multipart fra nettleseren.
+      // OPTIONS/CORS er verifisert, mens multipart-POST ble stoppet med 403 før Edge-koden.
       const { data: result, error: invokeError } = await activeSupabase.functions.invoke(
         "inspection-assistant",
-        { body: formData }
+        {
+          body: {
+            audioDataUrl: audio.dataUrl,
+            audioName,
+            audioType: audio.type || "audio/webm",
+          },
+        }
       );
 
       if (invokeError) {
