@@ -1,4 +1,4 @@
-// FASE 19.14 BEFARING TIL TILBUDSUTKAST: AI lager kontrollert arbeidsomfang og forbehold fra lagret befaring, men aldri priser. Bruker må eksplisitt bruke utkastet og punche beløp manuelt. Ingen SQL, main, CSS eller produksjonsmerge.
+// FASE 19.13 TRYGG BEFARINGSFLYT FRA VERIFISERT 19.12 BASELINE: Bevarer valgt sak og intern visning ved fanebytte, sikrer flere lydnotater i full bredde, og beholder lokal befaringskladd/AI-forslag per sak. Ingen SQL, Edge, main, CSS eller produksjonsmerge.
 // FASE 19.12 JSON/DATA-URL HOTFIX: Sender lyd til inspection-assistant som JSON med eksisterende data-URL via aktiv Expo ProffDok Supabase-klient. Bevarer FASE 19.11 lydnotatflyt, flere lydnotater, kladd, transkripsjon og eksplisitt AI-godkjenning. Ingen SQL, Edge, main, CSS eller produksjonsmerge.
 // FASE 19.11 LYDNOTAT-ARBEIDSFLYT: Bevarer befaringskladd og AI-forslag per sak lokalt ved fanebytte, forklarer hva bruker skal lese inn, støtter flere nummererte lydnotater, transkripsjonsvisning og trygg legg-til/erstatt-bruk av AI-forslag. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9D FUNCTION INVOKE HOTFIX: Sender lyd til inspection-assistant via den aktive Expo ProffDok Supabase-klientens functions.invoke. Fjerner avhengighet til Vite env-URL/API-key i integrert AI-kall. Ingen SQL, Edge, main eller produksjonsmerge.
@@ -46,6 +46,58 @@ const supabase =
     : null;
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
+const SALES_NAVIGATION_VERSION = 1;
+const VALID_SALES_MODES = new Set([
+  "list",
+  "new",
+  "detail",
+  "survey-plan",
+  "inspection-note",
+  "offer-builder",
+  "customer-offer",
+  "customer-accepted",
+  "project-activation",
+]);
+
+function loadSalesNavigation(storageKey) {
+  try {
+    const raw = window.sessionStorage.getItem(storageKey);
+    if (!raw) return { mode: "list", selectedRequestId: null };
+
+    const parsed = JSON.parse(raw);
+    if (
+      parsed?.version !== SALES_NAVIGATION_VERSION ||
+      !VALID_SALES_MODES.has(parsed?.mode)
+    ) {
+      return { mode: "list", selectedRequestId: null };
+    }
+
+    return {
+      mode: parsed.mode,
+      selectedRequestId:
+        typeof parsed.selectedRequestId === "string"
+          ? parsed.selectedRequestId
+          : null,
+    };
+  } catch {
+    return { mode: "list", selectedRequestId: null };
+  }
+}
+
+function saveSalesNavigation(storageKey, mode, selectedRequestId) {
+  try {
+    window.sessionStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        version: SALES_NAVIGATION_VERSION,
+        mode,
+        selectedRequestId: selectedRequestId || null,
+      })
+    );
+  } catch {
+    // Kun UX-minne for feature-visningen.
+  }
+}
 
 const initialRequests = [
   {
@@ -258,9 +310,20 @@ export default function SalesModule({
 
     return `${STORAGE_KEY}:${companyScope || "uten-firma"}:${userScope}`;
   }, [integrationMode, profile?.company_name, profile?.companyName, authUser?.id]);
+  const salesNavigationKey = `${salesStorageKey}:navigation`;
+  const initialNavigationRef = useRef(null);
+
+  if (!initialNavigationRef.current) {
+    initialNavigationRef.current = loadSalesNavigation(salesNavigationKey);
+  }
+
   const [requests, setRequests] = useState(() => loadRequests(salesStorageKey));
-  const [mode, setMode] = useState("list");
-  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [mode, setMode] = useState(
+    () => initialNavigationRef.current?.mode || "list"
+  );
+  const [selectedRequestId, setSelectedRequestId] = useState(
+    () => initialNavigationRef.current?.selectedRequestId || null
+  );
   const [form, setForm] = useState(emptyForm);
   const [surveyForm, setSurveyForm] = useState({
     date: "",
@@ -286,9 +349,6 @@ export default function SalesModule({
   const inspectionRecorderRef = useRef(null);
   const inspectionAudioStreamRef = useRef(null);
   const inspectionAudioChunksRef = useRef([]);
-  const [offerAiState, setOfferAiState] = useState("idle");
-  const [offerAiError, setOfferAiError] = useState("");
-  const [offerAiProposal, setOfferAiProposal] = useState(null);
   const [offerForm, setOfferForm] = useState({
     title: "",
     intro: "",
@@ -335,6 +395,26 @@ export default function SalesModule({
     () => requests.find((request) => request.id === selectedRequestId) || null,
     [requests, selectedRequestId]
   );
+
+  useEffect(() => {
+    const restored = loadSalesNavigation(salesNavigationKey);
+    const requestExists = restored.selectedRequestId
+      ? requests.some((request) => request.id === restored.selectedRequestId)
+      : false;
+
+    if (restored.selectedRequestId && !requestExists) {
+      setSelectedRequestId(null);
+      setMode("list");
+      return;
+    }
+
+    setSelectedRequestId(restored.selectedRequestId);
+    setMode(restored.mode);
+  }, [salesNavigationKey]);
+
+  useEffect(() => {
+    saveSalesNavigation(salesNavigationKey, mode, selectedRequestId);
+  }, [salesNavigationKey, mode, selectedRequestId]);
 
   useEffect(() => {
     if (mode !== "inspection-note" || !selectedRequestId) return;
@@ -685,94 +765,6 @@ export default function SalesModule({
 
   function updateOfferForm(field, value) {
     setOfferForm((current) => ({ ...current, [field]: value }));
-  }
-
-  async function createOfferDraftFromInspection() {
-    if (!activeSupabase || !selectedRequest) return;
-
-    const inspection = {
-      customerWishes:
-        selectedRequest.inspectionCustomerWishes ||
-        selectedRequest.customerWishes ||
-        "",
-      existingConditions:
-        selectedRequest.inspectionExistingConditions ||
-        selectedRequest.existingConditions ||
-        "",
-      measurements:
-        selectedRequest.inspectionMeasurements ||
-        selectedRequest.measurements ||
-        "",
-      professionalObservations:
-        selectedRequest.inspectionObservations ||
-        selectedRequest.observations ||
-        selectedRequest.inspectionNote ||
-        "",
-    };
-
-    if (!Object.values(inspection).some((value) => String(value || "").trim())) {
-      setOfferAiError("Lagre befaringsnotatet før du oppretter tilbudsutkast.");
-      setOfferAiState("error");
-      return;
-    }
-
-    setOfferAiState("working");
-    setOfferAiError("");
-    setOfferAiProposal(null);
-
-    try {
-      const { data: sessionData } = await activeSupabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
-
-      if (!accessToken) {
-        throw new Error("Innloggingen er utløpt. Logg inn på nytt.");
-      }
-
-      const response = await fetch("/api/inspection-assistant", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mode: "offer_draft",
-          inspection,
-        }),
-      });
-
-      const result = await response.json().catch(() => null);
-
-      if (!response.ok || !result?.ok) {
-        throw new Error(result?.error || "Kunne ikke opprette tilbudsutkast.");
-      }
-
-      setOfferAiProposal(result.offerDraft || null);
-      setOfferAiState("ready");
-    } catch (error) {
-      setOfferAiError(error?.message || "Kunne ikke opprette tilbudsutkast.");
-      setOfferAiState("error");
-    }
-  }
-
-  function applyOfferAiProposal() {
-    if (!offerAiProposal) return;
-
-    setOfferForm((current) => ({
-      ...current,
-      intro: offerAiProposal.intro || current.intro,
-      lines: (offerAiProposal.lines || []).length
-        ? offerAiProposal.lines.map((line, index) => ({
-            id: `ai-line-${Date.now()}-${index}`,
-            description: String(line.description || ""),
-            amount: "",
-            productUrl: "",
-            imageDataUrl: "",
-            imageName: "",
-          }))
-        : current.lines,
-      reservations: offerAiProposal.reservations || current.reservations,
-    }));
-    setOfferAiState("applied");
   }
 
   function updateOfferLine(lineId, field, value) {
@@ -2567,75 +2559,6 @@ export default function SalesModule({
               }}
             >
               <div className="sales-form-grid">
-                <div className="sales-field sales-field-full">
-                  <span>Fra befaring til tilbudsutkast</span>
-                  <div className="sales-form-preview">
-                    <strong>AI foreslår arbeidsomfang – aldri priser</strong>
-                    <p className="sales-subtitle" style={{ margin: "6px 0 12px" }}>
-                      Befaringsassistenten bruker det lagrede befaringsnotatet til å foreslå innledning, arbeidslinjer og relevante forbehold. Du kontrollerer utkastet før det brukes og legger inn alle beløp manuelt.
-                    </p>
-                    <button
-                      type="button"
-                      className="sales-primary-button"
-                      onClick={createOfferDraftFromInspection}
-                      disabled={offerAiState === "working"}
-                    >
-                      <ClipboardList size={18} />
-                      {offerAiState === "working"
-                        ? "Lager tilbudsutkast …"
-                        : "Opprett tilbudsutkast fra befaring"}
-                    </button>
-                  </div>
-                </div>
-
-                {offerAiError ? (
-                  <div className="sales-field sales-field-full">
-                    <div className="sales-form-preview">
-                      <strong>Kunne ikke lage tilbudsutkast</strong>
-                      <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
-                        {offerAiError}
-                      </p>
-                    </div>
-                  </div>
-                ) : null}
-
-                {offerAiProposal ? (
-                  <div className="sales-field sales-field-full">
-                    <span>AI-forslag – kontroller før bruk</span>
-                    <div className="sales-form-preview">
-                      <strong>Innledning</strong>
-                      <p style={{ whiteSpace: "pre-wrap" }}>{offerAiProposal.intro || "Ikke foreslått"}</p>
-                      <strong>Arbeidsomfang</strong>
-                      <ol>
-                        {(offerAiProposal.lines || []).map((line, index) => (
-                          <li key={`offer-ai-${index}`}>{line.description}</li>
-                        ))}
-                      </ol>
-                      <strong>Forbehold</strong>
-                      <p style={{ whiteSpace: "pre-wrap" }}>{offerAiProposal.reservations || "Ikke foreslått"}</p>
-                      <button
-                        type="button"
-                        className="sales-primary-button"
-                        onClick={applyOfferAiProposal}
-                      >
-                        <CheckCircle2 size={18} />
-                        Bruk kontrollert utkast i tilbudet
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-
-                {offerAiState === "applied" ? (
-                  <div className="sales-field sales-field-full">
-                    <div className="sales-form-preview">
-                      <strong>Utkast lagt inn</strong>
-                      <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
-                        Kontroller arbeidsomfang og forbehold. Alle prisfelt er med vilje tomme og må fylles ut manuelt.
-                      </p>
-                    </div>
-                  </div>
-                ) : null}
-
                 <label className="sales-field sales-field-full">
                   <span>Tilbudstittel</span>
                   <input
@@ -3110,10 +3033,31 @@ export default function SalesModule({
                   ) : null}
 
                   {(inspectionForm.audioNotes || []).length ? (
-                    <div className="sales-photo-grid">
+                    <>
+                      <p className="sales-subtitle" style={{ margin: "14px 0 8px" }}>
+                        {(inspectionForm.audioNotes || []).length} lydnotat(er) registrert.
+                        Du kan ta opp flere og analysere ett eller alle.
+                      </p>
+                      <div
+                      className="sales-photo-grid"
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "minmax(0, 1fr)",
+                        gap: 12,
+                        marginTop: 14,
+                      }}
+                    >
                       {(inspectionForm.audioNotes || []).map((audio) => (
-                        <div className="sales-photo-card" key={audio.id}>
-                          <div style={{ padding: 12 }}>
+                        <div
+                          className="sales-photo-card"
+                          key={audio.id}
+                          style={{
+                            width: "100%",
+                            minWidth: 0,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div style={{ padding: 14, minWidth: 0 }}>
                             <strong style={{ display: "block", marginBottom: 8 }}>
                               Lydnotat {(inspectionForm.audioNotes || []).findIndex((note) => note.id === audio.id) + 1}
                             </strong>
@@ -3129,7 +3073,7 @@ export default function SalesModule({
                                   type="button"
                                   className="sales-secondary-button"
                                   onClick={() => toggleInspectionTranscript(audio.id)}
-                                  style={{ width: "fit-content" }}
+                                  style={{ width: "100%", justifyContent: "center" }}
                                 >
                                   {inspectionTranscriptOpenIds.includes(audio.id)
                                     ? "Skjul transkripsjon"
@@ -3147,12 +3091,14 @@ export default function SalesModule({
                             type="button"
                             className="sales-secondary-button"
                             onClick={() => removeInspectionAudioNote(audio.id)}
+                            style={{ width: "100%", justifyContent: "center" }}
                           >
                             Fjern
                           </button>
                         </div>
                       ))}
                     </div>
+                    </>
                   ) : (
                     <p className="sales-subtitle">Ingen lydnotater registrert ennå.</p>
                   )}
@@ -3712,7 +3658,7 @@ export default function SalesModule({
                       onClick={selectedRequest.nextStep === "Opprett tilbud" ? openOfferBuilder : openInspectionNote}
                     >
                       {selectedRequest.nextStep === "Opprett tilbud" ? <ClipboardList size={18} /> : <Ruler size={18} />}
-                      {selectedRequest.nextStep === "Opprett tilbud" ? "Lag tilbud" : "Registrer befaring"}
+                      {selectedRequest.nextStep === "Opprett tilbud" ? "Opprett tilbud" : "Registrer befaring"}
                     </button>
                   ) : null}
 
