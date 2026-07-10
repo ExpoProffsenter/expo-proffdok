@@ -1,3 +1,4 @@
+// FASE 19.8 AKTIVER AI-BEFARINGSASSISTENT I AKTIV SESSION: Kobler eksisterende autentiserte inspection-assistant-kall til hvert lydnotat i Befaringsnotat. Bruker må eksplisitt sende lyd til AI og eksplisitt godkjenne forslag før feltene fylles. Ingen automatisk lagring. Ingen SQL/main/CSS/Edge-endring.
 // FASE 19.6E LYDNOTAT-UX: Rydder kun presentasjon og brukerflyt for lydnotat i preview. PC/Chrome er verifisert. iPhone/Safari er fortsatt ikke godkjent. Ingen endring i opptakslogikk, tilbud, opsjoner, kundelink, versjonsvakt eller Edge Function.
 // FASE 19.6D TRYGG BASELINE: Ruller tilbake preview-auth i SalesModule. Lydnotat beholdes. AI-assistent beholdes server-side, men aktiveres først når modulen kobles inn i aktiv app med eksisterende Supabase-auth og firma-/admin-tilgang.
 // FASE 19.6 AI-BEFARINGSASSISTENT: Autentisert lydtranskripsjon og AI-forslag med eksplisitt brukergodkjenning. Ingen automatisk lagring.\n// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
@@ -2816,9 +2817,26 @@ export default function SalesModule() {
                   {(inspectionForm.audioNotes || []).length ? (
                     <div className="sales-form-preview" style={{ marginTop: 14 }}>
                       <strong>AI-forslag fra lyd</strong>
-                      <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
-                        AI-forslag aktiveres når Befaring / Tilbud / Aksept kobles inn i den aktive Expo ProffDok-appen. Opptaket ditt er klart for avspilling og kontroll i previewen.
+                      <p className="sales-subtitle" style={{ margin: "6px 0 12px" }}>
+                        Velg lydnotatet du vil sende til befaringsassistenten. Ingenting legges inn i feltene eller lagres automatisk.
                       </p>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        {(inspectionForm.audioNotes || []).map((audio, index) => (
+                          <button
+                            key={audio.id}
+                            type="button"
+                            className="sales-secondary-button"
+                            onClick={() => analyzeInspectionAudio(audio)}
+                            disabled={inspectionAiState === "working"}
+                            style={{ width: "fit-content" }}
+                          >
+                            <Mic size={18} />
+                            {inspectionAiState === "working"
+                              ? "AI analyserer lyd..."
+                              : `Send lydnotat ${index + 1} til AI`}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   ) : null}
 
