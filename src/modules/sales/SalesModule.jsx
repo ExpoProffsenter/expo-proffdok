@@ -1,4 +1,4 @@
-// FASE 19.13 TRYGG BEFARINGSFLYT FRA VERIFISERT 19.12 BASELINE: Bevarer valgt sak og intern visning ved fanebytte, sikrer flere lydnotater i full bredde, og beholder lokal befaringskladd/AI-forslag per sak. Ingen SQL, Edge, main, CSS eller produksjonsmerge.
+// FASE 19.14 KJERNEFLYT UTEN AI-AVHENGIGHET: Setter lyd/AI på pause i brukerflaten og prioriterer hovedløpet forespørsel → befaring med tekst/bilder → manuelt priset tilbud → kundelenke/aksept. Viser lagret befaringsgrunnlag direkte i tilbudsbyggeren. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.12 JSON/DATA-URL HOTFIX: Sender lyd til inspection-assistant som JSON med eksisterende data-URL via aktiv Expo ProffDok Supabase-klient. Bevarer FASE 19.11 lydnotatflyt, flere lydnotater, kladd, transkripsjon og eksplisitt AI-godkjenning. Ingen SQL, Edge, main, CSS eller produksjonsmerge.
 // FASE 19.11 LYDNOTAT-ARBEIDSFLYT: Bevarer befaringskladd og AI-forslag per sak lokalt ved fanebytte, forklarer hva bruker skal lese inn, støtter flere nummererte lydnotater, transkripsjonsvisning og trygg legg-til/erstatt-bruk av AI-forslag. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9D FUNCTION INVOKE HOTFIX: Sender lyd til inspection-assistant via den aktive Expo ProffDok Supabase-klientens functions.invoke. Fjerner avhengighet til Vite env-URL/API-key i integrert AI-kall. Ingen SQL, Edge, main eller produksjonsmerge.
@@ -46,58 +46,6 @@ const supabase =
     : null;
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
-const SALES_NAVIGATION_VERSION = 1;
-const VALID_SALES_MODES = new Set([
-  "list",
-  "new",
-  "detail",
-  "survey-plan",
-  "inspection-note",
-  "offer-builder",
-  "customer-offer",
-  "customer-accepted",
-  "project-activation",
-]);
-
-function loadSalesNavigation(storageKey) {
-  try {
-    const raw = window.sessionStorage.getItem(storageKey);
-    if (!raw) return { mode: "list", selectedRequestId: null };
-
-    const parsed = JSON.parse(raw);
-    if (
-      parsed?.version !== SALES_NAVIGATION_VERSION ||
-      !VALID_SALES_MODES.has(parsed?.mode)
-    ) {
-      return { mode: "list", selectedRequestId: null };
-    }
-
-    return {
-      mode: parsed.mode,
-      selectedRequestId:
-        typeof parsed.selectedRequestId === "string"
-          ? parsed.selectedRequestId
-          : null,
-    };
-  } catch {
-    return { mode: "list", selectedRequestId: null };
-  }
-}
-
-function saveSalesNavigation(storageKey, mode, selectedRequestId) {
-  try {
-    window.sessionStorage.setItem(
-      storageKey,
-      JSON.stringify({
-        version: SALES_NAVIGATION_VERSION,
-        mode,
-        selectedRequestId: selectedRequestId || null,
-      })
-    );
-  } catch {
-    // Kun UX-minne for feature-visningen.
-  }
-}
 
 const initialRequests = [
   {
@@ -272,6 +220,64 @@ function getVisibleOfferLines(lines = []) {
   return Array.isArray(lines) ? lines.filter((line) => !line?.__companyMeta) : [];
 }
 
+function getInspectionContext(request = {}) {
+  return {
+    customerWishes:
+      request.inspectionCustomerWishes ||
+      request.customerWishes ||
+      "",
+    existingConditions:
+      request.inspectionExistingConditions ||
+      request.existingConditions ||
+      "",
+    measurements:
+      request.inspectionMeasurements ||
+      request.measurements ||
+      "",
+    observations:
+      request.inspectionObservations ||
+      request.observations ||
+      request.inspectionNote ||
+      "",
+    photos:
+      request.inspectionPhotos ||
+      request.photos ||
+      [],
+  };
+}
+
+function hasInspectionContext(request = {}) {
+  const context = getInspectionContext(request);
+
+  return Boolean(
+    context.customerWishes ||
+      context.existingConditions ||
+      context.measurements ||
+      context.observations ||
+      context.photos?.length
+  );
+}
+
+function buildInspectionIntro(request = {}) {
+  const context = getInspectionContext(request);
+  const parts = [];
+
+  if (context.customerWishes) {
+    parts.push(`Kundens ønsker: ${context.customerWishes}`);
+  }
+  if (context.existingConditions) {
+    parts.push(`Eksisterende forhold: ${context.existingConditions}`);
+  }
+  if (context.measurements) {
+    parts.push(`Målinger: ${context.measurements}`);
+  }
+  if (context.observations) {
+    parts.push(`Faglige observasjoner: ${context.observations}`);
+  }
+
+  return parts.join("\n\n");
+}
+
 function getWorkflowSteps(request) {
   const activeStepByStatus = {
     Forespørsel: "Forespørsel",
@@ -310,20 +316,9 @@ export default function SalesModule({
 
     return `${STORAGE_KEY}:${companyScope || "uten-firma"}:${userScope}`;
   }, [integrationMode, profile?.company_name, profile?.companyName, authUser?.id]);
-  const salesNavigationKey = `${salesStorageKey}:navigation`;
-  const initialNavigationRef = useRef(null);
-
-  if (!initialNavigationRef.current) {
-    initialNavigationRef.current = loadSalesNavigation(salesNavigationKey);
-  }
-
   const [requests, setRequests] = useState(() => loadRequests(salesStorageKey));
-  const [mode, setMode] = useState(
-    () => initialNavigationRef.current?.mode || "list"
-  );
-  const [selectedRequestId, setSelectedRequestId] = useState(
-    () => initialNavigationRef.current?.selectedRequestId || null
-  );
+  const [mode, setMode] = useState("list");
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [surveyForm, setSurveyForm] = useState({
     date: "",
@@ -395,26 +390,6 @@ export default function SalesModule({
     () => requests.find((request) => request.id === selectedRequestId) || null,
     [requests, selectedRequestId]
   );
-
-  useEffect(() => {
-    const restored = loadSalesNavigation(salesNavigationKey);
-    const requestExists = restored.selectedRequestId
-      ? requests.some((request) => request.id === restored.selectedRequestId)
-      : false;
-
-    if (restored.selectedRequestId && !requestExists) {
-      setSelectedRequestId(null);
-      setMode("list");
-      return;
-    }
-
-    setSelectedRequestId(restored.selectedRequestId);
-    setMode(restored.mode);
-  }, [salesNavigationKey]);
-
-  useEffect(() => {
-    saveSalesNavigation(salesNavigationKey, mode, selectedRequestId);
-  }, [salesNavigationKey, mode, selectedRequestId]);
 
   useEffect(() => {
     if (mode !== "inspection-note" || !selectedRequestId) return;
@@ -765,6 +740,24 @@ export default function SalesModule({
 
   function updateOfferForm(field, value) {
     setOfferForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function addInspectionContextToOfferIntro() {
+    if (!selectedRequest) return;
+
+    const inspectionIntro = buildInspectionIntro(selectedRequest);
+    if (!inspectionIntro) return;
+
+    setOfferForm((current) => {
+      const currentIntro = String(current.intro || "").trim();
+
+      return {
+        ...current,
+        intro: currentIntro
+          ? `${currentIntro}\n\nBefaringsgrunnlag:\n${inspectionIntro}`
+          : `Befaringsgrunnlag:\n${inspectionIntro}`,
+      };
+    });
   }
 
   function updateOfferLine(lineId, field, value) {
@@ -1414,7 +1407,13 @@ export default function SalesModule({
             inspectionMeasurements: inspectionForm.measurements.trim(),
             inspectionObservations: inspectionForm.observations.trim(),
             inspectionPhotos: inspectionForm.photos,
-            inspectionAudioNotes: inspectionForm.audioNotes || [],
+            inspectionAudioNotes: (inspectionForm.audioNotes || []).map((audio) => ({
+              id: audio.id,
+              name: audio.name,
+              type: audio.type,
+              createdAt: audio.createdAt,
+              transcript: audio.transcript || "",
+            })),
             ...(request.status === "Forespørsel" || request.status === "Befaring"
               ? {
                   status: "Befaring",
@@ -2559,6 +2558,79 @@ export default function SalesModule({
               }}
             >
               <div className="sales-form-grid">
+                {hasInspectionContext(selectedRequest) ? (
+                  <div className="sales-field sales-field-full">
+                    <span>Befaringsgrunnlag</span>
+                    <div className="sales-form-preview">
+                      <p className="sales-subtitle" style={{ marginTop: 0 }}>
+                        Bruk dette som grunnlag når du beskriver arbeidene. Prisene legges inn manuelt.
+                      </p>
+
+                      <div className="sales-detail-lines">
+                        {getInspectionContext(selectedRequest).customerWishes ? (
+                          <p>
+                            <strong>Kundens ønsker:</strong>{" "}
+                            {getInspectionContext(selectedRequest).customerWishes}
+                          </p>
+                        ) : null}
+
+                        {getInspectionContext(selectedRequest).existingConditions ? (
+                          <p>
+                            <strong>Eksisterende forhold:</strong>{" "}
+                            {getInspectionContext(selectedRequest).existingConditions}
+                          </p>
+                        ) : null}
+
+                        {getInspectionContext(selectedRequest).measurements ? (
+                          <p>
+                            <strong>Målinger:</strong>{" "}
+                            {getInspectionContext(selectedRequest).measurements}
+                          </p>
+                        ) : null}
+
+                        {getInspectionContext(selectedRequest).observations ? (
+                          <p>
+                            <strong>Faglige observasjoner:</strong>{" "}
+                            {getInspectionContext(selectedRequest).observations}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      {getInspectionContext(selectedRequest).photos?.length ? (
+                        <div className="sales-photo-grid" style={{ marginTop: 14 }}>
+                          {getInspectionContext(selectedRequest).photos.map((photo) => (
+                            <div className="sales-photo-card" key={photo.id}>
+                              <img
+                                src={photo.dataUrl}
+                                alt={photo.name || "Befaringsbilde"}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      <button
+                        type="button"
+                        className="sales-secondary-button"
+                        onClick={addInspectionContextToOfferIntro}
+                        style={{ width: "fit-content", marginTop: 14 }}
+                      >
+                        <ClipboardList size={18} />
+                        Legg befaringsgrunnlag i innledningen
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="sales-field sales-field-full">
+                    <div className="sales-form-preview">
+                      <strong>Ingen lagret befaring funnet</strong>
+                      <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
+                        Du kan fortsatt opprette tilbudet manuelt, eller gå tilbake og registrere tekst og bilder fra befaringen først.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <label className="sales-field sales-field-full">
                   <span>Tilbudstittel</span>
                   <input
@@ -2972,219 +3044,13 @@ export default function SalesModule({
                 </label>
 
                 <div className="sales-field sales-field-full">
-                  <span>Befaringsnotat med lyd</span>
-                  <p className="sales-subtitle" style={{ marginTop: 0 }}>
-                    <strong>Snakk fritt mens du går gjennom befaringen.</strong>{" "}
-                    Fortell om kundens ønsker, eksisterende forhold, mål og faglige observasjoner.
-                    Befaringsassistenten sorterer innholdet i riktige felt. Du kontrollerer alltid forslaget før noe lagres.
-                  </p>
-
-                  {inspectionDraftDirty ? (
-                    <div className="sales-form-preview" style={{ marginBottom: 14 }}>
-                      <strong>Ulagrede endringer</strong>
-                      <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
-                        Befaringskladden og AI-forslaget beholdes lokalt for denne saken når du går tilbake eller bytter fane. Trykk Lagre befaringsnotat når innholdet er kontrollert.
-                      </p>
-                    </div>
-                  ) : null}
-
-                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                    {inspectionRecordingState === "recording" ? (
-                      <button
-                        className="sales-secondary-button"
-                        type="button"
-                        onClick={stopInspectionAudioRecording}
-                        style={{ width: "fit-content" }}
-                      >
-                        <Square size={18} />
-                        Stopp opptak
-                      </button>
-                    ) : (
-                      <button
-                        className="sales-secondary-button"
-                        type="button"
-                        onClick={startInspectionAudioRecording}
-                        style={{ width: "fit-content" }}
-                      >
-                        <Mic size={18} />
-                        {(inspectionForm.audioNotes || []).length
-                          ? "Ta opp nytt lydnotat"
-                          : "Ta opp befaringsnotat"}
-                      </button>
-                    )}
-
-                    <label className="sales-secondary-button" style={{ width: "fit-content" }}>
-                      <Plus size={18} />
-                      Velg eller ta opp lydfil
-                      <input
-                        type="file"
-                        accept="audio/*"
-                        capture
-                        onChange={handleInspectionAudioFiles}
-                        style={{ display: "none" }}
-                      />
-                    </label>
+                  <span>Lyd og AI-assistent</span>
+                  <div className="sales-form-preview">
+                    <strong>Satt på pause i denne fasen</strong>
+                    <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
+                      Kjerneflyten skal fungere fullt ut uten OpenAI-kostnad. Registrer befaringen med tekst og bilder. Lyd og AI kan senere aktiveres som en valgfri tilleggsfunksjon.
+                    </p>
                   </div>
-
-                  {inspectionRecordingError ? (
-                    <p className="sales-subtitle" style={{ marginTop: 10 }}>
-                      {inspectionRecordingError}
-                    </p>
-                  ) : null}
-
-                  {(inspectionForm.audioNotes || []).length ? (
-                    <>
-                      <p className="sales-subtitle" style={{ margin: "14px 0 8px" }}>
-                        {(inspectionForm.audioNotes || []).length} lydnotat(er) registrert.
-                        Du kan ta opp flere og analysere ett eller alle.
-                      </p>
-                      <div
-                      className="sales-photo-grid"
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "minmax(0, 1fr)",
-                        gap: 12,
-                        marginTop: 14,
-                      }}
-                    >
-                      {(inspectionForm.audioNotes || []).map((audio) => (
-                        <div
-                          className="sales-photo-card"
-                          key={audio.id}
-                          style={{
-                            width: "100%",
-                            minWidth: 0,
-                            overflow: "hidden",
-                          }}
-                        >
-                          <div style={{ padding: 14, minWidth: 0 }}>
-                            <strong style={{ display: "block", marginBottom: 8 }}>
-                              Lydnotat {(inspectionForm.audioNotes || []).findIndex((note) => note.id === audio.id) + 1}
-                            </strong>
-                            <audio controls src={audio.dataUrl} style={{ width: "100%" }} />
-                            {audio.createdAt ? (
-                              <p className="sales-subtitle" style={{ marginTop: 8, marginBottom: 8 }}>
-                                Opptak lagret {new Date(audio.createdAt).toLocaleString("nb-NO")}
-                              </p>
-                            ) : null}
-                            {audio.transcript ? (
-                              <>
-                                <button
-                                  type="button"
-                                  className="sales-secondary-button"
-                                  onClick={() => toggleInspectionTranscript(audio.id)}
-                                  style={{ width: "100%", justifyContent: "center" }}
-                                >
-                                  {inspectionTranscriptOpenIds.includes(audio.id)
-                                    ? "Skjul transkripsjon"
-                                    : "Se transkripsjon"}
-                                </button>
-                                {inspectionTranscriptOpenIds.includes(audio.id) ? (
-                                  <p style={{ whiteSpace: "pre-wrap", marginBottom: 0 }}>
-                                    {audio.transcript}
-                                  </p>
-                                ) : null}
-                              </>
-                            ) : null}
-                          </div>
-                          <button
-                            type="button"
-                            className="sales-secondary-button"
-                            onClick={() => removeInspectionAudioNote(audio.id)}
-                            style={{ width: "100%", justifyContent: "center" }}
-                          >
-                            Fjern
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                    </>
-                  ) : (
-                    <p className="sales-subtitle">Ingen lydnotater registrert ennå.</p>
-                  )}
-
-                  {(inspectionForm.audioNotes || []).length ? (
-                    <div className="sales-form-preview" style={{ marginTop: 14 }}>
-                      <strong>AI-forslag fra lyd</strong>
-                      <p className="sales-subtitle" style={{ margin: "6px 0 12px" }}>
-                        Velg lydnotatet du vil sende til befaringsassistenten. Ingenting legges inn i feltene eller lagres automatisk.
-                      </p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                        {(inspectionForm.audioNotes || []).map((audio, index) => (
-                          <button
-                            type="button"
-                            className="sales-secondary-button"
-                            key={`ai-${audio.id}`}
-                            onClick={() => analyzeInspectionAudio(audio)}
-                            disabled={inspectionAiState === "working"}
-                          >
-                            <Mic size={18} />
-                            {inspectionAiState === "working"
-                              ? "Befaringsassistenten arbeider …"
-                              : `Analyser lydnotat ${index + 1}`}
-                          </button>
-                        ))}
-                        {(inspectionForm.audioNotes || []).length > 1 ? (
-                          <button
-                            type="button"
-                            className="sales-primary-button"
-                            onClick={analyzeAllInspectionAudio}
-                            disabled={inspectionAiState === "working"}
-                          >
-                            <CheckCircle2 size={18} />
-                            {inspectionAiState === "working"
-                              ? "Befaringsassistenten arbeider …"
-                              : "Analyser alle lydnotater"}
-                          </button>
-                        ) : null}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {inspectionAiError ? (
-                    <div className="sales-form-preview" style={{ marginTop: 14 }}>
-                      <strong>Befaringsassistenten kunne ikke fullføre</strong>
-                      <p style={{ marginBottom: 0 }}>{inspectionAiError}</p>
-                    </div>
-                  ) : null}
-
-                  {inspectionAiProposal ? (
-                    <div className="sales-form-preview" style={{ marginTop: 14 }}>
-                      <h2>AI-forslag – kontroller før bruk</h2>
-                      <p className="sales-subtitle">
-                        Ingenting er lagt inn i befaringsfeltene eller lagret ennå.
-                      </p>
-                      <div className="sales-detail-lines">
-                        <p><strong>Kundens ønsker:</strong> {inspectionAiProposal.customerWishes || "Ikke foreslått"}</p>
-                        <p><strong>Eksisterende forhold:</strong> {inspectionAiProposal.existingConditions || "Ikke foreslått"}</p>
-                        <p><strong>Målinger:</strong> {inspectionAiProposal.measurements || "Ikke foreslått"}</p>
-                        <p><strong>Faglige observasjoner:</strong> {inspectionAiProposal.observations || "Ikke foreslått"}</p>
-                      </div>
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
-                        <button
-                          type="button"
-                          className="sales-primary-button"
-                          onClick={() => applyInspectionAiProposal("append")}
-                        >
-                          <CheckCircle2 size={18} />
-                          Legg til i eksisterende felt
-                        </button>
-                        <button
-                          type="button"
-                          className="sales-secondary-button"
-                          onClick={() => applyInspectionAiProposal("replace")}
-                        >
-                          Erstatt eksisterende innhold
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {inspectionAiState === "applied" ? (
-                    <p className="sales-subtitle" style={{ marginTop: 10 }}>
-                      AI-forslaget er lagt i feltene som en lokal kladd. Kontroller og rediger før du lagrer befaringsnotatet.
-                    </p>
-                  ) : null}
                 </div>
 
                 <div className="sales-field sales-field-full">
@@ -3433,7 +3299,7 @@ export default function SalesModule({
     );
     const nextStepTitle = (() => {
       if (selectedRequest.status === "Forespørsel") return "Planlegg befaring";
-      if (selectedRequest.status === "Befaring" && selectedRequest.nextStep === "Opprett tilbud") return "Lag tilbud";
+      if (selectedRequest.status === "Befaring" && selectedRequest.nextStep === "Opprett tilbud") return "Opprett tilbud";
       if (selectedRequest.status === "Befaring") return "Registrer befaring";
       if (selectedRequest.status === "Tilbud" && hasUnpublishedOfferChanges) {
         return hasPublishedCustomerOffer ? "Oppdater kundens tilbud" : "Publiser kundetilbud";
