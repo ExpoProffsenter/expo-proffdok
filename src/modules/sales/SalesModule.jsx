@@ -1,4 +1,4 @@
-// FASE 19.9E JSON-LYD HOTFIX: Sender lyd som JSON/data-URL for å unngå multipart-POST som ble blokkert med 403 før Edge-koden. Ingen SQL, main, CSS eller produksjonsmerge.
+// FASE 19.10 SAMLET STABILISERING: Bevarer valgt sak/visning ved fanebytte og sender AI-kall via samme-origin Vercel-proxy for å unngå browser->Supabase 403. Ingen SQL, main, CSS eller produksjonsmerge.
 // FASE 19.9D FUNCTION INVOKE HOTFIX: Sender lyd til inspection-assistant via den aktive Expo ProffDok Supabase-klientens functions.invoke. Fjerner avhengighet til Vite env-URL/API-key i integrert AI-kall. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9C AKTIVER AI-KNAPP I INTEGRERT MODUL: Kobler eksisterende autentiserte inspection-assistant-kall til lydkortet i aktiv Expo ProffDok-app. Ingen automatisk lagring, SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9 AUTENTISERT FEATURE-BRO: SalesModule kan bruke Supabase-klient, innlogget bruker og profil fra aktiv Expo ProffDok-app. Lokal testlagring scopes per bruker/firma. Ingen SQL, Edge Function, prosjektaktivering eller produksjonsmerge.
@@ -44,6 +44,58 @@ const supabase =
     : null;
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
+const SALES_NAVIGATION_VERSION = 1;
+const VALID_SALES_MODES = new Set([
+  "list",
+  "new",
+  "detail",
+  "survey-plan",
+  "inspection-note",
+  "offer-builder",
+  "customer-offer",
+  "customer-accepted",
+  "project-activation",
+]);
+
+function loadSalesNavigation(storageKey) {
+  try {
+    const raw = window.sessionStorage.getItem(storageKey);
+    if (!raw) return { mode: "list", selectedRequestId: null };
+
+    const parsed = JSON.parse(raw);
+    if (
+      parsed?.version !== SALES_NAVIGATION_VERSION ||
+      !VALID_SALES_MODES.has(parsed?.mode)
+    ) {
+      return { mode: "list", selectedRequestId: null };
+    }
+
+    return {
+      mode: parsed.mode,
+      selectedRequestId:
+        typeof parsed.selectedRequestId === "string"
+          ? parsed.selectedRequestId
+          : null,
+    };
+  } catch {
+    return { mode: "list", selectedRequestId: null };
+  }
+}
+
+function saveSalesNavigation(storageKey, mode, selectedRequestId) {
+  try {
+    window.sessionStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        version: SALES_NAVIGATION_VERSION,
+        mode,
+        selectedRequestId: selectedRequestId || null,
+      })
+    );
+  } catch {
+    // Navigasjonsminne er kun en UX-forbedring.
+  }
+}
 
 const initialRequests = [
   {
@@ -256,9 +308,20 @@ export default function SalesModule({
 
     return `${STORAGE_KEY}:${companyScope || "uten-firma"}:${userScope}`;
   }, [integrationMode, profile?.company_name, profile?.companyName, authUser?.id]);
+  const salesNavigationKey = `${salesStorageKey}:navigation`;
+  const initialNavigationRef = useRef(null);
+
+  if (!initialNavigationRef.current) {
+    initialNavigationRef.current = loadSalesNavigation(salesNavigationKey);
+  }
+
   const [requests, setRequests] = useState(() => loadRequests(salesStorageKey));
-  const [mode, setMode] = useState("list");
-  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [mode, setMode] = useState(
+    () => initialNavigationRef.current?.mode || "list"
+  );
+  const [selectedRequestId, setSelectedRequestId] = useState(
+    () => initialNavigationRef.current?.selectedRequestId || null
+  );
   const [form, setForm] = useState(emptyForm);
   const [surveyForm, setSurveyForm] = useState({
     date: "",
@@ -323,6 +386,24 @@ export default function SalesModule({
     website: "",
     logoUrl: "",
   });
+
+  useEffect(() => {
+    const restored = loadSalesNavigation(salesNavigationKey);
+    const requestExists = restored.selectedRequestId
+      ? requests.some((request) => request.id === restored.selectedRequestId)
+      : false;
+
+    setSelectedRequestId(requestExists ? restored.selectedRequestId : null);
+    setMode(
+      requestExists || ["list", "new"].includes(restored.mode)
+        ? restored.mode
+        : "list"
+    );
+  }, [salesNavigationKey]);
+
+  useEffect(() => {
+    saveSalesNavigation(salesNavigationKey, mode, selectedRequestId);
+  }, [salesNavigationKey, mode, selectedRequestId]);
 
   const selectedRequest = useMemo(
     () => requests.find((request) => request.id === selectedRequestId) || null,
@@ -1143,21 +1224,26 @@ export default function SalesModule({
         ? audio.name
         : `befaring.${extension}`;
 
-      // FASE 19.9E: Send lyd som JSON/data-URL i stedet for multipart fra nettleseren.
-      // OPTIONS/CORS er verifisert, mens multipart-POST ble stoppet med 403 før Edge-koden.
-      const { data: result, error: invokeError } = await activeSupabase.functions.invoke(
-        "inspection-assistant",
-        {
-          body: {
-            audioDataUrl: audio.dataUrl,
-            audioName,
-            audioType: audio.type || "audio/webm",
-          },
-        }
-      );
+      const proxyResponse = await fetch("/api/inspection-assistant", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          audioDataUrl: audio.dataUrl,
+          audioName,
+          audioType: audio.type || "audio/webm",
+        }),
+      });
 
-      if (invokeError) {
-        throw new Error(invokeError.message || "Befaringsassistenten feilet.");
+      const result = await proxyResponse.json().catch(() => null);
+
+      if (!proxyResponse.ok) {
+        throw new Error(
+          result?.error ||
+            `Befaringsassistenten svarte med status ${proxyResponse.status}.`
+        );
       }
 
       if (!result?.ok) {
