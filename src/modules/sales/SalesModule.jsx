@@ -1,3 +1,4 @@
+// FASE 19.6E LYDNOTAT-UX: Rydder kun presentasjon og brukerflyt for lydnotat i preview. PC/Chrome er verifisert. iPhone/Safari er fortsatt ikke godkjent. Ingen endring i opptakslogikk, tilbud, opsjoner, kundelink, versjonsvakt eller Edge Function.
 // FASE 19.6D TRYGG BASELINE: Ruller tilbake preview-auth i SalesModule. Lydnotat beholdes. AI-assistent beholdes server-side, men aktiveres først når modulen kobles inn i aktiv app med eksisterende Supabase-auth og firma-/admin-tilgang.
 // FASE 19.6 AI-BEFARINGSASSISTENT: Autentisert lydtranskripsjon og AI-forslag med eksplisitt brukergodkjenning. Ingen automatisk lagring.\n// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
 // FASE 19.4A IPHONE-KLAR LYDNOTAT BEFARING: Legger til trygg lydopptak/lydfil på befaringsnotat med iPhone-fallback via lydfilinput. Ingen AI/transkripsjon/SQL/main/Edge.
@@ -2736,9 +2737,9 @@ export default function SalesModule() {
                 </label>
 
                 <div className="sales-field sales-field-full">
-                  <span>Lydnotat fra befaring</span>
+                  <span>Befaringsnotat med lyd</span>
                   <p className="sales-subtitle" style={{ marginTop: 0 }}>
-                    Ta korte lydnotater på befaring. Dette er ikke AI-transkripsjon ennå; lyd lagres først som kontrollerbart vedlegg i previewen.
+                    Ta opp et lydnotat mens du går gjennom befaringen. Du kan spille av opptaket og kontrollere innholdet før befaringsnotatet lagres.
                   </p>
 
                   <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -2760,13 +2761,13 @@ export default function SalesModule() {
                         style={{ width: "fit-content" }}
                       >
                         <Mic size={18} />
-                        Start opptak
+                        Ta opp befaringsnotat
                       </button>
                     )}
 
                     <label className="sales-secondary-button" style={{ width: "fit-content" }}>
                       <Plus size={18} />
-                      Ta opp / velg lydfil
+                      Velg eller ta opp lydfil
                       <input
                         type="file"
                         accept="audio/*"
@@ -2789,18 +2790,12 @@ export default function SalesModule() {
                         <div className="sales-photo-card" key={audio.id}>
                           <div style={{ padding: 12 }}>
                             <strong style={{ display: "block", marginBottom: 8 }}>
-                              {audio.name || "Befaringslyd"}
+                              Lydnotat fra befaring
                             </strong>
                             <audio controls src={audio.dataUrl} style={{ width: "100%" }} />
-                            <div className="sales-form-preview" style={{ marginTop: 10 }}>
-                              <strong>AI-befaringsassistent</strong>
-                              <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
-                                Klar server-side, men aktiveres først når denne modulen kjøres inne i aktiv Expo ProffDok-app med eksisterende innlogging.
-                              </p>
-                            </div>
                             {audio.createdAt ? (
-                              <p className="sales-subtitle" style={{ marginTop: 8 }}>
-                                Lagret {new Date(audio.createdAt).toLocaleString("nb-NO")}
+                              <p className="sales-subtitle" style={{ marginTop: 8, marginBottom: 0 }}>
+                                Opptak lagret {new Date(audio.createdAt).toLocaleString("nb-NO")}
                               </p>
                             ) : null}
                           </div>
@@ -2817,6 +2812,15 @@ export default function SalesModule() {
                   ) : (
                     <p className="sales-subtitle">Ingen lydnotater registrert ennå.</p>
                   )}
+
+                  {(inspectionForm.audioNotes || []).length ? (
+                    <div className="sales-form-preview" style={{ marginTop: 14 }}>
+                      <strong>AI-forslag fra lyd</strong>
+                      <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
+                        AI-forslag aktiveres når Befaring / Tilbud / Aksept kobles inn i den aktive Expo ProffDok-appen. Opptaket ditt er klart for avspilling og kontroll i previewen.
+                      </p>
+                    </div>
+                  ) : null}
 
                   {inspectionAiError ? (
                     <div className="sales-form-preview" style={{ marginTop: 14 }}>
