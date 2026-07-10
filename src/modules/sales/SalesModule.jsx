@@ -1,3 +1,4 @@
+// FASE 19.6C PREVIEW-AUTH RETURN HOTFIX: Lagrer godkjent Supabase-session og returpunkt i lokal preview-storage, slik at innlogging returnerer til samme befaringsnotat. Ingen SQL/main/CSS/Edge.
 // FASE 19.6B SESSION HOTFIX: Eksplisitt persistent Supabase-auth i sales-preview, robust session-rehydrering og samme befaringsnotat etter innlogging. Ingen SQL/main/CSS/Edge.
 // FASE 19.6A PREVIEW-AUTH OG AI-UX HOTFIX: Egen kontrollert Supabase-innlogging i isolert sales-preview, tydelig AI-transkripsjonstekst og robust lydkort-UX. Beholder autentisert inspection-assistant. Ingen main/smart-worker/SQL-endring.\n// FASE 19.6 AI-BEFARINGSASSISTENT: Autentisert lydtranskripsjon og AI-forslag med eksplisitt brukergodkjenning. Ingen automatisk lagring.\n// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
 // FASE 19.4A IPHONE-KLAR LYDNOTAT BEFARING: Legger til trygg lydopptak/lydfil på befaringsnotat med iPhone-fallback via lydfilinput. Ingen AI/transkripsjon/SQL/main/Edge.
@@ -47,6 +48,8 @@ const supabase =
     : null;
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
+const PREVIEW_AUTH_SESSION_KEY = "expo-proffdok-sales-preview-session-fallback-v1";
+const PREVIEW_AUTH_RETURN_KEY = "expo-proffdok-sales-preview-auth-return-v1";
 
 const initialRequests = [
   {
@@ -221,6 +224,102 @@ function getVisibleOfferLines(lines = []) {
   return Array.isArray(lines) ? lines.filter((line) => !line?.__companyMeta) : [];
 }
 
+function getInspectionFormFromRequest(request = {}) {
+  return {
+    customerWishes:
+      request?.inspectionCustomerWishes ||
+      request?.customerWishes ||
+      "",
+    existingConditions:
+      request?.inspectionExistingConditions ||
+      request?.existingConditions ||
+      "",
+    measurements:
+      request?.inspectionMeasurements ||
+      request?.measurements ||
+      "",
+    observations:
+      request?.inspectionObservations ||
+      request?.observations ||
+      request?.inspectionNote ||
+      "",
+    photos:
+      request?.inspectionPhotos ||
+      request?.photos ||
+      [],
+    audioNotes:
+      request?.inspectionAudioNotes ||
+      request?.audioNotes ||
+      [],
+  };
+}
+
+function savePreviewSessionFallback(session) {
+  try {
+    if (!session?.access_token) return;
+    window.localStorage.setItem(PREVIEW_AUTH_SESSION_KEY, JSON.stringify(session));
+  } catch {
+    // Preview-fallback er kun for test av isolert sales-preview.
+  }
+}
+
+function loadPreviewSessionFallback() {
+  try {
+    const stored = window.localStorage.getItem(PREVIEW_AUTH_SESSION_KEY);
+    if (!stored) return null;
+
+    const session = JSON.parse(stored);
+    if (!session?.access_token) return null;
+
+    if (session.expires_at && session.expires_at * 1000 < Date.now()) {
+      window.localStorage.removeItem(PREVIEW_AUTH_SESSION_KEY);
+      return null;
+    }
+
+    return session;
+  } catch {
+    return null;
+  }
+}
+
+function clearPreviewSessionFallback() {
+  try {
+    window.localStorage.removeItem(PREVIEW_AUTH_SESSION_KEY);
+  } catch {
+    // Ingen handling.
+  }
+}
+
+function savePreviewAuthReturn(requestId) {
+  try {
+    if (!requestId) return;
+    window.localStorage.setItem(
+      PREVIEW_AUTH_RETURN_KEY,
+      JSON.stringify({ mode: "inspection-note", requestId })
+    );
+  } catch {
+    // Ingen handling.
+  }
+}
+
+function loadPreviewAuthReturn() {
+  try {
+    const stored = window.localStorage.getItem(PREVIEW_AUTH_RETURN_KEY);
+    if (!stored) return null;
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+function clearPreviewAuthReturn() {
+  try {
+    window.localStorage.removeItem(PREVIEW_AUTH_RETURN_KEY);
+  } catch {
+    // Ingen handling.
+  }
+}
+
 function getWorkflowSteps(request) {
   const activeStepByStatus = {
     Forespørsel: "Forespørsel",
@@ -332,10 +431,26 @@ export default function SalesModule() {
       }
 
       const { data } = await supabase.auth.getSession();
+      let session = data?.session || null;
+
+      if (!session?.access_token) {
+        const fallbackSession = loadPreviewSessionFallback();
+
+        if (fallbackSession?.access_token && fallbackSession?.refresh_token) {
+          const { data: restoredData } = await supabase.auth.setSession({
+            access_token: fallbackSession.access_token,
+            refresh_token: fallbackSession.refresh_token,
+          });
+          session = restoredData?.session || fallbackSession;
+        } else {
+          session = fallbackSession;
+        }
+      }
 
       if (!active) return;
 
-      setPreviewAuthSession(data?.session || null);
+      if (session?.access_token) savePreviewSessionFallback(session);
+      setPreviewAuthSession(session || null);
       setPreviewAuthReady(true);
     }
 
@@ -346,6 +461,11 @@ export default function SalesModule() {
         if (!active) return;
         setPreviewAuthSession(session || null);
         setPreviewAuthReady(true);
+        if (session?.access_token) {
+          savePreviewSessionFallback(session);
+        } else {
+          clearPreviewSessionFallback();
+        }
         if (session?.user?.id) {
           setPreviewAuthError("");
           setPreviewAuthState("idle");
@@ -359,6 +479,21 @@ export default function SalesModule() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!previewAuthSession?.access_token) return;
+
+    const returnTarget = loadPreviewAuthReturn();
+    if (returnTarget?.mode !== "inspection-note" || !returnTarget.requestId) return;
+
+    const request = requests.find((item) => item.id === returnTarget.requestId);
+    if (!request) return;
+
+    setSelectedRequestId(request.id);
+    setInspectionForm(getInspectionFormFromRequest(request));
+    setMode("inspection-note");
+    clearPreviewAuthReturn();
+  }, [previewAuthSession?.access_token, requests]);
+
   function updatePreviewAuthForm(field, value) {
     setPreviewAuthForm((current) => ({ ...current, [field]: value }));
   }
@@ -371,6 +506,7 @@ export default function SalesModule() {
       return;
     }
 
+    savePreviewAuthReturn(selectedRequestId);
     setPreviewAuthState("working");
     setPreviewAuthError("");
 
@@ -400,11 +536,21 @@ export default function SalesModule() {
       return;
     }
 
+    savePreviewSessionFallback(verifiedSession);
     setPreviewAuthSession(verifiedSession);
     setPreviewAuthReady(true);
     setPreviewAuthForm((current) => ({ ...current, password: "" }));
     setPreviewAuthError("");
     setPreviewAuthState("idle");
+
+    if (selectedRequestId) {
+      const request = requests.find((item) => item.id === selectedRequestId);
+      if (request) {
+        setInspectionForm(getInspectionFormFromRequest(request));
+        setMode("inspection-note");
+      }
+    }
+
     await refreshCompanyProfile();
   }
 
@@ -412,6 +558,8 @@ export default function SalesModule() {
     if (!supabase) return;
 
     await supabase.auth.signOut();
+    clearPreviewSessionFallback();
+    clearPreviewAuthReturn();
     setPreviewAuthSession(null);
     setInspectionAiProposal(null);
     setInspectionAiError("");
@@ -1034,33 +1182,7 @@ export default function SalesModule() {
   }
 
   function openInspectionNote() {
-    setInspectionForm({
-      customerWishes:
-        selectedRequest?.inspectionCustomerWishes ||
-        selectedRequest?.customerWishes ||
-        "",
-      existingConditions:
-        selectedRequest?.inspectionExistingConditions ||
-        selectedRequest?.existingConditions ||
-        "",
-      measurements:
-        selectedRequest?.inspectionMeasurements ||
-        selectedRequest?.measurements ||
-        "",
-      observations:
-        selectedRequest?.inspectionObservations ||
-        selectedRequest?.observations ||
-        selectedRequest?.inspectionNote ||
-        "",
-      photos:
-        selectedRequest?.inspectionPhotos ||
-        selectedRequest?.photos ||
-        [],
-      audioNotes:
-        selectedRequest?.inspectionAudioNotes ||
-        selectedRequest?.audioNotes ||
-        [],
-    });
+    setInspectionForm(getInspectionFormFromRequest(selectedRequest));
     setMode("inspection-note");
   }
 
@@ -1218,7 +1340,7 @@ export default function SalesModule() {
         const {
           data: { session: freshSession },
         } = await supabase.auth.getSession();
-        session = freshSession;
+        session = freshSession || loadPreviewSessionFallback();
       }
 
       if (!session?.access_token) {
