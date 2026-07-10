@@ -1,3 +1,4 @@
+// FASE 19.12 JSON/DATA-URL HOTFIX: Sender lyd til inspection-assistant som JSON med eksisterende data-URL via aktiv Expo ProffDok Supabase-klient. Bevarer FASE 19.11 lydnotatflyt, flere lydnotater, kladd, transkripsjon og eksplisitt AI-godkjenning. Ingen SQL, Edge, main, CSS eller produksjonsmerge.
 // FASE 19.11 LYDNOTAT-ARBEIDSFLYT: Bevarer befaringskladd og AI-forslag per sak lokalt ved fanebytte, forklarer hva bruker skal lese inn, støtter flere nummererte lydnotater, transkripsjonsvisning og trygg legg-til/erstatt-bruk av AI-forslag. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9D FUNCTION INVOKE HOTFIX: Sender lyd til inspection-assistant via den aktive Expo ProffDok Supabase-klientens functions.invoke. Fjerner avhengighet til Vite env-URL/API-key i integrert AI-kall. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.9C AKTIVER AI-KNAPP I INTEGRERT MODUL: Kobler eksisterende autentiserte inspection-assistant-kall til lydkortet i aktiv Expo ProffDok-app. Ingen automatisk lagring, SQL, Edge, main eller produksjonsmerge.
@@ -1193,27 +1194,15 @@ export default function SalesModule({
         throw new Error("Ingen gyldig Expo ProffDok-session ble funnet. Logg ut og inn igjen før du prøver på nytt.");
       }
 
-      const audioResponse = await fetch(audio.dataUrl);
-      const audioBlob = await audioResponse.blob();
-      const extension = audio.type?.includes("mp4")
-        ? "m4a"
-        : audio.type?.includes("mpeg")
-          ? "mp3"
-          : audio.type?.includes("wav")
-            ? "wav"
-            : "webm";
-      const audioFile = new File(
-        [audioBlob],
-        audio.name?.includes(".") ? audio.name : `befaring.${extension}`,
-        { type: audio.type || audioBlob.type || "audio/webm" }
-      );
-
-      const formData = new FormData();
-      formData.append("audio", audioFile);
-
       const { data: result, error: invokeError } = await activeSupabase.functions.invoke(
         "inspection-assistant",
-        { body: formData }
+        {
+          body: {
+            audioDataUrl: audio.dataUrl,
+            fileName: audio.name || "Befaringslyd",
+            mimeType: audio.type || "audio/webm",
+          },
+        }
       );
 
       if (invokeError) {
