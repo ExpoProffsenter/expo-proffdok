@@ -1,3 +1,4 @@
+// FASE 19.15D OFFENTLIG KUNDERUTING: Åpner publicOffer direkte i SalesModule før innlogging og intern appnavigasjon. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
 // FASE 19.9 AUTENTISERT FEATURE-BRO: Kobler Befaring / Tilbud / Aksept inn som tydelig testfane kun på feature-branchen og sender eksisterende Supabase-klient, authUser og profile til SalesModule. Ingen SQL, Edge, prosjektaktivering eller produksjonsmerge.
 // FASE 17.1A RAPPORT BLANKSKJERM HOTFIX: Definerer trygg global overtagelsessjekk for rapportvisning slik at Rapport-fanen ikke krasjer med projectHasOvertagelse is not defined. Beholder Fase 16.4-logikk: dato alene teller ikke, overtagelse krever aktiv registrering + signatur fra begge parter. Ingen SQL/Edge/PDF-design/chat/kundeportal/UE-/garantiendring.
 // FASE 16.5G FIRMAPROFIL I E-POST: Sender firmalogo/brandfelt med alle smart-worker/Resend-eposter slik at e-post kan bruke utførende firmas logo når firmaprofil har logo. Fallback er Expo ProffDok/Expo Proffsenter. Ingen SQL/PDF/databaseendring.
@@ -8173,6 +8174,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] }) }, section.title))
     ] });
 
+    const publicOfferToken = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("publicOffer") : "";
+    if (publicOfferToken) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, {
+        supabaseClient: supabase,
+        authUser,
+        profile,
+        integrationMode: "public"
+      });
+    }
     if (authLoading && !isReadOnly && !isUnderleverandorView) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Laster..." }) }) }) });
     }
