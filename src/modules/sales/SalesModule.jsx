@@ -1,3 +1,4 @@
+// FASE 20J TYDELIG LEVERANSEOMFANG: Egne, versjonslåste felt for inkludert, ikke inkludert og kundens leveranse vises i kundetilbud og omfattes av digital aksept. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20I EGEN KONTRAKT: Håndverksbedriften kan laste opp egen kontrakt etter kundeaksept. Kontrakten lagres med saken og følger automatisk til Tilbud/kontrakt ved prosjektaktivering. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20F GJENOPPRETT TILBUD FØR AUTOLAGRING: Ved retur fra en annen hovedfane gjenopprettes tilbudsskjemaet fra kladd/sak før autolagring tillates, slik at en tom initialform aldri kan overskrive poster og priser. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20E VARIG TILBUDSKLADD: Mellomlagrer tilbudet både lokalt og fortløpende i eksisterende sales_requests, slik at poster og priser tåler fanebytte, sidegjenlasting og nettleserens lagringsbegrensning. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -303,6 +304,9 @@ function createOfferTermsSnapshot(request = {}) {
     __offerTermsMeta: true,
     terms: request.offerTerms || "",
     paymentTerms: request.offerPaymentTerms || "",
+    included: request.offerIncluded || "",
+    excluded: request.offerExcluded || "",
+    customerSupplied: request.offerCustomerSupplied || "",
   };
 }
 
@@ -454,6 +458,9 @@ export default function SalesModule({
     ],
     options: [],
     reservations: "",
+    included: "",
+    excluded: "",
+    customerSupplied: "",
     terms: "",
     paymentTerms: "10 dager netto",
     validityDays: "30",
@@ -548,6 +555,9 @@ export default function SalesModule({
             offerLines: formValue.lines,
             offerOptions: formValue.options,
             offerReservations: formValue.reservations,
+            offerIncluded: formValue.included,
+            offerExcluded: formValue.excluded,
+            offerCustomerSupplied: formValue.customerSupplied,
             offerTerms: formValue.terms,
             offerPaymentTerms: formValue.paymentTerms,
             offerValidityDays: formValue.validityDays,
@@ -609,6 +619,9 @@ export default function SalesModule({
             ],
       options: request?.offerOptions?.length ? request.offerOptions : [],
       reservations: request?.offerReservations || "",
+      included: request?.offerIncluded || "",
+      excluded: request?.offerExcluded || "",
+      customerSupplied: request?.offerCustomerSupplied || "",
       terms: request?.offerTerms || "",
       paymentTerms: request?.offerPaymentTerms || "10 dager netto",
       validityDays: request?.offerValidityDays || "30",
@@ -627,6 +640,10 @@ export default function SalesModule({
         ? storedDraft.options
         : requestForm.options,
       terms: storedDraft.terms ?? requestForm.terms,
+      included: storedDraft.included ?? requestForm.included,
+      excluded: storedDraft.excluded ?? requestForm.excluded,
+      customerSupplied:
+        storedDraft.customerSupplied ?? requestForm.customerSupplied,
       paymentTerms:
         storedDraft.paymentTerms ?? requestForm.paymentTerms,
     };
@@ -1852,6 +1869,9 @@ export default function SalesModule({
         offerLines: cleanLines,
         offerOptions: cleanOptions,
         offerReservations: offerForm.reservations.trim(),
+        offerIncluded: offerForm.included.trim(),
+        offerExcluded: offerForm.excluded.trim(),
+        offerCustomerSupplied: offerForm.customerSupplied.trim(),
         offerTerms: offerForm.terms.trim(),
         offerPaymentTerms: offerForm.paymentTerms.trim(),
         offerValidityDays: offerForm.validityDays,
@@ -2231,6 +2251,9 @@ export default function SalesModule({
       companyLogoUrl: companySnapshot.logoUrl || "",
       offerOptions: version.options || [],
       offerReservations: version.reservations || "",
+      offerIncluded: offerTermsSnapshot.included || "",
+      offerExcluded: offerTermsSnapshot.excluded || "",
+      offerCustomerSupplied: offerTermsSnapshot.customerSupplied || "",
       offerTerms: offerTermsSnapshot.terms || "",
       offerPaymentTerms: offerTermsSnapshot.paymentTerms || "",
       offerValidityDays: String(version.validity_days || 30),
@@ -2825,6 +2848,14 @@ export default function SalesModule({
     const activeTermsSnapshot = getOfferTermsSnapshot(activeOfferVersion?.lines || []);
     const offerTerms =
       activeTermsSnapshot.terms || selectedRequest.offerTerms || "";
+    const offerIncluded =
+      activeTermsSnapshot.included || selectedRequest.offerIncluded || "";
+    const offerExcluded =
+      activeTermsSnapshot.excluded || selectedRequest.offerExcluded || "";
+    const offerCustomerSupplied =
+      activeTermsSnapshot.customerSupplied ||
+      selectedRequest.offerCustomerSupplied ||
+      "";
     const offerPaymentTerms =
       activeTermsSnapshot.paymentTerms || selectedRequest.offerPaymentTerms || "";
     const offerValidityDays =
@@ -3107,6 +3138,32 @@ export default function SalesModule({
                 </article>
               ) : null}
 
+              {offerIncluded || offerExcluded || offerCustomerSupplied ? (
+                <article className="sales-customer-section sales-customer-text-section">
+                  <span className="sales-section-kicker">Omfang</span>
+                  <div style={{ display: "grid", gap: 20 }}>
+                    {offerIncluded ? (
+                      <div>
+                        <h2>Inkludert i tilbudet</h2>
+                        <p style={{ whiteSpace: "pre-wrap" }}>{offerIncluded}</p>
+                      </div>
+                    ) : null}
+                    {offerExcluded ? (
+                      <div>
+                        <h2>Ikke inkludert</h2>
+                        <p style={{ whiteSpace: "pre-wrap" }}>{offerExcluded}</p>
+                      </div>
+                    ) : null}
+                    {offerCustomerSupplied ? (
+                      <div>
+                        <h2>Kundens leveranse</h2>
+                        <p style={{ whiteSpace: "pre-wrap" }}>{offerCustomerSupplied}</p>
+                      </div>
+                    ) : null}
+                  </div>
+                </article>
+              ) : null}
+
               {offerTerms || offerPaymentTerms ? (
                 <article className="sales-customer-section sales-customer-text-section">
                   <span className="sales-section-kicker">Vilkår</span>
@@ -3134,7 +3191,7 @@ export default function SalesModule({
                     <h2>Aksepter tilbudet</h2>
                     <p>
                       Skriv inn fullt navn og bekreft at du aksepterer tilbudet med
-                      arbeider, priser, forbehold, vilkår og betalingsbetingelser
+                      arbeider, priser, leveranseomfang, forbehold, vilkår og betalingsbetingelser
                       som vist over.
                     </p>
                   </div>
@@ -3197,7 +3254,7 @@ export default function SalesModule({
                       />
                       <span>
                         Jeg aksepterer tilbudet og bekrefter at jeg har lest
-                        tilbudets innhold, priser, forbehold, vilkår og
+                        tilbudets innhold, priser, leveranseomfang, forbehold, vilkår og
                         betalingsbetingelser.
                       </span>
                     </label>
@@ -3578,6 +3635,42 @@ export default function SalesModule({
                       updateOfferForm("reservations", event.target.value)
                     }
                     placeholder="Eksempel: Tilbudet forutsetter at eksisterende konstruksjoner er egnet for planlagte arbeider. Skjulte forhold prises som tillegg etter avtale."
+                    rows={5}
+                  />
+                </label>
+
+                <label className="sales-field sales-field-full">
+                  <span>Inkludert i tilbudet</span>
+                  <textarea
+                    value={offerForm.included}
+                    onChange={(event) =>
+                      updateOfferForm("included", event.target.value)
+                    }
+                    placeholder="Beskriv tydelig hvilke arbeider, materialer og ytelser som er inkludert i tilbudssummen."
+                    rows={5}
+                  />
+                </label>
+
+                <label className="sales-field sales-field-full">
+                  <span>Ikke inkludert</span>
+                  <textarea
+                    value={offerForm.excluded}
+                    onChange={(event) =>
+                      updateOfferForm("excluded", event.target.value)
+                    }
+                    placeholder="Beskriv arbeider, materialer eller kostnader som ikke inngår i tilbudet."
+                    rows={5}
+                  />
+                </label>
+
+                <label className="sales-field sales-field-full">
+                  <span>Kundens leveranse</span>
+                  <textarea
+                    value={offerForm.customerSupplied}
+                    onChange={(event) =>
+                      updateOfferForm("customerSupplied", event.target.value)
+                    }
+                    placeholder="Beskriv hva kunden selv skal levere, bestille eller sørge for før og under arbeidet."
                     rows={5}
                   />
                 </label>
