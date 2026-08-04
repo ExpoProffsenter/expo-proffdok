@@ -1,3 +1,4 @@
+// FASE 20A PROSJEKTAKTIVERING: Venter med administrator-direkteåpning til Supabase-sesjon og godkjent profil er klare, laster prosjektlisten på nytt og åpner prosjektet nøyaktig én gang. Kun feature/befaring-tilbud. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
 // FASE 19.15D OFFENTLIG KUNDERUTING: Åpner publicOffer direkte i SalesModule før innlogging og intern appnavigasjon. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
 // FASE 19.9 AUTENTISERT FEATURE-BRO: Kobler Befaring / Tilbud / Aksept inn som tydelig testfane kun på feature-branchen og sender eksisterende Supabase-klient, authUser og profile til SalesModule. Ingen SQL, Edge, prosjektaktivering eller produksjonsmerge.
 // FASE 17.1A RAPPORT BLANKSKJERM HOTFIX: Definerer trygg global overtagelsessjekk for rapportvisning slik at Rapport-fanen ikke krasjer med projectHasOvertagelse is not defined. Beholder Fase 16.4-logikk: dato alene teller ikke, overtagelse krever aktiv registrering + signatur fra begge parter. Ingen SQL/Edge/PDF-design/chat/kundeportal/UE-/garantiendring.
@@ -1518,6 +1519,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const lastChatMessageCountRef = (0, import_react.useRef)(0);
     const lastChatRefreshAtRef = (0, import_react.useRef)(0);
     const previousAuthUserIdRef = (0, import_react.useRef)(null);
+    const directProjectOpenAttemptRef = (0, import_react.useRef)("");
     const dirtyTrackingPausedRef = (0, import_react.useRef)(false);
     const dirtyTrackingResumeTimerRef = (0, import_react.useRef)(null);
     const projectDirtyRef = (0, import_react.useRef)(false);
@@ -3301,9 +3303,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         setPasswordRecovery(true);
       }
       if (id && !isRecoveryLink) {
-        openProjectById(id);
         const requestedTab = String(params.get("tab") || params.get("open") || "").trim().toLowerCase();
         const linkAccessMode = params.get("access") || params.get("role");
+        if (linkAccessMode !== "admin") openProjectById(id);
         if (linkAccessMode === "underleverandor") setTab(requestedTab || "produkter");
         if (linkAccessMode === "kunde" && requestedTab) setCustomerTab(requestedTab === "chat" ? "chat" : requestedTab);
         if (linkAccessMode === "admin" && requestedTab) setTab(requestedTab);
@@ -3323,6 +3325,29 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       });
       return () => listener.subscription.unsubscribe();
     }, []);
+    (0, import_react.useEffect)(() => {
+      const params = new URLSearchParams(window.location.search);
+      const id = String(params.get("project") || "").trim();
+      const linkAccessMode = params.get("access") || params.get("role");
+      const requestedTab = String(params.get("tab") || params.get("open") || "prosjekt").trim().toLowerCase() || "prosjekt";
+      if (!id || linkAccessMode !== "admin") return;
+      if (!authUser?.id || !profile?.approved || profile?.deactivated || authLoading || profileLoading) return;
+      if (directProjectOpenAttemptRef.current === id) return;
+      directProjectOpenAttemptRef.current = id;
+      let cancelled = false;
+      const openAuthenticatedProject = async () => {
+        await loadProjects(authUser, false, profile);
+        if (cancelled) return;
+        await openProjectById(id, requestedTab);
+      };
+      openAuthenticatedProject().catch((error) => {
+        console.error("Kunne ikke åpne aktivert prosjekt etter innlogging:", error);
+        directProjectOpenAttemptRef.current = "";
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [authUser?.id, profile?.id, profile?.approved, profile?.deactivated, authLoading, profileLoading]);
     (0, import_react.useEffect)(() => {
       setPortalAccessInput("");
       setPortalAccessGranted(false);
