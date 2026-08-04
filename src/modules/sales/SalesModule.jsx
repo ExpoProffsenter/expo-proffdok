@@ -1,3 +1,4 @@
+// FASE 19.15B BILDEVISNING I BEFARINGSOPPSUMMERING: Viser lagrede befaringsbilder som klikkbare miniatyrbilder med stor visning. Ingen SQL/lagrings/main/Edge-endring.
 // FASE 19.15 VARIG BEFARINGSLAGRING: Forespørsler, befaringsplan og notater lagres firmascopet i Supabase. Befaringsbilder komprimeres og lagres privat i Storage. Ingen lyd eller AI.
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
 // FASE 19.3 TYDELIG PUBLISERINGSBEKREFTELSE: Viser tydelig intern bekreftelse når kundelink/ny tilbudsversjon er publisert. Ingen SQL/main/Edge.
@@ -441,6 +442,7 @@ export default function SalesModule({
   const [publicOfferError, setPublicOfferError] = useState("");
   const [salesCompanyId, setSalesCompanyId] = useState(null);
   const [salesStorageError, setSalesStorageError] = useState("");
+  const [selectedInspectionPhoto, setSelectedInspectionPhoto] = useState(null);
   const [companyProfile, setCompanyProfile] = useState({
     companyName: "",
     orgNumber: "",
@@ -455,6 +457,17 @@ export default function SalesModule({
     () => requests.find((request) => request.id === selectedRequestId) || null,
     [requests, selectedRequestId]
   );
+
+  useEffect(() => {
+    if (!selectedInspectionPhoto) return undefined;
+
+    function closePhotoOnEscape(event) {
+      if (event.key === "Escape") setSelectedInspectionPhoto(null);
+    }
+
+    window.addEventListener("keydown", closePhotoOnEscape);
+    return () => window.removeEventListener("keydown", closePhotoOnEscape);
+  }, [selectedInspectionPhoto]);
 
   useEffect(() => {
     let cancelled = false;
@@ -3919,10 +3932,53 @@ export default function SalesModule({
                     {selectedRequest.inspectionObservations ? (
                       <p><strong>Faglige observasjoner:</strong> {selectedRequest.inspectionObservations}</p>
                     ) : null}
-                    <span>
-                      <Plus size={16} />
-                      {(selectedRequest.inspectionPhotos || []).length} befaringsbilde(r)
-                    </span>
+                    {(selectedRequest.inspectionPhotos || []).length ? (
+                      <div style={{ marginTop: 10 }}>
+                        <strong>
+                          {(selectedRequest.inspectionPhotos || []).length} befaringsbilde(r)
+                        </strong>
+                        <div
+                          className="sales-photo-grid"
+                          style={{ marginTop: 10 }}
+                          aria-label="Befaringsbilder"
+                        >
+                          {(selectedRequest.inspectionPhotos || []).map((photo, index) => (
+                            <button
+                              key={photo.id || photo.path || index}
+                              type="button"
+                              className="sales-photo-card"
+                              onClick={() => setSelectedInspectionPhoto(photo)}
+                              disabled={!photo.dataUrl}
+                              aria-label={`Åpne befaringsbilde ${index + 1} i stor visning`}
+                              style={{
+                                padding: 0,
+                                border: "1px solid #d7e4ea",
+                                borderRadius: 14,
+                                overflow: "hidden",
+                                cursor: photo.dataUrl ? "zoom-in" : "not-allowed",
+                                background: "#f8fbfc",
+                              }}
+                            >
+                              {photo.dataUrl ? (
+                                <img
+                                  src={photo.dataUrl}
+                                  alt={photo.name || `Befaringsbilde ${index + 1}`}
+                                  loading="lazy"
+                                  style={{ display: "block", width: "100%", height: 150, objectFit: "cover" }}
+                                />
+                              ) : (
+                                <span style={{ display: "grid", minHeight: 120, placeItems: "center", padding: 12 }}>
+                                  Bildet kunne ikke lastes inn
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="sales-subtitle" style={{ margin: "8px 0 0" }}>
+                          Trykk på et bilde for å se det i stor størrelse.
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 ) : selectedRequest.status === "Befaring" &&
                   selectedRequest.surveyDate ? (
@@ -3949,6 +4005,58 @@ export default function SalesModule({
             </section>
           </main>
         </div>
+        {selectedInspectionPhoto?.dataUrl ? (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Befaringsbilde i stor visning"
+            onClick={() => setSelectedInspectionPhoto(null)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9999,
+              display: "grid",
+              placeItems: "center",
+              padding: 20,
+              background: "rgba(5, 19, 27, 0.88)",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedInspectionPhoto(null)}
+              aria-label="Lukk bilde"
+              style={{
+                position: "fixed",
+                top: 16,
+                right: 16,
+                width: 44,
+                height: 44,
+                border: 0,
+                borderRadius: 999,
+                background: "#ffffff",
+                color: "#132733",
+                fontSize: 28,
+                lineHeight: 1,
+                cursor: "pointer",
+              }}
+            >
+              ×
+            </button>
+            <img
+              src={selectedInspectionPhoto.dataUrl}
+              alt={selectedInspectionPhoto.name || "Befaringsbilde"}
+              onClick={(event) => event.stopPropagation()}
+              style={{
+                display: "block",
+                maxWidth: "min(1200px, 96vw)",
+                maxHeight: "90vh",
+                objectFit: "contain",
+                borderRadius: 14,
+                boxShadow: "0 24px 70px rgba(0, 0, 0, 0.38)",
+              }}
+            />
+          </div>
+        ) : null}
       </div>
     );
   }
