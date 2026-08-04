@@ -1,3 +1,4 @@
+// FASE 20A PROSJEKTAKTIVERING: Verifiserer at lagret prosjekt-ID faktisk finnes. En feilaktig Aktivert-sak uten prosjekt repareres tilbake til Akseptert og kan aktiveres trygt på nytt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 19.15G REELL PROSJEKTAKTIVERING: Oppretter ordinært ProffDok-prosjekt fra akseptert tilbud, overfører kunde/sak/tilbud/befaringsbilder, sperrer duplikater og åpner prosjektet direkte. Ingen SQL eller main-endring.
 // FASE 19.15F AKSEPTSTATUS: Synkroniserer digital kundeaksept via eksisterende offentlig tilbuds-RPC og sakens publicToken. Ingen SQL/main/Edge-endring.
 // FASE 19.15C KUNDELINK: Beholder publicOffer-token og Vercels delingsparametere i URL-en.
@@ -511,9 +512,29 @@ export default function SalesModule({
         return;
       }
 
+      const claimedActivatedProjectIds = (rows || [])
+        .map((row) => row?.payload)
+        .filter((request) => request?.status === "Aktivert" && request?.projectId)
+        .map((request) => request.projectId);
+      let activatedProjectVerificationAvailable = claimedActivatedProjectIds.length === 0;
+      let realActivatedProjectIds = new Set();
+      const repairedActivatedRequestRefs = new Set();
+      if (claimedActivatedProjectIds.length > 0) {
+        const { data: realProjects, error: realProjectsError } = await activeSupabase
+          .from("projects")
+          .select("id")
+          .in("id", claimedActivatedProjectIds);
+        if (realProjectsError) {
+          console.error("Kunne ikke verifisere aktiverte ProffDok-prosjekter", realProjectsError);
+        } else {
+          activatedProjectVerificationAvailable = true;
+          realActivatedProjectIds = new Set((realProjects || []).map((project) => project.id));
+        }
+      }
+
       const hydrated = await Promise.all(
         (rows || []).map(async (row) => {
-          const request = { ...(row.payload || {}), id: row.request_ref };
+          let request = { ...(row.payload || {}), id: row.request_ref };
           const photos = await Promise.all(
             (request.inspectionPhotos || []).map(async (photo) => {
               if (!photo.path) return photo;
@@ -526,8 +547,24 @@ export default function SalesModule({
           let acceptedOffer = null;
           let acceptedVersion = null;
 
-          const hasRealActivatedProject =
+          const claimsActivatedProject =
             request.status === "Aktivert" && Boolean(request.projectId);
+          const hasRealActivatedProject =
+            claimsActivatedProject &&
+            (!activatedProjectVerificationAvailable || realActivatedProjectIds.has(request.projectId));
+
+          if (claimsActivatedProject && activatedProjectVerificationAvailable && !hasRealActivatedProject) {
+            repairedActivatedRequestRefs.add(row.request_ref);
+            request = {
+              ...request,
+              projectId: "",
+              projectActivatedAt: "",
+              status: "Akseptert",
+              statusClass: "sales-status-accepted",
+              nextStep: "Aktiver som prosjekt",
+              iconName: "check",
+            };
+          }
 
           if (request.publicToken && !hasRealActivatedProject) {
             const { data: publicOfferData, error: publicOfferError } =
@@ -609,6 +646,27 @@ export default function SalesModule({
       if (cancelled) return;
       setRequests(hydrated);
       saveRequests(hydrated, salesStorageKey);
+      if (repairedActivatedRequestRefs.size > 0) {
+        const repairedRows = hydrated
+          .filter((request) => repairedActivatedRequestRefs.has(request.id))
+          .map((request) => ({
+            company_id: resolvedCompanyId,
+            request_ref: request.id,
+            status: request.status || "Akseptert",
+            archived_at: request.archivedAt || null,
+            payload: stripTransientPhotoData(request),
+            updated_at: new Date().toISOString(),
+          }));
+        const { error: repairError } = await activeSupabase
+          .from("sales_requests")
+          .upsert(repairedRows, { onConflict: "company_id,request_ref" });
+        if (repairError) {
+          console.error("Kunne ikke lagre reparert prosjektaktivering", repairError);
+          setSalesStorageError(
+            "Saken ble reparert i visningen, men statusen kunne ikke lagres. Last siden på nytt og prøv igjen."
+          );
+        }
+      }
     }
 
     loadPersistentRequests();
