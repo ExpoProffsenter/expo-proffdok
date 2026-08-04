@@ -1,4 +1,5 @@
 // FASE 20A PROSJEKTAKTIVERING: Venter med administrator-direkteåpning til Supabase-sesjon og godkjent profil er klare, laster prosjektlisten på nytt og åpner prosjektet nøyaktig én gang. Kun feature/befaring-tilbud. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
+// FASE 20G KORREKT MODULINFORMASJON: Fjerner utdatert prototypetekst etter godkjent prosjektaktivering og varig tilbudskladd. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
 // FASE 19.15D OFFENTLIG KUNDERUTING: Åpner publicOffer direkte i SalesModule før innlogging og intern appnavigasjon. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
 // FASE 20B ANSVARLIG GJENNOM HELE LØPET: Innlogget brukers registrerte navn settes på nye ordinære prosjekter og sendes til salgsmodulen. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 19.9 AUTENTISERT FEATURE-BRO: Kobler Befaring / Tilbud / Aksept inn som tydelig testfane kun på feature-branchen og sender eksisterende Supabase-klient, authUser og profile til SalesModule. Ingen SQL, Edge, prosjektaktivering eller produksjonsmerge.
@@ -10157,8 +10158,8 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] })
         ] }) }) }) })),
         tab === "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept – kontrollert feature-test", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Denne funksjonen kjører kun på feature/befaring-tilbud og bruker din eksisterende Expo ProffDok-innlogging. Saker lagres foreløpig lokalt og er scoped til innlogget bruker/firma. Aktiver som prosjekt er fortsatt prototype og skal ikke brukes mot produksjonsprosjekter." })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, { supabaseClient: supabase, authUser, profile, currentUserName: user?.name || "", integrationMode: "app" })
         ] }),
