@@ -1,18 +1,8 @@
-// FASE 19.14A BEVAR SAK VED FANEBYTTE: Husker valgt sak og intern visning når brukeren forlater Befaring/Tilbud-fanen og åpner den igjen. Ingen SQL, Edge, main eller produksjonsmerge.
-// FASE 19.14 KJERNEFLYT UTEN AI-AVHENGIGHET: Setter lyd/AI på pause i brukerflaten og prioriterer hovedløpet forespørsel → befaring med tekst/bilder → manuelt priset tilbud → kundelenke/aksept. Viser lagret befaringsgrunnlag direkte i tilbudsbyggeren. Ingen SQL, Edge, main eller produksjonsmerge.
-// FASE 19.12 JSON/DATA-URL HOTFIX: Sender lyd til inspection-assistant som JSON med eksisterende data-URL via aktiv Expo ProffDok Supabase-klient. Bevarer FASE 19.11 lydnotatflyt, flere lydnotater, kladd, transkripsjon og eksplisitt AI-godkjenning. Ingen SQL, Edge, main, CSS eller produksjonsmerge.
-// FASE 19.11 LYDNOTAT-ARBEIDSFLYT: Bevarer befaringskladd og AI-forslag per sak lokalt ved fanebytte, forklarer hva bruker skal lese inn, støtter flere nummererte lydnotater, transkripsjonsvisning og trygg legg-til/erstatt-bruk av AI-forslag. Ingen SQL, Edge, main eller produksjonsmerge.
-// FASE 19.9D FUNCTION INVOKE HOTFIX: Sender lyd til inspection-assistant via den aktive Expo ProffDok Supabase-klientens functions.invoke. Fjerner avhengighet til Vite env-URL/API-key i integrert AI-kall. Ingen SQL, Edge, main eller produksjonsmerge.
-// FASE 19.9C AKTIVER AI-KNAPP I INTEGRERT MODUL: Kobler eksisterende autentiserte inspection-assistant-kall til lydkortet i aktiv Expo ProffDok-app. Ingen automatisk lagring, SQL, Edge, main eller produksjonsmerge.
-// FASE 19.9 AUTENTISERT FEATURE-BRO: SalesModule kan bruke Supabase-klient, innlogget bruker og profil fra aktiv Expo ProffDok-app. Lokal testlagring scopes per bruker/firma. Ingen SQL, Edge Function, prosjektaktivering eller produksjonsmerge.
-// FASE 19.6E LYDNOTAT-UX: Rydder kun presentasjon og brukerflyt for lydnotat i preview. PC/Chrome er verifisert. iPhone/Safari er fortsatt ikke godkjent. Ingen endring i opptakslogikk, tilbud, opsjoner, kundelink, versjonsvakt eller Edge Function.
-// FASE 19.6D TRYGG BASELINE: Ruller tilbake preview-auth i SalesModule. Lydnotat beholdes. AI-assistent beholdes server-side, men aktiveres først når modulen kobles inn i aktiv app med eksisterende Supabase-auth og firma-/admin-tilgang.
-// FASE 19.6 AI-BEFARINGSASSISTENT: Autentisert lydtranskripsjon og AI-forslag med eksplisitt brukergodkjenning. Ingen automatisk lagring.\n// FASE 19.4C HOTFIX BEFARINGSNOTAT BLANKSIDE: Definerer manglende lydopptak-state/ref-er slik at Befaringsnotat ikke krasjer. Ingen SQL/main/CSS/Edge.
-// FASE 19.4A IPHONE-KLAR LYDNOTAT BEFARING: Legger til trygg lydopptak/lydfil på befaringsnotat med iPhone-fallback via lydfilinput. Ingen AI/transkripsjon/SQL/main/Edge.
+// FASE 19.14B UTEN LYD OG AI: Fjerner hele lyd-/AI-funksjonen fra befaringsmodulen. Befaring registreres med tekst og bilder. Bevarer navigasjonsrettelsen fra FASE 19.14A. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
 // FASE 19.3 TYDELIG PUBLISERINGSBEKREFTELSE: Viser tydelig intern bekreftelse når kundelink/ny tilbudsversjon er publisert. Ingen SQL/main/Edge.
 // FASE 19.2 TRYGG REPUBLISERING: Tydeliggjør når redigert tilbud/opsjon må publiseres som ny kundelenke-versjon. Ingen SQL/main/Edge.
-// FASE 19.4B TILGANG BEFARINGSNOTAT FRA TILBUD: Viser trygg knapp for Befaringsnotat/lydnotat også i tilbudssak uten å endre tilbudsstatus ved lagring. Ingen SQL/main/CSS/Edge.
+// FASE 19.4B TILGANG BEFARINGSNOTAT FRA TILBUD: Viser trygg knapp for befaringsnotat også i tilbudssak uten å endre tilbudsstatus ved lagring. Ingen SQL/main/CSS/Edge.
 // FASE 19.4D BEVAR BEFARINGSINFO: Viser forespørselsnotat/befaringsplan som kontekst i befaringsnotat og bruker trygge fallback-felt ved åpning fra tilbudssak. Ingen SQL/main/CSS/Edge.
 // FASE 19.5 UX-FORENKLING INTERN ARBEIDSFLYT: Tydeligere primær neste-handling i intern sak, uten database/SQL/Edge/main-endring. Bevarer tilbudsversjoner, kundelink og befaringsnotat.
 // FASE 18.19C3 HOTFIX FIRMAPROFIL EMAIL-FALLBACK: Henter firmaprofil robust via auth-id først og innlogget e-post som fallback før publish-snapshot. Ingen SQL/main/CSS.
@@ -29,13 +19,11 @@ import {
   MapPin,
   Phone,
   Plus,
-  Mic,
-  Square,
   Ruler,
   Save,
   Send,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import "./sales.css";
 
@@ -372,18 +360,8 @@ export default function SalesModule({
     measurements: "",
     observations: "",
     photos: [],
-    audioNotes: [],
   });
-  const [inspectionRecordingState, setInspectionRecordingState] = useState("idle");
-  const [inspectionRecordingError, setInspectionRecordingError] = useState("");
-  const [inspectionAiState, setInspectionAiState] = useState("idle");
-  const [inspectionAiError, setInspectionAiError] = useState("");
-  const [inspectionAiProposal, setInspectionAiProposal] = useState(null);
   const [inspectionDraftDirty, setInspectionDraftDirty] = useState(false);
-  const [inspectionTranscriptOpenIds, setInspectionTranscriptOpenIds] = useState([]);
-  const inspectionRecorderRef = useRef(null);
-  const inspectionAudioStreamRef = useRef(null);
-  const inspectionAudioChunksRef = useRef([]);
   const [offerForm, setOfferForm] = useState({
     title: "",
     intro: "",
@@ -443,10 +421,10 @@ export default function SalesModule({
 
   useEffect(() => {
     if (mode !== "inspection-note" || !selectedRequestId) return;
-    saveInspectionDraft(inspectionForm, inspectionAiProposal);
-    // Lokal feature-kladd skal følge alle endringer i befaringsskjema/AI-forslag.
+    saveInspectionDraft(inspectionForm);
+    // Lokal feature-kladd skal følge alle endringer i befaringsskjemaet.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inspectionForm, inspectionAiProposal, mode, selectedRequestId]);
+  }, [inspectionForm, mode, selectedRequestId]);
 
   async function fetchCompanyProfile() {
     if (!activeSupabase) return null;
@@ -1085,7 +1063,7 @@ export default function SalesModule({
     return `${salesStorageKey}:inspection-draft:${requestId || "uten-sak"}`;
   }
 
-  function saveInspectionDraft(nextForm, nextProposal = inspectionAiProposal) {
+  function saveInspectionDraft(nextForm) {
     if (!selectedRequestId) return;
 
     try {
@@ -1093,7 +1071,6 @@ export default function SalesModule({
         getInspectionDraftKey(selectedRequestId),
         JSON.stringify({
           form: nextForm,
-          proposal: nextProposal,
           savedAt: new Date().toISOString(),
         })
       );
@@ -1146,16 +1123,9 @@ export default function SalesModule({
         selectedRequest?.inspectionPhotos ||
         selectedRequest?.photos ||
         [],
-      audioNotes:
-        selectedRequest?.inspectionAudioNotes ||
-        selectedRequest?.audioNotes ||
-        [],
     };
 
     setInspectionForm(nextForm);
-    setInspectionAiProposal(draft?.proposal || null);
-    setInspectionAiState(draft?.proposal ? "ready" : "idle");
-    setInspectionAiError("");
     setInspectionDraftDirty(Boolean(draft));
     setMode("inspection-note");
   }
@@ -1200,251 +1170,6 @@ export default function SalesModule({
     }));
   }
 
-  function addInspectionAudioNoteFromBlob(blob, fallbackName = "Befaringslyd") {
-    if (!blob) return;
-
-    const maxAudioSizeBytes = 8 * 1024 * 1024;
-    if (blob.size > maxAudioSizeBytes) {
-      alert("Lydnotatet er for stort for denne previewen. Hold opptaket kortere, eller vent til serverlagring er på plass.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setInspectionForm((current) => ({
-        ...current,
-        audioNotes: [
-          ...(current.audioNotes || []),
-          {
-            id: `${Date.now()}-${Math.random()}`,
-            name: fallbackName,
-            dataUrl: reader.result,
-            type: blob.type || "audio/webm",
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      }));
-    };
-    reader.readAsDataURL(blob);
-  }
-
-  function handleInspectionAudioFiles(event) {
-    const files = Array.from(event.target.files || []);
-
-    files.forEach((file) => {
-      addInspectionAudioNoteFromBlob(file, file.name || "Befaringslyd");
-    });
-
-    event.target.value = "";
-  }
-
-  async function startInspectionAudioRecording() {
-    setInspectionRecordingError("");
-
-    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      setInspectionRecordingError(
-        "Direkte opptak støttes ikke i denne nettleseren. Bruk knappen Ta opp / velg lydfil – den fungerer som iPhone-fallback."
-      );
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      inspectionAudioChunksRef.current = [];
-      inspectionAudioStreamRef.current = stream;
-      inspectionRecorderRef.current = recorder;
-
-      recorder.ondataavailable = (event) => {
-        if (event.data?.size) inspectionAudioChunksRef.current.push(event.data);
-      };
-
-      recorder.onstop = () => {
-        const blob = new Blob(inspectionAudioChunksRef.current, {
-          type: recorder.mimeType || "audio/webm",
-        });
-        inspectionAudioChunksRef.current = [];
-        addInspectionAudioNoteFromBlob(blob, `Befaringslyd ${new Date().toLocaleString("nb-NO")}`);
-        inspectionAudioStreamRef.current?.getTracks?.().forEach((track) => track.stop());
-        inspectionAudioStreamRef.current = null;
-        inspectionRecorderRef.current = null;
-        setInspectionRecordingState("idle");
-      };
-
-      recorder.start();
-      setInspectionRecordingState("recording");
-    } catch (error) {
-      setInspectionRecordingError(
-        "Mikrofonen kunne ikke startes. På iPhone kan du bruke Ta opp / velg lydfil i stedet."
-      );
-      inspectionAudioStreamRef.current?.getTracks?.().forEach((track) => track.stop());
-      inspectionAudioStreamRef.current = null;
-      inspectionRecorderRef.current = null;
-      setInspectionRecordingState("idle");
-    }
-  }
-
-  function stopInspectionAudioRecording() {
-    const recorder = inspectionRecorderRef.current;
-
-    if (recorder && recorder.state !== "inactive") {
-      recorder.stop();
-      return;
-    }
-
-    inspectionAudioStreamRef.current?.getTracks?.().forEach((track) => track.stop());
-    inspectionAudioStreamRef.current = null;
-    inspectionRecorderRef.current = null;
-    setInspectionRecordingState("idle");
-  }
-
-  function removeInspectionAudioNote(audioId) {
-    setInspectionForm((current) => ({
-      ...current,
-      audioNotes: (current.audioNotes || []).filter((audio) => audio.id !== audioId),
-    }));
-  }
-
-  async function analyzeInspectionAudio(audio, preserveExistingProposal = false) {
-    if (!activeSupabase || !audio?.dataUrl) return null;
-
-    setInspectionAiState("working");
-    setInspectionAiError("");
-    if (!preserveExistingProposal) setInspectionAiProposal(null);
-
-    try {
-      const {
-        data: { session },
-      } = await activeSupabase.auth.getSession();
-
-      if (!session?.access_token) {
-        throw new Error("Ingen gyldig Expo ProffDok-session ble funnet. Logg ut og inn igjen før du prøver på nytt.");
-      }
-
-      const { data: result, error: invokeError } = await activeSupabase.functions.invoke(
-        "inspection-assistant",
-        {
-          body: {
-            audioDataUrl: audio.dataUrl,
-            fileName: audio.name || "Befaringslyd",
-            mimeType: audio.type || "audio/webm",
-          },
-        }
-      );
-
-      if (invokeError) {
-        throw new Error(invokeError.message || "Befaringsassistenten feilet.");
-      }
-
-      if (!result?.ok) {
-        throw new Error(result?.error || "Befaringsassistenten feilet.");
-      }
-
-      const proposal = {
-        transcript: result.transcript || "",
-        customerWishes: result.suggestion?.customerWishes || "",
-        existingConditions: result.suggestion?.existingConditions || "",
-        measurements: result.suggestion?.measurements || "",
-        observations: result.suggestion?.professionalObservations || "",
-      };
-
-      setInspectionForm((current) => ({
-        ...current,
-        audioNotes: (current.audioNotes || []).map((note) =>
-          note.id === audio.id ? { ...note, transcript: proposal.transcript } : note
-        ),
-      }));
-      setInspectionAiProposal(proposal);
-      setInspectionAiState("ready");
-      setInspectionDraftDirty(true);
-      return proposal;
-    } catch (error) {
-      setInspectionAiError(error?.message || "Befaringsassistenten feilet.");
-      setInspectionAiState("error");
-      return null;
-    }
-  }
-
-  function joinInspectionText(existingValue, suggestedValue) {
-    const existing = String(existingValue || "").trim();
-    const suggested = String(suggestedValue || "").trim();
-
-    if (!suggested) return existing;
-    if (!existing) return suggested;
-
-    return `${existing}\n${suggested}`;
-  }
-
-  async function analyzeAllInspectionAudio() {
-    const notes = inspectionForm.audioNotes || [];
-    if (!notes.length) return;
-
-    setInspectionAiState("working");
-    setInspectionAiError("");
-
-    const combined = {
-      transcript: "",
-      customerWishes: "",
-      existingConditions: "",
-      measurements: "",
-      observations: "",
-    };
-
-    for (const audio of notes) {
-      const proposal = await analyzeInspectionAudio(audio, true);
-      if (!proposal) return;
-
-      combined.transcript = joinInspectionText(combined.transcript, proposal.transcript);
-      combined.customerWishes = joinInspectionText(combined.customerWishes, proposal.customerWishes);
-      combined.existingConditions = joinInspectionText(combined.existingConditions, proposal.existingConditions);
-      combined.measurements = joinInspectionText(combined.measurements, proposal.measurements);
-      combined.observations = joinInspectionText(combined.observations, proposal.observations);
-    }
-
-    setInspectionAiProposal(combined);
-    setInspectionAiState("ready");
-    setInspectionDraftDirty(true);
-  }
-
-  function applyInspectionAiProposal(mode = "append") {
-    if (!inspectionAiProposal) return;
-
-    setInspectionForm((current) => {
-      const nextForm = {
-        ...current,
-        customerWishes:
-          mode === "replace"
-            ? inspectionAiProposal.customerWishes
-            : joinInspectionText(current.customerWishes, inspectionAiProposal.customerWishes),
-        existingConditions:
-          mode === "replace"
-            ? inspectionAiProposal.existingConditions
-            : joinInspectionText(current.existingConditions, inspectionAiProposal.existingConditions),
-        measurements:
-          mode === "replace"
-            ? inspectionAiProposal.measurements
-            : joinInspectionText(current.measurements, inspectionAiProposal.measurements),
-        observations:
-          mode === "replace"
-            ? inspectionAiProposal.observations
-            : joinInspectionText(current.observations, inspectionAiProposal.observations),
-      };
-
-      saveInspectionDraft(nextForm, inspectionAiProposal);
-      return nextForm;
-    });
-    setInspectionAiState("applied");
-    setInspectionDraftDirty(true);
-  }
-
-  function toggleInspectionTranscript(audioId) {
-    setInspectionTranscriptOpenIds((current) =>
-      current.includes(audioId)
-        ? current.filter((id) => id !== audioId)
-        : [...current, audioId]
-    );
-  }
-
   function handleSaveInspectionNote(event) {
     event.preventDefault();
 
@@ -1457,13 +1182,6 @@ export default function SalesModule({
             inspectionMeasurements: inspectionForm.measurements.trim(),
             inspectionObservations: inspectionForm.observations.trim(),
             inspectionPhotos: inspectionForm.photos,
-            inspectionAudioNotes: (inspectionForm.audioNotes || []).map((audio) => ({
-              id: audio.id,
-              name: audio.name,
-              type: audio.type,
-              createdAt: audio.createdAt,
-              transcript: audio.transcript || "",
-            })),
             ...(request.status === "Forespørsel" || request.status === "Befaring"
               ? {
                   status: "Befaring",
@@ -1479,8 +1197,6 @@ export default function SalesModule({
     setRequests(nextRequests);
     saveRequests(nextRequests, salesStorageKey);
     clearInspectionDraft(selectedRequestId);
-    setInspectionAiProposal(null);
-    setInspectionAiState("idle");
     setInspectionDraftDirty(false);
     setMode("detail");
   }
@@ -3094,16 +2810,6 @@ export default function SalesModule({
                 </label>
 
                 <div className="sales-field sales-field-full">
-                  <span>Lyd og AI-assistent</span>
-                  <div className="sales-form-preview">
-                    <strong>Satt på pause i denne fasen</strong>
-                    <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
-                      Kjerneflyten skal fungere fullt ut uten OpenAI-kostnad. Registrer befaringen med tekst og bilder. Lyd og AI kan senere aktiveres som en valgfri tilleggsfunksjon.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="sales-field sales-field-full">
                   <span>Bilder fra befaring</span>
                   <label className="sales-secondary-button" style={{ width: "fit-content" }}>
                     <Plus size={18} />
@@ -3159,10 +2865,6 @@ export default function SalesModule({
                     {inspectionForm.measurements
                       ? "Målinger registrert"
                       : "Målinger ikke registrert"}
-                  </span>
-                  <span>
-                    <Mic size={16} />
-                    {(inspectionForm.audioNotes || []).length} lydnotat(er)
                   </span>
                   <span>
                     <Plus size={16} />
@@ -3344,8 +3046,7 @@ export default function SalesModule({
         selectedRequest.inspectionExistingConditions ||
         selectedRequest.inspectionMeasurements ||
         selectedRequest.inspectionObservations ||
-        selectedRequest.inspectionPhotos?.length ||
-        selectedRequest.inspectionAudioNotes?.length
+        selectedRequest.inspectionPhotos?.length
     );
     const nextStepTitle = (() => {
       if (selectedRequest.status === "Forespørsel") return "Planlegg befaring";
@@ -3367,7 +3068,7 @@ export default function SalesModule({
         return "Befaringen er registrert. Neste naturlige steg er å bygge tilbudet fra samme sak.";
       }
       if (selectedRequest.status === "Befaring") {
-        return "Registrer kundens ønsker, eksisterende forhold, målinger, observasjoner, bilder og eventuelle lydnotater.";
+        return "Registrer kundens ønsker, eksisterende forhold, målinger, observasjoner og bilder.";
       }
       if (selectedRequest.status === "Tilbud" && hasUnpublishedOfferChanges) {
         return "Tilbudet er endret internt. Kunden ser ikke endringene før du publiserer en ny versjon av kundetilbudet.";
@@ -3436,7 +3137,7 @@ export default function SalesModule({
                     onClick={openInspectionNote}
                   >
                     <Ruler size={18} />
-                    Befaringsnotat / lydnotat
+                    Befaringsnotat
                   </button>
                 ) : null}
 
@@ -3994,7 +3695,7 @@ export default function SalesModule({
                 selectedRequest.inspectionExistingConditions ||
                 selectedRequest.inspectionMeasurements ||
                 selectedRequest.inspectionObservations ||
-                selectedRequest.inspectionAudioNotes?.length ? (
+                selectedRequest.inspectionPhotos?.length ? (
                   <div className="sales-detail-lines">
                     {selectedRequest.inspectionCustomerWishes ? (
                       <p><strong>Kundens ønsker:</strong> {selectedRequest.inspectionCustomerWishes}</p>
@@ -4008,10 +3709,6 @@ export default function SalesModule({
                     {selectedRequest.inspectionObservations ? (
                       <p><strong>Faglige observasjoner:</strong> {selectedRequest.inspectionObservations}</p>
                     ) : null}
-                    <span>
-                      <Mic size={16} />
-                      {(selectedRequest.inspectionAudioNotes || []).length} lydnotat(er)
-                    </span>
                     <span>
                       <Plus size={16} />
                       {(selectedRequest.inspectionPhotos || []).length} befaringsbilde(r)
