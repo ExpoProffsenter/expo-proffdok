@@ -1,3 +1,4 @@
+// FASE 20D STABIL TILBUDSKLADD VED HOVEDFANEBYTTE: Bruker stabil kladdnøkkel per bruker/sak, finner kladder fra FASE 20C og lagrer siste skjema synkront ved avmontering. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20C TRYGG TILBUDSKLADD OG TYDELIG BEFARING: Mellomlagrer tilbud fortløpende per sak, gjenoppretter kladden etter fanebytte, tydeliggjør ufullført befaringsnotat og legger kunden som deltaker i Outlook-utkast. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20B ANSVARLIG GJENNOM HELE LØPET: Setter innlogget bruker som ansvarlig ved ny forespørsel, beholder ansvarlig gjennom befaring/tilbud og overfører samme navn til aktivert prosjekt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20A PROSJEKTAKTIVERING: Verifiserer at lagret prosjekt-ID faktisk finnes. En feilaktig Aktivert-sak uten prosjekt repareres tilbake til Akseptert og kan aktiveres trygt på nytt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -31,7 +32,7 @@ import {
   Save,
   Send,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import "./sales.css";
 
@@ -432,6 +433,12 @@ export default function SalesModule({
     reservations: "",
     validityDays: "30",
   });
+  const offerFormRef = useRef(offerForm);
+  const offerModeRef = useRef(mode);
+  const offerRequestIdRef = useRef(selectedRequestId);
+  offerFormRef.current = offerForm;
+  offerModeRef.current = mode;
+  offerRequestIdRef.current = selectedRequestId;
   const [acceptanceForm, setAcceptanceForm] = useState({
     name: "",
     confirmed: false,
@@ -477,6 +484,51 @@ export default function SalesModule({
       ""
   ).trim();
 
+  function getStableOfferDraftKey(requestId = selectedRequestId) {
+    const userScope = String(authUser?.id || authUser?.email || "innlogget-bruker")
+      .trim()
+      .toLowerCase();
+    return `${STORAGE_KEY}:offer-draft:${userScope}:${requestId || "uten-sak"}`;
+  }
+
+  function saveOfferDraft(formValue = offerForm, requestId = selectedRequestId) {
+    if (!requestId) return;
+    window.localStorage.setItem(
+      getStableOfferDraftKey(requestId),
+      JSON.stringify({ form: formValue, savedAt: new Date().toISOString() })
+    );
+  }
+
+  function loadOfferDraft(requestId) {
+    if (!requestId) return null;
+
+    const candidateKeys = [
+      getStableOfferDraftKey(requestId),
+      `${salesStorageKey}:offer-draft:${requestId}`,
+    ];
+    const legacySuffix = `:offer-draft:${requestId}`;
+
+    for (let index = 0; index < window.localStorage.length; index += 1) {
+      const key = window.localStorage.key(index);
+      if (key?.startsWith(STORAGE_KEY) && key.endsWith(legacySuffix)) {
+        candidateKeys.push(key);
+      }
+    }
+
+    return candidateKeys.reduce((latest, key) => {
+      try {
+        const parsed = JSON.parse(window.localStorage.getItem(key) || "null");
+        if (!parsed?.form) return latest;
+        const savedAt = Date.parse(parsed.savedAt || "") || 0;
+        return !latest || savedAt >= latest.savedAt
+          ? { form: parsed.form, savedAt }
+          : latest;
+      } catch {
+        return latest;
+      }
+    }, null)?.form || null;
+  }
+
   useEffect(() => {
     if (!selectedInspectionPhoto) return undefined;
 
@@ -492,14 +544,23 @@ export default function SalesModule({
     if (mode !== "offer-builder" || !selectedRequestId) return;
 
     try {
-      window.localStorage.setItem(
-        `${salesStorageKey}:offer-draft:${selectedRequestId}`,
-        JSON.stringify({ form: offerForm, savedAt: new Date().toISOString() })
-      );
+      saveOfferDraft(offerForm, selectedRequestId);
     } catch (error) {
       console.warn("Kunne ikke mellomlagre tilbudskladden lokalt", error);
     }
+
   }, [mode, offerForm, salesStorageKey, selectedRequestId]);
+
+  useEffect(() => {
+    return () => {
+      if (offerModeRef.current !== "offer-builder" || !offerRequestIdRef.current) return;
+      try {
+        saveOfferDraft(offerFormRef.current, offerRequestIdRef.current);
+      } catch (error) {
+        console.warn("Kunne ikke lagre siste tilbudskladd ved fanebytte", error);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -1241,10 +1302,7 @@ export default function SalesModule({
     let storedDraft = null;
 
     try {
-      const storedValue = window.localStorage.getItem(
-        `${salesStorageKey}:offer-draft:${selectedRequest?.id || "uten-sak"}`
-      );
-      storedDraft = storedValue ? JSON.parse(storedValue)?.form : null;
+      storedDraft = loadOfferDraft(selectedRequest?.id);
     } catch {
       storedDraft = null;
     }
@@ -1573,9 +1631,11 @@ export default function SalesModule({
     }
 
     try {
+      offerModeRef.current = "detail";
       window.localStorage.removeItem(
-        `${salesStorageKey}:offer-draft:${selectedRequestId}`
+        getStableOfferDraftKey(selectedRequestId)
       );
+      window.localStorage.removeItem(`${salesStorageKey}:offer-draft:${selectedRequestId}`);
     } catch {
       // Varig lagring er fullført selv om lokal kladd ikke kan ryddes.
     }
