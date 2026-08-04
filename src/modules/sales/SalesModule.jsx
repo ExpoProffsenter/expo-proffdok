@@ -1,3 +1,4 @@
+// FASE 19.14A BEVAR SAK VED FANEBYTTE: Husker valgt sak og intern visning når brukeren forlater Befaring/Tilbud-fanen og åpner den igjen. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.14 KJERNEFLYT UTEN AI-AVHENGIGHET: Setter lyd/AI på pause i brukerflaten og prioriterer hovedløpet forespørsel → befaring med tekst/bilder → manuelt priset tilbud → kundelenke/aksept. Viser lagret befaringsgrunnlag direkte i tilbudsbyggeren. Ingen SQL, Edge, main eller produksjonsmerge.
 // FASE 19.12 JSON/DATA-URL HOTFIX: Sender lyd til inspection-assistant som JSON med eksisterende data-URL via aktiv Expo ProffDok Supabase-klient. Bevarer FASE 19.11 lydnotatflyt, flere lydnotater, kladd, transkripsjon og eksplisitt AI-godkjenning. Ingen SQL, Edge, main, CSS eller produksjonsmerge.
 // FASE 19.11 LYDNOTAT-ARBEIDSFLYT: Bevarer befaringskladd og AI-forslag per sak lokalt ved fanebytte, forklarer hva bruker skal lese inn, støtter flere nummererte lydnotater, transkripsjonsvisning og trygg legg-til/erstatt-bruk av AI-forslag. Ingen SQL, Edge, main eller produksjonsmerge.
@@ -46,6 +47,39 @@ const supabase =
     : null;
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
+
+function loadSalesNavigation(storageKey) {
+  try {
+    const storedNavigation = window.localStorage.getItem(
+      `${storageKey}:navigation`
+    );
+    const parsedNavigation = storedNavigation
+      ? JSON.parse(storedNavigation)
+      : null;
+
+    if (!parsedNavigation?.selectedRequestId) {
+      return { mode: "list", selectedRequestId: null };
+    }
+
+    return {
+      mode: parsedNavigation.mode || "detail",
+      selectedRequestId: parsedNavigation.selectedRequestId,
+    };
+  } catch {
+    return { mode: "list", selectedRequestId: null };
+  }
+}
+
+function saveSalesNavigation(storageKey, mode, selectedRequestId) {
+  try {
+    window.localStorage.setItem(
+      `${storageKey}:navigation`,
+      JSON.stringify({ mode, selectedRequestId })
+    );
+  } catch {
+    // Navigasjon er kun et lokalt hjelpemiddel i feature-previewen.
+  }
+}
 
 const initialRequests = [
   {
@@ -316,9 +350,15 @@ export default function SalesModule({
 
     return `${STORAGE_KEY}:${companyScope || "uten-firma"}:${userScope}`;
   }, [integrationMode, profile?.company_name, profile?.companyName, authUser?.id]);
+  const initialNavigation = useMemo(
+    () => loadSalesNavigation(salesStorageKey),
+    [salesStorageKey]
+  );
   const [requests, setRequests] = useState(() => loadRequests(salesStorageKey));
-  const [mode, setMode] = useState("list");
-  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [mode, setMode] = useState(initialNavigation.mode);
+  const [selectedRequestId, setSelectedRequestId] = useState(
+    initialNavigation.selectedRequestId
+  );
   const [form, setForm] = useState(emptyForm);
   const [surveyForm, setSurveyForm] = useState({
     date: "",
@@ -390,6 +430,16 @@ export default function SalesModule({
     () => requests.find((request) => request.id === selectedRequestId) || null,
     [requests, selectedRequestId]
   );
+
+  useEffect(() => {
+    if (selectedRequestId && !selectedRequest) {
+      setMode("list");
+      setSelectedRequestId(null);
+      return;
+    }
+
+    saveSalesNavigation(salesStorageKey, mode, selectedRequestId);
+  }, [mode, salesStorageKey, selectedRequest, selectedRequestId]);
 
   useEffect(() => {
     if (mode !== "inspection-note" || !selectedRequestId) return;
