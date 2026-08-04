@@ -1,3 +1,4 @@
+// FASE 20B ANSVARLIG GJENNOM HELE LØPET: Setter innlogget bruker som ansvarlig ved ny forespørsel, beholder ansvarlig gjennom befaring/tilbud og overfører samme navn til aktivert prosjekt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20A PROSJEKTAKTIVERING: Verifiserer at lagret prosjekt-ID faktisk finnes. En feilaktig Aktivert-sak uten prosjekt repareres tilbake til Akseptert og kan aktiveres trygt på nytt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 19.15G REELL PROSJEKTAKTIVERING: Oppretter ordinært ProffDok-prosjekt fra akseptert tilbud, overfører kunde/sak/tilbud/befaringsbilder, sperrer duplikater og åpner prosjektet direkte. Ingen SQL eller main-endring.
 // FASE 19.15F AKSEPTSTATUS: Synkroniserer digital kundeaksept via eksisterende offentlig tilbuds-RPC og sakens publicToken. Ingen SQL/main/Edge-endring.
@@ -373,6 +374,7 @@ export default function SalesModule({
   supabaseClient = null,
   authUser = null,
   profile = null,
+  currentUserName = "",
   integrationMode = "preview",
 } = {}) {
   const activeSupabase = supabaseClient || supabase;
@@ -462,6 +464,17 @@ export default function SalesModule({
     () => requests.find((request) => request.id === selectedRequestId) || null,
     [requests, selectedRequestId]
   );
+
+  const loggedInResponsible = String(
+    currentUserName ||
+      profile?.full_name ||
+      profile?.fullName ||
+      profile?.name ||
+      authUser?.user_metadata?.full_name ||
+      authUser?.user_metadata?.name ||
+      authUser?.email ||
+      ""
+  ).trim();
 
   useEffect(() => {
     if (!selectedInspectionPhoto) return undefined;
@@ -859,7 +872,11 @@ export default function SalesModule({
         selectedRequest?.title ||
         "Nytt ProffDok-prosjekt",
       projectNumber: selectedRequest?.projectNumber || "",
-      responsible: selectedRequest?.projectResponsible || "",
+      responsible:
+        selectedRequest?.projectResponsible ||
+        selectedRequest?.responsible ||
+        selectedRequest?.surveyResponsible ||
+        loggedInResponsible,
       note:
         selectedRequest?.projectNote ||
         "Opprettes fra akseptert tilbud i Befaring / Tilbud / Aksept.",
@@ -1768,7 +1785,10 @@ export default function SalesModule({
     setSurveyForm({
       date: selectedRequest?.surveyDate || "",
       time: selectedRequest?.surveyTime || "",
-      responsible: selectedRequest?.surveyResponsible || "",
+      responsible:
+        selectedRequest?.surveyResponsible ||
+        selectedRequest?.responsible ||
+        loggedInResponsible,
       note: selectedRequest?.surveyNote || "",
     });
     setMode("survey-plan");
@@ -2050,6 +2070,8 @@ export default function SalesModule({
       address: form.address.trim() || "Adresse ikke registrert",
       source: form.source,
       note: form.note.trim(),
+      responsible: loggedInResponsible,
+      projectResponsible: loggedInResponsible,
       status: "Forespørsel",
       statusClass: "sales-status-new",
       nextStep: "Planlegg befaring",
