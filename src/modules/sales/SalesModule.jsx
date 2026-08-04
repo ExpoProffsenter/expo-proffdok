@@ -1,3 +1,4 @@
+// FASE 20N FIRMALOGO OG NEDLASTING AV AKSEPTBEVIS: Nye akseptbevis bruker håndverksbedriftens firmalogo og lagrede firmaprofil. Låst PDF kan både åpnes og lastes ned. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20M LÅST AKSEPTBEVIS: Oppretter PDF fra akseptert, publisert tilbudsversjon og lagrer dokumentet varig på saken og i aktivert prosjekt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20J TYDELIG LEVERANSEOMFANG: Egne, versjonslåste felt for inkludert, ikke inkludert og kundens leveranse vises i kundetilbud og omfattes av digital aksept. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20I EGEN KONTRAKT: Håndverksbedriften kan laste opp egen kontrakt etter kundeaksept. Kontrakten lagres med saken og følger automatisk til Tilbud/kontrakt ved prosjektaktivering. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -28,6 +29,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardList,
+  Download,
   Home,
   FileText,
   Mail,
@@ -1279,6 +1281,22 @@ export default function SalesModule({
       const right = 192;
       const lineHeight = 5.2;
       let y = 20;
+      const acceptanceCompany = {
+        companyName:
+          selectedRequest.companyName || companyProfile.companyName || "",
+        orgNumber:
+          selectedRequest.companyOrgNumber || companyProfile.orgNumber || "",
+        address:
+          selectedRequest.companyAddress || companyProfile.address || "",
+        phone:
+          selectedRequest.companyPhone || companyProfile.phone || "",
+        email:
+          selectedRequest.companyEmail || companyProfile.email || "",
+        website:
+          selectedRequest.companyWebsite || companyProfile.website || "",
+        logoUrl:
+          selectedRequest.companyLogoUrl || companyProfile.logoUrl || "",
+      };
       const ensureSpace = (height = 12) => {
         if (y + height <= 278) return;
         pdf.addPage();
@@ -1305,14 +1323,63 @@ export default function SalesModule({
       };
 
       pdf.setFillColor(16, 92, 106);
-      pdf.rect(0, 0, 210, 34, "F");
+      pdf.rect(0, 0, 210, 38, "F");
       pdf.setTextColor(255, 255, 255);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(20);
       pdf.text("AKSEPTBEVIS", left, 17);
       pdf.setFontSize(9.5);
-      pdf.text("Expo ProffDok - dokumentasjon av digital kundeaksept", left, 25);
-      y = 44;
+      pdf.text(
+        acceptanceCompany.companyName || "Dokumentasjon av digital kundeaksept",
+        left,
+        25
+      );
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.text("Dokumentert i Expo ProffDok", left, 31);
+
+      if (acceptanceCompany.logoUrl) {
+        try {
+          const logoResponse = await fetch(acceptanceCompany.logoUrl, {
+            cache: "force-cache",
+          });
+          if (!logoResponse.ok) throw new Error("Firmalogoen kunne ikke hentes.");
+          const logoBlob = await logoResponse.blob();
+          const logoDataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error("Firmalogoen kunne ikke leses."));
+            reader.readAsDataURL(logoBlob);
+          });
+          const logoSize = await new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () =>
+              resolve({ width: image.naturalWidth, height: image.naturalHeight });
+            image.onerror = () => reject(new Error("Firmalogoen har ugyldig bildeformat."));
+            image.src = logoDataUrl;
+          });
+          const maxWidth = 46;
+          const maxHeight = 24;
+          const scale = Math.min(
+            maxWidth / logoSize.width,
+            maxHeight / logoSize.height
+          );
+          const logoWidth = logoSize.width * scale;
+          const logoHeight = logoSize.height * scale;
+          const logoFormat = logoBlob.type.includes("png") ? "PNG" : "JPEG";
+          pdf.addImage(
+            logoDataUrl,
+            logoFormat,
+            right - logoWidth,
+            (38 - logoHeight) / 2,
+            logoWidth,
+            logoHeight
+          );
+        } catch (logoError) {
+          console.warn("Firmalogo kunne ikke legges inn i akseptbeviset", logoError);
+        }
+      }
+      y = 48;
 
       addText(selectedRequest.acceptedOfferTitle || selectedRequest.offerTitle || selectedRequest.title || "Tilbud", { size: 16, style: "bold", after: 5 });
       addText(`Tilbud nr.: ${selectedRequest.id}`, { style: "bold", after: 1 });
@@ -1321,6 +1388,22 @@ export default function SalesModule({
       addText(`Aksepttidspunkt: ${selectedRequest.acceptedAt ? new Date(selectedRequest.acceptedAt).toLocaleString("nb-NO") : "Ikke registrert"}`, { after: 1 });
       addText(`Kunde: ${selectedRequest.customer || "-"}`, { after: 1 });
       addText(`Arbeidssted: ${selectedRequest.address || "-"}`, { after: 5 });
+
+      const companyDetails = [
+        acceptanceCompany.orgNumber
+          ? `Org.nr. ${acceptanceCompany.orgNumber}`
+          : "",
+        acceptanceCompany.address,
+        acceptanceCompany.phone,
+        acceptanceCompany.email,
+        acceptanceCompany.website,
+      ].filter(Boolean);
+      if (acceptanceCompany.companyName || companyDetails.length) {
+        addSection(
+          "Utførende bedrift",
+          [acceptanceCompany.companyName, ...companyDetails].filter(Boolean).join("\n")
+        );
+      }
 
       addSection("Innledning", selectedRequest.acceptedOfferIntro);
       const acceptedLines = getVisibleOfferLines(selectedRequest.acceptedOfferLines || selectedRequest.offerLines || []);
@@ -4791,6 +4874,17 @@ export default function SalesModule({
                           >
                             <FileText size={18} />
                             Åpne akseptbevis
+                          </a>
+                          <a
+                            className="sales-secondary-button"
+                            href={selectedRequest.acceptanceProofFile.url}
+                            download={
+                              selectedRequest.acceptanceProofFile.name ||
+                              `Akseptbevis-${sanitizeStoragePart(selectedRequest.id)}.pdf`
+                            }
+                          >
+                            <Download size={18} />
+                            Last ned PDF
                           </a>
                           <span style={{ color: "#42606b", fontWeight: 700 }}>
                             Låst dokument - følger automatisk med til prosjektet.
