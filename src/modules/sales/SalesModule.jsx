@@ -293,8 +293,25 @@ function createCompanySnapshot(profile = {}) {
   };
 }
 
+function createOfferTermsSnapshot(request = {}) {
+  return {
+    id: "__expo_offer_terms_snapshot__",
+    __offerTermsMeta: true,
+    terms: request.offerTerms || "",
+    paymentTerms: request.offerPaymentTerms || "",
+  };
+}
+
+function getOfferTermsSnapshot(lines = []) {
+  return Array.isArray(lines)
+    ? lines.find((line) => line?.__offerTermsMeta) || {}
+    : {};
+}
+
 function getVisibleOfferLines(lines = []) {
-  return Array.isArray(lines) ? lines.filter((line) => !line?.__companyMeta) : [];
+  return Array.isArray(lines)
+    ? lines.filter((line) => !line?.__companyMeta && !line?.__offerTermsMeta)
+    : [];
 }
 
 function getInspectionContext(request = {}) {
@@ -433,6 +450,8 @@ export default function SalesModule({
     ],
     options: [],
     reservations: "",
+    terms: "",
+    paymentTerms: "10 dager netto",
     validityDays: "30",
   });
   const offerFormRef = useRef(offerForm);
@@ -523,6 +542,8 @@ export default function SalesModule({
             offerLines: formValue.lines,
             offerOptions: formValue.options,
             offerReservations: formValue.reservations,
+            offerTerms: formValue.terms,
+            offerPaymentTerms: formValue.paymentTerms,
             offerValidityDays: formValue.validityDays,
             offerTotal: getOfferTotal(formValue.lines),
             offerDraftSavedAt: new Date().toISOString(),
@@ -582,7 +603,26 @@ export default function SalesModule({
             ],
       options: request?.offerOptions?.length ? request.offerOptions : [],
       reservations: request?.offerReservations || "",
+      terms: request?.offerTerms || "",
+      paymentTerms: request?.offerPaymentTerms || "10 dager netto",
       validityDays: request?.offerValidityDays || "30",
+    };
+  }
+
+  function normalizeStoredOfferDraft(storedDraft, request) {
+    const requestForm = buildOfferFormFromRequest(request);
+    if (!storedDraft) return requestForm;
+
+    return {
+      ...requestForm,
+      ...storedDraft,
+      lines: Array.isArray(storedDraft.lines) ? storedDraft.lines : requestForm.lines,
+      options: Array.isArray(storedDraft.options)
+        ? storedDraft.options
+        : requestForm.options,
+      terms: storedDraft.terms ?? requestForm.terms,
+      paymentTerms:
+        storedDraft.paymentTerms ?? requestForm.paymentTerms,
     };
   }
 
@@ -603,7 +643,7 @@ export default function SalesModule({
     }
 
     offerFormHydratedRequestIdRef.current = selectedRequestId;
-    setOfferForm(storedDraft || buildOfferFormFromRequest(selectedRequest));
+    setOfferForm(normalizeStoredOfferDraft(storedDraft, selectedRequest));
     setOfferDraftSaveStatus("idle");
     setOfferFormReady(true);
     // Gjenoppretting må skje før autolagring får starte.
@@ -1300,6 +1340,7 @@ export default function SalesModule({
       intro: request.offerIntro || "",
       lines: [
         createCompanySnapshot(companyProfile),
+        createOfferTermsSnapshot(request),
         ...(request.offerLines || []),
       ],
       options: request.offerOptions || [],
@@ -1434,7 +1475,7 @@ export default function SalesModule({
     }
 
     offerFormHydratedRequestIdRef.current = selectedRequest?.id || "";
-    setOfferForm(storedDraft || buildOfferFormFromRequest(selectedRequest));
+    setOfferForm(normalizeStoredOfferDraft(storedDraft, selectedRequest));
     setOfferFormReady(true);
     setMode("offer-builder");
   }
@@ -1713,6 +1754,8 @@ export default function SalesModule({
         offerLines: cleanLines,
         offerOptions: cleanOptions,
         offerReservations: offerForm.reservations.trim(),
+        offerTerms: offerForm.terms.trim(),
+        offerPaymentTerms: offerForm.paymentTerms.trim(),
         offerValidityDays: offerForm.validityDays,
         offerTotal: getOfferTotal(cleanLines),
         sentOfferVersionId: null,
@@ -2052,6 +2095,7 @@ export default function SalesModule({
       intro: request.offerIntro || "",
       lines: [
         createCompanySnapshot(profileForPublish),
+        createOfferTermsSnapshot(request),
         ...(request.offerLines || []),
       ],
       options: request.offerOptions || [],
@@ -2070,6 +2114,7 @@ export default function SalesModule({
     const publishedLines = Array.isArray(version.lines) ? version.lines : [];
     const companySnapshot =
       publishedLines.find((line) => line?.__companyMeta) || {};
+    const offerTermsSnapshot = getOfferTermsSnapshot(publishedLines);
     const visibleOfferLines = getVisibleOfferLines(publishedLines);
 
     return {
@@ -2088,6 +2133,8 @@ export default function SalesModule({
       companyLogoUrl: companySnapshot.logoUrl || "",
       offerOptions: version.options || [],
       offerReservations: version.reservations || "",
+      offerTerms: offerTermsSnapshot.terms || "",
+      offerPaymentTerms: offerTermsSnapshot.paymentTerms || "",
       offerValidityDays: String(version.validity_days || 30),
       offerTotal: Number(version.total_ex_vat || 0),
       customer: offer.customer_name,
@@ -2671,6 +2718,11 @@ export default function SalesModule({
     const offerOptions = activeOfferVersion?.options || selectedRequest.offerOptions || [];
     const offerReservations =
       activeOfferVersion?.reservations || selectedRequest.offerReservations;
+    const activeTermsSnapshot = getOfferTermsSnapshot(activeOfferVersion?.lines || []);
+    const offerTerms =
+      activeTermsSnapshot.terms || selectedRequest.offerTerms || "";
+    const offerPaymentTerms =
+      activeTermsSnapshot.paymentTerms || selectedRequest.offerPaymentTerms || "";
     const offerValidityDays =
       activeOfferVersion?.validityDays || selectedRequest.offerValidityDays || "30";
     const selectedOptions = offerOptions.filter((option) =>
@@ -2951,6 +3003,26 @@ export default function SalesModule({
                 </article>
               ) : null}
 
+              {offerTerms || offerPaymentTerms ? (
+                <article className="sales-customer-section sales-customer-text-section">
+                  <span className="sales-section-kicker">Vilkår</span>
+                  <div style={{ display: "grid", gap: 20 }}>
+                    {offerTerms ? (
+                      <div>
+                        <h2>Vilkår</h2>
+                        <p style={{ whiteSpace: "pre-wrap" }}>{offerTerms}</p>
+                      </div>
+                    ) : null}
+                    {offerPaymentTerms ? (
+                      <div>
+                        <h2>Betalingsbetingelser</h2>
+                        <p style={{ whiteSpace: "pre-wrap" }}>{offerPaymentTerms}</p>
+                      </div>
+                    ) : null}
+                  </div>
+                </article>
+              ) : null}
+
               <form onSubmit={handleAcceptOffer} className="sales-customer-accept-form">
                 <article className="sales-customer-accept-card">
                   <div className="sales-customer-accept-copy">
@@ -2958,7 +3030,8 @@ export default function SalesModule({
                     <h2>Aksepter tilbudet</h2>
                     <p>
                       Skriv inn fullt navn og bekreft at du aksepterer tilbudet med
-                      arbeider, priser, forutsetninger og forbehold som vist over.
+                      arbeider, priser, forbehold, vilkår og betalingsbetingelser
+                      som vist over.
                     </p>
                   </div>
 
@@ -3020,7 +3093,8 @@ export default function SalesModule({
                       />
                       <span>
                         Jeg aksepterer tilbudet og bekrefter at jeg har lest
-                        tilbudets innhold, priser, forutsetninger og forbehold.
+                        tilbudets innhold, priser, forbehold, vilkår og
+                        betalingsbetingelser.
                       </span>
                     </label>
                   </div>
@@ -3401,6 +3475,30 @@ export default function SalesModule({
                     }
                     placeholder="Eksempel: Tilbudet forutsetter at eksisterende konstruksjoner er egnet for planlagte arbeider. Skjulte forhold prises som tillegg etter avtale."
                     rows={5}
+                  />
+                </label>
+
+                <label className="sales-field sales-field-full">
+                  <span>Vilkår</span>
+                  <textarea
+                    value={offerForm.terms}
+                    onChange={(event) =>
+                      updateOfferForm("terms", event.target.value)
+                    }
+                    placeholder="Skriv inn vilkårene som skal gjelde for dette tilbudet. Teksten fryses i den publiserte tilbudsversjonen."
+                    rows={7}
+                  />
+                </label>
+
+                <label className="sales-field sales-field-full">
+                  <span>Betalingsbetingelser</span>
+                  <textarea
+                    value={offerForm.paymentTerms}
+                    onChange={(event) =>
+                      updateOfferForm("paymentTerms", event.target.value)
+                    }
+                    placeholder="Eksempel: 10 dager netto. Fakturering etter avtalt betalingsplan."
+                    rows={4}
                   />
                 </label>
 
