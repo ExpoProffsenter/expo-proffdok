@@ -1,4 +1,4 @@
-// FASE 19.15E AKSEPTSTATUS: Synkroniserer digital kundeaksept fra sales_offers inn i intern sak ved innlasting. Ingen SQL/main/Edge-endring.
+// FASE 19.15F AKSEPTSTATUS: Synkroniserer digital kundeaksept via eksisterende offentlig tilbuds-RPC og sakens publicToken. Ingen SQL/main/Edge-endring.
 // FASE 19.15C KUNDELINK: Beholder publicOffer-token og Vercels delingsparametere i URL-en.
 // FASE 19.15B BILDEVISNING I BEFARINGSOPPSUMMERING: Viser lagrede befaringsbilder som klikkbare miniatyrbilder med stor visning. Ingen SQL/lagrings/main/Edge-endring.
 // FASE 19.15 VARIG BEFARINGSLAGRING: Forespørsler, befaringsplan og notater lagres firmascopet i Supabase. Befaringsbilder komprimeres og lagres privat i Storage. Ingen lyd eller AI.
@@ -509,23 +509,6 @@ export default function SalesModule({
         return;
       }
 
-      const { data: acceptedOffers, error: acceptedOffersError } =
-        await activeSupabase
-          .from("sales_offers")
-          .select(
-            "request_ref,status,accepted_by,accepted_at,accepted_payload,active_version_id"
-          )
-          .eq("company_id", resolvedCompanyId)
-          .eq("status", "accepted");
-
-      if (acceptedOffersError) {
-        console.error("Kunne ikke hente aksepterte tilbud", acceptedOffersError);
-      }
-
-      const acceptedOfferByRequestRef = new Map(
-        (acceptedOffers || []).map((offer) => [offer.request_ref, offer])
-      );
-
       const hydrated = await Promise.all(
         (rows || []).map(async (row) => {
           const request = { ...(row.payload || {}), id: row.request_ref };
@@ -538,7 +521,25 @@ export default function SalesModule({
               return { ...photo, dataUrl: data?.signedUrl || "" };
             })
           );
-          const acceptedOffer = acceptedOfferByRequestRef.get(row.request_ref);
+          let acceptedOffer = null;
+          let acceptedVersion = null;
+
+          if (request.publicToken && request.status !== "Aktivert") {
+            const { data: publicOfferData, error: publicOfferError } =
+              await activeSupabase.rpc("get_sales_offer_by_token", {
+                token: request.publicToken,
+              });
+
+            if (publicOfferError) {
+              console.error(
+                `Kunne ikke kontrollere tilbudsstatus for sak ${row.request_ref}`,
+                publicOfferError
+              );
+            } else if (publicOfferData?.offer?.status === "accepted") {
+              acceptedOffer = publicOfferData.offer;
+              acceptedVersion = publicOfferData.version || null;
+            }
+          }
 
           if (!acceptedOffer || request.status === "Aktivert") {
             return { ...request, inspectionPhotos: photos };
@@ -551,10 +552,17 @@ export default function SalesModule({
               ? acceptedPayload.selectedOptions
               : [];
           const acceptedOfferLines = getVisibleOfferLines(
-            request.offerLines || []
+            acceptedVersion?.lines || request.offerLines || []
           );
           const acceptedTotal =
-            getOfferTotal(acceptedOfferLines) + getOfferTotal(acceptedOptions);
+            Number(
+              acceptedPayload.accepted_total ??
+                acceptedPayload.acceptedTotal ??
+                acceptedPayload.total_ex_vat ??
+                acceptedPayload.totalExVat
+            ) ||
+            Number(acceptedVersion?.total_ex_vat || 0) +
+              getOfferTotal(acceptedOptions);
 
           return {
             ...request,
@@ -574,8 +582,14 @@ export default function SalesModule({
               acceptedPayload.acceptedAt ||
               null,
             acceptedOfferVersionId:
-              acceptedOffer.active_version_id || request.sentOfferVersionId || null,
-            acceptedOfferVersionNumber: request.sentOfferVersionNumber || null,
+              acceptedVersion?.id ||
+              acceptedOffer.active_version_id ||
+              request.sentOfferVersionId ||
+              null,
+            acceptedOfferVersionNumber:
+              acceptedVersion?.version_number ||
+              request.sentOfferVersionNumber ||
+              null,
             acceptedOfferLines,
             acceptedOptionIds: acceptedOptions
               .map((option) => option?.id)
