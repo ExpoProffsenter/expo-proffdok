@@ -1,3 +1,4 @@
+// FASE 20C TRYGG TILBUDSKLADD OG TYDELIG BEFARING: Mellomlagrer tilbud fortløpende per sak, gjenoppretter kladden etter fanebytte, tydeliggjør ufullført befaringsnotat og legger kunden som deltaker i Outlook-utkast. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20B ANSVARLIG GJENNOM HELE LØPET: Setter innlogget bruker som ansvarlig ved ny forespørsel, beholder ansvarlig gjennom befaring/tilbud og overfører samme navn til aktivert prosjekt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20A PROSJEKTAKTIVERING: Verifiserer at lagret prosjekt-ID faktisk finnes. En feilaktig Aktivert-sak uten prosjekt repareres tilbake til Akseptert og kan aktiveres trygt på nytt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 19.15G REELL PROSJEKTAKTIVERING: Oppretter ordinært ProffDok-prosjekt fra akseptert tilbud, overfører kunde/sak/tilbud/befaringsbilder, sperrer duplikater og åpner prosjektet direkte. Ingen SQL eller main-endring.
@@ -486,6 +487,19 @@ export default function SalesModule({
     window.addEventListener("keydown", closePhotoOnEscape);
     return () => window.removeEventListener("keydown", closePhotoOnEscape);
   }, [selectedInspectionPhoto]);
+
+  useEffect(() => {
+    if (mode !== "offer-builder" || !selectedRequestId) return;
+
+    try {
+      window.localStorage.setItem(
+        `${salesStorageKey}:offer-draft:${selectedRequestId}`,
+        JSON.stringify({ form: offerForm, savedAt: new Date().toISOString() })
+      );
+    } catch (error) {
+      console.warn("Kunne ikke mellomlagre tilbudskladden lokalt", error);
+    }
+  }, [mode, offerForm, salesStorageKey, selectedRequestId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1224,7 +1238,18 @@ export default function SalesModule({
   }
 
   function openOfferBuilder() {
-    setOfferForm({
+    let storedDraft = null;
+
+    try {
+      const storedValue = window.localStorage.getItem(
+        `${salesStorageKey}:offer-draft:${selectedRequest?.id || "uten-sak"}`
+      );
+      storedDraft = storedValue ? JSON.parse(storedValue)?.form : null;
+    } catch {
+      storedDraft = null;
+    }
+
+    setOfferForm(storedDraft || {
       title: selectedRequest?.offerTitle || `Tilbud – ${selectedRequest?.title || ""}`,
       intro:
         selectedRequest?.offerIntro ||
@@ -1457,7 +1482,7 @@ export default function SalesModule({
     }).format(value);
   }
 
-  function handleSaveOffer(event) {
+  async function handleSaveOffer(event) {
     event.preventDefault();
 
     const cleanLines = offerForm.lines
@@ -1540,9 +1565,20 @@ export default function SalesModule({
     });
 
     setRequests(nextRequests);
-    void persistRequests(nextRequests).catch((error) =>
-      alert(error.message || "Kunne ikke lagre tilbudsutkastet varig.")
-    );
+    try {
+      await persistRequests(nextRequests);
+    } catch (error) {
+      alert(error.message || "Kunne ikke lagre tilbudsutkastet varig.");
+      return;
+    }
+
+    try {
+      window.localStorage.removeItem(
+        `${salesStorageKey}:offer-draft:${selectedRequestId}`
+      );
+    } catch {
+      // Varig lagring er fullført selv om lokal kladd ikke kan ryddes.
+    }
     setMode("detail");
   }
 
@@ -1773,6 +1809,10 @@ export default function SalesModule({
       path: "/calendar/action/compose",
       rru: "addevent",
     });
+
+    if (request.email) {
+      params.set("to", request.email);
+    }
 
     window.open(
       `https://outlook.office.com/calendar/0/deeplink/compose?${params.toString()}`,
@@ -2867,6 +2907,9 @@ export default function SalesModule({
               <p className="sales-subtitle">
                 {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
               </p>
+              <p className="sales-subtitle" style={{ marginTop: 8 }}>
+                Kladden mellomlagres automatisk mens du arbeider.
+              </p>
             </section>
 
             <form
@@ -3610,7 +3653,7 @@ export default function SalesModule({
     const nextStepTitle = (() => {
       if (selectedRequest.status === "Forespørsel") return "Planlegg befaring";
       if (selectedRequest.status === "Befaring" && selectedRequest.nextStep === "Opprett tilbud") return "Opprett tilbud";
-      if (selectedRequest.status === "Befaring") return "Registrer befaring";
+      if (selectedRequest.status === "Befaring") return "Fullfør befaringsnotat";
       if (selectedRequest.status === "Tilbud" && hasUnpublishedOfferChanges) {
         return hasPublishedCustomerOffer ? "Oppdater kundens tilbud" : "Publiser kundetilbud";
       }
@@ -3838,7 +3881,7 @@ export default function SalesModule({
                       onClick={selectedRequest.nextStep === "Opprett tilbud" ? openOfferBuilder : openInspectionNote}
                     >
                       {selectedRequest.nextStep === "Opprett tilbud" ? <ClipboardList size={18} /> : <Ruler size={18} />}
-                      {selectedRequest.nextStep === "Opprett tilbud" ? "Opprett tilbud" : "Registrer befaring"}
+                      {selectedRequest.nextStep === "Opprett tilbud" ? "Opprett tilbud" : "Fullfør befaringsnotat"}
                     </button>
                   ) : null}
 
