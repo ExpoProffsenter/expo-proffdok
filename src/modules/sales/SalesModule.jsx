@@ -1,3 +1,4 @@
+// FASE 20T SYNLIG TILBUDS- OG AKSEPTHISTORIKK: Viser tidligere og gjeldende aksepterte tilbudsversjoner med kunde, tidspunkt, total, valgte opsjoner og låst akseptbevis. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20P SIKKER ÅPNING AV AKSEPTBEVIS: Ny fane reserveres direkte ved brukerklikk og viser ferdig PDF etter opprettelse. Eksisterende nedlasting, firmalogo og låst dokumentasjon beholdes. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20M LÅST AKSEPTBEVIS: Oppretter PDF fra akseptert, publisert tilbudsversjon og lagrer dokumentet varig på saken og i aktivert prosjekt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20J TYDELIG LEVERANSEOMFANG: Egne, versjonslåste felt for inkludert, ikke inkludert og kundens leveranse vises i kundetilbud og omfattes av digital aksept. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -4490,6 +4491,48 @@ export default function SalesModule({
         selectedRequest.inspectionObservations ||
         selectedRequest.inspectionPhotos?.length
     );
+    const currentAcceptedHistoryEntry = selectedRequest.acceptedAt
+      ? {
+          id: `current-accepted-offer-${selectedRequest.acceptedOfferVersionId || selectedRequest.acceptedAt}`,
+          versionId:
+            selectedRequest.acceptedOfferVersionId ||
+            selectedRequest.sentOfferVersionId ||
+            "",
+          versionNumber:
+            selectedRequest.acceptedOfferVersionNumber ||
+            selectedRequest.sentOfferVersionNumber ||
+            "",
+          acceptedBy: selectedRequest.acceptedBy || "",
+          acceptedAt: selectedRequest.acceptedAt || "",
+          acceptedTotal: Number(selectedRequest.acceptedTotal || 0),
+          selectedOptions: selectedRequest.acceptedOptions || [],
+          lines:
+            selectedRequest.acceptedOfferLines ||
+            selectedRequest.offerLines ||
+            [],
+          acceptanceProofFile: selectedRequest.acceptanceProofFile || null,
+        }
+      : null;
+    const acceptedOfferHistoryEntries = [
+      ...(Array.isArray(selectedRequest.acceptedOfferHistory)
+        ? selectedRequest.acceptedOfferHistory
+        : []),
+      ...(currentAcceptedHistoryEntry ? [currentAcceptedHistoryEntry] : []),
+    ]
+      .filter(
+        (entry, index, entries) =>
+          entries.findIndex(
+            (candidate) =>
+              String(candidate.versionId || candidate.versionNumber || "") ===
+                String(entry.versionId || entry.versionNumber || "") &&
+              String(candidate.acceptedAt || "") === String(entry.acceptedAt || "")
+          ) === index
+      )
+      .sort(
+        (left, right) =>
+          new Date(right.acceptedAt || 0).getTime() -
+          new Date(left.acceptedAt || 0).getTime()
+      );
     const nextStepTitle = (() => {
       if (selectedRequest.status === "Forespørsel") return "Planlegg befaring";
       if (selectedRequest.status === "Befaring" && selectedRequest.nextStep === "Opprett tilbud") return "Opprett tilbud";
@@ -4522,7 +4565,7 @@ export default function SalesModule({
         return "Kunden har akseptert tilbudet. Akseptert innhold låses i denne flyten før senere prosjektaktivering.";
       }
       if (selectedRequest.status === "Aktivert") {
-        return "Saken er markert som aktivert i preview. Endelig integrasjon mot aktiv ProffDok-app skal gjøres kontrollert senere.";
+        return "Saken er ferdig aktivert. Prosjektet og overførte dokumenter kan åpnes direkte i den ordinære ProffDok-prosjektlisten.";
       }
       return "Følg neste tydelige handling i saken.";
     })();
@@ -5358,6 +5401,98 @@ export default function SalesModule({
                   </p>
                 )}
               </article>
+
+              {acceptedOfferHistoryEntries.length ? (
+                <article className="sales-detail-card sales-detail-card-wide">
+                  <h2>Tilbuds- og aksepthistorikk</h2>
+                  <p style={{ marginTop: 0 }}>
+                    Aksepterte versjoner er skrivebeskyttet og beholdes som
+                    dokumentasjon selv om det senere opprettes et revidert tilbud.
+                  </p>
+                  <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
+                    {acceptedOfferHistoryEntries.map((entry, index) => {
+                      const optionCount = Array.isArray(entry.selectedOptions)
+                        ? entry.selectedOptions.length
+                        : 0;
+                      const lineCount = Array.isArray(entry.lines)
+                        ? entry.lines.length
+                        : 0;
+                      const versionLabel = entry.versionNumber
+                        ? `v${entry.versionNumber}`
+                        : "Ukjent versjon";
+
+                      return (
+                        <details
+                          key={entry.id || `${entry.versionId}-${entry.acceptedAt}-${index}`}
+                          open={index === 0}
+                          style={{
+                            border: "1px solid #d7e4ea",
+                            borderRadius: 16,
+                            background: "#f8fbfc",
+                            padding: "14px 16px",
+                          }}
+                        >
+                          <summary
+                            style={{
+                              cursor: "pointer",
+                              fontWeight: 900,
+                              color: "#183744",
+                            }}
+                          >
+                            Tilbud {versionLabel} · {formatNok(entry.acceptedTotal || 0)} eks. mva.
+                          </summary>
+                          <div className="sales-detail-lines" style={{ marginTop: 14 }}>
+                            <span>
+                              <CheckCircle2 size={16} />
+                              Akseptert av {entry.acceptedBy || "kunde"}
+                            </span>
+                            <p style={{ margin: 0 }}>
+                              {entry.acceptedAt
+                                ? new Date(entry.acceptedAt).toLocaleString("nb-NO")
+                                : "Aksepttidspunkt ikke registrert"}
+                            </p>
+                            <p style={{ margin: 0 }}>
+                              {lineCount} tilbudspost{lineCount === 1 ? "" : "er"} · {optionCount} valgt{optionCount === 1 ? "" : "e"} opsjon{optionCount === 1 ? "" : "er"}
+                            </p>
+                            <p style={{ margin: 0 }}>
+                              <strong>Sum inkl. mva.:</strong>{" "}
+                              {formatNok(Number(entry.acceptedTotal || 0) * 1.25)}
+                            </p>
+                            {entry.acceptanceProofFile?.url ? (
+                              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 6 }}>
+                                <a
+                                  className="sales-secondary-button"
+                                  href={entry.acceptanceProofFile.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <FileText size={18} />
+                                  Åpne akseptbevis
+                                </a>
+                                <a
+                                  className="sales-secondary-button"
+                                  href={entry.acceptanceProofFile.url}
+                                  download={
+                                    entry.acceptanceProofFile.name ||
+                                    `Akseptbevis-${sanitizeStoragePart(selectedRequest.id)}-${sanitizeStoragePart(versionLabel)}.pdf`
+                                  }
+                                >
+                                  <Download size={18} />
+                                  Last ned PDF
+                                </a>
+                              </div>
+                            ) : (
+                              <p style={{ margin: "6px 0 0", color: "#6b4f00", fontWeight: 700 }}>
+                                Aksepten er lagret, men denne versjonen har ikke et eget PDF-bevis.
+                              </p>
+                            )}
+                          </div>
+                        </details>
+                      );
+                    })}
+                  </div>
+                </article>
+              ) : null}
             </section>
           </main>
         </div>
