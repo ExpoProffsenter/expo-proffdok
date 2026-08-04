@@ -865,7 +865,11 @@ export default function SalesModule({
             }
           }
 
-          if (!acceptedOffer || hasRealActivatedProject) {
+          if (
+            !acceptedOffer ||
+            hasRealActivatedProject ||
+            request.offerRevisionDraftFromVersion
+          ) {
             return { ...request, inspectionPhotos: photos };
           }
 
@@ -1747,6 +1751,109 @@ export default function SalesModule({
     };
   }
 
+  async function handleCreateOfferRevisionAfterAcceptance() {
+    if (!selectedRequest || selectedRequest.status !== "Akseptert") return;
+
+    const acceptedVersionNumber =
+      selectedRequest.acceptedOfferVersionNumber ||
+      selectedRequest.sentOfferVersionNumber ||
+      "";
+    const confirmed = window.confirm(
+      `Opprette en ny redigerbar tilbudsversjon basert på akseptert v${acceptedVersionNumber || "-"}?\n\nDen aksepterte versjonen og akseptbeviset beholdes låst. Den nye versjonen må publiseres og aksepteres på nytt.`
+    );
+    if (!confirmed) return;
+
+    const acceptedHistoryEntry = {
+      id: `accepted-offer-${selectedRequest.acceptedOfferVersionId || Date.now()}`,
+      versionId: selectedRequest.acceptedOfferVersionId || selectedRequest.sentOfferVersionId || "",
+      versionNumber: acceptedVersionNumber,
+      acceptedBy: selectedRequest.acceptedBy || "",
+      acceptedAt: selectedRequest.acceptedAt || "",
+      acceptedTotal: Number(selectedRequest.acceptedTotal || 0),
+      selectedOptions: selectedRequest.acceptedOptions || [],
+      lines: selectedRequest.acceptedOfferLines || selectedRequest.offerLines || [],
+      title: selectedRequest.acceptedOfferTitle || selectedRequest.offerTitle || selectedRequest.title || "Tilbud",
+      intro: selectedRequest.acceptedOfferIntro || selectedRequest.offerIntro || "",
+      reservations: selectedRequest.acceptedOfferReservations || selectedRequest.offerReservations || "",
+      included: selectedRequest.acceptedOfferIncluded || selectedRequest.offerIncluded || "",
+      excluded: selectedRequest.acceptedOfferExcluded || selectedRequest.offerExcluded || "",
+      customerSupplied: selectedRequest.acceptedOfferCustomerSupplied || selectedRequest.offerCustomerSupplied || "",
+      terms: selectedRequest.acceptedOfferTerms || selectedRequest.offerTerms || "",
+      paymentTerms: selectedRequest.acceptedOfferPaymentTerms || selectedRequest.offerPaymentTerms || "",
+      acceptanceProofFile: selectedRequest.acceptanceProofFile || null,
+    };
+    const existingHistory = Array.isArray(selectedRequest.acceptedOfferHistory)
+      ? selectedRequest.acceptedOfferHistory
+      : [];
+    const historyAlreadyContainsVersion = existingHistory.some(
+      (entry) =>
+        entry.versionId === acceptedHistoryEntry.versionId &&
+        entry.acceptedAt === acceptedHistoryEntry.acceptedAt
+    );
+    const nextHistory = historyAlreadyContainsVersion
+      ? existingHistory
+      : [...existingHistory, acceptedHistoryEntry];
+    const nextRequest = {
+      ...selectedRequest,
+      offerTitle: acceptedHistoryEntry.title,
+      offerIntro: acceptedHistoryEntry.intro,
+      offerLines: acceptedHistoryEntry.lines,
+      offerOptions: selectedRequest.offerOptions || [],
+      offerReservations: acceptedHistoryEntry.reservations,
+      offerIncluded: acceptedHistoryEntry.included,
+      offerExcluded: acceptedHistoryEntry.excluded,
+      offerCustomerSupplied: acceptedHistoryEntry.customerSupplied,
+      offerTerms: acceptedHistoryEntry.terms,
+      offerPaymentTerms: acceptedHistoryEntry.paymentTerms,
+      offerTotal: getOfferTotal(acceptedHistoryEntry.lines),
+      acceptedOfferHistory: nextHistory,
+      offerRevisionDraftFromVersion: acceptedVersionNumber || true,
+      offerRevisionDraftCreatedAt: new Date().toISOString(),
+      sentOfferVersionId: null,
+      sentOfferVersionNumber: null,
+      sentOfferAt: null,
+      acceptedBy: "",
+      acceptedAt: "",
+      acceptedOfferVersionId: null,
+      acceptedOfferVersionNumber: null,
+      acceptedOfferLines: [],
+      acceptedOptionIds: [],
+      acceptedOptions: [],
+      acceptedTotal: null,
+      acceptedPayload: null,
+      acceptanceProofFile: null,
+      acceptanceProofCreatedAt: "",
+      status: "Tilbud",
+      statusClass: "sales-status-quote",
+      nextStep: "Rediger og publiser ny tilbudsversjon",
+      iconName: "send",
+    };
+    const nextRequests = requests.map((request) =>
+      request.id === selectedRequest.id ? nextRequest : request
+    );
+
+    setRequests(nextRequests);
+    latestRequestsRef.current = nextRequests;
+    try {
+      await persistRequests(nextRequests);
+      try {
+        window.localStorage.removeItem(getStableOfferDraftKey(selectedRequest.id));
+        window.localStorage.removeItem(`${salesStorageKey}:offer-draft:${selectedRequest.id}`);
+      } catch {
+        // Den varige revisjonskladden er allerede lagret.
+      }
+      offerFormHydratedRequestIdRef.current = selectedRequest.id;
+      setOfferForm(buildOfferFormFromRequest(nextRequest));
+      setOfferFormReady(true);
+      setOfferDraftSaveStatus("saved");
+      setMode("offer-builder");
+    } catch (error) {
+      setRequests(requests);
+      latestRequestsRef.current = requests;
+      alert(error.message || "Kunne ikke opprette en ny tilbudsversjon.");
+    }
+  }
+
   function toggleAcceptedOption(optionId) {
     setAcceptanceForm((current) => ({
       ...current,
@@ -2599,6 +2706,8 @@ export default function SalesModule({
             status: "Tilbud",
             statusClass: "sales-status-quote",
             nextStep: "Kundelink er oppdatert",
+            offerRevisionDraftFromVersion: null,
+            offerRevisionDraftCreatedAt: "",
             lastPublishedLineCount: currentLineCount,
             lastPublishedOptionCount: currentOptionCount,
           }
@@ -4628,10 +4737,20 @@ export default function SalesModule({
                   ) : null}
 
                   {selectedRequest.status === "Akseptert" ? (
-                    <button className="sales-primary-button" type="button" onClick={openProjectActivation}>
-                      <Home size={18} />
-                      Aktiver som prosjekt
-                    </button>
+                    <>
+                      <button className="sales-primary-button" type="button" onClick={openProjectActivation}>
+                        <Home size={18} />
+                        Aktiver som prosjekt
+                      </button>
+                      <button
+                        className="sales-secondary-button"
+                        type="button"
+                        onClick={handleCreateOfferRevisionAfterAcceptance}
+                      >
+                        <Plus size={18} />
+                        Opprett ny tilbudsversjon
+                      </button>
+                    </>
                   ) : null}
                 </div>
                 {selectedRequest.status === "Aktivert" &&
