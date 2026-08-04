@@ -1,5 +1,6 @@
 // FASE 20A PROSJEKTAKTIVERING: Venter med administrator-direkteåpning til Supabase-sesjon og godkjent profil er klare, laster prosjektlisten på nytt og åpner prosjektet nøyaktig én gang. Kun feature/befaring-tilbud. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
 // FASE 19.15D OFFENTLIG KUNDERUTING: Åpner publicOffer direkte i SalesModule før innlogging og intern appnavigasjon. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
+// FASE 20B ANSVARLIG GJENNOM HELE LØPET: Innlogget brukers registrerte navn settes på nye ordinære prosjekter og sendes til salgsmodulen. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 19.9 AUTENTISERT FEATURE-BRO: Kobler Befaring / Tilbud / Aksept inn som tydelig testfane kun på feature-branchen og sender eksisterende Supabase-klient, authUser og profile til SalesModule. Ingen SQL, Edge, prosjektaktivering eller produksjonsmerge.
 // FASE 17.1A RAPPORT BLANKSKJERM HOTFIX: Definerer trygg global overtagelsessjekk for rapportvisning slik at Rapport-fanen ikke krasjer med projectHasOvertagelse is not defined. Beholder Fase 16.4-logikk: dato alene teller ikke, overtagelse krever aktiv registrering + signatur fra begge parter. Ingen SQL/Edge/PDF-design/chat/kundeportal/UE-/garantiendring.
 // FASE 16.5G FIRMAPROFIL I E-POST: Sender firmalogo/brandfelt med alle smart-worker/Resend-eposter slik at e-post kan bruke utførende firmas logo når firmaprofil har logo. Fallback er Expo ProffDok/Expo Proffsenter. Ingen SQL/PDF/databaseendring.
@@ -2577,7 +2578,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const supportProjectOwner = (adminUsers || []).find((entry) => entry?.id === currentProjectOwnerId);
     const exitSupportMode = () => {
       if (!isSupportModeActive) return;
-      setProject(emptyProject());
+      setProject({ ...emptyProject(), responsible: user?.name || authUser?.email || "" });
       setChecked({});
       setProductDocs({});
       setManualProducts({});
@@ -3101,6 +3102,11 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const applyProfile = (row) => {
       if (!row) return;
       setProfile(row);
+      setUser((current) => ({
+        ...current,
+        name: row.full_name || current.name || "",
+        email: row.email || current.email || ""
+      }));
       setCompany((c) => ({
         ...c,
         companyName: row.company_name || c.companyName || "Expo Proffsenter",
@@ -10154,7 +10160,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept – kontrollert feature-test", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Denne funksjonen kjører kun på feature/befaring-tilbud og bruker din eksisterende Expo ProffDok-innlogging. Saker lagres foreløpig lokalt og er scoped til innlogget bruker/firma. Aktiver som prosjekt er fortsatt prototype og skal ikke brukes mot produksjonsprosjekter." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, { supabaseClient: supabase, authUser, profile, integrationMode: "app" })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, { supabaseClient: supabase, authUser, profile, currentUserName: user?.name || "", integrationMode: "app" })
         ] }),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektinformasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
