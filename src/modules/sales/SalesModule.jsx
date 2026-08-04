@@ -1,3 +1,4 @@
+// FASE 20F GJENOPPRETT TILBUD FØR AUTOLAGRING: Ved retur fra en annen hovedfane gjenopprettes tilbudsskjemaet fra kladd/sak før autolagring tillates, slik at en tom initialform aldri kan overskrive poster og priser. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20E VARIG TILBUDSKLADD: Mellomlagrer tilbudet både lokalt og fortløpende i eksisterende sales_requests, slik at poster og priser tåler fanebytte, sidegjenlasting og nettleserens lagringsbegrensning. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20D STABIL TILBUDSKLADD VED HOVEDFANEBYTTE: Bruker stabil kladdnøkkel per bruker/sak, finner kladder fra FASE 20C og lagrer siste skjema synkront ved avmontering. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20C TRYGG TILBUDSKLADD OG TYDELIG BEFARING: Mellomlagrer tilbud fortløpende per sak, gjenoppretter kladden etter fanebytte, tydeliggjør ufullført befaringsnotat og legger kunden som deltaker i Outlook-utkast. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -438,6 +439,7 @@ export default function SalesModule({
   const offerModeRef = useRef(mode);
   const offerRequestIdRef = useRef(selectedRequestId);
   const offerDraftSaveTimerRef = useRef(null);
+  const offerFormHydratedRequestIdRef = useRef("");
   const latestRequestsRef = useRef(requests);
   offerFormRef.current = offerForm;
   offerModeRef.current = mode;
@@ -462,6 +464,7 @@ export default function SalesModule({
   const [salesCompanyId, setSalesCompanyId] = useState(null);
   const [salesStorageError, setSalesStorageError] = useState("");
   const [offerDraftSaveStatus, setOfferDraftSaveStatus] = useState("idle");
+  const [offerFormReady, setOfferFormReady] = useState(false);
   const [selectedInspectionPhoto, setSelectedInspectionPhoto] = useState(null);
   const [companyProfile, setCompanyProfile] = useState({
     companyName: "",
@@ -558,6 +561,55 @@ export default function SalesModule({
     }, null)?.form || null;
   }
 
+  function buildOfferFormFromRequest(request) {
+    return {
+      title: request?.offerTitle || `Tilbud – ${request?.title || ""}`,
+      intro:
+        request?.offerIntro ||
+        `Vi viser til befaring og tilbyr med dette følgende arbeider for ${request?.customer || "kunden"}.`,
+      lines:
+        request?.offerLines?.length
+          ? request.offerLines
+          : [
+              {
+                id: `line-${Date.now()}`,
+                description: "",
+                amount: "",
+                productUrl: "",
+                imageDataUrl: "",
+                imageName: "",
+              },
+            ],
+      options: request?.offerOptions?.length ? request.offerOptions : [],
+      reservations: request?.offerReservations || "",
+      validityDays: request?.offerValidityDays || "30",
+    };
+  }
+
+  useEffect(() => {
+    if (mode !== "offer-builder" || !selectedRequestId || !selectedRequest) {
+      return;
+    }
+
+    if (offerFormHydratedRequestIdRef.current === selectedRequestId) {
+      return;
+    }
+
+    let storedDraft = null;
+    try {
+      storedDraft = loadOfferDraft(selectedRequestId);
+    } catch {
+      storedDraft = null;
+    }
+
+    offerFormHydratedRequestIdRef.current = selectedRequestId;
+    setOfferForm(storedDraft || buildOfferFormFromRequest(selectedRequest));
+    setOfferDraftSaveStatus("idle");
+    setOfferFormReady(true);
+    // Gjenoppretting må skje før autolagring får starte.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, selectedRequest, selectedRequestId]);
+
   useEffect(() => {
     if (!selectedInspectionPhoto) return undefined;
 
@@ -570,7 +622,7 @@ export default function SalesModule({
   }, [selectedInspectionPhoto]);
 
   useEffect(() => {
-    if (mode !== "offer-builder" || !selectedRequestId) return;
+    if (mode !== "offer-builder" || !selectedRequestId || !offerFormReady) return;
 
     try {
       saveOfferDraft(offerForm, selectedRequestId);
@@ -613,7 +665,7 @@ export default function SalesModule({
         offerDraftSaveTimerRef.current = null;
       }
     };
-  }, [mode, offerForm, salesStorageKey, selectedRequestId]);
+  }, [mode, offerForm, offerFormReady, salesStorageKey, selectedRequestId]);
 
   useEffect(() => {
     return () => {
@@ -1381,30 +1433,9 @@ export default function SalesModule({
       storedDraft = null;
     }
 
-    setOfferForm(storedDraft || {
-      title: selectedRequest?.offerTitle || `Tilbud – ${selectedRequest?.title || ""}`,
-      intro:
-        selectedRequest?.offerIntro ||
-        `Vi viser til befaring og tilbyr med dette følgende arbeider for ${selectedRequest?.customer || "kunden"}.`,
-      lines:
-        selectedRequest?.offerLines?.length
-          ? selectedRequest.offerLines
-          : [
-              {
-                id: `line-${Date.now()}`,
-                description: "",
-                amount: "",
-                productUrl: "",
-                imageDataUrl: "",
-                imageName: "",
-              },
-            ],
-      options: selectedRequest?.offerOptions?.length
-        ? selectedRequest.offerOptions
-        : [],
-      reservations: selectedRequest?.offerReservations || "",
-      validityDays: selectedRequest?.offerValidityDays || "30",
-    });
+    offerFormHydratedRequestIdRef.current = selectedRequest?.id || "";
+    setOfferForm(storedDraft || buildOfferFormFromRequest(selectedRequest));
+    setOfferFormReady(true);
     setMode("offer-builder");
   }
 
