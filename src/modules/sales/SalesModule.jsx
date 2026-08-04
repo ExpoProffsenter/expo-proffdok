@@ -1,3 +1,4 @@
+// FASE 19.15C KUNDELINK: Beholder publicOffer-token og Vercels delingsparametere i URL-en.
 // FASE 19.15B BILDEVISNING I BEFARINGSOPPSUMMERING: Viser lagrede befaringsbilder som klikkbare miniatyrbilder med stor visning. Ingen SQL/lagrings/main/Edge-endring.
 // FASE 19.15 VARIG BEFARINGSLAGRING: Forespørsler, befaringsplan og notater lagres firmascopet i Supabase. Befaringsbilder komprimeres og lagres privat i Storage. Ingen lyd eller AI.
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
@@ -670,8 +671,8 @@ export default function SalesModule({
     if (!publicOfferToken) return;
 
     loadPublicOfferFromToken(publicOfferToken);
-    window.history.replaceState({}, "", window.location.pathname);
-    // Kun første lasting av offentlig kundelink i isolert preview.
+    // Behold tokenet i adressefeltet. Da kan den åpne kundesiden kopieres
+    // videre uten at mottakeren faller tilbake til appens hovedmeny.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1500,7 +1501,8 @@ export default function SalesModule({
 
   function getCustomerOfferLink(token) {
     const url = new URL(window.location.href);
-    url.search = "";
+    // Behold eventuelle Vercel-parametere for deling av beskyttet preview.
+    // Erstatt bare kundetokenet dersom det allerede finnes.
     url.searchParams.set("publicOffer", token);
     return url.toString();
   }
