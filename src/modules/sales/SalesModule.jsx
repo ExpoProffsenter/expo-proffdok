@@ -1,3 +1,4 @@
+// FASE 19.15E AKSEPTSTATUS: Synkroniserer digital kundeaksept fra sales_offers inn i intern sak ved innlasting. Ingen SQL/main/Edge-endring.
 // FASE 19.15C KUNDELINK: Beholder publicOffer-token og Vercels delingsparametere i URL-en.
 // FASE 19.15B BILDEVISNING I BEFARINGSOPPSUMMERING: Viser lagrede befaringsbilder som klikkbare miniatyrbilder med stor visning. Ingen SQL/lagrings/main/Edge-endring.
 // FASE 19.15 VARIG BEFARINGSLAGRING: Forespørsler, befaringsplan og notater lagres firmascopet i Supabase. Befaringsbilder komprimeres og lagres privat i Storage. Ingen lyd eller AI.
@@ -508,6 +509,23 @@ export default function SalesModule({
         return;
       }
 
+      const { data: acceptedOffers, error: acceptedOffersError } =
+        await activeSupabase
+          .from("sales_offers")
+          .select(
+            "request_ref,status,accepted_by,accepted_at,accepted_payload,active_version_id"
+          )
+          .eq("company_id", resolvedCompanyId)
+          .eq("status", "accepted");
+
+      if (acceptedOffersError) {
+        console.error("Kunne ikke hente aksepterte tilbud", acceptedOffersError);
+      }
+
+      const acceptedOfferByRequestRef = new Map(
+        (acceptedOffers || []).map((offer) => [offer.request_ref, offer])
+      );
+
       const hydrated = await Promise.all(
         (rows || []).map(async (row) => {
           const request = { ...(row.payload || {}), id: row.request_ref };
@@ -520,7 +538,52 @@ export default function SalesModule({
               return { ...photo, dataUrl: data?.signedUrl || "" };
             })
           );
-          return { ...request, inspectionPhotos: photos };
+          const acceptedOffer = acceptedOfferByRequestRef.get(row.request_ref);
+
+          if (!acceptedOffer || request.status === "Aktivert") {
+            return { ...request, inspectionPhotos: photos };
+          }
+
+          const acceptedPayload = acceptedOffer.accepted_payload || {};
+          const acceptedOptions = Array.isArray(acceptedPayload.selected_options)
+            ? acceptedPayload.selected_options
+            : Array.isArray(acceptedPayload.selectedOptions)
+              ? acceptedPayload.selectedOptions
+              : [];
+          const acceptedOfferLines = getVisibleOfferLines(
+            request.offerLines || []
+          );
+          const acceptedTotal =
+            getOfferTotal(acceptedOfferLines) + getOfferTotal(acceptedOptions);
+
+          return {
+            ...request,
+            inspectionPhotos: photos,
+            status: "Akseptert",
+            statusClass: "sales-status-accepted",
+            nextStep: "Aktiver som prosjekt",
+            iconName: "home",
+            acceptedBy:
+              acceptedOffer.accepted_by ||
+              acceptedPayload.accepted_name ||
+              acceptedPayload.acceptedName ||
+              "Kunde",
+            acceptedAt:
+              acceptedOffer.accepted_at ||
+              acceptedPayload.accepted_at ||
+              acceptedPayload.acceptedAt ||
+              null,
+            acceptedOfferVersionId:
+              acceptedOffer.active_version_id || request.sentOfferVersionId || null,
+            acceptedOfferVersionNumber: request.sentOfferVersionNumber || null,
+            acceptedOfferLines,
+            acceptedOptionIds: acceptedOptions
+              .map((option) => option?.id)
+              .filter(Boolean),
+            acceptedOptions,
+            acceptedTotal,
+            acceptedPayload,
+          };
         })
       );
 
