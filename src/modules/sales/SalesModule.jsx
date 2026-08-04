@@ -1,3 +1,4 @@
+// FASE 20I EGEN KONTRAKT: Håndverksbedriften kan laste opp egen kontrakt etter kundeaksept. Kontrakten lagres med saken og følger automatisk til Tilbud/kontrakt ved prosjektaktivering. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20F GJENOPPRETT TILBUD FØR AUTOLAGRING: Ved retur fra en annen hovedfane gjenopprettes tilbudsskjemaet fra kladd/sak før autolagring tillates, slik at en tom initialform aldri kan overskrive poster og priser. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20E VARIG TILBUDSKLADD: Mellomlagrer tilbudet både lokalt og fortløpende i eksisterende sales_requests, slik at poster og priser tåler fanebytte, sidegjenlasting og nettleserens lagringsbegrensning. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20D STABIL TILBUDSKLADD VED HOVEDFANEBYTTE: Bruker stabil kladdnøkkel per bruker/sak, finner kladder fra FASE 20C og lagrer siste skjema synkront ved avmontering. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -26,6 +27,7 @@ import {
   CheckCircle2,
   ClipboardList,
   Home,
+  FileText,
   Mail,
   MapPin,
   Phone,
@@ -33,6 +35,8 @@ import {
   Ruler,
   Save,
   Send,
+  Trash2,
+  Upload,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
@@ -476,6 +480,8 @@ export default function SalesModule({
     note: "",
   });
   const [projectActivationBusy, setProjectActivationBusy] = useState(false);
+  const [contractUploadBusy, setContractUploadBusy] = useState(false);
+  const [contractUploadError, setContractUploadError] = useState("");
   const [customerLinkCopied, setCustomerLinkCopied] = useState(false);
   const [publishFeedback, setPublishFeedback] = useState(null);
   const [publicOfferLoading, setPublicOfferLoading] = useState(false);
@@ -1129,6 +1135,90 @@ export default function SalesModule({
     setProjectForm((current) => ({ ...current, [field]: value }));
   }
 
+  async function handleContractUpload(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || contractUploadBusy || !selectedRequest) return;
+    if (integrationMode !== "app" || !activeSupabase || !authUser?.id) {
+      setContractUploadError("Du må være innlogget i Expo ProffDok for å laste opp kontrakt.");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      setContractUploadError("Kontrakten kan ikke være større enn 20 MB.");
+      return;
+    }
+
+    setContractUploadBusy(true);
+    setContractUploadError("");
+    try {
+      const cleanName = sanitizeStoragePart(file.name || "kontrakt");
+      const path = `sales-contracts/${authUser.id}/${sanitizeStoragePart(selectedRequest.id)}/${Date.now()}-${cleanName}`;
+      const { error: uploadError } = await activeSupabase.storage
+        .from("project-images")
+        .upload(path, file, {
+          cacheControl: "3600",
+          contentType: file.type || "application/octet-stream",
+          upsert: false,
+        });
+      if (uploadError) throw uploadError;
+
+      const { data: publicFile } = activeSupabase.storage
+        .from("project-images")
+        .getPublicUrl(path);
+      const contractFile = {
+        id: crypto.randomUUID(),
+        name: file.name || "Kontrakt",
+        url: publicFile.publicUrl,
+        path,
+        type: file.type || "application/octet-stream",
+        size: file.size,
+        created: new Date().toISOString(),
+        by: loggedInResponsible,
+        documentType: "contract",
+      };
+      const nextRequests = requests.map((request) =>
+        request.id === selectedRequest.id
+          ? { ...request, contractFile, contractUploadedAt: contractFile.created }
+          : request
+      );
+      setRequests(nextRequests);
+      await persistRequests(nextRequests);
+    } catch (error) {
+      console.error("Kunne ikke laste opp kontrakt", error);
+      setContractUploadError(error.message || "Kunne ikke laste opp kontrakten.");
+    } finally {
+      setContractUploadBusy(false);
+    }
+  }
+
+  async function handleRemoveContract() {
+    if (!selectedRequest?.contractFile || contractUploadBusy) return;
+    if (!window.confirm("Vil du fjerne den opplastede kontrakten fra saken?")) return;
+    setContractUploadBusy(true);
+    setContractUploadError("");
+    try {
+      const contractPath = selectedRequest.contractFile.path;
+      if (contractPath && activeSupabase) {
+        const { error: removeError } = await activeSupabase.storage
+          .from("project-images")
+          .remove([contractPath]);
+        if (removeError) throw removeError;
+      }
+      const nextRequests = requests.map((request) =>
+        request.id === selectedRequest.id
+          ? { ...request, contractFile: null, contractUploadedAt: "" }
+          : request
+      );
+      setRequests(nextRequests);
+      await persistRequests(nextRequests);
+    } catch (error) {
+      console.error("Kunne ikke fjerne kontrakt", error);
+      setContractUploadError(error.message || "Kunne ikke fjerne kontrakten.");
+    } finally {
+      setContractUploadBusy(false);
+    }
+  }
+
   async function handleActivateProject(event) {
     event.preventDefault();
     if (projectActivationBusy) return;
@@ -1272,7 +1362,15 @@ export default function SalesModule({
           },
           checked: {}, productDocs: {}, manualProducts: {}, other: {}, surf: {}, bathroomEquipment: {},
           photos: projectPhotos, access: [], inst: [], files: [], checklist: {},
-          tilbud: { enabled: true, files: [], tillegg: "", fradrag: "", kommentar: projectDescription },
+          tilbud: {
+            enabled: true,
+            files: selectedRequest.contractFile
+              ? [{ ...selectedRequest.contractFile, id: selectedRequest.contractFile.id || crypto.randomUUID() }]
+              : [],
+            tillegg: "",
+            fradrag: "",
+            kommentar: projectDescription,
+          },
           overtagelse: { enabled: false, dato: new Date().toISOString().slice(0, 10), kommentar: "", signUtførende: "", signKunde: "", signUtførendeImage: "", signKundeImage: "" },
           warranty: { enabled: false, issued: false, status: "draft" },
           projectLog: { enabled: false, draft: "", messages: [], lastReadByAdmin: "", lastReadByCustomer: "" },
@@ -2603,6 +2701,12 @@ export default function SalesModule({
                   <span>
                     <Plus size={16} />
                     Befaringsnotat og bilder
+                  </span>
+                  <span>
+                    <FileText size={16} />
+                    {selectedRequest.contractFile
+                      ? `Kontrakt: ${selectedRequest.contractFile.name}`
+                      : "Ingen kontrakt lastet opp – kan legges til senere i prosjektet"}
                   </span>
                   <span>
                     <Home size={16} />
@@ -4396,6 +4500,69 @@ export default function SalesModule({
                         </div>
                       </div>
                     ) : null}
+                    <div
+                      style={{
+                        marginTop: 20,
+                        padding: 18,
+                        border: "1px solid #d7e4ea",
+                        borderRadius: 16,
+                        background: "#f8fbfc",
+                      }}
+                    >
+                      <p style={{ margin: "0 0 6px" }}>
+                        <strong>Kontrakt</strong>
+                      </p>
+                      <p style={{ margin: "0 0 14px" }}>
+                        Håndverksbedriften kan laste opp sin egen ferdigstilte kontrakt.
+                        Sluttkunden skal kontrollere og signere kontrakten etter bedriftens
+                        vanlige rutiner.
+                      </p>
+                      {selectedRequest.contractFile ? (
+                        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                          <a
+                            className="sales-secondary-button"
+                            href={selectedRequest.contractFile.url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <FileText size={18} />
+                            Åpne {selectedRequest.contractFile.name || "kontrakt"}
+                          </a>
+                          <button
+                            className="sales-secondary-button"
+                            type="button"
+                            onClick={handleRemoveContract}
+                            disabled={contractUploadBusy}
+                          >
+                            <Trash2 size={18} />
+                            Fjern kontrakt
+                          </button>
+                          <span style={{ color: "#42606b", fontWeight: 700 }}>
+                            Kontrakten følger automatisk med til ProffDok-prosjektet.
+                          </span>
+                        </div>
+                      ) : (
+                        <label
+                          className="sales-secondary-button"
+                          style={{ display: "inline-flex", cursor: contractUploadBusy ? "wait" : "pointer" }}
+                        >
+                          <Upload size={18} />
+                          {contractUploadBusy ? "Laster opp kontrakt …" : "Last opp egen kontrakt"}
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            onChange={handleContractUpload}
+                            disabled={contractUploadBusy}
+                            style={{ display: "none" }}
+                          />
+                        </label>
+                      )}
+                      {contractUploadError ? (
+                        <p style={{ margin: "12px 0 0", color: "#a83232", fontWeight: 700 }}>
+                          {contractUploadError}
+                        </p>
+                      ) : null}
+                    </div>
                     <p>
                       Neste steg er å aktivere saken som et vanlig ProffDok-prosjekt.
                     </p>
