@@ -2,7 +2,7 @@
 // FASE 20G KORREKT MODULINFORMASJON: Fjerner utdatert prototypetekst etter godkjent prosjektaktivering og varig tilbudskladd. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
 // FASE 19.15D OFFENTLIG KUNDERUTING: Åpner publicOffer direkte i SalesModule før innlogging og intern appnavigasjon. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
 // FASE 20B ANSVARLIG GJENNOM HELE LØPET: Innlogget brukers registrerte navn settes på nye ordinære prosjekter og sendes til salgsmodulen. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
-// FASE 20V PRODUKSJONSKLAR HJELP/NAVIGASJON: Flytter Befaring/Tilbud etter Startside, beholder Hjelp på opprinnelig plass, fjerner testmerking og dokumenterer komplett salgsflyt frem til aktivert prosjekt. Kun Hjelp-tekst og fanerekkefølge.
+// FASE 20W STARTSIDE/HJELP: Startside går tilbake til hovedoversikten også fra et åpent prosjekt, og utdaterte lydreferanser er fjernet fra Hjelp. Ingen prosjektdata eller historikk endres.
 // FASE 19.9 AUTENTISERT FEATURE-BRO: Kobler Befaring / Tilbud / Aksept inn som tydelig testfane kun på feature-branchen og sender eksisterende Supabase-klient, authUser og profile til SalesModule. Ingen SQL, Edge, prosjektaktivering eller produksjonsmerge.
 // FASE 17.1A RAPPORT BLANKSKJERM HOTFIX: Definerer trygg global overtagelsessjekk for rapportvisning slik at Rapport-fanen ikke krasjer med projectHasOvertagelse is not defined. Beholder Fase 16.4-logikk: dato alene teller ikke, overtagelse krever aktiv registrering + signatur fra begge parter. Ingen SQL/Edge/PDF-design/chat/kundeportal/UE-/garantiendring.
 // FASE 16.5G FIRMAPROFIL I E-POST: Sender firmalogo/brandfelt med alle smart-worker/Resend-eposter slik at e-post kan bruke utførende firmas logo når firmaprofil har logo. Fallback er Expo ProffDok/Expo Proffsenter. Ingen SQL/PDF/databaseendring.
@@ -2695,7 +2695,22 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return false;
     };
     const goToTab = async (id) => {
-      if (!id || id === tab) return;
+      if (!id) return;
+      if (id === "prosjekt" && (projectId || mobileCreatingProject)) {
+        const canLeave = await confirmLeaveWithUnsavedChanges("går tilbake til startsiden");
+        if (!canLeave) return;
+        setProjectId(null);
+        setCurrentProjectOwnerId("");
+        setSupportModeExplicit(false);
+        setMobileCreatingProject(false);
+        resetProjectDirty();
+        setTab("prosjekt");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(() => scrollToMobileTabTarget("prosjekt"), 90);
+        setTimeout(() => scrollToMobileTabTarget("prosjekt"), 320);
+        return;
+      }
+      if (id === tab) return;
       const canLeave = await confirmLeaveWithUnsavedChanges(`går til fanen "${tabs.find(([tabId]) => tabId === id)?.[1] || id}"`);
       if (!canLeave) return;
       setTab(id);
@@ -12046,7 +12061,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         purpose: "Befaring/Tilbud samler hele salgsflyten fra ny forespørsel og befaring til publisert tilbud, digital kundeaksept og aktivert ProffDok-prosjekt.",
         workflow: [
           "Opprett en ny forespørsel og registrer kunde, kontaktinformasjon, adresse, ansvarlig og neste steg.",
-          "Planlegg befaring og samle notater, bilder og eventuelle lydopptak i saken. Kontroller og godkjenn alltid forslag før de lagres.",
+          "Planlegg befaring og samle notater, bilder og nødvendige avklaringer i saken.",
           "Opprett tilbudsutkast med beskrivelse, tilbudslinjer, beløp, bilder, lenker og eventuelle opsjoner.",
           "Forhåndsvis tilbudet, publiser riktig versjon og send eller kopier kundelenken til kunden.",
           "Kunden gjennomgår tilbudet, velger eventuelle opsjoner og gir digital aksept. Kontroller deretter akseptdetaljene i saken.",
@@ -12058,7 +12073,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           "Publiserte og aksepterte tilbudsversjoner skal ikke overskrives. Ved endringer opprettes en ny tilbudsversjon som krever ny kundeaksept.",
           "Akseptbeviset dokumenterer tilbudsversjon, tidspunkt, kunde og valgte opsjoner og skal oppbevares sammen med prosjektets øvrige avtaledokumenter.",
           "En aktivert salgssak er skrivebeskyttet. Tilbud, akseptbevis, kontrakter og tidligere versjoner bevares i historikken.",
-          "AI-baserte forslag fra lyd eller notater er hjelp til utarbeidelsen og må alltid kontrolleres av brukeren før de lagres eller brukes i tilbud."
+          "Kontroller at notater og avklaringer er korrekte før de lagres eller brukes i tilbud."
         ],
         best: [
           "Registrer eier, neste steg og frist når forespørselen opprettes.",
