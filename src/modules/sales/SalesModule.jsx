@@ -1,3 +1,4 @@
+// FASE 20E VARIG TILBUDSKLADD: Mellomlagrer tilbudet både lokalt og fortløpende i eksisterende sales_requests, slik at poster og priser tåler fanebytte, sidegjenlasting og nettleserens lagringsbegrensning. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20D STABIL TILBUDSKLADD VED HOVEDFANEBYTTE: Bruker stabil kladdnøkkel per bruker/sak, finner kladder fra FASE 20C og lagrer siste skjema synkront ved avmontering. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20C TRYGG TILBUDSKLADD OG TYDELIG BEFARING: Mellomlagrer tilbud fortløpende per sak, gjenoppretter kladden etter fanebytte, tydeliggjør ufullført befaringsnotat og legger kunden som deltaker i Outlook-utkast. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20B ANSVARLIG GJENNOM HELE LØPET: Setter innlogget bruker som ansvarlig ved ny forespørsel, beholder ansvarlig gjennom befaring/tilbud og overfører samme navn til aktivert prosjekt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -436,9 +437,12 @@ export default function SalesModule({
   const offerFormRef = useRef(offerForm);
   const offerModeRef = useRef(mode);
   const offerRequestIdRef = useRef(selectedRequestId);
+  const offerDraftSaveTimerRef = useRef(null);
+  const latestRequestsRef = useRef(requests);
   offerFormRef.current = offerForm;
   offerModeRef.current = mode;
   offerRequestIdRef.current = selectedRequestId;
+  latestRequestsRef.current = requests;
   const [acceptanceForm, setAcceptanceForm] = useState({
     name: "",
     confirmed: false,
@@ -457,6 +461,7 @@ export default function SalesModule({
   const [publicOfferError, setPublicOfferError] = useState("");
   const [salesCompanyId, setSalesCompanyId] = useState(null);
   const [salesStorageError, setSalesStorageError] = useState("");
+  const [offerDraftSaveStatus, setOfferDraftSaveStatus] = useState("idle");
   const [selectedInspectionPhoto, setSelectedInspectionPhoto] = useState(null);
   const [companyProfile, setCompanyProfile] = useState({
     companyName: "",
@@ -496,6 +501,30 @@ export default function SalesModule({
     window.localStorage.setItem(
       getStableOfferDraftKey(requestId),
       JSON.stringify({ form: formValue, savedAt: new Date().toISOString() })
+    );
+  }
+
+  function mergeOfferDraftIntoRequests(
+    currentRequests,
+    formValue = offerForm,
+    requestId = selectedRequestId
+  ) {
+    if (!requestId) return currentRequests;
+
+    return currentRequests.map((request) =>
+      request.id === requestId
+        ? {
+            ...request,
+            offerTitle: formValue.title,
+            offerIntro: formValue.intro,
+            offerLines: formValue.lines,
+            offerOptions: formValue.options,
+            offerReservations: formValue.reservations,
+            offerValidityDays: formValue.validityDays,
+            offerTotal: getOfferTotal(formValue.lines),
+            offerDraftSavedAt: new Date().toISOString(),
+          }
+        : request
     );
   }
 
@@ -549,6 +578,41 @@ export default function SalesModule({
       console.warn("Kunne ikke mellomlagre tilbudskladden lokalt", error);
     }
 
+    const nextRequests = mergeOfferDraftIntoRequests(
+      latestRequestsRef.current,
+      offerForm,
+      selectedRequestId
+    );
+    latestRequestsRef.current = nextRequests;
+    setRequests(nextRequests);
+    saveRequests(nextRequests, salesStorageKey);
+
+    if (offerDraftSaveTimerRef.current) {
+      window.clearTimeout(offerDraftSaveTimerRef.current);
+    }
+
+    offerDraftSaveTimerRef.current = window.setTimeout(() => {
+      setOfferDraftSaveStatus("saving");
+      void persistRequests(nextRequests)
+        .then(() => {
+          setOfferDraftSaveStatus("saved");
+          setSalesStorageError("");
+        })
+        .catch((error) => {
+          console.error("Kunne ikke mellomlagre tilbudskladden varig", error);
+          setOfferDraftSaveStatus("error");
+          setSalesStorageError(
+            "Tilbudskladden kunne ikke mellomlagres varig. Ikke forlat tilbudet før nettet virker igjen."
+          );
+        });
+    }, 500);
+
+    return () => {
+      if (offerDraftSaveTimerRef.current) {
+        window.clearTimeout(offerDraftSaveTimerRef.current);
+        offerDraftSaveTimerRef.current = null;
+      }
+    };
   }, [mode, offerForm, salesStorageKey, selectedRequestId]);
 
   useEffect(() => {
@@ -559,6 +623,16 @@ export default function SalesModule({
       } catch (error) {
         console.warn("Kunne ikke lagre siste tilbudskladd ved fanebytte", error);
       }
+
+      const nextRequests = mergeOfferDraftIntoRequests(
+        latestRequestsRef.current,
+        offerFormRef.current,
+        offerRequestIdRef.current
+      );
+      saveRequests(nextRequests, salesStorageKey);
+      void persistRequests(nextRequests).catch((error) =>
+        console.error("Kunne ikke lagre siste tilbudskladd varig", error)
+      );
     };
   }, []);
 
@@ -2968,7 +3042,13 @@ export default function SalesModule({
                 {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
               </p>
               <p className="sales-subtitle" style={{ marginTop: 8 }}>
-                Kladden mellomlagres automatisk mens du arbeider.
+                {offerDraftSaveStatus === "saving"
+                  ? "Lagrer tilbudskladden sikkert …"
+                  : offerDraftSaveStatus === "saved"
+                    ? "Alle poster og priser er lagret sikkert."
+                    : offerDraftSaveStatus === "error"
+                      ? "Kladden er ikke lagret varig – kontroller nettet før du går videre."
+                      : "Kladden mellomlagres automatisk mens du arbeider."}
               </p>
             </section>
 
