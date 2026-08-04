@@ -5,6 +5,7 @@
 // FASE 19.4B TILGANG BEFARINGSNOTAT FRA TILBUD: Viser trygg knapp for befaringsnotat også i tilbudssak uten å endre tilbudsstatus ved lagring. Ingen SQL/main/CSS/Edge.
 // FASE 19.4D BEVAR BEFARINGSINFO: Viser forespørselsnotat/befaringsplan som kontekst i befaringsnotat og bruker trygge fallback-felt ved åpning fra tilbudssak. Ingen SQL/main/CSS/Edge.
 // FASE 19.5 UX-FORENKLING INTERN ARBEIDSFLYT: Tydeligere primær neste-handling i intern sak, uten database/SQL/Edge/main-endring. Bevarer tilbudsversjoner, kundelink og befaringsnotat.
+// FASE 19.15A SIKKER FLERFIRMALAGRING: Henter stabil firma-ID via databasefunksjon og medlemskap, uten avhengighet til profiles.company_id. Ingen main/Edge/AI/lyd.
 // FASE 18.19C3 HOTFIX FIRMAPROFIL EMAIL-FALLBACK: Henter firmaprofil robust via auth-id først og innlogget e-post som fallback før publish-snapshot. Ingen SQL/main/CSS.
 // FASE 18.19C2 HOTFIX FIRMAPROFILSNAPSHOT: Bruker samme profiles-felt som hovedappen, venter på auth/session og legger firmasnapshot inn i faktisk publish-payload. Ingen SQL/main/CSS.
 // FASE 18.19C1 HOTFIX PREMIUM KUNDETILBUD/FIRMA: Henter innlogget brukers eksisterende firmaprofil og publiserer et låst firmasnapshot i tilbudsversjonen via eksisterende lines-json. Ingen SQL/main/Edge Function.
@@ -439,6 +440,7 @@ export default function SalesModule({
   const [publicOfferLoading, setPublicOfferLoading] = useState(false);
   const [publicOfferError, setPublicOfferError] = useState("");
   const [salesCompanyId, setSalesCompanyId] = useState(null);
+  const [salesStorageError, setSalesStorageError] = useState("");
   const [companyProfile, setCompanyProfile] = useState({
     companyName: "",
     orgNumber: "",
@@ -464,19 +466,27 @@ export default function SalesModule({
       const user = sessionData?.session?.user;
       if (!user?.id || cancelled) return;
 
-      const { data: profileRow, error: profileError } = await activeSupabase
-        .from("profiles")
-        .select("company_id")
-        .eq("id", user.id)
-        .maybeSingle();
+      const { data: resolvedCompanyId, error: companyError } = await activeSupabase
+        .rpc("resolve_sales_company_scope");
 
-      if (profileError || !profileRow?.company_id || cancelled) return;
-      setSalesCompanyId(profileRow.company_id);
+      if (companyError || !resolvedCompanyId) {
+        if (!cancelled) {
+          setSalesCompanyId(null);
+          setSalesStorageError(
+            companyError?.message ||
+              "Firmatilknytningen kunne ikke bekreftes. Kontakt firmaadministrator."
+          );
+        }
+        return;
+      }
+      if (cancelled) return;
+      setSalesStorageError("");
+      setSalesCompanyId(resolvedCompanyId);
 
       const { data: rows, error } = await activeSupabase
         .from("sales_requests")
         .select("request_ref,payload,status,archived_at")
-        .eq("company_id", profileRow.company_id)
+        .eq("company_id", resolvedCompanyId)
         .order("updated_at", { ascending: false });
 
       if (error) {
@@ -515,7 +525,10 @@ export default function SalesModule({
     saveRequests(nextRequests, salesStorageKey);
     if (integrationMode !== "app") return;
     if (!activeSupabase || !salesCompanyId) {
-      throw new Error("Varig lagring er ikke klar. Oppdater siden og prøv igjen.");
+      throw new Error(
+        salesStorageError ||
+          "Varig lagring er ikke klar. Kontroller firmatilknytningen og prøv igjen."
+      );
     }
 
     const { data: sessionData } = await activeSupabase.auth.getSession();
@@ -1309,7 +1322,10 @@ export default function SalesModule({
     event.preventDefault();
 
     if (integrationMode === "app" && (!activeSupabase || !salesCompanyId)) {
-      alert("Varig lagring er ikke klar. Oppdater siden og prøv igjen.");
+      alert(
+        salesStorageError ||
+          "Varig lagring er ikke klar. Kontroller firmatilknytningen og prøv igjen."
+      );
       return;
     }
 
