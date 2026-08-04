@@ -2900,8 +2900,8 @@ export default function SalesModule({
                 <p className="sales-eyebrow">Digitalt tilbud</p>
                 <h1 className="sales-title sales-customer-title">{offerTitle}</h1>
                 <p className="sales-subtitle sales-customer-lead">
-                  Et oversiktlig tilbud for arbeidene under. Velg eventuelle opsjoner
-                  og aksepter digitalt nederst på siden.
+                  Her finner du leveransen, prisene og vilkårene samlet. Velg
+                  eventuelle opsjoner før du aksepterer tilbudet nederst på siden.
                 </p>
 
                 <div className="sales-customer-meta-grid">
@@ -2910,11 +2910,11 @@ export default function SalesModule({
                     <strong>{selectedRequest.customer || "Ikke registrert"}</strong>
                   </div>
                   <div>
-                    <span>Prosjektadresse</span>
+                    <span>Arbeidssted</span>
                     <strong>{selectedRequest.address || "Ikke registrert"}</strong>
                   </div>
                   <div>
-                    <span>Tilbudsnummer</span>
+                    <span>Tilbud nr.</span>
                     <strong>{selectedRequest.id}</strong>
                   </div>
                   <div>
@@ -2926,7 +2926,7 @@ export default function SalesModule({
                     </strong>
                   </div>
                   <div>
-                    <span>Gyldighet</span>
+                    <span>Gyldig i</span>
                     <strong>{offerValidityDays} dager</strong>
                   </div>
                 </div>
@@ -3144,19 +3144,19 @@ export default function SalesModule({
                   <div style={{ display: "grid", gap: 20 }}>
                     {offerIncluded ? (
                       <div>
-                        <h2>Inkludert i tilbudet</h2>
+                        <h2>Dette er inkludert</h2>
                         <p style={{ whiteSpace: "pre-wrap" }}>{offerIncluded}</p>
                       </div>
                     ) : null}
                     {offerExcluded ? (
                       <div>
-                        <h2>Ikke inkludert</h2>
+                        <h2>Dette er ikke inkludert</h2>
                         <p style={{ whiteSpace: "pre-wrap" }}>{offerExcluded}</p>
                       </div>
                     ) : null}
                     {offerCustomerSupplied ? (
                       <div>
-                        <h2>Kundens leveranse</h2>
+                        <h2>Dette sørger kunden for</h2>
                         <p style={{ whiteSpace: "pre-wrap" }}>{offerCustomerSupplied}</p>
                       </div>
                     ) : null}
@@ -3640,37 +3640,37 @@ export default function SalesModule({
                 </label>
 
                 <label className="sales-field sales-field-full">
-                  <span>Inkludert i tilbudet</span>
+                  <span>Dette er inkludert</span>
                   <textarea
                     value={offerForm.included}
                     onChange={(event) =>
                       updateOfferForm("included", event.target.value)
                     }
-                    placeholder="Beskriv tydelig hvilke arbeider, materialer og ytelser som er inkludert i tilbudssummen."
+                    placeholder="Beskriv arbeidene, materialene og ytelsene som inngår i tilbudssummen."
                     rows={5}
                   />
                 </label>
 
                 <label className="sales-field sales-field-full">
-                  <span>Ikke inkludert</span>
+                  <span>Dette er ikke inkludert</span>
                   <textarea
                     value={offerForm.excluded}
                     onChange={(event) =>
                       updateOfferForm("excluded", event.target.value)
                     }
-                    placeholder="Beskriv arbeider, materialer eller kostnader som ikke inngår i tilbudet."
+                    placeholder="Beskriv tydelig hva som ikke inngår i tilbudssummen."
                     rows={5}
                   />
                 </label>
 
                 <label className="sales-field sales-field-full">
-                  <span>Kundens leveranse</span>
+                  <span>Dette sørger kunden for</span>
                   <textarea
                     value={offerForm.customerSupplied}
                     onChange={(event) =>
                       updateOfferForm("customerSupplied", event.target.value)
                     }
-                    placeholder="Beskriv hva kunden selv skal levere, bestille eller sørge for før og under arbeidet."
+                    placeholder="Beskriv hva kunden skal levere, bestille eller klargjøre før og under arbeidet."
                     rows={5}
                   />
                 </label>
