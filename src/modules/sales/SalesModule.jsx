@@ -4832,6 +4832,21 @@ export default function SalesModule({
                       )}.
                     </p>
                     <p>Prosjektet er opprettet i den ordinære ProffDok-prosjektlisten.</p>
+                    {selectedRequest.projectId ? (
+                      <button
+                        className="sales-primary-button"
+                        type="button"
+                        style={{ alignSelf: "flex-start", marginTop: 8 }}
+                        onClick={() =>
+                          window.location.assign(
+                            `${window.location.pathname}?project=${encodeURIComponent(selectedRequest.projectId)}&access=admin&tab=prosjekt`
+                          )
+                        }
+                      >
+                        <Home size={18} />
+                        Åpne ProffDok-prosjekt
+                      </button>
+                    ) : null}
                   </div>
                 ) : selectedRequest.status === "Akseptert" &&
                 selectedRequest.acceptedBy ? (
