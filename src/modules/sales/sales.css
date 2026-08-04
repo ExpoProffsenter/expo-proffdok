@@ -1007,7 +1007,7 @@ a:hover {
 
 .sales-customer-meta-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-top: 26px;
 }
@@ -1033,12 +1033,11 @@ a:hover {
 
 .sales-customer-meta-grid strong {
   display: block;
-  overflow: hidden;
   color: #10212b;
   font-size: 13px;
   line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .sales-customer-company-card {
@@ -1480,7 +1479,7 @@ a:hover {
   min-width: 230px;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1100px) {
   .sales-customer-hero,
   .sales-customer-accept-card {
     grid-template-columns: 1fr;
@@ -1503,7 +1502,10 @@ a:hover {
     padding: 18px;
   }
 
-  .sales-customer-meta-grid,
+  .sales-customer-meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .sales-customer-option-grid {
     grid-template-columns: 1fr;
   }
@@ -1568,6 +1570,10 @@ a:hover {
 
   .sales-customer-title {
     font-size: clamp(32px, 10vw, 42px);
+  }
+
+  .sales-customer-meta-grid {
+    grid-template-columns: 1fr;
   }
 
   .sales-customer-meta-grid div {
