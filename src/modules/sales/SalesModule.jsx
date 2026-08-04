@@ -1273,13 +1273,6 @@ export default function SalesModule({
       return;
     }
 
-    const acceptanceProofWindow = window.open("", "_blank");
-    if (acceptanceProofWindow) {
-      acceptanceProofWindow.document.title = "Oppretter akseptbevis";
-      acceptanceProofWindow.document.body.innerHTML =
-        '<main style="font-family:Arial,sans-serif;max-width:620px;margin:64px auto;padding:24px;color:#183b46"><h1 style="font-size:24px">Oppretter akseptbevis …</h1><p>PDF-en genereres og åpnes automatisk når den er klar.</p></main>';
-    }
-
     setAcceptanceProofBusy(true);
     setAcceptanceProofError("");
     try {
@@ -1480,17 +1473,8 @@ export default function SalesModule({
       );
       setRequests(nextRequests);
       await persistRequests(nextRequests);
-      if (acceptanceProofWindow && !acceptanceProofWindow.closed) {
-        acceptanceProofWindow.location.replace(acceptanceProofFile.url);
-      } else {
-        setAcceptanceProofError(
-          "Akseptbeviset er opprettet, men nettleseren blokkerte den nye fanen. Bruk «Åpne akseptbevis» nedenfor."
-        );
-      }
+      setAcceptanceProofError("");
     } catch (error) {
-      if (acceptanceProofWindow && !acceptanceProofWindow.closed) {
-        acceptanceProofWindow.close();
-      }
       console.error("Kunne ikke opprette akseptbevis", error);
       setAcceptanceProofError(error.message || "Kunne ikke opprette akseptbeviset.");
     } finally {
@@ -5001,15 +4985,19 @@ export default function SalesModule({
                         akseptert total, valgte opsjoner og alle avtalebetingelser.
                       </p>
                       {selectedRequest.acceptanceProofFile?.url ? (
-                        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                        <div>
+                          <p style={{ margin: "0 0 12px", color: "#176b42", fontWeight: 800 }}>
+                            Akseptbeviset er opprettet og lagret. Trykk på knappen under for å åpne PDF-en.
+                          </p>
+                          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                           <a
                             className="sales-primary-button"
                             href={selectedRequest.acceptanceProofFile.url}
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                           >
                             <FileText size={18} />
-                            Åpne akseptbevis
+                            Åpne PDF i ny fane
                           </a>
                           <a
                             className="sales-secondary-button"
@@ -5025,6 +5013,7 @@ export default function SalesModule({
                           <span style={{ color: "#42606b", fontWeight: 700 }}>
                             Låst dokument - følger automatisk med til prosjektet.
                           </span>
+                          </div>
                         </div>
                       ) : (
                         <button
