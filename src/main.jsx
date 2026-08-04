@@ -1,3 +1,9 @@
+// FASE 20A PROSJEKTAKTIVERING: Venter med administrator-direkteåpning til Supabase-sesjon og godkjent profil er klare, laster prosjektlisten på nytt og åpner prosjektet nøyaktig én gang. Kun feature/befaring-tilbud. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
+// FASE 20G KORREKT MODULINFORMASJON: Fjerner utdatert prototypetekst etter godkjent prosjektaktivering og varig tilbudskladd. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
+// FASE 19.15D OFFENTLIG KUNDERUTING: Åpner publicOffer direkte i SalesModule før innlogging og intern appnavigasjon. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
+// FASE 20B ANSVARLIG GJENNOM HELE LØPET: Innlogget brukers registrerte navn settes på nye ordinære prosjekter og sendes til salgsmodulen. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
+// FASE 20W STARTSIDE/HJELP: Startside går tilbake til hovedoversikten også fra et åpent prosjekt, og utdaterte lydreferanser er fjernet fra Hjelp. Ingen prosjektdata eller historikk endres.
+// FASE 19.9 AUTENTISERT FEATURE-BRO: Kobler Befaring / Tilbud / Aksept inn som tydelig testfane kun på feature-branchen og sender eksisterende Supabase-klient, authUser og profile til SalesModule. Ingen SQL, Edge, prosjektaktivering eller produksjonsmerge.
 // FASE 17.1A RAPPORT BLANKSKJERM HOTFIX: Definerer trygg global overtagelsessjekk for rapportvisning slik at Rapport-fanen ikke krasjer med projectHasOvertagelse is not defined. Beholder Fase 16.4-logikk: dato alene teller ikke, overtagelse krever aktiv registrering + signatur fra begge parter. Ingen SQL/Edge/PDF-design/chat/kundeportal/UE-/garantiendring.
 // FASE 16.5G FIRMAPROFIL I E-POST: Sender firmalogo/brandfelt med alle smart-worker/Resend-eposter slik at e-post kan bruke utførende firmas logo når firmaprofil har logo. Fallback er Expo ProffDok/Expo Proffsenter. Ingen SQL/PDF/databaseendring.
 // FASE 16.5F SMART CHATLENKE: Chatvarsler til kunde åpner kundeportal direkte i Chat-fanen etter tilgangskode. Beholder eksisterende kunde-/UE-/Resend-/tilgangslogikk; kun URL-tab og kundeportal-navigasjon. Ingen SQL/Edge/PDF/databaseendring.
@@ -178,6 +184,7 @@ import { createRoot } from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 import { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck } from 'lucide-react';
 import './style.css';
+import SalesModule from './modules/sales/SalesModule.jsx';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 
 const import_react = { default: React, ...ReactNS };
@@ -1515,6 +1522,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const lastChatMessageCountRef = (0, import_react.useRef)(0);
     const lastChatRefreshAtRef = (0, import_react.useRef)(0);
     const previousAuthUserIdRef = (0, import_react.useRef)(null);
+    const directProjectOpenAttemptRef = (0, import_react.useRef)("");
     const dirtyTrackingPausedRef = (0, import_react.useRef)(false);
     const dirtyTrackingResumeTimerRef = (0, import_react.useRef)(null);
     const projectDirtyRef = (0, import_react.useRef)(false);
@@ -2572,7 +2580,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const supportProjectOwner = (adminUsers || []).find((entry) => entry?.id === currentProjectOwnerId);
     const exitSupportMode = () => {
       if (!isSupportModeActive) return;
-      setProject(emptyProject());
+      setProject({ ...emptyProject(), responsible: user?.name || authUser?.email || "" });
       setChecked({});
       setProductDocs({});
       setManualProducts({});
@@ -2613,6 +2621,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const openProjectDeviationCount = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
     const tabs = [
       ["prosjekt", "Startside"],
+      ["sales", "Befaring/Tilbud"],
       ["prosjektinfo", "Prosjektinformasjon/beskrivelse"],
       ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
       ["firma", "Firmaprofil"],
@@ -2686,7 +2695,22 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return false;
     };
     const goToTab = async (id) => {
-      if (!id || id === tab) return;
+      if (!id) return;
+      if (id === "prosjekt" && (projectId || mobileCreatingProject)) {
+        const canLeave = await confirmLeaveWithUnsavedChanges("går tilbake til startsiden");
+        if (!canLeave) return;
+        setProjectId(null);
+        setCurrentProjectOwnerId("");
+        setSupportModeExplicit(false);
+        setMobileCreatingProject(false);
+        resetProjectDirty();
+        setTab("prosjekt");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(() => scrollToMobileTabTarget("prosjekt"), 90);
+        setTimeout(() => scrollToMobileTabTarget("prosjekt"), 320);
+        return;
+      }
+      if (id === tab) return;
       const canLeave = await confirmLeaveWithUnsavedChanges(`går til fanen "${tabs.find(([tabId]) => tabId === id)?.[1] || id}"`);
       if (!canLeave) return;
       setTab(id);
@@ -3095,6 +3119,11 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const applyProfile = (row) => {
       if (!row) return;
       setProfile(row);
+      setUser((current) => ({
+        ...current,
+        name: row.full_name || current.name || "",
+        email: row.email || current.email || ""
+      }));
       setCompany((c) => ({
         ...c,
         companyName: row.company_name || c.companyName || "Expo Proffsenter",
@@ -3297,9 +3326,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         setPasswordRecovery(true);
       }
       if (id && !isRecoveryLink) {
-        openProjectById(id);
         const requestedTab = String(params.get("tab") || params.get("open") || "").trim().toLowerCase();
         const linkAccessMode = params.get("access") || params.get("role");
+        if (linkAccessMode !== "admin") openProjectById(id);
         if (linkAccessMode === "underleverandor") setTab(requestedTab || "produkter");
         if (linkAccessMode === "kunde" && requestedTab) setCustomerTab(requestedTab === "chat" ? "chat" : requestedTab);
         if (linkAccessMode === "admin" && requestedTab) setTab(requestedTab);
@@ -3319,6 +3348,29 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       });
       return () => listener.subscription.unsubscribe();
     }, []);
+    (0, import_react.useEffect)(() => {
+      const params = new URLSearchParams(window.location.search);
+      const id = String(params.get("project") || "").trim();
+      const linkAccessMode = params.get("access") || params.get("role");
+      const requestedTab = String(params.get("tab") || params.get("open") || "prosjekt").trim().toLowerCase() || "prosjekt";
+      if (!id || linkAccessMode !== "admin") return;
+      if (!authUser?.id || !profile?.approved || profile?.deactivated || authLoading || profileLoading) return;
+      if (directProjectOpenAttemptRef.current === id) return;
+      directProjectOpenAttemptRef.current = id;
+      let cancelled = false;
+      const openAuthenticatedProject = async () => {
+        await loadProjects(authUser, false, profile);
+        if (cancelled) return;
+        await openProjectById(id, requestedTab);
+      };
+      openAuthenticatedProject().catch((error) => {
+        console.error("Kunne ikke åpne aktivert prosjekt etter innlogging:", error);
+        directProjectOpenAttemptRef.current = "";
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [authUser?.id, profile?.id, profile?.approved, profile?.deactivated, authLoading, profileLoading]);
     (0, import_react.useEffect)(() => {
       setPortalAccessInput("");
       setPortalAccessGranted(false);
@@ -8170,6 +8222,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       ] }) }, section.title))
     ] });
 
+    const publicOfferToken = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("publicOffer") : "";
+    if (publicOfferToken) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, {
+        supabaseClient: supabase,
+        authUser,
+        profile,
+        integrationMode: "public"
+      });
+    }
     if (authLoading && !isReadOnly && !isUnderleverandorView) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Laster..." }) }) }) });
     }
@@ -9842,7 +9903,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { "aria-label": "Velg seksjon", value: tab, onChange: (e) => goToTab(e.target.value), children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: id, children: l }, "mobile-field-" + id)) })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
-        !projectId && !mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
+        !projectId && !mobileCreatingProject && tab !== "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hva skal du dokumentere nå?" }),
@@ -10112,6 +10173,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] })
           ] })
         ] }) }) }) })),
+        tab === "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, { supabaseClient: supabase, authUser, profile, currentUserName: user?.name || "", integrationMode: "app" })
+        ] }),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektinformasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Standardtekster", defaultOpen: !hasValue(project.projectDescription), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
@@ -10484,7 +10551,10 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
               " Last opp tilbud / kontrakt",
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", multiple: true, onChange: (e) => uploadTilbudFiles(e.target.files) })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", multiple: true, style: { display: "none" }, onChange: (e) => {
+                uploadTilbudFiles(e.target.files);
+                e.target.value = "";
+              } })
             ] }),
             (tilbud.files || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen tilbud eller kontrakter er lastet opp enn\xE5." }),
             (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
@@ -11611,6 +11681,27 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ]
       },
       {
+        key: "hjelp",
+        title: "❓ Hjelp",
+        purpose: "Hjelp-fanen inneholder digital brukerveiledning, brukervilkår og anbefalt appinstallasjon på mobil.",
+        workflow: [
+          "Åpne Hjelp når du trenger forklaring på en fane eller arbeidsflyt.",
+          "Bruk seksjonene i samme rekkefølge som fanene i appen.",
+          "Les brukervilkår og personvern ved behov.",
+          "Legg Expo ProffDok på hjemskjermen for rask tilgang på mobil."
+        ],
+        important: [
+          "Digital brukerveiledning er den gjeldende veiledningen i Expo ProffDok.",
+          "Kun innhold relevant for din brukerrolle vises.",
+          "Veiledningen oppdateres direkte i appen når ny funksjonalitet tas i bruk."
+        ],
+        best: [
+          "Bruk Hjelp-fanen ved opplæring av nye brukere.",
+          "Sjekk Nytt i denne versjonen når du lurer på hva som er endret.",
+          "Gi administrator beskjed dersom noe i veiledningen bør presiseres."
+        ]
+      },
+      {
         key: "info",
         title: "📝 Prosjektinformasjon/beskrivelse",
         purpose: "Prosjektinformasjon beskriver hva som er utført og gir kunden, takstmann eller senere eier et tydelig bilde av leveransen.",
@@ -11965,6 +12056,34 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ]
       },
       {
+        key: "sales",
+        title: "🧾 Befaring/Tilbud",
+        purpose: "Befaring/Tilbud samler hele salgsflyten fra ny forespørsel og befaring til publisert tilbud, digital kundeaksept og aktivert ProffDok-prosjekt.",
+        workflow: [
+          "Opprett en ny forespørsel og registrer kunde, kontaktinformasjon, adresse, ansvarlig og neste steg.",
+          "Planlegg befaring og samle notater, bilder og nødvendige avklaringer i saken.",
+          "Opprett tilbudsutkast med beskrivelse, tilbudslinjer, beløp, bilder, lenker og eventuelle opsjoner.",
+          "Forhåndsvis tilbudet, publiser riktig versjon og send eller kopier kundelenken til kunden.",
+          "Kunden gjennomgår tilbudet, velger eventuelle opsjoner og gir digital aksept. Kontroller deretter akseptdetaljene i saken.",
+          "Opprett og kontroller det låste akseptbeviset. Last eventuelt opp kontrakt eller andre avtaledokumenter.",
+          "Aktiver den aksepterte salgssaken som ProffDok-prosjekt og åpne prosjektet fra salgssaken eller oversikten."
+        ],
+        important: [
+          "Kontroller kundeopplysninger, summer, merverdiavgift, opsjoner, vedlegg og firmaprofil før tilbudet publiseres.",
+          "Publiserte og aksepterte tilbudsversjoner skal ikke overskrives. Ved endringer opprettes en ny tilbudsversjon som krever ny kundeaksept.",
+          "Akseptbeviset dokumenterer tilbudsversjon, tidspunkt, kunde og valgte opsjoner og skal oppbevares sammen med prosjektets øvrige avtaledokumenter.",
+          "En aktivert salgssak er skrivebeskyttet. Tilbud, akseptbevis, kontrakter og tidligere versjoner bevares i historikken.",
+          "Kontroller at notater og avklaringer er korrekte før de lagres eller brukes i tilbud."
+        ],
+        best: [
+          "Registrer eier, neste steg og frist når forespørselen opprettes.",
+          "Ta bilder og noter avklaringer under befaringen, slik at informasjonen ikke må registreres på nytt senere.",
+          "Bruk tydelige tilbudslinjer og skill mellom hovedleveranse og valgfrie opsjoner.",
+          "Åpne kundelenken og kontroller kundevisningen før den sendes.",
+          "Kontroller akseptbevis og avtaledokumenter før saken aktiveres som prosjekt."
+        ]
+      },
+      {
         key: "rapport",
         title: "📄 Rapport",
         purpose: "Rapporten samler prosjektets dokumentasjon til en profesjonell PDF med produkter, bilder, sjekklister, avvik, overtagelse og eventuell garanti.",
@@ -11987,36 +12106,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ]
       },
       {
-        key: "hjelp",
-        title: "❓ Hjelp",
-        purpose: "Hjelp-fanen inneholder digital brukerveiledning, brukervilkår og anbefalt appinstallasjon på mobil.",
-        workflow: [
-          "Åpne Hjelp når du trenger forklaring på en fane eller arbeidsflyt.",
-          "Bruk accordion-seksjonene i samme rekkefølge som fanene i appen.",
-          "Les brukervilkår og personvern ved behov.",
-          "Legg Expo ProffDok på hjemskjermen for rask tilgang på mobil."
-        ],
-        important: [
-          "Digital brukerveiledning er den gjeldende veiledningen i Expo ProffDok.",
-          "Kun innhold relevant for din brukerrolle vises.",
-          "Veiledningen oppdateres direkte i appen når ny funksjonalitet tas i bruk."
-        ],
-        best: [
-          "Bruk Hjelp-fanen ved opplæring av nye brukere.",
-          "Sjekk Nytt i versjon 1.1 når du lurer på hva som er endret.",
-          "Gi administrator beskjed dersom noe i veiledningen bør presiseres."
-        ]
-      },
-      {
         key: "nytt",
-        title: "📢 Nytt i versjon 1.1",
-        purpose: "Denne oversikten viser viktige funksjoner og forbedringer som er tilgjengelige i Expo ProffDok v1.1.",
+        title: "📢 Nytt i denne versjonen",
+        purpose: "Denne oversikten viser viktige funksjoner og forbedringer som er tilgjengelige i Expo ProffDok.",
         workflow: [
           "Egne sjekkpunkter per fag er tilgjengelig på garantiprosjekter med valgt Sopro-system.",
           "Sjekkpunkter for andre fag kan legges inn for rørlegger, tømrer, elektriker, maler, ventilasjon og annet fag.",
           "Avvikssentral samler sjekkpunktavvik og andre prosjektavvik.",
           "Bilder fra Ferdig resultat kan brukes som headingbilde i rapporten.",
           "Digital brukerveiledning er nå den gjeldende veiledningen i Hjelp.",
+          "Befaring/Tilbud samler forespørsel, befaring, tilbud, digital kundeaksept, akseptbevis og prosjektaktivering i én arbeidsflyt.",
           "Systemadministrator kan avvise og slette ventende brukere.",
           "Rapportdesign, mobilvisning, autolagring og e-postvarsler er forbedret."
         ],
@@ -12080,10 +12179,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ]
       }
     ];
+    const userGuideOrder = ["start", "sales", "info", "garanti", "firmaProfil", "prosjektering", "produkter", "overflater", "bilder", "tilgang", "fagUtstyr", "sjekklister", "avvik", "tilbud", "chat", "interne", "overtagelse", "prosjektliste", "rapport", "hjelp", "nytt"];
+    const orderedUserGuideSections = [...userGuideSections].sort((a, b) => userGuideOrder.indexOf(a.key) - userGuideOrder.indexOf(b.key));
     const visibleGuideSections = [
-      ...userGuideSections.slice(0, 4),
+      ...orderedUserGuideSections.slice(0, 5),
       ...(isCompanyAdmin || isSystemAdmin ? companyAdminSections : []),
-      ...userGuideSections.slice(4),
+      ...orderedUserGuideSections.slice(5),
       ...(isSystemAdmin ? systemAdminSections : [])
     ];
     const guideRoleLabel = isSystemAdmin ? "Systemadministrator" : isCompanyAdmin ? "Firmaadministrator" : "Vanlig bruker";
@@ -12109,16 +12210,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Hjelp og dokumentasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item helpQuickStart", style: { background: "linear-gradient(135deg,#0f172a,#164e63)", color: "#ffffff", borderColor: "#0f766e" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0, color: "#ffffff" }, children: "📘 Digital brukerveiledning v1.1" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0, color: "#ffffff" }, children: "📘 Digital brukerveiledning" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Komplett digital brukerveiledning for Expo ProffDok. Veiledningen er tekstbasert, mobilvennlig og viser kun innhold som er relevant for din brukerrolle." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 22.06.2026" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 05.08.2026" })
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#f8fafc" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "💡 Anbefalt hovedflyt" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett prosjekt → velg garanti og Sopro-system ved garantibad → legg til sjekkpunkter for andre fag → dokumenter produkter, bilder, sjekklister og avvik → gjennomfør overtagelse → generer og arkiver rapport → lås prosjekt." })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ny kundesak: Opprett forespørsel → gjennomfør befaring → utarbeid og publiser tilbud → innhent digital kundeaksept → opprett akseptbevis → aktiver som prosjekt. Eksisterende prosjekt: Åpne prosjekt → dokumenter produkter, bilder, sjekklister og avvik → gjennomfør overtagelse → generer og arkiver rapport → lås prosjekt." })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gap: "12px" }, children: visibleGuideSections.map(renderGuideSection) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
