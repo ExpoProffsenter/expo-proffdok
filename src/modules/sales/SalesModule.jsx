@@ -1,4 +1,4 @@
-// FASE 19.14B UTEN LYD OG AI: Fjerner hele lyd-/AI-funksjonen fra befaringsmodulen. Befaring registreres med tekst og bilder. Bevarer navigasjonsrettelsen fra FASE 19.14A. Ingen SQL, Edge, main eller produksjonsmerge.
+// FASE 19.15 VARIG BEFARINGSLAGRING: Forespørsler, befaringsplan og notater lagres firmascopet i Supabase. Befaringsbilder komprimeres og lagres privat i Storage. Ingen lyd eller AI.
 // FASE 19.1 PREMIUM DIGITALT KUNDETILBUD: Polerer offentlig kundevisning med tydeligere hero, metadata, prislinjer, opsjonskort og akseptfelt. Kun SalesModule/sales.css i feature/befaring-tilbud. Ingen SQL/main/Edge Function.
 // FASE 19.3 TYDELIG PUBLISERINGSBEKREFTELSE: Viser tydelig intern bekreftelse når kundelink/ny tilbudsversjon er publisert. Ingen SQL/main/Edge.
 // FASE 19.2 TRYGG REPUBLISERING: Tydeliggjør når redigert tilbud/opsjon må publiseres som ny kundelenke-versjon. Ingen SQL/main/Edge.
@@ -35,6 +35,50 @@ const supabase =
     : null;
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
+const INSPECTION_BUCKET = "sales-inspection-photos";
+
+function stripTransientPhotoData(request = {}) {
+  return {
+    ...request,
+    inspectionPhotos: (request.inspectionPhotos || []).map(
+      ({ dataUrl, previewUrl, ...photo }) => photo
+    ),
+  };
+}
+
+function sanitizeStoragePart(value = "") {
+  return String(value)
+    .trim()
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "fil";
+}
+
+function dataUrlToBlob(dataUrl) {
+  const [header, encoded] = String(dataUrl).split(",");
+  const mimeType = header?.match(/data:([^;]+)/)?.[1] || "image/jpeg";
+  const bytes = atob(encoded || "");
+  const buffer = new Uint8Array(bytes.length);
+  for (let index = 0; index < bytes.length; index += 1) {
+    buffer[index] = bytes.charCodeAt(index);
+  }
+  return new Blob([buffer], { type: mimeType });
+}
+
+async function compressImageDataUrl(dataUrl, maxDimension = 1920, quality = 0.78) {
+  const image = new Image();
+  image.src = dataUrl;
+  await new Promise((resolve, reject) => {
+    image.onload = resolve;
+    image.onerror = reject;
+  });
+
+  const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+  canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", quality);
+}
 
 function loadSalesNavigation(storageKey) {
   try {
@@ -394,6 +438,7 @@ export default function SalesModule({
   const [publishFeedback, setPublishFeedback] = useState(null);
   const [publicOfferLoading, setPublicOfferLoading] = useState(false);
   const [publicOfferError, setPublicOfferError] = useState("");
+  const [salesCompanyId, setSalesCompanyId] = useState(null);
   const [companyProfile, setCompanyProfile] = useState({
     companyName: "",
     orgNumber: "",
@@ -408,6 +453,90 @@ export default function SalesModule({
     () => requests.find((request) => request.id === selectedRequestId) || null,
     [requests, selectedRequestId]
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPersistentRequests() {
+      if (!activeSupabase || integrationMode !== "app") return;
+
+      const { data: sessionData } = await activeSupabase.auth.getSession();
+      const user = sessionData?.session?.user;
+      if (!user?.id || cancelled) return;
+
+      const { data: profileRow, error: profileError } = await activeSupabase
+        .from("profiles")
+        .select("company_id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError || !profileRow?.company_id || cancelled) return;
+      setSalesCompanyId(profileRow.company_id);
+
+      const { data: rows, error } = await activeSupabase
+        .from("sales_requests")
+        .select("request_ref,payload,status,archived_at")
+        .eq("company_id", profileRow.company_id)
+        .order("updated_at", { ascending: false });
+
+      if (error) {
+        console.error("Kunne ikke hente salgssaker", error);
+        return;
+      }
+
+      const hydrated = await Promise.all(
+        (rows || []).map(async (row) => {
+          const request = { ...(row.payload || {}), id: row.request_ref };
+          const photos = await Promise.all(
+            (request.inspectionPhotos || []).map(async (photo) => {
+              if (!photo.path) return photo;
+              const { data } = await activeSupabase.storage
+                .from(INSPECTION_BUCKET)
+                .createSignedUrl(photo.path, 60 * 60 * 24 * 7);
+              return { ...photo, dataUrl: data?.signedUrl || "" };
+            })
+          );
+          return { ...request, inspectionPhotos: photos };
+        })
+      );
+
+      if (cancelled) return;
+      setRequests(hydrated);
+      saveRequests(hydrated, salesStorageKey);
+    }
+
+    loadPersistentRequests();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSupabase, integrationMode, salesStorageKey]);
+
+  async function persistRequests(nextRequests) {
+    saveRequests(nextRequests, salesStorageKey);
+    if (integrationMode !== "app") return;
+    if (!activeSupabase || !salesCompanyId) {
+      throw new Error("Varig lagring er ikke klar. Oppdater siden og prøv igjen.");
+    }
+
+    const { data: sessionData } = await activeSupabase.auth.getSession();
+    if (!sessionData?.session?.user?.id) {
+      throw new Error("Innloggingen er utløpt. Logg inn på nytt.");
+    }
+
+    const rows = nextRequests.map((request) => ({
+      company_id: salesCompanyId,
+      request_ref: request.id,
+      status: request.status || "Forespørsel",
+      archived_at: request.archivedAt || null,
+      payload: stripTransientPhotoData(request),
+      updated_at: new Date().toISOString(),
+    }));
+
+    const { error } = await activeSupabase
+      .from("sales_requests")
+      .upsert(rows, { onConflict: "company_id,request_ref" });
+    if (error) throw error;
+  }
 
   useEffect(() => {
     if (selectedRequestId && !selectedRequest) {
@@ -598,7 +727,9 @@ export default function SalesModule({
     );
 
     setRequests(nextRequests);
-    saveRequests(nextRequests, salesStorageKey);
+    void persistRequests(nextRequests).catch((error) =>
+      alert(error.message || "Kunne ikke lagre prosjektaktiveringen varig.")
+    );
     setPublishFeedback(null);
     setCustomerLinkCopied(false);
     setMode("detail");
@@ -734,7 +865,9 @@ export default function SalesModule({
     );
 
     setRequests(nextRequests);
-    saveRequests(nextRequests, salesStorageKey);
+    void persistRequests(nextRequests).catch((error) =>
+      alert(error.message || "Kunne ikke lagre aksepten varig.")
+    );
     setMode(selectedRequest.isPublicOffer ? "customer-accepted" : "detail");
   }
 
@@ -1055,7 +1188,9 @@ export default function SalesModule({
     });
 
     setRequests(nextRequests);
-    saveRequests(nextRequests, salesStorageKey);
+    void persistRequests(nextRequests).catch((error) =>
+      alert(error.message || "Kunne ikke lagre tilbudsutkastet varig.")
+    );
     setMode("detail");
   }
 
@@ -1170,8 +1305,50 @@ export default function SalesModule({
     }));
   }
 
-  function handleSaveInspectionNote(event) {
+  async function handleSaveInspectionNote(event) {
     event.preventDefault();
+
+    if (integrationMode === "app" && (!activeSupabase || !salesCompanyId)) {
+      alert("Varig lagring er ikke klar. Oppdater siden og prøv igjen.");
+      return;
+    }
+
+    let persistentPhotos = inspectionForm.photos;
+    try {
+      persistentPhotos = await Promise.all(
+        inspectionForm.photos.map(async (photo) => {
+          if (photo.path || !photo.dataUrl) return photo;
+          const compressedDataUrl = await compressImageDataUrl(photo.dataUrl);
+          const blob = dataUrlToBlob(compressedDataUrl);
+          const extension = "jpg";
+          const baseName = sanitizeStoragePart(photo.name).replace(
+            /\.[a-zA-Z0-9]+$/,
+            ""
+          );
+          const path = `${salesCompanyId}/${sanitizeStoragePart(
+            selectedRequestId
+          )}/${Date.now()}-${baseName}.${extension}`;
+          const { error: uploadError } = await activeSupabase.storage
+            .from(INSPECTION_BUCKET)
+            .upload(path, blob, { contentType: "image/jpeg", upsert: false });
+          if (uploadError) throw uploadError;
+          const { data: signed } = await activeSupabase.storage
+            .from(INSPECTION_BUCKET)
+            .createSignedUrl(path, 60 * 60 * 24 * 7);
+          return {
+            id: photo.id,
+            name: photo.name,
+            path,
+            size: blob.size,
+            createdAt: new Date().toISOString(),
+            dataUrl: signed?.signedUrl || compressedDataUrl,
+          };
+        })
+      );
+    } catch (error) {
+      alert(error.message || "Kunne ikke laste opp befaringsbildet.");
+      return;
+    }
 
     const nextRequests = requests.map((request) =>
       request.id === selectedRequestId
@@ -1181,7 +1358,7 @@ export default function SalesModule({
             inspectionExistingConditions: inspectionForm.existingConditions.trim(),
             inspectionMeasurements: inspectionForm.measurements.trim(),
             inspectionObservations: inspectionForm.observations.trim(),
-            inspectionPhotos: inspectionForm.photos,
+            inspectionPhotos: persistentPhotos,
             ...(request.status === "Forespørsel" || request.status === "Befaring"
               ? {
                   status: "Befaring",
@@ -1195,7 +1372,12 @@ export default function SalesModule({
     );
 
     setRequests(nextRequests);
-    saveRequests(nextRequests, salesStorageKey);
+    try {
+      await persistRequests(nextRequests);
+    } catch (error) {
+      alert(error.message || "Kunne ikke lagre befaringsnotatet varig.");
+      return;
+    }
     clearInspectionDraft(selectedRequestId);
     setInspectionDraftDirty(false);
     setMode("detail");
@@ -1258,7 +1440,7 @@ export default function SalesModule({
     setSurveyForm((current) => ({ ...current, [field]: value }));
   }
 
-  function handleSaveSurveyPlan(event) {
+  async function handleSaveSurveyPlan(event) {
     event.preventDefault();
 
     const nextRequests = requests.map((request) =>
@@ -1278,7 +1460,12 @@ export default function SalesModule({
     );
 
     setRequests(nextRequests);
-    saveRequests(nextRequests, salesStorageKey);
+    try {
+      await persistRequests(nextRequests);
+    } catch (error) {
+      alert(error.message || "Kunne ikke lagre befaringsplanen varig.");
+      return;
+    }
     setMode("detail");
   }
 
@@ -1438,7 +1625,9 @@ export default function SalesModule({
     );
 
     setRequests(nextRequests);
-    saveRequests(nextRequests, salesStorageKey);
+    void persistRequests(nextRequests).catch((error) =>
+      alert(error.message || "Kunne ikke lagre publiseringen varig.")
+    );
 
     const link = getCustomerOfferLink(data.public_token);
     setPublishFeedback({
@@ -1510,7 +1699,7 @@ export default function SalesModule({
     setMode("customer-offer");
   }
 
-  function handleCreateRequest(event) {
+  async function handleCreateRequest(event) {
     event.preventDefault();
 
     const nextRequest = {
@@ -1531,7 +1720,12 @@ export default function SalesModule({
     const nextRequests = [nextRequest, ...requests];
 
     setRequests(nextRequests);
-    saveRequests(nextRequests, salesStorageKey);
+    try {
+      await persistRequests(nextRequests);
+    } catch (error) {
+      alert(error.message || "Kunne ikke opprette forespørselen varig.");
+      return;
+    }
     resetForm();
     setSelectedRequestId(nextRequest.id);
     setMode("detail");
