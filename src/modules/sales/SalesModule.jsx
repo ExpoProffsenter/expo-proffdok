@@ -3166,7 +3166,13 @@ export default function SalesModule({
 
               {offerTerms || offerPaymentTerms ? (
                 <article className="sales-customer-section sales-customer-text-section">
-                  <span className="sales-section-kicker">Vilkår</span>
+                  <span className="sales-section-kicker">
+                    {offerTerms && offerPaymentTerms
+                      ? "Avtalebetingelser"
+                      : offerTerms
+                        ? "Vilkår"
+                        : "Betaling"}
+                  </span>
                   <div style={{ display: "grid", gap: 20 }}>
                     {offerTerms ? (
                       <div>
