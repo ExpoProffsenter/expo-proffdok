@@ -1,4 +1,4 @@
-// FASE 20N FIRMALOGO OG NEDLASTING AV AKSEPTBEVIS: Nye akseptbevis bruker håndverksbedriftens firmalogo og lagrede firmaprofil. Låst PDF kan både åpnes og lastes ned. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
+// FASE 20P SIKKER ÅPNING AV AKSEPTBEVIS: Ny fane reserveres direkte ved brukerklikk og viser ferdig PDF etter opprettelse. Eksisterende nedlasting, firmalogo og låst dokumentasjon beholdes. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20M LÅST AKSEPTBEVIS: Oppretter PDF fra akseptert, publisert tilbudsversjon og lagrer dokumentet varig på saken og i aktivert prosjekt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20J TYDELIG LEVERANSEOMFANG: Egne, versjonslåste felt for inkludert, ikke inkludert og kundens leveranse vises i kundetilbud og omfattes av digital aksept. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20I EGEN KONTRAKT: Håndverksbedriften kan laste opp egen kontrakt etter kundeaksept. Kontrakten lagres med saken og følger automatisk til Tilbud/kontrakt ved prosjektaktivering. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -1273,6 +1273,13 @@ export default function SalesModule({
       return;
     }
 
+    const acceptanceProofWindow = window.open("", "_blank");
+    if (acceptanceProofWindow) {
+      acceptanceProofWindow.document.title = "Oppretter akseptbevis";
+      acceptanceProofWindow.document.body.innerHTML =
+        '<main style="font-family:Arial,sans-serif;max-width:620px;margin:64px auto;padding:24px;color:#183b46"><h1 style="font-size:24px">Oppretter akseptbevis …</h1><p>PDF-en genereres og åpnes automatisk når den er klar.</p></main>';
+    }
+
     setAcceptanceProofBusy(true);
     setAcceptanceProofError("");
     try {
@@ -1473,7 +1480,17 @@ export default function SalesModule({
       );
       setRequests(nextRequests);
       await persistRequests(nextRequests);
+      if (acceptanceProofWindow && !acceptanceProofWindow.closed) {
+        acceptanceProofWindow.location.replace(acceptanceProofFile.url);
+      } else {
+        setAcceptanceProofError(
+          "Akseptbeviset er opprettet, men nettleseren blokkerte den nye fanen. Bruk «Åpne akseptbevis» nedenfor."
+        );
+      }
     } catch (error) {
+      if (acceptanceProofWindow && !acceptanceProofWindow.closed) {
+        acceptanceProofWindow.close();
+      }
       console.error("Kunne ikke opprette akseptbevis", error);
       setAcceptanceProofError(error.message || "Kunne ikke opprette akseptbeviset.");
     } finally {
