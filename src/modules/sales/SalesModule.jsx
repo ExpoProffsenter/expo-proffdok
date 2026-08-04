@@ -1113,12 +1113,21 @@ export default function SalesModule({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const activeRequests = useMemo(
+    () => requests.filter((request) => request.status !== "Aktivert"),
+    [requests]
+  );
+
+  const activatedRequests = useMemo(
+    () => requests.filter((request) => request.status === "Aktivert"),
+    [requests]
+  );
+
   const summary = useMemo(
     () => [
       {
-        label: "Forespørsler",
-        value: requests.filter((request) => request.status === "Forespørsel")
-          .length,
+        label: "Aktive saker",
+        value: activeRequests.length,
       },
       {
         label: "Befaring",
@@ -1133,7 +1142,7 @@ export default function SalesModule({
         value: requests.filter((request) => request.status === "Akseptert").length,
       },
     ],
-    [requests]
+    [activeRequests, requests]
   );
 
   function updateForm(field, value) {
@@ -5460,7 +5469,14 @@ export default function SalesModule({
             </div>
 
             <div className="sales-request-list">
-              {requests.map((request) => {
+              {activeRequests.length === 0 ? (
+                <p className="sales-subtitle">
+                  Ingen aktive forespørsler. Opprett en ny forespørsel for å
+                  starte en befaring eller et tilbud.
+                </p>
+              ) : null}
+
+              {activeRequests.map((request) => {
                 const Icon = iconMap[request.iconName] || ClipboardList;
 
                 return (
@@ -5496,6 +5512,55 @@ export default function SalesModule({
               })}
             </div>
           </section>
+
+          {activatedRequests.length > 0 ? (
+            <section className="sales-panel">
+              <div className="sales-panel-header">
+                <div>
+                  <h2 className="sales-panel-title">
+                    Aktiverte prosjekter ({activatedRequests.length})
+                  </h2>
+                </div>
+              </div>
+
+              <div className="sales-request-list">
+                {activatedRequests.map((request) => {
+                  const Icon = iconMap[request.iconName] || ClipboardList;
+
+                  return (
+                    <button
+                      className="sales-request-card"
+                      key={request.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedRequestId(request.id);
+                        setMode("detail");
+                      }}
+                    >
+                      <div className="sales-request-main">
+                        <h3 className="sales-request-title">{request.title}</h3>
+                        <p className="sales-request-customer">
+                          {request.customer} · {request.address} · {request.id}
+                        </p>
+                      </div>
+
+                      <div className="sales-request-next">
+                        <span className="sales-next-label">Prosjekt</span>
+                        <span className="sales-next-step">
+                          <Icon size={16} />
+                          {request.nextStep}
+                        </span>
+                      </div>
+
+                      <span className={`sales-status ${request.statusClass}`}>
+                        {request.status}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ) : null}
         </main>
       </div>
     </div>
