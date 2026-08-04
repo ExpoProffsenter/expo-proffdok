@@ -1,3 +1,4 @@
+// FASE 20M LÅST AKSEPTBEVIS: Oppretter PDF fra akseptert, publisert tilbudsversjon og lagrer dokumentet varig på saken og i aktivert prosjekt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20J TYDELIG LEVERANSEOMFANG: Egne, versjonslåste felt for inkludert, ikke inkludert og kundens leveranse vises i kundetilbud og omfattes av digital aksept. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20I EGEN KONTRAKT: Håndverksbedriften kan laste opp egen kontrakt etter kundeaksept. Kontrakten lagres med saken og følger automatisk til Tilbud/kontrakt ved prosjektaktivering. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20F GJENOPPRETT TILBUD FØR AUTOLAGRING: Ved retur fra en annen hovedfane gjenopprettes tilbudsskjemaet fra kladd/sak før autolagring tillates, slik at en tom initialform aldri kan overskrive poster og priser. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -489,6 +490,8 @@ export default function SalesModule({
   const [projectActivationBusy, setProjectActivationBusy] = useState(false);
   const [contractUploadBusy, setContractUploadBusy] = useState(false);
   const [contractUploadError, setContractUploadError] = useState("");
+  const [acceptanceProofBusy, setAcceptanceProofBusy] = useState(false);
+  const [acceptanceProofError, setAcceptanceProofError] = useState("");
   const [customerLinkCopied, setCustomerLinkCopied] = useState(false);
   const [publishFeedback, setPublishFeedback] = useState(null);
   const [publicOfferLoading, setPublicOfferLoading] = useState(false);
@@ -873,6 +876,9 @@ export default function SalesModule({
           const acceptedOfferLines = getVisibleOfferLines(
             acceptedVersion?.lines || request.offerLines || []
           );
+          const acceptedTermsSnapshot = getOfferTermsSnapshot(
+            acceptedVersion?.lines || []
+          );
           const acceptedTotal =
             Number(
               acceptedPayload.accepted_total ??
@@ -916,6 +922,14 @@ export default function SalesModule({
             acceptedOptions,
             acceptedTotal,
             acceptedPayload,
+            acceptedOfferTitle: acceptedVersion?.title || request.offerTitle || request.title || "Tilbud",
+            acceptedOfferIntro: acceptedVersion?.intro || request.offerIntro || "",
+            acceptedOfferReservations: acceptedVersion?.reservations || request.offerReservations || "",
+            acceptedOfferIncluded: acceptedTermsSnapshot.included || request.offerIncluded || "",
+            acceptedOfferExcluded: acceptedTermsSnapshot.excluded || request.offerExcluded || "",
+            acceptedOfferCustomerSupplied: acceptedTermsSnapshot.customerSupplied || request.offerCustomerSupplied || "",
+            acceptedOfferTerms: acceptedTermsSnapshot.terms || request.offerTerms || "",
+            acceptedOfferPaymentTerms: acceptedTermsSnapshot.paymentTerms || request.offerPaymentTerms || "",
           };
         })
       );
@@ -1130,6 +1144,12 @@ export default function SalesModule({
   }
 
   function openProjectActivation() {
+    if (!selectedRequest?.acceptanceProofFile?.url) {
+      setAcceptanceProofError(
+        "Opprett det låste akseptbeviset før saken aktiveres som prosjekt."
+      );
+      return;
+    }
     setProjectForm({
       projectName:
         selectedRequest?.projectName ||
@@ -1233,6 +1253,144 @@ export default function SalesModule({
       setContractUploadError(error.message || "Kunne ikke fjerne kontrakten.");
     } finally {
       setContractUploadBusy(false);
+    }
+  }
+
+  async function handleCreateAcceptanceProof() {
+    if (!selectedRequest || acceptanceProofBusy) return;
+    if (selectedRequest.acceptanceProofFile?.url) {
+      window.open(selectedRequest.acceptanceProofFile.url, "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (integrationMode !== "app" || !activeSupabase || !authUser?.id) {
+      setAcceptanceProofError("Du må være innlogget i Expo ProffDok for å opprette akseptbeviset.");
+      return;
+    }
+
+    setAcceptanceProofBusy(true);
+    setAcceptanceProofError("");
+    try {
+      const module = await import("https://esm.sh/jspdf@2.5.1");
+      const JsPDF = module.jsPDF || module.default?.jsPDF;
+      if (!JsPDF) throw new Error("PDF-verktøyet kunne ikke lastes.");
+
+      const pdf = new JsPDF({ unit: "mm", format: "a4" });
+      const left = 18;
+      const right = 192;
+      const lineHeight = 5.2;
+      let y = 20;
+      const ensureSpace = (height = 12) => {
+        if (y + height <= 278) return;
+        pdf.addPage();
+        y = 20;
+      };
+      const addText = (text, options = {}) => {
+        const value = String(text || "").trim();
+        if (!value) return;
+        const size = options.size || 10;
+        const style = options.style || "normal";
+        const lines = pdf.splitTextToSize(value, options.width || right - left);
+        ensureSpace(lines.length * lineHeight + (options.after || 2));
+        pdf.setFont("helvetica", style);
+        pdf.setFontSize(size);
+        pdf.setTextColor(options.color || "#183b46");
+        pdf.text(lines, left, y);
+        y += lines.length * lineHeight + (options.after ?? 2);
+      };
+      const addSection = (title, text) => {
+        if (!String(text || "").trim()) return;
+        ensureSpace(18);
+        addText(title, { size: 11, style: "bold", after: 1 });
+        addText(text, { size: 9.5, after: 4 });
+      };
+
+      pdf.setFillColor(16, 92, 106);
+      pdf.rect(0, 0, 210, 34, "F");
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(20);
+      pdf.text("AKSEPTBEVIS", left, 17);
+      pdf.setFontSize(9.5);
+      pdf.text("Expo ProffDok - dokumentasjon av digital kundeaksept", left, 25);
+      y = 44;
+
+      addText(selectedRequest.acceptedOfferTitle || selectedRequest.offerTitle || selectedRequest.title || "Tilbud", { size: 16, style: "bold", after: 5 });
+      addText(`Tilbud nr.: ${selectedRequest.id}`, { style: "bold", after: 1 });
+      addText(`Tilbudsversjon: v${selectedRequest.acceptedOfferVersionNumber || selectedRequest.sentOfferVersionNumber || "-"}`, { after: 1 });
+      addText(`Akseptert av: ${selectedRequest.acceptedBy || "Kunde"}`, { after: 1 });
+      addText(`Aksepttidspunkt: ${selectedRequest.acceptedAt ? new Date(selectedRequest.acceptedAt).toLocaleString("nb-NO") : "Ikke registrert"}`, { after: 1 });
+      addText(`Kunde: ${selectedRequest.customer || "-"}`, { after: 1 });
+      addText(`Arbeidssted: ${selectedRequest.address || "-"}`, { after: 5 });
+
+      addSection("Innledning", selectedRequest.acceptedOfferIntro);
+      const acceptedLines = getVisibleOfferLines(selectedRequest.acceptedOfferLines || selectedRequest.offerLines || []);
+      if (acceptedLines.length) {
+        addText("Aksepterte arbeider og priser", { size: 11, style: "bold", after: 2 });
+        acceptedLines.forEach((line, index) => {
+          addText(`${index + 1}. ${line.description || "Tilbudspost"} - ${formatNok(getOfferTotal([line]))} eks. mva.`, { size: 9.5, after: 1 });
+        });
+        y += 3;
+      }
+      if (selectedRequest.acceptedOptions?.length) {
+        addText("Valgte opsjoner", { size: 11, style: "bold", after: 2 });
+        selectedRequest.acceptedOptions.forEach((option) => {
+          addText(`${option.title || "Opsjon"}${option.description ? `: ${option.description}` : ""} - ${formatNok(getOfferTotal([option]))} eks. mva.`, { size: 9.5, after: 1 });
+        });
+        y += 3;
+      }
+      addText(`Akseptert total eks. mva.: ${formatNok(Number(selectedRequest.acceptedTotal || 0))}`, { size: 11, style: "bold", after: 1 });
+      addText(`Akseptert total inkl. mva.: ${formatNok(Number(selectedRequest.acceptedTotal || 0) * 1.25)}`, { size: 11, style: "bold", after: 5 });
+      addSection("Forutsetninger og forbehold", selectedRequest.acceptedOfferReservations || selectedRequest.offerReservations);
+      addSection("Dette er inkludert", selectedRequest.acceptedOfferIncluded || selectedRequest.offerIncluded);
+      addSection("Dette er ikke inkludert", selectedRequest.acceptedOfferExcluded || selectedRequest.offerExcluded);
+      addSection("Dette sørger kunden for", selectedRequest.acceptedOfferCustomerSupplied || selectedRequest.offerCustomerSupplied);
+      addSection("Vilkår", selectedRequest.acceptedOfferTerms || selectedRequest.offerTerms);
+      addSection("Betalingsbetingelser", selectedRequest.acceptedOfferPaymentTerms || selectedRequest.offerPaymentTerms);
+      addText("Bekreftelse", { size: 11, style: "bold", after: 1 });
+      addText("Kunden har digitalt bekreftet at tilbudet, valgte opsjoner, leveranseomfang, forbehold, vilkår og betalingsbetingelser er lest og akseptert.", { size: 9.5, after: 4 });
+      addText("Dokumentet er opprettet fra den publiserte tilbudsversjonen og skal ikke redigeres. Eventuelle senere endringer må håndteres i en ny avtale eller tilbudsversjon.", { size: 8.5, after: 2 });
+
+      const pageCount = pdf.getNumberOfPages();
+      for (let page = 1; page <= pageCount; page += 1) {
+        pdf.setPage(page);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.setTextColor(80, 100, 108);
+        pdf.text(`Akseptbevis ${selectedRequest.id} - side ${page} av ${pageCount}`, left, 290);
+      }
+
+      const blob = pdf.output("blob");
+      const version = selectedRequest.acceptedOfferVersionNumber || selectedRequest.sentOfferVersionNumber || "1";
+      const fileName = `Akseptbevis-${sanitizeStoragePart(selectedRequest.id)}-v${version}.pdf`;
+      const path = `sales-acceptance-proofs/${authUser.id}/${sanitizeStoragePart(selectedRequest.id)}/${crypto.randomUUID()}-${fileName}`;
+      const { error: uploadError } = await activeSupabase.storage
+        .from("project-images")
+        .upload(path, blob, { cacheControl: "3600", contentType: "application/pdf", upsert: false });
+      if (uploadError) throw uploadError;
+      const { data: publicFile } = activeSupabase.storage.from("project-images").getPublicUrl(path);
+      const acceptanceProofFile = {
+        id: crypto.randomUUID(),
+        name: fileName,
+        url: publicFile.publicUrl,
+        path,
+        type: "application/pdf",
+        size: blob.size,
+        created: new Date().toISOString(),
+        by: loggedInResponsible,
+        documentType: "acceptance-proof",
+        locked: true,
+        offerVersionNumber: version,
+      };
+      const nextRequests = requests.map((request) =>
+        request.id === selectedRequest.id ? { ...request, acceptanceProofFile } : request
+      );
+      setRequests(nextRequests);
+      await persistRequests(nextRequests);
+    } catch (error) {
+      console.error("Kunne ikke opprette akseptbevis", error);
+      setAcceptanceProofError(error.message || "Kunne ikke opprette akseptbeviset.");
+    } finally {
+      setAcceptanceProofBusy(false);
     }
   }
 
@@ -1381,9 +1539,9 @@ export default function SalesModule({
           photos: projectPhotos, access: [], inst: [], files: [], checklist: {},
           tilbud: {
             enabled: true,
-            files: selectedRequest.contractFile
-              ? [{ ...selectedRequest.contractFile, id: selectedRequest.contractFile.id || crypto.randomUUID() }]
-              : [],
+            files: [selectedRequest.acceptanceProofFile, selectedRequest.contractFile]
+              .filter(Boolean)
+              .map((file) => ({ ...file, id: file.id || crypto.randomUUID() })),
             tillegg: "",
             fradrag: "",
             kommentar: projectDescription,
@@ -1563,6 +1721,14 @@ export default function SalesModule({
             acceptedOptionIds: acceptanceForm.selectedOptionIds,
             acceptedOptions: selectedOptions,
             acceptedTotal,
+            acceptedOfferTitle: activeOfferVersion?.title || selectedRequest.offerTitle || selectedRequest.title || "Tilbud",
+            acceptedOfferIntro: activeOfferVersion?.intro || selectedRequest.offerIntro || "",
+            acceptedOfferReservations: activeOfferVersion?.reservations || selectedRequest.offerReservations || "",
+            acceptedOfferIncluded: selectedRequest.offerIncluded || "",
+            acceptedOfferExcluded: selectedRequest.offerExcluded || "",
+            acceptedOfferCustomerSupplied: selectedRequest.offerCustomerSupplied || "",
+            acceptedOfferTerms: selectedRequest.offerTerms || "",
+            acceptedOfferPaymentTerms: selectedRequest.offerPaymentTerms || "",
             status: "Akseptert",
             statusClass: "sales-status-accepted",
             nextStep: selectedRequest.isPublicOffer
@@ -4599,6 +4765,54 @@ export default function SalesModule({
                         </div>
                       </div>
                     ) : null}
+                    <div
+                      style={{
+                        marginTop: 20,
+                        padding: 18,
+                        border: "1px solid #b9d9df",
+                        borderRadius: 16,
+                        background: "#f2fafb",
+                      }}
+                    >
+                      <p style={{ margin: "0 0 6px" }}>
+                        <strong>Låst akseptbevis</strong>
+                      </p>
+                      <p style={{ margin: "0 0 14px" }}>
+                        PDF-en dokumenterer tilbudsversjonen, aksepttidspunktet,
+                        akseptert total, valgte opsjoner og alle avtalebetingelser.
+                      </p>
+                      {selectedRequest.acceptanceProofFile?.url ? (
+                        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                          <a
+                            className="sales-primary-button"
+                            href={selectedRequest.acceptanceProofFile.url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <FileText size={18} />
+                            Åpne akseptbevis
+                          </a>
+                          <span style={{ color: "#42606b", fontWeight: 700 }}>
+                            Låst dokument - følger automatisk med til prosjektet.
+                          </span>
+                        </div>
+                      ) : (
+                        <button
+                          className="sales-primary-button"
+                          type="button"
+                          onClick={handleCreateAcceptanceProof}
+                          disabled={acceptanceProofBusy}
+                        >
+                          <FileText size={18} />
+                          {acceptanceProofBusy ? "Oppretter akseptbevis …" : "Opprett akseptbevis"}
+                        </button>
+                      )}
+                      {acceptanceProofError ? (
+                        <p style={{ margin: "12px 0 0", color: "#a83232", fontWeight: 700 }}>
+                          {acceptanceProofError}
+                        </p>
+                      ) : null}
+                    </div>
                     <div
                       style={{
                         marginTop: 20,
