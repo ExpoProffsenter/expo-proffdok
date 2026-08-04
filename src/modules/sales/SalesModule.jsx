@@ -1,3 +1,4 @@
+// FASE 19.15G REELL PROSJEKTAKTIVERING: Oppretter ordinært ProffDok-prosjekt fra akseptert tilbud, overfører kunde/sak/tilbud/befaringsbilder, sperrer duplikater og åpner prosjektet direkte. Ingen SQL eller main-endring.
 // FASE 19.15F AKSEPTSTATUS: Synkroniserer digital kundeaksept via eksisterende offentlig tilbuds-RPC og sakens publicToken. Ingen SQL/main/Edge-endring.
 // FASE 19.15C KUNDELINK: Beholder publicOffer-token og Vercels delingsparametere i URL-en.
 // FASE 19.15B BILDEVISNING I BEFARINGSOPPSUMMERING: Viser lagrede befaringsbilder som klikkbare miniatyrbilder med stor visning. Ingen SQL/lagrings/main/Edge-endring.
@@ -438,6 +439,7 @@ export default function SalesModule({
     responsible: "",
     note: "",
   });
+  const [projectActivationBusy, setProjectActivationBusy] = useState(false);
   const [customerLinkCopied, setCustomerLinkCopied] = useState(false);
   const [publishFeedback, setPublishFeedback] = useState(null);
   const [publicOfferLoading, setPublicOfferLoading] = useState(false);
@@ -524,7 +526,10 @@ export default function SalesModule({
           let acceptedOffer = null;
           let acceptedVersion = null;
 
-          if (request.publicToken && request.status !== "Aktivert") {
+          const hasRealActivatedProject =
+            request.status === "Aktivert" && Boolean(request.projectId);
+
+          if (request.publicToken && !hasRealActivatedProject) {
             const { data: publicOfferData, error: publicOfferError } =
               await activeSupabase.rpc("get_sales_offer_by_token", {
                 token: request.publicToken,
@@ -541,7 +546,7 @@ export default function SalesModule({
             }
           }
 
-          if (!acceptedOffer || request.status === "Aktivert") {
+          if (!acceptedOffer || hasRealActivatedProject) {
             return { ...request, inspectionPhotos: photos };
           }
 
@@ -808,35 +813,203 @@ export default function SalesModule({
     setProjectForm((current) => ({ ...current, [field]: value }));
   }
 
-  function handleActivateProject(event) {
+  async function handleActivateProject(event) {
     event.preventDefault();
+    if (projectActivationBusy) return;
+    if (integrationMode !== "app" || !activeSupabase || !authUser?.id) {
+      alert("Du må være innlogget i Expo ProffDok for å opprette prosjektet.");
+      return;
+    }
+    if (selectedRequest.status !== "Akseptert" && !selectedRequest.projectId) {
+      alert("Tilbudet må være akseptert før saken kan aktiveres som prosjekt.");
+      return;
+    }
 
-    const activatedAt = new Date().toISOString();
+    setProjectActivationBusy(true);
+    try {
+      const requestRef = selectedRequest.id;
+      let existingProjectId = selectedRequest.projectId || "";
 
-    const nextRequests = requests.map((request) =>
-      request.id === selectedRequestId
-        ? {
-            ...request,
+      if (existingProjectId) {
+        const { data: existingById, error: existingByIdError } = await activeSupabase
+          .from("projects")
+          .select("id")
+          .eq("id", existingProjectId)
+          .maybeSingle();
+        if (existingByIdError) throw existingByIdError;
+        if (!existingById) existingProjectId = "";
+      }
+
+      if (!existingProjectId) {
+        const { data: ownedProjects, error: duplicateError } = await activeSupabase
+          .from("projects")
+          .select("id,data")
+          .eq("user_id", authUser.id);
+        if (duplicateError) throw duplicateError;
+        const duplicate = (ownedProjects || []).find(
+          (row) => row?.data?.project?.salesOrigin?.requestRef === requestRef
+        );
+        existingProjectId = duplicate?.id || "";
+      }
+
+      if (!existingProjectId) {
+        const projectId = crypto.randomUUID();
+        const activatedAt = new Date().toISOString();
+        const acceptedLines = getVisibleOfferLines(
+          selectedRequest.acceptedOfferLines || selectedRequest.offerLines || []
+        );
+        const acceptedOptions = selectedRequest.acceptedOptions || [];
+        const inspectionPhotos = selectedRequest.inspectionPhotos || [];
+        const projectPhotos = [];
+
+        for (const [index, photo] of inspectionPhotos.entries()) {
+          let blob = null;
+          if (photo.path) {
+            const { data, error } = await activeSupabase.storage
+              .from(INSPECTION_BUCKET)
+              .download(photo.path);
+            if (error) throw new Error(`Kunne ikke overføre befaringsbilde: ${error.message}`);
+            blob = data;
+          } else if (photo.dataUrl) {
+            blob = dataUrlToBlob(photo.dataUrl);
+          }
+          if (!blob) continue;
+          const cleanName = sanitizeStoragePart(photo.name || `befaring-${index + 1}.jpg`);
+          const imagePath = `sales-activation/${authUser.id}/${projectId}/${Date.now()}-${index}-${cleanName}`;
+          const { error: imageError } = await activeSupabase.storage
+            .from("project-images")
+            .upload(imagePath, blob, { cacheControl: "3600", upsert: false });
+          if (imageError) throw new Error(`Kunne ikke lagre befaringsbilde i prosjektet: ${imageError.message}`);
+          const { data: publicImage } = activeSupabase.storage
+            .from("project-images")
+            .getPublicUrl(imagePath);
+          projectPhotos.push({
+            id: crypto.randomUUID(),
+            url: publicImage.publicUrl,
+            path: imagePath,
+            name: photo.name || `Befaringsbilde ${index + 1}`,
+            cat: "Før oppstart",
+            comment: "Overført fra befaring",
+            created: photo.createdAt || activatedAt,
+          });
+        }
+
+        const inspectionSummary = [
+          selectedRequest.inspectionCustomerWishes && `Kundens ønsker: ${selectedRequest.inspectionCustomerWishes}`,
+          selectedRequest.inspectionExistingConditions && `Eksisterende forhold: ${selectedRequest.inspectionExistingConditions}`,
+          selectedRequest.inspectionMeasurements && `Mål og registreringer: ${selectedRequest.inspectionMeasurements}`,
+          selectedRequest.inspectionObservations && `Observasjoner: ${selectedRequest.inspectionObservations}`,
+        ].filter(Boolean).join("\n\n");
+        const offerSummary = [
+          ...acceptedLines.map((line) => `• ${line.description}: ${formatNok(Number(line.amount || 0))} eks. mva.`),
+          ...acceptedOptions.map((option) => `• Valgt opsjon – ${option.description}: ${formatNok(Number(option.amount || 0))} eks. mva.`),
+        ].join("\n");
+        const projectDescription = [
+          selectedRequest.note,
+          inspectionSummary,
+          offerSummary && `Akseptert tilbud v${selectedRequest.acceptedOfferVersionNumber || selectedRequest.sentOfferVersionNumber || ""}:\n${offerSummary}`,
+          selectedRequest.acceptedTotal != null && `Akseptert total: ${formatNok(Number(selectedRequest.acceptedTotal || 0))} eks. mva. / ${formatNok(Number(selectedRequest.acceptedTotal || 0) * 1.25)} inkl. mva.`,
+        ].filter(Boolean).join("\n\n");
+        const companyName =
+          profile?.company_name || profile?.companyName || companyProfile.companyName || "";
+        const projectData = {
+          company: {
+            companyName,
+            orgNumber: profile?.org_number || companyProfile.orgNumber || "",
+            address: profile?.address || companyProfile.address || "",
+            phone: profile?.phone || companyProfile.phone || "",
+            email: profile?.email || companyProfile.email || authUser.email || "",
+            website: companyProfile.website || "",
+            logoUrl: companyProfile.logoUrl || "",
+          },
+          user: { id: authUser.id, email: authUser.email || "" },
+          project: {
+            responsible: projectForm.responsible.trim(),
             projectName: projectForm.projectName.trim(),
             projectNumber: projectForm.projectNumber.trim(),
-            projectResponsible: projectForm.responsible.trim(),
-            projectNote: projectForm.note.trim(),
-            projectActivatedAt: activatedAt,
-            status: "Aktivert",
-            statusClass: "sales-status-accepted",
-            nextStep: "Åpne ProffDok-prosjekt",
-            iconName: "home",
-          }
-        : request
-    );
+            address: selectedRequest.address || "",
+            postnr: selectedRequest.postnr || "",
+            city: selectedRequest.city || "",
+            customer: selectedRequest.customer || "",
+            customerEmail: selectedRequest.email || "",
+            customerPhone: selectedRequest.phone || "",
+            date: new Date().toISOString().slice(0, 10),
+            notes: projectForm.note.trim(),
+            projectDescription,
+            projectInfoIncludeInReport: true,
+            checklistPhotosNote: false,
+            reportHeroPhotoId: "",
+            isTemplate: false,
+            fall: "", fallDusj: "", fallUtenfor: "", sluk: "", terskel: "", membran: "",
+            prosjekteringKommentar: "", prosjekteringPunkter: [], customChecklistGroups: [], projectDeviations: [],
+            locked: false, status: "active", workflowStatus: "Pågår", lockedAt: "", lockedBy: "",
+            salesOrigin: {
+              requestRef,
+              publicToken: selectedRequest.publicToken || "",
+              acceptedOfferVersionId: selectedRequest.acceptedOfferVersionId || "",
+              acceptedOfferVersionNumber: selectedRequest.acceptedOfferVersionNumber || "",
+              acceptedBy: selectedRequest.acceptedBy || "",
+              acceptedAt: selectedRequest.acceptedAt || "",
+              acceptedTotal: Number(selectedRequest.acceptedTotal || 0),
+              activatedAt,
+            },
+          },
+          checked: {}, productDocs: {}, manualProducts: {}, other: {}, surf: {}, bathroomEquipment: {},
+          photos: projectPhotos, access: [], inst: [], files: [], checklist: {},
+          tilbud: { enabled: true, files: [], tillegg: "", fradrag: "", kommentar: projectDescription },
+          overtagelse: { enabled: false, dato: new Date().toISOString().slice(0, 10), kommentar: "", signUtførende: "", signKunde: "", signUtførendeImage: "", signKundeImage: "" },
+          warranty: { enabled: false, issued: false, status: "draft" },
+          projectLog: { enabled: false, draft: "", messages: [], lastReadByAdmin: "", lastReadByCustomer: "" },
+          internalNotes: projectForm.note.trim(),
+        };
+        const { data: inserted, error: insertError } = await activeSupabase
+          .from("projects")
+          .insert({
+            id: projectId,
+            title: projectForm.projectName.trim() || selectedRequest.address || "Uten navn",
+            data: projectData,
+            user_id: authUser.id,
+            share_enabled: true,
+            locked: false,
+            locked_at: null,
+            locked_by: "",
+            updated_at: activatedAt,
+          })
+          .select("id")
+          .single();
+        if (insertError) throw insertError;
+        existingProjectId = inserted.id;
+      }
 
-    setRequests(nextRequests);
-    void persistRequests(nextRequests).catch((error) =>
-      alert(error.message || "Kunne ikke lagre prosjektaktiveringen varig.")
-    );
-    setPublishFeedback(null);
-    setCustomerLinkCopied(false);
-    setMode("detail");
+      const activatedAt = new Date().toISOString();
+      const nextRequests = requests.map((request) =>
+        request.id === selectedRequestId
+          ? {
+              ...request,
+              projectId: existingProjectId,
+              projectName: projectForm.projectName.trim(),
+              projectNumber: projectForm.projectNumber.trim(),
+              projectResponsible: projectForm.responsible.trim(),
+              projectNote: projectForm.note.trim(),
+              projectActivatedAt: request.projectActivatedAt || activatedAt,
+              status: "Aktivert",
+              statusClass: "sales-status-accepted",
+              nextStep: "Åpne ProffDok-prosjekt",
+              iconName: "home",
+            }
+          : request
+      );
+      setRequests(nextRequests);
+      await persistRequests(nextRequests);
+      setPublishFeedback(null);
+      setCustomerLinkCopied(false);
+      window.location.assign(`${window.location.pathname}?project=${encodeURIComponent(existingProjectId)}&access=admin&tab=prosjekt`);
+    } catch (error) {
+      console.error("Kunne ikke aktivere salgssak som prosjekt", error);
+      alert(error.message || "Kunne ikke opprette ProffDok-prosjektet.");
+    } finally {
+      setProjectActivationBusy(false);
+    }
   }
 
   function buildOfferSnapshot(request) {
@@ -2059,7 +2232,7 @@ export default function SalesModule({
                     onChange={(event) =>
                       updateProjectForm("projectNumber", event.target.value)
                     }
-                    placeholder="Valgfritt i prototype"
+                    placeholder="Valgfritt prosjektnummer"
                   />
                 </label>
 
@@ -2101,7 +2274,7 @@ export default function SalesModule({
                   </span>
                   <span>
                     <Home size={16} />
-                    Vanlig ProffDok-prosjekt opprettes senere i Supabase
+                    Vanlig ProffDok-prosjekt opprettes og åpnes direkte
                   </span>
                 </div>
               </div>
@@ -2115,9 +2288,13 @@ export default function SalesModule({
                   Avbryt
                 </button>
 
-                <button className="sales-primary-button" type="submit">
+                <button
+                  className="sales-primary-button"
+                  type="submit"
+                  disabled={projectActivationBusy}
+                >
                   <Home size={18} />
-                  Aktiver som prosjekt
+                  {projectActivationBusy ? "Oppretter prosjekt …" : "Aktiver som prosjekt"}
                 </button>
               </div>
             </form>
@@ -3469,7 +3646,11 @@ export default function SalesModule({
                             ? openCustomerOfferPreview
                             : selectedRequest.status === "Akseptert"
                               ? openProjectActivation
-                              : undefined
+                              : selectedRequest.status === "Aktivert" && selectedRequest.projectId
+                                ? () => window.location.assign(
+                                    `${window.location.pathname}?project=${encodeURIComponent(selectedRequest.projectId)}&access=admin&tab=prosjekt`
+                                  )
+                                : undefined
                   }
                 >
                   <CalendarDays size={18} />
@@ -3634,11 +3815,7 @@ export default function SalesModule({
                         "nb-NO"
                       )}.
                     </p>
-                    <p>
-                      Dette er fortsatt en prototype. Endelig prosjektopprettelse
-                      skal senere kobles kontrollert mot eksisterende ProffDok-prosjekter
-                      i Supabase.
-                    </p>
+                    <p>Prosjektet er opprettet i den ordinære ProffDok-prosjektlisten.</p>
                   </div>
                 ) : selectedRequest.status === "Akseptert" &&
                 selectedRequest.acceptedBy ? (
