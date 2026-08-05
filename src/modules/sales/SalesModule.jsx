@@ -2,6 +2,7 @@
 // FASE 20P SIKKER ÅPNING AV AKSEPTBEVIS: Ny fane reserveres direkte ved brukerklikk og viser ferdig PDF etter opprettelse. Eksisterende nedlasting, firmalogo og låst dokumentasjon beholdes. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20M LÅST AKSEPTBEVIS: Oppretter PDF fra akseptert, publisert tilbudsversjon og lagrer dokumentet varig på saken og i aktivert prosjekt. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20J TYDELIG LEVERANSEOMFANG: Egne, versjonslåste felt for inkludert, ikke inkludert og kundens leveranse vises i kundetilbud og omfattes av digital aksept. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
+// FASE 21A DIREKTE NY FORESPØRSEL: Startsiden kan åpne registreringsskjemaet direkte via et signal uten å opprette eller endre salgsdata før brukeren lagrer.
 // FASE 20I EGEN KONTRAKT: Håndverksbedriften kan laste opp egen kontrakt etter kundeaksept. Kontrakten lagres med saken og følger automatisk til Tilbud/kontrakt ved prosjektaktivering. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20F GJENOPPRETT TILBUD FØR AUTOLAGRING: Ved retur fra en annen hovedfane gjenopprettes tilbudsskjemaet fra kladd/sak før autolagring tillates, slik at en tom initialform aldri kan overskrive poster og priser. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20E VARIG TILBUDSKLADD: Mellomlagrer tilbudet både lokalt og fortløpende i eksisterende sales_requests, slik at poster og priser tåler fanebytte, sidegjenlasting og nettleserens lagringsbegrensning. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -409,6 +410,7 @@ export default function SalesModule({
   profile = null,
   currentUserName = "",
   integrationMode = "preview",
+  startNewRequestSignal = 0,
 } = {}) {
   const activeSupabase = supabaseClient || supabase;
   const salesStorageKey = useMemo(() => {
@@ -1153,6 +1155,13 @@ export default function SalesModule({
   function resetForm() {
     setForm(emptyForm);
   }
+
+  useEffect(() => {
+    if (!startNewRequestSignal || integrationMode !== "app") return;
+    resetForm();
+    setSelectedRequestId(null);
+    setMode("new");
+  }, [startNewRequestSignal, integrationMode]);
 
   function goToList() {
     setMode("list");
