@@ -2867,7 +2867,16 @@ export default function SalesModule({
           <main className="sales-main">
             <section className="sales-form-hero">
               <p className="sales-eyebrow">Ny forespørsel</p>
-              <h1 className="sales-title">Registrer kundehenvendelse</h1>
+              <h1
+                className="sales-title"
+                style={{
+                  maxWidth: "100%",
+                  fontSize: "clamp(26px, 8vw, 56px)",
+                  overflowWrap: "anywhere",
+                }}
+              >
+                Registrer kundehenvendelse
+              </h1>
               <p className="sales-subtitle">
                 Fang opp det viktigste raskt. Resten kan fylles ut etter
                 befaring.
