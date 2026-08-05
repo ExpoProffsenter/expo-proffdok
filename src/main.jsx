@@ -1,3 +1,4 @@
+// FASE 21B TYDELIG STARTSIDE OG MOBILMENY: Startsiden gir direkte inngang til ny forespørsel, Befaring/Tilbud og prosjektlisten på både mobil og PC. Mobil arbeidsmeny er tilgjengelig også uten åpent prosjekt. Ingen prosjekt-, salgs- eller backenddata endres.
 // FASE 20A PROSJEKTAKTIVERING: Venter med administrator-direkteåpning til Supabase-sesjon og godkjent profil er klare, laster prosjektlisten på nytt og åpner prosjektet nøyaktig én gang. Kun feature/befaring-tilbud. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
 // FASE 20G KORREKT MODULINFORMASJON: Fjerner utdatert prototypetekst etter godkjent prosjektaktivering og varig tilbudskladd. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
 // FASE 19.15D OFFENTLIG KUNDERUTING: Åpner publicOffer direkte i SalesModule før innlogging og intern appnavigasjon. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
@@ -1408,6 +1409,8 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       };
     }, []);
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
+    const [salesStartNewRequestSignal, setSalesStartNewRequestSignal] = (0, import_react.useState)(0);
+    const [mobileMenuOpen, setMobileMenuOpen] = (0, import_react.useState)(false);
     const [projectDirty, setProjectDirty] = (0, import_react.useState)(false);
     const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
     const [user, setUser] = (0, import_react.useState)({ name: "", email: "", role: "Eier / administrator" });
@@ -2705,17 +2708,32 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         setMobileCreatingProject(false);
         resetProjectDirty();
         setTab("prosjekt");
+        setMobileMenuOpen(false);
         window.history.replaceState({}, document.title, window.location.pathname);
         setTimeout(() => scrollToMobileTabTarget("prosjekt"), 90);
         setTimeout(() => scrollToMobileTabTarget("prosjekt"), 320);
         return;
       }
-      if (id === tab) return;
+      if (id === tab) {
+        setMobileMenuOpen(false);
+        return;
+      }
       const canLeave = await confirmLeaveWithUnsavedChanges(`går til fanen "${tabs.find(([tabId]) => tabId === id)?.[1] || id}"`);
       if (!canLeave) return;
       setTab(id);
+      setMobileMenuOpen(false);
       setTimeout(() => scrollToMobileTabTarget(id), 90);
       setTimeout(() => scrollToMobileTabTarget(id), 320);
+    };
+    const openSalesOverview = () => {
+      setTab("sales");
+      setMobileMenuOpen(false);
+      setTimeout(() => scrollToMobileTabTarget("sales"), 90);
+      setTimeout(() => scrollToMobileTabTarget("sales"), 320);
+    };
+    const startNewSalesRequest = () => {
+      setSalesStartNewRequestSignal((current) => current + 1);
+      openSalesOverview();
     };
     const appendProjectDescriptionTemplate = (templateText) => {
       const currentText = project.projectDescription || "";
@@ -9458,6 +9476,26 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           gap:8px;
           align-items:center;
         }
+        .mobileFieldBarToggle {
+          width:100%;
+          min-height:44px !important;
+          display:flex !important;
+          align-items:center !important;
+          justify-content:space-between !important;
+          gap:10px !important;
+          padding:8px 12px !important;
+          border-radius:14px !important;
+          background:#082f3a !important;
+          border:1px solid #082f3a !important;
+          color:#fff !important;
+          font-size:16px !important;
+          font-weight:900 !important;
+        }
+        .mobileFieldBarMenu {
+          display:grid;
+          grid-template-columns:1fr;
+          gap:8px;
+        }
         .mobileProjectLine {
           grid-column:1 / -1;
           display:flex;
@@ -9889,8 +9927,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] })
         ] }) })
       ] }),
-      projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLine", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileFieldBarToggle", "aria-expanded": mobileMenuOpen, onClick: () => setMobileMenuOpen((open) => !open), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["☰ Meny · ", tabs.find(([id]) => id === tab)?.[1] || "Velg side"] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "aria-hidden": "true", children: mobileMenuOpen ? "▲" : "▼" })
+        ] }),
+        mobileMenuOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarMenu", children: [
+        projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLine", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLineText", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Du jobber i" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: project.projectName || project.address || "\xC5pent prosjekt" })
@@ -9901,20 +9944,23 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           }, children: "Bytt" })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { "aria-label": "Velg seksjon", value: tab, onChange: (e) => goToTab(e.target.value), children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: id, children: l }, "mobile-field-" + id)) })
+        ] })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
         !projectId && !mobileCreatingProject && tab !== "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hva skal du dokumentere nå?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Start et nytt prosjekt eller fortsett der du slapp. Denne startsiden vises kun på mobil." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hva vil du jobbe med?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Opprett en ny forespørsel, fortsett med befaring og tilbud, eller åpne et eksisterende ProffDok-prosjekt." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeActions", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesRequest, children: "+ Ny forespørsel" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openSalesOverview, children: "Åpne Befaring/Tilbud" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => {
                 createNewProject();
                 setTab("prosjekt");
                 setTimeout(() => scrollToMobileTabTarget("prosjekt"), 120);
               }, children: "+ Nytt prosjekt" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => loadProjects(authUser, true), children: "Oppdater" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" })
             ] })
           ] }),
           warrantyTemplateProjectRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeSearchCard", style: { marginTop: "12px" }, children: [
@@ -10108,9 +10154,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         tab === "prosjekt" && (!hasActiveProjectWorkspace ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "desktopOnlyWhenNoProject desktopNoProjectWelcome", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "desktopNoProjectHero", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Velg eller opprett prosjekt" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen prosjekt er valgt. Start et nytt prosjekt, eller åpne et eksisterende prosjekt fra prosjektlisten før du fyller inn prosjektinformasjon." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hva vil du jobbe med?" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett en ny forespørsel, fortsett med befaring og tilbud, eller åpne et eksisterende ProffDok-prosjekt." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "16px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesRequest, children: "+ Ny forespørsel" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openSalesOverview, children: "Åpne Befaring/Tilbud" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { createNewProject(); setTab("prosjekt"); }, children: "+ Nytt prosjekt" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" })
             ] })
@@ -10177,7 +10225,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, { supabaseClient: supabase, authUser, profile, currentUserName: user?.name || "", integrationMode: "app" })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, { supabaseClient: supabase, authUser, profile, currentUserName: user?.name || "", integrationMode: "app", startNewRequestSignal: salesStartNewRequestSignal })
         ] }),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektinformasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
@@ -11661,10 +11709,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       {
         key: "start",
         title: "🚀 Startside / kom i gang",
-        purpose: "Startsiden og hovedflyten hjelper brukeren raskt i gang med riktig prosjekt, riktig dokumentasjon og riktig rekkefølge på arbeidet.",
+        purpose: "Startsiden gir direkte inngang til både forespørsel/tilbud og eksisterende ProffDok-prosjekter.",
         workflow: [
           "Logg inn og kontroller at firmaprofilen er fylt ut med korrekt informasjon og logo.",
-          "Opprett eller åpne prosjekt fra startsiden/prosjektlisten.",
+          "Velg Ny forespørsel for å registrere en kundehenvendelse direkte, eller åpne Befaring/Tilbud for å fortsette en eksisterende salgssak.",
+          "Opprett et nytt prosjekt direkte når tilbudsprosessen ikke er nødvendig, eller åpne et eksisterende prosjekt fra prosjektlisten.",
           "Legg inn prosjektinformasjon, kunde, adresse og ansvarlig før øvrig dokumentasjon bygges opp.",
           "Velg dokumentert tetthetsgaranti og Sopro-system dersom prosjektet skal være et garantibad.",
           "Dokumenter produkter, bilder, sjekklister, avvik, overtagelse og rapport fortløpende."
