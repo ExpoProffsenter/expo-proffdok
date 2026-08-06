@@ -1,3 +1,4 @@
+// FASE 22D.3 AUTENTISERT NAVNEKILDE TIL SALGSMODUL: SalesModule mottar innlogget brukers navn fra Supabase Auth metadata før prosjektdata. Kun feature/befaringsbekreftelse-fase22a. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
 // FASE 21B TYDELIG STARTSIDE OG MOBILMENY: Startsiden gir direkte inngang til ny forespørsel, Befaring/Tilbud og prosjektlisten på både mobil og PC. Mobil arbeidsmeny er tilgjengelig også uten åpent prosjekt. Ingen prosjekt-, salgs- eller backenddata endres.
 // FASE 20A PROSJEKTAKTIVERING: Venter med administrator-direkteåpning til Supabase-sesjon og godkjent profil er klare, laster prosjektlisten på nytt og åpner prosjektet nøyaktig én gang. Kun feature/befaring-tilbud. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
 // FASE 20G KORREKT MODULINFORMASJON: Fjerner utdatert prototypetekst etter godkjent prosjektaktivering og varig tilbudskladd. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
@@ -10271,7 +10272,18 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, { supabaseClient: supabase, authUser, profile, currentUserName: user?.name || "", integrationMode: "app", startNewRequestSignal: salesStartNewRequestSignal })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, {
+            supabaseClient: supabase,
+            authUser,
+            profile,
+            currentUserName:
+              authUser?.user_metadata?.full_name ||
+              authUser?.user_metadata?.name ||
+              user?.name ||
+              "",
+            integrationMode: "app",
+            startNewRequestSignal: salesStartNewRequestSignal
+          })
         ] }),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektinformasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
