@@ -1,3 +1,4 @@
+// FASE 23J SALES-SURVEY-PLAN: Flytter planlegging av befaring ut av SalesModule uten å endre UI, validering, navigasjon, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 23I SALES-REQUEST-FORM: Flytter skjema for ny og redigert forespørsel ut av SalesModule uten å endre UI, validering, navigasjon, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 23H SALES-LIST-VIEW: Flytter saksoversikt, nøkkeltall og aktive/aktiverte sakskort ut av SalesModule uten å endre UI, navigasjon, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 23G SALES-ACCEPTANCE-PDF: Flytter opprettelse av låst akseptbevis-PDF ut av SalesModule uten å endre UI, dataflyt, database, Storage-regler, e-post eller prosjektaktivering.
@@ -141,6 +142,7 @@ import {
 import { createAcceptanceProofPdf } from "./services/salesAcceptancePdf.js";
 import SalesListView from "./components/SalesListView.jsx";
 import SalesRequestForm from "./components/SalesRequestForm.jsx";
+import SalesSurveyPlan from "./components/SalesSurveyPlan.jsx";
 import "./sales.css";
 
 const supabase = createDefaultSalesSupabaseClient();
@@ -3701,134 +3703,20 @@ export default function SalesModule({
     );
   }
 
-  if (mode === "survey-plan" && selectedRequest) {
-    return (
-      <div className="sales-app">
-        <div className="sales-shell">
-          <header className="sales-header">
-            <button
-              className="sales-back-button"
-              type="button"
-              onClick={() => setMode("detail")}
-            >
-              <ArrowLeft size={18} />
-              Tilbake
-            </button>
 
-            <div className="sales-brand sales-brand-compact">
-              <div className="sales-brand-mark">
-                <ClipboardList size={22} />
-              </div>
-              <div className="sales-brand-copy">
-                <strong>Expo ProffDok</strong>
-                <span>Befaring / Tilbud / Aksept</span>
-              </div>
-            </div>
-          </header>
-
-          <main className="sales-main">
-            <section className="sales-form-hero">
-              <p className="sales-eyebrow">Planlegg befaring</p>
-              <h1 className="sales-title">{selectedRequest.title}</h1>
-              <p className="sales-subtitle">
-                {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
-              </p>
-            </section>
-
-            <form className="sales-form-panel" onSubmit={handleSaveSurveyPlan}>
-              <div className="sales-form-grid">
-                <label className="sales-field">
-                  <span>Dato</span>
-                  <input
-                    type="date"
-                    value={surveyForm.date}
-                    onChange={(event) => updateSurveyForm("date", event.target.value)}
-                    required
-                  />
-                </label>
-
-                <label className="sales-field">
-                  <span>Tidspunkt</span>
-                  <input
-                    type="time"
-                    value={surveyForm.time}
-                    onChange={(event) => updateSurveyForm("time", event.target.value)}
-                    required
-                  />
-                </label>
-
-                <label className="sales-field sales-field-full">
-                  <span>Prosjektansvarlig</span>
-                  <input
-                    value={loggedInResponsible}
-                    readOnly
-                    aria-readonly="true"
-                  />
-                </label>
-
-                <label className="sales-field sales-field-full">
-                  <span>Intern merknad</span>
-                  <textarea
-                    value={surveyForm.note}
-                    onChange={(event) => updateSurveyForm("note", event.target.value)}
-                    placeholder="Eksempel: Avklar parkering. Kunde ønsker vurdering av sluk og fall."
-                    rows={4}
-                  />
-                </label>
-              </div>
-
-              <label className="sales-acceptance-check sales-field-full" style={{ marginTop: 18 }}>
-                <input
-                  type="checkbox"
-                  checked={surveyForm.sendConfirmation}
-                  disabled={!selectedRequest.email || customerEmailBusy}
-                  onChange={(event) => updateSurveyForm("sendConfirmation", event.target.checked)}
-                />
-                <span>
-                  {selectedRequest.email
-                    ? `${selectedRequest.surveyConfirmationSentAt ? "Send bekreftelsen på nytt" : "Send befaringsbekreftelse"} til ${selectedRequest.email}`
-                    : "Registrer kundens e-postadresse for å sende befaringsbekreftelse"}
-                </span>
-              </label>
-
-              <div className="sales-form-preview">
-                <h2>Befaringsplan</h2>
-                <div className="sales-preview-lines">
-                  <span>
-                    <CalendarDays size={16} />
-                    {surveyForm.date ? formatInspectionDateTime(surveyForm.date, surveyForm.time) : "Dato og tidspunkt ikke valgt"}
-                  </span>
-                  <span>
-                    <CheckCircle2 size={16} />
-                    {loggedInResponsible || "Ansvarlig ikke valgt"}
-                  </span>
-                  <span>
-                    <MapPin size={16} />
-                    {selectedRequest.address}
-                  </span>
-                </div>
-              </div>
-
-              <div className="sales-form-actions">
-                <button
-                  className="sales-secondary-button"
-                  type="button"
-                  onClick={() => setMode("detail")}
-                >
-                  Avbryt
-                </button>
-
-                <button className="sales-primary-button" type="submit">
-                  <Save size={18} />
-                  {customerEmailBusy ? "Lagrer og sender …" : selectedRequest.surveyDate ? "Lagre endringer" : "Lagre befaringsplan"}
-                </button>
-              </div>
-            </form>
-          </main>
-        </div>
-      </div>
-    );
-  }
+if (mode === "survey-plan" && selectedRequest) {
+  return (
+    <SalesSurveyPlan
+      selectedRequest={selectedRequest}
+      surveyForm={surveyForm}
+      loggedInResponsible={loggedInResponsible}
+      customerEmailBusy={customerEmailBusy}
+      onBack={() => setMode("detail")}
+      onSubmit={handleSaveSurveyPlan}
+      onUpdateSurveyForm={updateSurveyForm}
+    />
+  );
+}
 
   if (mode === "detail" && selectedRequest) {
     const workflowSteps = getWorkflowSteps(selectedRequest);
