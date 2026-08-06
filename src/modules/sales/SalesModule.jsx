@@ -1,3 +1,4 @@
+// FASE 23N SALES-PROJECT-ACTIVATION: Flytter prosjektaktiveringens presentasjon ut av SalesModule uten å endre validering, dataflyt, database, Storage, prosjektopprettelse eller navigasjon.
 // FASE 23M SALES-OFFER-BUILDER: Flytter tilbudsbyggerens presentasjon ut av SalesModule uten å endre UI, validering, autolagring, dataflyt, database, Storage, publisering, e-post eller aksept.
 // FASE 23L SALES-DETAIL-VIEW: Flytter intern saksdetalj ut av SalesModule uten å endre UI, navigasjon, dataflyt, database, Storage, e-post, tilbud eller prosjektaktivering.
 // FASE 23K SALES-INSPECTION-NOTE: Flytter befaringsnotat og bildevisning ut av SalesModule uten å endre UI, validering, navigasjon, dataflyt, database, Storage eller tilbud.
@@ -149,6 +150,7 @@ import SalesSurveyPlan from "./components/SalesSurveyPlan.jsx";
 import SalesInspectionNote from "./components/SalesInspectionNote.jsx";
 import SalesDetailView from "./components/SalesDetailView.jsx";
 import SalesOfferBuilder from "./components/SalesOfferBuilder.jsx";
+import SalesProjectActivation from "./components/SalesProjectActivation.jsx";
 import "./sales.css";
 
 const supabase = createDefaultSalesSupabaseClient();
@@ -2374,133 +2376,14 @@ export default function SalesModule({
 
   if (mode === "project-activation" && selectedRequest) {
     return (
-      <div className="sales-app">
-        <div className="sales-shell">
-          <header className="sales-header">
-            <button
-              className="sales-back-button"
-              type="button"
-              onClick={() => setMode("detail")}
-            >
-              <ArrowLeft size={18} />
-              Tilbake
-            </button>
-
-            <div className="sales-brand sales-brand-compact">
-              <div className="sales-brand-mark">
-                <ClipboardList size={22} />
-              </div>
-              <div className="sales-brand-copy">
-                <strong>Expo ProffDok</strong>
-                <span>Aktiver som prosjekt</span>
-              </div>
-            </div>
-          </header>
-
-          <main className="sales-main">
-            <section className="sales-form-hero">
-              <p className="sales-eyebrow">Aktiver som ProffDok-prosjekt</p>
-              <h1 className="sales-title">{selectedRequest.title}</h1>
-              <p className="sales-subtitle">
-                {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
-              </p>
-            </section>
-
-            <form className="sales-form-panel" onSubmit={handleActivateProject}>
-              <div className="sales-form-grid">
-                <label className="sales-field">
-                  <span>Prosjektnavn</span>
-                  <input
-                    value={projectForm.projectName}
-                    onChange={(event) =>
-                      updateProjectForm("projectName", event.target.value)
-                    }
-                    required
-                  />
-                </label>
-
-                <label className="sales-field">
-                  <span>Prosjektnummer</span>
-                  <input
-                    value={projectForm.projectNumber}
-                    onChange={(event) =>
-                      updateProjectForm("projectNumber", event.target.value)
-                    }
-                    placeholder="Valgfritt prosjektnummer"
-                  />
-                </label>
-
-                <label className="sales-field sales-field-full">
-                  <span>Ansvarlig</span>
-                  <input
-                    value={projectForm.responsible}
-                    onChange={(event) =>
-                      updateProjectForm("responsible", event.target.value)
-                    }
-                    placeholder="Navn på ansvarlig bruker"
-                  />
-                </label>
-
-                <label className="sales-field sales-field-full">
-                  <span>Intern merknad ved aktivering</span>
-                  <textarea
-                    value={projectForm.note}
-                    onChange={(event) => updateProjectForm("note", event.target.value)}
-                    rows={4}
-                  />
-                </label>
-              </div>
-
-              <div className="sales-form-preview">
-                <h2>Data som skal følge videre</h2>
-                <div className="sales-preview-lines">
-                  <span>
-                    <ClipboardList size={16} />
-                    Kunde, adresse, telefon og e-post
-                  </span>
-                  <span>
-                    <CheckCircle2 size={16} />
-                    Akseptert tilbud og valgte opsjoner
-                  </span>
-                  <span>
-                    <Plus size={16} />
-                    Befaringsnotat og bilder
-                  </span>
-                  <span>
-                    <FileText size={16} />
-                    {selectedRequest.contractFile
-                      ? `Kontrakt: ${selectedRequest.contractFile.name}`
-                      : "Ingen kontrakt lastet opp – kan legges til senere i prosjektet"}
-                  </span>
-                  <span>
-                    <Home size={16} />
-                    Vanlig ProffDok-prosjekt opprettes og åpnes direkte
-                  </span>
-                </div>
-              </div>
-
-              <div className="sales-form-actions">
-                <button
-                  className="sales-secondary-button"
-                  type="button"
-                  onClick={() => setMode("detail")}
-                >
-                  Avbryt
-                </button>
-
-                <button
-                  className="sales-primary-button"
-                  type="submit"
-                  disabled={projectActivationBusy}
-                >
-                  <Home size={18} />
-                  {projectActivationBusy ? "Oppretter prosjekt …" : "Aktiver som prosjekt"}
-                </button>
-              </div>
-            </form>
-          </main>
-        </div>
-      </div>
+      <SalesProjectActivation
+        selectedRequest={selectedRequest}
+        projectForm={projectForm}
+        projectActivationBusy={projectActivationBusy}
+        onBack={() => setMode("detail")}
+        onSubmit={handleActivateProject}
+        onUpdateProjectForm={updateProjectForm}
+      />
     );
   }
 
