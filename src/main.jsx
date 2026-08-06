@@ -1,3 +1,5 @@
+// FASE 22E FULLFØR BRUKERPROFIL: Godkjente eksisterende brukere uten fullt navn må registrere fullt navn før appen åpnes. Navn og valgfritt mobilnummer lagres i Supabase Auth user_metadata. Kun feature/befaringsbekreftelse-fase22a. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
+// FASE 22D.3 AUTENTISERT NAVNEKILDE TIL SALGSMODUL: SalesModule mottar innlogget brukers navn fra Supabase Auth metadata før prosjektdata. Kun feature/befaringsbekreftelse-fase22a. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
 // FASE 21B TYDELIG STARTSIDE OG MOBILMENY: Startsiden gir direkte inngang til ny forespørsel, Befaring/Tilbud og prosjektlisten på både mobil og PC. Mobil arbeidsmeny er tilgjengelig også uten åpent prosjekt. Ingen prosjekt-, salgs- eller backenddata endres.
 // FASE 20A PROSJEKTAKTIVERING: Venter med administrator-direkteåpning til Supabase-sesjon og godkjent profil er klare, laster prosjektlisten på nytt og åpner prosjektet nøyaktig én gang. Kun feature/befaring-tilbud. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
 // FASE 20G KORREKT MODULINFORMASJON: Fjerner utdatert prototypetekst etter godkjent prosjektaktivering og varig tilbudskladd. Kun feature/befaring-tilbud. Ingen SQL, Edge Function eller produksjonsmerge.
@@ -1451,6 +1453,10 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [authPasswordRepeat, setAuthPasswordRepeat] = (0, import_react.useState)("");
     const [authFullName, setAuthFullName] = (0, import_react.useState)("");
     const [authMobile, setAuthMobile] = (0, import_react.useState)("");
+    const [profileCompletionName, setProfileCompletionName] = (0, import_react.useState)("");
+    const [profileCompletionMobile, setProfileCompletionMobile] = (0, import_react.useState)("");
+    const [profileCompletionSaving, setProfileCompletionSaving] = (0, import_react.useState)(false);
+    const [profileCompletionError, setProfileCompletionError] = (0, import_react.useState)("");
     const [passwordRecovery, setPasswordRecovery] = (0, import_react.useState)(false);
     const [newPassword, setNewPassword] = (0, import_react.useState)("");
     const [newPasswordRepeat, setNewPasswordRepeat] = (0, import_react.useState)("");
@@ -3293,6 +3299,84 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         setTermsAccepting(false);
       }
     };
+    const authenticatedFullName = String(
+      authUser?.user_metadata?.full_name ||
+      authUser?.user_metadata?.name ||
+      ""
+    ).trim();
+
+    const authenticatedMobile = String(
+      authUser?.user_metadata?.mobile ||
+      authUser?.user_metadata?.phone ||
+      ""
+    ).trim();
+
+    const needsProfileCompletion =
+      !!authUser &&
+      !!profile?.approved &&
+      !profile?.deactivated &&
+      !authenticatedFullName;
+
+    (0, import_react.useEffect)(() => {
+      setProfileCompletionName(authenticatedFullName);
+      setProfileCompletionMobile(authenticatedMobile);
+      setProfileCompletionError("");
+    }, [authUser?.id, authenticatedFullName, authenticatedMobile]);
+
+    const saveProfileCompletion = async () => {
+      const fullName = String(profileCompletionName || "").trim();
+      const mobile = String(profileCompletionMobile || "").trim();
+
+      if (fullName.length < 3 || !fullName.includes(" ")) {
+        setProfileCompletionError("Skriv inn fullt navn med fornavn og etternavn.");
+        return;
+      }
+
+      setProfileCompletionSaving(true);
+      setProfileCompletionError("");
+
+      try {
+        const existingMetadata = authUser?.user_metadata || {};
+        const nextMetadata = {
+          ...existingMetadata,
+          full_name: fullName,
+          name: fullName
+        };
+
+        if (mobile) {
+          nextMetadata.mobile = mobile;
+          nextMetadata.phone = mobile;
+        }
+
+        const { data, error } = await supabase.auth.updateUser({
+          data: nextMetadata
+        });
+
+        if (error) throw error;
+
+        const updatedUser = data?.user || {
+          ...authUser,
+          user_metadata: nextMetadata
+        };
+
+        setAuthUser(updatedUser);
+        setUser((current) => ({
+          ...current,
+          name: fullName,
+          email: current?.email || updatedUser?.email || ""
+        }));
+        setProfileCompletionName(fullName);
+        setProfileCompletionMobile(mobile);
+      } catch (error) {
+        console.error("Kunne ikke lagre brukerprofil:", error);
+        setProfileCompletionError(
+          "Kunne ikke lagre brukerprofilen. Prøv igjen eller kontakt systemadministrator."
+        );
+      } finally {
+        setProfileCompletionSaving(false);
+      }
+    };
+
     const handleAuthUser = async (sessionUser) => {
       const nextUserId = sessionUser?.id || null;
       const previousUserId = previousAuthUserIdRef.current;
@@ -3316,6 +3400,10 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         setTermsReadConfirmed(false);
         setTermsError("");
         setTermsLoading(false);
+        setProfileCompletionName("");
+        setProfileCompletionMobile("");
+        setProfileCompletionError("");
+        setProfileCompletionSaving(false);
         return;
       }
       const row = await ensureProfile(sessionUser);
@@ -8710,6 +8798,30 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ] }) })
       ] });
     }
+    if (!isReadOnly && needsProfileCompletion) {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Brand, { logo: company.logoUrl, name }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Expo ProffDok" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Fullfør brukerprofilen" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Fullfør brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Vi mangler navnet ditt. Fullt navn brukes som prosjektansvarlig i befaringer, tilbud, prosjekter og kundekommunikasjon." }),
+          profileCompletionError && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", style: { background: "#fef2f2", borderColor: "#fecaca", marginBottom: "14px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#991b1b", fontWeight: 800, margin: 0 }, children: profileCompletionError }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Fullt navn", value: profileCompletionName, onChange: setProfileCompletionName, autoComplete: "name" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Mobilnummer (valgfritt)", value: profileCompletionMobile, onChange: setProfileCompletionMobile, autoComplete: "tel" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post", value: authUser?.email || "", onChange: () => {}, disabled: true, autoComplete: "email" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProfileCompletion, disabled: profileCompletionSaving, children: profileCompletionSaving ? "Lagrer..." : "Lagre og fortsett" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "14px" }, children: "Opplysningene lagres på brukerkontoen din og kan brukes på tvers av Expo ProffDok." })
+        ] }) })
+      ] });
+    }
+
     if (!isReadOnly && authUser && profile?.approved && !profile?.deactivated && termsLoading) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "head", children: [
@@ -10271,7 +10383,18 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, { supabaseClient: supabase, authUser, profile, currentUserName: user?.name || "", integrationMode: "app", startNewRequestSignal: salesStartNewRequestSignal })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, {
+            supabaseClient: supabase,
+            authUser,
+            profile,
+            currentUserName:
+              authUser?.user_metadata?.full_name ||
+              authUser?.user_metadata?.name ||
+              user?.name ||
+              "",
+            integrationMode: "app",
+            startNewRequestSignal: salesStartNewRequestSignal
+          })
         ] }),
         tab === "prosjektinfo" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektinformasjon/beskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektinformasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
