@@ -1,3 +1,4 @@
+// FASE 22A1 KORRIGERT BEFARINGSBEKREFTELSE: Ingen portal-lenke i befaringsmail, fullt ansvarlig navn og kontaktinformasjon. Tilbudsmail uendret.
 // FASE 22A BEFARINGSBEKREFTELSE OG TILBUDSMAIL: Sender kundemail via eksisterende smart-worker etter at data/publisering er lagret. Ingen SQL/RLS/Storage-endring.
 // FASE 20T SYNLIG TILBUDS- OG AKSEPTHISTORIKK: Viser tidligere og gjeldende aksepterte tilbudsversjoner med kunde, tidspunkt, total, valgte opsjoner og låst akseptbevis. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20P SIKKER ÅPNING AV AKSEPTBEVIS: Ny fane reserveres direkte ved brukerklikk og viser ferdig PDF etter opprettelse. Eksisterende nedlasting, firmalogo og låst dokumentasjon beholdes. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -525,16 +526,26 @@ export default function SalesModule({
     [requests, selectedRequestId]
   );
 
-  const loggedInResponsible = String(
+  const responsibleContactName = String(
     currentUserName ||
       profile?.full_name ||
       profile?.fullName ||
       profile?.name ||
       authUser?.user_metadata?.full_name ||
       authUser?.user_metadata?.name ||
-      authUser?.email ||
       ""
   ).trim();
+
+  const responsibleContactEmail = String(
+    authUser?.email || profile?.email || ""
+  ).trim();
+
+  const responsibleContactPhone = String(
+    profile?.phone || companyProfile.phone || ""
+  ).trim();
+
+  const loggedInResponsible =
+    responsibleContactName || responsibleContactEmail;
 
   function getStableOfferDraftKey(requestId = selectedRequestId) {
     const userScope = String(authUser?.id || authUser?.email || "innlogget-bruker")
@@ -2546,6 +2557,7 @@ export default function SalesModule({
       responsible:
         selectedRequest?.surveyResponsible ||
         selectedRequest?.responsible ||
+        responsibleContactName ||
         loggedInResponsible,
       note: selectedRequest?.surveyNote || "",
       sendConfirmation: Boolean(selectedRequest?.email),
@@ -2555,6 +2567,25 @@ export default function SalesModule({
 
   function updateSurveyForm(field, value) {
     setSurveyForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function buildInspectionConfirmationMessage({ date, time, note, responsible }) {
+    const contactLines = [
+      responsible ? `Ansvarlig: ${responsible}` : "",
+      responsibleContactEmail ? `E-post: ${responsibleContactEmail}` : "",
+      responsibleContactPhone ? `Telefon: ${responsibleContactPhone}` : "",
+    ].filter(Boolean);
+
+    return [
+      `Dato: ${date}`,
+      `Tidspunkt: ${time}`,
+      note ? `Merknad: ${note}` : "",
+      "",
+      "Dersom tidspunktet ikke passer eller du har spørsmål om befaringen, ber vi deg kontakte ansvarlig saksbehandler.",
+      contactLines.length ? contactLines.join("\n") : "",
+    ]
+      .filter((line, index, lines) => line || (index > 0 && lines[index - 1]))
+      .join("\n");
   }
 
   async function handleSaveSurveyPlan(event) {
@@ -2599,11 +2630,21 @@ export default function SalesModule({
           customerEmail: selectedRequest.email,
           customerPhone: selectedRequest.phone,
           projectAddress: selectedRequest.address,
-          projectResponsible: surveyForm.responsible.trim(),
+          projectResponsible:
+            surveyForm.responsible.trim() ||
+            responsibleContactName ||
+            loggedInResponsible,
           fromName: company.companyName || loggedInResponsible,
-          message: `Dato: ${surveyForm.date}\nTidspunkt: ${surveyForm.time}${surveyForm.note.trim() ? `\n\nMerknad: ${surveyForm.note.trim()}` : ""}\n\nTa kontakt dersom tidspunktet ikke passer.`,
-          projectLink: "https://expo-proffdok.app",
-          buttonText: "Åpne Expo ProffDok",
+          message: buildInspectionConfirmationMessage({
+            date: surveyForm.date,
+            time: surveyForm.time,
+            note: surveyForm.note.trim(),
+            responsible:
+              surveyForm.responsible.trim() ||
+              responsibleContactName ||
+              loggedInResponsible,
+          }),
+          projectLink: "",
           companyLogoUrl: company.logoUrl,
           footerCompanyText: company.companyName || "Expo ProffDok",
           sentViaText: "Befaringsbekreftelse sendt gjennom Expo ProffDok",
@@ -2653,11 +2694,23 @@ export default function SalesModule({
         customerEmail: request.email,
         customerPhone: request.phone,
         projectAddress: request.address,
-        projectResponsible: request.surveyResponsible || request.responsible || loggedInResponsible,
+        projectResponsible:
+          request.surveyResponsible ||
+          request.responsible ||
+          responsibleContactName ||
+          loggedInResponsible,
         fromName: company.companyName || loggedInResponsible,
-        message: `Dato: ${request.surveyDate}\nTidspunkt: ${request.surveyTime}${request.surveyNote ? `\n\nMerknad: ${request.surveyNote}` : ""}\n\nTa kontakt dersom tidspunktet ikke passer.`,
-        projectLink: "https://expo-proffdok.app",
-        buttonText: "Åpne Expo ProffDok",
+        message: buildInspectionConfirmationMessage({
+          date: request.surveyDate,
+          time: request.surveyTime,
+          note: request.surveyNote || "",
+          responsible:
+            request.surveyResponsible ||
+            request.responsible ||
+            responsibleContactName ||
+            loggedInResponsible,
+        }),
+        projectLink: "",
         companyLogoUrl: company.logoUrl,
         footerCompanyText: company.companyName || "Expo ProffDok",
         sentViaText: "Befaringsbekreftelse sendt gjennom Expo ProffDok",
