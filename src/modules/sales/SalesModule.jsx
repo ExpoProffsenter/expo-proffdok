@@ -1,4 +1,4 @@
-// FASE 22A1 KORRIGERT BEFARINGSBEKREFTELSE: Ingen portal-lenke i befaringsmail, fullt ansvarlig navn og kontaktinformasjon. Tilbudsmail uendret.
+// FASE 22B REDIGERBAR FORESPØRSEL/BEFARING OG NORSK BEFARINGSTID: Kunde- og befaringsdata kan oppdateres før aksept. Utsendt bekreftelse kan sendes oppdatert. Ingen SQL/RLS/Storage-endring.
 // FASE 22A BEFARINGSBEKREFTELSE OG TILBUDSMAIL: Sender kundemail via eksisterende smart-worker etter at data/publisering er lagret. Ingen SQL/RLS/Storage-endring.
 // FASE 20T SYNLIG TILBUDS- OG AKSEPTHISTORIKK: Viser tidligere og gjeldende aksepterte tilbudsversjoner med kunde, tidspunkt, total, valgte opsjoner og låst akseptbevis. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
 // FASE 20P SIKKER ÅPNING AV AKSEPTBEVIS: Ny fane reserveres direkte ved brukerklikk og viser ferdig PDF etter opprettelse. Eksisterende nedlasting, firmalogo og låst dokumentasjon beholdes. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -267,6 +267,23 @@ function createRequestId(requests) {
   return `F-2026-${String(highestNumber + 1).padStart(4, "0")}`;
 }
 
+function formatInspectionDateTime(date, time) {
+  if (!date) return time || "";
+
+  const parsed = new Date(`${date}T${time || "00:00"}:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return [date, time ? `kl. ${time}` : ""].filter(Boolean).join(" ");
+  }
+
+  const formattedDate = new Intl.DateTimeFormat("nb-NO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(parsed);
+
+  return `${formattedDate}${time ? ` kl. ${time}` : ""}`;
+}
+
 function normalizeCompanyProfile(row = {}, fallbackEmail = "") {
   return {
     companyName: row.company_name || "",
@@ -526,6 +543,17 @@ export default function SalesModule({
     [requests, selectedRequestId]
   );
 
+  const loggedInResponsible = String(
+    currentUserName ||
+      profile?.full_name ||
+      profile?.fullName ||
+      profile?.name ||
+      authUser?.user_metadata?.full_name ||
+      authUser?.user_metadata?.name ||
+      authUser?.email ||
+      ""
+  ).trim();
+
   const responsibleContactName = String(
     currentUserName ||
       profile?.full_name ||
@@ -535,17 +563,12 @@ export default function SalesModule({
       authUser?.user_metadata?.name ||
       ""
   ).trim();
-
   const responsibleContactEmail = String(
-    authUser?.email || profile?.email || ""
+    profile?.email || authUser?.email || ""
   ).trim();
-
   const responsibleContactPhone = String(
-    profile?.phone || companyProfile.phone || ""
+    profile?.phone || profile?.phone_number || profile?.mobile || ""
   ).trim();
-
-  const loggedInResponsible =
-    responsibleContactName || responsibleContactEmail;
 
   function getStableOfferDraftKey(requestId = selectedRequestId) {
     const userScope = String(authUser?.id || authUser?.email || "innlogget-bruker")
@@ -1181,6 +1204,82 @@ export default function SalesModule({
 
   function resetForm() {
     setForm(emptyForm);
+  }
+
+
+  function openEditRequest() {
+    if (!selectedRequest || !["Forespørsel", "Befaring"].includes(selectedRequest.status)) {
+      return;
+    }
+
+    setForm({
+      customer: selectedRequest.customer || "",
+      phone: selectedRequest.phone || "",
+      email: selectedRequest.email || "",
+      address: selectedRequest.address || "",
+      title: selectedRequest.title || "Modernisering av bad",
+      source: selectedRequest.source || "Telefon",
+      note: selectedRequest.note || "",
+    });
+    setMode("edit-request");
+  }
+
+  async function handleUpdateRequest(event) {
+    event.preventDefault();
+    if (!selectedRequest || !["Forespørsel", "Befaring"].includes(selectedRequest.status)) return;
+
+    const updatedRequest = {
+      ...selectedRequest,
+      customer: form.customer.trim() || "Uten kundenavn",
+      phone: form.phone.trim(),
+      email: form.email.trim(),
+      address: form.address.trim() || "Adresse ikke registrert",
+      title: form.title,
+      source: form.source,
+      note: form.note.trim(),
+    };
+    const confirmationRelevantChange = Boolean(
+      selectedRequest.surveyConfirmationSentAt &&
+        (updatedRequest.customer !== selectedRequest.customer ||
+          updatedRequest.email !== selectedRequest.email ||
+          updatedRequest.address !== selectedRequest.address ||
+          updatedRequest.title !== selectedRequest.title)
+    );
+    const nextRequests = requests.map((request) =>
+      request.id === selectedRequest.id ? updatedRequest : request
+    );
+
+    setRequests(nextRequests);
+    latestRequestsRef.current = nextRequests;
+    try {
+      await persistRequests(nextRequests);
+    } catch (error) {
+      alert(error.message || "Kunne ikke lagre endringene i forespørselen.");
+      return;
+    }
+
+    if (confirmationRelevantChange) {
+      const openSurvey = window.confirm(
+        "Kunde- eller prosjektinformasjon i en allerede utsendt befaringsbekreftelse er endret. Vil du kontrollere befaringen og sende en oppdatert bekreftelse nå?"
+      );
+      if (openSurvey) {
+        setSurveyForm({
+          date: updatedRequest.surveyDate || "",
+          time: updatedRequest.surveyTime || "",
+          responsible:
+            updatedRequest.surveyResponsible ||
+            updatedRequest.responsible ||
+            responsibleContactName ||
+            loggedInResponsible,
+          note: updatedRequest.surveyNote || "",
+          sendConfirmation: true,
+        });
+        setMode("survey-plan");
+        return;
+      }
+    }
+
+    setMode("detail");
   }
 
   useEffect(() => {
@@ -2560,7 +2659,9 @@ export default function SalesModule({
         responsibleContactName ||
         loggedInResponsible,
       note: selectedRequest?.surveyNote || "",
-      sendConfirmation: Boolean(selectedRequest?.email),
+      sendConfirmation: Boolean(
+        selectedRequest?.email && !selectedRequest?.surveyConfirmationSentAt
+      ),
     });
     setMode("survey-plan");
   }
@@ -2571,14 +2672,13 @@ export default function SalesModule({
 
   function buildInspectionConfirmationMessage({ date, time, note, responsible }) {
     const contactLines = [
-      responsible ? `Ansvarlig: ${responsible}` : "",
+      responsible ? `Navn: ${responsible}` : "",
       responsibleContactEmail ? `E-post: ${responsibleContactEmail}` : "",
       responsibleContactPhone ? `Telefon: ${responsibleContactPhone}` : "",
     ].filter(Boolean);
 
     return [
-      `Dato: ${date}`,
-      `Tidspunkt: ${time}`,
+      `Dato og tidspunkt: ${formatInspectionDateTime(date, time)}`,
       note ? `Merknad: ${note}` : "",
       "",
       "Dersom tidspunktet ikke passer eller du har spørsmål om befaringen, ber vi deg kontakte ansvarlig saksbehandler.",
@@ -2591,6 +2691,23 @@ export default function SalesModule({
   async function handleSaveSurveyPlan(event) {
     event.preventDefault();
 
+    const previousRequest = selectedRequest;
+    const surveyChanged = Boolean(
+      previousRequest?.surveyDate !== surveyForm.date ||
+        previousRequest?.surveyTime !== surveyForm.time ||
+        (previousRequest?.surveyResponsible || "") !== surveyForm.responsible.trim() ||
+        (previousRequest?.surveyNote || "") !== surveyForm.note.trim()
+    );
+    let shouldSendConfirmation = Boolean(
+      surveyForm.sendConfirmation && previousRequest?.email
+    );
+
+    if (previousRequest?.surveyConfirmationSentAt && surveyChanged && previousRequest?.email) {
+      shouldSendConfirmation = window.confirm(
+        "Befaringen er endret etter at kunden fikk bekreftelsen. Vil du sende en oppdatert befaringsbekreftelse nå?"
+      );
+    }
+
     const savedAt = new Date().toISOString();
     const nextRequests = requests.map((request) =>
       request.id === selectedRequestId
@@ -2602,13 +2719,18 @@ export default function SalesModule({
             surveyNote: surveyForm.note.trim(),
             status: "Befaring",
             statusClass: "sales-status-survey",
-            nextStep: "Fullfør befaringsnotat",
-            iconName: "ruler",
+            nextStep:
+              request.nextStep === "Opprett tilbud"
+                ? "Opprett tilbud"
+                : "Fullfør befaringsnotat",
+            iconName: request.nextStep === "Opprett tilbud" ? "send" : "ruler",
           }
         : request
     );
+    const savedRequest = nextRequests.find((request) => request.id === selectedRequestId);
 
     setRequests(nextRequests);
+    latestRequestsRef.current = nextRequests;
     try {
       await persistRequests(nextRequests);
     } catch (error) {
@@ -2616,20 +2738,20 @@ export default function SalesModule({
       return;
     }
 
-    if (surveyForm.sendConfirmation && selectedRequest.email) {
+    if (shouldSendConfirmation && savedRequest?.email) {
       setCustomerEmailBusy(true);
       setCustomerEmailFeedback(null);
       try {
         const company = await getCompanyProfileForPublish();
         await sendCustomerEmail({
           direction: "inspection_confirmation",
-          toEmail: selectedRequest.email,
-          subject: `Bekreftelse på befaring – ${selectedRequest.title}`,
-          projectName: selectedRequest.title,
-          customerName: selectedRequest.customer,
-          customerEmail: selectedRequest.email,
-          customerPhone: selectedRequest.phone,
-          projectAddress: selectedRequest.address,
+          toEmail: savedRequest.email,
+          subject: `Befaringsbekreftelse – ${savedRequest.title}`,
+          projectName: savedRequest.title,
+          customerName: savedRequest.customer,
+          customerEmail: savedRequest.email,
+          customerPhone: savedRequest.phone,
+          projectAddress: savedRequest.address,
           projectResponsible:
             surveyForm.responsible.trim() ||
             responsibleContactName ||
@@ -2655,13 +2777,19 @@ export default function SalesModule({
             ? {
                 ...request,
                 surveyConfirmationSentAt: savedAt,
-                surveyConfirmationSentTo: selectedRequest.email,
+                surveyConfirmationSentTo: savedRequest.email,
               }
             : request
         );
         setRequests(sentRequests);
+        latestRequestsRef.current = sentRequests;
         await persistRequests(sentRequests);
-        setCustomerEmailFeedback({ type: "success", text: "Befaringsbekreftelsen er sendt til kunden." });
+        setCustomerEmailFeedback({
+          type: "success",
+          text: previousRequest?.surveyConfirmationSentAt
+            ? "Oppdatert befaringsbekreftelse er sendt til kunden."
+            : "Befaringsbekreftelsen er sendt til kunden.",
+        });
       } catch (error) {
         setCustomerEmailFeedback({
           type: "error",
@@ -2688,7 +2816,7 @@ export default function SalesModule({
       await sendCustomerEmail({
         direction: "inspection_confirmation",
         toEmail: request.email,
-        subject: `Bekreftelse på befaring – ${request.title}`,
+        subject: `Befaringsbekreftelse – ${request.title}`,
         projectName: request.title,
         customerName: request.customer,
         customerEmail: request.email,
@@ -2727,6 +2855,7 @@ export default function SalesModule({
           : item
       );
       setRequests(sentRequests);
+      latestRequestsRef.current = sentRequests;
       await persistRequests(sentRequests);
       setCustomerEmailFeedback({ type: "success", text: "Befaringsbekreftelsen er sendt til kunden." });
     } catch (error) {
@@ -2757,7 +2886,7 @@ export default function SalesModule({
       await sendCustomerEmail({
         direction: "sales_offer",
         toEmail: currentRequest.email,
-        subject: `${company.companyName || "Vi"} har sendt deg et tilbud – ${currentRequest.offerTitle || currentRequest.title}`,
+        subject: `Tilbud – ${currentRequest.offerTitle || currentRequest.title}`,
         projectName: currentRequest.offerTitle || currentRequest.title,
         customerName: currentRequest.customer,
         customerEmail: currentRequest.email,
@@ -2767,7 +2896,7 @@ export default function SalesModule({
         fromName: company.companyName || loggedInResponsible,
         message: `Tilbud nr. ${currentRequest.id}${currentRequest.sentOfferVersionNumber ? ` – versjon v${currentRequest.sentOfferVersionNumber}` : ""}. Åpne tilbudet for å se arbeider, priser, opsjoner og vilkår.`,
         projectLink: link,
-        buttonText: "Åpne tilbudet",
+        buttonText: "Åpne tilbud",
         companyLogoUrl: company.logoUrl,
         footerCompanyText: company.companyName || "Expo ProffDok",
         sentViaText: "Tilbud sendt gjennom Expo ProffDok",
@@ -3072,7 +3201,8 @@ export default function SalesModule({
     setMode("detail");
   }
 
-  if (mode === "new") {
+  if (mode === "new" || mode === "edit-request") {
+    const isEditingRequest = mode === "edit-request";
     return (
       <div className="sales-app">
         <div className="sales-shell">
@@ -3095,7 +3225,7 @@ export default function SalesModule({
 
           <main className="sales-main">
             <section className="sales-form-hero">
-              <p className="sales-eyebrow">Ny forespørsel</p>
+              <p className="sales-eyebrow">{isEditingRequest ? "Rediger forespørsel" : "Ny forespørsel"}</p>
               <h1
                 className="sales-title"
                 style={{
@@ -3104,15 +3234,19 @@ export default function SalesModule({
                   overflowWrap: "anywhere",
                 }}
               >
-                Registrer kundehenvendelse
+                {isEditingRequest ? "Oppdater kundehenvendelse" : "Registrer kundehenvendelse"}
               </h1>
               <p className="sales-subtitle">
-                Fang opp det viktigste raskt. Resten kan fylles ut etter
-                befaring.
+                {isEditingRequest
+                  ? "Oppdater kunde-, adresse- og prosjektinformasjon uten å opprette en ny sak."
+                  : "Fang opp det viktigste raskt. Resten kan fylles ut etter befaring."}
               </p>
             </section>
 
-            <form className="sales-form-panel" onSubmit={handleCreateRequest}>
+            <form
+              className="sales-form-panel"
+              onSubmit={isEditingRequest ? handleUpdateRequest : handleCreateRequest}
+            >
               <div className="sales-form-grid">
                 <label className="sales-field">
                   <span>Kundenavn</span>
@@ -3229,7 +3363,8 @@ export default function SalesModule({
                   type="button"
                   onClick={() => {
                     resetForm();
-                    goToList();
+                    if (isEditingRequest) setMode("detail");
+                    else goToList();
                   }}
                 >
                   Avbryt
@@ -3237,7 +3372,7 @@ export default function SalesModule({
 
                 <button className="sales-primary-button" type="submit">
                   <Save size={18} />
-                  Lagre forespørsel
+                  {isEditingRequest ? "Lagre endringer" : "Lagre forespørsel"}
                 </button>
               </div>
             </form>
@@ -3504,8 +3639,8 @@ export default function SalesModule({
                 <ClipboardList size={22} />
               </div>
               <div className="sales-brand-copy">
-                <strong>Expo ProffDok</strong>
-                <span>Digitalt tilbud</span>
+                <strong>{offerCompany.companyName || "Tilbud"}</strong>
+                <span>Tilbud</span>
               </div>
             </div>
           </header>
@@ -3513,7 +3648,7 @@ export default function SalesModule({
           <main className="sales-main sales-customer-main">
             <section className="sales-customer-hero">
               <div className="sales-customer-hero-content">
-                <p className="sales-eyebrow">Digitalt tilbud</p>
+                <p className="sales-eyebrow">Tilbud</p>
                 <h1 className="sales-title sales-customer-title">{offerTitle}</h1>
                 <p className="sales-subtitle sales-customer-lead">
                   Her finner du leveransen, prisene og vilkårene samlet. Velg
@@ -4673,7 +4808,7 @@ export default function SalesModule({
                 />
                 <span>
                   {selectedRequest.email
-                    ? `Send befaringsbekreftelse til ${selectedRequest.email}`
+                    ? `${selectedRequest.surveyConfirmationSentAt ? "Send bekreftelsen på nytt" : "Send befaringsbekreftelse"} til ${selectedRequest.email}`
                     : "Registrer kundens e-postadresse for å sende befaringsbekreftelse"}
                 </span>
               </label>
@@ -4683,11 +4818,7 @@ export default function SalesModule({
                 <div className="sales-preview-lines">
                   <span>
                     <CalendarDays size={16} />
-                    {surveyForm.date || "Dato ikke valgt"}
-                  </span>
-                  <span>
-                    <ClipboardList size={16} />
-                    {surveyForm.time || "Tidspunkt ikke valgt"}
+                    {surveyForm.date ? formatInspectionDateTime(surveyForm.date, surveyForm.time) : "Dato og tidspunkt ikke valgt"}
                   </span>
                   <span>
                     <CheckCircle2 size={16} />
@@ -4711,7 +4842,7 @@ export default function SalesModule({
 
                 <button className="sales-primary-button" type="submit">
                   <Save size={18} />
-                  {customerEmailBusy ? "Lagrer og sender …" : "Lagre befaringsplan"}
+                  {customerEmailBusy ? "Lagrer og sender …" : selectedRequest.surveyDate ? "Lagre endringer" : "Lagre befaringsplan"}
                 </button>
               </div>
             </form>
@@ -4864,6 +4995,28 @@ export default function SalesModule({
               </div>
 
               <div className="sales-hero-actions">
+                {["Forespørsel", "Befaring"].includes(selectedRequest.status) ? (
+                  <button
+                    className="sales-secondary-button"
+                    type="button"
+                    onClick={openEditRequest}
+                  >
+                    <ClipboardList size={18} />
+                    Rediger forespørsel
+                  </button>
+                ) : null}
+
+                {selectedRequest.status === "Befaring" ? (
+                  <button
+                    className="sales-secondary-button"
+                    type="button"
+                    onClick={openSurveyPlanning}
+                  >
+                    <CalendarDays size={18} />
+                    Rediger befaring
+                  </button>
+                ) : null}
+
                 {selectedRequest.surveyDate &&
                 !["Akseptert", "Aktivert"].includes(selectedRequest.status) ? (
                   <button
@@ -5725,7 +5878,10 @@ export default function SalesModule({
                   <div className="sales-detail-lines">
                     <span>
                       <CalendarDays size={16} />
-                      {selectedRequest.surveyDate} kl. {selectedRequest.surveyTime}
+                      {formatInspectionDateTime(
+                        selectedRequest.surveyDate,
+                        selectedRequest.surveyTime
+                      )}
                     </span>
                     <span>
                       <CheckCircle2 size={16} />
