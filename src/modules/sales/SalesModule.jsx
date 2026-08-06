@@ -1,3 +1,4 @@
+// FASE 23B SALES-CONSTANTS: Flytter statiske salgsdata, lagringsnavn og standardskjema ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 23A SALES-UTILS: Flytter rene hjelpefunksjoner ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 22D.2 KORRIGERT VISNING AV PROSJEKTANSVARLIG: Intern saksvisning bruker innlogget brukers navn i stedet for lagret e-post. Ingen CSS-, database-, kundevisnings- eller e-postendring.
 // FASE 22D.1 INNLOGGET PROSJEKTANSVARLIG: Bruker innlogget brukers fulle navn som ansvarlig i befaring, intern visning og kundemail. E-post brukes kun som siste fallback. Ingen SQL/RLS/Storage-endring.
@@ -72,6 +73,14 @@ import {
   sanitizeStoragePart,
   stripTransientPhotoData,
 } from "./utils/salesUtils.js";
+import {
+  INSPECTION_BUCKET,
+  STORAGE_KEY,
+  emptyForm,
+  initialRequests,
+  requestSources,
+  workTypes,
+} from "./constants/salesConstants.js";
 import "./sales.css";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -80,9 +89,6 @@ const supabase =
   supabaseUrl && supabaseAnonKey
     ? createClient(supabaseUrl, supabaseAnonKey)
     : null;
-
-const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
-const INSPECTION_BUCKET = "sales-inspection-photos";
 
 function dataUrlToBlob(dataUrl) {
   const [header, encoded] = String(dataUrl).split(",");
@@ -144,101 +150,11 @@ function saveSalesNavigation(storageKey, mode, selectedRequestId) {
   }
 }
 
-const initialRequests = [
-  {
-    id: "F-2026-0041",
-    title: "Modernisering av bad",
-    customer: "Ola Nordmann",
-    phone: "900 00 000",
-    email: "ola@example.no",
-    address: "Kirkeveien 12",
-    source: "Telefon",
-    note: "Kunden ønsker modernisering av eksisterende bad. Sluk og fall må vurderes på befaring.",
-    status: "Forespørsel",
-    statusClass: "sales-status-new",
-    nextStep: "Planlegg befaring",
-    iconName: "clipboard",
-  },
-  {
-    id: "F-2026-0040",
-    title: "Flislegging entré og vaskerom",
-    customer: "Anne Hansen",
-    phone: "911 11 111",
-    email: "anne@example.no",
-    address: "Solfaret 8",
-    source: "E-post",
-    note: "Ønsker pris på flislegging i entré og vaskerom. Underlag må kontrolleres.",
-    status: "Befaring",
-    statusClass: "sales-status-survey",
-    nextStep: "Fullfør befaringsnotat",
-    iconName: "ruler",
-  },
-  {
-    id: "F-2026-0039",
-    title: "Membran og flisarbeider",
-    customer: "Sameiet Parkveien 4",
-    phone: "922 22 222",
-    email: "styret@example.no",
-    address: "Parkveien 4",
-    source: "Eksisterende kunde",
-    note: "Sameiet ønsker tilbud på membran og flisarbeider i felles våtrom.",
-    status: "Tilbud",
-    statusClass: "sales-status-quote",
-    nextStep: "Send tilbud til kunde",
-    iconName: "send",
-  },
-  {
-    id: "F-2026-0038",
-    title: "Oppgradering av dusjsone",
-    customer: "Marius Berg",
-    phone: "933 33 333",
-    email: "marius@example.no",
-    address: "Lindeveien 22",
-    source: "Nettside",
-    note: "Kunden ønsker ny dusjsone og vurdering av membran i eksisterende bad.",
-    status: "Akseptert",
-    statusClass: "sales-status-accepted",
-    nextStep: "Aktiver som prosjekt",
-    iconName: "home",
-  },
-];
-
-const workTypes = [
-  "Modernisering av bad",
-  "Nybygg bad",
-  "Flislegging",
-  "Membranarbeider",
-  "Avretting / støp",
-  "Murarbeider",
-  "Servicearbeid",
-  "Annet",
-];
-
-const requestSources = [
-  "Telefon",
-  "E-post",
-  "Nettside",
-  "Butikk / showroom",
-  "Eksisterende kunde",
-  "Anbefaling",
-  "Annet",
-];
-
 const iconMap = {
   clipboard: ClipboardList,
   ruler: Ruler,
   send: Send,
   home: Home,
-};
-
-const emptyForm = {
-  customer: "",
-  phone: "",
-  email: "",
-  address: "",
-  title: "Modernisering av bad",
-  source: "Telefon",
-  note: "",
 };
 
 function loadRequests(storageKey = STORAGE_KEY) {
