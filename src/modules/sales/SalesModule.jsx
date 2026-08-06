@@ -1,3 +1,4 @@
+// FASE 23F SALES-OFFERS: Flytter ren tilbudslogikk, skjema-normalisering, publiseringspayload og offentlig tilbudsmapping ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post, aksept eller prosjektaktivering.
 // FASE 23E SALES-IMAGES: Flytter lesing, størrelsesmåling, konvertering og komprimering av bilder ut av SalesModule uten å endre UI, dataflyt, database, Storage-regler, e-post eller prosjektaktivering.
 // FASE 23D SALES-SUPABASE: Flytter Supabase-klient, databasekall, RPC, Storage, auth-abonnement og Edge Function-kall ut av SalesModule uten å endre UI, dataflyt, database, RLS, Storage-regler, e-post eller prosjektaktivering.
 // FASE 23C SALES-STORAGE: Flytter all lokal nettleserlagring for navigasjon, preview-saker og kladder ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
@@ -57,8 +58,6 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   buildInspectionIntro,
-  createCompanySnapshot,
-  createOfferTermsSnapshot,
   createRequestId,
   firstNonEmailName,
   formatInspectionDateTime,
@@ -75,6 +74,18 @@ import {
   sanitizeStoragePart,
   stripTransientPhotoData,
 } from "./utils/salesUtils.js";
+import {
+  buildOfferFormFromRequest,
+  buildPublishPayload,
+  createEmptyOfferLine,
+  createEmptyOfferOption,
+  createInitialOfferForm,
+  getActiveOfferVersion,
+  mapPublicOfferToRequest,
+  mergeOfferDraftIntoRequests,
+  normalizeStoredOfferDraft,
+  prepareOfferFormForSave,
+} from "./utils/salesOfferLogic.js";
 import {
   INSPECTION_BUCKET,
   emptyForm,
@@ -181,28 +192,7 @@ export default function SalesModule({
     photos: [],
   });
   const [inspectionDraftDirty, setInspectionDraftDirty] = useState(false);
-  const [offerForm, setOfferForm] = useState({
-    title: "",
-    intro: "",
-    lines: [
-      {
-        id: "line-1",
-        description: "",
-        amount: "",
-        productUrl: "",
-        imageDataUrl: "",
-        imageName: "",
-      },
-    ],
-    options: [],
-    reservations: "",
-    included: "",
-    excluded: "",
-    customerSupplied: "",
-    terms: "",
-    paymentTerms: "10 dager netto",
-    validityDays: "30",
-  });
+  const [offerForm, setOfferForm] = useState(createInitialOfferForm);
   const offerFormRef = useRef(offerForm);
   const offerModeRef = useRef(mode);
   const offerRequestIdRef = useRef(selectedRequestId);
@@ -308,94 +298,6 @@ export default function SalesModule({
   function saveOfferDraft(formValue = offerForm, requestId = selectedRequestId) {
     if (!requestId) return;
     saveStoredOfferDraft(getStableOfferDraftKey(requestId), formValue);
-  }
-
-  function mergeOfferDraftIntoRequests(
-    currentRequests,
-    formValue = offerForm,
-    requestId = selectedRequestId
-  ) {
-    if (!requestId) return currentRequests;
-
-    return currentRequests.map((request) =>
-      request.id === requestId
-        ? {
-            ...request,
-            offerTitle: formValue.title,
-            offerIntro: formValue.intro,
-            offerLines: formValue.lines,
-            offerOptions: formValue.options,
-            offerReservations: formValue.reservations,
-            offerIncluded: formValue.included,
-            offerExcluded: formValue.excluded,
-            offerCustomerSupplied: formValue.customerSupplied,
-            offerTerms: formValue.terms,
-            offerPaymentTerms: formValue.paymentTerms,
-            offerValidityDays: formValue.validityDays,
-            offerTotal: getOfferTotal(formValue.lines),
-            offerDraftSavedAt: new Date().toISOString(),
-          }
-        : request
-    );
-  }
-
-  function loadOfferDraft(requestId) {
-    return loadStoredOfferDraft({
-      requestId,
-      stableKey: getStableOfferDraftKey(requestId),
-      scopedKey: getScopedOfferDraftKey(requestId),
-    });
-  }
-
-  function buildOfferFormFromRequest(request) {
-    return {
-      title: request?.offerTitle || `Tilbud – ${request?.title || ""}`,
-      intro:
-        request?.offerIntro ||
-        `Vi viser til befaring og tilbyr med dette følgende arbeider for ${request?.customer || "kunden"}.`,
-      lines:
-        request?.offerLines?.length
-          ? request.offerLines
-          : [
-              {
-                id: `line-${Date.now()}`,
-                description: "",
-                amount: "",
-                productUrl: "",
-                imageDataUrl: "",
-                imageName: "",
-              },
-            ],
-      options: request?.offerOptions?.length ? request.offerOptions : [],
-      reservations: request?.offerReservations || "",
-      included: request?.offerIncluded || "",
-      excluded: request?.offerExcluded || "",
-      customerSupplied: request?.offerCustomerSupplied || "",
-      terms: request?.offerTerms || "",
-      paymentTerms: request?.offerPaymentTerms || "10 dager netto",
-      validityDays: request?.offerValidityDays || "30",
-    };
-  }
-
-  function normalizeStoredOfferDraft(storedDraft, request) {
-    const requestForm = buildOfferFormFromRequest(request);
-    if (!storedDraft) return requestForm;
-
-    return {
-      ...requestForm,
-      ...storedDraft,
-      lines: Array.isArray(storedDraft.lines) ? storedDraft.lines : requestForm.lines,
-      options: Array.isArray(storedDraft.options)
-        ? storedDraft.options
-        : requestForm.options,
-      terms: storedDraft.terms ?? requestForm.terms,
-      included: storedDraft.included ?? requestForm.included,
-      excluded: storedDraft.excluded ?? requestForm.excluded,
-      customerSupplied:
-        storedDraft.customerSupplied ?? requestForm.customerSupplied,
-      paymentTerms:
-        storedDraft.paymentTerms ?? requestForm.paymentTerms,
-    };
   }
 
   useEffect(() => {
@@ -1494,67 +1396,10 @@ export default function SalesModule({
     }
   }
 
-  function buildOfferSnapshot(request) {
-    const versionNumber = (request.offerVersions?.length || 0) + 1;
-    const createdAt = new Date().toISOString();
-
-    return {
-      id: `offer-version-${Date.now()}`,
-      versionNumber,
-      createdAt,
-      title: request.offerTitle || "",
-      intro: request.offerIntro || "",
-      lines: [
-        createCompanySnapshot(companyProfile),
-        createOfferTermsSnapshot(request),
-        ...(request.offerLines || []),
-      ],
-      options: request.offerOptions || [],
-      reservations: request.offerReservations || "",
-      validityDays: request.offerValidityDays || "30",
-      total: request.offerTotal || 0,
-    };
-  }
-
-  function createOrReuseSentOfferVersion(request) {
-    if (request.sentOfferVersionId) {
-      return request;
-    }
-
-    const snapshot = buildOfferSnapshot(request);
-
-    return {
-      ...request,
-      offerVersions: [...(request.offerVersions || []), snapshot],
-      sentOfferVersionId: snapshot.id,
-      sentOfferVersionNumber: snapshot.versionNumber,
-      sentOfferAt: snapshot.createdAt,
-    };
-  }
-
   function openCustomerOfferPreview() {
     if (!selectedRequest) return;
 
     openCustomerOfferFromRequestId(selectedRequest.id);
-  }
-
-  function getActiveOfferVersion(request) {
-    if (!request?.sentOfferVersionId) return null;
-    return (
-      request.offerVersions?.find(
-        (version) => version.id === request.sentOfferVersionId
-      ) || null
-    );
-  }
-
-  function createNewOfferVersionDraft(request) {
-    return {
-      ...request,
-      sentOfferVersionId: null,
-      sentOfferVersionNumber: null,
-      sentOfferAt: null,
-      nextStep: "Send tilbud til kunde",
-    };
   }
 
   async function handleCreateOfferRevisionAfterAcceptance() {
@@ -1790,17 +1635,6 @@ export default function SalesModule({
     }));
   }
 
-  function createEmptyOfferLine() {
-    return {
-      id: `line-${Date.now()}-${Math.random()}`,
-      description: "",
-      amount: "",
-      productUrl: "",
-      imageDataUrl: "",
-      imageName: "",
-    };
-  }
-
   function addOfferLine() {
     setOfferForm((current) => ({
       ...current,
@@ -1891,17 +1725,7 @@ export default function SalesModule({
   function addOfferOption() {
     setOfferForm((current) => ({
       ...current,
-      options: [
-        ...current.options,
-        {
-          id: `option-${Date.now()}-${Math.random()}`,
-          title: "",
-          description: "",
-          amount: "",
-          imageDataUrl: "",
-          imageName: "",
-        },
-      ],
+      options: [...current.options, createEmptyOfferOption()],
     }));
   }
 
@@ -1948,53 +1772,18 @@ export default function SalesModule({
   async function handleSaveOffer(event) {
     event.preventDefault();
 
-    const cleanLines = offerForm.lines
-      .map((line) => ({
-        ...line,
-        description: line.description.trim(),
-        amount: String(line.amount || "").trim(),
-        productUrl: String(line.productUrl || "").trim(),
-        imageDataUrl: line.imageDataUrl || "",
-        imageName: line.imageName || "",
-      }))
-      .filter(
-        (line) =>
-          line.description ||
-          line.amount ||
-          line.productUrl ||
-          line.imageDataUrl
-      );
+    const { cleanLines, cleanOptions, incompleteLine } =
+      prepareOfferFormForSave(offerForm);
 
     if (!cleanLines.length) {
       alert("Legg inn minst én tilbudslinje før du lagrer tilbudet.");
       return;
     }
 
-    const incompleteLine = cleanLines.find(
-      (line) => !line.description || !line.amount
-    );
-
     if (incompleteLine) {
       alert("Tilbudslinjer som har innhold må ha både beskrivelse og beløp. Tomme linjer ignoreres automatisk.");
       return;
     }
-
-    const cleanOptions = offerForm.options
-      .map((option) => ({
-        ...option,
-        title: option.title.trim(),
-        description: option.description.trim(),
-        amount: String(option.amount || "").trim(),
-        productUrl: String(option.productUrl || "").trim(),
-      }))
-      .filter(
-        (option) =>
-          option.title ||
-          option.description ||
-          option.amount ||
-          option.imageDataUrl ||
-          option.productUrl
-      );
 
     const nextRequests = requests.map((request) => {
       if (request.id !== selectedRequestId) return request;
@@ -2542,87 +2331,6 @@ export default function SalesModule({
     // Erstatt bare kundetokenet dersom det allerede finnes.
     url.searchParams.set("publicOffer", token);
     return url.toString();
-  }
-
-  function buildPublishPayload(request, profileForPublish = companyProfile) {
-    return {
-      offer_id: request.salesOfferId || null,
-      request_ref: request.id,
-      customer_name: request.customer,
-      customer_email: request.email,
-      customer_phone: request.phone,
-      customer_address: request.address,
-      title: request.offerTitle || request.title,
-      intro: request.offerIntro || "",
-      lines: [
-        createCompanySnapshot(profileForPublish),
-        createOfferTermsSnapshot(request),
-        ...(request.offerLines || []),
-      ],
-      options: request.offerOptions || [],
-      reservations: request.offerReservations || "",
-      validity_days: Number(request.offerValidityDays || 30),
-      total_ex_vat: request.offerTotal || 0,
-    };
-  }
-
-  function mapPublicOfferToRequest(result) {
-    const offer = result?.offer;
-    const version = result?.version;
-
-    if (!offer || !version) return null;
-
-    const publishedLines = Array.isArray(version.lines) ? version.lines : [];
-    const companySnapshot =
-      publishedLines.find((line) => line?.__companyMeta) || {};
-    const offerTermsSnapshot = getOfferTermsSnapshot(publishedLines);
-    const visibleOfferLines = getVisibleOfferLines(publishedLines);
-
-    return {
-      id: offer.request_ref || offer.id,
-      salesOfferId: offer.id,
-      title: version.title || offer.title,
-      offerTitle: version.title || offer.title,
-      offerIntro: version.intro || "",
-      offerLines: visibleOfferLines,
-      companyName: companySnapshot.companyName || "",
-      companyOrgNumber: companySnapshot.orgNumber || "",
-      companyAddress: companySnapshot.address || "",
-      companyPhone: companySnapshot.phone || "",
-      companyEmail: companySnapshot.email || "",
-      companyWebsite: companySnapshot.website || "",
-      companyLogoUrl: companySnapshot.logoUrl || "",
-      offerOptions: version.options || [],
-      offerReservations: version.reservations || "",
-      offerIncluded: offerTermsSnapshot.included || "",
-      offerExcluded: offerTermsSnapshot.excluded || "",
-      offerCustomerSupplied: offerTermsSnapshot.customerSupplied || "",
-      offerTerms: offerTermsSnapshot.terms || "",
-      offerPaymentTerms: offerTermsSnapshot.paymentTerms || "",
-      offerValidityDays: String(version.validity_days || 30),
-      offerTotal: Number(version.total_ex_vat || 0),
-      customer: offer.customer_name,
-      email: offer.customer_email,
-      phone: offer.customer_phone,
-      address: offer.customer_address,
-      status: offer.status === "accepted" ? "Akseptert" : "Tilbud",
-      statusClass:
-        offer.status === "accepted"
-          ? "sales-status-accepted"
-          : "sales-status-quote",
-      nextStep:
-        offer.status === "accepted"
-          ? "Tilbudet er akseptert"
-          : "Digital aksept",
-      iconName: offer.status === "accepted" ? "home" : "send",
-      sentOfferVersionId: version.id,
-      sentOfferVersionNumber: version.version_number,
-      publicToken: offer.public_token,
-      isPublicOffer: true,
-      acceptedBy: offer.accepted_by,
-      acceptedAt: offer.accepted_at,
-      acceptedPayload: offer.accepted_payload,
-    };
   }
 
   async function publishOfferAndGetLink(requestId) {
