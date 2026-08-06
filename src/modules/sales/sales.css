@@ -1605,3 +1605,80 @@ a:hover {
     font-size: 26px;
   }
 }
+
+/* FASE 22C – responsiv saksoversikt
+   Skiller saksinformasjon og handlinger i detaljhodet.
+   Bevarer eksisterende kundevisning og øvrige modulstiler.
+*/
+.sales-detail-hero {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 22px;
+}
+
+.sales-detail-hero > div:first-child {
+  min-width: 0;
+  width: 100%;
+}
+
+.sales-detail-hero .sales-title {
+  max-width: 920px;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.sales-detail-hero .sales-subtitle {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.sales-detail-hero .sales-hero-actions {
+  width: 100%;
+  justify-content: flex-start;
+  padding-top: 18px;
+  border-top: 1px solid #e6eef2;
+}
+
+.sales-detail-hero .sales-hero-actions .sales-primary-button {
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .sales-detail-hero {
+    gap: 18px;
+  }
+
+  .sales-detail-hero .sales-hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .sales-detail-hero .sales-hero-actions .sales-primary-button,
+  .sales-detail-hero .sales-hero-actions .sales-secondary-button {
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .sales-detail-hero .sales-title {
+    font-size: clamp(32px, 11vw, 44px);
+    line-height: 1.04;
+  }
+
+  .sales-detail-hero .sales-subtitle {
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .sales-detail-hero .sales-hero-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-top: 16px;
+  }
+}
