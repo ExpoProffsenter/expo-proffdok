@@ -4860,12 +4860,57 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
     };
     const approveAdminUser = async (id) => {
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      const approvedUser = (adminUsers || []).find((userRow) => userRow?.id === id);
       const { error } = await supabase.from("profiles").update({ approved: true, deactivated: false }).eq("id", id);
       if (error) {
         console.error(error);
         return alert("Kunne ikke godkjenne bruker: " + error.message);
       }
-      alert("Bruker er godkjent.");
+      const approvedEmail = String(approvedUser?.email || "").trim();
+      if (!approvedEmail) {
+        alert("Bruker er godkjent, men e-postadressen mangler. Godkjenningsmelding kunne derfor ikke sendes.");
+        loadAdminUsers();
+        return;
+      }
+      const appLink = "https://expo-proffdok.app";
+      const approvedName = String(approvedUser?.full_name || approvedUser?.name || "").trim();
+      const approvalMessage = `Hei${approvedName ? ` ${approvedName}` : ""}
+
+Kontoen din i Expo ProffDok er nå godkjent, og du har fått tilgang.
+
+Du kan logge inn med e-postadressen ${approvedEmail} og passordet du opprettet ved registrering.
+
+Logg inn i Expo ProffDok:
+${appLink}
+
+Med vennlig hilsen
+Expo ProffDok`;
+      try {
+        const { error: approvalMailError } = await supabase.functions.invoke("smart-worker", {
+          body: {
+            toEmail: approvedEmail,
+            direction: "user_access_approved",
+            recipientName: approvedName,
+            customerName: approvedName || approvedEmail,
+            message: approvalMessage,
+            projectLink: appLink,
+            projectName: "Brukergodkjenning",
+            companyName: "Expo ProffDok",
+            brandName: "Expo ProffDok",
+            fromName: "Expo ProffDok",
+            subject: "Du har fått tilgang til Expo ProffDok"
+          }
+        });
+        if (approvalMailError) {
+          console.warn("Brukeren ble godkjent, men godkjennings-e-posten kunne ikke sendes:", approvalMailError.message);
+          alert("Bruker er godkjent, men e-posten om godkjenningen kunne ikke sendes. Gi brukeren beskjed manuelt.");
+        } else {
+          alert("Bruker er godkjent, og e-post om tilgangen er sendt.");
+        }
+      } catch (approvalMailError) {
+        console.warn("Brukeren ble godkjent, men godkjennings-e-posten kunne ikke sendes:", approvalMailError);
+        alert("Bruker er godkjent, men e-posten om godkjenningen kunne ikke sendes. Gi brukeren beskjed manuelt.");
+      }
       loadAdminUsers();
     };
     const deactivateAdminUser = async (id) => {
@@ -5550,6 +5595,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: authPassword });
       if (error) return alert("Kunne ikke logge inn: " + error.message);
     };
+    const expoProffDokAppLink = "https://expo-proffdok.app";
     const systemAdminSignupNoticeRecipients = ["kenneth@ringside.no", "espen@expoproffsenter.no"];
     const notifySystemAdminsAboutSignup = async (newUserEmail = "", fullName = "", mobile = "") => {
       const cleanEmail = String(newUserEmail || "").trim().toLowerCase();
@@ -5558,7 +5604,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       if (!cleanEmail) return;
       const recipients = Array.from(new Set(systemAdminSignupNoticeRecipients.map((email) => String(email || "").trim().toLowerCase()).filter(Boolean)));
       if (!recipients.length) return;
-      const appLink = `${window.location.origin}${window.location.pathname}`;
+      const appLink = expoProffDokAppLink;
       const message = `Ny bruker har opprettet konto i Expo ProffDok og venter på godkjenning.
 
 Bruker: ${cleanEmail}
