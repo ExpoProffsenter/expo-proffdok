@@ -1,3 +1,4 @@
+// FASE 23A SALES-UTILS: Flytter rene hjelpefunksjoner ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 22D.2 KORRIGERT VISNING AV PROSJEKTANSVARLIG: Intern saksvisning bruker innlogget brukers navn i stedet for lagret e-post. Ingen CSS-, database-, kundevisnings- eller e-postendring.
 // FASE 22D.1 INNLOGGET PROSJEKTANSVARLIG: Bruker innlogget brukers fulle navn som ansvarlig i befaring, intern visning og kundemail. E-post brukes kun som siste fallback. Ingen SQL/RLS/Storage-endring.
 // FASE 22D SYNLIG BEFARINGSTID I SAKSOVERSIKT: Avtalt dato, klokkeslett og ansvarlig vises direkte i detaljhodet. Ingen SQL/RLS/Storage-endring.
@@ -51,6 +52,26 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import {
+  buildInspectionIntro,
+  createCompanySnapshot,
+  createOfferTermsSnapshot,
+  createRequestId,
+  firstNonEmailName,
+  formatInspectionDateTime,
+  formatNok,
+  getInspectionContext,
+  getOfferTermsSnapshot,
+  getOfferTotal,
+  getVisibleOfferLines,
+  getWorkflowSteps,
+  hasCompanyProfile,
+  hasInspectionContext,
+  isEmailLike,
+  normalizeCompanyProfile,
+  sanitizeStoragePart,
+  stripTransientPhotoData,
+} from "./utils/salesUtils.js";
 import "./sales.css";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -62,22 +83,6 @@ const supabase =
 
 const STORAGE_KEY = "expo-proffdok-sales-preview-requests-v1";
 const INSPECTION_BUCKET = "sales-inspection-photos";
-
-function stripTransientPhotoData(request = {}) {
-  return {
-    ...request,
-    inspectionPhotos: (request.inspectionPhotos || []).map(
-      ({ dataUrl, previewUrl, ...photo }) => photo
-    ),
-  };
-}
-
-function sanitizeStoragePart(value = "") {
-  return String(value)
-    .trim()
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "fil";
-}
 
 function dataUrlToBlob(dataUrl) {
   const [header, encoded] = String(dataUrl).split(",");
@@ -258,184 +263,6 @@ function saveRequests(requests, storageKey = STORAGE_KEY) {
   } catch {
     // Lokal preview-lagring er kun for test.
   }
-}
-
-function createRequestId(requests) {
-  const highestNumber = requests.reduce((highest, request) => {
-    const match = request.id?.match(/F-2026-(\d+)/);
-    if (!match) return highest;
-    return Math.max(highest, Number(match[1]));
-  }, 41);
-
-  return `F-2026-${String(highestNumber + 1).padStart(4, "0")}`;
-}
-
-function formatInspectionDateTime(date, time) {
-  if (!date) return time || "";
-
-  const parsed = new Date(`${date}T${time || "00:00"}:00`);
-  if (Number.isNaN(parsed.getTime())) {
-    return [date, time ? `kl. ${time}` : ""].filter(Boolean).join(" ");
-  }
-
-  const formattedDate = new Intl.DateTimeFormat("nb-NO", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(parsed);
-
-  return `${formattedDate}${time ? ` kl. ${time}` : ""}`;
-}
-
-function normalizeCompanyProfile(row = {}, fallbackEmail = "") {
-  return {
-    companyName: row.company_name || "",
-    orgNumber: row.org_number || "",
-    address: row.address || "",
-    phone: row.phone || "",
-    email: row.email || fallbackEmail || "",
-    website: row.website || "",
-    logoUrl: row.logo_url || "",
-  };
-}
-
-function hasCompanyProfile(profile = {}) {
-  return Boolean(
-    profile.companyName ||
-      profile.orgNumber ||
-      profile.address ||
-      profile.phone ||
-      profile.email ||
-      profile.website ||
-      profile.logoUrl
-  );
-}
-
-function createCompanySnapshot(profile = {}) {
-  return {
-    id: "__expo_company_snapshot__",
-    __companyMeta: true,
-    companyName: profile.companyName || "",
-    orgNumber: profile.orgNumber || "",
-    address: profile.address || "",
-    phone: profile.phone || "",
-    email: profile.email || "",
-    website: profile.website || "",
-    logoUrl: profile.logoUrl || "",
-  };
-}
-
-function createOfferTermsSnapshot(request = {}) {
-  return {
-    id: "__expo_offer_terms_snapshot__",
-    __offerTermsMeta: true,
-    terms: request.offerTerms || "",
-    paymentTerms: request.offerPaymentTerms || "",
-    included: request.offerIncluded || "",
-    excluded: request.offerExcluded || "",
-    customerSupplied: request.offerCustomerSupplied || "",
-  };
-}
-
-function getOfferTermsSnapshot(lines = []) {
-  return Array.isArray(lines)
-    ? lines.find((line) => line?.__offerTermsMeta) || {}
-    : {};
-}
-
-function getVisibleOfferLines(lines = []) {
-  return Array.isArray(lines)
-    ? lines.filter((line) => !line?.__companyMeta && !line?.__offerTermsMeta)
-    : [];
-}
-
-function getInspectionContext(request = {}) {
-  return {
-    customerWishes:
-      request.inspectionCustomerWishes ||
-      request.customerWishes ||
-      "",
-    existingConditions:
-      request.inspectionExistingConditions ||
-      request.existingConditions ||
-      "",
-    measurements:
-      request.inspectionMeasurements ||
-      request.measurements ||
-      "",
-    observations:
-      request.inspectionObservations ||
-      request.observations ||
-      request.inspectionNote ||
-      "",
-    photos:
-      request.inspectionPhotos ||
-      request.photos ||
-      [],
-  };
-}
-
-function hasInspectionContext(request = {}) {
-  const context = getInspectionContext(request);
-
-  return Boolean(
-    context.customerWishes ||
-      context.existingConditions ||
-      context.measurements ||
-      context.observations ||
-      context.photos?.length
-  );
-}
-
-function buildInspectionIntro(request = {}) {
-  const context = getInspectionContext(request);
-  const parts = [];
-
-  if (context.customerWishes) {
-    parts.push(`Kundens ønsker: ${context.customerWishes}`);
-  }
-  if (context.existingConditions) {
-    parts.push(`Eksisterende forhold: ${context.existingConditions}`);
-  }
-  if (context.measurements) {
-    parts.push(`Målinger: ${context.measurements}`);
-  }
-  if (context.observations) {
-    parts.push(`Faglige observasjoner: ${context.observations}`);
-  }
-
-  return parts.join("\n\n");
-}
-
-function getWorkflowSteps(request) {
-  const activeStepByStatus = {
-    Forespørsel: "Forespørsel",
-    Befaring: "Befaring",
-    Tilbud: "Tilbud",
-    Akseptert: "Aksept",
-    Aktivert: "Prosjekt",
-  };
-
-  const activeStep = activeStepByStatus[request.status] || "Forespørsel";
-  const steps = ["Forespørsel", "Befaring", "Tilbud", "Aksept", "Prosjekt"];
-  const activeIndex = steps.indexOf(activeStep);
-
-  return steps.map((step, index) => ({
-    label: step,
-    state: index < activeIndex ? "done" : index === activeIndex ? "active" : "pending",
-  }));
-}
-
-function isEmailLike(value = "") {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim());
-}
-
-function firstNonEmailName(...values) {
-  const match = values
-    .map((value) => String(value || "").trim())
-    .find((value) => value && !isEmailLike(value));
-
-  return match || "";
 }
 
 export default function SalesModule({
@@ -2309,24 +2136,6 @@ export default function SalesModule({
 
     reader.readAsDataURL(file);
     event.target.value = "";
-  }
-
-  function getOfferTotal(lines) {
-    return lines.reduce((sum, line) => {
-      const normalized = String(line.amount || "")
-        .replace(/\s/g, "")
-        .replace(",", ".");
-      const amount = Number(normalized);
-      return sum + (Number.isFinite(amount) ? amount : 0);
-    }, 0);
-  }
-
-  function formatNok(value) {
-    return new Intl.NumberFormat("nb-NO", {
-      style: "currency",
-      currency: "NOK",
-      maximumFractionDigits: 0,
-    }).format(value);
   }
 
   async function handleSaveOffer(event) {
