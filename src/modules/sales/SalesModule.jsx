@@ -1,3 +1,4 @@
+// FASE 23Q SALES-COMMUNICATION: Flytter henting av firmaprofil, kunde-e-post og befaringsbekreftelsestekst ut av SalesModule uten å endre UI, database, RLS, Storage, Edge Function eller e-postinnhold.
 // FASE 23P SALES-PUBLISHING: Flytter tilbudspublisering og bygging av kundelenker ut av SalesModule uten å endre UI, tilbudsdata, database, RLS, Storage, e-post eller aksept.
 // FASE 23O SALES-CUSTOMER-VIEW: Flytter offentlig kundevisning, lastestatus, lenkefeil og akseptbekreftelse ut av SalesModule uten å endre UI, tilbudsdata, aksept, database, Storage eller e-post.
 // FASE 23N SALES-PROJECT-ACTIVATION: Flytter prosjektaktiveringens presentasjon ut av SalesModule uten å endre validering, dataflyt, database, Storage, prosjektopprettelse eller navigasjon.
@@ -70,7 +71,6 @@ import {
   buildInspectionIntro,
   createRequestId,
   firstNonEmailName,
-  formatInspectionDateTime,
   formatNok,
   getInspectionContext,
   getOfferTermsSnapshot,
@@ -80,7 +80,6 @@ import {
   hasCompanyProfile,
   hasInspectionContext,
   isEmailLike,
-  normalizeCompanyProfile,
   sanitizeStoragePart,
   stripTransientPhotoData,
 } from "./utils/salesUtils.js";
@@ -121,9 +120,6 @@ import {
   createSalesProject,
   createStorageSignedUrl,
   downloadStorageFile,
-  fetchCurrentSalesUser,
-  fetchProfileByEmail,
-  fetchProfileById,
   fetchProjectById,
   fetchProjectsByIds,
   fetchProjectsByOwner,
@@ -131,7 +127,6 @@ import {
   getSalesOfferByToken,
   getSalesSession,
   getStoragePublicUrl,
-  invokeSmartWorker,
   removeStorageFiles,
   resolveSalesCompanyScope,
   subscribeToSalesAuthChanges,
@@ -148,6 +143,11 @@ import {
   buildCustomerOfferLink,
   publishSalesOfferAndBuildLink,
 } from "./services/salesPublishing.js";
+import {
+  buildInspectionConfirmationMessage,
+  fetchSalesCompanyProfile,
+  sendSalesCustomerEmail,
+} from "./services/salesCommunication.js";
 import SalesListView from "./components/SalesListView.jsx";
 import SalesRequestForm from "./components/SalesRequestForm.jsx";
 import SalesSurveyPlan from "./components/SalesSurveyPlan.jsx";
@@ -665,51 +665,9 @@ export default function SalesModule({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inspectionForm, mode, selectedRequestId]);
 
-  async function fetchCompanyProfile() {
-    if (!activeSupabase) return null;
-
-    const { data: sessionData } = await getSalesSession(activeSupabase);
-    let user = sessionData?.session?.user || null;
-
-    if (!user) {
-      const { data: userData } = await fetchCurrentSalesUser(activeSupabase);
-      user = userData?.user || null;
-    }
-
-    if (!user?.id) return null;
-
-    const profileSelect =
-      "company_name,org_number,address,phone,email,website,logo_url";
-
-    let { data, error } = await fetchProfileById(activeSupabase, user.id, profileSelect);
-
-    if (error) return null;
-
-    let nextProfile = data ? normalizeCompanyProfile(data, user.email || "") : null;
-
-    if (!hasCompanyProfile(nextProfile) && user.email) {
-      const fallback = await fetchProfileByEmail(activeSupabase, user.email, profileSelect);
-
-      if (!fallback.error && fallback.data) {
-        nextProfile = normalizeCompanyProfile(fallback.data, user.email || "");
-      }
-    }
-
-    return hasCompanyProfile(nextProfile) ? nextProfile : null;
-  }
-
-  async function sendCustomerEmail(payload) {
-    if (!activeSupabase) throw new Error("Supabase er ikke tilgjengelig.");
-
-    const { data, error } = await invokeSmartWorker(activeSupabase, payload);
-
-    if (error) throw error;
-    if (data?.ok === false) throw new Error(data.error || "E-posten kunne ikke sendes.");
-    return data;
-  }
 
   async function refreshCompanyProfile() {
-    const nextProfile = await fetchCompanyProfile();
+    const nextProfile = await fetchSalesCompanyProfile(activeSupabase);
 
     if (!nextProfile) return null;
 
@@ -729,7 +687,7 @@ export default function SalesModule({
     let active = true;
 
     async function loadInitialCompanyProfile() {
-      const nextProfile = await fetchCompanyProfile();
+      const nextProfile = await fetchSalesCompanyProfile(activeSupabase);
       if (active && nextProfile) setCompanyProfile(nextProfile);
     }
 
@@ -1928,24 +1886,6 @@ export default function SalesModule({
     setSurveyForm((current) => ({ ...current, [field]: value }));
   }
 
-  function buildInspectionConfirmationMessage({ date, time, note, responsible }) {
-    const contactLines = [
-      responsible ? `Navn: ${responsible}` : "",
-      responsibleContactEmail ? `E-post: ${responsibleContactEmail}` : "",
-      responsibleContactPhone ? `Telefon: ${responsibleContactPhone}` : "",
-    ].filter(Boolean);
-
-    return [
-      `Dato og tidspunkt: ${formatInspectionDateTime(date, time)}`,
-      note ? `Merknad: ${note}` : "",
-      "",
-      "Dersom tidspunktet ikke passer eller du har spørsmål om befaringen, ber vi deg kontakte ansvarlig saksbehandler.",
-      contactLines.length ? contactLines.join("\n") : "",
-    ]
-      .filter((line, index, lines) => line || (index > 0 && lines[index - 1]))
-      .join("\n");
-  }
-
   async function handleSaveSurveyPlan(event) {
     event.preventDefault();
 
@@ -2001,7 +1941,7 @@ export default function SalesModule({
       setCustomerEmailFeedback(null);
       try {
         const company = await getCompanyProfileForPublish();
-        await sendCustomerEmail({
+        await sendSalesCustomerEmail(activeSupabase, {
           direction: "inspection_confirmation",
           toEmail: savedRequest.email,
           subject: `Befaringsbekreftelse – ${savedRequest.title}`,
@@ -2017,6 +1957,8 @@ export default function SalesModule({
             time: surveyForm.time,
             note: surveyForm.note.trim(),
             responsible: loggedInResponsible,
+            responsibleContactEmail,
+            responsibleContactPhone,
           }),
           projectLink: "",
           companyLogoUrl: company.logoUrl,
@@ -2065,7 +2007,7 @@ export default function SalesModule({
     setCustomerEmailFeedback(null);
     try {
       const company = await getCompanyProfileForPublish();
-      await sendCustomerEmail({
+      await sendSalesCustomerEmail(activeSupabase, {
         direction: "inspection_confirmation",
         toEmail: request.email,
         subject: `Befaringsbekreftelse – ${request.title}`,
@@ -2081,6 +2023,8 @@ export default function SalesModule({
           time: request.surveyTime,
           note: request.surveyNote || "",
           responsible: getResponsibleDisplayName(request.surveyResponsible || request.responsible),
+          responsibleContactEmail,
+          responsibleContactPhone,
         }),
         projectLink: "",
         companyLogoUrl: company.logoUrl,
@@ -2127,7 +2071,7 @@ export default function SalesModule({
       const currentRequest = latestRequestsRef.current.find((item) => item.id === requestId) || request;
       const company = await getCompanyProfileForPublish();
 
-      await sendCustomerEmail({
+      await sendSalesCustomerEmail(activeSupabase, {
         direction: "sales_offer",
         toEmail: currentRequest.email,
         subject: `Tilbud – ${currentRequest.offerTitle || currentRequest.title}`,
@@ -2174,11 +2118,13 @@ export default function SalesModule({
 
   async function publishOfferAndGetLink(requestId) {
     const request = requests.find((item) => item.id === requestId);
+    const profileForPublish = await getCompanyProfileForPublish();
+
     const result = await publishSalesOfferAndBuildLink({
       client: activeSupabase,
       request,
       requests,
-      loadCompanyProfile: getCompanyProfileForPublish,
+      companyProfile: profileForPublish,
       currentUrl: window.location.href,
       confirmOptionRemoval: (previousOptionCount) =>
         window.confirm(
