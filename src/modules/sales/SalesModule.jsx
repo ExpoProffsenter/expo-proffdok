@@ -1,3 +1,4 @@
+// FASE 23E SALES-IMAGES: Flytter lesing, størrelsesmåling, konvertering og komprimering av bilder ut av SalesModule uten å endre UI, dataflyt, database, Storage-regler, e-post eller prosjektaktivering.
 // FASE 23D SALES-SUPABASE: Flytter Supabase-klient, databasekall, RPC, Storage, auth-abonnement og Edge Function-kall ut av SalesModule uten å endre UI, dataflyt, database, RLS, Storage-regler, e-post eller prosjektaktivering.
 // FASE 23C SALES-STORAGE: Flytter all lokal nettleserlagring for navigasjon, preview-saker og kladder ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 23B SALES-CONSTANTS: Flytter statiske salgsdata, lagringsnavn og standardskjema ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
@@ -120,36 +121,15 @@ import {
   uploadStorageFile,
   upsertSalesRequests,
 } from "./services/salesSupabase.js";
+import {
+  compressImageDataUrl,
+  dataUrlToBlob,
+  getImageNaturalSize,
+  readFileAsDataUrl,
+} from "./services/salesImages.js";
 import "./sales.css";
 
 const supabase = createDefaultSalesSupabaseClient();
-
-function dataUrlToBlob(dataUrl) {
-  const [header, encoded] = String(dataUrl).split(",");
-  const mimeType = header?.match(/data:([^;]+)/)?.[1] || "image/jpeg";
-  const bytes = atob(encoded || "");
-  const buffer = new Uint8Array(bytes.length);
-  for (let index = 0; index < bytes.length; index += 1) {
-    buffer[index] = bytes.charCodeAt(index);
-  }
-  return new Blob([buffer], { type: mimeType });
-}
-
-async function compressImageDataUrl(dataUrl, maxDimension = 1920, quality = 0.78) {
-  const image = new Image();
-  image.src = dataUrl;
-  await new Promise((resolve, reject) => {
-    image.onload = resolve;
-    image.onerror = reject;
-  });
-
-  const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(image.width * scale));
-  canvas.height = Math.max(1, Math.round(image.height * scale));
-  canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL("image/jpeg", quality);
-}
 
 const iconMap = {
   clipboard: ClipboardList,
@@ -1191,19 +1171,14 @@ export default function SalesModule({
           });
           if (!logoResponse.ok) throw new Error("Firmalogoen kunne ikke hentes.");
           const logoBlob = await logoResponse.blob();
-          const logoDataUrl = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = () => reject(new Error("Firmalogoen kunne ikke leses."));
-            reader.readAsDataURL(logoBlob);
-          });
-          const logoSize = await new Promise((resolve, reject) => {
-            const image = new Image();
-            image.onload = () =>
-              resolve({ width: image.naturalWidth, height: image.naturalHeight });
-            image.onerror = () => reject(new Error("Firmalogoen har ugyldig bildeformat."));
-            image.src = logoDataUrl;
-          });
+          const logoDataUrl = await readFileAsDataUrl(
+            logoBlob,
+            "Firmalogoen kunne ikke leses."
+          );
+          const logoSize = await getImageNaturalSize(
+            logoDataUrl,
+            "Firmalogoen har ugyldig bildeformat."
+          );
           const maxWidth = 46;
           const maxHeight = 24;
           const scale = Math.min(
@@ -1883,24 +1858,23 @@ export default function SalesModule({
 
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setOfferForm((current) => ({
-        ...current,
-        lines: current.lines.map((line) =>
-          line.id === lineId
-            ? {
-                ...line,
-                imageDataUrl: reader.result,
-                imageName: file.name,
-              }
-            : line
-        ),
-      }));
-    };
-
-    reader.readAsDataURL(file);
     event.target.value = "";
+    readFileAsDataUrl(file)
+      .then((imageDataUrl) => {
+        setOfferForm((current) => ({
+          ...current,
+          lines: current.lines.map((line) =>
+            line.id === lineId
+              ? {
+                  ...line,
+                  imageDataUrl,
+                  imageName: file.name,
+                }
+              : line
+          ),
+        }));
+      })
+      .catch(() => {});
   }
 
   function removeOfferLineImage(lineId) {
@@ -1952,24 +1926,23 @@ export default function SalesModule({
 
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setOfferForm((current) => ({
-        ...current,
-        options: current.options.map((option) =>
-          option.id === optionId
-            ? {
-                ...option,
-                imageDataUrl: reader.result,
-                imageName: file.name,
-              }
-            : option
-        ),
-      }));
-    };
-
-    reader.readAsDataURL(file);
     event.target.value = "";
+    readFileAsDataUrl(file)
+      .then((imageDataUrl) => {
+        setOfferForm((current) => ({
+          ...current,
+          options: current.options.map((option) =>
+            option.id === optionId
+              ? {
+                  ...option,
+                  imageDataUrl,
+                  imageName: file.name,
+                }
+              : option
+          ),
+        }));
+      })
+      .catch(() => {});
   }
 
   async function handleSaveOffer(event) {
@@ -2143,21 +2116,21 @@ export default function SalesModule({
     const files = Array.from(event.target.files || []);
 
     files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setInspectionForm((current) => ({
-          ...current,
-          photos: [
-            ...current.photos,
-            {
-              id: `${Date.now()}-${Math.random()}`,
-              name: file.name,
-              dataUrl: reader.result,
-            },
-          ],
-        }));
-      };
-      reader.readAsDataURL(file);
+      readFileAsDataUrl(file)
+        .then((dataUrl) => {
+          setInspectionForm((current) => ({
+            ...current,
+            photos: [
+              ...current.photos,
+              {
+                id: `${Date.now()}-${Math.random()}`,
+                name: file.name,
+                dataUrl,
+              },
+            ],
+          }));
+        })
+        .catch(() => {});
     });
 
     event.target.value = "";
