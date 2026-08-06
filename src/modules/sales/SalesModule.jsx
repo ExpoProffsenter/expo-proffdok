@@ -1,3 +1,4 @@
+// FASE 22D SYNLIG BEFARINGSTID I SAKSOVERSIKT: Avtalt dato, klokkeslett og ansvarlig vises direkte i detaljhodet. Ingen SQL/RLS/Storage-endring.
 // FASE 22B REDIGERBAR FORESPØRSEL/BEFARING OG NORSK BEFARINGSTID: Kunde- og befaringsdata kan oppdateres før aksept. Utsendt bekreftelse kan sendes oppdatert. Ingen SQL/RLS/Storage-endring.
 // FASE 22A BEFARINGSBEKREFTELSE OG TILBUDSMAIL: Sender kundemail via eksisterende smart-worker etter at data/publisering er lagret. Ingen SQL/RLS/Storage-endring.
 // FASE 20T SYNLIG TILBUDS- OG AKSEPTHISTORIKK: Viser tidligere og gjeldende aksepterte tilbudsversjoner med kunde, tidspunkt, total, valgte opsjoner og låst akseptbevis. Ingen SQL, RLS, Storage-regler, Edge Function eller produksjonsmerge.
@@ -4992,6 +4993,30 @@ export default function SalesModule({
                 <p className="sales-subtitle">
                   {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
                 </p>
+
+                {selectedRequest.surveyDate ? (
+                  <div
+                    className="sales-detail-lines"
+                    style={{ marginTop: 14, gap: 8 }}
+                    aria-label="Avtalt befaring"
+                  >
+                    <span>
+                      <CalendarDays size={16} />
+                      <strong>Befaring avtalt:</strong>{" "}
+                      {formatInspectionDateTime(
+                        selectedRequest.surveyDate,
+                        selectedRequest.surveyTime
+                      )}
+                    </span>
+                    {selectedRequest.surveyResponsible ? (
+                      <span>
+                        <CheckCircle2 size={16} />
+                        <strong>Ansvarlig:</strong>{" "}
+                        {selectedRequest.surveyResponsible}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               <div className="sales-hero-actions">
