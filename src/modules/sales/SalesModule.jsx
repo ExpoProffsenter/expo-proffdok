@@ -322,7 +322,7 @@ export default function SalesModule({
 
     let storedDraft = null;
     try {
-      storedDraft = loadOfferDraft(selectedRequestId);
+      storedDraft = loadStoredOfferDraft(selectedRequestId);
     } catch {
       storedDraft = null;
     }
@@ -1398,7 +1398,7 @@ export default function SalesModule({
     let storedDraft = null;
 
     try {
-      storedDraft = loadOfferDraft(selectedRequest?.id);
+      storedDraft = loadStoredOfferDraft(selectedRequest?.id);
     } catch {
       storedDraft = null;
     }
