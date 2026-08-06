@@ -1,3 +1,4 @@
+// FASE 23P SALES-PUBLISHING: Flytter tilbudspublisering og bygging av kundelenker ut av SalesModule uten å endre UI, tilbudsdata, database, RLS, Storage, e-post eller aksept.
 // FASE 23O SALES-CUSTOMER-VIEW: Flytter offentlig kundevisning, lastestatus, lenkefeil og akseptbekreftelse ut av SalesModule uten å endre UI, tilbudsdata, aksept, database, Storage eller e-post.
 // FASE 23N SALES-PROJECT-ACTIVATION: Flytter prosjektaktiveringens presentasjon ut av SalesModule uten å endre validering, dataflyt, database, Storage, prosjektopprettelse eller navigasjon.
 // FASE 23M SALES-OFFER-BUILDER: Flytter tilbudsbyggerens presentasjon ut av SalesModule uten å endre UI, validering, autolagring, dataflyt, database, Storage, publisering, e-post eller aksept.
@@ -85,7 +86,6 @@ import {
 } from "./utils/salesUtils.js";
 import {
   buildOfferFormFromRequest,
-  buildPublishPayload,
   createEmptyOfferLine,
   createEmptyOfferOption,
   createInitialOfferForm,
@@ -132,7 +132,6 @@ import {
   getSalesSession,
   getStoragePublicUrl,
   invokeSmartWorker,
-  publishSalesOffer,
   removeStorageFiles,
   resolveSalesCompanyScope,
   subscribeToSalesAuthChanges,
@@ -145,6 +144,10 @@ import {
   readFileAsDataUrl,
 } from "./services/salesImages.js";
 import { createAcceptanceProofPdf } from "./services/salesAcceptancePdf.js";
+import {
+  buildCustomerOfferLink,
+  publishSalesOfferAndBuildLink,
+} from "./services/salesPublishing.js";
 import SalesListView from "./components/SalesListView.jsx";
 import SalesRequestForm from "./components/SalesRequestForm.jsx";
 import SalesSurveyPlan from "./components/SalesSurveyPlan.jsx";
@@ -2120,7 +2123,7 @@ export default function SalesModule({
     try {
       const link = publishFirst
         ? await publishOfferAndGetLink(requestId)
-        : getCustomerOfferLink(request.publicToken);
+        : buildCustomerOfferLink(window.location.href, request.publicToken);
       const currentRequest = latestRequestsRef.current.find((item) => item.id === requestId) || request;
       const company = await getCompanyProfileForPublish();
 
@@ -2169,102 +2172,28 @@ export default function SalesModule({
     }
   }
 
-  function getCustomerOfferLink(token) {
-    const url = new URL(window.location.href);
-    // Behold eventuelle Vercel-parametere for deling av beskyttet preview.
-    // Erstatt bare kundetokenet dersom det allerede finnes.
-    url.searchParams.set("publicOffer", token);
-    return url.toString();
-  }
-
   async function publishOfferAndGetLink(requestId) {
-    if (!activeSupabase) {
-      throw new Error("Supabase-miljøvariabler mangler i Vercel-preview.");
-    }
-
     const request = requests.find((item) => item.id === requestId);
-
-    if (!request || !request.offerLines?.length) {
-      throw new Error("Tilbudet mangler prislinjer.");
-    }
-
-    const currentLineCount = request.offerLines?.length || 0;
-    const currentOptionCount = request.offerOptions?.length || 0;
-
-    if (request.publicToken) {
-      const { data: publishedOfferData, error: publishedOfferError } =
-        await getSalesOfferByToken(activeSupabase, request.publicToken);
-
-      if (publishedOfferError) throw publishedOfferError;
-
-      const previousOptions = Array.isArray(publishedOfferData?.version?.options)
-        ? publishedOfferData.version.options
-        : [];
-      const previousOptionCount = previousOptions.length;
-
-      if (previousOptionCount > 0 && currentOptionCount === 0) {
-        const confirmed = window.confirm(
+    const result = await publishSalesOfferAndBuildLink({
+      client: activeSupabase,
+      request,
+      requests,
+      loadCompanyProfile: getCompanyProfileForPublish,
+      currentUrl: window.location.href,
+      confirmOptionRemoval: (previousOptionCount) =>
+        window.confirm(
           `ADVARSEL: Sist publiserte tilbud hadde ${previousOptionCount} opsjon${
             previousOptionCount === 1 ? "" : "er"
           }, men tilbudet du nå publiserer har 0.\n\nHvis du fortsetter, publiseres en ny tilbudsversjon uten opsjoner.\n\nVil du virkelig fortsette?`
-        );
-
-        if (!confirmed) {
-          throw new Error(
-            "Publisering avbrutt. Kontroller opsjonene i Rediger tilbud."
-          );
-        }
-      }
-    }
-
-    const profileForPublish = await getCompanyProfileForPublish();
-
-    const { data, error } = await publishSalesOffer(
-      activeSupabase,
-      buildPublishPayload(request, profileForPublish)
-    );
-
-    if (error) throw error;
-
-    const nextRequests = requests.map((item) =>
-      item.id === requestId
-        ? {
-            ...item,
-            salesOfferId: data.offer_id,
-            sentOfferVersionId: data.version_id,
-            sentOfferVersionNumber: data.version_number,
-            publicToken: data.public_token,
-            companyName: profileForPublish.companyName || item.companyName || "",
-            companyOrgNumber: profileForPublish.orgNumber || item.companyOrgNumber || "",
-            companyAddress: profileForPublish.address || item.companyAddress || "",
-            companyPhone: profileForPublish.phone || item.companyPhone || "",
-            companyEmail: profileForPublish.email || item.companyEmail || "",
-            companyWebsite: profileForPublish.website || item.companyWebsite || "",
-            companyLogoUrl: profileForPublish.logoUrl || item.companyLogoUrl || "",
-            status: "Tilbud",
-            statusClass: "sales-status-quote",
-            nextStep: "Kundelink er oppdatert",
-            offerRevisionDraftFromVersion: null,
-            offerRevisionDraftCreatedAt: "",
-            lastPublishedLineCount: currentLineCount,
-            lastPublishedOptionCount: currentOptionCount,
-          }
-        : item
-    );
-
-    latestRequestsRef.current = nextRequests;
-    setRequests(nextRequests);
-    await persistRequests(nextRequests);
-
-    const link = getCustomerOfferLink(data.public_token);
-    setPublishFeedback({
-      requestId,
-      versionNumber: data.version_number,
-      link,
-      publishedAt: new Date().toISOString(),
+        ),
     });
 
-    return link;
+    latestRequestsRef.current = result.nextRequests;
+    setRequests(result.nextRequests);
+    await persistRequests(result.nextRequests);
+    setPublishFeedback(result.publishFeedback);
+
+    return result.link;
   }
 
   async function openCustomerOfferFromRequestId(requestId) {
