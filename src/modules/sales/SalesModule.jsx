@@ -1,3 +1,4 @@
+// FASE 22D.1 INNLOGGET PROSJEKTANSVARLIG: Bruker innlogget brukers fulle navn som ansvarlig i befaring, intern visning og kundemail. E-post brukes kun som siste fallback. Ingen SQL/RLS/Storage-endring.
 // FASE 22D SYNLIG BEFARINGSTID I SAKSOVERSIKT: Avtalt dato, klokkeslett og ansvarlig vises direkte i detaljhodet. Ingen SQL/RLS/Storage-endring.
 // FASE 22B REDIGERBAR FORESPØRSEL/BEFARING OG NORSK BEFARINGSTID: Kunde- og befaringsdata kan oppdateres før aksept. Utsendt bekreftelse kan sendes oppdatert. Ingen SQL/RLS/Storage-endring.
 // FASE 22A BEFARINGSBEKREFTELSE OG TILBUDSMAIL: Sender kundemail via eksisterende smart-worker etter at data/publisering er lagret. Ingen SQL/RLS/Storage-endring.
@@ -424,6 +425,18 @@ function getWorkflowSteps(request) {
   }));
 }
 
+function isEmailLike(value = "") {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim());
+}
+
+function firstNonEmailName(...values) {
+  const match = values
+    .map((value) => String(value || "").trim())
+    .find((value) => value && !isEmailLike(value));
+
+  return match || "";
+}
+
 export default function SalesModule({
   supabaseClient = null,
   authUser = null,
@@ -544,26 +557,37 @@ export default function SalesModule({
     [requests, selectedRequestId]
   );
 
+  const responsibleContactName = firstNonEmailName(
+    profile?.full_name,
+    profile?.fullName,
+    profile?.display_name,
+    profile?.displayName,
+    profile?.name,
+    authUser?.user_metadata?.full_name,
+    authUser?.user_metadata?.fullName,
+    authUser?.user_metadata?.display_name,
+    authUser?.user_metadata?.displayName,
+    authUser?.user_metadata?.name,
+    currentUserName
+  );
+
   const loggedInResponsible = String(
-    currentUserName ||
-      profile?.full_name ||
-      profile?.fullName ||
-      profile?.name ||
-      authUser?.user_metadata?.full_name ||
-      authUser?.user_metadata?.name ||
+    responsibleContactName ||
       authUser?.email ||
+      profile?.email ||
+      currentUserName ||
       ""
   ).trim();
 
-  const responsibleContactName = String(
-    currentUserName ||
-      profile?.full_name ||
-      profile?.fullName ||
-      profile?.name ||
-      authUser?.user_metadata?.full_name ||
-      authUser?.user_metadata?.name ||
-      ""
-  ).trim();
+  function getResponsibleDisplayName(value = "") {
+    const storedValue = String(value || "").trim();
+
+    if (!storedValue || isEmailLike(storedValue)) {
+      return loggedInResponsible;
+    }
+
+    return storedValue;
+  }
   const responsibleContactEmail = String(
     profile?.email || authUser?.email || ""
   ).trim();
@@ -2654,11 +2678,7 @@ export default function SalesModule({
     setSurveyForm({
       date: selectedRequest?.surveyDate || "",
       time: selectedRequest?.surveyTime || "",
-      responsible:
-        selectedRequest?.surveyResponsible ||
-        selectedRequest?.responsible ||
-        responsibleContactName ||
-        loggedInResponsible,
+      responsible: loggedInResponsible,
       note: selectedRequest?.surveyNote || "",
       sendConfirmation: Boolean(
         selectedRequest?.email && !selectedRequest?.surveyConfirmationSentAt
@@ -2696,7 +2716,7 @@ export default function SalesModule({
     const surveyChanged = Boolean(
       previousRequest?.surveyDate !== surveyForm.date ||
         previousRequest?.surveyTime !== surveyForm.time ||
-        (previousRequest?.surveyResponsible || "") !== surveyForm.responsible.trim() ||
+        getResponsibleDisplayName(previousRequest?.surveyResponsible) !== loggedInResponsible ||
         (previousRequest?.surveyNote || "") !== surveyForm.note.trim()
     );
     let shouldSendConfirmation = Boolean(
@@ -2716,7 +2736,7 @@ export default function SalesModule({
             ...request,
             surveyDate: surveyForm.date,
             surveyTime: surveyForm.time,
-            surveyResponsible: surveyForm.responsible.trim(),
+            surveyResponsible: loggedInResponsible,
             surveyNote: surveyForm.note.trim(),
             status: "Befaring",
             statusClass: "sales-status-survey",
@@ -2753,19 +2773,13 @@ export default function SalesModule({
           customerEmail: savedRequest.email,
           customerPhone: savedRequest.phone,
           projectAddress: savedRequest.address,
-          projectResponsible:
-            surveyForm.responsible.trim() ||
-            responsibleContactName ||
-            loggedInResponsible,
+          projectResponsible: loggedInResponsible,
           fromName: company.companyName || loggedInResponsible,
           message: buildInspectionConfirmationMessage({
             date: surveyForm.date,
             time: surveyForm.time,
             note: surveyForm.note.trim(),
-            responsible:
-              surveyForm.responsible.trim() ||
-              responsibleContactName ||
-              loggedInResponsible,
+            responsible: loggedInResponsible,
           }),
           projectLink: "",
           companyLogoUrl: company.logoUrl,
@@ -2823,21 +2837,13 @@ export default function SalesModule({
         customerEmail: request.email,
         customerPhone: request.phone,
         projectAddress: request.address,
-        projectResponsible:
-          request.surveyResponsible ||
-          request.responsible ||
-          responsibleContactName ||
-          loggedInResponsible,
+        projectResponsible: getResponsibleDisplayName(request.surveyResponsible || request.responsible),
         fromName: company.companyName || loggedInResponsible,
         message: buildInspectionConfirmationMessage({
           date: request.surveyDate,
           time: request.surveyTime,
           note: request.surveyNote || "",
-          responsible:
-            request.surveyResponsible ||
-            request.responsible ||
-            responsibleContactName ||
-            loggedInResponsible,
+          responsible: getResponsibleDisplayName(request.surveyResponsible || request.responsible),
         }),
         projectLink: "",
         companyLogoUrl: company.logoUrl,
@@ -4576,7 +4582,7 @@ export default function SalesModule({
                     {selectedRequest.surveyResponsible ? (
                       <span>
                         <CheckCircle2 size={16} />
-                        Ansvarlig: {selectedRequest.surveyResponsible}
+                        Prosjektansvarlig: {getResponsibleDisplayName(selectedRequest.surveyResponsible)}
                       </span>
                     ) : null}
                     {selectedRequest.surveyNote ? (
@@ -4777,15 +4783,11 @@ export default function SalesModule({
                 </label>
 
                 <label className="sales-field sales-field-full">
-                  <span>Ansvarlig</span>
+                  <span>Prosjektansvarlig</span>
                   <input
-                    value={surveyForm.responsible}
-                    onChange={(event) =>
-                      updateSurveyForm("responsible", event.target.value)
-                    }
-                    placeholder="Navn på ansvarlig bruker"
-                    autoComplete="off"
-                    required
+                    value={loggedInResponsible}
+                    readOnly
+                    aria-readonly="true"
                   />
                 </label>
 
@@ -4823,7 +4825,7 @@ export default function SalesModule({
                   </span>
                   <span>
                     <CheckCircle2 size={16} />
-                    {surveyForm.responsible || "Ansvarlig ikke valgt"}
+                    {loggedInResponsible || "Ansvarlig ikke valgt"}
                   </span>
                   <span>
                     <MapPin size={16} />
@@ -5011,8 +5013,11 @@ export default function SalesModule({
                     {selectedRequest.surveyResponsible ? (
                       <span>
                         <CheckCircle2 size={16} />
-                        <strong>Ansvarlig:</strong>{" "}
-                        {selectedRequest.surveyResponsible}
+                        <strong>Prosjektansvarlig:</strong>{" "}
+                        {getResponsibleDisplayName(
+                          selectedRequest.surveyResponsible ||
+                            selectedRequest.responsible
+                        )}
                       </span>
                     ) : null}
                   </div>
@@ -5910,7 +5915,7 @@ export default function SalesModule({
                     </span>
                     <span>
                       <CheckCircle2 size={16} />
-                      Ansvarlig: {selectedRequest.surveyResponsible}
+                      Prosjektansvarlig: {getResponsibleDisplayName(selectedRequest.surveyResponsible)}
                     </span>
                     {selectedRequest.surveyNote ? (
                       <p>{selectedRequest.surveyNote}</p>
