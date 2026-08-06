@@ -1,3 +1,4 @@
+// FASE 23C SALES-STORAGE: Flytter all lokal nettleserlagring for navigasjon, preview-saker og kladder ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 23B SALES-CONSTANTS: Flytter statiske salgsdata, lagringsnavn og standardskjema ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 23A SALES-UTILS: Flytter rene hjelpefunksjoner ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 22D.2 KORRIGERT VISNING AV PROSJEKTANSVARLIG: Intern saksvisning bruker innlogget brukers navn i stedet for lagret e-post. Ingen CSS-, database-, kundevisnings- eller e-postendring.
@@ -75,12 +76,26 @@ import {
 } from "./utils/salesUtils.js";
 import {
   INSPECTION_BUCKET,
-  STORAGE_KEY,
   emptyForm,
-  initialRequests,
   requestSources,
   workTypes,
 } from "./constants/salesConstants.js";
+import {
+  buildInspectionDraftKey,
+  buildSalesStorageKey,
+  buildScopedOfferDraftKey,
+  buildStableOfferDraftKey,
+  clearInspectionDraft as clearStoredInspectionDraft,
+  clearOfferDraft,
+  loadInspectionDraft,
+  loadOfferDraft as loadStoredOfferDraft,
+  loadRequests,
+  loadSalesNavigation,
+  saveInspectionDraft as saveStoredInspectionDraft,
+  saveOfferDraft as saveStoredOfferDraft,
+  saveRequests,
+  saveSalesNavigation,
+} from "./services/salesLocalStorage.js";
 import "./sales.css";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -117,69 +132,12 @@ async function compressImageDataUrl(dataUrl, maxDimension = 1920, quality = 0.78
   return canvas.toDataURL("image/jpeg", quality);
 }
 
-function loadSalesNavigation(storageKey) {
-  try {
-    const storedNavigation = window.localStorage.getItem(
-      `${storageKey}:navigation`
-    );
-    const parsedNavigation = storedNavigation
-      ? JSON.parse(storedNavigation)
-      : null;
-
-    if (!parsedNavigation?.selectedRequestId) {
-      return { mode: "list", selectedRequestId: null };
-    }
-
-    return {
-      mode: parsedNavigation.mode || "detail",
-      selectedRequestId: parsedNavigation.selectedRequestId,
-    };
-  } catch {
-    return { mode: "list", selectedRequestId: null };
-  }
-}
-
-function saveSalesNavigation(storageKey, mode, selectedRequestId) {
-  try {
-    window.localStorage.setItem(
-      `${storageKey}:navigation`,
-      JSON.stringify({ mode, selectedRequestId })
-    );
-  } catch {
-    // Navigasjon er kun et lokalt hjelpemiddel i feature-previewen.
-  }
-}
-
 const iconMap = {
   clipboard: ClipboardList,
   ruler: Ruler,
   send: Send,
   home: Home,
 };
-
-function loadRequests(storageKey = STORAGE_KEY) {
-  try {
-    const storedRequests = window.localStorage.getItem(storageKey);
-
-    if (!storedRequests) return initialRequests;
-
-    const parsedRequests = JSON.parse(storedRequests);
-
-    if (!Array.isArray(parsedRequests)) return initialRequests;
-
-    return parsedRequests;
-  } catch {
-    return initialRequests;
-  }
-}
-
-function saveRequests(requests, storageKey = STORAGE_KEY) {
-  try {
-    window.localStorage.setItem(storageKey, JSON.stringify(requests));
-  } catch {
-    // Lokal preview-lagring er kun for test.
-  }
-}
 
 export default function SalesModule({
   supabaseClient = null,
@@ -190,18 +148,15 @@ export default function SalesModule({
   startNewRequestSignal = 0,
 } = {}) {
   const activeSupabase = supabaseClient || supabase;
-  const salesStorageKey = useMemo(() => {
-    if (integrationMode !== "app") return STORAGE_KEY;
-
-    const companyScope = String(profile?.company_name || profile?.companyName || "")
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-    const userScope = String(authUser?.id || "anonymous");
-
-    return `${STORAGE_KEY}:${companyScope || "uten-firma"}:${userScope}`;
-  }, [integrationMode, profile?.company_name, profile?.companyName, authUser?.id]);
+  const salesStorageKey = useMemo(
+    () =>
+      buildSalesStorageKey({
+        integrationMode,
+        companyName: profile?.company_name || profile?.companyName || "",
+        userId: authUser?.id || "anonymous",
+      }),
+    [integrationMode, profile?.company_name, profile?.companyName, authUser?.id]
+  );
   const initialNavigation = useMemo(
     () => loadSalesNavigation(salesStorageKey),
     [salesStorageKey]
@@ -340,18 +295,20 @@ export default function SalesModule({
   ).trim();
 
   function getStableOfferDraftKey(requestId = selectedRequestId) {
-    const userScope = String(authUser?.id || authUser?.email || "innlogget-bruker")
-      .trim()
-      .toLowerCase();
-    return `${STORAGE_KEY}:offer-draft:${userScope}:${requestId || "uten-sak"}`;
+    return buildStableOfferDraftKey({
+      userId: authUser?.id,
+      userEmail: authUser?.email,
+      requestId,
+    });
+  }
+
+  function getScopedOfferDraftKey(requestId = selectedRequestId) {
+    return buildScopedOfferDraftKey(salesStorageKey, requestId);
   }
 
   function saveOfferDraft(formValue = offerForm, requestId = selectedRequestId) {
     if (!requestId) return;
-    window.localStorage.setItem(
-      getStableOfferDraftKey(requestId),
-      JSON.stringify({ form: formValue, savedAt: new Date().toISOString() })
-    );
+    saveStoredOfferDraft(getStableOfferDraftKey(requestId), formValue);
   }
 
   function mergeOfferDraftIntoRequests(
@@ -384,33 +341,11 @@ export default function SalesModule({
   }
 
   function loadOfferDraft(requestId) {
-    if (!requestId) return null;
-
-    const candidateKeys = [
-      getStableOfferDraftKey(requestId),
-      `${salesStorageKey}:offer-draft:${requestId}`,
-    ];
-    const legacySuffix = `:offer-draft:${requestId}`;
-
-    for (let index = 0; index < window.localStorage.length; index += 1) {
-      const key = window.localStorage.key(index);
-      if (key?.startsWith(STORAGE_KEY) && key.endsWith(legacySuffix)) {
-        candidateKeys.push(key);
-      }
-    }
-
-    return candidateKeys.reduce((latest, key) => {
-      try {
-        const parsed = JSON.parse(window.localStorage.getItem(key) || "null");
-        if (!parsed?.form) return latest;
-        const savedAt = Date.parse(parsed.savedAt || "") || 0;
-        return !latest || savedAt >= latest.savedAt
-          ? { form: parsed.form, savedAt }
-          : latest;
-      } catch {
-        return latest;
-      }
-    }, null)?.form || null;
+    return loadStoredOfferDraft({
+      requestId,
+      stableKey: getStableOfferDraftKey(requestId),
+      scopedKey: getScopedOfferDraftKey(requestId),
+    });
   }
 
   function buildOfferFormFromRequest(request) {
@@ -1752,8 +1687,10 @@ export default function SalesModule({
     try {
       await persistRequests(nextRequests);
       try {
-        window.localStorage.removeItem(getStableOfferDraftKey(selectedRequest.id));
-        window.localStorage.removeItem(`${salesStorageKey}:offer-draft:${selectedRequest.id}`);
+        clearOfferDraft(
+          getStableOfferDraftKey(selectedRequest.id),
+          getScopedOfferDraftKey(selectedRequest.id)
+        );
       } catch {
         // Den varige revisjonskladden er allerede lagret.
       }
@@ -2151,10 +2088,10 @@ export default function SalesModule({
 
     try {
       offerModeRef.current = "detail";
-      window.localStorage.removeItem(
-        getStableOfferDraftKey(selectedRequestId)
+      clearOfferDraft(
+        getStableOfferDraftKey(selectedRequestId),
+        getScopedOfferDraftKey(selectedRequestId)
       );
-      window.localStorage.removeItem(`${salesStorageKey}:offer-draft:${selectedRequestId}`);
     } catch {
       // Varig lagring er fullført selv om lokal kladd ikke kan ryddes.
     }
@@ -2162,46 +2099,26 @@ export default function SalesModule({
   }
 
   function getInspectionDraftKey(requestId = selectedRequestId) {
-    return `${salesStorageKey}:inspection-draft:${requestId || "uten-sak"}`;
+    return buildInspectionDraftKey(salesStorageKey, requestId);
   }
 
   function saveInspectionDraft(nextForm) {
     if (!selectedRequestId) return;
-
-    try {
-      window.localStorage.setItem(
-        getInspectionDraftKey(selectedRequestId),
-        JSON.stringify({
-          form: nextForm,
-          savedAt: new Date().toISOString(),
-        })
-      );
-    } catch {
-      // Lokal feature-kladd. Ingen database-/prosjektlagring.
-    }
+    saveStoredInspectionDraft(
+      getInspectionDraftKey(selectedRequestId),
+      nextForm
+    );
   }
 
   function clearInspectionDraft(requestId = selectedRequestId) {
     if (!requestId) return;
-
-    try {
-      window.localStorage.removeItem(getInspectionDraftKey(requestId));
-    } catch {
-      // Lokal feature-kladd.
-    }
+    clearStoredInspectionDraft(getInspectionDraftKey(requestId));
   }
 
   function openInspectionNote() {
-    let draft = null;
-
-    try {
-      const storedDraft = window.localStorage.getItem(
-        getInspectionDraftKey(selectedRequest?.id)
-      );
-      draft = storedDraft ? JSON.parse(storedDraft) : null;
-    } catch {
-      draft = null;
-    }
+    const draft = loadInspectionDraft(
+      getInspectionDraftKey(selectedRequest?.id)
+    );
 
     const nextForm = draft?.form || {
       customerWishes:
