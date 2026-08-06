@@ -1,3 +1,4 @@
+// FASE 23T KUNDEKODE I CHAT-E-POST: Chatvarsler til kunde oppretter eller gjenbruker alltid kundens tilgangskode før e-post sendes. Varslet sendes ikke uten gyldig kode, og lagringsbekreftelsen viser om e-postvarslingen faktisk ble sendt. Ingen SQL-, RLS-, Storage-, portal- eller øvrig e-postflyt-endring.
 // FASE 23S TRYGG KOPIERING AV KUNDE-/UE-TILGANG: Kopiert tilgangstekst merker lenke og kode tydelig på separate linjer, slik at tilgangskoden ikke kan bli tolket som en del av URL-en. Ingen database-, RLS-, Storage-, e-post- eller portaltilgangsendring.
 // FASE 22E FULLFØR BRUKERPROFIL: Godkjente eksisterende brukere uten fullt navn må registrere fullt navn før appen åpnes. Navn og valgfritt mobilnummer lagres i Supabase Auth user_metadata. Kun feature/befaringsbekreftelse-fase22a. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
 // FASE 22D.3 AUTENTISERT NAVNEKILDE TIL SALGSMODUL: SalesModule mottar innlogget brukers navn fra Supabase Auth metadata før prosjektdata. Kun feature/befaringsbekreftelse-fase22a. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
@@ -3809,8 +3810,16 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       }
     };
     const notifyChatMessage = async ({ toEmail, direction, message }) => {
-      if (!toEmail || !message?.text) return;
+      if (!toEmail || !message?.text) return false;
       try {
+        const sendsToCustomer = direction !== "to_owner";
+        const customerAccessRecord = sendsToCustomer && projectId
+          ? await ensurePortalAccessForProject({ id: projectId, roleParam: "kunde" })
+          : null;
+        if (sendsToCustomer && !customerAccessRecord?.code) {
+          console.warn("Chatvarsel til kunde ble ikke sendt fordi tilgangskode ikke kunne opprettes eller hentes.");
+          return false;
+        }
         const { error } = await supabase.functions.invoke("smart-worker", {
           body: {
             toEmail,
@@ -3821,17 +3830,21 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
             customerEmail: project.customerEmail || "",
             ...emailBrandPayload(),
             fromName: message.by || "Ukjent",
-            message: `${message.text}${direction === "to_owner" ? "" : portalAccessLine(getPortalAccessRecord(project, "kunde"))}`,
-            projectLink: projectId ? makeProjectLink(projectId, direction === "to_owner" ? "admin" : "kunde", direction === "to_owner" ? "" : "chat") : "",
-            accessCode: direction === "to_owner" ? "" : getPortalAccessRecord(project, "kunde")?.code || "",
-            accessCodeExpiresAt: direction === "to_owner" ? "" : getPortalAccessRecord(project, "kunde")?.expiresAt || ""
+            message: `${message.text}${sendsToCustomer ? portalAccessLine(customerAccessRecord, project) : ""}`,
+            projectLink: projectId ? makeProjectLink(projectId, sendsToCustomer ? "kunde" : "admin", sendsToCustomer ? "chat" : "") : "",
+            accessCode: sendsToCustomer ? customerAccessRecord?.code || "" : "",
+            accessCodeExpiresAt: sendsToCustomer ? customerAccessRecord?.expiresAt || "" : "",
+            accessPolicy: sendsToCustomer ? "active_project_plus_locked_30_days" : ""
           }
         });
         if (error) {
           console.warn("E-postvarsling kunne ikke sendes:", error.message);
+          return false;
         }
+        return true;
       } catch (error) {
         console.warn("E-postvarsling kunne ikke sendes:", error);
+        return false;
       }
     };
     const emailBrandPayload = () => {
@@ -3929,12 +3942,18 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       } else {
         setProjectLog(updatedLog);
       }
-      await notifyChatMessage({
+      const customerNotificationSent = await notifyChatMessage({
         toEmail: project.customerEmail,
         direction: "to_customer",
         message
       });
-      alert(project.customerEmail ? "\u2714 Melding sendt og lagret p\xE5 prosjektet. E-postvarsling fors\xF8kt sendt til kunde." : "\u2714 Melding lagret p\xE5 prosjektet. Legg inn kunde e-post for e-postvarsling.");
+      alert(
+        !project.customerEmail
+          ? "\u2714 Melding lagret p\xE5 prosjektet. Legg inn kunde e-post for e-postvarsling."
+          : customerNotificationSent
+            ? "\u2714 Melding sendt og lagret p\xE5 prosjektet. E-postvarsel med kundelenke og tilgangskode er sendt."
+            : "\u2714 Melding er lagret p\xE5 prosjektet, men e-postvarsling til kunde kunne ikke sendes."
+      );
     };
     const removeProjectLogMessage = async (id) => {
       if (!id) return;
