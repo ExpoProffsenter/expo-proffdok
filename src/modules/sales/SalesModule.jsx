@@ -1,3 +1,4 @@
+// FASE 22D.2 KORRIGERT VISNING AV PROSJEKTANSVARLIG: Intern saksvisning bruker innlogget brukers navn i stedet for lagret e-post. Ingen CSS-, database-, kundevisnings- eller e-postendring.
 // FASE 22D.1 INNLOGGET PROSJEKTANSVARLIG: Bruker innlogget brukers fulle navn som ansvarlig i befaring, intern visning og kundemail. E-post brukes kun som siste fallback. Ingen SQL/RLS/Storage-endring.
 // FASE 22D SYNLIG BEFARINGSTID I SAKSOVERSIKT: Avtalt dato, klokkeslett og ansvarlig vises direkte i detaljhodet. Ingen SQL/RLS/Storage-endring.
 // FASE 22B REDIGERBAR FORESPØRSEL/BEFARING OG NORSK BEFARINGSTID: Kunde- og befaringsdata kan oppdateres før aksept. Utsendt bekreftelse kan sendes oppdatert. Ingen SQL/RLS/Storage-endring.
@@ -4582,7 +4583,7 @@ export default function SalesModule({
                     {selectedRequest.surveyResponsible ? (
                       <span>
                         <CheckCircle2 size={16} />
-                        Prosjektansvarlig: {getResponsibleDisplayName(selectedRequest.surveyResponsible)}
+                        Prosjektansvarlig: {loggedInResponsible}
                       </span>
                     ) : null}
                     {selectedRequest.surveyNote ? (
@@ -5014,10 +5015,7 @@ export default function SalesModule({
                       <span>
                         <CheckCircle2 size={16} />
                         <strong>Prosjektansvarlig:</strong>{" "}
-                        {getResponsibleDisplayName(
-                          selectedRequest.surveyResponsible ||
-                            selectedRequest.responsible
-                        )}
+                        {loggedInResponsible}
                       </span>
                     ) : null}
                   </div>
@@ -5915,7 +5913,7 @@ export default function SalesModule({
                     </span>
                     <span>
                       <CheckCircle2 size={16} />
-                      Prosjektansvarlig: {getResponsibleDisplayName(selectedRequest.surveyResponsible)}
+                      Prosjektansvarlig: {loggedInResponsible}
                     </span>
                     {selectedRequest.surveyNote ? (
                       <p>{selectedRequest.surveyNote}</p>
