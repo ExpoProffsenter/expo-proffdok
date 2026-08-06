@@ -1,3 +1,4 @@
+// FASE 23D SALES-SUPABASE: Flytter Supabase-klient, databasekall, RPC, Storage, auth-abonnement og Edge Function-kall ut av SalesModule uten å endre UI, dataflyt, database, RLS, Storage-regler, e-post eller prosjektaktivering.
 // FASE 23C SALES-STORAGE: Flytter all lokal nettleserlagring for navigasjon, preview-saker og kladder ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 23B SALES-CONSTANTS: Flytter statiske salgsdata, lagringsnavn og standardskjema ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
 // FASE 23A SALES-UTILS: Flytter rene hjelpefunksjoner ut av SalesModule uten å endre UI, dataflyt, database, Storage, e-post eller prosjektaktivering.
@@ -53,7 +54,6 @@ import {
   Upload,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import {
   buildInspectionIntro,
   createCompanySnapshot,
@@ -96,14 +96,33 @@ import {
   saveRequests,
   saveSalesNavigation,
 } from "./services/salesLocalStorage.js";
+import {
+  acceptSalesOffer,
+  createDefaultSalesSupabaseClient,
+  createSalesProject,
+  createStorageSignedUrl,
+  downloadStorageFile,
+  fetchCurrentSalesUser,
+  fetchProfileByEmail,
+  fetchProfileById,
+  fetchProjectById,
+  fetchProjectsByIds,
+  fetchProjectsByOwner,
+  fetchSalesRequests,
+  getSalesOfferByToken,
+  getSalesSession,
+  getStoragePublicUrl,
+  invokeSmartWorker,
+  publishSalesOffer,
+  removeStorageFiles,
+  resolveSalesCompanyScope,
+  subscribeToSalesAuthChanges,
+  uploadStorageFile,
+  upsertSalesRequests,
+} from "./services/salesSupabase.js";
 import "./sales.css";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null;
+const supabase = createDefaultSalesSupabaseClient();
 
 function dataUrlToBlob(dataUrl) {
   const [header, encoded] = String(dataUrl).split(",");
@@ -507,12 +526,11 @@ export default function SalesModule({
     async function loadPersistentRequests() {
       if (!activeSupabase || integrationMode !== "app") return;
 
-      const { data: sessionData } = await activeSupabase.auth.getSession();
+      const { data: sessionData } = await getSalesSession(activeSupabase);
       const user = sessionData?.session?.user;
       if (!user?.id || cancelled) return;
 
-      const { data: resolvedCompanyId, error: companyError } = await activeSupabase
-        .rpc("resolve_sales_company_scope");
+      const { data: resolvedCompanyId, error: companyError } = await resolveSalesCompanyScope(activeSupabase);
 
       if (companyError || !resolvedCompanyId) {
         if (!cancelled) {
@@ -528,11 +546,7 @@ export default function SalesModule({
       setSalesStorageError("");
       setSalesCompanyId(resolvedCompanyId);
 
-      const { data: rows, error } = await activeSupabase
-        .from("sales_requests")
-        .select("request_ref,payload,status,archived_at")
-        .eq("company_id", resolvedCompanyId)
-        .order("updated_at", { ascending: false });
+      const { data: rows, error } = await fetchSalesRequests(activeSupabase, resolvedCompanyId);
 
       if (error) {
         console.error("Kunne ikke hente salgssaker", error);
@@ -547,10 +561,7 @@ export default function SalesModule({
       let realActivatedProjectIds = new Set();
       const repairedActivatedRequestRefs = new Set();
       if (claimedActivatedProjectIds.length > 0) {
-        const { data: realProjects, error: realProjectsError } = await activeSupabase
-          .from("projects")
-          .select("id")
-          .in("id", claimedActivatedProjectIds);
+        const { data: realProjects, error: realProjectsError } = await fetchProjectsByIds(activeSupabase, claimedActivatedProjectIds);
         if (realProjectsError) {
           console.error("Kunne ikke verifisere aktiverte ProffDok-prosjekter", realProjectsError);
         } else {
@@ -565,9 +576,12 @@ export default function SalesModule({
           const photos = await Promise.all(
             (request.inspectionPhotos || []).map(async (photo) => {
               if (!photo.path) return photo;
-              const { data } = await activeSupabase.storage
-                .from(INSPECTION_BUCKET)
-                .createSignedUrl(photo.path, 60 * 60 * 24 * 7);
+              const { data } = await createStorageSignedUrl(
+                activeSupabase,
+                INSPECTION_BUCKET,
+                photo.path,
+                60 * 60 * 24 * 7
+              );
               return { ...photo, dataUrl: data?.signedUrl || "" };
             })
           );
@@ -595,9 +609,7 @@ export default function SalesModule({
 
           if (request.publicToken && !hasRealActivatedProject) {
             const { data: publicOfferData, error: publicOfferError } =
-              await activeSupabase.rpc("get_sales_offer_by_token", {
-                token: request.publicToken,
-              });
+              await getSalesOfferByToken(activeSupabase, request.publicToken);
 
             if (publicOfferError) {
               console.error(
@@ -699,9 +711,7 @@ export default function SalesModule({
             payload: stripTransientPhotoData(request),
             updated_at: new Date().toISOString(),
           }));
-        const { error: repairError } = await activeSupabase
-          .from("sales_requests")
-          .upsert(repairedRows, { onConflict: "company_id,request_ref" });
+        const { error: repairError } = await upsertSalesRequests(activeSupabase, repairedRows);
         if (repairError) {
           console.error("Kunne ikke lagre reparert prosjektaktivering", repairError);
           setSalesStorageError(
@@ -727,7 +737,7 @@ export default function SalesModule({
       );
     }
 
-    const { data: sessionData } = await activeSupabase.auth.getSession();
+    const { data: sessionData } = await getSalesSession(activeSupabase);
     if (!sessionData?.session?.user?.id) {
       throw new Error("Innloggingen er utløpt. Logg inn på nytt.");
     }
@@ -741,9 +751,7 @@ export default function SalesModule({
       updated_at: new Date().toISOString(),
     }));
 
-    const { error } = await activeSupabase
-      .from("sales_requests")
-      .upsert(rows, { onConflict: "company_id,request_ref" });
+    const { error } = await upsertSalesRequests(activeSupabase, rows);
     if (error) throw error;
   }
 
@@ -767,11 +775,11 @@ export default function SalesModule({
   async function fetchCompanyProfile() {
     if (!activeSupabase) return null;
 
-    const { data: sessionData } = await activeSupabase.auth.getSession();
+    const { data: sessionData } = await getSalesSession(activeSupabase);
     let user = sessionData?.session?.user || null;
 
     if (!user) {
-      const { data: userData } = await activeSupabase.auth.getUser();
+      const { data: userData } = await fetchCurrentSalesUser(activeSupabase);
       user = userData?.user || null;
     }
 
@@ -780,22 +788,14 @@ export default function SalesModule({
     const profileSelect =
       "company_name,org_number,address,phone,email,website,logo_url";
 
-    let { data, error } = await activeSupabase
-      .from("profiles")
-      .select(profileSelect)
-      .eq("id", user.id)
-      .maybeSingle();
+    let { data, error } = await fetchProfileById(activeSupabase, user.id, profileSelect);
 
     if (error) return null;
 
     let nextProfile = data ? normalizeCompanyProfile(data, user.email || "") : null;
 
     if (!hasCompanyProfile(nextProfile) && user.email) {
-      const fallback = await activeSupabase
-        .from("profiles")
-        .select(profileSelect)
-        .ilike("email", user.email)
-        .maybeSingle();
+      const fallback = await fetchProfileByEmail(activeSupabase, user.email, profileSelect);
 
       if (!fallback.error && fallback.data) {
         nextProfile = normalizeCompanyProfile(fallback.data, user.email || "");
@@ -808,9 +808,7 @@ export default function SalesModule({
   async function sendCustomerEmail(payload) {
     if (!activeSupabase) throw new Error("Supabase er ikke tilgjengelig.");
 
-    const { data, error } = await activeSupabase.functions.invoke("smart-worker", {
-      body: payload,
-    });
+    const { data, error } = await invokeSmartWorker(activeSupabase, payload);
 
     if (error) throw error;
     if (data?.ok === false) throw new Error(data.error || "E-posten kunne ikke sendes.");
@@ -844,16 +842,17 @@ export default function SalesModule({
 
     loadInitialCompanyProfile();
 
-    const { data: subscription } = activeSupabase?.auth?.onAuthStateChange?.(
+    const subscription = subscribeToSalesAuthChanges(
+      activeSupabase,
       (_event, session) => {
         if (!session?.user?.id) return;
         loadInitialCompanyProfile();
       }
-    ) || { data: null };
+    );
 
     return () => {
       active = false;
-      subscription?.subscription?.unsubscribe?.();
+      subscription?.unsubscribe?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1045,18 +1044,14 @@ export default function SalesModule({
     try {
       const cleanName = sanitizeStoragePart(file.name || "kontrakt");
       const path = `sales-contracts/${authUser.id}/${sanitizeStoragePart(selectedRequest.id)}/${Date.now()}-${cleanName}`;
-      const { error: uploadError } = await activeSupabase.storage
-        .from("project-images")
-        .upload(path, file, {
-          cacheControl: "3600",
-          contentType: file.type || "application/octet-stream",
-          upsert: false,
-        });
+      const { error: uploadError } = await uploadStorageFile(activeSupabase, "project-images", path, file, {
+        cacheControl: "3600",
+        contentType: file.type || "application/octet-stream",
+        upsert: false,
+      });
       if (uploadError) throw uploadError;
 
-      const { data: publicFile } = activeSupabase.storage
-        .from("project-images")
-        .getPublicUrl(path);
+      const { data: publicFile } = getStoragePublicUrl(activeSupabase, "project-images", path);
       const contractFile = {
         id: crypto.randomUUID(),
         name: file.name || "Kontrakt",
@@ -1091,9 +1086,7 @@ export default function SalesModule({
     try {
       const contractPath = selectedRequest.contractFile.path;
       if (contractPath && activeSupabase) {
-        const { error: removeError } = await activeSupabase.storage
-          .from("project-images")
-          .remove([contractPath]);
+        const { error: removeError } = await removeStorageFiles(activeSupabase, "project-images", [contractPath]);
         if (removeError) throw removeError;
       }
       const nextRequests = requests.map((request) =>
@@ -1299,11 +1292,13 @@ export default function SalesModule({
       const version = selectedRequest.acceptedOfferVersionNumber || selectedRequest.sentOfferVersionNumber || "1";
       const fileName = `Akseptbevis-${sanitizeStoragePart(selectedRequest.id)}-v${version}.pdf`;
       const path = `sales-acceptance-proofs/${authUser.id}/${sanitizeStoragePart(selectedRequest.id)}/${crypto.randomUUID()}-${fileName}`;
-      const { error: uploadError } = await activeSupabase.storage
-        .from("project-images")
-        .upload(path, blob, { cacheControl: "3600", contentType: "application/pdf", upsert: false });
+      const { error: uploadError } = await uploadStorageFile(activeSupabase, "project-images", path, blob, {
+        cacheControl: "3600",
+        contentType: "application/pdf",
+        upsert: false,
+      });
       if (uploadError) throw uploadError;
-      const { data: publicFile } = activeSupabase.storage.from("project-images").getPublicUrl(path);
+      const { data: publicFile } = getStoragePublicUrl(activeSupabase, "project-images", path);
       const acceptanceProofFile = {
         id: crypto.randomUUID(),
         name: fileName,
@@ -1349,20 +1344,13 @@ export default function SalesModule({
       let existingProjectId = selectedRequest.projectId || "";
 
       if (existingProjectId) {
-        const { data: existingById, error: existingByIdError } = await activeSupabase
-          .from("projects")
-          .select("id")
-          .eq("id", existingProjectId)
-          .maybeSingle();
+        const { data: existingById, error: existingByIdError } = await fetchProjectById(activeSupabase, existingProjectId);
         if (existingByIdError) throw existingByIdError;
         if (!existingById) existingProjectId = "";
       }
 
       if (!existingProjectId) {
-        const { data: ownedProjects, error: duplicateError } = await activeSupabase
-          .from("projects")
-          .select("id,data")
-          .eq("user_id", authUser.id);
+        const { data: ownedProjects, error: duplicateError } = await fetchProjectsByOwner(activeSupabase, authUser.id);
         if (duplicateError) throw duplicateError;
         const duplicate = (ownedProjects || []).find(
           (row) => row?.data?.project?.salesOrigin?.requestRef === requestRef
@@ -1383,9 +1371,7 @@ export default function SalesModule({
         for (const [index, photo] of inspectionPhotos.entries()) {
           let blob = null;
           if (photo.path) {
-            const { data, error } = await activeSupabase.storage
-              .from(INSPECTION_BUCKET)
-              .download(photo.path);
+            const { data, error } = await downloadStorageFile(activeSupabase, INSPECTION_BUCKET, photo.path);
             if (error) throw new Error(`Kunne ikke overføre befaringsbilde: ${error.message}`);
             blob = data;
           } else if (photo.dataUrl) {
@@ -1394,13 +1380,12 @@ export default function SalesModule({
           if (!blob) continue;
           const cleanName = sanitizeStoragePart(photo.name || `befaring-${index + 1}.jpg`);
           const imagePath = `sales-activation/${authUser.id}/${projectId}/${Date.now()}-${index}-${cleanName}`;
-          const { error: imageError } = await activeSupabase.storage
-            .from("project-images")
-            .upload(imagePath, blob, { cacheControl: "3600", upsert: false });
+          const { error: imageError } = await uploadStorageFile(activeSupabase, "project-images", imagePath, blob, {
+            cacheControl: "3600",
+            upsert: false,
+          });
           if (imageError) throw new Error(`Kunne ikke lagre befaringsbilde i prosjektet: ${imageError.message}`);
-          const { data: publicImage } = activeSupabase.storage
-            .from("project-images")
-            .getPublicUrl(imagePath);
+          const { data: publicImage } = getStoragePublicUrl(activeSupabase, "project-images", imagePath);
           projectPhotos.push({
             id: crypto.randomUUID(),
             url: publicImage.publicUrl,
@@ -1488,21 +1473,17 @@ export default function SalesModule({
           projectLog: { enabled: false, draft: "", messages: [], lastReadByAdmin: "", lastReadByCustomer: "" },
           internalNotes: projectForm.note.trim(),
         };
-        const { data: inserted, error: insertError } = await activeSupabase
-          .from("projects")
-          .insert({
-            id: projectId,
-            title: projectForm.projectName.trim() || selectedRequest.address || "Uten navn",
-            data: projectData,
-            user_id: authUser.id,
-            share_enabled: true,
-            locked: false,
-            locked_at: null,
-            locked_by: "",
-            updated_at: activatedAt,
-          })
-          .select("id")
-          .single();
+        const { data: inserted, error: insertError } = await createSalesProject(activeSupabase, {
+          id: projectId,
+          title: projectForm.projectName.trim() || selectedRequest.address || "Uten navn",
+          data: projectData,
+          user_id: authUser.id,
+          share_enabled: true,
+          locked: false,
+          locked_at: null,
+          locked_by: "",
+          updated_at: activatedAt,
+        });
         if (insertError) throw insertError;
         existingProjectId = inserted.id;
       }
@@ -1737,10 +1718,10 @@ export default function SalesModule({
         return;
       }
 
-      const { error } = await activeSupabase.rpc("accept_sales_offer", {
+      const { error } = await acceptSalesOffer(activeSupabase, {
         token: selectedRequest.publicToken,
-        accepted_name: acceptanceForm.name.trim(),
-        selected_options: selectedOptions,
+        acceptedName: acceptanceForm.name.trim(),
+        selectedOptions,
       });
 
       if (error) {
@@ -2215,13 +2196,17 @@ export default function SalesModule({
           const path = `${salesCompanyId}/${sanitizeStoragePart(
             selectedRequestId
           )}/${Date.now()}-${baseName}.${extension}`;
-          const { error: uploadError } = await activeSupabase.storage
-            .from(INSPECTION_BUCKET)
-            .upload(path, blob, { contentType: "image/jpeg", upsert: false });
+          const { error: uploadError } = await uploadStorageFile(activeSupabase, INSPECTION_BUCKET, path, blob, {
+            contentType: "image/jpeg",
+            upsert: false,
+          });
           if (uploadError) throw uploadError;
-          const { data: signed } = await activeSupabase.storage
-            .from(INSPECTION_BUCKET)
-            .createSignedUrl(path, 60 * 60 * 24 * 7);
+          const { data: signed } = await createStorageSignedUrl(
+            activeSupabase,
+            INSPECTION_BUCKET,
+            path,
+            60 * 60 * 24 * 7
+          );
           return {
             id: photo.id,
             name: photo.name,
@@ -2683,9 +2668,7 @@ export default function SalesModule({
 
     if (request.publicToken) {
       const { data: publishedOfferData, error: publishedOfferError } =
-        await activeSupabase.rpc("get_sales_offer_by_token", {
-          token: request.publicToken,
-        });
+        await getSalesOfferByToken(activeSupabase, request.publicToken);
 
       if (publishedOfferError) throw publishedOfferError;
 
@@ -2711,9 +2694,10 @@ export default function SalesModule({
 
     const profileForPublish = await getCompanyProfileForPublish();
 
-    const { data, error } = await activeSupabase.rpc("publish_sales_offer", {
-      payload: buildPublishPayload(request, profileForPublish),
-    });
+    const { data, error } = await publishSalesOffer(
+      activeSupabase,
+      buildPublishPayload(request, profileForPublish)
+    );
 
     if (error) throw error;
 
@@ -2787,9 +2771,7 @@ export default function SalesModule({
     setPublicOfferLoading(true);
     setPublicOfferError("");
 
-    const { data, error } = await activeSupabase.rpc("get_sales_offer_by_token", {
-      token,
-    });
+    const { data, error } = await getSalesOfferByToken(activeSupabase, token);
 
     setPublicOfferLoading(false);
 
