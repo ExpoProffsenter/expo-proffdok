@@ -1,3 +1,4 @@
+// FASE 23S TRYGG KOPIERING AV KUNDE-/UE-TILGANG: Kopiert tilgangstekst merker lenke og kode tydelig på separate linjer, slik at tilgangskoden ikke kan bli tolket som en del av URL-en. Ingen database-, RLS-, Storage-, e-post- eller portaltilgangsendring.
 // FASE 22E FULLFØR BRUKERPROFIL: Godkjente eksisterende brukere uten fullt navn må registrere fullt navn før appen åpnes. Navn og valgfritt mobilnummer lagres i Supabase Auth user_metadata. Kun feature/befaringsbekreftelse-fase22a. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
 // FASE 22D.3 AUTENTISERT NAVNEKILDE TIL SALGSMODUL: SalesModule mottar innlogget brukers navn fra Supabase Auth metadata før prosjektdata. Kun feature/befaringsbekreftelse-fase22a. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
 // FASE 21B TYDELIG STARTSIDE OG MOBILMENY: Startsiden gir direkte inngang til ny forespørsel, Befaring/Tilbud og prosjektlisten på både mobil og PC. Mobil arbeidsmeny er tilgjengelig også uten åpent prosjekt. Ingen prosjekt-, salgs- eller backenddata endres.
@@ -4510,6 +4511,17 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
 Tilgangskode: ${record.code}
 ${portalAccessPolicyText(projectValue, record)}`;
     };
+    const portalAccessClipboardText = ({
+      link = "",
+      record = {},
+      roleParam = "kunde",
+      projectValue = project
+    } = {}) => {
+      const cleanLink = String(link || "").trim();
+      const linkLabel = roleParam === "underleverandor" ? "Underentreprenørlenke" : "Kundelenke";
+      if (!record?.code) return `${linkLabel}:\n${cleanLink}`;
+      return `${linkLabel}:\n${cleanLink}\n\nTilgangskode: ${normalizePortalAccessCode(record.code)}\n\n${portalAccessPolicyText(projectValue, record)}`;
+    };
     const ensurePortalAccessForProject = async ({ id, roleParam = "kunde", forceNew = false } = {}) => {
       const targetId = id || projectId;
       if (!targetId) return null;
@@ -4645,7 +4657,10 @@ ${portalAccessPolicyText(projectValue, record)}`;
       if (!id) return;
       const accessRecord = await ensurePortalAccessForProject({ id, roleParam: "kunde" });
       const link = makeProjectLink(id, "kunde");
-      await copyLinkToClipboard(`${link}${accessRecord?.code ? portalAccessLine(accessRecord, project) : ""}`, accessRecord?.code ? "Kundelink og tilgangskode kopiert." : "Kundelink kopiert.");
+      await copyLinkToClipboard(
+        portalAccessClipboardText({ link, record: accessRecord, roleParam: "kunde" }),
+        accessRecord?.code ? "Kundelenke og tilgangskode kopiert." : "Kundelenke kopiert."
+      );
     };
     const copyAccessLink = async (role = "kunde") => {
       const id = await saveProjectForLink();
@@ -4654,8 +4669,8 @@ ${portalAccessPolicyText(projectValue, record)}`;
       const accessRecord = await ensurePortalAccessForProject({ id, roleParam });
       const link = makeProjectLink(id, role);
       await copyLinkToClipboard(
-        `${link}${accessRecord?.code ? portalAccessLine(accessRecord, project) : ""}`,
-        roleParam === "underleverandor" ? "Underentreprenør-link og tilgangskode kopiert." : "Kundelink og tilgangskode kopiert."
+        portalAccessClipboardText({ link, record: accessRecord, roleParam }),
+        roleParam === "underleverandor" ? "Underentreprenørlenke og tilgangskode kopiert." : "Kundelenke og tilgangskode kopiert."
       );
     };
     const sendAccessEmail = async ({ role = "kunde", toEmail = "", recipientName = "" } = {}) => {
@@ -4695,13 +4710,19 @@ ${portalAccessPolicyText(projectValue, record)}`;
         });
         if (error) {
           console.warn("Tilgangs-e-post kunne ikke sendes:", error.message);
-          await copyLinkToClipboard(`${link}${accessText}`, "E-post kunne ikke sendes, men link og tilgangskode er kopiert.");
+          await copyLinkToClipboard(
+            portalAccessClipboardText({ link, record: accessRecord, roleParam }),
+            "E-post kunne ikke sendes, men lenke og tilgangskode er kopiert."
+          );
           return;
         }
         alert("✔ E-post med tilgangslink og tilgangskode er sendt.");
       } catch (error) {
         console.warn("Tilgangs-e-post kunne ikke sendes:", error);
-        await copyLinkToClipboard(`${link}${accessText}`, "E-post kunne ikke sendes, men link og tilgangskode er kopiert.");
+        await copyLinkToClipboard(
+            portalAccessClipboardText({ link, record: accessRecord, roleParam }),
+            "E-post kunne ikke sendes, men lenke og tilgangskode er kopiert."
+          );
       }
     };
 
@@ -10637,7 +10658,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
               " Legg til person/firma"
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => copyAccessLink("kunde"), children: "Kopier kundelink" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => copyAccessLink("kunde"), children: "Kopier kundelenke og kode" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => sendAccessEmail({ role: "kunde", toEmail: project.customerEmail, recipientName: project.customer }), children: "Send kundelink på e-post" })
           ] }),
           access.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen ekstra tilganger er lagt til enn\xE5." }),
@@ -10649,7 +10670,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: accessRoleInfo.find((r) => r.role === a.role)?.text || "" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => copyAccessLink(a.role), children: "Kopier link" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => copyAccessLink(a.role), children: "Kopier lenke og kode" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => sendAccessEmail({ role: a.role, toEmail: a.email, recipientName: a.name }), children: "Send e-post med link" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setAccess(access.filter((x) => x.id !== a.id)), children: "Fjern" })
             ] })
