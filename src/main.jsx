@@ -1,3 +1,4 @@
+// FASE 23Z.2 DOKUMENTASJONSKULTUR I HJELP: Presiserer at Expo ProffDok skal brukes til komplett relevant prosjektdokumentasjon. Alle relevante produkter/FDV, bilder, kontrollpunkter, avvik, overtagelse og eventuell garanti skal dokumenteres før ferdigstilling. Begrenset sjekklisteomfang er kun for reelt mindre prosjekt og fritar ikke fra å dokumentere faktisk leveranse. Kun Hjelp/UI-tekst; ingen låse-, garanti-, overtagelses-, rapport-, SQL-, RLS-, Storage-, Edge Function-, e-post- eller datamodellendring.
 // FASE 23Z.1 SLUTTSIDE / BEGRENSET OMFANG: Sluttdokumentasjon bruker samme sjekklistestatus som rapportstatusen. Begrenset omfang vises som OK med antall relevante vurderte kontrollpunkt; standardprosjekter beholder full sjekklistestatus. Ingen endring i låsing, garanti, overtagelse, SQL/RLS/Storage eller datamodell.
 // FASE 23Z TRYGG FERDIGSTILLING / SMÅ PROSJEKTER: Låsing bruker samme sluttkrav som rapport/kundeportal. Standardprosjekter krever alle aktive kontrollpunkter vurdert; ikke-garantiprosjekter kan eksplisitt velges som mindre prosjekt/begrenset sjekklisteomfang, der minst ett vurdert kontrollpunkt blir relevant ferdigstillingsgrunnlag. Åpne sjekkpunkt- og prosjektavvik blokkerer alltid. Garantiprosjekter kan ikke bruke begrenset omfang og kan aldri låses før garanti er utstedt. Ingen SQL/RLS/Storage/Edge/e-post- eller garantimotorendring.
 // FASE 23Y KORREKT SLUTTSTATUS / OVERTAGELSESDATO: Sluttdokumentasjon krever registrert overtagelse, ingen åpne avvik, ferdig relevante sjekklister (dersom sjekkliste finnes) og eventuell utstedt garanti. Produkter/vedlegg er dokumentasjonsgrad, men blokkerer ikke enkle prosjekter alene. Ny overtagelse foreslår alltid dagens lokale dato uten å overskrive lagret dato. Kun lokal rapport-/kundeportalstatus og datoforslag; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty, garanti- eller overtagelsesregistreringslogikk.
@@ -12327,6 +12328,32 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ]
       },
       {
+        key: "quality",
+        title: "✅ Dokumentasjonskrav og kvalitet",
+        purpose: "Expo ProffDok er laget for håndverkere som skal levere komplett og etterprøvbar dokumentasjon av det arbeidet som faktisk er utført. Dokumentasjon er en del av leveransen – ikke et tillegg som fylles ut til slutt.",
+        workflow: [
+          "Dokumenter prosjektet fortløpende mens arbeidet utføres.",
+          "Legg inn relevante produkter og FDV-dokumentasjon for produkter og materialer som er levert eller installert og som kunden kan ha behov for å kjenne, drifte eller vedlikeholde.",
+          "Ta bilder av relevante arbeidsfaser, skjulte konstruksjoner, kritiske detaljer og ferdig resultat der dette er relevant for leveransen.",
+          "Vurder alle kontrollpunkter som er relevante for prosjektets faktiske omfang, og lukk eventuelle avvik før ferdigstilling.",
+          "Registrer overtagelse med begge signaturer når arbeidet er gjennomgått med kunden.",
+          "Kontroller rapporten før prosjektet låses og dokumentasjonen sendes kunden."
+        ],
+        important: [
+          "Et prosjekt skal ikke ferdigstilles i Expo ProffDok med mangelfull dokumentasjon av arbeid som faktisk er utført.",
+          "Mindre prosjekt / begrenset sjekklisteomfang skal bare brukes når standardlisten inneholder punkter som reelt ikke gjelder prosjektet. Valget reduserer ikke kravet til å dokumentere hele den faktiske leveransen.",
+          "Manglende produkter eller FDV skal ikke brukes som en snarvei. Dersom relevante produkter er levert eller installert, skal de dokumenteres.",
+          "Garantiprosjekter følger i tillegg egne garanti- og Sopro-krav og kan ikke bruke begrenset sjekklisteomfang for å omgå disse kravene.",
+          "Rapporten viser den dokumentasjonen som faktisk er registrert. Den utførende virksomheten er ansvarlig for at omfanget er riktig og tilstrekkelig for prosjektet."
+        ],
+        best: [
+          "Tenk dokumentasjon før arbeidet lukkes inne eller blir vanskelig å kontrollere i ettertid.",
+          "Bruk sjekklistene som arbeidsverktøy, ikke bare som sluttkontroll.",
+          "La en annen ansvarlig person kontrollere dokumentasjonen før større prosjekter ferdigstilles.",
+          "Ferdigstill først når dokumentasjonen er så komplett at den kan overleveres kunden med faglig trygghet."
+        ]
+      },
+      {
         key: "hjelp",
         title: "❓ Hjelp",
         purpose: "Hjelp-fanen inneholder digital brukerveiledning, brukervilkår og anbefalt appinstallasjon på mobil.",
@@ -12825,7 +12852,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ]
       }
     ];
-    const userGuideOrder = ["start", "sales", "info", "garanti", "firmaProfil", "prosjektering", "produkter", "overflater", "bilder", "tilgang", "fagUtstyr", "sjekklister", "avvik", "tilbud", "chat", "interne", "overtagelse", "prosjektliste", "rapport", "hjelp", "nytt"];
+    const userGuideOrder = ["start", "quality", "sales", "info", "garanti", "firmaProfil", "prosjektering", "produkter", "overflater", "bilder", "tilgang", "fagUtstyr", "sjekklister", "avvik", "tilbud", "chat", "interne", "overtagelse", "prosjektliste", "rapport", "hjelp", "nytt"];
     const orderedUserGuideSections = [...userGuideSections].sort((a, b) => userGuideOrder.indexOf(a.key) - userGuideOrder.indexOf(b.key));
     const visibleGuideSections = [
       ...orderedUserGuideSections.slice(0, 5),
@@ -12860,8 +12887,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Komplett digital brukerveiledning for Expo ProffDok. Veiledningen er tekstbasert, mobilvennlig og viser kun innhold som er relevant for din brukerrolle." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 05.08.2026" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 07.08.2026" })
           ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#ecfdf5", borderColor: "#86efac" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "✅ Dokumentasjon er en del av håndverksleveransen" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { lineHeight: 1.6, marginBottom: "8px" }, children: "Expo ProffDok skal brukes til komplett relevant prosjektdokumentasjon. Arbeid som er utført skal dokumenteres med de produktene/FDV-opplysningene, bildene, kontrollpunktene, avvikene og overtagelsesopplysningene som faktisk er relevante for leveransen." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginBottom: 0 }, children: "Mindre prosjekt / begrenset sjekklisteomfang er kun for reelt mindre omfang. Det er ikke en snarvei for å hoppe over relevant dokumentasjon. Dersom produkter eller materialer med FDV er levert eller installert, skal de dokumenteres før prosjektet ferdigstilles." })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#f8fafc" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "💡 Anbefalt hovedflyt" }),
