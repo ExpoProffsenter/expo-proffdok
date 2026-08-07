@@ -1,3 +1,4 @@
+// FASE 23Y KORREKT SLUTTSTATUS / OVERTAGELSESDATO: Sluttdokumentasjon krever registrert overtagelse, ingen åpne avvik, ferdig relevante sjekklister (dersom sjekkliste finnes) og eventuell utstedt garanti. Produkter/vedlegg er dokumentasjonsgrad, men blokkerer ikke enkle prosjekter alene. Ny overtagelse foreslår alltid dagens lokale dato uten å overskrive lagret dato. Kun lokal rapport-/kundeportalstatus og datoforslag; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty, garanti- eller overtagelsesregistreringslogikk.
 // FASE 23X STABIL PROSJEKTNAVIGASJON: Bevarer 23T/23U, men rydder lastet prosjektstate når bruker går til startsiden og hindrer prosjektfaner uten aktivt prosjekt. Dette fjerner situasjonen der gamle prosjektdata kunne vises samtidig som fanen het Startside. Kun navigasjon/lokal UI-state; ingen SQL, RLS, Storage, Edge Function, e-post, garanti-, overtagelses- eller datamodellendring.
 // FASE 23W KUNDEPORTAL / RAPPORTSTATUS I SYNK: Kundeportalen bruker samme 8-punkts dokumentasjonsgrad som premiumrapporten og samme grense mellom statusrapport og sluttrapport. Pågående prosjekt omtales som statusrapport; komplett/sluttrapport først etter registrert overtagelse, ingen åpne avvik og eventuell utstedt garanti. Kun kundeportal/UI og lokal rapportstatusberegning; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty, garanti-, overtagelses- eller datamodellendring.
 // FASE 23V.3 PREMIUM RAPPORT / SLUTTPOLERING: Bevarer eksisterende premiumrapport og garantimotor urørt. Rapport kan genereres underveis som statusrapport med kun registrert innhold. Garantibevis/SINTEF-QR og registrering av komplett garantirapport skjer kun når garanti faktisk er utstedt. Digital rapport-QR vises kun i sluttdokumentasjon etter signert overtagelse (og utstedt garanti når garanti er aktivert). Valgt headingbilde brukes eksplisitt; ellers standard bad-fallback. Tilbudstekst/priser formateres ryddigere og duplisering reduseres. Kun rapport/PDF-logikk og rapportens etterregistrering; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty eller datamodellendring.
@@ -980,9 +981,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     fradrag: "",
     kommentar: ""
   });
+  var getLocalTodayIsoDate = () => {
+    const now = /* @__PURE__ */ new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 6e4);
+    return local.toISOString().slice(0, 10);
+  };
   var emptyOvertagelse = () => ({
     enabled: false,
-    dato: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+    dato: getLocalTodayIsoDate(),
     kommentar: "",
     signUtf\u00F8rende: "",
     signKunde: "",
@@ -2004,6 +2010,13 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const overtagelseIsSignedByBoth = (o = overtagelse) => hasOvertagelseSignature(o?.signUtf\u00F8rende, o?.signUtf\u00F8rendeImage) && hasOvertagelseSignature(o?.signKunde, o?.signKundeImage);
     const overtagelseHasDraftContent = (o = overtagelse) => !!o?.enabled || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
     const projectHasOvertagelse = (o = overtagelse) => !!o?.enabled && overtagelseIsSignedByBoth(o);
+    (0, import_react.useEffect)(() => {
+      if (tab !== "overtagelse") return;
+      if (projectHasOvertagelse(overtagelse) || overtagelseHasDraftContent(overtagelse)) return;
+      const today = getLocalTodayIsoDate();
+      if (overtagelse?.dato === today) return;
+      setOvertagelse({ ...emptyOvertagelse(), ...overtagelse, dato: today });
+    }, [tab, projectId]);
     const workflowStatusOptions = ["Utkast", "Pågår", "Avventer", "Klar for kunde", "Avvik åpent", "Ferdigstilt"];
     const getOpenDeviationCount = (sourceChecklist = checklist) => Object.values(sourceChecklist || {}).flatMap((items) => Object.values(items || {})).filter((value) => value?.status === "Avvik").length;
     const workflowStatusInfo = (status) => {
@@ -6261,6 +6274,8 @@ ${appLink}`;
         const isFinalReport = (status = reportDocumentationStatus()) => {
           if (!projectHasOvertagelse(overtagelse)) return false;
           if (status.openDeviationTotal > 0) return false;
+          const checklistReadyForFinal = status.checklistTotal === 0 || status.checklistDone >= status.checklistTotal;
+          if (!checklistReadyForFinal) return false;
           if (warranty?.enabled && !warrantyIssuedForReport()) return false;
           return true;
         };
@@ -6570,7 +6585,7 @@ ${appLink}`;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8.4);
           doc.setTextColor(51, 65, 85);
-          const badgeSub = openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : issuedWarranty && warranty?.guaranteeNumber ? `Garantinummer: ${warranty.guaranteeNumber}` : reportFinal ? "Prosjektet er registrert overtatt. Rapporten viser dokumentasjonen som er registrert i prosjektet." : `${status.percent} % dokumentasjonsgrad · ${status.checklistDone}/${status.checklistTotal || status.checklistDone} kontrollpunkt vurdert.`;
+          const badgeSub = openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : issuedWarranty && warranty?.guaranteeNumber ? `Garantinummer: ${warranty.guaranteeNumber}` : reportFinal ? "Prosjektet er registrert overtatt og relevante kontrollpunkter er ferdig vurdert." : projectHasOvertagelse(overtagelse) ? `Overtagelse er registrert, men dokumentasjonen pågår · ${status.checklistDone}/${status.checklistTotal || status.checklistDone} kontrollpunkt vurdert.` : `${status.percent} % dokumentasjonsgrad · ${status.checklistDone}/${status.checklistTotal || status.checklistDone} kontrollpunkt vurdert.`;
           doc.text(safeText(badgeSub), margin + 6, badgeY + 17);
 
           const cardY = 176;
@@ -7114,8 +7129,10 @@ ${appLink}`;
           const summaryLine = hasOpenDeviations
             ? `${status.openDeviationTotal} åpne avvik må følges opp før sluttdokumentasjon.`
             : reportFinal
-              ? "Prosjektet er registrert overtatt. Rapporten viser dokumentasjonen som er registrert i prosjektet."
-              : `Ingen åpne avvik registrert. Dokumentasjonsgrad ${status.percent} %.`;
+              ? "Prosjektet er registrert overtatt og relevante kontrollpunkter er ferdig vurdert."
+              : projectHasOvertagelse(overtagelse)
+                ? `Overtagelse er registrert, men dokumentasjonen pågår. ${status.checklistDone}/${status.checklistTotal || status.checklistDone} kontrollpunkt er vurdert.`
+                : `Ingen åpne avvik registrert. Dokumentasjonsgrad ${status.percent} %.`;
           doc.text(safeText(summaryLine), margin + 6, y + 16);
           y += 28;
           const gap = 4;
@@ -9234,10 +9251,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         { label: "Garanti", done: customerPortalWarrantyIssued || !customerPortalWarrantyActive }
       ];
       const customerPortalCompletionPercent = Math.round(customerPortalCompletionItems.filter((item) => item.done).length / customerPortalCompletionItems.length * 100);
-      const customerPortalReportFinal = projectHasOvertagelse(overtagelse) && customerPortalOpenDeviationTotal === 0 && (!customerPortalWarrantyActive || customerPortalWarrantyIssued);
+      const customerPortalChecklistReadyForFinal = customerPortalChecklistTotal === 0 || customerPortalChecklistComplete;
+      const customerPortalReportFinal = projectHasOvertagelse(overtagelse) && customerPortalOpenDeviationTotal === 0 && customerPortalChecklistReadyForFinal && (!customerPortalWarrantyActive || customerPortalWarrantyIssued);
       const customerPortalReportDownloadLabel = customerPortalReportFinal ? "Last ned sluttrapport" : "Last ned statusrapport";
       const customerPortalHeaderText = customerPortalReportFinal ? "Her finner du prosjektets sluttdokumentasjon, bilder, produkter og rapport" : "Her finner du prosjektets registrerte dokumentasjon, bilder, produkter og statusrapport";
-      const customerPortalReadyForFinished = customerPortalChecklistComplete && customerPortalChecklistAvvik === 0 && projectHasOvertagelse(overtagelse) && (!customerPortalWarrantyActive || customerPortalWarrantyIssued);
+      const customerPortalReadyForFinished = customerPortalChecklistReadyForFinal && customerPortalChecklistAvvik === 0 && projectHasOvertagelse(overtagelse) && (!customerPortalWarrantyActive || customerPortalWarrantyIssued);
       const customerPortalStatusWasDowngradedFromOldFinished = currentStatus.label === "Ferdigstilt" && !customerPortalReadyForFinished;
       const customerPortalDisplayStatus = customerPortalWarrantyIssued ? { label: `${getWarrantyYears(warranty)} års garanti aktiv`, icon: "✅", tone: "done" } : customerPortalStatusWasDowngradedFromOldFinished ? { label: "Pågår", icon: "🟡", tone: "progress" } : currentStatus;
       const customerPortalPrimaryStatus = customerPortalDisplayStatus.label;
