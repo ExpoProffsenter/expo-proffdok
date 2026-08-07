@@ -1,3 +1,4 @@
+// FASE 23X STABIL PROSJEKTNAVIGASJON: Bevarer 23T/23U, men rydder lastet prosjektstate når bruker går til startsiden og hindrer prosjektfaner uten aktivt prosjekt. Dette fjerner situasjonen der gamle prosjektdata kunne vises samtidig som fanen het Startside. Kun navigasjon/lokal UI-state; ingen SQL, RLS, Storage, Edge Function, e-post, garanti-, overtagelses- eller datamodellendring.
 // FASE 23W KUNDEPORTAL / RAPPORTSTATUS I SYNK: Kundeportalen bruker samme 8-punkts dokumentasjonsgrad som premiumrapporten og samme grense mellom statusrapport og sluttrapport. Pågående prosjekt omtales som statusrapport; komplett/sluttrapport først etter registrert overtagelse, ingen åpne avvik og eventuell utstedt garanti. Kun kundeportal/UI og lokal rapportstatusberegning; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty, garanti-, overtagelses- eller datamodellendring.
 // FASE 23V.3 PREMIUM RAPPORT / SLUTTPOLERING: Bevarer eksisterende premiumrapport og garantimotor urørt. Rapport kan genereres underveis som statusrapport med kun registrert innhold. Garantibevis/SINTEF-QR og registrering av komplett garantirapport skjer kun når garanti faktisk er utstedt. Digital rapport-QR vises kun i sluttdokumentasjon etter signert overtagelse (og utstedt garanti når garanti er aktivert). Valgt headingbilde brukes eksplisitt; ellers standard bad-fallback. Tilbudstekst/priser formateres ryddigere og duplisering reduseres. Kun rapport/PDF-logikk og rapportens etterregistrering; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty eller datamodellendring.
 // FASE 23U.1 AVBRYT NYTT PROSJEKT HOTFIX: Registrerer brukerinput i uspart nytt prosjekt synkront via input/change-capture, slik at Avbryt alltid spør før innskrevne opplysninger forkastes. Tom kladd går fortsatt direkte til startsiden. Ingen prosjekt opprettes eller lagres ved avbryt. Kun navigasjon/UI og lokal kladdopprydding; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
@@ -2747,10 +2748,33 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
       const canLeave = await confirmLeaveWithUnsavedChanges("går tilbake til startsiden");
       if (!canLeave) return;
+      // FASE 23X: Når vi forlater arbeidsflaten, må også den innlastede prosjektstaten tømmes.
+      // Ellers kan gamle prosjektdata fortsatt vises hvis en prosjektfane åpnes etter at projectId er nullstilt.
+      pauseDirtyTrackingBriefly(1200);
+      setProject({ ...emptyProject(), responsible: user?.name || authUser?.email || "" });
+      setChecked({});
+      setProductDocs({});
+      setManualProducts({});
+      setOther({});
+      setSurf({});
+      setBathroomEquipment(emptyBathroomEquipment());
+      setPhotos([]);
+      setAccess([]);
+      setInst([]);
+      setFiles([]);
+      setChecklist({});
+      setTilbud(emptyTilbud());
+      setOvertagelse(emptyOvertagelse());
+      setWarranty(emptyWarranty());
+      setProjectLog(emptyProjectLog());
+      setInternalNotes("");
       setProjectId(null);
       setCurrentProjectOwnerId("");
       setSupportModeExplicit(false);
       setMobileCreatingProject(false);
+      setLocalDraftRestoreChecked(false);
+      setShowOpenDeviationsOnly(false);
+      setProjectAutoSaveStatus("");
       resetProjectDirty();
       setTab("prosjekt");
       setMobileMenuOpen(false);
@@ -2797,6 +2821,17 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     };
     const goToTab = async (id) => {
       if (!id) return;
+      const projectWorkspaceOnlyTabs = new Set([
+        "prosjektinfo", "garanti", "prosjektering", "produkter", "overflater", "bilder", "tilgang",
+        "installasjoner", "sjekklister", "avvik", "tilbud", "chat", "internt", "overtagelse", "rapport"
+      ]);
+      if (!hasActiveProjectWorkspace && projectWorkspaceOnlyTabs.has(id)) {
+        setTab("prosjekt");
+        setMobileMenuOpen(false);
+        alert("Åpne et prosjekt fra Prosjektliste før du går til denne fanen.");
+        setTimeout(() => scrollToMobileTabTarget("prosjekt"), 90);
+        return;
+      }
       if (id === tab) {
         setMobileMenuOpen(false);
         return;
