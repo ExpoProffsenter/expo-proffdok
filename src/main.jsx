@@ -1,3 +1,4 @@
+// FASE 23V PREMIUM RAPPORT GJENOPPRETTING/POLERING: Bevarer eksisterende premiumrapport, men retter misvisende status i forside/sertifikat, overtagelsesdato uten signert overtagelse, dobbel branding i fallback-hero og unødvendige tomme rapportseksjoner. Kun rapport/PDF-visning; ingen SQL, RLS, Storage, Edge Function, e-post, prosjektdata, garanti- eller lagringslogikk.
 // FASE 23U.1 AVBRYT NYTT PROSJEKT HOTFIX: Registrerer brukerinput i uspart nytt prosjekt synkront via input/change-capture, slik at Avbryt alltid spør før innskrevne opplysninger forkastes. Tom kladd går fortsatt direkte til startsiden. Ingen prosjekt opprettes eller lagres ved avbryt. Kun navigasjon/UI og lokal kladdopprydding; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
 // FASE 23U AVBRYT NYTT PROSJEKT: Usparte nye prosjekter får tydelig Avbryt nytt prosjekt-knapp på PC og mobil. Tom kladd går direkte til startsiden; kladd med innhold krever bekreftelse før lokal kladd og usparte data forkastes. Ingen prosjekt opprettes eller lagres ved avbryt. Kun navigasjon/UI og lokal kladdopprydding; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
 // FASE 23T TYDELIG PROSJEKTOVERSIKT OG KUNDEINFO: Når et prosjekt er åpent, heter første fane Prosjektoversikt og blir i prosjektet. Kunde, kontaktinfo, adresse og prosjektansvarlig vises tydelig samlet. Egen knapp går tilbake til startsiden med eksisterende kontroll for ulagrede endringer. Prosjektinformasjon/beskrivelse presiseres til Prosjektbeskrivelse. Kun navigasjon/UI; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
@@ -769,8 +770,6 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       <rect x="695" y="115" width="110" height="410" rx="55" fill="#ffffff"/>
       <rect x="724" y="150" width="52" height="330" rx="26" fill="#e2e8f0"/>
     </g>
-    <text x="84" y="104" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="900" fill="#0f172a">Expo ProffDok</text>
-    <text x="84" y="154" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#0f766e">Dokumentert baderomsprosjekt</text>
   </svg>`)}`
   var getPhotoIdentity = (photo = {}) => String(photo?.id || photo?.path || photo?.url || "").trim();
   var isFinishedResultPhoto = (photo = {}) => String(photo?.cat || "").trim().toLowerCase() === "ferdig resultat";
@@ -6173,19 +6172,20 @@ ${appLink}`;
           const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
           const checklistTotal = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
           const checklistDone = entries.filter((value) => hasValue(value?.status)).length;
-          const openDeviationTotal = getOpenDeviationCount(checklist);
+          const openProjectDeviationTotal = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
+          const openDeviationTotal = getOpenDeviationCount(checklist) + openProjectDeviationTotal;
           const productTotal = (selected || []).length + (manualSelected || []).length;
           const photoTotal = (photos || []).filter((photo) => hasValue(photo?.url)).length;
           const attachmentTotal = countReportAttachments();
           const items = [
-            { label: "Prosjektinformasjon", ok: [project.projectName, project.address, project.customer].some(hasValue), detail: "Prosjektnavn, kunde og adresse" },
+            { label: "Prosjektinformasjon", ok: [project.projectName, project.address, project.customer].every(hasValue), detail: "Prosjektnavn, kunde og adresse" },
             { label: "Produkter / FDV", ok: productTotal > 0, detail: `${productTotal} produkt${productTotal === 1 ? "" : "er"} dokumentert` },
             { label: "Bildedokumentasjon", ok: photoTotal > 0, detail: `${photoTotal} bilde${photoTotal === 1 ? "" : "r"} registrert` },
             { label: "Sjekklister", ok: checklistTotal > 0 && checklistDone >= checklistTotal, detail: `${checklistDone}/${checklistTotal || checklistDone} kontrollpunkt vurdert` },
             { label: "Avvik", ok: openDeviationTotal === 0, detail: openDeviationTotal ? `${openDeviationTotal} åpne avvik` : "Ingen åpne avvik" },
             { label: "Vedlegg", ok: attachmentTotal > 0, detail: `${attachmentTotal} vedlegg` },
             { label: "Overtagelse", ok: projectHasOvertagelse(overtagelse), detail: projectHasOvertagelse(overtagelse) ? "Registrert" : "Ikke registrert" },
-            { label: "Garanti", ok: !!warranty?.issued || !warranty?.enabled, detail: warranty?.issued ? `${getWarrantyYears(warranty)} år · ${warranty?.guaranteeNumber || "aktiv"}` : warranty?.enabled ? "Ikke utstedt" : "Ikke aktivert" }
+            { label: "Garanti", ok: !!warranty?.issued || !warranty?.enabled, detail: warranty?.issued ? `${getWarrantyYears(warranty)} år · ${warranty?.guaranteeNumber || "aktiv"}` : warranty?.enabled ? "Ikke utstedt" : "Ikke relevant / ikke aktivert" }
           ];
           const percent = Math.round(items.filter((item) => item.ok).length / items.length * 100);
           return { items, percent, productTotal, photoTotal, checklistTotal, checklistDone, openDeviationTotal, attachmentTotal };
@@ -6436,18 +6436,20 @@ ${appLink}`;
           doc.text(coverAddressLines, coverTextX, addressY);
 
           const badgeY = 146;
-          const badgeText = warranty?.issued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti` : openDeviationTotal ? "Kontroll med åpne avvik" : "Kontroll dokumentert";
-          doc.setFillColor(...(openDeviationTotal ? [254, 242, 242] : warranty?.issued ? [236, 253, 245] : [239, 246, 255]));
-          doc.setDrawColor(...(openDeviationTotal ? [248, 113, 113] : warranty?.issued ? [74, 222, 128] : [147, 197, 253]));
+          const reportComplete = status.percent === 100;
+          const badgeText = warranty?.issued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti` : openDeviationTotal ? "Kontroll med åpne avvik" : reportComplete ? "Dokumentasjon komplett" : "Dokumentasjon pågår";
+          const badgeTone = openDeviationTotal ? "red" : warranty?.issued || reportComplete ? "green" : "blue";
+          doc.setFillColor(...(badgeTone === "red" ? [254, 242, 242] : badgeTone === "green" ? [236, 253, 245] : [239, 246, 255]));
+          doc.setDrawColor(...(badgeTone === "red" ? [248, 113, 113] : badgeTone === "green" ? [74, 222, 128] : [147, 197, 253]));
           doc.roundedRect(margin, badgeY, contentWidth, 24, 3, 3, "FD");
           doc.setFont("helvetica", "bold");
           doc.setFontSize(12);
-          doc.setTextColor(...(openDeviationTotal ? [153, 27, 27] : warranty?.issued ? [6, 95, 70] : [12, 42, 82]));
+          doc.setTextColor(...(badgeTone === "red" ? [153, 27, 27] : badgeTone === "green" ? [6, 95, 70] : [12, 42, 82]));
           doc.text(safeText(badgeText), margin + 6, badgeY + 9);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8.4);
           doc.setTextColor(51, 65, 85);
-          const badgeSub = warranty?.issued && warranty?.guaranteeNumber ? `Garantinummer: ${warranty.guaranteeNumber}` : openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : "Prosjektet har ingen åpne avvik i rapportgrunnlaget.";
+          const badgeSub = warranty?.issued && warranty?.guaranteeNumber ? `Garantinummer: ${warranty.guaranteeNumber}` : openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : reportComplete ? "Alle rapportens dokumentasjonskrav er registrert." : `${status.percent} % dokumentasjonsgrad · ${status.checklistDone}/${status.checklistTotal || status.checklistDone} kontrollpunkt vurdert.`;
           doc.text(safeText(badgeSub), margin + 6, badgeY + 17);
 
           const cardY = 176;
@@ -7690,7 +7692,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ["Prosjektleder / ansvarlig", project.responsible || user.name],
           ["Utførende firma", name || company.companyName || "Expo ProffDok"],
           ["Oppstart / dato", project.date],
-          ["Ferdigstillelse / overtagelse", overtagelse?.dato],
+          ["Ferdigstillelse / overtagelse", projectHasOvertagelse(overtagelse) ? overtagelse?.dato : "Ikke registrert"],
           ["Garantiperiode", warranty?.issued ? `${getWarrantyYears(warranty)} år` : warranty?.enabled ? `${getWarrantyYears(warranty)} år – ikke utstedt` : ""],
           ["Garantinummer", warranty?.guaranteeNumber],
           ["Dokumentnummer", makeReportDocumentNumber()],
@@ -7755,21 +7757,21 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         addInfoGridSection("Prosjektering", prosjekteringEntries);
 
         setPdfProgress("Legger inn produkter og FDV…", "Bygger produktkort og valgte dokumentlenker.");
-        addSectionPageBreak("Produkter / FDV");
         const allProducts = [...selected || [], ...manualSelected || []];
-        if (!allProducts.length) {
-          addParagraph("Ingen produkter er valgt.");
+        const legacyOtherProducts = Object.entries(other || {}).filter(([, v]) => v);
+        if (allProducts.length || legacyOtherProducts.length) {
+          addSectionPageBreak("Produkter / FDV");
+          const productsBySection = allProducts.reduce((acc, product) => {
+            const section = product.section || "Andre produkter";
+            acc[section] = [...acc[section] || [], product];
+            return acc;
+          }, {});
+          Object.entries(productsBySection).forEach(([section, products]) => {
+            addProductCategoryHeader(section, products.length);
+            products.forEach((p) => addProductReportCard(p));
+          });
+          legacyOtherProducts.forEach(([k, v]) => addParagraph(`Tidligere registrert annet produkt under ${k}: ${v}`));
         }
-        const productsBySection = allProducts.reduce((acc, product) => {
-          const section = product.section || "Andre produkter";
-          acc[section] = [...acc[section] || [], product];
-          return acc;
-        }, {});
-        Object.entries(productsBySection).forEach(([section, products]) => {
-          addProductCategoryHeader(section, products.length);
-          products.forEach((p) => addProductReportCard(p));
-        });
-        Object.entries(other || {}).filter(([, v]) => v).forEach(([k, v]) => addParagraph(`Tidligere registrert annet produkt under ${k}: ${v}`));
 
         const bathroomEquipmentGroupsForPdf = buildBathroomEquipmentReportGroups(surf, bathroomEquipment);
         if (bathroomEquipmentGroupsForPdf.length) {
@@ -7781,15 +7783,18 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         }
 
         setPdfProgress("Samler bilder…", "Laster inn og konverterer bilder til PDF-format.");
-        addSectionPageBreak("Bildedokumentasjon");
         const photoCats = [...new Set((photos || []).map((photo) => photo.cat).filter(Boolean))];
-        if (!photoCats.length) addParagraph("Ingen bilder er lagt til.");
-        for (const cat of photoCats) {
-          await addImageGalleryCategory(cat, (photos || []).filter((item) => item.cat === cat));
+        if (photoCats.length) {
+          addSectionPageBreak("Bildedokumentasjon");
+          for (const cat of photoCats) {
+            await addImageGalleryCategory(cat, (photos || []).filter((item) => item.cat === cat));
+          }
         }
 
-        addSectionTitle("Fag, deler og utstyr");
-        if (!(inst || []).length) addParagraph("Ingen fag-/utstyrsposter er lagt til.");
+        if ((inst || []).length) {
+          if (photoCats.length) addSectionTitle("Fag, deler og utstyr");
+          else addSectionPageBreak("Fag, deler og utstyr");
+        }
         for (const item of inst || []) {
           const sectionTitle = item.category || "Fag/utstyr";
           addSubTitle(sectionTitle);
@@ -7804,14 +7809,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         }
 
         setPdfProgress("Bygger sjekklister…", "Fremhever OK-punkter, avvik og kommentarer.");
-        addSectionPageBreak("Sjekkliste / utførte kontroller");
-        addParagraph("Kontrollpunktene under viser registrert status for prosjektet. Godkjente punkter er fremhevet for å gi en tydelig dokumentasjon av utført kontroll.", { size: 8.5, lineHeight: 4.3 });
-        for (const [category, items] of Object.entries(checklist || {})) {
-          const itemEntries = Object.entries(items || {});
-          if (!itemEntries.length) continue;
-          addChecklistCategoryTitle(category, itemEntries.length);
-          for (const [item, value] of itemEntries) {
-            await addChecklistStatusCard(category, item, value || {});
+        const checklistCategoriesForReport = Object.entries(checklist || {}).filter(([, items]) => Object.keys(items || {}).length > 0);
+        if (checklistCategoriesForReport.length) {
+          addSectionPageBreak("Sjekkliste / utførte kontroller");
+          addParagraph("Kontrollpunktene under viser registrert status for prosjektet. Godkjente punkter er fremhevet for å gi en tydelig dokumentasjon av utført kontroll.", { size: 8.5, lineHeight: 4.3 });
+          for (const [category, items] of checklistCategoriesForReport) {
+            const itemEntries = Object.entries(items || {});
+            addChecklistCategoryTitle(category, itemEntries.length);
+            for (const [item, value] of itemEntries) {
+              await addChecklistStatusCard(category, item, value || {});
+            }
           }
         }
 
@@ -8031,15 +8038,17 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.setGState && doc.setGState(new doc.GState({ opacity: 0.92 }));
           doc.roundedRect(margin, 70, contentWidth, 24, 3, 3, "F");
           doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
+          const reportComplete = status.percent === 100;
           doc.setFont("helvetica", "bold");
           doc.setFontSize(17);
           doc.setTextColor(12, 42, 82);
-          doc.text("DOKUMENTASJONSSERTIFIKAT", pageWidth / 2, 90, { align: "center" });
+          doc.text(reportComplete ? "DOKUMENTASJONSSERTIFIKAT" : "DOKUMENTASJONSOVERSIKT", pageWidth / 2, 90, { align: "center" });
           y = 114;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
           doc.setTextColor(51, 65, 85);
-          doc.text(doc.splitTextToSize("Dette prosjektet er dokumentert gjennom Expo ProffDok med registrerte produkter, bilder, sjekklister, vedlegg, overtagelse og eventuell dokumentert tetthetsgaranti.", contentWidth), margin, y);
+          const certificateIntro = reportComplete ? "Prosjektets dokumentasjonskrav er registrert i Expo ProffDok. Oversikten nedenfor viser rapportgrunnlaget ved genereringstidspunktet." : "Rapporten viser registrert dokumentasjon og hva som fortsatt må følges opp før prosjektet kan regnes som komplett dokumentert.";
+          doc.text(doc.splitTextToSize(certificateIntro, contentWidth), margin, y);
           y += 20;
           const certW = (contentWidth - 6) / 2;
           drawInfoCardPdf(margin, y, certW, 22, "Prosjekt", project.projectName || project.address || "Prosjekt");
@@ -8055,24 +8064,31 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawMetricCard(margin + (metricW + metricGap) * 2, y, metricW, 20, "Produkter", String(status.productTotal), "neutral");
           drawMetricCard(margin + (metricW + metricGap) * 3, y, metricW, 20, "Avvik", String(status.openDeviationTotal), status.openDeviationTotal ? "red" : "green");
           y += 34;
+          const checklistComplete = status.checklistTotal > 0 && status.checklistDone >= status.checklistTotal;
           const certItems = [
-            "Full fotodokumentasjon der bilder er registrert",
-            "Produktdokumentasjon og FDV der dette er lagt inn",
-            "Sjekklister og kontrollpunkter dokumentert",
-            "Overtagelse og garantidokumentasjon der dette er aktivert",
+            { label: "Bildedokumentasjon", ok: status.photoTotal > 0, detail: status.photoTotal > 0 ? `${status.photoTotal} bilde${status.photoTotal === 1 ? "" : "r"} registrert` : "Ingen bilder registrert" },
+            { label: "Produktdokumentasjon / FDV", ok: status.productTotal > 0, detail: status.productTotal > 0 ? `${status.productTotal} produkt${status.productTotal === 1 ? "" : "er"} dokumentert` : "Ingen produkter dokumentert" },
+            { label: "Sjekklister og kontrollpunkter", ok: checklistComplete, detail: `${status.checklistDone}/${status.checklistTotal || status.checklistDone} kontrollpunkt vurdert` },
+            { label: "Overtagelse", ok: projectHasOvertagelse(overtagelse), detail: projectHasOvertagelse(overtagelse) ? "Signert av begge parter" : "Ikke registrert" },
+            { label: "Garanti", ok: warranty?.issued || !warranty?.enabled, neutral: !warranty?.enabled, detail: warranty?.issued ? `${getWarrantyYears(warranty)} år · ${warranty?.guaranteeNumber || "aktiv"}` : warranty?.enabled ? "Ikke utstedt" : "Ikke aktivert" },
           ];
-          certItems.forEach((text) => {
-            doc.setFillColor(236, 253, 245);
-            doc.setDrawColor(74, 222, 128);
+          certItems.forEach((item) => {
+            const tone = item.neutral ? "neutral" : item.ok ? "ok" : "followup";
+            doc.setFillColor(...(tone === "ok" ? [236, 253, 245] : tone === "followup" ? [255, 251, 235] : [248, 250, 252]));
+            doc.setDrawColor(...(tone === "ok" ? [74, 222, 128] : tone === "followup" ? [251, 191, 36] : [203, 213, 225]));
             doc.circle(margin + 5, y - 1.5, 3, "FD");
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(7.4);
-            doc.setTextColor(6, 95, 70);
-            doc.text("OK", margin + 2.2, y + .7);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(9.1);
+            doc.setFontSize(6.8);
+            doc.setTextColor(...(tone === "ok" ? [6, 95, 70] : tone === "followup" ? [146, 64, 14] : [71, 85, 105]));
+            doc.text(tone === "ok" ? "OK" : tone === "followup" ? "!" : "i", margin + (tone === "ok" ? 2.2 : 4.1), y + .7);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8.5);
             doc.setTextColor(31, 41, 55);
-            doc.text(safeText(text), margin + 12, y + .5);
+            doc.text(safeText(item.label), margin + 12, y + .5);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.4);
+            doc.setTextColor(71, 85, 105);
+            doc.text(safeText(item.detail), pageWidth - margin, y + .5, { align: "right" });
             y += 9;
           });
           if (qrUrl) {
