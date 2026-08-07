@@ -1,4 +1,4 @@
-// FASE 23V PREMIUM RAPPORT GJENOPPRETTING/POLERING: Bevarer eksisterende premiumrapport, men retter misvisende status i forside/sertifikat, overtagelsesdato uten signert overtagelse, dobbel branding i fallback-hero og unødvendige tomme rapportseksjoner. Kun rapport/PDF-visning; ingen SQL, RLS, Storage, Edge Function, e-post, prosjektdata, garanti- eller lagringslogikk.
+// FASE 23V.2 PREMIUM RAPPORT / TRYGG SLUTTRAPPORT: Bevarer eksisterende premiumrapport og garantimotor urørt. Rapport kan genereres underveis som statusrapport med kun registrert innhold. Garantibevis/SINTEF-QR og registrering av komplett garantirapport skjer kun når garanti faktisk er utstedt. Digital rapport-QR vises kun i sluttdokumentasjon etter signert overtagelse (og utstedt garanti når garanti er aktivert). Valgt headingbilde brukes eksplisitt; ellers standard bad-fallback. Tilbudstekst/priser formateres ryddigere og duplisering reduseres. Kun rapport/PDF-logikk og rapportens etterregistrering; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty eller datamodellendring.
 // FASE 23U.1 AVBRYT NYTT PROSJEKT HOTFIX: Registrerer brukerinput i uspart nytt prosjekt synkront via input/change-capture, slik at Avbryt alltid spør før innskrevne opplysninger forkastes. Tom kladd går fortsatt direkte til startsiden. Ingen prosjekt opprettes eller lagres ved avbryt. Kun navigasjon/UI og lokal kladdopprydding; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
 // FASE 23U AVBRYT NYTT PROSJEKT: Usparte nye prosjekter får tydelig Avbryt nytt prosjekt-knapp på PC og mobil. Tom kladd går direkte til startsiden; kladd med innhold krever bekreftelse før lokal kladd og usparte data forkastes. Ingen prosjekt opprettes eller lagres ved avbryt. Kun navigasjon/UI og lokal kladdopprydding; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
 // FASE 23T TYDELIG PROSJEKTOVERSIKT OG KUNDEINFO: Når et prosjekt er åpent, heter første fane Prosjektoversikt og blir i prosjektet. Kunde, kontaktinfo, adresse og prosjektansvarlig vises tydelig samlet. Egen knapp går tilbake til startsiden med eksisterende kontroll for ulagrede endringer. Prosjektinformasjon/beskrivelse presiseres til Prosjektbeskrivelse. Kun navigasjon/UI; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
@@ -6190,6 +6190,31 @@ ${appLink}`;
           const percent = Math.round(items.filter((item) => item.ok).length / items.length * 100);
           return { items, percent, productTotal, photoTotal, checklistTotal, checklistDone, openDeviationTotal, attachmentTotal };
         };
+        const warrantyIssuedForReport = () => !!warranty?.enabled && (!!warranty?.issued || warranty?.status === "issued" || hasValue(warranty?.guaranteeNumber));
+        const isFinalReport = (status = reportDocumentationStatus()) => {
+          if (!projectHasOvertagelse(overtagelse)) return false;
+          if (status.openDeviationTotal > 0) return false;
+          if (warranty?.enabled && !warrantyIssuedForReport()) return false;
+          return true;
+        };
+        const normalizeReportComparable = (value = "") => safeText(value).toLowerCase().replace(/\s+/g, " ").trim();
+        const splitAcceptedOfferFromDescription = (value = "") => {
+          const source = safeText(value).trim();
+          const match = /Akseptert tilbud(?:\s+v\d+)?\s*:/i.exec(source);
+          if (!match) return { intro: source, heading: "", rows: [] };
+          const intro = source.slice(0, match.index).trim();
+          const offerText = source.slice(match.index).trim();
+          const colonIndex = offerText.indexOf(":");
+          const heading = colonIndex >= 0 ? offerText.slice(0, colonIndex).trim() : "Akseptert tilbud";
+          const body = colonIndex >= 0 ? offerText.slice(colonIndex + 1).trim() : offerText;
+          const parts = body.split(/\s*•\s*/).map((part) => part.trim()).filter(Boolean);
+          const rows = parts.map((part) => {
+            const rowColon = part.indexOf(":");
+            if (rowColon < 0) return { label: "", value: part };
+            return { label: part.slice(0, rowColon).trim(), value: part.slice(rowColon + 1).trim() };
+          });
+          return { intro, heading, rows };
+        };
         const ensureSpace = (height = 8) => {
           if (y + height <= pageHeight - 18) return;
           doc.addPage();
@@ -6355,7 +6380,7 @@ ${appLink}`;
           const addressLine = reportAddressLine();
           const reportHeroPhotoId = safeText(project?.reportHeroPhotoId || "").trim();
           const selectedCoverImage = reportHeroPhotoId ? (photos || []).find((photo) => hasValue(photo?.url) && getPhotoIdentity(photo) === reportHeroPhotoId) : null;
-          const coverImage = selectedCoverImage || (photos || []).slice().reverse().find((photo) => hasValue(photo?.url) && isFinishedResultPhoto(photo)) || null;
+          const coverImage = selectedCoverImage || null;
           const coverImageUrl = coverImage?.url || DEFAULT_REPORT_HERO_IMAGE_URL;
           doc.setFillColor(8, 18, 30);
           doc.rect(0, 0, pageWidth, pageHeight, "F");
@@ -6436,9 +6461,10 @@ ${appLink}`;
           doc.text(coverAddressLines, coverTextX, addressY);
 
           const badgeY = 146;
-          const reportComplete = status.percent === 100;
-          const badgeText = warranty?.issued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti` : openDeviationTotal ? "Kontroll med åpne avvik" : reportComplete ? "Dokumentasjon komplett" : "Dokumentasjon pågår";
-          const badgeTone = openDeviationTotal ? "red" : warranty?.issued || reportComplete ? "green" : "blue";
+          const reportFinal = isFinalReport(status);
+          const issuedWarranty = warrantyIssuedForReport();
+          const badgeText = openDeviationTotal ? "Kontroll med åpne avvik" : issuedWarranty ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti` : reportFinal ? "Sluttdokumentasjon" : "Dokumentasjon pågår";
+          const badgeTone = openDeviationTotal ? "red" : issuedWarranty || reportFinal ? "green" : "blue";
           doc.setFillColor(...(badgeTone === "red" ? [254, 242, 242] : badgeTone === "green" ? [236, 253, 245] : [239, 246, 255]));
           doc.setDrawColor(...(badgeTone === "red" ? [248, 113, 113] : badgeTone === "green" ? [74, 222, 128] : [147, 197, 253]));
           doc.roundedRect(margin, badgeY, contentWidth, 24, 3, 3, "FD");
@@ -6449,7 +6475,7 @@ ${appLink}`;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8.4);
           doc.setTextColor(51, 65, 85);
-          const badgeSub = warranty?.issued && warranty?.guaranteeNumber ? `Garantinummer: ${warranty.guaranteeNumber}` : openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : reportComplete ? "Alle rapportens dokumentasjonskrav er registrert." : `${status.percent} % dokumentasjonsgrad · ${status.checklistDone}/${status.checklistTotal || status.checklistDone} kontrollpunkt vurdert.`;
+          const badgeSub = openDeviationTotal ? "Prosjektet har åpne avvik som må følges opp." : issuedWarranty && warranty?.guaranteeNumber ? `Garantinummer: ${warranty.guaranteeNumber}` : reportFinal ? "Prosjektet er registrert overtatt. Rapporten viser dokumentasjonen som er registrert i prosjektet." : `${status.percent} % dokumentasjonsgrad · ${status.checklistDone}/${status.checklistTotal || status.checklistDone} kontrollpunkt vurdert.`;
           doc.text(safeText(badgeSub), margin + 6, badgeY + 17);
 
           const cardY = 176;
@@ -6482,7 +6508,8 @@ ${appLink}`;
         const addPremiumDocumentationOverviewPage = async () => {
           const status = reportDocumentationStatus();
           const customerUrl = reportCustomerPortalUrl();
-          const qrUrl = customerUrl ? `https://quickchart.io/qr?text=${encodeURIComponent(customerUrl)}&size=180&margin=1` : "";
+          const reportFinal = isFinalReport(status);
+          const qrUrl = reportFinal && customerUrl ? `https://quickchart.io/qr?text=${encodeURIComponent(customerUrl)}&size=180&margin=1` : "";
           doc.addPage();
           y = 16;
           addSectionTitle("Dokumentasjon inkludert");
@@ -6970,35 +6997,43 @@ ${appLink}`;
           const assessed = entries.filter((value) => hasValue(value?.status));
           const okTotal = assessed.filter((value) => ["ok", "utført", "utfort"].includes(String(value?.status || "").toLowerCase())).length;
           const notRelevantTotal = assessed.filter((value) => String(value?.status || "").toLowerCase() === "ikke aktuelt").length;
-          const openDeviationTotal = assessed.filter((value) => value?.status === "Avvik").length;
           const closedDeviationTotal = assessed.filter((value) => value?.status === "Lukket avvik").length;
-          const photoTotal = (photos || []).filter((photo) => hasValue(photo?.url)).length;
-          const productTotal = (selected || []).length + (manualSelected || []).length;
+          const status = reportDocumentationStatus();
+          const reportFinal = isFinalReport(status);
+          const photoTotal = status.photoTotal;
+          const productTotal = status.productTotal;
           addSectionTitle("Rapportsammendrag");
-          const passed = openDeviationTotal === 0;
+          const hasOpenDeviations = status.openDeviationTotal > 0;
+          const tone = hasOpenDeviations ? "red" : reportFinal ? "green" : "blue";
+          doc.setDrawColor(...(tone === "red" ? [248, 113, 113] : tone === "green" ? [74, 222, 128] : [147, 197, 253]));
+          doc.setFillColor(...(tone === "red" ? [254, 242, 242] : tone === "green" ? [236, 253, 245] : [239, 246, 255]));
           ensureSpace(26);
-          doc.setDrawColor(...(passed ? [74, 222, 128] : [248, 113, 113]));
-          doc.setFillColor(...(passed ? [236, 253, 245] : [254, 242, 242]));
           doc.roundedRect(margin, y, contentWidth, 22, 3, 3, "FD");
           doc.setFont("helvetica", "bold");
           doc.setFontSize(13);
-          doc.setTextColor(...(passed ? [6, 95, 70] : [153, 27, 27]));
-          doc.text(passed ? "KONTROLL DOKUMENTERT" : "KONTROLL MED ÅPNE AVVIK", margin + 6, y + 9);
+          doc.setTextColor(...(tone === "red" ? [153, 27, 27] : tone === "green" ? [6, 95, 70] : [12, 42, 82]));
+          doc.text(hasOpenDeviations ? "KONTROLL MED ÅPNE AVVIK" : reportFinal ? "SLUTTDOKUMENTASJON" : "DOKUMENTASJON PÅGÅR", margin + 6, y + 9);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8.2);
           doc.setTextColor(51, 65, 85);
-          doc.text(passed ? "Prosjektet har ingen åpne avvik i rapportgrunnlaget." : "Prosjektet har åpne avvik som må følges opp.", margin + 6, y + 16);
+          const summaryLine = hasOpenDeviations
+            ? `${status.openDeviationTotal} åpne avvik må følges opp før sluttdokumentasjon.`
+            : reportFinal
+              ? "Prosjektet er registrert overtatt. Rapporten viser dokumentasjonen som er registrert i prosjektet."
+              : `Ingen åpne avvik registrert. Dokumentasjonsgrad ${status.percent} %.`;
+          doc.text(safeText(summaryLine), margin + 6, y + 16);
           y += 28;
           const gap = 4;
           const cardW = (contentWidth - gap * 3) / 4;
           ensureSpace(24);
           drawMetricCard(margin, y, cardW, 20, "Godkjente punkter", String(okTotal), "green");
           drawMetricCard(margin + (cardW + gap), y, cardW, 20, "Ikke aktuelle", String(notRelevantTotal), "neutral");
-          drawMetricCard(margin + (cardW + gap) * 2, y, cardW, 20, "Åpne avvik", String(openDeviationTotal), openDeviationTotal ? "red" : "green");
+          drawMetricCard(margin + (cardW + gap) * 2, y, cardW, 20, "Åpne avvik", String(status.openDeviationTotal), status.openDeviationTotal ? "red" : "green");
           drawMetricCard(margin + (cardW + gap) * 3, y, cardW, 20, "Bilder", String(photoTotal), "blue");
           y += 26;
-          addParagraph(`Produkter dokumentert: ${productTotal}. Lukkede avvik: ${closedDeviationTotal}. Rapporten bygger på registrerte produkter, bilder, sjekklister, avvikshistorikk og signert overtakelse der dette er registrert.`, { size: 8.5, lineHeight: 4.4 });
-          if (warranty?.issued) addParagraph(`✓ ${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti er utstedt. Garantinummer: ${warranty.guaranteeNumber || "Ikke oppgitt"}.`, { size: 8.5, lineHeight: 4.4, bold: true });
+          addParagraph(`Produkter dokumentert: ${productTotal}. Lukkede sjekkpunktavvik: ${closedDeviationTotal}. Rapporten bygger på det som er registrert i prosjektet ved genereringstidspunktet.`, { size: 8.5, lineHeight: 4.4 });
+          if (warrantyIssuedForReport()) addParagraph(`✓ ${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti er utstedt. Garantinummer: ${warranty.guaranteeNumber || "Ikke oppgitt"}.`, { size: 8.5, lineHeight: 4.4, bold: true });
+          else if (warranty?.enabled) addParagraph("Tetthetsgaranti er aktivert for prosjektet, men er ikke utstedt. Garantibevis inngår derfor ikke i denne rapporten.", { size: 8.5, lineHeight: 4.4 });
         };
         const addChecklistCategoryTitle = (category, count = 0) => {
           if (y > pageHeight - 54) {
@@ -7363,12 +7398,12 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         };
 
         const addWarrantyCertificatePages = async () => {
-          if (!warranty?.enabled || !warrantyReadiness?.selectedSystem) return;
+          if (!warrantyIssuedForReport() || !warrantyReadiness?.selectedSystem || !hasValue(warranty?.guaranteeNumber)) return;
           const selectedSystem = warrantyReadiness.selectedSystem;
-          const guaranteeNumber = warranty?.guaranteeNumber || "Tildeles ved utstedelse";
+          const guaranteeNumber = warranty.guaranteeNumber;
           const overtagelseDate = overtagelse?.dato || project?.date || "";
           const issuedDate = warranty?.issuedAt ? new Date(warranty.issuedAt) : /* @__PURE__ */ new Date();
-          const issuedDateText = warranty?.issued && warranty?.issuedAt ? issuedDate.toLocaleDateString("no-NO") : "Ikke utstedt";
+          const issuedDateText = warranty?.issuedAt ? issuedDate.toLocaleDateString("no-NO") : "Utstedt";
           const reportText = warranty?.reportGeneratedAt ? new Date(warranty.reportGeneratedAt).toLocaleString("no-NO") : "Genereres nå";
           const warrantyValidTo = (() => {
             const sourceDate = overtagelseDate || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
@@ -7739,9 +7774,19 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
 
         addReportSummary();
 
+        const projectDescriptionReport = splitAcceptedOfferFromDescription(project.projectDescription || "");
         if (project.projectInfoIncludeInReport && hasValue(project.projectDescription)) {
           addSectionTitle("Prosjektinformasjon/beskrivelse");
-          addParagraph(project.projectDescription);
+          if (projectDescriptionReport.intro) addParagraph(projectDescriptionReport.intro);
+          if (projectDescriptionReport.rows.length) {
+            addSubTitle(projectDescriptionReport.heading || "Akseptert tilbud");
+            projectDescriptionReport.rows.forEach((row) => {
+              if (row.label) addKeyValue(row.label, row.value);
+              else addParagraph(row.value, { size: 9, lineHeight: 4.6 });
+            });
+          } else if (!projectDescriptionReport.intro) {
+            addParagraph(project.projectDescription);
+          }
         }
 
         const prosjekteringEntries = [
@@ -7869,11 +7914,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         }
 
         if (tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0)) {
+          const descriptionComparable = normalizeReportComparable(project.projectDescription || "");
+          const offerCommentComparable = normalizeReportComparable(tilbud.kommentar || "");
+          const offerCommentDuplicatesDescription = !!offerCommentComparable && !!descriptionComparable && (descriptionComparable.includes(offerCommentComparable) || offerCommentComparable.includes(descriptionComparable));
           addSectionTitle("Tilbud / kontrakt");
-          addKeyValue("Tillegg", tilbud.tillegg);
-          addKeyValue("Fradrag", tilbud.fradrag);
-          addKeyValue("Avtaleendringer / kommentar", tilbud.kommentar);
-          if ((tilbud.files || []).length > 0) addParagraph("Tilbuds- og kontraktsvedlegg ligger også samlet bakerst i rapporten under Vedlegg.", { size: 9.5, lineHeight: 4.6 });
+          if (hasValue(tilbud.tillegg)) addKeyValue("Tillegg", tilbud.tillegg);
+          if (hasValue(tilbud.fradrag)) addKeyValue("Fradrag", tilbud.fradrag);
+          if (hasValue(tilbud.kommentar) && !offerCommentDuplicatesDescription) addKeyValue("Avtaleendringer / kommentar", tilbud.kommentar);
+          if ((tilbud.files || []).length > 0) addParagraph("Tilbuds- og kontraktsdokumenter er vedlagt og ligger også samlet bakerst i rapporten under Vedlegg.", { size: 9.5, lineHeight: 4.6 });
           (tilbud.files || []).forEach((file) => addLink(file.name || "Vedlegg", file.url));
         }
 
@@ -7949,7 +7997,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           visibleAccess.forEach((a) => addParagraph(`${a.name || a.email} — ${a.role || "Tilgang"}`));
         }
 
-        setPdfProgress("Oppretter garantidokument…", "Legger inn garantisertifikat, vilkår og QR-kode der garanti er aktivert.");
+        setPdfProgress("Oppretter garantidokument…", "Legger inn garantisertifikat, vilkår og SINTEF-QR bare når garanti er utstedt.");
         await addWarrantyCertificatePages();
 
         setPdfProgress("Legger inn dokumentasjonsstatus…", "Oppsummerer komplett dokumentasjonsgrad.");
@@ -8015,10 +8063,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         const addFinalDocumentationCertificatePage = async () => {
           const status = reportDocumentationStatus();
           const customerUrl = reportCustomerPortalUrl();
-          const qrUrl = customerUrl ? `https://quickchart.io/qr?text=${encodeURIComponent(customerUrl)}&size=180&margin=1` : "";
+          const reportFinal = isFinalReport(status);
+          const qrUrl = reportFinal && customerUrl ? `https://quickchart.io/qr?text=${encodeURIComponent(customerUrl)}&size=180&margin=1` : "";
           const reportHeroPhotoId = safeText(project?.reportHeroPhotoId || "").trim();
           const selectedCoverImage = reportHeroPhotoId ? (photos || []).find((photo) => hasValue(photo?.url) && getPhotoIdentity(photo) === reportHeroPhotoId) : null;
-          const coverImage = selectedCoverImage || (photos || []).slice().reverse().find((photo) => hasValue(photo?.url) && isFinishedResultPhoto(photo)) || null;
+          const coverImage = selectedCoverImage || null;
           const coverImageUrl = coverImage?.url || DEFAULT_REPORT_HERO_IMAGE_URL;
           doc.addPage();
           y = 16;
@@ -8038,16 +8087,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           doc.setGState && doc.setGState(new doc.GState({ opacity: 0.92 }));
           doc.roundedRect(margin, 70, contentWidth, 24, 3, 3, "F");
           doc.setGState && doc.setGState(new doc.GState({ opacity: 1 }));
-          const reportComplete = status.percent === 100;
           doc.setFont("helvetica", "bold");
           doc.setFontSize(17);
           doc.setTextColor(12, 42, 82);
-          doc.text(reportComplete ? "DOKUMENTASJONSSERTIFIKAT" : "DOKUMENTASJONSOVERSIKT", pageWidth / 2, 90, { align: "center" });
+          doc.text(reportFinal ? "SLUTTDOKUMENTASJON" : "DOKUMENTASJONSOVERSIKT", pageWidth / 2, 90, { align: "center" });
           y = 114;
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
           doc.setTextColor(51, 65, 85);
-          const certificateIntro = reportComplete ? "Prosjektets dokumentasjonskrav er registrert i Expo ProffDok. Oversikten nedenfor viser rapportgrunnlaget ved genereringstidspunktet." : "Rapporten viser registrert dokumentasjon og hva som fortsatt må følges opp før prosjektet kan regnes som komplett dokumentert.";
+          const certificateIntro = reportFinal ? "Prosjektet er registrert overtatt. Oversikten viser dokumentasjonen som er registrert i Expo ProffDok ved genereringstidspunktet." : "Rapporten viser registrert dokumentasjon og hva som fortsatt må følges opp. Innhold som ikke er registrert i prosjektet, inngår ikke i rapporten.";
           doc.text(doc.splitTextToSize(certificateIntro, contentWidth), margin, y);
           y += 20;
           const certW = (contentWidth - 6) / 2;
@@ -8093,14 +8141,28 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           });
           if (qrUrl) {
             const qrImage = await loadPdfImage(qrUrl);
-            const qrSize = 22;
+            const qrSize = 24;
+            const qrBlockH = 36;
+            if (y + qrBlockH > pageHeight - 28) y = pageHeight - 28 - qrBlockH;
+            doc.setDrawColor(191, 219, 254);
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(margin, y, contentWidth, qrBlockH, 3, 3, "FD");
             const qrX = pageWidth - margin - qrSize - 6;
-            const qrY = pageHeight - 64;
+            const qrY = y + 5;
             if (qrImage && !qrImage.error) doc.addImage(qrImage.dataUrl, qrImage.format || "PNG", qrX, qrY, qrSize, qrSize);
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(7.6);
+            doc.setFontSize(9.2);
             doc.setTextColor(12, 42, 82);
-            doc.text("Skann for digital rapport", qrX + qrSize / 2, qrY + qrSize + 6, { align: "center" });
+            doc.text("Digital sluttrapport", margin + 7, y + 12);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7.6);
+            doc.setTextColor(71, 85, 105);
+            doc.text(doc.splitTextToSize("Skann QR-koden for å åpne prosjektets digitale kundevisning. QR-koden vises bare i sluttdokumentasjon etter registrert overtagelse, og etter utstedt garanti når garanti er aktivert.", contentWidth - qrSize - 20), margin + 7, y + 19);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(6.8);
+            doc.setTextColor(12, 42, 82);
+            doc.text("Skann for digital rapport", qrX + qrSize / 2, qrY + qrSize + 4, { align: "center" });
+            y += qrBlockH + 5;
           }
           doc.setFont("helvetica", "normal");
           doc.setFontSize(8.2);
@@ -8128,7 +8190,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         if (warranty?.enabled) {
           if (isProjectLocked) {
             alert("PDF er generert fra låst/arkivert prosjekt. Prosjektets lagrede dokumentasjon og garantistatus er ikke endret.");
-          } else {
+          } else if (warrantyIssuedForReport() && hasValue(warranty?.guaranteeNumber) && isFinalReport(reportDocumentationStatus())) {
             const reportGeneratedAt = (/* @__PURE__ */ new Date()).toISOString();
             setWarranty((prev) => ({
               ...emptyWarranty(),
@@ -8136,9 +8198,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               reportGeneratedAt,
               reportGeneratedFileName: generatedFileName,
               guaranteeNumber: prev?.guaranteeNumber || "",
-              status: prev?.issued ? "issued" : "report_generated"
+              status: "issued"
             }));
-            alert("PDF er generert. Husk å lagre filen på egen maskin/server. Garantimodulen er oppdatert med at komplett rapport er generert – husk å lagre/oppdatere prosjektet.");
+            alert("Komplett PDF med utstedt garantibevis er generert. Husk å lagre/oppdatere prosjektet slik at tidspunktet for komplett garantirapport registreres.");
+          } else {
+            alert("Statusrapport er generert. Garantien er ikke utstedt, derfor er garantimodulen ikke markert med komplett PDF-rapport.");
           }
         }
       } catch (error) {
