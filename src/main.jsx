@@ -1,3 +1,4 @@
+// FASE 23U AVBRYT NYTT PROSJEKT: Usparte nye prosjekter får tydelig Avbryt nytt prosjekt-knapp på PC og mobil. Tom kladd går direkte til startsiden; kladd med innhold krever bekreftelse før lokal kladd og usparte data forkastes. Ingen prosjekt opprettes eller lagres ved avbryt. Kun navigasjon/UI og lokal kladdopprydding; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
 // FASE 23T TYDELIG PROSJEKTOVERSIKT OG KUNDEINFO: Når et prosjekt er åpent, heter første fane Prosjektoversikt og blir i prosjektet. Kunde, kontaktinfo, adresse og prosjektansvarlig vises tydelig samlet. Egen knapp går tilbake til startsiden med eksisterende kontroll for ulagrede endringer. Prosjektinformasjon/beskrivelse presiseres til Prosjektbeskrivelse. Kun navigasjon/UI; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
 // FASE 23S TRYGG KOPIERING AV KUNDE-/UE-TILGANG: Kopiert tilgangstekst merker lenke og kode tydelig på separate linjer, slik at tilgangskoden ikke kan bli tolket som en del av URL-en. Ingen database-, RLS-, Storage-, e-post- eller portaltilgangsendring.
 // FASE 22E FULLFØR BRUKERPROFIL: Godkjente eksisterende brukere uten fullt navn må registrere fullt navn før appen åpnes. Navn og valgfritt mobilnummer lagres i Supabase Auth user_metadata. Kun feature/befaringsbekreftelse-fase22a. Ingen SQL, RLS, Storage, Edge Function eller produksjonsmerge.
@@ -2631,7 +2632,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     }, [ordinaryProjectListRows]);
     const openProjectDeviationCount = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
     const tabs = [
-      ["prosjekt", hasActiveProjectWorkspace ? "Prosjektoversikt" : "Startside"],
+      ["prosjekt", mobileCreatingProject && !projectId ? "Nytt prosjekt" : hasActiveProjectWorkspace ? "Prosjektoversikt" : "Startside"],
       ["sales", "Befaring/Tilbud"],
       ["prosjektinfo", "Prosjektbeskrivelse"],
       ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
@@ -2718,6 +2719,42 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setSupportModeExplicit(false);
       setMobileCreatingProject(false);
       resetProjectDirty();
+      setTab("prosjekt");
+      setMobileMenuOpen(false);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setTimeout(() => scrollToMobileTabTarget("prosjekt"), 90);
+      setTimeout(() => scrollToMobileTabTarget("prosjekt"), 320);
+    };
+    const cancelNewProject = () => {
+      if (projectId || !mobileCreatingProject) return;
+      const hasDraftContent = hasMeaningfulProjectDraftContent(buildProjectSnapshot());
+      if (hasDraftContent && !window.confirm("Avbryte nytt prosjekt? Ulagrede opplysninger går tapt.")) return;
+      pauseDirtyTrackingBriefly(1200);
+      clearLocalDraft(null);
+      setProject(emptyProject());
+      setChecked({});
+      setProductDocs({});
+      setManualProducts({});
+      setOther({});
+      setSurf({});
+      setBathroomEquipment(emptyBathroomEquipment());
+      setPhotos([]);
+      setAccess([]);
+      setInst([]);
+      setFiles([]);
+      setChecklist({});
+      setTilbud(emptyTilbud());
+      setOvertagelse(emptyOvertagelse());
+      setWarranty(emptyWarranty());
+      setProjectLog(emptyProjectLog());
+      setInternalNotes("");
+      setProjectId(null);
+      setCurrentProjectOwnerId("");
+      setSupportModeExplicit(false);
+      setMobileCreatingProject(false);
+      resetProjectDirty();
+      setLocalDraftRestoreChecked(false);
+      setProjectAutoSaveStatus("");
       setTab("prosjekt");
       setMobileMenuOpen(false);
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -10091,6 +10128,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
+          !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
           projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: "← Til startside" }),
           hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectDirty ? "● Lagre endringer" : projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
           hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
@@ -10165,6 +10203,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: project.projectName || project.address || "\xC5pent prosjekt" })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: "Bytt" })
+        ] }),
+        !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLine", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLineText", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Nytt prosjekt" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ikke lagret ennå" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "Avbryt" })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { "aria-label": "Velg seksjon", value: tab, onChange: (e) => goToTab(e.target.value), children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: id, children: l }, "mobile-field-" + id)) })
         ] })
