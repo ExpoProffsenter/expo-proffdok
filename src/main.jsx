@@ -1,3 +1,4 @@
+// FASE 23W KUNDEPORTAL / RAPPORTSTATUS I SYNK: Kundeportalen bruker samme 8-punkts dokumentasjonsgrad som premiumrapporten og samme grense mellom statusrapport og sluttrapport. Pågående prosjekt omtales som statusrapport; komplett/sluttrapport først etter registrert overtagelse, ingen åpne avvik og eventuell utstedt garanti. Kun kundeportal/UI og lokal rapportstatusberegning; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty, garanti-, overtagelses- eller datamodellendring.
 // FASE 23V.3 PREMIUM RAPPORT / SLUTTPOLERING: Bevarer eksisterende premiumrapport og garantimotor urørt. Rapport kan genereres underveis som statusrapport med kun registrert innhold. Garantibevis/SINTEF-QR og registrering av komplett garantirapport skjer kun når garanti faktisk er utstedt. Digital rapport-QR vises kun i sluttdokumentasjon etter signert overtagelse (og utstedt garanti når garanti er aktivert). Valgt headingbilde brukes eksplisitt; ellers standard bad-fallback. Tilbudstekst/priser formateres ryddigere og duplisering reduseres. Kun rapport/PDF-logikk og rapportens etterregistrering; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty eller datamodellendring.
 // FASE 23U.1 AVBRYT NYTT PROSJEKT HOTFIX: Registrerer brukerinput i uspart nytt prosjekt synkront via input/change-capture, slik at Avbryt alltid spør før innskrevne opplysninger forkastes. Tom kladd går fortsatt direkte til startsiden. Ingen prosjekt opprettes eller lagres ved avbryt. Kun navigasjon/UI og lokal kladdopprydding; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
 // FASE 23U AVBRYT NYTT PROSJEKT: Usparte nye prosjekter får tydelig Avbryt nytt prosjekt-knapp på PC og mobil. Tom kladd går direkte til startsiden; kladd med innhold krever bekreftelse før lokal kladd og usparte data forkastes. Ingen prosjekt opprettes eller lagres ved avbryt. Kun navigasjon/UI og lokal kladdopprydding; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
@@ -9172,21 +9173,40 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalWarrantyTermsAccepted = !!warrantyReadiness?.termsAccepted;
       const customerPortalWarrantyStatusText = customerPortalWarrantyIssued ? `${getWarrantyYears(warranty)} års dokumentert tetthetsgaranti er utstedt${warranty?.guaranteeNumber ? ` – ${warranty.guaranteeNumber}` : ""}.` : customerPortalWarrantyActive ? "Tetthetsgaranti er valgt for prosjektet. Garantibevis utstedes når alle krav er oppfylt og overtagelsen er registrert." : "Garanti er ikke aktivert for dette prosjektet.";
       const customerPortalDocumentationReady = customerPortalProductCount > 0 || customerPortalPhotoCount > 0 || customerPortalChecklistDone > 0 || projectHasOvertagelse(overtagelse) || customerPortalWarrantyActive;
+      // FASE 23W: Samme dokumentasjonsmodell som premiumrapporten. Dette hindrer at kunden ser f.eks. 50 % i portalen og 63 % i PDF-en.
+      const customerPortalFileIdentityText = (file = {}) => [file?.name, file?.fileName, file?.url, file?.path, file?.type, file?.mimeType, file?.contentType].filter(Boolean).join(" ").toLowerCase();
+      const customerPortalIsLikelyDocumentFile = (file = {}) => /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|csv|txt|rtf|odt|ods|odp)(\?|#|$)/i.test(customerPortalFileIdentityText(file)) || /application\/(pdf|msword|vnd\.)/i.test(customerPortalFileIdentityText(file));
+      let customerPortalAttachmentCount = Array.isArray(files) ? files.filter((file) => hasValue(file?.name) || hasValue(file?.url) || hasValue(file?.path)).length : 0;
+      Object.values(checklist || {}).forEach((items) => {
+        Object.values(items || {}).forEach((value) => {
+          customerPortalAttachmentCount += (value?.photos || []).filter((file) => customerPortalIsLikelyDocumentFile(file)).length;
+        });
+      });
+      (inst || []).forEach((entry) => {
+        customerPortalAttachmentCount += (entry?.photos || []).filter((file) => customerPortalIsLikelyDocumentFile(file)).length;
+      });
+      customerPortalAttachmentCount += Array.isArray(tilbud?.files) ? tilbud.files.filter((file) => hasValue(file?.name) || hasValue(file?.url) || hasValue(file?.path)).length : 0;
+      const customerPortalOpenProjectDeviationCount = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
+      const customerPortalOpenDeviationTotal = getOpenDeviationCount(checklist) + customerPortalOpenProjectDeviationCount;
       const customerPortalCompletionItems = [
-        { label: "Prosjektinformasjon", done: hasValue(project.projectName) || hasValue(project.address) || hasValue(project.customer) },
-        { label: "Produkter", done: customerPortalProductCount > 0 },
-        { label: "Bilder", done: customerPortalPhotoCount > 0 },
-        { label: "Sjekklister", done: customerPortalChecklistComplete && customerPortalChecklistAvvik === 0 },
-        ...(customerPortalWarrantyActive && customerPortalSoproChecklistTotal ? [{ label: "Garantipunkter", done: customerPortalSoproChecklistComplete && customerPortalChecklistAvvik === 0 }] : []),
+        { label: "Prosjektinformasjon", done: [project.projectName, project.address, project.customer].every(hasValue) },
+        { label: "Produkter / FDV", done: customerPortalProductCount > 0 },
+        { label: "Bildedokumentasjon", done: customerPortalPhotoCount > 0 },
+        { label: "Sjekklister", done: customerPortalChecklistTotal > 0 && customerPortalChecklistDone >= customerPortalChecklistTotal },
+        { label: "Avvik", done: customerPortalOpenDeviationTotal === 0 },
+        { label: "Vedlegg", done: customerPortalAttachmentCount > 0 },
         { label: "Overtagelse", done: projectHasOvertagelse(overtagelse) },
         { label: "Garanti", done: customerPortalWarrantyIssued || !customerPortalWarrantyActive }
       ];
       const customerPortalCompletionPercent = Math.round(customerPortalCompletionItems.filter((item) => item.done).length / customerPortalCompletionItems.length * 100);
+      const customerPortalReportFinal = projectHasOvertagelse(overtagelse) && customerPortalOpenDeviationTotal === 0 && (!customerPortalWarrantyActive || customerPortalWarrantyIssued);
+      const customerPortalReportDownloadLabel = customerPortalReportFinal ? "Last ned sluttrapport" : "Last ned statusrapport";
+      const customerPortalHeaderText = customerPortalReportFinal ? "Her finner du prosjektets sluttdokumentasjon, bilder, produkter og rapport" : "Her finner du prosjektets registrerte dokumentasjon, bilder, produkter og statusrapport";
       const customerPortalReadyForFinished = customerPortalChecklistComplete && customerPortalChecklistAvvik === 0 && projectHasOvertagelse(overtagelse) && (!customerPortalWarrantyActive || customerPortalWarrantyIssued);
       const customerPortalStatusWasDowngradedFromOldFinished = currentStatus.label === "Ferdigstilt" && !customerPortalReadyForFinished;
       const customerPortalDisplayStatus = customerPortalWarrantyIssued ? { label: `${getWarrantyYears(warranty)} års garanti aktiv`, icon: "✅", tone: "done" } : customerPortalStatusWasDowngradedFromOldFinished ? { label: "Pågår", icon: "🟡", tone: "progress" } : currentStatus;
       const customerPortalPrimaryStatus = customerPortalDisplayStatus.label;
-      const customerPortalNextAction = customerPortalWarrantyIssued ? "Last ned komplett rapport eller se garantidokumentasjonen." : customerPortalChecklistMissing > 0 ? `Fullfør ${customerPortalChecklistMissing} gjenstående kontrollpunkt før prosjektet kan regnes som ferdigstilt.` : customerPortalChecklistAvvik > 0 ? "Lukk eller avklar åpne avvik før prosjektet kan ferdigstilles." : !projectHasOvertagelse(overtagelse) ? "Overtagelse må registreres når prosjektet er klart og signert av begge parter." : customerPortalWarrantyActive && !customerPortalWarrantyIssued ? "Garantibevis utstedes når alle garantikrav er oppfylt." : "Se rapport, bilder og produktdokumentasjon.";
+      const customerPortalNextAction = customerPortalWarrantyIssued ? "Last ned sluttrapport eller se garantidokumentasjonen." : customerPortalChecklistMissing > 0 ? `Fullfør ${customerPortalChecklistMissing} gjenstående kontrollpunkt før prosjektet kan regnes som ferdigstilt.` : customerPortalChecklistAvvik > 0 ? "Lukk eller avklar åpne avvik før prosjektet kan ferdigstilles." : !projectHasOvertagelse(overtagelse) ? "Overtagelse må registreres når prosjektet er klart og signert av begge parter." : customerPortalWarrantyActive && !customerPortalWarrantyIssued ? "Garantibevis utstedes når alle garantikrav er oppfylt." : "Se rapport, bilder og produktdokumentasjon.";
       if (!portalAccessOk) return renderPortalAccessGate("kunde");
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
@@ -9195,13 +9215,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Kundeportal" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-                "Her finner du komplett prosjektdokumentasjon, garanti, bilder, produkter og rapport",
+                customerPortalHeaderText,
                 totalChatCount ? ` \xB7 ${totalChatCount} melding${totalChatCount === 1 ? "" : "er"}` : ""
               ] })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
-              " Last ned PDF"
+              ` ${customerPortalReportDownloadLabel}`
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", { children: [
@@ -9251,7 +9271,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("rapport"), children: "Se rapport" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("dokumentasjon"), children: "Se dokumentasjon" }),
               customerPortalWarrantyActive && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("garanti"), children: "Se garanti" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadClickablePdfReport, children: "Last ned PDF" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadClickablePdfReport, children: customerPortalReportDownloadLabel }),
               hasTilbudContent && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("tilbud"), children: "Tilbud/kontrakt" })
             ] })
           ] }),
@@ -9260,7 +9280,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette er kundens samlede oversikt over prosjektstatus, dokumentasjon, garanti og neste steg." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Prosjektstatus", value: customerPortalPrimaryStatus }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Dokumentasjon", value: `${customerPortalCompletionPercent}% komplett` }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Dokumentasjon", value: `${customerPortalCompletionPercent} % dokumentasjonsgrad` }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Garanti", value: customerPortalWarrantyStatusText }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Neste steg", value: customerPortalNextAction })
             ] }),
@@ -9272,7 +9292,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] }, item.label)) })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: downloadClickablePdfReport, children: "Last ned komplett rapport" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: downloadClickablePdfReport, children: customerPortalReportDownloadLabel }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("garanti"), children: "Se garanti" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("bilder"), children: "Se bilder" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setCustomerTab("produkter"), children: "Se produkter" })
@@ -9303,7 +9323,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
             customerPortalWarrantySystem?.sintefUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: customerPortalWarrantySystem.sintefUrl, target: "_blank", rel: "noopener noreferrer", children: "Åpne SINTEF Teknisk Godkjenning" }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "customerPortalActions", style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { className: "upload", href: `/${warrantyTermsPdfFileName}`, target: "_blank", rel: "noopener noreferrer", children: "Last ned garantivilkår PDF" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadClickablePdfReport, children: "Last ned komplett rapport" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: downloadClickablePdfReport, children: customerPortalReportDownloadLabel })
             ] })
           ] }),
           customerTab === "bilder" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Bilder", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Camera, {}), children: [
