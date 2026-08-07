@@ -3809,7 +3809,27 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       }
     };
     const notifyChatMessage = async ({ toEmail, direction, message }) => {
-      if (!toEmail || !message?.text) return;
+      if (!toEmail || !message?.text) return false;
+
+      const sendsToCustomer = direction !== "to_owner";
+      let customerAccessRecord = null;
+
+      if (sendsToCustomer) {
+        customerAccessRecord = projectId
+          ? await ensurePortalAccessForProject({
+              id: projectId,
+              roleParam: "kunde"
+            })
+          : null;
+
+        if (!customerAccessRecord?.code) {
+          console.warn(
+            "E-postvarsling til kunde ble ikke sendt fordi tilgangskode mangler."
+          );
+          return false;
+        }
+      }
+
       try {
         const { error } = await supabase.functions.invoke("smart-worker", {
           body: {
@@ -3821,17 +3841,38 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
             customerEmail: project.customerEmail || "",
             ...emailBrandPayload(),
             fromName: message.by || "Ukjent",
-            message: `${message.text}${direction === "to_owner" ? "" : portalAccessLine(getPortalAccessRecord(project, "kunde"))}`,
-            projectLink: projectId ? makeProjectLink(projectId, direction === "to_owner" ? "admin" : "kunde", direction === "to_owner" ? "" : "chat") : "",
-            accessCode: direction === "to_owner" ? "" : getPortalAccessRecord(project, "kunde")?.code || "",
-            accessCodeExpiresAt: direction === "to_owner" ? "" : getPortalAccessRecord(project, "kunde")?.expiresAt || ""
+            message: message.text,
+            projectLink: projectId
+              ? makeProjectLink(
+                  projectId,
+                  sendsToCustomer ? "kunde" : "admin",
+                  sendsToCustomer ? "chat" : ""
+                )
+              : "",
+            accessCode: sendsToCustomer
+              ? customerAccessRecord.code
+              : "",
+            accessCodeExpiresAt: sendsToCustomer
+              ? customerAccessRecord.expiresAt || ""
+              : "",
+            accessPolicy: sendsToCustomer
+              ? "active_project_plus_locked_30_days"
+              : ""
           }
         });
+
         if (error) {
-          console.warn("E-postvarsling kunne ikke sendes:", error.message);
+          console.warn(
+            "E-postvarsling kunne ikke sendes:",
+            error.message
+          );
+          return false;
         }
+
+        return true;
       } catch (error) {
         console.warn("E-postvarsling kunne ikke sendes:", error);
+        return false;
       }
     };
     const emailBrandPayload = () => {
