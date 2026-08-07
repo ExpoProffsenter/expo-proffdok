@@ -1,3 +1,4 @@
+// FASE 23U.1 AVBRYT NYTT PROSJEKT HOTFIX: Registrerer brukerinput i uspart nytt prosjekt synkront via input/change-capture, slik at Avbryt alltid spør før innskrevne opplysninger forkastes. Tom kladd går fortsatt direkte til startsiden. Ingen prosjekt opprettes eller lagres ved avbryt. Kun navigasjon/UI og lokal kladdopprydding; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
 // FASE 23U AVBRYT NYTT PROSJEKT: Usparte nye prosjekter får tydelig Avbryt nytt prosjekt-knapp på PC og mobil. Tom kladd går direkte til startsiden; kladd med innhold krever bekreftelse før lokal kladd og usparte data forkastes. Ingen prosjekt opprettes eller lagres ved avbryt. Kun navigasjon/UI og lokal kladdopprydding; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
 // FASE 23T TYDELIG PROSJEKTOVERSIKT OG KUNDEINFO: Når et prosjekt er åpent, heter første fane Prosjektoversikt og blir i prosjektet. Kunde, kontaktinfo, adresse og prosjektansvarlig vises tydelig samlet. Egen knapp går tilbake til startsiden med eksisterende kontroll for ulagrede endringer. Prosjektinformasjon/beskrivelse presiseres til Prosjektbeskrivelse. Kun navigasjon/UI; ingen SQL, RLS, Storage, Edge Function, e-post- eller datamodellendring.
 // FASE 23S TRYGG KOPIERING AV KUNDE-/UE-TILGANG: Kopiert tilgangstekst merker lenke og kode tydelig på separate linjer, slik at tilgangskoden ikke kan bli tolket som en del av URL-en. Ingen database-, RLS-, Storage-, e-post- eller portaltilgangsendring.
@@ -1540,6 +1541,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const projectDirtyRef = (0, import_react.useRef)(false);
     const projectDirtyInitializedRef = (0, import_react.useRef)(false);
     const dirtyBaselineRef = (0, import_react.useRef)("");
+    const newProjectTouchedRef = (0, import_react.useRef)(false);
 
     const projectDirtyFingerprint = (snapshot = {}) => {
       try {
@@ -2727,7 +2729,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     };
     const cancelNewProject = () => {
       if (projectId || !mobileCreatingProject) return;
-      const hasDraftContent = hasMeaningfulProjectDraftContent(buildProjectSnapshot());
+      const hasDraftContent = newProjectTouchedRef.current || projectDirtyRef.current || hasMeaningfulProjectDraftContent(buildProjectSnapshot());
       if (hasDraftContent && !window.confirm("Avbryte nytt prosjekt? Ulagrede opplysninger går tapt.")) return;
       pauseDirtyTrackingBriefly(1200);
       clearLocalDraft(null);
@@ -2752,6 +2754,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setCurrentProjectOwnerId("");
       setSupportModeExplicit(false);
       setMobileCreatingProject(false);
+      newProjectTouchedRef.current = false;
       resetProjectDirty();
       setLocalDraftRestoreChecked(false);
       setProjectAutoSaveStatus("");
@@ -3577,6 +3580,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       if (!canLeave) return;
       const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || (Array.isArray(project.projectDeviations) ? project.projectDeviations : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
+      newProjectTouchedRef.current = false;
       pauseDirtyTrackingBriefly(1200);
       setProject(emptyProject());
       setChecked({});
@@ -10214,7 +10218,14 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { "aria-label": "Velg seksjon", value: tab, onChange: (e) => goToTab(e.target.value), children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: id, children: l }, "mobile-field-" + id)) })
         ] })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
+        onInputCapture: () => {
+          if (!projectId && mobileCreatingProject) newProjectTouchedRef.current = true;
+        },
+        onChangeCapture: () => {
+          if (!projectId && mobileCreatingProject) newProjectTouchedRef.current = true;
+        },
+        children: [
         !projectId && !mobileCreatingProject && tab !== "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "mobileProjectChooser", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
