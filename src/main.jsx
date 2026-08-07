@@ -1,3 +1,6 @@
+// FASE 23Z.2 DOKUMENTASJONSKULTUR I HJELP: Presiserer at Expo ProffDok skal brukes til komplett relevant prosjektdokumentasjon. Alle relevante produkter/FDV, bilder, kontrollpunkter, avvik, overtagelse og eventuell garanti skal dokumenteres før ferdigstilling. Begrenset sjekklisteomfang er kun for reelt mindre prosjekt og fritar ikke fra å dokumentere faktisk leveranse. Kun Hjelp/UI-tekst; ingen låse-, garanti-, overtagelses-, rapport-, SQL-, RLS-, Storage-, Edge Function-, e-post- eller datamodellendring.
+// FASE 23Z.1 SLUTTSIDE / BEGRENSET OMFANG: Sluttdokumentasjon bruker samme sjekklistestatus som rapportstatusen. Begrenset omfang vises som OK med antall relevante vurderte kontrollpunkt; standardprosjekter beholder full sjekklistestatus. Ingen endring i låsing, garanti, overtagelse, SQL/RLS/Storage eller datamodell.
+// FASE 23Z TRYGG FERDIGSTILLING / SMÅ PROSJEKTER: Låsing bruker samme sluttkrav som rapport/kundeportal. Standardprosjekter krever alle aktive kontrollpunkter vurdert; ikke-garantiprosjekter kan eksplisitt velges som mindre prosjekt/begrenset sjekklisteomfang, der minst ett vurdert kontrollpunkt blir relevant ferdigstillingsgrunnlag. Åpne sjekkpunkt- og prosjektavvik blokkerer alltid. Garantiprosjekter kan ikke bruke begrenset omfang og kan aldri låses før garanti er utstedt. Ingen SQL/RLS/Storage/Edge/e-post- eller garantimotorendring.
 // FASE 23Y KORREKT SLUTTSTATUS / OVERTAGELSESDATO: Sluttdokumentasjon krever registrert overtagelse, ingen åpne avvik, ferdig relevante sjekklister (dersom sjekkliste finnes) og eventuell utstedt garanti. Produkter/vedlegg er dokumentasjonsgrad, men blokkerer ikke enkle prosjekter alene. Ny overtagelse foreslår alltid dagens lokale dato uten å overskrive lagret dato. Kun lokal rapport-/kundeportalstatus og datoforslag; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty, garanti- eller overtagelsesregistreringslogikk.
 // FASE 23X STABIL PROSJEKTNAVIGASJON: Bevarer 23T/23U, men rydder lastet prosjektstate når bruker går til startsiden og hindrer prosjektfaner uten aktivt prosjekt. Dette fjerner situasjonen der gamle prosjektdata kunne vises samtidig som fanen het Startside. Kun navigasjon/lokal UI-state; ingen SQL, RLS, Storage, Edge Function, e-post, garanti-, overtagelses- eller datamodellendring.
 // FASE 23W KUNDEPORTAL / RAPPORTSTATUS I SYNK: Kundeportalen bruker samme 8-punkts dokumentasjonsgrad som premiumrapporten og samme grense mellom statusrapport og sluttrapport. Pågående prosjekt omtales som statusrapport; komplett/sluttrapport først etter registrert overtagelse, ingen åpne avvik og eventuell utstedt garanti. Kun kundeportal/UI og lokal rapportstatusberegning; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty, garanti-, overtagelses- eller datamodellendring.
@@ -1378,6 +1381,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     prosjekteringPunkter: [],
     customChecklistGroups: [],
     projectDeviations: [],
+    checklistScopeMode: "standard",
     locked: false,
     status: "active",
     workflowStatus: "Pågår",
@@ -2057,10 +2061,13 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const photoCount = (photos || []).filter((photo) => photo?.url).length;
       const checklistValues = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
       const checklistTotal = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
-      const checklistDone = checklistValues.filter((value) => hasValue(value?.status)).length;
-      const checklistMissing = Math.max(0, checklistTotal - checklistDone);
+      const checklistDone = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length, 0);
+      const limitedChecklistScope = !warranty?.enabled && project?.checklistScopeMode === "limited";
+      const checklistCompleteForFinal = checklistTotal === 0 || (limitedChecklistScope ? checklistDone > 0 : checklistDone >= checklistTotal);
+      const checklistMissing = limitedChecklistScope ? 0 : Math.max(0, checklistTotal - checklistDone);
       const checklistAvvik = checklistValues.filter((value) => value?.status === "Avvik").length;
-      const openDeviationCount = checklistAvvik;
+      const openProjectDeviationCount = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
+      const openDeviationCount = checklistAvvik + openProjectDeviationCount;
       const hasProjectBasics = [project.projectName, project.address, project.customer].some(hasValue);
       const hasDescription = hasValue(project.projectDescription);
       const hasCustomerEmail = hasValue(project.customerEmail);
@@ -2072,15 +2079,15 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         productCount > 0,
         photoCount > 0,
         checklistDone > 0,
-        checklistMissing === 0 && checklistTotal > 0,
+        checklistCompleteForFinal,
         openDeviationCount === 0,
         hasCustomerEmail,
         hasCustomerPhone,
         hasOvertagelse
       ];
       const completionPercent = Math.round(completionChecks.filter(Boolean).length / completionChecks.length * 100);
-      return { productCount, photoCount, checklistTotal, checklistDone, checklistMissing, checklistAvvik, openDeviationCount, hasProjectBasics, hasDescription, hasCustomerEmail, hasCustomerPhone, hasOvertagelse, completionPercent };
-    }, [selected, manualSelected, photos, checklist, project, overtagelse, activeChecklistTemplate]);
+      return { productCount, photoCount, checklistTotal, checklistDone, checklistMissing, checklistAvvik, openDeviationCount, limitedChecklistScope, checklistCompleteForFinal, hasProjectBasics, hasDescription, hasCustomerEmail, hasCustomerPhone, hasOvertagelse, completionPercent };
+    }, [selected, manualSelected, photos, checklist, project, overtagelse, activeChecklistTemplate, warranty]);
     const projectGuideItems = (0, import_react.useMemo)(() => {
       const items = [];
       if (!projectGuideStats.hasProjectBasics) items.push({ id: "basis", label: "Fyll inn prosjekt, adresse og kunde", tab: "prosjekt", tone: "warning" });
@@ -4983,11 +4990,30 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       if (!utf\u00F8rendeSigned || !kundeSigned) {
         return alert("B\xE5de utf\xF8rende og kunde m\xE5 signere f\xF8r overtagelse kan fullf\xF8res.");
       }
+      const checklistTotalForLock = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
+      const checklistDoneForLock = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length, 0);
+      const limitedChecklistScopeForLock = !warranty?.enabled && project?.checklistScopeMode === "limited";
+      const checklistReadyForLock = checklistTotalForLock === 0 || (limitedChecklistScopeForLock ? checklistDoneForLock > 0 : checklistDoneForLock >= checklistTotalForLock);
+      const openProjectDeviationCountForLock = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
+      const openDeviationTotalForLock = getOpenDeviationCount(checklist) + openProjectDeviationCountForLock;
+      if (openDeviationTotalForLock > 0) {
+        return alert(`Prosjektet kan ikke låses før ${openDeviationTotalForLock} åpne avvik er lukket eller avklart.`);
+      }
+      if (!checklistReadyForLock) {
+        if (limitedChecklistScopeForLock && checklistDoneForLock === 0) {
+          return alert("Mindre prosjekt / begrenset sjekklisteomfang krever at minst ett relevant kontrollpunkt er vurdert før prosjektet kan låses.");
+        }
+        return alert(`Prosjektet kan ikke låses ennå. ${Math.max(0, checklistTotalForLock - checklistDoneForLock)} kontrollpunkt gjenstår. For et reelt mindre prosjekt uten garanti kan du velge «Mindre prosjekt / begrenset sjekklisteomfang» i Overtagelse.`);
+      }
+      if (limitedChecklistScopeForLock) {
+        const confirmLimitedLock = window.confirm(`Dette prosjektet er satt som mindre prosjekt / begrenset sjekklisteomfang. ${checklistDoneForLock} vurdert${checklistDoneForLock === 1 ? "" : "e"} kontrollpunkt blir hele ferdigstillingsgrunnlaget. Vil du fullføre og låse prosjektet med dette omfanget?`);
+        if (!confirmLimitedLock) return;
+      }
       const completedOvertagelse = {
         ...emptyOvertagelse(),
         ...overtagelse,
         enabled: true,
-        dato: overtagelse.dato || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)
+        dato: overtagelse.dato || getLocalTodayIsoDate()
       };
       const completedWarranty = warranty?.enabled ? {
         ...emptyWarranty(),
@@ -5040,6 +5066,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
           goToTab("garanti");
           return;
         }
+        return alert("Prosjektet låses ikke før garantien er utstedt. Du kan fortsette arbeidet og gå til Garanti når dokumentasjonen er klar.");
       }
       const shouldOfferCompletionEmail = !!project.customerEmail;
       const completionEmailAccepted = shouldOfferCompletionEmail ? await sendProjectCompletionEmailToCustomer({ askFirst: true, silent: false }) : false;
@@ -6251,7 +6278,10 @@ ${appLink}`;
         const reportDocumentationStatus = () => {
           const entries = Object.values(checklist || {}).flatMap((items) => Object.values(items || {}));
           const checklistTotal = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).length, 0);
-          const checklistDone = entries.filter((value) => hasValue(value?.status)).length;
+          const checklistDone = activeChecklistTemplate.reduce((sum, group) => sum + (group.items || []).filter((item) => hasValue(checklist?.[group.category]?.[item]?.status)).length, 0);
+          const limitedChecklistScope = !warranty?.enabled && project?.checklistScopeMode === "limited";
+          const checklistCompleteForFinal = checklistTotal === 0 || (limitedChecklistScope ? checklistDone > 0 : checklistDone >= checklistTotal);
+          const checklistDetail = limitedChecklistScope ? (checklistDone > 0 ? `${checklistDone} relevant${checklistDone === 1 ? "" : "e"} kontrollpunkt vurdert · begrenset omfang` : "Ingen relevante kontrollpunkt vurdert · begrenset omfang") : `${checklistDone}/${checklistTotal || checklistDone} kontrollpunkt vurdert`;
           const openProjectDeviationTotal = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
           const openDeviationTotal = getOpenDeviationCount(checklist) + openProjectDeviationTotal;
           const productTotal = (selected || []).length + (manualSelected || []).length;
@@ -6261,21 +6291,20 @@ ${appLink}`;
             { label: "Prosjektinformasjon", ok: [project.projectName, project.address, project.customer].every(hasValue), detail: "Prosjektnavn, kunde og adresse" },
             { label: "Produkter / FDV", ok: productTotal > 0, detail: `${productTotal} produkt${productTotal === 1 ? "" : "er"} dokumentert` },
             { label: "Bildedokumentasjon", ok: photoTotal > 0, detail: `${photoTotal} bilde${photoTotal === 1 ? "" : "r"} registrert` },
-            { label: "Sjekklister", ok: checklistTotal > 0 && checklistDone >= checklistTotal, detail: `${checklistDone}/${checklistTotal || checklistDone} kontrollpunkt vurdert` },
+            { label: "Sjekklister", ok: checklistCompleteForFinal, detail: checklistDetail },
             { label: "Avvik", ok: openDeviationTotal === 0, detail: openDeviationTotal ? `${openDeviationTotal} åpne avvik` : "Ingen åpne avvik" },
             { label: "Vedlegg", ok: attachmentTotal > 0, detail: `${attachmentTotal} vedlegg` },
             { label: "Overtagelse", ok: projectHasOvertagelse(overtagelse), detail: projectHasOvertagelse(overtagelse) ? "Registrert" : "Ikke registrert" },
             { label: "Garanti", ok: !!warranty?.issued || !warranty?.enabled, detail: warranty?.issued ? `${getWarrantyYears(warranty)} år · ${warranty?.guaranteeNumber || "aktiv"}` : warranty?.enabled ? "Ikke utstedt" : "Ikke relevant / ikke aktivert" }
           ];
           const percent = Math.round(items.filter((item) => item.ok).length / items.length * 100);
-          return { items, percent, productTotal, photoTotal, checklistTotal, checklistDone, openDeviationTotal, attachmentTotal };
+          return { items, percent, productTotal, photoTotal, checklistTotal, checklistDone, checklistCompleteForFinal, limitedChecklistScope, checklistDetail, openDeviationTotal, attachmentTotal };
         };
         const warrantyIssuedForReport = () => !!warranty?.enabled && (!!warranty?.issued || warranty?.status === "issued" || hasValue(warranty?.guaranteeNumber));
         const isFinalReport = (status = reportDocumentationStatus()) => {
           if (!projectHasOvertagelse(overtagelse)) return false;
           if (status.openDeviationTotal > 0) return false;
-          const checklistReadyForFinal = status.checklistTotal === 0 || status.checklistDone >= status.checklistTotal;
-          if (!checklistReadyForFinal) return false;
+          if (!status.checklistCompleteForFinal) return false;
           if (warranty?.enabled && !warrantyIssuedForReport()) return false;
           return true;
         };
@@ -8246,11 +8275,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawMetricCard(margin + (metricW + metricGap) * 2, y, metricW, 20, "Produkter", String(status.productTotal), "neutral");
           drawMetricCard(margin + (metricW + metricGap) * 3, y, metricW, 20, "Avvik", String(status.openDeviationTotal), status.openDeviationTotal ? "red" : "green");
           y += 34;
-          const checklistComplete = status.checklistTotal > 0 && status.checklistDone >= status.checklistTotal;
+          const checklistComplete = status.checklistCompleteForFinal;
           const certItems = [
             { label: "Bildedokumentasjon", ok: status.photoTotal > 0, detail: status.photoTotal > 0 ? `${status.photoTotal} bilde${status.photoTotal === 1 ? "" : "r"} registrert` : "Ingen bilder registrert" },
             { label: "Produktdokumentasjon / FDV", ok: status.productTotal > 0, detail: status.productTotal > 0 ? `${status.productTotal} produkt${status.productTotal === 1 ? "" : "er"} dokumentert` : "Ingen produkter dokumentert" },
-            { label: "Sjekklister og kontrollpunkter", ok: checklistComplete, detail: `${status.checklistDone}/${status.checklistTotal || status.checklistDone} kontrollpunkt vurdert` },
+            { label: "Sjekklister og kontrollpunkter", ok: checklistComplete, detail: status.checklistDetail },
             { label: "Overtagelse", ok: projectHasOvertagelse(overtagelse), detail: projectHasOvertagelse(overtagelse) ? "Signert av begge parter" : "Ikke registrert" },
             { label: "Garanti", ok: warranty?.issued || !warranty?.enabled, neutral: !warranty?.enabled, detail: warranty?.issued ? `${getWarrantyYears(warranty)} år · ${warranty?.guaranteeNumber || "aktiv"}` : warranty?.enabled ? "Ikke utstedt" : "Ikke aktivert" },
           ];
@@ -9208,14 +9237,15 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
       const customerPortalActiveChecklistStats = countChecklistTemplateStatus(activeChecklistTemplate);
       const customerPortalChecklistTotal = customerPortalActiveChecklistStats.total;
       const customerPortalChecklistDone = customerPortalActiveChecklistStats.done;
-      const customerPortalChecklistMissing = customerPortalActiveChecklistStats.missing;
-      const customerPortalChecklistComplete = customerPortalActiveChecklistStats.complete;
+      const customerPortalLimitedChecklistScope = !warranty?.enabled && project?.checklistScopeMode === "limited";
+      const customerPortalChecklistMissing = customerPortalLimitedChecklistScope ? 0 : customerPortalActiveChecklistStats.missing;
+      const customerPortalChecklistComplete = customerPortalChecklistTotal === 0 || (customerPortalLimitedChecklistScope ? customerPortalChecklistDone > 0 : customerPortalActiveChecklistStats.complete);
       const customerPortalSoproChecklistTotal = customerPortalSoproChecklistStats.total;
       const customerPortalSoproChecklistDone = customerPortalSoproChecklistStats.done;
       const customerPortalSoproChecklistComplete = customerPortalSoproChecklistStats.complete;
       const customerPortalBaseChecklistText = customerPortalBaseChecklistStats.done ? `${customerPortalBaseChecklistStats.done} av ${customerPortalBaseChecklistStats.total} ordinære kontrollpunkter` : "Ordinære sjekklister ikke utfylt ennå";
       const customerPortalSoproChecklistText = customerPortalSoproChecklistTotal ? `Garantipunkter: ${customerPortalSoproChecklistDone} av ${customerPortalSoproChecklistTotal}` : "";
-      const customerPortalChecklistStatusText = customerPortalChecklistDone ? `${customerPortalBaseChecklistText}${customerPortalSoproChecklistText ? ` · ${customerPortalSoproChecklistText}` : ""}${customerPortalChecklistMissing ? ` · ${customerPortalChecklistMissing} gjenstår` : ""}` : "Ikke utfylt ennå";
+      const customerPortalChecklistStatusText = customerPortalLimitedChecklistScope ? (customerPortalChecklistDone ? `${customerPortalChecklistDone} relevant${customerPortalChecklistDone === 1 ? "" : "e"} kontrollpunkt vurdert · begrenset omfang` : "Begrenset omfang valgt · minst ett relevant kontrollpunkt må vurderes") : customerPortalChecklistDone ? `${customerPortalBaseChecklistText}${customerPortalSoproChecklistText ? ` · ${customerPortalSoproChecklistText}` : ""}${customerPortalChecklistMissing ? ` · ${customerPortalChecklistMissing} gjenstår` : ""}` : "Ikke utfylt ennå";
       const customerPortalAddress = [project.address, project.postnr, project.city].filter(Boolean).join(", ");
       const customerPortalProducts = [...selected || [], ...manualSelected || []];
       const customerPortalPhotos = (photos || []).filter((photo) => hasValue(photo?.url));
@@ -9244,22 +9274,22 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         { label: "Prosjektinformasjon", done: [project.projectName, project.address, project.customer].every(hasValue) },
         { label: "Produkter / FDV", done: customerPortalProductCount > 0 },
         { label: "Bildedokumentasjon", done: customerPortalPhotoCount > 0 },
-        { label: "Sjekklister", done: customerPortalChecklistTotal > 0 && customerPortalChecklistDone >= customerPortalChecklistTotal },
+        { label: "Sjekklister", done: customerPortalChecklistComplete },
         { label: "Avvik", done: customerPortalOpenDeviationTotal === 0 },
         { label: "Vedlegg", done: customerPortalAttachmentCount > 0 },
         { label: "Overtagelse", done: projectHasOvertagelse(overtagelse) },
         { label: "Garanti", done: customerPortalWarrantyIssued || !customerPortalWarrantyActive }
       ];
       const customerPortalCompletionPercent = Math.round(customerPortalCompletionItems.filter((item) => item.done).length / customerPortalCompletionItems.length * 100);
-      const customerPortalChecklistReadyForFinal = customerPortalChecklistTotal === 0 || customerPortalChecklistComplete;
+      const customerPortalChecklistReadyForFinal = customerPortalChecklistComplete;
       const customerPortalReportFinal = projectHasOvertagelse(overtagelse) && customerPortalOpenDeviationTotal === 0 && customerPortalChecklistReadyForFinal && (!customerPortalWarrantyActive || customerPortalWarrantyIssued);
       const customerPortalReportDownloadLabel = customerPortalReportFinal ? "Last ned sluttrapport" : "Last ned statusrapport";
       const customerPortalHeaderText = customerPortalReportFinal ? "Her finner du prosjektets sluttdokumentasjon, bilder, produkter og rapport" : "Her finner du prosjektets registrerte dokumentasjon, bilder, produkter og statusrapport";
-      const customerPortalReadyForFinished = customerPortalChecklistReadyForFinal && customerPortalChecklistAvvik === 0 && projectHasOvertagelse(overtagelse) && (!customerPortalWarrantyActive || customerPortalWarrantyIssued);
+      const customerPortalReadyForFinished = customerPortalChecklistReadyForFinal && customerPortalOpenDeviationTotal === 0 && projectHasOvertagelse(overtagelse) && (!customerPortalWarrantyActive || customerPortalWarrantyIssued);
       const customerPortalStatusWasDowngradedFromOldFinished = currentStatus.label === "Ferdigstilt" && !customerPortalReadyForFinished;
       const customerPortalDisplayStatus = customerPortalWarrantyIssued ? { label: `${getWarrantyYears(warranty)} års garanti aktiv`, icon: "✅", tone: "done" } : customerPortalStatusWasDowngradedFromOldFinished ? { label: "Pågår", icon: "🟡", tone: "progress" } : currentStatus;
       const customerPortalPrimaryStatus = customerPortalDisplayStatus.label;
-      const customerPortalNextAction = customerPortalWarrantyIssued ? "Last ned sluttrapport eller se garantidokumentasjonen." : customerPortalChecklistMissing > 0 ? `Fullfør ${customerPortalChecklistMissing} gjenstående kontrollpunkt før prosjektet kan regnes som ferdigstilt.` : customerPortalChecklistAvvik > 0 ? "Lukk eller avklar åpne avvik før prosjektet kan ferdigstilles." : !projectHasOvertagelse(overtagelse) ? "Overtagelse må registreres når prosjektet er klart og signert av begge parter." : customerPortalWarrantyActive && !customerPortalWarrantyIssued ? "Garantibevis utstedes når alle garantikrav er oppfylt." : "Se rapport, bilder og produktdokumentasjon.";
+      const customerPortalNextAction = customerPortalWarrantyIssued ? "Last ned sluttrapport eller se garantidokumentasjonen." : customerPortalOpenDeviationTotal > 0 ? "Lukk eller avklar åpne avvik før prosjektet kan ferdigstilles." : customerPortalLimitedChecklistScope && customerPortalChecklistDone === 0 ? "Vurder minst ett relevant kontrollpunkt for dette mindre prosjektet før det kan ferdigstilles." : customerPortalChecklistMissing > 0 ? `Fullfør ${customerPortalChecklistMissing} gjenstående kontrollpunkt før prosjektet kan regnes som ferdigstilt.` : !projectHasOvertagelse(overtagelse) ? "Overtagelse må registreres når prosjektet er klart og signert av begge parter." : customerPortalWarrantyActive && !customerPortalWarrantyIssued ? "Garantibevis utstedes når alle garantikrav er oppfylt." : "Se rapport, bilder og produktdokumentasjon.";
       if (!portalAccessOk) return renderPortalAccessGate("kunde");
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { children: [
@@ -11240,6 +11270,20 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
               ] })
             ] })
           ] }),
+          !warranty?.enabled && !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginTop: "16px", background: project?.checklistScopeMode === "limited" ? "#fffbeb" : "#f8fafc", borderColor: project?.checklistScopeMode === "limited" ? "#fde68a" : "#dbe7ec" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "flex-start", gap: "10px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: "3px 0 0", flex: "0 0 auto" }, checked: project?.checklistScopeMode === "limited", onChange: (e) => {
+                const nextLimited = e.target.checked;
+                if (nextLimited && !window.confirm("Bruk begrenset sjekklisteomfang bare for et reelt mindre prosjekt der hele standard sjekklisten ikke er relevant. Minst ett relevant kontrollpunkt må være vurdert, og åpne avvik blokkerer fortsatt ferdigstilling. Fortsette?")) return;
+                setProject({ ...project, checklistScopeMode: nextLimited ? "limited" : "standard" });
+              } }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { margin: 0 }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Mindre prosjekt / begrenset sjekklisteomfang" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { style: { display: "block", marginTop: "4px" }, children: "Bruk kun når hele standard sjekklisten ikke er relevant. Da blir de kontrollpunktene som faktisk er vurdert prosjektets ferdigstillingsgrunnlag. Minst ett punkt må være vurdert. Garantiprosjekter kan ikke bruke dette." })
+              ] })
+            ] }),
+            project?.checklistScopeMode === "limited" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", style: { marginTop: "8px", fontWeight: 700 }, children: ["Begrenset omfang aktivt: ", projectGuideStats.checklistDone, " vurdert kontrollpunkt", projectGuideStats.checklistDone === 1 ? "" : "er", "."] })
+          ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: "Lagre overtagelse" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: completeOvertagelseAndLock, disabled: isProjectLocked, children: "Fullf\xF8r overtagelse og l\xE5s prosjekt" }),
@@ -12284,6 +12328,32 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ]
       },
       {
+        key: "quality",
+        title: "✅ Dokumentasjonskrav og kvalitet",
+        purpose: "Expo ProffDok er laget for håndverkere som skal levere komplett og etterprøvbar dokumentasjon av det arbeidet som faktisk er utført. Dokumentasjon er en del av leveransen – ikke et tillegg som fylles ut til slutt.",
+        workflow: [
+          "Dokumenter prosjektet fortløpende mens arbeidet utføres.",
+          "Legg inn relevante produkter og FDV-dokumentasjon for produkter og materialer som er levert eller installert og som kunden kan ha behov for å kjenne, drifte eller vedlikeholde.",
+          "Ta bilder av relevante arbeidsfaser, skjulte konstruksjoner, kritiske detaljer og ferdig resultat der dette er relevant for leveransen.",
+          "Vurder alle kontrollpunkter som er relevante for prosjektets faktiske omfang, og lukk eventuelle avvik før ferdigstilling.",
+          "Registrer overtagelse med begge signaturer når arbeidet er gjennomgått med kunden.",
+          "Kontroller rapporten før prosjektet låses og dokumentasjonen sendes kunden."
+        ],
+        important: [
+          "Et prosjekt skal ikke ferdigstilles i Expo ProffDok med mangelfull dokumentasjon av arbeid som faktisk er utført.",
+          "Mindre prosjekt / begrenset sjekklisteomfang skal bare brukes når standardlisten inneholder punkter som reelt ikke gjelder prosjektet. Valget reduserer ikke kravet til å dokumentere hele den faktiske leveransen.",
+          "Manglende produkter eller FDV skal ikke brukes som en snarvei. Dersom relevante produkter er levert eller installert, skal de dokumenteres.",
+          "Garantiprosjekter følger i tillegg egne garanti- og Sopro-krav og kan ikke bruke begrenset sjekklisteomfang for å omgå disse kravene.",
+          "Rapporten viser den dokumentasjonen som faktisk er registrert. Den utførende virksomheten er ansvarlig for at omfanget er riktig og tilstrekkelig for prosjektet."
+        ],
+        best: [
+          "Tenk dokumentasjon før arbeidet lukkes inne eller blir vanskelig å kontrollere i ettertid.",
+          "Bruk sjekklistene som arbeidsverktøy, ikke bare som sluttkontroll.",
+          "La en annen ansvarlig person kontrollere dokumentasjonen før større prosjekter ferdigstilles.",
+          "Ferdigstill først når dokumentasjonen er så komplett at den kan overleveres kunden med faglig trygghet."
+        ]
+      },
+      {
         key: "hjelp",
         title: "❓ Hjelp",
         purpose: "Hjelp-fanen inneholder digital brukerveiledning, brukervilkår og anbefalt appinstallasjon på mobil.",
@@ -12782,7 +12852,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         ]
       }
     ];
-    const userGuideOrder = ["start", "sales", "info", "garanti", "firmaProfil", "prosjektering", "produkter", "overflater", "bilder", "tilgang", "fagUtstyr", "sjekklister", "avvik", "tilbud", "chat", "interne", "overtagelse", "prosjektliste", "rapport", "hjelp", "nytt"];
+    const userGuideOrder = ["start", "quality", "sales", "info", "garanti", "firmaProfil", "prosjektering", "produkter", "overflater", "bilder", "tilgang", "fagUtstyr", "sjekklister", "avvik", "tilbud", "chat", "interne", "overtagelse", "prosjektliste", "rapport", "hjelp", "nytt"];
     const orderedUserGuideSections = [...userGuideSections].sort((a, b) => userGuideOrder.indexOf(a.key) - userGuideOrder.indexOf(b.key));
     const visibleGuideSections = [
       ...orderedUserGuideSections.slice(0, 5),
@@ -12817,8 +12887,13 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Komplett digital brukerveiledning for Expo ProffDok. Veiledningen er tekstbasert, mobilvennlig og viser kun innhold som er relevant for din brukerrolle." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 05.08.2026" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 07.08.2026" })
           ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#ecfdf5", borderColor: "#86efac" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "✅ Dokumentasjon er en del av håndverksleveransen" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { lineHeight: 1.6, marginBottom: "8px" }, children: "Expo ProffDok skal brukes til komplett relevant prosjektdokumentasjon. Arbeid som er utført skal dokumenteres med de produktene/FDV-opplysningene, bildene, kontrollpunktene, avvikene og overtagelsesopplysningene som faktisk er relevante for leveransen." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginBottom: 0 }, children: "Mindre prosjekt / begrenset sjekklisteomfang er kun for reelt mindre omfang. Det er ikke en snarvei for å hoppe over relevant dokumentasjon. Dersom produkter eller materialer med FDV er levert eller installert, skal de dokumenteres før prosjektet ferdigstilles." })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#f8fafc" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "💡 Anbefalt hovedflyt" }),
