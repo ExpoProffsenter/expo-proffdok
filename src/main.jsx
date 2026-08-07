@@ -1,3 +1,4 @@
+// FASE 23Z.1 SLUTTSIDE / BEGRENSET OMFANG: Sluttdokumentasjon bruker samme sjekklistestatus som rapportstatusen. Begrenset omfang vises som OK med antall relevante vurderte kontrollpunkt; standardprosjekter beholder full sjekklistestatus. Ingen endring i låsing, garanti, overtagelse, SQL/RLS/Storage eller datamodell.
 // FASE 23Z TRYGG FERDIGSTILLING / SMÅ PROSJEKTER: Låsing bruker samme sluttkrav som rapport/kundeportal. Standardprosjekter krever alle aktive kontrollpunkter vurdert; ikke-garantiprosjekter kan eksplisitt velges som mindre prosjekt/begrenset sjekklisteomfang, der minst ett vurdert kontrollpunkt blir relevant ferdigstillingsgrunnlag. Åpne sjekkpunkt- og prosjektavvik blokkerer alltid. Garantiprosjekter kan ikke bruke begrenset omfang og kan aldri låses før garanti er utstedt. Ingen SQL/RLS/Storage/Edge/e-post- eller garantimotorendring.
 // FASE 23Y KORREKT SLUTTSTATUS / OVERTAGELSESDATO: Sluttdokumentasjon krever registrert overtagelse, ingen åpne avvik, ferdig relevante sjekklister (dersom sjekkliste finnes) og eventuell utstedt garanti. Produkter/vedlegg er dokumentasjonsgrad, men blokkerer ikke enkle prosjekter alene. Ny overtagelse foreslår alltid dagens lokale dato uten å overskrive lagret dato. Kun lokal rapport-/kundeportalstatus og datoforslag; ingen SQL, RLS, Storage, Edge Function, e-post, warrantyReadiness, issueWarranty, garanti- eller overtagelsesregistreringslogikk.
 // FASE 23X STABIL PROSJEKTNAVIGASJON: Bevarer 23T/23U, men rydder lastet prosjektstate når bruker går til startsiden og hindrer prosjektfaner uten aktivt prosjekt. Dette fjerner situasjonen der gamle prosjektdata kunne vises samtidig som fanen het Startside. Kun navigasjon/lokal UI-state; ingen SQL, RLS, Storage, Edge Function, e-post, garanti-, overtagelses- eller datamodellendring.
@@ -8273,11 +8274,11 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawMetricCard(margin + (metricW + metricGap) * 2, y, metricW, 20, "Produkter", String(status.productTotal), "neutral");
           drawMetricCard(margin + (metricW + metricGap) * 3, y, metricW, 20, "Avvik", String(status.openDeviationTotal), status.openDeviationTotal ? "red" : "green");
           y += 34;
-          const checklistComplete = status.checklistTotal > 0 && status.checklistDone >= status.checklistTotal;
+          const checklistComplete = status.checklistCompleteForFinal;
           const certItems = [
             { label: "Bildedokumentasjon", ok: status.photoTotal > 0, detail: status.photoTotal > 0 ? `${status.photoTotal} bilde${status.photoTotal === 1 ? "" : "r"} registrert` : "Ingen bilder registrert" },
             { label: "Produktdokumentasjon / FDV", ok: status.productTotal > 0, detail: status.productTotal > 0 ? `${status.productTotal} produkt${status.productTotal === 1 ? "" : "er"} dokumentert` : "Ingen produkter dokumentert" },
-            { label: "Sjekklister og kontrollpunkter", ok: checklistComplete, detail: `${status.checklistDone}/${status.checklistTotal || status.checklistDone} kontrollpunkt vurdert` },
+            { label: "Sjekklister og kontrollpunkter", ok: checklistComplete, detail: status.checklistDetail },
             { label: "Overtagelse", ok: projectHasOvertagelse(overtagelse), detail: projectHasOvertagelse(overtagelse) ? "Signert av begge parter" : "Ikke registrert" },
             { label: "Garanti", ok: warranty?.issued || !warranty?.enabled, neutral: !warranty?.enabled, detail: warranty?.issued ? `${getWarrantyYears(warranty)} år · ${warranty?.guaranteeNumber || "aktiv"}` : warranty?.enabled ? "Ikke utstedt" : "Ikke aktivert" },
           ];
