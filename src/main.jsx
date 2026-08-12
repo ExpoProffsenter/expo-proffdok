@@ -1,3 +1,4 @@
+// FASE 24O MENYNAVIGASJON / INNHOLDSANKER: Fanevalg på både PC og mobil scroller til det aktuelle innholdet i valgt fane i stedet for toppen av siden. Aktiv fane kan også klikkes for å gå tilbake til innholdet. Kun navigasjon/scroll-UI; ingen prosjektdata, lagring, Supabase, SQL/RLS, Storage, Edge Function, e-post, garanti- eller rapportmotorendring.
 // FASE 24N AVVIKSVISNING: Flytter kun Avvikssentralens visnings-/UI-komponent ut av main.jsx uten funksjonsendring. Sjekkpunktavvik, HMS-/prosjektavvik, bilder, chatutkast, rapportvalg og eksisterende prosjektstate beholdes uendret. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.\n// FASE 24M OVERFLATER/INNREDNING: Flytter ren UI-visning og lokale feltoppdateringer for Overflater og innredning ut av main.jsx. Ingen lagrings-, rapport-, garanti-, portal-, SQL-, RLS-, Storage-, Edge Function- eller e-postlogikk endres.
 // FASE 24L PRODUKTMODUL: Flytter eksisterende Produkter-fane og rapportdokumentvalg til egen ren UI-modul uten funksjonsendring. Produktdata, Produktmaster, Supabase, lagring, garanti, rapportgenerator, portaltilgang, SQL/RLS/Storage/Edge Function og e-postlogikk er uendret.
 // FASE 24K APPSTATISK KONFIG: Flytter app-branding, guide-stier og brukervilkårstekst ut av main.jsx. Kun statisk app-/vilkårskonfigurasjon; ingen auth-, lagrings-, garanti-, rapport-, portal-, SQL-, RLS-, Storage-, Edge Function- eller e-postlogikk endres.
@@ -2270,12 +2271,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const scrollToMobileTabTarget = (id) => {
       if (!id) return;
       if (typeof window === "undefined" || typeof document === "undefined") return;
-      if (window.innerWidth > 700) {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        return;
-      }
       const targetMap = {
         prosjekt: ".mobileCurrentProjectBar, .desktopOnlyWhenNoProject section, main",
+        sales: "main",
         prosjektinfo: ".projectInfoSection, section, main",
         garanti: ".warrantyStatusCard, section, main",
         firma: ".logoBox, section, main",
@@ -2287,6 +2285,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         tilgang: ".accessQuickStart, section, main",
         installasjoner: ".installQuickStart, section, main",
         sjekklister: ".checklistSummaryCard, .checklistAccordion, section, main",
+        avvik: "main > section, section, main",
         tilbud: ".contractQuickStart, section, main",
         overtagelse: ".handoverQuickStart, section, main",
         chat: ".chatQuickStart, .chatMessages, section, main",
@@ -2409,6 +2408,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
       if (id === tab) {
         setMobileMenuOpen(false);
+        setTimeout(() => scrollToMobileTabTarget(id), 20);
         return;
       }
       const canLeave = await confirmLeaveWithUnsavedChanges(`går til fanen "${tabs.find(([tabId]) => tabId === id)?.[1] || id}"`);
