@@ -1,4 +1,4 @@
-// FASE 24D HJELP / BRUKERVEILEDNING: Mekanisk uttrekk av eksisterende HelpCenter fra main.jsx. Ingen endring i hjelpetekst, roller, brukervilkår, prosjektlogikk, garanti, database, RLS, Storage, Edge Function eller e-post.
+// FASE 25D HJELP / BRUKERVEILEDNING: Oppdatert dokumentasjon for Tilbud/kontrakt etter Fase 25B. Presiserer valgfri tilbudsflyt, strukturerte tillegg/fradrag, gjeldende avtalesum inkl. mva. og bakoverkompatibilitet. Ingen funksjons-, database-, RLS-, Storage-, Edge Function- eller e-postendring.
 import React, * as ReactNS from 'react';
 import { FileText } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
@@ -329,22 +329,28 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
       {
         key: "tilbud",
         title: "📄 Tilbud/kontrakt",
-        purpose: "Tilbud/kontrakt samler prosjektets avtaledokumenter og relevante vedlegg på ett sted.",
+        purpose: "Tilbud/kontrakt dokumenterer prosjektets avtalegrunnlag og eventuelle endringer etter at prosjektet er opprettet. Fanen er valgfri – ikke alle prosjekter har et tilbud eller en kontrakt registrert i Expo ProffDok.",
         workflow: [
-          "Last opp tilbud, kontrakt, bestilling eller andre relevante avtaledokumenter.",
-          "Bruk tydelige filnavn og kategori der dette er mulig.",
-          "Legg inn endringsmeldinger eller tillegg dersom dette skal følge prosjektet.",
-          "Kontroller at riktig dokumentasjon er med før rapporten sendes."
+          "Hvis prosjektet er aktivert fra Befaring/Tilbud, vises den opprinnelige aksepterte avtalen som prosjektets utgangspunkt.",
+          "Hvis prosjektet er opprettet direkte uten tilbud i Expo ProffDok, kan fanen stå tom. Eksternt tilbud, kontrakt, bestilling eller andre avtaledokumenter kan lastes opp som vedlegg dersom dette finnes.",
+          "Registrer senere avtaleendringer som egne poster og velg Tillegg eller Fradrag.",
+          "Legg inn beskrivelse, beløp inkl. mva. og eventuell kommentar eller avtalegrunnlag.",
+          "Når prosjektet har en registrert opprinnelig avtalesum, beregner Expo ProffDok gjeldende avtalesum som opprinnelig avtale pluss tillegg og minus fradrag.",
+          "Kontroller avtaleendringer og vedlegg før Tilbud/kontrakt tas med i rapport eller deles med kunden."
         ],
         important: [
-          "Avtaledokumenter bør oppbevares samlet med prosjektets øvrige dokumentasjon.",
-          "Feil eller manglende avtaledokumenter kan gi uklarhet ved senere spørsmål.",
-          "PDF-vedlegg må ha fungerende lenke for å kunne åpnes fra rapport."
+          "Det opprinnelige aksepterte tilbudet overskrives ikke når tillegg eller fradrag registreres. Senere endringer dokumenteres separat.",
+          "Ikke alle prosjekter har et tilbud i Expo ProffDok. Manglende tilbud betyr derfor ikke at prosjektet er ufullstendig.",
+          "Gjeldende avtalesum beregnes bare når prosjektet har en registrert opprinnelig avtalesum.",
+          "Alle priser som vises og registreres i Tilbud/kontrakt for privatkunder er inkl. mva.",
+          "Eldre tillegg eller fradrag som bare finnes som fritekst beholdes som dokumentasjon, men tas ikke automatisk med i beregnet avtalesum.",
+          "Tilbud, kontrakt og avtaledokumenter er ikke tilgjengelige for underentreprenørtilgang."
         ],
         best: [
-          "Last opp signerte dokumenter så snart de foreligger.",
-          "Bruk denne fanen som prosjektets dokumentarkiv for avtalegrunnlag.",
-          "Kontroller vedlegg før overtagelse."
+          "Registrer tillegg og fradrag fortløpende når de blir avtalt med kunden.",
+          "Bruk én endringspost per avtalt endring slik at historikken blir tydelig.",
+          "Last opp signert tilbud, kontrakt, akseptbevis eller annen relevant dokumentasjon når dette finnes.",
+          "Kontroller at gjeldende avtalesum stemmer med faktisk avtale før sluttrapporten deles med kunden."
         ]
       },
       {
@@ -496,11 +502,13 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Bilder fra Ferdig resultat kan brukes som headingbilde i rapporten.",
           "Digital brukerveiledning er nå den gjeldende veiledningen i Hjelp.",
           "Befaring/Tilbud samler forespørsel, befaring, tilbud, digital kundeaksept, akseptbevis og prosjektaktivering i én arbeidsflyt.",
+          "Tilbud/kontrakt skiller nå mellom opprinnelig avtale og senere endringer. Tillegg og fradrag registreres som egne poster med beløp inkl. mva., og gjeldende avtalesum beregnes når opprinnelig avtalesum finnes.",
           "Systemadministrator kan avvise og slette ventende brukere.",
           "Rapportdesign, mobilvisning, autolagring og e-postvarsler er forbedret."
         ],
         important: [
           "Egne sjekkpunkter vises ikke uten garanti og Sopro-system.",
+          "Tilbud/kontrakt er valgfritt. Prosjekter uten tilbud registrert i Expo ProffDok kan bruke fanen kun til eksterne avtaledokumenter eller la den stå tom.",
           "Sjekkpunkter for andre fag overskriver ikke eksisterende punkter.",
           "Brukere må fortsatt laste ned og arkivere ferdig rapport lokalt."
         ],
@@ -594,7 +602,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Komplett digital brukerveiledning for Expo ProffDok. Veiledningen er tekstbasert, mobilvennlig og viser kun innhold som er relevant for din brukerrolle." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 07.08.2026" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 13.08.2026" })
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#ecfdf5", borderColor: "#86efac" }, children: [
