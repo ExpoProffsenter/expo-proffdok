@@ -9624,6 +9624,7 @@ ${appLink}`;
     Grid,
     Textarea,
     getActiveChecklistTemplate,
+    getWarrantyYears,
     canUseCustomChecklistForWarranty,
     customChecklistTradeOptions,
     customChecklistCategoryFromTrade,
