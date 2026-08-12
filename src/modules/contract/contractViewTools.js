@@ -16,11 +16,15 @@ export function createContractViewTools({
     uploadTilbudFiles
   }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilbud / kontrakt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, {}), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her legger du inn tilbud, kontrakt og avtaleendringer. Kunde får se dette i kundelinken når det finnes innhold eller vedlegg. Huk av hvis sammendraget også skal med i vanlig rapport/PDF." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan du laste opp et eksisterende tilbud eller en kontrakt, og registrere senere pris- eller avtaleendringer. Har prosjektet ikke tilbud eller kontrakt, kan feltene for tillegg og fradrag stå tomme." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "item", style: { marginBottom: "14px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Pris- og avtaleendringer" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginBottom: 0 }, children: "Brukes bare dersom det finnes en avtalt pris eller kontrakt som senere er endret. Tillegg er arbeid eller leveranser som øker avtalt pris. Fradrag er arbeid eller leveranser som trekkes fra avtalt pris." })
+      ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Tillegg", value: tilbud.tillegg || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, tillegg: v }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Fradrag", value: tilbud.fradrag || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, fradrag: v }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Avtaleendringer / kommentar", value: tilbud.kommentar || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, kommentar: v }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Tillegg til avtalt pris", value: tilbud.tillegg || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, tillegg: v }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Fradrag fra avtalt pris", value: tilbud.fradrag || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, fradrag: v }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Avtaleendring / kommentar", value: tilbud.kommentar || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, kommentar: v }) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "checkbox", style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" }, checked: !!tilbud.enabled, onChange: (e) => setTilbud({ ...emptyTilbud(), ...tilbud, enabled: e.target.checked }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Ta med sammendrag i rapport" })
@@ -28,7 +32,7 @@ export function createContractViewTools({
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Last opp tilbud, kontrakt eller andre avtaledokumenter. Vedleggene lagres på prosjektet og vises i kundelinken. Underentreprenør har ikke tilgang til tilbud/kontrakt." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Valgfritt. Last opp tilbud, kontrakt eller andre avtaledokumenter dersom prosjektet har dette. Vedleggene lagres på prosjektet og vises i kundelinken. Underentreprenør har ikke tilgang til tilbud/kontrakt." }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, { size: 18 }),
           " Last opp tilbud / kontrakt",
