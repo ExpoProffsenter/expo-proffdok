@@ -1,3 +1,4 @@
+// FASE 24R FAG/DELER/UTSTYR FULLFØRING: Fullfører Fase 24P ved å bruke eksisterende installationViewTools også i ordinær intern prosjektvisning. Ingen funksjonsendring; kun fjerner gjenværende duplisert UI fra main.jsx. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
 // FASE 24P FAG/DELER/UTSTYR: Flytter kun visningen for Fag, deler og utstyr ut av main.jsx uten funksjonsendring. Samme modul brukes for intern prosjektvisning og underentreprenørvisning. Bildeopplasting, prosjektstate, lagring og øvrig logikk beholdes uendret. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
 // FASE 24O MENYNAVIGASJON / INNHOLDSANKER: Fanevalg på både PC og mobil scroller til det aktuelle innholdet i valgt fane i stedet for toppen av siden. Aktiv fane kan også klikkes for å gå tilbake til innholdet. Kun navigasjon/scroll-UI; ingen prosjektdata, lagring, Supabase, SQL/RLS, Storage, Edge Function, e-post, garanti- eller rapportmotorendring.
 // FASE 24N AVVIKSVISNING: Flytter kun Avvikssentralens visnings-/UI-komponent ut av main.jsx uten funksjonsendring. Sjekkpunktavvik, HMS-/prosjektavvik, bilder, chatutkast, rapportvalg og eksisterende prosjektstate beholdes uendret. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.\n// FASE 24M OVERFLATER/INNREDNING: Flytter ren UI-visning og lokale feltoppdateringer for Overflater og innredning ut av main.jsx. Ingen lagrings-, rapport-, garanti-, portal-, SQL-, RLS-, Storage-, Edge Function- eller e-postlogikk endres.
@@ -7435,46 +7436,12 @@ ${appLink}`;
             ] })
           ] }, a.id))
         ] }),
-        tab === "installasjoner" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Fag, deler og utstyr", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", onClick: () => setInst((prev) => [...prev, { id: uid(), category: "R\xF8rlegger", name: "", qty: "", supplier: "", desc: "", fdvUrl: "", photos: [], by: user.name || "Ukjent", created: (/* @__PURE__ */ new Date()).toLocaleString("no-NO") }]), children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
-            " Legg til post"
-          ] }),
-          inst.map((x) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Kategori", value: x.category, options: installCats, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, category: v } : i)) }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn/produkt", value: x.name, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, name: v } : i)) }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Antall/mengde", value: x.qty, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, qty: v } : i)) }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Leverand\xF8r", value: x.supplier, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, supplier: v } : i)) }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Beskrivelse/plassering", value: x.desc, onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, desc: v } : i)) }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "FDV-/databladlink", value: x.fdvUrl || "", onChange: (v) => setInst(inst.map((i) => i.id === x.id ? { ...i, fdvUrl: v } : i)) })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
-              " Last opp bilder",
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", accept: "image/*", multiple: true, onChange: async (e) => {
-                const imgs = await uploadImages(e.target.files, "installasjoner");
-                setInst(inst.map((i) => i.id === x.id ? { ...i, photos: [...i.photos || [], ...imgs] } : i));
-              } })
-            ] }),
-            (x.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
-              "\u{1F4F7} ",
-              (x.photos || []).length,
-              " bilder lagt til"
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos", children: (x.photos || []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name })
-            ] }, p.id)) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
-              "Lagt inn av ",
-              x.by,
-              " \xB7 ",
-              x.created
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setInst(inst.filter((i) => i.id !== x.id)), children: "Fjern" })
-          ] }, x.id))
-        ] }),
+        tab === "installasjoner" && renderInstallationPanel({
+          inst,
+          setInst,
+          uploadImages,
+          authorName: user.name || "Ukjent"
+        }),
         tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
