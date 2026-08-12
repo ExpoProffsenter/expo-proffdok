@@ -1,9 +1,9 @@
 // FASE 24B PORTALMODUL: Flytter eksisterende tilgangskode-logikk og kundeportalvisning ut av main.jsx uten funksjonsendring.
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
-import { Camera, FileText, Building2, ClipboardCheck, BadgeCheck } from 'lucide-react';
+import { Camera, FileText, Building2, ClipboardCheck, BadgeCheck, Download } from 'lucide-react';
 
 const import_jsx_runtime = { jsx, jsxs, Fragment };
-const import_lucide_react = { Camera, FileText, Building2, ClipboardCheck, BadgeCheck };
+const import_lucide_react = { Camera, FileText, Building2, ClipboardCheck, BadgeCheck, Download };
 
 export function createPortalAccessTools(ctx = {}) {
   const {
