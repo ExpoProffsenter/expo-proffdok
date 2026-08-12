@@ -1,3 +1,4 @@
+// FASE 25B STRUKTURERTE AVTALEENDRINGER: Tilbud/kontrakt støtter strukturerte tillegg og fradrag med beløp inkl. mva. og bakoverkompatible sammendrag. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // FASE 25A TYDELIG TILBUD/KONTRAKT: Rydder også eldre automatisk importert befarings-/tilbudstekst fra avtaleendringsfeltet når eldre prosjekter mangler komplett salesOrigin. Kun visnings-/migreringsvern; ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // FASE 24S.1 TILBUD/KONTRAKT DATAKLARHET: Skjuler eldre automatisk kopiert prosjektbeskrivelse fra avtaleendringsfelt i visning, kundeportal, rapport og PDF uten automatisk databaseendring. Nye aktiveringer håndteres i SalesModule. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // FASE 24S TILBUD/KONTRAKT-VISNING: Flytter kun Tilbud / kontrakt-fanens UI ut av main.jsx uten funksjonsendring. Vedlegg, prosjektstate, opplasting og rapportvalg beholdes uendret. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
@@ -626,6 +627,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var emptyTilbud = () => ({
     enabled: false,
     files: [],
+    changes: [],
+    legacyTillegg: "",
+    legacyFradrag: "",
     tillegg: "",
     fradrag: "",
     kommentar: ""
@@ -1067,7 +1071,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [checklist, setChecklist] = (0, import_react.useState)({});
     const [tilbud, setTilbud] = (0, import_react.useState)(emptyTilbud());
     const displayTilbud = (0, import_react.useMemo)(() => {
-      const normalized = { ...emptyTilbud(), ...tilbud || {}, files: Array.isArray(tilbud?.files) ? tilbud.files : [] };
+      const normalized = {
+        ...emptyTilbud(),
+        ...tilbud || {},
+        files: Array.isArray(tilbud?.files) ? tilbud.files : [],
+        changes: Array.isArray(tilbud?.changes) ? tilbud.changes : []
+      };
       const comment = String(normalized.kommentar || "").trim();
       const description = String(project?.projectDescription || "").trim();
       const looksLikeLegacySalesImport = Boolean(
@@ -3247,7 +3256,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const createNewProject = async () => {
       const canLeave = await confirmLeaveWithUnsavedChanges("starter nytt prosjekt");
       if (!canLeave) return;
-      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || (Array.isArray(project.projectDeviations) ? project.projectDeviations : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || (Array.isArray(project.projectDeviations) ? project.projectDeviations : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.changes || []).length || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
       newProjectTouchedRef.current = false;
       pauseDirtyTrackingBriefly(1200);
@@ -8474,9 +8483,12 @@ ${appLink}`;
   const { renderContractPanel } = createContractViewTools({
     Section,
     Grid,
+    Input,
+    Select,
     Textarea,
     FileText: import_lucide_react.FileText,
     Plus: import_lucide_react.Plus,
+    Trash2: import_lucide_react.Trash2,
     emptyTilbud
   });
 
