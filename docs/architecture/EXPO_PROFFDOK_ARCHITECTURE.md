@@ -1,21 +1,22 @@
 Expo ProffDok – arkitekturkart
-Fase: 23 – Modulisering, videreutvikling og trygg produksjonsforvaltning  
-Status: Nå-arkitektur og anbefalt målarkitektur  
-Dato: 6. august 2026  
-Branch: `feature/fase23-arkitekturkart`  
-Plassering i repository: `docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md`  
-Produksjonsgrunnlag: Stabil `main` etter Fase 22
----
-1. Formål
-Dette dokumentet er kartet for videre modulisering av Expo ProffDok. Det beskriver:
-dagens faktiske frontendstruktur
-ansvar og avhengigheter i `main.jsx` og `SalesModule.jsx`
+Fase: 25 – Modulisert produksjonsarkitektur og trygg videreutvikling
+Status: Oppdatert nå-arkitektur etter Fase 25C
+Dato: 13. august 2026
+Branch: `feature/fase25d-dokumentasjon`
+Plassering i repository: `docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md`
+Produksjonsgrunnlag: Stabil `main` etter Fase 25C
+Formål
+Dette dokumentet er kartet for videre utvikling og modulisering av Expo ProffDok. Det opprinnelige arkitekturkartet ble etablert i Fase 23. Denne versjonen er oppdatert etter produksjonsendringene gjennom Fase 25C.
+Dokumentet beskriver:
+dagens faktiske frontendstruktur og grad av modulisering
+ansvar og avhengigheter i `main.jsx`, `SalesModule.jsx` og utskilte moduler
 datamodeller, Supabase-tabeller, RPC-er, Storage og Edge Functions
 hovedflyter mellom brukergrensesnitt, database, filer, e-post og kundeportaler
+Tilbud/kontrakt-modellen med opprinnelig avtale og senere avtaleendringer
 teknisk gjeld og risikoområder
 anbefalt målstruktur
-trygg rekkefølge for moduliseringsarbeidet
-test- og godkjenningskrav for hver senere refaktorering
+trygg rekkefølge for videre modulisering
+test- og godkjenningskrav for senere refaktoreringer
 Dokumentet innfører ingen funksjonelle endringer, ingen databaseendringer og ingen endringer i produksjons-UI.
 1.1 Styrende prinsipper
 Produksjonsversjonen på `main` er kilde til sannhet.
@@ -28,13 +29,23 @@ Mobilvisning er en obligatorisk del av hver test.
 Dataformatet i eksisterende prosjekter og salgssaker skal være bakoverkompatibelt.
 Komplette filer leveres når en endring skal implementeres.
 Branch, mappe og filnavn skal alltid oppgis før kode erstattes.
----
+Aksepterte tilbudsversjoner er historikk og skal ikke overskrives av senere avtaleendringer.
+Prosjekter uten tilbud registrert i Expo ProffDok er en normal og støttet tilstand.
 2. Kildegrunnlag og avgrensning
-Arkitekturkartet er laget fra følgende produksjonsnære filer og Supabase-oversikter:
+Arkitekturkartet ble opprinnelig laget fra produksjonsnære filer og Supabase-oversikter i Fase 23 og er senere oppdatert mot de modulene og flytene som er endret gjennom Fase 24 og 25.
+Sentrale produksjonsnære områder:
 `src/main.jsx`
 `src/style.css`
 `src/modules/sales/SalesModule.jsx`
 `src/modules/sales/sales.css`
+`src/modules/help/helpTools.js`
+`src/modules/report/reportViewTools.js`
+`src/modules/contract/contractViewTools.js`
+`src/modules/product/productViewTools.js`
+`src/modules/surfaces/surfaceViewTools.js`
+`src/modules/deviations/deviationViewTools.js`
+`src/modules/installations/installationViewTools.js`
+`src/modules/portal/portalTools.js`
 `package.json`
 `vite.config.js`
 `supabase/functions/smart-worker/index.ts`
@@ -43,15 +54,16 @@ Supabase Table Editor
 Supabase Database Functions
 Supabase Storage Buckets
 Supabase Edge Functions
-2.1 Oppmålt kodeomfang
-Område	Fil	Omfang	Observerte React-konstruksjoner
+2.1 Historisk kodeomfang fra Fase 23
+Følgende målinger er et historisk målepunkt fra før den videre moduliseringen og skal ikke tolkes som dagens linjetall:
+Område	Fil	Historisk omfang	Observerte React-konstruksjoner
 Hovedapp	`src/main.jsx`	13 826 linjer, ca. 941 KB	96 state-deklarasjoner, 23 effects, 34 memo-beregninger, 19 refs
 Salgsmodul	`src/modules/sales/SalesModule.jsx`	6 228 linjer, ca. 241 KB	27 state-deklarasjoner, 10 effects, 6 memo-beregninger, 6 refs og 98 navngitte funksjoner
 Global CSS	`src/style.css`	221 linjer	Globale elementselektorer og mobil-/printregler
 Salgs-CSS	`src/modules/sales/sales.css`	1 684 linjer	Hovedsakelig `.sales-*`, men også globale selektorer
-`main.jsx` har et generert/transpilert preg med blant annet `import_react`, `import_jsx_runtime` og kall som `(0, import_react.useState)`. Filen må derfor behandles ekstra konservativt. En stor automatisk formattering eller full omskriving skal ikke kombineres med moduldeling.
+`main.jsx` har fortsatt et generert/transpilert preg med blant annet `import_react`, `import_jsx_runtime` og kall som `(0, import_react.useState)`. Filen behandles derfor fortsatt konservativt. Fase 24–25 har flyttet flere visninger og hjelpeområder ut i egne moduler uten å omskrive hele appskallet.
 2.2 Ikke fullt verifisert i dette kartet
-Følgende er ikke eksportert og detaljkontrollert linje for linje:
+Følgende er fortsatt ikke eksportert og detaljkontrollert linje for linje:
 komplette SQL-definisjoner for tabeller
 alle fremmednøkler og indekser
 komplette RLS-policyer
@@ -60,36 +72,60 @@ SQL-koden i alle RPC-funksjoner
 Vercel-miljøvariabler og produksjonsinnstillinger
 innholdet i hele `api/`- og `public/`-mappene
 låste versjoner i `package-lock.json`
-Der dokumentet bygger på tabellnavn eller funksjonsnavn uten SQL-eksport, er dette uttrykkelig merket som observert, logisk kobling eller må verifiseres.
----
+eksakt komplett filinventar i alle nyere modulmapper
+Der dokumentet bygger på observerte modulnavn eller funksjonsnavn uten fersk full repository-eksport, skal dette leses som produksjonsnær dokumentasjon og ikke som en komplett automatisk kodeinventering.
 3. Repository – observert nåstruktur
+Fase 24 og 25 har flyttet flere tydelige domenevisninger ut av `main.jsx`. Følgende struktur er observert i produksjonsarbeidet:
 ```text
 expo-proffdok/
-├── api/                              # Innhold ikke detaljkartlagt i denne leveransen
-├── public/                           # Logoer, dokumenter og øvrige statiske filer
+├── api/
+├── public/
 ├── src/
-│   ├── main.jsx                      # Hovedapp, auth, prosjekt, admin, portaler og rapport
-│   ├── style.css                     # Global styling for hovedappen
+│   ├── main.jsx
+│   ├── style.css
 │   ├── modules/
-│   │   └── sales/
-│   │       ├── README.md
-│   │       ├── SalesModule.jsx       # Befaring / Tilbud / Aksept
-│   │       ├── SalesPreview.jsx      # Separat salgs-preview
-│   │       └── sales.css             # Styling for salgsmodulen
-│   └── [utgått AI-test fjernet]
-├── index.html                        # Ordinær app-entry
-├── sales-preview.html                # Separat salgs-preview-entry
+│   │   ├── app/
+│   │   ├── checklist/
+│   │   ├── config/
+│   │   ├── contract/
+│   │   │   └── contractViewTools.js
+│   │   ├── deviations/
+│   │   │   └── deviationViewTools.js
+│   │   ├── help/
+│   │   │   └── helpTools.js
+│   │   ├── images/
+│   │   ├── installations/
+│   │   │   └── installationViewTools.js
+│   │   ├── overtagelse/
+│   │   ├── portal/
+│   │   │   └── portalTools.js
+│   │   ├── product/
+│   │   │   └── productViewTools.js
+│   │   ├── project/
+│   │   ├── report/
+│   │   │   └── reportViewTools.js
+│   │   ├── sales/
+│   │   │   ├── README.md
+│   │   │   ├── SalesModule.jsx
+│   │   │   ├── SalesPreview.jsx
+│   │   │   └── sales.css
+│   │   └── surfaces/
+│   │       └── surfaceViewTools.js
+│   ├── [øvrige produksjonsfiler]
+├── index.html
+├── sales-preview.html
 ├── package.json
 ├── package-lock.json
 └── vite.config.js
 ```
-3.1 Vite-entrypunkter etter opprydding
+Dette er ikke ment som en komplett filinventering av hele repositoryet. Hovedpoenget er at domenevisninger som tidligere lå direkte i `main.jsx` nå i større grad ligger i egne modulmapper.
+3.1 Vite-entrypunkter
 ```text
 index.html          → ordinær Expo ProffDok-app
 sales-preview.html  → isolert salgs-preview
 ```
 Utgått `ai-transcript-test.html` og tilhørende React-testfil er fjernet. Vite-konfigurasjonen refererer ikke lenger til AI-testsiden.
-3.2 Supabase Edge Functions etter opprydding
+3.2 Supabase Edge Functions
 Aktive funksjoner:
 ```text
 delete-pending-user
@@ -100,7 +136,17 @@ Fjernet som utgått og ubrukt:
 inspection-assistant
 swift-processor
 ```
----
+3.3 Modulisering gjennom Fase 24–25
+Følgende områder er bekreftet flyttet eller koblet mot egne view-/verktøymoduler uten databaseskjemaendring:
+Hjelp
+Produkter
+Overflater og innredning
+Avvik
+Fag, deler og utstyr
+Tilbud/kontrakt
+Rapport
+Portalrelaterte hjelpefunksjoner
+`main.jsx` er fortsatt den sentrale state- og integrasjonsorkestratoren. Moduliseringen har derfor redusert UI-omfanget, men har ikke flyttet hele prosjektpersistensen eller Supabase-tilgangen ut av hovedappen.
 4. Systemkontekst
 ```mermaid
 flowchart LR
@@ -134,13 +180,12 @@ Filer	Supabase Storage	Prosjektbilder, dokumenter, chatbilder og befaringsbilder
 Serverlogikk	Supabase RPC	Firmaavgrensning, publisering, offentlig tilbud og aksept
 Integrasjoner	Edge Functions	Resend-e-post og sikker sletting av ventende brukere
 Dokumenter	jsPDF	Sluttrapport, garantidokument og akseptbevis
----
-5. Hovedappen – `src/main.jsx`
+Hovedappen – `src/main.jsx`
 5.1 Hovedansvar
-`main.jsx` er i dag både applikasjonsskall, domene-/datatjeneste, state-container og UI for nesten hele Expo ProffDok.
-Den håndterer blant annet:
+`main.jsx` er fortsatt applikasjonsskall, sentral state-container og integrasjonspunkt for store deler av Expo ProffDok, men flere presentasjonsområder er nå flyttet til egne moduler.
+Hovedappen håndterer fortsatt blant annet:
 app-branding, favicon og manifest
-Supabase-klient
+Supabase-klient og sentral prosjektpersistens
 innlogging, registrering og passordgjenoppretting
 obligatorisk fullføring av brukerprofil
 profil, godkjenning, firma- og systemroller
@@ -149,54 +194,41 @@ startside og mobilmeny
 prosjektliste, søk og filter
 opprettelse, åpning, kopiering og sletting av prosjekt
 autolagring, manuell lagring og lokal nødkladd
-prosjektinformasjon og prosjektering
-produkter og produktdokumentasjon
-overflater og innredning
-bilder og vedlegg
-sjekklister og egne sjekkpunkter
-avvikssentral
-tilbud/kontrakt i prosjekt
-overtagelse og signatur
-dokumentert tetthetsgaranti
-prosjektchat og e-postvarsling
-kundeportal og underentreprenørportal
-rapportvisning og PDF-generering
-firmaadministrasjon
-systemadministrasjon og supportmodus
-produktmaster og garantikontrollpunkter
-innebygd brukerveiledning
+prosjektstate og integrasjon mellom utskilte domenevisninger
+overtagelse, garanti, prosjektchat og interne notater
+kunde- og underentreprenørtilgang
+firmaadministrasjon og systemadministrasjon
 integrasjon mot `SalesModule`
-Dette gir svært høy kobling: En liten endring i én del av filen kan påvirke state, lagring, portalvisning, rapport eller rollelogikk i en annen del.
-5.2 Hovedkomponenter som allerede finnes i filen
-Følgende navngitte React-komponenter er identifisert og er naturlige fremtidige uttrekkspunkter:
+Egne moduler eier nå hele eller deler av visningen for blant annet:
+Hjelp
+Produkter
+Overflater og innredning
+Avvik
+Fag, deler og utstyr
+Tilbud/kontrakt
+Rapport
+portalverktøy
+Arkitekturkonsekvensen er fortsatt høy kobling fordi state, normalisering og lagring i stor grad styres fra `main.jsx`. En modul kan være visuelt utskilt uten at datalaget er fullstendig frikoblet.
+5.2 Komponent- og moduleierskap etter Fase 25
+Det opprinnelige Fase 23-kartet listet mange komponenter som lå direkte i `main.jsx`. Flere av disse områdene er siden flyttet til egne moduler.
+Bekreftede egne modulgrensesnitt inkluderer:
 ```text
-App
-Brand
-ProjectWarrantySetup
-WarrantyPanel
-AppInstallGuide
-HelpCenter
-Section
-CollapsibleBlock
-Grid
-ProductReportDocumentSelector
-Input
-Textarea
-Select
-PhotoGrid
-ProjectInformationReadOnly
-DeviationCenter
-ChecklistEditor
-ChecklistReportSection
-BathroomEquipmentReportSection
-Report
-PdfSafeLink
-InfoCard
-SignatureCard
-SignaturePad
-CustomerReport
+src/modules/help/helpTools.js
+src/modules/product/productViewTools.js
+src/modules/surfaces/surfaceViewTools.js
+src/modules/deviations/deviationViewTools.js
+src/modules/installations/installationViewTools.js
+src/modules/contract/contractViewTools.js
+src/modules/report/reportViewTools.js
+src/modules/portal/portalTools.js
 ```
-Komponentene ligger fortsatt i samme fil og deler mange variabler, hjelpefunksjoner og datastrukturer fra filens scope.
+`main.jsx` beholder fortsatt en rekke delte UI-primitiver, stateobjekter, callbacks og persistensfunksjoner som sendes inn i modulene. Det er bevisst: Fase 24–25 har prioritert små, testbare uttrekk fremfor samtidig flytting av state og datatilgang.
+En ny refaktorering skal derfor først kontrollere:
+hvilket stateobjekt som eies av `main.jsx`
+hvilke callbacks modulen mottar
+hvilke rapport-/portalvisninger som leser samme data
+hvordan eksisterende prosjektdata normaliseres
+om eldre prosjekter mangler nyere JSON-felt
 5.3 Intern fanestruktur
 Observerte interne faner:
 ```text
@@ -361,14 +393,31 @@ salesOrigin                # Når prosjekt er aktivert fra tilbud
 portalAccess / tilgangsdata # Lagres i prosjektobjektet gjennom hjelpefunksjoner
 ```
 5.6.2 `tilbud`
+Tilbud/kontrakt er valgfritt. Ikke alle prosjekter har et tilbud registrert i Expo ProffDok.
+Nåværende prosjektstruktur støtter:
 ```text
 enabled
 files
+changes
+legacyTillegg
+legacyFradrag
 tillegg
 fradrag
 kommentar
 ```
-Akseptbevis og eventuell opplastet kontrakt overføres hit ved prosjektaktivering fra salgsmodulen.
+`changes` er listen for strukturerte senere avtaleendringer:
+```text
+id
+type                # "Tillegg" eller "Fradrag"
+description
+amountInclVat       # Beløp registrert inkl. mva.
+comment
+createdAt
+```
+`tillegg` og `fradrag` beholdes som bakoverkompatible tekstsammendrag slik at eksisterende rapport- og kundevisninger kan fungere sammen med eldre prosjektdata.
+`legacyTillegg` og `legacyFradrag` brukes til å bevare eldre fritekst uten å anta at teksten inneholder et maskinlesbart beløp.
+Når prosjektet er aktivert fra Befaring/Tilbud, ligger opprinnelig avtalehistorikk i `project.salesOrigin`. Akseptbevis og eventuell opplastet kontrakt kan ligge i `tilbud.files`.
+Når prosjektet er opprettet direkte uten tilbud, kan `tilbud` være tomt. Systemet skal ikke konstruere en opprinnelig avtalesum for slike prosjekter.
 5.6.3 `overtagelse`
 ```text
 enabled
@@ -427,8 +476,7 @@ tilgangskoder
 garanti
 produktmaster-synk
 Arkitekturkonsekvens: To samtidige oppdateringer kan i prinsippet overskrive hverandres endringer dersom begge arbeider fra ulike snapshots. Refaktorering må derfor bevare dagens merge-/normaliseringslogikk nøyaktig. En egen, sentral `projectRepository` er et senere mål, men skal ikke innføres samtidig med første komponentuttrekk.
----
-6. Befaring / Tilbud / Aksept – `SalesModule.jsx`
+Befaring / Tilbud / Aksept – `SalesModule.jsx`
 6.1 Integrasjon med hovedappen
 Hovedappen importerer salgsmodulen fra:
 ```text
@@ -627,23 +675,66 @@ accept_sales_offer(token, accepted_name, selected_options)
 ```
 Akseptert sum beregnes som aktiv tilbudsversjon pluss valgte opsjoner. Etter aksept opprettes et låst PDF-akseptbevis fra akseptert versjon og lagres i Storage.
 6.9 Prosjektaktivering
-Ved aktivering:
-Kontrolleres det om lagret `projectId` faktisk finnes.
-Det søkes etter mulig duplikat via `data.project.salesOrigin.requestRef`.
-Befaringsbilder kopieres til `project-images`.
-Aksepterte linjer, opsjoner og summer bygges inn i prosjektbeskrivelsen.
-Akseptbevis og kontrakt legges i prosjektets `tilbud.files`.
-Ny rad opprettes i `projects`.
-Salgssaken settes til `Aktivert` med prosjekt-ID.
-Appen åpner det nye prosjektet direkte.
+Ved aktivering fra en akseptert salgssak:
+kontrolleres det om lagret `projectId` faktisk finnes
+det søkes etter mulig duplikat via `data.project.salesOrigin.requestRef`
+befaringsbilder kopieres til `project-images`
+prosjektbeskrivelsen bygges av forespørselsnotat og relevant befaringssammendrag
+akseptert tilbud lagres ikke lenger som en stor fritekstkopi i prosjektbeskrivelsen eller som avtaleendringskommentar
+opprinnelig akseptert tilbud knyttes til prosjektet gjennom `project.salesOrigin`
+akseptbevis og eventuell kontrakt legges i prosjektets `tilbud.files`
+`tilbud.changes` starter tomt for nye aktiverte prosjekter
+ny rad opprettes i `projects`
+salgssaken settes til `Aktivert` med prosjekt-ID
+appen åpner det nye prosjektet direkte
 Logisk kobling mellom salgssak og prosjekt:
 ```text
 sales_requests.request_ref
         ↕
 projects.data.project.salesOrigin.requestRef
 ```
+`project.salesOrigin` kan blant annet inneholde:
+```text
+requestRef
+publicToken
+acceptedOfferVersionId
+acceptedOfferVersionNumber
+acceptedBy
+acceptedAt
+acceptedTotal
+activatedAt
+```
+`acceptedTotal` er historisk lagret fra salgsflyten som beløp eks. mva. Den opprinnelige tilbudsversjonen og aksepten er historikk og skal ikke overskrives når prosjektet senere får tillegg eller fradrag.
 Dette er en applikasjonskobling. Om det finnes en databasefremmednøkkel er ikke verifisert.
----
+6.10 Tilbud/kontrakt etter prosjektaktivering
+Prosjektfanen Tilbud/kontrakt skiller mellom:
+```text
+Opprinnelig avtale
+Senere avtaleendringer
+Vedlegg / avtaledokumenter
+Gjeldende avtalesum
+```
+Prosjekt aktivert fra Befaring/Tilbud:
+den opprinnelige aksepterte avtalen vises fra `salesOrigin`
+senere tillegg/fradrag registreres som egne poster i `tilbud.changes`
+den opprinnelige tilbudsversjonen endres ikke
+Prosjekt opprettet direkte:
+har ikke nødvendigvis `salesOrigin`
+kan ha eksternt tilbud eller kontrakt som kun lastes opp som vedlegg
+kan la hele fanen stå tom
+får ingen automatisk beregnet grunnsum dersom opprinnelig avtalesum ikke finnes
+Privatkundevisning:
+beløp i Tilbud/kontrakt vises og registreres inkl. mva.
+historisk `salesOrigin.acceptedTotal` konverteres i gjeldende implementasjon fra eks. mva. til inkl. mva.
+strukturerte endringer lagres som `amountInclVat`
+Beregning når opprinnelig grunnsum finnes:
+```text
+opprinnelig avtalesum inkl. mva.
++ strukturerte tillegg inkl. mva.
+- strukturerte fradrag inkl. mva.
+= gjeldende avtalesum inkl. mva.
+```
+Eldre fritekst for tillegg/fradrag beholdes som dokumentasjon, men tas ikke automatisk med i avtalesumberegningen.
 7. Supabase – tabeller
 7.1 Observert tabelloversikt
 ```text
@@ -725,8 +816,7 @@ validity_days
 total_ex_vat
 ```
 Eksakt SQL-type, constraints og indeksstruktur må verifiseres gjennom schema-eksport før databaseendringer.
----
-8. Supabase – databasefunksjoner / RPC
+Supabase – databasefunksjoner / RPC
 8.1 Salgsfunksjoner
 Funksjon	Return	Direkte frontendbruk	Ansvar
 `resolve_sales_company_scope()`	`uuid`	Ja	Finner stabil firmascopet ID for innlogget bruker
@@ -746,8 +836,7 @@ Disse kalles ikke direkte fra opplastet frontend og er derfor sannsynligvis stø
 Funksjon	Bruk
 `set_project_lock(...)`	Låsing/arkivering av prosjekt
 `set_updated_at()`	Triggerfunksjon for tidsstempel
----
-9. Supabase Storage
+Supabase Storage
 9.1 Buckets
 Bucket	Tilgang observert	Begrensning	Bruk
 `sales-inspection-photos`	Privat	8 MB, bildeformater	Befaringsbilder, signerte URL-er
@@ -783,8 +872,7 @@ opplastede kontrakter
 låste akseptbevis
 andre prosjektvedlegg
 Dette er et høyt prioritert sikkerhets- og personvernpunkt. Det skal ikke endres som en del av frontendmodulisering. En eventuell overgang til privat bucket krever egen migreringsplan, signerte URL-er, kontroll av rapport/PDF, kundeportal, eksisterende URL-er og historiske dokumenter.
----
-10. Edge Functions
+Edge Functions
 10.1 `smart-worker`
 Hovedansvar: HTML-e-post og sending via Resend.
 Observerte `direction`-verdier:
@@ -836,8 +924,7 @@ SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
 ```
 `SUPABASE_SERVICE_ROLE_KEY` skal aldri eksponeres til frontend eller dokumenteres med verdi.
----
-11. Autentisering, roller og tilgang
+Autentisering, roller og tilgang
 11.1 Brukerflyt
 ```mermaid
 flowchart TD
@@ -883,8 +970,7 @@ kode lagret i prosjektdata
 lokal godkjenning i nettleser etter korrekt kode
 statusbasert gyldighet, inkludert periode etter låsing/arkivering
 Portalene leser samme `projects.data` som intern app, men med avgrenset UI og redigeringsmulighet.
----
-12. Hovedflyter
+Hovedflyter
 12.1 Ordinært prosjekt
 ```mermaid
 flowchart LR
@@ -912,8 +998,12 @@ flowchart LR
     S8 --> S9[Akseptbevis PDF]
     S9 --> S10[Prosjektaktivering]
     S10 --> P[(projects)]
-    S10 --> S11[salesOrigin.requestRef]
+    S10 --> SO[salesOrigin]
+    SO --> A[Opprinnelig avtale]
+    A --> E[Senere tillegg / fradrag]
+    E --> G[Gjeldende avtalesum inkl. mva.]
 ```
+Den opprinnelige tilbudsversjonen ligger fast som historikk. Prosjektets senere avtaleendringer er en separat prosjektflyt og skal ikke skrive tilbake over den aksepterte tilbudsversjonen.
 12.3 E-post
 ```mermaid
 flowchart LR
@@ -935,7 +1025,7 @@ flowchart TD
     W --> REG[warranty_registry]
 ```
 ---
-13. Eksterne avhengigheter
+Eksterne avhengigheter
 13.1 NPM
 ```text
 React
@@ -957,8 +1047,7 @@ Supabase	Auth, DB, RPC, Storage, Edge	Kritisk plattformavhengighet
 13.3 Supabase-klient
 Hovedappen oppretter Supabase-klienten direkte med prosjekt-URL og anon key i kildekoden. Salgsmodulen har i tillegg støtte for `VITE_SUPABASE_URL` og `VITE_SUPABASE_ANON_KEY`, men mottar normalt klienten fra hovedappen.
 Anon key er laget for klientbruk, men to konfigurasjonsmåter gir teknisk gjeld og risiko for miljøavvik. En felles klientmodul er et senere, avgrenset mål.
----
-14. CSS-arkitektur
+CSS-arkitektur
 14.1 `style.css`
 Global styling bruker brede selektorer som:
 ```text
@@ -995,26 +1084,27 @@ samme DOM-hierarki så langt det er praktisk mulig
 samme rekkefølge på elementer
 samme breakpoint-oppførsel
 CSS Modules, scoped CSS eller redesign skal være en separat fase etter at funksjonell modulisering er stabil.
----
-15. Risikoregister
+Risikoregister
 Prioritet	Risiko	Konsekvens	Tiltak
 Kritisk	`project-images` er offentlig og inneholder kontrakter/akseptbevis	Dokumenter kan være tilgjengelige via kjent URL	Egen sikkerhetsfase med private filer, migrering og signerte URL-er
-Høy	`main.jsx` har ekstremt mange ansvar og stort felles scope	Høy regresjonsfare ved små endringer	Små uttrekk, identisk API og full regresjonstest
-Høy	`SalesModule.jsx` kombinerer UI, state, DB, Storage, e-post og PDF	Vanskelig å teste og endre sikkert	Splitt først rene utilities og presentasjonsvisninger
+Høy	`main.jsx` har fortsatt mange ansvar og stort felles scope	Høy regresjonsfare ved små endringer	Små uttrekk, identisk API og full regresjonstest
+Høy	`SalesModule.jsx` kombinerer UI, state, DB, Storage, e-post og PDF	Vanskelig å teste og endre sikkert	Splitt gradvis uten å flytte flere risikoområder samtidig
 Høy	Hele `projects.data` oppdateres fra flere kodeveier	Mulig overskriving ved samtidige snapshots	Sentral repository/merge-strategi i senere egen fase
 Høy	JSON-datamodell mangler eksplisitt schema-versjon	Historiske prosjekter kan avvike	Legg senere til normalisering og schemaVersion uten å bryte gamle data
 Høy	`smart-worker` har ikke kodebasert rollevalidering	Misbruk dersom JWT/deploybeskyttelse er feil	Verifiser Edge Function JWT og eventuelt tillatte directions/mottakere
 Høy	Offentlige prosjekt- og chatbilder	Personvern og delingsrisiko	Kartlegg policies og planlegg privat lagring separat
+Middels	`salesOrigin.acceptedTotal` lagres eks. mva., mens nye avtaleendringer lagres inkl. mva.	Feil beregning hvis konverteringsforutsetningen endres	Dokumenter mva.-grunnlag og innfør senere eksplisitt pris-/mva.-modell dersom behovet øker
+Middels	Gjeldende implementasjon bruker 25 % mva. ved konvertering av historisk tilbudssum	Kan bli feil ved annen mva.-sats eller annen kundetype	Ikke generaliser beregningen uten egen modell og migreringsplan
+Middels	Eldre tillegg/fradrag kan finnes som ustrukturert fritekst	Kan ikke beregnes automatisk uten tolkning	Behold som dokumentasjon; migrer bare eksplisitt
 Middels	Globale regler i `sales.css`	Salgsendring kan påvirke hovedappen	Behold uendret nå; namespace senere
 Middels	Flere pakker bruker `latest`	Uforutsigbar installasjon ved ny lockfil	Pin versjoner i separat branch
 Middels	jsPDF lastes fra ekstern CDN ved runtime	PDF kan feile ved CDN-/nettverksproblem	Flytt senere til låst npm-avhengighet
-Middels	Doble Supabase-konfigurasjonsmønstre	Miljøavvik og vanskeligere testing	Felles klientmodul etter første sikre uttrekk
+Middels	Doble Supabase-konfigurasjonsmønstre	Miljøavvik og vanskeligere testing	Felles klientmodul etter sikre uttrekk
 Middels	Lokal kladd og databasekladd lever parallelt	Konflikt eller gammel kladd kan vinne	Bevar tidsstempel-/hydreringlogikk; test fanebytte nøye
 Middels	Offentlig tilbud avhenger av RPC-sikkerhet	Token-/akseptdata kan eksponeres ved feil SQL	Revider SQL og grants før databaseendringer
-Middels	Ingen observerte test-/lint-scripts i `package.json`	Regresjon oppdages sent	Innfør tester gradvis uten å blokkere første dokumenterte uttrekk
+Middels	Ingen observerte test-/lint-scripts i opprinnelig `package.json`	Regresjon oppdages sent	Innfør tester gradvis uten å kombinere med funksjonsendringer
 Lav	Test-/preview-entry finnes i produksjonsrepo	Kan bli feilaktig brukt eller glemt	Behold dokumentert; vurder senere separat opprydding
----
-16. Anbefalt målarkitektur
+Anbefalt målarkitektur
 Målbildet skal nås gradvis. Det er ikke en anbefaling om å flytte alt samtidig.
 ```text
 src/
@@ -1067,8 +1157,7 @@ Domeneområder skal ikke importere interne filer fra hverandre uten et eksplisit
 Delt UI kan ligge i `shared/components`, men bare når minst to områder faktisk bruker det.
 `main.jsx` skal til slutt kun starte appen og importere appskallet.
 Ingen komponentuttrekk skal endre databasepayload eller CSS-kontrakt.
----
-17. Anbefalt målstruktur for salgsmodulen
+Anbefalt målstruktur for salgsmodulen
 ```text
 src/modules/sales/
 ├── SalesModule.jsx                  # Orkestrering og valg av aktiv visning
@@ -1117,115 +1206,64 @@ kladdrefs og effects flyttes ikke samtidig
 UI kan sammenlignes direkte før/etter
 én view kan trekkes ut om gangen
 Hooks og services innføres først etter at visningene er skilt ut og regresjonstestet.
----
-18. Anbefalt målstruktur for hovedappen
-Første prioritet er ikke å bygge en ny global state-løsning. Hovedappen skal først deles etter tydelige domener med eksisterende state og callbacks beholdt i `App`.
-Naturlige områder:
+Videre målstruktur for hovedappen
+Fase 24–25 har vist at små view-uttrekk kan gjennomføres uten å bytte global state-arkitektur.
+Bekreftet retning:
+`main.jsx` beholder state og callbacks mens ett domene om gangen flyttes ut
+nye domenevisninger får tydelig modulgrense
+rapport-/portalbruk av samme data testes samtidig
+legacy-prosjekter normaliseres uten automatisk masseendring av databaseinnhold
+funksjonell videreutvikling og ren modulisering bør fortsatt holdes adskilt når det er mulig
+Områder som allerede er helt eller delvis moduliserte:
 ```text
-Auth og profil
-Startside og prosjektliste
-Prosjektinformasjon
-Prosjektering
-Produkter og produktmaster
-Overflater og innredning
-Bilder og vedlegg
-Sjekklister
-Avvik
-Tilbud / kontrakt
-Chat
-Overtagelse
-Garanti
-Rapport / PDF
-Kundeportal
-Underentreprenørportal
-Firmaadministrasjon
-Systemadministrasjon
 Hjelp
+Produkter
+Overflater og innredning
+Avvik
+Fag, deler og utstyr
+Tilbud / kontrakt
+Rapport / PDF
+Portalverktøy
 ```
-Eksisterende navngitte komponenter nederst i `main.jsx` er gode kandidater, men hver enkelt må analyseres for skjulte avhengigheter før flytting.
----
-19. Trygg modulisering – anbefalt rekkefølge
-Trinn 0 – Arkitekturkart og opprydding
-Status:
-arkitekturkart opprettet
-utgått AI-test fjernet
-`inspection-assistant` fjernet
-`swift-processor` fjernet
-Vite-preview reparert
-produksjon urørt
-Trinn 1 – Rene salgsverktøy
-Første kodebranch etter arkitekturkartet bør kun flytte rene, state-frie hjelpefunksjoner fra `SalesModule.jsx`.
-Eksempler:
-```text
-sanitizeStoragePart
-formatInspectionDateTime
-isEmailLike
-firstNonEmailName
-getOfferTotal
-formatNok
-getWorkflowSteps
-```
-Krav:
-samme funksjonssignatur
-ingen UI-endring
-ingen state/effect flyttes
-ingen Supabase-kall flyttes
-produksjonsbuild og salgsflyt testes
-Trinn 2 – Presentasjonskomponenter i salg
-Trekk ut én visning om gangen, anbefalt start:
-```text
-SalesListView
-```
-Deretter:
-```text
-RequestFormView
-SurveyPlanningView
-InspectionNoteView
-OfferBuilderView
-CustomerOfferView
-ProjectActivationView
-```
-`SalesModule` beholder state og handlers.
-Trinn 3 – Salgstjenester
-Når visningene er stabile:
-flytt databasekall til servicefiler
-flytt Storage-kall til egen service
-flytt e-postpayload til egen service
-flytt publiseringsmapping til model/service
-Ingen databaseendring skal kombineres med dette trinnet.
-Trinn 4 – Hovedappens rene komponenter
-Start med komponenter som allerede er navngitt og har liten avhengighetsflate, for eksempel:
-```text
-Brand
-Section
-CollapsibleBlock
-Grid
-Input
-Textarea
-Select
-InfoCard
-PdfSafeLink
-```
-Felleskomponenter trekkes ut uten redesign.
-Trinn 5 – Hovedappens domenevisninger
-Én fane om gangen. `App` beholder state og callbacks til visningen er stabil.
-Trinn 6 – Data- og servicearkitektur
-Først etter at UI er delt:
+Naturlige videre kandidater må velges ut fra fersk `main` og faktisk avhengighetsflate – ikke bare etter den opprinnelige Fase 23-listen.
+Før nye uttrekk bør dagens repositorystruktur og importgraf kontrolleres slik at det ikke opprettes dupliserte mapper eller feil `src/src/...`-stier.
+19. Trygg videreutvikling etter Fase 25
+Den opprinnelige Fase 23-planen var å starte med små, state-frie uttrekk. Denne strategien er videreført gjennom Fase 24 og 25.
+19.1 Gjennomført retning
+Bekreftede prinsipper og leveranser:
+arkitekturkart før større refaktorering
+utgått AI-/lydopptaksfunksjonalitet fjernet
+flere domenevisninger flyttet ut av `main.jsx`
+rapportvisning flyttet til egen modul
+Tilbud/kontrakt flyttet til egen modul
+prosjektets tilbudsdata ryddet slik at opprinnelig avtale og senere endringer ikke blandes
+strukturerte tillegg/fradrag innført uten SQL-endring
+historiske fasekommentarer i toppen av `main.jsx` ryddet uten funksjonsendring
+produksjon verifisert etter hver merge
+19.2 Anbefalt videre rekkefølge
+Trinn 1 – Hold dokumentasjonen synkron
+Oppdater Hjelp og arkitekturkart når produksjonsflyt eller datamodell endres.
+Trinn 2 – Fersk kartlegging før neste modul
+Kontroller dagens `main.jsx`, modulmapper, imports og delte callbacks før neste uttrekk.
+Trinn 3 – Ett domene om gangen
+Trekk ut én visning eller én ren tjeneste i hver branch. Ikke kombiner med redesign, databaseendring eller sikkerhetsmigrering.
+Trinn 4 – Automatisert minimumstest
+Bygg videre på Vercel Preview og innfør etter hvert enkle automatiske smoke-/utility-tester for de mest kritiske normaliserings- og beregningsfunksjonene.
+Trinn 5 – Data- og servicearkitektur
+Først når UI-modulene er stabile:
 felles Supabase-klient
 `projectRepository`
 normalisering av prosjektdata
 sentral snapshot-/mergefunksjon
 tydelig schema-versjon
-Dette er høyere risiko og skal ha egen branch og utvidet dataintegritetstest.
-Trinn 7 – Sikkerhet og lagring
+Trinn 6 – Sikkerhet og lagring
 Egen fase for:
 private prosjektfiler
 signerte URL-er
 migrering av eksisterende dokumenter
 Edge Function JWT og autorisasjon
 RLS-/RPC-revisjon
-Skal ikke blandes med frontendmodulisering.
----
+Sikkerhetsarbeid skal ikke blandes med ordinær frontendmodulisering.
 20. Teststrategi for hver refaktorering
 20.1 Automatisk minimum
 Før merge:
@@ -1309,36 +1347,24 @@ akseptpayload
 Storage-paths
 e-postpayload til `smart-worker`
 URL-parametere og kundelenker
----
-21. Branch- og mergepolicy for Fase 23
-Arkitekturkart
+Branch- og mergepolicy etter Fase 25
+Hver logiske endring skal fortsatt få egen branch.
+Eksempler:
 ```text
-Branch: feature/fase23-arkitekturkart
-Mappe: docs/architecture
-Fil: EXPO_PROFFDOK_ARCHITECTURE.md
-```
-Denne branchen skal bare inneholde:
-dokumentasjon
-allerede godkjent sletting av utgåtte AI-testfiler
-allerede godkjent fjerning av utgått Vite-entry
-Senere modulisering
-Hver logiske endring får egen branch, eksempel:
-```text
-feature/fase23-sales-utils
-feature/fase23-sales-list-view
-feature/fase23-sales-request-form
-feature/fase23-shared-ui-primitives
+feature/fase25d-dokumentasjon
+feature/fase26-<avgrenset-område>
 ```
 En branch skal ikke inneholde flere uavhengige refaktoreringer.
+Dokumentasjonsbranch skal kun endre dokumentasjon eller Hjelp-innhold og ikke funksjonskode.
 Mergekrav
-Vercel Preview er grønn.
+Vercel Preview er Ready.
 Build er grønn.
 Avtalt testmatrise er gjennomført.
-UI er sammenlignet på mobil og desktop.
+Relevant UI er kontrollert på desktop og mobil når endringen påvirker UI.
 Ingen uventede database-, Storage- eller Edge-endringer.
 Endringen er gjennomgått mot dette arkitekturkartet.
 Merge til `main` skjer først etter uttrykkelig godkjenning.
----
+Etter merge skal Production bli Ready og det gjennomføres en kort produksjonskontroll før branch slettes.
 22. Beslutningslogg
 Dato	Beslutning	Begrunnelse
 06.08.2026	Produksjonsversjonen etter Fase 22 er nytt stabilt utgangspunkt	Befaring, tilbud, e-post, aksept og prosjektaktivering er produksjonssatt
@@ -1350,9 +1376,17 @@ Dato	Beslutning	Begrunnelse
 06.08.2026	`delete-pending-user` beholdes	Aktiv og sikker systemadminfunksjon
 06.08.2026	`smart-worker` beholdes	Kritisk felles e-posttjeneste
 06.08.2026	Første modulisering skal være liten og uten funksjonsendring	Produksjonsstabilitet prioriteres
----
+12.08.2026	Flere prosjektvisninger er moduliserte gjennom Fase 24	Reduserer omfanget i `main.jsx` uten stor omskriving
+12.08.2026	Opprinnelig akseptert tilbud skal ikke kopieres inn som senere avtaleendring	Skiller historisk avtale fra prosjektets senere endringer
+13.08.2026	Tilbud/kontrakt er eksplisitt valgfritt	Ikke alle prosjekter har tilbud registrert i Expo ProffDok
+13.08.2026	Tillegg og fradrag registreres som strukturerte endringsposter	Gir tydeligere historikk og muliggjør beregning av gjeldende avtalesum
+13.08.2026	Priser i prosjektets privatkundeorienterte Tilbud/kontrakt-visning presenteres inkl. mva.	Privatkunder skal forholde seg til sluttpris inkl. mva.
+13.08.2026	Akseptert tilbud beholdes låst; gjeldende avtalesum beregnes separat	Historikk skal ikke overskrives av senere endringer
+13.08.2026	Ingen SQL-/RLS-endring for strukturerte avtaleendringer	Ny funksjon er lagt inn bakoverkompatibelt i eksisterende prosjekt-JSON
+13.08.2026	210 historiske fasekommentarlinjer fjernet fra toppen av `main.jsx`	Ren kildekodeopprydding uten funksjonsendring; historikk finnes i Git
+13.08.2026	Hjelp og arkitekturkart oppdateres etter Fase 25	Dokumentasjonen skal beskrive faktisk produksjonsflyt
 23. Åpne verifikasjonspunkter
-Disse skal avklares før relevant område endres, men blokkerer ikke første rene frontenduttrekk:
+Disse skal avklares før relevant område endres, men blokkerer ikke ordinære små frontenduttrekk:
 Eksporter komplett Supabase-schema til versjonskontroll.
 Dokumenter RLS-policyer for alle tabeller.
 Dokumenter Storage-policyer og tilgang til eksisterende filer.
@@ -1365,30 +1399,40 @@ Bekreft låste versjoner fra `package-lock.json`.
 Dokumenter Vercel Preview-/Production-miljøvariabler uten å eksponere verdier.
 Avklar langsiktig plan for offentlig `project-images`.
 Avklar om `fdv_register` fortsatt er aktivt domene eller kun historisk kompatibilitet.
----
-24. Anbefalt neste kodeoppgave etter godkjent arkitekturkart
-Én ren og lavrisiko endring: flytt state-frie salgsverktøy til en egen utility-fil.
-Foreslått senere branch:
+Ta en fersk komplett repository-inventering etter den videre Fase 24–25-moduliseringen.
+Vurder senere om `salesOrigin.acceptedTotal` bør få eksplisitt mva.-metadata i stedet for implisitt 25 %-konvertering.
+Avklar fremtidig strategi for eldre ustrukturerte tillegg/fradrag dersom de skal kunne inngå i maskinell avtalesumberegning.
+24. Anbefalt neste kodeoppgave
+Etter Fase 25D bør neste tekniske oppgave velges fra en fersk kontroll av dagens `main` og modulstruktur.
+Anbefalt arbeidsmåte:
 ```text
-feature/fase23-sales-utils
+1. Hent dagens produksjonsfiler
+2. Kartlegg gjenstående store UI-/ansvarsblokker i main.jsx
+3. Velg ett lavrisiko domene
+4. Lag egen feature-branch
+5. Flytt kun det avgrensede området
+6. Vercel Preview
+7. Desktop- og mobiltest
+8. Merge først etter eksplisitt godkjenning
 ```
-Foreslått fil:
-```text
-src/modules/sales/utils/salesFormatters.js
-```
-Før endringen skal den eksakte listen over funksjoner og alle kallsteder kvalitetssikres. Ingen state, effect, Supabase-kall, Storage-kall, CSS eller UI skal flyttes i samme leveranse.
----
+Ikke bruk det gamle Fase 23-linjetallet eller den gamle uttrekkslisten alene som grunnlag for neste modul. Produksjonskoden har endret seg betydelig siden kartet først ble skrevet.
 25. Konklusjon
-Expo ProffDok har en bred og moden funksjonsflate, men teknisk er hovedappen og salgsmodulen blitt store orkestreringsfiler med mange delte avhengigheter. Den sikreste veien videre er ikke en stor omskriving, men en kontrollert serie av små, målbare uttrekk.
-Arkitekturen skal utvikles etter denne rekkefølgen:
+Expo ProffDok har fortsatt en bred funksjonsflate og et sentralt `main.jsx`, men Fase 24–25 har redusert direkte UI-ansvar gjennom flere kontrollerte moduluttrekk.
+Den viktigste arkitekturelle retningen er fortsatt:
 ```text
 Kartlegg
-→ trekk ut rene funksjoner
-→ trekk ut presentasjonsvisninger
-→ stabiliser og test
-→ trekk ut tjenester
-→ samle datatilgang
-→ styrk automatiske tester
-→ gjennomfør sikkerhetsmigreringer separat
+→ gjør én avgrenset endring
+→ behold state/datakontrakt stabil
+→ test i Vercel Preview
+→ test produksjon
+→ dokumenter faktisk løsning
+→ fortsett til neste område
 ```
-Dette bevarer produksjonen samtidig som Expo ProffDok gradvis blir enklere å teste, tryggere å endre og raskere å videreutvikle.
+Tilbud/kontrakt er nå et tydelig eksempel på denne modellen:
+opprinnelig akseptert tilbud beholdes som historikk
+prosjekter uten tilbud i appen støttes eksplisitt
+senere tillegg/fradrag lagres separat
+gjeldende avtalesum beregnes uten å overskrive opprinnelig avtale
+privatkundeorienterte priser i denne prosjektvisningen presenteres inkl. mva.
+legacy-data beholdes bakoverkompatibelt
+Neste steg bør fortsatt være små og testbare. Store omskrivinger, databaseskjemaendringer og sikkerhetsmigreringer skal gjennomføres som egne faser med egen testplan.
