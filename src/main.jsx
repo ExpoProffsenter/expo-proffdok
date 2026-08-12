@@ -1,3 +1,4 @@
+// FASE 24S TILBUD/KONTRAKT-VISNING: Flytter kun Tilbud / kontrakt-fanens UI ut av main.jsx uten funksjonsendring. Vedlegg, prosjektstate, opplasting og rapportvalg beholdes uendret. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
 // FASE 24R FAG/DELER/UTSTYR FULLFØRING: Fullfører Fase 24P ved å bruke eksisterende installationViewTools også i ordinær intern prosjektvisning. Ingen funksjonsendring; kun fjerner gjenværende duplisert UI fra main.jsx. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
 // FASE 24P FAG/DELER/UTSTYR: Flytter kun visningen for Fag, deler og utstyr ut av main.jsx uten funksjonsendring. Samme modul brukes for intern prosjektvisning og underentreprenørvisning. Bildeopplasting, prosjektstate, lagring og øvrig logikk beholdes uendret. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
 // FASE 24O MENYNAVIGASJON / INNHOLDSANKER: Fanevalg på både PC og mobil scroller til det aktuelle innholdet i valgt fane i stedet for toppen av siden. Aktiv fane kan også klikkes for å gå tilbake til innholdet. Kun navigasjon/scroll-UI; ingen prosjektdata, lagring, Supabase, SQL/RLS, Storage, Edge Function, e-post, garanti- eller rapportmotorendring.
@@ -225,6 +226,7 @@ import { createProductViewTools } from './modules/product/productViewTools.js';
 import { createSurfaceViewTools } from './modules/surfaces/surfaceViewTools.js';
 import { createDeviationCenter } from './modules/deviations/deviationViewTools.js';
 import { createInstallationViewTools } from './modules/installations/installationViewTools.js';
+import { createContractViewTools } from './modules/contract/contractViewTools.js';
 import { ensureExpoProffDokAppBranding, warrantyArchiveNotice, userGuidePdfPath, adminGuidePdfPath, EXPO_PROFFDOK_TERMS_VERSION, EXPO_PROFFDOK_TERMS_TITLE, expoProffDokTermsSections } from './modules/app/appStaticTools.js';
 import {
   productSections, productCategoryOptions, productCheckpointTypeOptions, productCheckpointTypeLabels,
@@ -7490,50 +7492,11 @@ ${appLink}`;
             onPrepareChatDraft: prepareDeviationChatDraft
           }
         ) }),
-        tab === "tilbud" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilbud / kontrakt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her legger du inn tilbud, kontrakt og avtaleendringer. Kunde f\xE5r se dette i kundelinken n\xE5r det finnes innhold eller vedlegg. Huk av hvis sammendraget ogs\xE5 skal med i vanlig rapport/PDF." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Tillegg", value: tilbud.tillegg || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, tillegg: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Fradrag", value: tilbud.fradrag || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, fradrag: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Avtaleendringer / kommentar", value: tilbud.kommentar || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, kommentar: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "input",
-                {
-                  type: "checkbox",
-                  style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" },
-                  checked: !!tilbud.enabled,
-                  onChange: (e) => setTilbud({ ...emptyTilbud(), ...tilbud, enabled: e.target.checked })
-                }
-              ),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Ta med sammendrag i rapport" })
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Last opp tilbud, kontrakt eller andre avtaledokumenter. Vedleggene lagres p\xE5 prosjektet og vises i kundelinken. Underentrepren\xF8r har ikke tilgang til tilbud/kontrakt." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
-              " Last opp tilbud / kontrakt",
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", multiple: true, style: { display: "none" }, onChange: (e) => {
-                uploadTilbudFiles(e.target.files);
-                e.target.value = "";
-              } })
-            ] }),
-            (tilbud.files || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen tilbud eller kontrakter er lastet opp enn\xE5." }),
-            (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: f.name }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
-                "Lastet opp av ",
-                f.by || "Ukjent",
-                " \xB7 ",
-                f.created
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", children: "\xC5pne" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setTilbud({ ...emptyTilbud(), ...tilbud, files: (tilbud.files || []).filter((x) => x.id !== f.id) }), children: "Fjern" })
-            ] }, f.id))
-          ] })
-        ] }),
+        tab === "tilbud" && renderContractPanel({
+          tilbud,
+          setTilbud,
+          uploadTilbudFiles
+        }),
         tab === "overtagelse" && renderOvertagelsePanel({
           Section, Grid, Input, Textarea, SignaturePad,
           project, setProject, projectId, overtagelse, setOvertagelse, warranty, isProjectLocked,
@@ -8483,6 +8446,14 @@ ${appLink}`;
     Plus: import_lucide_react.Plus,
     uid,
     installCats
+  });
+  const { renderContractPanel } = createContractViewTools({
+    Section,
+    Grid,
+    Textarea,
+    FileText: import_lucide_react.FileText,
+    Plus: import_lucide_react.Plus,
+    emptyTilbud
   });
 
   function stopInteractivePropagation(event) {
