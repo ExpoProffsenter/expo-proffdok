@@ -1,4 +1,5 @@
-// FASE 24Q RAPPORTVISNING FAG/UTSTYR-BILDER: Viser eksisterende bilder fra Fag, deler og utstyr også direkte i Rapport-fanen. PDF-logikk, bildeopplasting, lagring og øvrig rapportinnhold er uendret.\nimport { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+// FASE 24Q RAPPORTVISNING FAG/UTSTYR-BILDER: Viser eksisterende bilder fra Fag, deler og utstyr også direkte i Rapport-fanen. PDF-logikk, bildeopplasting, lagring og øvrig rapportinnhold er uendret.
+import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 
 const import_jsx_runtime = { jsx, jsxs, Fragment };
 
