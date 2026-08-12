@@ -12,6 +12,7 @@ export function createChecklistEditor({
   Grid,
   Textarea,
   getActiveChecklistTemplate,
+  getWarrantyYears,
   canUseCustomChecklistForWarranty,
   customChecklistTradeOptions,
   customChecklistCategoryFromTrade,
