@@ -1,3 +1,5 @@
+// FASE 25A TYDELIG TILBUD/KONTRAKT: Rydder også eldre automatisk importert befarings-/tilbudstekst fra avtaleendringsfeltet når eldre prosjekter mangler komplett salesOrigin. Kun visnings-/migreringsvern; ingen SQL/RLS/Storage/Edge Function/e-postendring.
+// FASE 24S.1 TILBUD/KONTRAKT DATAKLARHET: Skjuler eldre automatisk kopiert prosjektbeskrivelse fra avtaleendringsfelt i visning, kundeportal, rapport og PDF uten automatisk databaseendring. Nye aktiveringer håndteres i SalesModule. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // FASE 24S TILBUD/KONTRAKT-VISNING: Flytter kun Tilbud / kontrakt-fanens UI ut av main.jsx uten funksjonsendring. Vedlegg, prosjektstate, opplasting og rapportvalg beholdes uendret. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
 // FASE 24R FAG/DELER/UTSTYR FULLFØRING: Fullfører Fase 24P ved å bruke eksisterende installationViewTools også i ordinær intern prosjektvisning. Ingen funksjonsendring; kun fjerner gjenværende duplisert UI fra main.jsx. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
 // FASE 24P FAG/DELER/UTSTYR: Flytter kun visningen for Fag, deler og utstyr ut av main.jsx uten funksjonsendring. Samme modul brukes for intern prosjektvisning og underentreprenørvisning. Bildeopplasting, prosjektstate, lagring og øvrig logikk beholdes uendret. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
@@ -1064,6 +1066,27 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [files, setFiles] = (0, import_react.useState)([]);
     const [checklist, setChecklist] = (0, import_react.useState)({});
     const [tilbud, setTilbud] = (0, import_react.useState)(emptyTilbud());
+    const displayTilbud = (0, import_react.useMemo)(() => {
+      const normalized = { ...emptyTilbud(), ...tilbud || {}, files: Array.isArray(tilbud?.files) ? tilbud.files : [] };
+      const comment = String(normalized.kommentar || "").trim();
+      const description = String(project?.projectDescription || "").trim();
+      const looksLikeLegacySalesImport = Boolean(
+        comment && (
+          (description && comment === description) ||
+          (
+            /Akseptert tilbud(?:\s+v\d+)?/i.test(comment) &&
+            (
+              /Akseptert total:/i.test(comment) ||
+              /Kundens ønsker:/i.test(comment) ||
+              /Eksisterende forhold:/i.test(comment) ||
+              /Mål og registreringer?:/i.test(comment) ||
+              /Observasjoner:/i.test(comment)
+            )
+          )
+        )
+      );
+      return looksLikeLegacySalesImport ? { ...normalized, kommentar: "" } : normalized;
+    }, [tilbud, project?.projectDescription]);
     const [overtagelse, setOvertagelse] = (0, import_react.useState)(emptyOvertagelse());
     const [warranty, setWarranty] = (0, import_react.useState)(emptyWarranty());
     const [chatUploadFile, setChatUploadFile] = (0, import_react.useState)(null);
@@ -5308,7 +5331,7 @@ ${appLink}`;
       setWarranty,
       shouldIncludeProductReportDoc,
       surf,
-      tilbud,
+      tilbud: displayTilbud,
       user,
       warranty,
       warrantyReadiness
@@ -5970,7 +5993,7 @@ ${appLink}`;
     }
     if (isReadOnly) {
       return renderCustomerPortal({
-        hasValue, tilbud, selected, manualSelected, photos, checklist, warranty, project,
+        hasValue, tilbud: displayTilbud, selected, manualSelected, photos, checklist, warranty, project,
         getBaseChecklistTemplateForWarranty, getSoproChecklistTemplate, activeChecklistTemplate,
         projectHasOvertagelse, getWarrantyYears, warrantyReadiness, files, inst, getOpenDeviationCount,
         overtagelse, currentStatus, portalAccessOk, renderPortalAccessGate, company, name, Brand,
@@ -7493,7 +7516,8 @@ ${appLink}`;
           }
         ) }),
         tab === "tilbud" && renderContractPanel({
-          tilbud,
+          project,
+          tilbud: displayTilbud,
           setTilbud,
           uploadTilbudFiles
         }),
@@ -7668,7 +7692,7 @@ ${appLink}`;
           ] })
         ] }),
                 tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
-                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
+                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: displayTilbud, overtagelse, projectLog }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),
