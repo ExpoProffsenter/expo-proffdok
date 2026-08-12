@@ -1,3 +1,7 @@
+// FASE 25B STRUKTURERTE AVTALEENDRINGER: Tilbud/kontrakt støtter strukturerte tillegg og fradrag med beløp inkl. mva. og bakoverkompatible sammendrag. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
+// FASE 25A TYDELIG TILBUD/KONTRAKT: Rydder også eldre automatisk importert befarings-/tilbudstekst fra avtaleendringsfeltet når eldre prosjekter mangler komplett salesOrigin. Kun visnings-/migreringsvern; ingen SQL/RLS/Storage/Edge Function/e-postendring.
+// FASE 24S.1 TILBUD/KONTRAKT DATAKLARHET: Skjuler eldre automatisk kopiert prosjektbeskrivelse fra avtaleendringsfelt i visning, kundeportal, rapport og PDF uten automatisk databaseendring. Nye aktiveringer håndteres i SalesModule. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
+// FASE 24S TILBUD/KONTRAKT-VISNING: Flytter kun Tilbud / kontrakt-fanens UI ut av main.jsx uten funksjonsendring. Vedlegg, prosjektstate, opplasting og rapportvalg beholdes uendret. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
 // FASE 24R FAG/DELER/UTSTYR FULLFØRING: Fullfører Fase 24P ved å bruke eksisterende installationViewTools også i ordinær intern prosjektvisning. Ingen funksjonsendring; kun fjerner gjenværende duplisert UI fra main.jsx. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
 // FASE 24P FAG/DELER/UTSTYR: Flytter kun visningen for Fag, deler og utstyr ut av main.jsx uten funksjonsendring. Samme modul brukes for intern prosjektvisning og underentreprenørvisning. Bildeopplasting, prosjektstate, lagring og øvrig logikk beholdes uendret. Ingen SQL/RLS/Storage/Edge Function/e-post/garanti-/rapportmotorendring.
 // FASE 24O MENYNAVIGASJON / INNHOLDSANKER: Fanevalg på både PC og mobil scroller til det aktuelle innholdet i valgt fane i stedet for toppen av siden. Aktiv fane kan også klikkes for å gå tilbake til innholdet. Kun navigasjon/scroll-UI; ingen prosjektdata, lagring, Supabase, SQL/RLS, Storage, Edge Function, e-post, garanti- eller rapportmotorendring.
@@ -225,6 +229,7 @@ import { createProductViewTools } from './modules/product/productViewTools.js';
 import { createSurfaceViewTools } from './modules/surfaces/surfaceViewTools.js';
 import { createDeviationCenter } from './modules/deviations/deviationViewTools.js';
 import { createInstallationViewTools } from './modules/installations/installationViewTools.js';
+import { createContractViewTools } from './modules/contract/contractViewTools.js';
 import { ensureExpoProffDokAppBranding, warrantyArchiveNotice, userGuidePdfPath, adminGuidePdfPath, EXPO_PROFFDOK_TERMS_VERSION, EXPO_PROFFDOK_TERMS_TITLE, expoProffDokTermsSections } from './modules/app/appStaticTools.js';
 import {
   productSections, productCategoryOptions, productCheckpointTypeOptions, productCheckpointTypeLabels,
@@ -622,6 +627,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
   var emptyTilbud = () => ({
     enabled: false,
     files: [],
+    changes: [],
+    legacyTillegg: "",
+    legacyFradrag: "",
     tillegg: "",
     fradrag: "",
     kommentar: ""
@@ -1062,6 +1070,32 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [files, setFiles] = (0, import_react.useState)([]);
     const [checklist, setChecklist] = (0, import_react.useState)({});
     const [tilbud, setTilbud] = (0, import_react.useState)(emptyTilbud());
+    const displayTilbud = (0, import_react.useMemo)(() => {
+      const normalized = {
+        ...emptyTilbud(),
+        ...tilbud || {},
+        files: Array.isArray(tilbud?.files) ? tilbud.files : [],
+        changes: Array.isArray(tilbud?.changes) ? tilbud.changes : []
+      };
+      const comment = String(normalized.kommentar || "").trim();
+      const description = String(project?.projectDescription || "").trim();
+      const looksLikeLegacySalesImport = Boolean(
+        comment && (
+          (description && comment === description) ||
+          (
+            /Akseptert tilbud(?:\s+v\d+)?/i.test(comment) &&
+            (
+              /Akseptert total:/i.test(comment) ||
+              /Kundens ønsker:/i.test(comment) ||
+              /Eksisterende forhold:/i.test(comment) ||
+              /Mål og registreringer?:/i.test(comment) ||
+              /Observasjoner:/i.test(comment)
+            )
+          )
+        )
+      );
+      return looksLikeLegacySalesImport ? { ...normalized, kommentar: "" } : normalized;
+    }, [tilbud, project?.projectDescription]);
     const [overtagelse, setOvertagelse] = (0, import_react.useState)(emptyOvertagelse());
     const [warranty, setWarranty] = (0, import_react.useState)(emptyWarranty());
     const [chatUploadFile, setChatUploadFile] = (0, import_react.useState)(null);
@@ -3222,7 +3256,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const createNewProject = async () => {
       const canLeave = await confirmLeaveWithUnsavedChanges("starter nytt prosjekt");
       if (!canLeave) return;
-      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || (Array.isArray(project.projectDeviations) ? project.projectDeviations : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || (Array.isArray(project.projectDeviations) ? project.projectDeviations : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.changes || []).length || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
       if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
       newProjectTouchedRef.current = false;
       pauseDirtyTrackingBriefly(1200);
@@ -5306,7 +5340,7 @@ ${appLink}`;
       setWarranty,
       shouldIncludeProductReportDoc,
       surf,
-      tilbud,
+      tilbud: displayTilbud,
       user,
       warranty,
       warrantyReadiness
@@ -5968,7 +6002,7 @@ ${appLink}`;
     }
     if (isReadOnly) {
       return renderCustomerPortal({
-        hasValue, tilbud, selected, manualSelected, photos, checklist, warranty, project,
+        hasValue, tilbud: displayTilbud, selected, manualSelected, photos, checklist, warranty, project,
         getBaseChecklistTemplateForWarranty, getSoproChecklistTemplate, activeChecklistTemplate,
         projectHasOvertagelse, getWarrantyYears, warrantyReadiness, files, inst, getOpenDeviationCount,
         overtagelse, currentStatus, portalAccessOk, renderPortalAccessGate, company, name, Brand,
@@ -7490,50 +7524,12 @@ ${appLink}`;
             onPrepareChatDraft: prepareDeviationChatDraft
           }
         ) }),
-        tab === "tilbud" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Tilbud / kontrakt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her legger du inn tilbud, kontrakt og avtaleendringer. Kunde f\xE5r se dette i kundelinken n\xE5r det finnes innhold eller vedlegg. Huk av hvis sammendraget ogs\xE5 skal med i vanlig rapport/PDF." }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Tillegg", value: tilbud.tillegg || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, tillegg: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Fradrag", value: tilbud.fradrag || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, fradrag: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Avtaleendringer / kommentar", value: tilbud.kommentar || "", onChange: (v) => setTilbud({ ...emptyTilbud(), ...tilbud, kommentar: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "check", style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "input",
-                {
-                  type: "checkbox",
-                  style: { width: "auto", minHeight: "auto", padding: 0, margin: 0, flex: "0 0 auto" },
-                  checked: !!tilbud.enabled,
-                  onChange: (e) => setTilbud({ ...emptyTilbud(), ...tilbud, enabled: e.target.checked })
-                }
-              ),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { margin: 0 }, children: "Ta med sammendrag i rapport" })
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Last opp tilbud, kontrakt eller andre avtaledokumenter. Vedleggene lagres p\xE5 prosjektet og vises i kundelinken. Underentrepren\xF8r har ikke tilgang til tilbud/kontrakt." }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
-              " Last opp tilbud / kontrakt",
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "file", multiple: true, style: { display: "none" }, onChange: (e) => {
-                uploadTilbudFiles(e.target.files);
-                e.target.value = "";
-              } })
-            ] }),
-            (tilbud.files || []).length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ingen tilbud eller kontrakter er lastet opp enn\xE5." }),
-            (tilbud.files || []).map((f) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "file", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: f.name }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
-                "Lastet opp av ",
-                f.by || "Ukjent",
-                " \xB7 ",
-                f.created
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: f.url, target: "_blank", rel: "noopener noreferrer", children: "\xC5pne" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setTilbud({ ...emptyTilbud(), ...tilbud, files: (tilbud.files || []).filter((x) => x.id !== f.id) }), children: "Fjern" })
-            ] }, f.id))
-          ] })
-        ] }),
+        tab === "tilbud" && renderContractPanel({
+          project,
+          tilbud: displayTilbud,
+          setTilbud,
+          uploadTilbudFiles
+        }),
         tab === "overtagelse" && renderOvertagelsePanel({
           Section, Grid, Input, Textarea, SignaturePad,
           project, setProject, projectId, overtagelse, setOvertagelse, warranty, isProjectLocked,
@@ -7705,7 +7701,7 @@ ${appLink}`;
           ] })
         ] }),
                 tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
-                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }),
+                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: displayTilbud, overtagelse, projectLog }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),
@@ -8483,6 +8479,17 @@ ${appLink}`;
     Plus: import_lucide_react.Plus,
     uid,
     installCats
+  });
+  const { renderContractPanel } = createContractViewTools({
+    Section,
+    Grid,
+    Input,
+    Select,
+    Textarea,
+    FileText: import_lucide_react.FileText,
+    Plus: import_lucide_react.Plus,
+    Trash2: import_lucide_react.Trash2,
+    emptyTilbud
   });
 
   function stopInteractivePropagation(event) {

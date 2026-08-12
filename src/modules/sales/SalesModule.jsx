@@ -1,3 +1,5 @@
+// FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
+// FASE 24S.1 KORREKT PROSJEKTAKTIVERING/TILBUD: Ved aktivering ligger forespørsel og befaring i prosjektbeskrivelse, mens opprinnelig akseptert tilbud dokumenteres via salesOrigin og akseptbevis/kontrakt. Tillegg/fradrag/avtaleendring starter tomt og brukes kun for senere endringer. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // FASE 23Q SALES-COMMUNICATION: Flytter henting av firmaprofil, kunde-e-post og befaringsbekreftelsestekst ut av SalesModule uten å endre UI, database, RLS, Storage, Edge Function eller e-postinnhold.
 // FASE 23P SALES-PUBLISHING: Flytter tilbudspublisering og bygging av kundelenker ut av SalesModule uten å endre UI, tilbudsdata, database, RLS, Storage, e-post eller aksept.
 // FASE 23O SALES-CUSTOMER-VIEW: Flytter offentlig kundevisning, lastestatus, lenkefeil og akseptbekreftelse ut av SalesModule uten å endre UI, tilbudsdata, aksept, database, Storage eller e-post.
@@ -1085,15 +1087,9 @@ export default function SalesModule({
           selectedRequest.inspectionMeasurements && `Mål og registreringer: ${selectedRequest.inspectionMeasurements}`,
           selectedRequest.inspectionObservations && `Observasjoner: ${selectedRequest.inspectionObservations}`,
         ].filter(Boolean).join("\n\n");
-        const offerSummary = [
-          ...acceptedLines.map((line) => `• ${line.description}: ${formatNok(Number(line.amount || 0))} eks. mva.`),
-          ...acceptedOptions.map((option) => `• Valgt opsjon – ${option.description}: ${formatNok(Number(option.amount || 0))} eks. mva.`),
-        ].join("\n");
         const projectDescription = [
           selectedRequest.note,
           inspectionSummary,
-          offerSummary && `Akseptert tilbud v${selectedRequest.acceptedOfferVersionNumber || selectedRequest.sentOfferVersionNumber || ""}:\n${offerSummary}`,
-          selectedRequest.acceptedTotal != null && `Akseptert total: ${formatNok(Number(selectedRequest.acceptedTotal || 0))} eks. mva. / ${formatNok(Number(selectedRequest.acceptedTotal || 0) * 1.25)} inkl. mva.`,
         ].filter(Boolean).join("\n\n");
         const companyName =
           profile?.company_name || profile?.companyName || companyProfile.companyName || "";
@@ -1146,9 +1142,12 @@ export default function SalesModule({
             files: [selectedRequest.acceptanceProofFile, selectedRequest.contractFile]
               .filter(Boolean)
               .map((file) => ({ ...file, id: file.id || crypto.randomUUID() })),
+            changes: [],
+            legacyTillegg: "",
+            legacyFradrag: "",
             tillegg: "",
             fradrag: "",
-            kommentar: projectDescription,
+            kommentar: "",
           },
           overtagelse: { enabled: false, dato: new Date().toISOString().slice(0, 10), kommentar: "", signUtførende: "", signKunde: "", signUtførendeImage: "", signKundeImage: "" },
           warranty: { enabled: false, issued: false, status: "draft" },

@@ -1,3 +1,4 @@
+// FASE 25B AVTALESUM I RAPPORT: Rapport og kunderapport viser opprinnelig og gjeldende avtalesum inkl. mva. basert på strukturerte tillegg/fradrag. Eksisterende vedlegg og legacy-sammendrag beholdes.
 // FASE 24Q RAPPORTVISNING FAG/UTSTYR-BILDER: Viser eksisterende bilder fra Fag, deler og utstyr også direkte i Rapport-fanen. PDF-logikk, bildeopplasting, lagring og øvrig rapportinnhold er uendret.
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 
@@ -196,6 +197,33 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
     ] });
   }
 
+  const parseContractAmount = (value) => {
+    const cleaned = String(value ?? "").replace(/\s/g, "").replace(",", ".").replace(/[^\d.-]/g, "");
+    const number = Number(cleaned);
+    return Number.isFinite(number) ? Math.max(0, number) : 0;
+  };
+  const formatContractNok = (value) => new Intl.NumberFormat("no-NO", {
+    style: "currency",
+    currency: "NOK",
+    maximumFractionDigits: 0
+  }).format(Number(value || 0));
+  const contractTotals = (project = {}, tilbud = {}) => {
+    const changes = Array.isArray(tilbud?.changes) ? tilbud.changes : [];
+    const originalInclVat = Number(project?.salesOrigin?.acceptedTotal || 0) * 1.25;
+    const additions = changes
+      .filter((item) => item?.type === "Tillegg")
+      .reduce((sum, item) => sum + parseContractAmount(item?.amountInclVat), 0);
+    const deductions = changes
+      .filter((item) => item?.type === "Fradrag")
+      .reduce((sum, item) => sum + parseContractAmount(item?.amountInclVat), 0);
+    return {
+      originalInclVat,
+      additions,
+      deductions,
+      currentInclVat: originalInclVat > 0 ? originalInclVat + additions - deductions : null
+    };
+  };
+
   function Report({ company, name, project, selected, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }) {
     const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, "Postnr.": project.postnr, "Poststed / by": project.city, Kunde: project.customer, "Kunde e-post": project.customerEmail, "Kunde telefon": project.customerPhone, Dato: project.date, Status: project.locked ? "Avsluttet / l\xE5st" : "Aktivt", Notater: project.notes };
     const cats = [...new Set(photos.map((p) => p.cat))];
@@ -352,12 +380,18 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
         ] }, m.id))
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChecklistReportSection, { checklist, projectDeviations: project?.projectDeviations || [] }),
-      tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
+      tilbud?.enabled && (hasValue(tilbud.tillegg) || hasValue(tilbud.fradrag) || hasValue(tilbud.kommentar) || (tilbud.files || []).length > 0 || (tilbud.changes || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Tilbud / kontrakt" }),
+        agreementTotals.originalInclVat > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Opprinnelig avtalesum inkl. mva.", value: formatContractNok(agreementTotals.originalInclVat) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Tillegg inkl. mva.", value: agreementTotals.additions > 0 ? `+ ${formatContractNok(agreementTotals.additions)}` : "" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Fradrag inkl. mva.", value: agreementTotals.deductions > 0 ? `− ${formatContractNok(agreementTotals.deductions)}` : "" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Gjeldende avtalesum inkl. mva.", value: formatContractNok(agreementTotals.currentInclVat) })
+        ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Tillegg", value: tilbud.tillegg }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Fradrag", value: tilbud.fradrag }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Avtaleendringer / kommentar", value: tilbud.kommentar })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Registrerte tillegg", value: tilbud.tillegg }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Registrerte fradrag", value: tilbud.fradrag }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Annen avtaleendring / kommentar", value: tilbud.kommentar })
         ] }),
         (tilbud.files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
@@ -507,12 +541,18 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
           (i.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: i.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photo", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, alt: p.name || "Bilde" }) }, p.id)) })
         ] }, i.id))
       ] }),
-      (hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { id: "kunde-tilbud", children: [
+      (hasValue(tilbud?.tillegg) || hasValue(tilbud?.fradrag) || hasValue(tilbud?.kommentar) || (tilbud?.files || []).length > 0 || (tilbud?.changes || []).length > 0) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { id: "kunde-tilbud", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Tilbud / kontrakt" }),
+        agreementTotals.originalInclVat > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Opprinnelig avtalesum inkl. mva.", value: formatContractNok(agreementTotals.originalInclVat) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Tillegg inkl. mva.", value: agreementTotals.additions > 0 ? `+ ${formatContractNok(agreementTotals.additions)}` : "" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Fradrag inkl. mva.", value: agreementTotals.deductions > 0 ? `− ${formatContractNok(agreementTotals.deductions)}` : "" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Gjeldende avtalesum inkl. mva.", value: formatContractNok(agreementTotals.currentInclVat) })
+        ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Tillegg", value: tilbud.tillegg }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Fradrag", value: tilbud.fradrag }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Avtaleendringer / kommentar", value: tilbud.kommentar })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Registrerte tillegg", value: tilbud.tillegg }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Registrerte fradrag", value: tilbud.fradrag }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(InfoCard, { label: "Annen avtaleendring / kommentar", value: tilbud.kommentar })
         ] }),
         (tilbud.files || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Vedlegg" }),
