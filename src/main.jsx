@@ -9631,7 +9631,6 @@ ${appLink}`;
     hasValue,
     customChecklistCategoryPrefix,
     checklistPointAnchor,
-    isWarrantyCheckpoint,
     isSoproWarrantyPoint,
     customChecklistTradeFromCategory,
     customChecklistTradeIconUrl,
