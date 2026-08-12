@@ -1,3 +1,4 @@
+// FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 24S.1 KORREKT PROSJEKTAKTIVERING/TILBUD: Ved aktivering ligger forespørsel og befaring i prosjektbeskrivelse, mens opprinnelig akseptert tilbud dokumenteres via salesOrigin og akseptbevis/kontrakt. Tillegg/fradrag/avtaleendring starter tomt og brukes kun for senere endringer. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // FASE 23Q SALES-COMMUNICATION: Flytter henting av firmaprofil, kunde-e-post og befaringsbekreftelsestekst ut av SalesModule uten å endre UI, database, RLS, Storage, Edge Function eller e-postinnhold.
 // FASE 23P SALES-PUBLISHING: Flytter tilbudspublisering og bygging av kundelenker ut av SalesModule uten å endre UI, tilbudsdata, database, RLS, Storage, e-post eller aksept.
@@ -1141,6 +1142,9 @@ export default function SalesModule({
             files: [selectedRequest.acceptanceProofFile, selectedRequest.contractFile]
               .filter(Boolean)
               .map((file) => ({ ...file, id: file.id || crypto.randomUUID() })),
+            changes: [],
+            legacyTillegg: "",
+            legacyFradrag: "",
             tillegg: "",
             fradrag: "",
             kommentar: "",
