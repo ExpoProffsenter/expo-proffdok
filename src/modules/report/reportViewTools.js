@@ -1,4 +1,4 @@
-import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+// FASE 24Q RAPPORTVISNING FAG/UTSTYR-BILDER: Viser eksisterende bilder fra Fag, deler og utstyr også direkte i Rapport-fanen. PDF-logikk, bildeopplasting, lagring og øvrig rapportinnhold er uendret.\nimport { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 
 const import_jsx_runtime = { jsx, jsxs, Fragment };
 
@@ -331,7 +331,11 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
             " ",
             i.desc && ` \u2014 ${i.desc}`
           ] }),
-          i.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: i.fdvUrl, children: "\xC5pne FDV/datablad" })
+          i.fdvUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PdfSafeLink, { href: i.fdvUrl, children: "\xC5pne FDV/datablad" }),
+          (i.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos reportPhotos", children: i.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url, alt: p.name || i.name || "Bilde" }),
+            p.name && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name })
+          ] }, p.id || p.url)) })
         ] }, i.id))
       ] }),
       projectLog?.enabled && (projectLog.messages || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { children: [
