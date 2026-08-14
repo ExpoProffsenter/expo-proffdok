@@ -248,7 +248,12 @@ export function buildPublishPayload(request, profileForPublish) {
     customer_name: request.customer,
     customer_email: request.email,
     customer_phone: request.phone,
-    customer_address: request.address,
+    customer_address: [
+      request.address,
+      [request.postnr, request.city].filter(Boolean).join(" "),
+    ]
+      .filter(Boolean)
+      .join(", "),
     title: request.offerTitle || request.title,
     intro: request.offerIntro || "",
     lines: [
