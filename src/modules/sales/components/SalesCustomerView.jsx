@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 26B.3
+// Kundetilbud grupperer hovedposter/underposter, koblede opsjoner og vedlegg. Valgte opsjoner oppdaterer riktig hovedpostsum.
+// Priser vises inkl. mva.; intern lagrings- og akseptmodell beholdes eks. mva. Ingen SQL/RLS/Storage/Edge-endring.
 // Expo ProffDok – FASE 26A
 // Privatkundens tilbud viser alle kundevendte priser inkl. mva. Intern lagrings- og akseptmodell beholdes uendret eks. mva.
 // Ingen SQL/RLS/Storage/Edge Function/e-postendring.
@@ -5,7 +8,7 @@
 // Presentasjonskomponent for offentlig kundevisning, lastestatus, lenkefeil og akseptbekreftelse.
 // Ingen egen React-state, Supabase-kall, Storage-kall eller tilbudsforretningslogikk.
 
-import { ArrowLeft, CheckCircle2, ClipboardList, Plus } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ClipboardList, FileText, Plus } from "lucide-react";
 import {
   formatNok,
   getOfferTermsSnapshot,
@@ -13,6 +16,65 @@ import {
   getVisibleOfferLines,
 } from "../utils/salesUtils.js";
 import { getActiveOfferVersion } from "../utils/salesOfferLogic.js";
+
+const LEGACY_MAIN_POST = {
+  id: "ovrige-arbeider",
+  title: "Øvrige arbeider",
+};
+
+function getMainPostMeta(item = {}) {
+  return {
+    id: String(item.mainPostId || LEGACY_MAIN_POST.id).trim() || LEGACY_MAIN_POST.id,
+    title:
+      String(item.mainPostTitle || LEGACY_MAIN_POST.title).trim() ||
+      LEGACY_MAIN_POST.title,
+  };
+}
+
+function buildCustomerOfferGroups(lines = [], options = []) {
+  const groups = [];
+  const groupMap = new Map();
+
+  function ensureGroup(item) {
+    const meta = getMainPostMeta(item);
+
+    if (!groupMap.has(meta.id)) {
+      const group = {
+        ...meta,
+        lines: [],
+        options: [],
+      };
+      groupMap.set(meta.id, group);
+      groups.push(group);
+    }
+
+    return groupMap.get(meta.id);
+  }
+
+  lines.forEach((line) => {
+    ensureGroup(line).lines.push(line);
+  });
+
+  options.forEach((option) => {
+    ensureGroup(option).options.push(option);
+  });
+
+  return groups.filter((group) => group.lines.length || group.options.length);
+}
+
+function getCustomerLineTitle(line = {}) {
+  const description = String(line.description || "Tilbudspost").trim();
+
+  if (
+    line.lineType === "administration" &&
+    line.adminMode === "percent" &&
+    String(line.adminPercent || "").trim()
+  ) {
+    return `${description} (${line.adminPercent} %)`;
+  }
+
+  return description;
+}
 
 export default function SalesCustomerView({
   publicOfferLoading = false,
@@ -128,6 +190,7 @@ export default function SalesCustomerView({
     );
     const selectedOptionsTotal = getOfferTotal(selectedOptions);
     const acceptedTotal = offerTotal + selectedOptionsTotal;
+    const offerGroups = buildCustomerOfferGroups(offerLines, offerOptions);
 
     return (
       <div className="sales-app sales-customer-offer-app">
@@ -257,44 +320,214 @@ export default function SalesCustomerView({
                     <h2>Arbeider og priser</h2>
                   </div>
                   <span className="sales-customer-section-note">
-                    Alle priser er oppgitt inkl. mva.
+                    Alle priser er oppgitt inkl. mva. Valgte opsjoner oppdaterer
+                    summen i den hovedposten de tilhører.
                   </span>
                 </div>
 
-                <div className="sales-customer-lines">
-                  {offerLines.map((line, index) => (
-                    <div key={line.id} className="sales-customer-line-card">
-                      <div className="sales-customer-line-number">
-                        {String(index + 1).padStart(2, "0")}
-                      </div>
+                <div className="sales-customer-main-posts">
+                  {offerGroups.map((group, groupIndex) => {
+                    const groupSelectedOptions = group.options.filter((option) =>
+                      acceptanceForm.selectedOptionIds.includes(option.id)
+                    );
+                    const groupBaseTotal = getOfferTotal(group.lines);
+                    const groupSelectedOptionsTotal =
+                      getOfferTotal(groupSelectedOptions);
+                    const groupAcceptedTotal =
+                      groupBaseTotal + groupSelectedOptionsTotal;
 
-                      <div className="sales-customer-line-body">
-                        <h3>{line.description}</h3>
+                    return (
+                      <section className="sales-customer-main-post" key={group.id}>
+                        <div className="sales-customer-main-post-heading">
+                          <div>
+                            <span className="sales-customer-main-post-number">
+                              {String(groupIndex + 1).padStart(2, "0")}
+                            </span>
+                            <h3>{group.title}</h3>
+                          </div>
 
-                        {line.imageDataUrl || line.productUrl ? (
-                          <div className="sales-customer-line-media">
-                            {line.imageDataUrl ? (
-                              <img
-                                src={line.imageDataUrl}
-                                alt={line.imageName || line.description || "Produktbilde"}
-                              />
-                            ) : null}
+                          <div className="sales-customer-main-post-sum">
+                            <span>
+                              {groupSelectedOptionsTotal > 0
+                                ? "Sum inkl. valgte opsjoner"
+                                : "Sum hovedpost"}
+                            </span>
+                            <strong>
+                              {formatNok(groupAcceptedTotal * 1.25)}
+                            </strong>
+                            <small>inkl. mva.</small>
+                          </div>
+                        </div>
 
-                            {line.productUrl ? (
-                              <a href={line.productUrl} target="_blank" rel="noreferrer">
-                                Se produkt / dokumentasjon
-                              </a>
-                            ) : null}
+                        {group.lines.length ? (
+                          <div className="sales-customer-lines">
+                            {group.lines.map((line, lineIndex) => (
+                              <div key={line.id} className="sales-customer-line-card">
+                                <div className="sales-customer-line-number">
+                                  {groupIndex + 1}.{lineIndex + 1}
+                                </div>
+
+                                <div className="sales-customer-line-body">
+                                  <h3>{getCustomerLineTitle(line)}</h3>
+
+                                  {line.imageDataUrl ||
+                                  line.productUrl ||
+                                  line.attachmentFile?.url && line.attachmentFile?.customerVisible !== false ? (
+                                    <div className="sales-customer-line-media">
+                                      {line.imageDataUrl ? (
+                                        <img
+                                          src={line.imageDataUrl}
+                                          alt={
+                                            line.imageName ||
+                                            line.description ||
+                                            "Produktbilde"
+                                          }
+                                        />
+                                      ) : null}
+
+                                      <div className="sales-customer-media-links">
+                                        {line.productUrl ? (
+                                          <a
+                                            href={line.productUrl}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                          >
+                                            Se produkt / dokumentasjon
+                                          </a>
+                                        ) : null}
+
+                                        {line.attachmentFile?.url && line.attachmentFile?.customerVisible !== false ? (
+                                          <a
+                                            href={line.attachmentFile.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                          >
+                                            <FileText size={16} />
+                                            Åpne vedlegg:{" "}
+                                            {line.attachmentFile.name || "PDF"}
+                                          </a>
+                                        ) : null}
+                                      </div>
+                                    </div>
+                                  ) : null}
+                                </div>
+
+                                <strong className="sales-customer-line-price">
+                                  {formatNok(getOfferTotal([line]) * 1.25)}
+                                  <span>inkl. mva.</span>
+                                </strong>
+                              </div>
+                            ))}
                           </div>
                         ) : null}
-                      </div>
 
-                      <strong className="sales-customer-line-price">
-                        {formatNok(getOfferTotal([line]) * 1.25)}
-                        <span>inkl. mva.</span>
-                      </strong>
-                    </div>
-                  ))}
+                        {group.options.length ? (
+                          <div className="sales-customer-main-post-options">
+                            <div className="sales-customer-main-post-options-heading">
+                              <strong>Opsjoner</strong>
+                              <span>
+                                Velg eventuelle tillegg til {group.title}.
+                              </span>
+                            </div>
+
+                            <div className="sales-customer-option-grid">
+                              {group.options.map((option) => {
+                                const isSelected =
+                                  acceptanceForm.selectedOptionIds.includes(
+                                    option.id
+                                  );
+
+                                return (
+                                  <label
+                                    className={`sales-customer-option-card ${
+                                      isSelected
+                                        ? "sales-customer-option-card-selected"
+                                        : ""
+                                    } ${
+                                      option.imageDataUrl
+                                        ? "sales-customer-option-card-with-image"
+                                        : ""
+                                    }`}
+                                    key={option.id}
+                                  >
+                                    {option.imageDataUrl ? (
+                                      <img
+                                        className="sales-customer-option-image"
+                                        src={option.imageDataUrl}
+                                        alt={
+                                          option.imageName ||
+                                          option.title ||
+                                          "Opsjon"
+                                        }
+                                      />
+                                    ) : null}
+
+                                    <div className="sales-customer-option-content">
+                                      <div className="sales-customer-option-topline">
+                                        <input
+                                          type="checkbox"
+                                          checked={isSelected}
+                                          onChange={() =>
+                                            toggleAcceptedOption(option.id)
+                                          }
+                                        />
+                                        <span className="sales-customer-option-state">
+                                          {isSelected ? "Valgt" : "Velg opsjon"}
+                                        </span>
+                                      </div>
+
+                                      <h3>{option.title || "Opsjon"}</h3>
+                                      {option.description ? (
+                                        <p>{option.description}</p>
+                                      ) : null}
+
+                                      <div className="sales-customer-media-links">
+                                        {option.productUrl ? (
+                                          <a
+                                            href={option.productUrl}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            onClick={(event) =>
+                                              event.stopPropagation()
+                                            }
+                                          >
+                                            Se produkt / dokumentasjon
+                                          </a>
+                                        ) : null}
+
+                                        {option.attachmentFile?.url && option.attachmentFile?.customerVisible !== false ? (
+                                          <a
+                                            href={option.attachmentFile.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            onClick={(event) =>
+                                              event.stopPropagation()
+                                            }
+                                          >
+                                            <FileText size={16} />
+                                            Åpne vedlegg:{" "}
+                                            {option.attachmentFile.name || "PDF"}
+                                          </a>
+                                        ) : null}
+                                      </div>
+
+                                      <strong className="sales-customer-option-price">
+                                        +{" "}
+                                        {formatNok(
+                                          getOfferTotal([option]) * 1.25
+                                        )}{" "}
+                                        inkl. mva.
+                                      </strong>
+                                    </div>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : null}
+                      </section>
+                    );
+                  })}
                 </div>
 
                 <div className="sales-customer-total-card">
@@ -315,81 +548,9 @@ export default function SalesCustomerView({
                 </div>
               </article>
 
-              {offerOptions.length ? (
-                <article className="sales-customer-section">
-                  <div className="sales-customer-section-heading">
-                    <div>
-                      <span className="sales-section-kicker">03</span>
-                      <h2>Opsjoner</h2>
-                    </div>
-                    <span className="sales-customer-section-note">
-                      Valgte opsjoner legges til totalsummen før aksept.
-                    </span>
-                  </div>
-
-                  <div className="sales-customer-option-grid">
-                    {offerOptions.map((option) => {
-                      const isSelected = acceptanceForm.selectedOptionIds.includes(
-                        option.id
-                      );
-
-                      return (
-                        <label
-                          className={`sales-customer-option-card ${
-                            isSelected ? "sales-customer-option-card-selected" : ""
-                          } ${option.imageDataUrl ? "sales-customer-option-card-with-image" : ""}`}
-                          key={option.id}
-                        >
-                          {option.imageDataUrl ? (
-                            <img
-                              className="sales-customer-option-image"
-                              src={option.imageDataUrl}
-                              alt={option.imageName || option.title || "Opsjon"}
-                            />
-                          ) : null}
-
-                          <div className="sales-customer-option-content">
-                            <div className="sales-customer-option-topline">
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={() => toggleAcceptedOption(option.id)}
-                              />
-                              <span className="sales-customer-option-state">
-                                {isSelected ? "Valgt" : "Velg opsjon"}
-                              </span>
-                            </div>
-
-                            <h3>{option.title || "Opsjon"}</h3>
-                            {option.description ? <p>{option.description}</p> : null}
-
-                            {option.productUrl ? (
-                              <a
-                                href={option.productUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                onClick={(event) => event.stopPropagation()}
-                              >
-                                Se produkt / dokumentasjon
-                              </a>
-                            ) : null}
-
-                            <strong className="sales-customer-option-price">
-                              + {formatNok(getOfferTotal([option]) * 1.25)} inkl. mva.
-                            </strong>
-                          </div>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </article>
-              ) : null}
-
               {offerReservations ? (
                 <article className="sales-customer-section sales-customer-text-section">
-                  <span className="sales-section-kicker">
-                    {offerOptions.length ? "04" : "03"}
-                  </span>
+                  <span className="sales-section-kicker">03</span>
                   <div>
                     <h2>Forutsetninger og forbehold</h2>
                     <p>{offerReservations}</p>
@@ -482,7 +643,8 @@ export default function SalesCustomerView({
                         {selectedOptions.map((option) => (
                           <span key={option.id}>
                             <Plus size={16} />
-                            {option.title}: {formatNok(getOfferTotal([option]) * 1.25)} inkl. mva.
+                            {getMainPostMeta(option).title} – {option.title}:{" "}
+                            {formatNok(getOfferTotal([option]) * 1.25)} inkl. mva.
                           </span>
                         ))}
                       </div>
