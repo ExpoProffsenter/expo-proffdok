@@ -1,5 +1,5 @@
-// Expo ProffDok – FASE 26B.3
-// Kundetilbud grupperer hovedposter/underposter, koblede opsjoner og vedlegg. Valgte opsjoner oppdaterer riktig hovedpostsum.
+// Expo ProffDok – FASE 26B.5
+// Kundetilbud skiller tydelig mellom tillegg/oppgraderinger og alternativer som erstatter en konkret grunnpost.\n// Kundetilbud grupperer hovedposter/underposter, koblede opsjoner og vedlegg. Valgte opsjoner oppdaterer riktig hovedpostsum.
 // Priser vises inkl. mva.; intern lagrings- og akseptmodell beholdes eks. mva. Ingen SQL/RLS/Storage/Edge-endring.
 // Expo ProffDok – FASE 26A
 // Privatkundens tilbud viser alle kundevendte priser inkl. mva. Intern lagrings- og akseptmodell beholdes uendret eks. mva.
@@ -74,6 +74,23 @@ function getCustomerLineTitle(line = {}) {
   }
 
   return description;
+}
+
+function isAlternativeOption(option = {}) {
+  return option?.optionType === "alternative";
+}
+
+function getOptionPriceChangeText(option = {}) {
+  const amountInclVat = getOfferTotal([option]) * 1.25;
+
+  if (amountInclVat === 0) return "Ingen prisendring";
+
+  const prefix = amountInclVat > 0 ? "+" : "−";
+  return `${prefix} ${formatNok(Math.abs(amountInclVat))} inkl. mva.`;
+}
+
+function getOptionPriceLabel(option = {}) {
+  return isAlternativeOption(option) ? "Prisendring" : "Tillegg";
 }
 
 export default function SalesCustomerView({
@@ -226,8 +243,10 @@ export default function SalesCustomerView({
                 <p className="sales-eyebrow">Tilbud</p>
                 <h1 className="sales-title sales-customer-title">{offerTitle}</h1>
                 <p className="sales-subtitle sales-customer-lead">
-                  Her finner du leveransen, prisene og vilkårene samlet. Velg
-                  eventuelle opsjoner før du aksepterer tilbudet nederst på siden.
+                  Her finner du leveransen, prisene og vilkårene samlet. Opsjoner
+                  kan være tillegg/oppgraderinger eller alternativer som erstatter
+                  en konkret underpost. Gjør eventuelle valg før du aksepterer
+                  tilbudet nederst på siden.
                 </p>
 
                 <div className="sales-customer-meta-grid">
@@ -320,8 +339,9 @@ export default function SalesCustomerView({
                     <h2>Arbeider og priser</h2>
                   </div>
                   <span className="sales-customer-section-note">
-                    Alle priser er oppgitt inkl. mva. Valgte opsjoner oppdaterer
-                    summen i den hovedposten de tilhører.
+                    Alle priser er oppgitt inkl. mva. En opsjon kan være et tillegg
+                    til grunnprisen eller et alternativ som erstatter en konkret
+                    underpost. Valget oppdaterer totalsummen automatisk.
                   </span>
                 </div>
 
@@ -348,8 +368,8 @@ export default function SalesCustomerView({
 
                           <div className="sales-customer-main-post-sum">
                             <span>
-                              {groupSelectedOptionsTotal > 0
-                                ? "Sum inkl. valgte opsjoner"
+                              {groupSelectedOptions.length
+                                ? "Sum etter valgte opsjoner"
                                 : "Sum hovedpost"}
                             </span>
                             <strong>
@@ -361,63 +381,96 @@ export default function SalesCustomerView({
 
                         {group.lines.length ? (
                           <div className="sales-customer-lines">
-                            {group.lines.map((line, lineIndex) => (
-                              <div key={line.id} className="sales-customer-line-card">
-                                <div className="sales-customer-line-number">
-                                  {groupIndex + 1}.{lineIndex + 1}
-                                </div>
+                            {group.lines.map((line, lineIndex) => {
+                              const replacingOption = groupSelectedOptions.find(
+                                (option) =>
+                                  isAlternativeOption(option) &&
+                                  option.replacementLineId === line.id
+                              );
 
-                                <div className="sales-customer-line-body">
-                                  <h3>{getCustomerLineTitle(line)}</h3>
+                              return (
+                                <div
+                                  key={line.id}
+                                  className={`sales-customer-line-card ${
+                                    replacingOption
+                                      ? "sales-customer-line-card-replaced"
+                                      : ""
+                                  }`}
+                                >
+                                  <div className="sales-customer-line-number">
+                                    {groupIndex + 1}.{lineIndex + 1}
+                                  </div>
 
-                                  {line.imageDataUrl ||
-                                  line.productUrl ||
-                                  line.attachmentFile?.url && line.attachmentFile?.customerVisible !== false ? (
-                                    <div className="sales-customer-line-media">
-                                      {line.imageDataUrl ? (
-                                        <img
-                                          src={line.imageDataUrl}
-                                          alt={
-                                            line.imageName ||
-                                            line.description ||
-                                            "Produktbilde"
-                                          }
-                                        />
-                                      ) : null}
+                                  <div className="sales-customer-line-body">
+                                    <h3>{getCustomerLineTitle(line)}</h3>
 
-                                      <div className="sales-customer-media-links">
-                                        {line.productUrl ? (
-                                          <a
-                                            href={line.productUrl}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                          >
-                                            Se produkt / dokumentasjon
-                                          </a>
+                                    {replacingOption ? (
+                                      <p className="sales-customer-line-replaced-note">
+                                        Erstattes av valgt alternativ:{" "}
+                                        <strong>
+                                          {replacingOption.title || "Alternativ"}
+                                        </strong>
+                                        . Grunnprisen for denne posten inngår allerede
+                                        i tilbudssummen.
+                                      </p>
+                                    ) : null}
+
+                                    {line.imageDataUrl ||
+                                    line.productUrl ||
+                                    line.attachmentFile?.url && line.attachmentFile?.customerVisible !== false ? (
+                                      <div className="sales-customer-line-media">
+                                        {line.imageDataUrl ? (
+                                          <img
+                                            src={line.imageDataUrl}
+                                            alt={
+                                              line.imageName ||
+                                              line.description ||
+                                              "Produktbilde"
+                                            }
+                                          />
                                         ) : null}
 
-                                        {line.attachmentFile?.url && line.attachmentFile?.customerVisible !== false ? (
-                                          <a
-                                            href={line.attachmentFile.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                          >
-                                            <FileText size={16} />
-                                            Åpne vedlegg:{" "}
-                                            {line.attachmentFile.name || "PDF"}
-                                          </a>
-                                        ) : null}
+                                        <div className="sales-customer-media-links">
+                                          {line.productUrl ? (
+                                            <a
+                                              href={line.productUrl}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                            >
+                                              Se produkt / dokumentasjon
+                                            </a>
+                                          ) : null}
+
+                                          {line.attachmentFile?.url && line.attachmentFile?.customerVisible !== false ? (
+                                            <a
+                                              href={line.attachmentFile.url}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                            >
+                                              <FileText size={16} />
+                                              Åpne vedlegg:{" "}
+                                              {line.attachmentFile.name || "PDF"}
+                                            </a>
+                                          ) : null}
+                                        </div>
                                       </div>
-                                    </div>
-                                  ) : null}
-                                </div>
+                                    ) : null}
+                                  </div>
 
-                                <strong className="sales-customer-line-price">
-                                  {formatNok(getOfferTotal([line]) * 1.25)}
-                                  <span>inkl. mva.</span>
-                                </strong>
-                              </div>
-                            ))}
+                                  {replacingOption ? (
+                                    <strong className="sales-customer-line-price sales-customer-line-price-replaced">
+                                      Erstattet
+                                      <span>grunnpris inngår</span>
+                                    </strong>
+                                  ) : (
+                                    <strong className="sales-customer-line-price">
+                                      {formatNok(getOfferTotal([line]) * 1.25)}
+                                      <span>inkl. mva.</span>
+                                    </strong>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         ) : null}
 
@@ -426,7 +479,8 @@ export default function SalesCustomerView({
                             <div className="sales-customer-main-post-options-heading">
                               <strong>Opsjoner</strong>
                               <span>
-                                Velg eventuelle tillegg til {group.title}.
+                                Velg eventuelle tillegg eller alternativer til{" "}
+                                {group.title}.
                               </span>
                             </div>
 
@@ -476,7 +530,31 @@ export default function SalesCustomerView({
                                         </span>
                                       </div>
 
+                                      <span className="sales-customer-option-type">
+                                        {isAlternativeOption(option)
+                                          ? "Alternativ / erstatter"
+                                          : "Tillegg / oppgradering"}
+                                      </span>
+
                                       <h3>{option.title || "Opsjon"}</h3>
+
+                                      {isAlternativeOption(option) ? (
+                                        <p className="sales-customer-option-replacement">
+                                          <strong>Erstatter:</strong>{" "}
+                                          {group.lines.find(
+                                            (line) =>
+                                              line.id === option.replacementLineId
+                                          )?.description ||
+                                            "Valgt underpost"}
+                                          . Grunnprisen er allerede med i tilbudet;
+                                          beløpet under er kun prisendringen.
+                                        </p>
+                                      ) : (
+                                        <p className="sales-customer-option-replacement">
+                                          Kommer i tillegg til grunnprisen dersom den velges.
+                                        </p>
+                                      )}
+
                                       {option.description ? (
                                         <p>{option.description}</p>
                                       ) : null}
@@ -512,11 +590,8 @@ export default function SalesCustomerView({
                                       </div>
 
                                       <strong className="sales-customer-option-price">
-                                        +{" "}
-                                        {formatNok(
-                                          getOfferTotal([option]) * 1.25
-                                        )}{" "}
-                                        inkl. mva.
+                                        {getOptionPriceLabel(option)}:{" "}
+                                        {getOptionPriceChangeText(option)}
                                       </strong>
                                     </div>
                                   </label>
@@ -535,10 +610,18 @@ export default function SalesCustomerView({
                     <span>Sum arbeider inkl. mva.</span>
                     <strong>{formatNok(offerTotal * 1.25)}</strong>
                   </div>
-                  {selectedOptionsTotal > 0 ? (
+                  {selectedOptions.length ? (
                     <div className="sales-customer-total-row sales-customer-total-muted">
-                      <span>Valgte opsjoner inkl. mva.</span>
-                      <strong>{formatNok(selectedOptionsTotal * 1.25)}</strong>
+                      <span>Prisendring valgte opsjoner</span>
+                      <strong>
+                        {selectedOptionsTotal === 0
+                          ? formatNok(0)
+                          : `${
+                              selectedOptionsTotal > 0 ? "+" : "−"
+                            } ${formatNok(
+                              Math.abs(selectedOptionsTotal * 1.25)
+                            )}`}
+                      </strong>
                     </div>
                   ) : null}
                   <div className="sales-customer-total-row sales-customer-total-grand">
@@ -640,13 +723,29 @@ export default function SalesCustomerView({
                     <div className="sales-customer-selected-options">
                       <h3>Valgte opsjoner</h3>
                       <div>
-                        {selectedOptions.map((option) => (
-                          <span key={option.id}>
-                            <Plus size={16} />
-                            {getMainPostMeta(option).title} – {option.title}:{" "}
-                            {formatNok(getOfferTotal([option]) * 1.25)} inkl. mva.
-                          </span>
-                        ))}
+                        {selectedOptions.map((option) => {
+                          const group = offerGroups.find(
+                            (item) => item.id === getMainPostMeta(option).id
+                          );
+                          const replacedLine = group?.lines.find(
+                            (line) => line.id === option.replacementLineId
+                          );
+
+                          return (
+                            <span key={option.id}>
+                              <Plus size={16} />
+                              {getMainPostMeta(option).title} –{" "}
+                              {option.title || "Opsjon"}
+                              {isAlternativeOption(option)
+                                ? ` (erstatter ${
+                                    replacedLine?.description || "underpost"
+                                  })`
+                                : ""}
+                              : {getOptionPriceLabel(option)}{" "}
+                              {getOptionPriceChangeText(option)}
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
                   ) : null}
