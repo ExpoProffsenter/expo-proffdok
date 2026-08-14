@@ -2136,6 +2136,16 @@ export default function SalesModule({
       return false;
     }
 
+    if (incompleteOption) {
+      alert("Opsjoner som har innhold må ha både tittel og beløp. Tomme opsjoner ignoreres automatisk.");
+      return false;
+    }
+
+    if (invalidAlternativeOption) {
+      alert("En alternativ opsjon må kobles til underposten den erstatter før tilbudet kan lagres.");
+      return false;
+    }
+
     const nextRequests = requests.map((request) => {
       if (request.id !== selectedRequestId) return request;
 
