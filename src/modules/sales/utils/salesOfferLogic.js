@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 26B
+// Expo ProffDok – FASE 26B.1\n// Bevarer PDF-vedlegg på underposter og opsjoner i tilbudsdata. Ingen SQL/RLS/Storage-regelendring.\n// Expo ProffDok – FASE 26B
 // Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri
 // administrasjon/prosjektstyring. Beholder flat lines/options-modell for bakoverkompatibilitet.
 // Ingen SQL/RLS/Storage/Edge/e-postendring.
@@ -74,6 +74,7 @@ export function createEmptyOfferLine(mainPost = null) {
     productUrl: "",
     imageDataUrl: "",
     imageName: "",
+    attachmentFile: null,
   };
 }
 
@@ -90,6 +91,7 @@ export function createOfferAdministrationLine(mainPost) {
     productUrl: "",
     imageDataUrl: "",
     imageName: "",
+    attachmentFile: null,
   };
 }
 
@@ -113,6 +115,7 @@ export function createEmptyOfferOption(mainPost = null) {
     productUrl: "",
     imageDataUrl: "",
     imageName: "",
+    attachmentFile: null,
   };
 }
 
@@ -288,6 +291,17 @@ export function prepareOfferFormForSave(formValue) {
       productUrl: String(line.productUrl || "").trim(),
       imageDataUrl: line.imageDataUrl || "",
       imageName: line.imageName || "",
+      attachmentFile: line.attachmentFile
+        ? {
+            ...line.attachmentFile,
+            name: String(line.attachmentFile.name || "").trim(),
+            url: String(line.attachmentFile.url || "").trim(),
+            path: String(line.attachmentFile.path || "").trim(),
+            type: String(line.attachmentFile.type || "application/pdf").trim(),
+            size: Number(line.attachmentFile.size || 0),
+            customerVisible: line.attachmentFile.customerVisible !== false,
+          }
+        : null,
       ...(line.lineType === "administration"
         ? {
             lineType: "administration",
@@ -301,7 +315,8 @@ export function prepareOfferFormForSave(formValue) {
         line.description ||
         line.amount ||
         line.productUrl ||
-        line.imageDataUrl
+        line.imageDataUrl ||
+        line.attachmentFile?.url
     );
 
   const incompleteLine = cleanLines.find(
@@ -321,6 +336,17 @@ export function prepareOfferFormForSave(formValue) {
       productUrl: String(option.productUrl || "").trim(),
       imageDataUrl: option.imageDataUrl || "",
       imageName: option.imageName || "",
+      attachmentFile: option.attachmentFile
+        ? {
+            ...option.attachmentFile,
+            name: String(option.attachmentFile.name || "").trim(),
+            url: String(option.attachmentFile.url || "").trim(),
+            path: String(option.attachmentFile.path || "").trim(),
+            type: String(option.attachmentFile.type || "application/pdf").trim(),
+            size: Number(option.attachmentFile.size || 0),
+            customerVisible: option.attachmentFile.customerVisible !== false,
+          }
+        : null,
     }))
     .filter(
       (option) =>
@@ -328,7 +354,8 @@ export function prepareOfferFormForSave(formValue) {
         option.description ||
         option.amount ||
         option.imageDataUrl ||
-        option.productUrl
+        option.productUrl ||
+        option.attachmentFile?.url
     );
 
   return { cleanLines, cleanOptions, incompleteLine };
