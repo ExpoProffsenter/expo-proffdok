@@ -3,7 +3,7 @@
    Valgte opsjoner oppdaterer hovedpostsummen visuelt. Ingen beregnings- eller akseptlogikk i CSS.
 */
 
-/* Expo ProffDok – FASE 26A
+/* Expo ProffDok – FASE 26B.5\n   Tydelig visning av opsjonstype og erstattede grunnposter i kundetilbud.\n*/\n\n/* Expo ProffDok – FASE 26A
    Tydelig prismerking i intern tilbudsbygger og trygg layout for lange kundeseksjonsmerker.
    Ingen endring i tilbudsdata, beregning eller akseptlogikk.
 */
@@ -1911,3 +1911,57 @@ a:hover {
     font-size: 18px;
   }
 }
+
+/* FASE 26B.5 – opsjonstype og alternativ vare */
+.sales-offer-amount-field small,
+.sales-field small {
+  color: #71858f;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.sales-customer-line-card-replaced {
+  background: #f6fafb !important;
+}
+
+.sales-customer-line-card-replaced .sales-customer-line-body h3 {
+  color: #526975;
+}
+
+.sales-customer-line-replaced-note {
+  margin-top: 7px !important;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #eef6f8;
+  color: #526975 !important;
+  font-size: 12px;
+  line-height: 1.45 !important;
+}
+
+.sales-customer-line-price-replaced {
+  color: #607985;
+  font-size: 14px;
+}
+
+.sales-customer-option-type {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 8px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eef6f8;
+  color: #0b8790;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sales-customer-option-replacement {
+  margin-bottom: 8px !important;
+  color: #607985 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
