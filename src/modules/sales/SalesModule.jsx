@@ -823,10 +823,13 @@ export default function SalesModule({
         : {}),
     };
     const confirmationRelevantChange = Boolean(
-      selectedRequest.surveyConfirmationSentAt &&
+      ["Forespørsel", "Befaring"].includes(selectedRequest.status) &&
+        selectedRequest.surveyConfirmationSentAt &&
         (updatedRequest.customer !== selectedRequest.customer ||
           updatedRequest.email !== selectedRequest.email ||
           updatedRequest.address !== selectedRequest.address ||
+          updatedRequest.postnr !== selectedRequest.postnr ||
+          updatedRequest.city !== selectedRequest.city ||
           updatedRequest.title !== selectedRequest.title)
     );
     const nextRequests = requests.map((request) =>
