@@ -67,14 +67,18 @@ export default function SalesRequestForm({
           </section>
 
           <form className="sales-form-panel" onSubmit={onSubmit}>
+            <p className="sales-offer-price-guidance" style={{ marginBottom: 16 }}>
+              Felter merket * må fylles ut.
+            </p>
             <div className="sales-form-grid">
               <label className="sales-field">
-                <span>Kundenavn</span>
+                <span>Kundenavn *</span>
                 <input
                   value={form.customer}
                   onChange={(event) => onUpdateForm("customer", event.target.value)}
-                  placeholder="Ola Nordmann"
+                  placeholder="Skriv inn kundenavn"
                   autoComplete="name"
+                  required
                   autoFocus
                 />
               </label>
@@ -106,33 +110,36 @@ export default function SalesRequestForm({
               </label>
 
               <label className="sales-field sales-field-full">
-                <span>Adresse</span>
+                <span>Adresse *</span>
                 <input
                   value={form.address}
                   onChange={(event) => onUpdateForm("address", event.target.value)}
-                  placeholder="Kirkeveien 12"
+                  placeholder="Skriv inn adresse"
                   autoComplete="address-line1"
+                  required
                 />
               </label>
 
               <label className="sales-field">
-                <span>Postnummer</span>
+                <span>Postnummer *</span>
                 <input
                   value={form.postnr || ""}
                   onChange={(event) => onUpdateForm("postnr", event.target.value)}
-                  placeholder="0368"
+                  placeholder="Skriv inn postnummer"
                   inputMode="numeric"
                   autoComplete="postal-code"
+                  required
                 />
               </label>
 
               <label className="sales-field">
-                <span>Sted</span>
+                <span>Sted *</span>
                 <input
                   value={form.city || ""}
                   onChange={(event) => onUpdateForm("city", event.target.value)}
-                  placeholder="Oslo"
+                  placeholder="Skriv inn sted"
                   autoComplete="address-level2"
+                  required
                 />
               </label>
 
