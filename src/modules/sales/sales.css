@@ -1,3 +1,8 @@
+/* Expo ProffDok – FASE 26B.3
+   Kundetilbud grupperer hovedposter, underposter, koblede opsjoner og vedlegg.
+   Valgte opsjoner oppdaterer hovedpostsummen visuelt. Ingen beregnings- eller akseptlogikk i CSS.
+*/
+
 /* Expo ProffDok – FASE 26A
    Tydelig prismerking i intern tilbudsbygger og trygg layout for lange kundeseksjonsmerker.
    Ingen endring i tilbudsdata, beregning eller akseptlogikk.
@@ -1736,5 +1741,173 @@ a:hover {
     grid-template-columns: 1fr;
     gap: 10px;
     padding-top: 16px;
+  }
+}
+
+
+/* FASE 26B.3 – hovedposter og vedlegg i kundetilbud */
+.sales-customer-main-posts {
+  display: grid;
+  gap: 16px;
+}
+
+.sales-customer-main-post {
+  overflow: hidden;
+  border: 1px solid #d7e4ea;
+  border-radius: 21px;
+  background: #fbfdfe;
+}
+
+.sales-customer-main-post-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 17px 18px;
+  border-bottom: 1px solid #e1edf1;
+  background: linear-gradient(135deg, #f2fbfc, #ffffff);
+}
+
+.sales-customer-main-post-heading > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sales-customer-main-post-heading h3 {
+  margin: 0;
+  color: #10212b;
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.sales-customer-main-post-number {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 13px;
+  background: #0e9aa3;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sales-customer-main-post-sum {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sales-customer-main-post-sum span,
+.sales-customer-main-post-sum small {
+  color: #71858f;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sales-customer-main-post-sum strong {
+  color: #10212b;
+  font-size: 18px;
+}
+
+.sales-customer-main-post > .sales-customer-lines {
+  gap: 0;
+}
+
+.sales-customer-main-post .sales-customer-line-card {
+  border: 0;
+  border-bottom: 1px solid #e7eff2;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.sales-customer-main-post .sales-customer-line-card:last-child {
+  border-bottom: 0;
+}
+
+.sales-customer-main-post-options {
+  padding: 16px 18px 18px;
+  border-top: 1px solid #dbe8ed;
+  background: #f8fbfc;
+}
+
+.sales-customer-main-post-options-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.sales-customer-main-post-options-heading strong {
+  color: #10212b;
+  font-size: 14px;
+}
+
+.sales-customer-main-post-options-heading span {
+  color: #71858f;
+  font-size: 12px;
+  text-align: right;
+}
+
+.sales-customer-media-links {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.sales-customer-media-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.sales-customer-option-content .sales-customer-media-links {
+  margin-top: 8px;
+}
+
+@media (max-width: 760px) {
+  .sales-customer-main-post-heading {
+    align-items: flex-start;
+  }
+
+  .sales-customer-main-post-sum {
+    white-space: normal;
+  }
+
+  .sales-customer-main-post-options-heading {
+    display: grid;
+    gap: 4px;
+  }
+
+  .sales-customer-main-post-options-heading span {
+    text-align: left;
+  }
+}
+
+@media (max-width: 520px) {
+  .sales-customer-main-post-heading {
+    display: grid;
+    gap: 12px;
+  }
+
+  .sales-customer-main-post-sum {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .sales-customer-main-post-heading h3 {
+    font-size: 18px;
   }
 }
