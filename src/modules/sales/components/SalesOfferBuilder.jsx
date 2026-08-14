@@ -51,6 +51,7 @@ export default function SalesOfferBuilder({
   addCustomMainPost,
   addAdministrationLine,
   updateOfferOption,
+  handleOfferOptionAmountEnter,
   handleOfferOptionFile,
   removeOfferOptionImage,
   removeOfferOptionAttachment,
@@ -582,6 +583,7 @@ export default function SalesOfferBuilder({
 
                                     <div style={{ display: "grid", gap: 10 }}>
                                       <input
+                                        data-offer-option-title={option.id}
                                         value={option.title}
                                         onChange={(event) =>
                                           updateOfferOption(
@@ -779,6 +781,12 @@ export default function SalesOfferBuilder({
                                             option.id,
                                             "amount",
                                             event.target.value
+                                          )
+                                        }
+                                        onKeyDown={(event) =>
+                                          handleOfferOptionAmountEnter(
+                                            event,
+                                            option
                                           )
                                         }
                                         placeholder="0"
