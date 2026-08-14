@@ -78,26 +78,24 @@ export default function SalesOfferBuilder({
       return;
     }
 
-    // Alert() blokkerer nettleseren. Hoppet skjer derfor først etter at
-    // brukeren har trykket OK og React har rendret valideringsmålet.
-    requestAnimationFrame(() => {
-      replacementField?.focus?.({ preventScroll: true });
-      target.scrollIntoView({
-        behavior: "auto",
-        block: "center",
-        inline: "nearest",
-      });
+    // Etter at alert() er lukket kan nettleseren forsøke å gi fokus tilbake
+    // til Lagre-knappen. Vi lar derfor selve select-feltet ta fokus og
+    // bruker nettleserens native fokus-scroll som første mekanisme.
+    const timer = window.setTimeout(() => {
+      replacementField?.focus?.();
 
-      requestAnimationFrame(() => {
+      window.setTimeout(() => {
         target.scrollIntoView({
-          behavior: "auto",
+          behavior: "smooth",
           block: "center",
           inline: "nearest",
         });
-        replacementField?.focus?.({ preventScroll: true });
+        replacementField?.focus?.();
         onOfferValidationJumpHandled?.();
-      });
-    });
+      }, 180);
+    }, 120);
+
+    return () => window.clearTimeout(timer);
   }, [offerValidationJump?.token]);
 
 
