@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 26B.1\n// Bevarer PDF-vedlegg på underposter og opsjoner i tilbudsdata. Ingen SQL/RLS/Storage-regelendring.\n// Expo ProffDok – FASE 26B
+// Expo ProffDok – FASE 26B.5\n// Opsjoner skiller mellom tillegg/oppgradering og alternativ som erstatter en konkret underpost.\n// Alternativer lagrer kun prisendringen mot grunnposten; eksisterende total-/akseptmatematikk beholdes.\n// Bevarer PDF-vedlegg på underposter og opsjoner i tilbudsdata. Ingen SQL/RLS/Storage-regelendring.\n// Expo ProffDok – FASE 26B
 // Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri
 // administrasjon/prosjektstyring. Beholder flat lines/options-modell for bakoverkompatibilitet.
 // Ingen SQL/RLS/Storage/Edge/e-postendring.
@@ -110,6 +110,8 @@ export function createEmptyOfferOption(mainPost = null) {
   return {
     id: createEntityId("option"),
     ...postMeta,
+    optionType: "addition",
+    replacementLineId: "",
     title: "",
     description: "",
     internalProductNumber: "",
@@ -145,10 +147,20 @@ export function normalizeOfferLines(lines = []) {
 }
 
 export function normalizeOfferOptions(options = []) {
-  return (Array.isArray(options) ? options : []).map((option) => ({
-    ...option,
-    ...normalizeMainPostMeta(option),
-  }));
+  return (Array.isArray(options) ? options : []).map((option) => {
+    const optionType =
+      option?.optionType === "alternative" ? "alternative" : "addition";
+
+    return {
+      ...option,
+      ...normalizeMainPostMeta(option),
+      optionType,
+      replacementLineId:
+        optionType === "alternative"
+          ? String(option?.replacementLineId || "").trim()
+          : "",
+    };
+  });
 }
 
 export function recalculateAdministrationLines(lines = []) {
@@ -335,6 +347,12 @@ export function prepareOfferFormForSave(formValue) {
       mainPostTitle: String(
         option.mainPostTitle || LEGACY_MAIN_POST.title
       ).trim(),
+      optionType:
+        option.optionType === "alternative" ? "alternative" : "addition",
+      replacementLineId:
+        option.optionType === "alternative"
+          ? String(option.replacementLineId || "").trim()
+          : "",
       title: String(option.title || "").trim(),
       description: String(option.description || "").trim(),
       internalProductNumber: String(option.internalProductNumber || "").trim(),
@@ -364,7 +382,29 @@ export function prepareOfferFormForSave(formValue) {
         option.attachmentFile?.url
     );
 
-  return { cleanLines, cleanOptions, incompleteLine };
+  const incompleteOption = cleanOptions.find(
+    (option) => !option.title || option.amount === ""
+  );
+
+  const invalidAlternativeOption = cleanOptions.find((option) => {
+    if (option.optionType !== "alternative") return false;
+    if (!option.replacementLineId) return true;
+
+    return !cleanLines.some(
+      (line) =>
+        line.id === option.replacementLineId &&
+        line.mainPostId === option.mainPostId &&
+        line.lineType !== "administration"
+    );
+  });
+
+  return {
+    cleanLines,
+    cleanOptions,
+    incompleteLine,
+    incompleteOption,
+    invalidAlternativeOption,
+  };
 }
 
 export function buildOfferSnapshot(
