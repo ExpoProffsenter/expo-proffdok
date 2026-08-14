@@ -278,6 +278,7 @@ export default function SalesModule({
   const offerFormHydratedRequestIdRef = useRef("");
   const offerFormSavedBaselineRef = useRef("");
   const pendingInvalidAlternativeOptionIdRef = useRef("");
+  const [offerValidationJump, setOfferValidationJump] = useState(null);
   const latestRequestsRef = useRef(requests);
   offerFormRef.current = offerForm;
   offerModeRef.current = mode;
@@ -1979,42 +1980,6 @@ export default function SalesModule({
     }));
   }
 
-  function focusInvalidAlternativeOption(optionId) {
-    window.setTimeout(() => {
-      const optionCard = document.querySelector(
-        `[data-offer-option-id="${optionId}"]`
-      );
-      const replacementField = optionCard?.querySelector(
-        `[data-offer-option-replacement="${optionId}"]`
-      );
-      const target = replacementField || optionCard;
-
-      if (!target) return;
-
-      const scrollToTarget = () => {
-        const rect = target.getBoundingClientRect();
-        const targetTop = Math.max(
-          0,
-          window.scrollY + rect.top - Math.max(140, window.innerHeight * 0.28)
-        );
-
-        window.scrollTo({
-          top: targetTop,
-          behavior: "smooth",
-        });
-      };
-
-      requestAnimationFrame(() => {
-        scrollToTarget();
-
-        window.setTimeout(() => {
-          scrollToTarget();
-          replacementField?.focus?.({ preventScroll: true });
-        }, 450);
-      });
-    }, 120);
-  }
-
   function focusOfferSaveButton() {
     window.setTimeout(() => {
       const saveButton = document.querySelector(
@@ -2215,7 +2180,10 @@ export default function SalesModule({
       );
 
       if (invalidAlternativeOption.id) {
-        focusInvalidAlternativeOption(invalidAlternativeOption.id);
+        setOfferValidationJump({
+          optionId: invalidAlternativeOption.id,
+          token: `${Date.now()}-${Math.random()}`,
+        });
       }
       return false;
     }
@@ -3038,6 +3006,8 @@ export default function SalesModule({
         removeOfferOptionAttachment={removeOfferOptionAttachment}
         removeOfferOption={removeOfferOption}
         addOfferOption={addOfferOption}
+        offerValidationJump={offerValidationJump}
+        onOfferValidationJumpHandled={() => setOfferValidationJump(null)}
       />
     );
   }
