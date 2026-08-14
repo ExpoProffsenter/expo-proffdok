@@ -159,6 +159,10 @@ export function normalizeOfferOptions(options = []) {
         optionType === "alternative"
           ? String(option?.replacementLineId || "").trim()
           : "",
+      replacementLineDescription:
+        optionType === "alternative"
+          ? String(option?.replacementLineDescription || "").trim()
+          : "",
     };
   });
 }
@@ -353,6 +357,20 @@ export function prepareOfferFormForSave(formValue) {
         option.optionType === "alternative"
           ? String(option.replacementLineId || "").trim()
           : "",
+      replacementLineDescription:
+        option.optionType === "alternative"
+          ? String(
+              option.replacementLineDescription ||
+                cleanLines.find(
+                  (line) =>
+                    String(line.id || "") ===
+                      String(option.replacementLineId || "") &&
+                    line.mainPostId === option.mainPostId &&
+                    line.lineType !== "administration"
+                )?.description ||
+                ""
+            ).trim()
+          : "",
       title: String(option.title || "").trim(),
       description: String(option.description || "").trim(),
       internalProductNumber: String(option.internalProductNumber || "").trim(),
@@ -426,7 +444,9 @@ export function buildOfferSnapshot(
       createOfferTermsSnapshot(request),
       ...(request.offerLines || []).map(toPublicOfferItem),
     ],
-    options: (request.offerOptions || []).map(toPublicOfferItem),
+    options: (request.offerOptions || []).map((option) =>
+      toPublicOfferOption(option, request.offerLines || [])
+    ),
     reservations: request.offerReservations || "",
     validityDays: request.offerValidityDays || "30",
     total: request.offerTotal || 0,
@@ -472,6 +492,32 @@ function toPublicOfferItem(item = {}) {
   return publicItem;
 }
 
+function toPublicOfferOption(option = {}, lines = []) {
+  const publicOption = toPublicOfferItem(option);
+
+  if (publicOption.optionType !== "alternative") {
+    return {
+      ...publicOption,
+      replacementLineId: "",
+      replacementLineDescription: "",
+    };
+  }
+
+  const replacementLine = (Array.isArray(lines) ? lines : []).find(
+    (line) =>
+      String(line?.id || "") === String(publicOption.replacementLineId || "")
+  );
+
+  return {
+    ...publicOption,
+    replacementLineDescription: String(
+      publicOption.replacementLineDescription ||
+        replacementLine?.description ||
+        ""
+    ).trim(),
+  };
+}
+
 export function buildPublishPayload(request, profileForPublish) {
   return {
     offer_id: request.salesOfferId || null,
@@ -492,7 +538,9 @@ export function buildPublishPayload(request, profileForPublish) {
       createOfferTermsSnapshot(request),
       ...(request.offerLines || []).map(toPublicOfferItem),
     ],
-    options: (request.offerOptions || []).map(toPublicOfferItem),
+    options: (request.offerOptions || []).map((option) =>
+      toPublicOfferOption(option, request.offerLines || [])
+    ),
     reservations: request.offerReservations || "",
     validity_days: Number(request.offerValidityDays || 30),
     total_ex_vat: request.offerTotal || 0,
