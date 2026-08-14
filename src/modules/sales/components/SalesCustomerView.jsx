@@ -89,8 +89,54 @@ function getOptionPriceChangeText(option = {}) {
   return `${prefix} ${formatNok(Math.abs(amountInclVat))} inkl. mva.`;
 }
 
+function getOptionAmountInclVat(option = {}) {
+  return getOfferTotal([option]) * 1.25;
+}
+
+function isReductionOption(option = {}) {
+  return !isAlternativeOption(option) && getOptionAmountInclVat(option) < 0;
+}
+
+function getOptionTypeLabel(option = {}) {
+  if (isAlternativeOption(option)) return "Alternativ / erstatter";
+  if (isReductionOption(option)) return "Fradrag / prisreduksjon";
+  return "Tillegg / oppgradering";
+}
+
 function getOptionPriceLabel(option = {}) {
-  return isAlternativeOption(option) ? "Prisendring" : "Tillegg";
+  if (isAlternativeOption(option)) return "Prisendring";
+  if (isReductionOption(option)) return "Fradrag";
+  if (getOptionAmountInclVat(option) === 0) return "Prisendring";
+  return "Tillegg";
+}
+
+function getReplacementLineDescription(option = {}, lines = []) {
+  return (
+    String(option?.replacementLineDescription || "").trim() ||
+    String(
+      (Array.isArray(lines) ? lines : []).find(
+        (line) =>
+          String(line?.id || "") ===
+          String(option?.replacementLineId || "")
+      )?.description || ""
+    ).trim() ||
+    "underposten som er valgt i tilbudet"
+  );
+}
+
+function getOptionExplanation(option = {}, lines = []) {
+  if (isAlternativeOption(option)) {
+    return `Erstatter: ${getReplacementLineDescription(
+      option,
+      lines
+    )}. Grunnprisen er allerede med i tilbudet; beløpet under er kun prisendringen.`;
+  }
+
+  if (isReductionOption(option)) {
+    return "Reduserer grunnprisen dersom den velges.";
+  }
+
+  return "Kommer i tillegg til grunnprisen dersom den velges.";
 }
 
 export default function SalesCustomerView({
@@ -531,29 +577,14 @@ export default function SalesCustomerView({
                                       </div>
 
                                       <span className="sales-customer-option-type">
-                                        {isAlternativeOption(option)
-                                          ? "Alternativ / erstatter"
-                                          : "Tillegg / oppgradering"}
+                                        {getOptionTypeLabel(option)}
                                       </span>
 
                                       <h3>{option.title || "Opsjon"}</h3>
 
-                                      {isAlternativeOption(option) ? (
-                                        <p className="sales-customer-option-replacement">
-                                          <strong>Erstatter:</strong>{" "}
-                                          {group.lines.find(
-                                            (line) =>
-                                              line.id === option.replacementLineId
-                                          )?.description ||
-                                            "Valgt underpost"}
-                                          . Grunnprisen er allerede med i tilbudet;
-                                          beløpet under er kun prisendringen.
-                                        </p>
-                                      ) : (
-                                        <p className="sales-customer-option-replacement">
-                                          Kommer i tillegg til grunnprisen dersom den velges.
-                                        </p>
-                                      )}
+                                      <p className="sales-customer-option-replacement">
+                                        {getOptionExplanation(option, group.lines)}
+                                      </p>
 
                                       {option.description ? (
                                         <p>{option.description}</p>
@@ -727,19 +758,16 @@ export default function SalesCustomerView({
                           const group = offerGroups.find(
                             (item) => item.id === getMainPostMeta(option).id
                           );
-                          const replacedLine = group?.lines.find(
-                            (line) => line.id === option.replacementLineId
-                          );
-
                           return (
                             <span key={option.id}>
                               <Plus size={16} />
                               {getMainPostMeta(option).title} –{" "}
                               {option.title || "Opsjon"}
                               {isAlternativeOption(option)
-                                ? ` (erstatter ${
-                                    replacedLine?.description || "underpost"
-                                  })`
+                                ? ` (erstatter ${getReplacementLineDescription(
+                                    option,
+                                    group?.lines || []
+                                  )})`
                                 : ""}
                               : {getOptionPriceLabel(option)}{" "}
                               {getOptionPriceChangeText(option)}
