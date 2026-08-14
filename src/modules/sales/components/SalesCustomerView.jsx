@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 26A
+// Privatkundens tilbud viser alle kundevendte priser inkl. mva. Intern lagrings- og akseptmodell beholdes uendret eks. mva.
+// Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // Expo ProffDok – FASE 23O
 // Presentasjonskomponent for offentlig kundevisning, lastestatus, lenkefeil og akseptbekreftelse.
 // Ingen egen React-state, Supabase-kall, Storage-kall eller tilbudsforretningslogikk.
@@ -254,7 +257,7 @@ export default function SalesCustomerView({
                     <h2>Arbeider og priser</h2>
                   </div>
                   <span className="sales-customer-section-note">
-                    Alle priser er oppgitt eks. mva. per post.
+                    Alle priser er oppgitt inkl. mva.
                   </span>
                 </div>
 
@@ -287,8 +290,8 @@ export default function SalesCustomerView({
                       </div>
 
                       <strong className="sales-customer-line-price">
-                        {formatNok(getOfferTotal([line]))}
-                        <span>eks. mva.</span>
+                        {formatNok(getOfferTotal([line]) * 1.25)}
+                        <span>inkl. mva.</span>
                       </strong>
                     </div>
                   ))}
@@ -296,17 +299,13 @@ export default function SalesCustomerView({
 
                 <div className="sales-customer-total-card">
                   <div className="sales-customer-total-row">
-                    <span>Sum arbeider eks. mva.</span>
-                    <strong>{formatNok(offerTotal)}</strong>
-                  </div>
-                  <div className="sales-customer-total-row sales-customer-total-muted">
-                    <span>Mva. 25 %</span>
-                    <strong>{formatNok(offerTotal * 0.25)}</strong>
+                    <span>Sum arbeider inkl. mva.</span>
+                    <strong>{formatNok(offerTotal * 1.25)}</strong>
                   </div>
                   {selectedOptionsTotal > 0 ? (
                     <div className="sales-customer-total-row sales-customer-total-muted">
-                      <span>Valgte opsjoner eks. mva.</span>
-                      <strong>{formatNok(selectedOptionsTotal)}</strong>
+                      <span>Valgte opsjoner inkl. mva.</span>
+                      <strong>{formatNok(selectedOptionsTotal * 1.25)}</strong>
                     </div>
                   ) : null}
                   <div className="sales-customer-total-row sales-customer-total-grand">
@@ -376,7 +375,7 @@ export default function SalesCustomerView({
                             ) : null}
 
                             <strong className="sales-customer-option-price">
-                              + {formatNok(getOfferTotal([option]))} eks. mva.
+                              + {formatNok(getOfferTotal([option]) * 1.25)} inkl. mva.
                             </strong>
                           </div>
                         </label>
@@ -483,7 +482,7 @@ export default function SalesCustomerView({
                         {selectedOptions.map((option) => (
                           <span key={option.id}>
                             <Plus size={16} />
-                            {option.title}: {formatNok(getOfferTotal([option]))} eks. mva.
+                            {option.title}: {formatNok(getOfferTotal([option]) * 1.25)} inkl. mva.
                           </span>
                         ))}
                       </div>
