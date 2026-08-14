@@ -225,6 +225,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
   };
 
   function Report({ company, name, project, selected, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, projectLog }) {
+    const agreementTotals = contractTotals(project, tilbud);
     const projectFields = { Prosjektansvarlig: project.responsible, Prosjektnavn: project.projectName, Adresse: project.address, "Postnr.": project.postnr, "Poststed / by": project.city, Kunde: project.customer, "Kunde e-post": project.customerEmail, "Kunde telefon": project.customerPhone, Dato: project.date, Status: project.locked ? "Avsluttet / l\xE5st" : "Aktivt", Notater: project.notes };
     const cats = [...new Set(photos.map((p) => p.cat))];
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "report", children: [
@@ -428,6 +429,7 @@ function BathroomEquipmentReportSection({ surf, bathroomEquipment }) {
 
 
   function CustomerReport({ company, name, project, selected, manualProducts, other, surf, bathroomEquipment, photos, inst, files, checklist, tilbud, overtagelse, projectLog }) {
+    const agreementTotals = contractTotals(project, tilbud);
     const projectFields = [
       ["Prosjektansvarlig", project.responsible],
       ["Prosjektnavn", project.projectName],
