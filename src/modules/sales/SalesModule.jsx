@@ -144,6 +144,7 @@ import {
   readFileAsDataUrl,
 } from "./services/salesImages.js";
 import { createAcceptanceProofPdf } from "./services/salesAcceptancePdf.js";
+import { createPublishedOfferPdf } from "./services/salesOfferPdf.js";
 import {
   buildCustomerOfferLink,
   publishSalesOfferAndBuildLink,
@@ -297,6 +298,8 @@ export default function SalesModule({
   const [contractUploadError, setContractUploadError] = useState("");
   const [acceptanceProofBusy, setAcceptanceProofBusy] = useState(false);
   const [acceptanceProofError, setAcceptanceProofError] = useState("");
+  const [offerPdfBusy, setOfferPdfBusy] = useState(false);
+  const [offerPdfError, setOfferPdfError] = useState("");
   const [customerLinkCopied, setCustomerLinkCopied] = useState(false);
   const [customerEmailBusy, setCustomerEmailBusy] = useState(false);
   const [customerEmailFeedback, setCustomerEmailFeedback] = useState(null);
@@ -1086,6 +1089,55 @@ export default function SalesModule({
     }
   }
 
+  async function handleDownloadPublishedOfferPdf() {
+    if (!selectedRequest || offerPdfBusy) return;
+
+    if (!selectedRequest.publicToken) {
+      setOfferPdfError(
+        "Publiser tilbudet først. PDF-en skal alltid opprettes fra den publiserte tilbudsversjonen."
+      );
+      return;
+    }
+
+    if (!activeSupabase) {
+      setOfferPdfError("Supabase-miljøvariabler mangler i Vercel-preview.");
+      return;
+    }
+
+    setOfferPdfBusy(true);
+    setOfferPdfError("");
+
+    try {
+      const { data, error } = await getSalesOfferByToken(
+        activeSupabase,
+        selectedRequest.publicToken
+      );
+      if (error) throw error;
+
+      const publishedRequest = mapPublicOfferToRequest(data);
+      if (!publishedRequest) {
+        throw new Error("Publisert tilbudsversjon kunne ikke hentes.");
+      }
+
+      const { blob, fileName } = await createPublishedOfferPdf({
+        selectedRequest: publishedRequest,
+      });
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+    } catch (error) {
+      console.error("Kunne ikke laste ned publisert tilbud som PDF", error);
+      setOfferPdfError(error.message || "Kunne ikke opprette tilbuds-PDF.");
+    } finally {
+      setOfferPdfBusy(false);
+    }
+  }
+
   async function handleCreateAcceptanceProof() {
     if (!selectedRequest || acceptanceProofBusy) return;
     if (selectedRequest.acceptanceProofFile?.url) {
@@ -1698,6 +1750,50 @@ export default function SalesModule({
     }));
 
     focusOfferLineDescription(newLine.id);
+  }
+
+  function focusOfferOptionTitle(optionId) {
+    window.setTimeout(() => {
+      const field = document.querySelector(
+        `[data-offer-option-title="${optionId}"]`
+      );
+
+      if (field) {
+        field.focus();
+        field.select?.();
+      }
+    }, 0);
+  }
+
+  function handleOfferOptionAmountEnter(event, option) {
+    if (event.key !== "Enter") return;
+
+    event.preventDefault();
+
+    const groupOptions = offerForm.options.filter(
+      (item) => item.mainPostId === option.mainPostId
+    );
+    const currentIndex = groupOptions.findIndex(
+      (item) => item.id === option.id
+    );
+    const nextOption = groupOptions[currentIndex + 1];
+
+    if (nextOption) {
+      focusOfferOptionTitle(nextOption.id);
+      return;
+    }
+
+    const newOption = createEmptyOfferOption({
+      id: option.mainPostId,
+      title: option.mainPostTitle,
+    });
+
+    setOfferForm((current) => ({
+      ...current,
+      options: [...current.options, newOption],
+    }));
+
+    focusOfferOptionTitle(newOption.id);
   }
 
   async function removeOfferLine(lineId) {
@@ -2852,6 +2948,7 @@ export default function SalesModule({
         addCustomMainPost={addCustomMainPost}
         addAdministrationLine={addAdministrationLine}
         updateOfferOption={updateOfferOption}
+        handleOfferOptionAmountEnter={handleOfferOptionAmountEnter}
         handleOfferOptionFile={handleOfferOptionFile}
         removeOfferOptionImage={removeOfferOptionImage}
         removeOfferOptionAttachment={removeOfferOptionAttachment}
@@ -2896,6 +2993,8 @@ if (mode === "survey-plan" && selectedRequest) {
         {...{
           acceptanceProofBusy,
           acceptanceProofError,
+          offerPdfBusy,
+          offerPdfError,
           contractUploadBusy,
           contractUploadError,
           copyCustomerOfferLink,
@@ -2905,6 +3004,7 @@ if (mode === "survey-plan" && selectedRequest) {
           goToList,
           handleContractUpload,
           handleCreateAcceptanceProof,
+          handleDownloadPublishedOfferPdf,
           handleCreateOfferRevisionAfterAcceptance,
           handleRemoveContract,
           loggedInResponsible,
