@@ -59,6 +59,12 @@ export default function SalesDetailView({
   summary,
 }) {
     const workflowSteps = getWorkflowSteps(selectedRequest);
+    const customerAddress = [
+      selectedRequest.address,
+      [selectedRequest.postnr, selectedRequest.city].filter(Boolean).join(" "),
+    ]
+      .filter(Boolean)
+      .join(", ");
     const hasPublishedCustomerOffer = Boolean(
       selectedRequest.publicToken ||
         selectedRequest.salesOfferId ||
@@ -195,7 +201,7 @@ export default function SalesDetailView({
                 </span>
                 <h1 className="sales-title">{selectedRequest.title}</h1>
                 <p className="sales-subtitle">
-                  {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
+                  {selectedRequest.customer} · {customerAddress || "Adresse ikke registrert"} · {selectedRequest.id}
                 </p>
 
                 {selectedRequest.surveyDate ? (
@@ -224,14 +230,16 @@ export default function SalesDetailView({
               </div>
 
               <div className="sales-hero-actions">
-                {["Forespørsel", "Befaring"].includes(selectedRequest.status) ? (
+                {["Forespørsel", "Befaring", "Tilbud"].includes(selectedRequest.status) ? (
                   <button
                     className="sales-secondary-button"
                     type="button"
                     onClick={openEditRequest}
                   >
                     <ClipboardList size={18} />
-                    Rediger forespørsel
+                    {selectedRequest.status === "Tilbud"
+                      ? "Rediger kunde"
+                      : "Rediger forespørsel"}
                   </button>
                 ) : null}
 
@@ -344,7 +352,7 @@ export default function SalesDetailView({
                 <div className="sales-detail-lines">
                   <span>
                     <MapPin size={16} />
-                    {selectedRequest.address}
+                    {customerAddress || "Adresse ikke registrert"}
                   </span>
                   <span>
                     <ClipboardList size={16} />
