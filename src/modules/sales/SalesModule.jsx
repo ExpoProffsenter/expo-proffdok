@@ -1,3 +1,4 @@
+// FASE 26B: Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri administrasjon/prosjektstyring. Flat lagringsmodell beholdes for bakoverkompatibilitet. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 24S.1 KORREKT PROSJEKTAKTIVERING/TILBUD: Ved aktivering ligger forespørsel og befaring i prosjektbeskrivelse, mens opprinnelig akseptert tilbud dokumenteres via salesOrigin og akseptbevis/kontrakt. Tillegg/fradrag/avtaleendring starter tomt og brukes kun for senere endringer. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // FASE 23Q SALES-COMMUNICATION: Flytter henting av firmaprofil, kunde-e-post og befaringsbekreftelsestekst ut av SalesModule uten å endre UI, database, RLS, Storage, Edge Function eller e-postinnhold.
@@ -90,11 +91,13 @@ import {
   createEmptyOfferLine,
   createEmptyOfferOption,
   createInitialOfferForm,
+  createOfferAdministrationLine,
   getActiveOfferVersion,
   mapPublicOfferToRequest,
   mergeOfferDraftIntoRequests,
   normalizeStoredOfferDraft,
   prepareOfferFormForSave,
+  recalculateAdministrationLines,
 } from "./utils/salesOfferLogic.js";
 import {
   INSPECTION_BUCKET,
@@ -1462,19 +1465,62 @@ export default function SalesModule({
   }
 
   function updateOfferLine(lineId, field, value) {
+    setOfferForm((current) => {
+      const nextLines = current.lines.map((line) =>
+        line.id === lineId ? { ...line, [field]: value } : line
+      );
+
+      return {
+        ...current,
+        lines: recalculateAdministrationLines(nextLines),
+      };
+    });
+  }
+
+  function addOfferLine(mainPost) {
     setOfferForm((current) => ({
       ...current,
-      lines: current.lines.map((line) =>
-        line.id === lineId ? { ...line, [field]: value } : line
-      ),
+      lines: [
+        ...current.lines,
+        createEmptyOfferLine(mainPost),
+      ],
     }));
   }
 
-  function addOfferLine() {
+  function addCustomMainPost() {
+    const title = window.prompt("Navn på egen hovedpost:");
+
+    if (!String(title || "").trim()) return;
+
+    const mainPost = {
+      id: `custom-${Date.now()}-${Math.random()}`,
+      title: String(title).trim(),
+    };
+
     setOfferForm((current) => ({
       ...current,
-      lines: [...current.lines, createEmptyOfferLine()],
+      lines: [...current.lines, createEmptyOfferLine(mainPost)],
     }));
+  }
+
+  function addAdministrationLine(mainPost) {
+    setOfferForm((current) => {
+      const alreadyExists = current.lines.some(
+        (line) =>
+          line.mainPostId === mainPost.id &&
+          line.lineType === "administration"
+      );
+
+      if (alreadyExists) return current;
+
+      return {
+        ...current,
+        lines: recalculateAdministrationLines([
+          ...current.lines,
+          createOfferAdministrationLine(mainPost),
+        ]),
+      };
+    });
   }
 
   function focusOfferLineDescription(lineId) {
@@ -1490,19 +1536,28 @@ export default function SalesModule({
     }, 0);
   }
 
-  function handleOfferLineAmountEnter(event, line, index) {
+  function handleOfferLineAmountEnter(event, line) {
     if (event.key !== "Enter") return;
 
     event.preventDefault();
 
-    const nextLine = offerForm.lines[index + 1];
+    const groupLines = offerForm.lines.filter(
+      (item) =>
+        item.mainPostId === line.mainPostId &&
+        item.lineType !== "administration"
+    );
+    const currentIndex = groupLines.findIndex((item) => item.id === line.id);
+    const nextLine = groupLines[currentIndex + 1];
 
     if (nextLine) {
       focusOfferLineDescription(nextLine.id);
       return;
     }
 
-    const newLine = createEmptyOfferLine();
+    const newLine = createEmptyOfferLine({
+      id: line.mainPostId,
+      title: line.mainPostTitle,
+    });
 
     setOfferForm((current) => ({
       ...current,
@@ -1515,10 +1570,9 @@ export default function SalesModule({
   function removeOfferLine(lineId) {
     setOfferForm((current) => ({
       ...current,
-      lines:
-        current.lines.length === 1
-          ? current.lines
-          : current.lines.filter((line) => line.id !== lineId),
+      lines: recalculateAdministrationLines(
+        current.lines.filter((line) => line.id !== lineId)
+      ),
     }));
   }
 
@@ -1557,10 +1611,10 @@ export default function SalesModule({
     }));
   }
 
-  function addOfferOption() {
+  function addOfferOption(mainPost) {
     setOfferForm((current) => ({
       ...current,
-      options: [...current.options, createEmptyOfferOption()],
+      options: [...current.options, createEmptyOfferOption(mainPost)],
     }));
   }
 
@@ -2334,6 +2388,8 @@ export default function SalesModule({
         removeOfferLineImage={removeOfferLineImage}
         removeOfferLine={removeOfferLine}
         addOfferLine={addOfferLine}
+        addCustomMainPost={addCustomMainPost}
+        addAdministrationLine={addAdministrationLine}
         updateOfferOption={updateOfferOption}
         handleOfferOptionImage={handleOfferOptionImage}
         removeOfferOption={removeOfferOption}
