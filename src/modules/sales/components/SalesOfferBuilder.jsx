@@ -3,6 +3,7 @@
 // administrasjon/prosjektstyring. Bilde og link beholdes på underposter og opsjoner.
 // Ingen Supabase/Storage/publiseringslogikk i komponenten.
 
+import { useEffect, useRef } from "react";
 import { ArrowLeft, ClipboardList, FileText, Plus, Save, Send } from "lucide-react";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import {
@@ -57,8 +58,48 @@ export default function SalesOfferBuilder({
   removeOfferOptionAttachment,
   removeOfferOption,
   addOfferOption,
+  offerValidationJump,
+  onOfferValidationJumpHandled,
 }) {
   const offerTotal = getOfferTotal(offerForm.lines);
+  const optionCardRefs = useRef(new Map());
+  const optionReplacementRefs = useRef(new Map());
+
+  useEffect(() => {
+    const optionId = String(offerValidationJump?.optionId || "").trim();
+    if (!optionId) return;
+
+    const optionCard = optionCardRefs.current.get(optionId);
+    const replacementField = optionReplacementRefs.current.get(optionId);
+    const target = replacementField || optionCard;
+
+    if (!target) {
+      onOfferValidationJumpHandled?.();
+      return;
+    }
+
+    // Alert() blokkerer nettleseren. Hoppet skjer derfor først etter at
+    // brukeren har trykket OK og React har rendret valideringsmålet.
+    requestAnimationFrame(() => {
+      replacementField?.focus?.({ preventScroll: true });
+      target.scrollIntoView({
+        behavior: "auto",
+        block: "center",
+        inline: "nearest",
+      });
+
+      requestAnimationFrame(() => {
+        target.scrollIntoView({
+          behavior: "auto",
+          block: "center",
+          inline: "nearest",
+        });
+        replacementField?.focus?.({ preventScroll: true });
+        onOfferValidationJumpHandled?.();
+      });
+    });
+  }, [offerValidationJump?.token]);
+
 
   const standardIds = new Set(OFFER_MAIN_POSTS.map((post) => post.id));
   const referencedPosts = [...(offerForm.lines || []), ...(offerForm.options || [])]
@@ -576,7 +617,17 @@ export default function SalesOfferBuilder({
                                     className="sales-offer-line"
                                     key={option.id}
                                     data-offer-option-id={option.id}
-                                    style={{ alignItems: "start" }}
+                                    ref={(node) => {
+                                      if (node) {
+                                        optionCardRefs.current.set(option.id, node);
+                                      } else {
+                                        optionCardRefs.current.delete(option.id);
+                                      }
+                                    }}
+                                    style={{
+                                      alignItems: "start",
+                                      scrollMarginTop: 120,
+                                    }}
                                   >
                                     <div className="sales-offer-line-number">
                                       O{optionIndex + 1}
@@ -630,6 +681,18 @@ export default function SalesOfferBuilder({
                                           <span>Erstatter underpost</span>
                                           <select
                                             data-offer-option-replacement={option.id}
+                                            ref={(node) => {
+                                              if (node) {
+                                                optionReplacementRefs.current.set(
+                                                  option.id,
+                                                  node
+                                                );
+                                              } else {
+                                                optionReplacementRefs.current.delete(
+                                                  option.id
+                                                );
+                                              }
+                                            }}
                                             value={option.replacementLineId || ""}
                                             onChange={(event) =>
                                               updateOfferOption(
