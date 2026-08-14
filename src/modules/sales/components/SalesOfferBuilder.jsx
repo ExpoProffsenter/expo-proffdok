@@ -3,7 +3,7 @@
 // administrasjon/prosjektstyring. Bilde og link beholdes på underposter og opsjoner.
 // Ingen Supabase/Storage/publiseringslogikk i komponenten.
 
-import { ArrowLeft, ClipboardList, Plus, Save, Send } from "lucide-react";
+import { ArrowLeft, ClipboardList, FileText, Plus, Save, Send } from "lucide-react";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import {
   formatNok,
@@ -17,7 +17,8 @@ function hasLineContent(line) {
     String(line?.description || "").trim() ||
       String(line?.amount || "").trim() ||
       String(line?.productUrl || "").trim() ||
-      line?.imageDataUrl
+      line?.imageDataUrl ||
+      line?.attachmentFile?.url
   );
 }
 
@@ -27,7 +28,8 @@ function hasOptionContent(option) {
       String(option?.description || "").trim() ||
       String(option?.amount || "").trim() ||
       String(option?.productUrl || "").trim() ||
-      option?.imageDataUrl
+      option?.imageDataUrl ||
+      option?.attachmentFile?.url
   );
 }
 
@@ -41,14 +43,17 @@ export default function SalesOfferBuilder({
   updateOfferForm,
   updateOfferLine,
   handleOfferLineAmountEnter,
-  handleOfferLineImage,
+  handleOfferLineFile,
   removeOfferLineImage,
+  removeOfferLineAttachment,
   removeOfferLine,
   addOfferLine,
   addCustomMainPost,
   addAdministrationLine,
   updateOfferOption,
-  handleOfferOptionImage,
+  handleOfferOptionFile,
+  removeOfferOptionImage,
+  removeOfferOptionAttachment,
   removeOfferOption,
   addOfferOption,
 }) {
@@ -351,17 +356,48 @@ export default function SalesOfferBuilder({
                                       </div>
                                     ) : null}
 
+                                    {line.attachmentFile?.url ? (
+                                      <div className="sales-form-preview" style={{ padding: 12 }}>
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 10,
+                                            flexWrap: "wrap",
+                                          }}
+                                        >
+                                          <FileText size={18} />
+                                          <a
+                                            href={line.attachmentFile.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                          >
+                                            {line.attachmentFile.name || "Vedlagt PDF"}
+                                          </a>
+                                          <button
+                                            className="sales-secondary-button"
+                                            type="button"
+                                            onClick={() =>
+                                              removeOfferLineAttachment(line.id)
+                                            }
+                                          >
+                                            Fjern PDF
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : null}
+
                                     <label
                                       className="sales-secondary-button"
                                       style={{ width: "fit-content" }}
                                     >
                                       <Plus size={18} />
-                                      Legg til bilde
+                                      Legg til bilde/PDF
                                       <input
                                         type="file"
-                                        accept="image/*"
+                                        accept="image/*,application/pdf,.pdf"
                                         onChange={(event) =>
-                                          handleOfferLineImage(line.id, event)
+                                          handleOfferLineFile(line.id, event)
                                         }
                                         style={{ display: "none" }}
                                       />
@@ -567,6 +603,46 @@ export default function SalesOfferBuilder({
                                               "Opsjon"
                                             }
                                           />
+                                          <button
+                                            className="sales-secondary-button"
+                                            type="button"
+                                            onClick={() =>
+                                              removeOfferOptionImage(option.id)
+                                            }
+                                          >
+                                            Fjern bilde
+                                          </button>
+                                        </div>
+                                      ) : null}
+
+                                      {option.attachmentFile?.url ? (
+                                        <div className="sales-form-preview" style={{ padding: 12 }}>
+                                          <div
+                                            style={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 10,
+                                              flexWrap: "wrap",
+                                            }}
+                                          >
+                                            <FileText size={18} />
+                                            <a
+                                              href={option.attachmentFile.url}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                            >
+                                              {option.attachmentFile.name || "Vedlagt PDF"}
+                                            </a>
+                                            <button
+                                              className="sales-secondary-button"
+                                              type="button"
+                                              onClick={() =>
+                                                removeOfferOptionAttachment(option.id)
+                                              }
+                                            >
+                                              Fjern PDF
+                                            </button>
+                                          </div>
                                         </div>
                                       ) : null}
 
@@ -575,12 +651,12 @@ export default function SalesOfferBuilder({
                                         style={{ width: "fit-content" }}
                                       >
                                         <Plus size={18} />
-                                        Legg til bilde
+                                        Legg til bilde/PDF
                                         <input
                                           type="file"
-                                          accept="image/*"
+                                          accept="image/*,application/pdf,.pdf"
                                           onChange={(event) =>
-                                            handleOfferOptionImage(option.id, event)
+                                            handleOfferOptionFile(option.id, event)
                                           }
                                           style={{ display: "none" }}
                                         />
