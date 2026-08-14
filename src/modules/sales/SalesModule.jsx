@@ -2175,13 +2175,10 @@ export default function SalesModule({
       const mainPostTitle =
         invalidAlternativeOption.mainPostTitle || "aktuell hovedpost";
 
-      alert(
-        `Opsjonen "${optionTitle}" under "${mainPostTitle}" må kobles til underposten den erstatter før tilbudet kan lagres.`
-      );
-
       if (invalidAlternativeOption.id) {
         setOfferValidationJump({
           optionId: invalidAlternativeOption.id,
+          message: `Opsjonen "${optionTitle}" under "${mainPostTitle}" må kobles til underposten den erstatter før tilbudet kan lagres.`,
           token: `${Date.now()}-${Math.random()}`,
         });
       }
