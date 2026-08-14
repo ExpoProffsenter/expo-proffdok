@@ -1989,15 +1989,30 @@ export default function SalesModule({
       );
       const target = replacementField || optionCard;
 
-      target?.scrollIntoView?.({
-        behavior: "smooth",
-        block: "center",
-      });
+      if (!target) return;
 
-      window.setTimeout(() => {
-        replacementField?.focus?.({ preventScroll: true });
-      }, 350);
-    }, 180);
+      const scrollToTarget = () => {
+        const rect = target.getBoundingClientRect();
+        const targetTop = Math.max(
+          0,
+          window.scrollY + rect.top - Math.max(140, window.innerHeight * 0.28)
+        );
+
+        window.scrollTo({
+          top: targetTop,
+          behavior: "smooth",
+        });
+      };
+
+      requestAnimationFrame(() => {
+        scrollToTarget();
+
+        window.setTimeout(() => {
+          scrollToTarget();
+          replacementField?.focus?.({ preventScroll: true });
+        }, 450);
+      });
+    }, 120);
   }
 
   function focusOfferSaveButton() {
