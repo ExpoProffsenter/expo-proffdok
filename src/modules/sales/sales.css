@@ -1964,4 +1964,75 @@ a:hover {
   font-size: 12px !important;
   line-height: 1.5 !important;
 }
+/* FASE 26B.5.5 – mobil tilbudsbygger
+   - Hindrer iOS Safari auto-zoom ved fokus i input/select/textarea.
+   - Hindrer horisontal forskyvning i sales-visninger på smale skjermer.
+   - Fast Lagre tilbud-knapp i tilbudsbyggeren på mobil.
+*/
+.sales-offer-mobile-save {
+  display: none;
+}
 
+@media (max-width: 760px) {
+  html,
+  body,
+  #root,
+  .sales-app {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .sales-shell,
+  .sales-main,
+  .sales-form-panel,
+  .sales-panel,
+  .sales-detail-hero,
+  .sales-detail-card,
+  .sales-next-card,
+  .sales-request-card,
+  .sales-offer-line {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sales-app input,
+  .sales-app select,
+  .sales-app textarea {
+    font-size: 16px;
+  }
+
+  .sales-primary-button,
+  .sales-secondary-button,
+  .sales-back-button {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .sales-offer-builder-app .sales-shell {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+
+  .sales-offer-mobile-save {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9000;
+    display: block;
+    padding:
+      10px
+      max(12px, env(safe-area-inset-right))
+      calc(10px + env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
+    border-top: 1px solid rgba(207, 222, 228, 0.95);
+    background: rgba(248, 251, 252, 0.96);
+    box-shadow: 0 -12px 30px rgba(16, 33, 43, 0.10);
+    backdrop-filter: blur(10px);
+  }
+
+  .sales-offer-mobile-save .sales-primary-button {
+    width: 100%;
+    min-height: 52px;
+  }
+}
