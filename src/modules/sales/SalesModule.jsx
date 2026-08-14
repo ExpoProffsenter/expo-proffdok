@@ -198,6 +198,7 @@ function createOfferFormChangeSignature(formValue) {
       mainPostTitle: line.mainPostTitle || "",
       lineType: line.lineType || "work",
       description: line.description || "",
+      internalProductNumber: line.internalProductNumber || "",
       amount: String(line.amount ?? ""),
       adminMode: line.adminMode || "",
       adminPercent: String(line.adminPercent ?? ""),
@@ -212,6 +213,7 @@ function createOfferFormChangeSignature(formValue) {
       mainPostTitle: option.mainPostTitle || "",
       title: option.title || "",
       description: option.description || "",
+      internalProductNumber: option.internalProductNumber || "",
       amount: String(option.amount ?? ""),
       productUrl: option.productUrl || "",
       imageName: option.imageName || "",
@@ -228,6 +230,9 @@ export default function SalesModule({
   currentUserName = "",
   integrationMode = "preview",
   startNewRequestSignal = 0,
+  startNewOfferSignal = 0,
+  onStartNewRequestHandled = null,
+  onStartNewOfferHandled = null,
 } = {}) {
   const activeSupabase = supabaseClient || supabase;
   const salesStorageKey = useMemo(
@@ -936,7 +941,20 @@ export default function SalesModule({
     resetForm();
     setSelectedRequestId(null);
     setMode("new");
+    onStartNewRequestHandled?.();
+    // Signal nullstilles i hovedappen etter at det er håndtert.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startNewRequestSignal, integrationMode]);
+
+  useEffect(() => {
+    if (!startNewOfferSignal || integrationMode !== "app") return;
+    resetForm();
+    setSelectedRequestId(null);
+    setMode("new-offer");
+    onStartNewOfferHandled?.();
+    // Signal nullstilles i hovedappen etter at det er håndtert.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startNewOfferSignal, integrationMode]);
 
   function goToList() {
     setMode("list");
@@ -2589,6 +2607,57 @@ export default function SalesModule({
     setMode("customer-offer");
   }
 
+  async function handleCreateDirectOffer(event) {
+    event.preventDefault();
+
+    const customerName = form.customer.trim() || "Uten kundenavn";
+    const nextRequest = {
+      id: createRequestId(requests),
+      title: form.title,
+      customer: customerName,
+      phone: form.phone.trim(),
+      email: form.email.trim(),
+      address: form.address.trim() || "Adresse ikke registrert",
+      postnr: form.postnr.trim(),
+      city: form.city.trim(),
+      source: form.source,
+      note: form.note.trim(),
+      responsible: loggedInResponsible,
+      projectResponsible: loggedInResponsible,
+      directOffer: true,
+      offerTitle: `Tilbud – ${form.title}`,
+      offerIntro: `Vi tilbyr med dette følgende arbeider for ${customerName}.`,
+      offerLines: [],
+      offerOptions: [],
+      offerTotal: 0,
+      status: "Tilbud",
+      statusClass: "sales-status-quote",
+      nextStep: "Opprett tilbud",
+      iconName: "send",
+    };
+
+    const nextRequests = [nextRequest, ...requests];
+    setRequests(nextRequests);
+    latestRequestsRef.current = nextRequests;
+
+    try {
+      await persistRequests(nextRequests);
+    } catch (error) {
+      alert(error.message || "Kunne ikke opprette tilbudssaken varig.");
+      return;
+    }
+
+    const initialOfferForm = buildOfferFormFromRequest(nextRequest);
+    offerFormHydratedRequestIdRef.current = nextRequest.id;
+    offerFormSavedBaselineRef.current = createOfferFormChangeSignature(initialOfferForm);
+    setOfferForm(initialOfferForm);
+    setOfferFormReady(true);
+    setOfferDraftSaveStatus("saved");
+    resetForm();
+    setSelectedRequestId(nextRequest.id);
+    setMode("offer-builder");
+  }
+
   async function handleCreateRequest(event) {
     event.preventDefault();
 
@@ -2625,19 +2694,27 @@ export default function SalesModule({
     setMode("detail");
   }
 
-  if (mode === "new" || mode === "edit-request") {
+  if (mode === "new" || mode === "new-offer" || mode === "edit-request") {
     const isEditingRequest = mode === "edit-request";
+    const isDirectOffer = mode === "new-offer";
     return (
       <SalesRequestForm
         form={form}
         isEditingRequest={isEditingRequest}
+        isDirectOffer={isDirectOffer}
         onBack={goToList}
         onCancel={() => {
           resetForm();
           if (isEditingRequest) setMode("detail");
           else goToList();
         }}
-        onSubmit={isEditingRequest ? handleUpdateRequest : handleCreateRequest}
+        onSubmit={
+          isEditingRequest
+            ? handleUpdateRequest
+            : isDirectOffer
+              ? handleCreateDirectOffer
+              : handleCreateRequest
+        }
         onUpdateForm={updateForm}
       />
     );
