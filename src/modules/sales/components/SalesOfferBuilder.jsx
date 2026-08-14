@@ -3,7 +3,7 @@
 // administrasjon/prosjektstyring. Bilde og link beholdes på underposter og opsjoner.
 // Ingen Supabase/Storage/publiseringslogikk i komponenten.
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { ArrowLeft, ClipboardList, FileText, Plus, Save, Send } from "lucide-react";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import {
@@ -65,38 +65,43 @@ export default function SalesOfferBuilder({
   const optionCardRefs = useRef(new Map());
   const optionReplacementRefs = useRef(new Map());
 
-  useEffect(() => {
+  function handleValidationJumpConfirm() {
     const optionId = String(offerValidationJump?.optionId || "").trim();
-    if (!optionId) return;
+    if (!optionId) {
+      onOfferValidationJumpHandled?.();
+      return;
+    }
 
     const optionCard = optionCardRefs.current.get(optionId);
     const replacementField = optionReplacementRefs.current.get(optionId);
-    const target = replacementField || optionCard;
+    const target = optionCard || replacementField;
 
     if (!target) {
       onOfferValidationJumpHandled?.();
       return;
     }
 
-    // Etter at alert() er lukket kan nettleseren forsøke å gi fokus tilbake
-    // til Lagre-knappen. Vi lar derfor selve select-feltet ta fokus og
-    // bruker nettleserens native fokus-scroll som første mekanisme.
-    const timer = window.setTimeout(() => {
-      replacementField?.focus?.();
+    // Hoppet skjer direkte i brukerens klikk på dialogknappen.
+    // Dermed er det ingen browser-alert som kan ta fokus tilbake til Lagre-knappen.
+    target.scrollIntoView({
+      behavior: "auto",
+      block: "center",
+      inline: "nearest",
+    });
+    replacementField?.focus?.({ preventScroll: true });
 
-      window.setTimeout(() => {
-        target.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest",
-        });
-        replacementField?.focus?.();
-        onOfferValidationJumpHandled?.();
-      }, 180);
-    }, 120);
+    onOfferValidationJumpHandled?.();
 
-    return () => window.clearTimeout(timer);
-  }, [offerValidationJump?.token]);
+    requestAnimationFrame(() => {
+      target.scrollIntoView({
+        behavior: "auto",
+        block: "center",
+        inline: "nearest",
+      });
+      replacementField?.focus?.({ preventScroll: true });
+    });
+  }
+
 
 
   const standardIds = new Set(OFFER_MAIN_POSTS.map((post) => post.id));
@@ -141,6 +146,52 @@ export default function SalesOfferBuilder({
 
   return (
     <div className="sales-app">
+      {offerValidationJump?.optionId ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="sales-offer-validation-title"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 10000,
+            display: "grid",
+            placeItems: "center",
+            padding: 18,
+            background: "rgba(15, 23, 42, 0.48)",
+          }}
+        >
+          <div
+            style={{
+              width: "min(92vw, 520px)",
+              padding: 22,
+              borderRadius: 18,
+              background: "#ffffff",
+              boxShadow: "0 24px 70px rgba(15, 23, 42, 0.28)",
+            }}
+          >
+            <h2
+              id="sales-offer-validation-title"
+              style={{ margin: "0 0 10px", fontSize: 20 }}
+            >
+              Tilbudet kan ikke lagres ennå
+            </h2>
+            <p style={{ margin: "0 0 18px", lineHeight: 1.55 }}>
+              {offerValidationJump.message ||
+                "En alternativ opsjon må kobles til underposten den erstatter."}
+            </p>
+            <button
+              className="sales-primary-button"
+              type="button"
+              onClick={handleValidationJumpConfirm}
+              autoFocus
+            >
+              OK – gå til opsjonen
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <div className="sales-shell">
         <header className="sales-header">
           <button
