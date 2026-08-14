@@ -2098,3 +2098,78 @@ a:hover {
     height: 36px;
   }
 }
+/* FASE 26C.1 – fullbredde og mer kompakt mobilvisning
+   Kun mobil. Bryter sales-modulen kontrollert ut av eventuell bredde/padding
+   i hovedappens parent-container, slik at skjermen utnyttes bedre.
+*/
+@media (max-width: 760px) {
+  .sales-app {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+
+  .sales-shell {
+    width: 100%;
+    max-width: none;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .sales-main {
+    gap: 16px;
+  }
+
+  .sales-form-panel,
+  .sales-detail-card,
+  .sales-next-card,
+  .sales-summary-card {
+    width: 100%;
+    max-width: none;
+  }
+
+  .sales-offer-builder-app .sales-form-panel {
+    padding: 10px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .sales-offer-builder-app .sales-offer-lines {
+    gap: 10px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line-number {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 0;
+  }
+
+  .sales-offer-mobile-save {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+@media (max-width: 430px) {
+  .sales-shell {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .sales-offer-builder-app .sales-form-panel {
+    padding: 8px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line {
+    padding: 8px;
+  }
+
+  .sales-offer-mobile-save {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
