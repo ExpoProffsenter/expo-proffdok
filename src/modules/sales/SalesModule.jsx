@@ -165,6 +165,62 @@ import "./sales.css";
 
 const supabase = createDefaultSalesSupabaseClient();
 
+function createOfferFormChangeSignature(formValue) {
+  const compactImageSignature = (value) => {
+    const text = String(value || "");
+    if (!text) return "";
+    return `${text.length}:${text.slice(-48)}`;
+  };
+
+  const compactAttachment = (file) =>
+    file
+      ? {
+          id: file.id || "",
+          name: file.name || "",
+          path: file.path || "",
+          size: Number(file.size || 0),
+        }
+      : null;
+
+  return JSON.stringify({
+    title: formValue?.title || "",
+    intro: formValue?.intro || "",
+    reservations: formValue?.reservations || "",
+    included: formValue?.included || "",
+    excluded: formValue?.excluded || "",
+    customerSupplied: formValue?.customerSupplied || "",
+    terms: formValue?.terms || "",
+    paymentTerms: formValue?.paymentTerms || "",
+    validityDays: formValue?.validityDays || "",
+    lines: (formValue?.lines || []).map((line) => ({
+      id: line.id || "",
+      mainPostId: line.mainPostId || "",
+      mainPostTitle: line.mainPostTitle || "",
+      lineType: line.lineType || "work",
+      description: line.description || "",
+      amount: String(line.amount ?? ""),
+      adminMode: line.adminMode || "",
+      adminPercent: String(line.adminPercent ?? ""),
+      productUrl: line.productUrl || "",
+      imageName: line.imageName || "",
+      imageSignature: compactImageSignature(line.imageDataUrl),
+      attachmentFile: compactAttachment(line.attachmentFile),
+    })),
+    options: (formValue?.options || []).map((option) => ({
+      id: option.id || "",
+      mainPostId: option.mainPostId || "",
+      mainPostTitle: option.mainPostTitle || "",
+      title: option.title || "",
+      description: option.description || "",
+      amount: String(option.amount ?? ""),
+      productUrl: option.productUrl || "",
+      imageName: option.imageName || "",
+      imageSignature: compactImageSignature(option.imageDataUrl),
+      attachmentFile: compactAttachment(option.attachmentFile),
+    })),
+  });
+}
+
 export default function SalesModule({
   supabaseClient = null,
   authUser = null,
@@ -214,6 +270,7 @@ export default function SalesModule({
   const offerRequestIdRef = useRef(selectedRequestId);
   const offerDraftSaveTimerRef = useRef(null);
   const offerFormHydratedRequestIdRef = useRef("");
+  const offerFormSavedBaselineRef = useRef("");
   const latestRequestsRef = useRef(requests);
   offerFormRef.current = offerForm;
   offerModeRef.current = mode;
@@ -332,8 +389,10 @@ export default function SalesModule({
       storedDraft = null;
     }
 
+    const hydratedOfferForm = normalizeStoredOfferDraft(storedDraft, selectedRequest);
     offerFormHydratedRequestIdRef.current = selectedRequestId;
-    setOfferForm(normalizeStoredOfferDraft(storedDraft, selectedRequest));
+    offerFormSavedBaselineRef.current = createOfferFormChangeSignature(hydratedOfferForm);
+    setOfferForm(hydratedOfferForm);
     setOfferDraftSaveStatus("idle");
     setOfferFormReady(true);
     // Gjenoppretting må skje før autolagring får starte.
@@ -1436,8 +1495,10 @@ export default function SalesModule({
       storedDraft = null;
     }
 
+    const nextOfferForm = normalizeStoredOfferDraft(storedDraft, selectedRequest);
     offerFormHydratedRequestIdRef.current = selectedRequest?.id || "";
-    setOfferForm(normalizeStoredOfferDraft(storedDraft, selectedRequest));
+    offerFormSavedBaselineRef.current = createOfferFormChangeSignature(nextOfferForm);
+    setOfferForm(nextOfferForm);
     setOfferFormReady(true);
     setMode("offer-builder");
   }
@@ -1872,20 +1933,18 @@ export default function SalesModule({
     }
   }
 
-  async function handleSaveOffer(event) {
-    event.preventDefault();
-
+  async function saveOfferAndReturnToDetail() {
     const { cleanLines, cleanOptions, incompleteLine } =
       prepareOfferFormForSave(offerForm);
 
     if (!cleanLines.length) {
       alert("Legg inn minst én tilbudslinje før du lagrer tilbudet.");
-      return;
+      return false;
     }
 
     if (incompleteLine) {
       alert("Tilbudslinjer som har innhold må ha både beskrivelse og beløp. Tomme linjer ignoreres automatisk.");
-      return;
+      return false;
     }
 
     const nextRequests = requests.map((request) => {
@@ -1929,7 +1988,7 @@ export default function SalesModule({
       await persistRequests(nextRequests);
     } catch (error) {
       alert(error.message || "Kunne ikke lagre tilbudsutkastet varig.");
-      return;
+      return false;
     }
 
     try {
@@ -1941,7 +2000,40 @@ export default function SalesModule({
     } catch {
       // Varig lagring er fullført selv om lokal kladd ikke kan ryddes.
     }
+
+    offerFormSavedBaselineRef.current = createOfferFormChangeSignature({
+      ...offerForm,
+      lines: cleanLines,
+      options: cleanOptions,
+    });
     setMode("detail");
+    return true;
+  }
+
+  async function handleSaveOffer(event) {
+    event.preventDefault();
+    await saveOfferAndReturnToDetail();
+  }
+
+  async function handleOfferBuilderBack() {
+    const currentSignature = createOfferFormChangeSignature(offerFormRef.current);
+    const hasChanges =
+      Boolean(offerFormSavedBaselineRef.current) &&
+      currentSignature !== offerFormSavedBaselineRef.current;
+
+    if (!hasChanges) {
+      offerModeRef.current = "detail";
+      setMode("detail");
+      return;
+    }
+
+    const shouldSave = window.confirm(
+      "Du har endringer i tilbudet siden du åpnet det. Vil du lagre tilbudet før du går tilbake?\n\nOK = lagre og gå tilbake.\nAvbryt = fortsett å redigere.\n\nKladden er allerede mellomlagret automatisk som sikkerhet."
+    );
+
+    if (!shouldSave) return;
+
+    await saveOfferAndReturnToDetail();
   }
 
   function getInspectionDraftKey(requestId = selectedRequestId) {
@@ -2592,7 +2684,7 @@ export default function SalesModule({
         selectedRequest={selectedRequest}
         offerForm={offerForm}
         offerDraftSaveStatus={offerDraftSaveStatus}
-        onBack={() => setMode("detail")}
+        onBack={handleOfferBuilderBack}
         handleSaveOffer={handleSaveOffer}
         addInspectionContextToOfferIntro={addInspectionContextToOfferIntro}
         updateOfferForm={updateOfferForm}
