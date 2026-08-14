@@ -730,14 +730,11 @@ export default function SalesModule({
     // overskrive sist åpne interne salgssak i nettleserlagringen.
     if (isPublicOfferView) return;
 
-    if (selectedRequestId && !selectedRequest) {
-      setMode("list");
-      setSelectedRequestId(null);
-      return;
-    }
-
+    // Ikke nullstill valgt sak bare fordi request-listen er i et kortvarig
+    // mellomsteg under lagring/publisering. Det var dette som kunne sende
+    // brukeren tilbake til hovedlisten etter publisering.
     saveSalesNavigation(salesStorageKey, mode, selectedRequestId);
-  }, [mode, salesStorageKey, selectedRequest, selectedRequestId]);
+  }, [mode, salesStorageKey, selectedRequestId]);
 
   useEffect(() => {
     if (mode !== "inspection-note" || !selectedRequestId) return;
@@ -2752,13 +2749,14 @@ export default function SalesModule({
   }
 
   async function publishOfferAndGetLink(requestId) {
-    const request = requests.find((item) => item.id === requestId);
+    const currentRequests = latestRequestsRef.current;
+    const request = currentRequests.find((item) => item.id === requestId);
     const profileForPublish = await getCompanyProfileForPublish();
 
     const result = await publishSalesOfferAndBuildLink({
       client: activeSupabase,
       request,
-      requests,
+      requests: currentRequests,
       companyProfile: profileForPublish,
       currentUrl: window.location.href,
       confirmOptionRemoval: (previousOptionCount) =>
@@ -2772,6 +2770,11 @@ export default function SalesModule({
     latestRequestsRef.current = result.nextRequests;
     setRequests(result.nextRequests);
     await persistRequests(result.nextRequests);
+
+    // Publisering skal aldri endre hvor proffen befinner seg i appen.
+    setSelectedRequestId(requestId);
+    setMode("detail");
+    saveSalesNavigation(salesStorageKey, "detail", requestId);
     setPublishFeedback(result.publishFeedback);
 
     return result.link;
