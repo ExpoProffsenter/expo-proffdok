@@ -575,6 +575,7 @@ export default function SalesOfferBuilder({
                                   <div
                                     className="sales-offer-line"
                                     key={option.id}
+                                    data-offer-option-id={option.id}
                                     style={{ alignItems: "start" }}
                                   >
                                     <div className="sales-offer-line-number">
@@ -628,6 +629,7 @@ export default function SalesOfferBuilder({
                                         <label className="sales-field">
                                           <span>Erstatter underpost</span>
                                           <select
+                                            data-offer-option-replacement={option.id}
                                             value={option.replacementLineId || ""}
                                             onChange={(event) =>
                                               updateOfferOption(
@@ -1036,7 +1038,11 @@ export default function SalesOfferBuilder({
                 Avbryt
               </button>
 
-              <button className="sales-primary-button" type="submit">
+              <button
+                className="sales-primary-button"
+                type="submit"
+                data-sales-save-offer-button="true"
+              >
                 <Save size={18} />
                 Lagre tilbud
               </button>
