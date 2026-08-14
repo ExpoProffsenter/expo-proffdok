@@ -1,5 +1,5 @@
 // FASE 26B.1 TILBUDSVEDLEGG: Underposter og opsjoner kan ha bilde og PDF-vedlegg. PDF lagres i eksisterende project-images Storage og følger tilbudsdata uten SQL/RLS-endring.\n// FASE 26B: Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri administrasjon/prosjektstyring. Flat lagringsmodell beholdes for bakoverkompatibilitet. Ingen SQL/RLS/Storage/Edge/e-postendring.
-// FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
+// FASE 26B.5 OPSJONSTYPE: Tillegg/oppgradering og alternativ som erstatter konkret underpost. Alternativpris lagres som prisendring mot grunnposten; kundens valg er gjensidig eksklusivt per erstattet underpost. Ingen SQL/RLS/Storage/Edge-endring.\n// FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 24S.1 KORREKT PROSJEKTAKTIVERING/TILBUD: Ved aktivering ligger forespørsel og befaring i prosjektbeskrivelse, mens opprinnelig akseptert tilbud dokumenteres via salesOrigin og akseptbevis/kontrakt. Tillegg/fradrag/avtaleendring starter tomt og brukes kun for senere endringer. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // FASE 23Q SALES-COMMUNICATION: Flytter henting av firmaprofil, kunde-e-post og befaringsbekreftelsestekst ut av SalesModule uten å endre UI, database, RLS, Storage, Edge Function eller e-postinnhold.
 // FASE 23P SALES-PUBLISHING: Flytter tilbudspublisering og bygging av kundelenker ut av SalesModule uten å endre UI, tilbudsdata, database, RLS, Storage, e-post eller aksept.
@@ -1441,12 +1441,48 @@ export default function SalesModule({
   }
 
   function toggleAcceptedOption(optionId) {
-    setAcceptanceForm((current) => ({
-      ...current,
-      selectedOptionIds: current.selectedOptionIds.includes(optionId)
-        ? current.selectedOptionIds.filter((id) => id !== optionId)
-        : [...current.selectedOptionIds, optionId],
-    }));
+    const activeOfferVersion = getActiveOfferVersion(selectedRequest);
+    const offerOptions =
+      activeOfferVersion?.options || selectedRequest?.offerOptions || [];
+    const toggledOption = offerOptions.find((option) => option.id === optionId);
+
+    setAcceptanceForm((current) => {
+      if (current.selectedOptionIds.includes(optionId)) {
+        return {
+          ...current,
+          selectedOptionIds: current.selectedOptionIds.filter(
+            (id) => id !== optionId
+          ),
+        };
+      }
+
+      let nextSelectedOptionIds = [...current.selectedOptionIds];
+
+      if (
+        toggledOption?.optionType === "alternative" &&
+        toggledOption?.replacementLineId
+      ) {
+        const conflictingAlternativeIds = new Set(
+          offerOptions
+            .filter(
+              (option) =>
+                option.id !== optionId &&
+                option.optionType === "alternative" &&
+                option.replacementLineId === toggledOption.replacementLineId
+            )
+            .map((option) => option.id)
+        );
+
+        nextSelectedOptionIds = nextSelectedOptionIds.filter(
+          (id) => !conflictingAlternativeIds.has(id)
+        );
+      }
+
+      return {
+        ...current,
+        selectedOptionIds: [...nextSelectedOptionIds, optionId],
+      };
+    });
   }
 
   async function handleAcceptOffer(event) {
@@ -1849,9 +1885,25 @@ export default function SalesModule({
   function updateOfferOption(optionId, field, value) {
     setOfferForm((current) => ({
       ...current,
-      options: current.options.map((option) =>
-        option.id === optionId ? { ...option, [field]: value } : option
-      ),
+      options: current.options.map((option) => {
+        if (option.id !== optionId) return option;
+
+        if (field === "optionType") {
+          const optionType =
+            value === "alternative" ? "alternative" : "addition";
+
+          return {
+            ...option,
+            optionType,
+            replacementLineId:
+              optionType === "alternative"
+                ? option.replacementLineId || ""
+                : "",
+          };
+        }
+
+        return { ...option, [field]: value };
+      }),
     }));
   }
 
@@ -1970,8 +2022,13 @@ export default function SalesModule({
   }
 
   async function saveOfferAndReturnToDetail() {
-    const { cleanLines, cleanOptions, incompleteLine } =
-      prepareOfferFormForSave(offerForm);
+    const {
+      cleanLines,
+      cleanOptions,
+      incompleteLine,
+      incompleteOption,
+      invalidAlternativeOption,
+    } = prepareOfferFormForSave(offerForm);
 
     if (!cleanLines.length) {
       alert("Legg inn minst én tilbudslinje før du lagrer tilbudet.");
