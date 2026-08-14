@@ -91,6 +91,24 @@ function getSignedOptionAmountText(option = {}) {
   return `${prefix} ${formatNok(Math.abs(amountInclVat))} inkl. mva.`;
 }
 
+function isReductionOption(option = {}) {
+  return !isAlternativeOption(option) && getOfferTotal([option]) < 0;
+}
+
+function getReplacementLineDescription(option = {}, lines = []) {
+  return (
+    String(option?.replacementLineDescription || "").trim() ||
+    String(
+      (Array.isArray(lines) ? lines : []).find(
+        (line) =>
+          String(line?.id || "") ===
+          String(option?.replacementLineId || "")
+      )?.description || ""
+    ).trim() ||
+    "underposten som ble valgt i tilbudet"
+  );
+}
+
 export async function createAcceptanceProofPdf({
   selectedRequest,
   companyProfile = {},
@@ -300,7 +318,7 @@ export async function createAcceptanceProofPdf({
         const replacingOption = group.options.find(
           (option) =>
             isAlternativeOption(option) &&
-            option.replacementLineId === line.id
+            String(option.replacementLineId || "") === String(line.id || "")
         );
 
         addText(
@@ -343,16 +361,18 @@ export async function createAcceptanceProofPdf({
       });
 
       group.options.forEach((option) => {
-        const replacedLine = group.lines.find(
-          (line) => line.id === option.replacementLineId
-        );
         const optionPrefix = isAlternativeOption(option)
-          ? `Valgt alternativ: ${option.title || "Alternativ"} - erstatter ${
-              replacedLine?.description || "underpost"
-            } - prisendring ${getSignedOptionAmountText(option)}`
-          : `Valgt tillegg: ${option.title || "Opsjon"} - ${getSignedOptionAmountText(
-              option
-            )}`;
+          ? `Valgt alternativ: ${option.title || "Alternativ"} - erstatter ${getReplacementLineDescription(
+              option,
+              group.lines
+            )} - prisendring ${getSignedOptionAmountText(option)}`
+          : isReductionOption(option)
+            ? `Valgt fradrag: ${option.title || "Opsjon"} - ${getSignedOptionAmountText(
+                option
+              )}`
+            : `Valgt tillegg: ${option.title || "Opsjon"} - ${getSignedOptionAmountText(
+                option
+              )}`;
 
         addText(
           `${optionPrefix}${
