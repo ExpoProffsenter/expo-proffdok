@@ -1970,7 +1970,27 @@ a:hover {
    - Fast Lagre tilbud-knapp i tilbudsbyggeren på mobil.
 */
 .sales-offer-mobile-save {
-  display: none;
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9000;
+  display: block;
+  width: min(280px, calc(100vw - 48px));
+  padding: 10px;
+  border: 1px solid rgba(207, 222, 228, 0.95);
+  border-radius: 18px;
+  background: rgba(248, 251, 252, 0.96);
+  box-shadow: 0 14px 34px rgba(16, 33, 43, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+.sales-offer-mobile-save .sales-primary-button {
+  width: 100%;
+  min-height: 50px;
+}
+
+.sales-offer-builder-app .sales-shell {
+  padding-bottom: 96px;
 }
 
 @media (max-width: 760px) {
