@@ -1,4 +1,4 @@
-// FASE 26B: Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri administrasjon/prosjektstyring. Flat lagringsmodell beholdes for bakoverkompatibilitet. Ingen SQL/RLS/Storage/Edge/e-postendring.
+// FASE 26B.1 TILBUDSVEDLEGG: Underposter og opsjoner kan ha bilde og PDF-vedlegg. PDF lagres i eksisterende project-images Storage og følger tilbudsdata uten SQL/RLS-endring.\n// FASE 26B: Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri administrasjon/prosjektstyring. Flat lagringsmodell beholdes for bakoverkompatibilitet. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 24S.1 KORREKT PROSJEKTAKTIVERING/TILBUD: Ved aktivering ligger forespørsel og befaring i prosjektbeskrivelse, mens opprinnelig akseptert tilbud dokumenteres via salesOrigin og akseptbevis/kontrakt. Tillegg/fradrag/avtaleendring starter tomt og brukes kun for senere endringer. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // FASE 23Q SALES-COMMUNICATION: Flytter henting av firmaprofil, kunde-e-post og befaringsbekreftelsestekst ut av SalesModule uten å endre UI, database, RLS, Storage, Edge Function eller e-postinnhold.
@@ -1567,21 +1567,135 @@ export default function SalesModule({
     focusOfferLineDescription(newLine.id);
   }
 
-  function removeOfferLine(lineId) {
+  async function removeOfferLine(lineId) {
+    const line = offerFormRef.current.lines.find((item) => item.id === lineId);
+
+    if (line?.attachmentFile?.path) {
+      try {
+        await removeOfferPdfAttachment(line.attachmentFile);
+      } catch (error) {
+        alert(error.message || "Kunne ikke fjerne PDF-vedlegget.");
+        return;
+      }
+    }
+
     setOfferForm((current) => ({
       ...current,
       lines: recalculateAdministrationLines(
-        current.lines.filter((line) => line.id !== lineId)
+        current.lines.filter((item) => item.id !== lineId)
       ),
     }));
   }
 
-  function handleOfferLineImage(lineId, event) {
+  async function uploadOfferPdfAttachment(file, itemType, itemId) {
+    if (integrationMode !== "app" || !activeSupabase || !authUser?.id) {
+      throw new Error(
+        "Du må være innlogget i Expo ProffDok for å laste opp PDF i tilbudet."
+      );
+    }
+
+    if (!selectedRequestId) {
+      throw new Error("Tilbudssaken mangler saksreferanse.");
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      throw new Error("PDF-filen kan ikke være større enn 20 MB.");
+    }
+
+    const cleanName = sanitizeStoragePart(file.name || "tilbudsvedlegg.pdf");
+    const path = `sales-offer-attachments/${authUser.id}/${sanitizeStoragePart(
+      selectedRequestId
+    )}/${itemType}/${sanitizeStoragePart(itemId)}/${Date.now()}-${cleanName}`;
+
+    const { error: uploadError } = await uploadStorageFile(
+      activeSupabase,
+      "project-images",
+      path,
+      file,
+      {
+        cacheControl: "3600",
+        contentType: "application/pdf",
+        upsert: false,
+      }
+    );
+    if (uploadError) throw uploadError;
+
+    const { data: publicFile } = getStoragePublicUrl(
+      activeSupabase,
+      "project-images",
+      path
+    );
+
+    return {
+      id: crypto.randomUUID(),
+      name: file.name || "Tilbudsvedlegg.pdf",
+      url: publicFile.publicUrl,
+      path,
+      type: "application/pdf",
+      size: file.size,
+      created: new Date().toISOString(),
+      by: loggedInResponsible,
+      customerVisible: true,
+    };
+  }
+
+  async function removeOfferPdfAttachment(attachmentFile) {
+    if (!attachmentFile?.path || !activeSupabase) return;
+
+    const { error } = await removeStorageFiles(
+      activeSupabase,
+      "project-images",
+      [attachmentFile.path]
+    );
+    if (error) throw error;
+  }
+
+  async function handleOfferLineFile(lineId, event) {
     const file = event.target.files?.[0];
 
     if (!file) return;
-
     event.target.value = "";
+
+    const isPdf =
+      file.type === "application/pdf" ||
+      String(file.name || "").toLowerCase().endsWith(".pdf");
+
+    if (isPdf) {
+      try {
+        const currentLine = offerFormRef.current.lines.find(
+          (line) => line.id === lineId
+        );
+        const attachmentFile = await uploadOfferPdfAttachment(
+          file,
+          "line",
+          lineId
+        );
+
+        if (currentLine?.attachmentFile?.path) {
+          try {
+            await removeOfferPdfAttachment(currentLine.attachmentFile);
+          } catch (error) {
+            console.warn("Kunne ikke rydde tidligere PDF-vedlegg", error);
+          }
+        }
+
+        setOfferForm((current) => ({
+          ...current,
+          lines: current.lines.map((line) =>
+            line.id === lineId ? { ...line, attachmentFile } : line
+          ),
+        }));
+      } catch (error) {
+        alert(error.message || "Kunne ikke laste opp PDF-vedlegget.");
+      }
+      return;
+    }
+
+    if (!String(file.type || "").startsWith("image/")) {
+      alert("Velg et bilde eller en PDF-fil.");
+      return;
+    }
+
     readFileAsDataUrl(file)
       .then((imageDataUrl) => {
         setOfferForm((current) => ({
@@ -1597,7 +1711,9 @@ export default function SalesModule({
           ),
         }));
       })
-      .catch(() => {});
+      .catch(() => {
+        alert("Kunne ikke lese bildefilen.");
+      });
   }
 
   function removeOfferLineImage(lineId) {
@@ -1609,6 +1725,21 @@ export default function SalesModule({
           : line
       ),
     }));
+  }
+
+  async function removeOfferLineAttachment(lineId) {
+    const line = offerFormRef.current.lines.find((item) => item.id === lineId);
+    try {
+      await removeOfferPdfAttachment(line?.attachmentFile);
+      setOfferForm((current) => ({
+        ...current,
+        lines: current.lines.map((item) =>
+          item.id === lineId ? { ...item, attachmentFile: null } : item
+        ),
+      }));
+    } catch (error) {
+      alert(error.message || "Kunne ikke fjerne PDF-vedlegget.");
+    }
   }
 
   function addOfferOption(mainPost) {
@@ -1627,19 +1758,72 @@ export default function SalesModule({
     }));
   }
 
-  function removeOfferOption(optionId) {
+  async function removeOfferOption(optionId) {
+    const option = offerFormRef.current.options.find(
+      (item) => item.id === optionId
+    );
+
+    if (option?.attachmentFile?.path) {
+      try {
+        await removeOfferPdfAttachment(option.attachmentFile);
+      } catch (error) {
+        alert(error.message || "Kunne ikke fjerne PDF-vedlegget.");
+        return;
+      }
+    }
+
     setOfferForm((current) => ({
       ...current,
-      options: current.options.filter((option) => option.id !== optionId),
+      options: current.options.filter((item) => item.id !== optionId),
     }));
   }
 
-  function handleOfferOptionImage(optionId, event) {
+  async function handleOfferOptionFile(optionId, event) {
     const file = event.target.files?.[0];
 
     if (!file) return;
-
     event.target.value = "";
+
+    const isPdf =
+      file.type === "application/pdf" ||
+      String(file.name || "").toLowerCase().endsWith(".pdf");
+
+    if (isPdf) {
+      try {
+        const currentOption = offerFormRef.current.options.find(
+          (option) => option.id === optionId
+        );
+        const attachmentFile = await uploadOfferPdfAttachment(
+          file,
+          "option",
+          optionId
+        );
+
+        if (currentOption?.attachmentFile?.path) {
+          try {
+            await removeOfferPdfAttachment(currentOption.attachmentFile);
+          } catch (error) {
+            console.warn("Kunne ikke rydde tidligere PDF-vedlegg", error);
+          }
+        }
+
+        setOfferForm((current) => ({
+          ...current,
+          options: current.options.map((option) =>
+            option.id === optionId ? { ...option, attachmentFile } : option
+          ),
+        }));
+      } catch (error) {
+        alert(error.message || "Kunne ikke laste opp PDF-vedlegget.");
+      }
+      return;
+    }
+
+    if (!String(file.type || "").startsWith("image/")) {
+      alert("Velg et bilde eller en PDF-fil.");
+      return;
+    }
+
     readFileAsDataUrl(file)
       .then((imageDataUrl) => {
         setOfferForm((current) => ({
@@ -1655,7 +1839,37 @@ export default function SalesModule({
           ),
         }));
       })
-      .catch(() => {});
+      .catch(() => {
+        alert("Kunne ikke lese bildefilen.");
+      });
+  }
+
+  function removeOfferOptionImage(optionId) {
+    setOfferForm((current) => ({
+      ...current,
+      options: current.options.map((option) =>
+        option.id === optionId
+          ? { ...option, imageDataUrl: "", imageName: "" }
+          : option
+      ),
+    }));
+  }
+
+  async function removeOfferOptionAttachment(optionId) {
+    const option = offerFormRef.current.options.find(
+      (item) => item.id === optionId
+    );
+    try {
+      await removeOfferPdfAttachment(option?.attachmentFile);
+      setOfferForm((current) => ({
+        ...current,
+        options: current.options.map((item) =>
+          item.id === optionId ? { ...item, attachmentFile: null } : item
+        ),
+      }));
+    } catch (error) {
+      alert(error.message || "Kunne ikke fjerne PDF-vedlegget.");
+    }
   }
 
   async function handleSaveOffer(event) {
@@ -2384,14 +2598,17 @@ export default function SalesModule({
         updateOfferForm={updateOfferForm}
         updateOfferLine={updateOfferLine}
         handleOfferLineAmountEnter={handleOfferLineAmountEnter}
-        handleOfferLineImage={handleOfferLineImage}
+        handleOfferLineFile={handleOfferLineFile}
         removeOfferLineImage={removeOfferLineImage}
+        removeOfferLineAttachment={removeOfferLineAttachment}
         removeOfferLine={removeOfferLine}
         addOfferLine={addOfferLine}
         addCustomMainPost={addCustomMainPost}
         addAdministrationLine={addAdministrationLine}
         updateOfferOption={updateOfferOption}
-        handleOfferOptionImage={handleOfferOptionImage}
+        handleOfferOptionFile={handleOfferOptionFile}
+        removeOfferOptionImage={removeOfferOptionImage}
+        removeOfferOptionAttachment={removeOfferOptionAttachment}
         removeOfferOption={removeOfferOption}
         addOfferOption={addOfferOption}
       />
