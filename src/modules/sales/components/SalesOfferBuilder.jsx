@@ -1,5 +1,5 @@
-// Expo ProffDok – FASE 26B
-// Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri
+// Expo ProffDok – FASE 26B.5
+// Opsjoner velges som tillegg/oppgradering eller alternativ som erstatter konkret underpost.\n// Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri
 // administrasjon/prosjektstyring. Bilde og link beholdes på underposter og opsjoner.
 // Ingen Supabase/Storage/publiseringslogikk i komponenten.
 
@@ -260,6 +260,8 @@ export default function SalesOfferBuilder({
                   for å samle underposter, opsjoner og eventuell avtalt
                   administrasjon/prosjektstyring. Kunden får prisene vist inkl. mva.
                   Varenummer er valgfritt og kun internt – det publiseres aldri til kunden.
+                  For hver opsjon velger du om den er et tillegg/oppgradering eller
+                  et alternativ som erstatter en konkret underpost.
                 </p>
 
                 {activeMainPosts.length ? (
@@ -561,7 +563,10 @@ export default function SalesOfferBuilder({
                             <div style={{ marginTop: 18 }}>
                               <strong>Opsjoner knyttet til {mainPost.title}</strong>
                               <p className="sales-subtitle" style={{ margin: "6px 0 10px" }}>
-                                Opsjonene kommer i tillegg først når kunden velger dem.
+                                Velg <strong>Tillegg / oppgradering</strong> når grunnposten beholdes.
+                                Velg <strong>Alternativ / erstatter</strong> når kunden skal velge
+                                et annet produkt eller arbeid i stedet for en konkret underpost.
+                                For alternativer registreres bare prisendringen mot grunnposten.
                               </p>
 
                               <div className="sales-offer-lines">
@@ -585,8 +590,73 @@ export default function SalesOfferBuilder({
                                             event.target.value
                                           )
                                         }
-                                        placeholder="Opsjon, f.eks. oppgradering av flis"
+                                        placeholder={
+                                          option.optionType === "alternative"
+                                            ? "Alternativ, f.eks. Dansani innredning"
+                                            : "Opsjon, f.eks. oppgradering av flis"
+                                        }
                                       />
+
+                                      <label className="sales-field">
+                                        <span>Opsjonstype</span>
+                                        <select
+                                          value={
+                                            option.optionType === "alternative"
+                                              ? "alternative"
+                                              : "addition"
+                                          }
+                                          onChange={(event) =>
+                                            updateOfferOption(
+                                              option.id,
+                                              "optionType",
+                                              event.target.value
+                                            )
+                                          }
+                                        >
+                                          <option value="addition">
+                                            Tillegg / oppgradering
+                                          </option>
+                                          <option value="alternative">
+                                            Alternativ / erstatter underpost
+                                          </option>
+                                        </select>
+                                      </label>
+
+                                      {option.optionType === "alternative" ? (
+                                        <label className="sales-field">
+                                          <span>Erstatter underpost</span>
+                                          <select
+                                            value={option.replacementLineId || ""}
+                                            onChange={(event) =>
+                                              updateOfferOption(
+                                                option.id,
+                                                "replacementLineId",
+                                                event.target.value
+                                              )
+                                            }
+                                          >
+                                            <option value="">
+                                              Velg underpost som erstattes
+                                            </option>
+                                            {workLines.map((line, lineIndex) => (
+                                              <option key={line.id} value={line.id}>
+                                                {line.description ||
+                                                  `Underpost ${lineIndex + 1}`}
+                                              </option>
+                                            ))}
+                                          </select>
+                                          {!workLines.length ? (
+                                            <small>
+                                              Legg inn en underpost i hovedposten først.
+                                            </small>
+                                          ) : (
+                                            <small>
+                                              Grunnprisen beholdes i tilbudet. Kunden ser at
+                                              denne posten erstattes dersom alternativet velges.
+                                            </small>
+                                          )}
+                                        </label>
+                                      ) : null}
 
                                       <input
                                         value={option.description}
@@ -697,7 +767,11 @@ export default function SalesOfferBuilder({
                                     </div>
 
                                     <label className="sales-offer-amount-field">
-                                      <span>Pris eks. mva.</span>
+                                      <span>
+                                        {option.optionType === "alternative"
+                                          ? "Prisendring eks. mva. (+/−)"
+                                          : "Tillegg eks. mva."}
+                                      </span>
                                       <input
                                         value={option.amount}
                                         onChange={(event) =>
@@ -710,6 +784,16 @@ export default function SalesOfferBuilder({
                                         placeholder="0"
                                         inputMode="decimal"
                                       />
+                                      {option.optionType === "alternative" ? (
+                                        <small>
+                                          Skriv 0 ved samme pris, positivt beløp ved dyrere
+                                          alternativ og minus ved rimeligere alternativ.
+                                        </small>
+                                      ) : (
+                                        <small>
+                                          Beløpet legges til grunnprisen hvis kunden velger opsjonen.
+                                        </small>
+                                      )}
                                     </label>
 
                                     <button
