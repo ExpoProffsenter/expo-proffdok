@@ -277,6 +277,7 @@ export default function SalesModule({
   const offerDraftSaveTimerRef = useRef(null);
   const offerFormHydratedRequestIdRef = useRef("");
   const offerFormSavedBaselineRef = useRef("");
+  const pendingInvalidAlternativeOptionIdRef = useRef("");
   const latestRequestsRef = useRef(requests);
   offerFormRef.current = offerForm;
   offerModeRef.current = mode;
@@ -1978,6 +1979,37 @@ export default function SalesModule({
     }));
   }
 
+  function focusInvalidAlternativeOption(optionId) {
+    window.setTimeout(() => {
+      const optionCard = document.querySelector(
+        `[data-offer-option-id="${optionId}"]`
+      );
+      const replacementField = optionCard?.querySelector(
+        `[data-offer-option-replacement="${optionId}"]`
+      );
+
+      optionCard?.scrollIntoView?.({
+        behavior: "smooth",
+        block: "center",
+      });
+      replacementField?.focus?.();
+    }, 0);
+  }
+
+  function focusOfferSaveButton() {
+    window.setTimeout(() => {
+      const saveButton = document.querySelector(
+        '[data-sales-save-offer-button="true"]'
+      );
+
+      saveButton?.scrollIntoView?.({
+        behavior: "smooth",
+        block: "center",
+      });
+      saveButton?.focus?.();
+    }, 80);
+  }
+
   function updateOfferOption(optionId, field, value) {
     setOfferForm((current) => ({
       ...current,
@@ -2001,6 +2033,15 @@ export default function SalesModule({
         return { ...option, [field]: value };
       }),
     }));
+
+    if (
+      field === "replacementLineId" &&
+      String(value || "").trim() &&
+      pendingInvalidAlternativeOptionIdRef.current === optionId
+    ) {
+      pendingInvalidAlternativeOptionIdRef.current = "";
+      focusOfferSaveButton();
+    }
   }
 
   async function removeOfferOption(optionId) {
@@ -2142,7 +2183,21 @@ export default function SalesModule({
     }
 
     if (invalidAlternativeOption) {
-      alert("En alternativ opsjon må kobles til underposten den erstatter før tilbudet kan lagres.");
+      pendingInvalidAlternativeOptionIdRef.current =
+        invalidAlternativeOption.id || "";
+
+      const optionTitle =
+        invalidAlternativeOption.title || "Alternativ opsjon";
+      const mainPostTitle =
+        invalidAlternativeOption.mainPostTitle || "aktuell hovedpost";
+
+      alert(
+        `Opsjonen "${optionTitle}" under "${mainPostTitle}" må kobles til underposten den erstatter før tilbudet kan lagres.`
+      );
+
+      if (invalidAlternativeOption.id) {
+        focusInvalidAlternativeOption(invalidAlternativeOption.id);
+      }
       return false;
     }
 
