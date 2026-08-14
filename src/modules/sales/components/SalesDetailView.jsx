@@ -83,7 +83,7 @@ export default function SalesDetailView({
       ? hasPublishedCustomerOffer
         ? "Publiser ny versjon"
         : "Publiser kundetilbud"
-      : "Vis kundens tilbud";
+      : "Se kundens tilbud";
     const publishLineCount = selectedRequest.offerLines?.length || 0;
     const publishOptionCount = selectedRequest.offerOptions?.length || 0;
     const publishedVersionNumber =
@@ -906,7 +906,7 @@ export default function SalesDetailView({
                             ? hasPublishedCustomerOffer
                               ? "Publiser ny versjon"
                               : "Publiser kundetilbud"
-                            : "Åpne kundelink"}
+                            : "Se kundens tilbud"}
                         </button>
                         <button
                           className="sales-secondary-button"
