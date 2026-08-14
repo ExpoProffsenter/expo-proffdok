@@ -1,6 +1,146 @@
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import { surfaces, bathroomEquipmentSections } from '../config/projectConfig.js';
 
 const import_jsx_runtime = { jsx, jsxs, Fragment };
+
+const hasValue = (value) => value !== undefined && value !== null && String(value).trim() !== "";
+
+export const emptyBathroomEquipment = () => ({});
+
+const equipmentValue = (equipment = {}, key = "", field = "") => equipment?.[`${key}_${field}`] || "";
+const equipmentHasGenericContent = (equipment = {}, key = "") => ["product", "supplier", "fdvUrl", "certificateUrl", "comment"].some((field) => hasValue(equipmentValue(equipment, key, field)));
+const equipmentSectionStorageKey = (title = "") => `custom_${String(title || "annet").toLowerCase().replace(/[åä]/g, "a").replace(/[øö]/g, "o").replace(/[æ]/g, "ae").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "")}`;
+const equipmentCustomItemsForSection = (equipment = {}, title = "") => {
+  const value = equipment?.[equipmentSectionStorageKey(title)];
+  return Array.isArray(value) ? value : [];
+};
+const equipmentCustomItemHasContent = (item = {}) => ["product", "supplier", "fdvUrl", "certificateUrl", "comment"].some((field) => hasValue(item?.[field]));
+const wcHasContent = (equipment = {}) => ["wcType", "wcProduct", "wcSupplier", "wcProductFdvUrl", "wcProductCertificateUrl", "wcCistern", "wcCisternSupplier", "wcCisternFdvUrl", "wcCisternCertificateUrl", "wcFlushPlate", "wcFlushPlateSupplier", "wcFlushPlateFdvUrl", "wcFlushPlateCertificateUrl", "wcFdvUrl", "wcCertificateUrl", "wcComment"].some((field) => hasValue(equipment?.[field]));
+
+export const buildBathroomEquipmentReportGroups = (surf = {}, bathroomEquipment = {}) => {
+  const groups = [];
+  const pushGroup = (title) => {
+    let group = groups.find((entry) => entry.title === title);
+    if (!group) {
+      group = { title, items: [] };
+      groups.push(group);
+    }
+    return group;
+  };
+  const surfaceRows = Object.entries(surf || {}).filter(([, value]) => hasValue(value));
+  const surfaceExtras = (bathroomEquipmentSections.find((section) => section.title === "Overflater")?.items || []).filter((item) => equipmentHasGenericContent(bathroomEquipment, item.key));
+  const surfaceCustomExtras = equipmentCustomItemsForSection(bathroomEquipment, "Overflater").filter(equipmentCustomItemHasContent);
+  if (surfaceRows.length || surfaceExtras.length || surfaceCustomExtras.length) {
+    const group = pushGroup("Overflater");
+    surfaceRows.forEach(([label, value]) => group.items.push({ title: label, entries: [["Produkt / beskrivelse", value]], links: [] }));
+    surfaceExtras.forEach((item) => {
+      const entries = [
+        ["Produkt / beskrivelse", equipmentValue(bathroomEquipment, item.key, "product")],
+        ["Leverandør", equipmentValue(bathroomEquipment, item.key, "supplier")],
+        ["Kommentar", equipmentValue(bathroomEquipment, item.key, "comment")]
+      ].filter(([, value]) => hasValue(value));
+      const links = [
+        { label: "FDV", url: equipmentValue(bathroomEquipment, item.key, "fdvUrl") },
+        { label: "Produktsertifikat", url: equipmentValue(bathroomEquipment, item.key, "certificateUrl") }
+      ].filter((link) => hasValue(link.url));
+      group.items.push({ title: item.label, entries, links });
+    });
+    surfaceCustomExtras.forEach((customItem, index) => {
+      const entries = [
+        ["Produkt / beskrivelse", customItem.product],
+        ["Leverandør", customItem.supplier],
+        ["Kommentar", customItem.comment]
+      ].filter(([, value]) => hasValue(value));
+      const links = [
+        { label: "FDV", url: customItem.fdvUrl },
+        { label: "Produktsertifikat", url: customItem.certificateUrl }
+      ].filter((link) => hasValue(link.url));
+      group.items.push({ title: customItem.title || `Eget produkt ${index + 1}`, entries, links });
+    });
+  }
+  if (wcHasContent(bathroomEquipment)) {
+    const type = bathroomEquipment.wcType || "";
+    const group = pushGroup("Sanitærutstyr");
+    if (type) {
+      group.items.push({ title: "WC / toalett", entries: [["Type WC", type]], links: [] });
+    }
+    const wcProductLinks = [
+      { label: "FDV", url: bathroomEquipment.wcProductFdvUrl || bathroomEquipment.wcFdvUrl },
+      { label: "Produktsertifikat", url: bathroomEquipment.wcProductCertificateUrl || bathroomEquipment.wcCertificateUrl }
+    ].filter((link) => hasValue(link.url));
+    if (hasValue(bathroomEquipment.wcProduct) || hasValue(bathroomEquipment.wcSupplier) || wcProductLinks.length) {
+      group.items.push({
+        title: type === "Vegghengt" ? "WC – veggskål" : "WC-produkt",
+        entries: [
+          ["Produkt / modell", bathroomEquipment.wcProduct],
+          ["Leverandør", bathroomEquipment.wcSupplier]
+        ].filter(([, value]) => hasValue(value)),
+        links: wcProductLinks
+      });
+    }
+    if (type === "Vegghengt") {
+      const cisternLinks = [
+        { label: "FDV", url: bathroomEquipment.wcCisternFdvUrl },
+        { label: "Produktsertifikat", url: bathroomEquipment.wcCisternCertificateUrl }
+      ].filter((link) => hasValue(link.url));
+      if (hasValue(bathroomEquipment.wcCistern) || hasValue(bathroomEquipment.wcCisternSupplier) || cisternLinks.length) {
+        group.items.push({
+          title: "WC – sisterne",
+          entries: [
+            ["Sisternemodell", bathroomEquipment.wcCistern],
+            ["Leverandør", bathroomEquipment.wcCisternSupplier]
+          ].filter(([, value]) => hasValue(value)),
+          links: cisternLinks
+        });
+      }
+      const flushPlateLinks = [
+        { label: "FDV", url: bathroomEquipment.wcFlushPlateFdvUrl },
+        { label: "Produktsertifikat", url: bathroomEquipment.wcFlushPlateCertificateUrl }
+      ].filter((link) => hasValue(link.url));
+      if (hasValue(bathroomEquipment.wcFlushPlate) || hasValue(bathroomEquipment.wcFlushPlateSupplier) || flushPlateLinks.length) {
+        group.items.push({
+          title: "WC – trykknapp",
+          entries: [
+            ["Trykknappmodell", bathroomEquipment.wcFlushPlate],
+            ["Leverandør", bathroomEquipment.wcFlushPlateSupplier]
+          ].filter(([, value]) => hasValue(value)),
+          links: flushPlateLinks
+        });
+      }
+    }
+    if (hasValue(bathroomEquipment.wcComment)) {
+      group.items.push({ title: "WC – kommentar", entries: [["Kommentar", bathroomEquipment.wcComment]], links: [] });
+    }
+  }
+  bathroomEquipmentSections.filter((section) => section.title !== "Overflater").forEach((section) => {
+    const group = pushGroup(section.title);
+    section.items.filter((item) => equipmentHasGenericContent(bathroomEquipment, item.key)).forEach((item) => {
+      const entries = [
+        ["Produkt / beskrivelse", equipmentValue(bathroomEquipment, item.key, "product")],
+        ["Leverandør", equipmentValue(bathroomEquipment, item.key, "supplier")],
+        ["Kommentar", equipmentValue(bathroomEquipment, item.key, "comment")]
+      ].filter(([, value]) => hasValue(value));
+      const links = [
+        { label: "FDV", url: equipmentValue(bathroomEquipment, item.key, "fdvUrl") },
+        { label: "Produktsertifikat", url: equipmentValue(bathroomEquipment, item.key, "certificateUrl") }
+      ].filter((link) => hasValue(link.url));
+      group.items.push({ title: item.label, entries, links });
+    });
+    equipmentCustomItemsForSection(bathroomEquipment, section.title).filter(equipmentCustomItemHasContent).forEach((customItem, index) => {
+      const entries = [
+        ["Produkt / beskrivelse", customItem.product],
+        ["Leverandør", customItem.supplier],
+        ["Kommentar", customItem.comment]
+      ].filter(([, value]) => hasValue(value));
+      const links = [
+        { label: "FDV", url: customItem.fdvUrl },
+        { label: "Produktsertifikat", url: customItem.certificateUrl }
+      ].filter((link) => hasValue(link.url));
+      group.items.push({ title: customItem.title || `Eget produkt ${index + 1}`, entries, links });
+    });
+  });
+  return groups.filter((group) => group.items.length > 0);
+};
 
 export function createSurfaceViewTools({
   Section,
@@ -9,16 +149,7 @@ export function createSurfaceViewTools({
   Select,
   Textarea,
   CollapsibleBlock,
-  hasValue,
-  uid,
-  surfaces,
-  bathroomEquipmentSections,
-  equipmentValue,
-  equipmentHasGenericContent,
-  equipmentSectionStorageKey,
-  equipmentCustomItemsForSection,
-  equipmentCustomItemHasContent,
-  wcHasContent
+  uid
 }) {
   function renderOverflaterOgInnredning({
     surf = {},
