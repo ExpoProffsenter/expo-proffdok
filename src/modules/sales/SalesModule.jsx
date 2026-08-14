@@ -764,7 +764,7 @@ export default function SalesModule({
 
 
   function openEditRequest() {
-    if (!selectedRequest || !["Forespørsel", "Befaring"].includes(selectedRequest.status)) {
+    if (!selectedRequest || !["Forespørsel", "Befaring", "Tilbud"].includes(selectedRequest.status)) {
       return;
     }
 
@@ -784,7 +784,22 @@ export default function SalesModule({
 
   async function handleUpdateRequest(event) {
     event.preventDefault();
-    if (!selectedRequest || !["Forespørsel", "Befaring"].includes(selectedRequest.status)) return;
+    if (!selectedRequest || !["Forespørsel", "Befaring", "Tilbud"].includes(selectedRequest.status)) return;
+
+    const customerDetailsChanged = Boolean(
+      selectedRequest.customer !== (form.customer.trim() || "Uten kundenavn") ||
+        selectedRequest.phone !== form.phone.trim() ||
+        selectedRequest.email !== form.email.trim() ||
+        selectedRequest.address !== (form.address.trim() || "Adresse ikke registrert") ||
+        (selectedRequest.postnr || "") !== form.postnr.trim() ||
+        (selectedRequest.city || "") !== form.city.trim()
+    );
+    const hasPublishedOffer = Boolean(
+      selectedRequest.publicToken ||
+        selectedRequest.salesOfferId ||
+        selectedRequest.sentOfferVersionId ||
+        selectedRequest.sentOfferVersionNumber
+    );
 
     const updatedRequest = {
       ...selectedRequest,
@@ -797,6 +812,15 @@ export default function SalesModule({
       title: form.title,
       source: form.source,
       note: form.note.trim(),
+      ...(selectedRequest.status === "Tilbud" &&
+      hasPublishedOffer &&
+      customerDetailsChanged
+        ? {
+            sentOfferVersionId: null,
+            sentOfferAt: null,
+            nextStep: "Publiser ny tilbudsversjon",
+          }
+        : {}),
     };
     const confirmationRelevantChange = Boolean(
       selectedRequest.surveyConfirmationSentAt &&
