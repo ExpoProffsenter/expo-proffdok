@@ -1020,6 +1020,7 @@ export default function SalesDetailView({
                     </div>
 
                     <div
+                      className="sales-offer-detail-lines-list"
                       style={{
                         display: "grid",
                         gap: 10,
@@ -1048,6 +1049,7 @@ export default function SalesDetailView({
                     </div>
 
                     <div
+                      className="sales-offer-detail-total"
                       style={{
                         marginTop: 18,
                         paddingTop: 14,
