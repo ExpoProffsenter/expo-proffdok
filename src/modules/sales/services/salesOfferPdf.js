@@ -71,6 +71,29 @@ function optionPriceText(option = {}) {
   return `${prefix} ${formatNok(Math.abs(amountInclVat))} inkl. mva.`;
 }
 
+function optionTypeText(option = {}, groupLines = []) {
+  if (option.optionType === "alternative") {
+    const replacementDescription =
+      String(option.replacementLineDescription || "").trim() ||
+      String(
+        (Array.isArray(groupLines) ? groupLines : []).find(
+          (line) =>
+            String(line?.id || "") ===
+            String(option.replacementLineId || "")
+        )?.description || ""
+      ).trim() ||
+      "underposten som er valgt i tilbudet";
+
+    return `Alternativ / erstatter: ${replacementDescription}`;
+  }
+
+  if (getOfferTotal([option]) < 0) {
+    return "Fradrag / prisreduksjon";
+  }
+
+  return "Tillegg / oppgradering";
+}
+
 function normalizeWebUrl(value = "") {
   const clean = String(value || "").trim();
   if (!clean) return "";
@@ -292,15 +315,7 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
       if (group.options.length) {
         addText("Opsjoner", { size: 9.5, style: "bold", after: 1 });
         group.options.forEach((option) => {
-          const replacementLine = group.lines.find(
-            (line) => String(line.id) === String(option.replacementLineId || "")
-          );
-          const typeText =
-            option.optionType === "alternative"
-              ? `Alternativ / erstatter${
-                  replacementLine ? `: ${lineTitle(replacementLine)}` : ""
-                }`
-              : "Tillegg / oppgradering";
+          const typeText = optionTypeText(option, group.lines);
           addText(
             `${option.title || "Opsjon"} - ${typeText} - ${optionPriceText(
               option
