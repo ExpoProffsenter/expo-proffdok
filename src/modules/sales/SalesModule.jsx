@@ -1987,13 +1987,17 @@ export default function SalesModule({
       const replacementField = optionCard?.querySelector(
         `[data-offer-option-replacement="${optionId}"]`
       );
+      const target = replacementField || optionCard;
 
-      optionCard?.scrollIntoView?.({
+      target?.scrollIntoView?.({
         behavior: "smooth",
         block: "center",
       });
-      replacementField?.focus?.();
-    }, 0);
+
+      window.setTimeout(() => {
+        replacementField?.focus?.({ preventScroll: true });
+      }, 350);
+    }, 180);
   }
 
   function focusOfferSaveButton() {
