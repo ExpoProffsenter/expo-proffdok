@@ -220,9 +220,15 @@ export default function SalesOfferBuilder({
               ) : (
                 <div className="sales-field sales-field-full">
                   <div className="sales-form-preview">
-                    <strong>Ingen lagret befaring funnet</strong>
+                    <strong>
+                      {selectedRequest.directOffer
+                        ? "Direkte tilbud – ingen befaring kreves"
+                        : "Ingen lagret befaring funnet"}
+                    </strong>
                     <p className="sales-subtitle" style={{ margin: "6px 0 0" }}>
-                      Du kan fortsatt opprette tilbudet manuelt, eller gå tilbake og registrere tekst og bilder fra befaringen først.
+                      {selectedRequest.directOffer
+                        ? "Tilbudet er opprettet direkte og kan bygges manuelt med hovedposter, underposter, opsjoner og vedlegg."
+                        : "Du kan fortsatt opprette tilbudet manuelt, eller gå tilbake og registrere tekst og bilder fra befaringen først."}
                     </p>
                   </div>
                 </div>
@@ -253,6 +259,7 @@ export default function SalesOfferBuilder({
                   Beløp i tilbudsbyggeren legges inn eks. mva. Hovedposter brukes
                   for å samle underposter, opsjoner og eventuell avtalt
                   administrasjon/prosjektstyring. Kunden får prisene vist inkl. mva.
+                  Varenummer er valgfritt og kun internt – det publiseres aldri til kunden.
                 </p>
 
                 {activeMainPosts.length ? (
@@ -321,6 +328,19 @@ export default function SalesOfferBuilder({
                                         )
                                       }
                                       placeholder={`Underpost under ${mainPost.title}`}
+                                    />
+
+                                    <input
+                                      value={line.internalProductNumber || ""}
+                                      onChange={(event) =>
+                                        updateOfferLine(
+                                          line.id,
+                                          "internalProductNumber",
+                                          event.target.value
+                                        )
+                                      }
+                                      placeholder="Varenummer – kun internt (valgfritt)"
+                                      autoComplete="off"
                                     />
 
                                     <input
@@ -578,6 +598,19 @@ export default function SalesOfferBuilder({
                                           )
                                         }
                                         placeholder="Kort beskrivelse"
+                                      />
+
+                                      <input
+                                        value={option.internalProductNumber || ""}
+                                        onChange={(event) =>
+                                          updateOfferOption(
+                                            option.id,
+                                            "internalProductNumber",
+                                            event.target.value
+                                          )
+                                        }
+                                        placeholder="Varenummer – kun internt (valgfritt)"
+                                        autoComplete="off"
                                       />
 
                                       <input
