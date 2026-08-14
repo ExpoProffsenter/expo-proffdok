@@ -1,5 +1,5 @@
-// Expo ProffDok - FASE 26B.3
-// Akseptbeviset speiler hovedposter, underposter, valgte opsjoner og vedleggsreferanser fra akseptert tilbudsversjon.
+// Expo ProffDok - FASE 26B.5
+// Akseptbeviset skiller mellom valgte tillegg og alternativer som erstatter konkret underpost.\n// Akseptbeviset speiler hovedposter, underposter, valgte opsjoner og vedleggsreferanser fra akseptert tilbudsversjon.
 // Kundevendte priser vises inkl. mva.; intern lagringsmodell beholdes eks. mva. Ingen SQL/RLS/Storage/Edge-endring.
 // Expo ProffDok - FASE 26A
 // Akseptbeviset viser kundevendte priser inkl. mva. Intern lagrings- og akseptmodell beholdes uendret eks. mva.
@@ -76,6 +76,19 @@ function getCustomerLineTitle(line = {}) {
   }
 
   return description;
+}
+
+function isAlternativeOption(option = {}) {
+  return option?.optionType === "alternative";
+}
+
+function getSignedOptionAmountText(option = {}) {
+  const amountInclVat = getOfferTotal([option]) * 1.25;
+
+  if (amountInclVat === 0) return "ingen prisendring";
+
+  const prefix = amountInclVat > 0 ? "+" : "−";
+  return `${prefix} ${formatNok(Math.abs(amountInclVat))} inkl. mva.`;
 }
 
 export async function createAcceptanceProofPdf({
@@ -284,10 +297,22 @@ export async function createAcceptanceProofPdf({
       });
 
       group.lines.forEach((line, lineIndex) => {
+        const replacingOption = group.options.find(
+          (option) =>
+            isAlternativeOption(option) &&
+            option.replacementLineId === line.id
+        );
+
         addText(
-          `${groupIndex + 1}.${lineIndex + 1} ${getCustomerLineTitle(
-            line
-          )} - ${formatNok(getOfferTotal([line]) * 1.25)} inkl. mva.`,
+          replacingOption
+            ? `${groupIndex + 1}.${lineIndex + 1} ${getCustomerLineTitle(
+                line
+              )} - erstattet av valgt alternativ: ${
+                replacingOption.title || "Alternativ"
+              }. Grunnprisen inngår i tilbudssummen.`
+            : `${groupIndex + 1}.${lineIndex + 1} ${getCustomerLineTitle(
+                line
+              )} - ${formatNok(getOfferTotal([line]) * 1.25)} inkl. mva.`,
           { size: 9.5, after: 1 }
         );
 
@@ -318,10 +343,21 @@ export async function createAcceptanceProofPdf({
       });
 
       group.options.forEach((option) => {
+        const replacedLine = group.lines.find(
+          (line) => line.id === option.replacementLineId
+        );
+        const optionPrefix = isAlternativeOption(option)
+          ? `Valgt alternativ: ${option.title || "Alternativ"} - erstatter ${
+              replacedLine?.description || "underpost"
+            } - prisendring ${getSignedOptionAmountText(option)}`
+          : `Valgt tillegg: ${option.title || "Opsjon"} - ${getSignedOptionAmountText(
+              option
+            )}`;
+
         addText(
-          `Valgt opsjon: ${option.title || "Opsjon"}${
+          `${optionPrefix}${
             option.description ? ` - ${option.description}` : ""
-          } - ${formatNok(getOfferTotal([option]) * 1.25)} inkl. mva.`,
+          }`,
           { size: 9, style: "bold", after: 1 }
         );
 
