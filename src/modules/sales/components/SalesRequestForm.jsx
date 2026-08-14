@@ -96,13 +96,34 @@ export default function SalesRequestForm({
                 />
               </label>
 
-              <label className="sales-field">
+              <label className="sales-field sales-field-full">
                 <span>Adresse</span>
                 <input
                   value={form.address}
                   onChange={(event) => onUpdateForm("address", event.target.value)}
                   placeholder="Kirkeveien 12"
-                  autoComplete="street-address"
+                  autoComplete="address-line1"
+                />
+              </label>
+
+              <label className="sales-field">
+                <span>Postnummer</span>
+                <input
+                  value={form.postnr || ""}
+                  onChange={(event) => onUpdateForm("postnr", event.target.value)}
+                  placeholder="0368"
+                  inputMode="numeric"
+                  autoComplete="postal-code"
+                />
+              </label>
+
+              <label className="sales-field">
+                <span>Sted</span>
+                <input
+                  value={form.city || ""}
+                  onChange={(event) => onUpdateForm("city", event.target.value)}
+                  placeholder="Oslo"
+                  autoComplete="address-level2"
                 />
               </label>
 
@@ -155,7 +176,9 @@ export default function SalesRequestForm({
                 </span>
                 <span>
                   <MapPin size={16} />
-                  {form.address || "Adresse ikke registrert"}
+                  {[form.address, form.postnr, form.city]
+                    .filter(Boolean)
+                    .join(", ") || "Adresse ikke registrert"}
                 </span>
                 <span>
                   <Phone size={16} />
