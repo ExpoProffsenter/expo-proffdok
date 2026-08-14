@@ -90,6 +90,8 @@ export const emptyForm = {
   phone: "",
   email: "",
   address: "",
+  postnr: "",
+  city: "",
   title: "Modernisering av bad",
   source: "Telefon",
   note: "",
