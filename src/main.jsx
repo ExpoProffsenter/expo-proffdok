@@ -843,6 +843,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }, []);
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
     const [salesStartNewRequestSignal, setSalesStartNewRequestSignal] = (0, import_react.useState)(0);
+    const [salesStartNewOfferSignal, setSalesStartNewOfferSignal] = (0, import_react.useState)(0);
     const [mobileMenuOpen, setMobileMenuOpen] = (0, import_react.useState)(false);
     const [projectDirty, setProjectDirty] = (0, import_react.useState)(false);
     const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
@@ -2253,6 +2254,10 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     };
     const startNewSalesRequest = () => {
       setSalesStartNewRequestSignal((current) => current + 1);
+      openSalesOverview();
+    };
+    const startNewSalesOffer = () => {
+      setSalesStartNewOfferSignal((current) => current + 1);
       openSalesOverview();
     };
     const appendProjectDescriptionTemplate = (templateText) => {
@@ -6798,9 +6803,10 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeHero", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hva vil du jobbe med?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Opprett en ny forespørsel, fortsett med befaring og tilbud, eller åpne et eksisterende ProffDok-prosjekt." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Opprett en ny forespørsel, lag et tilbud direkte, fortsett med befaring og tilbud, eller åpne et eksisterende ProffDok-prosjekt." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeActions", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesRequest, children: "+ Ny forespørsel" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesOffer, children: "+ Nytt tilbud" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openSalesOverview, children: "Åpne Befaring/Tilbud" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => {
                 createNewProject();
@@ -7000,9 +7006,10 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "desktopNoProjectHero", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Hva vil du jobbe med?" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett en ny forespørsel, fortsett med befaring og tilbud, eller åpne et eksisterende ProffDok-prosjekt." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett en ny forespørsel, lag et tilbud direkte, fortsett med befaring og tilbud, eller åpne et eksisterende ProffDok-prosjekt." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "16px" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesRequest, children: "+ Ny forespørsel" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: startNewSalesOffer, children: "+ Nytt tilbud" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openSalesOverview, children: "Åpne Befaring/Tilbud" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { createNewProject(); setTab("prosjekt"); }, children: "+ Nytt prosjekt" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("prosjektliste"), children: "Åpne prosjektliste" })
@@ -7080,7 +7087,10 @@ ${appLink}`;
               user?.name ||
               "",
             integrationMode: "app",
-            startNewRequestSignal: salesStartNewRequestSignal
+            startNewRequestSignal: salesStartNewRequestSignal,
+            startNewOfferSignal: salesStartNewOfferSignal,
+            onStartNewRequestHandled: () => setSalesStartNewRequestSignal(0),
+            onStartNewOfferHandled: () => setSalesStartNewOfferSignal(0)
           })
         ] }),
         tab === "prosjektinfo" && renderProjectDescriptionPanel({

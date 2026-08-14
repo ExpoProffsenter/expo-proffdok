@@ -1,4 +1,5 @@
-// FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
+// FASE 26B.1 TILBUDSVEDLEGG: Underposter og opsjoner kan ha bilde og PDF-vedlegg. PDF lagres i eksisterende project-images Storage og følger tilbudsdata uten SQL/RLS-endring.\n// FASE 26B: Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri administrasjon/prosjektstyring. Flat lagringsmodell beholdes for bakoverkompatibilitet. Ingen SQL/RLS/Storage/Edge/e-postendring.
+// FASE 26B.5 OPSJONSTYPE: Tillegg/oppgradering og alternativ som erstatter konkret underpost. Alternativpris lagres som prisendring mot grunnposten; kundens valg er gjensidig eksklusivt per erstattet underpost. Ingen SQL/RLS/Storage/Edge-endring.\n// FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 24S.1 KORREKT PROSJEKTAKTIVERING/TILBUD: Ved aktivering ligger forespørsel og befaring i prosjektbeskrivelse, mens opprinnelig akseptert tilbud dokumenteres via salesOrigin og akseptbevis/kontrakt. Tillegg/fradrag/avtaleendring starter tomt og brukes kun for senere endringer. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // FASE 23Q SALES-COMMUNICATION: Flytter henting av firmaprofil, kunde-e-post og befaringsbekreftelsestekst ut av SalesModule uten å endre UI, database, RLS, Storage, Edge Function eller e-postinnhold.
 // FASE 23P SALES-PUBLISHING: Flytter tilbudspublisering og bygging av kundelenker ut av SalesModule uten å endre UI, tilbudsdata, database, RLS, Storage, e-post eller aksept.
@@ -90,11 +91,13 @@ import {
   createEmptyOfferLine,
   createEmptyOfferOption,
   createInitialOfferForm,
+  createOfferAdministrationLine,
   getActiveOfferVersion,
   mapPublicOfferToRequest,
   mergeOfferDraftIntoRequests,
   normalizeStoredOfferDraft,
   prepareOfferFormForSave,
+  recalculateAdministrationLines,
 } from "./utils/salesOfferLogic.js";
 import {
   INSPECTION_BUCKET,
@@ -141,6 +144,7 @@ import {
   readFileAsDataUrl,
 } from "./services/salesImages.js";
 import { createAcceptanceProofPdf } from "./services/salesAcceptancePdf.js";
+import { createPublishedOfferPdf } from "./services/salesOfferPdf.js";
 import {
   buildCustomerOfferLink,
   publishSalesOfferAndBuildLink,
@@ -162,6 +166,64 @@ import "./sales.css";
 
 const supabase = createDefaultSalesSupabaseClient();
 
+function createOfferFormChangeSignature(formValue) {
+  const compactImageSignature = (value) => {
+    const text = String(value || "");
+    if (!text) return "";
+    return `${text.length}:${text.slice(-48)}`;
+  };
+
+  const compactAttachment = (file) =>
+    file
+      ? {
+          id: file.id || "",
+          name: file.name || "",
+          path: file.path || "",
+          size: Number(file.size || 0),
+        }
+      : null;
+
+  return JSON.stringify({
+    title: formValue?.title || "",
+    intro: formValue?.intro || "",
+    reservations: formValue?.reservations || "",
+    included: formValue?.included || "",
+    excluded: formValue?.excluded || "",
+    customerSupplied: formValue?.customerSupplied || "",
+    terms: formValue?.terms || "",
+    paymentTerms: formValue?.paymentTerms || "",
+    validityDays: formValue?.validityDays || "",
+    lines: (formValue?.lines || []).map((line) => ({
+      id: line.id || "",
+      mainPostId: line.mainPostId || "",
+      mainPostTitle: line.mainPostTitle || "",
+      lineType: line.lineType || "work",
+      description: line.description || "",
+      internalProductNumber: line.internalProductNumber || "",
+      amount: String(line.amount ?? ""),
+      adminMode: line.adminMode || "",
+      adminPercent: String(line.adminPercent ?? ""),
+      productUrl: line.productUrl || "",
+      imageName: line.imageName || "",
+      imageSignature: compactImageSignature(line.imageDataUrl),
+      attachmentFile: compactAttachment(line.attachmentFile),
+    })),
+    options: (formValue?.options || []).map((option) => ({
+      id: option.id || "",
+      mainPostId: option.mainPostId || "",
+      mainPostTitle: option.mainPostTitle || "",
+      title: option.title || "",
+      description: option.description || "",
+      internalProductNumber: option.internalProductNumber || "",
+      amount: String(option.amount ?? ""),
+      productUrl: option.productUrl || "",
+      imageName: option.imageName || "",
+      imageSignature: compactImageSignature(option.imageDataUrl),
+      attachmentFile: compactAttachment(option.attachmentFile),
+    })),
+  });
+}
+
 export default function SalesModule({
   supabaseClient = null,
   authUser = null,
@@ -169,6 +231,9 @@ export default function SalesModule({
   currentUserName = "",
   integrationMode = "preview",
   startNewRequestSignal = 0,
+  startNewOfferSignal = 0,
+  onStartNewRequestHandled = null,
+  onStartNewOfferHandled = null,
 } = {}) {
   const activeSupabase = supabaseClient || supabase;
   const salesStorageKey = useMemo(
@@ -211,6 +276,9 @@ export default function SalesModule({
   const offerRequestIdRef = useRef(selectedRequestId);
   const offerDraftSaveTimerRef = useRef(null);
   const offerFormHydratedRequestIdRef = useRef("");
+  const offerFormSavedBaselineRef = useRef("");
+  const pendingInvalidAlternativeOptionIdRef = useRef("");
+  const [offerValidationJump, setOfferValidationJump] = useState(null);
   const latestRequestsRef = useRef(requests);
   offerFormRef.current = offerForm;
   offerModeRef.current = mode;
@@ -232,6 +300,8 @@ export default function SalesModule({
   const [contractUploadError, setContractUploadError] = useState("");
   const [acceptanceProofBusy, setAcceptanceProofBusy] = useState(false);
   const [acceptanceProofError, setAcceptanceProofError] = useState("");
+  const [offerPdfBusy, setOfferPdfBusy] = useState(false);
+  const [offerPdfError, setOfferPdfError] = useState("");
   const [customerLinkCopied, setCustomerLinkCopied] = useState(false);
   const [customerEmailBusy, setCustomerEmailBusy] = useState(false);
   const [customerEmailFeedback, setCustomerEmailFeedback] = useState(null);
@@ -329,8 +399,10 @@ export default function SalesModule({
       storedDraft = null;
     }
 
+    const hydratedOfferForm = normalizeStoredOfferDraft(storedDraft, selectedRequest);
     offerFormHydratedRequestIdRef.current = selectedRequestId;
-    setOfferForm(normalizeStoredOfferDraft(storedDraft, selectedRequest));
+    offerFormSavedBaselineRef.current = createOfferFormChangeSignature(hydratedOfferForm);
+    setOfferForm(hydratedOfferForm);
     setOfferDraftSaveStatus("idle");
     setOfferFormReady(true);
     // Gjenoppretting må skje før autolagring får starte.
@@ -758,6 +830,23 @@ export default function SalesModule({
     setForm((current) => ({ ...current, [field]: value }));
   }
 
+  function validateRequiredCustomerFields() {
+    const requiredFields = [
+      ["customer", "kundenavn"],
+      ["address", "adresse"],
+      ["postnr", "postnummer"],
+      ["city", "sted"],
+    ];
+    const missing = requiredFields.find(
+      ([field]) => !String(form?.[field] || "").trim()
+    );
+
+    if (!missing) return true;
+
+    alert(`Fyll inn ${missing[1]} før du fortsetter.`);
+    return false;
+  }
+
   function resetForm() {
     setForm(emptyForm);
   }
@@ -785,12 +874,13 @@ export default function SalesModule({
   async function handleUpdateRequest(event) {
     event.preventDefault();
     if (!selectedRequest || !["Forespørsel", "Befaring", "Tilbud"].includes(selectedRequest.status)) return;
+    if (!validateRequiredCustomerFields()) return;
 
     const customerDetailsChanged = Boolean(
-      selectedRequest.customer !== (form.customer.trim() || "Uten kundenavn") ||
+      selectedRequest.customer !== form.customer.trim() ||
         selectedRequest.phone !== form.phone.trim() ||
         selectedRequest.email !== form.email.trim() ||
-        selectedRequest.address !== (form.address.trim() || "Adresse ikke registrert") ||
+        selectedRequest.address !== form.address.trim() ||
         (selectedRequest.postnr || "") !== form.postnr.trim() ||
         (selectedRequest.city || "") !== form.city.trim()
     );
@@ -803,10 +893,10 @@ export default function SalesModule({
 
     const updatedRequest = {
       ...selectedRequest,
-      customer: form.customer.trim() || "Uten kundenavn",
+      customer: form.customer.trim(),
       phone: form.phone.trim(),
       email: form.email.trim(),
-      address: form.address.trim() || "Adresse ikke registrert",
+      address: form.address.trim(),
       postnr: form.postnr.trim(),
       city: form.city.trim(),
       title: form.title,
@@ -874,7 +964,20 @@ export default function SalesModule({
     resetForm();
     setSelectedRequestId(null);
     setMode("new");
+    onStartNewRequestHandled?.();
+    // Signal nullstilles i hovedappen etter at det er håndtert.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startNewRequestSignal, integrationMode]);
+
+  useEffect(() => {
+    if (!startNewOfferSignal || integrationMode !== "app") return;
+    resetForm();
+    setSelectedRequestId(null);
+    setMode("new-offer");
+    onStartNewOfferHandled?.();
+    // Signal nullstilles i hovedappen etter at det er håndtert.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startNewOfferSignal, integrationMode]);
 
   function goToList() {
     setMode("list");
@@ -985,6 +1088,55 @@ export default function SalesModule({
       setContractUploadError(error.message || "Kunne ikke fjerne kontrakten.");
     } finally {
       setContractUploadBusy(false);
+    }
+  }
+
+  async function handleDownloadPublishedOfferPdf() {
+    if (!selectedRequest || offerPdfBusy) return;
+
+    if (!selectedRequest.publicToken) {
+      setOfferPdfError(
+        "Publiser tilbudet først. PDF-en skal alltid opprettes fra den publiserte tilbudsversjonen."
+      );
+      return;
+    }
+
+    if (!activeSupabase) {
+      setOfferPdfError("Supabase-miljøvariabler mangler i Vercel-preview.");
+      return;
+    }
+
+    setOfferPdfBusy(true);
+    setOfferPdfError("");
+
+    try {
+      const { data, error } = await getSalesOfferByToken(
+        activeSupabase,
+        selectedRequest.publicToken
+      );
+      if (error) throw error;
+
+      const publishedRequest = mapPublicOfferToRequest(data);
+      if (!publishedRequest) {
+        throw new Error("Publisert tilbudsversjon kunne ikke hentes.");
+      }
+
+      const { blob, fileName } = await createPublishedOfferPdf({
+        selectedRequest: publishedRequest,
+      });
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+    } catch (error) {
+      console.error("Kunne ikke laste ned publisert tilbud som PDF", error);
+      setOfferPdfError(error.message || "Kunne ikke opprette tilbuds-PDF.");
+    } finally {
+      setOfferPdfBusy(false);
     }
   }
 
@@ -1343,12 +1495,48 @@ export default function SalesModule({
   }
 
   function toggleAcceptedOption(optionId) {
-    setAcceptanceForm((current) => ({
-      ...current,
-      selectedOptionIds: current.selectedOptionIds.includes(optionId)
-        ? current.selectedOptionIds.filter((id) => id !== optionId)
-        : [...current.selectedOptionIds, optionId],
-    }));
+    const activeOfferVersion = getActiveOfferVersion(selectedRequest);
+    const offerOptions =
+      activeOfferVersion?.options || selectedRequest?.offerOptions || [];
+    const toggledOption = offerOptions.find((option) => option.id === optionId);
+
+    setAcceptanceForm((current) => {
+      if (current.selectedOptionIds.includes(optionId)) {
+        return {
+          ...current,
+          selectedOptionIds: current.selectedOptionIds.filter(
+            (id) => id !== optionId
+          ),
+        };
+      }
+
+      let nextSelectedOptionIds = [...current.selectedOptionIds];
+
+      if (
+        toggledOption?.optionType === "alternative" &&
+        toggledOption?.replacementLineId
+      ) {
+        const conflictingAlternativeIds = new Set(
+          offerOptions
+            .filter(
+              (option) =>
+                option.id !== optionId &&
+                option.optionType === "alternative" &&
+                option.replacementLineId === toggledOption.replacementLineId
+            )
+            .map((option) => option.id)
+        );
+
+        nextSelectedOptionIds = nextSelectedOptionIds.filter(
+          (id) => !conflictingAlternativeIds.has(id)
+        );
+      }
+
+      return {
+        ...current,
+        selectedOptionIds: [...nextSelectedOptionIds, optionId],
+      };
+    });
   }
 
   async function handleAcceptOffer(event) {
@@ -1433,8 +1621,10 @@ export default function SalesModule({
       storedDraft = null;
     }
 
+    const nextOfferForm = normalizeStoredOfferDraft(storedDraft, selectedRequest);
     offerFormHydratedRequestIdRef.current = selectedRequest?.id || "";
-    setOfferForm(normalizeStoredOfferDraft(storedDraft, selectedRequest));
+    offerFormSavedBaselineRef.current = createOfferFormChangeSignature(nextOfferForm);
+    setOfferForm(nextOfferForm);
     setOfferFormReady(true);
     setMode("offer-builder");
   }
@@ -1462,19 +1652,62 @@ export default function SalesModule({
   }
 
   function updateOfferLine(lineId, field, value) {
+    setOfferForm((current) => {
+      const nextLines = current.lines.map((line) =>
+        line.id === lineId ? { ...line, [field]: value } : line
+      );
+
+      return {
+        ...current,
+        lines: recalculateAdministrationLines(nextLines),
+      };
+    });
+  }
+
+  function addOfferLine(mainPost) {
     setOfferForm((current) => ({
       ...current,
-      lines: current.lines.map((line) =>
-        line.id === lineId ? { ...line, [field]: value } : line
-      ),
+      lines: [
+        ...current.lines,
+        createEmptyOfferLine(mainPost),
+      ],
     }));
   }
 
-  function addOfferLine() {
+  function addCustomMainPost() {
+    const title = window.prompt("Navn på egen hovedpost:");
+
+    if (!String(title || "").trim()) return;
+
+    const mainPost = {
+      id: `custom-${Date.now()}-${Math.random()}`,
+      title: String(title).trim(),
+    };
+
     setOfferForm((current) => ({
       ...current,
-      lines: [...current.lines, createEmptyOfferLine()],
+      lines: [...current.lines, createEmptyOfferLine(mainPost)],
     }));
+  }
+
+  function addAdministrationLine(mainPost) {
+    setOfferForm((current) => {
+      const alreadyExists = current.lines.some(
+        (line) =>
+          line.mainPostId === mainPost.id &&
+          line.lineType === "administration"
+      );
+
+      if (alreadyExists) return current;
+
+      return {
+        ...current,
+        lines: recalculateAdministrationLines([
+          ...current.lines,
+          createOfferAdministrationLine(mainPost),
+        ]),
+      };
+    });
   }
 
   function focusOfferLineDescription(lineId) {
@@ -1490,19 +1723,28 @@ export default function SalesModule({
     }, 0);
   }
 
-  function handleOfferLineAmountEnter(event, line, index) {
+  function handleOfferLineAmountEnter(event, line) {
     if (event.key !== "Enter") return;
 
     event.preventDefault();
 
-    const nextLine = offerForm.lines[index + 1];
+    const groupLines = offerForm.lines.filter(
+      (item) =>
+        item.mainPostId === line.mainPostId &&
+        item.lineType !== "administration"
+    );
+    const currentIndex = groupLines.findIndex((item) => item.id === line.id);
+    const nextLine = groupLines[currentIndex + 1];
 
     if (nextLine) {
       focusOfferLineDescription(nextLine.id);
       return;
     }
 
-    const newLine = createEmptyOfferLine();
+    const newLine = createEmptyOfferLine({
+      id: line.mainPostId,
+      title: line.mainPostTitle,
+    });
 
     setOfferForm((current) => ({
       ...current,
@@ -1512,22 +1754,179 @@ export default function SalesModule({
     focusOfferLineDescription(newLine.id);
   }
 
-  function removeOfferLine(lineId) {
+  function focusOfferOptionTitle(optionId) {
+    window.setTimeout(() => {
+      const field = document.querySelector(
+        `[data-offer-option-title="${optionId}"]`
+      );
+
+      if (field) {
+        field.focus();
+        field.select?.();
+      }
+    }, 0);
+  }
+
+  function handleOfferOptionAmountEnter(event, option) {
+    if (event.key !== "Enter") return;
+
+    event.preventDefault();
+
+    const groupOptions = offerForm.options.filter(
+      (item) => item.mainPostId === option.mainPostId
+    );
+    const currentIndex = groupOptions.findIndex(
+      (item) => item.id === option.id
+    );
+    const nextOption = groupOptions[currentIndex + 1];
+
+    if (nextOption) {
+      focusOfferOptionTitle(nextOption.id);
+      return;
+    }
+
+    const newOption = createEmptyOfferOption({
+      id: option.mainPostId,
+      title: option.mainPostTitle,
+    });
+
     setOfferForm((current) => ({
       ...current,
-      lines:
-        current.lines.length === 1
-          ? current.lines
-          : current.lines.filter((line) => line.id !== lineId),
+      options: [...current.options, newOption],
+    }));
+
+    focusOfferOptionTitle(newOption.id);
+  }
+
+  async function removeOfferLine(lineId) {
+    const line = offerFormRef.current.lines.find((item) => item.id === lineId);
+
+    if (line?.attachmentFile?.path) {
+      try {
+        await removeOfferPdfAttachment(line.attachmentFile);
+      } catch (error) {
+        alert(error.message || "Kunne ikke fjerne PDF-vedlegget.");
+        return;
+      }
+    }
+
+    setOfferForm((current) => ({
+      ...current,
+      lines: recalculateAdministrationLines(
+        current.lines.filter((item) => item.id !== lineId)
+      ),
     }));
   }
 
-  function handleOfferLineImage(lineId, event) {
+  async function uploadOfferPdfAttachment(file, itemType, itemId) {
+    if (integrationMode !== "app" || !activeSupabase || !authUser?.id) {
+      throw new Error(
+        "Du må være innlogget i Expo ProffDok for å laste opp PDF i tilbudet."
+      );
+    }
+
+    if (!selectedRequestId) {
+      throw new Error("Tilbudssaken mangler saksreferanse.");
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      throw new Error("PDF-filen kan ikke være større enn 20 MB.");
+    }
+
+    const cleanName = sanitizeStoragePart(file.name || "tilbudsvedlegg.pdf");
+    const path = `sales-offer-attachments/${authUser.id}/${sanitizeStoragePart(
+      selectedRequestId
+    )}/${itemType}/${sanitizeStoragePart(itemId)}/${Date.now()}-${cleanName}`;
+
+    const { error: uploadError } = await uploadStorageFile(
+      activeSupabase,
+      "project-images",
+      path,
+      file,
+      {
+        cacheControl: "3600",
+        contentType: "application/pdf",
+        upsert: false,
+      }
+    );
+    if (uploadError) throw uploadError;
+
+    const { data: publicFile } = getStoragePublicUrl(
+      activeSupabase,
+      "project-images",
+      path
+    );
+
+    return {
+      id: crypto.randomUUID(),
+      name: file.name || "Tilbudsvedlegg.pdf",
+      url: publicFile.publicUrl,
+      path,
+      type: "application/pdf",
+      size: file.size,
+      created: new Date().toISOString(),
+      by: loggedInResponsible,
+      customerVisible: true,
+    };
+  }
+
+  async function removeOfferPdfAttachment(attachmentFile) {
+    if (!attachmentFile?.path || !activeSupabase) return;
+
+    const { error } = await removeStorageFiles(
+      activeSupabase,
+      "project-images",
+      [attachmentFile.path]
+    );
+    if (error) throw error;
+  }
+
+  async function handleOfferLineFile(lineId, event) {
     const file = event.target.files?.[0];
 
     if (!file) return;
-
     event.target.value = "";
+
+    const isPdf =
+      file.type === "application/pdf" ||
+      String(file.name || "").toLowerCase().endsWith(".pdf");
+
+    if (isPdf) {
+      try {
+        const currentLine = offerFormRef.current.lines.find(
+          (line) => line.id === lineId
+        );
+        const attachmentFile = await uploadOfferPdfAttachment(
+          file,
+          "line",
+          lineId
+        );
+
+        if (currentLine?.attachmentFile?.path) {
+          try {
+            await removeOfferPdfAttachment(currentLine.attachmentFile);
+          } catch (error) {
+            console.warn("Kunne ikke rydde tidligere PDF-vedlegg", error);
+          }
+        }
+
+        setOfferForm((current) => ({
+          ...current,
+          lines: current.lines.map((line) =>
+            line.id === lineId ? { ...line, attachmentFile } : line
+          ),
+        }));
+      } catch (error) {
+        alert(error.message || "Kunne ikke laste opp PDF-vedlegget.");
+      }
+      return;
+    }
+
+    if (!String(file.type || "").startsWith("image/")) {
+      alert("Velg et bilde eller en PDF-fil.");
+      return;
+    }
+
     readFileAsDataUrl(file)
       .then((imageDataUrl) => {
         setOfferForm((current) => ({
@@ -1543,7 +1942,9 @@ export default function SalesModule({
           ),
         }));
       })
-      .catch(() => {});
+      .catch(() => {
+        alert("Kunne ikke lese bildefilen.");
+      });
   }
 
   function removeOfferLineImage(lineId) {
@@ -1557,35 +1958,142 @@ export default function SalesModule({
     }));
   }
 
-  function addOfferOption() {
+  async function removeOfferLineAttachment(lineId) {
+    const line = offerFormRef.current.lines.find((item) => item.id === lineId);
+    try {
+      await removeOfferPdfAttachment(line?.attachmentFile);
+      setOfferForm((current) => ({
+        ...current,
+        lines: current.lines.map((item) =>
+          item.id === lineId ? { ...item, attachmentFile: null } : item
+        ),
+      }));
+    } catch (error) {
+      alert(error.message || "Kunne ikke fjerne PDF-vedlegget.");
+    }
+  }
+
+  function addOfferOption(mainPost) {
     setOfferForm((current) => ({
       ...current,
-      options: [...current.options, createEmptyOfferOption()],
+      options: [...current.options, createEmptyOfferOption(mainPost)],
     }));
+  }
+
+  function focusOfferSaveButton() {
+    window.setTimeout(() => {
+      const saveButton = document.querySelector(
+        '[data-sales-save-offer-button="true"]'
+      );
+
+      saveButton?.scrollIntoView?.({
+        behavior: "smooth",
+        block: "center",
+      });
+      saveButton?.focus?.();
+    }, 80);
   }
 
   function updateOfferOption(optionId, field, value) {
     setOfferForm((current) => ({
       ...current,
-      options: current.options.map((option) =>
-        option.id === optionId ? { ...option, [field]: value } : option
-      ),
+      options: current.options.map((option) => {
+        if (option.id !== optionId) return option;
+
+        if (field === "optionType") {
+          const optionType =
+            value === "alternative" ? "alternative" : "addition";
+
+          return {
+            ...option,
+            optionType,
+            replacementLineId:
+              optionType === "alternative"
+                ? option.replacementLineId || ""
+                : "",
+          };
+        }
+
+        return { ...option, [field]: value };
+      }),
     }));
+
+    if (
+      field === "replacementLineId" &&
+      String(value || "").trim() &&
+      pendingInvalidAlternativeOptionIdRef.current === optionId
+    ) {
+      pendingInvalidAlternativeOptionIdRef.current = "";
+      focusOfferSaveButton();
+    }
   }
 
-  function removeOfferOption(optionId) {
+  async function removeOfferOption(optionId) {
+    const option = offerFormRef.current.options.find(
+      (item) => item.id === optionId
+    );
+
+    if (option?.attachmentFile?.path) {
+      try {
+        await removeOfferPdfAttachment(option.attachmentFile);
+      } catch (error) {
+        alert(error.message || "Kunne ikke fjerne PDF-vedlegget.");
+        return;
+      }
+    }
+
     setOfferForm((current) => ({
       ...current,
-      options: current.options.filter((option) => option.id !== optionId),
+      options: current.options.filter((item) => item.id !== optionId),
     }));
   }
 
-  function handleOfferOptionImage(optionId, event) {
+  async function handleOfferOptionFile(optionId, event) {
     const file = event.target.files?.[0];
 
     if (!file) return;
-
     event.target.value = "";
+
+    const isPdf =
+      file.type === "application/pdf" ||
+      String(file.name || "").toLowerCase().endsWith(".pdf");
+
+    if (isPdf) {
+      try {
+        const currentOption = offerFormRef.current.options.find(
+          (option) => option.id === optionId
+        );
+        const attachmentFile = await uploadOfferPdfAttachment(
+          file,
+          "option",
+          optionId
+        );
+
+        if (currentOption?.attachmentFile?.path) {
+          try {
+            await removeOfferPdfAttachment(currentOption.attachmentFile);
+          } catch (error) {
+            console.warn("Kunne ikke rydde tidligere PDF-vedlegg", error);
+          }
+        }
+
+        setOfferForm((current) => ({
+          ...current,
+          options: current.options.map((option) =>
+            option.id === optionId ? { ...option, attachmentFile } : option
+          ),
+        }));
+      } catch (error) {
+        alert(error.message || "Kunne ikke laste opp PDF-vedlegget.");
+      }
+      return;
+    }
+
+    if (!String(file.type || "").startsWith("image/")) {
+      alert("Velg et bilde eller en PDF-fil.");
+      return;
+    }
+
     readFileAsDataUrl(file)
       .then((imageDataUrl) => {
         setOfferForm((current) => ({
@@ -1601,23 +2109,80 @@ export default function SalesModule({
           ),
         }));
       })
-      .catch(() => {});
+      .catch(() => {
+        alert("Kunne ikke lese bildefilen.");
+      });
   }
 
-  async function handleSaveOffer(event) {
-    event.preventDefault();
+  function removeOfferOptionImage(optionId) {
+    setOfferForm((current) => ({
+      ...current,
+      options: current.options.map((option) =>
+        option.id === optionId
+          ? { ...option, imageDataUrl: "", imageName: "" }
+          : option
+      ),
+    }));
+  }
 
-    const { cleanLines, cleanOptions, incompleteLine } =
-      prepareOfferFormForSave(offerForm);
+  async function removeOfferOptionAttachment(optionId) {
+    const option = offerFormRef.current.options.find(
+      (item) => item.id === optionId
+    );
+    try {
+      await removeOfferPdfAttachment(option?.attachmentFile);
+      setOfferForm((current) => ({
+        ...current,
+        options: current.options.map((item) =>
+          item.id === optionId ? { ...item, attachmentFile: null } : item
+        ),
+      }));
+    } catch (error) {
+      alert(error.message || "Kunne ikke fjerne PDF-vedlegget.");
+    }
+  }
+
+  async function saveOfferAndReturnToDetail() {
+    const {
+      cleanLines,
+      cleanOptions,
+      incompleteLine,
+      incompleteOption,
+      invalidAlternativeOption,
+    } = prepareOfferFormForSave(offerForm);
 
     if (!cleanLines.length) {
       alert("Legg inn minst én tilbudslinje før du lagrer tilbudet.");
-      return;
+      return false;
     }
 
     if (incompleteLine) {
       alert("Tilbudslinjer som har innhold må ha både beskrivelse og beløp. Tomme linjer ignoreres automatisk.");
-      return;
+      return false;
+    }
+
+    if (incompleteOption) {
+      alert("Opsjoner som har innhold må ha både tittel og beløp. Tomme opsjoner ignoreres automatisk.");
+      return false;
+    }
+
+    if (invalidAlternativeOption) {
+      pendingInvalidAlternativeOptionIdRef.current =
+        invalidAlternativeOption.id || "";
+
+      const optionTitle =
+        invalidAlternativeOption.title || "Alternativ opsjon";
+      const mainPostTitle =
+        invalidAlternativeOption.mainPostTitle || "aktuell hovedpost";
+
+      if (invalidAlternativeOption.id) {
+        setOfferValidationJump({
+          optionId: invalidAlternativeOption.id,
+          message: `Opsjonen "${optionTitle}" under "${mainPostTitle}" må kobles til underposten den erstatter før tilbudet kan lagres.`,
+          token: `${Date.now()}-${Math.random()}`,
+        });
+      }
+      return false;
     }
 
     const nextRequests = requests.map((request) => {
@@ -1661,7 +2226,7 @@ export default function SalesModule({
       await persistRequests(nextRequests);
     } catch (error) {
       alert(error.message || "Kunne ikke lagre tilbudsutkastet varig.");
-      return;
+      return false;
     }
 
     try {
@@ -1673,7 +2238,40 @@ export default function SalesModule({
     } catch {
       // Varig lagring er fullført selv om lokal kladd ikke kan ryddes.
     }
+
+    offerFormSavedBaselineRef.current = createOfferFormChangeSignature({
+      ...offerForm,
+      lines: cleanLines,
+      options: cleanOptions,
+    });
     setMode("detail");
+    return true;
+  }
+
+  async function handleSaveOffer(event) {
+    event.preventDefault();
+    await saveOfferAndReturnToDetail();
+  }
+
+  async function handleOfferBuilderBack() {
+    const currentSignature = createOfferFormChangeSignature(offerFormRef.current);
+    const hasChanges =
+      Boolean(offerFormSavedBaselineRef.current) &&
+      currentSignature !== offerFormSavedBaselineRef.current;
+
+    if (!hasChanges) {
+      offerModeRef.current = "detail";
+      setMode("detail");
+      return;
+    }
+
+    const shouldSave = window.confirm(
+      "Du har endringer i tilbudet siden du åpnet det. Vil du lagre tilbudet før du går tilbake?\n\nOK = lagre og gå tilbake.\nAvbryt = fortsett å redigere.\n\nKladden er allerede mellomlagret automatisk som sikkerhet."
+    );
+
+    if (!shouldSave) return;
+
+    await saveOfferAndReturnToDetail();
   }
 
   function getInspectionDraftKey(requestId = selectedRequestId) {
@@ -2229,16 +2827,69 @@ export default function SalesModule({
     setMode("customer-offer");
   }
 
+  async function handleCreateDirectOffer(event) {
+    event.preventDefault();
+    if (!validateRequiredCustomerFields()) return;
+
+    const customerName = form.customer.trim();
+    const nextRequest = {
+      id: createRequestId(requests),
+      title: form.title,
+      customer: customerName,
+      phone: form.phone.trim(),
+      email: form.email.trim(),
+      address: form.address.trim(),
+      postnr: form.postnr.trim(),
+      city: form.city.trim(),
+      source: form.source,
+      note: form.note.trim(),
+      responsible: loggedInResponsible,
+      projectResponsible: loggedInResponsible,
+      directOffer: true,
+      offerTitle: `Tilbud – ${form.title}`,
+      offerIntro: `Vi tilbyr med dette følgende arbeider for ${customerName}.`,
+      offerLines: [],
+      offerOptions: [],
+      offerTotal: 0,
+      status: "Tilbud",
+      statusClass: "sales-status-quote",
+      nextStep: "Opprett tilbud",
+      iconName: "send",
+    };
+
+    const nextRequests = [nextRequest, ...requests];
+    setRequests(nextRequests);
+    latestRequestsRef.current = nextRequests;
+
+    try {
+      await persistRequests(nextRequests);
+    } catch (error) {
+      alert(error.message || "Kunne ikke opprette tilbudssaken varig.");
+      return;
+    }
+
+    const initialOfferForm = buildOfferFormFromRequest(nextRequest);
+    offerFormHydratedRequestIdRef.current = nextRequest.id;
+    offerFormSavedBaselineRef.current = createOfferFormChangeSignature(initialOfferForm);
+    setOfferForm(initialOfferForm);
+    setOfferFormReady(true);
+    setOfferDraftSaveStatus("saved");
+    resetForm();
+    setSelectedRequestId(nextRequest.id);
+    setMode("offer-builder");
+  }
+
   async function handleCreateRequest(event) {
     event.preventDefault();
+    if (!validateRequiredCustomerFields()) return;
 
     const nextRequest = {
       id: createRequestId(requests),
       title: form.title,
-      customer: form.customer.trim() || "Uten kundenavn",
+      customer: form.customer.trim(),
       phone: form.phone.trim(),
       email: form.email.trim(),
-      address: form.address.trim() || "Adresse ikke registrert",
+      address: form.address.trim(),
       postnr: form.postnr.trim(),
       city: form.city.trim(),
       source: form.source,
@@ -2265,19 +2916,27 @@ export default function SalesModule({
     setMode("detail");
   }
 
-  if (mode === "new" || mode === "edit-request") {
+  if (mode === "new" || mode === "new-offer" || mode === "edit-request") {
     const isEditingRequest = mode === "edit-request";
+    const isDirectOffer = mode === "new-offer";
     return (
       <SalesRequestForm
         form={form}
         isEditingRequest={isEditingRequest}
+        isDirectOffer={isDirectOffer}
         onBack={goToList}
         onCancel={() => {
           resetForm();
           if (isEditingRequest) setMode("detail");
           else goToList();
         }}
-        onSubmit={isEditingRequest ? handleUpdateRequest : handleCreateRequest}
+        onSubmit={
+          isEditingRequest
+            ? handleUpdateRequest
+            : isDirectOffer
+              ? handleCreateDirectOffer
+              : handleCreateRequest
+        }
         onUpdateForm={updateForm}
       />
     );
@@ -2324,20 +2983,28 @@ export default function SalesModule({
         selectedRequest={selectedRequest}
         offerForm={offerForm}
         offerDraftSaveStatus={offerDraftSaveStatus}
-        onBack={() => setMode("detail")}
+        onBack={handleOfferBuilderBack}
         handleSaveOffer={handleSaveOffer}
         addInspectionContextToOfferIntro={addInspectionContextToOfferIntro}
         updateOfferForm={updateOfferForm}
         updateOfferLine={updateOfferLine}
         handleOfferLineAmountEnter={handleOfferLineAmountEnter}
-        handleOfferLineImage={handleOfferLineImage}
+        handleOfferLineFile={handleOfferLineFile}
         removeOfferLineImage={removeOfferLineImage}
+        removeOfferLineAttachment={removeOfferLineAttachment}
         removeOfferLine={removeOfferLine}
         addOfferLine={addOfferLine}
+        addCustomMainPost={addCustomMainPost}
+        addAdministrationLine={addAdministrationLine}
         updateOfferOption={updateOfferOption}
-        handleOfferOptionImage={handleOfferOptionImage}
+        handleOfferOptionAmountEnter={handleOfferOptionAmountEnter}
+        handleOfferOptionFile={handleOfferOptionFile}
+        removeOfferOptionImage={removeOfferOptionImage}
+        removeOfferOptionAttachment={removeOfferOptionAttachment}
         removeOfferOption={removeOfferOption}
         addOfferOption={addOfferOption}
+        offerValidationJump={offerValidationJump}
+        onOfferValidationJumpHandled={() => setOfferValidationJump(null)}
       />
     );
   }
@@ -2377,6 +3044,8 @@ if (mode === "survey-plan" && selectedRequest) {
         {...{
           acceptanceProofBusy,
           acceptanceProofError,
+          offerPdfBusy,
+          offerPdfError,
           contractUploadBusy,
           contractUploadError,
           copyCustomerOfferLink,
@@ -2386,6 +3055,7 @@ if (mode === "survey-plan" && selectedRequest) {
           goToList,
           handleContractUpload,
           handleCreateAcceptanceProof,
+          handleDownloadPublishedOfferPdf,
           handleCreateOfferRevisionAfterAcceptance,
           handleRemoveContract,
           loggedInResponsible,

@@ -8,6 +8,7 @@ import { requestSources, workTypes } from "../constants/salesConstants.js";
 export default function SalesRequestForm({
   form,
   isEditingRequest = false,
+  isDirectOffer = false,
   onBack,
   onCancel,
   onSubmit,
@@ -36,7 +37,11 @@ export default function SalesRequestForm({
         <main className="sales-main">
           <section className="sales-form-hero">
             <p className="sales-eyebrow">
-              {isEditingRequest ? "Rediger forespørsel" : "Ny forespørsel"}
+              {isEditingRequest
+                ? "Rediger forespørsel"
+                : isDirectOffer
+                  ? "Nytt tilbud"
+                  : "Ny forespørsel"}
             </p>
             <h1
               className="sales-title"
@@ -48,24 +53,32 @@ export default function SalesRequestForm({
             >
               {isEditingRequest
                 ? "Oppdater kundehenvendelse"
-                : "Registrer kundehenvendelse"}
+                : isDirectOffer
+                  ? "Registrer kunde og opprett tilbud"
+                  : "Registrer kundehenvendelse"}
             </h1>
             <p className="sales-subtitle">
               {isEditingRequest
                 ? "Oppdater kunde-, adresse- og prosjektinformasjon uten å opprette en ny sak."
-                : "Fang opp det viktigste raskt. Resten kan fylles ut etter befaring."}
+                : isDirectOffer
+                  ? "Legg inn kunde- og prosjektinformasjon. Du går deretter direkte til tilbudsbyggeren uten forespørsel eller befaring."
+                  : "Fang opp det viktigste raskt. Resten kan fylles ut etter befaring."}
             </p>
           </section>
 
           <form className="sales-form-panel" onSubmit={onSubmit}>
+            <p className="sales-offer-price-guidance" style={{ marginBottom: 16 }}>
+              Felter merket * må fylles ut.
+            </p>
             <div className="sales-form-grid">
               <label className="sales-field">
-                <span>Kundenavn</span>
+                <span>Kundenavn *</span>
                 <input
                   value={form.customer}
                   onChange={(event) => onUpdateForm("customer", event.target.value)}
-                  placeholder="Ola Nordmann"
+                  placeholder="Skriv inn kundenavn"
                   autoComplete="name"
+                  required
                   autoFocus
                 />
               </label>
@@ -97,33 +110,36 @@ export default function SalesRequestForm({
               </label>
 
               <label className="sales-field sales-field-full">
-                <span>Adresse</span>
+                <span>Adresse *</span>
                 <input
                   value={form.address}
                   onChange={(event) => onUpdateForm("address", event.target.value)}
-                  placeholder="Kirkeveien 12"
+                  placeholder="Skriv inn adresse"
                   autoComplete="address-line1"
+                  required
                 />
               </label>
 
               <label className="sales-field">
-                <span>Postnummer</span>
+                <span>Postnummer *</span>
                 <input
                   value={form.postnr || ""}
                   onChange={(event) => onUpdateForm("postnr", event.target.value)}
-                  placeholder="0368"
+                  placeholder="Skriv inn postnummer"
                   inputMode="numeric"
                   autoComplete="postal-code"
+                  required
                 />
               </label>
 
               <label className="sales-field">
-                <span>Sted</span>
+                <span>Sted *</span>
                 <input
                   value={form.city || ""}
                   onChange={(event) => onUpdateForm("city", event.target.value)}
-                  placeholder="Oslo"
+                  placeholder="Skriv inn sted"
                   autoComplete="address-level2"
+                  required
                 />
               </label>
 
@@ -142,7 +158,7 @@ export default function SalesRequestForm({
               </label>
 
               <label className="sales-field">
-                <span>Forespørselen kom via</span>
+                <span>{isDirectOffer ? "Tilbudet kom via" : "Forespørselen kom via"}</span>
                 <select
                   value={form.source}
                   onChange={(event) => onUpdateForm("source", event.target.value)}
@@ -160,7 +176,11 @@ export default function SalesRequestForm({
                 <textarea
                   value={form.note}
                   onChange={(event) => onUpdateForm("note", event.target.value)}
-                  placeholder="Kunden ønsker befaring for modernisering av bad. Sluk må vurderes."
+                  placeholder={
+                    isDirectOffer
+                      ? "Kort intern merknad om tilbudet eller kundens behov."
+                      : "Kunden ønsker befaring for modernisering av bad. Sluk må vurderes."
+                  }
                   rows={4}
                 />
               </label>
@@ -202,7 +222,11 @@ export default function SalesRequestForm({
 
               <button className="sales-primary-button" type="submit">
                 <Save size={18} />
-                {isEditingRequest ? "Lagre endringer" : "Lagre forespørsel"}
+                {isEditingRequest
+                  ? "Lagre endringer"
+                  : isDirectOffer
+                    ? "Opprett tilbud"
+                    : "Lagre forespørsel"}
               </button>
             </div>
           </form>

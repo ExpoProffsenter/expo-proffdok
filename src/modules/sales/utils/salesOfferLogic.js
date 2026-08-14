@@ -1,6 +1,7 @@
-// Expo ProffDok – FASE 23F
-// Ren tilbudslogikk for Befaring / Tilbud / Aksept.
-// Ingen React-state, Supabase-kall, Storage-kall eller UI-rendering.
+// Expo ProffDok – FASE 26B.5\n// Opsjoner skiller mellom tillegg/oppgradering og alternativ som erstatter en konkret underpost.\n// Alternativer lagrer kun prisendringen mot grunnposten; eksisterende total-/akseptmatematikk beholdes.\n// Bevarer PDF-vedlegg på underposter og opsjoner i tilbudsdata. Ingen SQL/RLS/Storage-regelendring.\n// Expo ProffDok – FASE 26B
+// Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri
+// administrasjon/prosjektstyring. Beholder flat lines/options-modell for bakoverkompatibilitet.
+// Ingen SQL/RLS/Storage/Edge/e-postendring.
 
 import {
   createCompanySnapshot,
@@ -10,42 +11,203 @@ import {
   getVisibleOfferLines,
 } from "./salesUtils.js";
 
-export function createEmptyOfferLine() {
+const LEGACY_MAIN_POST = {
+  id: "ovrige-arbeider",
+  title: "Øvrige arbeider",
+};
+
+function createEntityId(prefix) {
+  return `${prefix}-${Date.now()}-${Math.random()}`;
+}
+
+function normalizeMainPostMeta(item = {}) {
+  const mainPostId = String(item.mainPostId || "").trim();
+  const mainPostTitle = String(item.mainPostTitle || "").trim();
+
+  if (mainPostId) {
+    return {
+      mainPostId,
+      mainPostTitle: mainPostTitle || "Egen hovedpost",
+    };
+  }
+
   return {
-    id: `line-${Date.now()}-${Math.random()}`,
+    mainPostId: LEGACY_MAIN_POST.id,
+    mainPostTitle: LEGACY_MAIN_POST.title,
+  };
+}
+
+function parseOfferAmount(value) {
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(/\s/g, "")
+    .replace(",", ".");
+
+  if (!normalized) return 0;
+
+  const numberValue = Number(normalized);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+}
+
+function toStoredOfferAmount(value) {
+  if (!Number.isFinite(value)) return "";
+  return String(Number(value.toFixed(2)));
+}
+
+export function createEmptyOfferLine(mainPost = null) {
+  const postMeta = mainPost?.id
+    ? {
+        mainPostId: mainPost.id,
+        mainPostTitle: mainPost.title || "Egen hovedpost",
+      }
+    : {
+        mainPostId: LEGACY_MAIN_POST.id,
+        mainPostTitle: LEGACY_MAIN_POST.title,
+      };
+
+  return {
+    id: createEntityId("line"),
+    ...postMeta,
+    lineType: "work",
     description: "",
+    internalProductNumber: "",
     amount: "",
     productUrl: "",
     imageDataUrl: "",
     imageName: "",
+    attachmentFile: null,
   };
 }
 
-export function createEmptyOfferOption() {
+export function createOfferAdministrationLine(mainPost) {
   return {
-    id: `option-${Date.now()}-${Math.random()}`,
-    title: "",
-    description: "",
+    id: createEntityId("line"),
+    mainPostId: mainPost?.id || LEGACY_MAIN_POST.id,
+    mainPostTitle: mainPost?.title || LEGACY_MAIN_POST.title,
+    lineType: "administration",
+    description: "Administrasjon og prosjektstyring",
+    adminMode: "percent",
+    adminPercent: "",
     amount: "",
+    productUrl: "",
     imageDataUrl: "",
     imageName: "",
+    attachmentFile: null,
   };
+}
+
+export function createEmptyOfferOption(mainPost = null) {
+  const postMeta = mainPost?.id
+    ? {
+        mainPostId: mainPost.id,
+        mainPostTitle: mainPost.title || "Egen hovedpost",
+      }
+    : {
+        mainPostId: LEGACY_MAIN_POST.id,
+        mainPostTitle: LEGACY_MAIN_POST.title,
+      };
+
+  return {
+    id: createEntityId("option"),
+    ...postMeta,
+    optionType: "addition",
+    replacementLineId: "",
+    title: "",
+    description: "",
+    internalProductNumber: "",
+    amount: "",
+    productUrl: "",
+    imageDataUrl: "",
+    imageName: "",
+    attachmentFile: null,
+  };
+}
+
+export function normalizeOfferLines(lines = []) {
+  return (Array.isArray(lines) ? lines : []).map((line) => {
+    const mainPostMeta = normalizeMainPostMeta(line);
+
+    return {
+      ...line,
+      ...mainPostMeta,
+      lineType:
+        line?.lineType === "administration" ? "administration" : "work",
+      adminMode:
+        line?.lineType === "administration"
+          ? line.adminMode === "fixed"
+            ? "fixed"
+            : "percent"
+          : undefined,
+      adminPercent:
+        line?.lineType === "administration"
+          ? String(line.adminPercent ?? "")
+          : undefined,
+    };
+  });
+}
+
+export function normalizeOfferOptions(options = []) {
+  return (Array.isArray(options) ? options : []).map((option) => {
+    const optionType =
+      option?.optionType === "alternative" ? "alternative" : "addition";
+
+    return {
+      ...option,
+      ...normalizeMainPostMeta(option),
+      optionType,
+      replacementLineId:
+        optionType === "alternative"
+          ? String(option?.replacementLineId || "").trim()
+          : "",
+      replacementLineDescription:
+        optionType === "alternative"
+          ? String(option?.replacementLineDescription || "").trim()
+          : "",
+    };
+  });
+}
+
+export function recalculateAdministrationLines(lines = []) {
+  const normalizedLines = normalizeOfferLines(lines);
+
+  const baseTotals = normalizedLines.reduce((totals, line) => {
+    if (line.lineType === "administration") return totals;
+
+    const current = totals.get(line.mainPostId) || 0;
+    totals.set(line.mainPostId, current + parseOfferAmount(line.amount));
+    return totals;
+  }, new Map());
+
+  return normalizedLines.map((line) => {
+    if (
+      line.lineType !== "administration" ||
+      line.adminMode === "fixed"
+    ) {
+      return line;
+    }
+
+    const percentText = String(line.adminPercent ?? "").trim();
+
+    if (!percentText) {
+      return { ...line, amount: "" };
+    }
+
+    const percent = parseOfferAmount(percentText);
+    const baseTotal = baseTotals.get(line.mainPostId) || 0;
+    const calculatedAmount = baseTotal * (percent / 100);
+
+    return {
+      ...line,
+      amount: toStoredOfferAmount(calculatedAmount),
+    };
+  });
 }
 
 export function createInitialOfferForm() {
   return {
     title: "",
     intro: "",
-    lines: [
-      {
-        id: "line-1",
-        description: "",
-        amount: "",
-        productUrl: "",
-        imageDataUrl: "",
-        imageName: "",
-      },
-    ],
+    lines: [],
     options: [],
     reservations: "",
     included: "",
@@ -65,14 +227,17 @@ export function mergeOfferDraftIntoRequests(
 ) {
   if (!requestId) return currentRequests;
 
+  const normalizedLines = recalculateAdministrationLines(formValue.lines || []);
+  const normalizedOptions = normalizeOfferOptions(formValue.options || []);
+
   return currentRequests.map((request) =>
     request.id === requestId
       ? {
           ...request,
           offerTitle: formValue.title,
           offerIntro: formValue.intro,
-          offerLines: formValue.lines,
-          offerOptions: formValue.options,
+          offerLines: normalizedLines,
+          offerOptions: normalizedOptions,
           offerReservations: formValue.reservations,
           offerIncluded: formValue.included,
           offerExcluded: formValue.excluded,
@@ -80,7 +245,7 @@ export function mergeOfferDraftIntoRequests(
           offerTerms: formValue.terms,
           offerPaymentTerms: formValue.paymentTerms,
           offerValidityDays: formValue.validityDays,
-          offerTotal: getOfferTotal(formValue.lines),
+          offerTotal: getOfferTotal(normalizedLines),
           offerDraftSavedAt: savedAt,
         }
       : request
@@ -92,21 +257,11 @@ export function buildOfferFormFromRequest(request) {
     title: request?.offerTitle || `Tilbud – ${request?.title || ""}`,
     intro:
       request?.offerIntro ||
-      `Vi viser til befaring og tilbyr med dette følgende arbeider for ${request?.customer || "kunden"}.`,
-    lines:
-      request?.offerLines?.length
-        ? request.offerLines
-        : [
-            {
-              id: `line-${Date.now()}`,
-              description: "",
-              amount: "",
-              productUrl: "",
-              imageDataUrl: "",
-              imageName: "",
-            },
-          ],
-    options: request?.offerOptions?.length ? request.offerOptions : [],
+      (request?.directOffer
+        ? `Vi tilbyr med dette følgende arbeider for ${request?.customer || "kunden"}.`
+        : `Vi viser til befaring og tilbyr med dette følgende arbeider for ${request?.customer || "kunden"}.`),
+    lines: recalculateAdministrationLines(request?.offerLines || []),
+    options: normalizeOfferOptions(request?.offerOptions || []),
     reservations: request?.offerReservations || "",
     included: request?.offerIncluded || "",
     excluded: request?.offerExcluded || "",
@@ -124,12 +279,14 @@ export function normalizeStoredOfferDraft(storedDraft, request) {
   return {
     ...requestForm,
     ...storedDraft,
-    lines: Array.isArray(storedDraft.lines)
-      ? storedDraft.lines
-      : requestForm.lines,
-    options: Array.isArray(storedDraft.options)
-      ? storedDraft.options
-      : requestForm.options,
+    lines: recalculateAdministrationLines(
+      Array.isArray(storedDraft.lines) ? storedDraft.lines : requestForm.lines
+    ),
+    options: normalizeOfferOptions(
+      Array.isArray(storedDraft.options)
+        ? storedDraft.options
+        : requestForm.options
+    ),
     terms: storedDraft.terms ?? requestForm.terms,
     included: storedDraft.included ?? requestForm.included,
     excluded: storedDraft.excluded ?? requestForm.excluded,
@@ -140,34 +297,98 @@ export function normalizeStoredOfferDraft(storedDraft, request) {
 }
 
 export function prepareOfferFormForSave(formValue) {
-  const cleanLines = (formValue.lines || [])
+  const recalculatedLines = recalculateAdministrationLines(formValue.lines || []);
+
+  const cleanLines = recalculatedLines
     .map((line) => ({
       ...line,
+      mainPostId: String(line.mainPostId || LEGACY_MAIN_POST.id).trim(),
+      mainPostTitle: String(
+        line.mainPostTitle || LEGACY_MAIN_POST.title
+      ).trim(),
       description: String(line.description || "").trim(),
+      internalProductNumber: String(line.internalProductNumber || "").trim(),
       amount: String(line.amount || "").trim(),
       productUrl: String(line.productUrl || "").trim(),
       imageDataUrl: line.imageDataUrl || "",
       imageName: line.imageName || "",
+      attachmentFile: line.attachmentFile
+        ? {
+            ...line.attachmentFile,
+            name: String(line.attachmentFile.name || "").trim(),
+            url: String(line.attachmentFile.url || "").trim(),
+            path: String(line.attachmentFile.path || "").trim(),
+            type: String(line.attachmentFile.type || "application/pdf").trim(),
+            size: Number(line.attachmentFile.size || 0),
+            customerVisible: line.attachmentFile.customerVisible !== false,
+          }
+        : null,
+      ...(line.lineType === "administration"
+        ? {
+            lineType: "administration",
+            adminMode: line.adminMode === "fixed" ? "fixed" : "percent",
+            adminPercent: String(line.adminPercent ?? "").trim(),
+          }
+        : { lineType: "work" }),
     }))
     .filter(
       (line) =>
         line.description ||
         line.amount ||
         line.productUrl ||
-        line.imageDataUrl
+        line.imageDataUrl ||
+        line.attachmentFile?.url
     );
 
   const incompleteLine = cleanLines.find(
     (line) => !line.description || !line.amount
   );
 
-  const cleanOptions = (formValue.options || [])
+  const cleanOptions = normalizeOfferOptions(formValue.options || [])
     .map((option) => ({
       ...option,
+      mainPostId: String(option.mainPostId || LEGACY_MAIN_POST.id).trim(),
+      mainPostTitle: String(
+        option.mainPostTitle || LEGACY_MAIN_POST.title
+      ).trim(),
+      optionType:
+        option.optionType === "alternative" ? "alternative" : "addition",
+      replacementLineId:
+        option.optionType === "alternative"
+          ? String(option.replacementLineId || "").trim()
+          : "",
+      replacementLineDescription:
+        option.optionType === "alternative"
+          ? String(
+              option.replacementLineDescription ||
+                cleanLines.find(
+                  (line) =>
+                    String(line.id || "") ===
+                      String(option.replacementLineId || "") &&
+                    line.mainPostId === option.mainPostId &&
+                    line.lineType !== "administration"
+                )?.description ||
+                ""
+            ).trim()
+          : "",
       title: String(option.title || "").trim(),
       description: String(option.description || "").trim(),
+      internalProductNumber: String(option.internalProductNumber || "").trim(),
       amount: String(option.amount || "").trim(),
       productUrl: String(option.productUrl || "").trim(),
+      imageDataUrl: option.imageDataUrl || "",
+      imageName: option.imageName || "",
+      attachmentFile: option.attachmentFile
+        ? {
+            ...option.attachmentFile,
+            name: String(option.attachmentFile.name || "").trim(),
+            url: String(option.attachmentFile.url || "").trim(),
+            path: String(option.attachmentFile.path || "").trim(),
+            type: String(option.attachmentFile.type || "application/pdf").trim(),
+            size: Number(option.attachmentFile.size || 0),
+            customerVisible: option.attachmentFile.customerVisible !== false,
+          }
+        : null,
     }))
     .filter(
       (option) =>
@@ -175,10 +396,33 @@ export function prepareOfferFormForSave(formValue) {
         option.description ||
         option.amount ||
         option.imageDataUrl ||
-        option.productUrl
+        option.productUrl ||
+        option.attachmentFile?.url
     );
 
-  return { cleanLines, cleanOptions, incompleteLine };
+  const incompleteOption = cleanOptions.find(
+    (option) => !option.title || option.amount === ""
+  );
+
+  const invalidAlternativeOption = cleanOptions.find((option) => {
+    if (option.optionType !== "alternative") return false;
+    if (!option.replacementLineId) return true;
+
+    return !cleanLines.some(
+      (line) =>
+        line.id === option.replacementLineId &&
+        line.mainPostId === option.mainPostId &&
+        line.lineType !== "administration"
+    );
+  });
+
+  return {
+    cleanLines,
+    cleanOptions,
+    incompleteLine,
+    incompleteOption,
+    invalidAlternativeOption,
+  };
 }
 
 export function buildOfferSnapshot(
@@ -198,9 +442,11 @@ export function buildOfferSnapshot(
     lines: [
       createCompanySnapshot(companyProfile),
       createOfferTermsSnapshot(request),
-      ...(request.offerLines || []),
+      ...(request.offerLines || []).map(toPublicOfferItem),
     ],
-    options: request.offerOptions || [],
+    options: (request.offerOptions || []).map((option) =>
+      toPublicOfferOption(option, request.offerLines || [])
+    ),
     reservations: request.offerReservations || "",
     validityDays: request.offerValidityDays || "30",
     total: request.offerTotal || 0,
@@ -241,6 +487,37 @@ export function createNewOfferVersionDraft(request) {
   };
 }
 
+function toPublicOfferItem(item = {}) {
+  const { internalProductNumber, ...publicItem } = item || {};
+  return publicItem;
+}
+
+function toPublicOfferOption(option = {}, lines = []) {
+  const publicOption = toPublicOfferItem(option);
+
+  if (publicOption.optionType !== "alternative") {
+    return {
+      ...publicOption,
+      replacementLineId: "",
+      replacementLineDescription: "",
+    };
+  }
+
+  const replacementLine = (Array.isArray(lines) ? lines : []).find(
+    (line) =>
+      String(line?.id || "") === String(publicOption.replacementLineId || "")
+  );
+
+  return {
+    ...publicOption,
+    replacementLineDescription: String(
+      publicOption.replacementLineDescription ||
+        replacementLine?.description ||
+        ""
+    ).trim(),
+  };
+}
+
 export function buildPublishPayload(request, profileForPublish) {
   return {
     offer_id: request.salesOfferId || null,
@@ -259,9 +536,11 @@ export function buildPublishPayload(request, profileForPublish) {
     lines: [
       createCompanySnapshot(profileForPublish),
       createOfferTermsSnapshot(request),
-      ...(request.offerLines || []),
+      ...(request.offerLines || []).map(toPublicOfferItem),
     ],
-    options: request.offerOptions || [],
+    options: (request.offerOptions || []).map((option) =>
+      toPublicOfferOption(option, request.offerLines || [])
+    ),
     reservations: request.offerReservations || "",
     validity_days: Number(request.offerValidityDays || 30),
     total_ex_vat: request.offerTotal || 0,

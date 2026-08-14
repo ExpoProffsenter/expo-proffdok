@@ -30,6 +30,8 @@ import {
 export default function SalesDetailView({
   acceptanceProofBusy,
   acceptanceProofError,
+  offerPdfBusy,
+  offerPdfError,
   contractUploadBusy,
   contractUploadError,
   copyCustomerOfferLink,
@@ -39,6 +41,7 @@ export default function SalesDetailView({
   goToList,
   handleContractUpload,
   handleCreateAcceptanceProof,
+  handleDownloadPublishedOfferPdf,
   handleCreateOfferRevisionAfterAcceptance,
   handleRemoveContract,
   loggedInResponsible,
@@ -87,6 +90,12 @@ export default function SalesDetailView({
       publishFeedback?.requestId === selectedRequest.id
         ? Number(publishFeedback.versionNumber) || 0
         : Number(selectedRequest.sentOfferVersionNumber) || 0;
+    const canDownloadPublishedOffer = Boolean(selectedRequest.publicToken);
+    const publishedOfferDownloadLabel = hasUnpublishedOfferChanges
+      ? "Last ned sist publiserte tilbud PDF"
+      : publishedVersionNumber
+        ? `Last ned tilbud PDF v${publishedVersionNumber}`
+        : "Last ned tilbud PDF";
     const hasInspectionContent = Boolean(
       selectedRequest.inspectionCustomerWishes ||
         selectedRequest.inspectionExistingConditions ||
@@ -968,6 +977,46 @@ export default function SalesDetailView({
                           </p>
                         </div>
                       ) : null}
+
+                      <div
+                        style={{
+                          marginTop: 14,
+                          padding: "16px 16px",
+                          border: "1px solid #e4c86b",
+                          borderRadius: 16,
+                          background: "#fffbea",
+                        }}
+                      >
+                        <p style={{ margin: "0 0 6px", fontWeight: 900, color: "#6f5600" }}>
+                          Viktig – lagre tilbudet i eget arkiv
+                        </p>
+                        <p style={{ margin: "0 0 12px", lineHeight: 1.55 }}>
+                          Expo ProffDok lagrer tilbudsdata som del av tjenesten, men permanent dokumentlagring kan ikke garanteres. Last ned den publiserte tilbuds-PDF-en og arkiver den i bedriftens eget dokumentarkiv.
+                        </p>
+                        {hasUnpublishedOfferChanges && hasPublishedCustomerOffer ? (
+                          <p style={{ margin: "0 0 12px", color: "#7a650f", fontWeight: 700 }}>
+                            Tilbudet har upubliserte endringer. Knappen under laster derfor ned sist publiserte kundeversjon.
+                          </p>
+                        ) : !canDownloadPublishedOffer ? (
+                          <p style={{ margin: "0 0 12px", color: "#7a650f", fontWeight: 700 }}>
+                            Publiser kundetilbudet først. Deretter kan PDF-en lastes ned.
+                          </p>
+                        ) : null}
+                        <button
+                          className="sales-secondary-button"
+                          type="button"
+                          onClick={handleDownloadPublishedOfferPdf}
+                          disabled={!canDownloadPublishedOffer || offerPdfBusy}
+                        >
+                          <Download size={18} />
+                          {offerPdfBusy ? "Oppretter tilbuds-PDF …" : publishedOfferDownloadLabel}
+                        </button>
+                        {offerPdfError ? (
+                          <p style={{ margin: "12px 0 0", color: "#a83232", fontWeight: 700 }}>
+                            {offerPdfError}
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div

@@ -1,4 +1,9 @@
-/* Expo ProffDok – FASE 26A
+/* Expo ProffDok – FASE 26B.3
+   Kundetilbud grupperer hovedposter, underposter, koblede opsjoner og vedlegg.
+   Valgte opsjoner oppdaterer hovedpostsummen visuelt. Ingen beregnings- eller akseptlogikk i CSS.
+*/
+
+/* Expo ProffDok – FASE 26B.5\n   Tydelig visning av opsjonstype og erstattede grunnposter i kundetilbud.\n*/\n\n/* Expo ProffDok – FASE 26A
    Tydelig prismerking i intern tilbudsbygger og trygg layout for lange kundeseksjonsmerker.
    Ingen endring i tilbudsdata, beregning eller akseptlogikk.
 */
@@ -1736,5 +1741,360 @@ a:hover {
     grid-template-columns: 1fr;
     gap: 10px;
     padding-top: 16px;
+  }
+}
+
+
+/* FASE 26B.3 – hovedposter og vedlegg i kundetilbud */
+.sales-customer-main-posts {
+  display: grid;
+  gap: 16px;
+}
+
+.sales-customer-main-post {
+  overflow: hidden;
+  border: 1px solid #d7e4ea;
+  border-radius: 21px;
+  background: #fbfdfe;
+}
+
+.sales-customer-main-post-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 17px 18px;
+  border-bottom: 1px solid #e1edf1;
+  background: linear-gradient(135deg, #f2fbfc, #ffffff);
+}
+
+.sales-customer-main-post-heading > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sales-customer-main-post-heading h3 {
+  margin: 0;
+  color: #10212b;
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.sales-customer-main-post-number {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 13px;
+  background: #0e9aa3;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sales-customer-main-post-sum {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sales-customer-main-post-sum span,
+.sales-customer-main-post-sum small {
+  color: #71858f;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sales-customer-main-post-sum strong {
+  color: #10212b;
+  font-size: 18px;
+}
+
+.sales-customer-main-post > .sales-customer-lines {
+  gap: 0;
+}
+
+.sales-customer-main-post .sales-customer-line-card {
+  border: 0;
+  border-bottom: 1px solid #e7eff2;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.sales-customer-main-post .sales-customer-line-card:last-child {
+  border-bottom: 0;
+}
+
+.sales-customer-main-post-options {
+  padding: 16px 18px 18px;
+  border-top: 1px solid #dbe8ed;
+  background: #f8fbfc;
+}
+
+.sales-customer-main-post-options-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.sales-customer-main-post-options-heading strong {
+  color: #10212b;
+  font-size: 14px;
+}
+
+.sales-customer-main-post-options-heading span {
+  color: #71858f;
+  font-size: 12px;
+  text-align: right;
+}
+
+.sales-customer-media-links {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.sales-customer-media-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.sales-customer-option-content .sales-customer-media-links {
+  margin-top: 8px;
+}
+
+@media (max-width: 760px) {
+  .sales-customer-main-post-heading {
+    align-items: flex-start;
+  }
+
+  .sales-customer-main-post-sum {
+    white-space: normal;
+  }
+
+  .sales-customer-main-post-options-heading {
+    display: grid;
+    gap: 4px;
+  }
+
+  .sales-customer-main-post-options-heading span {
+    text-align: left;
+  }
+}
+
+@media (max-width: 520px) {
+  .sales-customer-main-post-heading {
+    display: grid;
+    gap: 12px;
+  }
+
+  .sales-customer-main-post-sum {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .sales-customer-main-post-heading h3 {
+    font-size: 18px;
+  }
+}
+
+/* FASE 26B.5 – opsjonstype og alternativ vare */
+.sales-offer-amount-field small,
+.sales-field small {
+  color: #71858f;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.sales-customer-line-card-replaced {
+  background: #f6fafb !important;
+}
+
+.sales-customer-line-card-replaced .sales-customer-line-body h3 {
+  color: #526975;
+}
+
+.sales-customer-line-replaced-note {
+  margin-top: 7px !important;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #eef6f8;
+  color: #526975 !important;
+  font-size: 12px;
+  line-height: 1.45 !important;
+}
+
+.sales-customer-line-price-replaced {
+  color: #607985;
+  font-size: 14px;
+}
+
+.sales-customer-option-type {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 8px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eef6f8;
+  color: #0b8790;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sales-customer-option-replacement {
+  margin-bottom: 8px !important;
+  color: #607985 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+/* FASE 26B.5.5 – mobil tilbudsbygger
+   - Hindrer iOS Safari auto-zoom ved fokus i input/select/textarea.
+   - Hindrer horisontal forskyvning i sales-visninger på smale skjermer.
+   - Fast Lagre tilbud-knapp i tilbudsbyggeren på mobil.
+*/
+.sales-offer-mobile-save {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  html,
+  body,
+  #root,
+  .sales-app {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .sales-shell,
+  .sales-main,
+  .sales-form-panel,
+  .sales-panel,
+  .sales-detail-hero,
+  .sales-detail-card,
+  .sales-next-card,
+  .sales-request-card,
+  .sales-offer-line {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sales-app input,
+  .sales-app select,
+  .sales-app textarea {
+    font-size: 16px;
+  }
+
+  .sales-primary-button,
+  .sales-secondary-button,
+  .sales-back-button {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .sales-offer-builder-app .sales-shell {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+
+  .sales-offer-mobile-save {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9000;
+    display: block;
+    padding:
+      10px
+      max(12px, env(safe-area-inset-right))
+      calc(10px + env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
+    border-top: 1px solid rgba(207, 222, 228, 0.95);
+    background: rgba(248, 251, 252, 0.96);
+    box-shadow: 0 -12px 30px rgba(16, 33, 43, 0.10);
+    backdrop-filter: blur(10px);
+  }
+
+  .sales-offer-mobile-save .sales-primary-button {
+    width: 100%;
+    min-height: 52px;
+  }
+}
+/* FASE 26B.5.6 – siste mobilpolering av tilbudsbygger
+   Gjør underposter/opsjoner enkolonnet på mobil slik at alle felter får full bredde.
+   Gjelder kun tilbudsbyggeren; kundevisning og desktop påvirkes ikke.
+*/
+@media (max-width: 760px) {
+  .sales-offer-builder-app .sales-offer-line {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line > * {
+    grid-column: 1 !important;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sales-offer-builder-app .sales-offer-line-number {
+    justify-self: start;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 2px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line input,
+  .sales-offer-builder-app .sales-offer-line select,
+  .sales-offer-builder-app .sales-offer-line textarea,
+  .sales-offer-builder-app .sales-offer-line button,
+  .sales-offer-builder-app .sales-offer-line .sales-offer-amount-field {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sales-offer-builder-app .sales-offer-line button {
+    justify-content: center;
+  }
+
+  .sales-offer-builder-app .sales-offer-line select {
+    text-overflow: ellipsis;
+  }
+
+  .sales-offer-builder-app .sales-option-image-preview {
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 520px) {
+  .sales-offer-builder-app .sales-form-panel {
+    padding: 14px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line {
+    border-radius: 16px;
+    padding: 12px;
+  }
+
+  .sales-offer-builder-app .sales-offer-line-number {
+    width: 36px;
+    height: 36px;
   }
 }
