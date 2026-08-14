@@ -723,6 +723,13 @@ export default function SalesModule({
   }
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const isPublicOfferView = Boolean(params.get("publicOffer"));
+
+    // Kundevisningen åpnes på samme domene som proffappen. Den skal aldri
+    // overskrive sist åpne interne salgssak i nettleserlagringen.
+    if (isPublicOfferView) return;
+
     if (selectedRequestId && !selectedRequest) {
       setMode("list");
       setSelectedRequestId(null);
@@ -2771,11 +2778,43 @@ export default function SalesModule({
   }
 
   async function openCustomerOfferFromRequestId(requestId) {
+    const request =
+      latestRequestsRef.current.find((item) => item.id === requestId) ||
+      requests.find((item) => item.id === requestId);
+
+    if (!request) {
+      alert("Fant ikke tilbudssaken.");
+      return;
+    }
+
+    const hasUnpublishedChanges = Boolean(
+      request.status === "Tilbud" &&
+        request.offerLines?.length &&
+        !request.sentOfferVersionId
+    );
+
     try {
-      const link = await publishOfferAndGetLink(requestId);
+      if (hasUnpublishedChanges) {
+        // Publiser er én handling: gjør tilbudet synlig for kunden og bli på saken.
+        await publishOfferAndGetLink(requestId);
+        return;
+      }
+
+      if (!request.publicToken) {
+        alert("Tilbudet er ikke publisert ennå.");
+        return;
+      }
+
+      // Se kundens tilbud er en egen handling og åpner kundevisningen i ny fane.
+      const link = buildCustomerOfferLink(window.location.href, request.publicToken);
       window.open(link, "_blank", "noopener,noreferrer");
     } catch (error) {
-      alert(error.message || "Kunne ikke åpne kundelink.");
+      alert(
+        error.message ||
+          (hasUnpublishedChanges
+            ? "Kunne ikke publisere tilbudet."
+            : "Kunne ikke åpne kundens tilbud.")
+      );
     }
   }
 
