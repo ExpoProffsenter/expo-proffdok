@@ -70,6 +70,7 @@ export function createEmptyOfferLine(mainPost = null) {
     ...postMeta,
     lineType: "work",
     description: "",
+    internalProductNumber: "",
     amount: "",
     productUrl: "",
     imageDataUrl: "",
@@ -111,6 +112,7 @@ export function createEmptyOfferOption(mainPost = null) {
     ...postMeta,
     title: "",
     description: "",
+    internalProductNumber: "",
     amount: "",
     productUrl: "",
     imageDataUrl: "",
@@ -239,7 +241,9 @@ export function buildOfferFormFromRequest(request) {
     title: request?.offerTitle || `Tilbud – ${request?.title || ""}`,
     intro:
       request?.offerIntro ||
-      `Vi viser til befaring og tilbyr med dette følgende arbeider for ${request?.customer || "kunden"}.`,
+      (request?.directOffer
+        ? `Vi tilbyr med dette følgende arbeider for ${request?.customer || "kunden"}.`
+        : `Vi viser til befaring og tilbyr med dette følgende arbeider for ${request?.customer || "kunden"}.`),
     lines: recalculateAdministrationLines(request?.offerLines || []),
     options: normalizeOfferOptions(request?.offerOptions || []),
     reservations: request?.offerReservations || "",
@@ -287,6 +291,7 @@ export function prepareOfferFormForSave(formValue) {
         line.mainPostTitle || LEGACY_MAIN_POST.title
       ).trim(),
       description: String(line.description || "").trim(),
+      internalProductNumber: String(line.internalProductNumber || "").trim(),
       amount: String(line.amount || "").trim(),
       productUrl: String(line.productUrl || "").trim(),
       imageDataUrl: line.imageDataUrl || "",
@@ -332,6 +337,7 @@ export function prepareOfferFormForSave(formValue) {
       ).trim(),
       title: String(option.title || "").trim(),
       description: String(option.description || "").trim(),
+      internalProductNumber: String(option.internalProductNumber || "").trim(),
       amount: String(option.amount || "").trim(),
       productUrl: String(option.productUrl || "").trim(),
       imageDataUrl: option.imageDataUrl || "",
@@ -378,9 +384,9 @@ export function buildOfferSnapshot(
     lines: [
       createCompanySnapshot(companyProfile),
       createOfferTermsSnapshot(request),
-      ...(request.offerLines || []),
+      ...(request.offerLines || []).map(toPublicOfferItem),
     ],
-    options: request.offerOptions || [],
+    options: (request.offerOptions || []).map(toPublicOfferItem),
     reservations: request.offerReservations || "",
     validityDays: request.offerValidityDays || "30",
     total: request.offerTotal || 0,
@@ -421,6 +427,11 @@ export function createNewOfferVersionDraft(request) {
   };
 }
 
+function toPublicOfferItem(item = {}) {
+  const { internalProductNumber, ...publicItem } = item || {};
+  return publicItem;
+}
+
 export function buildPublishPayload(request, profileForPublish) {
   return {
     offer_id: request.salesOfferId || null,
@@ -439,9 +450,9 @@ export function buildPublishPayload(request, profileForPublish) {
     lines: [
       createCompanySnapshot(profileForPublish),
       createOfferTermsSnapshot(request),
-      ...(request.offerLines || []),
+      ...(request.offerLines || []).map(toPublicOfferItem),
     ],
-    options: request.offerOptions || [],
+    options: (request.offerOptions || []).map(toPublicOfferItem),
     reservations: request.offerReservations || "",
     validity_days: Number(request.offerValidityDays || 30),
     total_ex_vat: request.offerTotal || 0,
