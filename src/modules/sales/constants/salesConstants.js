@@ -96,3 +96,19 @@ export const emptyForm = {
   source: "Telefon",
   note: "",
 };
+
+export const OFFER_MAIN_POSTS = [
+  { id: "tildekking", title: "Tildekking" },
+  { id: "demontering-riving", title: "Demontering og riving" },
+  { id: "avretting", title: "Avretting av gulv og vegger" },
+  { id: "stop", title: "Støp" },
+  { id: "membran", title: "Membran" },
+  { id: "flislegging", title: "Flislegging" },
+  { id: "tomrer", title: "Tømrer" },
+  { id: "rorlegger", title: "Rørlegger" },
+  { id: "elektriker", title: "Elektriker" },
+  { id: "maler", title: "Maler" },
+  { id: "utstyr", title: "Utstyr" },
+  { id: "rigg-drift", title: "Rigg og drift" },
+  { id: "avfall", title: "Avfallshåndtering" },
+];
