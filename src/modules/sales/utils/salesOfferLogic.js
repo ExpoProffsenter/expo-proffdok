@@ -1,6 +1,7 @@
-// Expo ProffDok – FASE 23F
-// Ren tilbudslogikk for Befaring / Tilbud / Aksept.
-// Ingen React-state, Supabase-kall, Storage-kall eller UI-rendering.
+// Expo ProffDok – FASE 26B
+// Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri
+// administrasjon/prosjektstyring. Beholder flat lines/options-modell for bakoverkompatibilitet.
+// Ingen SQL/RLS/Storage/Edge/e-postendring.
 
 import {
   createCompanySnapshot,
@@ -10,9 +11,64 @@ import {
   getVisibleOfferLines,
 } from "./salesUtils.js";
 
-export function createEmptyOfferLine() {
+const LEGACY_MAIN_POST = {
+  id: "ovrige-arbeider",
+  title: "Øvrige arbeider",
+};
+
+function createEntityId(prefix) {
+  return `${prefix}-${Date.now()}-${Math.random()}`;
+}
+
+function normalizeMainPostMeta(item = {}) {
+  const mainPostId = String(item.mainPostId || "").trim();
+  const mainPostTitle = String(item.mainPostTitle || "").trim();
+
+  if (mainPostId) {
+    return {
+      mainPostId,
+      mainPostTitle: mainPostTitle || "Egen hovedpost",
+    };
+  }
+
   return {
-    id: `line-${Date.now()}-${Math.random()}`,
+    mainPostId: LEGACY_MAIN_POST.id,
+    mainPostTitle: LEGACY_MAIN_POST.title,
+  };
+}
+
+function parseOfferAmount(value) {
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(/\s/g, "")
+    .replace(",", ".");
+
+  if (!normalized) return 0;
+
+  const numberValue = Number(normalized);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+}
+
+function toStoredOfferAmount(value) {
+  if (!Number.isFinite(value)) return "";
+  return String(Number(value.toFixed(2)));
+}
+
+export function createEmptyOfferLine(mainPost = null) {
+  const postMeta = mainPost?.id
+    ? {
+        mainPostId: mainPost.id,
+        mainPostTitle: mainPost.title || "Egen hovedpost",
+      }
+    : {
+        mainPostId: LEGACY_MAIN_POST.id,
+        mainPostTitle: LEGACY_MAIN_POST.title,
+      };
+
+  return {
+    id: createEntityId("line"),
+    ...postMeta,
+    lineType: "work",
     description: "",
     amount: "",
     productUrl: "",
@@ -21,31 +77,116 @@ export function createEmptyOfferLine() {
   };
 }
 
-export function createEmptyOfferOption() {
+export function createOfferAdministrationLine(mainPost) {
   return {
-    id: `option-${Date.now()}-${Math.random()}`,
-    title: "",
-    description: "",
+    id: createEntityId("line"),
+    mainPostId: mainPost?.id || LEGACY_MAIN_POST.id,
+    mainPostTitle: mainPost?.title || LEGACY_MAIN_POST.title,
+    lineType: "administration",
+    description: "Administrasjon og prosjektstyring",
+    adminMode: "percent",
+    adminPercent: "",
     amount: "",
+    productUrl: "",
     imageDataUrl: "",
     imageName: "",
   };
+}
+
+export function createEmptyOfferOption(mainPost = null) {
+  const postMeta = mainPost?.id
+    ? {
+        mainPostId: mainPost.id,
+        mainPostTitle: mainPost.title || "Egen hovedpost",
+      }
+    : {
+        mainPostId: LEGACY_MAIN_POST.id,
+        mainPostTitle: LEGACY_MAIN_POST.title,
+      };
+
+  return {
+    id: createEntityId("option"),
+    ...postMeta,
+    title: "",
+    description: "",
+    amount: "",
+    productUrl: "",
+    imageDataUrl: "",
+    imageName: "",
+  };
+}
+
+export function normalizeOfferLines(lines = []) {
+  return (Array.isArray(lines) ? lines : []).map((line) => {
+    const mainPostMeta = normalizeMainPostMeta(line);
+
+    return {
+      ...line,
+      ...mainPostMeta,
+      lineType:
+        line?.lineType === "administration" ? "administration" : "work",
+      adminMode:
+        line?.lineType === "administration"
+          ? line.adminMode === "fixed"
+            ? "fixed"
+            : "percent"
+          : undefined,
+      adminPercent:
+        line?.lineType === "administration"
+          ? String(line.adminPercent ?? "")
+          : undefined,
+    };
+  });
+}
+
+export function normalizeOfferOptions(options = []) {
+  return (Array.isArray(options) ? options : []).map((option) => ({
+    ...option,
+    ...normalizeMainPostMeta(option),
+  }));
+}
+
+export function recalculateAdministrationLines(lines = []) {
+  const normalizedLines = normalizeOfferLines(lines);
+
+  const baseTotals = normalizedLines.reduce((totals, line) => {
+    if (line.lineType === "administration") return totals;
+
+    const current = totals.get(line.mainPostId) || 0;
+    totals.set(line.mainPostId, current + parseOfferAmount(line.amount));
+    return totals;
+  }, new Map());
+
+  return normalizedLines.map((line) => {
+    if (
+      line.lineType !== "administration" ||
+      line.adminMode === "fixed"
+    ) {
+      return line;
+    }
+
+    const percentText = String(line.adminPercent ?? "").trim();
+
+    if (!percentText) {
+      return { ...line, amount: "" };
+    }
+
+    const percent = parseOfferAmount(percentText);
+    const baseTotal = baseTotals.get(line.mainPostId) || 0;
+    const calculatedAmount = baseTotal * (percent / 100);
+
+    return {
+      ...line,
+      amount: toStoredOfferAmount(calculatedAmount),
+    };
+  });
 }
 
 export function createInitialOfferForm() {
   return {
     title: "",
     intro: "",
-    lines: [
-      {
-        id: "line-1",
-        description: "",
-        amount: "",
-        productUrl: "",
-        imageDataUrl: "",
-        imageName: "",
-      },
-    ],
+    lines: [],
     options: [],
     reservations: "",
     included: "",
@@ -65,14 +206,17 @@ export function mergeOfferDraftIntoRequests(
 ) {
   if (!requestId) return currentRequests;
 
+  const normalizedLines = recalculateAdministrationLines(formValue.lines || []);
+  const normalizedOptions = normalizeOfferOptions(formValue.options || []);
+
   return currentRequests.map((request) =>
     request.id === requestId
       ? {
           ...request,
           offerTitle: formValue.title,
           offerIntro: formValue.intro,
-          offerLines: formValue.lines,
-          offerOptions: formValue.options,
+          offerLines: normalizedLines,
+          offerOptions: normalizedOptions,
           offerReservations: formValue.reservations,
           offerIncluded: formValue.included,
           offerExcluded: formValue.excluded,
@@ -80,7 +224,7 @@ export function mergeOfferDraftIntoRequests(
           offerTerms: formValue.terms,
           offerPaymentTerms: formValue.paymentTerms,
           offerValidityDays: formValue.validityDays,
-          offerTotal: getOfferTotal(formValue.lines),
+          offerTotal: getOfferTotal(normalizedLines),
           offerDraftSavedAt: savedAt,
         }
       : request
@@ -93,20 +237,8 @@ export function buildOfferFormFromRequest(request) {
     intro:
       request?.offerIntro ||
       `Vi viser til befaring og tilbyr med dette følgende arbeider for ${request?.customer || "kunden"}.`,
-    lines:
-      request?.offerLines?.length
-        ? request.offerLines
-        : [
-            {
-              id: `line-${Date.now()}`,
-              description: "",
-              amount: "",
-              productUrl: "",
-              imageDataUrl: "",
-              imageName: "",
-            },
-          ],
-    options: request?.offerOptions?.length ? request.offerOptions : [],
+    lines: recalculateAdministrationLines(request?.offerLines || []),
+    options: normalizeOfferOptions(request?.offerOptions || []),
     reservations: request?.offerReservations || "",
     included: request?.offerIncluded || "",
     excluded: request?.offerExcluded || "",
@@ -124,12 +256,14 @@ export function normalizeStoredOfferDraft(storedDraft, request) {
   return {
     ...requestForm,
     ...storedDraft,
-    lines: Array.isArray(storedDraft.lines)
-      ? storedDraft.lines
-      : requestForm.lines,
-    options: Array.isArray(storedDraft.options)
-      ? storedDraft.options
-      : requestForm.options,
+    lines: recalculateAdministrationLines(
+      Array.isArray(storedDraft.lines) ? storedDraft.lines : requestForm.lines
+    ),
+    options: normalizeOfferOptions(
+      Array.isArray(storedDraft.options)
+        ? storedDraft.options
+        : requestForm.options
+    ),
     terms: storedDraft.terms ?? requestForm.terms,
     included: storedDraft.included ?? requestForm.included,
     excluded: storedDraft.excluded ?? requestForm.excluded,
@@ -140,14 +274,27 @@ export function normalizeStoredOfferDraft(storedDraft, request) {
 }
 
 export function prepareOfferFormForSave(formValue) {
-  const cleanLines = (formValue.lines || [])
+  const recalculatedLines = recalculateAdministrationLines(formValue.lines || []);
+
+  const cleanLines = recalculatedLines
     .map((line) => ({
       ...line,
+      mainPostId: String(line.mainPostId || LEGACY_MAIN_POST.id).trim(),
+      mainPostTitle: String(
+        line.mainPostTitle || LEGACY_MAIN_POST.title
+      ).trim(),
       description: String(line.description || "").trim(),
       amount: String(line.amount || "").trim(),
       productUrl: String(line.productUrl || "").trim(),
       imageDataUrl: line.imageDataUrl || "",
       imageName: line.imageName || "",
+      ...(line.lineType === "administration"
+        ? {
+            lineType: "administration",
+            adminMode: line.adminMode === "fixed" ? "fixed" : "percent",
+            adminPercent: String(line.adminPercent ?? "").trim(),
+          }
+        : { lineType: "work" }),
     }))
     .filter(
       (line) =>
@@ -161,13 +308,19 @@ export function prepareOfferFormForSave(formValue) {
     (line) => !line.description || !line.amount
   );
 
-  const cleanOptions = (formValue.options || [])
+  const cleanOptions = normalizeOfferOptions(formValue.options || [])
     .map((option) => ({
       ...option,
+      mainPostId: String(option.mainPostId || LEGACY_MAIN_POST.id).trim(),
+      mainPostTitle: String(
+        option.mainPostTitle || LEGACY_MAIN_POST.title
+      ).trim(),
       title: String(option.title || "").trim(),
       description: String(option.description || "").trim(),
       amount: String(option.amount || "").trim(),
       productUrl: String(option.productUrl || "").trim(),
+      imageDataUrl: option.imageDataUrl || "",
+      imageName: option.imageName || "",
     }))
     .filter(
       (option) =>
