@@ -8,6 +8,7 @@ import { requestSources, workTypes } from "../constants/salesConstants.js";
 export default function SalesRequestForm({
   form,
   isEditingRequest = false,
+  isDirectOffer = false,
   onBack,
   onCancel,
   onSubmit,
@@ -36,7 +37,11 @@ export default function SalesRequestForm({
         <main className="sales-main">
           <section className="sales-form-hero">
             <p className="sales-eyebrow">
-              {isEditingRequest ? "Rediger forespørsel" : "Ny forespørsel"}
+              {isEditingRequest
+                ? "Rediger forespørsel"
+                : isDirectOffer
+                  ? "Nytt tilbud"
+                  : "Ny forespørsel"}
             </p>
             <h1
               className="sales-title"
@@ -48,12 +53,16 @@ export default function SalesRequestForm({
             >
               {isEditingRequest
                 ? "Oppdater kundehenvendelse"
-                : "Registrer kundehenvendelse"}
+                : isDirectOffer
+                  ? "Registrer kunde og opprett tilbud"
+                  : "Registrer kundehenvendelse"}
             </h1>
             <p className="sales-subtitle">
               {isEditingRequest
                 ? "Oppdater kunde-, adresse- og prosjektinformasjon uten å opprette en ny sak."
-                : "Fang opp det viktigste raskt. Resten kan fylles ut etter befaring."}
+                : isDirectOffer
+                  ? "Legg inn kunde- og prosjektinformasjon. Du går deretter direkte til tilbudsbyggeren uten forespørsel eller befaring."
+                  : "Fang opp det viktigste raskt. Resten kan fylles ut etter befaring."}
             </p>
           </section>
 
@@ -142,7 +151,7 @@ export default function SalesRequestForm({
               </label>
 
               <label className="sales-field">
-                <span>Forespørselen kom via</span>
+                <span>{isDirectOffer ? "Tilbudet kom via" : "Forespørselen kom via"}</span>
                 <select
                   value={form.source}
                   onChange={(event) => onUpdateForm("source", event.target.value)}
@@ -160,7 +169,11 @@ export default function SalesRequestForm({
                 <textarea
                   value={form.note}
                   onChange={(event) => onUpdateForm("note", event.target.value)}
-                  placeholder="Kunden ønsker befaring for modernisering av bad. Sluk må vurderes."
+                  placeholder={
+                    isDirectOffer
+                      ? "Kort intern merknad om tilbudet eller kundens behov."
+                      : "Kunden ønsker befaring for modernisering av bad. Sluk må vurderes."
+                  }
                   rows={4}
                 />
               </label>
@@ -202,7 +215,11 @@ export default function SalesRequestForm({
 
               <button className="sales-primary-button" type="submit">
                 <Save size={18} />
-                {isEditingRequest ? "Lagre endringer" : "Lagre forespørsel"}
+                {isEditingRequest
+                  ? "Lagre endringer"
+                  : isDirectOffer
+                    ? "Opprett tilbud"
+                    : "Lagre forespørsel"}
               </button>
             </div>
           </form>
