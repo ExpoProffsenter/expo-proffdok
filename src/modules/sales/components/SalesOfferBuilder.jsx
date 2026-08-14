@@ -145,7 +145,7 @@ export default function SalesOfferBuilder({
     .join(", ");
 
   return (
-    <div className="sales-app">
+    <div className="sales-app sales-offer-builder-app">
       {offerValidationJump?.optionId ? (
         <div
           role="dialog"
@@ -233,6 +233,7 @@ export default function SalesOfferBuilder({
           </section>
 
           <form
+            id="sales-offer-builder-form"
             className="sales-form-panel"
             onSubmit={handleSaveOffer}
             onKeyDown={(event) => {
@@ -1161,6 +1162,17 @@ export default function SalesOfferBuilder({
             </div>
           </form>
         </main>
+      </div>
+
+      <div className="sales-offer-mobile-save" aria-label="Lagre tilbud">
+        <button
+          className="sales-primary-button"
+          type="submit"
+          form="sales-offer-builder-form"
+        >
+          <Save size={18} />
+          Lagre tilbud
+        </button>
       </div>
     </div>
   );
