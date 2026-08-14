@@ -825,6 +825,23 @@ export default function SalesModule({
     setForm((current) => ({ ...current, [field]: value }));
   }
 
+  function validateRequiredCustomerFields() {
+    const requiredFields = [
+      ["customer", "kundenavn"],
+      ["address", "adresse"],
+      ["postnr", "postnummer"],
+      ["city", "sted"],
+    ];
+    const missing = requiredFields.find(
+      ([field]) => !String(form?.[field] || "").trim()
+    );
+
+    if (!missing) return true;
+
+    alert(`Fyll inn ${missing[1]} før du fortsetter.`);
+    return false;
+  }
+
   function resetForm() {
     setForm(emptyForm);
   }
@@ -852,12 +869,13 @@ export default function SalesModule({
   async function handleUpdateRequest(event) {
     event.preventDefault();
     if (!selectedRequest || !["Forespørsel", "Befaring", "Tilbud"].includes(selectedRequest.status)) return;
+    if (!validateRequiredCustomerFields()) return;
 
     const customerDetailsChanged = Boolean(
-      selectedRequest.customer !== (form.customer.trim() || "Uten kundenavn") ||
+      selectedRequest.customer !== form.customer.trim() ||
         selectedRequest.phone !== form.phone.trim() ||
         selectedRequest.email !== form.email.trim() ||
-        selectedRequest.address !== (form.address.trim() || "Adresse ikke registrert") ||
+        selectedRequest.address !== form.address.trim() ||
         (selectedRequest.postnr || "") !== form.postnr.trim() ||
         (selectedRequest.city || "") !== form.city.trim()
     );
@@ -870,10 +888,10 @@ export default function SalesModule({
 
     const updatedRequest = {
       ...selectedRequest,
-      customer: form.customer.trim() || "Uten kundenavn",
+      customer: form.customer.trim(),
       phone: form.phone.trim(),
       email: form.email.trim(),
-      address: form.address.trim() || "Adresse ikke registrert",
+      address: form.address.trim(),
       postnr: form.postnr.trim(),
       city: form.city.trim(),
       title: form.title,
@@ -2609,15 +2627,16 @@ export default function SalesModule({
 
   async function handleCreateDirectOffer(event) {
     event.preventDefault();
+    if (!validateRequiredCustomerFields()) return;
 
-    const customerName = form.customer.trim() || "Uten kundenavn";
+    const customerName = form.customer.trim();
     const nextRequest = {
       id: createRequestId(requests),
       title: form.title,
       customer: customerName,
       phone: form.phone.trim(),
       email: form.email.trim(),
-      address: form.address.trim() || "Adresse ikke registrert",
+      address: form.address.trim(),
       postnr: form.postnr.trim(),
       city: form.city.trim(),
       source: form.source,
@@ -2660,14 +2679,15 @@ export default function SalesModule({
 
   async function handleCreateRequest(event) {
     event.preventDefault();
+    if (!validateRequiredCustomerFields()) return;
 
     const nextRequest = {
       id: createRequestId(requests),
       title: form.title,
-      customer: form.customer.trim() || "Uten kundenavn",
+      customer: form.customer.trim(),
       phone: form.phone.trim(),
       email: form.email.trim(),
-      address: form.address.trim() || "Adresse ikke registrert",
+      address: form.address.trim(),
       postnr: form.postnr.trim(),
       city: form.city.trim(),
       source: form.source,
