@@ -1,3 +1,8 @@
+/* Expo ProffDok – FASE 26A
+   Tydelig prismerking i intern tilbudsbygger og trygg layout for lange kundeseksjonsmerker.
+   Ingen endring i tilbudsdata, beregning eller akseptlogikk.
+*/
+
 /* Expo ProffDok – FASE 19.1
    Premium digitalt kundetilbud for Befaring / Tilbud / Aksept.
    Isolert CSS for sales-modulen. Ingen produksjons-main-endring.
@@ -626,6 +631,44 @@ a:hover {
   background: #f8fbfc;
 }
 
+.sales-offer-price-guidance {
+  margin: 0 0 4px;
+  color: #526975;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sales-offer-amount-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sales-offer-amount-field > span {
+  color: #344c59;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sales-offer-amount-field > input {
+  width: 100%;
+  min-height: 49px;
+  padding: 0 14px;
+  border: 1px solid #cfdee4;
+  border-radius: 15px;
+  background: #fff;
+  color: #10212b;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.sales-offer-amount-field > input:focus {
+  border-color: #1bb7c0;
+  box-shadow: 0 0 0 4px rgba(28, 199, 207, 0.13);
+}
+
 .sales-offer-line-number {
   display: grid;
   place-items: center;
@@ -807,7 +850,7 @@ a:hover {
     grid-template-columns: 42px minmax(0, 1fr);
   }
 
-  .sales-offer-line > input,
+  .sales-offer-line > .sales-offer-amount-field,
   .sales-offer-line > button {
     grid-column: 2;
   }
@@ -1104,10 +1147,16 @@ a:hover {
   padding: 24px;
 }
 
-.sales-customer-intro-card,
-.sales-customer-text-section {
+.sales-customer-intro-card {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.sales-customer-text-section {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
@@ -1122,6 +1171,13 @@ a:hover {
   color: #087b82;
   font-size: 12px;
   font-weight: 900;
+}
+
+.sales-customer-text-section > .sales-section-kicker {
+  width: auto;
+  min-width: 38px;
+  padding: 0 10px;
+  white-space: nowrap;
 }
 
 .sales-customer-section h2,

@@ -1,3 +1,6 @@
+// Expo ProffDok - FASE 26A
+// Akseptbeviset viser kundevendte priser inkl. mva. Intern lagrings- og akseptmodell beholdes uendret eks. mva.
+// Ingen SQL/RLS/Storage/Edge Function/e-postendring.
 // Expo ProffDok - FASE 23G
 // Oppretter låst PDF-bevis fra en akseptert, publisert tilbudsversjon.
 // Ingen React-state, Supabase-kall, Storage-regler eller UI-rendering.
@@ -177,13 +180,17 @@ export async function createAcceptanceProofPdf({
     addText("Aksepterte arbeider og priser", {
       size: 11,
       style: "bold",
+      after: 1,
+    });
+    addText("Alle priser er oppgitt inkl. mva.", {
+      size: 8.5,
       after: 2,
     });
     acceptedLines.forEach((line, index) => {
       addText(
         `${index + 1}. ${line.description || "Tilbudspost"} - ${formatNok(
-          getOfferTotal([line])
-        )} eks. mva.`,
+          getOfferTotal([line]) * 1.25
+        )} inkl. mva.`,
         { size: 9.5, after: 1 }
       );
     });
@@ -195,18 +202,12 @@ export async function createAcceptanceProofPdf({
       addText(
         `${option.title || "Opsjon"}${
           option.description ? `: ${option.description}` : ""
-        } - ${formatNok(getOfferTotal([option]))} eks. mva.`,
+        } - ${formatNok(getOfferTotal([option]) * 1.25)} inkl. mva.`,
         { size: 9.5, after: 1 }
       );
     });
     y += 3;
   }
-  addText(
-    `Akseptert total eks. mva.: ${formatNok(
-      Number(selectedRequest.acceptedTotal || 0)
-    )}`,
-    { size: 11, style: "bold", after: 1 }
-  );
   addText(
     `Akseptert total inkl. mva.: ${formatNok(
       Number(selectedRequest.acceptedTotal || 0) * 1.25

@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 26A
+// Tydeliggjør at interne tilbudspriser legges inn eks. mva.; kundetilbudet viser priser inkl. mva.
+// Ingen endring i lagringsmodell, beregning, publisering eller akseptlogikk.
 // Expo ProffDok – FASE 23M
 // Presentasjonskomponent for tilbudsbyggeren.
 // Ingen egen React-state, Supabase-kall, Storage-kall eller tilbudsforretningslogikk.
@@ -181,6 +184,10 @@ return (
 
             <div className="sales-field sales-field-full">
               <span>Arbeider og priser</span>
+              <p className="sales-offer-price-guidance">
+                Beløp i tilbudsbyggeren legges inn eks. mva. Expo ProffDok viser
+                automatisk prisene inkl. mva. i kundetilbudet.
+              </p>
 
               <div className="sales-offer-lines">
                 {offerForm.lines.map((line, index) => (
@@ -240,17 +247,20 @@ return (
                       </label>
                     </div>
 
-                    <input
-                      value={line.amount}
-                      onChange={(event) =>
-                        updateOfferLine(line.id, "amount", event.target.value)
-                      }
-                      onKeyDown={(event) =>
-                        handleOfferLineAmountEnter(event, line, index)
-                      }
-                      placeholder="Beløp eks. mva."
-                      inputMode="decimal"
-                    />
+                    <label className="sales-offer-amount-field">
+                      <span>Pris eks. mva.</span>
+                      <input
+                        value={line.amount}
+                        onChange={(event) =>
+                          updateOfferLine(line.id, "amount", event.target.value)
+                        }
+                        onKeyDown={(event) =>
+                          handleOfferLineAmountEnter(event, line, index)
+                        }
+                        placeholder="0"
+                        inputMode="decimal"
+                      />
+                    </label>
 
                     <button
                       className="sales-secondary-button"
@@ -277,6 +287,10 @@ return (
 
             <div className="sales-field sales-field-full">
               <span>Opsjoner</span>
+              <p className="sales-offer-price-guidance">
+                Opsjonspriser legges også inn eks. mva. Kunden får dem vist inkl.
+                mva. i det publiserte tilbudet.
+              </p>
 
               {offerForm.options.length ? (
                 <div className="sales-offer-lines">
@@ -345,14 +359,17 @@ return (
                         </label>
                       </div>
 
-                      <input
-                        value={option.amount}
-                        onChange={(event) =>
-                          updateOfferOption(option.id, "amount", event.target.value)
-                        }
-                        placeholder="Beløp eks. mva."
-                        inputMode="decimal"
-                      />
+                      <label className="sales-offer-amount-field">
+                        <span>Pris eks. mva.</span>
+                        <input
+                          value={option.amount}
+                          onChange={(event) =>
+                            updateOfferOption(option.id, "amount", event.target.value)
+                          }
+                          placeholder="0"
+                          inputMode="decimal"
+                        />
+                      </label>
 
                       <button
                         className="sales-secondary-button"
