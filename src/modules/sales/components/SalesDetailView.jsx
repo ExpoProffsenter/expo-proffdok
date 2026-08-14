@@ -83,7 +83,7 @@ export default function SalesDetailView({
       ? hasPublishedCustomerOffer
         ? "Publiser ny versjon"
         : "Publiser kundetilbud"
-      : "Vis kundens tilbud";
+      : "Se kundens tilbud";
     const publishLineCount = selectedRequest.offerLines?.length || 0;
     const publishOptionCount = selectedRequest.offerOptions?.length || 0;
     const publishedVersionNumber =
@@ -886,8 +886,8 @@ export default function SalesDetailView({
                             : "Kundelink:"}
                         </strong>{" "}
                         {hasUnpublishedOfferChanges
-                          ? "Publiser for å lage en ny tilbudsversjon på kundelinken. Kunden ser ikke endringene før dette er gjort."
-                          : "Kunden åpner tilbudet via egen lenke og kan velge opsjoner og akseptere digitalt."}
+                          ? "Du har endringer som kunden ikke ser ennå. Publiser tilbudet for å gjøre dem synlige."
+                          : "Tilbudet er publisert. Se samme tilbud som kunden ser, eller send det på e-post."}
                       </p>
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                         <button
@@ -906,7 +906,7 @@ export default function SalesDetailView({
                             ? hasPublishedCustomerOffer
                               ? "Publiser ny versjon"
                               : "Publiser kundetilbud"
-                            : "Åpne kundelink"}
+                            : "Se kundens tilbud"}
                         </button>
                         <button
                           className="sales-secondary-button"
@@ -967,13 +967,13 @@ export default function SalesDetailView({
                           }}
                         >
                           <p style={{ margin: 0, fontWeight: 900, color: "#087b82" }}>
-                            Ny tilbudsversjon er publisert
+                            ✓ Tilbudet er publisert og klart for kunden
                           </p>
                           <p style={{ margin: "5px 0 0" }}>
-                            Kundelinken er oppdatert.
+                            Kunden kan nå se denne versjonen av tilbudet.
                             {publishFeedback.versionNumber
-                              ? ` Versjon v${publishFeedback.versionNumber} er nå tilgjengelig for kunden.`
-                              : " Nyeste tilbud er nå tilgjengelig for kunden."}
+                              ? ` Publisert versjon: v${publishFeedback.versionNumber}.`
+                              : ""}
                           </p>
                         </div>
                       ) : null}

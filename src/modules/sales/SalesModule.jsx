@@ -723,14 +723,18 @@ export default function SalesModule({
   }
 
   useEffect(() => {
-    if (selectedRequestId && !selectedRequest) {
-      setMode("list");
-      setSelectedRequestId(null);
-      return;
-    }
+    const params = new URLSearchParams(window.location.search);
+    const isPublicOfferView = Boolean(params.get("publicOffer"));
 
+    // Kundevisningen åpnes på samme domene som proffappen. Den skal aldri
+    // overskrive sist åpne interne salgssak i nettleserlagringen.
+    if (isPublicOfferView) return;
+
+    // Ikke nullstill valgt sak bare fordi request-listen er i et kortvarig
+    // mellomsteg under lagring/publisering. Det var dette som kunne sende
+    // brukeren tilbake til hovedlisten etter publisering.
     saveSalesNavigation(salesStorageKey, mode, selectedRequestId);
-  }, [mode, salesStorageKey, selectedRequest, selectedRequestId]);
+  }, [mode, salesStorageKey, selectedRequestId]);
 
   useEffect(() => {
     if (mode !== "inspection-note" || !selectedRequestId) return;
@@ -2745,13 +2749,14 @@ export default function SalesModule({
   }
 
   async function publishOfferAndGetLink(requestId) {
-    const request = requests.find((item) => item.id === requestId);
+    const currentRequests = latestRequestsRef.current;
+    const request = currentRequests.find((item) => item.id === requestId);
     const profileForPublish = await getCompanyProfileForPublish();
 
     const result = await publishSalesOfferAndBuildLink({
       client: activeSupabase,
       request,
-      requests,
+      requests: currentRequests,
       companyProfile: profileForPublish,
       currentUrl: window.location.href,
       confirmOptionRemoval: (previousOptionCount) =>
@@ -2765,17 +2770,54 @@ export default function SalesModule({
     latestRequestsRef.current = result.nextRequests;
     setRequests(result.nextRequests);
     await persistRequests(result.nextRequests);
+
+    // Publisering skal aldri endre hvor proffen befinner seg i appen.
+    setSelectedRequestId(requestId);
+    setMode("detail");
+    saveSalesNavigation(salesStorageKey, "detail", requestId);
     setPublishFeedback(result.publishFeedback);
 
     return result.link;
   }
 
   async function openCustomerOfferFromRequestId(requestId) {
+    const request =
+      latestRequestsRef.current.find((item) => item.id === requestId) ||
+      requests.find((item) => item.id === requestId);
+
+    if (!request) {
+      alert("Fant ikke tilbudssaken.");
+      return;
+    }
+
+    const hasUnpublishedChanges = Boolean(
+      request.status === "Tilbud" &&
+        request.offerLines?.length &&
+        !request.sentOfferVersionId
+    );
+
     try {
-      const link = await publishOfferAndGetLink(requestId);
+      if (hasUnpublishedChanges) {
+        // Publiser er én handling: gjør tilbudet synlig for kunden og bli på saken.
+        await publishOfferAndGetLink(requestId);
+        return;
+      }
+
+      if (!request.publicToken) {
+        alert("Tilbudet er ikke publisert ennå.");
+        return;
+      }
+
+      // Se kundens tilbud er en egen handling og åpner kundevisningen i ny fane.
+      const link = buildCustomerOfferLink(window.location.href, request.publicToken);
       window.open(link, "_blank", "noopener,noreferrer");
     } catch (error) {
-      alert(error.message || "Kunne ikke åpne kundelink.");
+      alert(
+        error.message ||
+          (hasUnpublishedChanges
+            ? "Kunne ikke publisere tilbudet."
+            : "Kunne ikke åpne kundens tilbud.")
+      );
     }
   }
 
