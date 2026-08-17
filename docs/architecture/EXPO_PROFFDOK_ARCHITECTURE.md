@@ -1,10 +1,10 @@
 Expo ProffDok – arkitekturkart
-Fase: 27 – Modulisert produksjonsarkitektur, runtime-sikkerhet og mobilforenkling
-Status: Oppdatert nå-arkitektur etter Fase 27B–27C
+Fase: 27 – Modulisert produksjonsarkitektur, runtime-sikkerhet, mobilforenkling og kontrollert reduksjon av main.jsx
+Status: Oppdatert nå-arkitektur etter Fase 27D–27H
 Dato: 17. august 2026
-Branch: `fase27c3-help-update`
+Branch: `fase27i-architecture-sync`
 Plassering i repository: `docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md`
-Produksjonsgrunnlag: Stabil `main` etter Fase 27B.2 og Fase 27C
+Produksjonsgrunnlag: Stabil `main` etter Fase 27H
 Formål
 Dette dokumentet er kartet for videre utvikling og modulisering av Expo ProffDok. Det opprinnelige arkitekturkartet ble etablert i Fase 23. Denne versjonen er oppdatert etter produksjonsendringene gjennom Fase 27C.
 Dokumentet beskriver:
@@ -42,6 +42,11 @@ Sentrale produksjonsnære områder:
 `src/modules/sales/sales.css`
 `src/modules/help/helpTools.js`
 `src/modules/app/AppErrorBoundary.jsx`
+`src/modules/app/appRuntimeStyles.js`
+`src/modules/warranty/warrantyViewTools.js`
+`src/modules/company/companyViewTools.js`
+`src/modules/portal/accessViewTools.js`
+`src/modules/chat/chatViewTools.js`
 `src/modules/report/reportViewTools.js`
 `src/modules/contract/contractViewTools.js`
 `src/modules/product/productViewTools.js`
@@ -65,7 +70,7 @@ Hovedapp	`src/main.jsx`	13 826 linjer, ca. 941 KB	96 state-deklarasjoner, 23 eff
 Salgsmodul	`src/modules/sales/SalesModule.jsx`	6 228 linjer, ca. 241 KB	27 state-deklarasjoner, 10 effects, 6 memo-beregninger, 6 refs og 98 navngitte funksjoner
 Global CSS	`src/style.css`	221 linjer	Globale elementselektorer og mobil-/printregler
 Salgs-CSS	`src/modules/sales/sales.css`	1 684 linjer	Hovedsakelig `.sales-*`, men også globale selektorer
-`main.jsx` har fortsatt et generert/transpilert preg med blant annet `import_react`, `import_jsx_runtime` og kall som `(0, import_react.useState)`. Filen behandles derfor fortsatt konservativt. Fase 24–25 har flyttet flere visninger og hjelpeområder ut i egne moduler uten å omskrive hele appskallet.
+`main.jsx` har fortsatt et generert/transpilert preg med blant annet `import_react`, `import_jsx_runtime` og kall som `(0, import_react.useState)`. Filen behandles derfor fortsatt konservativt. Etter Fase 27H er `main.jsx` redusert til omtrent 7 154 linjer i den produksjonsnære filen som ble brukt i refaktoreringen. Linjetallet er kun et arbeidsmål og ikke et mål i seg selv. Fase 24–25 har flyttet flere visninger og hjelpeområder ut i egne moduler uten å omskrive hele appskallet.
 2.2 Ikke fullt verifisert i dette kartet
 Følgende er fortsatt ikke eksportert og detaljkontrollert linje for linje:
 komplette SQL-definisjoner for tabeller
@@ -89,7 +94,12 @@ expo-proffdok/
 │   ├── style.css
 │   ├── modules/
 │   │   ├── app/
-│   │   │   └── AppErrorBoundary.jsx
+│   │   │   ├── AppErrorBoundary.jsx
+│   │   │   └── appRuntimeStyles.js
+│   │   ├── chat/
+│   │   │   └── chatViewTools.js
+│   │   ├── company/
+│   │   │   └── companyViewTools.js
 │   │   ├── checklist/
 │   │   ├── config/
 │   │   ├── contract/
@@ -103,7 +113,8 @@ expo-proffdok/
 │   │   │   └── installationViewTools.js
 │   │   ├── overtagelse/
 │   │   ├── portal/
-│   │   │   └── portalTools.js
+│   │   │   ├── portalTools.js
+│   │   │   └── accessViewTools.js
 │   │   ├── product/
 │   │   │   └── productViewTools.js
 │   │   ├── project/
@@ -114,8 +125,10 @@ expo-proffdok/
 │   │   │   ├── SalesModule.jsx
 │   │   │   ├── SalesPreview.jsx
 │   │   │   └── sales.css
-│   │   └── surfaces/
-│   │       └── surfaceViewTools.js
+│   │   ├── surfaces/
+│   │   │   └── surfaceViewTools.js
+│   │   └── warranty/
+│   │       └── warrantyViewTools.js
 │   ├── [øvrige produksjonsfiler]
 ├── scripts/
 │   └── critical-build-check.mjs
@@ -154,14 +167,19 @@ Tilbud/kontrakt
 Rapport
 Portalrelaterte hjelpefunksjoner
 `main.jsx` er fortsatt den sentrale state- og integrasjonsorkestratoren. Moduliseringen har derfor redusert UI-omfanget, men har ikke flyttet hele prosjektpersistensen eller Supabase-tilgangen ut av hovedappen.
-
 Fase 27B–27C har i tillegg lagt til:
-- `AppErrorBoundary.jsx` rundt hovedappen, slik at en React-renderfeil gir kontrollert feilmelding i stedet for blank skjerm
-- `scripts/critical-build-check.mjs`, som kjøres før Vite-build og kontrollerer enkelte kritiske kjente kontrakter
-- forenklet mobilnavigasjon med prioriterte hurtigvalg, egen Status-inngang og `Alle funksjoner`
-- komprimert mobilvisning for sjekklistefremdrift og flytende chatknapp
-
+`AppErrorBoundary.jsx` rundt hovedappen, slik at en React-renderfeil gir kontrollert feilmelding i stedet for blank skjerm
+`scripts/critical-build-check.mjs`, som kjøres før Vite-build og kontrollerer enkelte kritiske kjente kontrakter
+forenklet mobilnavigasjon med prioriterte hurtigvalg, egen Status-inngang og `Alle funksjoner`
+komprimert mobilvisning for sjekklistefremdrift og flytende chatknapp
 Dette er frontend-/build-endringer og har ikke endret database, RLS, Storage, Edge Functions eller prosjektdataformat.
+Fase 27D–27H fortsatte med få, større og sammenhengende uttrekk:
+Garanti-visningene ble flyttet til `src/modules/warranty/warrantyViewTools.js`
+Firmaprofil og Firmaadministrasjon ble samlet i `src/modules/company/companyViewTools.js`
+intern Tilgang og deling-visning ble flyttet til `src/modules/portal/accessViewTools.js`
+prosjektchat og Interne notater ble samlet i `src/modules/chat/chatViewTools.js`
+store inline runtime CSS-strenger ble flyttet til `src/modules/app/appRuntimeStyles.js`
+For alle disse uttrekkene ligger forretningslogikk, prosjektpersistens, Supabase-kall, Storage, e-post og rolle-/tilgangslogikk fortsatt i eksisterende hovedlogikk eller tjenester. Uttrekkene er primært presentasjons- og oversiktsforbedringer.
 4. Systemkontekst
 ```mermaid
 flowchart LR
@@ -222,7 +240,12 @@ Avvik
 Fag, deler og utstyr
 Tilbud/kontrakt
 Rapport
+Garanti
+Firmaprofil og Firmaadministrasjon
+Tilgang og deling
+Chat og Interne notater
 portalverktøy
+runtime-stiler
 Arkitekturkonsekvensen er fortsatt høy kobling fordi state, normalisering og lagring i stor grad styres fra `main.jsx`. En modul kan være visuelt utskilt uten at datalaget er fullstendig frikoblet.
 5.2 Komponent- og moduleierskap etter Fase 25
 Det opprinnelige Fase 23-kartet listet mange komponenter som lå direkte i `main.jsx`. Flere av disse områdene er siden flyttet til egne moduler.
@@ -236,6 +259,11 @@ src/modules/installations/installationViewTools.js
 src/modules/contract/contractViewTools.js
 src/modules/report/reportViewTools.js
 src/modules/portal/portalTools.js
+src/modules/portal/accessViewTools.js
+src/modules/warranty/warrantyViewTools.js
+src/modules/company/companyViewTools.js
+src/modules/chat/chatViewTools.js
+src/modules/app/appRuntimeStyles.js
 ```
 `main.jsx` beholder fortsatt en rekke delte UI-primitiver, stateobjekter, callbacks og persistensfunksjoner som sendes inn i modulene. Det er bevisst: Fase 24–25 har prioritert små, testbare uttrekk fremfor samtidig flytting av state og datatilgang.
 En ny refaktorering skal derfor først kontrollere:
@@ -492,27 +520,20 @@ garanti
 produktmaster-synk
 Arkitekturkonsekvens: To samtidige oppdateringer kan i prinsippet overskrive hverandres endringer dersom begge arbeider fra ulike snapshots. Refaktorering må derfor bevare dagens merge-/normaliseringslogikk nøyaktig. En egen, sentral `projectRepository` er et senere mål, men skal ikke innføres samtidig med første komponentuttrekk.
 5.8 Runtime-sikkerhet og kritisk build-kontroll
-
 Fase 27B innførte et lite sikkerhetsnett uten ny testplattform eller nye npm-avhengigheter.
-
 Runtime:
 ```text
 src/modules/app/AppErrorBoundary.jsx
 ```
 `main.jsx` renderer hovedappen inne i `AppErrorBoundary`. Dersom en React-visning kaster en renderfeil, vises en kontrollert feilmelding med mulighet for å laste siden på nytt. Feilen logges fortsatt til nettleserkonsollen. Løsningen erstatter ikke feilretting, men reduserer risikoen for helt blank skjerm.
-
 Build:
 ```text
 scripts/critical-build-check.mjs
 ```
 `package.json` kjører kontrollen før `vite build`. Kontrollen verifiserer et lite sett kjente kritiske kontrakter, blant annet at rapportvisningene initialiserer `agreementTotals` og at `AppErrorBoundary` fortsatt er koblet rundt hovedappen.
-
 Dette er bevisst et smalt regresjonsvern. Det er ikke en full unit-/component-/end-to-end-testplattform.
-
 5.9 Mobilnavigasjon etter Fase 27C
-
 Desktopnavigasjonen er beholdt. På mobil er informasjonsmengden redusert og arbeidsoppgaver prioritert.
-
 Når et prosjekt er åpent viser mobilmenyen først hurtigvalg til:
 ```text
 Befaring/Tilbud
@@ -520,17 +541,13 @@ Bilder
 Sjekklister
 Fag/utstyr
 ```
-
 I samme meny finnes:
 ```text
 Status
 Alle funksjoner
 ```
-
 `Status` åpner den komplette prosjektstatusen og mangler-/fremdriftsvisningen ved behov. `Alle funksjoner` gir tilgang til øvrige faner. Ingen funksjoner er fjernet.
-
 Sjekklistefremdriften er visuelt komprimert på mobil, og chatknappen er redusert i størrelse slik at kontrollpunkter og arbeidsinnhold kommer høyere opp på skjermen. Dette er presentasjonsendringer; sjekklistedata og lagringslogikk er uendret.
-
 Befaring / Tilbud / Aksept – `SalesModule.jsx`
 6.1 Integrasjon med hovedappen
 Hovedappen importerer salgsmodulen fra:
@@ -1118,8 +1135,8 @@ h2
 h3
 ```
 Mobil- og printreglene er også globale. DOM-struktur og elementtype påvirker derfor utseendet selv om klassene ikke endres.
-
 Fase 27C la til mobilspesifikke regler for den nye mobilmenyen, komprimert sjekklistefremdrift og mindre flytende chatknapp. Desktopreglene er bevisst beholdt.
+Fase 27H flyttet de store inline CSS-strengene ut av `main.jsx` til `src/modules/app/appRuntimeStyles.js`. Selve `<style>`-elementene står fortsatt på samme plass i render-treet, slik at cascade og rekkefølge bevares. Dette var et mekanisk uttrekk uten redesign.
 14.2 `sales.css`
 Mesteparten av salgsstilen er namespacet med `.sales-*`, men filen inneholder også globale regler for:
 ```text
@@ -1297,11 +1314,23 @@ prosjektets tilbudsdata ryddet slik at opprinnelig avtale og senere endringer ik
 strukturerte tillegg/fradrag innført uten SQL-endring
 historiske fasekommentarer i toppen av `main.jsx` ryddet uten funksjonsendring
 produksjon verifisert etter hver merge
-- runtime Error Boundary lagt rundt hovedappen
-- critical pre-build check innført uten nye npm-avhengigheter
-- mobilnavigasjon forenklet uten å fjerne funksjoner
-- prosjektstatus og sjekklistefremdrift nedprioritert visuelt på mobil, men fortsatt tilgjengelig ved behov
-19.2 Anbefalt videre rekkefølge
+runtime Error Boundary lagt rundt hovedappen
+critical pre-build check innført uten nye npm-avhengigheter
+mobilnavigasjon forenklet uten å fjerne funksjoner
+prosjektstatus og sjekklistefremdrift nedprioritert visuelt på mobil, men fortsatt tilgjengelig ved behov
+Garanti-visninger flyttet ut av `main.jsx`
+Firmaprofil og Firmaadministrasjon samlet i egen firmamodul
+Tilgang og deling flyttet til portalområdet
+Chat og Interne notater samlet i egen kommunikasjonsmodul
+ca. 959 linjer inline runtime CSS flyttet ut av `main.jsx` uten cascade-endring
+19.2 Stoppregel for videre modulisering
+Fase 27 har nå tatt ut de tydeligste lav- og moderat-risiko presentasjonsområdene. Videre uttrekk skal ikke gjøres kun for å redusere linjetallet i `main.jsx`.
+Fersk vurdering etter Fase 27H:
+`Systemadmin` er fortsatt en stor visningsblokk, men har høy kobling mot brukeradministrasjon, supportmodus, Produktmaster, prosjektsynk og mange callbacks/stateverdier.
+`Prosjektering` og enkelte mindre faner er for små til at et nytt modulgrensesnitt gir tydelig netto gevinst nå.
+store deler av gjenværende `main.jsx` er orkestrering, persistens, normalisering og integrasjonslogikk. Dette bør ikke flyttes mekanisk på samme måte som rene visningsblokker.
+Konklusjon: neste kodeuttrekk skal bare gjennomføres dersom en ny konkret funksjonsendring eller vedlikeholdsoppgave viser en naturlig modulgrense. Systemadmin/Productmaster skal ikke trekkes ut bare for å gjøre `main.jsx` kortere.
+19.3 Anbefalt videre rekkefølge
 Trinn 1 – Hold dokumentasjonen synkron
 Oppdater Hjelp og arkitekturkart når produksjonsflyt eller datamodell endres.
 Trinn 2 – Fersk kartlegging før neste modul
@@ -1334,7 +1363,6 @@ npm run check:critical
 npm run build
 ```
 `npm run build` kjører også critical-build-check før Vite-build.
-
 Videre testutvikling:
 ```text
 unit tests for rene utilities
@@ -1454,6 +1482,12 @@ Dato	Beslutning	Begrunnelse
 17.08.2026	Critical pre-build check innføres	Kjente kritiske regresjoner skal kunne stoppe Vercel-build før deploy
 17.08.2026	Mobilnavigasjonen forenkles	Mobil brukes primært til operative oppgaver; viktige funksjoner prioriteres og status flyttes ut av hovedflyten
 17.08.2026	Sjekklistefremdrift og chat komprimeres på mobil	Mer av arbeidsinnholdet skal være synlig uten unødvendig scrolling
+17.08.2026	Garanti-visningene flyttes til egen modul	Naturlig sammenhengende UI-område uten flytting av garantilogikk eller persistens
+17.08.2026	Firmaprofil og Firmaadministrasjon samles i én firmamodul	Gir bedre oversikt uten å splitte firmaområdet i småfiler
+17.08.2026	Tilgang og deling flyttes til portalområdet	Presentasjonen kan skilles ut mens tilgangskoder, e-post og Supabase-logikk forblir urørt
+17.08.2026	Chat og Interne notater samles som kommunikasjonsvisning	Sammenhengende prosjektkommunikasjon uten flytting av live-/lagringslogikk
+17.08.2026	Inline runtime CSS flyttes ut av main.jsx	Stor reduksjon i visuell støy uten endring av DOM-plassering eller cascade
+17.08.2026	Videre mekanisk modulisering settes på pause	Systemadmin har høy kobling, og mindre gjenværende blokker gir ikke nok vedlikeholdsgevinst i forhold til ny modulkompleksitet
 23. Åpne verifikasjonspunkter
 Disse skal avklares før relevant område endres, men blokkerer ikke ordinære små frontenduttrekk:
 Eksporter komplett Supabase-schema til versjonskontroll.
@@ -1471,22 +1505,21 @@ Avklar om `fdv_register` fortsatt er aktivt domene eller kun historisk kompatibi
 Ta en fersk komplett repository-inventering etter den videre Fase 24–25-moduliseringen.
 Vurder senere om `salesOrigin.acceptedTotal` bør få eksplisitt mva.-metadata i stedet for implisitt 25 %-konvertering.
 Avklar fremtidig strategi for eldre ustrukturerte tillegg/fradrag dersom de skal kunne inngå i maskinell avtalesumberegning.
-24. Anbefalt neste kodeoppgave etter Fase 27C
-Etter Fase 27C bør neste tekniske oppgave fortsatt velges fra en fersk kontroll av dagens `main` og modulstruktur.
-Anbefalt arbeidsmåte:
+24. Anbefalt neste kodeoppgave etter Fase 27H
+Det anbefales ikke et nytt mekanisk view-uttrekk umiddelbart etter Fase 27H.
+Neste kodeoppgave bør velges ut fra faktisk produktbehov, feilretting eller en konkret vedlikeholdsgevinst. Når et slikt behov oppstår:
 ```text
 1. Hent dagens produksjonsfiler
-2. Kartlegg gjenstående store UI-/ansvarsblokker i main.jsx
-3. Velg ett lavrisiko domene
-4. Lag egen feature-branch
-5. Flytt kun det avgrensede området
-6. Vercel Preview
-7. Desktop- og mobiltest
-8. Merge først etter eksplisitt godkjenning
+2. Kartlegg bare området som faktisk skal endres
+3. Vurder om eksisterende modul kan utvides før en ny modul opprettes
+4. Opprett ny modul bare dersom den gir tydelig bedre oversikt eller testbarhet
+5. Behold database-, lagrings- og sikkerhetskontrakter stabile
+6. Preview-test
+7. Merge først etter eksplisitt godkjenning
 ```
-Ikke bruk det gamle Fase 23-linjetallet eller den gamle uttrekkslisten alene som grunnlag for neste modul. Produksjonskoden har endret seg betydelig siden kartet først ble skrevet.
-25. Konklusjon
-Expo ProffDok har fortsatt en bred funksjonsflate og et sentralt `main.jsx`, men Fase 24–27 har redusert direkte UI-ansvar gjennom kontrollerte moduluttrekk og lagt til et lite runtime-/build-sikkerhetsnett.
+Systemadmin/Productmaster er ikke anbefalt som neste rent mekaniske uttrekk. Området skal først moduleres dersom det senere skal videreutvikles eller vedlikeholdes på en måte som gjør modulgrensen nyttig.
+Konklusjon
+Expo ProffDok har fortsatt en bred funksjonsflate og et sentralt `main.jsx`, men Fase 24–27 har redusert direkte UI-ansvar gjennom kontrollerte moduluttrekk, flyttet stor inline CSS-støy ut av hovedfilen og lagt til et lite runtime-/build-sikkerhetsnett.
 Den viktigste arkitekturelle retningen er fortsatt:
 ```text
 Kartlegg
