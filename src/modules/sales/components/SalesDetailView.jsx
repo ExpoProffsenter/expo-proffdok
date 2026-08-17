@@ -1,3 +1,7 @@
+// Expo ProffDok – FASE 28B2
+// Viser sendt-/oppfølgingsstatus inne på tilbudssaken og gjør eksisterende
+// manuelle e-postutsending til tydelig "Følg opp tilbud" etter 7 dager uten aksept.
+// Ingen SQL-, Supabase-, Storage- eller automatisk e-postendring.
 // Expo ProffDok – FASE 23L
 // Presentasjonskomponent for intern saksdetalj i Befaring / Tilbud / Aksept.
 // Ingen egen React-state, Supabase-kall, Storage-kall eller forretningslogikk.
@@ -26,6 +30,43 @@ import {
   getWorkflowSteps,
   sanitizeStoragePart,
 } from "../utils/salesUtils.js";
+
+const OFFER_FOLLOW_UP_DAYS = 7;
+
+function getOfferFollowUpInfo(request) {
+  if (
+    request?.status !== "Tilbud" ||
+    request?.acceptedAt ||
+    !request?.offerEmailSentAt
+  ) {
+    return null;
+  }
+
+  const sentAt = new Date(request.offerEmailSentAt);
+
+  if (Number.isNaN(sentAt.getTime())) {
+    return null;
+  }
+
+  const ageInDays = Math.max(
+    0,
+    Math.floor((Date.now() - sentAt.getTime()) / (24 * 60 * 60 * 1000))
+  );
+  const sentDate = sentAt.toLocaleDateString("nb-NO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const ageText =
+    ageInDays === 0
+      ? "i dag"
+      : `${ageInDays} ${ageInDays === 1 ? "dag" : "dager"} siden`;
+
+  return {
+    text: `Sendt ${sentDate} · ${ageText}`,
+    shouldFollowUp: ageInDays >= OFFER_FOLLOW_UP_DAYS,
+  };
+}
 
 export default function SalesDetailView({
   acceptanceProofBusy,
@@ -79,6 +120,7 @@ export default function SalesDetailView({
         selectedRequest.offerLines?.length &&
         !selectedRequest.sentOfferVersionId
     );
+    const offerFollowUp = getOfferFollowUpInfo(selectedRequest);
     const customerOfferActionLabel = hasUnpublishedOfferChanges
       ? hasPublishedCustomerOffer
         ? "Publiser ny versjon"
@@ -889,6 +931,54 @@ export default function SalesDetailView({
                           ? "Du har endringer som kunden ikke ser ennå. Publiser tilbudet for å gjøre dem synlige."
                           : "Tilbudet er publisert. Se samme tilbud som kunden ser, eller send det på e-post."}
                       </p>
+                      {offerFollowUp ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            marginBottom: 12,
+                            padding: "10px 12px",
+                            border: offerFollowUp.shouldFollowUp
+                              ? "1px solid #fed7aa"
+                              : "1px solid #d7e4ea",
+                            borderRadius: 14,
+                            background: offerFollowUp.shouldFollowUp
+                              ? "#fff7ed"
+                              : "#ffffff",
+                          }}
+                        >
+                          <span style={{ fontWeight: 800 }}>
+                            {offerFollowUp.text}
+                          </span>
+                          {offerFollowUp.shouldFollowUp ? (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                minHeight: 24,
+                                padding: "3px 8px",
+                                borderRadius: 999,
+                                fontSize: 12,
+                                fontWeight: 800,
+                                background: "#ffedd5",
+                                color: "#9a3412",
+                                border: "1px solid #fdba74",
+                              }}
+                            >
+                              Bør følges opp
+                            </span>
+                          ) : null}
+                          {offerFollowUp.shouldFollowUp &&
+                          hasUnpublishedOfferChanges ? (
+                            <span style={{ fontSize: 13, color: "#7c2d12" }}>
+                              Publiser den nye tilbudsversjonen før oppfølging sendes.
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                         <button
                           className={
@@ -935,9 +1025,11 @@ export default function SalesDetailView({
                             ? "Sender …"
                             : hasUnpublishedOfferChanges
                               ? "Publiser og send e-post"
-                              : selectedRequest.offerEmailSentAt
-                                ? "Send tilbudet på nytt"
-                                : "Send tilbud på e-post"}
+                              : offerFollowUp?.shouldFollowUp
+                                ? "Følg opp tilbud"
+                                : selectedRequest.offerEmailSentAt
+                                  ? "Send tilbudet på nytt"
+                                  : "Send tilbud på e-post"}
                         </button>
                       </div>
 
