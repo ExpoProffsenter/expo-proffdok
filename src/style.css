@@ -219,3 +219,134 @@ footer { color: var(--expo-muted); margin-top: 18px; border-top: 1px solid #dbe7
   .photo img { width: 100% !important; height: 120px !important; object-fit: contain !important; background: #f8fafc !important; }
   footer { margin-top: 20px; }
 }
+
+/* FASE 27C: Mobil arbeidsflate – status på forespørsel og mindre visuell støy. */
+.mobileStatusClose { display: none; }
+
+@media screen and (max-width: 700px) {
+  .projectStatusSection,
+  .projectGuideSection {
+    display: none !important;
+  }
+
+  .projectStatusSection.mobileStatusOpen,
+  .projectGuideSection.mobileStatusOpen {
+    display: block !important;
+  }
+
+  .mobileStatusClose {
+    display: inline-flex !important;
+    width: 100% !important;
+    min-height: 42px !important;
+    justify-content: center !important;
+    margin: 0 0 12px !important;
+  }
+
+  .mobileStatusMenuButton {
+    width: 100% !important;
+    min-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    text-align: left !important;
+    padding: 9px 12px !important;
+    box-shadow: none !important;
+  }
+
+  .mobileStatusMenuButton > span {
+    font-weight: 900 !important;
+    white-space: nowrap !important;
+  }
+
+  .mobileStatusMenuButton > small {
+    color: inherit !important;
+    font-size: 12px !important;
+    font-weight: 750 !important;
+    text-align: right !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Sjekkliste på mobil er et arbeidsverktøy: behold kun kort status + neste handling. */
+  body .checklistSummaryCard {
+    padding: 10px 11px !important;
+    margin: 8px 0 10px !important;
+    border-radius: 14px !important;
+  }
+
+  body .checklistSummaryCard > div:first-child {
+    display: flex !important;
+    align-items: baseline !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+
+  body .checklistSummaryCard > div:first-child b {
+    font-size: 15px !important;
+  }
+
+  body .checklistSummaryCard > div:first-child p {
+    margin: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.3 !important;
+  }
+
+  body .checklistSummaryCard .checklistProgress,
+  body .checklistSummaryCard .checklistSummaryBadges {
+    display: none !important;
+  }
+
+  body .checklistSummaryCard .checklistSummaryActions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    margin-top: 8px !important;
+  }
+
+  body .checklistSummaryCard .checklistSummaryActions button {
+    min-height: 40px !important;
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+  }
+
+  body .checklistSummaryCard .checklistSummaryActions button.secondary,
+  body .checklistSummaryCard .checklistSummaryActions[style] {
+    display: none !important;
+  }
+
+  /* Chat er fortsatt tilgjengelig, men skal ikke dekke arbeidsflaten. */
+  body .mobileChatFab {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+    padding: 0 !important;
+    right: 10px !important;
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    gap: 0 !important;
+    border-radius: 999px !important;
+  }
+
+  body .mobileChatFab > span:first-child {
+    font-size: 19px !important;
+    line-height: 1 !important;
+  }
+
+  body .mobileChatFab > span:last-child {
+    display: none !important;
+  }
+
+  body .mobileChatFab.hasUnread::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 2px solid #b91c1c;
+  }
+}
+
