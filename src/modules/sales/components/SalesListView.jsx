@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 28B1
+// Viser når kundetilbud faktisk ble sendt på e-post og markerer tilbud som bør
+// følges opp etter 7 dager uten aksept. Ingen SQL-, e-post- eller state-endring.
 // Expo ProffDok – FASE 23H
 // Presentasjonskomponent for saksoversikten i Befaring / Tilbud / Aksept.
 // Ingen React-state, Supabase-kall, Storage-kall eller forretningslogikk.
@@ -10,6 +13,43 @@ const iconMap = {
   send: Send,
   home: Home,
 };
+
+const OFFER_FOLLOW_UP_DAYS = 7;
+
+function getOfferFollowUpInfo(request) {
+  if (
+    request?.status !== "Tilbud" ||
+    request?.acceptedAt ||
+    !request?.offerEmailSentAt
+  ) {
+    return null;
+  }
+
+  const sentAt = new Date(request.offerEmailSentAt);
+
+  if (Number.isNaN(sentAt.getTime())) {
+    return null;
+  }
+
+  const ageInDays = Math.max(
+    0,
+    Math.floor((Date.now() - sentAt.getTime()) / (24 * 60 * 60 * 1000))
+  );
+  const sentDate = sentAt.toLocaleDateString("nb-NO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const ageText =
+    ageInDays === 0
+      ? "i dag"
+      : `${ageInDays} ${ageInDays === 1 ? "dag" : "dager"} siden`;
+
+  return {
+    text: `Sendt ${sentDate} · ${ageText}`,
+    shouldFollowUp: ageInDays >= OFFER_FOLLOW_UP_DAYS,
+  };
+}
 
 export default function SalesListView({
   activeRequests = [],
@@ -79,6 +119,7 @@ export default function SalesListView({
 
               {activeRequests.map((request) => {
                 const Icon = iconMap[request.iconName] || ClipboardList;
+                const offerFollowUp = getOfferFollowUpInfo(request);
 
                 return (
                   <button
@@ -92,6 +133,42 @@ export default function SalesListView({
                       <p className="sales-request-customer">
                         {request.customer} · {request.address} · {request.id}
                       </p>
+
+                      {offerFollowUp ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            marginTop: 7,
+                          }}
+                        >
+                          <span className="sales-subtitle" style={{ margin: 0 }}>
+                            {offerFollowUp.text}
+                          </span>
+
+                          {offerFollowUp.shouldFollowUp ? (
+                            <span
+                              aria-label="Tilbud bør følges opp"
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                minHeight: 24,
+                                padding: "3px 8px",
+                                borderRadius: 999,
+                                fontSize: 12,
+                                fontWeight: 700,
+                                background: "#fff7ed",
+                                color: "#9a3412",
+                                border: "1px solid #fed7aa",
+                              }}
+                            >
+                              Bør følges opp
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="sales-request-next">
