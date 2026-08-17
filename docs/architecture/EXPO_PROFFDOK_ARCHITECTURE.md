@@ -1,12 +1,12 @@
 Expo ProffDok – arkitekturkart
-Fase: 25 – Modulisert produksjonsarkitektur og trygg videreutvikling
-Status: Oppdatert nå-arkitektur etter Fase 25C
-Dato: 13. august 2026
-Branch: `feature/fase25d-dokumentasjon`
+Fase: 27 – Modulisert produksjonsarkitektur, runtime-sikkerhet og mobilforenkling
+Status: Oppdatert nå-arkitektur etter Fase 27B–27C
+Dato: 17. august 2026
+Branch: `fase27c3-help-update`
 Plassering i repository: `docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md`
-Produksjonsgrunnlag: Stabil `main` etter Fase 25C
+Produksjonsgrunnlag: Stabil `main` etter Fase 27B.2 og Fase 27C
 Formål
-Dette dokumentet er kartet for videre utvikling og modulisering av Expo ProffDok. Det opprinnelige arkitekturkartet ble etablert i Fase 23. Denne versjonen er oppdatert etter produksjonsendringene gjennom Fase 25C.
+Dette dokumentet er kartet for videre utvikling og modulisering av Expo ProffDok. Det opprinnelige arkitekturkartet ble etablert i Fase 23. Denne versjonen er oppdatert etter produksjonsendringene gjennom Fase 27C.
 Dokumentet beskriver:
 dagens faktiske frontendstruktur og grad av modulisering
 ansvar og avhengigheter i `main.jsx`, `SalesModule.jsx` og utskilte moduler
@@ -17,6 +17,8 @@ teknisk gjeld og risikoområder
 anbefalt målstruktur
 trygg rekkefølge for videre modulisering
 test- og godkjenningskrav for senere refaktoreringer
+runtime-feilsikring og kritiske pre-build-kontroller
+mobilnavigasjon og mobilspesifikk informasjonsprioritering
 Dokumentet innfører ingen funksjonelle endringer, ingen databaseendringer og ingen endringer i produksjons-UI.
 1.1 Styrende prinsipper
 Produksjonsversjonen på `main` er kilde til sannhet.
@@ -39,6 +41,7 @@ Sentrale produksjonsnære områder:
 `src/modules/sales/SalesModule.jsx`
 `src/modules/sales/sales.css`
 `src/modules/help/helpTools.js`
+`src/modules/app/AppErrorBoundary.jsx`
 `src/modules/report/reportViewTools.js`
 `src/modules/contract/contractViewTools.js`
 `src/modules/product/productViewTools.js`
@@ -47,6 +50,7 @@ Sentrale produksjonsnære områder:
 `src/modules/installations/installationViewTools.js`
 `src/modules/portal/portalTools.js`
 `package.json`
+`scripts/critical-build-check.mjs`
 `vite.config.js`
 `supabase/functions/smart-worker/index.ts`
 `supabase/functions/delete-pending-user/index.ts`
@@ -75,7 +79,7 @@ låste versjoner i `package-lock.json`
 eksakt komplett filinventar i alle nyere modulmapper
 Der dokumentet bygger på observerte modulnavn eller funksjonsnavn uten fersk full repository-eksport, skal dette leses som produksjonsnær dokumentasjon og ikke som en komplett automatisk kodeinventering.
 3. Repository – observert nåstruktur
-Fase 24 og 25 har flyttet flere tydelige domenevisninger ut av `main.jsx`. Følgende struktur er observert i produksjonsarbeidet:
+Fase 24–27 har flyttet flere tydelige domenevisninger ut av `main.jsx` og lagt til et lite runtime-/build-sikkerhetsnett. Følgende struktur er observert i produksjonsarbeidet:
 ```text
 expo-proffdok/
 ├── api/
@@ -85,6 +89,7 @@ expo-proffdok/
 │   ├── style.css
 │   ├── modules/
 │   │   ├── app/
+│   │   │   └── AppErrorBoundary.jsx
 │   │   ├── checklist/
 │   │   ├── config/
 │   │   ├── contract/
@@ -112,6 +117,8 @@ expo-proffdok/
 │   │   └── surfaces/
 │   │       └── surfaceViewTools.js
 │   ├── [øvrige produksjonsfiler]
+├── scripts/
+│   └── critical-build-check.mjs
 ├── index.html
 ├── sales-preview.html
 ├── package.json
@@ -136,7 +143,7 @@ Fjernet som utgått og ubrukt:
 inspection-assistant
 swift-processor
 ```
-3.3 Modulisering gjennom Fase 24–25
+3.3 Modulisering og stabilisering gjennom Fase 24–27
 Følgende områder er bekreftet flyttet eller koblet mot egne view-/verktøymoduler uten databaseskjemaendring:
 Hjelp
 Produkter
@@ -147,6 +154,14 @@ Tilbud/kontrakt
 Rapport
 Portalrelaterte hjelpefunksjoner
 `main.jsx` er fortsatt den sentrale state- og integrasjonsorkestratoren. Moduliseringen har derfor redusert UI-omfanget, men har ikke flyttet hele prosjektpersistensen eller Supabase-tilgangen ut av hovedappen.
+
+Fase 27B–27C har i tillegg lagt til:
+- `AppErrorBoundary.jsx` rundt hovedappen, slik at en React-renderfeil gir kontrollert feilmelding i stedet for blank skjerm
+- `scripts/critical-build-check.mjs`, som kjøres før Vite-build og kontrollerer enkelte kritiske kjente kontrakter
+- forenklet mobilnavigasjon med prioriterte hurtigvalg, egen Status-inngang og `Alle funksjoner`
+- komprimert mobilvisning for sjekklistefremdrift og flytende chatknapp
+
+Dette er frontend-/build-endringer og har ikke endret database, RLS, Storage, Edge Functions eller prosjektdataformat.
 4. Systemkontekst
 ```mermaid
 flowchart LR
@@ -173,7 +188,7 @@ flowchart LR
 4.1 Runtime-lag
 Lag	Teknologi	Hovedansvar
 Klient	React	UI, state, navigasjon og arbeidsflyt
-Bygg	Vite	Bundle og multi-entry preview
+Bygg	Vite + critical pre-build check	Kritisk kildekontroll før bundle, deretter Vite-build og multi-entry preview
 Identitet	Supabase Auth	Innlogging, sesjon og user metadata
 Data	Supabase Postgres	Profiler, prosjekter, salgssaker, tilbud, produktmaster og garanti
 Filer	Supabase Storage	Prosjektbilder, dokumenter, chatbilder og befaringsbilder
@@ -190,7 +205,7 @@ innlogging, registrering og passordgjenoppretting
 obligatorisk fullføring av brukerprofil
 profil, godkjenning, firma- og systemroller
 brukervilkår og akseptlogg
-startside og mobilmeny
+startside og mobilmeny, inkludert prioriterte hurtigvalg og Status/Alle funksjoner på mobil
 prosjektliste, søk og filter
 opprettelse, åpning, kopiering og sletting av prosjekt
 autolagring, manuell lagring og lokal nødkladd
@@ -476,6 +491,46 @@ tilgangskoder
 garanti
 produktmaster-synk
 Arkitekturkonsekvens: To samtidige oppdateringer kan i prinsippet overskrive hverandres endringer dersom begge arbeider fra ulike snapshots. Refaktorering må derfor bevare dagens merge-/normaliseringslogikk nøyaktig. En egen, sentral `projectRepository` er et senere mål, men skal ikke innføres samtidig med første komponentuttrekk.
+5.8 Runtime-sikkerhet og kritisk build-kontroll
+
+Fase 27B innførte et lite sikkerhetsnett uten ny testplattform eller nye npm-avhengigheter.
+
+Runtime:
+```text
+src/modules/app/AppErrorBoundary.jsx
+```
+`main.jsx` renderer hovedappen inne i `AppErrorBoundary`. Dersom en React-visning kaster en renderfeil, vises en kontrollert feilmelding med mulighet for å laste siden på nytt. Feilen logges fortsatt til nettleserkonsollen. Løsningen erstatter ikke feilretting, men reduserer risikoen for helt blank skjerm.
+
+Build:
+```text
+scripts/critical-build-check.mjs
+```
+`package.json` kjører kontrollen før `vite build`. Kontrollen verifiserer et lite sett kjente kritiske kontrakter, blant annet at rapportvisningene initialiserer `agreementTotals` og at `AppErrorBoundary` fortsatt er koblet rundt hovedappen.
+
+Dette er bevisst et smalt regresjonsvern. Det er ikke en full unit-/component-/end-to-end-testplattform.
+
+5.9 Mobilnavigasjon etter Fase 27C
+
+Desktopnavigasjonen er beholdt. På mobil er informasjonsmengden redusert og arbeidsoppgaver prioritert.
+
+Når et prosjekt er åpent viser mobilmenyen først hurtigvalg til:
+```text
+Befaring/Tilbud
+Bilder
+Sjekklister
+Fag/utstyr
+```
+
+I samme meny finnes:
+```text
+Status
+Alle funksjoner
+```
+
+`Status` åpner den komplette prosjektstatusen og mangler-/fremdriftsvisningen ved behov. `Alle funksjoner` gir tilgang til øvrige faner. Ingen funksjoner er fjernet.
+
+Sjekklistefremdriften er visuelt komprimert på mobil, og chatknappen er redusert i størrelse slik at kontrollpunkter og arbeidsinnhold kommer høyere opp på skjermen. Dette er presentasjonsendringer; sjekklistedata og lagringslogikk er uendret.
+
 Befaring / Tilbud / Aksept – `SalesModule.jsx`
 6.1 Integrasjon med hovedappen
 Hovedappen importerer salgsmodulen fra:
@@ -1063,6 +1118,8 @@ h2
 h3
 ```
 Mobil- og printreglene er også globale. DOM-struktur og elementtype påvirker derfor utseendet selv om klassene ikke endres.
+
+Fase 27C la til mobilspesifikke regler for den nye mobilmenyen, komprimert sjekklistefremdrift og mindre flytende chatknapp. Desktopreglene er bevisst beholdt.
 14.2 `sales.css`
 Mesteparten av salgsstilen er namespacet med `.sales-*`, men filen inneholder også globale regler for:
 ```text
@@ -1102,7 +1159,7 @@ Middels	jsPDF lastes fra ekstern CDN ved runtime	PDF kan feile ved CDN-/nettverk
 Middels	Doble Supabase-konfigurasjonsmønstre	Miljøavvik og vanskeligere testing	Felles klientmodul etter sikre uttrekk
 Middels	Lokal kladd og databasekladd lever parallelt	Konflikt eller gammel kladd kan vinne	Bevar tidsstempel-/hydreringlogikk; test fanebytte nøye
 Middels	Offentlig tilbud avhenger av RPC-sikkerhet	Token-/akseptdata kan eksponeres ved feil SQL	Revider SQL og grants før databaseendringer
-Middels	Ingen observerte test-/lint-scripts i opprinnelig `package.json`	Regresjon oppdages sent	Innfør tester gradvis uten å kombinere med funksjonsendringer
+Middels	Ingen full automatisk testpakke; kun smal critical-build-check	Regresjoner utenfor de kontrollerte kontraktene kan fortsatt oppdages sent	Bygg videre gradvis med smoke-/utility-/component-tester uten å kombinere med store funksjonsendringer
 Lav	Test-/preview-entry finnes i produksjonsrepo	Kan bli feilaktig brukt eller glemt	Behold dokumentert; vurder senere separat opprydding
 Anbefalt målarkitektur
 Målbildet skal nås gradvis. Det er ikke en anbefaling om å flytte alt samtidig.
@@ -1227,9 +1284,9 @@ Portalverktøy
 ```
 Naturlige videre kandidater må velges ut fra fersk `main` og faktisk avhengighetsflate – ikke bare etter den opprinnelige Fase 23-listen.
 Før nye uttrekk bør dagens repositorystruktur og importgraf kontrolleres slik at det ikke opprettes dupliserte mapper eller feil `src/src/...`-stier.
-19. Trygg videreutvikling etter Fase 25
+19. Trygg videreutvikling etter Fase 27
 Den opprinnelige Fase 23-planen var å starte med små, state-frie uttrekk. Denne strategien er videreført gjennom Fase 24 og 25.
-19.1 Gjennomført retning
+19.1 Gjennomført retning gjennom Fase 27
 Bekreftede prinsipper og leveranser:
 arkitekturkart før større refaktorering
 utgått AI-/lydopptaksfunksjonalitet fjernet
@@ -1240,6 +1297,10 @@ prosjektets tilbudsdata ryddet slik at opprinnelig avtale og senere endringer ik
 strukturerte tillegg/fradrag innført uten SQL-endring
 historiske fasekommentarer i toppen av `main.jsx` ryddet uten funksjonsendring
 produksjon verifisert etter hver merge
+- runtime Error Boundary lagt rundt hovedappen
+- critical pre-build check innført uten nye npm-avhengigheter
+- mobilnavigasjon forenklet uten å fjerne funksjoner
+- prosjektstatus og sjekklistefremdrift nedprioritert visuelt på mobil, men fortsatt tilgjengelig ved behov
 19.2 Anbefalt videre rekkefølge
 Trinn 1 – Hold dokumentasjonen synkron
 Oppdater Hjelp og arkitekturkart når produksjonsflyt eller datamodell endres.
@@ -1269,14 +1330,18 @@ Sikkerhetsarbeid skal ikke blandes med ordinær frontendmodulisering.
 Før merge:
 ```text
 npm install / npm ci
+npm run check:critical
 npm run build
 ```
-Når testverktøy er innført:
+`npm run build` kjører også critical-build-check før Vite-build.
+
+Videre testutvikling:
 ```text
 unit tests for rene utilities
 component tests for utskilte views
 smoke tests for kritiske flyter
 ```
+Critical-build-check er et tillegg til, ikke en erstatning for, manuell Preview-test.
 20.2 Obligatorisk manuell regresjon
 Autentisering
 innlogging
@@ -1347,12 +1412,12 @@ akseptpayload
 Storage-paths
 e-postpayload til `smart-worker`
 URL-parametere og kundelenker
-Branch- og mergepolicy etter Fase 25
+Branch- og mergepolicy etter Fase 27
 Hver logiske endring skal fortsatt få egen branch.
 Eksempler:
 ```text
-feature/fase25d-dokumentasjon
-feature/fase26-<avgrenset-område>
+fase27c3-help-update
+fase27d-<avgrenset-område>
 ```
 En branch skal ikke inneholde flere uavhengige refaktoreringer.
 Dokumentasjonsbranch skal kun endre dokumentasjon eller Hjelp-innhold og ikke funksjonskode.
@@ -1385,6 +1450,10 @@ Dato	Beslutning	Begrunnelse
 13.08.2026	Ingen SQL-/RLS-endring for strukturerte avtaleendringer	Ny funksjon er lagt inn bakoverkompatibelt i eksisterende prosjekt-JSON
 13.08.2026	210 historiske fasekommentarlinjer fjernet fra toppen av `main.jsx`	Ren kildekodeopprydding uten funksjonsendring; historikk finnes i Git
 13.08.2026	Hjelp og arkitekturkart oppdateres etter Fase 25	Dokumentasjonen skal beskrive faktisk produksjonsflyt
+17.08.2026	AppErrorBoundary legges rundt hovedappen	En React-renderfeil skal gi kontrollert feilmelding i stedet for blank skjerm
+17.08.2026	Critical pre-build check innføres	Kjente kritiske regresjoner skal kunne stoppe Vercel-build før deploy
+17.08.2026	Mobilnavigasjonen forenkles	Mobil brukes primært til operative oppgaver; viktige funksjoner prioriteres og status flyttes ut av hovedflyten
+17.08.2026	Sjekklistefremdrift og chat komprimeres på mobil	Mer av arbeidsinnholdet skal være synlig uten unødvendig scrolling
 23. Åpne verifikasjonspunkter
 Disse skal avklares før relevant område endres, men blokkerer ikke ordinære små frontenduttrekk:
 Eksporter komplett Supabase-schema til versjonskontroll.
@@ -1402,8 +1471,8 @@ Avklar om `fdv_register` fortsatt er aktivt domene eller kun historisk kompatibi
 Ta en fersk komplett repository-inventering etter den videre Fase 24–25-moduliseringen.
 Vurder senere om `salesOrigin.acceptedTotal` bør få eksplisitt mva.-metadata i stedet for implisitt 25 %-konvertering.
 Avklar fremtidig strategi for eldre ustrukturerte tillegg/fradrag dersom de skal kunne inngå i maskinell avtalesumberegning.
-24. Anbefalt neste kodeoppgave
-Etter Fase 25D bør neste tekniske oppgave velges fra en fersk kontroll av dagens `main` og modulstruktur.
+24. Anbefalt neste kodeoppgave etter Fase 27C
+Etter Fase 27C bør neste tekniske oppgave fortsatt velges fra en fersk kontroll av dagens `main` og modulstruktur.
 Anbefalt arbeidsmåte:
 ```text
 1. Hent dagens produksjonsfiler
@@ -1417,7 +1486,7 @@ Anbefalt arbeidsmåte:
 ```
 Ikke bruk det gamle Fase 23-linjetallet eller den gamle uttrekkslisten alene som grunnlag for neste modul. Produksjonskoden har endret seg betydelig siden kartet først ble skrevet.
 25. Konklusjon
-Expo ProffDok har fortsatt en bred funksjonsflate og et sentralt `main.jsx`, men Fase 24–25 har redusert direkte UI-ansvar gjennom flere kontrollerte moduluttrekk.
+Expo ProffDok har fortsatt en bred funksjonsflate og et sentralt `main.jsx`, men Fase 24–27 har redusert direkte UI-ansvar gjennom kontrollerte moduluttrekk og lagt til et lite runtime-/build-sikkerhetsnett.
 Den viktigste arkitekturelle retningen er fortsatt:
 ```text
 Kartlegg
