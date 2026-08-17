@@ -1,3 +1,4 @@
+// FASE 28B2 HJELP / BRUKERVEILEDNING: Oppdatert for firmadelte tilbudsmaler og manuell oppfølging av sendte tilbud. Ingen database-, RLS-, Storage-, Edge Function- eller automatisk e-postendring.
 // FASE 27C.3 HJELP / BRUKERVEILEDNING: Oppdatert for mobilforenkling, ny mobilmeny, kompakt sjekklistefremdrift og runtime-feilhåndtering. Ingen database-, RLS-, Storage-, Edge Function- eller e-postendring.
 import React, * as ReactNS from 'react';
 import { FileText } from 'lucide-react';
@@ -475,13 +476,18 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Opprett en ny forespørsel og registrer kunde, kontaktinformasjon, adresse, ansvarlig og neste steg.",
           "Planlegg befaring og samle notater, bilder og nødvendige avklaringer i saken.",
           "Opprett tilbudsutkast med beskrivelse, tilbudslinjer, beløp, bilder, lenker og eventuelle opsjoner.",
+          "Bruk en firmadelt tilbudsmal når et standard oppsett passer, eller lagre et ferdig tilbudsoppsett som mal for senere bruk. Malinnholdet kopieres inn i en vanlig redigerbar tilbudskladd.",
           "Forhåndsvis tilbudet, publiser riktig versjon og send eller kopier kundelenken til kunden.",
+          "Etter e-postutsending viser Expo ProffDok sendt dato og hvor lenge tilbudet har vært ubesvart. Etter 7 dager uten aksept markeres tilbudet som Bør følges opp.",
+          "Åpne saken og bruk Følg opp tilbud for manuell oppfølging. Hvis tilbudet har upubliserte endringer, publiseres riktig ny versjon før den sendes til kunden.",
           "Kunden gjennomgår tilbudet, velger eventuelle opsjoner og gir digital aksept. Kontroller deretter akseptdetaljene i saken.",
           "Opprett og kontroller det låste akseptbeviset. Last eventuelt opp kontrakt eller andre avtaledokumenter.",
           "Aktiver den aksepterte salgssaken som ProffDok-prosjekt og åpne prosjektet fra salgssaken eller oversikten."
         ],
         important: [
           "Kontroller kundeopplysninger, summer, merverdiavgift, opsjoner, vedlegg og firmaprofil før tilbudet publiseres.",
+          "Tilbudsmaler er firmadelte og skal bare inneholde gjenbrukbart tilbudsinnhold. Kunde, adresse, befaring, bilder og PDF-vedlegg følger ikke med når malen lagres.",
+          "Oppfølging av sendte tilbud er manuell. Expo ProffDok sender ikke automatisk purring til kunden.",
           "Publiserte og aksepterte tilbudsversjoner skal ikke overskrives. Ved endringer opprettes en ny tilbudsversjon som krever ny kundeaksept.",
           "Akseptbeviset dokumenterer tilbudsversjon, tidspunkt, kunde og valgte opsjoner og skal oppbevares sammen med prosjektets øvrige avtaledokumenter.",
           "En aktivert salgssak er skrivebeskyttet. Tilbud, akseptbevis, kontrakter og tidligere versjoner bevares i historikken.",
@@ -491,6 +497,8 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Registrer eier, neste steg og frist når forespørselen opprettes.",
           "Ta bilder og noter avklaringer under befaringen, slik at informasjonen ikke må registreres på nytt senere.",
           "Bruk tydelige tilbudslinjer og skill mellom hovedleveranse og valgfrie opsjoner.",
+          "Bruk firmamaler for standard innhold, men kontroller og tilpass alltid malen til den konkrete kunden før publisering.",
+          "Følg opp tilbud som er markert Bør følges opp, og kontroller først om saken har en ny upublisert tilbudsversjon.",
           "Åpne kundelenken og kontroller kundevisningen før den sendes.",
           "Kontroller akseptbevis og avtaledokumenter før saken aktiveres som prosjekt."
         ]
@@ -528,6 +536,8 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Bilder fra Ferdig resultat kan brukes som headingbilde i rapporten.",
           "Digital brukerveiledning er nå den gjeldende veiledningen i Hjelp.",
           "Befaring/Tilbud samler forespørsel, befaring, tilbud, digital kundeaksept, akseptbevis og prosjektaktivering i én arbeidsflyt.",
+          "Firmadelte tilbudsmaler kan lagres, brukes og slettes direkte i tilbudsbyggeren. Malen kopieres inn som en redigerbar tilbudskladd uten kunde-, befarings-, bilde- eller PDF-data.",
+          "Sendte tilbud viser sendt dato og antall dager siden utsending. Tilbud som har vært ubesvart i 7 dager markeres Bør følges opp, og kan følges opp manuelt fra tilbudssaken.",
           "Tilbud/kontrakt skiller nå mellom opprinnelig avtale og senere endringer. Tillegg og fradrag registreres som egne poster med beløp inkl. mva., og gjeldende avtalesum beregnes når opprinnelig avtalesum finnes.",
           "Systemadministrator kan avvise og slette ventende brukere.",
           "Mobilvisningen er forenklet med hurtigvalg til Befaring/Tilbud, Bilder, Sjekklister og Fag/utstyr, egen Status-knapp og Alle funksjoner for resten av appen.",
