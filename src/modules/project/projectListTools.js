@@ -219,7 +219,6 @@ export function createProjectListTools({
     compact = false
   }) {
     const followUpRows = (Array.isArray(projectRows) ? projectRows : [])
-      .filter((item) => item?.listStatus?.tone !== "done" && item?.listStatus?.tone !== "locked")
       .map((item) => {
         const unreadCount = Number(item?.unreadForAdminInList || 0);
         const deviationCount = Number(item?.openDeviationCount || 0);
