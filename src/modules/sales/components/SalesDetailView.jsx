@@ -334,6 +334,7 @@ export default function SalesDetailView({
                 ) : null}
 
                 {selectedRequest.surveyDate &&
+                !inspectionIsCompleted &&
                 !["Akseptert", "Aktivert"].includes(selectedRequest.status) ? (
                   <button
                     className="sales-secondary-button"
