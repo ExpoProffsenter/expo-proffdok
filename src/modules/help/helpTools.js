@@ -609,6 +609,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Bruk supportmodus bevisst når du skal hjelpe et firma eller åpne et prosjekt på vegne av andre brukere.",
           "Vedlikehold produktmaster og synkroniser kun aktive prosjekter der dette er riktig.",
           "Bruk Nyheter i appen til korte, relevante meldinger om nye funksjoner eller viktige endringer.",
+          "Hold nyheten kort og konkret, slik at brukeren raskt ser hva som er endret.",
           "Publiser én tydelig nyhet om gangen. Deaktiver meldingen når den ikke lenger skal vises, eller publiser den på nytt når den skal bli aktuell igjen."
         ],
         important: [
