@@ -1,5 +1,6 @@
 // Expo ProffDok – main application entry. Historical phase/deploy notes are preserved in Git history.
 // FASE 28C1: Startside viser konkrete prosjekter som krever oppfølging via projectListTools.
+// FASE 28C2: Startsiden viser også sendte tilbud som bør følges opp, med direkte åpning av riktig salgssak.
 // Admin: old FDV-register UI removed; Produktmaster is now the active admin document register.
 import React, * as ReactNS from 'react';
 import { createRoot } from 'react-dom/client';
@@ -7,6 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck } from 'lucide-react';
 import './style.css';
 import SalesModule from './modules/sales/SalesModule.jsx';
+import SalesHomeFollowUp, { useSalesHomeFollowUpData } from './modules/sales/components/SalesHomeFollowUp.jsx';
 import { createReportTools } from './modules/report/reportTools.js';
 import { createReportViewTools } from './modules/report/reportViewTools.js';
 import { createPortalAccessTools, renderCustomerPortal } from './modules/portal/portalTools.js';
@@ -717,6 +719,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [tab, setTab] = (0, import_react.useState)("prosjekt");
     const [salesStartNewRequestSignal, setSalesStartNewRequestSignal] = (0, import_react.useState)(0);
     const [salesStartNewOfferSignal, setSalesStartNewOfferSignal] = (0, import_react.useState)(0);
+    const [salesOpenRequestSignal, setSalesOpenRequestSignal] = (0, import_react.useState)("");
     const [mobileMenuOpen, setMobileMenuOpen] = (0, import_react.useState)(false);
     const [mobileStatusOpen, setMobileStatusOpen] = (0, import_react.useState)(false);
     const [projectDirty, setProjectDirty] = (0, import_react.useState)(false);
@@ -1945,6 +1948,12 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const readyForCustomer = ordinaryProjectListRows.filter((item) => item.listStatus.tone === "customer_ready").length;
       return { active, deviations, unreadProjects, readyForCustomer };
     }, [ordinaryProjectListRows]);
+    const salesHomeFollowUp = useSalesHomeFollowUpData({
+      supabaseClient: supabase,
+      authUser,
+      integrationMode: "app",
+      enabled: !hasActiveProjectWorkspace && tab === "prosjekt"
+    });
     const openProjectDeviationCount = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
     const tabs = [
       ["prosjekt", mobileCreatingProject && !projectId ? "Nytt prosjekt" : hasActiveProjectWorkspace ? "Prosjektoversikt" : "Startside"],
@@ -2150,11 +2159,23 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setTimeout(() => scrollToMobileTabTarget("sales"), 320);
     };
     const startNewSalesRequest = () => {
+      setSalesOpenRequestSignal("");
+      setSalesStartNewOfferSignal(0);
       setSalesStartNewRequestSignal((current) => current + 1);
       openSalesOverview();
     };
     const startNewSalesOffer = () => {
+      setSalesOpenRequestSignal("");
+      setSalesStartNewRequestSignal(0);
       setSalesStartNewOfferSignal((current) => current + 1);
+      openSalesOverview();
+    };
+    const openSalesRequestFromHome = (requestId) => {
+      const cleanRequestId = String(requestId || "").trim();
+      if (!cleanRequestId) return;
+      setSalesStartNewRequestSignal(0);
+      setSalesStartNewOfferSignal(0);
+      setSalesOpenRequestSignal(cleanRequestId);
       openSalesOverview();
     };
     const appendProjectDescriptionTemplate = (templateText) => {
@@ -2630,6 +2651,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setProjectSearch("");
       setProjectStatusFilter("alle");
       setProjectUnreadOnly(false);
+      setSalesOpenRequestSignal("");
       setAdminUserSearch("");
       setAdminUserCompanyFilter("");
       setAdminUserFilter("pending");
@@ -5889,6 +5911,11 @@ ${appLink}`;
             limit: 6,
             compact: true
           }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesHomeFollowUp, {
+            ...salesHomeFollowUp,
+            compact: true,
+            onOpenRequest: openSalesRequestFromHome
+          }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeSearchCard", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk prosjekt, kunde, adresse, e-post, telefon eller garantinr.", value: projectSearch, onChange: setProjectSearch }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeFilterRow", children: [
@@ -6090,6 +6117,11 @@ ${appLink}`;
             openProjectById,
             limit: 6,
             compact: false
+          }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesHomeFollowUp, {
+            ...salesHomeFollowUp,
+            compact: false,
+            onOpenRequest: openSalesRequestFromHome
           })
         ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: projectId ? "Rediger kunde- og prosjektinfo" : "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Kunde- og prosjektdata", defaultOpen: true, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Prosjektansvarlig", value: project.responsible, onChange: (v) => setProject({ ...project, responsible: v }) }),
@@ -6134,8 +6166,10 @@ ${appLink}`;
             integrationMode: "app",
             startNewRequestSignal: salesStartNewRequestSignal,
             startNewOfferSignal: salesStartNewOfferSignal,
+            openRequestSignal: salesOpenRequestSignal,
             onStartNewRequestHandled: () => setSalesStartNewRequestSignal(0),
-            onStartNewOfferHandled: () => setSalesStartNewOfferSignal(0)
+            onStartNewOfferHandled: () => setSalesStartNewOfferSignal(0),
+            onOpenRequestHandled: () => setSalesOpenRequestSignal("")
           })
         ] }),
         tab === "prosjektinfo" && renderProjectDescriptionPanel({

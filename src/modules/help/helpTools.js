@@ -1,5 +1,6 @@
 // FASE 28B2 HJELP / BRUKERVEILEDNING: Oppdatert for firmadelte tilbudsmaler og manuell oppfølging av sendte tilbud. Ingen database-, RLS-, Storage-, Edge Function- eller automatisk e-postendring.
 // FASE 28C1 HJELP / BRUKERVEILEDNING: Startsiden beskriver nå Krever oppfølging for ulest kundemelding, åpne avvik og status Klar for kunde. Ingen database-, RLS-, Storage-, Edge Function- eller e-postendring.
+// FASE 28C2 HJELP / BRUKERVEILEDNING: Startsiden viser også sendte tilbud som bør følges opp. Tilbudsarbeidsflyten beskriver publisering/sending til kunde og gjennomført befaring. Ingen database-, RLS-, Storage- eller Edge Function-endring.
 import React, * as ReactNS from 'react';
 import { FileText } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
@@ -22,6 +23,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Velg Ny forespørsel for å registrere en kundehenvendelse direkte, eller åpne Befaring/Tilbud for å fortsette en eksisterende salgssak.",
           "Opprett et nytt prosjekt direkte når tilbudsprosessen ikke er nødvendig, eller åpne et eksisterende prosjekt fra prosjektlisten.",
           "Bruk feltet Krever oppfølging på Startsiden for å se prosjekter med ulest kundemelding, åpne avvik eller status Klar for kunde. Knappene åpner prosjektet direkte på riktig arbeidsflate.",
+          "Bruk feltet Tilbud som bør følges opp for å se tilbud som er sendt på e-post for minst 7 dager siden uten registrert kundeaksept. Åpne tilbud går direkte til riktig salgssak.",
           "Legg inn prosjektinformasjon, kunde, adresse og ansvarlig før øvrig dokumentasjon bygges opp.",
           "Velg dokumentert tetthetsgaranti og Sopro-system dersom prosjektet skal være et garantibad.",
           "Dokumenter produkter, bilder, sjekklister, avvik, overtagelse og rapport fortløpende."
@@ -29,12 +31,13 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
         important: [
           "Bruk personlig e-postadresse. Ikke del innlogging med andre.",
           "Prosjektdata som kunde, adresse og firmaopplysninger brukes videre i rapport og garantidokumentasjon.",
-          "Krever oppfølging er en arbeidsoversikt basert på eksisterende prosjektdata. Den oppretter ikke egne oppgaver og endrer ikke prosjektstatus automatisk.",
+          "Krever oppfølging og Tilbud som bør følges opp er arbeidsoversikter basert på eksisterende prosjekt- og salgsdata. De oppretter ikke egne oppgaver og endrer ikke status automatisk.",
           "Ferdig rapport bør alltid lastes ned og lagres i bedriftens eget arkiv."
         ],
         best: [
           "Start dokumentasjonen ved prosjektoppstart, ikke ved prosjektslutt.",
           "Bruk Krever oppfølging som en rask inngang til ulest kundedialog, åpne avvik og prosjekter som er klare for kunde.",
+          "Bruk Tilbud som bør følges opp som en daglig påminnelse om sendte tilbud som trenger manuell oppfølging.",
           "Ta bilder og fyll ut sjekklister mens arbeidet utføres.",
           "Bruk prosjektchatten som hovedkanal for kundedialog når avklaringer gjelder prosjektet eller leveransen."
         ]
@@ -477,11 +480,11 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
         purpose: "Befaring/Tilbud samler hele salgsflyten fra ny forespørsel og befaring til publisert tilbud, digital kundeaksept og aktivert ProffDok-prosjekt.",
         workflow: [
           "Opprett en ny forespørsel og registrer kunde, kontaktinformasjon, adresse, ansvarlig og neste steg.",
-          "Planlegg befaring og samle notater, bilder og nødvendige avklaringer i saken.",
+          "Planlegg befaring og samle notater, bilder og nødvendige avklaringer i saken. Når befaringsnotatet er fullført eller saken går videre til tilbud, vises befaringen som gjennomført.",
           "Opprett tilbudsutkast med beskrivelse, tilbudslinjer, beløp, bilder, lenker og eventuelle opsjoner.",
           "Bruk en firmadelt tilbudsmal når et standard oppsett passer, eller lagre et ferdig tilbudsoppsett som mal for senere bruk. Malinnholdet kopieres inn i en vanlig redigerbar tilbudskladd.",
-          "Forhåndsvis tilbudet, publiser riktig versjon og send eller kopier kundelenken til kunden.",
-          "Etter e-postutsending viser Expo ProffDok sendt dato og hvor lenge tilbudet har vært ubesvart. Etter 7 dager uten aksept markeres tilbudet som Bør følges opp.",
+          "Forhåndsvis tilbudet og bruk Publiser og send til kunde når den nye versjonen skal sendes på e-post. Bruk Publiser og kopier lenke når du vil sende kundelenken selv.",
+          "Etter e-postutsending viser Expo ProffDok sendt dato og hvor lenge tilbudet har vært ubesvart. Etter 7 dager uten aksept markeres tilbudet som Bør følges opp og vises også på Startsiden under Tilbud som bør følges opp.",
           "Åpne saken og bruk Følg opp tilbud for manuell oppfølging. Hvis tilbudet har upubliserte endringer, publiseres riktig ny versjon før den sendes til kunden.",
           "Kunden gjennomgår tilbudet, velger eventuelle opsjoner og gir digital aksept. Kontroller deretter akseptdetaljene i saken.",
           "Opprett og kontroller det låste akseptbeviset. Last eventuelt opp kontrakt eller andre avtaledokumenter.",
@@ -501,7 +504,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Ta bilder og noter avklaringer under befaringen, slik at informasjonen ikke må registreres på nytt senere.",
           "Bruk tydelige tilbudslinjer og skill mellom hovedleveranse og valgfrie opsjoner.",
           "Bruk firmamaler for standard innhold, men kontroller og tilpass alltid malen til den konkrete kunden før publisering.",
-          "Følg opp tilbud som er markert Bør følges opp, og kontroller først om saken har en ny upublisert tilbudsversjon.",
+          "Følg opp tilbud som er markert Bør følges opp fra salgssaken eller direkte fra Startsiden, og kontroller først om saken har en ny upublisert tilbudsversjon.",
           "Åpne kundelenken og kontroller kundevisningen før den sendes.",
           "Kontroller akseptbevis og avtaledokumenter før saken aktiveres som prosjekt."
         ]
@@ -540,8 +543,9 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Digital brukerveiledning er nå den gjeldende veiledningen i Hjelp.",
           "Befaring/Tilbud samler forespørsel, befaring, tilbud, digital kundeaksept, akseptbevis og prosjektaktivering i én arbeidsflyt.",
           "Firmadelte tilbudsmaler kan lagres, brukes og slettes direkte i tilbudsbyggeren. Malen kopieres inn som en redigerbar tilbudskladd uten kunde-, befarings-, bilde- eller PDF-data.",
-          "Sendte tilbud viser sendt dato og antall dager siden utsending. Tilbud som har vært ubesvart i 7 dager markeres Bør følges opp, og kan følges opp manuelt fra tilbudssaken.",
-          "Startsiden har nå Krever oppfølging, som samler prosjekter med ulest kundemelding, åpne avvik eller status Klar for kunde og gir direkte inngang til riktig arbeidsflate.",
+          "Sendte tilbud viser sendt dato og antall dager siden utsending. Tilbud som har vært ubesvart i 7 dager markeres Bør følges opp og vises også på Startsiden med direkte inngang til riktig tilbudssak.",
+          "Startsiden har nå Krever oppfølging for prosjekter og Tilbud som bør følges opp for sendte tilbud som har vært ubesvart i minst 7 dager. Begge gir direkte inngang til riktig arbeidsflate.",
+          "I Befaring/Tilbud vises gjennomført befaring tydelig, og Outlook-handlingen skjules når befaringen allerede er utført. Ny tilbudsversjon kan publiseres og sendes til kunden i samme handling.",
           "Tilbud/kontrakt skiller nå mellom opprinnelig avtale og senere endringer. Tillegg og fradrag registreres som egne poster med beløp inkl. mva., og gjeldende avtalesum beregnes når opprinnelig avtalesum finnes.",
           "Systemadministrator kan avvise og slette ventende brukere.",
           "Mobilvisningen er forenklet med hurtigvalg til Befaring/Tilbud, Bilder, Sjekklister og Fag/utstyr, egen Status-knapp og Alle funksjoner for resten av appen.",
