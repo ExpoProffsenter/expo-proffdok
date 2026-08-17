@@ -1964,6 +1964,17 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       ["hjelp", "Hjelp"],
       ...canUseAdminProjectSync ? [["admin", "Systemadmin"]] : []
     ];
+    const mobilePrimaryTabs = hasActiveProjectWorkspace ? [
+      ["sales", "Befaring/Tilbud", "🧾"],
+      ["bilder", "Bilder", "📷"],
+      ["sjekklister", "Sjekklister", "✅"],
+      ["installasjoner", "Fag/utstyr", "🛠️"]
+    ] : [
+      ["sales", "Befaring/Tilbud", "🧾"],
+      ["prosjektliste", "Prosjektliste", "📁"]
+    ];
+    const mobilePrimaryTabIds = new Set(mobilePrimaryTabs.map(([id]) => id));
+    const mobileOtherTabs = tabs.filter(([id]) => !mobilePrimaryTabIds.has(id));
     const currentTabIndex = tabs.findIndex(([id]) => id === tab);
     const previousTab = currentTabIndex > 0 ? tabs[currentTabIndex - 1] : null;
     const nextTab = currentTabIndex >= 0 && currentTabIndex < tabs.length - 1 ? tabs[currentTabIndex + 1] : null;
@@ -6215,6 +6226,73 @@ ${appLink}`;
           grid-template-columns:1fr;
           gap:8px;
         }
+        .mobileMenuQuickGrid {
+          display:grid;
+          grid-template-columns:repeat(2, minmax(0, 1fr));
+          gap:8px;
+        }
+        .mobileMenuQuickButton {
+          width:100%;
+          min-height:52px !important;
+          margin:0 !important;
+          padding:9px 8px !important;
+          display:flex !important;
+          align-items:center !important;
+          justify-content:center !important;
+          gap:7px !important;
+          border-radius:13px !important;
+          font-size:14px !important;
+          line-height:1.15 !important;
+          box-shadow:none !important;
+        }
+        .mobileMenuQuickButton > span:first-child {
+          font-size:17px;
+          flex:0 0 auto;
+        }
+        .mobileAllFunctions {
+          border:1px solid #cbd5e1;
+          border-radius:14px;
+          background:#fff;
+          overflow:hidden;
+        }
+        .mobileAllFunctions > summary {
+          min-height:44px;
+          padding:10px 12px;
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:10px;
+          cursor:pointer;
+          list-style:none;
+          font-size:15px;
+          font-weight:900;
+          color:#0f172a;
+          user-select:none;
+        }
+        .mobileAllFunctions > summary::-webkit-details-marker { display:none; }
+        .mobileAllFunctionsCaret {
+          transition:transform .16s ease;
+          font-size:13px;
+        }
+        .mobileAllFunctions[open] .mobileAllFunctionsCaret { transform:rotate(180deg); }
+        .mobileAllFunctionsGrid {
+          display:grid;
+          grid-template-columns:repeat(2, minmax(0, 1fr));
+          gap:8px;
+          padding:0 8px 8px;
+          border-top:1px solid #e2e8f0;
+        }
+        .mobileMenuAllButton {
+          width:100%;
+          min-height:44px !important;
+          margin:8px 0 0 !important;
+          padding:8px 7px !important;
+          border-radius:12px !important;
+          font-size:13px !important;
+          line-height:1.15 !important;
+          box-shadow:none !important;
+          white-space:normal !important;
+        }
         .mobileProjectLine {
           grid-column:1 / -1;
           display:flex;
@@ -6650,33 +6728,53 @@ ${appLink}`;
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileFieldBar", "aria-label": "Mobil arbeidsmeny", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarInner", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "mobileFieldBarToggle", "aria-expanded": mobileMenuOpen, onClick: () => setMobileMenuOpen((open) => !open), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["☰ Meny · ", tabs.find(([id]) => id === tab)?.[1] || "Velg side"] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["☰ ", tabs.find(([id]) => id === tab)?.[1] || "Velg side"] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "aria-hidden": "true", children: mobileMenuOpen ? "▲" : "▼" })
         ] }),
         mobileMenuOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileFieldBarMenu", children: [
-        projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLine", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLineText", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Du jobber i" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: project.projectName || project.address || "\xC5pent prosjekt" })
+          projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLine", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLineText", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Du jobber i" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: project.projectName || project.address || "\xC5pent prosjekt" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: "Bytt" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: "Bytt" })
-        ] }),
-        !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLine", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLineText", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Nytt prosjekt" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ikke lagret ennå" })
+          !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLine", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileProjectLineText", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Nytt prosjekt" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ikke lagret ennå" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "Avbryt" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "Avbryt" })
-        ] }),
-        projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: mobileStatusOpen ? "mobileStatusMenuButton" : "secondary mobileStatusMenuButton", onClick: openMobileStatus, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "📊 Status" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
-            currentStatus.label,
-            projectGuideStats.checklistMissing > 0 ? ` · ${projectGuideStats.checklistMissing} sjekkpunkt` : "",
-            projectGuideStats.openDeviationCount > 0 ? ` · ${projectGuideStats.openDeviationCount} avvik` : ""
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileMenuQuickGrid", "aria-label": "Viktigste funksjoner", children: mobilePrimaryTabs.map(([id, label, icon]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+            type: "button",
+            className: tab === id ? "mobileMenuQuickButton" : "secondary mobileMenuQuickButton",
+            onClick: () => goToTab(id),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "aria-hidden": "true", children: icon }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label })
+            ]
+          }, "mobile-primary-" + id)) }),
+          projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: mobileStatusOpen ? "mobileStatusMenuButton" : "secondary mobileStatusMenuButton", onClick: openMobileStatus, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "📊 Status" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
+              currentStatus.label,
+              projectGuideStats.checklistMissing > 0 ? ` · ${projectGuideStats.checklistMissing} sjekkpunkt` : "",
+              projectGuideStats.openDeviationCount > 0 ? ` · ${projectGuideStats.openDeviationCount} avvik` : ""
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", { className: "mobileAllFunctions", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("summary", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Alle funksjoner" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileAllFunctionsCaret", "aria-hidden": "true", children: "▼" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileAllFunctionsGrid", children: mobileOtherTabs.map(([id, label]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+              type: "button",
+              className: tab === id ? "mobileMenuAllButton" : "secondary mobileMenuAllButton",
+              onClick: () => goToTab(id),
+              children: label
+            }, "mobile-all-" + id)) })
           ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { "aria-label": "Velg seksjon", value: tab, onChange: (e) => goToTab(e.target.value), children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: id, children: l }, "mobile-field-" + id)) })
         ] })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
