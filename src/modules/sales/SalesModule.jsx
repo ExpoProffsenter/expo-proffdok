@@ -1,3 +1,4 @@
+// FASE 28C2 STARTSIDE-TILBUD: Tillater direkte åpning av en konkret salgssak fra Startsiden via signal. Ingen SQL/RLS/Storage/e-postendring.
 // FASE 28A3 TILBUDSMALER: Henter, bruker og sletter firmadelte tilbudsmaler. Malbruk kopierer kun tilbudsinnhold til redigerbar kladd; kunde/befaring/publisert historikk berøres ikke.
 // FASE 28A2 TILBUDSMALER: Eksisterende tilbud kan lagres som firmadelt mal via sales_offer_templates. Kundedata, bilder, PDF-vedlegg, publisering og historikk kopieres ikke til malen.
 // FASE 26B.1 TILBUDSVEDLEGG: Underposter og opsjoner kan ha bilde og PDF-vedlegg. PDF lagres i eksisterende project-images Storage og følger tilbudsdata uten SQL/RLS-endring.\n// FASE 26B: Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri administrasjon/prosjektstyring. Flat lagringsmodell beholdes for bakoverkompatibilitet. Ingen SQL/RLS/Storage/Edge/e-postendring.
@@ -237,8 +238,10 @@ export default function SalesModule({
   integrationMode = "preview",
   startNewRequestSignal = 0,
   startNewOfferSignal = 0,
+  openRequestSignal = "",
   onStartNewRequestHandled = null,
   onStartNewOfferHandled = null,
+  onOpenRequestHandled = null,
 } = {}) {
   const activeSupabase = supabaseClient || supabase;
   const salesStorageKey = useMemo(
@@ -1038,6 +1041,22 @@ export default function SalesModule({
     // Signal nullstilles i hovedappen etter at det er håndtert.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startNewOfferSignal, integrationMode]);
+
+  useEffect(() => {
+    if (!openRequestSignal || integrationMode !== "app") return;
+
+    const requestId = String(openRequestSignal || "").trim();
+    if (!requestId) return;
+
+    const requestExists = requests.some((request) => request.id === requestId);
+    if (!requestExists) return;
+
+    setSelectedRequestId(requestId);
+    setMode("detail");
+    onOpenRequestHandled?.();
+    // Vent til firmascopede requests er lastet dersom saken ikke finnes i lokal cache.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openRequestSignal, integrationMode, requests]);
 
   function goToList() {
     setMode("list");
