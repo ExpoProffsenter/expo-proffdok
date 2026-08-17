@@ -1,3 +1,5 @@
+// Expo ProffDok – FASE 28C1
+// Startsideoppfølging bygges på eksisterende prosjektlistedata uten nye databasefelt.
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 
 const import_jsx_runtime = { jsx, jsxs, Fragment };
@@ -209,5 +211,176 @@ export function createProjectListTools({
         ] });
   }
 
-  return { renderProjectListPanel };
+
+  function renderProjectFollowUpPanel({
+    projectRows = [],
+    openProjectById,
+    limit = 6,
+    compact = false
+  }) {
+    const followUpRows = (Array.isArray(projectRows) ? projectRows : [])
+      .filter((item) => item?.listStatus?.tone !== "done" && item?.listStatus?.tone !== "locked")
+      .map((item) => {
+        const unreadCount = Number(item?.unreadForAdminInList || 0);
+        const deviationCount = Number(item?.openDeviationCount || 0);
+        const readyForCustomer = item?.listStatus?.tone === "customer_ready";
+        const priority = unreadCount > 0 ? 0 : deviationCount > 0 ? 1 : readyForCustomer ? 2 : 99;
+        const updatedAt = String(item?.row?.updated_at || item?.row?.created_at || "");
+        return {
+          ...item,
+          unreadCount,
+          deviationCount,
+          readyForCustomer,
+          priority,
+          updatedAt
+        };
+      })
+      .filter((item) => item.priority < 99)
+      .sort(
+        (left, right) =>
+          left.priority - right.priority ||
+          String(right.updatedAt || "").localeCompare(String(left.updatedAt || ""))
+      )
+      .slice(0, Math.max(1, Number(limit) || 6));
+
+    if (!followUpRows.length) return null;
+
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+      className: "item",
+      style: {
+        marginTop: compact ? "12px" : "18px",
+        borderColor: "#f0d98f",
+        background: "#fffdf6"
+      },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+          style: { marginTop: 0, marginBottom: 6 },
+          children: "Krever oppfølging"
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+          className: "note",
+          style: { marginTop: 0, marginBottom: 12 },
+          children: "Prosjekter med ulest kundemelding, åpne avvik eller status Klar for kunde."
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+          style: { display: "grid", gap: 10 },
+          children: followUpRows.map((item) => {
+            const p = item.row || {};
+            const listProject = item.listProject || {};
+            const projectName = p.title || listProject.projectName || "Uten navn";
+            const customerLine = [listProject.customer, listProject.address].filter(Boolean).join(" · ");
+
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+              style: {
+                display: "grid",
+                gap: 10,
+                padding: compact ? "12px" : "14px",
+                border: "1px solid #e2e8f0",
+                borderRadius: 14,
+                background: "#ffffff"
+              },
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", {
+                      style: { display: "block", fontSize: compact ? 15 : 16 },
+                      children: projectName
+                    }),
+                    customerLine
+                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", {
+                          style: { display: "block", marginTop: 3, color: "#64748b" },
+                          children: customerLine
+                        })
+                      : null
+                  ]
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+                  style: { display: "flex", gap: 8, flexWrap: "wrap" },
+                  children: [
+                    item.unreadCount > 0
+                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+                          className: "projectMiniBadge",
+                          style: {
+                            borderColor: "#fecaca",
+                            background: "#fef2f2",
+                            color: "#991b1b"
+                          },
+                          children: [
+                            "💬 ",
+                            item.unreadCount,
+                            item.unreadCount === 1 ? " ulest kundemelding" : " uleste kundemeldinger"
+                          ]
+                        })
+                      : null,
+                    item.deviationCount > 0
+                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+                          className: "projectMiniBadge",
+                          style: {
+                            borderColor: "#fecaca",
+                            background: "#fef2f2",
+                            color: "#991b1b"
+                          },
+                          children: [
+                            "⚠️ ",
+                            item.deviationCount,
+                            item.deviationCount === 1 ? " åpent avvik" : " åpne avvik"
+                          ]
+                        })
+                      : null,
+                    item.readyForCustomer
+                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+                          className: "projectMiniBadge",
+                          style: {
+                            borderColor: "#bfdbfe",
+                            background: "#eff6ff",
+                            color: "#075985"
+                          },
+                          children: "✅ Klar for kunde"
+                        })
+                      : null
+                  ]
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+                  style: { display: "flex", gap: 8, flexWrap: "wrap" },
+                  children: [
+                    item.unreadCount > 0
+                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+                          type: "button",
+                          onClick: () => openProjectById?.(p.id, "chat"),
+                          children: "Åpne chat"
+                        })
+                      : null,
+                    item.deviationCount > 0
+                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+                          type: "button",
+                          className: item.unreadCount > 0 ? "secondary" : "",
+                          onClick: () =>
+                            openProjectById?.(p.id, "sjekklister", {
+                              showOpenDeviationsOnly: true
+                            }),
+                          children: "Se avvik"
+                        })
+                      : null,
+                    item.readyForCustomer
+                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+                          type: "button",
+                          className:
+                            item.unreadCount > 0 || item.deviationCount > 0
+                              ? "secondary"
+                              : "",
+                          onClick: () => openProjectById?.(p.id, "prosjekt"),
+                          children: "Åpne prosjekt"
+                        })
+                      : null
+                  ]
+                })
+              ]
+            }, `follow-up-${p.id}`);
+          })
+        })
+      ]
+    });
+  }
+
+  return { renderProjectListPanel, renderProjectFollowUpPanel };
 }
