@@ -1,4 +1,5 @@
 // Expo ProffDok – main application entry. Historical phase/deploy notes are preserved in Git history.
+// FASE 28C1: Startside viser konkrete prosjekter som krever oppfølging via projectListTools.
 // Admin: old FDV-register UI removed; Produktmaster is now the active admin document register.
 import React, * as ReactNS from 'react';
 import { createRoot } from 'react-dom/client';
@@ -5882,6 +5883,12 @@ ${appLink}`;
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "klar kunde" })
             ] })
           ] }),
+          renderProjectFollowUpPanel({
+            projectRows: ordinaryProjectListRows,
+            openProjectById,
+            limit: 6,
+            compact: true
+          }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeSearchCard", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk prosjekt, kunde, adresse, e-post, telefon eller garantinr.", value: projectSearch, onChange: setProjectSearch }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileHomeFilterRow", children: [
@@ -6070,14 +6077,20 @@ ${appLink}`;
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "aktive prosjekter" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.unread }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.unreadProjects }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "uleste chat" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: mobileHomeStats.deviations }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "med avvik" })
             ] })
-          ] })
+          ] }),
+          renderProjectFollowUpPanel({
+            projectRows: ordinaryProjectListRows,
+            openProjectById,
+            limit: 6,
+            compact: false
+          })
         ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: !projectId && !mobileCreatingProject ? "desktopOnlyWhenNoProject" : "", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: projectId ? "Rediger kunde- og prosjektinfo" : "Prosjektinformasjon", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Kunde- og prosjektdata", defaultOpen: true, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Prosjektansvarlig", value: project.responsible, onChange: (v) => setProject({ ...project, responsible: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Dato", type: "date", value: project.date, onChange: (v) => setProject({ ...project, date: v }) }),
@@ -7139,7 +7152,7 @@ ${appLink}`;
     Textarea,
     hasValue
   });
-  const { renderProjectListPanel } = createProjectListTools({
+  const { renderProjectListPanel, renderProjectFollowUpPanel } = createProjectListTools({
     Section,
     Grid,
     Input,
