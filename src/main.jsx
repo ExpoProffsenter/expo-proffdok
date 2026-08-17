@@ -1,5 +1,6 @@
 // Expo ProffDok – main application entry. Historical phase/deploy notes are preserved in Git history.
 // FASE 28C1: Startside viser konkrete prosjekter som krever oppfølging via projectListTools.
+// FASE 28D1: Appen varsler kontrollert når en nyere Vite/Vercel-versjon er tilgjengelig.
 // FASE 28C2: Startsiden viser også sendte tilbud som bør følges opp, med direkte åpning av riktig salgssak.
 // Admin: old FDV-register UI removed; Produktmaster is now the active admin document register.
 import React, * as ReactNS from 'react';
@@ -29,6 +30,7 @@ import { createCompanyViewTools } from './modules/company/companyViewTools.js';
 import { createCommunicationViewTools } from './modules/chat/chatViewTools.js';
 import { ensureExpoProffDokAppBranding, warrantyArchiveNotice, userGuidePdfPath, adminGuidePdfPath, EXPO_PROFFDOK_TERMS_VERSION, EXPO_PROFFDOK_TERMS_TITLE, expoProffDokTermsSections } from './modules/app/appStaticTools.js';
 import AppErrorBoundary from './modules/app/AppErrorBoundary.jsx';
+import AppUpdateNotice from './modules/app/AppUpdateNotice.jsx';
 import { APP_RUNTIME_STYLES, UNDERENTREPRENOR_RUNTIME_STYLES } from './modules/app/appRuntimeStyles.js';
 import {
   productSections, productCategoryOptions, productCheckpointTypeOptions, productCheckpointTypeLabels,
@@ -7196,6 +7198,11 @@ ${appLink}`;
 
   (0, import_client.createRoot)(document.getElementById("root")).render(
     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppErrorBoundary, {
-      children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {})
+      children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, {
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppUpdateNotice, {})
+        ]
+      })
     })
   );
