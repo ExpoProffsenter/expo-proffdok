@@ -1,3 +1,4 @@
+// FASE 28A3 TILBUDSMALER: Henter, bruker og sletter firmadelte tilbudsmaler. Malbruk kopierer kun tilbudsinnhold til redigerbar kladd; kunde/befaring/publisert historikk berøres ikke.
 // FASE 28A2 TILBUDSMALER: Eksisterende tilbud kan lagres som firmadelt mal via sales_offer_templates. Kundedata, bilder, PDF-vedlegg, publisering og historikk kopieres ikke til malen.
 // FASE 26B.1 TILBUDSVEDLEGG: Underposter og opsjoner kan ha bilde og PDF-vedlegg. PDF lagres i eksisterende project-images Storage og følger tilbudsdata uten SQL/RLS-endring.\n// FASE 26B: Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri administrasjon/prosjektstyring. Flat lagringsmodell beholdes for bakoverkompatibilitet. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 26B.5 OPSJONSTYPE: Tillegg/oppgradering og alternativ som erstatter konkret underpost. Alternativpris lagres som prisendring mot grunnposten; kundens valg er gjensidig eksklusivt per erstattet underpost. Ingen SQL/RLS/Storage/Edge-endring.\n// FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
@@ -129,8 +130,10 @@ import {
   fetchProjectById,
   fetchProjectsByIds,
   fetchProjectsByOwner,
+  fetchSalesOfferTemplates,
   fetchSalesRequests,
   insertSalesOfferTemplate,
+  deleteSalesOfferTemplate,
   getSalesOfferByToken,
   getSalesSession,
   getStoragePublicUrl,
@@ -314,6 +317,10 @@ export default function SalesModule({
   const [salesStorageError, setSalesStorageError] = useState("");
   const [offerDraftSaveStatus, setOfferDraftSaveStatus] = useState("idle");
   const [offerTemplateSaveBusy, setOfferTemplateSaveBusy] = useState(false);
+  const [offerTemplates, setOfferTemplates] = useState([]);
+  const [offerTemplatesLoading, setOfferTemplatesLoading] = useState(false);
+  const [selectedOfferTemplateId, setSelectedOfferTemplateId] = useState("");
+  const [offerTemplateActionBusy, setOfferTemplateActionBusy] = useState(false);
   const [offerFormReady, setOfferFormReady] = useState(false);
   const [selectedInspectionPhoto, setSelectedInspectionPhoto] = useState(null);
   const [companyProfile, setCompanyProfile] = useState({
@@ -411,6 +418,52 @@ export default function SalesModule({
     // Gjenoppretting må skje før autolagring får starte.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, selectedRequest, selectedRequestId]);
+
+  async function refreshOfferTemplates({ silent = false } = {}) {
+    if (!activeSupabase || !salesCompanyId || integrationMode !== "app") {
+      setOfferTemplates([]);
+      setSelectedOfferTemplateId("");
+      return [];
+    }
+
+    setOfferTemplatesLoading(true);
+
+    try {
+      const { data, error } = await fetchSalesOfferTemplates(
+        activeSupabase,
+        salesCompanyId
+      );
+
+      if (error) throw error;
+
+      const nextTemplates = Array.isArray(data) ? data : [];
+      setOfferTemplates(nextTemplates);
+      setSelectedOfferTemplateId((currentId) =>
+        currentId && nextTemplates.some((template) => template.id === currentId)
+          ? currentId
+          : ""
+      );
+      return nextTemplates;
+    } catch (error) {
+      console.error("Kunne ikke hente tilbudsmaler", error);
+      if (!silent) {
+        alert(error?.message || "Kunne ikke hente firmaets tilbudsmaler.");
+      }
+      return [];
+    } finally {
+      setOfferTemplatesLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (mode !== "offer-builder" || integrationMode !== "app" || !salesCompanyId) {
+      return;
+    }
+
+    void refreshOfferTemplates({ silent: true });
+    // Hent maler når tilbudsbyggeren åpnes eller firmascopet blir klart.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, integrationMode, salesCompanyId]);
 
   useEffect(() => {
     if (!selectedInspectionPhoto) return undefined;
@@ -2371,7 +2424,7 @@ export default function SalesModule({
     setOfferTemplateSaveBusy(true);
 
     try {
-      const { error } = await insertSalesOfferTemplate(activeSupabase, {
+      const { data, error } = await insertSalesOfferTemplate(activeSupabase, {
         companyId: salesCompanyId,
         name: templateName,
         payload: templatePayload,
@@ -2379,6 +2432,16 @@ export default function SalesModule({
       });
 
       if (error) throw error;
+
+      if (data?.id) {
+        setOfferTemplates((current) => [
+          data,
+          ...current.filter((template) => template.id !== data.id),
+        ]);
+        setSelectedOfferTemplateId(data.id);
+      } else {
+        await refreshOfferTemplates({ silent: true });
+      }
 
       alert(`Tilbudsmalen "${templateName}" er lagret for firmaet.`);
     } catch (error) {
@@ -2393,6 +2456,119 @@ export default function SalesModule({
       }
     } finally {
       setOfferTemplateSaveBusy(false);
+    }
+  }
+
+  function handleSelectOfferTemplate(templateId) {
+    setSelectedOfferTemplateId(String(templateId || ""));
+  }
+
+  function handleApplyOfferTemplate() {
+    if (offerTemplateActionBusy) return;
+
+    const template = offerTemplates.find(
+      (item) => item.id === selectedOfferTemplateId
+    );
+
+    if (!template) {
+      alert("Velg en tilbudsmal først.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Bruke tilbudsmalen "${template.name}"?\n\nDette erstatter innholdet i den redigerbare tilbudskladden. Kunde, adresse, befaring og tidligere publiserte tilbud berøres ikke.`
+    );
+
+    if (!confirmed) return;
+
+    const payload = template.payload || {};
+    const sourceLines = Array.isArray(payload.lines) ? payload.lines : [];
+    const sourceOptions = Array.isArray(payload.options) ? payload.options : [];
+    const lineIdMap = new Map();
+
+    const nextLines = sourceLines.map((line) => {
+      const oldId = String(line?.id || "");
+      const newId = `line-${crypto.randomUUID()}`;
+      if (oldId) lineIdMap.set(oldId, newId);
+
+      return {
+        ...line,
+        id: newId,
+        imageDataUrl: "",
+        imageName: "",
+        attachmentFile: null,
+      };
+    });
+
+    const nextOptions = sourceOptions.map((option) => ({
+      ...option,
+      id: `option-${crypto.randomUUID()}`,
+      replacementLineId:
+        option?.optionType === "alternative" && option?.replacementLineId
+          ? lineIdMap.get(String(option.replacementLineId)) || ""
+          : String(option?.replacementLineId || ""),
+      imageDataUrl: "",
+      imageName: "",
+      attachmentFile: null,
+    }));
+
+    const nextOfferForm = {
+      title: String(payload.title || ""),
+      intro: String(payload.intro || ""),
+      lines: recalculateAdministrationLines(nextLines),
+      options: nextOptions,
+      reservations: String(payload.reservations || ""),
+      included: String(payload.included || ""),
+      excluded: String(payload.excluded || ""),
+      customerSupplied: String(payload.customerSupplied || ""),
+      terms: String(payload.terms || ""),
+      paymentTerms: String(payload.paymentTerms || ""),
+      validityDays: String(payload.validityDays || "30"),
+    };
+
+    setOfferForm(nextOfferForm);
+    setOfferDraftSaveStatus("idle");
+  }
+
+  async function handleDeleteOfferTemplate() {
+    if (offerTemplateActionBusy) return;
+
+    const template = offerTemplates.find(
+      (item) => item.id === selectedOfferTemplateId
+    );
+
+    if (!template) {
+      alert("Velg tilbudsmalen du vil slette.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Slette tilbudsmalen "${template.name}" for firmaet?\n\nTilbud som allerede er opprettet fra malen påvirkes ikke.`
+    );
+
+    if (!confirmed) return;
+
+    setOfferTemplateActionBusy(true);
+
+    try {
+      const { error } = await deleteSalesOfferTemplate(
+        activeSupabase,
+        template.id,
+        salesCompanyId
+      );
+
+      if (error) throw error;
+
+      setOfferTemplates((current) =>
+        current.filter((item) => item.id !== template.id)
+      );
+      setSelectedOfferTemplateId("");
+      alert(`Tilbudsmalen "${template.name}" er slettet.`);
+    } catch (error) {
+      console.error("Kunne ikke slette tilbudsmal", error);
+      alert(error?.message || "Kunne ikke slette tilbudsmalen.");
+    } finally {
+      setOfferTemplateActionBusy(false);
     }
   }
 
@@ -3165,9 +3341,16 @@ export default function SalesModule({
         offerForm={offerForm}
         offerDraftSaveStatus={offerDraftSaveStatus}
         offerTemplateSaveBusy={offerTemplateSaveBusy}
+        offerTemplates={offerTemplates}
+        offerTemplatesLoading={offerTemplatesLoading}
+        selectedOfferTemplateId={selectedOfferTemplateId}
+        offerTemplateActionBusy={offerTemplateActionBusy}
         onBack={handleOfferBuilderBack}
         handleSaveOffer={handleSaveOffer}
         handleSaveOfferTemplate={handleSaveOfferTemplate}
+        handleSelectOfferTemplate={handleSelectOfferTemplate}
+        handleApplyOfferTemplate={handleApplyOfferTemplate}
+        handleDeleteOfferTemplate={handleDeleteOfferTemplate}
         addInspectionContextToOfferIntro={addInspectionContextToOfferIntro}
         updateOfferForm={updateOfferForm}
         updateOfferLine={updateOfferLine}
