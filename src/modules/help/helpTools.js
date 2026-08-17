@@ -1,3 +1,5 @@
+// FASE 28D1 HJELP / BRUKERVEILEDNING: Appen varsler når en nyere produksjonsversjon er tilgjengelig, uten tvangsreload midt i arbeid.
+// FASE 28D2 HJELP / BRUKERVEILEDNING: Systemadministrator kan publisere korte appnyheter. Brukere kan lukke eller velge Ikke vis igjen per bruker.
 // FASE 28B2 HJELP / BRUKERVEILEDNING: Oppdatert for firmadelte tilbudsmaler og manuell oppfølging av sendte tilbud. Ingen database-, RLS-, Storage-, Edge Function- eller automatisk e-postendring.
 // FASE 28C1 HJELP / BRUKERVEILEDNING: Startsiden beskriver nå Krever oppfølging for ulest kundemelding, åpne avvik og status Klar for kunde. Ingen database-, RLS-, Storage-, Edge Function- eller e-postendring.
 // FASE 28C2 HJELP / BRUKERVEILEDNING: Startsiden viser også sendte tilbud som bør følges opp. Tilbudsarbeidsflyten beskriver publisering/sending til kunde og gjennomført befaring. Ingen database-, RLS-, Storage- eller Edge Function-endring.
@@ -100,12 +102,14 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Bruk seksjonene i samme rekkefølge som fanene i appen.",
           "Les brukervilkår og personvern ved behov.",
           "Legg Expo ProffDok på hjemskjermen for rask tilgang på mobil.",
-          "Hvis en visning stopper på grunn av en teknisk feil, bruk knappen Last inn siden på nytt. Hvis feilen kommer tilbake, ta skjermbilde av feilmeldingen og send det til support."
+          "Hvis en visning stopper på grunn av en teknisk feil, bruk knappen Last inn siden på nytt. Hvis feilen kommer tilbake, ta skjermbilde av feilmeldingen og send det til support.",
+          "Når Expo ProffDok varsler at en ny appversjon er klar, velg Oppdater nå når du er ferdig med pågående registrering. Senere utsetter varselet midlertidig."
         ],
         important: [
           "Digital brukerveiledning er den gjeldende veiledningen i Expo ProffDok.",
           "Kun innhold relevant for din brukerrolle vises.",
-          "Veiledningen oppdateres direkte i appen når ny funksjonalitet tas i bruk."
+          "Veiledningen oppdateres direkte i appen når ny funksjonalitet tas i bruk.",
+          "Appen laster ikke bevisst om siden automatisk midt i arbeid. Ved ny versjon får du et eget oppdateringsvarsel."
         ],
         best: [
           "Bruk Hjelp-fanen ved opplæring av nye brukere.",
@@ -544,6 +548,8 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Befaring/Tilbud samler forespørsel, befaring, tilbud, digital kundeaksept, akseptbevis og prosjektaktivering i én arbeidsflyt.",
           "Firmadelte tilbudsmaler kan lagres, brukes og slettes direkte i tilbudsbyggeren. Malen kopieres inn som en redigerbar tilbudskladd uten kunde-, befarings-, bilde- eller PDF-data.",
           "Sendte tilbud viser sendt dato og antall dager siden utsending. Tilbud som har vært ubesvart i 7 dager markeres Bør følges opp og vises også på Startsiden med direkte inngang til riktig tilbudssak.",
+          "Expo ProffDok varsler når en nyere appversjon er tilgjengelig, slik at brukere som har en fane stående åpen kan oppdatere kontrollert.",
+          "Systemadministrator kan publisere korte nyheter i appen. Nyeste aktive nyhet vises for brukerne, som kan lukke den eller velge Ikke vis igjen."
           "Startsiden har nå Krever oppfølging for prosjekter og Tilbud som bør følges opp for sendte tilbud som har vært ubesvart i minst 7 dager. Begge gir direkte inngang til riktig arbeidsflate.",
           "I Befaring/Tilbud vises gjennomført befaring tydelig, og Outlook-handlingen skjules når befaringen allerede er utført. Ny tilbudsversjon kan publiseres og sendes til kunden i samme handling.",
           "Tilbud/kontrakt skiller nå mellom opprinnelig avtale og senere endringer. Tillegg og fradrag registreres som egne poster med beløp inkl. mva., og gjeldende avtalesum beregnes når opprinnelig avtalesum finnes.",
@@ -601,17 +607,22 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Avvis og slett feilregistrerte eller uønskede ventende brukere før de tas i bruk.",
           "Kontroller firma, rolle og systemadministratorstatus før godkjenning.",
           "Bruk supportmodus bevisst når du skal hjelpe et firma eller åpne et prosjekt på vegne av andre brukere.",
-          "Vedlikehold produktmaster og synkroniser kun aktive prosjekter der dette er riktig."
+          "Vedlikehold produktmaster og synkroniser kun aktive prosjekter der dette er riktig.",
+          "Bruk Nyheter i appen til korte, relevante meldinger om nye funksjoner eller viktige endringer.",
+          "Publiser én tydelig nyhet om gangen. Deaktiver meldingen når den ikke lenger skal vises, eller publiser den på nytt når den skal bli aktuell igjen."
         ],
         important: [
           "Ingen nye brukere skal godkjennes automatisk.",
           "Låste prosjekter skal aldri endres av produktmaster-synk.",
-          "Systemadmin-funksjoner påvirker hele løsningen og må brukes varsomt."
+          "Systemadmin-funksjoner påvirker hele løsningen og må brukes varsomt.",
+          "Kun nyeste aktive appnyhet vises. Ikke bruk appnyheter til sensitiv kunde- eller prosjektinformasjon.",
+          "Ikke vis igjen lagres per bruker og gjelder også når samme bruker logger inn på en annen enhet."
         ],
         best: [
           "Godkjenn bare brukere du kjenner eller har avklart med firmaet.",
           "Bruk små, kontrollerte endringer.",
-          "Avslutt supportmodus når du er ferdig."
+          "Avslutt supportmodus når du er ferdig.",
+          "Skriv appnyheter kort og konkret: hva som er nytt, og hva brukeren eventuelt bør gjøre."
         ]
       }
     ];
