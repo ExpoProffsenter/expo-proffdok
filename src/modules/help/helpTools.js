@@ -549,7 +549,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Firmadelte tilbudsmaler kan lagres, brukes og slettes direkte i tilbudsbyggeren. Malen kopieres inn som en redigerbar tilbudskladd uten kunde-, befarings-, bilde- eller PDF-data.",
           "Sendte tilbud viser sendt dato og antall dager siden utsending. Tilbud som har vært ubesvart i 7 dager markeres Bør følges opp og vises også på Startsiden med direkte inngang til riktig tilbudssak.",
           "Expo ProffDok varsler når en nyere appversjon er tilgjengelig, slik at brukere som har en fane stående åpen kan oppdatere kontrollert.",
-          "Systemadministrator kan publisere korte nyheter i appen. Nyeste aktive nyhet vises for brukerne, som kan lukke den eller velge Ikke vis igjen."
+          "Systemadministrator kan publisere korte nyheter i appen. Nyeste aktive nyhet vises for brukerne, som kan lukke den eller velge Ikke vis igjen.",
           "Startsiden har nå Krever oppfølging for prosjekter og Tilbud som bør følges opp for sendte tilbud som har vært ubesvart i minst 7 dager. Begge gir direkte inngang til riktig arbeidsflate.",
           "I Befaring/Tilbud vises gjennomført befaring tydelig, og Outlook-handlingen skjules når befaringen allerede er utført. Ny tilbudsversjon kan publiseres og sendes til kunden i samme handling.",
           "Tilbud/kontrakt skiller nå mellom opprinnelig avtale og senere endringer. Tillegg og fradrag registreres som egne poster med beløp inkl. mva., og gjeldende avtalesum beregnes når opprinnelig avtalesum finnes.",
