@@ -1,3 +1,4 @@
+// FASE 28A2 TILBUDSMALER: Eksisterende tilbud kan lagres som firmadelt mal via sales_offer_templates. Kundedata, bilder, PDF-vedlegg, publisering og historikk kopieres ikke til malen.
 // FASE 26B.1 TILBUDSVEDLEGG: Underposter og opsjoner kan ha bilde og PDF-vedlegg. PDF lagres i eksisterende project-images Storage og følger tilbudsdata uten SQL/RLS-endring.\n// FASE 26B: Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri administrasjon/prosjektstyring. Flat lagringsmodell beholdes for bakoverkompatibilitet. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 26B.5 OPSJONSTYPE: Tillegg/oppgradering og alternativ som erstatter konkret underpost. Alternativpris lagres som prisendring mot grunnposten; kundens valg er gjensidig eksklusivt per erstattet underpost. Ingen SQL/RLS/Storage/Edge-endring.\n// FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 24S.1 KORREKT PROSJEKTAKTIVERING/TILBUD: Ved aktivering ligger forespørsel og befaring i prosjektbeskrivelse, mens opprinnelig akseptert tilbud dokumenteres via salesOrigin og akseptbevis/kontrakt. Tillegg/fradrag/avtaleendring starter tomt og brukes kun for senere endringer. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
@@ -129,6 +130,7 @@ import {
   fetchProjectsByIds,
   fetchProjectsByOwner,
   fetchSalesRequests,
+  insertSalesOfferTemplate,
   getSalesOfferByToken,
   getSalesSession,
   getStoragePublicUrl,
@@ -311,6 +313,7 @@ export default function SalesModule({
   const [salesCompanyId, setSalesCompanyId] = useState(null);
   const [salesStorageError, setSalesStorageError] = useState("");
   const [offerDraftSaveStatus, setOfferDraftSaveStatus] = useState("idle");
+  const [offerTemplateSaveBusy, setOfferTemplateSaveBusy] = useState(false);
   const [offerFormReady, setOfferFormReady] = useState(false);
   const [selectedInspectionPhoto, setSelectedInspectionPhoto] = useState(null);
   const [companyProfile, setCompanyProfile] = useState({
@@ -2257,6 +2260,142 @@ export default function SalesModule({
     await saveOfferAndReturnToDetail();
   }
 
+  async function handleSaveOfferTemplate() {
+    if (offerTemplateSaveBusy) return;
+
+    if (
+      integrationMode === "app" &&
+      (!activeSupabase || !salesCompanyId || !authUser?.id)
+    ) {
+      alert(
+        salesStorageError ||
+          "Tilbudsmalen kan ikke lagres før firmatilknytningen er klar."
+      );
+      return;
+    }
+
+    if (!activeSupabase || !salesCompanyId || !authUser?.id) {
+      alert("Tilbudsmaler krever innlogging og firmatilknytning.");
+      return;
+    }
+
+    const suggestedName =
+      String(offerForm.title || "").trim() ||
+      String(selectedRequest?.title || "").trim() ||
+      "Tilbudsmal";
+
+    const enteredName = window.prompt(
+      "Gi tilbudsmalen et navn:",
+      suggestedName
+    );
+
+    if (enteredName === null) return;
+
+    const templateName = enteredName.trim();
+
+    if (!templateName) {
+      alert("Skriv inn et navn på tilbudsmalen.");
+      return;
+    }
+
+    const {
+      cleanLines,
+      cleanOptions,
+      incompleteLine,
+      incompleteOption,
+      invalidAlternativeOption,
+    } = prepareOfferFormForSave(offerForm);
+
+    if (!cleanLines.length) {
+      alert("Legg inn minst én tilbudslinje før du lagrer som mal.");
+      return;
+    }
+
+    if (incompleteLine) {
+      alert(
+        "Tilbudslinjer som har innhold må ha både beskrivelse og beløp før tilbudet kan lagres som mal."
+      );
+      return;
+    }
+
+    if (incompleteOption) {
+      alert(
+        "Opsjoner som har innhold må ha både tittel og beløp før tilbudet kan lagres som mal."
+      );
+      return;
+    }
+
+    if (invalidAlternativeOption) {
+      pendingInvalidAlternativeOptionIdRef.current =
+        invalidAlternativeOption.id || "";
+
+      const optionTitle =
+        invalidAlternativeOption.title || "Alternativ opsjon";
+      const mainPostTitle =
+        invalidAlternativeOption.mainPostTitle || "aktuell hovedpost";
+
+      if (invalidAlternativeOption.id) {
+        setOfferValidationJump({
+          optionId: invalidAlternativeOption.id,
+          message: `Opsjonen "${optionTitle}" under "${mainPostTitle}" må kobles til underposten den erstatter før tilbudet kan lagres som mal.`,
+          token: `${Date.now()}-${Math.random()}`,
+        });
+      }
+      return;
+    }
+
+    const templatePayload = {
+      title: String(offerForm.title || "").trim(),
+      intro: String(offerForm.intro || "").trim(),
+      lines: cleanLines.map((line) => ({
+        ...line,
+        imageDataUrl: "",
+        imageName: "",
+        attachmentFile: null,
+      })),
+      options: cleanOptions.map((option) => ({
+        ...option,
+        imageDataUrl: "",
+        imageName: "",
+        attachmentFile: null,
+      })),
+      reservations: String(offerForm.reservations || "").trim(),
+      included: String(offerForm.included || "").trim(),
+      excluded: String(offerForm.excluded || "").trim(),
+      customerSupplied: String(offerForm.customerSupplied || "").trim(),
+      terms: String(offerForm.terms || "").trim(),
+      paymentTerms: String(offerForm.paymentTerms || "").trim(),
+      validityDays: String(offerForm.validityDays || "30"),
+    };
+
+    setOfferTemplateSaveBusy(true);
+
+    try {
+      const { error } = await insertSalesOfferTemplate(activeSupabase, {
+        companyId: salesCompanyId,
+        name: templateName,
+        payload: templatePayload,
+        createdBy: authUser.id,
+      });
+
+      if (error) throw error;
+
+      alert(`Tilbudsmalen "${templateName}" er lagret for firmaet.`);
+    } catch (error) {
+      console.error("Kunne ikke lagre tilbudsmal", error);
+
+      if (error?.code === "23505") {
+        alert(
+          `Firmaet har allerede en tilbudsmal som heter "${templateName}". Velg et annet navn.`
+        );
+      } else {
+        alert(error?.message || "Kunne ikke lagre tilbudsmalen.");
+      }
+    } finally {
+      setOfferTemplateSaveBusy(false);
+    }
+  }
+
   async function handleOfferBuilderBack() {
     const currentSignature = createOfferFormChangeSignature(offerFormRef.current);
     const hasChanges =
@@ -3025,8 +3164,10 @@ export default function SalesModule({
         selectedRequest={selectedRequest}
         offerForm={offerForm}
         offerDraftSaveStatus={offerDraftSaveStatus}
+        offerTemplateSaveBusy={offerTemplateSaveBusy}
         onBack={handleOfferBuilderBack}
         handleSaveOffer={handleSaveOffer}
+        handleSaveOfferTemplate={handleSaveOfferTemplate}
         addInspectionContextToOfferIntro={addInspectionContextToOfferIntro}
         updateOfferForm={updateOfferForm}
         updateOfferLine={updateOfferLine}
