@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 28C2 UX
+// Publisering av ny tilbudsversjon har tydelig hovedhandling som sender til kunde,
+// og fullført befaringsnotat vises som "Befaring gjennomført".
 // Expo ProffDok – FASE 28B2
 // Viser sendt-/oppfølgingsstatus inne på tilbudssaken og gjør eksisterende
 // manuelle e-postutsending til tydelig "Følg opp tilbud" etter 7 dager uten aksept.
@@ -122,10 +125,29 @@ export default function SalesDetailView({
     );
     const offerFollowUp = getOfferFollowUpInfo(selectedRequest);
     const customerOfferActionLabel = hasUnpublishedOfferChanges
-      ? hasPublishedCustomerOffer
-        ? "Publiser ny versjon"
-        : "Publiser kundetilbud"
+      ? selectedRequest.email
+        ? "Publiser og send til kunde"
+        : "Publiser og kopier lenke"
       : "Se kundens tilbud";
+    const inspectionIsCompleted = Boolean(
+      selectedRequest.inspectionCompletedAt ||
+        ["Tilbud", "Akseptert", "Aktivert"].includes(selectedRequest.status) ||
+        (selectedRequest.status === "Befaring" &&
+          selectedRequest.nextStep === "Opprett tilbud")
+    );
+    const handlePrimaryCustomerOfferAction = () => {
+      if (!hasUnpublishedOfferChanges) {
+        openCustomerOfferFromRequestId(selectedRequest.id);
+        return;
+      }
+
+      if (selectedRequest.email) {
+        sendOfferEmail(selectedRequest.id, { publishFirst: true });
+        return;
+      }
+
+      copyCustomerOfferLink(selectedRequest.id);
+    };
     const publishLineCount = selectedRequest.offerLines?.length || 0;
     const publishOptionCount = selectedRequest.offerOptions?.length || 0;
     const publishedVersionNumber =
@@ -259,11 +281,17 @@ export default function SalesDetailView({
                   <div
                     className="sales-detail-lines"
                     style={{ marginTop: 14, gap: 8 }}
-                    aria-label="Avtalt befaring"
+                    aria-label={
+                      inspectionIsCompleted ? "Gjennomført befaring" : "Avtalt befaring"
+                    }
                   >
                     <span>
                       <CalendarDays size={16} />
-                      <strong>Befaring avtalt:</strong>{" "}
+                      <strong>
+                        {inspectionIsCompleted
+                          ? "Befaring gjennomført:"
+                          : "Befaring avtalt:"}
+                      </strong>{" "}
                       {formatInspectionDateTime(
                         selectedRequest.surveyDate,
                         selectedRequest.surveyTime
@@ -351,7 +379,7 @@ export default function SalesDetailView({
                         : selectedRequest.status === "Befaring"
                           ? openInspectionNote
                           : selectedRequest.status === "Tilbud"
-                            ? openCustomerOfferPreview
+                            ? handlePrimaryCustomerOfferAction
                             : selectedRequest.status === "Akseptert"
                               ? openProjectActivation
                               : selectedRequest.status === "Aktivert" && selectedRequest.projectId
@@ -506,7 +534,7 @@ export default function SalesDetailView({
                       <button
                         className={hasUnpublishedOfferChanges ? "sales-primary-button" : "sales-secondary-button"}
                         type="button"
-                        onClick={() => openCustomerOfferFromRequestId(selectedRequest.id)}
+                        onClick={handlePrimaryCustomerOfferAction}
                       >
                         <Send size={18} />
                         {customerOfferActionLabel}
@@ -928,7 +956,9 @@ export default function SalesDetailView({
                             : "Kundelink:"}
                         </strong>{" "}
                         {hasUnpublishedOfferChanges
-                          ? "Du har endringer som kunden ikke ser ennå. Publiser tilbudet for å gjøre dem synlige."
+                          ? selectedRequest.email
+                            ? "Du har endringer som kunden ikke ser ennå. Hovedhandlingen publiserer ny versjon og sender den til kunden på e-post."
+                            : "Du har endringer som kunden ikke ser ennå. Kunden har ingen e-post registrert, så publiser og kopier lenken for manuell sending."
                           : "Tilbudet er publisert. Se samme tilbud som kunden ser, eller send det på e-post."}
                       </p>
                       {offerFollowUp ? (
@@ -985,24 +1015,18 @@ export default function SalesDetailView({
                       ) : null}
 
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <button
-                          className={
-                            hasUnpublishedOfferChanges
-                              ? "sales-primary-button"
-                              : "sales-secondary-button"
-                          }
-                          type="button"
-                          onClick={() =>
-                            openCustomerOfferFromRequestId(selectedRequest.id)
-                          }
-                        >
-                          <Send size={18} />
-                          {hasUnpublishedOfferChanges
-                            ? hasPublishedCustomerOffer
-                              ? "Publiser ny versjon"
-                              : "Publiser kundetilbud"
-                            : "Se kundens tilbud"}
-                        </button>
+                        {!hasUnpublishedOfferChanges ? (
+                          <button
+                            className="sales-secondary-button"
+                            type="button"
+                            onClick={() =>
+                              openCustomerOfferFromRequestId(selectedRequest.id)
+                            }
+                          >
+                            <Send size={18} />
+                            Se kundens tilbud
+                          </button>
+                        ) : null}
                         <button
                           className="sales-secondary-button"
                           type="button"
@@ -1029,7 +1053,7 @@ export default function SalesDetailView({
                           {customerEmailBusy
                             ? "Sender …"
                             : hasUnpublishedOfferChanges
-                              ? "Publiser og send e-post"
+                              ? "Publiser og send til kunde"
                               : offerFollowUp?.shouldFollowUp
                                 ? "Følg opp tilbud"
                                 : selectedRequest.offerEmailSentAt
