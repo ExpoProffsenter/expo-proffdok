@@ -1,4 +1,4 @@
-// FASE 25D HJELP / BRUKERVEILEDNING: Oppdatert dokumentasjon for Tilbud/kontrakt etter Fase 25B. Presiserer valgfri tilbudsflyt, strukturerte tillegg/fradrag, gjeldende avtalesum inkl. mva. og bakoverkompatibilitet. Ingen funksjons-, database-, RLS-, Storage-, Edge Function- eller e-postendring.
+// FASE 27C.3 HJELP / BRUKERVEILEDNING: Oppdatert for mobilforenkling, ny mobilmeny, kompakt sjekklistefremdrift og runtime-feilhåndtering. Ingen database-, RLS-, Storage-, Edge Function- eller e-postendring.
 import React, * as ReactNS from 'react';
 import { FileText } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
@@ -17,6 +17,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
         purpose: "Startsiden gir direkte inngang til både forespørsel/tilbud og eksisterende ProffDok-prosjekter.",
         workflow: [
           "Logg inn og kontroller at firmaprofilen er fylt ut med korrekt informasjon og logo.",
+          "På mobil åpner du den mørke menylinjen for hurtigvalg til Befaring/Tilbud, Bilder, Sjekklister og Fag/utstyr. Status og øvrige funksjoner ligger i samme meny.",
           "Velg Ny forespørsel for å registrere en kundehenvendelse direkte, eller åpne Befaring/Tilbud for å fortsette en eksisterende salgssak.",
           "Opprett et nytt prosjekt direkte når tilbudsprosessen ikke er nødvendig, eller åpne et eksisterende prosjekt fra prosjektlisten.",
           "Legg inn prosjektinformasjon, kunde, adresse og ansvarlig før øvrig dokumentasjon bygges opp.",
@@ -32,6 +33,29 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Start dokumentasjonen ved prosjektoppstart, ikke ved prosjektslutt.",
           "Ta bilder og fyll ut sjekklister mens arbeidet utføres.",
           "Bruk prosjektchatten som hovedkanal for kundedialog når avklaringer gjelder prosjektet eller leveransen."
+        ]
+      },
+      {
+        key: "mobil",
+        title: "📱 Mobilbruk",
+        purpose: "Mobilvisningen er forenklet slik at de mest brukte arbeidsoppgavene ligger først. Befaring/Tilbud, Bilder, Sjekklister og Fag/utstyr er prioritert, mens status og øvrige funksjoner ligger samlet i mobilmenyen.",
+        workflow: [
+          "Trykk på den mørke menylinjen øverst i prosjektet for å åpne mobilmenyen.",
+          "Bruk hurtigvalgene Befaring/Tilbud, Bilder, Sjekklister og Fag/utstyr for de vanligste oppgavene ute på prosjekt.",
+          "Åpne Status fra mobilmenyen når du vil se full prosjektstatus, manglende dokumentasjon og fremdrift.",
+          "Bruk Alle funksjoner når du trenger Garanti, Firmaprofil, Prosjektering, Produkter, Rapport eller andre mindre brukte faner.",
+          "I Sjekklister er fremdriftsvisningen komprimert på mobil slik at neste sjekkpunkt kommer raskere opp på skjermen.",
+          "Den flytende chatknappen er gjort mindre på mobil for å dekke mindre av arbeidsområdet."
+        ],
+        important: [
+          "Ingen funksjoner er fjernet fra mobil. Mindre brukte funksjoner er samlet under Alle funksjoner.",
+          "Statusinformasjon er fortsatt tilgjengelig, men er flyttet ut av hovedflyten for å redusere scrolling.",
+          "Desktopvisningen har fortsatt full navigasjon og statusvisning som før."
+        ],
+        best: [
+          "Bruk hurtigvalgene som hovednavigasjon når du arbeider ute på prosjekt.",
+          "Åpne Status ved behov i stedet for å ha fremdriftsinformasjon åpen hele tiden.",
+          "Bruk Sjekklister og Bilder fortløpende mens arbeidet utføres."
         ]
       },
       {
@@ -68,7 +92,8 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Åpne Hjelp når du trenger forklaring på en fane eller arbeidsflyt.",
           "Bruk seksjonene i samme rekkefølge som fanene i appen.",
           "Les brukervilkår og personvern ved behov.",
-          "Legg Expo ProffDok på hjemskjermen for rask tilgang på mobil."
+          "Legg Expo ProffDok på hjemskjermen for rask tilgang på mobil.",
+          "Hvis en visning stopper på grunn av en teknisk feil, bruk knappen Last inn siden på nytt. Hvis feilen kommer tilbake, ta skjermbilde av feilmeldingen og send det til support."
         ],
         important: [
           "Digital brukerveiledning er den gjeldende veiledningen i Expo ProffDok.",
@@ -286,6 +311,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
         purpose: "Sjekklistene dokumenterer at arbeidet er kontrollert, og danner grunnlag for kvalitet, avvikshåndtering, rapport og eventuell garanti.",
         workflow: [
           "Åpne Sjekklister og arbeid deg gjennom punktene fortløpende.",
+          "På mobil er fremdriftskortet komprimert og visningen prioriterer neste manglende sjekkpunkt slik at du kommer raskere til selve kontrollarbeidet.",
           "Velg OK, Ikke aktuelt eller Avvik på hvert punkt.",
           "Legg inn kommentar og bilder der dette er relevant eller påkrevd.",
           "Ved garantiprosjekter legges Sopro-punkter automatisk inn når garanti og system er valgt.",
@@ -504,6 +530,10 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Befaring/Tilbud samler forespørsel, befaring, tilbud, digital kundeaksept, akseptbevis og prosjektaktivering i én arbeidsflyt.",
           "Tilbud/kontrakt skiller nå mellom opprinnelig avtale og senere endringer. Tillegg og fradrag registreres som egne poster med beløp inkl. mva., og gjeldende avtalesum beregnes når opprinnelig avtalesum finnes.",
           "Systemadministrator kan avvise og slette ventende brukere.",
+          "Mobilvisningen er forenklet med hurtigvalg til Befaring/Tilbud, Bilder, Sjekklister og Fag/utstyr, egen Status-knapp og Alle funksjoner for resten av appen.",
+          "Sjekklistefremdrift og chatknapp er komprimert på mobil slik at arbeidsinnholdet kommer høyere opp på skjermen.",
+          "Appen har nå en runtime-feilsikring som viser en tydelig feilmelding og mulighet for å laste siden på nytt i stedet for blank skjerm dersom en React-visning krasjer.",
+          "Kritiske build-kontroller kjøres før Vercel-build for å fange enkelte kjente regresjoner før deploy.",
           "Rapportdesign, mobilvisning, autolagring og e-postvarsler er forbedret."
         ],
         important: [
@@ -567,12 +597,12 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
         ]
       }
     ];
-    const userGuideOrder = ["start", "quality", "sales", "info", "garanti", "firmaProfil", "prosjektering", "produkter", "overflater", "bilder", "tilgang", "fagUtstyr", "sjekklister", "avvik", "tilbud", "chat", "interne", "overtagelse", "prosjektliste", "rapport", "hjelp", "nytt"];
+    const userGuideOrder = ["start", "mobil", "quality", "sales", "info", "garanti", "firmaProfil", "prosjektering", "produkter", "overflater", "bilder", "tilgang", "fagUtstyr", "sjekklister", "avvik", "tilbud", "chat", "interne", "overtagelse", "prosjektliste", "rapport", "hjelp", "nytt"];
     const orderedUserGuideSections = [...userGuideSections].sort((a, b) => userGuideOrder.indexOf(a.key) - userGuideOrder.indexOf(b.key));
     const visibleGuideSections = [
-      ...orderedUserGuideSections.slice(0, 5),
+      ...orderedUserGuideSections.slice(0, 6),
       ...(isCompanyAdmin || isSystemAdmin ? companyAdminSections : []),
-      ...orderedUserGuideSections.slice(5),
+      ...orderedUserGuideSections.slice(6),
       ...(isSystemAdmin ? systemAdminSections : [])
     ];
     const guideRoleLabel = isSystemAdmin ? "Systemadministrator" : isCompanyAdmin ? "Firmaadministrator" : "Vanlig bruker";
@@ -602,7 +632,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Komplett digital brukerveiledning for Expo ProffDok. Veiledningen er tekstbasert, mobilvennlig og viser kun innhold som er relevant for din brukerrolle." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 13.08.2026" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 17.08.2026" })
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#ecfdf5", borderColor: "#86efac" }, children: [
