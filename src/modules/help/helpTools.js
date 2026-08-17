@@ -1,5 +1,5 @@
 // FASE 28B2 HJELP / BRUKERVEILEDNING: Oppdatert for firmadelte tilbudsmaler og manuell oppfølging av sendte tilbud. Ingen database-, RLS-, Storage-, Edge Function- eller automatisk e-postendring.
-// FASE 27C.3 HJELP / BRUKERVEILEDNING: Oppdatert for mobilforenkling, ny mobilmeny, kompakt sjekklistefremdrift og runtime-feilhåndtering. Ingen database-, RLS-, Storage-, Edge Function- eller e-postendring.
+// FASE 28C1 HJELP / BRUKERVEILEDNING: Startsiden beskriver nå Krever oppfølging for ulest kundemelding, åpne avvik og status Klar for kunde. Ingen database-, RLS-, Storage-, Edge Function- eller e-postendring.
 import React, * as ReactNS from 'react';
 import { FileText } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
@@ -21,6 +21,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "På mobil åpner du den mørke menylinjen for hurtigvalg til Befaring/Tilbud, Bilder, Sjekklister og Fag/utstyr. Status og øvrige funksjoner ligger i samme meny.",
           "Velg Ny forespørsel for å registrere en kundehenvendelse direkte, eller åpne Befaring/Tilbud for å fortsette en eksisterende salgssak.",
           "Opprett et nytt prosjekt direkte når tilbudsprosessen ikke er nødvendig, eller åpne et eksisterende prosjekt fra prosjektlisten.",
+          "Bruk feltet Krever oppfølging på Startsiden for å se prosjekter med ulest kundemelding, åpne avvik eller status Klar for kunde. Knappene åpner prosjektet direkte på riktig arbeidsflate.",
           "Legg inn prosjektinformasjon, kunde, adresse og ansvarlig før øvrig dokumentasjon bygges opp.",
           "Velg dokumentert tetthetsgaranti og Sopro-system dersom prosjektet skal være et garantibad.",
           "Dokumenter produkter, bilder, sjekklister, avvik, overtagelse og rapport fortløpende."
@@ -28,10 +29,12 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
         important: [
           "Bruk personlig e-postadresse. Ikke del innlogging med andre.",
           "Prosjektdata som kunde, adresse og firmaopplysninger brukes videre i rapport og garantidokumentasjon.",
+          "Krever oppfølging er en arbeidsoversikt basert på eksisterende prosjektdata. Den oppretter ikke egne oppgaver og endrer ikke prosjektstatus automatisk.",
           "Ferdig rapport bør alltid lastes ned og lagres i bedriftens eget arkiv."
         ],
         best: [
           "Start dokumentasjonen ved prosjektoppstart, ikke ved prosjektslutt.",
+          "Bruk Krever oppfølging som en rask inngang til ulest kundedialog, åpne avvik og prosjekter som er klare for kunde.",
           "Ta bilder og fyll ut sjekklister mens arbeidet utføres.",
           "Bruk prosjektchatten som hovedkanal for kundedialog når avklaringer gjelder prosjektet eller leveransen."
         ]
@@ -538,6 +541,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Befaring/Tilbud samler forespørsel, befaring, tilbud, digital kundeaksept, akseptbevis og prosjektaktivering i én arbeidsflyt.",
           "Firmadelte tilbudsmaler kan lagres, brukes og slettes direkte i tilbudsbyggeren. Malen kopieres inn som en redigerbar tilbudskladd uten kunde-, befarings-, bilde- eller PDF-data.",
           "Sendte tilbud viser sendt dato og antall dager siden utsending. Tilbud som har vært ubesvart i 7 dager markeres Bør følges opp, og kan følges opp manuelt fra tilbudssaken.",
+          "Startsiden har nå Krever oppfølging, som samler prosjekter med ulest kundemelding, åpne avvik eller status Klar for kunde og gir direkte inngang til riktig arbeidsflate.",
           "Tilbud/kontrakt skiller nå mellom opprinnelig avtale og senere endringer. Tillegg og fradrag registreres som egne poster med beløp inkl. mva., og gjeldende avtalesum beregnes når opprinnelig avtalesum finnes.",
           "Systemadministrator kan avvise og slette ventende brukere.",
           "Mobilvisningen er forenklet med hurtigvalg til Befaring/Tilbud, Bilder, Sjekklister og Fag/utstyr, egen Status-knapp og Alle funksjoner for resten av appen.",
