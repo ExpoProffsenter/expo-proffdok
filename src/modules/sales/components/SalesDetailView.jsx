@@ -940,19 +940,24 @@ export default function SalesDetailView({
                             flexWrap: "wrap",
                             marginBottom: 12,
                             padding: "10px 12px",
-                            border: offerFollowUp.shouldFollowUp
-                              ? "1px solid #fed7aa"
-                              : "1px solid #d7e4ea",
+                            border:
+                              offerFollowUp.shouldFollowUp &&
+                              !hasUnpublishedOfferChanges
+                                ? "1px solid #fed7aa"
+                                : "1px solid #d7e4ea",
                             borderRadius: 14,
-                            background: offerFollowUp.shouldFollowUp
-                              ? "#fff7ed"
-                              : "#ffffff",
+                            background:
+                              offerFollowUp.shouldFollowUp &&
+                              !hasUnpublishedOfferChanges
+                                ? "#fff7ed"
+                                : "#ffffff",
                           }}
                         >
                           <span style={{ fontWeight: 800 }}>
                             {offerFollowUp.text}
                           </span>
-                          {offerFollowUp.shouldFollowUp ? (
+                          {offerFollowUp.shouldFollowUp &&
+                          !hasUnpublishedOfferChanges ? (
                             <span
                               style={{
                                 display: "inline-flex",
@@ -972,8 +977,8 @@ export default function SalesDetailView({
                           ) : null}
                           {offerFollowUp.shouldFollowUp &&
                           hasUnpublishedOfferChanges ? (
-                            <span style={{ fontSize: 13, color: "#7c2d12" }}>
-                              Publiser den nye tilbudsversjonen før oppfølging sendes.
+                            <span style={{ fontSize: 13, color: "#475569" }}>
+                              Ny versjon må publiseres før oppfølging.
                             </span>
                           ) : null}
                         </div>
