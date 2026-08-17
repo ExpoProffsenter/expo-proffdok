@@ -2764,6 +2764,8 @@ export default function SalesModule({
             inspectionMeasurements: inspectionForm.measurements.trim(),
             inspectionObservations: inspectionForm.observations.trim(),
             inspectionPhotos: persistentPhotos,
+            inspectionCompletedAt:
+              request.inspectionCompletedAt || new Date().toISOString(),
             ...(request.status === "Forespørsel" || request.status === "Befaring"
               ? {
                   status: "Befaring",
