@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 28A3
+// Viser firmadelte tilbudsmaler i tilbudsbyggeren med bruk og sletting.
+// Malbruk erstatter kun redigerbar tilbudskladd; kunde/befaring/publisert historikk berøres ikke.
 // Expo ProffDok – FASE 28A2
 // Legger til «Lagre som mal» uten å endre FASE 26B.5-strukturen i tilbudsbyggeren.
 // Maldata lagres via SalesModule/service; bilder og PDF-vedlegg tas ikke med i malen.
@@ -7,7 +10,7 @@
 // Ingen Supabase/Storage/publiseringslogikk i komponenten.
 
 import { useRef } from "react";
-import { ArrowLeft, ClipboardList, FileText, Plus, Save, Send } from "lucide-react";
+import { ArrowLeft, ClipboardList, FileText, Plus, Save, Send, Trash2 } from "lucide-react";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import {
   formatNok,
@@ -42,9 +45,16 @@ export default function SalesOfferBuilder({
   offerForm,
   offerDraftSaveStatus,
   offerTemplateSaveBusy = false,
+  offerTemplates = [],
+  offerTemplatesLoading = false,
+  selectedOfferTemplateId = "",
+  offerTemplateActionBusy = false,
   onBack,
   handleSaveOffer,
   handleSaveOfferTemplate,
+  handleSelectOfferTemplate,
+  handleApplyOfferTemplate,
+  handleDeleteOfferTemplate,
   addInspectionContextToOfferIntro,
   updateOfferForm,
   updateOfferLine,
@@ -251,6 +261,87 @@ export default function SalesOfferBuilder({
               }
             }}
           >
+            <div className="sales-form-preview" style={{ marginBottom: 18 }}>
+              <p className="sales-eyebrow" style={{ marginBottom: 4 }}>
+                Tilbudsmaler
+              </p>
+              <h2 style={{ margin: "0 0 6px" }}>Bruk firmamal</h2>
+              <p className="sales-subtitle" style={{ margin: 0 }}>
+                Malen kopieres inn i denne redigerbare tilbudskladden. Kunde,
+                adresse og befaringsdata beholdes på saken.
+              </p>
+
+              {offerTemplatesLoading ? (
+                <p className="sales-subtitle" style={{ marginTop: 14 }}>
+                  Laster firmaets tilbudsmaler …
+                </p>
+              ) : offerTemplates.length ? (
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 12,
+                    marginTop: 14,
+                  }}
+                >
+                  <label className="sales-field">
+                    <span>Velg tilbudsmal</span>
+                    <select
+                      value={selectedOfferTemplateId}
+                      onChange={(event) =>
+                        handleSelectOfferTemplate(event.target.value)
+                      }
+                    >
+                      <option value="">Velg mal</option>
+                      {offerTemplates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <button
+                      className="sales-secondary-button"
+                      type="button"
+                      onClick={handleApplyOfferTemplate}
+                      disabled={
+                        !selectedOfferTemplateId || offerTemplateActionBusy
+                      }
+                    >
+                      <ClipboardList size={18} />
+                      Bruk valgt mal
+                    </button>
+
+                    <button
+                      className="sales-secondary-button"
+                      type="button"
+                      onClick={handleDeleteOfferTemplate}
+                      disabled={
+                        !selectedOfferTemplateId || offerTemplateActionBusy
+                      }
+                    >
+                      <Trash2 size={18} />
+                      {offerTemplateActionBusy
+                        ? "Arbeider …"
+                        : "Slett valgt mal"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="sales-subtitle" style={{ marginTop: 14 }}>
+                  Firmaet har ingen lagrede tilbudsmaler ennå. Bygg et tilbud og
+                  bruk «Lagre som mal» nederst på siden.
+                </p>
+              )}
+            </div>
+
             <div className="sales-form-grid">
               {hasInspectionContext(selectedRequest) ? (
                 <div className="sales-field sales-field-full">
