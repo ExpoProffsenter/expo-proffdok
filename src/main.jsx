@@ -21,6 +21,7 @@ import { createDeviationCenter } from './modules/deviations/deviationViewTools.j
 import { createInstallationViewTools } from './modules/installations/installationViewTools.js';
 import { createContractViewTools } from './modules/contract/contractViewTools.js';
 import { ensureExpoProffDokAppBranding, warrantyArchiveNotice, userGuidePdfPath, adminGuidePdfPath, EXPO_PROFFDOK_TERMS_VERSION, EXPO_PROFFDOK_TERMS_TITLE, expoProffDokTermsSections } from './modules/app/appStaticTools.js';
+import AppErrorBoundary from './modules/app/AppErrorBoundary.jsx';
 import {
   productSections, productCategoryOptions, productCheckpointTypeOptions, productCheckpointTypeLabels,
   productCheckpointSystemOptions, productCheckpointSystemLabels, soproDf10ColorOptions, soproFlPlusColorOptions,
@@ -8389,4 +8390,8 @@ ${appLink}`;
     getWarrantyYears
   });
 
-  (0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}));
+  (0, import_client.createRoot)(document.getElementById("root")).render(
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppErrorBoundary, {
+      children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {})
+    })
+  );
