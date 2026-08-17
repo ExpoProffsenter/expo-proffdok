@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 28A2
+// Legger til «Lagre som mal» uten å endre FASE 26B.5-strukturen i tilbudsbyggeren.
+// Maldata lagres via SalesModule/service; bilder og PDF-vedlegg tas ikke med i malen.
 // Expo ProffDok – FASE 26B.5
 // Opsjoner velges som tillegg/oppgradering eller alternativ som erstatter konkret underpost.\n// Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri
 // administrasjon/prosjektstyring. Bilde og link beholdes på underposter og opsjoner.
@@ -38,8 +41,10 @@ export default function SalesOfferBuilder({
   selectedRequest,
   offerForm,
   offerDraftSaveStatus,
+  offerTemplateSaveBusy = false,
   onBack,
   handleSaveOffer,
+  handleSaveOfferTemplate,
   addInspectionContextToOfferIntro,
   updateOfferForm,
   updateOfferLine,
@@ -1149,6 +1154,16 @@ export default function SalesOfferBuilder({
                 onClick={onBack}
               >
                 Avbryt
+              </button>
+
+              <button
+                className="sales-secondary-button"
+                type="button"
+                onClick={handleSaveOfferTemplate}
+                disabled={offerTemplateSaveBusy}
+              >
+                <Save size={18} />
+                {offerTemplateSaveBusy ? "Lagrer mal …" : "Lagre som mal"}
               </button>
 
               <button
