@@ -24,7 +24,8 @@ export default function SalesSupportScope() {
       if (!client) return;
       const { data, error } = await listSalesSupportCompanies(client);
       if (!active) return;
-      if (error || !Array.isArray(data)) {
+      if (error || !Array.isArray(data) || data.length === 0) {
+        setCompanies([]);
         setAvailable(false);
         return;
       }
