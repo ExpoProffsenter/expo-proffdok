@@ -1,9 +1,13 @@
-// FASE 29B1: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
+// FASE 29B1/29B2: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
 // Ruten brukes som varig URL i prosjektdata og PDF. Selve Storage-lenken lages først
 // ved åpning og er kortlivet. Kundekode legges aldri i URL-en.
 
 import { createClient } from '@supabase/supabase-js';
-import { PRIVATE_DOCUMENT_BUCKET } from './privateDocumentTools.js';
+import {
+  PRIVATE_DOCUMENT_BUCKET,
+  buildPrivateSalesStoragePath,
+  isPrivateSalesLogicalPath,
+} from './privateDocumentTools.js';
 
 const normalizeRole = (value = 'kunde') => {
   const clean = String(value || '').trim().toLowerCase();
@@ -63,7 +67,7 @@ const redirectToSignedUrl = (signedUrl, download = false) => {
   window.location.replace(signedUrl);
 };
 
-const requestPortalSignedUrl = async (client, { projectId, role, code, path, download }) => {
+const requestPortalSignedUrl = async (client, { projectId = '', role, code, path, download }) => {
   const { data, error } = await client.functions.invoke('private-document-access', {
     body: {
       projectId,
@@ -78,6 +82,22 @@ const requestPortalSignedUrl = async (client, { projectId, role, code, path, dow
     throw new Error(data?.error || 'Tilgangen ble ikke godkjent.');
   }
   return data.signedUrl;
+};
+
+const storedPortalCandidates = (role = 'kunde') => {
+  const candidates = [];
+  const normalizedRole = normalizeRole(role);
+  try {
+    for (let index = 0; index < window.sessionStorage.length; index += 1) {
+      const key = window.sessionStorage.key(index) || '';
+      const match = key.match(/^expoProffDokPortalAccess:([^:]+):([^:]+)$/);
+      if (!match || normalizeRole(match[2]) !== normalizedRole) continue;
+      const code = normalizeCode(window.sessionStorage.getItem(key) || '');
+      if (!code) continue;
+      candidates.push({ projectId: match[1], code });
+    }
+  } catch {}
+  return candidates;
 };
 
 const showPortalCodeForm = ({ client, projectId, role, path, download }) => {
@@ -109,9 +129,11 @@ const showPortalCodeForm = ({ client, projectId, role, path, download }) => {
         path,
         download,
       });
-      try {
-        window.sessionStorage.setItem(portalStorageKey(projectId, role), code);
-      } catch {}
+      if (projectId) {
+        try {
+          window.sessionStorage.setItem(portalStorageKey(projectId, role), code);
+        } catch {}
+      }
       redirectToSignedUrl(signedUrl, download);
     } catch (error) {
       errorBox.textContent = error?.message || 'Feil tilgangskode eller manglende dokumenttilgang.';
@@ -151,47 +173,73 @@ export async function runPrivateDocumentRedirect() {
 
   const client = createClient(supabaseUrl, anonKey);
 
-  // Innloggede brukere bruker ordinær Storage-RLS direkte.
+  // Innloggede brukere bruker ordinær Storage-RLS direkte. For private Sales-dokumenter
+  // regnes fysisk firmascopet path ut fra innlogget firmascope; logical path forblir stabil i saken.
   try {
     const { data: sessionData } = await client.auth.getSession();
     if (sessionData?.session?.user) {
+      let physicalPath = path;
+      if (isPrivateSalesLogicalPath(path)) {
+        const { data: companyScopeId, error: scopeError } = await client.rpc('resolve_sales_company_scope');
+        if (scopeError || !companyScopeId) throw scopeError || new Error('Mangler firmascope.');
+        physicalPath = buildPrivateSalesStoragePath({
+          companyScopeId,
+          logicalPath: path,
+        });
+      }
       const { data, error } = await client.storage
         .from(PRIVATE_DOCUMENT_BUCKET)
-        .createSignedUrl(path, 10 * 60, download ? { download: true } : undefined);
+        .createSignedUrl(physicalPath, 10 * 60, download ? { download: true } : undefined);
       if (!error && data?.signedUrl) {
         redirectToSignedUrl(data.signedUrl, download);
         return;
       }
     }
   } catch {
-    // Fall gjennom til kodebasert portaltilgang dersom prosjektkontekst finnes.
+    // Fall gjennom til kodebasert portaltilgang.
   }
 
-  if (!projectId) {
-    showError('Du må være innlogget i Expo ProffDok for å åpne dette dokumentet.');
-    return;
-  }
-
-  let storedCode = '';
-  try {
-    storedCode = normalizeCode(window.sessionStorage.getItem(portalStorageKey(projectId, role)) || '');
-  } catch {}
-
-  if (storedCode) {
+  // Har lenken eksplisitt prosjekt-ID, prøv lagret kode for akkurat prosjektet først.
+  if (projectId) {
+    let storedCode = '';
     try {
-      const signedUrl = await requestPortalSignedUrl(client, {
-        projectId,
-        role,
-        code: storedCode,
-        path,
-        download,
-      });
-      redirectToSignedUrl(signedUrl, download);
-      return;
-    } catch {
+      storedCode = normalizeCode(window.sessionStorage.getItem(portalStorageKey(projectId, role)) || '');
+    } catch {}
+
+    if (storedCode) {
       try {
-        window.sessionStorage.removeItem(portalStorageKey(projectId, role));
-      } catch {}
+        const signedUrl = await requestPortalSignedUrl(client, {
+          projectId,
+          role,
+          code: storedCode,
+          path,
+          download,
+        });
+        redirectToSignedUrl(signedUrl, download);
+        return;
+      } catch {
+        try {
+          window.sessionStorage.removeItem(portalStorageKey(projectId, role));
+        } catch {}
+      }
+    }
+  } else {
+    // Varige Sales-dokumentlenker har ikke prosjekt-ID. Prøv eksisterende verifiserte
+    // kundeportalsesjoner; backend godkjenner bare kandidaten dersom path faktisk tilhører prosjektet.
+    for (const candidate of storedPortalCandidates(role)) {
+      try {
+        const signedUrl = await requestPortalSignedUrl(client, {
+          projectId: candidate.projectId,
+          role,
+          code: candidate.code,
+          path,
+          download,
+        });
+        redirectToSignedUrl(signedUrl, download);
+        return;
+      } catch {
+        // Kandidaten tilhører et annet prosjekt eller er utløpt. Prøv neste.
+      }
     }
   }
 

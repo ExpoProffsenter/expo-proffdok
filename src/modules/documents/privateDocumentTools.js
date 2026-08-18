@@ -8,6 +8,11 @@ export const LEGACY_PUBLIC_DOCUMENT_BUCKET = "project-images";
 export const DEFAULT_PRIVATE_DOCUMENT_URL_TTL_SECONDS = 10 * 60;
 export const EXPO_PROFFDOK_CANONICAL_URL = "https://expo-proffdok.app/";
 
+const PRIVATE_SALES_LOGICAL_PREFIXES = [
+  "sales-contracts/",
+  "sales-acceptance-proofs/"
+];
+
 const sanitizePathPart = (value = "", fallback = "fil") => {
   const clean = String(value || "")
     .trim()
@@ -17,10 +22,41 @@ const sanitizePathPart = (value = "", fallback = "fil") => {
   return clean || fallback;
 };
 
-export const isPrivateDocumentFile = (file = {}) =>
-  file?.private === true ||
-  file?.isPrivate === true ||
-  String(file?.bucket || file?.storageBucket || "").trim() === PRIVATE_DOCUMENT_BUCKET;
+const normalizeStoragePath = (value = "") =>
+  String(value || "").trim().replace(/^\/+/, "");
+
+export const isPrivateSalesLogicalPath = (path = "") => {
+  const cleanPath = normalizeStoragePath(path).toLowerCase();
+  return PRIVATE_SALES_LOGICAL_PREFIXES.some((prefix) => cleanPath.startsWith(prefix));
+};
+
+export const privateSalesRequestRefFromLogicalPath = (path = "") => {
+  const parts = normalizeStoragePath(path).split("/").filter(Boolean);
+  if (parts.length < 4 || !isPrivateSalesLogicalPath(path)) return "";
+  return String(parts[2] || "").trim();
+};
+
+export const buildPrivateSalesStoragePath = ({
+  companyScopeId,
+  logicalPath
+} = {}) => {
+  const scope = sanitizePathPart(companyScopeId, "");
+  const cleanLogicalPath = normalizeStoragePath(logicalPath);
+  const requestRef = sanitizePathPart(
+    privateSalesRequestRefFromLogicalPath(cleanLogicalPath),
+    ""
+  );
+  if (!scope || !requestRef || !isPrivateSalesLogicalPath(cleanLogicalPath)) return "";
+  return `${scope}/sales/${requestRef}/${cleanLogicalPath}`;
+};
+
+export const isPrivateDocumentFile = (file = {}) => {
+  const url = String(file?.url || file?.href || "");
+  return file?.private === true ||
+    file?.isPrivate === true ||
+    String(file?.bucket || file?.storageBucket || "").trim() === PRIVATE_DOCUMENT_BUCKET ||
+    /[?&]privateDocument=1(?:&|$)/i.test(url);
+};
 
 export const hasStoredDocumentReference = (file = {}) => {
   if (!file || typeof file !== "object") return false;
@@ -45,7 +81,7 @@ export const buildPrivateDocumentAppUrl = ({
   role = "kunde",
   download = false
 } = {}) => {
-  const cleanPath = String(path || "").trim().replace(/^\/+/, "");
+  const cleanPath = normalizeStoragePath(path);
   if (!cleanPath) return "";
   const url = new URL(EXPO_PROFFDOK_CANONICAL_URL);
   url.searchParams.set("privateDocument", "1");
