@@ -350,3 +350,75 @@ footer { color: var(--expo-muted); margin-top: 18px; border-top: 1px solid #dbe7
   }
 }
 
+/* FASE 28E: Mobil layoutopprydding – reduserer «kort inni kort»-effekt uten å endre desktop eller funksjonslogikk. */
+@media screen and (max-width: 700px) {
+  /* Bruk mer av den faktiske mobilbredden. */
+  main {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  main > section {
+    padding: 14px 10px;
+    border-radius: 16px;
+  }
+
+  /*
+   * Et section inni et section er normalt en layoutcontainer, ikke et nytt
+   * «vindu». På mobil vises den derfor flatt.
+   */
+  main section section {
+    margin: 12px 0 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /*
+   * En .item som selv inneholder nye .item-kort er normalt en gruppe/wrapper.
+   * Fjern gruppens ekstra ramme, men behold de innerste faktiske objektene
+   * (bruker, produkt, prosjekt, avvik osv.) som egne kort.
+   */
+  main .item:has(> .item) {
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /*
+   * Accordion-rader skal være selve inngangen. Wrapperen rundt knappen skal
+   * ikke lage et ekstra kortnivå – heller ikke når accordionen er lukket.
+   */
+  main .adminAccordionItem {
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    margin-top: 12px !important;
+  }
+
+  main .adminAccordionItem > .item {
+    margin-top: 10px !important;
+  }
+
+  /*
+   * Faktiske innholdskort beholder ramme, men får litt mindre luft slik at
+   * de ikke blir unødvendig smale på telefon.
+   */
+  main .item:not(:has(> .item)):not(.adminAccordionItem),
+  main .file {
+    padding: 13px !important;
+    border-radius: 15px !important;
+  }
+
+  /* Unngå at flere nivåer med margin gjør innholdet visuelt innrykket. */
+  main .item .item {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
