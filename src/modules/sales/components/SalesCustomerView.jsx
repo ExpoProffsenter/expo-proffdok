@@ -1,5 +1,6 @@
 // Expo ProffDok – FASE 26B.5
-// Kundetilbud skiller tydelig mellom tillegg/oppgraderinger og alternativer som erstatter en konkret grunnpost.\n// Kundetilbud grupperer hovedposter/underposter, koblede opsjoner og vedlegg. Valgte opsjoner oppdaterer riktig hovedpostsum.
+// Kundetilbud skiller tydelig mellom tillegg/oppgraderinger og alternativer som erstatter en konkret grunnpost.\
+// Kundetilbud grupperer hovedposter/underposter, koblede opsjoner og vedlegg. Valgte opsjoner oppdaterer riktig hovedpostsum.
 // Priser vises inkl. mva.; intern lagrings- og akseptmodell beholdes eks. mva. Ingen SQL/RLS/Storage/Edge-endring.
 // Expo ProffDok – FASE 26A
 // Privatkundens tilbud viser alle kundevendte priser inkl. mva. Intern lagrings- og akseptmodell beholdes uendret eks. mva.
@@ -393,6 +394,7 @@ export default function SalesCustomerView({
 
                 <div className="sales-customer-main-posts">
                   {offerGroups.map((group, groupIndex) => {
+                    const groupNumber = String(groupIndex + 1).padStart(2, "0");
                     const groupSelectedOptions = group.options.filter((option) =>
                       acceptanceForm.selectedOptionIds.includes(option.id)
                     );
@@ -407,7 +409,7 @@ export default function SalesCustomerView({
                         <div className="sales-customer-main-post-heading">
                           <div>
                             <span className="sales-customer-main-post-number">
-                              {String(groupIndex + 1).padStart(2, "0")}
+                              {groupNumber}
                             </span>
                             <h3>{group.title}</h3>
                           </div>
@@ -444,7 +446,7 @@ export default function SalesCustomerView({
                                   }`}
                                 >
                                   <div className="sales-customer-line-number">
-                                    {groupIndex + 1}.{lineIndex + 1}
+                                    {groupNumber}.{lineIndex + 1}
                                   </div>
 
                                   <div className="sales-customer-line-body">
@@ -466,14 +468,26 @@ export default function SalesCustomerView({
                                     line.attachmentFile?.url && line.attachmentFile?.customerVisible !== false ? (
                                       <div className="sales-customer-line-media">
                                         {line.imageDataUrl ? (
-                                          <img
-                                            src={line.imageDataUrl}
-                                            alt={
+                                          <a
+                                            href={line.imageDataUrl}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            title="Åpne større bilde"
+                                            aria-label={`Åpne større bilde: ${
                                               line.imageName ||
                                               line.description ||
                                               "Produktbilde"
-                                            }
-                                          />
+                                            }`}
+                                          >
+                                            <img
+                                              src={line.imageDataUrl}
+                                              alt={
+                                                line.imageName ||
+                                                line.description ||
+                                                "Produktbilde"
+                                              }
+                                            />
+                                          </a>
                                         ) : null}
 
                                         <div className="sales-customer-media-links">
@@ -551,15 +565,30 @@ export default function SalesCustomerView({
                                     key={option.id}
                                   >
                                     {option.imageDataUrl ? (
-                                      <img
-                                        className="sales-customer-option-image"
-                                        src={option.imageDataUrl}
-                                        alt={
+                                      <a
+                                        href={option.imageDataUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        title="Åpne større bilde"
+                                        aria-label={`Åpne større bilde: ${
                                           option.imageName ||
                                           option.title ||
                                           "Opsjon"
+                                        }`}
+                                        onClick={(event) =>
+                                          event.stopPropagation()
                                         }
-                                      />
+                                      >
+                                        <img
+                                          className="sales-customer-option-image"
+                                          src={option.imageDataUrl}
+                                          alt={
+                                            option.imageName ||
+                                            option.title ||
+                                            "Opsjon"
+                                          }
+                                        />
+                                      </a>
                                     ) : null}
 
                                     <div className="sales-customer-option-content">
