@@ -1,6 +1,6 @@
-// Expo ProffDok – FASE 23N
+// Expo ProffDok – FASE 23N / FASE 29C1
 // Presentasjonskomponent for aktivering av en akseptert salgssak som ProffDok-prosjekt.
-// Ingen egen React-state, Supabase-kall, Storage-kall eller prosjektopprettelseslogikk.
+// Prosjektaktivering er eksplisitt sperret i Systemadmin-supportmodus.
 
 import {
   ArrowLeft,
@@ -9,7 +9,9 @@ import {
   FileText,
   Home,
   Plus,
+  ShieldCheck,
 } from "lucide-react";
+import { getSalesSupportCompanyId } from "../services/salesSupabase.js";
 
 export default function SalesProjectActivation({
   selectedRequest,
@@ -19,6 +21,63 @@ export default function SalesProjectActivation({
   onSubmit,
   onUpdateProjectForm,
 }) {
+  const supportMode = Boolean(getSalesSupportCompanyId());
+
+  if (supportMode) {
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <header className="sales-header">
+            <button
+              className="sales-back-button"
+              type="button"
+              onClick={onBack}
+            >
+              <ArrowLeft size={18} />
+              Tilbake
+            </button>
+
+            <div className="sales-brand sales-brand-compact">
+              <div className="sales-brand-mark">
+                <ShieldCheck size={22} />
+              </div>
+              <div className="sales-brand-copy">
+                <strong>Systemadmin-support</strong>
+                <span>Prosjektaktivering er sperret</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="sales-main">
+            <section className="sales-form-hero">
+              <p className="sales-eyebrow">Handling sperret i supportmodus</p>
+              <h1 className="sales-title">{selectedRequest.title}</h1>
+              <p className="sales-subtitle">
+                {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
+              </p>
+            </section>
+
+            <div className="sales-form-panel">
+              <div className="sales-form-preview" style={{ marginTop: 0 }}>
+                <h2>Aktivering utføres av firmaet</h2>
+                <p className="sales-subtitle">
+                  Systemadministrator kan kontrollere aksept, dokumenter og
+                  prosjektgrunnlag, men oppretter ikke prosjektet på vegne av
+                  målbedriften. Dette beskytter eierskap og ansvarlig bruker.
+                </p>
+              </div>
+
+              <button className="sales-primary-button" type="button" onClick={onBack}>
+                <ArrowLeft size={18} />
+                Tilbake til saken
+              </button>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="sales-app">
       <div className="sales-shell">
