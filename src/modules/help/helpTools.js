@@ -1,3 +1,4 @@
+// FASE 29B4 HJELP / SYSTEMADMIN: Systemadmin beskrives som samlet kontrollpunkt for tverrfirma-support av prosjekter og Befaring/Tilbud.
 // FASE 28D1 HJELP / BRUKERVEILEDNING: Appen varsler når en nyere produksjonsversjon er tilgjengelig, uten tvangsreload midt i arbeid.
 // FASE 28D2 HJELP / BRUKERVEILEDNING: Systemadministrator kan publisere korte appnyheter. Brukere kan lukke eller velge Ikke vis igjen per bruker.
 // FASE 28B2 HJELP / BRUKERVEILEDNING: Oppdatert for firmadelte tilbudsmaler og manuell oppfølging av sendte tilbud. Ingen database-, RLS-, Storage-, Edge Function- eller automatisk e-postendring.
@@ -550,6 +551,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Sendte tilbud viser sendt dato og antall dager siden utsending. Tilbud som har vært ubesvart i 7 dager markeres Bør følges opp og vises også på Startsiden med direkte inngang til riktig tilbudssak.",
           "Expo ProffDok varsler når en nyere appversjon er tilgjengelig, slik at brukere som har en fane stående åpen kan oppdatere kontrollert.",
           "Systemadministrator kan publisere korte nyheter i appen. Nyeste aktive nyhet vises for brukerne, som kan lukke den eller velge Ikke vis igjen.",
+          "Systemadministrator velger nå firma fra Systemadmin når andre firmaers prosjekter eller Befaring/Tilbud skal supporteres.",
           "Startsiden har nå Krever oppfølging for prosjekter og Tilbud som bør følges opp for sendte tilbud som har vært ubesvart i minst 7 dager. Begge gir direkte inngang til riktig arbeidsflate.",
           "I Befaring/Tilbud vises gjennomført befaring tydelig, og Outlook-handlingen skjules når befaringen allerede er utført. Ny tilbudsversjon kan publiseres og sendes til kunden i samme handling.",
           "Tilbud/kontrakt skiller nå mellom opprinnelig avtale og senere endringer. Tillegg og fradrag registreres som egne poster med beløp inkl. mva., og gjeldende avtalesum beregnes når opprinnelig avtalesum finnes.",
@@ -601,12 +603,15 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
       {
         key: "systemadmin",
         title: "⚙️ Systemadministrasjon",
-        purpose: "Systemadministrasjon brukes til godkjenning av brukere, rolleoppsett, support, produktmaster og kontroll av systemdata.",
+        purpose: "Systemadministrasjon er kontrollsenteret for godkjenning av brukere, roller, tverrfirma-support, produktmaster, appnyheter og kontroll av systemdata.",
         workflow: [
           "Godkjenn nye brukere manuelt i Systemadmin.",
           "Avvis og slett feilregistrerte eller uønskede ventende brukere før de tas i bruk.",
           "Kontroller firma, rolle og systemadministratorstatus før godkjenning.",
-          "Bruk supportmodus bevisst når du skal hjelpe et firma eller åpne et prosjekt på vegne av andre brukere.",
+          "Bruk Systemadmin som eneste kontrollpunkt når du skal supportere andre firmaer.",
+          "Ved prosjektsupport: finn riktig firma i Supportmodus og åpne deretter riktig prosjekt. Kontroller at supportmodus er tydelig aktiv før du gjør endringer.",
+          "Ved Befaring/Tilbud-support: bruk Support – Befaring/Tilbud, velg firma og åpne firmaets salgsoversikt. Inne i Befaring/Tilbud vises aktivt supportfirma tydelig.",
+          "Gå tilbake til Systemadmin og velg Eget firma / avslutt Sales-support når du er ferdig med Befaring/Tilbud-support.",
           "Vedlikehold produktmaster og synkroniser kun aktive prosjekter der dette er riktig.",
           "Bruk Nyheter i appen til korte, relevante meldinger om nye funksjoner eller viktige endringer.",
           "Hold nyheten kort og konkret, slik at brukeren raskt ser hva som er endret.",
@@ -614,15 +619,20 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
         ],
         important: [
           "Ingen nye brukere skal godkjennes automatisk.",
+          "Firmaadministrator administrerer eget firma og har ikke systemadministrators tverrfirma-support.",
+          "Kontroller alltid hvilket firma supportmodus gjelder før du åpner, redigerer eller publiserer informasjon.",
+          "I Befaring/Tilbud-support er Aktiver som prosjekt sperret inntil eierskap og prosjektansvarlig kan overføres sikkert til riktig firma.",
           "Låste prosjekter skal aldri endres av produktmaster-synk.",
           "Systemadmin-funksjoner påvirker hele løsningen og må brukes varsomt.",
           "Kun nyeste aktive appnyhet vises. Ikke bruk appnyheter til sensitiv kunde- eller prosjektinformasjon.",
           "Ikke vis igjen lagres per bruker og gjelder også når samme bruker logger inn på en annen enhet."
         ],
         best: [
-          "Godkjenn bare brukere du kjenner eller har avklart med firmaet.",
-          "Bruk små, kontrollerte endringer.",
+          "Bruk vanlig visning for eget firma og supportmodus bare når du faktisk skal hjelpe et annet firma.",
+          "Les og kontroller saken før du gjør endringer på vegne av et annet firma.",
+          "Gjør små og målrettede supportendringer, og unngå unødvendig redigering.",
           "Avslutt supportmodus når du er ferdig.",
+          "Godkjenn bare brukere du kjenner eller har avklart med firmaet.",
           "Skriv appnyheter kort og konkret: hva som er nytt, og hva brukeren eventuelt bør gjøre."
         ]
       }
@@ -662,7 +672,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { color: "#dbeafe", lineHeight: 1.6 }, children: "Komplett digital brukerveiledning for Expo ProffDok. Veiledningen er tekstbasert, mobilvennlig og viser kun innhold som er relevant for din brukerrolle." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "12px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: ["Rolle: ", guideRoleLabel] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 17.08.2026" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "8px 12px", borderRadius: "999px", background: "rgba(255,255,255,.14)", fontWeight: 900 }, children: "Sist oppdatert: 18.08.2026" })
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { background: "#ecfdf5", borderColor: "#86efac" }, children: [

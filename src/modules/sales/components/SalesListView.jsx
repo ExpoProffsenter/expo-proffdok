@@ -1,11 +1,12 @@
-// Expo ProffDok – FASE 28B1
+// Expo ProffDok – FASE 28B1 / FASE 29B4
 // Viser når kundetilbud faktisk ble sendt på e-post og markerer tilbud som bør
-// følges opp etter 7 dager uten aksept. Ingen SQL-, e-post- eller state-endring.
+// følges opp etter 7 dager uten aksept. Ved Sales-support vises kun status;
+// firmabytte gjøres fra Systemadmin.
 // Expo ProffDok – FASE 23H
 // Presentasjonskomponent for saksoversikten i Befaring / Tilbud / Aksept.
-// Ingen React-state, Supabase-kall, Storage-kall eller forretningslogikk.
 
 import { ClipboardList, Home, Plus, Ruler, Send } from "lucide-react";
+import SalesSupportNotice from "./SalesSupportNotice.jsx";
 
 const iconMap = {
   clipboard: ClipboardList,
@@ -74,6 +75,8 @@ export default function SalesListView({
         </header>
 
         <main className="sales-main">
+          <SalesSupportNotice />
+
           <section className="sales-hero">
             <div>
               <h1 className="sales-title">Forespørsler</h1>

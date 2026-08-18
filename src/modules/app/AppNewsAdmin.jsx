@@ -1,8 +1,9 @@
-// Expo ProffDok – FASE 28D2
-// Enkel systemadminflate for korte nyheter i appen.
-// RLS tillater publisering/endring kun for systemadministrator.
+// Expo ProffDok – FASE 28D2 / FASE 29B4
+// Systemadminflaten samler appnyheter og inngang til Sales-support.
+// RLS/RPC validerer at utvidet supporttilgang kun brukes av systemadministrator.
 
 import { useEffect, useState } from "react";
+import SystemAdminSalesSupport from "./SystemAdminSalesSupport.jsx";
 import {
   fetchAllAppNews,
   publishAppNews,
@@ -118,133 +119,140 @@ export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
   }
 
   return (
-    <div className="item adminAccordionItem" style={{ marginTop: "12px" }}>
-      <h3 style={{ marginTop: 0 }}>Nyheter i appen</h3>
-      <p className="note">
-        Publiser en kort beskjed som vises til innloggede brukere. Nyeste aktive
-        nyhet vises. «Lukk» viser den igjen ved en senere innlasting, mens «Ikke
-        vis igjen» lagres på brukeren.
-      </p>
+    <>
+      <SystemAdminSalesSupport
+        supabaseClient={supabaseClient}
+        authUser={authUser}
+      />
 
-      <form onSubmit={handlePublish}>
-        <label style={{ display: "block", fontWeight: 800, marginBottom: "10px" }}>
-          Tittel
-          <input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            maxLength={120}
-            placeholder="Eksempel: Bedre oppfølging av tilbud"
-            style={{ width: "100%", marginTop: "6px" }}
-          />
-        </label>
+      <div className="item adminAccordionItem" style={{ marginTop: "12px" }}>
+        <h3 style={{ marginTop: 0 }}>Nyheter i appen</h3>
+        <p className="note">
+          Publiser en kort beskjed som vises til innloggede brukere. Nyeste aktive
+          nyhet vises. «Lukk» viser den igjen ved en senere innlasting, mens «Ikke
+          vis igjen» lagres på brukeren.
+        </p>
 
-        <label style={{ display: "block", fontWeight: 800 }}>
-          Kort informasjon
-          <textarea
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            maxLength={1200}
-            rows={5}
-            placeholder="Skriv kort hva som er nytt og hva brukeren bør vite."
-            style={{ width: "100%", marginTop: "6px", resize: "vertical" }}
-          />
-        </label>
+        <form onSubmit={handlePublish}>
+          <label style={{ display: "block", fontWeight: 800, marginBottom: "10px" }}>
+            Tittel
+            <input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              maxLength={120}
+              placeholder="Eksempel: Bedre oppfølging av tilbud"
+              style={{ width: "100%", marginTop: "6px" }}
+            />
+          </label>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px",
-            flexWrap: "wrap",
-            marginTop: "12px",
-          }}
-        >
-          <small style={{ color: "#64748b" }}>
-            {message.length}/1200 tegn
-          </small>
-          <button type="submit" disabled={publishBusy}>
-            {publishBusy ? "Publiserer..." : "Publiser nyhet"}
-          </button>
-        </div>
-      </form>
+          <label style={{ display: "block", fontWeight: 800 }}>
+            Kort informasjon
+            <textarea
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              maxLength={1200}
+              rows={5}
+              placeholder="Skriv kort hva som er nytt og hva brukeren bør vite."
+              style={{ width: "100%", marginTop: "6px", resize: "vertical" }}
+            />
+          </label>
 
-      {error && (
-        <div
-          style={{
-            marginTop: "12px",
-            padding: "10px 12px",
-            borderRadius: "12px",
-            background: "#fef2f2",
-            color: "#991b1b",
-            fontWeight: 700,
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      <div style={{ marginTop: "20px" }}>
-        <h4 style={{ marginBottom: "10px" }}>Tidligere nyheter</h4>
-        {loading && <p className="note">Henter nyheter...</p>}
-        {!loading && items.length === 0 && (
-          <p className="note">Ingen nyheter er publisert ennå.</p>
-        )}
-
-        {items.map((item) => (
           <div
-            key={item.id}
-            className="item"
             style={{
-              background: item.active ? "#f0fdfa" : "#f8fafc",
-              marginBottom: "10px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+              flexWrap: "wrap",
+              marginTop: "12px",
             }}
           >
+            <small style={{ color: "#64748b" }}>
+              {message.length}/1200 tegn
+            </small>
+            <button type="submit" disabled={publishBusy}>
+              {publishBusy ? "Publiserer..." : "Publiser nyhet"}
+            </button>
+          </div>
+        </form>
+
+        {error && (
+          <div
+            style={{
+              marginTop: "12px",
+              padding: "10px 12px",
+              borderRadius: "12px",
+              background: "#fef2f2",
+              color: "#991b1b",
+              fontWeight: 700,
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        <div style={{ marginTop: "20px" }}>
+          <h4 style={{ marginBottom: "10px" }}>Tidligere nyheter</h4>
+          {loading && <p className="note">Henter nyheter...</p>}
+          {!loading && items.length === 0 && (
+            <p className="note">Ingen nyheter er publisert ennå.</p>
+          )}
+
+          {items.map((item) => (
             <div
+              key={item.id}
+              className="item"
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                gap: "12px",
-                flexWrap: "wrap",
+                background: item.active ? "#f0fdfa" : "#f8fafc",
+                marginBottom: "10px",
               }}
             >
-              <div style={{ flex: "1 1 280px" }}>
-                <b>{item.title}</b>
-                <small style={{ display: "block", color: "#64748b", marginTop: "3px" }}>
-                  {item.active ? "Aktiv" : "Deaktivert"}
-                  {item.published_at
-                    ? ` · Publisert ${formatAdminNewsDate(item.published_at)}`
-                    : ""}
-                </small>
-                <div
-                  style={{
-                    whiteSpace: "pre-wrap",
-                    marginTop: "8px",
-                    color: "#475569",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {item.message}
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => handleToggleActive(item)}
-                disabled={actionBusyId === item.id}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                }}
               >
-                {actionBusyId === item.id
-                  ? "Lagrer..."
-                  : item.active
-                    ? "Deaktiver"
-                    : "Publiser på nytt"}
-              </button>
+                <div style={{ flex: "1 1 280px" }}>
+                  <b>{item.title}</b>
+                  <small style={{ display: "block", color: "#64748b", marginTop: "3px" }}>
+                    {item.active ? "Aktiv" : "Deaktivert"}
+                    {item.published_at
+                      ? ` · Publisert ${formatAdminNewsDate(item.published_at)}`
+                      : ""}
+                  </small>
+                  <div
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      marginTop: "8px",
+                      color: "#475569",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {item.message}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => handleToggleActive(item)}
+                  disabled={actionBusyId === item.id}
+                >
+                  {actionBusyId === item.id
+                    ? "Lagrer..."
+                    : item.active
+                      ? "Deaktiver"
+                      : "Publiser på nytt"}
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
