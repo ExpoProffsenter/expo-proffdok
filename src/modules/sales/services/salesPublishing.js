@@ -1,5 +1,7 @@
-// Expo ProffDok – FASE 23P
+// Expo ProffDok – FASE 23P / FASE 29B4
 // Samler publisering av tilbud og opprettelse av kundelenker.
+// FASE 29B4 bruker firmaprofilen SalesModule allerede har lastet inn, med samme
+// logo-prinsipp som hovedappen: firmaets logo når den finnes, ellers Expo-logo.
 // Ingen React-state, UI-rendering, databaseendring, RLS- eller Storage-endring.
 
 import { buildPublishPayload } from "../utils/salesOfferLogic.js";
@@ -20,6 +22,7 @@ export async function publishSalesOfferAndBuildLink({
   client,
   request,
   requests = [],
+  companyProfile = null,
   loadCompanyProfile = async () => ({}),
   currentUrl,
   confirmOptionRemoval = () => true,
@@ -57,11 +60,18 @@ export async function publishSalesOfferAndBuildLink({
     }
   }
 
-  const companyProfile = await loadCompanyProfile();
+  const resolvedCompanyProfile =
+    companyProfile && typeof companyProfile === "object"
+      ? companyProfile
+      : await loadCompanyProfile();
+  const publishCompanyProfile = {
+    ...(resolvedCompanyProfile || {}),
+    logoUrl: resolvedCompanyProfile?.logoUrl || "/expo-logo.png",
+  };
 
   const { data, error } = await publishSalesOffer(
     client,
-    buildPublishPayload(request, companyProfile)
+    buildPublishPayload(request, publishCompanyProfile)
   );
 
   if (error) throw error;
@@ -75,17 +85,19 @@ export async function publishSalesOfferAndBuildLink({
           sentOfferVersionNumber: data.version_number,
           publicToken: data.public_token,
           companyName:
-            companyProfile.companyName || item.companyName || "",
+            publishCompanyProfile.companyName || item.companyName || "",
           companyOrgNumber:
-            companyProfile.orgNumber || item.companyOrgNumber || "",
+            publishCompanyProfile.orgNumber || item.companyOrgNumber || "",
           companyAddress:
-            companyProfile.address || item.companyAddress || "",
-          companyPhone: companyProfile.phone || item.companyPhone || "",
-          companyEmail: companyProfile.email || item.companyEmail || "",
+            publishCompanyProfile.address || item.companyAddress || "",
+          companyPhone:
+            publishCompanyProfile.phone || item.companyPhone || "",
+          companyEmail:
+            publishCompanyProfile.email || item.companyEmail || "",
           companyWebsite:
-            companyProfile.website || item.companyWebsite || "",
+            publishCompanyProfile.website || item.companyWebsite || "",
           companyLogoUrl:
-            companyProfile.logoUrl || item.companyLogoUrl || "",
+            publishCompanyProfile.logoUrl || item.companyLogoUrl || "/expo-logo.png",
           status: "Tilbud",
           statusClass: "sales-status-quote",
           nextStep: "Kundelink er oppdatert",
