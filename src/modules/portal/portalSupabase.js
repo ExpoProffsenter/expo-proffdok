@@ -123,13 +123,16 @@ export const buildPortalStorageUploadPath = async ({
   if (!normalizedProjectId || !uploadSecret) {
     throw new Error("Portaltilgangen må bekreftes på nytt før fil kan lastes opp.");
   }
-  if (!['chat', 'photos', 'sjekklister', 'vedlegg'].includes(normalizedArea)) {
+  if (!["chat", "photos", "sjekklister", "vedlegg"].includes(normalizedArea)) {
     throw new Error("Ugyldig område for portalopplasting.");
   }
   if (normalizedRole === "kunde" && normalizedArea !== "chat") {
     throw new Error("Kunden har ikke tilgang til denne filopplastingen.");
   }
-  if (normalizedRole === "underleverandor" && !['chat', 'photos', 'sjekklister', 'vedlegg'].includes(normalizedArea)) {
+  if (
+    normalizedRole === "underleverandor" &&
+    !["chat", "photos", "sjekklister", "vedlegg"].includes(normalizedArea)
+  ) {
     throw new Error("Underentreprenøren har ikke tilgang til denne filopplastingen.");
   }
 
@@ -148,23 +151,39 @@ const installPortalStorageRewriter = (supabase, { projectId, role } = {}) => {
   if (supabase.__expoPortalStorageRewriterInstalled) return;
 
   const originalFrom = supabase.storage.from.bind(supabase.storage);
+  supabase.__expoPortalStoragePathMap = new Map();
+
   supabase.storage.from = (bucketId) => {
     const bucket = originalFrom(bucketId);
-    if (!bucket || typeof bucket.upload !== "function") return bucket;
+    if (!bucket) return bucket;
 
+    const originalGetPublicUrl =
+      typeof bucket.getPublicUrl === "function" ? bucket.getPublicUrl.bind(bucket) : null;
+    if (originalGetPublicUrl) {
+      bucket.getPublicUrl = (path, options) => {
+        const legacyPath = String(path || "");
+        const mappedPath =
+          supabase.__expoPortalStoragePathMap?.get(`${bucketId}:${legacyPath}`) || legacyPath;
+        return originalGetPublicUrl(mappedPath, options);
+      };
+    }
+
+    if (typeof bucket.upload !== "function") return bucket;
     const originalUpload = bucket.upload.bind(bucket);
+
     bucket.upload = async (path, file, options) => {
       const context = supabase.__expoPortalStorageContext;
       if (!context?.projectId || !context?.role) return originalUpload(path, file, options);
 
-      const legacyParts = String(path || "").split("/").filter(Boolean);
+      const legacyPath = String(path || "");
+      const legacyParts = legacyPath.split("/").filter(Boolean);
       let area = "";
       if (bucketId === "chat-images") {
         area = "chat";
       } else if (
         bucketId === "project-images" &&
         context.role === "underleverandor" &&
-        ['photos', 'sjekklister', 'vedlegg'].includes(String(legacyParts[0] || "").toLowerCase())
+        ["photos", "sjekklister", "vedlegg"].includes(String(legacyParts[0] || "").toLowerCase())
       ) {
         area = String(legacyParts[0] || "").toLowerCase();
       }
@@ -172,16 +191,34 @@ const installPortalStorageRewriter = (supabase, { projectId, role } = {}) => {
       if (!area) return originalUpload(path, file, options);
 
       try {
-        const sourceFileName = legacyParts[legacyParts.length - 1] || file?.name || `bilde-${Date.now()}.jpg`;
+        const sourceFileName =
+          legacyParts[legacyParts.length - 1] || file?.name || `bilde-${Date.now()}.jpg`;
         const signedPath = await buildPortalStorageUploadPath({
           projectId: context.projectId,
           role: context.role,
           area,
           fileName: sourceFileName
         });
-        return originalUpload(signedPath, file, options);
+        const result = await originalUpload(signedPath, file, options);
+        if (!result?.error && result?.data) {
+          supabase.__expoPortalStoragePathMap?.set(`${bucketId}:${legacyPath}`, signedPath);
+          return {
+            ...result,
+            data: {
+              ...result.data,
+              path: signedPath,
+              ...(result.data.fullPath
+                ? { fullPath: `${bucketId}/${signedPath}` }
+                : {})
+            }
+          };
+        }
+        return result;
       } catch (error) {
-        return { data: null, error: error instanceof Error ? error : new Error(String(error || "Filopplasting feilet.")) };
+        return {
+          data: null,
+          error: error instanceof Error ? error : new Error(String(error || "Filopplasting feilet."))
+        };
       }
     };
     return bucket;
@@ -189,7 +226,7 @@ const installPortalStorageRewriter = (supabase, { projectId, role } = {}) => {
   supabase.__expoPortalStorageRewriterInstalled = true;
 };
 
-const unwrapRpcData = (data) => Array.isArray(data) ? data[0] ?? null : data ?? null;
+const unwrapRpcData = (data) => (Array.isArray(data) ? data[0] ?? null : data ?? null);
 
 const runRpc = async (supabase, name, args) => {
   const { data, error } = await supabase.rpc(name, args);
@@ -197,26 +234,25 @@ const runRpc = async (supabase, name, args) => {
   return unwrapRpcData(data);
 };
 
-export const ensureProjectPortalAccess = async (supabase, {
-  projectId,
-  role = "kunde",
-  forceNew = false
-} = {}) => runRpc(supabase, "ensure_project_portal_access", {
-  p_project_id: projectId,
-  p_role: normalizePortalRole(role),
-  p_force_new: !!forceNew
-});
+export const ensureProjectPortalAccess = async (
+  supabase,
+  { projectId, role = "kunde", forceNew = false } = {}
+) =>
+  runRpc(supabase, "ensure_project_portal_access", {
+    p_project_id: projectId,
+    p_role: normalizePortalRole(role),
+    p_force_new: !!forceNew
+  });
 
 export const getProjectPortalAccessStatus = async (supabase, { projectId } = {}) =>
   runRpc(supabase, "get_project_portal_access_status", {
     p_project_id: projectId
   });
 
-export const verifyProjectPortalAccess = async (supabase, {
-  projectId,
-  role = "kunde",
-  code = ""
-} = {}) => {
+export const verifyProjectPortalAccess = async (
+  supabase,
+  { projectId, role = "kunde", code = "" } = {}
+) => {
   const normalizedRole = normalizePortalRole(role);
   const result = await runRpc(supabase, "verify_project_portal_access", {
     p_project_id: projectId,
@@ -234,36 +270,41 @@ export const verifyProjectPortalAccess = async (supabase, {
   return result;
 };
 
-export const saveUnderleverandorProjectContribution = async (supabase, {
-  projectId,
-  code = "",
-  updates = {}
-} = {}) => runRpc(supabase, "save_underleverandor_project_contribution", {
-  p_project_id: projectId,
-  p_code: normalizePortalAccessCode(code),
-  p_updates: updates && typeof updates === "object" ? updates : {}
-});
+export const saveUnderleverandorProjectContribution = async (
+  supabase,
+  { projectId, code = "", updates = {} } = {}
+) =>
+  runRpc(supabase, "save_underleverandor_project_contribution", {
+    p_project_id: projectId,
+    p_code: normalizePortalAccessCode(code),
+    p_updates: updates && typeof updates === "object" ? updates : {}
+  });
 
-export const appendCustomerProjectMessage = async (supabase, {
-  projectId,
-  code = "",
-  text = "",
-  imageUrl = "",
-  imageName = "",
-  imagePath = ""
-} = {}) => runRpc(supabase, "append_customer_project_message", {
-  p_project_id: projectId,
-  p_code: normalizePortalAccessCode(code),
-  p_text: String(text || ""),
-  p_image_url: String(imageUrl || ""),
-  p_image_name: String(imageName || ""),
-  p_image_path: String(imagePath || "")
-});
+export const appendCustomerProjectMessage = async (
+  supabase,
+  {
+    projectId,
+    code = "",
+    text = "",
+    imageUrl = "",
+    imageName = "",
+    imagePath = ""
+  } = {}
+) =>
+  runRpc(supabase, "append_customer_project_message", {
+    p_project_id: projectId,
+    p_code: normalizePortalAccessCode(code),
+    p_text: String(text || ""),
+    p_image_url: String(imageUrl || ""),
+    p_image_name: String(imageName || ""),
+    p_image_path: String(imagePath || "")
+  });
 
-export const markCustomerProjectChatRead = async (supabase, {
-  projectId,
-  code = ""
-} = {}) => runRpc(supabase, "mark_customer_project_chat_read", {
-  p_project_id: projectId,
-  p_code: normalizePortalAccessCode(code)
-});
+export const markCustomerProjectChatRead = async (
+  supabase,
+  { projectId, code = "" } = {}
+) =>
+  runRpc(supabase, "mark_customer_project_chat_read", {
+    p_project_id: projectId,
+    p_code: normalizePortalAccessCode(code)
+  });
