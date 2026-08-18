@@ -1,5 +1,7 @@
-// Expo ProffDok – FASE 23C
+// Expo ProffDok – FASE 23C / FASE 29B3
 // Lokal nettleserlagring for Befaring / Tilbud / Aksept.
+// I integrert app er Supabase eneste oppstartskilde for salgssaker. Lokal cache beholdes
+// som backup under økten, men får ikke hydrere gamle data før ferske serverdata er hentet.
 // Ingen React-state, Supabase-kall, Storage-bucket-kall eller UI-rendering.
 
 import {
@@ -67,6 +69,11 @@ export function saveSalesNavigation(storageKey, mode, selectedRequestId) {
 }
 
 export function loadRequests(storageKey = STORAGE_KEY) {
+  // Integrert app bruker en firmascopet nøkkel. Der skal Supabase alltid være
+  // source of truth ved oppstart; ellers kan en eldre lokal cache rekke å
+  // autolagres tilbake over nyere serverdata før databasehentingen er ferdig.
+  if (storageKey !== STORAGE_KEY) return [];
+
   try {
     const storage = getLocalStorage();
     if (!storage) return initialRequests;
