@@ -1,7 +1,7 @@
 // Expo ProffDok – FASE 29C1
-// Tydelig, vedvarende Systemadmin-supportkontekst. Denne filen viser kun
-// supportstatus og skjuler misvisende ansvarlig-visning; forretningsregler
-// håndheves i de aktuelle React-komponentene/tjenestene.
+// Tydelig, vedvarende Systemadmin-supportkontekst. Denne filen viser supportstatus,
+// målbedriftens profil/logo og skjuler misvisende ansvarlig-visning.
+// Forretningsregler håndheves i de aktuelle React-komponentene/tjenestene.
 // Ingen SQL/RLS/Storage-endring.
 
 import { useEffect, useState } from "react";
@@ -16,6 +16,8 @@ import {
 const client = createDefaultSalesSupabaseClient();
 const GLOBAL_BANNER_ID = "expo-sales-support-global-banner";
 const SUPPORT_HIDDEN_ATTR = "data-sales-support-hidden";
+const ORIGINAL_LOGO_SRC_ATTR = "data-sales-support-original-logo-src";
+const ORIGINAL_LOGO_ALT_ATTR = "data-sales-support-original-logo-alt";
 
 let observerInstalled = false;
 let refreshTimer = null;
@@ -37,6 +39,47 @@ function findNavigationButton(label) {
       (button) => String(button.textContent || "").trim() === label
     ) || null
   );
+}
+
+function getMainHeaderLogo() {
+  if (typeof document === "undefined") return null;
+  const image = document.querySelector("header .head img");
+  return image instanceof HTMLImageElement ? image : null;
+}
+
+function applySupportCompanyBranding() {
+  const image = getMainHeaderLogo();
+  if (!image || !getSalesSupportCompanyId()) return;
+
+  if (!image.hasAttribute(ORIGINAL_LOGO_SRC_ATTR)) {
+    image.setAttribute(ORIGINAL_LOGO_SRC_ATTR, image.getAttribute("src") || "");
+    image.setAttribute(ORIGINAL_LOGO_ALT_ATTR, image.getAttribute("alt") || "");
+  }
+
+  const targetLogo = String(context.companyLogoUrl || "").trim();
+  if (targetLogo && image.getAttribute("src") !== targetLogo) {
+    image.setAttribute("src", targetLogo);
+  }
+  if (context.companyName) {
+    image.setAttribute("alt", context.companyName);
+  }
+}
+
+function restoreMainHeaderBranding() {
+  const image = getMainHeaderLogo();
+  if (!image || !image.hasAttribute(ORIGINAL_LOGO_SRC_ATTR)) return;
+
+  const originalSrc = image.getAttribute(ORIGINAL_LOGO_SRC_ATTR) || "";
+  const originalAlt = image.getAttribute(ORIGINAL_LOGO_ALT_ATTR) || "";
+
+  if (originalSrc) image.setAttribute("src", originalSrc);
+  else image.removeAttribute("src");
+
+  if (originalAlt) image.setAttribute("alt", originalAlt);
+  else image.removeAttribute("alt");
+
+  image.removeAttribute(ORIGINAL_LOGO_SRC_ATTR);
+  image.removeAttribute(ORIGINAL_LOGO_ALT_ATTR);
 }
 
 function currentRequestRef() {
@@ -194,6 +237,7 @@ function createGlobalBanner() {
       responsible: "",
     };
     restoreHiddenResponsibleFields();
+    restoreMainHeaderBranding();
     removeGlobalBanner();
     findNavigationButton("Systemadmin")?.click();
   });
@@ -209,6 +253,7 @@ function updateGlobalBanner() {
   if (!companyId) {
     removeGlobalBanner();
     restoreHiddenResponsibleFields();
+    restoreMainHeaderBranding();
     return;
   }
 
@@ -235,13 +280,15 @@ function updateGlobalBanner() {
   if (logo instanceof HTMLImageElement) {
     const nextLogo = String(context.companyLogoUrl || "").trim();
     if (nextLogo) {
-      if (logo.src !== nextLogo) logo.src = nextLogo;
+      if (logo.getAttribute("src") !== nextLogo) logo.setAttribute("src", nextLogo);
       logo.style.display = "block";
     } else {
       logo.removeAttribute("src");
       logo.style.display = "none";
     }
   }
+
+  applySupportCompanyBranding();
 }
 
 async function loadCompanyContext(companyId, sequence) {
@@ -278,7 +325,7 @@ async function loadCompanyContext(companyId, sequence) {
     companyId,
     scopeId: String(resolvedScopeId || companyId).trim(),
     companyName: String(companyRow?.company_name || "").trim(),
-    companyLogoUrl: String(companyRow?.logo_url || "").trim(),
+    companyLogoUrl: String(companyRow?.logo_url || companyRow?.logoUrl || "").trim(),
     supportUserName,
     requestRef: "",
     responsible: "",
