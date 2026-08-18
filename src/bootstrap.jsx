@@ -3,6 +3,8 @@
 // FASE 29B3 UI: Kundetilbud åpner tilbudsbilder i innebygd lightbox i stedet for ny fane.
 // FASE 29B5: Permanente private dokumentlenker beholdes canonical i data/PDF, men klikk i
 // aktiv app åpnes på samme origin slik at Preview-/produksjonssesjonen følger med.
+// Kunde-/UE-portal åpner private dokumenter i samme fane slik at verifisert portalkode
+// forblir tilgjengelig i sessionStorage uten å legges i URL-en.
 import { installGlobalStorageImageOptimizer } from './modules/images/imageUploadOptimizer.js';
 
 installGlobalStorageImageOptimizer({
@@ -122,21 +124,21 @@ document.addEventListener(
 );
 
 function rewritePrivateDocumentAnchorForCurrentOrigin(anchor) {
-  if (!(anchor instanceof HTMLAnchorElement)) return;
+  if (!(anchor instanceof HTMLAnchorElement)) return null;
 
   let url;
   try {
     url = new URL(anchor.href, window.location.href);
   } catch {
-    return;
+    return null;
   }
 
-  if (url.searchParams.get('privateDocument') !== '1') return;
+  if (url.searchParams.get('privateDocument') !== '1') return null;
 
   const isKnownAppHost =
     url.hostname === 'expo-proffdok.app' ||
     url.hostname === window.location.hostname;
-  if (!isKnownAppHost) return;
+  if (!isKnownAppHost) return null;
 
   if (url.origin !== window.location.origin) {
     url.protocol = window.location.protocol;
@@ -148,7 +150,19 @@ function rewritePrivateDocumentAnchorForCurrentOrigin(anchor) {
   }
 
   anchor.href = url.toString();
+  return url;
 }
+
+const normalizePortalRole = (value = '') => {
+  const clean = String(value || '').trim().toLowerCase();
+  return clean === 'underleverandor' ||
+    clean === 'underleverandør' ||
+    clean === 'underentreprenør'
+    ? 'underleverandor'
+    : clean === 'kunde'
+      ? 'kunde'
+      : '';
+};
 
 document.addEventListener(
   'click',
@@ -156,7 +170,26 @@ document.addEventListener(
     const target = event.target instanceof Element ? event.target : null;
     const anchor = target?.closest('a[href]');
     if (!anchor) return;
-    rewritePrivateDocumentAnchorForCurrentOrigin(anchor);
+
+    const privateDocumentUrl = rewritePrivateDocumentAnchorForCurrentOrigin(anchor);
+    if (!privateDocumentUrl) return;
+
+    const currentParams = new URLSearchParams(window.location.search);
+    const currentProjectId = String(currentParams.get('project') || '').trim();
+    const currentPortalRole = normalizePortalRole(currentParams.get('role') || '');
+    const documentProjectId = String(
+      privateDocumentUrl.searchParams.get('project') || ''
+    ).trim();
+
+    if (
+      currentProjectId &&
+      currentPortalRole &&
+      documentProjectId === currentProjectId
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      window.location.assign(privateDocumentUrl.toString());
+    }
   },
   true
 );
