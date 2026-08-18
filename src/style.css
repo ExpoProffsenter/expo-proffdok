@@ -461,3 +461,68 @@ footer { color: var(--expo-muted); margin-top: 18px; border-top: 1px solid #dbe7
     padding-top: 10px !important;
   }
 }
+
+/* FASE 28E3: Mobil sluttpolering – kompakt salgsoversikt og tydeligere admin-accordion. */
+@media screen and (max-width: 700px) {
+  /*
+   * Sales sin egen CSS går ned til én kolonne under 760 px.
+   * På mobil gir fire nøkkeltall bedre oversikt som 2 x 2 kompakte kort.
+   */
+  main.sales-main > .sales-summary-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  main.sales-main > .sales-summary-grid > .sales-summary-card {
+    min-height: 92px !important;
+    padding: 13px 14px !important;
+    border-radius: 16px !important;
+  }
+
+  main.sales-main .sales-summary-label {
+    margin-bottom: 7px !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+  }
+
+  main.sales-main .sales-summary-value {
+    font-size: 26px !important;
+  }
+
+  /*
+   * Accordion-knappene består av titteltekst + egen status-span.
+   * Gjør knappen eksplisitt flex slik at de ikke limes sammen visuelt.
+   */
+  main .adminAccordionItem > button.secondary {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    min-height: 54px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  main .adminAccordionItem > button.secondary > span {
+    flex: 0 0 auto !important;
+    margin-left: auto !important;
+    padding-left: 8px !important;
+    text-align: right !important;
+    line-height: 1.25 !important;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  /* På helt smale skjermer kan accordion-status gå under tittelen uten kollisjon. */
+  main .adminAccordionItem > button.secondary {
+    flex-wrap: wrap !important;
+  }
+
+  main .adminAccordionItem > button.secondary > span {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-left: 28px !important;
+    text-align: left !important;
+  }
+}
