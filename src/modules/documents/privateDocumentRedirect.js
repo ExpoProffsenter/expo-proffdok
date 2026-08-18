@@ -1,11 +1,13 @@
-// FASE 29B1/29B2: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
+// FASE 29B1/29B2/29B3: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
 // Ruten brukes som varig URL i prosjektdata og PDF. Selve Storage-lenken lages først
-// ved åpning og er kortlivet. Kundekode legges aldri i URL-en.
+// ved åpning og er kortlivet. Kundekode legges aldri i URL-en. Kundesynlige tilbudsvedlegg
+// kan åpnes med tilbudets eksisterende publicOffer-token etter server-side kontroll.
 
 import { createClient } from '@supabase/supabase-js';
 import {
   PRIVATE_DOCUMENT_BUCKET,
   buildPrivateSalesStoragePath,
+  isPrivateOfferAttachmentLogicalPath,
   isPrivateSalesLogicalPath,
 } from './privateDocumentTools.js';
 
@@ -84,6 +86,21 @@ const requestPortalSignedUrl = async (client, { projectId = '', role, code, path
   return data.signedUrl;
 };
 
+const requestOfferSignedUrl = async (client, { offerToken, path, download }) => {
+  const { data, error } = await client.functions.invoke('private-document-access', {
+    body: {
+      offerToken: String(offerToken || '').trim(),
+      path,
+      download: !!download,
+    },
+  });
+  if (error) throw error;
+  if (!data?.ok || !data?.signedUrl) {
+    throw new Error(data?.error || 'Vedlegget er ikke tilgjengelig fra denne tilbudslenken.');
+  }
+  return data.signedUrl;
+};
+
 const storedPortalCandidates = (role = 'kunde') => {
   const candidates = [];
   const normalizedRole = normalizeRole(role);
@@ -157,6 +174,7 @@ export async function runPrivateDocumentRedirect() {
   const path = String(params.get('path') || '').trim().replace(/^\/+/, '');
   const projectId = String(params.get('project') || '').trim();
   const role = normalizeRole(params.get('role') || 'kunde');
+  const offerToken = String(params.get('publicOffer') || '').trim();
   const download = params.get('download') === '1';
 
   if (!path) {
@@ -173,13 +191,14 @@ export async function runPrivateDocumentRedirect() {
 
   const client = createClient(supabaseUrl, anonKey);
 
-  // Innloggede brukere bruker ordinær Storage-RLS direkte. For private Sales-dokumenter
-  // regnes fysisk firmascopet path ut fra innlogget firmascope; logical path forblir stabil i saken.
   try {
     const { data: sessionData } = await client.auth.getSession();
     if (sessionData?.session?.user) {
       let physicalPath = path;
-      if (isPrivateSalesLogicalPath(path)) {
+      if (
+        isPrivateSalesLogicalPath(path) ||
+        isPrivateOfferAttachmentLogicalPath(path)
+      ) {
         const { data: companyScopeId, error: scopeError } = await client.rpc('resolve_sales_company_scope');
         if (scopeError || !companyScopeId) throw scopeError || new Error('Mangler firmascope.');
         physicalPath = buildPrivateSalesStoragePath({
@@ -196,10 +215,24 @@ export async function runPrivateDocumentRedirect() {
       }
     }
   } catch {
-    // Fall gjennom til kodebasert portaltilgang.
+    // Fall gjennom til token- eller kodebasert tilgang.
   }
 
-  // Har lenken eksplisitt prosjekt-ID, prøv lagret kode for akkurat prosjektet først.
+  if (offerToken && isPrivateOfferAttachmentLogicalPath(path)) {
+    try {
+      const signedUrl = await requestOfferSignedUrl(client, {
+        offerToken,
+        path,
+        download,
+      });
+      redirectToSignedUrl(signedUrl, download);
+      return;
+    } catch (error) {
+      showError(error?.message || 'Vedlegget kunne ikke åpnes fra denne tilbudslenken.');
+      return;
+    }
+  }
+
   if (projectId) {
     let storedCode = '';
     try {
@@ -224,8 +257,6 @@ export async function runPrivateDocumentRedirect() {
       }
     }
   } else {
-    // Varige Sales-dokumentlenker har ikke prosjekt-ID. Prøv eksisterende verifiserte
-    // kundeportalsesjoner; backend godkjenner bare kandidaten dersom path faktisk tilhører prosjektet.
     for (const candidate of storedPortalCandidates(role)) {
       try {
         const signedUrl = await requestPortalSignedUrl(client, {
