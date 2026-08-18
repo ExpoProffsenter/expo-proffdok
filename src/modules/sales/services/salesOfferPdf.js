@@ -197,6 +197,28 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
     }
   };
 
+  const estimateOptionHeight = (option = {}, groupLines = []) => {
+    const typeText = optionTypeText(option, groupLines);
+    const titleText = `${option.title || "Opsjon"} - ${typeText}: ${optionPriceText(
+      option
+    )}`;
+    const titleLines = pdf.splitTextToSize(titleText, width).length;
+    const description = String(option.description || "").trim();
+    const descriptionLines = description
+      ? pdf.splitTextToSize(description, width - 5).length
+      : 0;
+    const linkCount = Number(Boolean(option.productUrl)) + Number(Boolean(option.attachmentFile?.url));
+
+    return (
+      titleLines * lineHeight +
+      1 +
+      descriptionLines * lineHeight +
+      (descriptionLines ? 1 : 0) +
+      linkCount * (lineHeight + 1) +
+      2
+    );
+  };
+
   // Nøytral header gjør at både transparente logoer og logoer med hvit bildeflate
   // presenteres uten synlig "boks" mot en farget bakgrunn.
   pdf.setFillColor(255, 255, 255);
@@ -315,8 +337,10 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
       });
 
       if (group.options.length) {
+        ensureSpace(lineHeight + 3 + estimateOptionHeight(group.options[0], group.lines));
         addText("Opsjoner", { size: 9.5, style: "bold", after: 1 });
         group.options.forEach((option) => {
+          ensureSpace(estimateOptionHeight(option, group.lines));
           const typeText = optionTypeText(option, group.lines);
           addText(
             `${option.title || "Opsjon"} - ${typeText}: ${optionPriceText(
