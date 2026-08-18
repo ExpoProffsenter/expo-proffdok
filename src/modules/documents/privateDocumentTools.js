@@ -1,10 +1,12 @@
 // FASE 29B: Felles bro for gamle offentlige og nye private prosjektdokumenter.
 // Eksisterende project-images-filer skal fortsatt kunne åpnes. Nye sensitive dokumenter
-// kan lagres i project-documents-private og åpnes med kortlivet signert URL.
+// lagres i project-documents-private og får en varig Expo ProffDok-lenke som først lager
+// en kortlivet Storage-URL når dokumentet faktisk åpnes.
 
 export const PRIVATE_DOCUMENT_BUCKET = "project-documents-private";
 export const LEGACY_PUBLIC_DOCUMENT_BUCKET = "project-images";
 export const DEFAULT_PRIVATE_DOCUMENT_URL_TTL_SECONDS = 10 * 60;
+export const EXPO_PROFFDOK_CANONICAL_URL = "https://expo-proffdok.app/";
 
 const sanitizePathPart = (value = "", fallback = "fil") => {
   const clean = String(value || "")
@@ -37,6 +39,23 @@ export const documentStorageBucket = (file = {}) => {
 export const documentStoragePath = (file = {}) =>
   String(file?.path || file?.storagePath || file?.filePath || "").trim();
 
+export const buildPrivateDocumentAppUrl = ({
+  path,
+  projectId = "",
+  role = "kunde",
+  download = false
+} = {}) => {
+  const cleanPath = String(path || "").trim().replace(/^\/+/, "");
+  if (!cleanPath) return "";
+  const url = new URL(EXPO_PROFFDOK_CANONICAL_URL);
+  url.searchParams.set("privateDocument", "1");
+  url.searchParams.set("path", cleanPath);
+  if (projectId) url.searchParams.set("project", String(projectId).trim());
+  if (projectId && role) url.searchParams.set("role", String(role).trim().toLowerCase());
+  if (download) url.searchParams.set("download", "1");
+  return url.toString();
+};
+
 export const buildPrivateSalesDocumentPath = ({
   companyScopeId,
   requestRef,
@@ -63,6 +82,18 @@ export const buildPrivateProjectDocumentPath = ({
   return `${scope}/projects/${project}/${type}/${Date.now()}-${crypto.randomUUID()}-${name}`;
 };
 
+export const withPrivateDocumentProjectAccess = (
+  file = {},
+  { projectId = "", role = "kunde" } = {}
+) => {
+  if (!isPrivateDocumentFile(file)) return file;
+  const path = documentStoragePath(file);
+  return {
+    ...file,
+    url: buildPrivateDocumentAppUrl({ path, projectId, role })
+  };
+};
+
 export async function uploadPrivateDocument(
   client,
   {
@@ -71,6 +102,8 @@ export async function uploadPrivateDocument(
     name = "",
     documentType = "document",
     createdBy = "",
+    projectId = "",
+    role = "kunde",
     uploadOptions = {}
   } = {}
 ) {
@@ -94,6 +127,7 @@ export async function uploadPrivateDocument(
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     name: name || file?.name || "Dokument",
+    url: buildPrivateDocumentAppUrl({ path: storedPath, projectId, role }),
     path: storedPath,
     storagePath: storedPath,
     bucket: PRIVATE_DOCUMENT_BUCKET,
