@@ -1,4 +1,4 @@
-// FASE 29B1/29B2/29B3: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
+// FASE 29B1/29B2/29B3/29B5: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
 // Ruten brukes som varig URL i prosjektdata og PDF. Selve Storage-lenken lages først
 // ved åpning og er kortlivet. Kundekode legges aldri i URL-en. Kundesynlige tilbudsvedlegg
 // kan åpnes med tilbudets eksisterende publicOffer-token etter server-side kontroll.
@@ -9,9 +9,10 @@ import {
   buildPrivateSalesStoragePath,
   isPrivateOfferAttachmentLogicalPath,
   isPrivateSalesLogicalPath,
+  privateSalesRequestRefFromLogicalPath,
 } from './privateDocumentTools.js';
 
-const normalizeRole = (value = 'kunde') => {
+const normalizeRole = (value = '') => {
   const clean = String(value || '').trim().toLowerCase();
   return clean === 'underleverandor' || clean === 'underleverandør' || clean === 'underentreprenør'
     ? 'underleverandor'
@@ -167,6 +168,42 @@ const showPortalCodeForm = ({ client, projectId, role, path, download }) => {
   input?.focus();
 };
 
+const resolveAuthenticatedSalesCompanyScope = async (
+  client,
+  { projectId = '', path = '' } = {}
+) => {
+  if (projectId) {
+    const requestRef = privateSalesRequestRefFromLogicalPath(path);
+    const { data: projectRow, error: projectError } = await client
+      .from('projects')
+      .select('id,company_scope_id,data')
+      .eq('id', projectId)
+      .maybeSingle();
+
+    if (projectError || !projectRow?.company_scope_id) {
+      throw projectError || new Error('Prosjektet eller firmascope kunne ikke leses.');
+    }
+
+    const projectRequestRef = String(
+      projectRow?.data?.project?.salesOrigin?.requestRef || ''
+    ).trim();
+
+    if (!requestRef || !projectRequestRef || requestRef !== projectRequestRef) {
+      throw new Error('Dokumentet tilhører ikke prosjektets opprinnelige salgssak.');
+    }
+
+    return String(projectRow.company_scope_id).trim();
+  }
+
+  const { data: companyScopeId, error: scopeError } = await client.rpc(
+    'resolve_sales_company_scope'
+  );
+  if (scopeError || !companyScopeId) {
+    throw scopeError || new Error('Mangler firmascope.');
+  }
+  return String(companyScopeId).trim();
+};
+
 export async function runPrivateDocumentRedirect() {
   showLoading();
 
@@ -199,8 +236,10 @@ export async function runPrivateDocumentRedirect() {
         isPrivateSalesLogicalPath(path) ||
         isPrivateOfferAttachmentLogicalPath(path)
       ) {
-        const { data: companyScopeId, error: scopeError } = await client.rpc('resolve_sales_company_scope');
-        if (scopeError || !companyScopeId) throw scopeError || new Error('Mangler firmascope.');
+        const companyScopeId = await resolveAuthenticatedSalesCompanyScope(client, {
+          projectId,
+          path,
+        });
         physicalPath = buildPrivateSalesStoragePath({
           companyScopeId,
           logicalPath: path,
