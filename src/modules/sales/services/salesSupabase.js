@@ -1,9 +1,17 @@
-// Expo ProffDok – FASE 23D / FASE 28A1
+// Expo ProffDok – FASE 23D / FASE 28A1 / FASE 29B2
 // Samler alle Supabase-kall for Befaring / Tilbud / Aksept.
 // FASE 28A1 legger til firmadelte tilbudsmaler.
-// Ingen React-state, UI-logikk, RLS-regler eller Storage-regler endres her.
+// FASE 29B2 ruter kontrakt og låst akseptbevis til privat, firmascopet Storage
+// uten å endre SalesModule eller lagret logical path i saken.
 
 import { createClient } from "@supabase/supabase-js";
+import {
+  LEGACY_PUBLIC_DOCUMENT_BUCKET,
+  PRIVATE_DOCUMENT_BUCKET,
+  buildPrivateDocumentAppUrl,
+  buildPrivateSalesStoragePath,
+  isPrivateSalesLogicalPath,
+} from "../../documents/privateDocumentTools.js";
 
 export function createDefaultSalesSupabaseClient() {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -133,8 +141,39 @@ export function fetchProfileByEmail(client, email, profileSelect) {
     .maybeSingle();
 }
 
-export function uploadStorageFile(client, bucket, path, file, options) {
-  return client.storage.from(bucket).upload(path, file, options);
+const shouldUsePrivateSalesStorage = (bucket, path) =>
+  bucket === LEGACY_PUBLIC_DOCUMENT_BUCKET && isPrivateSalesLogicalPath(path);
+
+async function resolvePrivateSalesStoragePath(client, bucket, path) {
+  if (!shouldUsePrivateSalesStorage(bucket, path)) return "";
+
+  const { data: companyScopeId, error } = await resolveSalesCompanyScope(client);
+  if (error) throw error;
+  if (!companyScopeId) {
+    throw new Error("Kunne ikke fastslå firma for privat dokumentlagring.");
+  }
+
+  const privatePath = buildPrivateSalesStoragePath({
+    companyScopeId,
+    logicalPath: path,
+  });
+  if (!privatePath) {
+    throw new Error("Kunne ikke bygge sikker Storage-path for dokumentet.");
+  }
+  return privatePath;
+}
+
+export async function uploadStorageFile(client, bucket, path, file, options) {
+  if (!shouldUsePrivateSalesStorage(bucket, path)) {
+    return client.storage.from(bucket).upload(path, file, options);
+  }
+
+  try {
+    const privatePath = await resolvePrivateSalesStoragePath(client, bucket, path);
+    return client.storage.from(PRIVATE_DOCUMENT_BUCKET).upload(privatePath, file, options);
+  } catch (error) {
+    return { data: null, error };
+  }
 }
 
 export function downloadStorageFile(client, bucket, path) {
@@ -146,11 +185,53 @@ export function createStorageSignedUrl(client, bucket, path, expiresIn) {
 }
 
 export function getStoragePublicUrl(client, bucket, path) {
+  if (shouldUsePrivateSalesStorage(bucket, path)) {
+    return {
+      data: {
+        publicUrl: buildPrivateDocumentAppUrl({ path }),
+      },
+    };
+  }
   return client.storage.from(bucket).getPublicUrl(path);
 }
 
-export function removeStorageFiles(client, bucket, paths) {
-  return client.storage.from(bucket).remove(paths);
+export async function removeStorageFiles(client, bucket, paths) {
+  const safePaths = Array.isArray(paths) ? paths.filter(Boolean) : [];
+  if (!safePaths.length) return { data: [], error: null };
+
+  const privateLogicalPaths = safePaths.filter((path) =>
+    shouldUsePrivateSalesStorage(bucket, path)
+  );
+  const ordinaryPaths = safePaths.filter((path) =>
+    !shouldUsePrivateSalesStorage(bucket, path)
+  );
+  const removed = [];
+
+  try {
+    if (privateLogicalPaths.length) {
+      const privatePaths = [];
+      for (const logicalPath of privateLogicalPaths) {
+        privatePaths.push(
+          await resolvePrivateSalesStoragePath(client, bucket, logicalPath)
+        );
+      }
+      const { data, error } = await client.storage
+        .from(PRIVATE_DOCUMENT_BUCKET)
+        .remove(privatePaths);
+      if (error) return { data: null, error };
+      if (Array.isArray(data)) removed.push(...data);
+    }
+
+    if (ordinaryPaths.length) {
+      const { data, error } = await client.storage.from(bucket).remove(ordinaryPaths);
+      if (error) return { data: null, error };
+      if (Array.isArray(data)) removed.push(...data);
+    }
+
+    return { data: removed, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
 }
 
 export function invokeSmartWorker(client, payload) {
