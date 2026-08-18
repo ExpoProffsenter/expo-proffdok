@@ -1,9 +1,9 @@
-// Expo ProffDok – FASE 23D / FASE 28A1 / FASE 29B2 / FASE 29B3.1
+// Expo ProffDok – FASE 23D / FASE 28A1 / FASE 29B2 / FASE 29B3
 // Samler alle Supabase-kall for Befaring / Tilbud / Aksept.
 // FASE 28A1 legger til firmadelte tilbudsmaler.
 // FASE 29B2 ruter kontrakt og låst akseptbevis til privat, firmascopet Storage.
-// FASE 29B3.1 forbereder offentlig kundevisning på private tilbudsvedlegg,
-// men endrer ikke write-routing for sales-offer-attachments ennå.
+// FASE 29B3 gjør det samme for PDF-vedlegg på tilbudslinjer/opsjoner og beriker
+// kun offentlig kundevisning med tilbudets eksisterende publicOffer-token.
 
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -190,7 +190,8 @@ export function fetchProfileByEmail(client, email, profileSelect) {
 }
 
 const shouldUsePrivateSalesStorage = (bucket, path) =>
-  bucket === LEGACY_PUBLIC_DOCUMENT_BUCKET && isPrivateSalesLogicalPath(path);
+  bucket === LEGACY_PUBLIC_DOCUMENT_BUCKET &&
+  (isPrivateSalesLogicalPath(path) || isPrivateOfferAttachmentLogicalPath(path));
 
 async function resolvePrivateSalesStoragePath(client, bucket, path) {
   if (!shouldUsePrivateSalesStorage(bucket, path)) return "";
