@@ -1,5 +1,7 @@
-// Expo ProffDok – FASE 23Q
+// Expo ProffDok – FASE 23Q / FASE 29B4
 // Samler henting av firmaprofil, sending av kunde-e-post og tekst til befaringsbekreftelse.
+// FASE 29B4 bruker samme logoregel som hovedappen: firmaets opplastede logo
+// når den finnes, ellers Expo Proffsenter-logoen.
 // Ingen React-state, UI-rendering, databaseendring, RLS-, Storage- eller Edge Function-endring.
 
 import {
@@ -17,6 +19,7 @@ import {
 
 const COMPANY_PROFILE_SELECT =
   "company_name,org_number,address,phone,email,website,logo_url";
+const DEFAULT_COMPANY_LOGO_URL = "/expo-logo.png";
 
 export async function fetchSalesCompanyProfile(client) {
   if (!client) return null;
@@ -58,7 +61,12 @@ export async function fetchSalesCompanyProfile(client) {
     }
   }
 
-  return hasCompanyProfile(nextProfile) ? nextProfile : null;
+  if (!hasCompanyProfile(nextProfile)) return null;
+
+  return {
+    ...nextProfile,
+    logoUrl: nextProfile.logoUrl || DEFAULT_COMPANY_LOGO_URL,
+  };
 }
 
 export async function sendSalesCustomerEmail(client, payload) {
