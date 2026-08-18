@@ -1,0 +1,70 @@
+name: Fase 29A2 portal security build
+
+on:
+  push:
+    branches:
+      - feature/fase29a2-portal-security
+    paths:
+      - scripts/fase29a2_main.patch.gz.b64
+      - .github/workflows/fase29a2-portal-security.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-build:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify production baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECTED_MAIN_BLOB="ae11d038766cb7c8b79a811f8e2f319a5251d55c"
+          ACTUAL_MAIN_BLOB="$(git hash-object src/main.jsx)"
+          echo "Expected main blob: ${EXPECTED_MAIN_BLOB}"
+          echo "Actual main blob:   ${ACTUAL_MAIN_BLOB}"
+          test "${ACTUAL_MAIN_BLOB}" = "${EXPECTED_MAIN_BLOB}"
+
+      - name: Apply reviewed portal patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode scripts/fase29a2_main.patch.gz.b64 | gzip --decompress > /tmp/fase29a2_main.patch
+          git apply --check /tmp/fase29a2_main.patch
+          git apply /tmp/fase29a2_main.patch
+          git diff --check
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Remove one-off helper files
+        shell: bash
+        run: |
+          rm -f scripts/fase29a2_main.patch.gz.b64
+          rm -f .github/workflows/fase29a2-portal-security.yml
+
+      - name: Commit verified frontend integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Fase 29A2: koble portal til sikker backend"
+          git push origin HEAD:feature/fase29a2-portal-security
