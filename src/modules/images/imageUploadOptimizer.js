@@ -236,6 +236,9 @@ export async function optimizeImageForUpload(file, {
   }
 }
 
+// Kan brukes direkte på en Supabase-klient dersom vi senere ønsker lokal installasjon
+// i en avgrenset modul. 29A5.2 bruker global Storage-hook fra bootstrap for å dekke
+// alle eksisterende opplastingspunkter uten å gjøre main.jsx større.
 export function installImageUploadOptimizer(supabase, options = {}) {
   if (!supabase?.storage || typeof supabase.storage.from !== 'function') return false;
   if (supabase.__expoImageUploadOptimizerInstalled) return true;
@@ -254,5 +257,71 @@ export function installImageUploadOptimizer(supabase, options = {}) {
   };
 
   supabase.__expoImageUploadOptimizerInstalled = true;
+  return true;
+}
+
+const isExpoStorageUploadUrl = (value = '') => {
+  const url = String(value || '');
+  return /\/storage\/v1\/object\/(project-images|chat-images)(?:\/|$)/i.test(url);
+};
+
+const formDataWithOptimizedImage = async (formData, options = {}) => {
+  if (typeof FormData === 'undefined' || !(formData instanceof FormData)) return formData;
+  if (typeof Blob === 'undefined') return formData;
+
+  const entries = Array.from(formData.entries());
+  const imageIndex = entries.findIndex(([, value]) => value instanceof Blob && !!supportedImageType(value));
+  if (imageIndex < 0) return formData;
+
+  const originalImage = entries[imageIndex][1];
+  const result = await optimizeImageForUpload(originalImage, options);
+  if (!result?.optimized || !result.file || result.file === originalImage) return formData;
+
+  const next = new FormData();
+  entries.forEach(([key, value], index) => {
+    if (index === imageIndex) {
+      const replacement = result.file;
+      const originalName = String(originalImage?.name || replacement?.name || 'bilde.jpg');
+      next.append(key, replacement, originalName);
+      return;
+    }
+    if (value instanceof Blob) {
+      next.append(key, value, String(value?.name || 'blob'));
+      return;
+    }
+    next.append(key, value);
+  });
+  return next;
+};
+
+export function installGlobalStorageImageOptimizer(options = {}) {
+  if (typeof window === 'undefined' || typeof window.fetch !== 'function') return false;
+  if (window.__expoGlobalStorageImageOptimizerInstalled) return true;
+
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = async (input, init) => {
+    const url = typeof input === 'string'
+      ? input
+      : input instanceof URL
+        ? input.toString()
+        : String(input?.url || '');
+    const method = String(init?.method || input?.method || 'GET').toUpperCase();
+    const body = init?.body;
+
+    if ((method === 'POST' || method === 'PUT') && isExpoStorageUploadUrl(url) && body instanceof FormData) {
+      try {
+        const optimizedBody = await formDataWithOptimizedImage(body, options);
+        if (optimizedBody !== body) {
+          return originalFetch(input, { ...(init || {}), body: optimizedBody });
+        }
+      } catch (error) {
+        console.warn('Global bildeoptimalisering hoppet over – original request brukes:', error);
+      }
+    }
+
+    return originalFetch(input, init);
+  };
+
+  window.__expoGlobalStorageImageOptimizerInstalled = true;
   return true;
 }
