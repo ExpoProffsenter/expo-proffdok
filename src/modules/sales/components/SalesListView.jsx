@@ -1,12 +1,13 @@
-// Expo ProffDok – FASE 28B1 / FASE 29B4
+// Expo ProffDok – FASE 28B1 / FASE 29B4 / FASE 29C1
 // Viser når kundetilbud faktisk ble sendt på e-post og markerer tilbud som bør
-// følges opp etter 7 dager uten aksept. Ved Sales-support vises kun status;
-// firmabytte gjøres fra Systemadmin.
+// følges opp etter 7 dager uten aksept. I Systemadmin-support kan eksisterende
+// saker åpnes, men nye forespørsler opprettes ikke uten ansvarlig i målbedriften.
 // Expo ProffDok – FASE 23H
 // Presentasjonskomponent for saksoversikten i Befaring / Tilbud / Aksept.
 
 import { ClipboardList, Home, Plus, Ruler, Send } from "lucide-react";
 import SalesSupportNotice from "./SalesSupportNotice.jsx";
+import { getSalesSupportCompanyId } from "../services/salesSupabase.js";
 
 const iconMap = {
   clipboard: ClipboardList,
@@ -59,6 +60,8 @@ export default function SalesListView({
   onCreateRequest,
   onOpenRequest,
 }) {
+  const supportMode = Boolean(getSalesSupportCompanyId());
+
   return (
     <div className="sales-app">
       <div className="sales-shell">
@@ -89,12 +92,25 @@ export default function SalesListView({
             <button
               className="sales-primary-button"
               type="button"
-              onClick={onCreateRequest}
+              onClick={supportMode ? undefined : onCreateRequest}
+              disabled={supportMode}
+              title={
+                supportMode
+                  ? "Nye saker opprettes ikke i Systemadmin-supportmodus."
+                  : undefined
+              }
             >
               <Plus size={19} />
-              Ny forespørsel
+              {supportMode ? "Ny forespørsel sperret" : "Ny forespørsel"}
             </button>
           </section>
+
+          {supportMode ? (
+            <p className="sales-subtitle" style={{ marginTop: -12, marginBottom: 20 }}>
+              Åpne og kontroller eksisterende saker. Nye saker må opprettes av
+              målbedriften slik at riktig saksansvarlig blir registrert.
+            </p>
+          ) : null}
 
           <section className="sales-summary-grid" aria-label="Oversikt">
             {summary.map((item) => (
@@ -115,8 +131,9 @@ export default function SalesListView({
             <div className="sales-request-list">
               {activeRequests.length === 0 ? (
                 <p className="sales-subtitle">
-                  Ingen aktive forespørsler. Opprett en ny forespørsel for å
-                  starte en befaring eller et tilbud.
+                  {supportMode
+                    ? "Ingen aktive forespørsler i dette firmaet."
+                    : "Ingen aktive forespørsler. Opprett en ny forespørsel for å starte en befaring eller et tilbud."}
                 </p>
               ) : null}
 
