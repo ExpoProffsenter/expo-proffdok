@@ -1,8 +1,9 @@
-// Expo ProffDok – FASE 23D / FASE 28A1 / FASE 29B2
+// Expo ProffDok – FASE 23D / FASE 28A1 / FASE 29B2 / FASE 29B3.1
 // Samler alle Supabase-kall for Befaring / Tilbud / Aksept.
 // FASE 28A1 legger til firmadelte tilbudsmaler.
-// FASE 29B2 ruter kontrakt og låst akseptbevis til privat, firmascopet Storage
-// uten å endre SalesModule eller lagret logical path i saken.
+// FASE 29B2 ruter kontrakt og låst akseptbevis til privat, firmascopet Storage.
+// FASE 29B3.1 forbereder offentlig kundevisning på private tilbudsvedlegg,
+// men endrer ikke write-routing for sales-offer-attachments ennå.
 
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -10,6 +11,7 @@ import {
   PRIVATE_DOCUMENT_BUCKET,
   buildPrivateDocumentAppUrl,
   buildPrivateSalesStoragePath,
+  isPrivateOfferAttachmentLogicalPath,
   isPrivateSalesLogicalPath,
 } from "../../documents/privateDocumentTools.js";
 
@@ -40,8 +42,54 @@ export function resolveSalesCompanyScope(client) {
   return client.rpc("resolve_sales_company_scope");
 }
 
-export function getSalesOfferByToken(client, token) {
-  return client.rpc("get_sales_offer_by_token", { token });
+const withPublicOfferAttachmentAccess = (item = {}, token = "") => {
+  const attachment = item?.attachmentFile;
+  const path = String(
+    attachment?.path || attachment?.storagePath || attachment?.filePath || ""
+  ).trim();
+
+  if (!attachment || !path || !isPrivateOfferAttachmentLogicalPath(path)) {
+    return item;
+  }
+
+  return {
+    ...item,
+    attachmentFile: {
+      ...attachment,
+      url: buildPrivateDocumentAppUrl({
+        path,
+        offerToken: token,
+      }),
+    },
+  };
+};
+
+const enrichPublicOfferDocumentLinks = (payload, token = "") => {
+  if (!payload || typeof payload !== "object") return payload;
+  const version = payload?.version;
+  if (!version || typeof version !== "object") return payload;
+
+  return {
+    ...payload,
+    version: {
+      ...version,
+      lines: Array.isArray(version.lines)
+        ? version.lines.map((item) => withPublicOfferAttachmentAccess(item, token))
+        : version.lines,
+      options: Array.isArray(version.options)
+        ? version.options.map((item) => withPublicOfferAttachmentAccess(item, token))
+        : version.options,
+    },
+  };
+};
+
+export async function getSalesOfferByToken(client, token) {
+  const result = await client.rpc("get_sales_offer_by_token", { token });
+  if (result?.error || !result?.data) return result;
+  return {
+    ...result,
+    data: enrichPublicOfferDocumentLinks(result.data, token),
+  };
 }
 
 export function acceptSalesOffer(

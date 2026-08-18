@@ -7,10 +7,11 @@ export const PRIVATE_DOCUMENT_BUCKET = "project-documents-private";
 export const LEGACY_PUBLIC_DOCUMENT_BUCKET = "project-images";
 export const DEFAULT_PRIVATE_DOCUMENT_URL_TTL_SECONDS = 10 * 60;
 export const EXPO_PROFFDOK_CANONICAL_URL = "https://expo-proffdok.app/";
+export const PRIVATE_OFFER_ATTACHMENT_PREFIX = "sales-offer-attachments/";
 
 const PRIVATE_SALES_LOGICAL_PREFIXES = [
   "sales-contracts/",
-  "sales-acceptance-proofs/"
+  "sales-acceptance-proofs/",
 ];
 
 const sanitizePathPart = (value = "", fallback = "fil") => {
@@ -30,9 +31,19 @@ export const isPrivateSalesLogicalPath = (path = "") => {
   return PRIVATE_SALES_LOGICAL_PREFIXES.some((prefix) => cleanPath.startsWith(prefix));
 };
 
+export const isPrivateOfferAttachmentLogicalPath = (path = "") =>
+  normalizeStoragePath(path)
+    .toLowerCase()
+    .startsWith(PRIVATE_OFFER_ATTACHMENT_PREFIX);
+
 export const privateSalesRequestRefFromLogicalPath = (path = "") => {
   const parts = normalizeStoragePath(path).split("/").filter(Boolean);
-  if (parts.length < 4 || !isPrivateSalesLogicalPath(path)) return "";
+  if (
+    parts.length < 4 ||
+    (!isPrivateSalesLogicalPath(path) && !isPrivateOfferAttachmentLogicalPath(path))
+  ) {
+    return "";
+  }
   return String(parts[2] || "").trim();
 };
 
@@ -42,11 +53,14 @@ export const buildPrivateSalesStoragePath = ({
 } = {}) => {
   const scope = sanitizePathPart(companyScopeId, "");
   const cleanLogicalPath = normalizeStoragePath(logicalPath);
+  const supportedPath =
+    isPrivateSalesLogicalPath(cleanLogicalPath) ||
+    isPrivateOfferAttachmentLogicalPath(cleanLogicalPath);
   const requestRef = sanitizePathPart(
     privateSalesRequestRefFromLogicalPath(cleanLogicalPath),
     ""
   );
-  if (!scope || !requestRef || !isPrivateSalesLogicalPath(cleanLogicalPath)) return "";
+  if (!scope || !requestRef || !supportedPath) return "";
   return `${scope}/sales/${requestRef}/${cleanLogicalPath}`;
 };
 
@@ -79,6 +93,7 @@ export const buildPrivateDocumentAppUrl = ({
   path,
   projectId = "",
   role = "kunde",
+  offerToken = "",
   download = false
 } = {}) => {
   const cleanPath = normalizeStoragePath(path);
@@ -88,6 +103,7 @@ export const buildPrivateDocumentAppUrl = ({
   url.searchParams.set("path", cleanPath);
   if (projectId) url.searchParams.set("project", String(projectId).trim());
   if (projectId && role) url.searchParams.set("role", String(role).trim().toLowerCase());
+  if (offerToken) url.searchParams.set("publicOffer", String(offerToken).trim());
   if (download) url.searchParams.set("download", "1");
   return url.toString();
 };
