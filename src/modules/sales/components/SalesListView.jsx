@@ -1,8 +1,11 @@
-// Expo ProffDok – FASE 28B1 / FASE 29B4
-// Saksoversikt for Befaring / Tilbud / Aksept. Systemadmin får egen supportvelger.
+// Expo ProffDok – FASE 28B1
+// Viser når kundetilbud faktisk ble sendt på e-post og markerer tilbud som bør
+// følges opp etter 7 dager uten aksept. Ingen SQL-, e-post- eller state-endring.
+// Expo ProffDok – FASE 23H
+// Presentasjonskomponent for saksoversikten i Befaring / Tilbud / Aksept.
+// Ingen React-state, Supabase-kall, Storage-kall eller forretningslogikk.
 
 import { ClipboardList, Home, Plus, Ruler, Send } from "lucide-react";
-import SalesSupportScope from "./SalesSupportScope.jsx";
 
 const iconMap = {
   clipboard: ClipboardList,
@@ -23,7 +26,10 @@ function getOfferFollowUpInfo(request) {
   }
 
   const sentAt = new Date(request.offerEmailSentAt);
-  if (Number.isNaN(sentAt.getTime())) return null;
+
+  if (Number.isNaN(sentAt.getTime())) {
+    return null;
+  }
 
   const ageInDays = Math.max(
     0,
@@ -68,8 +74,6 @@ export default function SalesListView({
         </header>
 
         <main className="sales-main">
-          <SalesSupportScope />
-
           <section className="sales-hero">
             <div>
               <h1 className="sales-title">Forespørsler</h1>
