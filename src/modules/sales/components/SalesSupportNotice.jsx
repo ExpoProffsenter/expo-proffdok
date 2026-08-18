@@ -1,6 +1,7 @@
 // Expo ProffDok – FASE 29C1
-// Holder Sales-supportkonteksten synlig gjennom hele appen og beskytter
-// ansvarlig-identitet når Systemadmin kontrollerer et annet firmas saker.
+// Tydelig, vedvarende Systemadmin-supportkontekst. Denne filen viser kun
+// supportstatus og skjuler misvisende ansvarlig-visning; forretningsregler
+// håndheves i de aktuelle React-komponentene/tjenestene.
 // Ingen SQL/RLS/Storage-endring.
 
 import { useEffect, useState } from "react";
@@ -15,24 +16,15 @@ import {
 const client = createDefaultSalesSupabaseClient();
 const GLOBAL_BANNER_ID = "expo-sales-support-global-banner";
 const SUPPORT_HIDDEN_ATTR = "data-sales-support-hidden";
-const BLOCKED_SUPPORT_ACTIONS = new Set([
-  "Ny forespørsel",
-  "Nytt tilbud",
-  "Planlegg befaring",
-  "Rediger befaring",
-  "Aktiver som prosjekt",
-  "Fortsett til prosjektaktivering",
-  "Send befaringsbekreftelse",
-  "Send bekreftelse på nytt",
-]);
 
-let guardInstalled = false;
+let observerInstalled = false;
 let refreshTimer = null;
 let loadSequence = 0;
 let context = {
   companyId: "",
   scopeId: "",
   companyName: "",
+  companyLogoUrl: "",
   supportUserName: "Systemadministrator",
   requestRef: "",
   responsible: "",
@@ -87,11 +79,12 @@ function hideMisleadingResponsibleFields() {
   });
 }
 
-function setText(node, value) {
-  if (node && node.textContent !== value) node.textContent = value;
+function removeGlobalBanner() {
+  if (typeof document === "undefined") return;
+  document.getElementById(GLOBAL_BANNER_ID)?.remove();
 }
 
-function createBanner() {
+function createGlobalBanner() {
   if (typeof document === "undefined" || !document.body) return null;
   let banner = document.getElementById(GLOBAL_BANNER_ID);
   if (banner) return banner;
@@ -105,7 +98,7 @@ function createBanner() {
     right: "14px",
     bottom: "14px",
     zIndex: "99990",
-    width: "min(520px, calc(100vw - 28px))",
+    width: "min(540px, calc(100vw - 28px))",
     padding: "12px 14px",
     border: "1px solid #d99b17",
     borderRadius: "14px",
@@ -115,14 +108,34 @@ function createBanner() {
     fontFamily: "Arial, Helvetica, sans-serif",
   });
 
+  const top = document.createElement("div");
+  Object.assign(top.style, {
+    display: "flex",
+    alignItems: "center",
+    gap: "9px",
+  });
+
+  const logo = document.createElement("img");
+  logo.dataset.role = "company-logo";
+  logo.alt = "Supportfirma";
+  Object.assign(logo.style, {
+    display: "none",
+    width: "34px",
+    height: "34px",
+    objectFit: "contain",
+    borderRadius: "7px",
+    background: "#fff",
+  });
+
   const title = document.createElement("strong");
   title.dataset.role = "title";
   Object.assign(title.style, { display: "block", fontSize: "14px" });
+  top.append(logo, title);
 
   const details = document.createElement("div");
   details.dataset.role = "details";
   Object.assign(details.style, {
-    marginTop: "4px",
+    marginTop: "5px",
     fontSize: "12px",
     lineHeight: "1.45",
   });
@@ -175,34 +188,36 @@ function createBanner() {
       companyId: "",
       scopeId: "",
       companyName: "",
+      companyLogoUrl: "",
       supportUserName: "Systemadministrator",
       requestRef: "",
       responsible: "",
     };
     restoreHiddenResponsibleFields();
-    banner.remove();
+    removeGlobalBanner();
     findNavigationButton("Systemadmin")?.click();
   });
 
   actions.append(returnButton, exitButton);
-  banner.append(title, details, actions);
+  banner.append(top, details, actions);
   document.body.append(banner);
   return banner;
 }
 
-function updateBanner() {
+function updateGlobalBanner() {
   const companyId = getSalesSupportCompanyId();
   if (!companyId) {
-    document.getElementById(GLOBAL_BANNER_ID)?.remove();
+    removeGlobalBanner();
     restoreHiddenResponsibleFields();
     return;
   }
 
-  const banner = createBanner();
+  const banner = createGlobalBanner();
   if (!banner) return;
 
   const title = banner.querySelector('[data-role="title"]');
   const details = banner.querySelector('[data-role="details"]');
+  const logo = banner.querySelector('[data-role="company-logo"]');
   const titleText = `🛡 Systemadmin-support${
     context.companyName ? ` – ${context.companyName}` : ""
   }`;
@@ -214,8 +229,19 @@ function updateBanner() {
     .filter(Boolean)
     .join(" · ");
 
-  setText(title, titleText);
-  setText(details, detailText);
+  if (title && title.textContent !== titleText) title.textContent = titleText;
+  if (details && details.textContent !== detailText) details.textContent = detailText;
+
+  if (logo instanceof HTMLImageElement) {
+    const nextLogo = String(context.companyLogoUrl || "").trim();
+    if (nextLogo) {
+      if (logo.src !== nextLogo) logo.src = nextLogo;
+      logo.style.display = "block";
+    } else {
+      logo.removeAttribute("src");
+      logo.style.display = "none";
+    }
+  }
 }
 
 async function loadCompanyContext(companyId, sequence) {
@@ -252,6 +278,7 @@ async function loadCompanyContext(companyId, sequence) {
     companyId,
     scopeId: String(resolvedScopeId || companyId).trim(),
     companyName: String(companyRow?.company_name || "").trim(),
+    companyLogoUrl: String(companyRow?.logo_url || "").trim(),
     supportUserName,
     requestRef: "",
     responsible: "",
@@ -293,15 +320,7 @@ async function refreshSupportContext() {
   const sequence = ++loadSequence;
 
   if (!companyId || !client) {
-    context = {
-      companyId: "",
-      scopeId: "",
-      companyName: "",
-      supportUserName: "Systemadministrator",
-      requestRef: "",
-      responsible: "",
-    };
-    updateBanner();
+    updateGlobalBanner();
     return;
   }
 
@@ -320,7 +339,7 @@ async function refreshSupportContext() {
   }
 
   if (sequence !== loadSequence) return;
-  updateBanner();
+  updateGlobalBanner();
   hideMisleadingResponsibleFields();
 }
 
@@ -333,66 +352,15 @@ function scheduleSupportRefresh() {
   }, 80);
 }
 
-function blockedActionLabel(button) {
-  const text = String(button?.textContent || "").replace(/\s+/g, " ").trim();
-  return BLOCKED_SUPPORT_ACTIONS.has(text) ? text : "";
-}
-
-function installSupportGuard() {
+function installSupportDisplayObserver() {
   if (
-    guardInstalled ||
+    observerInstalled ||
     typeof document === "undefined" ||
     typeof window === "undefined"
   ) {
     return;
   }
-  guardInstalled = true;
-
-  document.addEventListener(
-    "click",
-    (event) => {
-      if (!getSalesSupportCompanyId()) return;
-      const target = event.target instanceof Element ? event.target : null;
-      const button = target?.closest("button");
-      if (!button || !button.closest(".sales-app")) return;
-
-      const blockedLabel = blockedActionLabel(button);
-      if (!blockedLabel) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      window.alert(
-        `${blockedLabel} er sperret i Systemadmin-supportmodus. ` +
-          "Eksisterende saksansvarlig skal beholdes. Avslutt supportmodus for å utføre denne handlingen som ordinær firmabruker."
-      );
-    },
-    true
-  );
-
-  document.addEventListener(
-    "submit",
-    (event) => {
-      if (!getSalesSupportCompanyId()) return;
-      const form = event.target instanceof HTMLFormElement ? event.target : null;
-      if (!form || !form.closest(".sales-app")) return;
-
-      const eyebrow = String(
-        form.closest(".sales-app")?.querySelector(".sales-eyebrow")?.textContent || ""
-      ).trim();
-      if (!["Ny forespørsel", "Nytt tilbud", "Planlegg befaring"].includes(eyebrow)) {
-        return;
-      }
-
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      window.alert(
-        "Denne lagringen er sperret i Systemadmin-supportmodus for å beskytte firmaets eksisterende saksansvarlige."
-      );
-    },
-    true
-  );
+  observerInstalled = true;
 
   const observer = new MutationObserver((mutations) => {
     const onlyBannerChanges = mutations.every((mutation) =>
@@ -407,16 +375,17 @@ function installSupportGuard() {
     subtree: true,
   });
 
+  window.addEventListener("popstate", scheduleSupportRefresh);
   scheduleSupportRefresh();
 }
 
 if (typeof document !== "undefined") {
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", installSupportGuard, {
+    document.addEventListener("DOMContentLoaded", installSupportDisplayObserver, {
       once: true,
     });
   } else {
-    installSupportGuard();
+    installSupportDisplayObserver();
   }
 }
 
@@ -428,7 +397,10 @@ export default function SalesSupportNotice() {
     let active = true;
 
     async function loadCompanyName() {
-      if (!client || !companyId) return;
+      if (!client || !companyId) {
+        scheduleSupportRefresh();
+        return;
+      }
       const { data, error } = await getSalesSupportCompanyProfile(client, companyId);
       if (!active || error) return;
       const row = Array.isArray(data) ? data[0] : data;
