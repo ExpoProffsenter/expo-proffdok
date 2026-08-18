@@ -1,4 +1,5 @@
 // FASE 24E SJEKKLISTEMODUL: Mekanisk uttrekk av eksisterende ChecklistEditor fra main.jsx. Ingen funksjons-, garanti-, rapport-, database-, RLS-, Storage-, Edge Function- eller e-postendring.
+// FASE 29A5: Alle som kan redigere sjekklisten kan fjerne feilopplastede bilder fra et sjekkpunkt.
 import React, * as ReactNS from 'react';
 import { FileText, Plus } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
@@ -223,43 +224,23 @@ export function createChecklistEditor({
             totalStats.done,
             " av ",
             totalStats.total,
-            " punkter vurdert \xB7 ",
+            " punkter vurdert · ",
             percent,
             "% ferdig"
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistProgress", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { width: `${percent}%` } }) }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryBadges", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-            "\u2705 ",
-            totalStats.done,
-            " utfylt"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-            "\u26AA ",
-            totalStats.missing,
-            " mangler"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-            "\u26A0\uFE0F ",
-            totalStats.deviations,
-            " åpne avvik"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-            "\u2705 ",
-            totalStats.closedDeviations,
-            " lukket"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-            "\u{1F4F7} ",
-            totalStats.photos,
-            " bilder"
-          ] })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["✅ ", totalStats.done, " utfylt"] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["⚪ ", totalStats.missing, " mangler"] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["⚠️ ", totalStats.deviations, " åpne avvik"] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["✅ ", totalStats.closedDeviations, " lukket"] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["📷 ", totalStats.photos, " bilder"] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryActions", children: [
           firstIncompletePoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => scrollToChecklistPoint(firstIncompletePoint, "start"), children: "Gå til neste punkt" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: expandAll, children: "\xC5pne alle" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: collapseDone, children: "Vis det som gjenst\xE5r" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: expandAll, children: "Åpne alle" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: collapseDone, children: "Vis det som gjenstår" }),
           totalStats.deviations > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: toggleOpenDeviationView, children: showOpenDeviationsOnly ? "Vis alle punkter" : "Vis bare åpne avvik" })
         ] }),
         showOpenDeviationsOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Viser bare sjekkpunkter med åpne avvik. Trykk ‘Vis alle punkter’ for normal sjekkliste." }),
@@ -315,7 +296,7 @@ export function createChecklistEditor({
         const groupTone = stats.deviations > 0 ? "avvik" : stats.missing === 0 ? "done" : stats.done > 0 ? "progress" : "missing";
         return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `item checklistGroup checklistGroup-${groupTone}`, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "checklistGroupHeader", onClick: () => toggleCategory(group.category), "aria-expanded": isOpen, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "checklistGroupCaret", "aria-hidden": "true", children: isOpen ? "\u25BE" : "\u25B8" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "checklistGroupCaret", "aria-hidden": "true", children: isOpen ? "▾" : "▸" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "checklistGroupTitle", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("b", { style: { display: "inline-flex", alignItems: "center", gap: "8px" }, children: [
                 isSoproWarrantyCategory(group.category) ? "🛡️ " : String(group.category || "").startsWith(customChecklistCategoryPrefix) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: customChecklistTradeIconUrl(customChecklistTradeFromCategory(group.category)), alt: "", "aria-hidden": "true", style: { width: "24px", height: "24px", objectFit: "contain", display: "inline-block", flex: "0 0 auto" } }) : "",
@@ -327,11 +308,11 @@ export function createChecklistEditor({
                 "/",
                 stats.total,
                 " utfylt",
-                stats.deviations ? ` \xB7 ${stats.deviations} avvik` : "",
-                stats.photos ? ` \xB7 ${stats.photos} bilder` : ""
+                stats.deviations ? ` · ${stats.deviations} avvik` : "",
+                stats.photos ? ` · ${stats.photos} bilder` : ""
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "\u26A0\uFE0F Avvik" : stats.missing === 0 ? "\u2705 Ferdig" : stats.done > 0 ? "\u{1F7E1} P\xE5g\xE5r" : "\u26AA Mangler" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "⚠️ Avvik" : stats.missing === 0 ? "✅ Ferdig" : stats.done > 0 ? "🟡 Pågår" : "⚪ Mangler" })
           ] }),
           isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.filter((item) => !showOpenDeviationsOnly || checklist?.[group.category]?.[item]?.status === "Avvik").map((item) => {
             const value = checklist[group.category]?.[item] || {};
@@ -350,7 +331,7 @@ export function createChecklistEditor({
                   String(group.category || "").startsWith(customChecklistCategoryPrefix) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "Eget sjekkpunkt" }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
                     value.status || "Ikke vurdert",
-                    (value.photos || []).length > 0 ? ` \xB7 \u{1F4F7} ${(value.photos || []).length} bilder` : ""
+                    (value.photos || []).length > 0 ? ` · 📷 ${(value.photos || []).length} bilder` : ""
                   ] })
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistStatusButtons", children: ["Ok", "Ikke aktuelt", "Avvik"].map((status) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
@@ -394,7 +375,12 @@ export function createChecklistEditor({
               ] }),
               (value.photos || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "photos checklistPhotos", children: value.photos.map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "photo", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: p.url }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { children: p.name }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => {
+                  if (!window.confirm("Fjerne bildet fra dette sjekkpunktet?")) return;
+                  const nextPhotos = (value.photos || []).filter((photo) => photo?.id !== p?.id);
+                  setChecklistValue(group.category, item, { photos: nextPhotos }, { autoSave: true });
+                }, children: "Fjern bilde" })
               ] }, p.id)) })
             ] }, item);
           }) })
@@ -413,7 +399,7 @@ export function createChecklistEditor({
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { children: [
               "Lastet opp av ",
               f.by || "Ukjent",
-              " \xB7 ",
+              " · ",
               f.created || ""
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
@@ -427,7 +413,7 @@ export function createChecklistEditor({
               ] })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Textarea, { label: "Kort beskrivelse / kommentar", value: f.description || f.comment || "", onChange: (v) => updateChecklistAttachmentFile(f.id, { description: v }) }),
-            fileUrl ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: fileUrl, target: "_blank", rel: "noopener noreferrer", children: "\xC5pne" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { style: { color: "#991b1b", fontWeight: 800 }, children: "Dokumentlenke mangler – last opp filen på nytt" }),
+            fileUrl ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { href: fileUrl, target: "_blank", rel: "noopener noreferrer", children: "Åpne" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("small", { style: { color: "#991b1b", fontWeight: 800 }, children: "Dokumentlenke mangler – last opp filen på nytt" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setFiles(files.filter((x) => x.id !== f.id)), children: "Fjern" })
           ] }, f.id);
         })
