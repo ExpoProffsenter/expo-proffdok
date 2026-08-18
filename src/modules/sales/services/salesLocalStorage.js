@@ -1,8 +1,8 @@
-// Expo ProffDok – FASE 23C / FASE 29B3
+// Expo ProffDok – FASE 23C / FASE 29B3 / FASE 29B4
 // Lokal nettleserlagring for Befaring / Tilbud / Aksept.
 // I integrert app er Supabase eneste oppstartskilde for salgssaker. Lokal cache beholdes
 // som backup under økten, men får ikke hydrere gamle data før ferske serverdata er hentet.
-// Ingen React-state, Supabase-kall, Storage-bucket-kall eller UI-rendering.
+// FASE 29B4 skiller også lokal cache/navigasjon per valgt supportfirma.
 
 import {
   STORAGE_KEY,
@@ -12,6 +12,17 @@ import {
 function getLocalStorage() {
   if (typeof window === "undefined" || !window.localStorage) return null;
   return window.localStorage;
+}
+
+function getSupportCompanyScope() {
+  if (typeof window === "undefined") return "";
+  try {
+    return String(
+      new URLSearchParams(window.location.search).get("salesSupportCompany") || ""
+    ).trim();
+  } catch {
+    return "";
+  }
 }
 
 export function buildSalesStorageKey({
@@ -27,8 +38,11 @@ export function buildSalesStorageKey({
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   const userScope = String(userId || "anonymous");
+  const supportScope = getSupportCompanyScope();
 
-  return `${STORAGE_KEY}:${companyScope || "uten-firma"}:${userScope}`;
+  return `${STORAGE_KEY}:${companyScope || "uten-firma"}:${userScope}${
+    supportScope ? `:support:${supportScope}` : ""
+  }`;
 }
 
 export function loadSalesNavigation(storageKey) {
@@ -69,9 +83,6 @@ export function saveSalesNavigation(storageKey, mode, selectedRequestId) {
 }
 
 export function loadRequests(storageKey = STORAGE_KEY) {
-  // Integrert app bruker en firmascopet nøkkel. Der skal Supabase alltid være
-  // source of truth ved oppstart; ellers kan en eldre lokal cache rekke å
-  // autolagres tilbake over nyere serverdata før databasehentingen er ferdig.
   if (storageKey !== STORAGE_KEY) return [];
 
   try {
@@ -109,8 +120,11 @@ export function buildStableOfferDraftKey({
   const userScope = String(userId || userEmail || "innlogget-bruker")
     .trim()
     .toLowerCase();
+  const supportScope = getSupportCompanyScope();
 
-  return `${STORAGE_KEY}:offer-draft:${userScope}:${requestId || "uten-sak"}`;
+  return `${STORAGE_KEY}:offer-draft:${userScope}${
+    supportScope ? `:support:${supportScope}` : ""
+  }:${requestId || "uten-sak"}`;
 }
 
 export function buildScopedOfferDraftKey(storageKey, requestId = "") {
@@ -142,11 +156,14 @@ export function loadOfferDraft({
 
   const candidateKeys = [stableKey, scopedKey].filter(Boolean);
   const legacySuffix = `:offer-draft:${requestId}`;
+  const supportScope = getSupportCompanyScope();
 
-  for (let index = 0; index < storage.length; index += 1) {
-    const key = storage.key(index);
-    if (key?.startsWith(STORAGE_KEY) && key.endsWith(legacySuffix)) {
-      candidateKeys.push(key);
+  if (!supportScope) {
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (key?.startsWith(STORAGE_KEY) && key.endsWith(legacySuffix)) {
+        candidateKeys.push(key);
+      }
     }
   }
 
