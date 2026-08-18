@@ -1,9 +1,7 @@
-// Expo ProffDok – FASE 23D / FASE 28A1 / FASE 29B2 / FASE 29B3
-// Samler alle Supabase-kall for Befaring / Tilbud / Aksept.
-// FASE 28A1 legger til firmadelte tilbudsmaler.
-// FASE 29B2 ruter kontrakt og låst akseptbevis til privat, firmascopet Storage.
-// FASE 29B3 gjør det samme for PDF-vedlegg på tilbudslinjer/opsjoner og beriker
-// kun offentlig kundevisning med tilbudets eksisterende publicOffer-token.
+// Expo ProffDok – FASE 23D / FASE 28A1 / FASE 29B2 / FASE 29B3 / FASE 29B4
+// Samler Supabase-kall for Befaring / Tilbud / Aksept.
+// FASE 29B4 lar kun systemadministrator bruke eksplisitt valgt Sales-supportfirma.
+// Vanlige brukere beholder eksisterende firmascope uendret.
 
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -14,6 +12,23 @@ import {
   isPrivateOfferAttachmentLogicalPath,
   isPrivateSalesLogicalPath,
 } from "../../documents/privateDocumentTools.js";
+
+const SALES_SUPPORT_COMPANY_PARAM = "salesSupportCompany";
+
+export function getSalesSupportCompanyId() {
+  if (typeof window === "undefined") return "";
+  try {
+    return String(
+      new URLSearchParams(window.location.search).get(SALES_SUPPORT_COMPANY_PARAM) || ""
+    ).trim();
+  } catch {
+    return "";
+  }
+}
+
+export function isSalesSupportMode() {
+  return Boolean(getSalesSupportCompanyId());
+}
 
 export function createDefaultSalesSupabaseClient() {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -39,7 +54,22 @@ export function subscribeToSalesAuthChanges(client, callback) {
 }
 
 export function resolveSalesCompanyScope(client) {
-  return client.rpc("resolve_sales_company_scope");
+  const supportCompanyId = getSalesSupportCompanyId();
+  return supportCompanyId
+    ? client.rpc("resolve_sales_support_company_scope", {
+        requested_company_id: supportCompanyId,
+      })
+    : client.rpc("resolve_sales_company_scope");
+}
+
+export function listSalesSupportCompanies(client) {
+  return client.rpc("list_sales_support_companies");
+}
+
+export function getSalesSupportCompanyProfile(client, companyId) {
+  return client.rpc("get_sales_support_company_profile", {
+    requested_company_id: companyId,
+  });
 }
 
 const withPublicOfferAttachmentAccess = (item = {}, token = "") => {
@@ -56,10 +86,7 @@ const withPublicOfferAttachmentAccess = (item = {}, token = "") => {
     ...item,
     attachmentFile: {
       ...attachment,
-      url: buildPrivateDocumentAppUrl({
-        path,
-        offerToken: token,
-      }),
+      url: buildPrivateDocumentAppUrl({ path, offerToken: token }),
     },
   };
 };
@@ -92,10 +119,7 @@ export async function getSalesOfferByToken(client, token) {
   };
 }
 
-export function acceptSalesOffer(
-  client,
-  { token, acceptedName, selectedOptions }
-) {
+export function acceptSalesOffer(client, { token, acceptedName, selectedOptions }) {
   return client.rpc("accept_sales_offer", {
     token,
     accepted_name: acceptedName,
@@ -104,7 +128,12 @@ export function acceptSalesOffer(
 }
 
 export function publishSalesOffer(client, payload) {
-  return client.rpc("publish_sales_offer", { payload });
+  const supportCompanyId = getSalesSupportCompanyId();
+  return client.rpc("publish_sales_offer", {
+    payload: supportCompanyId
+      ? { ...payload, support_company_id: supportCompanyId }
+      : payload,
+  });
 }
 
 export function fetchSalesRequests(client, companyId) {
@@ -158,11 +187,7 @@ export function fetchProjectsByIds(client, projectIds) {
 }
 
 export function fetchProjectById(client, projectId) {
-  return client
-    .from("projects")
-    .select("id")
-    .eq("id", projectId)
-    .maybeSingle();
+  return client.from("projects").select("id").eq("id", projectId).maybeSingle();
 }
 
 export function fetchProjectsByOwner(client, userId) {
@@ -170,6 +195,14 @@ export function fetchProjectsByOwner(client, userId) {
 }
 
 export function createSalesProject(client, projectRow) {
+  if (isSalesSupportMode()) {
+    return Promise.resolve({
+      data: null,
+      error: new Error(
+        "Prosjektaktivering er sperret i Sales-supportmodus. Gå tilbake til eget firma før prosjektet aktiveres."
+      ),
+    });
+  }
   return client.from("projects").insert(projectRow).select("id").single();
 }
 
@@ -251,8 +284,8 @@ export async function removeStorageFiles(client, bucket, paths) {
   const privateLogicalPaths = safePaths.filter((path) =>
     shouldUsePrivateSalesStorage(bucket, path)
   );
-  const ordinaryPaths = safePaths.filter((path) =>
-    !shouldUsePrivateSalesStorage(bucket, path)
+  const ordinaryPaths = safePaths.filter(
+    (path) => !shouldUsePrivateSalesStorage(bucket, path)
   );
   const removed = [];
 
