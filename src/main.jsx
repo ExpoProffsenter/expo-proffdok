@@ -12,7 +12,13 @@ import SalesModule from './modules/sales/SalesModule.jsx';
 import SalesHomeFollowUp, { useSalesHomeFollowUpData } from './modules/sales/components/SalesHomeFollowUp.jsx';
 import { createReportTools } from './modules/report/reportTools.js';
 import { createReportViewTools } from './modules/report/reportViewTools.js';
-import { createPortalAccessTools, renderCustomerPortal } from './modules/portal/portalTools.js';
+import { renderCustomerPortal } from './modules/portal/portalTools.js';
+import { createPortalAccessTools } from './modules/portal/portalSecurityTools.js';
+import {
+  appendCustomerProjectMessage, clearStoredPortalAccessCode, getProjectPortalAccessStatus,
+  markCustomerProjectChatRead, readStoredPortalAccessCode, saveUnderleverandorProjectContribution,
+  verifyProjectPortalAccess
+} from './modules/portal/portalSupabase.js';
 import { createAccessViewTools } from './modules/portal/accessViewTools.js';
 import { createOvertagelseCompletionTools, renderOvertagelsePanel } from './modules/overtagelse/overtagelseTools.js';
 import { createHelpCenter } from './modules/help/helpTools.js';
@@ -780,6 +786,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [portalAccessInput, setPortalAccessInput] = (0, import_react.useState)("");
     const [portalAccessGranted, setPortalAccessGranted] = (0, import_react.useState)(false);
     const [portalAccessError, setPortalAccessError] = (0, import_react.useState)("");
+    const [portalAccessRecords, setPortalAccessRecords] = (0, import_react.useState)({});
     const [projects, setProjects] = (0, import_react.useState)([]);
     const [projectId, setProjectId] = (0, import_react.useState)(null);
     (0, import_react.useEffect)(() => {
@@ -2320,6 +2327,18 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setInternalNotes(data.internalNotes || "");
       pauseDirtyTrackingBriefly(1200);
     };
+    const applyVerifiedPortalResult = (result, { preserveDraft = false } = {}) => {
+      const row = result?.project;
+      if (!result?.ok || !row?.id) return false;
+      unpackData(dataFromRow(row), preserveDraft);
+      setProjectId(row.id);
+      setCurrentProjectOwnerId("");
+      setSupportModeExplicit(false);
+      setLocalDraftRestoreChecked(false);
+      setMobileCreatingProject(false);
+      setPortalAccessGranted(true);
+      return true;
+    };
     const autoSaveProjectToCloud = async (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
       if (!authUser || !projectId || isReadOnly || isProjectLocked) return;
       setProjectAutoSaveStatus("Autolagrer …");
@@ -2548,7 +2567,37 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     };
     const refreshProjectFromCloud = async (silent = false, fullRefresh = false) => {
       if (!projectId) return;
-      const { data, error } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+      let data = null;
+      let error = null;
+      if (portalAccessRoleParam) {
+        const code = readStoredPortalAccessCode(projectId, portalAccessRoleParam);
+        if (!code) {
+          setPortalAccessGranted(false);
+          if (!silent) alert("Tilgangskoden må bekreftes på nytt.");
+          return;
+        }
+        try {
+          const result = await verifyProjectPortalAccess(supabase, {
+            projectId,
+            role: portalAccessRoleParam,
+            code
+          });
+          if (!result?.ok || !result?.project) {
+            clearStoredPortalAccessCode(projectId, portalAccessRoleParam);
+            setPortalAccessGranted(false);
+            if (!silent) alert("Tilgangen er utløpt eller ugyldig. Be prosjektansvarlig sende ny tilgang.");
+            return;
+          }
+          data = result.project;
+          setPortalAccessGranted(true);
+        } catch (portalError) {
+          error = portalError;
+        }
+      } else {
+        const response = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        data = response.data;
+        error = response.error;
+      }
       if (error || !data) {
         console.error(error);
         if (!silent) alert("Kunne ikke oppdatere prosjektdata: " + (error?.message || "Fant ikke prosjekt"));
@@ -2876,7 +2925,14 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       if (id && !isRecoveryLink) {
         const requestedTab = String(params.get("tab") || params.get("open") || "").trim().toLowerCase();
         const linkAccessMode = params.get("access") || params.get("role");
-        if (linkAccessMode !== "admin") openProjectById(id);
+        if (linkAccessMode !== "admin") {
+          // FASE 29A2: Offentlig portal henter ikke lenger projects-raden før koden er verifisert server-side.
+          setProjectId(id);
+          setCurrentProjectOwnerId("");
+          setSupportModeExplicit(false);
+          setLocalDraftRestoreChecked(false);
+          setMobileCreatingProject(false);
+        }
         if (linkAccessMode === "underleverandor") setTab(requestedTab || "produkter");
         if (linkAccessMode === "kunde" && requestedTab) setCustomerTab(requestedTab === "chat" ? "chat" : requestedTab);
         if (linkAccessMode === "admin" && requestedTab) setTab(requestedTab);
@@ -2923,12 +2979,24 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setPortalAccessInput("");
       setPortalAccessGranted(false);
       setPortalAccessError("");
+      setPortalAccessRecords({});
     }, [projectId, portalAccessRoleParam]);
 
     (0, import_react.useEffect)(() => {
       if (!projectId) return;
       const chatVisible = isReadOnly || tab === "chat" || customerTab === "chat";
       if (!chatVisible) return;
+
+      // Offentlig portal skal aldri bruke rå Realtime-payload fra projects.
+      // Den poller gjennom den kodeverifiserte RPC-en i stedet.
+      if (portalAccessRoleParam) {
+        refreshProjectFromCloud(true);
+        const secureTimer = window.setInterval(() => {
+          refreshProjectFromCloud(true);
+        }, 5e3);
+        return () => window.clearInterval(secureTimer);
+      }
+
       let cancelled = false;
       const applyChatData = (row) => {
         if (!row || cancelled) return;
@@ -2957,7 +3025,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         window.clearInterval(timer);
         supabase.removeChannel(channel);
       };
-    }, [projectId, isReadOnly, tab, customerTab]);
+    }, [projectId, isReadOnly, tab, customerTab, portalAccessRoleParam]);
     (0, import_react.useEffect)(() => {
       if (!isReadOnly) {
         loadFdvRegister(false);
@@ -3225,6 +3293,28 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
         nextLogForSave = { ...normalized, [key]: timestamp };
         return nextLogForSave;
       });
+
+      if (reader === "customer" && portalAccessRoleParam === "kunde") {
+        const code = readStoredPortalAccessCode(projectId, "kunde");
+        if (!code) {
+          setPortalAccessGranted(false);
+          return;
+        }
+        try {
+          const result = await markCustomerProjectChatRead(supabase, { projectId, code });
+          if (!result?.ok || !result?.project) {
+            clearStoredPortalAccessCode(projectId, "kunde");
+            setPortalAccessGranted(false);
+            return;
+          }
+          const incomingLog = normalizeProjectLog(dataFromRow(result.project).projectLog);
+          setProjectLog((prev) => ({ ...incomingLog, draft: prev?.draft || "" }));
+        } catch (error) {
+          console.warn("Kunne ikke markere kundechat som lest:", error?.message || error);
+        }
+        return;
+      }
+
       try {
         const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
         if (fetchError || !existing) {
@@ -3471,14 +3561,18 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
     const saveCustomerChatMessage = async () => {
       if (!projectId) return alert("Prosjektet mangler ID.");
       const text = (projectLog.draft || "").trim();
-      if (!text && !customerChatUploadFile) return alert("Skriv en melding eller velg et bilde f\xF8rst.");
+      if (!text && !customerChatUploadFile) return alert("Skriv en melding eller velg et bilde først.");
+      const code = readStoredPortalAccessCode(projectId, "kunde");
+      if (!code) {
+        setPortalAccessGranted(false);
+        return alert("Tilgangskoden må bekreftes på nytt før meldingen kan sendes.");
+      }
       let uploadedImage = null;
       if (customerChatUploadFile) {
         uploadedImage = await uploadChatImage(customerChatUploadFile, projectId, "kunde");
         if (!uploadedImage) return;
       }
       const message = {
-        id: uid(),
         text,
         by: project.customer || "Kunde",
         role: "kunde",
@@ -3487,49 +3581,37 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
         imageName: uploadedImage?.imageName || "",
         imagePath: uploadedImage?.imagePath || ""
       };
-      const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
-      if (fetchError || !existing) {
-        console.error(fetchError);
-        return alert("Kunne ikke hente prosjekt f\xF8r melding ble lagret: " + (fetchError?.message || "Fant ikke prosjekt"));
-      }
-      if (rowIsLocked(existing)) {
-        return alert("Prosjektet er l\xE5st og chatmeldingen kan ikke lagres. Kontakt prosjektansvarlig hvis noe m\xE5 korrigeres.");
-      }
-      const existingData = dataFromRow(existing);
-      const existingLog = normalizeProjectLog(existingData.projectLog);
-      const updatedLog = {
-        ...existingLog,
-        draft: "",
-        lastReadByCustomer: (/* @__PURE__ */ new Date()).toISOString(),
-        messages: [...existingLog.messages || [], message]
-      };
-      const cleanData = JSON.parse(JSON.stringify({
-        ...existingData,
-        projectLog: updatedLog
-      }));
-      const { data: updatedRow, error } = await supabase.from("projects").update({
-        data: cleanData,
-        updated_at: (/* @__PURE__ */ new Date()).toISOString()
-      }).eq("id", projectId).select("*").maybeSingle();
-      if (error) {
+      try {
+        const result = await appendCustomerProjectMessage(supabase, {
+          projectId,
+          code,
+          text,
+          imageUrl: message.imageUrl,
+          imageName: message.imageName,
+          imagePath: message.imagePath
+        });
+        if (!result?.ok || !result?.project) {
+          if (result?.error === "locked") {
+            return alert("Prosjektet er låst og chatmeldingen kan ikke lagres. Kontakt prosjektansvarlig hvis noe må korrigeres.");
+          }
+          clearStoredPortalAccessCode(projectId, "kunde");
+          setPortalAccessGranted(false);
+          return alert("Tilgangen er utløpt eller ugyldig. Be prosjektansvarlig sende ny tilgang.");
+        }
+        setCustomerChatUploadFile(null);
+        const fileInput = document.getElementById("customer-chat-image-input");
+        if (fileInput) fileInput.value = "";
+        applyVerifiedPortalResult(result);
+        await notifyChatMessage({
+          toEmail: ownerNotificationEmail(),
+          direction: "to_owner",
+          message
+        });
+        alert(ownerNotificationEmail() ? "✔ Melding sendt og lagret på prosjektet. E-postvarsling forsøkt sendt til utførende." : "✔ Melding sendt og lagret på prosjektet.");
+      } catch (error) {
         console.error(error);
-        return alert("Kunne ikke lagre melding: " + error.message);
+        alert("Kunne ikke lagre melding: " + (error?.message || "Ukjent feil"));
       }
-      setCustomerChatUploadFile(null);
-      const fileInput = document.getElementById("customer-chat-image-input");
-      if (fileInput) fileInput.value = "";
-      if (updatedRow) {
-        unpackData(dataFromRow(updatedRow));
-        setProjectId(updatedRow.id);
-      } else {
-        setProjectLog(updatedLog);
-      }
-      await notifyChatMessage({
-        toEmail: ownerNotificationEmail(),
-        direction: "to_owner",
-        message
-      });
-      alert(ownerNotificationEmail() ? "\u2714 Melding sendt og lagret p\xE5 prosjektet. E-postvarsling fors\xF8kt sendt til utf\xF8rende." : "\u2714 Melding sendt og lagret p\xE5 prosjektet.");
     };
     const saveProject = async () => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
@@ -3711,63 +3793,47 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
     };
     const saveSharedProject = async () => {
       if (!projectId) return alert("Prosjektet mangler ID og kan ikke lagres fra delingslink.");
-      const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
-      if (fetchError || !existing) {
-        console.error(fetchError);
-        return alert("Kunne ikke kontrollere prosjektstatus f\xF8r lagring: " + (fetchError?.message || "Fant ikke prosjekt"));
+      const code = readStoredPortalAccessCode(projectId, "underleverandor");
+      if (!code) {
+        setPortalAccessGranted(false);
+        return alert("Tilgangskoden må bekreftes på nytt før bidrag kan lagres.");
       }
-      const existingProject = projectFromRow(existing, existing.data?.project || {});
-      if (rowIsLocked(existing) || isProjectLocked) {
-        const lockedProject = existingProject;
-        setProject(lockedProject);
-        return alert("Prosjektet er l\xE5st og kan ikke endres. Kontakt prosjektansvarlig hvis noe m\xE5 korrigeres.");
-      }
-      const safeProject = {
-        ...emptyProject(),
-        ...project,
-        locked: false,
-        status: "active",
-        lockedAt: "",
-        lockedBy: ""
-      };
-      const cleanData = JSON.parse(JSON.stringify({
-        company,
-        user,
-        project: safeProject,
+      const updates = JSON.parse(JSON.stringify({
         checked,
         productDocs,
         manualProducts,
-        other,
         surf,
         bathroomEquipment,
         photos,
-        access,
         inst,
         files,
         checklist,
-        tilbud,
-        overtagelse,
-        warranty,
-        projectLog,
-        internalNotes
+        project: {
+          customChecklistGroups: Array.isArray(project?.customChecklistGroups) ? project.customChecklistGroups : [],
+          reportHeroPhotoId: project?.reportHeroPhotoId || ""
+        }
       }));
-      const payload = {
-        title: safeProject.projectName || safeProject.address || "Uten navn",
-        data: cleanData,
-        share_enabled: true,
-        locked: false,
-        locked_at: null,
-        locked_by: "",
-        updated_at: (/* @__PURE__ */ new Date()).toISOString()
-      };
-      const { error } = await supabase.from("projects").update(payload).eq("id", projectId);
-      if (error) {
+      try {
+        const result = await saveUnderleverandorProjectContribution(supabase, {
+          projectId,
+          code,
+          updates
+        });
+        if (!result?.ok || !result?.project) {
+          if (result?.error === "locked") {
+            return alert("Prosjektet er låst og kan ikke endres. Kontakt prosjektansvarlig hvis noe må korrigeres.");
+          }
+          clearStoredPortalAccessCode(projectId, "underleverandor");
+          setPortalAccessGranted(false);
+          return alert("Tilgangen er utløpt eller ugyldig. Be prosjektansvarlig sende ny tilgang.");
+        }
+        applyVerifiedPortalResult(result, { preserveDraft: true });
+        resetProjectDirty();
+        alert("✔ Bidrag lagret på prosjektet " + (/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO"));
+      } catch (error) {
         console.error(error);
-        return alert("Kunne ikke lagre fra delingslink. Kontakt prosjektansvarlig hvis feilen vedvarer. Feil: " + error.message);
+        alert("Kunne ikke lagre fra delingslink. Kontakt prosjektansvarlig hvis feilen vedvarer. Feil: " + (error?.message || "Ukjent feil"));
       }
-      setProject(safeProject);
-      resetProjectDirty();
-      alert("\u2714 Bidrag lagret p\xE5 prosjektet " + (/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO"));
     };
     const setProjectLockedState = async (locked) => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 endre prosjektstatus.");
@@ -3939,9 +4005,62 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       project, projectId, projectIsLocked, portalAccessRoleParam, isAdminProjectLink,
       portalAccessGranted, portalAccessStorageKey, portalAccessInput, portalAccessError,
       setPortalAccessGranted, setPortalAccessInput, setPortalAccessError,
-      supabase, dataFromRow, authUser, profile, user, setProject, company, name,
+      supabase, authUser, profile, user, company, name,
+      portalAccessRecords, setPortalAccessRecords,
+      onPortalVerified: (result) => applyVerifiedPortalResult(result),
       Brand, Section, Input
     });
+
+    (0, import_react.useEffect)(() => {
+      if (!projectId || !portalAccessRoleParam || isAdminProjectLink) return;
+      const storedCode = readStoredPortalAccessCode(projectId, portalAccessRoleParam);
+      if (!storedCode) return;
+      let cancelled = false;
+      verifyProjectPortalAccess(supabase, {
+        projectId,
+        role: portalAccessRoleParam,
+        code: storedCode
+      }).then((result) => {
+        if (cancelled) return;
+        if (!result?.ok || !result?.project) {
+          clearStoredPortalAccessCode(projectId, portalAccessRoleParam);
+          setPortalAccessGranted(false);
+          return;
+        }
+        applyVerifiedPortalResult(result);
+      }).catch((error) => {
+        if (!cancelled) console.warn("Kunne ikke gjenbruke portaltilgang:", error?.message || error);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [projectId, portalAccessRoleParam, isAdminProjectLink]);
+
+    (0, import_react.useEffect)(() => {
+      if (!authUser?.id || !projectId || portalAccessRoleParam || tab !== "tilgang") return;
+      let cancelled = false;
+      getProjectPortalAccessStatus(supabase, { projectId }).then((status) => {
+        if (cancelled || !status?.ok) return;
+        const toRecord = (role, value = {}) => ({
+          role,
+          active: !!value?.active,
+          code: value?.active ? "stored" : "",
+          createdAt: value?.created_at || "",
+          validUntil: value?.valid_until || status?.valid_until || "",
+          accessPolicy: status?.access_policy || "active_project_plus_locked_30_days",
+          lockedGraceDays: Number(status?.locked_grace_days || 30)
+        });
+        setPortalAccessRecords({
+          kunde: toRecord("kunde", status?.kunde || {}),
+          underleverandor: toRecord("underleverandor", status?.underleverandor || {})
+        });
+      }).catch((error) => {
+        if (!cancelled) console.warn("Kunne ikke hente portalstatus:", error?.message || error);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [authUser?.id, projectId, portalAccessRoleParam, tab]);
 
     const makeProjectLink = (id, role = "kunde", targetTab = "") => {
       const tabSuffix = hasValue(targetTab) ? `&tab=${encodeURIComponent(String(targetTab || ""))}` : "";
