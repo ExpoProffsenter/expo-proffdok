@@ -1,9 +1,19 @@
-// Expo ProffDok – FASE 23I
+// Expo ProffDok – FASE 23I / FASE 29C1
 // Presentasjonskomponent for ny og redigert forespørsel.
-// Ingen React-state, Supabase-kall, Storage-kall eller forretningslogikk.
+// Nye saker opprettes ikke i Systemadmin-supportmodus fordi målbedriftens
+// ansvarlige bruker ikke er valgt i denne flyten.
 
-import { ArrowLeft, ClipboardList, Mail, MapPin, Phone, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  ClipboardList,
+  Mail,
+  MapPin,
+  Phone,
+  Save,
+  ShieldCheck,
+} from "lucide-react";
 import { requestSources, workTypes } from "../constants/salesConstants.js";
+import { getSalesSupportCompanyId } from "../services/salesSupabase.js";
 
 export default function SalesRequestForm({
   form,
@@ -14,6 +24,57 @@ export default function SalesRequestForm({
   onSubmit,
   onUpdateForm,
 }) {
+  const supportMode = Boolean(getSalesSupportCompanyId());
+
+  if (supportMode && !isEditingRequest) {
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <header className="sales-header">
+            <button className="sales-back-button" type="button" onClick={onBack || onCancel}>
+              <ArrowLeft size={18} />
+              Tilbake
+            </button>
+            <div className="sales-brand sales-brand-compact">
+              <div className="sales-brand-mark">
+                <ShieldCheck size={22} />
+              </div>
+              <div className="sales-brand-copy">
+                <strong>Systemadmin-support</strong>
+                <span>Befaring / Tilbud / Aksept</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="sales-main">
+            <section className="sales-form-hero">
+              <p className="sales-eyebrow">Handling sperret i supportmodus</p>
+              <h1 className="sales-title">
+                {isDirectOffer ? "Nytt tilbud" : "Ny forespørsel"} må opprettes av firmaet
+              </h1>
+              <p className="sales-subtitle">
+                Systemadministrator kan kontrollere og bistå på eksisterende saker,
+                men oppretter ikke nye saker på vegne av firmaet før en ansvarlig
+                bruker i målbedriften kan velges sikkert.
+              </p>
+            </section>
+
+            <div className="sales-form-panel">
+              <button
+                className="sales-primary-button"
+                type="button"
+                onClick={onBack || onCancel}
+              >
+                <ArrowLeft size={18} />
+                Tilbake til sakene
+              </button>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="sales-app">
       <div className="sales-shell">
