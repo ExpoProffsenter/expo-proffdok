@@ -121,21 +121,72 @@ export const buildPortalStorageUploadPath = async ({
   const uploadSecret = readStoredPortalUploadSecret(normalizedProjectId, normalizedRole);
 
   if (!normalizedProjectId || !uploadSecret) {
-    throw new Error("Portaltilgangen må bekreftes på nytt før bilde kan lastes opp.");
+    throw new Error("Portaltilgangen må bekreftes på nytt før fil kan lastes opp.");
   }
-  if (!['chat', 'photos', 'sjekklister'].includes(normalizedArea)) {
+  if (!['chat', 'photos', 'sjekklister', 'vedlegg'].includes(normalizedArea)) {
     throw new Error("Ugyldig område for portalopplasting.");
   }
   if (normalizedRole === "kunde" && normalizedArea !== "chat") {
-    throw new Error("Kunden har ikke tilgang til denne bildeopplastingen.");
+    throw new Error("Kunden har ikke tilgang til denne filopplastingen.");
   }
-  if (normalizedRole === "underleverandor" && !['chat', 'photos', 'sjekklister'].includes(normalizedArea)) {
-    throw new Error("Underentreprenøren har ikke tilgang til denne bildeopplastingen.");
+  if (normalizedRole === "underleverandor" && !['chat', 'photos', 'sjekklister', 'vedlegg'].includes(normalizedArea)) {
+    throw new Error("Underentreprenøren har ikke tilgang til denne filopplastingen.");
   }
 
   const signaturePayload = `${uploadSecret}:${normalizedProjectId}:${normalizedRole}:${normalizedArea}:${normalizedFileName}`;
   const signature = await sha256Hex(signaturePayload);
   return `portal/${normalizedRole}/${normalizedProjectId}/${normalizedArea}/${signature}/${normalizedFileName}`;
+};
+
+const installPortalStorageRewriter = (supabase, { projectId, role } = {}) => {
+  if (!supabase?.storage || typeof supabase.storage.from !== "function") return;
+
+  supabase.__expoPortalStorageContext = {
+    projectId: String(projectId || "").trim().toLowerCase(),
+    role: normalizePortalRole(role)
+  };
+  if (supabase.__expoPortalStorageRewriterInstalled) return;
+
+  const originalFrom = supabase.storage.from.bind(supabase.storage);
+  supabase.storage.from = (bucketId) => {
+    const bucket = originalFrom(bucketId);
+    if (!bucket || typeof bucket.upload !== "function") return bucket;
+
+    const originalUpload = bucket.upload.bind(bucket);
+    bucket.upload = async (path, file, options) => {
+      const context = supabase.__expoPortalStorageContext;
+      if (!context?.projectId || !context?.role) return originalUpload(path, file, options);
+
+      const legacyParts = String(path || "").split("/").filter(Boolean);
+      let area = "";
+      if (bucketId === "chat-images") {
+        area = "chat";
+      } else if (
+        bucketId === "project-images" &&
+        context.role === "underleverandor" &&
+        ['photos', 'sjekklister', 'vedlegg'].includes(String(legacyParts[0] || "").toLowerCase())
+      ) {
+        area = String(legacyParts[0] || "").toLowerCase();
+      }
+
+      if (!area) return originalUpload(path, file, options);
+
+      try {
+        const sourceFileName = legacyParts[legacyParts.length - 1] || file?.name || `bilde-${Date.now()}.jpg`;
+        const signedPath = await buildPortalStorageUploadPath({
+          projectId: context.projectId,
+          role: context.role,
+          area,
+          fileName: sourceFileName
+        });
+        return originalUpload(signedPath, file, options);
+      } catch (error) {
+        return { data: null, error: error instanceof Error ? error : new Error(String(error || "Filopplasting feilet.")) };
+      }
+    };
+    return bucket;
+  };
+  supabase.__expoPortalStorageRewriterInstalled = true;
 };
 
 const unwrapRpcData = (data) => Array.isArray(data) ? data[0] ?? null : data ?? null;
@@ -175,8 +226,10 @@ export const verifyProjectPortalAccess = async (supabase, {
 
   if (result?.ok && result?.upload_secret) {
     storePortalUploadSecret(projectId, normalizedRole, result.upload_secret);
+    installPortalStorageRewriter(supabase, { projectId, role: normalizedRole });
   } else if (!result?.ok) {
     clearStoredPortalUploadSecret(projectId, normalizedRole);
+    if (supabase) supabase.__expoPortalStorageContext = null;
   }
   return result;
 };
