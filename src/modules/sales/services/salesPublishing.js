@@ -2,7 +2,7 @@
 // Samler publisering av tilbud og opprettelse av kundelenker.
 // FASE 29B4 bruker firmaprofilen SalesModule allerede har lastet inn, med samme
 // logo-prinsipp som hovedappen: firmaets logo når den finnes, ellers Expo-logo.
-// Ingen React-state, UI-rendering, databaseendring, RLS- eller Storage-endring.
+// Intern supportparameter fjernes alltid fra kundelenker.
 
 import { buildPublishPayload } from "../utils/salesOfferLogic.js";
 import {
@@ -12,8 +12,9 @@ import {
 
 export function buildCustomerOfferLink(currentUrl, token) {
   const url = new URL(currentUrl);
-  // Behold eventuelle Vercel-parametere for deling av beskyttet preview.
-  // Erstatt bare kundetokenet dersom det allerede finnes.
+  // Behold eventuelle Vercel-parametere for deling av beskyttet preview,
+  // men eksponer aldri internt supportfirma i kundelenken.
+  url.searchParams.delete("salesSupportCompany");
   url.searchParams.set("publicOffer", token);
   return url.toString();
 }
