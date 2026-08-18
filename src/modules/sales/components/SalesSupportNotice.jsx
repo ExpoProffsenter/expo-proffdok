@@ -28,12 +28,14 @@ const BLOCKED_SUPPORT_ACTIONS = new Set([
 
 let guardInstalled = false;
 let refreshTimer = null;
-let loadedCompanyId = "";
-let loadingCompanyId = "";
-let supportContext = {
+let loadSequence = 0;
+let context = {
+  companyId: "",
+  scopeId: "",
   companyName: "",
   supportUserName: "Systemadministrator",
-  requests: new Map(),
+  requestRef: "",
+  responsible: "",
 };
 
 function findNavigationButton(label) {
@@ -45,32 +47,48 @@ function findNavigationButton(label) {
   );
 }
 
-function currentRequestContext() {
-  if (typeof document === "undefined") return null;
+function currentRequestRef() {
+  if (typeof document === "undefined") return "";
   const hero = document.querySelector(
     ".sales-app .sales-detail-hero, .sales-app .sales-form-hero"
   );
-  const text = String(hero?.textContent || "");
-  if (!text) return null;
-
-  for (const [requestRef, payload] of supportContext.requests.entries()) {
-    if (text.includes(requestRef)) {
-      return { requestRef, payload: payload || {} };
-    }
-  }
-
-  return null;
+  const match = String(hero?.textContent || "").match(/\bF-\d{4}-\d+\b/);
+  return String(match?.[0] || "").trim();
 }
 
-function currentResponsible() {
-  const current = currentRequestContext();
-  if (!current) return "";
-  return String(
-    current.payload?.surveyResponsible ||
-      current.payload?.projectResponsible ||
-      current.payload?.responsible ||
-      ""
-  ).trim();
+function restoreHiddenResponsibleFields() {
+  if (typeof document === "undefined") return;
+  document.querySelectorAll(`[${SUPPORT_HIDDEN_ATTR}="1"]`).forEach((node) => {
+    node.style.removeProperty("display");
+    node.removeAttribute(SUPPORT_HIDDEN_ATTR);
+  });
+}
+
+function hideMisleadingResponsibleFields() {
+  if (typeof document === "undefined") return;
+  if (!getSalesSupportCompanyId()) {
+    restoreHiddenResponsibleFields();
+    return;
+  }
+
+  document.querySelectorAll(".sales-app label").forEach((label) => {
+    const text = String(label.textContent || "").trim();
+    if (!text.startsWith("Prosjektansvarlig")) return;
+    label.setAttribute(SUPPORT_HIDDEN_ATTR, "1");
+    label.style.display = "none";
+  });
+
+  document.querySelectorAll(".sales-app span").forEach((span) => {
+    if (span.closest("label")) return;
+    const text = String(span.textContent || "").trim();
+    if (!text.startsWith("Prosjektansvarlig:")) return;
+    span.setAttribute(SUPPORT_HIDDEN_ATTR, "1");
+    span.style.display = "none";
+  });
+}
+
+function setText(node, value) {
+  if (node && node.textContent !== value) node.textContent = value;
 }
 
 function createBanner() {
@@ -99,8 +117,7 @@ function createBanner() {
 
   const title = document.createElement("strong");
   title.dataset.role = "title";
-  title.style.display = "block";
-  title.style.fontSize = "14px";
+  Object.assign(title.style, { display: "block", fontSize: "14px" });
 
   const details = document.createElement("div");
   details.dataset.role = "details";
@@ -154,12 +171,13 @@ function createBanner() {
       document.title,
       `${url.pathname}${url.search}${url.hash}`
     );
-    loadedCompanyId = "";
-    loadingCompanyId = "";
-    supportContext = {
+    context = {
+      companyId: "",
+      scopeId: "",
       companyName: "",
       supportUserName: "Systemadministrator",
-      requests: new Map(),
+      requestRef: "",
+      responsible: "",
     };
     restoreHiddenResponsibleFields();
     banner.remove();
@@ -185,133 +203,125 @@ function updateBanner() {
 
   const title = banner.querySelector('[data-role="title"]');
   const details = banner.querySelector('[data-role="details"]');
-  const responsible = currentResponsible();
+  const titleText = `🛡 Systemadmin-support${
+    context.companyName ? ` – ${context.companyName}` : ""
+  }`;
+  const detailText = [
+    `Innlogget support: ${context.supportUserName || "Systemadministrator"}`,
+    context.responsible ? `Saksansvarlig: ${context.responsible}` : "",
+    "Nye saker, endring av befaringsansvar og prosjektaktivering er sperret i supportmodus.",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
-  if (title) {
-    title.textContent = `🛡 Systemadmin-support${
-      supportContext.companyName ? ` – ${supportContext.companyName}` : ""
-    }`;
-  }
-
-  if (details) {
-    const lines = [
-      `Innlogget support: ${supportContext.supportUserName || "Systemadministrator"}`,
-      responsible ? `Saksansvarlig: ${responsible}` : "",
-      "Nye saker, endring av befaringsansvar og prosjektaktivering er sperret i supportmodus.",
-    ].filter(Boolean);
-    details.textContent = lines.join(" · ");
-  }
+  setText(title, titleText);
+  setText(details, detailText);
 }
 
-function restoreHiddenResponsibleFields() {
-  if (typeof document === "undefined") return;
-  document.querySelectorAll(`[${SUPPORT_HIDDEN_ATTR}="1"]`).forEach((node) => {
-    node.style.removeProperty("display");
-    node.removeAttribute(SUPPORT_HIDDEN_ATTR);
-  });
+async function loadCompanyContext(companyId, sequence) {
+  const { data: companyData, error: companyError } =
+    await getSalesSupportCompanyProfile(client, companyId);
+  if (companyError) throw companyError;
+
+  const { data: resolvedScopeId, error: scopeError } =
+    await resolveSalesCompanyScope(client);
+  if (scopeError) throw scopeError;
+
+  const { data: sessionData } = await client.auth.getSession();
+  const user = sessionData?.session?.user || null;
+  let supportUserName = String(user?.email || "Systemadministrator").trim();
+
+  if (user?.id) {
+    const { data: profileData } = await client
+      .from("profiles")
+      .select("full_name,email")
+      .eq("id", user.id)
+      .maybeSingle();
+    supportUserName = String(
+      profileData?.full_name || profileData?.email || user.email || "Systemadministrator"
+    ).trim();
+  }
+
+  if (sequence !== loadSequence || getSalesSupportCompanyId() !== companyId) {
+    return false;
+  }
+
+  const companyRow = Array.isArray(companyData) ? companyData[0] : companyData;
+  context = {
+    ...context,
+    companyId,
+    scopeId: String(resolvedScopeId || companyId).trim(),
+    companyName: String(companyRow?.company_name || "").trim(),
+    supportUserName,
+    requestRef: "",
+    responsible: "",
+  };
+  return true;
 }
 
-function hideMisleadingResponsibleFields() {
-  if (typeof document === "undefined") return;
-  if (!getSalesSupportCompanyId()) {
-    restoreHiddenResponsibleFields();
+async function loadRequestContext(requestRef, sequence) {
+  if (!requestRef || !context.scopeId) {
+    context = { ...context, requestRef: "", responsible: "" };
     return;
   }
 
-  document.querySelectorAll(".sales-app label").forEach((label) => {
-    const text = String(label.textContent || "").trim();
-    if (!text.startsWith("Prosjektansvarlig")) return;
-    label.setAttribute(SUPPORT_HIDDEN_ATTR, "1");
-    label.style.display = "none";
-  });
+  const { data, error } = await client
+    .from("sales_requests")
+    .select("request_ref,payload")
+    .eq("company_id", context.scopeId)
+    .eq("request_ref", requestRef)
+    .maybeSingle();
+  if (error) throw error;
+  if (sequence !== loadSequence || getSalesSupportCompanyId() !== context.companyId) {
+    return;
+  }
 
-  document.querySelectorAll(".sales-app span").forEach((span) => {
-    if (span.closest("label")) return;
-    const text = String(span.textContent || "").trim();
-    if (!text.startsWith("Prosjektansvarlig:")) return;
-    span.setAttribute(SUPPORT_HIDDEN_ATTR, "1");
-    span.style.display = "none";
-  });
+  context = {
+    ...context,
+    requestRef,
+    responsible: String(
+      data?.payload?.surveyResponsible ||
+        data?.payload?.projectResponsible ||
+        data?.payload?.responsible ||
+        ""
+    ).trim(),
+  };
 }
 
-async function loadSupportContext() {
+async function refreshSupportContext() {
   const companyId = getSalesSupportCompanyId();
+  const sequence = ++loadSequence;
+
   if (!companyId || !client) {
-    loadedCompanyId = "";
-    loadingCompanyId = "";
+    context = {
+      companyId: "",
+      scopeId: "",
+      companyName: "",
+      supportUserName: "Systemadministrator",
+      requestRef: "",
+      responsible: "",
+    };
     updateBanner();
     return;
   }
-
-  if (loadedCompanyId === companyId || loadingCompanyId === companyId) {
-    updateBanner();
-    hideMisleadingResponsibleFields();
-    return;
-  }
-
-  loadingCompanyId = companyId;
 
   try {
-    const { data: companyData, error: companyError } =
-      await getSalesSupportCompanyProfile(client, companyId);
-    if (companyError) throw companyError;
-    if (getSalesSupportCompanyId() !== companyId) return;
-
-    const companyRow = Array.isArray(companyData) ? companyData[0] : companyData;
-    const companyName = String(companyRow?.company_name || "").trim();
-
-    const { data: sessionData } = await client.auth.getSession();
-    const user = sessionData?.session?.user || null;
-    let supportUserName = String(user?.email || "Systemadministrator").trim();
-
-    if (user?.id) {
-      const { data: profileData } = await client
-        .from("profiles")
-        .select("full_name,email")
-        .eq("id", user.id)
-        .maybeSingle();
-      supportUserName = String(
-        profileData?.full_name || profileData?.email || user.email || "Systemadministrator"
-      ).trim();
+    if (context.companyId !== companyId) {
+      const loaded = await loadCompanyContext(companyId, sequence);
+      if (!loaded) return;
     }
 
-    const { data: resolvedCompanyId, error: scopeError } =
-      await resolveSalesCompanyScope(client);
-    if (scopeError) throw scopeError;
-
-    const { data: requestRows, error: requestError } = await client
-      .from("sales_requests")
-      .select("request_ref,payload")
-      .eq("company_id", resolvedCompanyId || companyId);
-    if (requestError) throw requestError;
-    if (getSalesSupportCompanyId() !== companyId) return;
-
-    supportContext = {
-      companyName,
-      supportUserName,
-      requests: new Map(
-        (requestRows || []).map((row) => [
-          String(row.request_ref || "").trim(),
-          row.payload || {},
-        ])
-      ),
-    };
-    loadedCompanyId = companyId;
+    const requestRef = currentRequestRef();
+    if (requestRef !== context.requestRef) {
+      await loadRequestContext(requestRef, sequence);
+    }
   } catch (error) {
     console.error("Kunne ikke laste Systemadmin-supportkontekst", error);
-    if (getSalesSupportCompanyId() === companyId) {
-      supportContext = {
-        companyName: "",
-        supportUserName: "Systemadministrator",
-        requests: new Map(),
-      };
-      loadedCompanyId = companyId;
-    }
-  } finally {
-    if (loadingCompanyId === companyId) loadingCompanyId = "";
-    updateBanner();
-    hideMisleadingResponsibleFields();
   }
+
+  if (sequence !== loadSequence) return;
+  updateBanner();
+  hideMisleadingResponsibleFields();
 }
 
 function scheduleSupportRefresh() {
@@ -319,10 +329,8 @@ function scheduleSupportRefresh() {
   if (refreshTimer) window.clearTimeout(refreshTimer);
   refreshTimer = window.setTimeout(() => {
     refreshTimer = null;
-    void loadSupportContext();
-    updateBanner();
-    hideMisleadingResponsibleFields();
-  }, 60);
+    void refreshSupportContext();
+  }, 80);
 }
 
 function blockedActionLabel(button) {
@@ -386,7 +394,14 @@ function installSupportGuard() {
     true
   );
 
-  const observer = new MutationObserver(() => scheduleSupportRefresh());
+  const observer = new MutationObserver((mutations) => {
+    const onlyBannerChanges = mutations.every((mutation) =>
+      mutation.target instanceof Element
+        ? Boolean(mutation.target.closest(`#${GLOBAL_BANNER_ID}`))
+        : mutation.target.parentElement?.closest(`#${GLOBAL_BANNER_ID}`)
+    );
+    if (!onlyBannerChanges) scheduleSupportRefresh();
+  });
   observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
