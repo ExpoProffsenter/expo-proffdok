@@ -422,3 +422,42 @@ footer { color: var(--expo-muted); margin-top: 18px; border-top: 1px solid #dbe7
     margin-right: 0 !important;
   }
 }
+
+/* FASE 28E2: Mobil – gjør hovedsiden flat og behold kun meningsfulle kortnivåer. */
+@media screen and (max-width: 700px) {
+  /*
+   * Kun den autentiserte hovedappen har nav rett foran main.
+   * Dermed beholdes innloggingssiden og offentlige kundevisninger som egne kort.
+   */
+  nav + main > section {
+    padding: 8px 2px 0 !important;
+    margin-bottom: 16px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /*
+   * Salgsoversikten har egne semantiske kort. Ytterrammen rundt statistikk
+   * og listen over aktive saker flates ut, mens selve statistikk- og sakskortene beholdes.
+   */
+  main.sales-main > .sales-summary-grid,
+  main.sales-main > .sales-panel {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  main.sales-main > .sales-summary-grid {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  main.sales-main > .sales-panel {
+    padding-top: 10px !important;
+  }
+}
