@@ -1,6 +1,7 @@
-// Expo ProffDok – FASE 26B.5.2
+// Expo ProffDok – FASE 26B.5.2 / FASE 29B4
 // Oppretter nedlastbar PDF fra faktisk publisert tilbudsversjon.
 // PDF-en er et kunde-/arkiveksemplar med priser inkl. mva. og uten interne varenummer.
+// FASE 29B4 gir firmalogoen en nøytral hvit header, tydeligere tilbudssum og ryddigere opsjoner.
 // Ingen database-, RLS-, Storage- eller Edge Function-endring.
 
 import {
@@ -68,7 +69,7 @@ function optionPriceText(option = {}) {
   const amountInclVat = getOfferTotal([option]) * 1.25;
   if (amountInclVat === 0) return "Ingen prisendring";
   const prefix = amountInclVat > 0 ? "+" : "-";
-  return `${prefix} ${formatNok(Math.abs(amountInclVat))} inkl. mva.`;
+  return `${prefix}${formatNok(Math.abs(amountInclVat))} inkl. mva.`;
 }
 
 function optionTypeText(option = {}, groupLines = []) {
@@ -112,7 +113,7 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
   const left = 18;
   const right = 192;
   const width = right - left;
-  const lineHeight = 5.2;
+  const lineHeight = 4.9;
   let y = 20;
 
   const offerCompany = {
@@ -175,9 +176,9 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
 
   const addSection = (title, text) => {
     if (!String(text || "").trim()) return;
-    ensureSpace(18);
+    ensureSpace(16);
     addText(title, { size: 11, style: "bold", after: 1 });
-    addText(text, { size: 9.5, after: 4 });
+    addText(text, { size: 9.5, after: 3 });
   };
 
   const addItemLinks = (item = {}) => {
@@ -196,21 +197,22 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
     }
   };
 
+  // Nøytral header gjør at både transparente logoer og logoer med hvit bildeflate
+  // presenteres uten synlig "boks" mot en farget bakgrunn.
+  pdf.setFillColor(255, 255, 255);
+  pdf.rect(0, 0, 210, 42, "F");
   pdf.setFillColor(16, 92, 106);
-  pdf.rect(0, 0, 210, 38, "F");
-  pdf.setTextColor(255, 255, 255);
+  pdf.rect(0, 0, 5, 42, "F");
+  pdf.setDrawColor(211, 226, 230);
+  pdf.setLineWidth(0.4);
+  pdf.line(left, 41, right, 41);
+
+  pdf.setTextColor(24, 59, 70);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(20);
   pdf.text("TILBUD", left, 17);
   pdf.setFontSize(9.5);
-  pdf.text(
-    offerCompany.companyName || "Expo ProffDok",
-    left,
-    25
-  );
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(7.5);
-  pdf.text("Publisert tilbud fra Expo ProffDok", left, 31);
+  pdf.text(offerCompany.companyName || "Expo ProffDok", left, 27);
 
   if (offerCompany.logoUrl) {
     try {
@@ -227,8 +229,8 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
         logoDataUrl,
         "Firmalogoen har ugyldig bildeformat."
       );
-      const maxWidth = 46;
-      const maxHeight = 24;
+      const maxWidth = 48;
+      const maxHeight = 26;
       const scale = Math.min(
         maxWidth / logoSize.width,
         maxHeight / logoSize.height
@@ -240,7 +242,7 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
         logoDataUrl,
         logoFormat,
         right - logoWidth,
-        (38 - logoHeight) / 2,
+        (42 - logoHeight) / 2,
         logoWidth,
         logoHeight
       );
@@ -249,11 +251,11 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
     }
   }
 
-  y = 48;
+  y = 51;
 
   addText(
     selectedRequest.offerTitle || selectedRequest.title || "Tilbud",
-    { size: 16, style: "bold", after: 5 }
+    { size: 16, style: "bold", after: 4 }
   );
   addText(`Tilbud nr.: ${selectedRequest.id || "-"}`, {
     style: "bold",
@@ -267,7 +269,7 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
   addText(`Arbeidssted: ${selectedRequest.address || "-"}`, { after: 1 });
   addText(
     `Gyldighet: ${selectedRequest.offerValidityDays || "30"} dager`,
-    { after: 5 }
+    { after: 4 }
   );
 
   const companyDetails = [
@@ -291,11 +293,11 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
     addText("Arbeider og priser", { size: 12, style: "bold", after: 1 });
     addText("Alle priser er oppgitt inkl. mva.", {
       size: 8.5,
-      after: 3,
+      after: 2,
     });
 
     offerGroups.forEach((group, groupIndex) => {
-      ensureSpace(18);
+      ensureSpace(17);
       addText(`${groupIndex + 1}. ${group.title}`, {
         size: 11,
         style: "bold",
@@ -317,7 +319,7 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
         group.options.forEach((option) => {
           const typeText = optionTypeText(option, group.lines);
           addText(
-            `${option.title || "Opsjon"} - ${typeText} - ${optionPriceText(
+            `${option.title || "Opsjon"} - ${typeText}: ${optionPriceText(
               option
             )}`,
             { size: 8.8, after: 1 }
@@ -338,21 +340,39 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
         `Sum ${group.title} inkl. mva.: ${formatNok(
           getOfferTotal(group.lines) * 1.25
         )}`,
-        { size: 9.5, style: "bold", after: 4 }
+        { size: 9.5, style: "bold", after: 3 }
       );
     });
   }
 
-  addText(
-    `Tilbudssum før valg av opsjoner inkl. mva.: ${formatNok(
-      offerTotal * 1.25
-    )}`,
-    { size: 11.5, style: "bold", after: 2 }
-  );
+  ensureSpace(24);
+  const totalBoxTop = y - 1;
+  pdf.setFillColor(239, 249, 250);
+  pdf.setDrawColor(173, 216, 220);
+  pdf.setLineWidth(0.4);
+  pdf.roundedRect(left, totalBoxTop, width, 20, 2, 2, "FD");
+  pdf.setTextColor(24, 59, 70);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(10);
+  pdf.text("Tilbudssum inkl. mva.", left + 5, totalBoxTop + 7);
+  if (offerOptions.length) {
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(7.8);
+    pdf.setTextColor(80, 100, 108);
+    pdf.text("Før valg av opsjoner", left + 5, totalBoxTop + 13);
+  }
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(15);
+  pdf.setTextColor(24, 59, 70);
+  pdf.text(formatNok(offerTotal * 1.25), right - 5, totalBoxTop + 12, {
+    align: "right",
+  });
+  y = totalBoxTop + 24;
+
   if (offerOptions.length) {
     addText(
       "Opsjoner er ikke inkludert i tilbudssummen før kunden eventuelt velger dem.",
-      { size: 8.5, after: 5 }
+      { size: 8.3, after: 3 }
     );
   }
 
@@ -366,10 +386,15 @@ export async function createPublishedOfferPdf({ selectedRequest }) {
   addSection("Vilkår", offerTerms);
   addSection("Betalingsbetingelser", offerPaymentTerms);
 
-  addText("Dokumentinformasjon", { size: 10.5, style: "bold", after: 1 });
+  addText("Dokumentinformasjon", {
+    size: 9,
+    style: "bold",
+    color: "#50646c",
+    after: 1,
+  });
   addText(
-    "Dette PDF-eksemplaret er opprettet fra den publiserte tilbudsversjonen i Expo ProffDok. Bedriften er selv ansvarlig for å laste ned og arkivere endelig tilbud i eget dokumentarkiv.",
-    { size: 8.5, after: 2 }
+    "Dokumentet er generert fra publisert tilbudsversjon i Expo ProffDok.",
+    { size: 7.8, color: "#50646c", after: 1 }
   );
 
   const pageCount = pdf.getNumberOfPages();
