@@ -1,3 +1,4 @@
+// FASE 29B5 UX: Når låst akseptbevis er opprettet kan brukeren fortsette direkte til prosjektaktivering fra samme kort.
 // Expo ProffDok – FASE 28C2 UX
 // Publisering av ny tilbudsversjon har tydelig hovedhandling som sender til kunde,
 // og fullført befaringsnotat vises som "Befaring gjennomført".
@@ -816,11 +817,11 @@ export default function SalesDetailView({
                       {selectedRequest.acceptanceProofFile?.url ? (
                         <div>
                           <p style={{ margin: "0 0 12px", color: "#176b42", fontWeight: 800 }}>
-                            Akseptbeviset er opprettet og lagret. Trykk på knappen under for å åpne PDF-en.
+                            Akseptbeviset er opprettet og lagret. Fortsett direkte til prosjektaktivering når du er klar.
                           </p>
                           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                           <a
-                            className="sales-primary-button"
+                            className="sales-secondary-button"
                             href={selectedRequest.acceptanceProofFile.url}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -839,6 +840,14 @@ export default function SalesDetailView({
                             <Download size={18} />
                             Last ned PDF
                           </a>
+                          <button
+                            className="sales-primary-button"
+                            type="button"
+                            onClick={openProjectActivation}
+                          >
+                            <Home size={18} />
+                            Fortsett til prosjektaktivering
+                          </button>
                           <span style={{ color: "#42606b", fontWeight: 700 }}>
                             Låst dokument - følger automatisk med til prosjektet.
                           </span>

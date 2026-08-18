@@ -1,7 +1,9 @@
-// Expo ProffDok – FASE 23D / FASE 28A1 / FASE 29B2 / FASE 29B3 / FASE 29B4
+// Expo ProffDok – FASE 23D / FASE 28A1 / FASE 29B2 / FASE 29B3 / FASE 29B4 / FASE 29B5
 // Samler Supabase-kall for Befaring / Tilbud / Aksept.
 // FASE 29B4 lar kun systemadministrator bruke eksplisitt valgt Sales-supportfirma.
 // Vanlige brukere beholder eksisterende firmascope uendret.
+// FASE 29B5 lar kundesynlige PDF-vedlegg fra aksepterte tilbudslinjer og valgte opsjoner
+// følge sikkert med til prosjektets Tilbud/kontrakt uten å kopiere selve Storage-filen.
 
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -194,16 +196,216 @@ export function fetchProjectsByOwner(client, userId) {
   return client.from("projects").select("id,data").eq("user_id", userId);
 }
 
-export function createSalesProject(client, projectRow) {
+const documentReferenceKey = (file = {}) => {
+  const path = String(
+    file?.path || file?.storagePath || file?.filePath || ""
+  ).trim();
+  if (path) return `path:${path}`;
+
+  const url = String(file?.url || file?.href || "").trim();
+  if (url) return `url:${url}`;
+
+  return `fallback:${String(file?.name || "").trim()}:${Number(file?.size || 0)}`;
+};
+
+const projectBoundSalesDocument = (file = {}, projectId = "") => {
+  const path = String(
+    file?.path || file?.storagePath || file?.filePath || ""
+  ).trim();
+  const isPrivateSalesDocument =
+    path &&
+    (isPrivateSalesLogicalPath(path) || isPrivateOfferAttachmentLogicalPath(path));
+
+  if (!isPrivateSalesDocument || !projectId) return file;
+
+  return {
+    ...file,
+    url: buildPrivateDocumentAppUrl({
+      path,
+      projectId,
+      role: "kunde",
+    }),
+  };
+};
+
+const collectAcceptedOfferAttachments = (payload = {}, projectId = "") => {
+  const groups = [
+    {
+      sourceType: "line",
+      items: Array.isArray(payload?.acceptedOfferLines)
+        ? payload.acceptedOfferLines
+        : [],
+    },
+    {
+      sourceType: "option",
+      items: Array.isArray(payload?.acceptedOptions)
+        ? payload.acceptedOptions
+        : [],
+    },
+  ];
+  const collected = [];
+
+  for (const group of groups) {
+    for (const item of group.items) {
+      const attachment = item?.attachmentFile;
+      if (!attachment || attachment?.customerVisible === false) continue;
+
+      const path = String(
+        attachment?.path || attachment?.storagePath || attachment?.filePath || ""
+      ).trim();
+      const url = String(attachment?.url || attachment?.href || "").trim();
+      if (!path && !url) continue;
+
+      collected.push(
+        projectBoundSalesDocument(
+          {
+            ...attachment,
+            id:
+              attachment.id ||
+              globalThis.crypto?.randomUUID?.() ||
+              `accepted-attachment-${Date.now()}-${Math.random()}`,
+            documentType: "accepted-offer-attachment",
+            acceptedOfferAttachment: true,
+            acceptedOfferSourceType: group.sourceType,
+            acceptedOfferSourceId: String(item?.id || ""),
+            acceptedOfferSourceLabel: String(
+              item?.title || item?.description || item?.mainPostTitle || ""
+            ).trim(),
+          },
+          projectId
+        )
+      );
+    }
+  }
+
+  return collected;
+};
+
+const mergeProjectAgreementFiles = (
+  existingFiles = [],
+  acceptedAttachments = [],
+  projectId = ""
+) => {
+  const seen = new Set();
+  const merged = [];
+
+  for (const sourceFile of [
+    ...(Array.isArray(existingFiles) ? existingFiles : []),
+    ...(Array.isArray(acceptedAttachments) ? acceptedAttachments : []),
+  ]) {
+    if (!sourceFile) continue;
+
+    const file = projectBoundSalesDocument(
+      {
+        ...sourceFile,
+        id:
+          sourceFile.id ||
+          globalThis.crypto?.randomUUID?.() ||
+          `agreement-file-${Date.now()}-${Math.random()}`,
+      },
+      projectId
+    );
+    const key = documentReferenceKey(file);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(file);
+  }
+
+  return merged;
+};
+
+async function enrichSalesProjectAgreementFiles(client, projectRow = {}) {
+  const projectId = String(projectRow?.id || "").trim();
+  const requestRef = String(
+    projectRow?.data?.project?.salesOrigin?.requestRef || ""
+  ).trim();
+
+  if (!projectId || !requestRef) return projectRow;
+
+  const { data: companyScopeId, error: scopeError } =
+    await resolveSalesCompanyScope(client);
+  if (scopeError) throw scopeError;
+  if (!companyScopeId) {
+    throw new Error("Kunne ikke fastslå firma ved prosjektaktivering.");
+  }
+
+  const { data: salesRequest, error: requestError } = await client
+    .from("sales_requests")
+    .select("payload")
+    .eq("company_id", companyScopeId)
+    .eq("request_ref", requestRef)
+    .maybeSingle();
+
+  if (requestError) throw requestError;
+  if (!salesRequest?.payload) {
+    throw new Error("Fant ikke akseptdata for salgssaken ved prosjektaktivering.");
+  }
+
+  const expectedVersionId = String(
+    projectRow?.data?.project?.salesOrigin?.acceptedOfferVersionId || ""
+  ).trim();
+  const storedVersionId = String(
+    salesRequest.payload?.acceptedOfferVersionId || ""
+  ).trim();
+
+  if (
+    expectedVersionId &&
+    storedVersionId &&
+    expectedVersionId !== storedVersionId
+  ) {
+    throw new Error(
+      "Akseptert tilbudsversjon stemmer ikke med prosjektgrunnlaget. Oppdater saken før aktivering."
+    );
+  }
+
+  const acceptedAttachments = collectAcceptedOfferAttachments(
+    salesRequest.payload,
+    projectId
+  );
+  const existingFiles = Array.isArray(projectRow?.data?.tilbud?.files)
+    ? projectRow.data.tilbud.files
+    : [];
+  const nextFiles = mergeProjectAgreementFiles(
+    existingFiles,
+    acceptedAttachments,
+    projectId
+  );
+
+  return {
+    ...projectRow,
+    data: {
+      ...(projectRow.data || {}),
+      tilbud: {
+        ...(projectRow?.data?.tilbud || {}),
+        files: nextFiles,
+      },
+    },
+  };
+}
+
+export async function createSalesProject(client, projectRow) {
   if (isSalesSupportMode()) {
-    return Promise.resolve({
+    return {
       data: null,
       error: new Error(
         "Prosjektaktivering er sperret i Sales-supportmodus. Gå tilbake til eget firma før prosjektet aktiveres."
       ),
-    });
+    };
   }
-  return client.from("projects").insert(projectRow).select("id").single();
+
+  try {
+    const enrichedProjectRow = await enrichSalesProjectAgreementFiles(
+      client,
+      projectRow
+    );
+    return client
+      .from("projects")
+      .insert(enrichedProjectRow)
+      .select("id")
+      .single();
+  } catch (error) {
+    return { data: null, error };
+  }
 }
 
 export function fetchProfileById(client, userId, profileSelect) {
