@@ -48,6 +48,9 @@ const helpCore = read(helpCorePath);
 if (salesModule) {
   requireText(salesModule, 'import SalesModuleCore from "./SalesModuleCore.jsx";', `${salesModulePath}: sikkerhets-wrapper rundt SalesModuleCore mangler.`);
   requireText(salesModule, '"expo-proffdok-sales-rehydrate"', `${salesModulePath}: recovery kan ikke remounte bare salgmodulen.`);
+  requireText(salesModule, "beginOfferDraftHydrationCycle", `${salesModulePath}: ny salgsmount starter ikke en ny tilbuds-hydration-cycle.`);
+  requireText(salesModule, 'window.addEventListener("beforeunload", blockPreHydrationUnloadSave)', `${salesModulePath}: sidegjenlasting sperrer ikke pre-hydration cleanup-save.`);
+  requireText(salesModule, 'window.addEventListener("pagehide", blockPreHydrationUnloadSave)', `${salesModulePath}: pagehide sperrer ikke pre-hydration cleanup-save.`);
 }
 
 if (salesModuleCore) {
@@ -72,6 +75,11 @@ if (localStorage) {
   requireText(localStorage, "appendAuditSnapshot(stableKey, clean)", `${localStoragePath}: reelle tilbudsendringer tas ikke inn i revisjonshistorikken.`);
   requireText(localStorage, 'line.lineType === "administration"', `${localStoragePath}: ubrukt administrasjonsrad skilles ikke fra reell tilbudslinje.`);
   requireText(localStorage, "pruneEmptyOfferDraftRows", `${localStoragePath}: tomme tilbudsrader filtreres ikke før lokal lagring.`);
+  requireText(localStorage, "export function beginOfferDraftHydrationCycle()", `${localStoragePath}: hydration-cycle kan ikke nullstilles ved ny mount/remount.`);
+  requireText(localStorage, "isOfferDraftHydratedForCurrentCycle", `${localStoragePath}: aktuell tilbudssak har ingen eksplisitt hydration-status.`);
+  requireText(localStorage, "if (requestId && !isOfferDraftHydratedForCurrentCycle(requestId))", `${localStoragePath}: pre-hydration autosave/cleanup er ikke blokkert.`);
+  requireText(localStorage, "hasMeaningfulKnownOfferDraft(requestId, stableKey)", `${localStoragePath}: eksisterende meningsfull kladd beskytter ikke mot tom initialform.`);
+  requireText(localStorage, "scheduleOfferDraftHydrated(requestId)", `${localStoragePath}: loadOfferDraft markerer ikke saken som hydrert etter innlasting.`);
 }
 
 if (localStorageCore) {
@@ -111,6 +119,7 @@ if (help) {
   requireText(help, '⚠ Lagret lokalt – venter på server betyr at endringene er sikret på denne enheten', `${helpPath}: Hjelp forklarer ikke lokal/offline-lagring.`);
   requireText(help, 'Hvis Expo ProffDok finner en nyere lokal kladd enn serverversjonen', `${helpPath}: Hjelp forklarer ikke recovery-valget.`);
   requireText(help, 'Fortsett på tilbud', `${helpPath}: Hjelp beskriver ikke videreføring av eksisterende tilbud.`);
+  requireText(help, 'En tom startkladd får ikke overskrive et eksisterende tilbud før den aktuelle saken er ferdig lastet inn.', `${helpPath}: Hjelp beskriver ikke hydration-sperren mot tom startkladd.`);
 }
 
 if (helpCore) {
