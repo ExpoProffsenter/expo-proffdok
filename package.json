@@ -1,8 +1,8 @@
 {
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "check:critical": "node scripts/critical-build-check.mjs",
-    "build": "node scripts/critical-build-check.mjs && vite build",
+    "check:critical": "node scripts/critical-build-check.mjs && node scripts/critical-sales-recovery-check.mjs",
+    "build": "node scripts/critical-build-check.mjs && node scripts/critical-sales-recovery-check.mjs && vite build",
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {

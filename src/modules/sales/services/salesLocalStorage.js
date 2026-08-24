@@ -1,234 +1,406 @@
-// Expo ProffDok – FASE 23C / FASE 29B3 / FASE 29B4
-// Lokal nettleserlagring for Befaring / Tilbud / Aksept.
-// I integrert app er Supabase eneste oppstartskilde for salgssaker. Lokal cache beholdes
-// som backup under økten, men får ikke hydrere gamle data før ferske serverdata er hentet.
-// FASE 29B4 skiller også lokal cache/navigasjon per valgt supportfirma.
+// Expo ProffDok – FASE 30C2
+// Sikkerhets-wrapper rundt lokal tilbudslagring.
+// Beholder komplett revisjonshistorikk for reelle tilbudsendringer, fjerner kun
+// strukturelt tomme rader og lar recovery prioritere siste faktiske offline-versjon.
 
-import {
-  STORAGE_KEY,
-  initialRequests,
-} from "../constants/salesConstants.js";
+export * from "./salesLocalStorageCore.js";
 
-function getLocalStorage() {
-  if (typeof window === "undefined" || !window.localStorage) return null;
-  return window.localStorage;
+import { STORAGE_KEY } from "../constants/salesConstants.js";
+import * as core from "./salesLocalStorageCore.js";
+
+const AUDIT_LIMIT = 20;
+const AUDIT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const AUDIT_TRANSITION_MS = 1800;
+const AUDIT_SUFFIX = ":audit-v2";
+const AUDIT_DECISION_SUFFIX = ":audit-decision-v2";
+const AUDIT_TRANSITION_SUFFIX = ":audit-transition-v2";
+const SERVER_BASELINE_PREFIX = `${STORAGE_KEY}:offer-server-baseline`;
+
+function storage() {
+  return typeof window !== "undefined" ? window.localStorage : null;
 }
 
-function getSupportCompanyScope() {
-  if (typeof window === "undefined") return "";
+function parseJson(store, key) {
   try {
-    return String(
-      new URLSearchParams(window.location.search).get("salesSupportCompany") || ""
-    ).trim();
-  } catch {
-    return "";
-  }
-}
-
-export function buildSalesStorageKey({
-  integrationMode = "preview",
-  companyName = "",
-  userId = "anonymous",
-} = {}) {
-  if (integrationMode !== "app") return STORAGE_KEY;
-
-  const companyScope = String(companyName || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  const userScope = String(userId || "anonymous");
-  const supportScope = getSupportCompanyScope();
-
-  return `${STORAGE_KEY}:${companyScope || "uten-firma"}:${userScope}${
-    supportScope ? `:support:${supportScope}` : ""
-  }`;
-}
-
-export function loadSalesNavigation(storageKey) {
-  try {
-    const storage = getLocalStorage();
-    if (!storage) return { mode: "list", selectedRequestId: null };
-
-    const storedNavigation = storage.getItem(`${storageKey}:navigation`);
-    const parsedNavigation = storedNavigation
-      ? JSON.parse(storedNavigation)
-      : null;
-
-    if (!parsedNavigation?.selectedRequestId) {
-      return { mode: "list", selectedRequestId: null };
-    }
-
-    return {
-      mode: parsedNavigation.mode || "detail",
-      selectedRequestId: parsedNavigation.selectedRequestId,
-    };
-  } catch {
-    return { mode: "list", selectedRequestId: null };
-  }
-}
-
-export function saveSalesNavigation(storageKey, mode, selectedRequestId) {
-  try {
-    const storage = getLocalStorage();
-    if (!storage) return;
-
-    storage.setItem(
-      `${storageKey}:navigation`,
-      JSON.stringify({ mode, selectedRequestId })
-    );
-  } catch {
-    // Navigasjon er kun et lokalt hjelpemiddel.
-  }
-}
-
-export function loadRequests(storageKey = STORAGE_KEY) {
-  if (storageKey !== STORAGE_KEY) return [];
-
-  try {
-    const storage = getLocalStorage();
-    if (!storage) return initialRequests;
-
-    const storedRequests = storage.getItem(storageKey);
-    if (!storedRequests) return initialRequests;
-
-    const parsedRequests = JSON.parse(storedRequests);
-    if (!Array.isArray(parsedRequests)) return initialRequests;
-
-    return parsedRequests;
-  } catch {
-    return initialRequests;
-  }
-}
-
-export function saveRequests(requests, storageKey = STORAGE_KEY) {
-  try {
-    const storage = getLocalStorage();
-    if (!storage) return;
-
-    storage.setItem(storageKey, JSON.stringify(requests));
-  } catch {
-    // Lokal preview-lagring er kun et sikkerhetsnett.
-  }
-}
-
-export function buildStableOfferDraftKey({
-  userId = "",
-  userEmail = "",
-  requestId = "",
-} = {}) {
-  const userScope = String(userId || userEmail || "innlogget-bruker")
-    .trim()
-    .toLowerCase();
-  const supportScope = getSupportCompanyScope();
-
-  return `${STORAGE_KEY}:offer-draft:${userScope}${
-    supportScope ? `:support:${supportScope}` : ""
-  }:${requestId || "uten-sak"}`;
-}
-
-export function buildScopedOfferDraftKey(storageKey, requestId = "") {
-  return `${storageKey}:offer-draft:${requestId || "uten-sak"}`;
-}
-
-export function saveOfferDraft(stableKey, formValue) {
-  const storage = getLocalStorage();
-  if (!storage) return;
-
-  storage.setItem(
-    stableKey,
-    JSON.stringify({
-      form: formValue,
-      savedAt: new Date().toISOString(),
-    })
-  );
-}
-
-export function loadOfferDraft({
-  requestId = "",
-  stableKey = "",
-  scopedKey = "",
-} = {}) {
-  if (!requestId) return null;
-
-  const storage = getLocalStorage();
-  if (!storage) return null;
-
-  const candidateKeys = [stableKey, scopedKey].filter(Boolean);
-  const legacySuffix = `:offer-draft:${requestId}`;
-  const supportScope = getSupportCompanyScope();
-
-  if (!supportScope) {
-    for (let index = 0; index < storage.length; index += 1) {
-      const key = storage.key(index);
-      if (key?.startsWith(STORAGE_KEY) && key.endsWith(legacySuffix)) {
-        candidateKeys.push(key);
-      }
-    }
-  }
-
-  return candidateKeys.reduce((latest, key) => {
-    try {
-      const parsed = JSON.parse(storage.getItem(key) || "null");
-      if (!parsed?.form) return latest;
-
-      const savedAt = Date.parse(parsed.savedAt || "") || 0;
-      return !latest || savedAt >= latest.savedAt
-        ? { form: parsed.form, savedAt }
-        : latest;
-    } catch {
-      return latest;
-    }
-  }, null)?.form || null;
-}
-
-export function clearOfferDraft(stableKey, scopedKey) {
-  const storage = getLocalStorage();
-  if (!storage) return;
-
-  [stableKey, scopedKey].filter(Boolean).forEach((key) => storage.removeItem(key));
-}
-
-export function buildInspectionDraftKey(storageKey, requestId = "") {
-  return `${storageKey}:inspection-draft:${requestId || "uten-sak"}`;
-}
-
-export function saveInspectionDraft(draftKey, formValue) {
-  try {
-    const storage = getLocalStorage();
-    if (!storage) return;
-
-    storage.setItem(
-      draftKey,
-      JSON.stringify({
-        form: formValue,
-        savedAt: new Date().toISOString(),
-      })
-    );
-  } catch {
-    // Lokal feature-kladd. Ingen database-/prosjektlagring.
-  }
-}
-
-export function loadInspectionDraft(draftKey) {
-  try {
-    const storage = getLocalStorage();
-    if (!storage) return null;
-
-    const storedDraft = storage.getItem(draftKey);
-    return storedDraft ? JSON.parse(storedDraft) : null;
+    const raw = store?.getItem?.(key);
+    return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
 
-export function clearInspectionDraft(draftKey) {
+function currentUserId(store) {
+  if (!store) return "";
   try {
-    const storage = getLocalStorage();
-    if (!storage) return;
-
-    storage.removeItem(draftKey);
+    for (let index = 0; index < store.length; index += 1) {
+      const key = store.key(index);
+      if (!key?.startsWith("sb-") || !key.includes("-auth-token")) continue;
+      const parsed = parseJson(store, key);
+      const id = String(
+        parsed?.user?.id ||
+          parsed?.currentSession?.user?.id ||
+          parsed?.session?.user?.id ||
+          ""
+      ).trim();
+      if (id) return id;
+    }
   } catch {
-    // Lokal feature-kladd.
+    return "";
   }
+  return "";
+}
+
+function isOfferDraftKeyForRequest(key, requestId) {
+  if (!key) return false;
+  const requestSuffix = `:${requestId}`;
+  const hasOfferDraftSegment = key.includes(":offer-draft:");
+  return hasOfferDraftSegment && key.endsWith(requestSuffix);
+}
+
+function stableKeyForRequest(requestId) {
+  const store = storage();
+  const userId = currentUserId(store);
+  if (!requestId || !store) return "";
+  if (userId) return core.buildStableOfferDraftKey({ userId, requestId });
+
+  // Bakoverkompatibel fallback dersom auth-token midlertidig ikke kan leses.
+  for (let index = 0; index < store.length; index += 1) {
+    const key = store.key(index);
+    if (isOfferDraftKeyForRequest(key, requestId)) return key;
+  }
+  return "";
+}
+
+function attachmentHasContent(file) {
+  return Boolean(String(file?.url || file?.path || file?.name || "").trim());
+}
+
+function lineHasUserContent(line = {}) {
+  if (line.lineType === "administration") {
+    return Boolean(
+      String(line.adminPercent ?? "").trim() ||
+        String(line.amount ?? "").trim() ||
+        String(line.internalProductNumber || "").trim() ||
+        String(line.productUrl || "").trim() ||
+        line.imageDataUrl ||
+        attachmentHasContent(line.attachmentFile)
+    );
+  }
+
+  return Boolean(
+    String(line.description || "").trim() ||
+      String(line.amount ?? "").trim() ||
+      String(line.internalProductNumber || "").trim() ||
+      String(line.productUrl || "").trim() ||
+      line.imageDataUrl ||
+      attachmentHasContent(line.attachmentFile)
+  );
+}
+
+function optionHasUserContent(option = {}) {
+  return Boolean(
+    String(option.title || "").trim() ||
+      String(option.description || "").trim() ||
+      String(option.amount ?? "").trim() ||
+      String(option.internalProductNumber || "").trim() ||
+      String(option.productUrl || "").trim() ||
+      option.imageDataUrl ||
+      attachmentHasContent(option.attachmentFile)
+  );
+}
+
+export function pruneEmptyOfferDraftRows(formValue = {}) {
+  return {
+    ...formValue,
+    lines: (Array.isArray(formValue.lines) ? formValue.lines : []).filter(lineHasUserContent),
+    options: (Array.isArray(formValue.options) ? formValue.options : []).filter(optionHasUserContent),
+  };
+}
+
+function compactForAudit(formValue = {}) {
+  const compactAttachment = (file) =>
+    file
+      ? {
+          id: file.id || "",
+          name: file.name || "",
+          path: file.path || "",
+          url: file.url || "",
+          type: file.type || "",
+          size: Number(file.size || 0),
+        }
+      : null;
+
+  const clean = pruneEmptyOfferDraftRows(formValue);
+  return {
+    ...clean,
+    lines: (clean.lines || []).map(({ imageDataUrl, ...line }) => ({
+      ...line,
+      imageDataUrl: "",
+      attachmentFile: compactAttachment(line.attachmentFile),
+    })),
+    options: (clean.options || []).map(({ imageDataUrl, ...option }) => ({
+      ...option,
+      imageDataUrl: "",
+      attachmentFile: compactAttachment(option.attachmentFile),
+    })),
+  };
+}
+
+function metrics(formValue = {}) {
+  const clean = pruneEmptyOfferDraftRows(formValue);
+  let size = 0;
+  try {
+    size = JSON.stringify(compactForAudit(clean)).length;
+  } catch {
+    size = 0;
+  }
+  return {
+    lines: (clean.lines || []).length,
+    options: (clean.options || []).length,
+    size,
+  };
+}
+
+function isMoreComplete(candidate, current) {
+  const a = metrics(candidate);
+  const b = metrics(current || {});
+  return Boolean(
+    a.lines > b.lines ||
+      a.options > b.options ||
+      (a.lines === b.lines && a.options === b.options && a.size > b.size * 1.08)
+  );
+}
+
+function auditKey(stableKey) {
+  return `${stableKey}${AUDIT_SUFFIX}`;
+}
+
+function auditDecisionKey(stableKey, candidateSavedAt, liveSavedAt) {
+  return `${stableKey}${AUDIT_DECISION_SUFFIX}:${candidateSavedAt}:${liveSavedAt}`;
+}
+
+function auditTransitionKey(stableKey) {
+  return `${stableKey}${AUDIT_TRANSITION_SUFFIX}`;
+}
+
+function appendAuditSnapshot(stableKey, formValue) {
+  const store = storage();
+  if (!store || !stableKey) return;
+
+  const form = compactForAudit(formValue);
+  const historyRaw = parseJson(store, auditKey(stableKey));
+  const history = Array.isArray(historyRaw) ? historyRaw : [];
+  const last = history[history.length - 1] || null;
+
+  let same = false;
+  try {
+    same = Boolean(last?.form) && JSON.stringify(last.form) === JSON.stringify(form);
+  } catch {
+    same = false;
+  }
+  if (same) return;
+
+  const next = [
+    ...history,
+    { form, savedAt: new Date().toISOString(), reason: "edit" },
+  ].slice(-AUDIT_LIMIT);
+
+  try {
+    store.setItem(auditKey(stableKey), JSON.stringify(next));
+  } catch {
+    // Core-lagringen fortsetter selv om revisjonshistorikken ikke får plass.
+  }
+}
+
+function latestServerSavedAt(requestId) {
+  const store = storage();
+  if (!store || !requestId) return 0;
+  const suffix = `:${requestId}`;
+  let latest = 0;
+
+  for (let index = 0; index < store.length; index += 1) {
+    const key = store.key(index);
+    if (!key?.startsWith(SERVER_BASELINE_PREFIX) || !key.endsWith(suffix)) continue;
+    const baseline = parseJson(store, key);
+    const savedAt = Date.parse(
+      baseline?.offerDraftSavedAt || baseline?.serverSavedAt || ""
+    ) || 0;
+    latest = Math.max(latest, savedAt);
+  }
+  return latest;
+}
+
+function activeAuditTransition(requestId) {
+  const store = storage();
+  const stableKey = stableKeyForRequest(requestId);
+  if (!store || !stableKey) return null;
+  const transition = parseJson(store, auditTransitionKey(stableKey));
+  if (!transition) return null;
+  const expiresAt = Date.parse(transition.expiresAt || "") || 0;
+  if (expiresAt <= Date.now()) {
+    store.removeItem(auditTransitionKey(stableKey));
+    return null;
+  }
+  return transition;
+}
+
+function installAuditTransition(stableKey, requestId) {
+  const store = storage();
+  if (!store || !stableKey) return;
+  const now = Date.now();
+  store.setItem(
+    auditTransitionKey(stableKey),
+    JSON.stringify({
+      type: "transition",
+      requestId,
+      createdAt: new Date(now).toISOString(),
+      expiresAt: new Date(now + AUDIT_TRANSITION_MS).toISOString(),
+    })
+  );
+}
+
+function preferredAuditRecovery(requestId) {
+  const store = storage();
+  const stableKey = stableKeyForRequest(requestId);
+  if (!store || !stableKey || !requestId) return null;
+
+  const live = parseJson(store, stableKey);
+  if (!live?.form) return null;
+
+  const liveSavedAt = Date.parse(live.savedAt || "") || 0;
+  const serverSavedAt = latestServerSavedAt(requestId);
+  const historyRaw = parseJson(store, auditKey(stableKey));
+  const history = Array.isArray(historyRaw) ? historyRaw : [];
+  const now = Date.now();
+
+  const candidate = history
+    .map((record) => ({ ...record, savedAtMs: Date.parse(record?.savedAt || "") || 0 }))
+    .filter(
+      (record) =>
+        record?.form &&
+        record.savedAtMs &&
+        now - record.savedAtMs <= AUDIT_MAX_AGE_MS &&
+        record.savedAtMs > serverSavedAt &&
+        isMoreComplete(record.form, live.form)
+    )
+    .sort((a, b) => b.savedAtMs - a.savedAtMs)[0];
+
+  if (!candidate) return null;
+
+  const decisionKey = auditDecisionKey(stableKey, candidate.savedAtMs, liveSavedAt);
+  const decision = parseJson(store, decisionKey);
+  if (decision?.choice) return null;
+
+  const local = metrics(candidate.form);
+  const current = metrics(live.form);
+
+  return {
+    type: "audit",
+    decisionKey,
+    liveKey: stableKey,
+    recoveryKey: auditKey(stableKey),
+    recoverySavedAt: candidate.savedAtMs,
+    recoverySavedAtText: candidate.savedAt || "",
+    liveSavedAt,
+    liveSavedAtText: live.savedAt || "",
+    localLines: local.lines,
+    localOptions: local.options,
+    serverLines: current.lines,
+    serverOptions: current.options,
+    auditCandidate: candidate,
+  };
+}
+
+function mergeRecoveredMedia(recovered = {}, live = {}) {
+  const liveLines = new Map((live.lines || []).map((line) => [String(line?.id || ""), line]));
+  const liveOptions = new Map((live.options || []).map((option) => [String(option?.id || ""), option]));
+  return {
+    ...recovered,
+    lines: (recovered.lines || []).map((line) => {
+      const old = liveLines.get(String(line?.id || ""));
+      return old
+        ? { ...line, imageDataUrl: line.imageDataUrl || old.imageDataUrl || "", imageName: line.imageName || old.imageName || "", attachmentFile: line.attachmentFile || old.attachmentFile || null }
+        : line;
+    }),
+    options: (recovered.options || []).map((option) => {
+      const old = liveOptions.get(String(option?.id || ""));
+      return old
+        ? { ...option, imageDataUrl: option.imageDataUrl || old.imageDataUrl || "", imageName: option.imageName || old.imageName || "", attachmentFile: option.attachmentFile || old.attachmentFile || null }
+        : option;
+    }),
+  };
+}
+
+export function saveOfferDraft(stableKey, formValue) {
+  const requestId = String(stableKey || "").split(":").pop() || "";
+  if (requestId && hasPendingOfferDraftRecovery(requestId)) return false;
+
+  const clean = pruneEmptyOfferDraftRows(formValue);
+  appendAuditSnapshot(stableKey, clean);
+  return core.saveOfferDraft(stableKey, clean);
+}
+
+export function loadOfferDraft(input = {}) {
+  const requestId = typeof input === "string" ? input : String(input?.requestId || "");
+  const transition = activeAuditTransition(requestId);
+  if (transition) {
+    const store = storage();
+    const stableKey = stableKeyForRequest(requestId);
+    return parseJson(store, stableKey)?.form || null;
+  }
+
+  const loaded = core.loadOfferDraft(input);
+  const auditRecovery = preferredAuditRecovery(requestId);
+  if (auditRecovery) {
+    const store = storage();
+    return parseJson(store, auditRecovery.liveKey)?.form || loaded;
+  }
+  return loaded;
+}
+
+export function getPendingOfferDraftRecovery(requestId = "") {
+  const transition = activeAuditTransition(requestId);
+  if (transition) return transition;
+  return preferredAuditRecovery(requestId) || core.getPendingOfferDraftRecovery(requestId);
+}
+
+export function hasPendingOfferDraftRecovery(requestId = "") {
+  return Boolean(getPendingOfferDraftRecovery(requestId));
+}
+
+export function resolvePendingOfferDraftRecovery(requestId = "", choice = "") {
+  if (!["local", "server"].includes(choice)) return false;
+
+  const store = storage();
+  const auditRecovery = preferredAuditRecovery(requestId);
+  if (!store || !auditRecovery) {
+    return core.resolvePendingOfferDraftRecovery(requestId, choice);
+  }
+
+  const corePending = core.getPendingOfferDraftRecovery(requestId);
+  if (corePending) core.resolvePendingOfferDraftRecovery(requestId, "server");
+
+  if (choice === "local") {
+    const live = parseJson(store, auditRecovery.liveKey);
+    const recovered = mergeRecoveredMedia(auditRecovery.auditCandidate.form, live?.form || {});
+    const recoveredRecord = {
+      form: pruneEmptyOfferDraftRows(recovered),
+      savedAt: new Date().toISOString(),
+    };
+    store.setItem(auditRecovery.liveKey, JSON.stringify(recoveredRecord));
+    appendAuditSnapshot(auditRecovery.liveKey, recoveredRecord.form);
+  }
+
+  store.setItem(
+    auditRecovery.decisionKey,
+    JSON.stringify({ choice, decidedAt: new Date().toISOString() })
+  );
+  installAuditTransition(auditRecovery.liveKey, requestId);
+  return true;
+}
+
+export function clearOfferDraft(stableKey, scopedKey) {
+  // Core rydder aktiv live-kladd og markerer bekreftet serverlagring.
+  // Audit beholdes i opptil syv dager som et bevisst sikkerhetsnett.
+  return core.clearOfferDraft(stableKey, scopedKey);
 }

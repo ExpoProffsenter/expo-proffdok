@@ -33,7 +33,10 @@ export function createProjectOverviewTools({
   }
 
   function renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace }) {
+    const salesOriginRef = String(project?.salesOrigin?.requestRef || "").trim();
+    const salesPublicToken = String(project?.salesOrigin?.publicToken || "").trim();
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektoversikt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+      salesOriginRef ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "data-expo-sales-origin-ref": salesOriginRef, "data-expo-sales-public-token": salesPublicToken, style: { display: "none" }, "aria-hidden": "true" }) : null,
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her finner du kunde, kontaktinformasjon, adresse og prosjektansvarlig samlet. Feltene kan redigeres i seksjonen under." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideGrid", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "guideCard", children: [
@@ -62,6 +65,7 @@ export function createProjectOverviewTools({
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }, children: [
+        salesOriginRef ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("sales"), children: "Åpne salgsgrunnlag" }) : null,
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => goToTab("chat"), children: "Åpne chat" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: "← Til startside" })
       ] })
@@ -74,7 +78,7 @@ export function createProjectOverviewTools({
     projectDescriptionTemplates,
     appendProjectDescriptionTemplate
   }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektbeskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { className: "projectInfoSection", title: "Prosjektbeskrivelse", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Her kan prosjektleder legge inn praktisk prosjektbeskrivelse og informasjon som kunde og underentreprenører skal kunne lese i sine prosjektlenker." }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, { title: "Standardtekster", defaultOpen: !hasValue(project.projectDescription), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Trykk på en mal for å legge den inn nederst i prosjektbeskrivelsen. Teksten kan redigeres fritt etterpå." }),
