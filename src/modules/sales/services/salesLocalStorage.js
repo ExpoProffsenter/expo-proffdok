@@ -1,7 +1,9 @@
-// Expo ProffDok – FASE 30C2
+// Expo ProffDok – FASE 30C3 / FASE 30C2
 // Sikkerhets-wrapper rundt lokal tilbudslagring.
 // Beholder komplett revisjonshistorikk for reelle tilbudsendringer, fjerner kun
 // strukturelt tomme rader og lar recovery prioritere siste faktiske offline-versjon.
+// FASE 30C3 blokkerer lagring fra en ny SalesModule-cycle til aktuell tilbudssak
+// faktisk er lest inn. Dette hindrer at tom initialform blir «siste kladd» ved remount.
 
 export * from "./salesLocalStorageCore.js";
 
@@ -15,6 +17,38 @@ const AUDIT_SUFFIX = ":audit-v2";
 const AUDIT_DECISION_SUFFIX = ":audit-decision-v2";
 const AUDIT_TRANSITION_SUFFIX = ":audit-transition-v2";
 const SERVER_BASELINE_PREFIX = `${STORAGE_KEY}:offer-server-baseline`;
+
+let offerDraftHydrationCycle = 0;
+const hydratedOfferDraftRequests = new Map();
+
+export function beginOfferDraftHydrationCycle() {
+  offerDraftHydrationCycle += 1;
+  hydratedOfferDraftRequests.clear();
+  return offerDraftHydrationCycle;
+}
+
+function markOfferDraftHydrated(requestId = "", cycle = offerDraftHydrationCycle) {
+  const normalized = String(requestId || "").trim();
+  if (!normalized || cycle !== offerDraftHydrationCycle) return false;
+  hydratedOfferDraftRequests.set(normalized, cycle);
+  return true;
+}
+
+function scheduleOfferDraftHydrated(requestId = "") {
+  const normalized = String(requestId || "").trim();
+  if (!normalized) return;
+  const cycle = offerDraftHydrationCycle;
+  window.setTimeout(() => {
+    markOfferDraftHydrated(normalized, cycle);
+  }, 0);
+}
+
+export function isOfferDraftHydratedForCurrentCycle(requestId = "") {
+  const normalized = String(requestId || "").trim();
+  return Boolean(
+    normalized && hydratedOfferDraftRequests.get(normalized) === offerDraftHydrationCycle
+  );
+}
 
 function storage() {
   return typeof window !== "undefined" ? window.localStorage : null;
@@ -183,6 +217,41 @@ function auditTransitionKey(stableKey) {
   return `${stableKey}${AUDIT_TRANSITION_SUFFIX}`;
 }
 
+function hasMeaningfulKnownOfferDraft(requestId, stableKey) {
+  const store = storage();
+  if (!store || !requestId) return false;
+
+  const live = stableKey ? parseJson(store, stableKey) : null;
+  const liveMetrics = metrics(live?.form || {});
+  if (liveMetrics.lines > 0 || liveMetrics.options > 0) return true;
+
+  const historyRaw = stableKey ? parseJson(store, auditKey(stableKey)) : null;
+  const history = Array.isArray(historyRaw) ? historyRaw : [];
+  if (
+    history.some((record) => {
+      const recordMetrics = metrics(record?.form || {});
+      return recordMetrics.lines > 0 || recordMetrics.options > 0;
+    })
+  ) {
+    return true;
+  }
+
+  const suffix = `:${requestId}`;
+  for (let index = 0; index < store.length; index += 1) {
+    const key = store.key(index);
+    if (!key?.startsWith(SERVER_BASELINE_PREFIX) || !key.endsWith(suffix)) continue;
+    const baseline = parseJson(store, key);
+    if (
+      Number(baseline?.meaningfulLines || 0) > 0 ||
+      Number(baseline?.meaningfulOptions || 0) > 0
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function appendAuditSnapshot(stableKey, formValue) {
   const store = storage();
   if (!store || !stableKey) return;
@@ -336,6 +405,18 @@ export function saveOfferDraft(stableKey, formValue) {
   if (requestId && hasPendingOfferDraftRecovery(requestId)) return false;
 
   const clean = pruneEmptyOfferDraftRows(formValue);
+
+  if (requestId && !isOfferDraftHydratedForCurrentCycle(requestId)) {
+    if (hasMeaningfulKnownOfferDraft(requestId, stableKey)) {
+      return false;
+    }
+
+    // Ny sak uten tidligere tilbud kan starte direkte i tilbudsbyggeren uten en
+    // separat loadOfferDraft-runde. Når ingen tidligere meningsfull kladd finnes,
+    // er første skriveforsøk derfor trygt å autorisere i denne cyclen.
+    markOfferDraftHydrated(requestId);
+  }
+
   appendAuditSnapshot(stableKey, clean);
   return core.saveOfferDraft(stableKey, clean);
 }
@@ -346,15 +427,21 @@ export function loadOfferDraft(input = {}) {
   if (transition) {
     const store = storage();
     const stableKey = stableKeyForRequest(requestId);
-    return parseJson(store, stableKey)?.form || null;
+    const form = parseJson(store, stableKey)?.form || null;
+    scheduleOfferDraftHydrated(requestId);
+    return form;
   }
 
   const loaded = core.loadOfferDraft(input);
   const auditRecovery = preferredAuditRecovery(requestId);
   if (auditRecovery) {
     const store = storage();
-    return parseJson(store, auditRecovery.liveKey)?.form || loaded;
+    const form = parseJson(store, auditRecovery.liveKey)?.form || loaded;
+    scheduleOfferDraftHydrated(requestId);
+    return form;
   }
+
+  scheduleOfferDraftHydrated(requestId);
   return loaded;
 }
 

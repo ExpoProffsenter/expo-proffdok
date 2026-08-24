@@ -1,4 +1,4 @@
-// FASE 30C2 HJELP: Tilbudskladd, recovery, lagringsstatus og trygg vei fra befaring til tilbud.
+// FASE 30C3 / FASE 30C2 HJELP: Tilbudskladd, recovery, lagringsstatus og trygg vei fra befaring til tilbud.
 import React from "react";
 import { FileText } from "lucide-react";
 import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
@@ -40,6 +40,7 @@ export function createHelpCenter(args) {
             React.createElement("li", null, "Ved serverfeil beholdes endringene lokalt. Ikke slett nettleserdata eller bytt enhet før kladden er synkronisert."),
             React.createElement("li", null, "Hvis Expo ProffDok finner en nyere lokal kladd enn serverversjonen, stoppes autosave og du må velge hvilken versjon du vil fortsette med."),
             React.createElement("li", null, "Lokal tilbudshistorikk beholder flere revisjoner slik at en nyere kladd kan gjenopprettes etter nettbrudd, lukket fane eller ny innlogging."),
+            React.createElement("li", null, "En tom startkladd får ikke overskrive et eksisterende tilbud før den aktuelle saken er ferdig lastet inn."),
             React.createElement("li", null, "Tomme tilbudsrader ignoreres ved lagring, mens påbegynte linjer fortsatt må ha nødvendig beskrivelse og beløp før tilbudet kan lagres ferdig.")
           )
         ),
