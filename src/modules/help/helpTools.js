@@ -54,7 +54,7 @@ export function createHelpCenter(args) {
             React.createElement("li", null, "Nye befaringsbilder sikres først lokalt på enheten før de vises i befaringsnotatet."),
             React.createElement("li", null, "Lokalt sikrede bilder kan gjenopprettes etter reload eller appbytte så lenge nettleserdata ikke slettes."),
             React.createElement("li", null, "Befaringsbildene lastes fortsatt til server når du trykker Lagre befaringsnotat."),
-            React.createElement("li", null, "Ved full reload mens befaringsnotatet er åpent lander du først tilbake på saken. Åpne befaringsnotatet igjen for å hente lokal kladd og lokalt sikrede bilder."),
+            React.createElement("li", null, "Ved full reload fra Befaring/Tilbud åpner appen salgfanen og aktuell sak igjen. Åpne befaringsnotatet for å hente lokal kladd og lokalt sikrede bilder."),
             React.createElement("li", null, "Ikke slett nettleserdata eller bytt enhet før nye bilder er lagret på server.")
           )
         ),
