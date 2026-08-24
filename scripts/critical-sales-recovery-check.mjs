@@ -93,7 +93,7 @@ if (inspectionNote) {
   requireText(inspectionNote, "localDraftKey: record.key", `${inspectionNotePath}: lokalt sikret bilde merkes ikke med varig lokal nøkkel.`);
   requireText(inspectionNote, "await removeInspectionPhotoBlobByKey(photo.localDraftKey)", `${inspectionNotePath}: fjernede bilder blir liggende og kan gjenoppstå fra IndexedDB.`);
   requireText(inspectionNote, "Lokalt sikrede bilder beholdes på denne enheten", `${inspectionNotePath}: brukeren får ikke korrekt varsel om lokal vs serverlagring.`);
-  requireText(inspectionNote, "Sikrer ${photoReadCount} bilde(r) på denne enheten", `${inspectionNotePath}: lokal sikringsstatus er ikke synlig under bildevalg.`);
+  requireText(inspectionNote, "Sikrer {photoReadCount} bilde(r) på denne enheten", `${inspectionNotePath}: lokal sikringsstatus er ikke synlig under bildevalg.`);
   forbidText(inspectionNote, "reader.readAsDataURL(file)", `${inspectionNotePath}: nye mobilbilder går fortsatt via stor DataURL før lokal sikkerhetslagring.`);
 }
 
