@@ -37,8 +37,12 @@ const boundaryPath = "src/modules/app/AppErrorBoundary.jsx";
 const salesListPath = "src/modules/sales/components/SalesListView.jsx";
 const salesRequestPath = "src/modules/sales/components/SalesRequestForm.jsx";
 const salesSurveyPath = "src/modules/sales/components/SalesSurveyPlan.jsx";
+const salesDetailPath = "src/modules/sales/components/SalesDetailView.jsx";
+const salesDetailCorePath = "src/modules/sales/components/SalesDetailViewCore.jsx";
 const salesActivationPath = "src/modules/sales/components/SalesProjectActivation.jsx";
 const salesSupabasePath = "src/modules/sales/services/salesSupabase.js";
+const salesSupabaseBasePath = "src/modules/sales/services/salesSupabaseBase.js";
+const salesLocalStoragePath = "src/modules/sales/services/salesLocalStorage.js";
 const bootstrapPath = "src/bootstrap.jsx";
 const privateDocumentRedirectPath = "src/modules/documents/privateDocumentRedirect.js";
 
@@ -48,8 +52,13 @@ const boundarySource = readRequiredFile(boundaryPath);
 const salesListSource = readRequiredFile(salesListPath);
 const salesRequestSource = readRequiredFile(salesRequestPath);
 const salesSurveySource = readRequiredFile(salesSurveyPath);
+const salesDetailSource = readRequiredFile(salesDetailPath);
+const salesDetailCoreSource = readRequiredFile(salesDetailCorePath);
 const salesActivationSource = readRequiredFile(salesActivationPath);
 const salesSupabaseSource = readRequiredFile(salesSupabasePath);
+const salesSupabaseBaseSource = readRequiredFile(salesSupabaseBasePath);
+const salesSupabaseGuardSource = `${salesSupabaseSource}\n${salesSupabaseBaseSource}`;
+const salesLocalStorageSource = readRequiredFile(salesLocalStoragePath);
 const bootstrapSource = readRequiredFile(bootstrapPath);
 const privateDocumentRedirectSource = readRequiredFile(privateDocumentRedirectPath);
 
@@ -165,6 +174,62 @@ if (salesSurveySource) {
   );
 }
 
+// Befaring -> tilbud: både befaringsnotat og direkte tilbud uten notat er godkjente flyter.
+if (salesDetailCoreSource) {
+  requireText(
+    salesDetailCoreSource,
+    'data-sales-regression-inspection-note="true"',
+    `${salesDetailCorePath}: Befaring mangler eksplisitt vei til befaringsnotat.`
+  );
+  requireText(
+    salesDetailCoreSource,
+    'data-sales-regression-direct-offer="true"',
+    `${salesDetailCorePath}: Befaring kan ikke lenger gå direkte til tilbud uten befaringsnotat.`
+  );
+  requireText(
+    salesDetailCoreSource,
+    "Opprett tilbud uten befaringsnotat",
+    `${salesDetailCorePath}: teksten for direkte tilbud uten befaringsnotat mangler.`
+  );
+}
+
+if (salesDetailSource) {
+  requireText(
+    salesDetailSource,
+    'import SalesDetailViewCore from "./SalesDetailViewCore.jsx";',
+    `${salesDetailPath}: presentasjons-wrapper rundt SalesDetailViewCore mangler.`
+  );
+  requireText(
+    salesDetailSource,
+    "hasMeaningfulOfferDraft",
+    `${salesDetailPath}: eksisterende tilbudskladd detekteres ikke før label velges.`
+  );
+  requireText(
+    salesDetailSource,
+    'return "Fortsett på tilbud";',
+    `${salesDetailPath}: eksisterende Befaring-tilbud vises ikke som «Fortsett på tilbud».`
+  );
+}
+
+// Tilbudsrecovery: lokal kladd lagres på stabil nøkkel med bruker-ID før saksnummer.
+if (salesLocalStorageSource) {
+  requireText(
+    salesLocalStorageSource,
+    'const requestSuffix = `:${requestId}`;',
+    `${salesLocalStoragePath}: recovery mangler generell requestId-suffiks for stabil tilbudskladd.`
+  );
+  requireText(
+    salesLocalStorageSource,
+    'key.includes(":offer-draft:")',
+    `${salesLocalStoragePath}: recovery skanner ikke tilbudskladdnøkler eksplisitt.`
+  );
+  requireText(
+    salesLocalStorageSource,
+    "key.endsWith(requestSuffix)",
+    `${salesLocalStoragePath}: stabil tilbudskladd med bruker-ID kan ikke finnes igjen.`
+  );
+}
+
 // Prosjektaktivering: dobbel sperre i både presentasjon og service-lag.
 if (salesActivationSource) {
   requireText(
@@ -174,9 +239,9 @@ if (salesActivationSource) {
   );
 }
 
-if (salesSupabaseSource) {
+if (salesSupabaseGuardSource) {
   const activationSection = sectionBetween(
-    salesSupabaseSource,
+    salesSupabaseGuardSource,
     "export async function createSalesProject(client, projectRow)",
     "export function fetchProfileById",
     "createSalesProject"
@@ -186,30 +251,29 @@ if (salesSupabaseSource) {
     requireText(
       activationSection,
       "if (isSalesSupportMode()) {",
-      `${salesSupabasePath}: service-laget tillater prosjektaktivering i supportmodus.`
+      `${salesSupabaseBasePath}: service-laget tillater prosjektaktivering i supportmodus.`
     );
   }
 
-  // Aksepterte kundesynlige tilbudsvedlegg skal følge prosjektet uten public Storage-kopi.
   requireText(
-    salesSupabaseSource,
+    salesSupabaseGuardSource,
     "acceptedOfferLines",
-    `${salesSupabasePath}: aksepterte tilbudslinjer overføres ikke til prosjektgrunnlaget.`
+    `${salesSupabaseBasePath}: aksepterte tilbudslinjer overføres ikke til prosjektgrunnlaget.`
   );
   requireText(
-    salesSupabaseSource,
+    salesSupabaseGuardSource,
     "acceptedOptions",
-    `${salesSupabasePath}: valgte aksepterte opsjoner overføres ikke til prosjektgrunnlaget.`
+    `${salesSupabaseBasePath}: valgte aksepterte opsjoner overføres ikke til prosjektgrunnlaget.`
   );
   requireText(
-    salesSupabaseSource,
+    salesSupabaseGuardSource,
     'documentType: "accepted-offer-attachment"',
-    `${salesSupabasePath}: aksepterte tilbudsvedlegg mangler dokumentmerking.`
+    `${salesSupabaseBasePath}: aksepterte tilbudsvedlegg mangler dokumentmerking.`
   );
   requireText(
-    salesSupabaseSource,
+    salesSupabaseGuardSource,
     'role: "kunde"',
-    `${salesSupabasePath}: prosjektbundne private salgsdokumenter mangler kunderolle.`
+    `${salesSupabaseBasePath}: prosjektbundne private salgsdokumenter mangler kunderolle.`
   );
 }
 

@@ -5,12 +5,17 @@
 // aktiv app åpnes på samme origin slik at Preview-/produksjonssesjonen følger med.
 // Kunde-/UE-portal åpner private dokumenter i samme fane slik at verifisert portalkode
 // forblir tilgjengelig i sessionStorage uten å legges i URL-en.
+// FASE 29E1: Aktivert prosjekt bruker gjennomføringsflyt; tidligere salgsflyt beholdes som Salgsgrunnlag.
 import { installGlobalStorageImageOptimizer } from './modules/images/imageUploadOptimizer.js';
+import { installProjectWorkflowUx } from './modules/project/projectWorkflowUx.js';
+import { installSalesInspectionHistoryUx } from './modules/project/salesInspectionHistoryUx.js';
 
 installGlobalStorageImageOptimizer({
   maxDimension: 2560,
   quality: 0.85
 });
+installProjectWorkflowUx();
+installSalesInspectionHistoryUx();
 
 const SALES_IMAGE_LIGHTBOX_ID = 'sales-customer-image-lightbox';
 

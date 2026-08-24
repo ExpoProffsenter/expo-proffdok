@@ -1,13 +1,20 @@
-// Expo ProffDok – FASE 28B1 / FASE 29B4 / FASE 29C1
+// Expo ProffDok – FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// FASE 30C2 viser ekte lastestatus mens salgssaker hentes, slik at 0 aldri presenteres
+// som et ferdig resultat mens Supabase fortsatt arbeider eller har feilet.
 // Viser når kundetilbud faktisk ble sendt på e-post og markerer tilbud som bør
 // følges opp etter 7 dager uten aksept. I Systemadmin-support kan eksisterende
 // saker åpnes, men nye forespørsler opprettes ikke uten ansvarlig i målbedriften.
 // Expo ProffDok – FASE 23H
 // Presentasjonskomponent for saksoversikten i Befaring / Tilbud / Aksept.
 
-import { ClipboardList, Home, Plus, Ruler, Send } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ClipboardList, Home, Hourglass, Plus, Ruler, Send } from "lucide-react";
 import SalesSupportNotice from "./SalesSupportNotice.jsx";
-import { getSalesSupportCompanyId } from "../services/salesSupabase.js";
+import {
+  getSalesRequestsLoadState,
+  getSalesSupportCompanyId,
+  subscribeSalesRequestsLoadState,
+} from "../services/salesSupabase.js";
 
 const iconMap = {
   clipboard: ClipboardList,
@@ -61,6 +68,25 @@ export default function SalesListView({
   onOpenRequest,
 }) {
   const supportMode = Boolean(getSalesSupportCompanyId());
+  const [loadState, setLoadState] = useState(() => getSalesRequestsLoadState());
+  const [longWait, setLongWait] = useState(false);
+
+  useEffect(() => subscribeSalesRequestsLoadState(setLoadState), []);
+
+  useEffect(() => {
+    if (["ready", "error"].includes(loadState.status)) {
+      setLongWait(false);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => setLongWait(true), 5000);
+    return () => window.clearTimeout(timer);
+  }, [loadState.status]);
+
+  const hasAnyRequest = activeRequests.length > 0 || activatedRequests.length > 0;
+  const requestsLoading =
+    !hasAnyRequest && ["idle", "loading"].includes(loadState.status);
+  const requestsLoadFailed = !hasAnyRequest && loadState.status === "error";
 
   return (
     <div className="sales-app">
@@ -112,11 +138,46 @@ export default function SalesListView({
             </p>
           ) : null}
 
+          {requestsLoading ? (
+            <div
+              role="status"
+              aria-live="polite"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                marginBottom: 18,
+                padding: "16px 18px",
+                border: "1px solid #9edce0",
+                borderRadius: 16,
+                background: "#e9fafb",
+                color: "#174f58",
+                fontWeight: 900,
+                boxShadow: "0 8px 24px rgba(16, 141, 151, 0.08)",
+              }}
+            >
+              <Hourglass size={28} aria-hidden="true" />
+              <div>
+                <div>Henter saker fra server …</div>
+                {longWait ? (
+                  <div
+                    className="sales-subtitle"
+                    style={{ marginTop: 4, fontWeight: 700 }}
+                  >
+                    Dette tar lengre tid enn normalt. Vi venter fortsatt på serveren.
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
           <section className="sales-summary-grid" aria-label="Oversikt">
             {summary.map((item) => (
               <article className="sales-summary-card" key={item.label}>
                 <span className="sales-summary-label">{item.label}</span>
-                <strong className="sales-summary-value">{item.value}</strong>
+                <strong className="sales-summary-value">
+                  {requestsLoading ? "…" : requestsLoadFailed ? "–" : item.value}
+                </strong>
               </article>
             ))}
           </section>
@@ -129,7 +190,32 @@ export default function SalesListView({
             </div>
 
             <div className="sales-request-list">
-              {activeRequests.length === 0 ? (
+              {requestsLoadFailed ? (
+                <div
+                  role="alert"
+                  style={{
+                    padding: "16px 18px",
+                    border: "1px solid #fed7aa",
+                    borderRadius: 16,
+                    background: "#fff7ed",
+                    color: "#7c2d12",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <strong>Sakene kunne ikke hentes fra serveren.</strong>
+                  <div style={{ marginTop: 4 }}>
+                    Vi viser derfor ikke 0 som om listen er tom. Vent litt og åpne
+                    Befaring/Tilbud på nytt når forbindelsen er stabil.
+                  </div>
+                  {loadState.error ? (
+                    <div style={{ marginTop: 6, fontSize: 13 }}>
+                      {loadState.error}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {!requestsLoading && !requestsLoadFailed && activeRequests.length === 0 ? (
                 <p className="sales-subtitle">
                   {supportMode
                     ? "Ingen aktive forespørsler i dette firmaet."
