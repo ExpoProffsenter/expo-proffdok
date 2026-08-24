@@ -14,6 +14,8 @@ import {
   saveSalesNavigation,
 } from "./services/salesLocalStorage.js";
 
+const SALES_RELOAD_TAB_KEY = "expo-proffdok:sales:restore-tab-after-reload";
+
 function protectInspectionDraftNavigation(props = {}) {
   const salesStorageKey = buildSalesStorageKey({
     integrationMode: props.integrationMode || "preview",
@@ -35,6 +37,15 @@ function protectInspectionDraftNavigation(props = {}) {
   }
 }
 
+function markSalesTabForReload(props = {}) {
+  if (props.integrationMode !== "app") return;
+  try {
+    window.sessionStorage?.setItem(SALES_RELOAD_TAB_KEY, "1");
+  } catch {
+    // Engangsmarkøren er kun navigasjonshjelp. Salgsdata påvirkes ikke.
+  }
+}
+
 export default function SalesModule(props) {
   const [instanceKey, setInstanceKey] = useState(() => {
     beginOfferDraftHydrationCycle();
@@ -49,6 +60,7 @@ export default function SalesModule(props) {
     };
 
     const blockPreHydrationUnloadSave = () => {
+      markSalesTabForReload(props);
       beginOfferDraftHydrationCycle();
     };
 
