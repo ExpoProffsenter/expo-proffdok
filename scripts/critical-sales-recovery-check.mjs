@@ -19,6 +19,7 @@ function forbidText(source, needle, message) {
   if (source.includes(needle)) failures.push(message);
 }
 
+const bootstrapPath = "src/bootstrap.jsx";
 const salesModulePath = "src/modules/sales/SalesModule.jsx";
 const salesModuleCorePath = "src/modules/sales/SalesModuleCore.jsx";
 const offerBuilderPath = "src/modules/sales/components/SalesOfferBuilder.jsx";
@@ -34,6 +35,7 @@ const offerLogicPath = "src/modules/sales/utils/salesOfferLogic.js";
 const helpPath = "src/modules/help/helpTools.js";
 const helpCorePath = "src/modules/help/helpToolsCore.js";
 
+const bootstrap = read(bootstrapPath);
 const salesModule = read(salesModulePath);
 const salesModuleCore = read(salesModuleCorePath);
 const offerBuilder = read(offerBuilderPath);
@@ -49,6 +51,14 @@ const offerLogic = read(offerLogicPath);
 const help = read(helpPath);
 const helpCore = read(helpCorePath);
 
+if (bootstrap) {
+  requireText(bootstrap, "expo-proffdok:sales:restore-tab-after-reload", `${bootstrapPath}: engangsmarkør for retur til salgfanen mangler.`);
+  requireText(bootstrap, "function restoreSalesTabAfterReload()", `${bootstrapPath}: bootstrap kan ikke gjenåpne salgfanen etter full reload.`);
+  requireText(bootstrap, "document.querySelectorAll('button')", `${bootstrapPath}: salgfanen finnes ikke kontrollert etter at hovedappen er rendret.`);
+  requireText(bootstrap, ".trim() === 'Befaring/Tilbud'", `${bootstrapPath}: reload-retur peker ikke eksplisitt på Befaring/Tilbud.`);
+  requireText(bootstrap, ".then(() => restoreSalesTabAfterReload())", `${bootstrapPath}: reload-retur kjøres ikke etter lasting av main.`);
+}
+
 if (salesModule) {
   requireText(salesModule, 'import SalesModuleCore from "./SalesModuleCore.jsx";', `${salesModulePath}: sikkerhets-wrapper rundt SalesModuleCore mangler.`);
   requireText(salesModule, '"expo-proffdok-sales-rehydrate"', `${salesModulePath}: recovery kan ikke remounte bare salgmodulen.`);
@@ -58,6 +68,9 @@ if (salesModule) {
   requireText(salesModule, "protectInspectionDraftNavigation", `${salesModulePath}: reload-vernet for befaringskladd mangler.`);
   requireText(salesModule, 'navigation?.mode === "inspection-note"', `${salesModulePath}: reload direkte i befaringsnotat normaliseres ikke til trygg saksvisning.`);
   requireText(salesModule, 'saveSalesNavigation(\n      salesStorageKey,\n      "detail",', `${salesModulePath}: befaringsreload bevarer ikke valgt sak mens modusen flyttes til detail.`);
+  requireText(salesModule, "expo-proffdok:sales:restore-tab-after-reload", `${salesModulePath}: salgfanen markeres ikke for engangsretur ved full reload.`);
+  requireText(salesModule, 'props.integrationMode !== "app"', `${salesModulePath}: offentlig/standalone salg kan feilaktig markere intern salgfaneretning.`);
+  requireText(salesModule, "markSalesTabForReload(props)", `${salesModulePath}: unload/pagehide setter ikke reload-markøren.`);
 }
 
 if (salesModuleCore) {
@@ -151,6 +164,7 @@ if (help) {
   requireText(help, 'En tom startkladd får ikke overskrive et eksisterende tilbud før den aktuelle saken er ferdig lastet inn.', `${helpPath}: Hjelp beskriver ikke hydration-sperren mot tom startkladd.`);
   requireText(help, 'Nye befaringsbilder sikres først lokalt på enheten før de vises i befaringsnotatet.', `${helpPath}: Hjelp beskriver ikke lokal-first sikring av befaringsbilder.`);
   requireText(help, 'Befaringsbildene lastes fortsatt til server når du trykker Lagre befaringsnotat.', `${helpPath}: Hjelp skiller ikke lokal bildesikring fra serverlagring.`);
+  requireText(help, 'Ved full reload fra Befaring/Tilbud åpner appen salgfanen og aktuell sak igjen.', `${helpPath}: Hjelp beskriver ikke automatisk retur til salgfanen etter reload.`);
 }
 
 if (helpCore) {
