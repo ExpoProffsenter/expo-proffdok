@@ -22,6 +22,8 @@ function forbidText(source, needle, message) {
 const salesModulePath = "src/modules/sales/SalesModule.jsx";
 const salesModuleCorePath = "src/modules/sales/SalesModuleCore.jsx";
 const offerBuilderPath = "src/modules/sales/components/SalesOfferBuilder.jsx";
+const inspectionNotePath = "src/modules/sales/components/SalesInspectionNote.jsx";
+const inspectionDraftDbPath = "src/modules/sales/services/salesInspectionDraftDb.js";
 const localStoragePath = "src/modules/sales/services/salesLocalStorage.js";
 const localStorageCorePath = "src/modules/sales/services/salesLocalStorageCore.js";
 const localStorageBasePath = "src/modules/sales/services/salesLocalStorageBase.js";
@@ -35,6 +37,8 @@ const helpCorePath = "src/modules/help/helpToolsCore.js";
 const salesModule = read(salesModulePath);
 const salesModuleCore = read(salesModuleCorePath);
 const offerBuilder = read(offerBuilderPath);
+const inspectionNote = read(inspectionNotePath);
+const inspectionDraftDb = read(inspectionDraftDbPath);
 const localStorage = read(localStoragePath);
 const localStorageCore = read(localStorageCorePath);
 const localStorageBase = read(localStorageBasePath);
@@ -51,6 +55,9 @@ if (salesModule) {
   requireText(salesModule, "beginOfferDraftHydrationCycle", `${salesModulePath}: ny salgsmount starter ikke en ny tilbuds-hydration-cycle.`);
   requireText(salesModule, 'window.addEventListener("beforeunload", blockPreHydrationUnloadSave)', `${salesModulePath}: sidegjenlasting sperrer ikke pre-hydration cleanup-save.`);
   requireText(salesModule, 'window.addEventListener("pagehide", blockPreHydrationUnloadSave)', `${salesModulePath}: pagehide sperrer ikke pre-hydration cleanup-save.`);
+  requireText(salesModule, "protectInspectionDraftNavigation", `${salesModulePath}: reload-vernet for befaringskladd mangler.`);
+  requireText(salesModule, 'navigation?.mode === "inspection-note"', `${salesModulePath}: reload direkte i befaringsnotat normaliseres ikke til trygg saksvisning.`);
+  requireText(salesModule, 'saveSalesNavigation(\n      salesStorageKey,\n      "detail",', `${salesModulePath}: befaringsreload bevarer ikke valgt sak mens modusen flyttes til detail.`);
 }
 
 if (salesModuleCore) {
@@ -66,6 +73,28 @@ if (offerBuilder) {
   requireText(offerBuilder, 'text: "✓ Lagret på server."', `${offerBuilderPath}: bekreftet serverstatus vises ikke eksplisitt.`);
   requireText(offerBuilder, 'text: "⚠ Lagret lokalt – venter på server."', `${offerBuilderPath}: lokal/offline-status vises ikke eksplisitt.`);
   requireText(offerBuilder, 'text: "⚠ Lagret lokalt – serveren er ikke tilgjengelig. Endringene beholdes på denne enheten."', `${offerBuilderPath}: serverfeil kan igjen gi falsk trygghet om lagring.`);
+}
+
+if (inspectionDraftDb) {
+  requireText(inspectionDraftDb, 'const DB_NAME = "expo-proffdok-sales-drafts";', `${inspectionDraftDbPath}: egen lokal database for befaringsbilder mangler.`);
+  requireText(inspectionDraftDb, 'const STORE_NAME = "inspectionPhotos";', `${inspectionDraftDbPath}: IndexedDB-store for befaringsbilder mangler.`);
+  requireText(inspectionDraftDb, 'indexedDb.open(DB_NAME, DB_VERSION)', `${inspectionDraftDbPath}: befaringsbilder åpner ikke IndexedDB.`);
+  requireText(inspectionDraftDb, 'store.createIndex(SCOPE_INDEX, "scope"', `${inspectionDraftDbPath}: lokale bilder er ikke scopet per bruker/sak.`);
+  requireText(inspectionDraftDb, "blob,", `${inspectionDraftDbPath}: binær bildefil lagres ikke i IndexedDB.`);
+  requireText(inspectionDraftDb, "export async function saveInspectionPhotoBlob", `${inspectionDraftDbPath}: lokal-first bildelagring mangler.`);
+  requireText(inspectionDraftDb, "export async function listInspectionPhotoBlobs", `${inspectionDraftDbPath}: lokale bilder kan ikke gjenopprettes.`);
+  requireText(inspectionDraftDb, "navigator.storage.persist", `${inspectionDraftDbPath}: nettleserens persistente lagring forsøkes ikke når tilgjengelig.`);
+}
+
+if (inspectionNote) {
+  requireText(inspectionNote, 'from "../services/salesInspectionDraftDb.js";', `${inspectionNotePath}: befaringsskjema bruker ikke IndexedDB-sikkerhetslageret.`);
+  requireText(inspectionNote, "await saveInspectionPhotoBlob({", `${inspectionNotePath}: valgt bilde sikres ikke lokalt før det tas inn i skjemaet.`);
+  requireText(inspectionNote, "await listInspectionPhotoBlobs(requestId)", `${inspectionNotePath}: lokalt sikrede bilder gjenopprettes ikke ved ny åpning.`);
+  requireText(inspectionNote, "localDraftKey: record.key", `${inspectionNotePath}: lokalt sikret bilde merkes ikke med varig lokal nøkkel.`);
+  requireText(inspectionNote, "await removeInspectionPhotoBlobByKey(photo.localDraftKey)", `${inspectionNotePath}: fjernede bilder blir liggende og kan gjenoppstå fra IndexedDB.`);
+  requireText(inspectionNote, "Lokalt sikrede bilder beholdes på denne enheten", `${inspectionNotePath}: brukeren får ikke korrekt varsel om lokal vs serverlagring.`);
+  requireText(inspectionNote, "Sikrer ${photoReadCount} bilde(r) på denne enheten", `${inspectionNotePath}: lokal sikringsstatus er ikke synlig under bildevalg.`);
+  forbidText(inspectionNote, "reader.readAsDataURL(file)", `${inspectionNotePath}: nye mobilbilder går fortsatt via stor DataURL før lokal sikkerhetslagring.`);
 }
 
 if (localStorage) {
@@ -120,6 +149,8 @@ if (help) {
   requireText(help, 'Hvis Expo ProffDok finner en nyere lokal kladd enn serverversjonen', `${helpPath}: Hjelp forklarer ikke recovery-valget.`);
   requireText(help, 'Fortsett på tilbud', `${helpPath}: Hjelp beskriver ikke videreføring av eksisterende tilbud.`);
   requireText(help, 'En tom startkladd får ikke overskrive et eksisterende tilbud før den aktuelle saken er ferdig lastet inn.', `${helpPath}: Hjelp beskriver ikke hydration-sperren mot tom startkladd.`);
+  requireText(help, 'Nye befaringsbilder sikres først lokalt på enheten før de vises i befaringsnotatet.', `${helpPath}: Hjelp beskriver ikke lokal-first sikring av befaringsbilder.`);
+  requireText(help, 'Befaringsbildene lastes fortsatt til server når du trykker Lagre befaringsnotat.', `${helpPath}: Hjelp skiller ikke lokal bildesikring fra serverlagring.`);
 }
 
 if (helpCore) {
