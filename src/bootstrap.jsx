@@ -6,6 +6,8 @@
 // Kunde-/UE-portal åpner private dokumenter i samme fane slik at verifisert portalkode
 // forblir tilgjengelig i sessionStorage uten å legges i URL-en.
 // FASE 29E1: Aktivert prosjekt bruker gjennomføringsflyt; tidligere salgsflyt beholdes som Salgsgrunnlag.
+// FASE 30D1: Full reload fra intern Befaring/Tilbud bruker en engangsmarkør og åpner
+// salgfanen igjen etter at hovedappen er rendret. main.jsx endres ikke.
 import { installGlobalStorageImageOptimizer } from './modules/images/imageUploadOptimizer.js';
 import { installProjectWorkflowUx } from './modules/project/projectWorkflowUx.js';
 import { installSalesInspectionHistoryUx } from './modules/project/salesInspectionHistoryUx.js';
@@ -18,6 +20,7 @@ installProjectWorkflowUx();
 installSalesInspectionHistoryUx();
 
 const SALES_IMAGE_LIGHTBOX_ID = 'sales-customer-image-lightbox';
+const SALES_RELOAD_TAB_KEY = 'expo-proffdok:sales:restore-tab-after-reload';
 
 function openSalesImageLightbox(src, alt = 'Tilbudsbilde') {
   if (!src) return;
@@ -199,6 +202,48 @@ document.addEventListener(
   true
 );
 
+function restoreSalesTabAfterReload() {
+  let shouldRestore = false;
+  try {
+    shouldRestore = window.sessionStorage?.getItem(SALES_RELOAD_TAB_KEY) === '1';
+  } catch {
+    shouldRestore = false;
+  }
+  if (!shouldRestore) return;
+
+  let observer = null;
+  let timeoutId = null;
+
+  const tryOpenSalesTab = () => {
+    const salesButton = Array.from(document.querySelectorAll('button')).find(
+      (button) =>
+        String(button.textContent || '')
+          .replace(/\s+/g, ' ')
+          .trim() === 'Befaring/Tilbud'
+    );
+    if (!salesButton) return false;
+
+    try {
+      window.sessionStorage?.removeItem(SALES_RELOAD_TAB_KEY);
+    } catch {
+      // Engangsmarkøren påvirker kun navigasjon.
+    }
+
+    observer?.disconnect();
+    if (timeoutId) window.clearTimeout(timeoutId);
+    salesButton.click();
+    return true;
+  };
+
+  if (tryOpenSalesTab()) return;
+
+  observer = new MutationObserver(() => {
+    tryOpenSalesTab();
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  timeoutId = window.setTimeout(() => observer?.disconnect(), 20000);
+}
+
 const params = new URLSearchParams(window.location.search);
 if (params.get('privateDocument') === '1') {
   import('./modules/documents/privateDocumentRedirect.js')
@@ -208,5 +253,9 @@ if (params.get('privateDocument') === '1') {
       document.body.innerHTML = '<main style="font-family:Arial,sans-serif;padding:24px"><h1>Dokumentet kunne ikke åpnes</h1><p>Prøv igjen fra Expo ProffDok.</p></main>';
     });
 } else {
-  import('./main.jsx');
+  import('./main.jsx')
+    .then(() => restoreSalesTabAfterReload())
+    .catch((error) => {
+      console.error('Kunne ikke starte Expo ProffDok:', error);
+    });
 }
