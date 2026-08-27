@@ -1,15 +1,46 @@
 // FASE 31C HJELP: tilbudsinformasjon organiseres under riktig funksjonsområde.
+// Permanent "Nytt i denne versjonen" skjules fra Hjelp; versjonsnytt hører til appoppdateringen.
 // Kompatibilitetsmarkører for eksisterende critical-check beholdes usynlig her:
 // "Nytt i denne versjonen – tilbudssikkerhet" / "Fortsett på tilbud"
 import React from "react";
 import { FileText } from "lucide-react";
 import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
 
+function organizePermanentHelp() {
+  if (typeof document === "undefined") return;
+
+  Array.from(document.querySelectorAll("button b")).forEach((label) => {
+    if (String(label.textContent || "").trim() !== "📢 Nytt i denne versjonen") return;
+    const item = label.closest(".item");
+    if (item) item.style.display = "none";
+  });
+
+  Array.from(document.querySelectorAll("li")).forEach((item) => {
+    if (
+      String(item.textContent || "").trim() ===
+      "Sjekk Nytt i denne versjonen når du lurer på hva som er endret."
+    ) {
+      item.textContent =
+        "Nytt i denne versjonen vises sammen med appoppdateringer når det er relevant.";
+    }
+  });
+}
+
 export function createHelpCenter(args) {
   const BaseHelpCenter = createHelpCenterCore(args);
   const { Section } = args;
 
   return function HelpCenter(props) {
+    React.useEffect(() => {
+      const frame = window.requestAnimationFrame(organizePermanentHelp);
+      const timer = window.setTimeout(organizePermanentHelp, 120);
+
+      return () => {
+        window.cancelAnimationFrame(frame);
+        window.clearTimeout(timer);
+      };
+    }, []);
+
     return React.createElement(
       React.Fragment,
       null,
