@@ -1,3 +1,8 @@
+// Expo ProffDok – FASE 31A1
+// Stopper ikke-numeriske tilbudsbeløp ved ordinær lagring/publisering uten å
+// endre 30C2-recovery, autosave-guard eller eksisterende lagringsmodell.
+// Gyldige nullbeløp, negative beløp, komma/punktum, mellomrom og norsk ",-"-format beholdes.
+// Enhetstekst som "lm" eller "stk" skal ikke kunne ligge i selve prisfeltet.
 // Expo ProffDok – FASE 30C2
 // Sikker wrapper rundt tilbudslogikken. Recovery blokkerer autosave, og helt
 // tomme rader fjernes før lokal/server-lagring. Påbegynte brukerlinjer beholdes.
@@ -12,6 +17,23 @@ import {
   mergeOfferDraftIntoRequests as mergeOfferDraftIntoRequestsCore,
   prepareOfferFormForSave as prepareOfferFormForSaveCore,
 } from "./salesOfferLogicCore.js";
+
+function normalizeOfferAmountForValidation(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/\s/g, "")
+    .replace(/([,.])-$/, "$1" )
+    .replace(",", ".");
+}
+
+function isValidOfferAmount(value) {
+  const normalized = normalizeOfferAmountForValidation(value);
+
+  if (!normalized) return false;
+  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized)) return false;
+
+  return Number.isFinite(Number(normalized));
+}
 
 export function mergeOfferDraftIntoRequests(
   currentRequests,
@@ -32,5 +54,18 @@ export function mergeOfferDraftIntoRequests(
 }
 
 export function prepareOfferFormForSave(formValue = {}) {
-  return prepareOfferFormForSaveCore(pruneEmptyOfferDraftRows(formValue));
+  const prepared = prepareOfferFormForSaveCore(pruneEmptyOfferDraftRows(formValue));
+
+  const invalidLineAmount = prepared.cleanLines.find(
+    (line) => line.amount !== "" && !isValidOfferAmount(line.amount)
+  );
+  const invalidOptionAmount = prepared.cleanOptions.find(
+    (option) => option.amount !== "" && !isValidOfferAmount(option.amount)
+  );
+
+  return {
+    ...prepared,
+    incompleteLine: prepared.incompleteLine || invalidLineAmount || null,
+    incompleteOption: prepared.incompleteOption || invalidOptionAmount || null,
+  };
 }
