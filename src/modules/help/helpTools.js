@@ -1,4 +1,4 @@
-// FASE 30C3 / FASE 30C2 HJELP: Tilbudskladd, recovery, lagringsstatus og trygg vei fra befaring til tilbud.
+// FASE 30D2 / FASE 30D1 / FASE 30C3 / FASE 30C2 HJELP: tilbudssikkerhet, mobilbefaring og ryddigere mobil Startside.
 import React from "react";
 import { FileText } from "lucide-react";
 import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
@@ -47,6 +47,32 @@ export function createHelpCenter(args) {
         React.createElement(
           "div",
           { className: "item", style: { background: "#f8fafc" } },
+          React.createElement("h3", { style: { marginTop: 0 } }, "📱 Ryddigere mobil Startside"),
+          React.createElement(
+            "ul",
+            null,
+            React.createElement("li", null, "Mobil Startsiden viser oversikt, nøkkeltall, oppfølging og hurtigvalg uten å gjenta hele prosjektlisten."),
+            React.createElement("li", null, "Trykk Åpne prosjektliste når du vil søke i eller åpne alle prosjektene."),
+            React.createElement("li", null, "Prosjektlisten og prosjektdataene er ikke fjernet; bare den ekstra listen på mobil Startsiden er skjult.")
+          )
+        ),
+        React.createElement(
+          "div",
+          { className: "item", style: { background: "#f8fafc" } },
+          React.createElement("h3", { style: { marginTop: 0 } }, "📷 Sikrere mobilbefaring"),
+          React.createElement(
+            "ul",
+            null,
+            React.createElement("li", null, "Nye befaringsbilder sikres først lokalt på enheten før de vises i befaringsnotatet."),
+            React.createElement("li", null, "Lokalt sikrede bilder kan gjenopprettes etter reload eller appbytte så lenge nettleserdata ikke slettes."),
+            React.createElement("li", null, "Befaringsbildene lastes fortsatt til server når du trykker Lagre befaringsnotat."),
+            React.createElement("li", null, "Ved full reload fra Befaring/Tilbud åpner appen salgfanen og aktuell sak igjen. Åpne befaringsnotatet for å hente lokal kladd og lokalt sikrede bilder."),
+            React.createElement("li", null, "Ikke slett nettleserdata eller bytt enhet før nye bilder er lagret på server.")
+          )
+        ),
+        React.createElement(
+          "div",
+          { className: "item", style: { background: "#f8fafc" } },
           React.createElement("h3", { style: { marginTop: 0 } }, "🧾 Befaring → tilbud"),
           React.createElement(
             "ul",
@@ -55,11 +81,6 @@ export function createHelpCenter(args) {
             React.createElement("li", null, "Hvis saken allerede har et tilbudsutkast, vises Fortsett på tilbud i stedet for å opprette et nytt tilbud."),
             React.createElement("li", null, "Før tilbud opprettes viser saken om befaringsnotater eller bilder mangler, slik at dette kan kontrolleres bevisst."),
             React.createElement("li", null, "Kontroller alltid kunde, arbeider, priser, mva., opsjoner og vedlegg før tilbudet publiseres til kunden.")
-          ),
-          React.createElement(
-            "p",
-            { className: "note", style: { marginBottom: 0 } },
-            "Denne versjonen styrker tilbudskladd og tilbudsrecovery. Videre sikring av mobilbefaringsbilder ved dvale/offline testes separat før den tas i produksjon."
           )
         )
       ),

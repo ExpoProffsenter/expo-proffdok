@@ -1,16 +1,55 @@
-// Expo ProffDok – FASE 30C3 / FASE 30C2
-// Tynn sikkerhets-wrapper rundt eksisterende SalesModule. Recovery kan remounte
-// bare salgmodulen uten å laste hele ProffDok eller sende brukeren til Startsiden.
-// FASE 30C3 starter en ny hydration-cycle før hver mount/remount slik at en tom
-// initial tilbudsform aldri kan lagres før aktuell salgssak er ferdig hydrert.
+// Expo ProffDok – FASE 30D1 / FASE 30C3 / FASE 30C2
+// Tynn sikkerhets-wrapper rundt eksisterende SalesModule.
+// FASE 30D1: Ved full reload mens befaringsnotatet er åpent lander brukeren
+// trygt på saken først. Lokal kladd/bilder beholdes og hydreres ved ny åpning,
+// slik at tom initial React-state ikke kan overskrive befaringskladden.
+// FASE 30C3: starter ny hydration-cycle før mount/remount for tilbudskladd.
 
 import { useEffect, useState } from "react";
 import SalesModuleCore from "./SalesModuleCore.jsx";
-import { beginOfferDraftHydrationCycle } from "./services/salesLocalStorage.js";
+import {
+  beginOfferDraftHydrationCycle,
+  buildSalesStorageKey,
+  loadSalesNavigation,
+  saveSalesNavigation,
+} from "./services/salesLocalStorage.js";
+
+const SALES_RELOAD_TAB_KEY = "expo-proffdok:sales:restore-tab-after-reload";
+
+function protectInspectionDraftNavigation(props = {}) {
+  const salesStorageKey = buildSalesStorageKey({
+    integrationMode: props.integrationMode || "preview",
+    companyName:
+      props.profile?.company_name || props.profile?.companyName || "",
+    userId: props.authUser?.id || "anonymous",
+  });
+  const navigation = loadSalesNavigation(salesStorageKey);
+
+  if (
+    navigation?.mode === "inspection-note" &&
+    navigation?.selectedRequestId
+  ) {
+    saveSalesNavigation(
+      salesStorageKey,
+      "detail",
+      navigation.selectedRequestId
+    );
+  }
+}
+
+function markSalesTabForReload(props = {}) {
+  if (props.integrationMode !== "app") return;
+  try {
+    window.sessionStorage?.setItem(SALES_RELOAD_TAB_KEY, "1");
+  } catch {
+    // Engangsmarkøren er kun navigasjonshjelp. Salgsdata påvirkes ikke.
+  }
+}
 
 export default function SalesModule(props) {
   const [instanceKey, setInstanceKey] = useState(() => {
     beginOfferDraftHydrationCycle();
+    protectInspectionDraftNavigation(props);
     return 0;
   });
 
@@ -21,6 +60,7 @@ export default function SalesModule(props) {
     };
 
     const blockPreHydrationUnloadSave = () => {
+      markSalesTabForReload(props);
       beginOfferDraftHydrationCycle();
     };
 
