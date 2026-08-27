@@ -25,6 +25,7 @@ import {
   hasInspectionContext,
   hasOfferQuantityDetails,
 } from "../utils/salesUtils.js";
+import "./SalesOfferQuantity.css";
 
 function hasLineContent(line) {
   return Boolean(
@@ -49,6 +50,30 @@ function hasOptionContent(option) {
       option?.imageDataUrl ||
       option?.attachmentFile?.url
   );
+}
+
+function parseStepperQuantity(value) {
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(/\s/g, "")
+    .replace(",", ".");
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function formatStepperQuantity(value) {
+  const rounded = Math.round((Number(value) + Number.EPSILON) * 1000) / 1000;
+  return String(rounded).replace(".", ",");
+}
+
+function stepQuantity(value, direction) {
+  const current = parseStepperQuantity(value);
+  const next = current + direction;
+  return next > 0 ? formatStepperQuantity(next) : formatStepperQuantity(current);
+}
+
+function canDecreaseQuantity(value) {
+  return parseStepperQuantity(value) > 1;
 }
 
 export default function SalesOfferBuilder({
@@ -537,26 +562,56 @@ export default function SalesOfferBuilder({
                                     <div
                                       style={{
                                         display: "grid",
-                                        gridTemplateColumns: "minmax(100px, 0.7fr) minmax(120px, 1fr)",
+                                        gridTemplateColumns: "minmax(150px, 0.8fr) minmax(120px, 1fr)",
                                         gap: 10,
                                       }}
                                     >
                                       <label className="sales-field">
-                                        <span>Antall (valgfritt)</span>
-                                        <input
-                                          data-offer-line-quantity={line.id}
-                                          value={line.quantity ?? ""}
-                                          onChange={(event) =>
-                                            updateOfferLine(
-                                              line.id,
-                                              "quantity",
-                                              event.target.value
-                                            )
-                                          }
-                                          placeholder="1"
-                                          inputMode="decimal"
-                                          autoComplete="off"
-                                        />
+                                        <span>Antall</span>
+                                        <div className="sales-quantity-stepper">
+                                          <button
+                                            type="button"
+                                            aria-label={`Reduser antall for ${line.description || "underpost"}`}
+                                            disabled={!canDecreaseQuantity(line.quantity)}
+                                            onClick={() =>
+                                              updateOfferLine(
+                                                line.id,
+                                                "quantity",
+                                                stepQuantity(line.quantity, -1)
+                                              )
+                                            }
+                                          >
+                                            −
+                                          </button>
+                                          <input
+                                            data-offer-line-quantity={line.id}
+                                            value={line.quantity ?? ""}
+                                            onChange={(event) =>
+                                              updateOfferLine(
+                                                line.id,
+                                                "quantity",
+                                                event.target.value
+                                              )
+                                            }
+                                            onFocus={(event) => event.currentTarget.select()}
+                                            placeholder="1"
+                                            inputMode="decimal"
+                                            autoComplete="off"
+                                          />
+                                          <button
+                                            type="button"
+                                            aria-label={`Øk antall for ${line.description || "underpost"}`}
+                                            onClick={() =>
+                                              updateOfferLine(
+                                                line.id,
+                                                "quantity",
+                                                stepQuantity(line.quantity, 1)
+                                              )
+                                            }
+                                          >
+                                            +
+                                          </button>
+                                        </div>
                                       </label>
 
                                       <label className="sales-field">
@@ -692,11 +747,13 @@ export default function SalesOfferBuilder({
                                       inputMode="decimal"
                                     />
                                     {hasOfferQuantityDetails(line) ? (
-                                      <small>
-                                        {formatOfferQuantity(line)} × {formatNok(getOfferUnitPrice(line))}
-                                        {" = "}
-                                        <strong>{formatNok(getOfferTotal([line]))}</strong> eks. mva.
-                                      </small>
+                                      <div className="sales-offer-line-total">
+                                        <span>Linjesum eks. mva.</span>
+                                        <strong>{formatNok(getOfferTotal([line]))}</strong>
+                                        <small>
+                                          {formatOfferQuantity(line)} × {formatNok(getOfferUnitPrice(line))}
+                                        </small>
+                                      </div>
                                     ) : null}
                                   </label>
 
@@ -953,26 +1010,56 @@ export default function SalesOfferBuilder({
                                       <div
                                         style={{
                                           display: "grid",
-                                          gridTemplateColumns: "minmax(100px, 0.7fr) minmax(120px, 1fr)",
+                                          gridTemplateColumns: "minmax(150px, 0.8fr) minmax(120px, 1fr)",
                                           gap: 10,
                                         }}
                                       >
                                         <label className="sales-field">
-                                          <span>Antall (valgfritt)</span>
-                                          <input
-                                            data-offer-option-quantity={option.id}
-                                            value={option.quantity ?? ""}
-                                            onChange={(event) =>
-                                              updateOfferOption(
-                                                option.id,
-                                                "quantity",
-                                                event.target.value
-                                              )
-                                            }
-                                            placeholder="1"
-                                            inputMode="decimal"
-                                            autoComplete="off"
-                                          />
+                                          <span>Antall</span>
+                                          <div className="sales-quantity-stepper">
+                                            <button
+                                              type="button"
+                                              aria-label={`Reduser antall for ${option.title || "opsjon"}`}
+                                              disabled={!canDecreaseQuantity(option.quantity)}
+                                              onClick={() =>
+                                                updateOfferOption(
+                                                  option.id,
+                                                  "quantity",
+                                                  stepQuantity(option.quantity, -1)
+                                                )
+                                              }
+                                            >
+                                              −
+                                            </button>
+                                            <input
+                                              data-offer-option-quantity={option.id}
+                                              value={option.quantity ?? ""}
+                                              onChange={(event) =>
+                                                updateOfferOption(
+                                                  option.id,
+                                                  "quantity",
+                                                  event.target.value
+                                                )
+                                              }
+                                              onFocus={(event) => event.currentTarget.select()}
+                                              placeholder="1"
+                                              inputMode="decimal"
+                                              autoComplete="off"
+                                            />
+                                            <button
+                                              type="button"
+                                              aria-label={`Øk antall for ${option.title || "opsjon"}`}
+                                              onClick={() =>
+                                                updateOfferOption(
+                                                  option.id,
+                                                  "quantity",
+                                                  stepQuantity(option.quantity, 1)
+                                                )
+                                              }
+                                            >
+                                              +
+                                            </button>
+                                          </div>
                                         </label>
 
                                         <label className="sales-field">
@@ -1117,11 +1204,13 @@ export default function SalesOfferBuilder({
                                         inputMode="decimal"
                                       />
                                       {hasOfferQuantityDetails(option) ? (
-                                        <small>
-                                          {formatOfferQuantity(option)} × {formatNok(getOfferUnitPrice(option))}
-                                          {" = "}
-                                          <strong>{formatNok(getOfferTotal([option]))}</strong> eks. mva.
-                                        </small>
+                                        <div className="sales-offer-line-total">
+                                          <span>Sum opsjon eks. mva.</span>
+                                          <strong>{formatNok(getOfferTotal([option]))}</strong>
+                                          <small>
+                                            {formatOfferQuantity(option)} × {formatNok(getOfferUnitPrice(option))}
+                                          </small>
+                                        </div>
                                       ) : null}
                                       {option.optionType === "alternative" ? (
                                         <small>
