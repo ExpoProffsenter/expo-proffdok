@@ -48,9 +48,7 @@ export function mergeOfferDraftIntoRequests(
 }
 
 export function prepareOfferFormForSave(formValue = {}) {
-  const prepared = prepareOfferFormForSaveCore(
-    pruneEmptyOfferDraftRows(formValue)
-  );
+  const prepared = prepareOfferFormForSaveCore(pruneEmptyOfferDraftRows(formValue));
 
   const invalidLineAmount = prepared.cleanLines.find(
     (line) => line.amount !== "" && !isValidOfferAmount(line.amount)
