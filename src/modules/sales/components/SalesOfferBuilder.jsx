@@ -1,3 +1,7 @@
+// Expo ProffDok – FASE 31A2
+// Validerer også valgfritt antall før lagring. Antall må være positivt og kan
+// skrives med komma/punktum. Feilen peker direkte til riktig antallsfelt uten
+// å endre 31A1-prisvalidering eller 30C2-recovery.
 // Expo ProffDok – FASE 31A1
 // Stopper ugyldige prisverdier i tilbudsbyggeren før den eldre generiske
 // valideringen og peker brukeren direkte til aktuell linje/opsjon.
@@ -190,43 +194,104 @@ function getSaveStatus(status) {
   };
 }
 
-function isValidOfferAmount(value) {
-  let normalized = String(value ?? "").trim().replace(/\s/g, "");
-  if (!normalized) return true;
+function normalizeNumericInput(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/\s/g, "")
+    .replace(/,-$/, "")
+    .replace(/\.-$/, "")
+    .replace(",", ".");
+}
 
-  normalized = normalized.replace(/,-$/, "").replace(/\.-$/, "").replace(",", ".");
-  if (!normalized) return false;
+function isValidOfferAmount(value) {
+  const normalized = normalizeNumericInput(value);
+  if (!normalized) return true;
   if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized)) return false;
 
   return Number.isFinite(Number(normalized));
 }
 
-function findInvalidOfferAmount(offerForm = {}) {
+function isValidOfferQuantity(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return true;
+
+  const normalized = normalizeNumericInput(text);
+  if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized)) return false;
+
+  const quantity = Number(normalized);
+  return Number.isFinite(quantity) && quantity > 0;
+}
+
+function findInvalidOfferField(offerForm = {}) {
   const lines = Array.isArray(offerForm.lines) ? offerForm.lines : [];
   const options = Array.isArray(offerForm.options) ? offerForm.options : [];
 
-  const invalidLine = lines.find(
+  const invalidLineAmount = lines.find(
     (line) => String(line?.amount ?? "").trim() && !isValidOfferAmount(line.amount)
   );
-  if (invalidLine) {
+  if (invalidLineAmount) {
     return {
+      field: "amount",
       kind: "line",
-      id: invalidLine.id,
-      value: String(invalidLine.amount || ""),
-      title: invalidLine.description || invalidLine.mainPostTitle || "Tilbudslinje",
+      id: invalidLineAmount.id,
+      value: String(invalidLineAmount.amount || ""),
+      title:
+        invalidLineAmount.description ||
+        invalidLineAmount.mainPostTitle ||
+        "Tilbudslinje",
     };
   }
 
-  const invalidOption = options.find(
+  const invalidOptionAmount = options.find(
     (option) =>
       String(option?.amount ?? "").trim() && !isValidOfferAmount(option.amount)
   );
-  if (invalidOption) {
+  if (invalidOptionAmount) {
     return {
+      field: "amount",
       kind: "option",
-      id: invalidOption.id,
-      value: String(invalidOption.amount || ""),
-      title: invalidOption.title || invalidOption.mainPostTitle || "Opsjon",
+      id: invalidOptionAmount.id,
+      value: String(invalidOptionAmount.amount || ""),
+      title:
+        invalidOptionAmount.title ||
+        invalidOptionAmount.mainPostTitle ||
+        "Opsjon",
+    };
+  }
+
+  const invalidLineQuantity = lines.find(
+    (line) =>
+      String(line?.quantity ?? "").trim() &&
+      !isValidOfferQuantity(line.quantity)
+  );
+  if (invalidLineQuantity) {
+    return {
+      field: "quantity",
+      kind: "line",
+      id: invalidLineQuantity.id,
+      value: String(invalidLineQuantity.quantity ?? ""),
+      title:
+        invalidLineQuantity.description ||
+        invalidLineQuantity.mainPostTitle ||
+        "Tilbudslinje",
+    };
+  }
+
+  const invalidOptionQuantity = options.find(
+    (option) =>
+      String(option?.quantity ?? "").trim() &&
+      !isValidOfferQuantity(option.quantity)
+  );
+  if (invalidOptionQuantity) {
+    return {
+      field: "quantity",
+      kind: "option",
+      id: invalidOptionQuantity.id,
+      value: String(invalidOptionQuantity.quantity ?? ""),
+      title:
+        invalidOptionQuantity.title ||
+        invalidOptionQuantity.mainPostTitle ||
+        "Opsjon",
     };
   }
 
@@ -241,7 +306,7 @@ export default function SalesOfferBuilder(props) {
   const [isOnline, setIsOnline] = useState(() =>
     typeof navigator === "undefined" ? true : navigator.onLine !== false
   );
-  const [amountValidation, setAmountValidation] = useState(null);
+  const [fieldValidation, setFieldValidation] = useState(null);
 
   useEffect(() => {
     const refreshNetworkStatus = () => {
@@ -326,52 +391,61 @@ export default function SalesOfferBuilder(props) {
     );
   }
 
-  function validateOfferAmounts(event) {
-    const invalidAmount = findInvalidOfferAmount(props.offerForm);
-    if (!invalidAmount) return false;
+  function validateOfferFields(event) {
+    const invalidField = findInvalidOfferField(props.offerForm);
+    if (!invalidField) return false;
 
     event?.preventDefault?.();
     event?.stopPropagation?.();
-    setAmountValidation(invalidAmount);
+    setFieldValidation(invalidField);
     return true;
   }
 
   function handleValidatedSaveOffer(event) {
-    if (validateOfferAmounts(event)) return false;
+    if (validateOfferFields(event)) return false;
     return props.handleSaveOffer?.(event);
   }
 
   function handleValidatedSaveOfferTemplate(...args) {
-    if (validateOfferAmounts()) return;
+    if (validateOfferFields()) return;
     return props.handleSaveOfferTemplate?.(...args);
   }
 
-  function focusInvalidAmount() {
-    const validation = amountValidation;
-    setAmountValidation(null);
+  function focusInvalidField() {
+    const validation = fieldValidation;
+    setFieldValidation(null);
     if (!validation?.id || typeof document === "undefined") return;
 
     const tryFocus = () => {
-      const selector =
+      const cardSelector =
         validation.kind === "option"
           ? `[data-offer-option-id="${validation.id}"]`
           : `[data-offer-line-id="${validation.id}"]`;
 
-      let card = document.querySelector(selector);
+      let card = document.querySelector(cardSelector);
       if (!card) {
-        card = Array.from(document.querySelectorAll(".sales-offer-line")).find((candidate) =>
-          Array.from(candidate.querySelectorAll("input")).some(
-            (input) => String(input.value ?? "").trim() === validation.value.trim()
-          )
+        card = Array.from(document.querySelectorAll(".sales-offer-line")).find(
+          (candidate) =>
+            Array.from(candidate.querySelectorAll("input")).some(
+              (input) =>
+                String(input.value ?? "").trim() === validation.value.trim()
+            )
         );
       }
       if (!card) return false;
 
+      const quantitySelector =
+        validation.kind === "option"
+          ? `[data-offer-option-quantity="${validation.id}"]`
+          : `[data-offer-line-quantity="${validation.id}"]`;
       const inputs = Array.from(card.querySelectorAll("input"));
-      const amountInput =
-        inputs.find(
-          (input) => String(input.value ?? "").trim() === validation.value.trim()
-        ) || inputs.find((input) => input.getAttribute("placeholder") === "0");
+      const targetInput =
+        validation.field === "quantity"
+          ? card.querySelector(quantitySelector)
+          : inputs.find(
+              (input) =>
+                String(input.value ?? "").trim() === validation.value.trim()
+            ) || inputs.find((input) => input.getAttribute("placeholder") === "0");
 
       card.scrollIntoView({
         behavior: "auto",
@@ -379,15 +453,13 @@ export default function SalesOfferBuilder(props) {
         inline: "nearest",
       });
 
-      if (amountInput) {
-        amountInput.focus({ preventScroll: true });
-        amountInput.select?.();
+      if (targetInput) {
+        targetInput.focus({ preventScroll: true });
+        targetInput.select?.();
       }
       return true;
     };
 
-    // Dialogen må først være fjernet av React. Første forsøk er raskt,
-    // de neste dekker tregere render/scroll i store tilbud.
     [0, 80, 220].forEach((delay) => {
       window.setTimeout(tryFocus, delay);
     });
@@ -405,6 +477,7 @@ export default function SalesOfferBuilder(props) {
     ? props.offerDraftSaveStatus
     : "offline";
   const saveStatus = getSaveStatus(effectiveOfferDraftSaveStatus);
+  const validationIsQuantity = fieldValidation?.field === "quantity";
 
   return (
     <>
@@ -471,11 +544,11 @@ export default function SalesOfferBuilder(props) {
         />
       </div>
 
-      {amountValidation ? (
+      {fieldValidation ? (
         <div
           role="dialog"
           aria-modal="true"
-          aria-labelledby="sales-offer-amount-validation-title"
+          aria-labelledby="sales-offer-field-validation-title"
           style={{
             position: "fixed",
             inset: 0,
@@ -496,27 +569,38 @@ export default function SalesOfferBuilder(props) {
             }}
           >
             <h2
-              id="sales-offer-amount-validation-title"
+              id="sales-offer-field-validation-title"
               style={{ margin: "0 0 10px", fontSize: 20 }}
             >
-              Kontroller prisfeltet
+              {validationIsQuantity ? "Kontroller antall" : "Kontroller prisfeltet"}
             </h2>
             <p style={{ margin: "0 0 12px", lineHeight: 1.55 }}>
-              Beløpet <strong>{amountValidation.value}</strong> på «{amountValidation.title}»
-              kan ikke brukes som pris.
+              {validationIsQuantity ? "Antallet" : "Beløpet"}{" "}
+              <strong>{fieldValidation.value}</strong> på «{fieldValidation.title}»
+              kan ikke brukes.
             </p>
-            <p style={{ margin: "0 0 18px", lineHeight: 1.55 }}>
-              Prisfeltet kan inneholde tall, komma/punktum, minus og norsk avslutning
-              som <strong>1600,-</strong>. Enhet som <strong>lm</strong>, <strong>stk</strong>
-              eller <strong>m²</strong> skal ikke stå i selve prisfeltet.
-            </p>
+            {validationIsQuantity ? (
+              <p style={{ margin: "0 0 18px", lineHeight: 1.55 }}>
+                Antall må være større enn 0 og kan skrives med komma eller punktum,
+                for eksempel <strong>2</strong> eller <strong>2,5</strong>. Enhet registreres
+                i eget felt ved siden av.
+              </p>
+            ) : (
+              <p style={{ margin: "0 0 18px", lineHeight: 1.55 }}>
+                Prisfeltet kan inneholde tall, komma/punktum, minus og norsk avslutning
+                som <strong>1600,-</strong>. Enhet som <strong>lm</strong>, <strong>stk</strong>
+                eller <strong>m²</strong> skal ikke stå i selve prisfeltet.
+              </p>
+            )}
             <button
               className="sales-primary-button"
               type="button"
-              onClick={focusInvalidAmount}
+              onClick={focusInvalidField}
               autoFocus
             >
-              OK – gå til prisfeltet
+              {validationIsQuantity
+                ? "OK – gå til antallsfeltet"
+                : "OK – gå til prisfeltet"}
             </button>
           </div>
         </div>
