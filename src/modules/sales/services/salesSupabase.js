@@ -1,4 +1,7 @@
-// Expo ProffDok – FASE 30C2
+// Expo ProffDok – FASE 32A / FASE 30C2
+// FASE 32A henter serverstemplet creator-snapshot for nye salgssaker uten å
+// blande Opprettet av med ansvarlig. Sporbarhetsfeltene er kun runtime-metadata
+// og skrives ikke tilbake i sales_requests.payload.
 // Tynn wrapper rundt eksisterende Supabase-service.
 // Legger et innholdsbasert fingeravtrykk på bekreftet serverbaseline slik at
 // samme tilbud ikke utløser recovery bare fordi lokal savedAt er nyere.
@@ -13,6 +16,11 @@ import {
 } from "../utils/salesOfferDraftSignature.js";
 
 const OFFER_SERVER_BASELINE_PREFIX = `${STORAGE_KEY}:offer-server-baseline`;
+const TRACEABILITY_PAYLOAD_KEYS = [
+  "__createdByUserId",
+  "__createdByName",
+  "__createdAt",
+];
 
 function browserStorage() {
   return typeof window !== "undefined" && window.localStorage
@@ -27,6 +35,49 @@ function parseJson(storage, key) {
   } catch {
     return null;
   }
+}
+
+function stripRuntimeTraceability(payload = {}) {
+  if (!payload || typeof payload !== "object") return payload;
+  const clean = { ...payload };
+  TRACEABILITY_PAYLOAD_KEYS.forEach((key) => delete clean[key]);
+  return clean;
+}
+
+async function hydrateCreatorTraceability(client, companyId, rows = []) {
+  if (!client || !companyId || !Array.isArray(rows) || rows.length === 0) {
+    return rows;
+  }
+
+  const { data: traceRows, error } = await client
+    .from("sales_requests")
+    .select("request_ref,created_by,created_by_name,created_at")
+    .eq("company_id", companyId);
+
+  if (error || !Array.isArray(traceRows)) return rows;
+
+  const traceByRef = new Map(
+    traceRows.map((row) => [String(row.request_ref || ""), row])
+  );
+
+  return rows.map((row) => {
+    const trace = traceByRef.get(String(row?.request_ref || ""));
+    const creatorName = String(trace?.created_by_name || "").trim();
+
+    // Gamle saker backfilles ikke. Uten serverstemplet navn vises heller ingen
+    // kunstig creator basert på ansvarlig eller andre mutable felt.
+    if (!creatorName) return row;
+
+    return {
+      ...row,
+      payload: {
+        ...(row?.payload || {}),
+        __createdByUserId: String(trace?.created_by || ""),
+        __createdByName: creatorName,
+        __createdAt: trace?.created_at || "",
+      },
+    };
+  });
 }
 
 async function rememberOfferContentSignatures(client, rows = [], fallbackCompanyId = "") {
@@ -79,15 +130,25 @@ async function rememberOfferContentSignatures(client, rows = [], fallbackCompany
 export async function fetchSalesRequests(client, companyId) {
   const result = await core.fetchSalesRequests(client, companyId);
   if (!result?.error) {
-    await rememberOfferContentSignatures(client, result?.data || [], companyId);
+    const hydratedRows = await hydrateCreatorTraceability(
+      client,
+      companyId,
+      result?.data || []
+    );
+    result.data = hydratedRows;
+    await rememberOfferContentSignatures(client, hydratedRows, companyId);
   }
   return result;
 }
 
 export async function upsertSalesRequests(client, rows) {
-  const result = await core.upsertSalesRequests(client, rows);
+  const safeRows = (Array.isArray(rows) ? rows : []).map((row) => ({
+    ...row,
+    payload: stripRuntimeTraceability(row?.payload || {}),
+  }));
+  const result = await core.upsertSalesRequests(client, safeRows);
   if (!result?.error) {
-    await rememberOfferContentSignatures(client, rows || []);
+    await rememberOfferContentSignatures(client, safeRows || []);
   }
   return result;
 }
