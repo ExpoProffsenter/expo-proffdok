@@ -194,16 +194,13 @@ export function getWorkflowSteps(request) {
     "Forespørsel",
     "Befaring",
     "Tilbud",
-    "Akseptert",
+    "Aksept",
     "Prosjekt",
   ];
 
-  // Behold historisk label "Aksept" i UI selv om intern status heter Akseptert.
-  const displaySteps = ["Forespørsel", "Befaring", "Tilbud", "Aksept", "Prosjekt"];
-  const normalizedActiveStep = activeStep === "Aksept" ? "Akseptert" : activeStep;
-  const activeIndex = steps.indexOf(normalizedActiveStep);
+  const activeIndex = steps.indexOf(activeStep);
 
-  return displaySteps.map((step, index) => ({
+  return steps.map((step, index) => ({
     label: step,
     state:
       index < activeIndex
