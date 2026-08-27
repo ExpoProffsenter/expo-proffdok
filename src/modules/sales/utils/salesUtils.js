@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 31A2
+// Tilbudslinjer og opsjoner kan ha valgfritt antall/enhet. amount er fortsatt
+// enhetspris eks. mva.; manglende antall behandles som 1 for full bakoverkompatibilitet.
 // Expo ProffDok – FASE 31A1B
 // Norsk prisformat som 1600,- og 1600.- summeres korrekt i tilbud, opsjoner og kundevisning.
 // Ingen SQL/RLS/Storage/Edge-endring.
@@ -191,13 +194,16 @@ export function getWorkflowSteps(request) {
     "Forespørsel",
     "Befaring",
     "Tilbud",
-    "Aksept",
+    "Akseptert",
     "Prosjekt",
   ];
 
-  const activeIndex = steps.indexOf(activeStep);
+  // Behold historisk label "Aksept" i UI selv om intern status heter Akseptert.
+  const displaySteps = ["Forespørsel", "Befaring", "Tilbud", "Aksept", "Prosjekt"];
+  const normalizedActiveStep = activeStep === "Aksept" ? "Akseptert" : activeStep;
+  const activeIndex = steps.indexOf(normalizedActiveStep);
 
-  return steps.map((step, index) => ({
+  return displaySteps.map((step, index) => ({
     label: step,
     state:
       index < activeIndex
@@ -222,18 +228,55 @@ export function firstNonEmailName(...values) {
   return match || "";
 }
 
+function normalizeOfferNumber(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/\s/g, "")
+    .replace(/,-$/, "")
+    .replace(/\.-$/, "")
+    .replace(",", ".");
+}
+
+export function getOfferUnitPrice(item = {}) {
+  const amount = Number(normalizeOfferNumber(item?.amount));
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+export function getOfferQuantity(item = {}) {
+  const rawQuantity = String(item?.quantity ?? "").trim();
+  if (!rawQuantity) return 1;
+
+  const quantity = Number(normalizeOfferNumber(rawQuantity));
+  return Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
+}
+
+export function getOfferUnit(item = {}) {
+  return String(item?.unit || "").trim();
+}
+
+export function hasOfferQuantityDetails(item = {}) {
+  return Boolean(
+    String(item?.quantity ?? "").trim() ||
+      String(item?.unit || "").trim()
+  );
+}
+
+export function formatOfferQuantity(item = {}) {
+  const quantity = getOfferQuantity(item);
+  const unit = getOfferUnit(item);
+  const formattedQuantity = new Intl.NumberFormat("nb-NO", {
+    maximumFractionDigits: 3,
+  }).format(quantity);
+
+  return unit ? `${formattedQuantity} ${unit}` : formattedQuantity;
+}
+
 export function getOfferTotal(lines) {
-  return lines.reduce((sum, line) => {
-    const normalized = String(line.amount || "")
-      .trim()
-      .replace(/\s/g, "")
-      .replace(/,-$/, "")
-      .replace(/\.-$/, "")
-      .replace(",", ".");
+  return (Array.isArray(lines) ? lines : []).reduce((sum, line) => {
+    const amount = getOfferUnitPrice(line);
+    const quantity = getOfferQuantity(line);
 
-    const amount = Number(normalized);
-
-    return sum + (Number.isFinite(amount) ? amount : 0);
+    return sum + amount * quantity;
   }, 0);
 }
 
