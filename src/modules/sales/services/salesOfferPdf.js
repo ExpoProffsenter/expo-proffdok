@@ -1,16 +1,10 @@
 // Expo ProffDok – FASE 31A2B
-// Beholder testet PDF-generator som Core. Presentasjonskopien av publisert tilbud
-// får antall × enhetspris i post-/opsjonstekst før PDF genereres.
-// Lagrede tilbudsdata endres ikke.
+// Bruker ny A4-generator som speiler kundelinkens struktur og visuelle hierarki.
+// Tidligere generator beholdes i salesOfferPdfCore.js som trygg rollback.
+// Ingen lagring, SQL, RLS, Storage-policy eller Edge-logikk endres.
 
-import { createPublishedOfferPdf as createPublishedOfferPdfCore } from "./salesOfferPdfCore.js";
-import { decorateRequestForQuantityPresentation } from "../utils/salesOfferQuantityPresentation.js";
+import { createPublishedOfferPdfPolished } from "./salesOfferPdfPolished.js";
 
 export async function createPublishedOfferPdf(args = {}) {
-  return createPublishedOfferPdfCore({
-    ...args,
-    selectedRequest: decorateRequestForQuantityPresentation(
-      args.selectedRequest
-    ),
-  });
+  return createPublishedOfferPdfPolished(args);
 }
