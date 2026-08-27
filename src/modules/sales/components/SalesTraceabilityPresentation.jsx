@@ -3,7 +3,13 @@
 // disse adskilt fra ansvarlig. Gamle saker uten creator-snapshot får ingen
 // kunstig Opprettet av-verdi.
 
-import { Children, cloneElement, isValidElement } from "react";
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useState,
+} from "react";
 
 function formatTraceTime(value) {
   const time = Date.parse(value || "");
@@ -18,9 +24,49 @@ function formatTraceTime(value) {
   });
 }
 
+function getRuntimeCreator(request = {}) {
+  const requestRef = String(request?.id || "");
+  const cached =
+    typeof window !== "undefined" && requestRef
+      ? window.__expoProffDokSalesTraceability?.[requestRef]
+      : null;
+
+  return {
+    name: String(request.__createdByName || cached?.createdByName || "").trim(),
+    createdAt: request.__createdAt || cached?.createdAt || "",
+  };
+}
+
 function TraceabilityBlock({ request = {} }) {
-  const creatorName = String(request.__createdByName || "").trim();
-  const createdAt = creatorName ? formatTraceTime(request.__createdAt) : "";
+  const requestRef = String(request?.id || "");
+  const [creator, setCreator] = useState(() => getRuntimeCreator(request));
+
+  useEffect(() => {
+    setCreator(getRuntimeCreator(request));
+
+    const handleTraceability = (event) => {
+      if (String(event?.detail?.requestRef || "") !== requestRef) return;
+      const name = String(event?.detail?.createdByName || "").trim();
+      if (!name) return;
+      setCreator({
+        name,
+        createdAt: event?.detail?.createdAt || "",
+      });
+    };
+
+    window.addEventListener(
+      "expo-proffdok-sales-traceability",
+      handleTraceability
+    );
+    return () =>
+      window.removeEventListener(
+        "expo-proffdok-sales-traceability",
+        handleTraceability
+      );
+  }, [requestRef, request.__createdByName, request.__createdAt]);
+
+  const creatorName = creator.name;
+  const createdAt = creatorName ? formatTraceTime(creator.createdAt) : "";
   const publishedByName = String(request.lastPublishedByName || "").trim();
   const publishedAt = publishedByName
     ? formatTraceTime(request.lastPublishedAt)
@@ -32,7 +78,8 @@ function TraceabilityBlock({ request = {} }) {
       ""
   ).trim();
 
-  if (!creatorName && !publishedByName && !responsible) return null;
+  // Gamle saker uten ny creator/publisher-sporbarhet endres ikke visuelt.
+  if (!creatorName && !publishedByName) return null;
 
   return (
     <div
