@@ -44,6 +44,27 @@ function stripRuntimeTraceability(payload = {}) {
   return clean;
 }
 
+function announceCreatorTraceability(rows = []) {
+  if (typeof window === "undefined") return;
+
+  (Array.isArray(rows) ? rows : []).forEach((row) => {
+    const payload = row?.payload || {};
+    const creatorName = String(payload.__createdByName || "").trim();
+    if (!creatorName || !row?.request_ref) return;
+
+    window.dispatchEvent(
+      new CustomEvent("expo-proffdok-sales-traceability", {
+        detail: {
+          requestRef: String(row.request_ref),
+          createdByUserId: String(payload.__createdByUserId || ""),
+          createdByName: creatorName,
+          createdAt: payload.__createdAt || "",
+        },
+      })
+    );
+  });
+}
+
 async function hydrateCreatorTraceability(client, companyId, rows = []) {
   if (!client || !companyId || !Array.isArray(rows) || rows.length === 0) {
     return rows;
@@ -149,6 +170,23 @@ export async function upsertSalesRequests(client, rows) {
   const result = await core.upsertSalesRequests(client, safeRows);
   if (!result?.error) {
     await rememberOfferContentSignatures(client, safeRows || []);
+
+    const companyIds = [
+      ...new Set(
+        safeRows.map((row) => String(row?.company_id || "").trim()).filter(Boolean)
+      ),
+    ];
+    for (const companyId of companyIds) {
+      const companyRows = safeRows.filter(
+        (row) => String(row?.company_id || "").trim() === companyId
+      );
+      const hydratedRows = await hydrateCreatorTraceability(
+        client,
+        companyId,
+        companyRows
+      );
+      announceCreatorTraceability(hydratedRows);
+    }
   }
   return result;
 }
