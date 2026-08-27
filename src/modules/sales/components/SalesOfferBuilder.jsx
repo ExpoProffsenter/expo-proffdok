@@ -351,20 +351,45 @@ export default function SalesOfferBuilder(props) {
     setAmountValidation(null);
     if (!validation?.id || typeof document === "undefined") return;
 
-    requestAnimationFrame(() => {
+    const tryFocus = () => {
       const selector =
         validation.kind === "option"
           ? `[data-offer-option-id="${validation.id}"]`
           : `[data-offer-line-id="${validation.id}"]`;
-      const card = document.querySelector(selector);
-      if (!card) return;
 
-      card.scrollIntoView({ behavior: "auto", block: "center", inline: "nearest" });
-      const amountInput = Array.from(card.querySelectorAll("input")).find(
-        (input) => String(input.value ?? "") === validation.value
-      );
-      amountInput?.focus?.({ preventScroll: true });
-      amountInput?.select?.();
+      let card = document.querySelector(selector);
+      if (!card) {
+        card = Array.from(document.querySelectorAll(".sales-offer-line")).find((candidate) =>
+          Array.from(candidate.querySelectorAll("input")).some(
+            (input) => String(input.value ?? "").trim() === validation.value.trim()
+          )
+        );
+      }
+      if (!card) return false;
+
+      const inputs = Array.from(card.querySelectorAll("input"));
+      const amountInput =
+        inputs.find(
+          (input) => String(input.value ?? "").trim() === validation.value.trim()
+        ) || inputs.find((input) => input.getAttribute("placeholder") === "0");
+
+      card.scrollIntoView({
+        behavior: "auto",
+        block: "center",
+        inline: "nearest",
+      });
+
+      if (amountInput) {
+        amountInput.focus({ preventScroll: true });
+        amountInput.select?.();
+      }
+      return true;
+    };
+
+    // Dialogen må først være fjernet av React. Første forsøk er raskt,
+    // de neste dekker tregere render/scroll i store tilbud.
+    [0, 80, 220].forEach((delay) => {
+      window.setTimeout(tryFocus, delay);
     });
   }
 
