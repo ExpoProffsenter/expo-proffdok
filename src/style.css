@@ -526,3 +526,11 @@ footer { color: var(--expo-muted); margin-top: 18px; border-top: 1px solid #dbe7
     text-align: left !important;
   }
 }
+
+/* FASE 30D2: Mobil Startside skal være en oversikt, ikke en ekstra prosjektliste. */
+@media screen and (max-width: 700px) {
+  .mobileProjectChooser > .mobileHomeSearchCard:has(+ .mobileProjectList),
+  .mobileProjectChooser > .mobileProjectList {
+    display: none !important;
+  }
+}
