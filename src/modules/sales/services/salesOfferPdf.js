@@ -1,10 +1,9 @@
 // Expo ProffDok – FASE 31A2B
-// Bruker ny A4-generator som speiler kundelinkens struktur og visuelle hierarki.
-// Tidligere generator beholdes i salesOfferPdfCore.js som trygg rollback.
-// Ingen lagring, SQL, RLS, Storage-policy eller Edge-logikk endres.
+// Bruker profesjonell A4-generator som speiler kundelinken og har robust paginering.
+// Tidligere generatorer beholdes som trygg rollback. Ingen lagring/SQL/RLS/Storage/Edge-endring.
 
-import { createPublishedOfferPdfPolished } from "./salesOfferPdfPolished.js";
+import { createPublishedOfferPdfPolishedV2 } from "./salesOfferPdfPolishedV2.js";
 
 export async function createPublishedOfferPdf(args = {}) {
-  return createPublishedOfferPdfPolished(args);
+  return createPublishedOfferPdfPolishedV2(args);
 }
