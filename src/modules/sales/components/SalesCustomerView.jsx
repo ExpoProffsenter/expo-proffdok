@@ -1,12 +1,13 @@
 // Expo ProffDok – FASE 31A2B
 // Kundetilbudet beholder eksisterende, testet Core-visning, men presentasjonen
-// følger nå samme dokumentrekkefølge som PDF: om tilbudet/forutsetninger/omfang
-// før arbeider og priser, med vilkår rett før digital aksept.
+// følger nå samme dokumentrekkefølge som PDF og tydeliggjør at opsjoner er valgfrie.
 // Ingen lagring, aksept, SQL, RLS, Storage eller Edge-logikk endres.
 
 import { useEffect } from "react";
 import SalesCustomerViewCore from "./SalesCustomerViewCore.jsx";
+import "./salesCustomerOptionality.css";
 import { decorateRequestForQuantityPresentation } from "../utils/salesOfferQuantityPresentation.js";
+import { decorateRequestForOptionalityPresentation } from "../utils/salesOfferOptionalityPresentation.js";
 
 const ORDER_STYLES = `
 .sales-customer-ordered-stack {
@@ -107,14 +108,19 @@ export default function SalesCustomerView(props) {
     };
   }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId]);
 
+  const quantityRequest = decorateRequestForQuantityPresentation(
+    props.selectedRequest
+  );
+  const presentationRequest = decorateRequestForOptionalityPresentation(
+    quantityRequest
+  );
+
   return (
     <>
       <style>{ORDER_STYLES}</style>
       <SalesCustomerViewCore
         {...props}
-        selectedRequest={decorateRequestForQuantityPresentation(
-          props.selectedRequest
-        )}
+        selectedRequest={presentationRequest}
       />
     </>
   );
