@@ -1,21 +1,13 @@
-// Expo ProffDok – FASE 31A2B / FASE 31B / FASE 30C2 UX
-// 31A2B: Vercel Preview kan forhåndsvise nytt akseptbevis fra låst akseptert innhold
-// uten opplasting, lagring eller endring av eksisterende akseptbevis. Preview-knappen
-// vises aldri på produksjonsdomenet.
-// Intern tilbudsvisning bruker samme hovedpostrekkefølge og nummereringsprinsipp
-// som kundevisningen. Hovedposter og opsjoner blir tydelige, og lagret ansvarlig
-// på saken vises foran innlogget bruker. Ingen endring av tilbudsdata, lagring,
-// publisering, recovery, SQL/RLS/Storage eller Edge Functions.
-// FASE 30C2: Tynn presentasjons-wrapper rundt eksisterende SalesDetailView. Når en Befaring-sak
-// allerede har reelt tilbudsinnhold, endres kun brukerens handlingslabel fra
-// «Opprett tilbud …» til «Fortsett på tilbud». Eksisterende arbeidsflyt og callbacks
-// beholdes uendret. Core-filen er fortsatt presentasjonsren og bruker ingen React-hooks.
+// Expo ProffDok – FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// Intern tilbudsvisning og låst akseptvisning følger samme hovedpostrekkefølge
+// som kundelink og dokumenter. Akseptdata, lagring og prosjektaktivering er uendret.
 
 import { Children, cloneElement, isValidElement } from "react";
 import SalesDetailViewCore from "./SalesDetailViewCore.jsx";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
 import { createAcceptanceProofPdf } from "../services/salesAcceptancePdf.js";
+import { rewriteAcceptedPresentation } from "./SalesAcceptedPresentation.jsx";
 
 const LEGACY_MAIN_POST = {
   id: "ovrige-arbeider",
@@ -485,6 +477,7 @@ export default function SalesDetailView(props) {
 
   let tree = SalesDetailViewCore(coreProps);
   tree = rewriteInternalOfferPresentation(tree, coreProps?.selectedRequest);
+  tree = rewriteAcceptedPresentation(tree, coreProps?.selectedRequest);
 
   if (hasExistingOfferDraft) {
     // SalesDetailViewCore er bevisst hook-fri. Vi materialiserer derfor treet her

@@ -1,5 +1,6 @@
-// Expo ProffDok – FASE 31A2B
+// Expo ProffDok – FASE 31C / FASE 31A2B
 // Profesjonelt, låst akseptbevis basert på den allerede aksepterte tilbudsversjonen.
+// Hovedpostnummer beholdes fra tilbudsversjonen selv om uvalgte opsjonsposter utelates.
 // Ingen endring i akseptlogikk, Supabase, RLS, Storage-path eller prosjektaktivering.
 
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
@@ -177,6 +178,31 @@ function acceptedSnapshot(request = {}) {
   };
 }
 
+function getAcceptedVersionNumberMap(request = {}, accepted = {}) {
+  const acceptedPayload = request.acceptedPayload || {};
+  const snapshot = acceptedPayload.version_snapshot || {};
+
+  const fullRawLines =
+    (Array.isArray(snapshot.lines) && snapshot.lines.length
+      ? snapshot.lines
+      : Array.isArray(request.offerLines) && request.offerLines.length
+        ? request.offerLines
+        : accepted.rawLines || accepted.lines) || [];
+  const fullLines = getVisibleOfferLines(fullRawLines);
+
+  const fullOptions =
+    (Array.isArray(snapshot.options) && snapshot.options.length
+      ? snapshot.options
+      : Array.isArray(snapshot.offerOptions) && snapshot.offerOptions.length
+        ? snapshot.offerOptions
+        : Array.isArray(request.offerOptions) && request.offerOptions.length
+          ? request.offerOptions
+          : accepted.options) || [];
+
+  const fullGroups = buildGroups(fullLines, fullOptions);
+  return new Map(fullGroups.map((group, index) => [group.id, index + 1]));
+}
+
 function companySnapshot(request = {}, companyProfile = {}, rawLines = []) {
   const meta = (Array.isArray(rawLines) ? rawLines : []).find((line) => line?.__companyMeta) || {};
   return {
@@ -227,6 +253,7 @@ export async function createAcceptanceProofPdfPolished({
   const accepted = acceptedSnapshot(selectedRequest);
   const company = companySnapshot(selectedRequest, companyProfile, accepted.rawLines);
   const groups = buildGroups(accepted.lines, accepted.options);
+  const versionNumberMap = getAcceptedVersionNumberMap(selectedRequest, accepted);
   const offerId = clean(selectedRequest.id || "-");
   const acceptedBy = clean(selectedRequest.acceptedBy || selectedRequest.acceptedPayload?.accepted_by || "Kunde");
   const acceptedAt = selectedRequest.acceptedAt || selectedRequest.acceptedPayload?.accepted_at || "";
@@ -393,13 +420,14 @@ export async function createAcceptanceProofPdfPolished({
     ensure(19 + Math.min(nextHeight, 36));
 
     const groupTotal = (getOfferTotal(group.lines) + getOfferTotal(group.options)) * 1.25;
+    const groupNumber = versionNumberMap.get(group.id) || groupIndex + 1;
     pdf.setFillColor(...COLORS.tealSoft);
     pdf.setDrawColor(...COLORS.line);
     pdf.roundedRect(PAGE.left, y, WIDTH, 17, 2, 2, "FD");
     pdf.setFillColor(...COLORS.teal);
     pdf.circle(PAGE.left + 8, y + 8.5, 4.7, "F");
     font(7.7, "bold", COLORS.white);
-    pdf.text(String(groupIndex + 1).padStart(2, "0"), PAGE.left + 8, y + 9.2, { align: "center" });
+    pdf.text(String(groupNumber).padStart(2, "0"), PAGE.left + 8, y + 9.2, { align: "center" });
     font(11.2, "bold", COLORS.ink);
     pdf.text(clean(group.title), PAGE.left + 16, y + 10);
     font(7.1, "bold", COLORS.muted);
@@ -417,6 +445,7 @@ export async function createAcceptanceProofPdfPolished({
         isAlternative(option) &&
         String(option.replacementLineId || "") === String(line.id || "")
     );
+    const groupNumber = versionNumberMap.get(group.id) || groupIndex + 1;
     const qText = qty(line);
     font(8.7, "bold", COLORS.ink);
     const titleRows = pdf.splitTextToSize(lineTitle(line), 96);
@@ -436,7 +465,7 @@ export async function createAcceptanceProofPdfPolished({
     pdf.setDrawColor(...COLORS.line);
     pdf.roundedRect(PAGE.left, y, WIDTH, height, 1.8, 1.8, "FD");
     font(8.1, "bold", COLORS.tealDark);
-    pdf.text(`${String(groupIndex + 1).padStart(2, "0")}.${lineIndex + 1}`, PAGE.left + 4, y + 6.5);
+    pdf.text(`${String(groupNumber).padStart(2, "0")}.${lineIndex + 1}`, PAGE.left + 4, y + 6.5);
     let textY = y + 6.5;
     font(8.7, "bold", COLORS.ink);
     titleRows.forEach((row) => {

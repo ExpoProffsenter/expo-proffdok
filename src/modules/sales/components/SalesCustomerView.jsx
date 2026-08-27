@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 31C
+// Hovedposter uten grunnpris vises som «Kun valgfrie opsjoner» i kundetilbudet.
+// Eksisterende pris-, valg- og akseptlogikk beholdes uendret.
 // Expo ProffDok – FASE 31A2B
 // Kundetilbudet beholder eksisterende, testet Core-visning, men presentasjonen
 // følger nå samme dokumentrekkefølge som PDF og tydeliggjør at opsjoner er valgfrie.
@@ -8,6 +11,7 @@ import SalesCustomerViewCore from "./SalesCustomerViewCore.jsx";
 import "./salesCustomerOptionality.css";
 import { decorateRequestForQuantityPresentation } from "../utils/salesOfferQuantityPresentation.js";
 import { decorateRequestForOptionalityPresentation } from "../utils/salesOfferOptionalityPresentation.js";
+import { getActiveOfferVersion } from "../utils/salesOfferLogic.js";
 
 const ORDER_STYLES = `
 .sales-customer-ordered-stack {
@@ -28,6 +32,42 @@ const ORDER_STYLES = `
   content: attr(data-section-number);
   font-size: 12px;
   line-height: 1;
+}
+.sales-customer-options-only-mainpost .sales-customer-main-post-sum > span {
+  font-size: 0 !important;
+}
+.sales-customer-options-only-mainpost .sales-customer-main-post-sum > span::after {
+  content: "Sum valgte opsjoner";
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+.sales-customer-options-only-mainpost.sales-customer-options-only-no-selection
+  .sales-customer-main-post-sum > span::after {
+  content: "Kun valgfrie opsjoner";
+}
+.sales-customer-options-only-mainpost.sales-customer-options-only-no-selection
+  .sales-customer-main-post-sum > strong,
+.sales-customer-options-only-mainpost.sales-customer-options-only-no-selection
+  .sales-customer-main-post-sum > small {
+  display: none !important;
+}
+.sales-customer-options-only-mainpost
+  .sales-customer-main-post-options-heading > span {
+  font-size: 0 !important;
+}
+.sales-customer-options-only-mainpost
+  .sales-customer-main-post-options-heading > span::after {
+  content: "Ingen grunnpris er knyttet til denne hovedposten. Velg eventuelle opsjoner under.";
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.sales-customer-options-only-mainpost .sales-customer-option-replacement {
+  font-size: 0 !important;
+}
+.sales-customer-options-only-mainpost .sales-customer-option-replacement::after {
+  content: "Prisen inngår kun dersom opsjonen velges.";
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 `;
 
@@ -98,22 +138,106 @@ function applyCustomerSectionOrder() {
     });
 }
 
-export default function SalesCustomerView(props) {
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(applyCustomerSectionOrder);
-    const timer = window.setTimeout(applyCustomerSectionOrder, 100);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.clearTimeout(timer);
-    };
-  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId]);
+function getOptionsOnlyGroups(request = {}) {
+  if (!request) return [];
 
+  const activeVersion = getActiveOfferVersion(request);
+  const lines = Array.isArray(activeVersion?.lines)
+    ? activeVersion.lines
+    : Array.isArray(request.offerLines)
+      ? request.offerLines
+      : [];
+  const options = Array.isArray(activeVersion?.options)
+    ? activeVersion.options
+    : Array.isArray(request.offerOptions)
+      ? request.offerOptions
+      : [];
+  const lineMainPostIds = new Set(
+    lines.map((line) => String(line?.mainPostId || "").trim()).filter(Boolean)
+  );
+  const groups = new Map();
+
+  options.forEach((option) => {
+    const id = String(option?.mainPostId || "").trim();
+    const title = String(option?.mainPostTitle || "").trim();
+    if (!id || !title || lineMainPostIds.has(id)) return;
+    if (!groups.has(id)) groups.set(id, { id, title, optionIds: [] });
+    groups.get(id).optionIds.push(String(option?.id || ""));
+  });
+
+  return Array.from(groups.values());
+}
+
+function applyCustomerOptionsOnlyPresentation(request, selectedOptionIds = []) {
+  if (typeof document === "undefined") return;
+
+  const sections = Array.from(
+    document.querySelectorAll(".sales-customer-main-post")
+  );
+  sections.forEach((section) => {
+    section.classList.remove(
+      "sales-customer-options-only-mainpost",
+      "sales-customer-options-only-no-selection"
+    );
+  });
+
+  const selectedIds = new Set(
+    (Array.isArray(selectedOptionIds) ? selectedOptionIds : []).map(String)
+  );
+  const usedSections = new Set();
+
+  getOptionsOnlyGroups(request).forEach((group) => {
+    const section = sections.find((candidate) => {
+      if (usedSections.has(candidate)) return false;
+      return (
+        String(candidate.querySelector("h3")?.textContent || "").trim() ===
+        group.title
+      );
+    });
+    if (!section) return;
+
+    usedSections.add(section);
+    section.classList.add("sales-customer-options-only-mainpost");
+
+    const hasSelectedOption = group.optionIds.some((id) => selectedIds.has(id));
+    if (!hasSelectedOption) {
+      section.classList.add("sales-customer-options-only-no-selection");
+    }
+  });
+}
+
+export default function SalesCustomerView(props) {
   const quantityRequest = decorateRequestForQuantityPresentation(
     props.selectedRequest
   );
   const presentationRequest = decorateRequestForOptionalityPresentation(
     quantityRequest
   );
+  const selectedOptionIds = props.acceptanceForm?.selectedOptionIds || [];
+
+  useEffect(() => {
+    const applyPresentation = () => {
+      applyCustomerSectionOrder();
+      applyCustomerOptionsOnlyPresentation(
+        presentationRequest,
+        selectedOptionIds
+      );
+    };
+
+    const frame = window.requestAnimationFrame(applyPresentation);
+    const timer = window.setTimeout(applyPresentation, 100);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
+  }, [
+    props.mode,
+    props.selectedRequest?.id,
+    props.selectedRequest?.sentOfferVersionId,
+    props.selectedRequest?.offerLines,
+    props.selectedRequest?.offerOptions,
+    selectedOptionIds.join("|"),
+  ]);
 
   return (
     <>

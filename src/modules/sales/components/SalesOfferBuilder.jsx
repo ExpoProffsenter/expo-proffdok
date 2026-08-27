@@ -16,6 +16,7 @@
 
 import { useEffect, useState } from "react";
 import SalesOfferBuilderCore from "./SalesOfferBuilderCore.jsx";
+import SalesOfferOptionsOnlyEnhancer from "./SalesOfferOptionsOnlyEnhancer.jsx";
 import { STORAGE_KEY } from "../constants/salesConstants.js";
 import {
   getPendingOfferDraftRecovery,
@@ -541,6 +542,10 @@ export default function SalesOfferBuilder(props) {
           handleSaveOffer={handleValidatedSaveOffer}
           handleSaveOfferTemplate={handleValidatedSaveOfferTemplate}
           offerDraftSaveStatus={effectiveOfferDraftSaveStatus}
+        />
+        <SalesOfferOptionsOnlyEnhancer
+          offerForm={props.offerForm}
+          addOfferOption={props.addOfferOption}
         />
       </div>
 
