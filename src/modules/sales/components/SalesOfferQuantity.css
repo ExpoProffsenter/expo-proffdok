@@ -1,0 +1,130 @@
+/* Expo ProffDok – FASE 31A2A
+   Tydeligere redigering av antall og linjesum i tilbudsbyggeren.
+   Kun presentasjon – ingen beregnings-, lagrings- eller backendlogikk. */
+
+.sales-offer-builder-app .sales-offer-line {
+  border: 2px solid #cbdde4;
+  background: #ffffff;
+  box-shadow: 0 5px 16px rgba(16, 33, 43, 0.055);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.sales-offer-builder-app .sales-offer-line:focus-within {
+  border-color: #76c8cd;
+  background: #fbfeff;
+  box-shadow: 0 0 0 3px rgba(28, 199, 207, 0.10), 0 7px 18px rgba(16, 33, 43, 0.07);
+}
+
+.sales-quantity-stepper {
+  display: grid;
+  grid-template-columns: 46px minmax(66px, 1fr) 46px;
+  min-height: 49px;
+  overflow: hidden;
+  border: 1px solid #cfdee4;
+  border-radius: 15px;
+  background: #ffffff;
+}
+
+.sales-quantity-stepper:focus-within {
+  border-color: #1bb7c0;
+  box-shadow: 0 0 0 4px rgba(28, 199, 207, 0.13);
+}
+
+.sales-quantity-stepper > button {
+  min-width: 0;
+  min-height: 47px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #eef7f8;
+  color: #087b82;
+  box-shadow: none;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.sales-quantity-stepper > button:first-child {
+  border-right: 1px solid #d8e6ea;
+}
+
+.sales-quantity-stepper > button:last-child {
+  border-left: 1px solid #d8e6ea;
+}
+
+.sales-quantity-stepper > button:hover:not(:disabled) {
+  transform: none;
+  background: #e2f3f4;
+  box-shadow: none;
+}
+
+.sales-quantity-stepper > button:disabled {
+  background: #f5f8f9;
+  color: #a8b6bc;
+  opacity: 1;
+}
+
+.sales-field .sales-quantity-stepper > input {
+  min-width: 0;
+  min-height: 47px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-align: center;
+  font-weight: 850;
+}
+
+.sales-field .sales-quantity-stepper > input:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.sales-offer-line-total {
+  display: grid;
+  gap: 3px;
+  margin-top: 5px;
+  padding: 10px 12px;
+  border: 1px solid #c8e7e9;
+  border-radius: 12px;
+  background: #ebf9fa;
+}
+
+.sales-offer-line-total > span {
+  color: #526975;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.sales-offer-line-total > strong {
+  color: #10212b;
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.sales-offer-line-total > small {
+  color: #58707d;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+@media (max-width: 760px) {
+  .sales-offer-builder-app .sales-offer-line {
+    border-width: 2px;
+  }
+
+  .sales-quantity-stepper {
+    grid-template-columns: 48px minmax(72px, 1fr) 48px;
+  }
+
+  .sales-quantity-stepper > button {
+    min-height: 50px;
+  }
+
+  .sales-field .sales-quantity-stepper > input {
+    min-height: 50px;
+  }
+}

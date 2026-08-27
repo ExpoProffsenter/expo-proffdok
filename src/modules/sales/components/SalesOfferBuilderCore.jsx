@@ -1,3 +1,7 @@
+// Expo ProffDok – FASE 31A2
+// Underposter og opsjoner kan ha valgfritt antall/enhet. Prisfeltet er enhetspris
+// når antall/enhet brukes, og linjesum vises direkte. Gamle poster uten antall
+// fungerer fortsatt som før med effektivt antall 1. Ingen backend-/policyendring.
 // Expo ProffDok – FASE 28A3
 // Viser firmadelte tilbudsmaler i tilbudsbyggeren med bruk og sletting.
 // Malbruk erstatter kun redigerbar tilbudskladd; kunde/befaring/publisert historikk berøres ikke.
@@ -14,15 +18,21 @@ import { ArrowLeft, ClipboardList, FileText, Plus, Save, Send, Trash2 } from "lu
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import {
   formatNok,
+  formatOfferQuantity,
   getInspectionContext,
   getOfferTotal,
+  getOfferUnitPrice,
   hasInspectionContext,
+  hasOfferQuantityDetails,
 } from "../utils/salesUtils.js";
+import "./SalesOfferQuantity.css";
 
 function hasLineContent(line) {
   return Boolean(
     String(line?.description || "").trim() ||
       String(line?.amount || "").trim() ||
+      String(line?.quantity ?? "").trim() ||
+      String(line?.unit || "").trim() ||
       String(line?.productUrl || "").trim() ||
       line?.imageDataUrl ||
       line?.attachmentFile?.url
@@ -34,10 +44,36 @@ function hasOptionContent(option) {
     String(option?.title || "").trim() ||
       String(option?.description || "").trim() ||
       String(option?.amount || "").trim() ||
+      String(option?.quantity ?? "").trim() ||
+      String(option?.unit || "").trim() ||
       String(option?.productUrl || "").trim() ||
       option?.imageDataUrl ||
       option?.attachmentFile?.url
   );
+}
+
+function parseStepperQuantity(value) {
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(/\s/g, "")
+    .replace(",", ".");
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function formatStepperQuantity(value) {
+  const rounded = Math.round((Number(value) + Number.EPSILON) * 1000) / 1000;
+  return String(rounded).replace(".", ",");
+}
+
+function stepQuantity(value, direction) {
+  const current = parseStepperQuantity(value);
+  const next = current + direction;
+  return next > 0 ? formatStepperQuantity(next) : formatStepperQuantity(current);
+}
+
+function canDecreaseQuantity(value) {
+  return parseStepperQuantity(value) > 1;
 }
 
 export default function SalesOfferBuilder({
@@ -116,8 +152,6 @@ export default function SalesOfferBuilder({
       replacementField?.focus?.({ preventScroll: true });
     });
   }
-
-
 
   const standardIds = new Set(OFFER_MAIN_POSTS.map((post) => post.id));
   const referencedPosts = [...(offerForm.lines || []), ...(offerForm.options || [])]
@@ -447,9 +481,10 @@ export default function SalesOfferBuilder({
                   Beløp i tilbudsbyggeren legges inn eks. mva. Hovedposter brukes
                   for å samle underposter, opsjoner og eventuell avtalt
                   administrasjon/prosjektstyring. Kunden får prisene vist inkl. mva.
-                  Varenummer er valgfritt og kun internt – det publiseres aldri til kunden.
-                  For hver opsjon velger du om den er et tillegg/oppgradering eller
-                  et alternativ som erstatter en konkret underpost.
+                  Antall og enhet er valgfritt; når det brukes er prisfeltet pris pr. enhet
+                  og linjesummen beregnes automatisk. Varenummer er valgfritt og kun internt –
+                  det publiseres aldri til kunden. For hver opsjon velger du om den er
+                  et tillegg/oppgradering eller et alternativ som erstatter en konkret underpost.
                 </p>
 
                 {activeMainPosts.length ? (
@@ -501,7 +536,11 @@ export default function SalesOfferBuilder({
                           {workLines.length ? (
                             <div className="sales-offer-lines" style={{ marginTop: 14 }}>
                               {workLines.map((line) => (
-                                <div className="sales-offer-line" key={line.id}>
+                                <div
+                                  className="sales-offer-line"
+                                  key={line.id}
+                                  data-offer-line-id={line.id}
+                                >
                                   <div className="sales-offer-line-number">
                                     {workLines.findIndex((item) => item.id === line.id) + 1}
                                   </div>
@@ -519,6 +558,78 @@ export default function SalesOfferBuilder({
                                       }
                                       placeholder={`Underpost under ${mainPost.title}`}
                                     />
+
+                                    <div
+                                      style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "minmax(150px, 0.8fr) minmax(120px, 1fr)",
+                                        gap: 10,
+                                      }}
+                                    >
+                                      <label className="sales-field">
+                                        <span>Antall</span>
+                                        <div className="sales-quantity-stepper">
+                                          <button
+                                            type="button"
+                                            aria-label={`Reduser antall for ${line.description || "underpost"}`}
+                                            disabled={!canDecreaseQuantity(line.quantity)}
+                                            onClick={() =>
+                                              updateOfferLine(
+                                                line.id,
+                                                "quantity",
+                                                stepQuantity(line.quantity, -1)
+                                              )
+                                            }
+                                          >
+                                            −
+                                          </button>
+                                          <input
+                                            data-offer-line-quantity={line.id}
+                                            value={line.quantity ?? ""}
+                                            onChange={(event) =>
+                                              updateOfferLine(
+                                                line.id,
+                                                "quantity",
+                                                event.target.value
+                                              )
+                                            }
+                                            onFocus={(event) => event.currentTarget.select()}
+                                            placeholder="1"
+                                            inputMode="decimal"
+                                            autoComplete="off"
+                                          />
+                                          <button
+                                            type="button"
+                                            aria-label={`Øk antall for ${line.description || "underpost"}`}
+                                            onClick={() =>
+                                              updateOfferLine(
+                                                line.id,
+                                                "quantity",
+                                                stepQuantity(line.quantity, 1)
+                                              )
+                                            }
+                                          >
+                                            +
+                                          </button>
+                                        </div>
+                                      </label>
+
+                                      <label className="sales-field">
+                                        <span>Enhet (valgfritt)</span>
+                                        <input
+                                          value={line.unit || ""}
+                                          onChange={(event) =>
+                                            updateOfferLine(
+                                              line.id,
+                                              "unit",
+                                              event.target.value
+                                            )
+                                          }
+                                          placeholder="stk, lm, m², time …"
+                                          autoComplete="off"
+                                        />
+                                      </label>
+                                    </div>
 
                                     <input
                                       value={line.internalProductNumber || ""}
@@ -615,7 +726,11 @@ export default function SalesOfferBuilder({
                                   </div>
 
                                   <label className="sales-offer-amount-field">
-                                    <span>Pris eks. mva.</span>
+                                    <span>
+                                      {hasOfferQuantityDetails(line)
+                                        ? "Pris pr. enhet eks. mva."
+                                        : "Pris eks. mva."}
+                                    </span>
                                     <input
                                       value={line.amount}
                                       onChange={(event) =>
@@ -631,6 +746,15 @@ export default function SalesOfferBuilder({
                                       placeholder="0"
                                       inputMode="decimal"
                                     />
+                                    {hasOfferQuantityDetails(line) ? (
+                                      <div className="sales-offer-line-total">
+                                        <span>Linjesum eks. mva.</span>
+                                        <strong>{formatNok(getOfferTotal([line]))}</strong>
+                                        <small>
+                                          {formatOfferQuantity(line)} × {formatNok(getOfferUnitPrice(line))}
+                                        </small>
+                                      </div>
+                                    ) : null}
                                   </label>
 
                                   <button
@@ -883,6 +1007,78 @@ export default function SalesOfferBuilder({
                                         placeholder="Kort beskrivelse"
                                       />
 
+                                      <div
+                                        style={{
+                                          display: "grid",
+                                          gridTemplateColumns: "minmax(150px, 0.8fr) minmax(120px, 1fr)",
+                                          gap: 10,
+                                        }}
+                                      >
+                                        <label className="sales-field">
+                                          <span>Antall</span>
+                                          <div className="sales-quantity-stepper">
+                                            <button
+                                              type="button"
+                                              aria-label={`Reduser antall for ${option.title || "opsjon"}`}
+                                              disabled={!canDecreaseQuantity(option.quantity)}
+                                              onClick={() =>
+                                                updateOfferOption(
+                                                  option.id,
+                                                  "quantity",
+                                                  stepQuantity(option.quantity, -1)
+                                                )
+                                              }
+                                            >
+                                              −
+                                            </button>
+                                            <input
+                                              data-offer-option-quantity={option.id}
+                                              value={option.quantity ?? ""}
+                                              onChange={(event) =>
+                                                updateOfferOption(
+                                                  option.id,
+                                                  "quantity",
+                                                  event.target.value
+                                                )
+                                              }
+                                              onFocus={(event) => event.currentTarget.select()}
+                                              placeholder="1"
+                                              inputMode="decimal"
+                                              autoComplete="off"
+                                            />
+                                            <button
+                                              type="button"
+                                              aria-label={`Øk antall for ${option.title || "opsjon"}`}
+                                              onClick={() =>
+                                                updateOfferOption(
+                                                  option.id,
+                                                  "quantity",
+                                                  stepQuantity(option.quantity, 1)
+                                                )
+                                              }
+                                            >
+                                              +
+                                            </button>
+                                          </div>
+                                        </label>
+
+                                        <label className="sales-field">
+                                          <span>Enhet (valgfritt)</span>
+                                          <input
+                                            value={option.unit || ""}
+                                            onChange={(event) =>
+                                              updateOfferOption(
+                                                option.id,
+                                                "unit",
+                                                event.target.value
+                                              )
+                                            }
+                                            placeholder="stk, lm, m², time …"
+                                            autoComplete="off"
+                                          />
+                                        </label>
+                                      </div>
+
                                       <input
                                         value={option.internalProductNumber || ""}
                                         onChange={(event) =>
@@ -982,8 +1178,12 @@ export default function SalesOfferBuilder({
                                     <label className="sales-offer-amount-field">
                                       <span>
                                         {option.optionType === "alternative"
-                                          ? "Prisendring eks. mva. (+/−)"
-                                          : "Tillegg eks. mva."}
+                                          ? hasOfferQuantityDetails(option)
+                                            ? "Prisendring pr. enhet eks. mva. (+/−)"
+                                            : "Prisendring eks. mva. (+/−)"
+                                          : hasOfferQuantityDetails(option)
+                                            ? "Tillegg pr. enhet eks. mva."
+                                            : "Tillegg eks. mva."}
                                       </span>
                                       <input
                                         value={option.amount}
@@ -1003,6 +1203,15 @@ export default function SalesOfferBuilder({
                                         placeholder="0"
                                         inputMode="decimal"
                                       />
+                                      {hasOfferQuantityDetails(option) ? (
+                                        <div className="sales-offer-line-total">
+                                          <span>Sum opsjon eks. mva.</span>
+                                          <strong>{formatNok(getOfferTotal([option]))}</strong>
+                                          <small>
+                                            {formatOfferQuantity(option)} × {formatNok(getOfferUnitPrice(option))}
+                                          </small>
+                                        </div>
+                                      ) : null}
                                       {option.optionType === "alternative" ? (
                                         <small>
                                           Skriv 0 ved samme pris, positivt beløp ved dyrere
