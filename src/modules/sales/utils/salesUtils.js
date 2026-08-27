@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 31A1B
+// Norsk prisformat som 1600,- og 1600.- summeres korrekt i tilbud, opsjoner og kundevisning.
+// Ingen SQL/RLS/Storage/Edge-endring.
 // Expo ProffDok – FASE 23A
 // Rene hjelpefunksjoner for Befaring / Tilbud / Aksept.
 // Ingen React-state, Supabase-kall, Storage-kall eller UI-rendering.
@@ -222,7 +225,10 @@ export function firstNonEmailName(...values) {
 export function getOfferTotal(lines) {
   return lines.reduce((sum, line) => {
     const normalized = String(line.amount || "")
+      .trim()
       .replace(/\s/g, "")
+      .replace(/,-$/, "")
+      .replace(/\.-$/, "")
       .replace(",", ".");
 
     const amount = Number(normalized);
