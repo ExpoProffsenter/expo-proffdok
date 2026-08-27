@@ -1,3 +1,8 @@
+// Expo ProffDok – FASE 31A1
+// Stopper ugyldige prisverdier i tilbudsbyggeren før den eldre generiske
+// valideringen og peker brukeren direkte til aktuell linje/opsjon.
+// Norsk prisformat som 1600,- beholdes, mens enhetstekst som «lm» må ligge utenfor prisfeltet.
+// Ingen SQL/RLS/Storage/Edge-endring.
 // Expo ProffDok – FASE 30C2
 // React-wrapper for tilbudsbyggeren som viser recovery-valg som en varig modal.
 // Dialogen kan ikke tolke fokusbytte, Escape eller lukking som et valg.
@@ -185,6 +190,49 @@ function getSaveStatus(status) {
   };
 }
 
+function isValidOfferAmount(value) {
+  let normalized = String(value ?? "").trim().replace(/\s/g, "");
+  if (!normalized) return true;
+
+  normalized = normalized.replace(/,-$/, "").replace(/\.-$/, "").replace(",", ".");
+  if (!normalized) return false;
+  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized)) return false;
+
+  return Number.isFinite(Number(normalized));
+}
+
+function findInvalidOfferAmount(offerForm = {}) {
+  const lines = Array.isArray(offerForm.lines) ? offerForm.lines : [];
+  const options = Array.isArray(offerForm.options) ? offerForm.options : [];
+
+  const invalidLine = lines.find(
+    (line) => String(line?.amount ?? "").trim() && !isValidOfferAmount(line.amount)
+  );
+  if (invalidLine) {
+    return {
+      kind: "line",
+      id: invalidLine.id,
+      value: String(invalidLine.amount || ""),
+      title: invalidLine.description || invalidLine.mainPostTitle || "Tilbudslinje",
+    };
+  }
+
+  const invalidOption = options.find(
+    (option) =>
+      String(option?.amount ?? "").trim() && !isValidOfferAmount(option.amount)
+  );
+  if (invalidOption) {
+    return {
+      kind: "option",
+      id: invalidOption.id,
+      value: String(invalidOption.amount || ""),
+      title: invalidOption.title || invalidOption.mainPostTitle || "Opsjon",
+    };
+  }
+
+  return null;
+}
+
 export default function SalesOfferBuilder(props) {
   const requestId = String(props?.selectedRequest?.id || "");
   const [recovery, setRecovery] = useState(() =>
@@ -193,6 +241,7 @@ export default function SalesOfferBuilder(props) {
   const [isOnline, setIsOnline] = useState(() =>
     typeof navigator === "undefined" ? true : navigator.onLine !== false
   );
+  const [amountValidation, setAmountValidation] = useState(null);
 
   useEffect(() => {
     const refreshNetworkStatus = () => {
@@ -277,6 +326,48 @@ export default function SalesOfferBuilder(props) {
     );
   }
 
+  function validateOfferAmounts(event) {
+    const invalidAmount = findInvalidOfferAmount(props.offerForm);
+    if (!invalidAmount) return false;
+
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    setAmountValidation(invalidAmount);
+    return true;
+  }
+
+  function handleValidatedSaveOffer(event) {
+    if (validateOfferAmounts(event)) return false;
+    return props.handleSaveOffer?.(event);
+  }
+
+  function handleValidatedSaveOfferTemplate(...args) {
+    if (validateOfferAmounts()) return;
+    return props.handleSaveOfferTemplate?.(...args);
+  }
+
+  function focusInvalidAmount() {
+    const validation = amountValidation;
+    setAmountValidation(null);
+    if (!validation?.id || typeof document === "undefined") return;
+
+    requestAnimationFrame(() => {
+      const selector =
+        validation.kind === "option"
+          ? `[data-offer-option-id="${validation.id}"]`
+          : `[data-offer-line-id="${validation.id}"]`;
+      const card = document.querySelector(selector);
+      if (!card) return;
+
+      card.scrollIntoView({ behavior: "auto", block: "center", inline: "nearest" });
+      const amountInput = Array.from(card.querySelectorAll("input")).find(
+        (input) => String(input.value ?? "") === validation.value
+      );
+      amountInput?.focus?.({ preventScroll: true });
+      amountInput?.select?.();
+    });
+  }
+
   const visibleRecovery = recovery?.type === "transition" ? null : recovery;
   const isHistoryRecovery = visibleRecovery?.type === "history";
   const localTime = isHistoryRecovery
@@ -349,9 +440,62 @@ export default function SalesOfferBuilder(props) {
         </span>
         <SalesOfferBuilderCore
           {...props}
+          handleSaveOffer={handleValidatedSaveOffer}
+          handleSaveOfferTemplate={handleValidatedSaveOfferTemplate}
           offerDraftSaveStatus={effectiveOfferDraftSaveStatus}
         />
       </div>
+
+      {amountValidation ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="sales-offer-amount-validation-title"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 25000,
+            display: "grid",
+            placeItems: "center",
+            padding: 18,
+            background: "rgba(15, 23, 42, 0.52)",
+          }}
+        >
+          <div
+            style={{
+              width: "min(92vw, 560px)",
+              padding: 22,
+              borderRadius: 18,
+              background: "#ffffff",
+              boxShadow: "0 24px 70px rgba(15, 23, 42, 0.28)",
+            }}
+          >
+            <h2
+              id="sales-offer-amount-validation-title"
+              style={{ margin: "0 0 10px", fontSize: 20 }}
+            >
+              Kontroller prisfeltet
+            </h2>
+            <p style={{ margin: "0 0 12px", lineHeight: 1.55 }}>
+              Beløpet <strong>{amountValidation.value}</strong> på «{amountValidation.title}»
+              kan ikke brukes som pris.
+            </p>
+            <p style={{ margin: "0 0 18px", lineHeight: 1.55 }}>
+              Prisfeltet kan inneholde tall, komma/punktum, minus og norsk avslutning
+              som <strong>1600,-</strong>. Enhet som <strong>lm</strong>, <strong>stk</strong>
+              eller <strong>m²</strong> skal ikke stå i selve prisfeltet.
+            </p>
+            <button
+              className="sales-primary-button"
+              type="button"
+              onClick={focusInvalidAmount}
+              autoFocus
+            >
+              OK – gå til prisfeltet
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {visibleRecovery ? (
         <div
