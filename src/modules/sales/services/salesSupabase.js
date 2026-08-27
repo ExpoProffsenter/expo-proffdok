@@ -1,4 +1,7 @@
-// Expo ProffDok – FASE 32A / FASE 30C2
+// Expo ProffDok – FASE 32 / FASE 32A / FASE 30C2
+// FASE 32 deler én standard Supabase-klient i hele Sales-modulen. Det hindrer
+// flere GoTrue/auth-klienter med samme browser-storage og lar bilde-/Storage-laget
+// bruke samme innloggede session som resten av Sales.
 // FASE 32A henter serverstemplet creator-snapshot for nye salgssaker uten å
 // blande Opprettet av med ansvarlig. Sporbarhetsfeltene er kun runtime-metadata
 // og skrives ikke tilbake i sales_requests.payload.
@@ -21,6 +24,15 @@ const TRACEABILITY_PAYLOAD_KEYS = [
   "__createdByName",
   "__createdAt",
 ];
+
+let sharedDefaultSalesSupabaseClient;
+
+export function createDefaultSalesSupabaseClient() {
+  if (sharedDefaultSalesSupabaseClient === undefined) {
+    sharedDefaultSalesSupabaseClient = core.createDefaultSalesSupabaseClient();
+  }
+  return sharedDefaultSalesSupabaseClient;
+}
 
 function browserStorage() {
   return typeof window !== "undefined" && window.localStorage
