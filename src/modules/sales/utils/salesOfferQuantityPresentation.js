@@ -12,7 +12,7 @@ import {
 function getQuantityUnitPriceText(item = {}) {
   if (!hasOfferQuantityDetails(item)) return "";
 
-  return `${formatOfferQuantity(item)} × ${formatNok(
+  return `Antall/enhetspris: ${formatOfferQuantity(item)} × ${formatNok(
     getOfferUnitPrice(item) * 1.25
   )}`;
 }
