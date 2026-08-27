@@ -1,6 +1,7 @@
 // Expo ProffDok – FASE 31C
 // Ferdigstiller hovedposter som kun inneholder valgfrie opsjoner uten å innføre
 // ny datatype eller backend-felt. Eksisterende tilbuds-/recoverylogikk beholdes.
+// Hovedpostrekkefølgen styres fortsatt av eksisterende OFFER_MAIN_POSTS/Core-logikk.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -122,34 +123,78 @@ function resetOptionsOnlyPresentation(root) {
 
 function findMainPostSection(root, title) {
   if (!root || !title) return null;
+
   return Array.from(root.querySelectorAll("section.sales-form-preview")).find(
     (candidate) =>
       String(candidate.querySelector("h2")?.textContent || "").trim() === title
   );
 }
 
+function getTopChromeOffset() {
+  if (typeof document === "undefined" || typeof window === "undefined") {
+    return 120;
+  }
+
+  const width = Math.max(window.innerWidth || 0, 320);
+  const samplePoints = [
+    [8, 8],
+    [Math.round(width / 2), 8],
+    [Math.max(width - 8, 8), 8],
+    [Math.round(width / 2), 40],
+  ];
+  const candidates = new Set();
+
+  samplePoints.forEach(([x, y]) => {
+    document.elementsFromPoint?.(x, y)?.forEach((element) => {
+      candidates.add(element);
+    });
+  });
+
+  let bottom = 0;
+
+  candidates.forEach((element) => {
+    const style = window.getComputedStyle?.(element);
+    if (!style || !["fixed", "sticky"].includes(style.position)) return;
+
+    const rect = element.getBoundingClientRect?.();
+    if (!rect || rect.top > 12 || rect.bottom <= 0) return;
+    if (rect.bottom > window.innerHeight * 0.65) return;
+
+    bottom = Math.max(bottom, rect.bottom);
+  });
+
+  const fallback = Math.min(180, Math.max(110, window.innerHeight * 0.16));
+  const measured = bottom ? bottom + 16 : fallback;
+  return Math.min(measured, Math.max(220, window.innerHeight * 0.42));
+}
+
 function scrollToMainPost(root, title) {
   if (!root || !title || typeof window === "undefined") return;
 
+  let attempt = 0;
+  const maxAttempts = 10;
+
   const tryScroll = () => {
     const section = findMainPostSection(root, title);
-    if (!section) return false;
 
-    section.scrollIntoView({
+    if (!section) {
+      attempt += 1;
+      if (attempt < maxAttempts) {
+        window.setTimeout(tryScroll, 70);
+      }
+      return;
+    }
+
+    const sectionTop = window.scrollY + section.getBoundingClientRect().top;
+    const targetTop = Math.max(0, sectionTop - getTopChromeOffset());
+
+    window.scrollTo({
+      top: targetTop,
       behavior: "smooth",
-      block: "start",
-      inline: "nearest",
     });
-
-    window.setTimeout(() => {
-      window.scrollBy({ top: -90, behavior: "auto" });
-    }, 120);
-    return true;
   };
 
-  [0, 80, 180, 360].forEach((delay) => {
-    window.setTimeout(tryScroll, delay);
-  });
+  window.setTimeout(tryScroll, 0);
 }
 
 function applyOptionsOnlyPresentation(root, offerForm) {
