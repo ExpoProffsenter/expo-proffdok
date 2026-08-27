@@ -18,6 +18,9 @@ import {
   pruneEmptyOfferDraftRows,
 } from "../services/salesLocalStorage.js";
 import { getOfferTotal } from "./salesUtils.js";
+import {
+  prepareOfferFormForSave as prepareOfferFormForSaveCore,
+} from "./salesOfferLogicCore.js";
 import * as core from "./salesOfferLogicCore.js";
 
 function normalizeOfferAmountForValidation(value) {
@@ -153,9 +156,7 @@ export function mergeOfferDraftIntoRequests(
 }
 
 export function prepareOfferFormForSave(formValue = {}) {
-  const prepared = core.prepareOfferFormForSave(
-    pruneEmptyOfferDraftRows(formValue)
-  );
+  const prepared = prepareOfferFormForSaveCore(pruneEmptyOfferDraftRows(formValue));
 
   const cleanLines = recalculateAdministrationLines(prepared.cleanLines || []).map(
     normalizeQuantityFields
