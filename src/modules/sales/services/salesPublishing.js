@@ -1,4 +1,7 @@
-// Expo ProffDok – FASE 23P / FASE 29B4
+// Expo ProffDok – FASE 32A / FASE 23P / FASE 29B4
+// FASE 32A beholder serverstemplet publisher og publiseringstid på saken etter
+// publisering. Opplysningene kommer fra publish_sales_offer og er ikke utledet
+// fra ansvarlig eller andre mutable felt.
 // Samler publisering av tilbud og opprettelse av kundelenker.
 // FASE 29B4 bruker firmaprofilen SalesModule allerede har lastet inn, med samme
 // logo-prinsipp som hovedappen: firmaets logo når den finnes, ellers Expo-logo.
@@ -77,6 +80,10 @@ export async function publishSalesOfferAndBuildLink({
 
   if (error) throw error;
 
+  const publishedByUserId = String(data?.published_by || "").trim();
+  const publishedByName = String(data?.published_by_name || "").trim();
+  const publishedAt = String(data?.published_at || "").trim();
+
   const nextRequests = requests.map((item) =>
     item.id === request.id
       ? {
@@ -85,6 +92,9 @@ export async function publishSalesOfferAndBuildLink({
           sentOfferVersionId: data.version_id,
           sentOfferVersionNumber: data.version_number,
           publicToken: data.public_token,
+          lastPublishedByUserId: publishedByUserId,
+          lastPublishedByName: publishedByName,
+          lastPublishedAt: publishedAt,
           companyName:
             publishCompanyProfile.companyName || item.companyName || "",
           companyOrgNumber:
@@ -119,7 +129,8 @@ export async function publishSalesOfferAndBuildLink({
       requestId: request.id,
       versionNumber: data.version_number,
       link,
-      publishedAt: new Date().toISOString(),
+      publishedAt: publishedAt || new Date().toISOString(),
+      publishedByName,
     },
   };
 }
