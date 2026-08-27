@@ -1,4 +1,7 @@
-// Expo ProffDok – FASE 31B / FASE 30C2 UX
+// Expo ProffDok – FASE 31A2B / FASE 31B / FASE 30C2 UX
+// 31A2B: Vercel Preview kan forhåndsvise nytt akseptbevis fra låst akseptert innhold
+// uten opplasting, lagring eller endring av eksisterende akseptbevis. Preview-knappen
+// vises aldri på produksjonsdomenet.
 // Intern tilbudsvisning bruker samme hovedpostrekkefølge og nummereringsprinsipp
 // som kundevisningen. Hovedposter og opsjoner blir tydelige, og lagret ansvarlig
 // på saken vises foran innlogget bruker. Ingen endring av tilbudsdata, lagring,
@@ -12,6 +15,7 @@ import { Children, cloneElement, isValidElement } from "react";
 import SalesDetailViewCore from "./SalesDetailViewCore.jsx";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
+import { createAcceptanceProofPdf } from "../services/salesAcceptancePdf.js";
 
 const LEGACY_MAIN_POST = {
   id: "ovrige-arbeider",
@@ -403,6 +407,69 @@ function rewriteInternalOfferPresentation(node, request) {
   return cloneElement(node, undefined, children);
 }
 
+function isPreviewDeployment() {
+  if (typeof window === "undefined") return false;
+  return window.location.hostname.endsWith(".vercel.app");
+}
+
+async function openAcceptanceProofPreview(request, companyProfile = {}) {
+  const previewWindow = window.open("", "_blank");
+  if (previewWindow) {
+    previewWindow.document.title = "Genererer akseptbevis …";
+    previewWindow.document.body.innerHTML =
+      '<div style="font-family:system-ui;padding:32px;color:#183b46">Genererer forhåndsvisning av akseptbevis …</div>';
+  }
+
+  try {
+    const { blob } = await createAcceptanceProofPdf({
+      selectedRequest: request,
+      companyProfile,
+    });
+    const blobUrl = URL.createObjectURL(blob);
+    if (previewWindow) {
+      previewWindow.location.replace(blobUrl);
+    } else {
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+    }
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
+  } catch (error) {
+    previewWindow?.close?.();
+    window.alert(
+      error instanceof Error
+        ? `Akseptbeviset kunne ikke forhåndsvises: ${error.message}`
+        : "Akseptbeviset kunne ikke forhåndsvises."
+    );
+  }
+}
+
+function AcceptanceProofPreviewButton({ request, companyProfile }) {
+  if (!request?.acceptedAt || !isPreviewDeployment()) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => openAcceptanceProofPreview(request, companyProfile)}
+      style={{
+        position: "fixed",
+        right: 20,
+        bottom: 20,
+        zIndex: 24000,
+        border: "1px solid #83cfd4",
+        borderRadius: 999,
+        padding: "12px 18px",
+        background: "#ffffff",
+        color: "#0b737b",
+        fontWeight: 900,
+        boxShadow: "0 12px 30px rgba(15, 118, 128, .18)",
+        cursor: "pointer",
+      }}
+      title="Kun i Vercel Preview. PDF-en genereres lokalt og lagres ikke."
+    >
+      Forhåndsvis nytt akseptbevis (uten lagring)
+    </button>
+  );
+}
+
 export default function SalesDetailView(props) {
   const storedResponsible = getStoredResponsible(
     props?.selectedRequest,
@@ -419,11 +486,19 @@ export default function SalesDetailView(props) {
   let tree = SalesDetailViewCore(coreProps);
   tree = rewriteInternalOfferPresentation(tree, coreProps?.selectedRequest);
 
-  if (!hasExistingOfferDraft) {
-    return tree;
+  if (hasExistingOfferDraft) {
+    // SalesDetailViewCore er bevisst hook-fri. Vi materialiserer derfor treet her
+    // og endrer kun de to konkrete handlingslabelene – aldri status eller nextStep.
+    tree = rewriteOfferContinuationLabels(tree);
   }
 
-  // SalesDetailViewCore er bevisst hook-fri. Vi materialiserer derfor treet her
-  // og endrer kun de to konkrete handlingslabelene – aldri status eller nextStep.
-  return rewriteOfferContinuationLabels(tree);
+  return (
+    <>
+      {tree}
+      <AcceptanceProofPreviewButton
+        request={coreProps?.selectedRequest}
+        companyProfile={coreProps?.companyProfile || {}}
+      />
+    </>
+  );
 }

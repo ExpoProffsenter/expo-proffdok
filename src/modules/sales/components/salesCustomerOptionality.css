@@ -1,0 +1,11 @@
+/* Expo ProffDok – FASE 31A2B
+   Kundelenken tydeliggjør visuelt at opsjoner er valgfrie og ikke inngår i grunnsummen. */
+
+.sales-customer-main-post-options-heading strong::after {
+  content: " – valgfrie og ikke inkludert i tilbudssummen";
+  font-weight: 700;
+}
+
+.sales-customer-main-post-options-heading span::after {
+  content: " Disse postene påvirker kun prisen dersom du velger dem.";
+}
