@@ -77,6 +77,7 @@ function createSales31CHelp() {
     "Nye befaringsbilder sikres først lokalt på enheten før de vises i befaringsnotatet.",
     "Lokalt sikrede bilder kan gjenopprettes etter reload eller appbytte så lenge nettleserdata ikke slettes.",
     "Befaringsbildene lastes fortsatt til server når du trykker Lagre befaringsnotat.",
+    "Ved full reload fra Befaring/Tilbud åpner appen salgfanen og aktuell sak igjen.",
     "En sak kan gå videre til tilbud uten befaringsnotat når befaring ikke er nødvendig. Kontroller likevel at nødvendige avklaringer er dokumentert før tilbudet publiseres.",
   ]);
 
