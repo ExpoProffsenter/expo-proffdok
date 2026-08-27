@@ -1,7 +1,8 @@
 // Expo ProffDok – FASE 31B / FASE 30C2 UX
 // Intern tilbudsvisning bruker samme hovedpostrekkefølge og nummereringsprinsipp
-// som kundevisningen. Hovedposter blir tydeligere uten å endre tilbudsdata,
-// lagring, publisering, recovery, SQL/RLS/Storage eller Edge Functions.
+// som kundevisningen. Hovedposter og opsjoner blir tydelige, og lagret ansvarlig
+// på saken vises foran innlogget bruker. Ingen endring av tilbudsdata, lagring,
+// publisering, recovery, SQL/RLS/Storage eller Edge Functions.
 // FASE 30C2: Tynn presentasjons-wrapper rundt eksisterende SalesDetailView. Når en Befaring-sak
 // allerede har reelt tilbudsinnhold, endres kun brukerens handlingslabel fra
 // «Opprett tilbud …» til «Fortsett på tilbud». Eksisterende arbeidsflyt og callbacks
@@ -116,6 +117,39 @@ function buildInternalOfferGroups(lines = [], options = []) {
       if (leftOrder !== rightOrder) return leftOrder - rightOrder;
       return left.firstSeen - right.firstSeen;
     });
+}
+
+function getStoredResponsible(request = {}, fallback = "") {
+  return (
+    [
+      request?.projectResponsible,
+      request?.surveyResponsible,
+      request?.responsible,
+      fallback,
+    ]
+      .map((value) => String(value || "").trim())
+      .find(Boolean) || ""
+  );
+}
+
+function getInternalOptionMeta(option = {}) {
+  const amount = getOfferTotal([option]);
+  const isAlternative = option?.optionType === "alternative";
+  const isReduction = !isAlternative && amount < 0;
+
+  return {
+    typeLabel: isAlternative
+      ? "Alternativ / erstatter"
+      : isReduction
+        ? "Fradrag / prisreduksjon"
+        : "Tillegg / oppgradering",
+    priceLabel: isAlternative
+      ? "Prisendring"
+      : isReduction
+        ? "Fradrag"
+        : "Tillegg",
+    amount,
+  };
 }
 
 function rewriteOfferContinuationLabels(node) {
@@ -272,13 +306,88 @@ function rewriteInternalOfferPresentation(node, request) {
             {group.options.length ? (
               <div
                 style={{
-                  padding: group.lines.length ? "0 16px 12px" : "12px 16px",
-                  color: "#52616b",
-                  fontSize: 13,
-                  fontWeight: 700,
+                  display: "grid",
+                  gap: 8,
+                  padding: "12px 16px 16px",
+                  borderTop: group.lines.length ? "1px dashed #cbd5e1" : "none",
+                  background: "#fbfdfe",
                 }}
               >
-                Opsjoner: {group.options.length} registrert
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    alignItems: "center",
+                    marginBottom: 2,
+                  }}
+                >
+                  <strong style={{ color: "#0f172a" }}>Opsjoner</strong>
+                  <span style={{ color: "#64748b", fontSize: 13, fontWeight: 700 }}>
+                    {group.options.length} registrert
+                  </span>
+                </div>
+
+                {group.options.map((option, optionIndex) => {
+                  const optionMeta = getInternalOptionMeta(option);
+
+                  return (
+                    <div
+                      key={option.id || `${group.id}-option-${optionIndex}`}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "minmax(0, 1fr) minmax(150px, auto)",
+                        gap: 14,
+                        alignItems: "start",
+                        padding: "10px 12px",
+                        border: "1px solid #dce7eb",
+                        borderRadius: 12,
+                        background: "#ffffff",
+                      }}
+                    >
+                      <div style={{ minWidth: 0 }}>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            marginBottom: 5,
+                            color: "#0f7f87",
+                            fontSize: 11,
+                            fontWeight: 900,
+                            textTransform: "uppercase",
+                            letterSpacing: ".03em",
+                          }}
+                        >
+                          {optionMeta.typeLabel}
+                        </span>
+                        <strong style={{ display: "block", color: "#0f172a" }}>
+                          {option.title || "Opsjon"}
+                        </strong>
+                        {option.description ? (
+                          <span
+                            style={{
+                              display: "block",
+                              marginTop: 4,
+                              color: "#52616b",
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            {option.description}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <strong
+                        style={{
+                          textAlign: "right",
+                          whiteSpace: "nowrap",
+                          color: "#0f172a",
+                        }}
+                      >
+                        {optionMeta.priceLabel}: {formatNok(optionMeta.amount)} eks. mva.
+                      </strong>
+                    </div>
+                  );
+                })}
               </div>
             ) : null}
           </section>
@@ -295,13 +404,20 @@ function rewriteInternalOfferPresentation(node, request) {
 }
 
 export default function SalesDetailView(props) {
+  const storedResponsible = getStoredResponsible(
+    props?.selectedRequest,
+    props?.loggedInResponsible
+  );
+  const coreProps = storedResponsible
+    ? { ...props, loggedInResponsible: storedResponsible }
+    : props;
   const hasExistingOfferDraft = Boolean(
-    props?.selectedRequest?.status === "Befaring" &&
-      hasMeaningfulOfferDraft(props.selectedRequest)
+    coreProps?.selectedRequest?.status === "Befaring" &&
+      hasMeaningfulOfferDraft(coreProps.selectedRequest)
   );
 
-  let tree = SalesDetailViewCore(props);
-  tree = rewriteInternalOfferPresentation(tree, props?.selectedRequest);
+  let tree = SalesDetailViewCore(coreProps);
+  tree = rewriteInternalOfferPresentation(tree, coreProps?.selectedRequest);
 
   if (!hasExistingOfferDraft) {
     return tree;
