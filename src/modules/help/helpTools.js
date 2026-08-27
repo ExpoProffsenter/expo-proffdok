@@ -19,11 +19,12 @@ function organizePermanentHelp() {
     if (item) item.style.display = "none";
   });
 
-  // 31C har en oppdatert Befaring/Tilbud-veiledning. Skjul den eldre duplikaten.
+  // 31C har en oppdatert Befaring/Tilbud-veiledning. Skjul kun den eldre duplikaten.
   labels.forEach((label) => {
     if (String(label.textContent || "").trim() !== "🧾 Befaring/Tilbud") return;
     const item = label.closest(".item");
-    if (item) item.style.display = "none";
+    if (!item || item.classList.contains("salesHelpEnhancedItem")) return;
+    item.style.display = "none";
   });
 
   // helpToolsCore åpner historisk Startside som standard. Lukk kun denne ved første visning.
@@ -202,7 +203,7 @@ export function createHelpCenter(args) {
         React.createElement(
           "div",
           {
-            className: "item",
+            className: "item salesHelpEnhancedItem",
             style: {
               borderColor: offerHelpOpen ? "#08b9c3" : "#e2e8f0",
               background: offerHelpOpen ? "#f8feff" : "#ffffff",
