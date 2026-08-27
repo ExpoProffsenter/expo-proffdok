@@ -86,27 +86,26 @@ function createSales31CHelp() {
   return block;
 }
 
-function organizePermanentHelp() {
+function organizePermanentHelp({ closeStart = false } = {}) {
   if (typeof document === "undefined") return;
 
   const labels = Array.from(document.querySelectorAll("button b"));
 
-  // helpToolsCore har historisk åpnet Startside som standard. Lukk den én gang når Hjelp vises.
-  const startLabel = labels.find((label) => textOf(label) === START_HELP_TITLE);
-  const startButton = startLabel?.closest("button");
-  if (startButton && textOf(startButton).includes("Lukk")) {
-    startButton.click();
-    return;
+  if (closeStart) {
+    const startLabel = labels.find((label) => textOf(label) === START_HELP_TITLE);
+    const startButton = startLabel?.closest("button");
+    if (startButton && textOf(startButton).includes("Lukk")) {
+      startButton.click();
+      return;
+    }
   }
 
-  // Vis korrekt dato for gjeldende digitale veiledning.
   Array.from(document.querySelectorAll("span")).forEach((item) => {
     if (textOf(item).startsWith("Sist oppdatert:")) {
       item.textContent = HELP_UPDATED_LABEL;
     }
   });
 
-  // Permanent versjonslogg skal ikke ligge som eget hjelpetema.
   labels.forEach((label) => {
     if (textOf(label) !== NEWS_HELP_TITLE) return;
     const item = label.closest(".item");
@@ -120,12 +119,10 @@ function organizePermanentHelp() {
     }
   });
 
-  // Legg 31C-informasjonen inn i den eksisterende, rollefiltrerte Befaring/Tilbud-boksen.
   const salesLabel = labels.find((label) => textOf(label) === SALES_HELP_TITLE);
   const salesItem = salesLabel?.closest(".item");
   if (!salesItem) return;
 
-  // Når accordionen er lukket finnes bare knappen. Innholdet legges inn når brukeren åpner den.
   const content = Array.from(salesItem.children).find(
     (child) => child.tagName === "DIV" && !child.dataset.phase31cSalesHelp
   );
@@ -139,16 +136,36 @@ export function createHelpCenter(args) {
 
   return function HelpCenter(props) {
     React.useEffect(() => {
-      const run = () => organizePermanentHelp();
-      const frame = window.requestAnimationFrame(run);
-      const timer = window.setTimeout(run, 120);
-      const observer = new MutationObserver(run);
-      observer.observe(document.body, { childList: true, subtree: true });
+      let disposed = false;
+
+      const initialize = () => {
+        if (disposed) return;
+        organizePermanentHelp({ closeStart: true });
+        window.setTimeout(() => {
+          if (!disposed) organizePermanentHelp();
+        }, 0);
+      };
+
+      const frame = window.requestAnimationFrame(initialize);
+      const timer = window.setTimeout(initialize, 120);
+
+      const handleHelpClick = (event) => {
+        const button = event.target?.closest?.("button");
+        if (!button) return;
+        const label = button.querySelector("b");
+        if (textOf(label) !== SALES_HELP_TITLE) return;
+        window.setTimeout(() => {
+          if (!disposed) organizePermanentHelp();
+        }, 0);
+      };
+
+      document.addEventListener("click", handleHelpClick);
 
       return () => {
+        disposed = true;
         window.cancelAnimationFrame(frame);
         window.clearTimeout(timer);
-        observer.disconnect();
+        document.removeEventListener("click", handleHelpClick);
       };
     }, []);
 
