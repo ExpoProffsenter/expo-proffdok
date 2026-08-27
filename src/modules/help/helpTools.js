@@ -1,6 +1,6 @@
 // FASE 31C HJELP: tilbudsinformasjon organiseres under eksisterende Befaring/Tilbud-hjelp.
 // Permanent "Nytt i denne versjonen" skjules fra Hjelp; versjonsnytt hører til appoppdatering/appnyhet.
-// Alle hjelpetema starter kollapset via helpToolsCore. Eksisterende rollebegrensninger beholdes.
+// Alle hjelpetema skal starte kollapset. Eksisterende rollebegrensninger beholdes.
 // Kompatibilitetsmarkører for eksisterende critical-check beholdes usynlig her:
 // "Nytt i denne versjonen – tilbudssikkerhet" / "Fortsett på tilbud"
 import React from "react";
@@ -8,6 +8,8 @@ import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
 
 const SALES_HELP_TITLE = "🧾 Befaring/Tilbud";
 const NEWS_HELP_TITLE = "📢 Nytt i denne versjonen";
+const START_HELP_TITLE = "🚀 Startside / kom i gang";
+const HELP_UPDATED_LABEL = "Sist oppdatert: 27.08.2026";
 
 function textOf(node) {
   return String(node?.textContent || "").trim();
@@ -88,6 +90,21 @@ function organizePermanentHelp() {
   if (typeof document === "undefined") return;
 
   const labels = Array.from(document.querySelectorAll("button b"));
+
+  // helpToolsCore har historisk åpnet Startside som standard. Lukk den én gang når Hjelp vises.
+  const startLabel = labels.find((label) => textOf(label) === START_HELP_TITLE);
+  const startButton = startLabel?.closest("button");
+  if (startButton && textOf(startButton).includes("Lukk")) {
+    startButton.click();
+    return;
+  }
+
+  // Vis korrekt dato for gjeldende digitale veiledning.
+  Array.from(document.querySelectorAll("span")).forEach((item) => {
+    if (textOf(item).startsWith("Sist oppdatert:")) {
+      item.textContent = HELP_UPDATED_LABEL;
+    }
+  });
 
   // Permanent versjonslogg skal ikke ligge som eget hjelpetema.
   labels.forEach((label) => {
