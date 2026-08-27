@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// Expo ProffDok – FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// FASE 32A viser serverstemplet creator og publisher internt uten å forveksle
+// disse med ansvarlig. Gamle saker uten nye snapshot-felt får ingen kunstig creator.
 // Intern tilbudsvisning og låst akseptvisning følger samme hovedpostrekkefølge
 // som kundelink og dokumenter. Akseptdata, lagring og prosjektaktivering er uendret.
 
@@ -8,6 +10,7 @@ import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
 import { createAcceptanceProofPdf } from "../services/salesAcceptancePdf.js";
 import { rewriteAcceptedPresentation } from "./SalesAcceptedPresentation.jsx";
+import { rewriteSalesTraceability } from "./SalesTraceabilityPresentation.jsx";
 
 const LEGACY_MAIN_POST = {
   id: "ovrige-arbeider",
@@ -478,6 +481,7 @@ export default function SalesDetailView(props) {
   let tree = SalesDetailViewCore(coreProps);
   tree = rewriteInternalOfferPresentation(tree, coreProps?.selectedRequest);
   tree = rewriteAcceptedPresentation(tree, coreProps?.selectedRequest);
+  tree = rewriteSalesTraceability(tree, coreProps?.selectedRequest);
 
   if (hasExistingOfferDraft) {
     // SalesDetailViewCore er bevisst hook-fri. Vi materialiserer derfor treet her
