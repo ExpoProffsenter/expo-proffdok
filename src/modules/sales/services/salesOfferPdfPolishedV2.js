@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 31C
+// Hovedposter uten grunnpris vises som «Kun valgfrie opsjoner» i PDF i stedet
+// for en kunstig hovedpostsum på 0 kr. Pris- og publiseringslogikk er uendret.
 // Expo ProffDok – FASE 31A2B
 // A4-PDF som speiler kundelinken med robust paginering og uten tekstoverlapp.
 // Ingen lagring, SQL, RLS, Storage-policy eller Edge-logikk endres.
@@ -119,9 +122,11 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
 
   const mainHeader=(g,gi)=>{
     const next=g.lines.length?measureLine(g.lines[0]):g.options.length?8+measureOption(g.options[0]):12; ensure(19+Math.min(next,34));
+    const optionsOnly=g.lines.length===0&&g.options.length>0;
     pdf.setFillColor(...C.soft); pdf.setDrawColor(...C.line); pdf.roundedRect(P.l,y,W,17,2,2,"FD"); pdf.setFillColor(...C.teal); pdf.circle(P.l+8,y+8.5,4.7,"F");
     font(7.7,"bold",C.white); pdf.text(String(gi+1).padStart(2,"0"),P.l+8,y+9.2,{align:"center"}); font(11.2,"bold",C.ink); pdf.text(clean(g.title),P.l+16,y+10);
-    font(7.2,"bold",C.muted); pdf.text("Sum hovedpost",P.r-4,y+5.5,{align:"right"}); font(11.3,"bold",C.ink); pdf.text(formatNok(getOfferTotal(g.lines)*1.25),P.r-4,y+11,{align:"right"}); font(6.9,"normal",C.muted); pdf.text("inkl. mva.",P.r-4,y+14.3,{align:"right"}); y+=19;
+    if(optionsOnly){font(7.2,"bold",C.muted);pdf.text("Hovedposttype",P.r-4,y+5.5,{align:"right"});font(9.4,"bold",C.ink);pdf.text("Kun valgfrie opsjoner",P.r-4,y+11,{align:"right"});}
+    else{font(7.2,"bold",C.muted);pdf.text("Sum hovedpost",P.r-4,y+5.5,{align:"right"});font(11.3,"bold",C.ink);pdf.text(formatNok(getOfferTotal(g.lines)*1.25),P.r-4,y+11,{align:"right"});font(6.9,"normal",C.muted);pdf.text("inkl. mva.",P.r-4,y+14.3,{align:"right"});} y+=19;
   };
 
   const lineRow=(line,gi,li)=>{
