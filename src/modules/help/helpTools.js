@@ -1,4 +1,4 @@
-// FASE 30D1 / FASE 30C3 / FASE 30C2 HJELP: tilbudssikkerhet og lokal sikring av befaringsbilder.
+// FASE 30D2 / FASE 30D1 / FASE 30C3 / FASE 30C2 HJELP: tilbudssikkerhet, mobilbefaring og ryddigere mobil Startside.
 import React from "react";
 import { FileText } from "lucide-react";
 import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
@@ -42,6 +42,18 @@ export function createHelpCenter(args) {
             React.createElement("li", null, "Lokal tilbudshistorikk beholder flere revisjoner slik at en nyere kladd kan gjenopprettes etter nettbrudd, lukket fane eller ny innlogging."),
             React.createElement("li", null, "En tom startkladd får ikke overskrive et eksisterende tilbud før den aktuelle saken er ferdig lastet inn."),
             React.createElement("li", null, "Tomme tilbudsrader ignoreres ved lagring, mens påbegynte linjer fortsatt må ha nødvendig beskrivelse og beløp før tilbudet kan lagres ferdig.")
+          )
+        ),
+        React.createElement(
+          "div",
+          { className: "item", style: { background: "#f8fafc" } },
+          React.createElement("h3", { style: { marginTop: 0 } }, "📱 Ryddigere mobil Startside"),
+          React.createElement(
+            "ul",
+            null,
+            React.createElement("li", null, "Mobil Startsiden viser oversikt, nøkkeltall, oppfølging og hurtigvalg uten å gjenta hele prosjektlisten."),
+            React.createElement("li", null, "Trykk Åpne prosjektliste når du vil søke i eller åpne alle prosjektene."),
+            React.createElement("li", null, "Prosjektlisten og prosjektdataene er ikke fjernet; bare den ekstra listen på mobil Startsiden er skjult.")
           )
         ),
         React.createElement(
