@@ -47,20 +47,25 @@ function stripRuntimeTraceability(payload = {}) {
 function announceCreatorTraceability(rows = []) {
   if (typeof window === "undefined") return;
 
+  if (!window.__expoProffDokSalesTraceability) {
+    window.__expoProffDokSalesTraceability = {};
+  }
+
   (Array.isArray(rows) ? rows : []).forEach((row) => {
     const payload = row?.payload || {};
     const creatorName = String(payload.__createdByName || "").trim();
     if (!creatorName || !row?.request_ref) return;
 
+    const detail = {
+      requestRef: String(row.request_ref),
+      createdByUserId: String(payload.__createdByUserId || ""),
+      createdByName: creatorName,
+      createdAt: payload.__createdAt || "",
+    };
+
+    window.__expoProffDokSalesTraceability[detail.requestRef] = detail;
     window.dispatchEvent(
-      new CustomEvent("expo-proffdok-sales-traceability", {
-        detail: {
-          requestRef: String(row.request_ref),
-          createdByUserId: String(payload.__createdByUserId || ""),
-          createdByName: creatorName,
-          createdAt: payload.__createdAt || "",
-        },
-      })
+      new CustomEvent("expo-proffdok-sales-traceability", { detail })
     );
   });
 }
@@ -157,6 +162,7 @@ export async function fetchSalesRequests(client, companyId) {
       result?.data || []
     );
     result.data = hydratedRows;
+    announceCreatorTraceability(hydratedRows);
     await rememberOfferContentSignatures(client, hydratedRows, companyId);
   }
   return result;
