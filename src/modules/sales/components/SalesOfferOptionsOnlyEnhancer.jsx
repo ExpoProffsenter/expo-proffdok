@@ -2,7 +2,7 @@
 // Ferdigstiller hovedposter som kun inneholder valgfrie opsjoner uten å innføre
 // ny datatype eller backend-felt. Eksisterende tilbuds-/recoverylogikk beholdes.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 
@@ -120,6 +120,38 @@ function resetOptionsOnlyPresentation(root) {
     });
 }
 
+function findMainPostSection(root, title) {
+  if (!root || !title) return null;
+  return Array.from(root.querySelectorAll("section.sales-form-preview")).find(
+    (candidate) =>
+      String(candidate.querySelector("h2")?.textContent || "").trim() === title
+  );
+}
+
+function scrollToMainPost(root, title) {
+  if (!root || !title || typeof window === "undefined") return;
+
+  const tryScroll = () => {
+    const section = findMainPostSection(root, title);
+    if (!section) return false;
+
+    section.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+      inline: "nearest",
+    });
+
+    window.setTimeout(() => {
+      window.scrollBy({ top: -90, behavior: "auto" });
+    }, 120);
+    return true;
+  };
+
+  [0, 80, 180, 360].forEach((delay) => {
+    window.setTimeout(tryScroll, delay);
+  });
+}
+
 function applyOptionsOnlyPresentation(root, offerForm) {
   if (!root) return;
   resetOptionsOnlyPresentation(root);
@@ -175,17 +207,26 @@ function applyOptionsOnlyPresentation(root, offerForm) {
 
 function findPortalTarget(root) {
   if (!root) return null;
+
+  const heading = Array.from(root.querySelectorAll("strong")).find(
+    (node) => String(node.textContent || "").trim() === "Legg til hovedpost"
+  );
+  if (heading?.parentElement) return heading.parentElement;
+
   const customButton = Array.from(root.querySelectorAll("button")).find(
     (button) =>
       String(button.textContent || "").trim() === "Legg til egen hovedpost"
   );
-  return customButton?.parentElement || null;
+  if (customButton?.parentElement) return customButton.parentElement;
+
+  return root.querySelector("#sales-offer-builder-form");
 }
 
 export default function SalesOfferOptionsOnlyEnhancer({
   offerForm = {},
   addOfferOption,
 }) {
+  const markerRef = useRef(null);
   const [portalTarget, setPortalTarget] = useState(null);
   const [selectedMainPostId, setSelectedMainPostId] = useState("");
 
@@ -202,18 +243,33 @@ export default function SalesOfferOptionsOnlyEnhancer({
   );
 
   useEffect(() => {
+    const root = markerRef.current?.parentElement;
+    if (!root) return undefined;
+
     const apply = () => {
-      if (typeof document === "undefined") return;
-      const root = document.querySelector(".sales-offer-save-scope");
-      if (!root) return;
       applyOptionsOnlyPresentation(root, offerForm);
       setPortalTarget(findPortalTarget(root));
     };
 
+    const handleMainPostClick = (event) => {
+      const button = event.target?.closest?.("button");
+      if (!button || !root.contains(button)) return;
+
+      const buttonText = String(button.textContent || "").trim();
+      const mainPost = OFFER_MAIN_POSTS.find(
+        (candidate) => candidate.title === buttonText
+      );
+      if (!mainPost) return;
+
+      scrollToMainPost(root, mainPost.title);
+    };
+
+    root.addEventListener("click", handleMainPostClick);
     const frame = window.requestAnimationFrame(apply);
     const timer = window.setTimeout(apply, 120);
 
     return () => {
+      root.removeEventListener("click", handleMainPostClick);
       window.cancelAnimationFrame(frame);
       window.clearTimeout(timer);
     };
@@ -248,17 +304,21 @@ export default function SalesOfferOptionsOnlyEnhancer({
     }
 
     if (!mainPost) return;
+
+    const root = markerRef.current?.parentElement;
     addOfferOption(mainPost);
     setSelectedMainPostId("");
+    scrollToMainPost(root, mainPost.title);
   }
 
   return (
     <>
       <style>{OPTIONS_ONLY_STYLES}</style>
+      <span ref={markerRef} aria-hidden="true" style={{ display: "none" }} />
       {portalTarget
         ? createPortal(
             <div className="sales-options-only-add-control">
-              <strong>Hovedpost uten grunnpris</strong>
+              <strong>Hovedpost uten grunnpris / kun opsjoner</strong>
               <span>
                 Bruk dette når hovedposten kun skal inneholde valgfrie opsjoner.
                 Det opprettes ingen kunstig underpost eller 0-kroners grunnpris.
