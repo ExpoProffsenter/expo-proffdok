@@ -102,6 +102,31 @@ function getAcceptedSnapshot(request = {}) {
   return { lines, options, total };
 }
 
+function getAcceptedVersionNumberMap(request = {}, snapshot = {}) {
+  const acceptedPayload = request.acceptedPayload || {};
+  const versionSnapshot = acceptedPayload.version_snapshot || {};
+
+  const fullRawLines =
+    (Array.isArray(versionSnapshot.lines) && versionSnapshot.lines.length
+      ? versionSnapshot.lines
+      : Array.isArray(request.offerLines) && request.offerLines.length
+        ? request.offerLines
+        : snapshot.lines) || [];
+  const fullLines = getVisibleOfferLines(fullRawLines);
+
+  const fullOptions =
+    (Array.isArray(versionSnapshot.options) && versionSnapshot.options.length
+      ? versionSnapshot.options
+      : Array.isArray(versionSnapshot.offerOptions) && versionSnapshot.offerOptions.length
+        ? versionSnapshot.offerOptions
+        : Array.isArray(request.offerOptions) && request.offerOptions.length
+          ? request.offerOptions
+          : snapshot.options) || [];
+
+  const fullGroups = buildAcceptedGroups(fullLines, fullOptions);
+  return new Map(fullGroups.map((group, index) => [group.id, index + 1]));
+}
+
 function isAlternativeOption(option = {}) {
   return option?.optionType === "alternative";
 }
@@ -149,6 +174,7 @@ function getQuantityText(item = {}) {
 function AcceptedOfferGroups({ request }) {
   const snapshot = getAcceptedSnapshot(request);
   const groups = buildAcceptedGroups(snapshot.lines, snapshot.options);
+  const versionNumberMap = getAcceptedVersionNumberMap(request, snapshot);
   const version =
     request.acceptedOfferVersionNumber ||
     request.acceptedPayload?.version_number ||
@@ -194,7 +220,8 @@ function AcceptedOfferGroups({ request }) {
 
       <div style={{ display: "grid", gap: 14 }}>
         {groups.map((group, groupIndex) => {
-          const groupNumber = String(groupIndex + 1).padStart(2, "0");
+          const originalNumber = versionNumberMap.get(group.id) || groupIndex + 1;
+          const groupNumber = String(originalNumber).padStart(2, "0");
           const groupTotal =
             getOfferTotal(group.lines) + getOfferTotal(group.options);
           const optionsOnly = group.lines.length === 0 && group.options.length > 0;
