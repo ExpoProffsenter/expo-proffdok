@@ -1,3 +1,7 @@
+// Expo ProffDok – FASE 31B
+// Kundetilbudets hovedposter sorteres etter fast arbeidsgang uavhengig av
+// rekkefølgen postene ble opprettet i. Egne hovedposter legges etter standardpostene.
+// Nummereringen følger dermed samme prinsipp som intern tilbudsvisning.
 // Expo ProffDok – FASE 26B.5
 // Kundetilbud skiller tydelig mellom tillegg/oppgraderinger og alternativer som erstatter en konkret grunnpost.\
 // Kundetilbud grupperer hovedposter/underposter, koblede opsjoner og vedlegg. Valgte opsjoner oppdaterer riktig hovedpostsum.
@@ -10,6 +14,7 @@
 // Ingen egen React-state, Supabase-kall, Storage-kall eller tilbudsforretningslogikk.
 
 import { ArrowLeft, CheckCircle2, ClipboardList, FileText, Plus } from "lucide-react";
+import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import {
   formatNok,
   getOfferTermsSnapshot,
@@ -35,6 +40,7 @@ function getMainPostMeta(item = {}) {
 function buildCustomerOfferGroups(lines = [], options = []) {
   const groups = [];
   const groupMap = new Map();
+  let firstSeen = 0;
 
   function ensureGroup(item) {
     const meta = getMainPostMeta(item);
@@ -44,6 +50,7 @@ function buildCustomerOfferGroups(lines = [], options = []) {
         ...meta,
         lines: [],
         options: [],
+        firstSeen: firstSeen++,
       };
       groupMap.set(meta.id, group);
       groups.push(group);
@@ -60,7 +67,23 @@ function buildCustomerOfferGroups(lines = [], options = []) {
     ensureGroup(option).options.push(option);
   });
 
-  return groups.filter((group) => group.lines.length || group.options.length);
+  const standardOrder = new Map(
+    OFFER_MAIN_POSTS.map((post, index) => [post.id, index])
+  );
+
+  return groups
+    .filter((group) => group.lines.length || group.options.length)
+    .sort((left, right) => {
+      const leftOrder = standardOrder.has(left.id)
+        ? standardOrder.get(left.id)
+        : Number.MAX_SAFE_INTEGER;
+      const rightOrder = standardOrder.has(right.id)
+        ? standardOrder.get(right.id)
+        : Number.MAX_SAFE_INTEGER;
+
+      if (leftOrder !== rightOrder) return leftOrder - rightOrder;
+      return left.firstSeen - right.firstSeen;
+    });
 }
 
 function getCustomerLineTitle(line = {}) {
