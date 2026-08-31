@@ -60,7 +60,6 @@ export async function createExpoSalesContract(
   if (data?.status && data.status !== "draft") {
     throw new Error("Kontrakten er allerede sendt eller signert og kan ikke redigeres.");
   }
-  notifyContractChanged({ id: data?.id || "", status: data?.status || "draft" });
   return data;
 }
 
