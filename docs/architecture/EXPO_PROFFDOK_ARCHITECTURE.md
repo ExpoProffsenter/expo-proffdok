@@ -1,103 +1,80 @@
 # Expo ProffDok – arkitekturkart
 
-**Fase:** 32 – stabil produksjonsarkitektur, sporbarhet, Sales-sikkerhet og kontrollert videreutvikling  
-**Status:** Nå-arkitektur etter Fase 32  
+**Fase:** 33B.2 – kontraktgrunnlag på server  
+**Status:** Produksjonsarkitektur med additiv kontraktsmodell; ingen kontrakt-UI er koblet på ennå  
 **Dato:** 31.08.2026  
-**Produksjonsgrunnlag:** `main` på `14ce96c978de674be2394173608366ff7c3f14e1`  
-**Plassering:** `docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md`
+**App-baseline:** `main` på `fa1b708b207c7aed6aa4b67e02fc78e478b4b453`  
+**Supabase:** `dqffxflaoyarbxyiyhop`
 
-Dette dokumentet er den tekniske oversikten for videre utvikling av Expo ProffDok. Det erstatter den tidligere Fase 27-versjonen som arbeidskart. Historisk detalj finnes i Git.
-
-Denne dokumentasjonsrunden endrer ingen runtime, database, RLS, Storage, Edge Functions eller brukergrensesnitt. HJELP endres ikke fordi arbeidsflyten for brukeren er uendret.
+Dette dokumentet er den tekniske inngangen til Expo ProffDok. Historiske fasebeskrivelser finnes i Git. Kartet skal være kort nok til å brukes i handover og detaljert nok til at neste utvikler forstår sikkerhets- og datakontraktene.
 
 ## 1. Styrende prinsipper
 
-1. Produksjonsversjonen på `main` er kilde til sannhet.
-2. Produksjon beskyttes foran alt. Funksjonskode går via feature-branch, Vercel Preview, eksplisitt `TEST OK`, merge og produksjonskontroll.
-3. Publiserte og aksepterte tilbudsversjoner er historikk og skal ikke overskrives.
-4. Prosjekter uten tilbud i Expo ProffDok er en normal og støttet tilstand.
-5. Privatkundeorienterte priser vises inkl. mva.
-6. Eksisterende prosjekt- og salgsdata skal være bakoverkompatible. Ingen historisk backfill uten eksplisitt beslutning.
-7. Systemadmin supportmodus skal aldri svekke firmaavgrensning, RLS eller riktig oppretter/ansvarlig.
-8. Sales recovery/hydration, lokal kladd og IndexedDB-bildesikring er kritiske kontrakter.
-9. Modulisering gjøres bare når den gir tydelig bedre oversikt, testbarhet eller vedlikehold. `main.jsx` skal ikke splittes bare for å redusere linjetall.
-10. Brukerrettede endringer skal vurderes mot HJELP i samme runde. Rent tekniske endringer skal eksplisitt dokumentere at HJELP ikke trenger endring.
+1. `main` er kilde til sannhet for appkode.
+2. Produksjon beskyttes foran alt: feature-branch → Preview → `TEST OK` → merge → produksjonskontroll.
+3. RLS/server er sikkerhetsgrensen; frontend alene gir aldri tilgang.
+4. Publiserte og aksepterte tilbudsversjoner er historikk og skal ikke overskrives.
+5. Signerte kontrakter er egen historikk og skal ikke mutere akseptert tilbud.
+6. Prosjekter uten Expo ProffDok-tilbud og uten Expo-kontrakt er gyldige legacy-/normaltilstander.
+7. Privatkundeorienterte priser vises inkl. mva.
+8. Ingen historisk backfill uten eksplisitt beslutning.
+9. Supportmodus skal ikke bli skrive-bypass eller sette systemadmin som feil oppretter/ansvarlig.
+10. Sales recovery/hydration og IndexedDB-sikring for befaringsbilder er kritiske kontrakter.
+11. Modulisering gjøres bare når den gir reell oversikt og vedlikeholdsgevinst.
+12. Brukerrettede endringer oppdaterer HJELP samme runde. Rent tekniske endringer dokumenterer eksplisitt at HJELP ikke trenger endring.
 
 ## 2. Plattform
 
-| Lag | Teknologi | Ansvar |
+| Lag | Teknologi | Hovedansvar |
 |---|---|---|
 | Klient | React + Vite | UI, state, navigasjon og arbeidsflyt |
 | Auth | Supabase Auth | Innlogging og identitet |
-| Data | Supabase Postgres | Profiler, prosjekter, salg, garanti og produktmaster |
-| Serverlogikk | Supabase RPC | Firmascoping, tilbudspublisering, offentlig tilbud og aksept |
-| Filer | Supabase Storage | Prosjektbilder, dokumenter, chatbilder, befaringsbilder og nye tilbudsbilder |
-| E-post | Supabase Edge Functions + Resend | Befaring, tilbud, portal, chat og systemmeldinger |
+| Data | Supabase Postgres | Prosjekter, Sales, kontrakt, garanti og produktdata |
+| Serverlogikk | Supabase RPC | Firmascoping, publisering, offentlig kundehandling og låsing |
+| Filer | Supabase Storage | Bilder og dokumenter |
+| E-post | Supabase Edge Functions + Resend | Befaring, tilbud, portal og meldinger |
 | Hosting | Vercel | Preview og Production |
-| PDF | jsPDF | Rapport, tilbud, garanti og akseptbevis |
+| PDF | jsPDF | Rapport, tilbud, akseptbevis, garanti og senere kontrakt |
 
 Produksjon: `https://expo-proffdok.app`
 
-## 3. Repository – dagens hovedstruktur
-
-Fersk repository-inventering på Fase 32 viser blant annet:
+## 3. Repository – hovedstruktur
 
 ```text
 src/
 ├── bootstrap.jsx
 ├── main.jsx
-├── modules/
-│   ├── app/
-│   │   ├── AppErrorBoundary.jsx
-│   │   ├── AppNewsAdmin.jsx
-│   │   ├── AppNewsNotice.jsx
-│   │   ├── AppUpdateNotice.jsx
-│   │   ├── SystemAdminSalesSupport.jsx
-│   │   └── appRuntimeStyles.js
-│   ├── chat/
-│   ├── checklist/
-│   ├── company/
-│   ├── config/
-│   ├── contract/
-│   ├── deviations/
-│   ├── documents/
-│   ├── help/
-│   ├── images/
-│   ├── installations/
-│   ├── overtagelse/
-│   ├── portal/
-│   ├── product/
-│   ├── project/
-│   ├── report/
-│   ├── sales/
-│   ├── surfaces/
-│   └── warranty/
+└── modules/
+    ├── app/
+    ├── chat/
+    ├── checklist/
+    ├── company/
+    ├── config/
+    ├── contract/
+    ├── deviations/
+    ├── documents/
+    ├── help/
+    ├── images/
+    ├── installations/
+    ├── overtagelse/
+    ├── portal/
+    ├── product/
+    ├── project/
+    ├── report/
+    ├── sales/
+    ├── surfaces/
+    └── warranty/
+
 scripts/
 ├── critical-build-check.mjs
 └── critical-sales-recovery-check.mjs
 ```
 
-`src/main.jsx` er fortsatt den sentrale applikasjonsorkestratoren og er ca. 468 KB i Fase 32. Det er betydelig mindre enn det historiske utgangspunktet, men inneholder fortsatt mye delt state, prosjektpersistens, navigasjon og integrasjonslogikk. Det behandles konservativt.
+`main.jsx` er fortsatt sentral orkestrator og skal behandles konservativt. Store naturlige ansvarsområder kan trekkes ut, men ikke bare for å redusere filstørrelse.
 
-## 4. Hovedappen
+## 4. Prosjektpersistens
 
-`main.jsx` håndterer fortsatt sentrale tverrgående ansvar:
-
-- autentisering, profil og roller
-- firma- og systemadminflyt
-- prosjektopprettelse, åpning, kopiering og lagring
-- prosjektstate og normalisering
-- autolagring og lokal nødkladd
-- prosjektliste og supportmodus
-- portalinnganger
-- integrasjon mot Sales
-- koordinering mellom moduliserte prosjektfaner
-
-Flere presentasjonsområder ligger i egne moduler, blant annet HJELP, garanti, firma, portal, chat, rapport, kontrakt, produkter, overflater, avvik, installasjoner og overtagelse.
-
-### 4.1 Prosjektpersistens
-
-Prosjektet lagres fortsatt hovedsakelig som en samlet JSON-struktur i `projects.data`. Viktige toppnivåområder er:
+Prosjektet lagres hovedsakelig i `projects.data` som samlet JSON. Viktige toppnivåområder er blant annet:
 
 ```text
 company
@@ -106,7 +83,6 @@ project
 checked
 productDocs
 manualProducts
-other
 surf
 bathroomEquipment
 photos
@@ -121,17 +97,11 @@ projectLog
 internalNotes
 ```
 
-Konsekvens: Flere kodeveier kan oppdatere samme store JSON. Endringer i lagring må derfor bevare merge-/normaliseringslogikk og testes mot eldre prosjekter.
+Flere kodeveier kan oppdatere samme JSON. Endringer må derfor bevare merge-/normaliseringslogikk og fungere mot eldre prosjekter.
 
-### 4.2 Låsing, ikke arkivering
+`locked` er ferdig/read-only-tilstand, ikke prosjektarkiv.
 
-`locked` er prosjektets ferdig-/read-only-tilstand. Fase 32 undersøkte separat arkivering, men funksjonen ble bevisst droppet fordi verdi ikke forsvarte kompleksitet og risiko. Prosjektarkiv skal derfor ikke bygges inn indirekte i `locked`.
-
-Kunde-/UE-portal kan fortsatt være tilgjengelig i 30 dager etter låsing etter gjeldende portalregler.
-
-## 5. Befaring / Tilbud / Aksept – Sales
-
-Sales er produksjonskoblet og håndterer:
+## 5. Sales – Befaring / Tilbud / Aksept
 
 ```text
 Forespørsel
@@ -142,143 +112,141 @@ Forespørsel
 → kundevalg av opsjoner
 → digital aksept
 → låst akseptbevis
+→ valgfri kontrakt
 → eventuell ny tilbudsversjon
 → aktivering som ProffDok-prosjekt
 ```
 
-`SalesModule.jsx` er nå en liten wrapper, mens hovedorkestrering ligger i `SalesModuleCore.jsx`. Presentasjon og tjenester er gradvis trukket ut i `components/`, `services/`, `constants/` og `utils/`.
+`SalesModule.jsx` er en liten wrapper. Hovedorkestrering ligger i `SalesModuleCore.jsx`, med presentasjon og tjenester i `components/`, `services/`, `constants/` og `utils/`.
 
-Viktige eksisterende presentasjonsmoduler inkluderer blant annet:
+### Kritiske Sales-kontrakter
+
+- Tom/uferdig lokal kladd må aldri overskrive nyere serverdata.
+- Recovery skal fungere ved reload, dvale og appbytte.
+- Befaringsbilder beholder egen IndexedDB/Storage-flyt.
+- Publisert tilbud er versjonslåst.
+- Kundeaksept knyttes til eksakt tilbudsversjon og valgte opsjoner.
+- Akseptbevis og tidligere aksepterte versjoner bevares ved ny versjon.
+- `scripts/critical-sales-recovery-check.mjs` er obligatorisk i build.
+- Sales bruker delt browser-Supabase-klient; ikke opprett parallelle GoTrue-klienter.
+
+### Sporbarhet
+
+For nye data skilles det mellom faktisk oppretter, saksansvarlig og faktisk publisist. Gamle saker backfilles ikke.
+
+## 6. Fase 33B.2 – servermodell for forbrukerkontrakt
+
+Fase 33B.2 legger til **servergrunnlaget**, men ingen brukerflate. Dagens app kjører videre uendret inntil senere 33B-runder kobler på veiviser, kundelenke og PDF.
+
+Ny tabell:
 
 ```text
-SalesListView.jsx
-SalesDetailView.jsx
-SalesInspectionNote.jsx
-SalesOfferBuilder.jsx
-SalesCustomerView.jsx
-SalesAcceptedPresentation.jsx
-SalesProjectActivation.jsx
-SalesHomeFollowUp.jsx
+sales_contracts
 ```
 
-Viktige tjenester inkluderer blant annet:
+Hver kontrakt er knyttet til:
+
+- `company_id` – Sales-firmascope
+- `request_ref` – salgssaken
+- `offer_id`
+- `offer_version_id` – eksakt akseptert tilbudsversjon
+- `source` – `expo` eller `external`
+- `status` – `draft`, `awaiting_customer`, `signed`, `external_confirmed` eller `void`
+- låst `snapshot`
+- signaturmetadata
+- eventuell ekstern/endelig dokumentreferanse
+
+Det gjøres **ingen historisk backfill**. Eksisterende `contractFile` i gamle salgssaker og dokumenter i gamle prosjekter beholdes som gyldig legacy.
+
+### Snapshot og historikk
+
+Når en Expo-kontrakt opprettes, bygges snapshotet server-side fra:
+
+- eksakt akseptert `sales_offer_versions`-rad
+- kundens registrerte aksept og valgte opsjoner
+- kundedata fra tilbudet
+- firmadata som skal vises i kontrakten
+- de få kontraktsfeltene brukeren fyller ut
+
+Akseptert tilbud endres aldri av kontrakten.
+
+Når bedriften signerer, går status til `awaiting_customer` og snapshotet låses. Kunden kan deretter signere samme snapshot med offentlig, unik kontrakttoken. Etter kundesignering er kontrakten `signed`. Endelig dokument kan knyttes til raden én gang uten å åpne snapshot/signaturhistorikken for redigering.
+
+Ekstern kontrakt kan registreres som `external_confirmed`; original dokumentreferanse beholdes. Ny UI skal senere kreve at bruker bekrefter at opplastet dokument er endelig/signert.
+
+### RLS og grants
+
+`sales_contracts` har RLS aktivert.
+
+- `authenticated` har kun direkte `SELECT`.
+- `anon` har ingen direkte tabelltilgang.
+- Intern skriving skjer kun gjennom kontrollerte RPC-er.
+- Vanlig bruker kan bare skrive for sin **faktiske** `current_sales_company_scope_id()`.
+- Systemadmin kan lese på tvers for support, men kontrakt-RPC-ene aksepterer ikke `support_company_id`; support er derfor ikke skrive-bypass.
+- Ingen direkte DELETE-flyt tilbys. Historikk beholdes og kan eventuelt markeres `void` før endelig Expo-signering.
+
+### Kontrakt-RPC-er
 
 ```text
-salesSupabase.js / salesSupabaseBase.js
-salesPublishing.js
-salesImages.js
-salesLocalStorage*.js
-salesInspectionDraftDb.js
-salesCommunication.js
-salesOfferPdf*.js
-salesAcceptancePdf*.js
+create_sales_contract(payload jsonb)
+save_sales_contract_draft(contract_id uuid, contract_data jsonb, company_snapshot jsonb)
+sign_sales_contract_company(contract_id uuid)
+get_sales_contract_by_token(token uuid)
+sign_sales_contract_customer(token uuid, accepted_name text, acknowledgements jsonb)
+register_external_sales_contract(payload jsonb)
+void_sales_contract(contract_id uuid)
+attach_sales_contract_final_document(contract_id uuid, document jsonb)
 ```
 
-### 5.1 Kritiske Sales-kontrakter
+De offentlige kunde-RPC-ene er med vilje `SECURITY DEFINER` og tilgjengelige for `anon`, på samme prinsipp som dagens tilbudstoken. Supabase-advisor vil derfor varsle om dem generisk; dette er forventet og skal ikke «fikses» blindt ved å fjerne nødvendig kundeaksess.
 
-- Lokal tilbudskladd må aldri overskrive nyere serverdata ved feil hydrering.
-- Gjenopprettingslogikk må fungere ved reload, dvale og appbytte.
-- Befaringsbilder har egen lokal/IndexedDB + Storage-flyt og skal ikke blandes med tilbudsbilder.
-- Publiserte tilbudsversjoner er immutable snapshots.
-- Kundeaksept skal alltid knyttes til eksakt versjon og valgte opsjoner.
-- Akseptbevis og tidligere aksepterte versjoner skal bevares når ny versjon opprettes.
-- `scripts/critical-sales-recovery-check.mjs` er obligatorisk del av build.
+De interne `SECURITY DEFINER`-RPC-ene er med vilje tilgjengelige for `authenticated`, men hver RPC kontrollerer aktiv bruker, faktisk Sales-firmascope, riktig tilbud og riktig akseptert versjon før skriving.
 
-### 5.2 Fase 32 sporbarhet
+### Migrasjoner
 
-For nye salgssaker og publisering skiller systemet mellom:
+```text
+20260831190622  fase33b2_sales_contract_foundation
+20260831190713  fase33b2_contract_offer_version_index
+```
 
-- **Opprettet av** – faktisk oppretter lagret server-side (`created_by_name`)
-- **Ansvarlig** – nåværende saksansvarlig
-- **Sist publisert av** – innlogget bruker som faktisk publiserte versjonen (`published_by`, `published_by_name`)
+Rollback-QA er kjørt transaksjonelt mot eksisterende akseptert tilbud:
 
-Historiske saker backfilles ikke automatisk. Manglende eldre sporbarhetsfelt er derfor gyldig legacy-tilstand.
+```text
+Expo: create → save → company sign → anon read → customer sign → attach final document
+External: register → void
+```
 
-### 5.3 Fase 32 tilbudsbilder
+Begge testene ble rullet tilbake. `sales_contracts` hadde 0 produksjonsrader etter QA.
 
-Nye bilder på tilbudslinjer og opsjoner lagres normalt i `project-images/sales-offer-images/...` og `imageDataUrl` inneholder offentlig Storage-URL i stedet for stor base64-streng.
+## 7. Kontraktproduktet – besluttet retning
 
-Dette er bakoverkompatibelt:
+Dette er produktretningen for kommende 33B-runder:
 
-- eldre `data:image...` fungerer fortsatt
-- ved offline/session/Storage-feil finnes fallback til gammel data-URL-metode
-- kundevisning kan bruke både URL og data-URL
-- befaringsbilder er ikke endret
-- ingen historisk massekonvertering
+- Etter akseptert tilbud kan bruker frivillig opprette Expo-kontrakt eller laste opp egen kontrakt.
+- Ikke-garantiprosjekt kan fortsette uten kontrakt.
+- Garantibad skal senere kreve enten signert Expo-kontrakt eller bekreftet ekstern kontrakt før garanti kan utstedes.
+- Expo-kontrakten skal ha minst mulig utfylling og en steg-for-steg-veiviser som ender i ett samlet dokument.
+- Akseptert tilbud, kunde og firmadata gjenbrukes automatisk.
+- Standard betalingsforslag: 40 % ved oppstart, 40 % ved hovedmilepæl, 20 % etter overtagelse; bruker kan endre planen.
+- Kontrakt og PDF skal følge Expo ProffDok-design og firmaets logo/profil.
+- Relevante hjelpelinker kan peke til Forbrukerrådet. Expo skal ikke bruke Forbrukerrådets logo eller fremstille kontrakten som godkjent av dem.
+- Expo skal ikke kopiere Standard Norge/NS-forbrukerblanketter.
+- 2 G kan brukes som informasjon, ikke som teknisk sperre eller hardkodet beløp.
 
-Fase 32 viste at store base64-bilder, ikke antall salgssaker, var hovedårsaken til unødvendig stor `sales_requests.payload`.
-
-### 5.4 Delt Sales Supabase-klient
-
-Sales wrapperen bruker en delt standardklient. Nye komponenter/tjenester skal ikke opprette egne browser-Supabase/Auth-klienter med samme storage key. Dublerte GoTrue-klienter kan gi uforutsigbar sesjons-/refreshadferd og var sannsynlig årsak til blinking under det avbrutte arkivforsøket.
-
-## 6. Systemadmin og supportmodus
+## 8. Systemadmin og support
 
 Systemadmin er et kontrollert tverrfirma-verktøy, ikke en generell sikkerhetsbypass.
 
-Ved prosjektsupport:
+- Supportfirma skal være tydelig i UI.
+- Lesing på tvers kan være nødvendig for support.
+- Opprettelse, signering og ansvar skal fortsatt utføres av riktig firma/bruker.
+- Prosjektaktivering eller kontraktskriving skal ikke gjennomføres dersom korrekt eierskap ikke kan etableres.
 
-- aktivt supportfirma skal være tydelig
-- prosjektlisten skal vise valgt supportfirmas prosjekter, ikke systemadministratorens eget firma
-- ordinære eierskaps-/write-regler skal bevares
-- supporthandling skal ikke endre faktisk oppretter eller feilaktig sette systemadmin som ansvarlig
+## 9. Overtagelse og garanti
 
-Sales-support er separat og har egne begrensninger. Prosjektaktivering i supportkontekst skal ikke tillates dersom eierskap/ansvar ikke kan settes sikkert.
+Overtagelse er først reelt registrert når begge parter har signert, bruker bekrefter gjennomført overtagelse, data er lagret og signaturene kan leses tilbake fra Supabase.
 
-## 7. Overtagelse og signatur
-
-Overtagelse er først reelt registrert når:
-
-1. begge parter har signert
-2. bruker bekrefter at overtagelsen er gjennomført
-3. data er lagret
-4. signaturene kan leses tilbake fra Supabase
-
-Fase 32 la inn serververifisering av begge signaturene før bekreftet overtagelse, garanti/låsing. UI skiller nå mellom utkast, registrering og senere endringer.
-
-`locked` skal ikke settes dersom signaturene ikke kan bekreftes eller øvrige ferdigstillingskrav ikke er oppfylt.
-
-## 8. HJELP som produktkontrakt
-
-HJELP er den gjeldende digitale brukerveiledningen i appen.
-
-Fast regel fra Fase 32:
-
-- påvirker en endring arbeidsflyt, knapper, begreper, roller eller brukeropplevelse → HJELP oppdateres i samme runde
-- er endringen rent teknisk/usynlig → dokumenter eksplisitt at HJELP ikke krever endring
-
-Fase 32 HJELP beskriver blant annet sporbarhet, supportmodus, overtagelse og låsing. Utdatert prosjektarkiv-begrep er fjernet.
-
-## 9. Supabase – sentrale domener
-
-Viktige tabeller:
-
-```text
-profiles
-projects
-companies
-company_user_invites
-user_terms_acceptance
-product_document_master
-product_master_checkpoints
-warranty_registry
-sales_requests
-sales_offers
-sales_offer_versions
-sales_company_scopes
-sales_company_memberships
-```
-
-Sentrale Sales RPC-er:
-
-```text
-resolve_sales_company_scope()
-publish_sales_offer(payload jsonb)
-get_sales_offer_by_token(token uuid)
-accept_sales_offer(...)
-```
-
-Fase 32 la til sporbarhetskolonner for nye data. SQL/RLS/SECURITY DEFINER/grants skal ikke endres blindt på bakgrunn av Supabase-advisors; eksisterende sikkerhetsmodell må forstås før endring.
+Garantimodulen har egne ferdigstillingskrav. Kontraktkravet for garantibad kobles på i senere 33B-runde og skal være bakoverkompatibelt: gamle prosjekter skal ikke få tvungen historisk kontrakt.
 
 ## 10. Storage
 
@@ -290,20 +258,15 @@ chat-images
 project-images
 ```
 
-`project-images` er offentlig og brukes av flere eksisterende flyter. Dette er en kjent sikkerhets-/personvernsgjeld, særlig for sensitive dokumenter. En fremtidig overgang til private filer krever egen migreringsplan, signerte URL-er og testing av kundeportal, PDF og historiske lenker.
+`project-images` er offentlig og brukes av eksisterende flyter, inkludert eldre kontraktopplasting. Dette er kjent sikkerhets-/personvernsgjeld. **Fase 33B.2 flytter ingen filer og endrer ingen Storage-policy.**
 
-Ikke innfør tilfeldige DELETE-policyer eller historisk filrydding som del av ordinær frontendutvikling.
+Endelig lagringsstrategi for nye signerte kontrakt-PDF-er avgjøres før 33B.5. Historiske URL-er skal bevares og eventuell overgang til privat Storage krever egen plan.
 
-## 11. Edge Functions
+## 11. HJELP og dokumentasjon
 
-Aktive sentrale funksjoner:
+Fase 33B.2 er rent teknisk/servermessig og har ingen synlig brukerflyt. **HJELP trenger derfor ikke oppdatering i denne runden.**
 
-```text
-smart-worker
-delete-pending-user
-```
-
-`smart-worker` håndterer e-post via Resend. Sikkerhetsendringer rundt JWT, mottakere eller directions skal behandles som egen server-/sikkerhetsoppgave og ikke blandes med visuell refaktorering.
+Når kontraktveiviseren blir synlig, skal HJELP oppdateres i samme runde med valg mellom Expo-kontrakt, ekstern kontrakt, signering og garantikrav.
 
 ## 12. Automatisk minimumsvern
 
@@ -315,93 +278,30 @@ critical-sales-recovery-check.mjs
 vite build
 ```
 
-Dette er et regresjonsvern, ikke en full testpakke. Manuell Preview-test er fortsatt nødvendig for brukerrettede endringer.
+Dette er minimumsvern. Brukerrettede endringer krever fortsatt Preview-test og eksplisitt `TEST OK`.
 
 ## 13. Viktigste tekniske risikoer
 
 | Prioritet | Risiko | Regel |
 |---|---|---|
-| Kritisk | Offentlig `project-images` med enkelte sensitive dokumenter | Egen sikkerhetsfase, ikke spontan migrering |
-| Høy | Stor og koblet `main.jsx` | Kun naturlige uttrekk med konkret gevinst |
-| Høy | Stor Sales-orkestrering og recovery-kompleksitet | Beskytt hydrering/recovery og historikk |
-| Høy | Hele `projects.data` oppdateres fra flere veier | Ikke endre persistens uten bred regresjonstest |
-| Høy | Supportmodus krysser firmagrenser | Frontend er ikke sikkerhetsgrense; RLS/serverregler må stå |
-| Middels | Legacy JSON uten eksplisitt schema-versjon | Normaliser bakoverkompatibelt, ingen tvungen backfill |
-| Middels | Offentlig Storage og historiske URL-er | Kartlegg før policyendringer |
-| Middels | Store genererte/Core-filer | Unngå splitting i mange små filer uten vedlikeholdsgevinst |
+| Kritisk | Offentlig `project-images` med enkelte sensitive dokumenter | Ikke flytt historikk spontant; egen Storage-plan |
+| Høy | Sales recovery/hydration | Beskytt eksisterende kladd- og gjenopprettingskontrakter |
+| Høy | Signert tilbud/kontraktshistorikk | Immutable snapshots; ingen overskriving |
+| Høy | Support på tvers av firma | Lesing er ikke skrive-bypass |
+| Høy | Stor `projects.data` JSON | Ingen persistensendring uten bred regresjonstest |
+| Middels | Legacy data uten nye felt | Bakoverkompatibilitet, ingen backfill |
+| Middels | Store Core-filer | Uttrekk bare når ansvargrensen er naturlig |
 
-## 14. Anbefalt videre retning
+## 14. Neste kontraktrunder
 
-### Gjør
-
-1. Velg neste oppgave ut fra reelt produktbehov, feil eller tydelig vedlikeholdsgevinst.
-2. Kartlegg bare området som skal endres.
-3. Utvid eksisterende modul før ny modul opprettes når det er naturlig.
-4. Behold data-/sikkerhetskontrakter stabile.
-5. Oppdater HJELP når endringen er brukerrettet.
-6. Preview-test, `TEST OK`, merge, Production READY, runtime-kontroll, slett branch.
-
-### Ikke gjør
-
-- ikke splitt `main.jsx` bare for å få lavere linjetall
-- ikke overfragmenter Sales i små wrappers uten tydelig verdi
-- ikke masserediger historiske prosjekt-/tilbudsdata
-- ikke bland RLS/Storage/sikkerhetsmigrering med ordinær UI-jobb
-- ikke reintroduser prosjektarkiv uten ny produktbeslutning
-- ikke svekk supportmodus for å gjøre systemadmin enklere
-
-## 15. Åpne fremtidspunkter
-
-### Flere rom under samme prosjekt
-
-Issue #110 beskriver mulig fremtidig modell med ett prosjekt/prosjektnummer og flere rom/arbeidsområder, eksempelvis Bad 1, Bad 2, WC-rom og vaskerom. Dette er kun backlog/utredning nå.
-
-Før implementering må det avgjøres hva som er prosjektfelles og hva som er romspesifikt for:
-
-- bilder
-- sjekklister
-- produkter/FDV
-- avvik
-- tilbud/kontrakt
-- overtagelse
-- garanti
-- rapport/PDF
-- chat
-
-### Andre åpne tekniske spørsmål
-
-- langsiktig privat Storage-strategi
-- eksplisitt schema-versjon/normalisering for `projects.data`
-- sentral project repository/merge-strategi
-- videre automatiserte smoke-/utility-tester
-- eventuell reduksjon av store Core-filer når en konkret endring gjør grensen naturlig
-
-## 16. Beslutningslogg – Fase 32
-
-| Dato | Beslutning |
-|---|---|
-| 27.08.2026 | Nye salgssaker får server-snapshot av faktisk oppretter. |
-| 27.08.2026 | Publisert tilbud lagrer faktisk publisist; historikk backfilles ikke. |
-| 31.08.2026 | Prosjektarkiv droppes; `locked` beholdes som ferdig/read-only-tilstand. |
-| 31.08.2026 | Nye tilbudsbilder lagres normalt som Storage-URL i stedet for base64. |
-| 31.08.2026 | Sales skal bruke delt browser Supabase-klient og ikke opprette parallelle GoTrue-klienter. |
-| 31.08.2026 | Supportmodus-prosjektliste følger valgt supportfirma. |
-| 31.08.2026 | Overtagelsessignaturer serververifiseres før bekreftet registrering/ferdigstilling. |
-| 31.08.2026 | Brukerrettede endringer skal oppdatere HJELP når relevant. |
-
-## 17. Konklusjon
-
-Expo ProffDok er en produksjonsapp med bred funksjonsflate og historiske data. Arkitekturstrategien er derfor fortsatt konservativ:
+Planlagt trygg rekkefølge:
 
 ```text
-Kartlegg faktisk main
-→ gjør én avgrenset endring
-→ behold data- og sikkerhetskontrakter
-→ bygg og Preview-test
-→ TEST OK
-→ merge
-→ verifiser Production
-→ dokumenter faktisk løsning
+33B.2  servermodell/RLS/RPC                 ← denne runden
+33B.3  intern steg-for-steg-veiviser/autofyll
+33B.4  kundelenke + begge signaturer
+33B.5  endelig PDF + prosjektets Tilbud/kontrakt
+33B.6  garantikobling + full HJELP/dokumentasjon
 ```
 
-Målet er ikke flest mulig moduler. Målet er en enkel, oversiktlig og trygg app som kan videreutvikles uten å miste funksjonalitet eller historikk.
+Hver brukerrettet runde skal gjennom build, Preview, eksisterende Sales-regresjon, ny funksjon, reload/persistens og relevant kundevisning før merge.
