@@ -1,12 +1,14 @@
 // Expo ProffDok – FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
 // FASE 33B.3 legger til et frivillig valg om enkel Expo-kontrakt i eksisterende
 // kontraktkort etter aksept. Opplasting av egen kontrakt og prosjektaktivering beholdes urørt.
+// Aktiv kontraktsveiviser huskes i sessionStorage slik at fanebytte/remount ikke
+// sender brukeren tilbake til tilbudssaken midt i utfyllingen.
 // FASE 32A viser serverstemplet creator og publisher internt uten å forveksle
 // disse med ansvarlig. Gamle saker uten nye snapshot-felt får ingen kunstig creator.
 // Intern tilbudsvisning og låst akseptvisning følger samme hovedpostrekkefølge
 // som kundelink og dokumenter. Akseptdata, lagring og prosjektaktivering er uendret.
 
-import { Children, cloneElement, isValidElement, useState } from "react";
+import { Children, cloneElement, isValidElement, useEffect, useState } from "react";
 import { FileSignature } from "lucide-react";
 import SalesDetailViewCore from "./SalesDetailViewCore.jsx";
 import SalesContractWizard from "./SalesContractWizard.jsx";
@@ -20,6 +22,36 @@ const LEGACY_MAIN_POST = {
   id: "ovrige-arbeider",
   title: "Øvrige arbeider",
 };
+
+const CONTRACT_WIZARD_OPEN_PREFIX = "expo-proffdok:sales-contract-wizard-open:";
+
+function getContractWizardOpenKey(requestId = "") {
+  const normalized = String(requestId || "").trim();
+  return normalized ? `${CONTRACT_WIZARD_OPEN_PREFIX}${normalized}` : "";
+}
+
+function isContractWizardRememberedOpen(requestId = "") {
+  if (typeof window === "undefined") return false;
+  const key = getContractWizardOpenKey(requestId);
+  if (!key) return false;
+  try {
+    return window.sessionStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function rememberContractWizardOpen(requestId = "", open = false) {
+  if (typeof window === "undefined") return;
+  const key = getContractWizardOpenKey(requestId);
+  if (!key) return;
+  try {
+    if (open) window.sessionStorage.setItem(key, "1");
+    else window.sessionStorage.removeItem(key);
+  } catch {
+    // Sessionlagring er kun UX-sikkerhet. Eksisterende Sales-flyt skal fungere uten.
+  }
+}
 
 function hasMeaningfulOfferDraft(request) {
   const lines = Array.isArray(request?.offerLines) ? request.offerLines : [];
@@ -546,7 +578,10 @@ function AcceptanceProofPreviewButton({ request, companyProfile }) {
 }
 
 export default function SalesDetailView(props) {
-  const [contractWizardOpen, setContractWizardOpen] = useState(false);
+  const selectedRequestId = String(props?.selectedRequest?.id || "");
+  const [contractWizardOpen, setContractWizardOpen] = useState(() =>
+    isContractWizardRememberedOpen(selectedRequestId)
+  );
   const storedResponsible = getStoredResponsible(
     props?.selectedRequest,
     props?.loggedInResponsible
@@ -559,11 +594,25 @@ export default function SalesDetailView(props) {
       hasMeaningfulOfferDraft(coreProps.selectedRequest)
   );
 
+  useEffect(() => {
+    setContractWizardOpen(isContractWizardRememberedOpen(selectedRequestId));
+  }, [selectedRequestId]);
+
+  function openContractWizard() {
+    rememberContractWizardOpen(selectedRequestId, true);
+    setContractWizardOpen(true);
+  }
+
+  function closeContractWizard() {
+    rememberContractWizardOpen(selectedRequestId, false);
+    setContractWizardOpen(false);
+  }
+
   if (contractWizardOpen && coreProps?.selectedRequest?.status === "Akseptert") {
     return (
       <SalesContractWizard
         request={coreProps.selectedRequest}
-        onClose={() => setContractWizardOpen(false)}
+        onClose={closeContractWizard}
       />
     );
   }
@@ -575,7 +624,7 @@ export default function SalesDetailView(props) {
   tree = rewriteContractChoice(
     tree,
     coreProps?.selectedRequest,
-    () => setContractWizardOpen(true)
+    openContractWizard
   );
 
   if (hasExistingOfferDraft) {
