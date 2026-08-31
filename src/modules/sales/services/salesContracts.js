@@ -45,6 +45,14 @@ export async function createExpoSalesContract(
   });
 
   if (error) throw error;
+  if (data?.source && data.source !== "expo") {
+    throw new Error(
+      "Det er allerede registrert en ekstern kontrakt for den aksepterte tilbudsversjonen."
+    );
+  }
+  if (data?.status && data.status !== "draft") {
+    throw new Error("Kontrakten er allerede sendt eller signert og kan ikke redigeres.");
+  }
   return data;
 }
 
