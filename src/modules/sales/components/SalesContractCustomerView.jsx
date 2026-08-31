@@ -220,7 +220,9 @@ export default function SalesContractCustomerView({ supabaseClient, contractToke
       <div className="sales-shell">
         <main className="sales-main">
           <section className="sales-form-hero">
-            <p className="sales-eyebrow">Kontrakt til signering</p>
+            <p className="sales-eyebrow">
+              {signed ? "Ferdig signert kontrakt" : "Kontrakt til signering"}
+            </p>
             <h1 className="sales-title">{presentation.request.title}</h1>
             <p className="sales-subtitle">
               {presentation.companyProfile.companyName || "Utførende firma"} · {presentation.request.customer}
@@ -228,49 +230,76 @@ export default function SalesContractCustomerView({ supabaseClient, contractToke
           </section>
 
           <div className="sales-form-panel" style={{ display: "grid", gap: 18 }}>
-            <div
-              style={{
-                display: "grid",
-                gap: 8,
-                padding: 14,
-                borderRadius: 12,
-                border: "1px solid #b9e0e3",
-                background: "#eefafb",
-                color: "#33545d",
-              }}
-            >
-              <div style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900, color: "#0b737b" }}>
-                <ShieldCheck size={18} /> Kontrakten er bekreftet av utførende firma
-              </div>
-              <div>
-                <strong>{contract.company_signed_by_name || presentation.companyProfile.companyName}</strong>
-                {contract.company_signed_at ? ` · ${formatDateTime(contract.company_signed_at)}` : ""}
-              </div>
-              <span>
-                Kontraktsgrunnlaget er låst. Kunden kan lese og signere, men ikke endre innholdet.
-              </span>
-            </div>
-
             {signed ? (
               <div
                 style={{
                   display: "grid",
-                  gap: 8,
-                  padding: 16,
-                  borderRadius: 12,
+                  gap: 9,
+                  padding: 18,
+                  borderRadius: 14,
                   border: "1px solid #b9dfc8",
                   background: "#f1fbf5",
                   color: "#176b42",
                 }}
               >
-                <div style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900 }}>
-                  <CheckCircle2 size={20} /> Kontrakten er signert av begge parter
+                <div style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900, fontSize: 18 }}>
+                  <CheckCircle2 size={22} /> Kontrakten er allerede signert
                 </div>
                 <span>
-                  Kunde: <strong>{contract.customer_signed_by_name}</strong>
+                  Denne kontrakten ble signert av <strong>{contract.customer_signed_by_name || presentation.request.customer}</strong>
+                  {contract.customer_signed_at ? ` · ${formatDateTime(contract.customer_signed_at)}` : ""}.
+                </span>
+                <span style={{ fontWeight: 800 }}>
+                  Ingen ytterligere handling er nødvendig.
+                </span>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: "grid",
+                  gap: 8,
+                  padding: 14,
+                  borderRadius: 12,
+                  border: "1px solid #b9e0e3",
+                  background: "#eefafb",
+                  color: "#33545d",
+                }}
+              >
+                <div style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900, color: "#0b737b" }}>
+                  <ShieldCheck size={18} /> Kontrakten er bekreftet av utførende firma
+                </div>
+                <div>
+                  <strong>{contract.company_signed_by_name || presentation.companyProfile.companyName}</strong>
+                  {contract.company_signed_at ? ` · ${formatDateTime(contract.company_signed_at)}` : ""}
+                </div>
+                <span>
+                  Kontraktsgrunnlaget er låst. Kunden kan lese og signere, men ikke endre innholdet.
+                </span>
+              </div>
+            )}
+
+            {signed ? (
+              <div
+                style={{
+                  display: "grid",
+                  gap: 6,
+                  padding: 14,
+                  borderRadius: 12,
+                  border: "1px solid #d7e4ea",
+                  background: "#ffffff",
+                  color: "#33545d",
+                }}
+              >
+                <strong style={{ color: "#183b46" }}>Signaturstatus</strong>
+                <span>
+                  Utførende firma: <strong>{contract.company_signed_by_name || presentation.companyProfile.companyName}</strong>
+                  {contract.company_signed_at ? ` · ${formatDateTime(contract.company_signed_at)}` : ""}
+                </span>
+                <span>
+                  Kunde: <strong>{contract.customer_signed_by_name || presentation.request.customer}</strong>
                   {contract.customer_signed_at ? ` · ${formatDateTime(contract.customer_signed_at)}` : ""}
                 </span>
-                <span>Kontrakten kan ikke endres etter signering.</span>
+                <span>Kontrakten er låst og kan ikke endres etter signering.</span>
               </div>
             ) : null}
 
