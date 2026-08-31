@@ -35,6 +35,7 @@ import {
 } from "../services/salesContracts.js";
 import { fetchSalesCompanyProfile } from "../services/salesCommunication.js";
 import { createDefaultSalesSupabaseClient } from "../services/salesSupabase.js";
+import SalesContractDocument from "./SalesContractDocument.jsx";
 
 const FORBRUKERRADET_HANDVERKER_URL =
   "https://www.forbrukerradet.no/forside/bolig/bruk-av-handverker/sjekkliste-handverker/";
@@ -107,22 +108,8 @@ function writeWizardSession(key, value) {
   }
 }
 
-function formatDate(value = "") {
-  if (!value) return "Ikke angitt";
-  const parsed = new Date(`${value}T12:00:00`);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return new Intl.DateTimeFormat("nb-NO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(parsed);
-}
-
 function customerAddress(request = {}) {
-  return [
-    request.address,
-    [request.postnr, request.city].filter(Boolean).join(" "),
-  ]
+  return [request.address, [request.postnr, request.city].filter(Boolean).join(" ")]
     .filter(Boolean)
     .join(", ");
 }
@@ -259,200 +246,6 @@ function BinaryChoice({ value, onChange }) {
         })}
       </div>
     </div>
-  );
-}
-
-function ContractDocument({ request, companyProfile, draft }) {
-  const version = getAcceptedSalesOfferVersionNumber(request);
-  const agreementLabel =
-    AGREEMENT_CHANNELS.find((item) => item.value === draft.agreement_channel)?.label ||
-    "Ikke valgt";
-  const priceLabel =
-    PRICE_FORMS.find((item) => item.value === draft.price_form)?.label ||
-    "Ikke valgt";
-
-  return (
-    <article
-      style={{
-        maxWidth: 820,
-        margin: "0 auto",
-        background: "#ffffff",
-        border: "1px solid #d8e5e9",
-        borderRadius: 16,
-        boxShadow: "0 16px 42px rgba(15, 54, 64, .09)",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          padding: "24px 26px",
-          background: "linear-gradient(135deg, #eaf9fa 0%, #f8fcfd 100%)",
-          borderBottom: "1px solid #d8e5e9",
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 18,
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <div style={{ color: "#0b737b", fontWeight: 900, fontSize: 13 }}>
-            EXPO PROFFDOK
-          </div>
-          <h2 style={{ margin: "5px 0 3px", color: "#0f172a" }}>
-            Enkel forbrukerkontrakt for håndverkertjenester
-          </h2>
-          <div style={{ color: "#52616b" }}>
-            Basert på akseptert tilbud{version ? ` v${version}` : ""}
-          </div>
-        </div>
-        {companyProfile?.logoUrl ? (
-          <img
-            src={companyProfile.logoUrl}
-            alt="Firmalogo"
-            style={{ maxWidth: 150, maxHeight: 58, objectFit: "contain" }}
-          />
-        ) : null}
-      </div>
-
-      <div style={{ padding: "24px 26px", display: "grid", gap: 22 }}>
-        <section>
-          <h3 style={{ margin: "0 0 10px", color: "#183b46" }}>1. Partene</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 10 }}>
-            <FieldSummary label="Utførende firma" value={companyProfile?.companyName} />
-            <FieldSummary label="Organisasjonsnummer" value={companyProfile?.orgNumber} />
-            <FieldSummary label="E-post firma" value={companyProfile?.email} />
-            <FieldSummary label="Telefon firma" value={companyProfile?.phone} />
-            <FieldSummary label="Kunde" value={request.customer} />
-            <FieldSummary label="E-post kunde" value={request.email} />
-            <FieldSummary label="Telefon kunde" value={request.phone} />
-            <FieldSummary label="Prosjektadresse" value={draft.project_address || customerAddress(request)} />
-          </div>
-        </section>
-
-        <section>
-          <h3 style={{ margin: "0 0 10px", color: "#183b46" }}>2. Avtalegrunnlaget</h3>
-          <p style={{ margin: 0, lineHeight: 1.6, color: "#334155" }}>
-            Arbeidet gjelder leveransen i kundens aksepterte tilbud
-            {version ? ` v${version}` : ""}, inkludert de opsjonene kunden valgte ved
-            aksept. Det aksepterte tilbudet er låst avtalegrunnlag og endres ikke av
-            denne kontrakten. Senere endringer og tilleggsarbeider avtales skriftlig.
-          </p>
-          {draft.included ? (
-            <p style={{ marginBottom: 0, color: "#334155" }}>
-              <strong>Inkludert:</strong> {draft.included}
-            </p>
-          ) : null}
-          {draft.excluded ? (
-            <p style={{ marginBottom: 0, color: "#334155" }}>
-              <strong>Ikke inkludert:</strong> {draft.excluded}
-            </p>
-          ) : null}
-          {draft.customer_supplied ? (
-            <p style={{ marginBottom: 0, color: "#334155" }}>
-              <strong>Kundens egne leveranser:</strong> {draft.customer_supplied}
-            </p>
-          ) : null}
-        </section>
-
-        <section>
-          <h3 style={{ margin: "0 0 10px", color: "#183b46" }}>3. Pris og fremdrift</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 10 }}>
-            <FieldSummary label="Prisform" value={priceLabel} />
-            <FieldSummary label="Avtalesum inkl. mva." value={formatNok(draft.price_incl_vat || 0)} />
-            <FieldSummary label="Planlagt oppstart" value={formatDate(draft.start_date)} />
-            <FieldSummary label="Forventet ferdig" value={formatDate(draft.expected_finish_date)} />
-          </div>
-        </section>
-
-        <section>
-          <h3 style={{ margin: "0 0 10px", color: "#183b46" }}>4. Betalingsplan</h3>
-          <div style={{ display: "grid", gap: 8 }}>
-            {(draft.payment_plan || []).map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "70px minmax(0,1fr)",
-                  gap: 12,
-                  padding: "11px 12px",
-                  border: "1px solid #d9e7eb",
-                  borderRadius: 10,
-                }}
-              >
-                <strong style={{ color: "#0b737b" }}>{item.percent} %</strong>
-                <div>
-                  <strong style={{ display: "block", color: "#0f172a" }}>{item.title}</strong>
-                  <span style={{ color: "#52616b" }}>{item.description}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h3 style={{ margin: "0 0 10px", color: "#183b46" }}>5. Partenes ansvar</h3>
-          <p style={{ margin: "0 0 8px", lineHeight: 1.6, color: "#334155" }}>
-            Utførende firma skal gjennomføre avtalt arbeid fagmessig og i samsvar med
-            håndverkertjenesteloven og den avtalte leveransen. Kunden skal sørge for
-            nødvendig tilgang, gi nødvendige avklaringer og informere om kjente forhold
-            som kan påvirke arbeidet.
-          </p>
-          <p style={{ margin: 0, lineHeight: 1.6, color: "#334155" }}>
-            Kundens ufravikelige rettigheter etter lovverket begrenses ikke av denne
-            kontrakten. Ved mangel kan kunden blant annet holde tilbake et nødvendig
-            beløp i samsvar med gjeldende regler.
-          </p>
-        </section>
-
-        <section>
-          <h3 style={{ margin: "0 0 10px", color: "#183b46" }}>6. Avtaleform og angrerett</h3>
-          <p style={{ margin: "0 0 8px", color: "#334155" }}>
-            <strong>Avtalen inngås:</strong> {agreementLabel}.
-          </p>
-          {agreementChannelNeedsWithdrawalInfo(draft.agreement_channel) ? (
-            <p style={{ margin: 0, lineHeight: 1.6, color: "#334155" }}>
-              Der reglene om angrerett gjelder, skal kunden få lovpålagt informasjon.
-              {draft.early_start_requested
-                ? " Kunden har bedt om at arbeidet kan starte før eventuell angrefrist er utløpt."
-                : " Det er ikke registrert ønske om oppstart før eventuell angrefrist er utløpt."}
-            </p>
-          ) : (
-            <p style={{ margin: 0, color: "#334155" }}>
-              Ingen særskilt tidlig-oppstartsanmodning er registrert.
-            </p>
-          )}
-        </section>
-
-        <section>
-          <h3 style={{ margin: "0 0 10px", color: "#183b46" }}>7. Særlige vilkår</h3>
-          <p style={{ margin: "0 0 8px", color: "#334155" }}>
-            <strong>Dagmulkt:</strong>{" "}
-            {draft.daily_penalty_agreed
-              ? draft.daily_penalty_text || "Avtalt mellom partene."
-              : "Ikke særskilt avtalt."}
-          </p>
-          <p style={{ margin: 0, whiteSpace: "pre-wrap", color: "#334155" }}>
-            <strong>Andre særskilte vilkår:</strong>{" "}
-            {draft.special_terms || "Ingen særskilte vilkår registrert."}
-          </p>
-        </section>
-
-        <section
-          style={{
-            paddingTop: 18,
-            borderTop: "1px solid #d9e7eb",
-            color: "#52616b",
-            fontSize: 13,
-            lineHeight: 1.5,
-          }}
-        >
-          Dette er et kontraktsutkast opprettet i Expo ProffDok. Det er ikke en
-          Standard Norge-/NS-blankett og innebærer ingen godkjenning fra Forbrukerrådet.
-          Signering og endelig låsing kommer i neste steg av kontraktsflyten.
-        </section>
-      </div>
-    </article>
   );
 }
 
@@ -723,7 +516,13 @@ export default function SalesContractWizard({ request, onClose }) {
                     tilbudet. Du skal ikke skrive samme informasjon på nytt.
                   </p>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 10 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                    gap: 10,
+                  }}
+                >
                   <FieldSummary label="Utførende firma" value={companyProfile?.companyName} />
                   <FieldSummary label="Org.nr." value={companyProfile?.orgNumber} />
                   <FieldSummary label="Kunde" value={request.customer} />
@@ -736,7 +535,10 @@ export default function SalesContractWizard({ request, onClose }) {
                         : "Akseptert tilbud"
                     }
                   />
-                  <FieldSummary label="Avtalesum inkl. mva." value={formatNok(draft.price_incl_vat || 0)} />
+                  <FieldSummary
+                    label="Avtalesum inkl. mva."
+                    value={formatNok(draft.price_incl_vat || 0)}
+                  />
                 </div>
                 <div
                   style={{
@@ -768,7 +570,13 @@ export default function SalesContractWizard({ request, onClose }) {
                   </p>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                    gap: 12,
+                  }}
+                >
                   <label style={labelStyle()}>
                     <span>Planlagt oppstart</span>
                     <input
@@ -783,7 +591,9 @@ export default function SalesContractWizard({ request, onClose }) {
                     <input
                       type="date"
                       value={draft.expected_finish_date}
-                      onChange={(event) => updateDraft("expected_finish_date", event.target.value)}
+                      onChange={(event) =>
+                        updateDraft("expected_finish_date", event.target.value)
+                      }
                       style={inputStyle()}
                     />
                   </label>
@@ -824,7 +634,9 @@ export default function SalesContractWizard({ request, onClose }) {
                           min="0"
                           max="100"
                           value={item.percent}
-                          onChange={(event) => updatePaymentPlan(index, "percent", event.target.value)}
+                          onChange={(event) =>
+                            updatePaymentPlan(index, "percent", event.target.value)
+                          }
                           style={inputStyle()}
                         />
                       </label>
@@ -832,7 +644,9 @@ export default function SalesContractWizard({ request, onClose }) {
                         <span>{item.title}</span>
                         <input
                           value={item.description}
-                          onChange={(event) => updatePaymentPlan(index, "description", event.target.value)}
+                          onChange={(event) =>
+                            updatePaymentPlan(index, "description", event.target.value)
+                          }
                           style={inputStyle()}
                         />
                       </label>
@@ -913,7 +727,9 @@ export default function SalesContractWizard({ request, onClose }) {
                     <span>Avtalt dagmulkt</span>
                     <input
                       value={draft.daily_penalty_text}
-                      onChange={(event) => updateDraft("daily_penalty_text", event.target.value)}
+                      onChange={(event) =>
+                        updateDraft("daily_penalty_text", event.target.value)
+                      }
                       placeholder="F.eks. beløp og når den gjelder"
                       style={inputStyle()}
                     />
@@ -941,7 +757,14 @@ export default function SalesContractWizard({ request, onClose }) {
                     color: "#33545d",
                   }}
                 >
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                      fontWeight: 900,
+                    }}
+                  >
                     <Info size={17} /> Nyttige offentlige råd
                   </div>
                   <a
@@ -973,11 +796,12 @@ export default function SalesContractWizard({ request, onClose }) {
                 <div>
                   <h2 style={{ marginTop: 0 }}>Kontroller dokumentet</h2>
                   <p className="sales-subtitle">
-                    Veiviseren ender i ett samlet dokument. Gå tilbake hvis noe skal
-                    endres, og lagre deretter utkastet på server.
+                    Kundeaksepten og det aksepterte tilbudet inngår nå tydelig i
+                    avtalegrunnlaget. Gå tilbake hvis noe skal endres, og lagre deretter
+                    utkastet på server.
                   </p>
                 </div>
-                <ContractDocument
+                <SalesContractDocument
                   request={request}
                   companyProfile={companyProfile || {}}
                   draft={draft}
