@@ -1,4 +1,5 @@
-// Expo ProffDok – FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// Expo ProffDok – FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// FASE 33B.5 viser kontraktsstatus, kundelenke og signert PDF direkte i kontraktkortet.
 // FASE 33B.4 gjør akseptbevisets neste-steg-tekst kompatibel med det nye valgfrie kontraktsteget.
 // FASE 33B.3 legger til et frivillig valg om enkel Expo-kontrakt i eksisterende
 // kontraktkort etter aksept. Opplasting av egen kontrakt og prosjektaktivering beholdes urørt.
@@ -10,9 +11,9 @@
 // som kundelink og dokumenter. Akseptdata, lagring og prosjektaktivering er uendret.
 
 import { Children, cloneElement, isValidElement, useEffect, useState } from "react";
-import { FileSignature } from "lucide-react";
 import SalesDetailViewCore from "./SalesDetailViewCore.jsx";
 import SalesContractWizard from "./SalesContractWizard.jsx";
+import SalesContractActions from "./SalesContractActions.jsx";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
 import { createAcceptanceProofPdf } from "../services/salesAcceptancePdf.js";
@@ -266,37 +267,17 @@ function rewriteContractChoice(node, request, onOpenWizard) {
           directChildren[1],
           undefined,
           request?.contractFile
-            ? "Egen kontrakt er lastet opp på saken. Du kan beholde denne som gjeldende kontraktsvalg eller fjerne den og opprette en enkel kontrakt i Expo ProffDok."
+            ? "Egen kontrakt er lastet opp på saken. Dersom en Expo-kontrakt også er opprettet, vises status og handlinger direkte her."
             : "Velg om du vil opprette en enkel kontrakt i Expo ProffDok eller laste opp bedriftens egen kontrakt. Begge valgene bygger videre på det aksepterte tilbudet."
         )
       : directChildren[1];
 
-    const choice = request?.contractFile ? null : (
+    const choice = (
       <div
-        key="fase33b3-expo-contract-choice"
-        style={{
-          display: "flex",
-          gap: 10,
-          alignItems: "center",
-          flexWrap: "wrap",
-          margin: "0 0 14px",
-          padding: 12,
-          borderRadius: 12,
-          border: "1px solid #b9e0e3",
-          background: "#eefafb",
-        }}
+        key="fase33b5-expo-contract-actions"
+        style={{ margin: "0 0 14px" }}
       >
-        <button
-          className="sales-primary-button"
-          type="button"
-          onClick={onOpenWizard}
-        >
-          <FileSignature size={18} />
-          Opprett / åpne enkel kontrakt
-        </button>
-        <span style={{ color: "#42606b", fontWeight: 700 }}>
-          Eller bruk «Last opp egen kontrakt» under.
-        </span>
+        <SalesContractActions request={request} onOpenWizard={onOpenWizard} />
       </div>
     );
 

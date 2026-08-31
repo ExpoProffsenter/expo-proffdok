@@ -1,3 +1,5 @@
+// FASE 33B.5 HJELP: kontrakt/kundelenke vises direkte på saken, signert kontrakt arkiveres som PDF og følger prosjektet.
+// FASE 33B.5: brukerflaten kaller samlet tilbud/kontrakt/endringer Avtalegrunnlag; intern `tilbud`-nøkkel beholdes.
 // FASE 33B.4 HJELP: bedriften signerer lagret Expo-kontrakt, kunden får sikker lenke og signerer samme låste grunnlag.
 // FASE 33B.3 HJELP: akseptert tilbud får frivillig stegvis Expo-kontrakt i tillegg til eksisterende opplasting.
 // Kontraktsteg og usparte felt sikres lokalt gjennom fanebytte/remount før eksplisitt serverlagring.
@@ -8,6 +10,7 @@
 // Kompatibilitetsmarkører for eksisterende critical-check beholdes usynlig her:
 // "Nytt i denne versjonen – tilbudssikkerhet" / "Fortsett på tilbud"
 import React from "react";
+import "../app/agreementBasisTerminology.js";
 import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
 
 const SALES_HELP_TITLE = "🧾 Befaring/Tilbud";
@@ -80,7 +83,8 @@ function createSales31CHelp() {
   ]);
 
   appendHelpSection(block, "Kontrakt etter aksept", [
-    "Når tilbudet er akseptert kan du frivillig velge Opprett / åpne enkel kontrakt eller bruke den eksisterende funksjonen Last opp egen kontrakt.",
+    "Kontrakt er valgfritt for vanlige prosjekter. Etter akseptert tilbud kan du opprette Expo-kontrakt, laste opp bedriftens egen kontrakt eller fortsette til prosjekt uten kontrakt.",
+    "Prosjekt kan også opprettes direkte uten tilbud. Et prosjekt uten tilbud og uten kontrakt er en gyldig normaltilstand; Avtalegrunnlag blir da bare stedet der eventuelle senere avtaledokumenter og endringer kan samles.",
     "Expo-kontrakten henter firma, kunde, prosjektadresse, tilbudsversjon og avtalesum automatisk. Du fyller hovedsakelig inn avtalt oppstart, forventet varighet i uker og noen få avtalevalg.",
     "Beregnet forventet ferdigstillelse beregnes automatisk fra avtalt oppstart og forventet varighet. Dokumenterte forhold som gir rett til fristforlengelse kan forskyve fristen.",
     "Standard betalingsplan er 40 % ved oppstart, 40 % ved hovedmilepæl og 20 % etter overtagelse. Planen kan justeres før utkastet lagres.",
@@ -88,17 +92,21 @@ function createSales31CHelp() {
     "Hvis dagmulkt avtales, angis også en redigerbar tilleggsfrist før den kan begynne å løpe. Dagmulkt skal bare gjelde forsinkelse utførende firma svarer for – ikke dokumentert forsinkelse som skyldes kundens valg, leveranser, manglende tilgang eller sene avklaringer.",
     "Ved avtale som er inngått digitalt, per telefon eller utenfor bedriftens faste forretningslokaler spør veiviseren om kunden ønsker oppstart før en eventuell angrefrist er utløpt. Kunden må bekrefte dette uttrykkelig ved signering.",
     "Aktivt kontraktsteg og usparte kontraktsfelt sikres lokalt i samme nettleserøkt. Når du åpner en Forbrukerrådet-lenke i ny fane og går tilbake, skal du fortsette på samme steg med datoer og valg intakt.",
-    "Sluttdokumentet viser kundeaksepten tydelig med akseptert tilbudsversjon, hvem som aksepterte, aksepttidspunkt, avtalesum inkl. mva. og valgte opsjoner. Akseptert tilbud med vedlegg inngår i avtalegrunnlaget i sin helhet.",
+    "Sluttdokumentet viser kundeaksepten tydelig med akseptert tilbudsversjon, hvem som aksepterte, aksepttidspunkt, avtalesum inkl. mva. og valgte opsjoner.",
+    "Den låste tilbudsversjonen følger Expo-kontrakten som avtalegrunnlag. Kundesynlig tilbudstekst, forutsetninger og forbehold, inkludert/ikke inkludert, kundens leveranser, vilkår og betalingsbetingelser tas med når opplysningene finnes i den aksepterte tilbudsversjonen.",
+    "Eldre aksepterte tilbud får ikke kunstig etterutfylt tekst som ikke var lagret da kunden aksepterte. Historiske tilbud beholdes som de faktisk var.",
     "Når utkastet er lagret, kontrollerer bedriften dokumentet og velger Bekreft og signer kontrakt. Innlogget bruker og tidspunkt registreres automatisk, og kontraktsgrunnlaget låses.",
     "Etter bedriftens signering kan den sikre kundelenken sendes på e-post, åpnes for kontroll eller kopieres. E-postfeil endrer ikke den låste kontrakten, og lenken kan sendes på nytt.",
     "Kunden kan lese kontrakten, men ikke redigere den. Før signering må kunden bekrefte kontrakten og at det tidligere aksepterte tilbudet med valgte opsjoner og vedlegg inngår i avtalegrunnlaget.",
     "Hvis tidlig oppstart før eventuell angrefrist er registrert, må kunden i tillegg bekrefte dette uttrykkelig før signering.",
     "Når kunden signerer med fullt navn, lagres navn og tidspunkt. Begge signaturer og kontraktsgrunnlaget blir låst historikk.",
     "Hvis kunden åpner signeringslenken etter at kontrakten allerede er signert, vises tydelig ferdigstatus med hvem som signerte og tidspunkt. Ingen ny signering er nødvendig eller mulig.",
-    "Kontrakten dekker blant annet arbeidets omfang, pris og betaling, endringer, partenes ansvar, skjulte forhold, forsinkelse/mangler, overtagelse, angrerett, dokumentrekkefølge og signering – uten at brukeren må fylle inn de samme opplysningene på nytt.",
-    "Akseptert tilbud og valgte opsjoner endres ikke når kontrakten opprettes eller signeres. Kontrakten er et eget dokumentgrunnlag.",
-    "Endelig kontrakt-PDF og automatisk overføring til prosjektets Tilbud / kontrakt kommer i neste kontrollerte kontraktsrunde.",
-    "Egen opplastet kontrakt og dagens prosjektaktivering fungerer fortsatt som før.",
+    "Kontraktkortet på Sales-saken viser kontraktsstatus direkte. Når en Expo-kontrakt finnes får du faste handlinger for Åpne kontrakt, Åpne kundelenke og Kopier kundelenke uten å gå inn i veiviseren først.",
+    "Når begge parter har signert, opprettes og arkiveres en endelig PDF fra det låste servergrunnlaget. PDF-en inneholder kontrakten, begge signaturer, den aksepterte tilbudsversjonen og aksept-/signatursporbarhet.",
+    "Når slutt-PDF-en finnes, vises Åpne signert PDF direkte på Sales-saken. PDF-en gjenbrukes og overskrives ikke ved senere åpninger.",
+    "Hvis saken allerede er aktivert som prosjekt, legges slutt-PDF-en idempotent i prosjektets Avtalegrunnlag. Hvis prosjektet aktiveres senere, følger PDF-en automatisk med ved aktiveringen.",
+    "Systemadministrator i Sales-supportmodus kan lese kontraktsstatus, men sluttarkivering utføres ikke automatisk i supportmodus. Support er ikke en skrivebypass.",
+    "Avtalegrunnlag i prosjektet samler opprinnelig avtale, eventuelt akseptbevis, eventuell kontrakt og senere tillegg/fradrag. Navnet endrer ikke lagring eller krav til prosjektet.",
   ]);
 
   appendHelpSection(block, "Sporbarhet", [
