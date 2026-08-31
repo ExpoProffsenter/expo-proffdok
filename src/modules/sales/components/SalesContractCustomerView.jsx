@@ -278,6 +278,12 @@ export default function SalesContractCustomerView({ supabaseClient, contractToke
               request={presentation.request}
               companyProfile={presentation.companyProfile}
               draft={presentation.draft}
+              signatures={{
+                companyName: contract.company_signed_by_name || "",
+                companyAt: contract.company_signed_at || "",
+                customerName: contract.customer_signed_by_name || "",
+                customerAt: contract.customer_signed_at || "",
+              }}
             />
 
             {!signed ? (
