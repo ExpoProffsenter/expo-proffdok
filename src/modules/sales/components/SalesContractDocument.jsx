@@ -453,14 +453,14 @@ export default function SalesContractDocument({ request, companyProfile, draft }
 
         <ContractSection number="9" title="Avtaleform og angrerett">
           <Paragraph>
-            <strong>Avtalen inngås:</strong> {agreementLabel}.
+            <strong>Avtalen er inngått:</strong> {agreementLabel}.
           </Paragraph>
           {agreementChannelNeedsWithdrawalInfo(draft.agreement_channel) ? (
             <Paragraph last>
               Der angrerettloven gjelder, skal kunden få lovpålagt informasjon om angreretten.
               {draft.early_start_requested
-                ? " Kunden har bedt om at arbeidet kan starte før eventuell angrefrist er utløpt. Kunden skal bekrefte denne anmodningen uttrykkelig i signeringssteget."
-                : " Det er ikke registrert ønske om oppstart før eventuell angrefrist er utløpt."}
+                ? " Kunden ønsker at arbeidet skal starte før eventuell angrefrist er utløpt og skal bekrefte dette uttrykkelig ved signering."
+                : " Det er ikke registrert at kunden ønsker oppstart før en eventuell angrefrist er utløpt."}
             </Paragraph>
           ) : (
             <Paragraph last>
@@ -509,8 +509,8 @@ export default function SalesContractDocument({ request, companyProfile, draft }
               gap: 12,
             }}
           >
-            <Summary label="Utførende firma" value="Signeres i neste steg" />
-            <Summary label="Kunde" value="Signeres i neste steg" />
+            <Summary label="Utførende firma" value="Avventer signering" />
+            <Summary label="Kunde" value="Avventer signering" />
           </div>
         </ContractSection>
 
@@ -523,10 +523,15 @@ export default function SalesContractDocument({ request, companyProfile, draft }
             lineHeight: 1.55,
           }}
         >
-          Dette er et kontraktsutkast opprettet i Expo ProffDok. Det er ikke en
-          Standard Norge-/NS-blankett og innebærer ingen godkjenning fra Forbrukerrådet.
-          Ufravikelige rettigheter etter gjeldende forbrukerlovgivning begrenses ikke av
-          kontrakten. Signering og endelig låsing kommer i neste steg av kontraktsflyten.
+          <strong style={{ display: "block", marginBottom: 5, color: "#183b46" }}>
+            Om kontrakten
+          </strong>
+          Dette dokumentet er opprettet i Expo ProffDok som en enkel forbrukerkontrakt for
+          håndverkertjenester og bygger på kundens aksepterte tilbud. Det er ikke en Standard
+          Norge-/NS-blankett og er ikke godkjent av Forbrukerrådet. Ufravikelige rettigheter
+          etter gjeldende forbrukerlovgivning gjelder uavhengig av kontrakten. Når begge
+          parter har signert, låses og arkiveres kontrakten som en del av prosjektets
+          avtalegrunnlag.
         </section>
       </div>
     </article>
