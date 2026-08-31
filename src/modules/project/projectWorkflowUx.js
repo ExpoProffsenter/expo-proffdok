@@ -167,6 +167,75 @@ function adaptPreviousNext(activeProject, nav) {
   }
 }
 
+function workflowStatusPresentation(status = 'Pågår') {
+  const map = {
+    'Utkast': { icon: '📝', background: '#f8fafc', color: '#334155', borderColor: '#cbd5e1' },
+    'Pågår': { icon: '🟡', background: '#fffbeb', color: '#92400e', borderColor: '#fde68a' },
+    'Avventer': { icon: '⏸️', background: '#eff6ff', color: '#1e40af', borderColor: '#bfdbfe' },
+    'Klar for kunde': { icon: '🟢', background: '#ecfdf5', color: '#166534', borderColor: '#bbf7d0' },
+    'Ferdigstilt': { icon: '✅', background: '#ecfdf5', color: '#166534', borderColor: '#bbf7d0' }
+  };
+  return map[status] || { icon: '🟡', background: '#fffbeb', color: '#92400e', borderColor: '#fde68a' };
+}
+
+function findPrimaryProjectStatusSection() {
+  return document.querySelector('section.projectStatusSection');
+}
+
+function findWorkflowStatusSelect(section) {
+  return Array.from(section?.querySelectorAll('label') || [])
+    .find((label) => cleanText(label.textContent).startsWith('Arbeidsstatus'))
+    ?.querySelector('select') || null;
+}
+
+function adaptPrimaryProjectStatus(activeProject) {
+  if (!activeProject) return;
+  const section = findPrimaryProjectStatusSection();
+  if (!(section instanceof HTMLElement)) return;
+
+  const heading = Array.from(section.children).find((child) => child.tagName === 'H2');
+  const headingText = cleanText(heading?.textContent || '');
+  if (!headingText.includes('Prosjektstatus: Avvik åpent')) return;
+
+  const statusSelect = findWorkflowStatusSelect(section);
+  const workflowStatus = cleanText(statusSelect?.value || 'Pågår') || 'Pågår';
+  const presentation = workflowStatusPresentation(workflowStatus);
+
+  replaceTextNodes(heading, '🔴 Prosjektstatus: Avvik åpent', `${presentation.icon} Prosjektstatus: ${workflowStatus}`);
+  replaceTextNodes(heading, 'Prosjektstatus: Avvik åpent', `Prosjektstatus: ${workflowStatus}`);
+
+  const badge = section.querySelector('.statusBadge');
+  if (badge instanceof HTMLElement && cleanText(badge.textContent).includes('Avvik åpent')) {
+    badge.textContent = `${presentation.icon} ${workflowStatus}`;
+    badge.style.background = presentation.background;
+    badge.style.color = presentation.color;
+    badge.style.borderColor = presentation.borderColor;
+  }
+
+  const warningNote = Array.from(section.querySelectorAll('p.note')).find((note) =>
+    /prosjektet har\s+\d+\s+åpne? avvik/i.test(cleanText(note.textContent))
+  );
+  if (warningNote instanceof HTMLElement) {
+    const countMatch = cleanText(warningNote.textContent).match(/har\s+(\d+)\s+åpne? avvik/i);
+    const count = Number(countMatch?.[1] || 0);
+    if (count > 0) {
+      warningNote.textContent = count === 1
+        ? '⚠️ 1 åpent avvik krever oppfølging.'
+        : `⚠️ ${count} åpne avvik krever oppfølging.`;
+    }
+  }
+}
+
+function adaptDeviationNavigation(activeProject) {
+  if (!activeProject) return;
+  Array.from(document.querySelectorAll('button')).forEach((button) => {
+    const text = cleanText(button.textContent);
+    if (text !== 'Se aktive avvik' && text !== 'Åpne Avvik') return;
+    setFlowTarget(button, 'Avvik', 'Åpne Avvik');
+    button.title = 'Åpner Avvikssentralen med prosjektets avvik.';
+  });
+}
+
 function findProjectStatusSection() {
   return Array.from(document.querySelectorAll('section')).find((section) => {
     const heading = Array.from(section.children).find((child) => child.tagName === 'H2');
@@ -398,6 +467,8 @@ function updateHelp(nav) {
       <li>Prosjekter som kommer fra tilbud får <strong>Salgsgrunnlag</strong>. Dette er skrivebeskyttet historikk, ikke et nytt arbeidssteg.</li>
       <li>I Salgsgrunnlag finnes raske innganger til opprinnelig forespørsel/befaring, kundens publiserte tilbud og kunde/prosjektdata.</li>
       <li>Den ordinære Befaring/Tilbud-funksjonen er fortsatt tilgjengelig fra Startsiden for nye og aktive salgssaker.</li>
+      <li><strong>Arbeidsstatus og åpne avvik vises separat.</strong> Et prosjekt kan for eksempel stå som Pågår samtidig som et eget varsel viser at ett eller flere avvik krever oppfølging.</li>
+      <li><strong>Åpne Avvik</strong> går direkte til Avvikssentralen. Nye HMS-/prosjektavvik krever en kort tittel før de opprettes, slik at tomme avvik ikke lagres ved et uhell.</li>
       <li><strong>Prosjektstatus / hva mangler</strong> er kollapset som standard. Fremdriften der følger utførte sjekkpunkter, for eksempel 0 av 54.</li>
       <li>Prosjekter opprettet direkte uten salgssak beholder Befaring/Tilbud som separat funksjon, men den inngår ikke i prosjektets Forrige/Neste-flyt.</li>
     </ul>`;
@@ -413,6 +484,8 @@ function applyProjectWorkflowUx() {
 
   adaptSalesLabel(showSalesOrigin, nav);
   adaptPreviousNext(activeProject, nav);
+  adaptPrimaryProjectStatus(activeProject);
+  adaptDeviationNavigation(activeProject);
   adaptProjectStatus(activeProject, nav);
   adaptSalesIntro(showSalesOrigin, nav);
   adaptSalesModuleVisibility(showSalesOrigin, nav);
