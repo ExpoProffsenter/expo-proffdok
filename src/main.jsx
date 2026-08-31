@@ -1317,6 +1317,15 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const overtagelseIsSignedByBoth = (o = overtagelse) => hasOvertagelseSignature(o?.signUtf\u00F8rende, o?.signUtf\u00F8rendeImage) && hasOvertagelseSignature(o?.signKunde, o?.signKundeImage);
     const overtagelseHasDraftContent = (o = overtagelse) => !!o?.enabled || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
     const projectHasOvertagelse = (o = overtagelse) => !!o?.enabled && overtagelseIsSignedByBoth(o);
+    const persistedProjectHasOvertagelse = (() => {
+      try {
+        const baselineSnapshot = dirtyBaselineRef.current ? JSON.parse(dirtyBaselineRef.current) : null;
+        return projectHasOvertagelse(baselineSnapshot?.overtagelse || {});
+      } catch (error) {
+        console.warn("Kunne ikke lese lagret overtagelsesstatus fra prosjektbaseline:", error);
+        return false;
+      }
+    })();
     (0, import_react.useEffect)(() => {
       if (tab !== "overtagelse") return;
       if (projectHasOvertagelse(overtagelse) || overtagelseHasDraftContent(overtagelse)) return;
@@ -6156,11 +6165,11 @@ ${appLink}`;
             suggestedWorkflowStatus !== (project.workflowStatus || "Pågår") && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setProject({ ...project, workflowStatus: suggestedWorkflowStatus }), children: "Bruk foreslått status" })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectLocked ? `Prosjektet ble l\xE5st${project.lockedAt ? " " + new Date(project.lockedAt).toLocaleString("no-NO") : ""}${project.lockedBy ? " av " + project.lockedBy : ""}. L\xE5s opp prosjektet hvis du trenger \xE5 gj\xF8re endringer.` : "Prosjektet er åpent for endringer. Bruk arbeidsstatus for å vise om prosjektet er utkast, pågår, avventer, klart for kunde eller har åpne avvik." }),
-          projectHasOvertagelse() ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+          persistedProjectHasOvertagelse ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "✅ Overtagelse er registrert",
             overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
             "."
-          ] }) : overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? 'Overtagelse er signert av begge parter, men ikke registrert. Gå til Overtagelse og klikk "Overtagelse registrert" når overleveringen faktisk er gjennomført.' : 'Overtagelse er påbegynt, men ikke registrert. Den regnes først som registrert når både utførende og kunde har signert, og du aktivt klikker "Overtagelse registrert".'  }),
+          ] }) : overtagelseHasDraftContent() && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: overtagelseIsSignedByBoth() ? (projectHasOvertagelse() ? 'Overtagelsen er signert av begge parter og bekreftet som gjennomført, men er ikke lagret som registrert ennå. Gå til Overtagelse og velg "Lagre og registrer overtagelse".' : 'Overtagelsen er signert av begge parter, men ikke registrert. Gå til Overtagelse, bekreft at overtagelsen er gjennomført og lagre.') : 'Overtagelse er påbegynt, men ikke registrert. Den regnes først som registrert når begge har signert, overtagelsen er bekreftet som gjennomført og lagringen er bekreftet.'  }),
           totalChatCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "\u{1F4AC} Chat: ",
             totalChatCount,
@@ -6495,7 +6504,7 @@ ${appLink}`;
         }),
         tab === "overtagelse" && renderOvertagelsePanel({
           Section, Grid, Input, Textarea, SignaturePad,
-          project, setProject, projectId, overtagelse, setOvertagelse, warranty, isProjectLocked,
+          project, setProject, projectId, overtagelse, setOvertagelse, warranty, isProjectLocked, projectDirty, persistedProjectHasOvertagelse,
           projectGuideStats, projectHasOvertagelse, overtagelseHasDraftContent, overtagelseIsSignedByBoth,
           emptyOvertagelse, getWarrantyYears, warrantyTermsPdfFileName, saveProject,
           completeOvertagelseAndLock, sendProjectCompletionEmailToCustomer

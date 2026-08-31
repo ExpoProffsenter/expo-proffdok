@@ -1,3 +1,4 @@
+// FASE 32 HJELP: brukerrettede endringer skal dokumenteres i Hjelp når arbeidsflyt, begreper eller UI påvirkes.
 // FASE 31C HJELP: tilbudsinformasjon organiseres under eksisterende Befaring/Tilbud-hjelp.
 // Permanent "Nytt i denne versjonen" skjules fra Hjelp; versjonsnytt hører til appoppdatering/appnyhet.
 // Alle hjelpetema skal starte kollapset. Eksisterende rollebegrensninger beholdes.
@@ -9,7 +10,7 @@ import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
 const SALES_HELP_TITLE = "🧾 Befaring/Tilbud";
 const NEWS_HELP_TITLE = "📢 Nytt i denne versjonen";
 const START_HELP_TITLE = "🚀 Startside / kom i gang";
-const HELP_UPDATED_LABEL = "Sist oppdatert: 27.08.2026";
+const HELP_UPDATED_LABEL = "Sist oppdatert: 31.08.2026";
 
 function textOf(node) {
   return String(node?.textContent || "").trim();
@@ -73,6 +74,13 @@ function createSales31CHelp() {
     "Tilbuds-PDF-en følger samme struktur som kundelinken med hovedposter, underposter, antall, enhetspris og valgfrie opsjoner.",
     "Når kunden aksepterer, knyttes aksepten til den publiserte tilbudsversjonen og valgte opsjoner.",
     "Akseptbeviset er låst dokumentasjon av tilbudsversjon, tidspunkt, kunde, sum og valgte opsjoner.",
+  ]);
+
+  appendHelpSection(block, "Sporbarhet", [
+    "Opprettet av viser hvem som faktisk opprettet nye salgssaker. Opplysningen settes av systemet og er ikke det samme som hvem som senere står som ansvarlig.",
+    "Ansvarlig viser hvem som har ansvar for saken nå og kan endres når saken overføres til en annen bruker.",
+    "Sist publisert av viser den innloggede brukeren som faktisk publiserte siste tilbudsversjon.",
+    "Eldre saker og tilbud kan mangle enkelte sporbarhetsfelt fordi historiske data ikke fylles inn i ettertid.",
   ]);
 
   appendHelpSection(block, "Befaring og mobilbilder", [
