@@ -83,6 +83,7 @@ function createSales31CHelp() {
     "Expo-kontrakten henter firma, kunde, prosjektadresse, tilbudsversjon og avtalesum automatisk. Du fyller hovedsakelig inn oppstart, forventet ferdigstillelse og noen få avtalevalg.",
     "Standard betalingsplan er 40 % ved oppstart, 40 % ved hovedmilepæl og 20 % etter overtagelse. Planen kan justeres før utkastet lagres.",
     "Dagmulkt velges tydelig som Ja eller Nei og skal bare settes til Ja dersom partene faktisk har avtalt dagmulkt.",
+    "Ved avtale som er inngått digitalt, per telefon eller utenfor bedriftens faste forretningslokaler spør veiviseren om kunden ønsker oppstart før en eventuell angrefrist er utløpt. Kunden må bekrefte dette uttrykkelig ved signering.",
     "Aktivt kontraktsteg og usparte kontraktsfelt sikres lokalt i samme nettleserøkt. Når du åpner en Forbrukerrådet-lenke i ny fane og går tilbake, skal du fortsette på samme steg med datoer og valg intakt.",
     "Sluttdokumentet viser kundeaksepten tydelig med akseptert tilbudsversjon, hvem som aksepterte, aksepttidspunkt, avtalesum inkl. mva. og valgte opsjoner. Akseptert tilbud med vedlegg inngår i avtalegrunnlaget i sin helhet.",
     "Kontrakten dekker blant annet arbeidets omfang, pris og betaling, endringer, partenes ansvar, skjulte forhold, forsinkelse/mangler, overtagelse, angrerett, dokumentrekkefølge og senere signering – uten at brukeren må fylle inn de samme opplysningene på nytt.",
