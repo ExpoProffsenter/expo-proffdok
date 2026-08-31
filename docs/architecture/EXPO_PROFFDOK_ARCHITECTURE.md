@@ -181,6 +181,19 @@ Når en Expo-kontrakt opprettes, bygger serveren snapshot fra:
 
 Akseptert tilbud endres aldri.
 
+Kontraktsdelen av snapshotet bruker fra Fase 33B.3 `schema_version: 2`. Viktige nye felt:
+
+```text
+start_date                     ← avtalt oppstart
+expected_duration_weeks        ← brukerfelt
+expected_finish_date           ← beregnes fra oppstart + varighet
+daily_penalty_agreed
+daily_penalty_grace_days       ← redigerbar slakk, standard 7 kalenderdager
+daily_penalty_text
+```
+
+Eldre lokale/sessionbaserte utkast som bare har start- og sluttdato normaliseres til forventet varighet der det er mulig. Det kjøres ingen historisk databasebackfill.
+
 Når bedriften senere signerer, skal snapshotet låses og status gå til `awaiting_customer`. Kunden skal deretter signere via unik kontrakttoken. Dette servergrunnlaget finnes, men kundesignering er ikke koblet til UI i Fase 33B.3.
 
 ### 6.2 RLS og grants
@@ -228,6 +241,7 @@ Nye naturlige moduler:
 
 ```text
 src/modules/sales/components/SalesContractWizard.jsx
+src/modules/sales/components/SalesContractDocument.jsx
 src/modules/sales/services/salesContracts.js
 src/modules/sales/utils/salesContractModel.js
 ```
@@ -250,8 +264,8 @@ Vanlig prosjekt kan fortsatt gå til prosjektaktivering uten kontrakt. Garantiba
 **Steg 1 – Grunnlag**  
 Autofyll av firma, org.nr., kunde, prosjektadresse, akseptert tilbudsversjon, avtalesum inkl. mva. og relevante tilbudsvilkår. Brukeren skal ikke skrive samme data på nytt.
 
-**Steg 2 – Tid og betaling**  
-Brukeren fyller hovedsakelig oppstart og forventet ferdigstillelse. Prisform er standardisert til fastpris iht. akseptert tilbud, men kan endres. Standard betalingsforslag:
+**Steg 2 – Fremdrift og betaling**  
+Brukeren fyller hovedsakelig **avtalt oppstart** og **forventet varighet i uker**. `expected_finish_date` beregnes automatisk og er ikke et eget brukerfelt. Prisform er standardisert til fastpris iht. akseptert tilbud, men kan endres. Standard betalingsforslag:
 
 ```text
 40 % ved faktisk oppstart – umiddelbart forfall
@@ -262,7 +276,13 @@ Brukeren fyller hovedsakelig oppstart og forventet ferdigstillelse. Prisform er 
 Planen er redigerbar og må samlet være 100 %.
 
 **Steg 3 – Avtalevalg**  
-Avtaleform, eventuell tidlig oppstart før angrefrist, eventuell særskilt dagmulkt og valgfritt felt for særskilte vilkår. Forbrukerrådet-lenker vises som informasjon uten logo eller påstand om godkjenning.
+Avtaleform, eventuell tidlig oppstart før angrefrist, eventuell særskilt dagmulkt og valgfritt felt for særskilte vilkår. Hvis dagmulkt avtales, registreres også redigerbar slakk i kalenderdager før dagmulkten kan begynne å løpe.
+
+Veiviseren viser en intern faglig anbefaling om at en tydelig avtalt dagmulkt kan gi forutsigbarhet og fremstå profesjonelt. Denne anbefalingen er kun bruker-UI og skal ikke inn i kundens dokument.
+
+Kontraktsdokumentet skal skille mellom forsinkelse utførende firma svarer for og dokumentert forsinkelse på kundens side. Kundens egne valg/leveranser, manglende tilgang, sene avklaringer eller andre forhold som gir rett til fristforlengelse skal forskyve fristen og ikke regnes som dagmulktsutløsende tid.
+
+Forbrukerrådet-lenker vises som informasjon uten logo eller påstand om godkjenning.
 
 **Steg 4 – samlet dokument**  
 Veiviseren ender i ett samlet Expo ProffDok-dokumentutkast med firmaets visuelle profil/logo. I Fase 33B.3 lagres kun utkastet på server.
@@ -336,7 +356,9 @@ Fase 33B.3 er brukerrettet. HJELP er derfor oppdatert samme runde med:
 - Expo-kontrakt som frivillig valg etter aksept
 - eksisterende opplasting av egen kontrakt
 - autofyll og få manuelle steg
+- avtalt oppstart + forventet varighet i uker + beregnet forventet ferdigstillelse
 - 40/40/20-standard
+- intern dagmulktsanbefaling og tydelig fordeling av forsinkelsesansvar
 - samlet dokument
 - at akseptert tilbud ikke endres
 - at prosjektaktivering fortsatt fungerer som før
@@ -361,7 +383,10 @@ For Fase 33B.3 skal Preview minst kontrollere:
 - «Last opp egen kontrakt» finnes fortsatt
 - «Opprett / åpne enkel kontrakt» åpner veiviseren
 - autofyll er korrekt
+- avtalt oppstart + forventet varighet beregner forventet ferdigstillelse riktig
 - 40/40/20 vises og kan redigeres
+- internt dagmulktsråd vises bare i veiviseren
+- dagmulktslakk og ansvar ved håndverker-/kundeforsinkelse er tydelig
 - steg frem/tilbake beholder verdier
 - samlet dokument er lesbart på PC og mobil
 - Forbrukerrådet-lenker åpner separat
