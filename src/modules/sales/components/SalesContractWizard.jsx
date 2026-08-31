@@ -1,7 +1,8 @@
 // Expo ProffDok – FASE 33B.3
 // Stegvis intern veiviser for enkel forbrukerkontrakt etter akseptert tilbud.
-// Denne runden lagrer kun redigerbart Expo-kontraktsutkast. Kundesignering og
-// endelig PDF kommer i egne steg senere. Eksisterende opplasting og prosjektaktivering beholdes.
+// Ulagrede felt og aktivt steg sikres i sessionStorage slik at fanebytte/remount
+// ikke mister datoer eller sender brukeren tilbake til start. Ingen serverlagring
+// skjer før brukeren selv velger Lagre kontraktsutkast.
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -39,6 +40,7 @@ const FORBRUKERRADET_HANDVERKER_URL =
   "https://www.forbrukerradet.no/forside/bolig/bruk-av-handverker/sjekkliste-handverker/";
 const FORBRUKERRADET_ANGRERETT_URL =
   "https://www.forbrukerradet.no/forside/angrer-du-pa-et-kjop/";
+const WIZARD_SESSION_PREFIX = "expo-proffdok:sales-contract-wizard-draft:";
 
 const STEP_LABELS = [
   "Grunnlag",
@@ -67,6 +69,42 @@ function labelStyle() {
     color: "#183b46",
     fontWeight: 800,
   };
+}
+
+function clampStep(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 1;
+  return Math.max(1, Math.min(4, Math.round(parsed)));
+}
+
+function wizardSessionKey(requestId = "", offerVersionId = "") {
+  const requestPart = String(requestId || "").trim();
+  const versionPart = String(offerVersionId || "").trim();
+  return requestPart
+    ? `${WIZARD_SESSION_PREFIX}${requestPart}:${versionPart || "accepted"}`
+    : "";
+}
+
+function readWizardSession(key) {
+  if (!key || typeof window === "undefined") return null;
+  try {
+    const parsed = JSON.parse(window.sessionStorage.getItem(key) || "null");
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeWizardSession(key, value) {
+  if (!key || typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(
+      key,
+      JSON.stringify({ ...value, updatedAt: new Date().toISOString() })
+    );
+  } catch {
+    // Lokal sikring er kun UX-vern. Servermodellen og eksisterende Sales-flyt står uendret.
+  }
 }
 
 function formatDate(value = "") {
@@ -146,6 +184,84 @@ function StepIndicator({ step }) {
   );
 }
 
+function BinaryChoice({ value, onChange }) {
+  const choices = [
+    {
+      value: false,
+      title: "Nei",
+      text: "Ingen særskilt dagmulkt er avtalt.",
+    },
+    {
+      value: true,
+      title: "Ja",
+      text: "Velg kun dersom partene faktisk har avtalt dagmulkt.",
+    },
+  ];
+
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      <div style={{ color: "#183b46", fontWeight: 800 }}>
+        Er dagmulkt særskilt avtalt?
+      </div>
+      <div
+        role="group"
+        aria-label="Dagmulkt"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+          gap: 10,
+        }}
+      >
+        {choices.map((choice) => {
+          const active = value === choice.value;
+          return (
+            <button
+              key={String(choice.value)}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onChange(choice.value)}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "42px minmax(0,1fr)",
+                gap: 10,
+                alignItems: "center",
+                width: "100%",
+                padding: 12,
+                borderRadius: 12,
+                border: `2px solid ${active ? "#16a7b0" : "#d9e7eb"}`,
+                background: active ? "#eefafb" : "#ffffff",
+                color: "#183b46",
+                textAlign: "left",
+                cursor: "pointer",
+                font: "inherit",
+              }}
+            >
+              <span
+                style={{
+                  display: "grid",
+                  placeItems: "center",
+                  width: 34,
+                  height: 34,
+                  borderRadius: 999,
+                  background: active ? "#16a7b0" : "#eef3f5",
+                  color: active ? "#ffffff" : "#52616b",
+                  fontWeight: 900,
+                }}
+              >
+                {active ? "✓" : ""}
+              </span>
+              <span>
+                <strong style={{ display: "block", marginBottom: 2 }}>{choice.title}</strong>
+                <span style={{ color: "#52616b", lineHeight: 1.35 }}>{choice.text}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ContractDocument({ request, companyProfile, draft }) {
   const version = getAcceptedSalesOfferVersionNumber(request);
   const agreementLabel =
@@ -205,7 +321,11 @@ function ContractDocument({ request, companyProfile, draft }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 10 }}>
             <FieldSummary label="Utførende firma" value={companyProfile?.companyName} />
             <FieldSummary label="Organisasjonsnummer" value={companyProfile?.orgNumber} />
+            <FieldSummary label="E-post firma" value={companyProfile?.email} />
+            <FieldSummary label="Telefon firma" value={companyProfile?.phone} />
             <FieldSummary label="Kunde" value={request.customer} />
+            <FieldSummary label="E-post kunde" value={request.email} />
+            <FieldSummary label="Telefon kunde" value={request.phone} />
             <FieldSummary label="Prosjektadresse" value={draft.project_address || customerAddress(request)} />
           </div>
         </section>
@@ -340,16 +460,37 @@ export default function SalesContractWizard({ request, onClose }) {
   const client = useMemo(() => createDefaultSalesSupabaseClient(), []);
   const offerId = getAcceptedSalesOfferId(request);
   const offerVersionId = getAcceptedSalesOfferVersionId(request);
-  const [step, setStep] = useState(1);
+  const requestId = String(request?.id || "");
+  const sessionKey = useMemo(
+    () => wizardSessionKey(requestId, offerVersionId),
+    [requestId, offerVersionId]
+  );
+  const initialSession = useMemo(() => readWizardSession(sessionKey), [sessionKey]);
+
+  const [step, setStep] = useState(() => clampStep(initialSession?.step || 1));
   const [companyProfile, setCompanyProfile] = useState(null);
-  const [draft, setDraft] = useState(() => createInitialSalesContractDraft(request));
-  const [contractId, setContractId] = useState("");
+  const [draft, setDraft] = useState(() =>
+    normalizeSalesContractDraft(
+      initialSession?.draft || createInitialSalesContractDraft(request),
+      request
+    )
+  );
+  const [contractId, setContractId] = useState(initialSession?.contractId || "");
   const [existingStatus, setExistingStatus] = useState("");
   const [existingSource, setExistingSource] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
+  const [sessionReady, setSessionReady] = useState(false);
+
+  function persistSessionNow(next = {}) {
+    writeWizardSession(sessionKey, {
+      step: next.step ?? step,
+      draft: next.draft ?? draft,
+      contractId: next.contractId ?? contractId,
+    });
+  }
 
   useEffect(() => {
     let active = true;
@@ -368,10 +509,10 @@ export default function SalesContractWizard({ request, onClose }) {
 
         if (existing?.error) throw existing.error;
         if (existing?.data) {
-          setContractId(existing.data.id || "");
+          setContractId(existing.data.id || contractId || "");
           setExistingStatus(existing.data.status || "");
           setExistingSource(existing.data.source || "");
-          if (existing.data.source === "expo") {
+          if (existing.data.source === "expo" && !initialSession?.draft) {
             setDraft(
               normalizeSalesContractDraft(
                 existing.data.snapshot?.contract || {},
@@ -388,7 +529,10 @@ export default function SalesContractWizard({ request, onClose }) {
             : "Kontraktsgrunnlaget kunne ikke lastes."
         );
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setSessionReady(true);
+          setLoading(false);
+        }
       }
     }
 
@@ -396,7 +540,13 @@ export default function SalesContractWizard({ request, onClose }) {
     return () => {
       active = false;
     };
-  }, [client, offerId, offerVersionId, request]);
+    // requestId er stabil identitet; vi unngår reload bare fordi request-objektet får ny referanse ved fanefokus.
+  }, [client, offerId, offerVersionId, requestId, sessionKey]);
+
+  useEffect(() => {
+    if (!sessionReady) return;
+    persistSessionNow();
+  }, [sessionReady, sessionKey, step, draft, contractId]);
 
   function updateDraft(field, value) {
     setDraft((current) => ({ ...current, [field]: value }));
@@ -424,15 +574,24 @@ export default function SalesContractWizard({ request, onClose }) {
       setError(validationError);
       return;
     }
+    const nextStep = Math.min(4, step + 1);
     setError("");
-    setStep((current) => Math.min(4, current + 1));
+    setStep(nextStep);
+    persistSessionNow({ step: nextStep });
     window.scrollTo?.({ top: 0, behavior: "smooth" });
   }
 
   function goBack() {
+    const nextStep = Math.max(1, step - 1);
     setError("");
-    setStep((current) => Math.max(1, current - 1));
+    setStep(nextStep);
+    persistSessionNow({ step: nextStep });
     window.scrollTo?.({ top: 0, behavior: "smooth" });
+  }
+
+  function closeWizard() {
+    persistSessionNow();
+    onClose?.();
   }
 
   async function saveDraft() {
@@ -485,6 +644,7 @@ export default function SalesContractWizard({ request, onClose }) {
       });
       setExistingStatus(saved?.status || "draft");
       setSavedMessage("Kontraktsutkastet er lagret på server.");
+      persistSessionNow({ contractId: id });
     } catch (saveError) {
       setError(
         saveError instanceof Error
@@ -512,7 +672,7 @@ export default function SalesContractWizard({ request, onClose }) {
     <div className="sales-app">
       <div className="sales-shell">
         <header className="sales-header">
-          <button className="sales-back-button" type="button" onClick={onClose}>
+          <button className="sales-back-button" type="button" onClick={closeWizard}>
             <ArrowLeft size={18} />
             Tilbake til saken
           </button>
@@ -668,16 +828,14 @@ export default function SalesContractWizard({ request, onClose }) {
                           style={inputStyle()}
                         />
                       </label>
-                      <div style={{ display: "grid", gap: 8 }}>
-                        <label style={labelStyle()}>
-                          <span>{item.title}</span>
-                          <input
-                            value={item.description}
-                            onChange={(event) => updatePaymentPlan(index, "description", event.target.value)}
-                            style={inputStyle()}
-                          />
-                        </label>
-                      </div>
+                      <label style={labelStyle()}>
+                        <span>{item.title}</span>
+                        <input
+                          value={item.description}
+                          onChange={(event) => updatePaymentPlan(index, "description", event.target.value)}
+                          style={inputStyle()}
+                        />
+                      </label>
                     </div>
                   ))}
                 </div>
@@ -742,27 +900,13 @@ export default function SalesContractWizard({ request, onClose }) {
                   </label>
                 ) : null}
 
-                <label
-                  style={{
-                    display: "flex",
-                    gap: 10,
-                    alignItems: "flex-start",
-                    padding: 13,
-                    borderRadius: 12,
-                    background: "#f8fbfc",
-                    border: "1px solid #d9e7eb",
+                <BinaryChoice
+                  value={Boolean(draft.daily_penalty_agreed)}
+                  onChange={(nextValue) => {
+                    updateDraft("daily_penalty_agreed", nextValue);
+                    if (!nextValue) updateDraft("daily_penalty_text", "");
                   }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={draft.daily_penalty_agreed}
-                    onChange={(event) =>
-                      updateDraft("daily_penalty_agreed", event.target.checked)
-                    }
-                    style={{ marginTop: 3 }}
-                  />
-                  <span>Partene har særskilt avtalt dagmulkt.</span>
-                </label>
+                />
 
                 {draft.daily_penalty_agreed ? (
                   <label style={labelStyle()}>
@@ -800,10 +944,20 @@ export default function SalesContractWizard({ request, onClose }) {
                   <div style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900 }}>
                     <Info size={17} /> Nyttige offentlige råd
                   </div>
-                  <a href={FORBRUKERRADET_HANDVERKER_URL} target="_blank" rel="noreferrer">
+                  <a
+                    href={FORBRUKERRADET_HANDVERKER_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => persistSessionNow()}
+                  >
                     Forbrukerrådet – råd ved bruk av håndverker ↗
                   </a>
-                  <a href={FORBRUKERRADET_ANGRERETT_URL} target="_blank" rel="noreferrer">
+                  <a
+                    href={FORBRUKERRADET_ANGRERETT_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => persistSessionNow()}
+                  >
                     Forbrukerrådet – angrerett ↗
                   </a>
                   <small>
@@ -875,7 +1029,7 @@ export default function SalesContractWizard({ request, onClose }) {
               <button
                 className="sales-secondary-button"
                 type="button"
-                onClick={step === 1 ? onClose : goBack}
+                onClick={step === 1 ? closeWizard : goBack}
               >
                 {step === 1 ? <X size={18} /> : <ArrowLeft size={18} />}
                 {step === 1 ? "Avbryt" : "Forrige"}
