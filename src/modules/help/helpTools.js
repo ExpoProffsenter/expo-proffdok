@@ -1,3 +1,4 @@
+// FASE 33B.3 HJELP: akseptert tilbud får frivillig stegvis Expo-kontrakt i tillegg til eksisterende opplasting.
 // FASE 32 HJELP: brukerrettede endringer skal dokumenteres i Hjelp når arbeidsflyt, begreper eller UI påvirkes.
 // FASE 31C HJELP: tilbudsinformasjon organiseres under eksisterende Befaring/Tilbud-hjelp.
 // Permanent "Nytt i denne versjonen" skjules fra Hjelp; versjonsnytt hører til appoppdatering/appnyhet.
@@ -74,6 +75,15 @@ function createSales31CHelp() {
     "Tilbuds-PDF-en følger samme struktur som kundelinken med hovedposter, underposter, antall, enhetspris og valgfrie opsjoner.",
     "Når kunden aksepterer, knyttes aksepten til den publiserte tilbudsversjonen og valgte opsjoner.",
     "Akseptbeviset er låst dokumentasjon av tilbudsversjon, tidspunkt, kunde, sum og valgte opsjoner.",
+  ]);
+
+  appendHelpSection(block, "Kontrakt etter aksept", [
+    "Når tilbudet er akseptert kan du frivillig velge Opprett / åpne enkel kontrakt eller bruke den eksisterende funksjonen Last opp egen kontrakt.",
+    "Expo-kontrakten henter firma, kunde, prosjektadresse, tilbudsversjon og avtalesum automatisk. Du fyller hovedsakelig inn oppstart, forventet ferdigstillelse og noen få avtalevalg.",
+    "Standard betalingsplan er 40 % ved oppstart, 40 % ved hovedmilepæl og 20 % etter overtagelse. Planen kan justeres før utkastet lagres.",
+    "Veiviseren ender i ett samlet kontraktsdokument som kan kontrolleres før utkastet lagres på server.",
+    "Akseptert tilbud og valgte opsjoner endres ikke når kontraktsutkastet opprettes. Kontrakten er et eget dokumentgrunnlag.",
+    "Egen opplastet kontrakt og dagens prosjektaktivering fungerer fortsatt som før.",
   ]);
 
   appendHelpSection(block, "Sporbarhet", [
