@@ -33,7 +33,7 @@ export const DEFAULT_PAYMENT_PLAN = [
     id: "startup",
     percent: 40,
     title: "Ved oppstart",
-    description: "Forfall ved faktisk oppstart av arbeidene.",
+    description: "Forfall umiddelbart ved faktisk oppstart av arbeidene.",
   },
   {
     id: "milestone",
