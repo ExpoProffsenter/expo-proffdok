@@ -1,8 +1,7 @@
 // Expo ProffDok – FASE 33B.3
 // Stegvis intern veiviser for enkel forbrukerkontrakt etter akseptert tilbud.
-// Ulagrede felt og aktivt steg sikres i sessionStorage slik at fanebytte/remount
-// ikke mister datoer eller sender brukeren tilbake til start. Ingen serverlagring
-// skjer før brukeren selv velger Lagre kontraktsutkast.
+// Ulagrede felt og aktivt steg sikres i sessionStorage. Serverlagring skjer først
+// når brukeren selv velger Lagre kontraktsutkast.
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -20,6 +19,7 @@ import {
   AGREEMENT_CHANNELS,
   PRICE_FORMS,
   agreementChannelNeedsWithdrawalInfo,
+  calculateExpectedFinishDate,
   createCompanyContractSnapshot,
   createInitialSalesContractDraft,
   getAcceptedSalesOfferId,
@@ -42,13 +42,7 @@ const FORBRUKERRADET_HANDVERKER_URL =
 const FORBRUKERRADET_ANGRERETT_URL =
   "https://www.forbrukerradet.no/forside/angrer-du-pa-et-kjop/";
 const WIZARD_SESSION_PREFIX = "expo-proffdok:sales-contract-wizard-draft:";
-
-const STEP_LABELS = [
-  "Grunnlag",
-  "Tid og betaling",
-  "Avtalevalg",
-  "Kontroller dokument",
-];
+const STEP_LABELS = ["Grunnlag", "Tid og betaling", "Avtalevalg", "Kontroller dokument"];
 
 function inputStyle() {
   return {
@@ -64,12 +58,7 @@ function inputStyle() {
 }
 
 function labelStyle() {
-  return {
-    display: "grid",
-    gap: 6,
-    color: "#183b46",
-    fontWeight: 800,
-  };
+  return { display: "grid", gap: 6, color: "#183b46", fontWeight: 800 };
 }
 
 function clampStep(value) {
@@ -104,7 +93,7 @@ function writeWizardSession(key, value) {
       JSON.stringify({ ...value, updatedAt: new Date().toISOString() })
     );
   } catch {
-    // Lokal sikring er kun UX-vern. Servermodellen og eksisterende Sales-flyt står uendret.
+    // Lokal sikring er kun UX-vern.
   }
 }
 
@@ -112,6 +101,17 @@ function customerAddress(request = {}) {
   return [request.address, [request.postnr, request.city].filter(Boolean).join(" ")]
     .filter(Boolean)
     .join(", ");
+}
+
+function formatDate(value = "") {
+  if (!value) return "Ikke beregnet";
+  const parsed = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return new Intl.DateTimeFormat("nb-NO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(parsed);
 }
 
 function FieldSummary({ label, value }) {
@@ -126,9 +126,7 @@ function FieldSummary({ label, value }) {
         background: "#f8fbfc",
       }}
     >
-      <span style={{ color: "#64748b", fontSize: 12, fontWeight: 800 }}>
-        {label}
-      </span>
+      <span style={{ color: "#64748b", fontSize: 12, fontWeight: 800 }}>{label}</span>
       <strong style={{ color: "#0f172a" }}>{value || "Ikke registrert"}</strong>
     </div>
   );
@@ -176,20 +174,18 @@ function BinaryChoice({ value, onChange }) {
     {
       value: false,
       title: "Nei",
-      text: "Ingen særskilt dagmulkt er avtalt.",
+      text: "Ingen særskilt dagmulkt tas inn i kontrakten.",
     },
     {
       value: true,
       title: "Ja",
-      text: "Velg kun dersom partene faktisk har avtalt dagmulkt.",
+      text: "Dagmulkt avtales tydelig med kunden i kontrakten.",
     },
   ];
 
   return (
     <div style={{ display: "grid", gap: 8 }}>
-      <div style={{ color: "#183b46", fontWeight: 800 }}>
-        Er dagmulkt særskilt avtalt?
-      </div>
+      <div style={{ color: "#183b46", fontWeight: 800 }}>Skal dagmulkt avtales?</div>
       <div
         role="group"
         aria-label="Dagmulkt"
@@ -306,12 +302,7 @@ export default function SalesContractWizard({ request, onClose }) {
           setExistingStatus(existing.data.status || "");
           setExistingSource(existing.data.source || "");
           if (existing.data.source === "expo" && !initialSession?.draft) {
-            setDraft(
-              normalizeSalesContractDraft(
-                existing.data.snapshot?.contract || {},
-                request
-              )
-            );
+            setDraft(normalizeSalesContractDraft(existing.data.snapshot?.contract || {}, request));
           }
         }
       } catch (loadError) {
@@ -333,7 +324,6 @@ export default function SalesContractWizard({ request, onClose }) {
     return () => {
       active = false;
     };
-    // requestId er stabil identitet; vi unngår reload bare fordi request-objektet får ny referanse ved fanefokus.
   }, [client, offerId, offerVersionId, requestId, sessionKey]);
 
   useEffect(() => {
@@ -343,6 +333,19 @@ export default function SalesContractWizard({ request, onClose }) {
 
   function updateDraft(field, value) {
     setDraft((current) => ({ ...current, [field]: value }));
+    setSavedMessage("");
+  }
+
+  function updateSchedule(field, value) {
+    setDraft((current) => {
+      const next = { ...current, [field]: value };
+      const weeks =
+        next.expected_duration_weeks === ""
+          ? ""
+          : Number(next.expected_duration_weeks || 0);
+      next.expected_finish_date = calculateExpectedFinishDate(next.start_date, weeks);
+      return next;
+    });
     setSavedMessage("");
   }
 
@@ -415,12 +418,13 @@ export default function SalesContractWizard({ request, onClose }) {
     setError("");
     try {
       const companySnapshot = createCompanyContractSnapshot(companyProfile || {});
+      const contractForSave = normalizeSalesContractDraft(draft, request);
       let id = contractId;
 
       if (!id) {
         const created = await createExpoSalesContract(client, {
           offerId,
-          contract: draft,
+          contract: contractForSave,
           companySnapshot,
         });
         id = created?.id || "";
@@ -432,12 +436,13 @@ export default function SalesContractWizard({ request, onClose }) {
 
       const saved = await saveExpoSalesContractDraft(client, {
         contractId: id,
-        contract: draft,
+        contract: contractForSave,
         companySnapshot,
       });
+      setDraft(contractForSave);
       setExistingStatus(saved?.status || "draft");
       setSavedMessage("Kontraktsutkastet er lagret på server.");
-      persistSessionNow({ contractId: id });
+      persistSessionNow({ contractId: id, draft: contractForSave });
     } catch (saveError) {
       setError(
         saveError instanceof Error
@@ -470,9 +475,7 @@ export default function SalesContractWizard({ request, onClose }) {
             Tilbake til saken
           </button>
           <div className="sales-brand sales-brand-compact">
-            <div className="sales-brand-mark">
-              <FileText size={22} />
-            </div>
+            <div className="sales-brand-mark"><FileText size={22} /></div>
             <div className="sales-brand-copy">
               <strong>Expo ProffDok</strong>
               <span>Enkel forbrukerkontrakt</span>
@@ -563,10 +566,10 @@ export default function SalesContractWizard({ request, onClose }) {
             {step === 2 ? (
               <div style={{ display: "grid", gap: 18 }}>
                 <div>
-                  <h2 style={{ marginTop: 0 }}>Tid og betaling</h2>
+                  <h2 style={{ marginTop: 0 }}>Fremdrift og betaling</h2>
                   <p className="sales-subtitle">
-                    Standard betalingsplan er 40 / 40 / 20 og kan justeres dersom
-                    prosjektet krever det.
+                    Angi planlagt oppstart og hvor mange uker arbeidet forventes å vare.
+                    Expo ProffDok beregner forventet ferdigdato automatisk.
                   </p>
                 </div>
 
@@ -582,21 +585,47 @@ export default function SalesContractWizard({ request, onClose }) {
                     <input
                       type="date"
                       value={draft.start_date}
-                      onChange={(event) => updateDraft("start_date", event.target.value)}
+                      onChange={(event) => updateSchedule("start_date", event.target.value)}
                       style={inputStyle()}
                     />
                   </label>
                   <label style={labelStyle()}>
-                    <span>Forventet ferdigstillelse</span>
+                    <span>Forventet varighet i uker</span>
                     <input
-                      type="date"
-                      value={draft.expected_finish_date}
+                      type="number"
+                      min="1"
+                      step="1"
+                      inputMode="numeric"
+                      value={draft.expected_duration_weeks}
                       onChange={(event) =>
-                        updateDraft("expected_finish_date", event.target.value)
+                        updateSchedule("expected_duration_weeks", event.target.value)
                       }
+                      placeholder="F.eks. 6"
                       style={inputStyle()}
                     />
                   </label>
+                  <div
+                    style={{
+                      gridColumn: "1 / -1",
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                      gap: 10,
+                      padding: 13,
+                      borderRadius: 12,
+                      border: "1px solid #cfe5e8",
+                      background: "#f2fafb",
+                    }}
+                  >
+                    <FieldSummary
+                      label="Beregnet forventet ferdigdato"
+                      value={formatDate(draft.expected_finish_date)}
+                    />
+                    <div style={{ color: "#52616b", lineHeight: 1.45, alignSelf: "center" }}>
+                      Dette er planlagt ferdigstillelse basert på oppstart og varighet.
+                      Fristen kan forskyves ved dokumenterte forhold som gir rett til
+                      fristforlengelse.
+                    </div>
+                  </div>
                   <label style={{ ...labelStyle(), gridColumn: "1 / -1" }}>
                     <span>Prisform</span>
                     <select
@@ -605,53 +634,60 @@ export default function SalesContractWizard({ request, onClose }) {
                       style={inputStyle()}
                     >
                       {PRICE_FORMS.map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
+                        <option key={item.value} value={item.value}>{item.label}</option>
                       ))}
                     </select>
                   </label>
                 </div>
 
-                <div style={{ display: "grid", gap: 10 }}>
-                  {(draft.payment_plan || []).map((item, index) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "90px minmax(0,1fr)",
-                        gap: 10,
-                        padding: 12,
-                        border: "1px solid #d9e7eb",
-                        borderRadius: 12,
-                        background: "#ffffff",
-                      }}
-                    >
-                      <label style={labelStyle()}>
-                        <span>Andel</span>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={item.percent}
-                          onChange={(event) =>
-                            updatePaymentPlan(index, "percent", event.target.value)
-                          }
-                          style={inputStyle()}
-                        />
-                      </label>
-                      <label style={labelStyle()}>
-                        <span>{item.title}</span>
-                        <input
-                          value={item.description}
-                          onChange={(event) =>
-                            updatePaymentPlan(index, "description", event.target.value)
-                          }
-                          style={inputStyle()}
-                        />
-                      </label>
-                    </div>
-                  ))}
+                <div>
+                  <strong style={{ display: "block", color: "#183b46", marginBottom: 8 }}>
+                    Betalingsplan
+                  </strong>
+                  <p className="sales-subtitle" style={{ marginTop: 0 }}>
+                    Standardforslaget er 40 / 40 / 20 og kan justeres dersom prosjektet
+                    krever det.
+                  </p>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    {(draft.payment_plan || []).map((item, index) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "90px minmax(0,1fr)",
+                          gap: 10,
+                          padding: 12,
+                          border: "1px solid #d9e7eb",
+                          borderRadius: 12,
+                          background: "#ffffff",
+                        }}
+                      >
+                        <label style={labelStyle()}>
+                          <span>Andel</span>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={item.percent}
+                            onChange={(event) =>
+                              updatePaymentPlan(index, "percent", event.target.value)
+                            }
+                            style={inputStyle()}
+                          />
+                        </label>
+                        <label style={labelStyle()}>
+                          <span>{item.title}</span>
+                          <input
+                            value={item.description}
+                            onChange={(event) =>
+                              updatePaymentPlan(index, "description", event.target.value)
+                            }
+                            style={inputStyle()}
+                          />
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -679,9 +715,7 @@ export default function SalesContractWizard({ request, onClose }) {
                   >
                     <option value="">Velg …</option>
                     {AGREEMENT_CHANNELS.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
-                      </option>
+                      <option key={item.value} value={item.value}>{item.label}</option>
                     ))}
                   </select>
                 </label>
@@ -721,6 +755,25 @@ export default function SalesContractWizard({ request, onClose }) {
                   </label>
                 ) : null}
 
+                <div
+                  style={{
+                    display: "grid",
+                    gap: 5,
+                    padding: 13,
+                    borderRadius: 12,
+                    background: "#eef8fb",
+                    border: "1px solid #cde6ea",
+                    color: "#33545d",
+                  }}
+                >
+                  <strong style={{ color: "#183b46" }}>Faglig anbefaling – kun internt</strong>
+                  <span style={{ lineHeight: 1.45 }}>
+                    En tydelig avtale om dagmulkt kan gi begge parter klare forventninger til
+                    fremdriften og fremstå profesjonelt. Denne anbefalingen vises bare for
+                    brukeren i Expo ProffDok og tas ikke med i kundens kontrakt.
+                  </span>
+                </div>
+
                 <BinaryChoice
                   value={Boolean(draft.daily_penalty_agreed)}
                   onChange={(nextValue) => {
@@ -730,17 +783,73 @@ export default function SalesContractWizard({ request, onClose }) {
                 />
 
                 {draft.daily_penalty_agreed ? (
-                  <label style={labelStyle()}>
-                    <span>Avtalt dagmulkt</span>
-                    <input
-                      value={draft.daily_penalty_text}
-                      onChange={(event) =>
-                        updateDraft("daily_penalty_text", event.target.value)
-                      }
-                      placeholder="F.eks. beløp og når den gjelder"
-                      style={inputStyle()}
-                    />
-                  </label>
+                  <div style={{ display: "grid", gap: 12 }}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                        gap: 12,
+                      }}
+                    >
+                      <label style={labelStyle()}>
+                        <span>Slakk før dagmulkt begynner å løpe</span>
+                        <div style={{ display: "grid", gridTemplateColumns: "110px 1fr", gap: 8 }}>
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            inputMode="numeric"
+                            value={draft.daily_penalty_grace_days}
+                            onChange={(event) =>
+                              updateDraft("daily_penalty_grace_days", event.target.value)
+                            }
+                            style={inputStyle()}
+                          />
+                          <div style={{ alignSelf: "center", color: "#52616b" }}>
+                            kalenderdager etter forventet ferdigdato
+                          </div>
+                        </div>
+                      </label>
+                      <label style={labelStyle()}>
+                        <span>Avtalt dagmulkt</span>
+                        <input
+                          value={draft.daily_penalty_text}
+                          onChange={(event) =>
+                            updateDraft("daily_penalty_text", event.target.value)
+                          }
+                          placeholder="F.eks. kr per kalenderdag og eventuell maksgrense"
+                          style={inputStyle()}
+                        />
+                      </label>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: 7,
+                        padding: 14,
+                        borderRadius: 12,
+                        background: "#f7fafb",
+                        border: "1px solid #d9e7eb",
+                        color: "#33545d",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      <strong style={{ color: "#183b46" }}>Hvem svarer for forsinkelsen?</strong>
+                      <span>
+                        <strong>Håndverkerens forhold:</strong> Dersom utførende firma er
+                        ansvarlig for forsinkelsen, kan avtalt dagmulkt begynne å løpe når den
+                        avtalte slakken er brukt opp.
+                      </span>
+                      <span>
+                        <strong>Kundens forhold:</strong> Forsinkelser som skyldes kundens
+                        egne valg eller leveranser, manglende tilgang, sene avklaringer eller
+                        andre dokumenterte forhold på kundens side skal ikke utløse dagmulkt.
+                        Fremdriftsfristen forskyves tilsvarende når vilkårene for
+                        fristforlengelse er oppfylt.
+                      </span>
+                    </div>
+                  </div>
                 ) : null}
 
                 <label style={labelStyle()}>
@@ -764,14 +873,7 @@ export default function SalesContractWizard({ request, onClose }) {
                     color: "#33545d",
                   }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 8,
-                      alignItems: "center",
-                      fontWeight: 900,
-                    }}
-                  >
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900 }}>
                     <Info size={17} /> Nyttige offentlige råd
                   </div>
                   <a
@@ -803,7 +905,7 @@ export default function SalesContractWizard({ request, onClose }) {
                 <div>
                   <h2 style={{ marginTop: 0 }}>Kontroller dokumentet</h2>
                   <p className="sales-subtitle">
-                    Kundeaksepten og det aksepterte tilbudet inngår nå tydelig i
+                    Kundeaksepten og det aksepterte tilbudet inngår tydelig i
                     avtalegrunnlaget. Gå tilbake hvis noe skal endres, og lagre deretter
                     utkastet på server.
                   </p>
@@ -853,10 +955,7 @@ export default function SalesContractWizard({ request, onClose }) {
               </div>
             ) : null}
 
-            <div
-              className="sales-form-actions"
-              style={{ marginTop: 20, justifyContent: "space-between" }}
-            >
+            <div className="sales-form-actions" style={{ marginTop: 20, justifyContent: "space-between" }}>
               <button
                 className="sales-secondary-button"
                 type="button"
@@ -868,8 +967,7 @@ export default function SalesContractWizard({ request, onClose }) {
 
               {step < 4 ? (
                 <button className="sales-primary-button" type="button" onClick={goNext}>
-                  Neste
-                  <ArrowRight size={18} />
+                  Neste <ArrowRight size={18} />
                 </button>
               ) : (
                 <button
