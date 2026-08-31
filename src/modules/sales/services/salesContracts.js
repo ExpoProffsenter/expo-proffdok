@@ -125,7 +125,10 @@ export function buildCustomerContractLink(
   if (!contractToken) return "";
   const url = new URL(currentUrl);
   url.searchParams.delete("salesSupportCompany");
-  if (offerToken) url.searchParams.set("publicOffer", offerToken);
+  // `publicOffer` er inngangen til eksisterende offentlig Sales-ruting i main.jsx.
+  // Eldre aksepterte saker kan mangle historisk tilbudstoken; kontrakts-RPC-en
+  // bruker likevel sin egen sikre token og trenger bare en ikke-tom routingmarkør.
+  url.searchParams.set("publicOffer", offerToken || "contract");
   url.searchParams.set("publicContract", contractToken);
   return url.toString();
 }
