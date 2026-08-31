@@ -461,14 +461,15 @@ export default function SalesContractDocument({ request, companyProfile, draft }
             Dersom forsinkelsen skyldes forhold utførende firma svarer for, regnes dette som
             forsinkelse på håndverkerens side. Dersom forsinkelsen skyldes kunden, kundens egne
             valg eller leveranser, manglende tilgang, sene avklaringer eller andre forhold som
-            etter avtalen eller loven gir rett til fristforlengelse, forskyves fristen
-            tilsvarende. Slike perioder skal ikke regnes som dagmulktsutløsende forsinkelse.
+            etter avtalen eller loven gir rett til fristforlengelse, forskyves
+            ferdigstillelsesfristen tilsvarende. Dagmulkt løper ikke for slik fristforlengelse.
           </Paragraph>
           {draft.daily_penalty_agreed ? (
             <Paragraph>
-              Partene har avtalt dagmulkt. Dagmulkt kan først begynne å løpe når beregnet og
-              eventuelt rettmessig forskjøvet ferdigstillelsesfrist er passert med {graceDays}
-              {" "}kalenderdager, og bare for forsinkelse utførende firma svarer for.
+              Partene har avtalt dagmulkt. Dagmulkt kan tidligst begynne å løpe når gjeldende
+              ferdigstillelsesfrist er overskredet og den avtalte tilleggsfristen på {graceDays}
+              {" "}kalenderdager er utløpt. Dagmulkt gjelder bare forsinkelse utførende firma
+              svarer for.
             </Paragraph>
           ) : null}
           <Paragraph last>
@@ -516,8 +517,8 @@ export default function SalesContractDocument({ request, companyProfile, draft }
                 <strong>Dagmulkt:</strong> {draft.daily_penalty_text || "Avtalt mellom partene."}
               </Paragraph>
               <Paragraph>
-                <strong>Avtalt slakk:</strong> {graceDays} kalenderdager etter forventet,
-                eventuelt rettmessig forskjøvet ferdigstillelsesfrist.
+                <strong>Avtalt tilleggsfrist:</strong> {graceDays} kalenderdager etter
+                gjeldende ferdigstillelsesfrist.
               </Paragraph>
             </>
           ) : (
