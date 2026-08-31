@@ -12,6 +12,22 @@ export function createOvertagelseCompletionTools({
   access, inst, files, tilbud, projectLog, internalNotes, supabase, goToTab,
   sendProjectCompletionEmailToCustomer, setProjectLockedState
 }) {
+    const verifyPersistedOvertagelseSignatures = async () => {
+      const { data: verifiedRow, error: verifyError } = await supabase
+        .from("projects")
+        .select("id,data")
+        .eq("id", projectId)
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      if (verifyError || !verifiedRow) {
+        return { ok: false, error: verifyError || new Error("Fant ikke lagret prosjekt") };
+      }
+      const savedOvertagelse = verifiedRow?.data?.overtagelse || {};
+      const utførendeSaved = hasValue(savedOvertagelse.signUtførende) || hasValue(savedOvertagelse.signUtførendeImage);
+      const kundeSaved = hasValue(savedOvertagelse.signKunde) || hasValue(savedOvertagelse.signKundeImage);
+      return { ok: utførendeSaved && kundeSaved, error: null };
+    };
+
     const completeOvertagelseAndLock = async () => {
       if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r overtagelse kan fullf\xF8res.");
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 fullf\xF8re overtagelse.");
@@ -92,7 +108,12 @@ export function createOvertagelseCompletionTools({
             console.error(saveBeforeWarrantyError);
             return alert("Kunne ikke lagre overtagelse før garanti: " + saveBeforeWarrantyError.message);
           }
-          alert("Overtagelse er lagret. Gå videre med garantibevis og last ned komplett PDF-rapport før prosjektet låses.");
+          const warrantySignatureVerification = await verifyPersistedOvertagelseSignatures();
+          if (!warrantySignatureVerification.ok) {
+            console.error("Kunne ikke bekrefte overtagelsessignaturer før garanti", warrantySignatureVerification.error);
+            return alert("⚠️ Overtagelsen ble forsøkt lagret, men begge signaturene kunne ikke bekreftes på server. Prosjektet er ikke låst. Prøv Lagre overtagelse på nytt før du går videre med garanti.");
+          }
+          alert("✅ Begge overtagelsessignaturer er bekreftet lagret på server. Gå videre med garantibevis og last ned komplett PDF-rapport før prosjektet låses.");
           goToTab("garanti");
           return;
         }
@@ -132,6 +153,11 @@ export function createOvertagelseCompletionTools({
       if (saveError) {
         console.error(saveError);
         return alert("Kunne ikke lagre overtagelse f\xF8r l\xE5sing: " + saveError.message);
+      }
+      const signatureVerification = await verifyPersistedOvertagelseSignatures();
+      if (!signatureVerification.ok) {
+        console.error("Kunne ikke bekrefte overtagelsessignaturer før låsing", signatureVerification.error);
+        return alert("⚠️ Begge overtagelsessignaturene kunne ikke bekreftes på server. Prosjektet er ikke låst. Prøv Lagre overtagelse på nytt, og kontakt support hvis meldingen gjentas.");
       }
       setOvertagelse(completedOvertagelse);
       await setProjectLockedState(true);

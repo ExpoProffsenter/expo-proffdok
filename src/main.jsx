@@ -1828,8 +1828,15 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     }, [projects, adminUsers]);
     const ordinaryProjectListRows = (0, import_react.useMemo)(() => {
       if (!isSystemAdminUser) return projectListRows;
+      const activeSupportProjectRow = supportModeExplicit && projectId && currentProjectOwnerId && currentProjectOwnerId !== authUser?.id
+        ? (projectListRows || []).find((item) => item?.row?.id === projectId) || null
+        : null;
+      const activeSupportCompanyScopeId = String(activeSupportProjectRow?.row?.company_scope_id || "").trim();
+      if (activeSupportCompanyScopeId) {
+        return (projectListRows || []).filter((item) => String(item?.row?.company_scope_id || "").trim() === activeSupportCompanyScopeId);
+      }
       return (projectListRows || []).filter((item) => projectBelongsToCurrentCompanyForProjectList(item?.row));
-    }, [projectListRows, isSystemAdminUser, authUser?.id, profile?.company_name, currentCompanyName]);
+    }, [projectListRows, isSystemAdminUser, supportModeExplicit, projectId, currentProjectOwnerId, authUser?.id, profile?.company_name, currentCompanyName]);
     const filteredProjectListRows = (0, import_react.useMemo)(() => {
       return ordinaryProjectListRows.filter((item) => {
         if (!projectMatchesSearch(item.searchable, projectSearch)) return false;
@@ -3716,11 +3723,24 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
           return (saved.projectName || "") === (saveProjectData.projectName || "") && (saved.address || "") === (saveProjectData.address || "") && (saved.postnr || "") === (saveProjectData.postnr || "") && (saved.city || "") === (saveProjectData.city || "") && (saved.customer || "") === (saveProjectData.customer || "") && (saved.customerEmail || "") === (saveProjectData.customerEmail || "") && (saved.customerPhone || "") === (saveProjectData.customerPhone || "") && (saved.notes || "") === (saveProjectData.notes || "");
         };
         if (updatedRow && matchesSavedProject(updatedRow)) {
+          const expectedOvertagelse = snapshot.overtagelse || {};
+          const expectedUtførendeSigned = hasValue(expectedOvertagelse.signUtførende) || hasValue(expectedOvertagelse.signUtførendeImage);
+          const expectedKundeSigned = hasValue(expectedOvertagelse.signKunde) || hasValue(expectedOvertagelse.signKundeImage);
+          const shouldVerifyBothSignatures = expectedUtførendeSigned && expectedKundeSigned;
+          if (shouldVerifyBothSignatures) {
+            const persistedOvertagelse = updatedRow?.data?.overtagelse || {};
+            const persistedUtførendeSigned = hasValue(persistedOvertagelse.signUtførende) || hasValue(persistedOvertagelse.signUtførendeImage);
+            const persistedKundeSigned = hasValue(persistedOvertagelse.signKunde) || hasValue(persistedOvertagelse.signKundeImage);
+            if (!persistedUtførendeSigned || !persistedKundeSigned) {
+              console.error("Overtagelsessignaturer kunne ikke bekreftes i lagret prosjektdata", { projectId: updatedRow.id });
+              return alert("⚠️ Prosjektet ble oppdatert, men begge overtagelsessignaturene kunne ikke bekreftes på server. Ikke forlat overtagelsen. Prøv Lagre overtagelse på nytt, og kontakt support hvis meldingen gjentas.");
+            }
+          }
           unpackData(dataFromRow(updatedRow), false);
           setProjectId(updatedRow.id);
           await loadProjects(authUser);
           resetProjectDirty();
-          return alert("\u2714 Prosjekt oppdatert og bekreftet lagret");
+          return alert(shouldVerifyBothSignatures ? "✅ Begge overtagelsessignaturer er bekreftet lagret på server." : "\u2714 Prosjekt oppdatert og bekreftet lagret");
         }
         const shouldCopy = window.confirm(
           "Prosjektet ble ikke oppdatert automatisk. Dette kan skyldes tilgang til et eldre prosjekt.\n\nVil du lagre dette som en ny oppdatert kopi n\xE5, slik at endringene ikke g\xE5r tapt?"
@@ -7236,6 +7256,11 @@ ${appLink}`;
     const start = (event) => {
       event.preventDefault();
       const canvas = canvasRef.current;
+      try {
+        canvas?.setPointerCapture?.(event.pointerId);
+      } catch (error) {
+        console.warn("Kunne ikke låse peker til signaturfelt:", error);
+      }
       const ctx = canvas.getContext("2d");
       const p = getPoint(event);
       drawingRef.current = true;
@@ -7258,6 +7283,11 @@ ${appLink}`;
       drawingRef.current = false;
       const canvas = canvasRef.current;
       if (hasDrawnRef.current) onChange(canvas.toDataURL("image/png"));
+      try {
+        if (canvas?.hasPointerCapture?.(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+      } catch (error) {
+        console.warn("Kunne ikke frigjøre peker fra signaturfelt:", error);
+      }
     };
     const clear = () => {
       const canvas = canvasRef.current;
