@@ -568,8 +568,8 @@ export default function SalesContractWizard({ request, onClose }) {
                 <div>
                   <h2 style={{ marginTop: 0 }}>Fremdrift og betaling</h2>
                   <p className="sales-subtitle">
-                    Angi planlagt oppstart og hvor mange uker arbeidet forventes å vare.
-                    Expo ProffDok beregner forventet ferdigdato automatisk.
+                    Angi avtalt oppstart og hvor mange uker arbeidet forventes å vare.
+                    Expo ProffDok beregner forventet ferdigstillelse automatisk.
                   </p>
                 </div>
 
@@ -581,7 +581,7 @@ export default function SalesContractWizard({ request, onClose }) {
                   }}
                 >
                   <label style={labelStyle()}>
-                    <span>Planlagt oppstart</span>
+                    <span>Avtalt oppstart</span>
                     <input
                       type="date"
                       value={draft.start_date}
@@ -617,13 +617,12 @@ export default function SalesContractWizard({ request, onClose }) {
                     }}
                   >
                     <FieldSummary
-                      label="Beregnet forventet ferdigdato"
+                      label="Beregnet forventet ferdigstillelse"
                       value={formatDate(draft.expected_finish_date)}
                     />
                     <div style={{ color: "#52616b", lineHeight: 1.45, alignSelf: "center" }}>
-                      Dette er planlagt ferdigstillelse basert på oppstart og varighet.
-                      Fristen kan forskyves ved dokumenterte forhold som gir rett til
-                      fristforlengelse.
+                      Datoen beregnes fra avtalt oppstart og forventet varighet. Fristen kan
+                      forskyves ved dokumenterte forhold som gir rett til fristforlengelse.
                     </div>
                   </div>
                   <label style={{ ...labelStyle(), gridColumn: "1 / -1" }}>
@@ -806,7 +805,7 @@ export default function SalesContractWizard({ request, onClose }) {
                             style={inputStyle()}
                           />
                           <div style={{ alignSelf: "center", color: "#52616b" }}>
-                            kalenderdager etter forventet ferdigdato
+                            kalenderdager etter forventet ferdigstillelse
                           </div>
                         </div>
                       </label>
