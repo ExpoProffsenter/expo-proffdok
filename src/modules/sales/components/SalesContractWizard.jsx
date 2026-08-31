@@ -666,7 +666,7 @@ export default function SalesContractWizard({ request, onClose }) {
                 </div>
 
                 <label style={labelStyle()}>
-                  <span>Hvordan inngås avtalen?</span>
+                  <span>Hvordan er avtalen inngått?</span>
                   <select
                     value={draft.agreement_channel}
                     onChange={(event) => {
@@ -689,13 +689,15 @@ export default function SalesContractWizard({ request, onClose }) {
                 {agreementChannelNeedsWithdrawalInfo(draft.agreement_channel) ? (
                   <label
                     style={{
-                      display: "flex",
-                      gap: 10,
-                      alignItems: "flex-start",
-                      padding: 13,
+                      display: "grid",
+                      gridTemplateColumns: "24px minmax(0,1fr)",
+                      gap: 11,
+                      alignItems: "start",
+                      padding: 14,
                       borderRadius: 12,
                       background: "#fffaf0",
                       border: "1px solid #f2d59b",
+                      cursor: "pointer",
                     }}
                   >
                     <input
@@ -704,12 +706,17 @@ export default function SalesContractWizard({ request, onClose }) {
                       onChange={(event) =>
                         updateDraft("early_start_requested", event.target.checked)
                       }
-                      style={{ marginTop: 3 }}
+                      style={{ marginTop: 4 }}
                     />
-                    <span>
-                      Kunden ønsker at arbeidet kan starte før eventuell angrefrist er
-                      utløpt. Dette må senere bekreftes uttrykkelig av kunden i
-                      signeringssteget.
+                    <span style={{ display: "grid", gap: 4 }}>
+                      <strong style={{ color: "#183b46" }}>
+                        Oppstart før eventuell angrefrist er utløpt
+                      </strong>
+                      <span style={{ color: "#52616b", lineHeight: 1.45 }}>
+                        Kryss av bare dersom kunden ønsker at arbeidet skal starte før en
+                        eventuell angrefrist er utløpt. Kunden må bekrefte dette uttrykkelig
+                        når kontrakten signeres.
+                      </span>
                     </span>
                   </label>
                 ) : null}
