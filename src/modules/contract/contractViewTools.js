@@ -143,7 +143,7 @@ function SignedContractMarker({ files, tilbud, setTilbud, emptyTilbud }) {
             : React.createElement(
                 "p",
                 { className: "note", style: { marginBottom: 0 } },
-                "Last først opp bedriftens signerte kontrakt under Vedlegg / avtaledokumenter. Deretter kan den markeres her."
+                "Hvis bedriften bruker egen kontrakt, laster du opp den signerte kontrakten under Vedlegg / avtaledokumenter og markerer den deretter som signert kontrakt."
               )
         )
   );
