@@ -1,3 +1,4 @@
+// FASE 33B.4 HJELP: bedriften signerer lagret Expo-kontrakt, kunden får sikker lenke og signerer samme låste grunnlag.
 // FASE 33B.3 HJELP: akseptert tilbud får frivillig stegvis Expo-kontrakt i tillegg til eksisterende opplasting.
 // Kontraktsteg og usparte felt sikres lokalt gjennom fanebytte/remount før eksplisitt serverlagring.
 // FASE 32 HJELP: brukerrettede endringer skal dokumenteres i Hjelp når arbeidsflyt, begreper eller UI påvirkes.
@@ -88,8 +89,14 @@ function createSales31CHelp() {
     "Ved avtale som er inngått digitalt, per telefon eller utenfor bedriftens faste forretningslokaler spør veiviseren om kunden ønsker oppstart før en eventuell angrefrist er utløpt. Kunden må bekrefte dette uttrykkelig ved signering.",
     "Aktivt kontraktsteg og usparte kontraktsfelt sikres lokalt i samme nettleserøkt. Når du åpner en Forbrukerrådet-lenke i ny fane og går tilbake, skal du fortsette på samme steg med datoer og valg intakt.",
     "Sluttdokumentet viser kundeaksepten tydelig med akseptert tilbudsversjon, hvem som aksepterte, aksepttidspunkt, avtalesum inkl. mva. og valgte opsjoner. Akseptert tilbud med vedlegg inngår i avtalegrunnlaget i sin helhet.",
-    "Kontrakten dekker blant annet arbeidets omfang, pris og betaling, endringer, partenes ansvar, skjulte forhold, forsinkelse/mangler, overtagelse, angrerett, dokumentrekkefølge og senere signering – uten at brukeren må fylle inn de samme opplysningene på nytt.",
-    "Akseptert tilbud og valgte opsjoner endres ikke når kontraktsutkastet opprettes. Kontrakten er et eget dokumentgrunnlag.",
+    "Når utkastet er lagret, kontrollerer bedriften dokumentet og velger Bekreft og signer kontrakt. Innlogget bruker og tidspunkt registreres automatisk, og kontraktsgrunnlaget låses.",
+    "Etter bedriftens signering kan den sikre kundelenken sendes på e-post, åpnes for kontroll eller kopieres. E-postfeil endrer ikke den låste kontrakten, og lenken kan sendes på nytt.",
+    "Kunden kan lese kontrakten, men ikke redigere den. Før signering må kunden bekrefte kontrakten og at det tidligere aksepterte tilbudet med valgte opsjoner og vedlegg inngår i avtalegrunnlaget.",
+    "Hvis tidlig oppstart før eventuell angrefrist er registrert, må kunden i tillegg bekrefte dette uttrykkelig før signering.",
+    "Når kunden signerer med fullt navn, lagres navn og tidspunkt. Begge signaturer og kontraktsgrunnlaget blir låst historikk.",
+    "Kontrakten dekker blant annet arbeidets omfang, pris og betaling, endringer, partenes ansvar, skjulte forhold, forsinkelse/mangler, overtagelse, angrerett, dokumentrekkefølge og signering – uten at brukeren må fylle inn de samme opplysningene på nytt.",
+    "Akseptert tilbud og valgte opsjoner endres ikke når kontrakten opprettes eller signeres. Kontrakten er et eget dokumentgrunnlag.",
+    "Endelig kontrakt-PDF og automatisk overføring til prosjektets Tilbud / kontrakt kommer i neste kontrollerte kontraktsrunde.",
     "Egen opplastet kontrakt og dagens prosjektaktivering fungerer fortsatt som før.",
   ]);
 
