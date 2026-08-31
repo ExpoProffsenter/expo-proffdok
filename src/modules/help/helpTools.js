@@ -84,7 +84,8 @@ function createSales31CHelp() {
     "Standard betalingsplan er 40 % ved oppstart, 40 % ved hovedmilepæl og 20 % etter overtagelse. Planen kan justeres før utkastet lagres.",
     "Dagmulkt velges tydelig som Ja eller Nei og skal bare settes til Ja dersom partene faktisk har avtalt dagmulkt.",
     "Aktivt kontraktsteg og usparte kontraktsfelt sikres lokalt i samme nettleserøkt. Når du åpner en Forbrukerrådet-lenke i ny fane og går tilbake, skal du fortsette på samme steg med datoer og valg intakt.",
-    "Veiviseren ender i ett samlet kontraktsdokument som kan kontrolleres før utkastet lagres på server.",
+    "Sluttdokumentet viser kundeaksepten tydelig med akseptert tilbudsversjon, hvem som aksepterte, aksepttidspunkt, avtalesum inkl. mva. og valgte opsjoner. Akseptert tilbud med vedlegg inngår i avtalegrunnlaget i sin helhet.",
+    "Kontrakten dekker blant annet arbeidets omfang, pris og betaling, endringer, partenes ansvar, skjulte forhold, forsinkelse/mangler, overtagelse, angrerett, dokumentrekkefølge og senere signering – uten at brukeren må fylle inn de samme opplysningene på nytt.",
     "Akseptert tilbud og valgte opsjoner endres ikke når kontraktsutkastet opprettes. Kontrakten er et eget dokumentgrunnlag.",
     "Egen opplastet kontrakt og dagens prosjektaktivering fungerer fortsatt som før.",
   ]);
