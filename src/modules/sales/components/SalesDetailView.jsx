@@ -1,11 +1,17 @@
-// Expo ProffDok – FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// Expo ProffDok – FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// FASE 33B.3 legger til et frivillig valg om enkel Expo-kontrakt i eksisterende
+// kontraktkort etter aksept. Opplasting av egen kontrakt og prosjektaktivering beholdes urørt.
+// Aktiv kontraktsveiviser huskes i sessionStorage slik at fanebytte/remount ikke
+// sender brukeren tilbake til tilbudssaken midt i utfyllingen.
 // FASE 32A viser serverstemplet creator og publisher internt uten å forveksle
 // disse med ansvarlig. Gamle saker uten nye snapshot-felt får ingen kunstig creator.
 // Intern tilbudsvisning og låst akseptvisning følger samme hovedpostrekkefølge
 // som kundelink og dokumenter. Akseptdata, lagring og prosjektaktivering er uendret.
 
-import { Children, cloneElement, isValidElement } from "react";
+import { Children, cloneElement, isValidElement, useEffect, useState } from "react";
+import { FileSignature } from "lucide-react";
 import SalesDetailViewCore from "./SalesDetailViewCore.jsx";
+import SalesContractWizard from "./SalesContractWizard.jsx";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
 import { createAcceptanceProofPdf } from "../services/salesAcceptancePdf.js";
@@ -16,6 +22,36 @@ const LEGACY_MAIN_POST = {
   id: "ovrige-arbeider",
   title: "Øvrige arbeider",
 };
+
+const CONTRACT_WIZARD_OPEN_PREFIX = "expo-proffdok:sales-contract-wizard-open:";
+
+function getContractWizardOpenKey(requestId = "") {
+  const normalized = String(requestId || "").trim();
+  return normalized ? `${CONTRACT_WIZARD_OPEN_PREFIX}${normalized}` : "";
+}
+
+function isContractWizardRememberedOpen(requestId = "") {
+  if (typeof window === "undefined") return false;
+  const key = getContractWizardOpenKey(requestId);
+  if (!key) return false;
+  try {
+    return window.sessionStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function rememberContractWizardOpen(requestId = "", open = false) {
+  if (typeof window === "undefined") return;
+  const key = getContractWizardOpenKey(requestId);
+  if (!key) return;
+  try {
+    if (open) window.sessionStorage.setItem(key, "1");
+    else window.sessionStorage.removeItem(key);
+  } catch {
+    // Sessionlagring er kun UX-sikkerhet. Eksisterende Sales-flyt skal fungere uten.
+  }
+}
 
 function hasMeaningfulOfferDraft(request) {
   const lines = Array.isArray(request?.offerLines) ? request.offerLines : [];
@@ -173,6 +209,82 @@ function rewriteOfferContinuationLabels(node) {
     rewriteOfferContinuationLabels
   );
 
+  return cloneElement(node, undefined, children);
+}
+
+function reactNodeText(node) {
+  if (node === null || node === undefined || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(reactNodeText).join(" ").trim();
+  if (!isValidElement(node)) return "";
+  return Children.toArray(node.props.children).map(reactNodeText).join(" ").trim();
+}
+
+function rewriteContractChoice(node, request, onOpenWizard) {
+  if (Array.isArray(node)) {
+    return node.map((child) => rewriteContractChoice(child, request, onOpenWizard));
+  }
+  if (!isValidElement(node)) return node;
+
+  const directChildren = Children.toArray(node.props.children);
+  const headingText = reactNodeText(directChildren[0]);
+  const introText = reactNodeText(directChildren[1]);
+  const isContractCard =
+    request?.status === "Akseptert" &&
+    headingText === "Kontrakt" &&
+    introText.includes("Håndverksbedriften kan laste opp sin egen ferdigstilte kontrakt.");
+
+  if (isContractCard) {
+    const intro = isValidElement(directChildren[1])
+      ? cloneElement(
+          directChildren[1],
+          undefined,
+          request?.contractFile
+            ? "Egen kontrakt er lastet opp på saken. Du kan beholde denne som gjeldende kontraktsvalg eller fjerne den og opprette en enkel kontrakt i Expo ProffDok."
+            : "Velg om du vil opprette en enkel kontrakt i Expo ProffDok eller laste opp bedriftens egen kontrakt. Begge valgene bygger videre på det aksepterte tilbudet."
+        )
+      : directChildren[1];
+
+    const choice = request?.contractFile ? null : (
+      <div
+        key="fase33b3-expo-contract-choice"
+        style={{
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          flexWrap: "wrap",
+          margin: "0 0 14px",
+          padding: 12,
+          borderRadius: 12,
+          border: "1px solid #b9e0e3",
+          background: "#eefafb",
+        }}
+      >
+        <button
+          className="sales-primary-button"
+          type="button"
+          onClick={onOpenWizard}
+        >
+          <FileSignature size={18} />
+          Opprett / åpne enkel kontrakt
+        </button>
+        <span style={{ color: "#42606b", fontWeight: 700 }}>
+          Eller bruk «Last opp egen kontrakt» under.
+        </span>
+      </div>
+    );
+
+    return cloneElement(node, undefined, [
+      directChildren[0],
+      intro,
+      choice,
+      ...directChildren.slice(2),
+    ]);
+  }
+
+  const children = Children.map(node.props.children, (child) =>
+    rewriteContractChoice(child, request, onOpenWizard)
+  );
   return cloneElement(node, undefined, children);
 }
 
@@ -466,6 +578,10 @@ function AcceptanceProofPreviewButton({ request, companyProfile }) {
 }
 
 export default function SalesDetailView(props) {
+  const selectedRequestId = String(props?.selectedRequest?.id || "");
+  const [contractWizardOpen, setContractWizardOpen] = useState(() =>
+    isContractWizardRememberedOpen(selectedRequestId)
+  );
   const storedResponsible = getStoredResponsible(
     props?.selectedRequest,
     props?.loggedInResponsible
@@ -478,10 +594,38 @@ export default function SalesDetailView(props) {
       hasMeaningfulOfferDraft(coreProps.selectedRequest)
   );
 
+  useEffect(() => {
+    setContractWizardOpen(isContractWizardRememberedOpen(selectedRequestId));
+  }, [selectedRequestId]);
+
+  function openContractWizard() {
+    rememberContractWizardOpen(selectedRequestId, true);
+    setContractWizardOpen(true);
+  }
+
+  function closeContractWizard() {
+    rememberContractWizardOpen(selectedRequestId, false);
+    setContractWizardOpen(false);
+  }
+
+  if (contractWizardOpen && coreProps?.selectedRequest?.status === "Akseptert") {
+    return (
+      <SalesContractWizard
+        request={coreProps.selectedRequest}
+        onClose={closeContractWizard}
+      />
+    );
+  }
+
   let tree = SalesDetailViewCore(coreProps);
   tree = rewriteInternalOfferPresentation(tree, coreProps?.selectedRequest);
   tree = rewriteAcceptedPresentation(tree, coreProps?.selectedRequest);
   tree = rewriteSalesTraceability(tree, coreProps?.selectedRequest);
+  tree = rewriteContractChoice(
+    tree,
+    coreProps?.selectedRequest,
+    openContractWizard
+  );
 
   if (hasExistingOfferDraft) {
     // SalesDetailViewCore er bevisst hook-fri. Vi materialiserer derfor treet her
