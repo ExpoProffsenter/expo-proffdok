@@ -2,6 +2,13 @@
 // Tynn klient rundt kontraktgrunnlaget fra FASE 33B.2–33B.4. Bruker eksisterende
 // delt Sales Supabase-klient og endrer ikke tilbud, aksept eller prosjektaktivering.
 
+const CONTRACT_CHANGED_EVENT = "expo-proffdok-sales-contract-changed";
+
+function notifyContractChanged(detail = {}) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(CONTRACT_CHANGED_EVENT, { detail }));
+}
+
 export async function fetchActiveSalesContract(
   client,
   { offerId = "", offerVersionId = "" } = {}
@@ -53,6 +60,7 @@ export async function createExpoSalesContract(
   if (data?.status && data.status !== "draft") {
     throw new Error("Kontrakten er allerede sendt eller signert og kan ikke redigeres.");
   }
+  notifyContractChanged({ id: data?.id || "", status: data?.status || "draft" });
   return data;
 }
 
@@ -70,6 +78,7 @@ export async function saveExpoSalesContractDraft(
   });
 
   if (error) throw error;
+  notifyContractChanged({ id: data?.id || contractId, status: data?.status || "draft" });
   return data;
 }
 
@@ -81,6 +90,7 @@ export async function signExpoSalesContractCompany(client, contractId) {
     contract_id: contractId,
   });
   if (error) throw error;
+  notifyContractChanged({ id: data?.id || contractId, status: data?.status || "awaiting_customer" });
   return data;
 }
 
@@ -120,3 +130,5 @@ export function buildCustomerContractLink(
   url.searchParams.set("publicContract", contractToken);
   return url.toString();
 }
+
+export { CONTRACT_CHANGED_EVENT };
