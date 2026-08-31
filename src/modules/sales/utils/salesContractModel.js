@@ -272,7 +272,7 @@ export function validateSalesContractStep(step, draft = {}) {
 
   if (step === 2) {
     if (!String(draft.start_date || "").trim()) {
-      return "Velg planlagt oppstart.";
+      return "Velg avtalt oppstart.";
     }
     const durationWeeks = Number(draft.expected_duration_weeks);
     if (!Number.isFinite(durationWeeks) || durationWeeks <= 0) {
