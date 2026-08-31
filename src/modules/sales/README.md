@@ -231,17 +231,17 @@ Få valg:
 - hvordan avtalen inngås
 - eventuell tidlig oppstart før angrefrist er ute
 - eventuell særskilt dagmulkt som tydelig Ja/Nei-valg
-- redigerbar slakk i kalenderdager før avtalt dagmulkt begynner å løpe
+- redigerbar tilleggsfrist i kalenderdager før avtalt dagmulkt begynner å løpe
 - eventuelle særskilte avtalevilkår
 
 Veiviseren viser en **intern faglig anbefaling** om at tydelig avtalt dagmulkt kan gi forutsigbarhet og fremstå profesjonelt. Denne anbefalingen skal aldri følge med til kundens kontraktsdokument.
 
 Hvis dagmulkt avtales, skal dokumentet skille mellom:
 
-- forsinkelse utførende firma svarer for – avtalt dagmulkt kan gjelde etter avtalt slakk
+- forsinkelse utførende firma svarer for – avtalt dagmulkt kan gjelde etter avtalt tilleggsfrist
 - dokumentert forsinkelse som skyldes kunden, kundens egne valg/leveranser, manglende tilgang, sene avklaringer eller andre forhold som gir rett til fristforlengelse – fristen forskyves og perioden skal ikke regnes som dagmulktsutløsende
 
-Standard slakk er 7 kalenderdager, men feltet er redigerbart før kontrakten lagres.
+Standard tilleggsfrist er 7 kalenderdager, men feltet er redigerbart før kontrakten lagres.
 
 Veiviseren lenker til relevante Forbrukerrådet-sider om håndverker og angrerett. Lenken er kun informasjon. Expo ProffDok bruker ikke Forbrukerrådets logo og fremstiller ikke kontrakten som godkjent av Forbrukerrådet.
 
