@@ -791,7 +791,7 @@ export default function SalesContractWizard({ request, onClose }) {
                       }}
                     >
                       <label style={labelStyle()}>
-                        <span>Slakk før dagmulkt begynner å løpe</span>
+                        <span>Avtalt tilleggsfrist før dagmulkt</span>
                         <div style={{ display: "grid", gridTemplateColumns: "110px 1fr", gap: 8 }}>
                           <input
                             type="number"
@@ -805,7 +805,7 @@ export default function SalesContractWizard({ request, onClose }) {
                             style={inputStyle()}
                           />
                           <div style={{ alignSelf: "center", color: "#52616b" }}>
-                            kalenderdager etter forventet ferdigstillelse
+                            kalenderdager etter gjeldende ferdigstillelsesfrist
                           </div>
                         </div>
                       </label>
@@ -834,18 +834,16 @@ export default function SalesContractWizard({ request, onClose }) {
                         lineHeight: 1.45,
                       }}
                     >
-                      <strong style={{ color: "#183b46" }}>Hvem svarer for forsinkelsen?</strong>
+                      <strong style={{ color: "#183b46" }}>Når kan dagmulkt bli aktuelt?</strong>
                       <span>
-                        <strong>Håndverkerens forhold:</strong> Dersom utførende firma er
-                        ansvarlig for forsinkelsen, kan avtalt dagmulkt begynne å løpe når den
-                        avtalte slakken er brukt opp.
+                        <strong>Forsinkelse håndverkeren svarer for:</strong> Avtalt dagmulkt
+                        kan begynne å løpe etter at den avtalte tilleggsfristen er utløpt.
                       </span>
                       <span>
-                        <strong>Kundens forhold:</strong> Forsinkelser som skyldes kundens
-                        egne valg eller leveranser, manglende tilgang, sene avklaringer eller
-                        andre dokumenterte forhold på kundens side skal ikke utløse dagmulkt.
-                        Fremdriftsfristen forskyves tilsvarende når vilkårene for
-                        fristforlengelse er oppfylt.
+                        <strong>Forsinkelse på kundens side:</strong> Kundens egne valg eller
+                        leveranser, manglende tilgang, sene avklaringer eller andre dokumenterte
+                        forhold på kundens side gir tilsvarende fristforlengelse og utløser ikke
+                        dagmulkt.
                       </span>
                     </div>
                   </div>
