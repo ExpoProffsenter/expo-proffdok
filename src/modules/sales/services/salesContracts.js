@@ -1,6 +1,13 @@
-// Expo ProffDok – FASE 33B.3
-// Tynn klient rundt kontraktgrunnlaget fra FASE 33B.2. Bruker eksisterende delt
-// Sales Supabase-klient og endrer ikke tilbud, aksept eller prosjektaktivering.
+// Expo ProffDok – FASE 33B.4
+// Tynn klient rundt kontraktgrunnlaget fra FASE 33B.2–33B.4. Bruker eksisterende
+// delt Sales Supabase-klient og endrer ikke tilbud, aksept eller prosjektaktivering.
+
+const CONTRACT_CHANGED_EVENT = "expo-proffdok-sales-contract-changed";
+
+function notifyContractChanged(detail = {}) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(CONTRACT_CHANGED_EVENT, { detail }));
+}
 
 export async function fetchActiveSalesContract(
   client,
@@ -11,7 +18,7 @@ export async function fetchActiveSalesContract(
   let query = client
     .from("sales_contracts")
     .select(
-      "id,company_id,request_ref,offer_id,offer_version_id,source,status,snapshot,customer_token,company_signed_by_name,company_signed_at,customer_signed_by_name,customer_signed_at,external_document,final_document,created_at,updated_at"
+      "id,company_id,request_ref,offer_id,offer_version_id,source,status,snapshot,customer_token,company_signed_by_name,company_signed_at,customer_signed_by_name,customer_signed_at,customer_acknowledgements,external_document,final_document,created_at,updated_at"
     )
     .eq("offer_id", offerId)
     .neq("status", "void")
@@ -70,5 +77,60 @@ export async function saveExpoSalesContractDraft(
   });
 
   if (error) throw error;
+  notifyContractChanged({ id: data?.id || contractId, status: data?.status || "draft" });
   return data;
 }
+
+export async function signExpoSalesContractCompany(client, contractId) {
+  if (!client) throw new Error("Supabase er ikke tilgjengelig.");
+  if (!contractId) throw new Error("Kontraktsreferanse mangler.");
+
+  const { data, error } = await client.rpc("sign_sales_contract_company", {
+    contract_id: contractId,
+  });
+  if (error) throw error;
+  notifyContractChanged({ id: data?.id || contractId, status: data?.status || "awaiting_customer" });
+  return data;
+}
+
+export async function fetchPublicSalesContract(client, token) {
+  if (!client || !token) return null;
+  const { data, error } = await client.rpc("get_sales_contract_by_token", {
+    token,
+  });
+  if (error) throw error;
+  return data || null;
+}
+
+export async function signPublicSalesContractCustomer(
+  client,
+  { token, acceptedName, acknowledgements } = {}
+) {
+  if (!client) throw new Error("Supabase er ikke tilgjengelig.");
+  if (!token) throw new Error("Kontraktslenken er ugyldig.");
+
+  const { data, error } = await client.rpc("sign_sales_contract_customer", {
+    token,
+    accepted_name: String(acceptedName || "").trim(),
+    acknowledgements: acknowledgements || {},
+  });
+  if (error) throw error;
+  return data;
+}
+
+export function buildCustomerContractLink(
+  currentUrl,
+  { contractToken = "", offerToken = "" } = {}
+) {
+  if (!contractToken) return "";
+  const url = new URL(currentUrl);
+  url.searchParams.delete("salesSupportCompany");
+  // `publicOffer` er inngangen til eksisterende offentlig Sales-ruting i main.jsx.
+  // Eldre aksepterte saker kan mangle historisk tilbudstoken; kontrakts-RPC-en
+  // bruker likevel sin egen sikre token og trenger bare en ikke-tom routingmarkør.
+  url.searchParams.set("publicOffer", offerToken || "contract");
+  url.searchParams.set("publicContract", contractToken);
+  return url.toString();
+}
+
+export { CONTRACT_CHANGED_EVENT };

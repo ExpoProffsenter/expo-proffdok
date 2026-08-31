@@ -1,4 +1,5 @@
-// Expo ProffDok – FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// Expo ProffDok – FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// FASE 33B.4 gjør akseptbevisets neste-steg-tekst kompatibel med det nye valgfrie kontraktsteget.
 // FASE 33B.3 legger til et frivillig valg om enkel Expo-kontrakt i eksisterende
 // kontraktkort etter aksept. Opplasting av egen kontrakt og prosjektaktivering beholdes urørt.
 // Aktiv kontraktsveiviser huskes i sessionStorage slik at fanebytte/remount ikke
@@ -207,6 +208,31 @@ function rewriteOfferContinuationLabels(node) {
   const children = Children.map(
     node.props.children,
     rewriteOfferContinuationLabels
+  );
+
+  return cloneElement(node, undefined, children);
+}
+
+function rewriteAcceptanceProofContinuationText(node) {
+  if (typeof node === "string") {
+    if (
+      node ===
+      "Akseptbeviset er opprettet og lagret. Fortsett direkte til prosjektaktivering når du er klar."
+    ) {
+      return "Akseptbeviset er opprettet og lagret. Du kan nå opprette kontrakt eller fortsette til prosjektaktivering.";
+    }
+    return node;
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(rewriteAcceptanceProofContinuationText);
+  }
+
+  if (!isValidElement(node)) return node;
+
+  const children = Children.map(
+    node.props.children,
+    rewriteAcceptanceProofContinuationText
   );
 
   return cloneElement(node, undefined, children);
@@ -626,6 +652,7 @@ export default function SalesDetailView(props) {
     coreProps?.selectedRequest,
     openContractWizard
   );
+  tree = rewriteAcceptanceProofContinuationText(tree);
 
   if (hasExistingOfferDraft) {
     // SalesDetailViewCore er bevisst hook-fri. Vi materialiserer derfor treet her
