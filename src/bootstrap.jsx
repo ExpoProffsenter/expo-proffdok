@@ -19,6 +19,38 @@ installGlobalStorageImageOptimizer({
 installProjectWorkflowUx();
 installSalesInspectionHistoryUx();
 
+function installProjectDeviationShortcutRouting() {
+  document.addEventListener(
+    'click',
+    (event) => {
+      const clicked = event.target instanceof Element ? event.target.closest('button') : null;
+      if (!(clicked instanceof HTMLButtonElement)) return;
+      const text = String(clicked.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text !== 'Åpne Avvik') return;
+
+      const nav = Array.from(document.querySelectorAll('nav')).find((candidate) =>
+        Array.from(candidate.querySelectorAll('button')).some((button) =>
+          String(button.textContent || '').replace(/\s+/g, ' ').trim() === 'Prosjektoversikt'
+        )
+      );
+      if (!nav) return;
+
+      const destination = Array.from(nav.querySelectorAll('button')).find((button) => {
+        const label = String(button.textContent || '').replace(/\s+/g, ' ').trim();
+        return label === 'Avvik' || /^Avvik\s*\(\d+\)$/.test(label);
+      });
+      if (!(destination instanceof HTMLButtonElement)) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      destination.click();
+    },
+    true
+  );
+}
+
+installProjectDeviationShortcutRouting();
+
 const SALES_IMAGE_LIGHTBOX_ID = 'sales-customer-image-lightbox';
 const SALES_RELOAD_TAB_KEY = 'expo-proffdok:sales:restore-tab-after-reload';
 
