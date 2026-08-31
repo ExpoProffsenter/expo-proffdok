@@ -1,5 +1,7 @@
-// Expo ProffDok – FASE 30D1 / FASE 30C3 / FASE 30C2
+// Expo ProffDok – FASE 33B.4 / FASE 30D1 / FASE 30C3 / FASE 30C2
 // Tynn sikkerhets-wrapper rundt eksisterende SalesModule.
+// FASE 33B.4: offentlig kontraktslenke går til egen tokenstyrt kundevisning uten
+// å endre eksisterende offentlig tilbudsvisning eller Sales recovery.
 // FASE 30D1: Ved full reload mens befaringsnotatet er åpent lander brukeren
 // trygt på saken først. Lokal kladd/bilder beholdes og hydreres ved ny åpning,
 // slik at tom initial React-state ikke kan overskrive befaringskladden.
@@ -7,6 +9,7 @@
 
 import { useEffect, useState } from "react";
 import SalesModuleCore from "./SalesModuleCore.jsx";
+import SalesContractCustomerView from "./components/SalesContractCustomerView.jsx";
 import {
   beginOfferDraftHydrationCycle,
   buildSalesStorageKey,
@@ -46,6 +49,11 @@ function markSalesTabForReload(props = {}) {
   }
 }
 
+function getPublicContractToken() {
+  if (typeof window === "undefined") return "";
+  return new URLSearchParams(window.location.search).get("publicContract") || "";
+}
+
 export default function SalesModule(props) {
   const [instanceKey, setInstanceKey] = useState(() => {
     beginOfferDraftHydrationCycle();
@@ -80,6 +88,18 @@ export default function SalesModule(props) {
       window.removeEventListener("pagehide", blockPreHydrationUnloadSave);
     };
   }, []);
+
+  const publicContractToken =
+    props.integrationMode === "public" ? getPublicContractToken() : "";
+
+  if (publicContractToken) {
+    return (
+      <SalesContractCustomerView
+        supabaseClient={props.supabaseClient}
+        contractToken={publicContractToken}
+      />
+    );
+  }
 
   return <SalesModuleCore key={instanceKey} {...props} />;
 }
