@@ -1,6 +1,7 @@
 // Expo ProffDok – FASE 33B.5
 // Fast kontraktflate på akseptert Sales-sak. Gjør kontrakt/kundelenke tilgjengelig
 // uten å åpne veiviseren først, og ferdigstiller signert Expo-kontrakt idempotent.
+// Supportmodus er fortsatt lese-/støttemodus og brukes aldri som skrivebypass.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -12,7 +13,10 @@ import {
   LockKeyhole,
   RefreshCw,
 } from "lucide-react";
-import { createDefaultSalesSupabaseClient } from "../services/salesSupabase.js";
+import {
+  createDefaultSalesSupabaseClient,
+  isSalesSupportMode,
+} from "../services/salesSupabase.js";
 import {
   CONTRACT_CHANGED_EVENT,
   buildCustomerContractLink,
@@ -34,6 +38,7 @@ function statusText(contract = {}) {
 
 export default function SalesContractActions({ request, onOpenWizard }) {
   const client = useMemo(() => createDefaultSalesSupabaseClient(), []);
+  const supportMode = isSalesSupportMode();
   const offerId = getAcceptedSalesOfferId(request);
   const offerVersionId = getAcceptedSalesOfferVersionId(request);
   const [contract, setContract] = useState(null);
@@ -80,7 +85,14 @@ export default function SalesContractActions({ request, onOpenWizard }) {
   }, [offerId, offerVersionId]);
 
   async function finalizeContract({ force = false } = {}) {
-    if (!contract?.id || contract.status !== "signed" || finalizing) return;
+    if (
+      supportMode ||
+      !contract?.id ||
+      contract.status !== "signed" ||
+      finalizing
+    ) {
+      return;
+    }
     const key = `${contract.id}:${contract.final_document?.path || "pending"}`;
     if (!force && finalizedKeyRef.current === key) return;
     finalizedKeyRef.current = key;
@@ -117,8 +129,8 @@ export default function SalesContractActions({ request, onOpenWizard }) {
   }
 
   useEffect(() => {
-    if (contract?.status === "signed") finalizeContract();
-  }, [contract?.id, contract?.status, contract?.final_document?.path]);
+    if (!supportMode && contract?.status === "signed") finalizeContract();
+  }, [supportMode, contract?.id, contract?.status, contract?.final_document?.path]);
 
   const customerLink = useMemo(() => {
     if (!contract?.customer_token || typeof window === "undefined") return "";
@@ -256,13 +268,18 @@ export default function SalesContractActions({ request, onOpenWizard }) {
           Oppretter og arkiverer endelig signert kontrakt-PDF …
         </span>
       ) : null}
+      {supportMode && signed && !contract.final_document ? (
+        <span style={{ color: "#52616b" }}>
+          Sluttarkivering av PDF gjøres av firmaet utenfor supportmodus.
+        </span>
+      ) : null}
       {message ? <span style={{ color: "#176b42", fontWeight: 750 }}>{message}</span> : null}
       {error ? (
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <span role="alert" style={{ color: "#9b1c1c", fontWeight: 700 }}>
             {error}
           </span>
-          {signed ? (
+          {signed && !supportMode ? (
             <button
               className="sales-secondary-button"
               type="button"
