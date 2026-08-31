@@ -50,6 +50,7 @@ src/modules/sales/
 ├── components/
 │   ├── SalesDetailView.jsx
 │   ├── SalesContractWizard.jsx
+│   ├── SalesContractDocument.jsx
 │   └── ...
 ├── services/
 │   ├── salesContracts.js
@@ -59,6 +60,8 @@ src/modules/sales/
 │   └── ...
 └── sales.css
 ```
+
+`SalesContractWizard.jsx` eier den korte steg-for-steg-flyten og lokal/sessionbasert gjenoppretting. `SalesContractDocument.jsx` eier kun den samlede kontraktsvisningen basert på allerede registrert tilbud/aksept og de få nye kontraktfeltene. Dette er en naturlig presentasjonsgrense og flytter ikke Sales-data eller sikkerhetsansvar.
 
 Fase 33B.3 er bevisst koblet inn gjennom den eksisterende `SalesDetailView.jsx`-wrapperen. `SalesDetailViewCore.jsx`, den gamle kontraktopplastingen og `SalesProjectActivation.jsx` er ikke skrevet om. Dette reduserer regresjonsrisiko og bevarer tidligere funksjonalitet.
 
@@ -76,6 +79,8 @@ Sales har flere vern mot datatap:
 - `scripts/critical-sales-recovery-check.mjs` i build
 
 En tom eller uhydrert tilbudskladd må aldri kunne overskrive nyere serverdata. Kontraktveiviseren har egen serverlagring og skal ikke blandes inn i tilbudskladdens recovery.
+
+Ulagrede kontraktfelt og aktivt steg sikres i `sessionStorage` per salgssak/akseptert tilbudsversjon. Dette er kun et UX-vern for samme nettleserøkt og skriver ikke til server før brukeren eksplisitt velger `Lagre kontraktsutkast`.
 
 ## Supabase-klient
 
@@ -210,14 +215,40 @@ Få valg:
 
 - hvordan avtalen inngås
 - eventuell tidlig oppstart før angrefrist er ute
-- eventuell særskilt dagmulkt
+- eventuell særskilt dagmulkt som tydelig Ja/Nei-valg
 - eventuelle særskilte avtalevilkår
 
 Veiviseren lenker til relevante Forbrukerrådet-sider om håndverker og angrerett. Lenken er kun informasjon. Expo ProffDok bruker ikke Forbrukerrådets logo og fremstiller ikke kontrakten som godkjent av Forbrukerrådet.
 
 ### Steg 4 – samlet dokument
 
-Veiviseren ender i ett samlet kontraktsutkast i Expo ProffDok-design med firmasnapshot/logo. Utkastet kan lagres på server.
+Veiviseren ender i ett samlet kontraktsutkast i Expo ProffDok-design med firmasnapshot/logo. Dokumentet skal kreve minst mulig ny utfylling og bruker eksisterende akseptdata direkte.
+
+Dokumentet viser øverst en tydelig låst kundeaksept med:
+
+- akseptert tilbudsversjon
+- hvem som aksepterte
+- aksepttidspunkt
+- avtalesum inkl. mva.
+- valgte opsjoner
+- lenke til låst akseptbevis når slikt dokument finnes på saken
+
+Det aksepterte tilbudet, valgte opsjoner og kundesynlige vedlegg inngår i kontraktsgrunnlaget i sin helhet uten at tilbudsinnhold kopieres til en ny redigerbar versjon.
+
+Kontraktsteksten dekker i denne runden blant annet:
+
+- partene og prosjektet
+- avtalegrunnlag og arbeidets omfang
+- pris, fremdrift og betalingsplan
+- endringer, tillegg og fradrag
+- partenes ansvar og kundens medvirkning
+- skjulte og uforutsette forhold
+- forsinkelse, mangler og retting
+- overtagelse, dokumentasjon og eventuell separat garanti
+- avtaleform og angrerett
+- særvilkår/dagmulkt
+- dokumentrekkefølge
+- tydelig plass for senere signering av begge parter
 
 **Fase 33B.3 sender ikke kontrakten til kunde, signerer ikke på vegne av partene og lager ikke endelig kontrakt-PDF.** Dette kommer i egne kontrollerte runder.
 
@@ -248,7 +279,8 @@ Fase 33B.3 er brukerrettet. HJELP er derfor oppdatert samme runde med:
 - valg mellom Expo-kontrakt og egen kontrakt
 - autofyll
 - 40/40/20-forslaget
-- samlet dokument
+- lokal gjenoppretting av steg og usparte felt
+- tydelig kundeaksept og komplett avtalegrunnlag i sluttdokumentet
 - at akseptert tilbud ikke endres
 - at dagens opplasting og prosjektaktivering fortsatt fungerer
 
