@@ -293,7 +293,7 @@ export function validateSalesContractStep(step, draft = {}) {
   if (step === 3 && draft.daily_penalty_agreed) {
     const graceDays = Number(draft.daily_penalty_grace_days);
     if (!Number.isFinite(graceDays) || graceDays < 0) {
-      return "Angi gyldig slakk før eventuell dagmulkt begynner å løpe.";
+      return "Angi gyldig tilleggsfrist før eventuell dagmulkt begynner å løpe.";
     }
     if (!String(draft.daily_penalty_text || "").trim()) {
       return "Beskriv avtalt dagmulkt, for eksempel beløp per dag og eventuell maksgrense.";
