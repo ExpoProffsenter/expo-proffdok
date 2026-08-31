@@ -5,6 +5,7 @@
 import { getOfferTermsSnapshot } from "./salesUtils.js";
 
 export const CONTRACT_VAT_FACTOR = 1.25;
+export const DEFAULT_DAILY_PENALTY_GRACE_DAYS = 7;
 
 export const AGREEMENT_CHANNELS = [
   {
@@ -17,7 +18,7 @@ export const AGREEMENT_CHANNELS = [
   },
   {
     value: "customer_location",
-    label: "Hos kunden eller utenfor bedriftens faste forretningslokaler",
+    label: "Hos kunden eller annet sted utenfor bedriftens faste lokaler",
   },
 ];
 
@@ -53,6 +54,37 @@ export const DEFAULT_PAYMENT_PLAN = [
 function toFiniteNumber(value, fallback = 0) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
+}
+
+function toDateOnly(value = "") {
+  const match = String(value || "").trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const [, year, month, day] = match;
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+function dateToIsoDate(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+}
+
+export function calculateExpectedFinishDate(startDate = "", durationWeeks = 0) {
+  const start = toDateOnly(startDate);
+  const weeks = toFiniteNumber(durationWeeks, 0);
+  if (!start || weeks <= 0) return "";
+
+  const result = new Date(start.getTime());
+  result.setUTCDate(result.getUTCDate() + Math.round(weeks * 7));
+  return dateToIsoDate(result);
+}
+
+function inferDurationWeeks(startDate = "", expectedFinishDate = "") {
+  const start = toDateOnly(startDate);
+  const finish = toDateOnly(expectedFinishDate);
+  if (!start || !finish || finish <= start) return 0;
+  return Math.max(1, Math.round((finish.getTime() - start.getTime()) / 604800000));
 }
 
 export function getAcceptedSalesOfferId(request = {}) {
@@ -147,18 +179,20 @@ export function createInitialSalesContractDraft(request = {}) {
   const offerTerms = getAcceptedOfferTerms(request);
 
   return {
-    schema_version: 1,
+    schema_version: 2,
     contract_type: "simple_consumer_services",
     price_form: "fixed",
     price_ex_vat: getAcceptedTotalExVat(request),
     price_incl_vat: getAcceptedTotalInclVat(request),
     project_address: getProjectAddress(request),
     start_date: "",
+    expected_duration_weeks: "",
     expected_finish_date: "",
     payment_plan: DEFAULT_PAYMENT_PLAN.map((item) => ({ ...item })),
     agreement_channel: "",
     early_start_requested: false,
     daily_penalty_agreed: false,
+    daily_penalty_grace_days: DEFAULT_DAILY_PENALTY_GRACE_DAYS,
     daily_penalty_text: "",
     special_terms: "",
     offer_terms: offerTerms.terms,
@@ -179,14 +213,50 @@ export function normalizeSalesContractDraft(value = {}, request = {}) {
       }))
     : initial.payment_plan;
 
+  const startDate = String(value?.start_date || initial.start_date || "").trim();
+  const inferredWeeks = inferDurationWeeks(startDate, value?.expected_finish_date);
+  const durationWeeksRaw =
+    value?.expected_duration_weeks !== undefined && value?.expected_duration_weeks !== null
+      ? value.expected_duration_weeks
+      : inferredWeeks || initial.expected_duration_weeks;
+  const durationWeeks =
+    durationWeeksRaw === "" ? "" : toFiniteNumber(durationWeeksRaw, inferredWeeks || 0);
+  const expectedFinishDate = calculateExpectedFinishDate(startDate, durationWeeks);
+
   return {
     ...initial,
     ...(value && typeof value === "object" ? value : {}),
+    schema_version: 2,
     payment_plan: paymentPlan,
     price_ex_vat: toFiniteNumber(value?.price_ex_vat, initial.price_ex_vat),
     price_incl_vat: toFiniteNumber(value?.price_incl_vat, initial.price_incl_vat),
+    start_date: startDate,
+    expected_duration_weeks: durationWeeks,
+    expected_finish_date: expectedFinishDate,
     early_start_requested: Boolean(value?.early_start_requested),
     daily_penalty_agreed: Boolean(value?.daily_penalty_agreed),
+    daily_penalty_grace_days: Math.max(
+      0,
+      Math.round(
+        toFiniteNumber(
+          value?.daily_penalty_grace_days,
+          DEFAULT_DAILY_PENALTY_GRACE_DAYS
+        )
+      )
+    ),
+  };
+}
+
+export function withCalculatedSchedule(draft = {}) {
+  const startDate = String(draft?.start_date || "").trim();
+  const durationWeeks =
+    draft?.expected_duration_weeks === ""
+      ? ""
+      : toFiniteNumber(draft?.expected_duration_weeks, 0);
+  return {
+    ...draft,
+    expected_duration_weeks: durationWeeks,
+    expected_finish_date: calculateExpectedFinishDate(startDate, durationWeeks),
   };
 }
 
@@ -204,8 +274,9 @@ export function validateSalesContractStep(step, draft = {}) {
     if (!String(draft.start_date || "").trim()) {
       return "Velg planlagt oppstart.";
     }
-    if (!String(draft.expected_finish_date || "").trim()) {
-      return "Velg forventet ferdigstillelse.";
+    const durationWeeks = Number(draft.expected_duration_weeks);
+    if (!Number.isFinite(durationWeeks) || durationWeeks <= 0) {
+      return "Angi hvor mange uker arbeidet forventes å vare.";
     }
     if (!String(draft.price_form || "").trim()) {
       return "Velg prisform.";
@@ -217,6 +288,16 @@ export function validateSalesContractStep(step, draft = {}) {
 
   if (step === 3 && !String(draft.agreement_channel || "").trim()) {
     return "Velg hvordan avtalen er inngått.";
+  }
+
+  if (step === 3 && draft.daily_penalty_agreed) {
+    const graceDays = Number(draft.daily_penalty_grace_days);
+    if (!Number.isFinite(graceDays) || graceDays < 0) {
+      return "Angi gyldig slakk før eventuell dagmulkt begynner å løpe.";
+    }
+    if (!String(draft.daily_penalty_text || "").trim()) {
+      return "Beskriv avtalt dagmulkt, for eksempel beløp per dag og eventuell maksgrense.";
+    }
   }
 
   return "";
