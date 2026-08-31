@@ -3,9 +3,36 @@
 **Status:** Produksjonskoblet Sales-modul  
 **Oppdatert:** Fase 33B.5 – 31.08.2026
 
-Sales håndterer flyten fra forespørsel til eventuelt ProffDok-prosjekt. Etter akseptert tilbud kan brukeren frivillig opprette en enkel Expo-kontrakt, laste opp egen kontrakt eller – for vanlige prosjekter – gå videre uten kontrakt. Eksisterende tilbud, aksept, recovery, ekstern kontraktopplasting og prosjektaktivering skal fortsatt fungere.
+Sales håndterer flyten fra forespørsel til eventuelt ProffDok-prosjekt. Etter akseptert tilbud kan brukeren frivillig opprette en enkel Expo-kontrakt, laste opp egen kontrakt eller gå videre uten kontrakt. Prosjekt kan også opprettes direkte uten Sales/tilbud. Eksisterende tilbud, aksept, recovery, ekstern kontraktopplasting og prosjektaktivering skal fortsatt fungere.
 
-## Hovedflyt
+## Gyldige prosjektveier
+
+Alle disse er gyldige normaltilstander:
+
+```text
+A) Direkte prosjekt uten tilbud
+   → ProffDok-prosjekt
+   → Avtalegrunnlag kan være tomt til dokumenter/endringer eventuelt registreres senere
+
+B) Akseptert tilbud
+   → ingen kontrakt
+   → ProffDok-prosjekt
+
+C) Akseptert tilbud
+   → egen opplastet kontrakt
+   → ProffDok-prosjekt
+
+D) Akseptert tilbud
+   → Expo ProffDok-kontrakt
+   → bedriftssignatur
+   → kundesignatur
+   → endelig privat PDF
+   → ProffDok-prosjekt
+```
+
+Kontrakt eller tilbud er altså ikke generelle krav for å opprette prosjekt. Eventuelt kontraktkrav for garantibad håndteres særskilt i 33B.6 og skal ikke endre vanlige prosjekter.
+
+## Sales-hovedflyt
 
 ```text
 Forespørsel
@@ -25,18 +52,21 @@ Forespørsel
    │  → kunden bekrefter og signerer
    │  → signed / begge signaturer låst
    │  → endelig privat PDF fra låst servergrunnlag
-   │  → Tilbud / kontrakt på eksisterende eller senere prosjekt
-   └─ Last opp egen kontrakt (eksisterende flyt)
+   │  → Avtalegrunnlag på eksisterende eller senere prosjekt
+   ├─ Last opp egen kontrakt (eksisterende flyt)
+   └─ Fortsett uten kontrakt
 → aktivering som ProffDok-prosjekt
 ```
 
-Tilbud kan også opprettes uten befaring. Prosjekter uten Expo-tilbud eller Expo-kontrakt er fortsatt gyldige. Kontrakt blir obligatorisk for garantibad først i 33B.6.
+Tilbud kan også opprettes uten befaring.
 
 ## Styrende prinsipper
 
 - Publiserte tilbudsversjoner og kundeaksept overskrives aldri.
 - Kontrakt er egen historikk og muterer ikke akseptert tilbud.
 - Kundeaksept knyttes til eksakt tilbudsversjon og valgte opsjoner.
+- Prosjekt uten tilbud er gyldig.
+- Prosjekt uten kontrakt er gyldig utenfor særskilt fremtidig garantikrav.
 - Privatkundeorienterte priser vises inkl. mva.
 - Ingen historisk backfill uten eksplisitt beslutning.
 - RLS/server er sikkerhetsgrensen; frontend er ikke tilgangskontroll.
@@ -44,6 +74,7 @@ Tilbud kan også opprettes uten befaring. Prosjekter uten Expo-tilbud eller Expo
 - Sales recovery/hydration og IndexedDB-sikring av befaringsbilder skal ikke svekkes.
 - Eksisterende `contractFile` er gyldig legacy og skal ikke flyttes eller backfilles tilfeldig.
 - Endelig Expo-kontrakt-PDF genereres kun fra serverlåst `sales_contracts.snapshot` og signaturmetadata, aldri fra redigerbar lokal kladd.
+- Brukerflaten heter **Avtalegrunnlag**, mens eksisterende intern prosjekt-/tabnøkkel `tilbud` og `data.tilbud` beholdes for bakoverkompatibilitet.
 
 ## Struktur
 
@@ -94,7 +125,7 @@ Ulagrede kontraktfelt og aktivt veivisersteg sikres i `sessionStorage` per salgs
 
 ## Servermodell – `sales_contracts`
 
-Hver kontrakt knyttes til faktisk Sales-firma, salgssak, tilbud og **eksakt akseptert tilbudsversjon**.
+Hver Expo-/ekstern Sales-kontrakt knyttes til faktisk Sales-firma, salgssak, tilbud og **eksakt akseptert tilbudsversjon**. Tabellen brukes ikke for direkte prosjekter uten tilbud.
 
 ```text
 source: expo | external
@@ -175,11 +206,11 @@ Kontraktkortet henter aktiv Expo-kontrakt for den eksakte aksepterte tilbudsvers
 - `Kopier kundelenke`
 - `Åpne signert PDF` når slutt-PDF finnes
 
-Eksisterende `Last opp egen kontrakt` beholdes. Hvis bare legacy `contractFile` finnes, påvirkes ikke den flyten.
+Eksisterende `Last opp egen kontrakt` beholdes, og vanlig prosjektaktivering uten kontrakt beholdes. Hvis bare legacy `contractFile` finnes, påvirkes ikke den flyten.
 
 Systemadministrator i Sales-supportmodus får ingen automatisk sluttarkivering. Supportmodus er eksplisitt ikke skrive-bypass.
 
-## Endelig signert PDF
+## Endelig signert PDF og komplett tilbudsgrunnlag
 
 Når en ordinær innlogget firmabruker åpner en Sales-sak med signert Expo-kontrakt og `final_document` mangler, kjøres idempotent ferdigstilling:
 
@@ -196,15 +227,39 @@ PDF-en inneholder:
 - kontraktens avtalepunkter
 - begge signaturer med navn/tidspunkt
 - låst kundeaksept
-- Vedlegg A: akseptert tilbud/tilbudsversjon, leveranse og valgte opsjoner
+- Vedlegg A: eksakt akseptert tilbudsversjon og kundens valgte opsjoner
 - Vedlegg B: aksept- og signatursporbarhet
 - priser til privatkunde inkl. mva.
 
-Den opprinnelige tilbudsversjonen eller kundeaksepten endres ikke.
+Vedlegg A viderefører kundesynlig tilbudsinnhold fra den låste versjonen når det finnes:
 
-## Prosjektets «Tilbud / kontrakt»
+```text
+tilbudsintro
+forutsetninger og forbehold
+inkludert
+ikke inkludert
+kundens egne leveranser
+vilkår
+betalingsbetingelser
+tilbudsposter
+valgte opsjoner
+```
 
-Eksisterende ekstern kontrakt/akseptbevis følger prosjektaktivering som før.
+Dette innholdet hentes fra snapshotet av tilbudsversjonen kunden faktisk aksepterte. Det skrives ikke om eller rekonstrueres fra en senere kladd. Gamle aksepterte tilbud som ikke hadde slike felt lagret får ingen historisk etterfylling.
+
+## Prosjektets «Avtalegrunnlag»
+
+Brukerflaten som tidligere het `Tilbud/kontrakt` heter nå **Avtalegrunnlag**. Intern nøkkel `tilbud` og `data.tilbud` beholdes uendret for bakoverkompatibilitet.
+
+Avtalegrunnlag kan inneholde:
+
+- akseptert tilbud / Sales-opprinnelse
+- låst akseptbevis
+- signert Expo-kontrakt
+- egen opplastet kontrakt eller annet avtaledokument
+- senere tillegg og fradrag
+
+Direkte prosjekt uten tilbud viser en normal tom starttilstand. Det er ikke en feil og krever ingen opplasting. Prosjekt med akseptert tilbud kan også fortsette uten kontrakt.
 
 For Expo-kontrakt:
 
@@ -217,7 +272,7 @@ Ingen Storage-objekter flyttes eller dupliseres når dokumentet kobles til prosj
 
 ## HJELP
 
-HJELP beskriver nå hele flyten fra frivillig Expo-kontrakt til signering, direkte kontrakt/kundelenke på saken, slutt-PDF og automatisk plassering i prosjektets `Tilbud / kontrakt`. Egen kontraktopplasting og ordinær prosjektaktivering fungerer fortsatt som før.
+HJELP beskriver nå de fire gyldige prosjektveiene, Avtalegrunnlag-terminologien, komplett videreføring av lagret kundesynlig tilbudsgrunnlag, slutt-PDF og automatisk prosjektkobling. Egen kontraktopplasting, ingen-kontrakt-flyt og direkte prosjekt uten tilbud består.
 
 ## QA for 33B.5
 
@@ -233,12 +288,14 @@ midlertidig final_document
 → testens final_document = 0
 ```
 
+Den virkelige F-2026-0042 er en eldre testversjon uten lagrede tilbudsvilkår i v10. Den brukes derfor ikke som bevis på hvordan nyere tilbud med vilkår rendres, og historikken backfilles ikke.
+
 ## Videre
 
 ```text
 33B.2  servermodell/RLS/RPC                           ← ferdig
 33B.3  intern steg-for-steg-veiviser/autofyll         ← ferdig
 33B.4  bedriftssignatur + kundelenke + kundesignering ← ferdig
-33B.5  slutt-PDF + direkte kontraktflate + prosjektkobling ← denne runden
+33B.5  slutt-PDF + Avtalegrunnlag + prosjektkobling   ← denne runden
 33B.6  garantikobling + slutt-QA/dokumentasjon
 ```
