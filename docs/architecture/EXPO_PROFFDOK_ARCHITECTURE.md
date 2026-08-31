@@ -188,7 +188,7 @@ start_date                     ← avtalt oppstart
 expected_duration_weeks        ← brukerfelt
 expected_finish_date           ← beregnes fra oppstart + varighet
 daily_penalty_agreed
-daily_penalty_grace_days       ← redigerbar slakk, standard 7 kalenderdager
+daily_penalty_grace_days       ← redigerbar tilleggsfrist, standard 7 kalenderdager
 daily_penalty_text
 ```
 
@@ -276,7 +276,7 @@ Brukeren fyller hovedsakelig **avtalt oppstart** og **forventet varighet i uker*
 Planen er redigerbar og må samlet være 100 %.
 
 **Steg 3 – Avtalevalg**  
-Avtaleform, eventuell tidlig oppstart før angrefrist, eventuell særskilt dagmulkt og valgfritt felt for særskilte vilkår. Hvis dagmulkt avtales, registreres også redigerbar slakk i kalenderdager før dagmulkten kan begynne å løpe.
+Avtaleform, eventuell tidlig oppstart før angrefrist, eventuell særskilt dagmulkt og valgfritt felt for særskilte vilkår. Hvis dagmulkt avtales, registreres også redigerbar tilleggsfrist i kalenderdager før dagmulkten kan begynne å løpe.
 
 Veiviseren viser en intern faglig anbefaling om at en tydelig avtalt dagmulkt kan gi forutsigbarhet og fremstå profesjonelt. Denne anbefalingen er kun bruker-UI og skal ikke inn i kundens dokument.
 
@@ -386,7 +386,7 @@ For Fase 33B.3 skal Preview minst kontrollere:
 - avtalt oppstart + forventet varighet beregner forventet ferdigstillelse riktig
 - 40/40/20 vises og kan redigeres
 - internt dagmulktsråd vises bare i veiviseren
-- dagmulktslakk og ansvar ved håndverker-/kundeforsinkelse er tydelig
+- avtalt tilleggsfrist og ansvar ved håndverker-/kundeforsinkelse er tydelig
 - steg frem/tilbake beholder verdier
 - samlet dokument er lesbart på PC og mobil
 - Forbrukerrådet-lenker åpner separat
