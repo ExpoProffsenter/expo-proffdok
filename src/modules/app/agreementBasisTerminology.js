@@ -1,12 +1,15 @@
-// Expo ProffDok – FASE 33B.5
+// Expo ProffDok – FASE 33B.5 / 33B.6
 // Kun presentasjon: eksisterende intern tab-/datanøkkel `tilbud` beholdes urørt.
 // Dette lar eldre og direkte opprettede prosjekter fungere uten migrering samtidig
 // som brukerflaten konsekvent omtaler samlet tilbud/kontrakt/endringer som Avtalegrunnlag.
-// Noen få tekniske HJELP-formuleringer normaliseres også til vanlig proffspråk.
+// Noen få tekniske HJELP-/brukertekster normaliseres også til vanlig proffspråk.
+// FASE 33B.6 presiserer at kontrakt fortsatt er valgfritt for vanlige prosjekter,
+// men kreves før dokumentert tetthetsgaranti kan utstedes.
 
 const REPLACEMENTS = [
   ["Tilbud / kontrakt", "Avtalegrunnlag"],
   ["Tilbud/kontrakt", "Avtalegrunnlag"],
+  ["Sist oppdatert: 31.08.2026", "Sist oppdatert: 01.09.2026"],
   [
     "Et prosjekt uten tilbud og uten kontrakt er en gyldig normaltilstand; Avtalegrunnlag blir da bare stedet der eventuelle senere avtaledokumenter og endringer kan samles.",
     "Et prosjekt uten tilbud og uten kontrakt er helt normalt. Avtalegrunnlag er da stedet der du kan samle eventuelle avtaledokumenter og senere endringer.",
@@ -27,6 +30,26 @@ const REPLACEMENTS = [
   [
     "Systemadministrator i Sales-supportmodus kan lese kontraktsstatus, men sluttarkivering utføres ikke automatisk i supportmodus. Support er ikke en skrivebypass.",
     "Systemadministrator i supportmodus kan se kontraktsstatus, men den signerte PDF-en arkiveres ikke automatisk. Dette hindrer at supportbrukeren gjør endringer på vegne av firmaet.",
+  ],
+  [
+    "Kontrakt er valgfritt for vanlige prosjekter. Etter akseptert tilbud kan du opprette Expo-kontrakt, laste opp bedriftens egen kontrakt eller fortsette til prosjekt uten kontrakt.",
+    "Kontrakt er valgfritt for vanlige prosjekter. Etter akseptert tilbud kan du opprette Expo-kontrakt, laste opp bedriftens egen kontrakt eller fortsette til prosjekt uten kontrakt. Skal prosjektet ha dokumentert tetthetsgaranti, må en signert kontrakt ligge i Avtalegrunnlag før garantien kan utstedes.",
+  ],
+  [
+    "Følg garantifremdriften og fullfør alle krav før garantien utstedes.",
+    "Følg garantifremdriften og fullfør alle krav. Kontroller også at signert kontrakt ligger i Avtalegrunnlag før garantien utstedes.",
+  ],
+  [
+    "Garantisertifikat kan ikke utstedes dersom det finnes åpne avvik.",
+    "Garantisertifikat kan ikke utstedes dersom det finnes åpne avvik, eller før en signert kontrakt ligger i Avtalegrunnlag. Dette kan være signert Expo-kontrakt eller bedriftens egen signerte kontrakt.",
+  ],
+  [
+    "Garantien er valgfri og kan bare utstedes når overtagelse er signert, alle avvik er lukket, sjekklister er fullført, bildedokumentasjon er lastet opp og godkjent Sopro-system er valgt.",
+    "Garantien er valgfri. Før den kan utstedes må overtagelse være signert, avvik være lukket, sjekklister være fullført, bilder være dokumentert, godkjent Sopro-system være valgt og signert kontrakt ligge i Avtalegrunnlag.",
+  ],
+  [
+    "Garantien bygger på dokumentert utførelse med valgt Sopro-system, fullførte sjekklister, lukket avvikshåndtering, bildedokumentasjon og signert overtagelse. Når garantien er utstedt, legges garantibevis og garantivilkår automatisk bakerst i den komplette PDF-rapporten. Last derfor ned komplett PDF etter at garantien er utstedt.",
+    "Garantien bygger på signert kontrakt i Avtalegrunnlag, dokumentert utførelse med valgt Sopro-system, fullførte sjekklister, lukket avvikshåndtering, bildedokumentasjon og signert overtagelse. Når garantien er utstedt, legges garantibevis og garantivilkår automatisk bakerst i den komplette PDF-rapporten. Last derfor ned komplett PDF etter at garantien er utstedt.",
   ],
 ];
 
