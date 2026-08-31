@@ -38,12 +38,19 @@ export function createDeviationCenter({
       });
     };
     const addProjectDeviation = () => {
+      const requestedTitle = window.prompt("Kort tittel på avviket:", "");
+      if (requestedTitle === null) return;
+      const title = requestedTitle.trim();
+      if (!title) {
+        window.alert("Skriv en kort tittel før avviket opprettes.");
+        return;
+      }
       const next = {
         id: uid(),
         type: "HMS",
         severity: "Middels",
         status: "Åpent",
-        title: "",
+        title,
         description: "",
         action: "",
         responsible: "",
@@ -119,7 +126,9 @@ export function createDeviationCenter({
         projectDeviations.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Ingen HMS- eller prosjektavvik er registrert." }),
         projectDeviations.map((entry) => {
           const isClosed = (entry.status || "Åpent") === "Lukket";
+          const missingSummary = !String(entry.title || "").trim() && !String(entry.description || "").trim();
           return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${isClosed ? "done" : "avvik"}`, children: [
+            missingSummary && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { fontWeight: 700 }, children: "⚠️ Dette eldre avviket mangler tittel og beskrivelse. Fyll inn hva avviket gjelder, eller fjern det hvis det ble opprettet ved en feil." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Type avvik", value: entry.type || "HMS", options: ["HMS", "SHA", "Kvalitet", "Fremdrift", "Leveranse", "Kundeavklaring", "Annet"], onChange: (v) => updateProjectDeviation(entry.id, { type: v }) }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Alvorlighet", value: entry.severity || "Middels", options: ["Lav", "Middels", "Høy", "Kritisk"], onChange: (v) => updateProjectDeviation(entry.id, { severity: v }) }),
