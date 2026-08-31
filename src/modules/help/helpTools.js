@@ -1,3 +1,4 @@
+// FASE 33B.5 HJELP: kontrakt/kundelenke vises direkte på saken, signert kontrakt arkiveres som PDF og følger prosjektet.
 // FASE 33B.4 HJELP: bedriften signerer lagret Expo-kontrakt, kunden får sikker lenke og signerer samme låste grunnlag.
 // FASE 33B.3 HJELP: akseptert tilbud får frivillig stegvis Expo-kontrakt i tillegg til eksisterende opplasting.
 // Kontraktsteg og usparte felt sikres lokalt gjennom fanebytte/remount før eksplisitt serverlagring.
@@ -80,7 +81,7 @@ function createSales31CHelp() {
   ]);
 
   appendHelpSection(block, "Kontrakt etter aksept", [
-    "Når tilbudet er akseptert kan du frivillig velge Opprett / åpne enkel kontrakt eller bruke den eksisterende funksjonen Last opp egen kontrakt.",
+    "Når tilbudet er akseptert kan du frivillig velge Opprett enkel kontrakt eller bruke den eksisterende funksjonen Last opp egen kontrakt.",
     "Expo-kontrakten henter firma, kunde, prosjektadresse, tilbudsversjon og avtalesum automatisk. Du fyller hovedsakelig inn avtalt oppstart, forventet varighet i uker og noen få avtalevalg.",
     "Beregnet forventet ferdigstillelse beregnes automatisk fra avtalt oppstart og forventet varighet. Dokumenterte forhold som gir rett til fristforlengelse kan forskyve fristen.",
     "Standard betalingsplan er 40 % ved oppstart, 40 % ved hovedmilepæl og 20 % etter overtagelse. Planen kan justeres før utkastet lagres.",
@@ -95,9 +96,13 @@ function createSales31CHelp() {
     "Hvis tidlig oppstart før eventuell angrefrist er registrert, må kunden i tillegg bekrefte dette uttrykkelig før signering.",
     "Når kunden signerer med fullt navn, lagres navn og tidspunkt. Begge signaturer og kontraktsgrunnlaget blir låst historikk.",
     "Hvis kunden åpner signeringslenken etter at kontrakten allerede er signert, vises tydelig ferdigstatus med hvem som signerte og tidspunkt. Ingen ny signering er nødvendig eller mulig.",
+    "Kontraktkortet på Sales-saken viser kontraktsstatus direkte. Når en Expo-kontrakt finnes får du faste handlinger for Åpne kontrakt, Åpne kundelenke og Kopier kundelenke uten å gå inn i veiviseren først.",
+    "Når begge parter har signert, opprettes og arkiveres en endelig PDF fra det låste servergrunnlaget. PDF-en inneholder kontrakten, begge signaturer og vedlegg med akseptert tilbud og akseptbevis/sporbarhet.",
+    "Når slutt-PDF-en finnes, vises Åpne signert PDF direkte på Sales-saken. PDF-en gjenbrukes og overskrives ikke ved senere åpninger.",
+    "Hvis saken allerede er aktivert som prosjekt, legges slutt-PDF-en idempotent i prosjektets Tilbud / kontrakt. Hvis prosjektet aktiveres senere, følger PDF-en automatisk med ved aktiveringen.",
+    "Systemadministrator i Sales-supportmodus kan lese kontraktsstatus, men sluttarkivering utføres ikke automatisk i supportmodus. Support er ikke en skrivebypass.",
     "Kontrakten dekker blant annet arbeidets omfang, pris og betaling, endringer, partenes ansvar, skjulte forhold, forsinkelse/mangler, overtagelse, angrerett, dokumentrekkefølge og signering – uten at brukeren må fylle inn de samme opplysningene på nytt.",
-    "Akseptert tilbud og valgte opsjoner endres ikke når kontrakten opprettes eller signeres. Kontrakten er et eget dokumentgrunnlag.",
-    "Endelig kontrakt-PDF og automatisk overføring til prosjektets Tilbud / kontrakt kommer i neste kontrollerte kontraktsrunde.",
+    "Akseptert tilbud og valgte opsjoner endres ikke når kontrakten opprettes, signeres eller arkiveres som PDF. Historikken beholdes låst.",
     "Egen opplastet kontrakt og dagens prosjektaktivering fungerer fortsatt som før.",
   ]);
 
