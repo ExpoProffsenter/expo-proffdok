@@ -13,11 +13,11 @@ export const AGREEMENT_CHANNELS = [
   },
   {
     value: "distance",
-    label: "Digitalt / telefon",
+    label: "Digitalt eller per telefon",
   },
   {
     value: "customer_location",
-    label: "Hos kunden / utenfor faste forretningslokaler",
+    label: "Hos kunden eller utenfor bedriftens faste forretningslokaler",
   },
 ];
 
@@ -216,7 +216,7 @@ export function validateSalesContractStep(step, draft = {}) {
   }
 
   if (step === 3 && !String(draft.agreement_channel || "").trim()) {
-    return "Velg hvordan avtalen inngås.";
+    return "Velg hvordan avtalen er inngått.";
   }
 
   return "";
