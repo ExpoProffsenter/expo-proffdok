@@ -153,6 +153,8 @@ export default function SalesContractDocument({ request, companyProfile, draft }
   const priceLabel =
     PRICE_FORMS.find((item) => item.value === draft.price_form)?.label ||
     "Ikke valgt";
+  const durationWeeks = Number(draft.expected_duration_weeks || 0);
+  const graceDays = Math.max(0, Number(draft.daily_penalty_grace_days || 0));
 
   return (
     <article
@@ -227,10 +229,17 @@ export default function SalesContractDocument({ request, companyProfile, draft }
               gap: 9,
             }}
           >
-            <Summary label="Akseptert tilbud" value={version ? `Versjon ${version}` : "Akseptert tilbud"} />
+            <Summary
+              label="Akseptert tilbud"
+              value={version ? `Versjon ${version}` : "Akseptert tilbud"}
+            />
             <Summary label="Akseptert av" value={acceptedBy} />
             <Summary label="Akseptert" value={formatDateTime(acceptedAt)} />
-            <Summary label="Avtalesum inkl. mva." value={formatNok(draft.price_incl_vat || 0)} strong />
+            <Summary
+              label="Avtalesum inkl. mva."
+              value={formatNok(draft.price_incl_vat || 0)}
+              strong
+            />
           </div>
 
           {acceptedOptions.length ? (
@@ -333,7 +342,9 @@ export default function SalesContractDocument({ request, companyProfile, draft }
             <Paragraph><strong>Ikke inkludert:</strong> {draft.excluded}</Paragraph>
           ) : null}
           {draft.customer_supplied ? (
-            <Paragraph last><strong>Kundens egne leveranser:</strong> {draft.customer_supplied}</Paragraph>
+            <Paragraph last>
+              <strong>Kundens egne leveranser:</strong> {draft.customer_supplied}
+            </Paragraph>
           ) : null}
         </ContractSection>
 
@@ -341,16 +352,32 @@ export default function SalesContractDocument({ request, companyProfile, draft }
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))",
+              gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
               gap: 10,
               marginBottom: 12,
             }}
           >
             <Summary label="Prisform" value={priceLabel} />
-            <Summary label="Avtalesum inkl. mva." value={formatNok(draft.price_incl_vat || 0)} strong />
-            <Summary label="Planlagt oppstart" value={formatDate(draft.start_date)} />
-            <Summary label="Forventet ferdig" value={formatDate(draft.expected_finish_date)} />
+            <Summary
+              label="Avtalesum inkl. mva."
+              value={formatNok(draft.price_incl_vat || 0)}
+              strong
+            />
+            <Summary label="Avtalt oppstart" value={formatDate(draft.start_date)} />
+            <Summary
+              label="Forventet varighet"
+              value={durationWeeks > 0 ? `${durationWeeks} uker` : "Ikke angitt"}
+            />
+            <Summary
+              label="Beregnet forventet ferdigstillelse"
+              value={formatDate(draft.expected_finish_date)}
+            />
           </div>
+          <Paragraph>
+            Forventet ferdigstillelse er beregnet ut fra avtalt oppstart og forventet
+            varighet. Dersom det oppstår dokumenterte forhold som etter avtalen eller loven
+            gir rett til fristforlengelse, forskyves ferdigstillelsesfristen tilsvarende.
+          </Paragraph>
           <Paragraph>
             Avtalesummen og prisformen følger det aksepterte tilbudet og denne kontrakten.
             Dersom prisformen er prisoverslag, høyeste pris eller regningsarbeid, gjelder de
@@ -405,8 +432,9 @@ export default function SalesContractDocument({ request, companyProfile, draft }
           </Paragraph>
           <Paragraph last>
             Kundens egne produkter eller leveranser er kundens ansvar med mindre annet er
-            uttrykkelig avtalt. Forsinkede kundevalg eller manglende tilgang kan påvirke
-            fremdriften og skal dokumenteres dersom det får betydning for prosjektet.
+            uttrykkelig avtalt. Forsinkede kundevalg, kundens egne leveranser, manglende
+            tilgang eller sene avklaringer kan påvirke fremdriften og skal dokumenteres når
+            det får betydning for prosjektet.
           </Paragraph>
         </ContractSection>
 
@@ -423,17 +451,31 @@ export default function SalesContractDocument({ request, companyProfile, draft }
           </Paragraph>
         </ContractSection>
 
-        <ContractSection number="7" title="Forsinkelse, mangler og retting">
+        <ContractSection number="7" title="Forsinkelse, fristforlengelse og mangler">
           <Paragraph>
-            Partene skal varsle hverandre uten ugrunnet opphold dersom forhold oppstår som kan
-            påvirke avtalt fremdrift eller ferdigstillelse. Ved forsinkelse eller mangel
-            gjelder partenes avtalte vilkår og de ufravikelige reglene i
-            håndverkertjenesteloven.
+            Partene skal varsle hverandre uten ugrunnet opphold dersom forhold oppstår som
+            kan påvirke avtalt fremdrift eller forventet ferdigstillelse. Årsaken og forventet
+            konsekvens for fremdriften skal så langt det er praktisk mulig dokumenteres.
           </Paragraph>
+          <Paragraph>
+            Dersom forsinkelsen skyldes forhold utførende firma svarer for, regnes dette som
+            forsinkelse på håndverkerens side. Dersom forsinkelsen skyldes kunden, kundens egne
+            valg eller leveranser, manglende tilgang, sene avklaringer eller andre forhold som
+            etter avtalen eller loven gir rett til fristforlengelse, forskyves fristen
+            tilsvarende. Slike perioder skal ikke regnes som dagmulktsutløsende forsinkelse.
+          </Paragraph>
+          {draft.daily_penalty_agreed ? (
+            <Paragraph>
+              Partene har avtalt dagmulkt. Dagmulkt kan først begynne å løpe når beregnet og
+              eventuelt rettmessig forskjøvet ferdigstillelsesfrist er passert med {graceDays}
+              {" "}kalenderdager, og bare for forsinkelse utførende firma svarer for.
+            </Paragraph>
+          ) : null}
           <Paragraph last>
-            Kunden kan gjøre gjeldende de rettighetene loven gir ved mangel, herunder holde
-            tilbake et nødvendig beløp. Utførende firma skal få anledning til å vurdere og
-            rette en meldt mangel når vilkårene for retting er oppfylt.
+            Ved mangel gjelder partenes avtalte vilkår og de ufravikelige reglene i
+            håndverkertjenesteloven. Kunden kan blant annet holde tilbake et nødvendig beløp,
+            og utførende firma skal få anledning til å vurdere og rette en meldt mangel når
+            vilkårene for retting er oppfylt.
           </Paragraph>
         </ContractSection>
 
@@ -452,9 +494,7 @@ export default function SalesContractDocument({ request, companyProfile, draft }
         </ContractSection>
 
         <ContractSection number="9" title="Avtaleform og angrerett">
-          <Paragraph>
-            <strong>Avtalen er inngått:</strong> {agreementLabel}.
-          </Paragraph>
+          <Paragraph><strong>Avtalen er inngått:</strong> {agreementLabel}.</Paragraph>
           {agreementChannelNeedsWithdrawalInfo(draft.agreement_channel) ? (
             <Paragraph last>
               Der angrerettloven gjelder, skal kunden få lovpålagt informasjon om angreretten.
@@ -470,12 +510,19 @@ export default function SalesContractDocument({ request, companyProfile, draft }
         </ContractSection>
 
         <ContractSection number="10" title="Særlige vilkår">
-          <Paragraph>
-            <strong>Dagmulkt:</strong>{" "}
-            {draft.daily_penalty_agreed
-              ? draft.daily_penalty_text || "Avtalt mellom partene."
-              : "Ikke særskilt avtalt."}
-          </Paragraph>
+          {draft.daily_penalty_agreed ? (
+            <>
+              <Paragraph>
+                <strong>Dagmulkt:</strong> {draft.daily_penalty_text || "Avtalt mellom partene."}
+              </Paragraph>
+              <Paragraph>
+                <strong>Avtalt slakk:</strong> {graceDays} kalenderdager etter forventet,
+                eventuelt rettmessig forskjøvet ferdigstillelsesfrist.
+              </Paragraph>
+            </>
+          ) : (
+            <Paragraph><strong>Dagmulkt:</strong> Ikke særskilt avtalt.</Paragraph>
+          )}
           <Paragraph last>
             <strong>Andre særskilte vilkår:</strong>{" "}
             {draft.special_terms || "Ingen særskilte vilkår registrert."}
@@ -488,7 +535,9 @@ export default function SalesContractDocument({ request, companyProfile, draft }
             <li>
               Kundens aksepterte tilbud{version ? ` v${version}` : ""}, med valgte opsjoner.
             </li>
-            <li>Vedlegg og kundesynlig dokumentasjon som fulgte den aksepterte tilbudsversjonen.</li>
+            <li>
+              Vedlegg og kundesynlig dokumentasjon som fulgte den aksepterte tilbudsversjonen.
+            </li>
             <li>Senere skriftlig avtalte og dokumenterte endringer, tillegg og fradrag.</li>
           </ol>
           <p style={{ margin: "10px 0 0", color: "#52616b", lineHeight: 1.55 }}>
