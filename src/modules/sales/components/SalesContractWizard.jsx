@@ -10,12 +10,14 @@ import {
   ExternalLink,
   FileSignature,
   LockKeyhole,
+  Mail,
   Pencil,
   ShieldCheck,
 } from "lucide-react";
 import SalesContractWizardCore from "./SalesContractWizardCore.jsx";
 import SalesContractDocument from "./SalesContractDocument.jsx";
 import { createDefaultSalesSupabaseClient } from "../services/salesSupabase.js";
+import { sendSalesCustomerEmail } from "../services/salesCommunication.js";
 import {
   CONTRACT_CHANGED_EVENT,
   buildCustomerContractLink,
@@ -103,8 +105,10 @@ export default function SalesContractWizard({ request, onClose }) {
   const [editing, setEditing] = useState(false);
   const [confirmCompany, setConfirmCompany] = useState(false);
   const [signing, setSigning] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
 
   async function loadContract({ leaveEditor = false } = {}) {
     setLoading(true);
@@ -177,6 +181,53 @@ export default function SalesContractWizard({ request, onClose }) {
       setCopyMessage("Kundelenken er kopiert.");
     } catch {
       setCopyMessage("Kunne ikke kopiere automatisk. Åpne lenken og kopier fra adressefeltet.");
+    }
+  }
+
+  async function sendCustomerLink() {
+    if (!customerLink) {
+      setError("Kundelenken er ikke klar ennå.");
+      return;
+    }
+    if (!String(request?.email || "").trim()) {
+      setError("Kunden mangler e-postadresse på salgssaken.");
+      return;
+    }
+
+    setSendingEmail(true);
+    setError("");
+    setEmailMessage("");
+    try {
+      const companyProfile = companySnapshotToProfile(contract?.snapshot?.company || {});
+      await sendSalesCustomerEmail(client, {
+        direction: "sales_contract",
+        toEmail: request.email,
+        projectName: request.title || "Kontrakt",
+        customerName: request.customer || "",
+        customerEmail: request.email || "",
+        customerPhone: request.phone || "",
+        projectAddress: request.address || "",
+        projectPostnr: request.postnr || "",
+        projectCity: request.city || "",
+        projectResponsible:
+          request.projectResponsible || request.surveyResponsible || request.responsible || "",
+        fromName: contract?.company_signed_by_name || "",
+        projectLink: customerLink,
+        buttonText: "Åpne og signer kontrakt",
+        companyLogoUrl: companyProfile.logoUrl || "",
+        companyName: companyProfile.companyName || "Expo ProffDok",
+        footerCompanyText: companyProfile.companyName || "Expo ProffDok",
+        sentViaText: "Kontrakt sendt gjennom Expo ProffDok",
+      });
+      setEmailMessage(`Kundelenken er sendt til ${request.email}.`);
+    } catch (sendError) {
+      setError(
+        sendError instanceof Error
+          ? `Kontrakten er fortsatt låst, men e-posten kunne ikke sendes: ${sendError.message}`
+          : "Kontrakten er fortsatt låst, men e-posten kunne ikke sendes."
+      );
+    } finally {
+      setSendingEmail(false);
     }
   }
 
@@ -349,8 +400,19 @@ export default function SalesContractWizard({ request, onClose }) {
                   Kunden kan lese det låste kontraktsgrunnlaget og signere med fullt navn. Kunden kan ikke redigere kontrakten.
                 </p>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  {status === "awaiting_customer" ? (
+                    <button
+                      className="sales-primary-button"
+                      type="button"
+                      onClick={sendCustomerLink}
+                      disabled={!customerLink || sendingEmail}
+                    >
+                      <Mail size={18} />
+                      {sendingEmail ? "Sender …" : "Send til kunde"}
+                    </button>
+                  ) : null}
                   <button
-                    className="sales-primary-button"
+                    className={status === "awaiting_customer" ? "sales-secondary-button" : "sales-primary-button"}
                     type="button"
                     onClick={() => window.open(customerLink, "_blank", "noopener,noreferrer")}
                     disabled={!customerLink}
@@ -361,10 +423,12 @@ export default function SalesContractWizard({ request, onClose }) {
                     <Copy size={18} /> Kopier kundelenke
                   </button>
                 </div>
+                {emailMessage ? <div style={{ color: "#176b42", fontWeight: 800 }}>{emailMessage}</div> : null}
                 {copyMessage ? <div style={{ color: "#176b42", fontWeight: 800 }}>{copyMessage}</div> : null}
+                {error ? <div role="alert" style={{ color: "#9b1c1c", fontWeight: 700 }}>{error}</div> : null}
                 {status === "awaiting_customer" ? (
                   <small style={{ color: "#52616b" }}>
-                    Neste steg i denne fasen er at kunden åpner lenken, bekrefter avtalegrunnlaget og signerer.
+                    E-post kan sendes på nytt ved behov. Kontrakten forblir låst selv om e-postutsending skulle feile.
                   </small>
                 ) : null}
               </section>
