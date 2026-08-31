@@ -281,7 +281,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Kunde bruker kundeportalen for dokumentasjon, rapport, tilbud/kontrakt og chat.",
           "Underentreprenører bruker egen portal for å bidra med bilder, dokumentasjon og relevante sjekkpunkter.",
           "Samme tilgangskode brukes ved senere chatvarsler og nye e-poster. Det genereres ikke ny kode for hver chatmelding.",
-          "Tilgangen er gyldig så lenge prosjektet er aktivt. Etter låsing eller arkivering beholdes tilgangen i 30 dager."
+          "Tilgangen er gyldig så lenge prosjektet er aktivt. Etter låsing beholdes tilgangen i 30 dager."
         ],
         important: [
           "Tilgangskoden sendes i e-post og skal ikke ligge i URL-en.",
@@ -406,7 +406,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Avtal gjerne med kunden i tilbud, kontrakt eller prosjektoppstart at prosjektchatten benyttes som en del av prosjektets skriftlige kommunikasjon og dokumentasjon.",
           "Kommunikasjon i prosjektchatten kan få betydning som dokumentasjon ved senere uenighet, særlig når partene har avtalt at chatten skal brukes til avklaringer, bestillinger eller endringer.",
           "Prosjektchatten erstatter ikke formelle avtaledokumenter, endringsmeldinger, sjekklister, avvik eller overtagelse der dette er nødvendig.",
-          "Kunden kan få e-postvarsel når det sendes ny relevant chatmelding. E-postvarsler til kunde bruker samme kundeportal-link og samme tilgangskode. Tilgangen er gyldig så lenge prosjektet er aktivt, og i 30 dager etter låsing/arkivering."
+          "Kunden kan få e-postvarsel når det sendes ny relevant chatmelding. E-postvarsler til kunde bruker samme kundeportal-link og samme tilgangskode. Tilgangen er gyldig så lenge prosjektet er aktivt, og i 30 dager etter låsing."
         ],
         best: [
           "Benytt prosjektchatten som hovedkanal for kundekommunikasjon. All dialog samles på prosjektet, reduserer administrasjon og minsker behovet for SMS, telefoner, e-poster og andre meldingskanaler.",
@@ -439,38 +439,42 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
       {
         key: "overtagelse",
         title: "✍️ Overtagelse",
-        purpose: "Overtagelse dokumenterer at prosjektet er gjennomgått og akseptert av kunde og utførende.",
+        purpose: "Overtagelse dokumenterer at prosjektet er gjennomgått og akseptert av kunde og utførende, og skiller tydelig mellom utkast, gjennomført overtagelse og lagret registrering.",
         workflow: [
           "Kontroller at produkter, bilder, sjekklister og avvik er oppdatert.",
           "Gå gjennom rapport og eventuelle merknader med kunden.",
           "Registrer dato og eventuelle overtagelsesmerknader.",
           "Signer digitalt med kunde og utførende.",
-          "Bruk signert overtagelse som grunnlag for garanti der dette er aktivert."
+          "Når overleveringen faktisk er gjennomført, kryss av Bekreft at overtagelsen er gjennomført.",
+          "Velg Lagre og registrer overtagelse. Expo ProffDok kontrollerer at begge signaturene faktisk er lagret før registreringen bekreftes.",
+          "Bruk signert og lagret overtagelse som grunnlag for garanti der dette er aktivert."
         ],
         important: [
-          "På garantiprosjekter må overtagelse være signert før garanti kan utstedes.",
+          "Avkryssingen alene registrerer ikke overtagelsen. Overtagelsen er først registrert når den er lagret og serveren har bekreftet signaturene.",
+          "På garantiprosjekter må overtagelse være signert og lagret før garanti kan utstedes.",
           "Åpne avvik bør være lukket eller avklart før overtagelse.",
           "Signaturer blir en del av prosjektets dokumentasjon."
         ],
         best: [
           "Generer en rapport før overtagelse og gå gjennom den med kunden.",
           "Skriv konkrete merknader dersom noe gjenstår.",
-          "Fullfør overtagelsen først når dokumentasjonen er kontrollert."
+          "Bruk Lagre utkast underveis dersom overtagelsen ikke er gjennomført ennå.",
+          "Fullfør og lås prosjektet først når overtagelsen er registrert og dokumentasjonen er kontrollert."
         ]
       },
       {
         key: "prosjektliste",
         title: "📑 Prosjektliste",
-        purpose: "Prosjektlisten gir oversikt over aktive, ferdige og arkiverte prosjekter.",
+        purpose: "Prosjektlisten gir oversikt over aktive og ferdige/låste prosjekter.",
         workflow: [
           "Bruk prosjektlisten for å åpne eksisterende prosjekt.",
           "Søk på kunde, adresse, prosjekt, telefon, e-post eller garantinummer.",
           "Filtrer på status eller uleste meldinger der dette er relevant.",
-          "Arkiver ferdige prosjekter slik at aktive prosjekter holdes oversiktlige."
+          "Når et prosjekt er ferdig og dokumentasjonen er kontrollert, kan prosjektet avsluttes/låses. Lås opp prosjektet igjen dersom det senere må redigeres."
         ],
         important: [
           "Systemadministrator skal normalt bruke vanlig prosjektliste for egne prosjekter og supportmodus kun ved behov.",
-          "Arkiverte og låste prosjekter skal fortsatt kunne åpnes for rapport og garanti.",
+          "Låste prosjekter skal fortsatt kunne åpnes for rapport og garanti, men må låses opp før de kan redigeres.",
           "Prosjektlisten viser prosjekter etter brukerens rolle og firmatilgang."
         ],
         best: [
@@ -609,7 +613,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           "Avvis og slett feilregistrerte eller uønskede ventende brukere før de tas i bruk.",
           "Kontroller firma, rolle og systemadministratorstatus før godkjenning.",
           "Bruk Systemadmin som eneste kontrollpunkt når du skal supportere andre firmaer.",
-          "Ved prosjektsupport: finn riktig firma i Supportmodus og åpne deretter riktig prosjekt. Kontroller at supportmodus er tydelig aktiv før du gjør endringer.",
+          "Ved prosjektsupport: finn riktig firma i Supportmodus og åpne deretter riktig prosjekt. Prosjektlisten skal følge valgt supportfirma, ikke systemadministratorens eget firma. Kontroller at supportmodus er tydelig aktiv før du gjør endringer.",
           "Ved Befaring/Tilbud-support: bruk Support – Befaring/Tilbud, velg firma og åpne firmaets salgsoversikt. Inne i Befaring/Tilbud vises aktivt supportfirma tydelig.",
           "Gå tilbake til Systemadmin og velg Eget firma / avslutt Sales-support når du er ferdig med Befaring/Tilbud-support.",
           "Vedlikehold produktmaster og synkroniser kun aktive prosjekter der dette er riktig.",
