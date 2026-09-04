@@ -1,10 +1,11 @@
-// Expo ProffDok – FASE 35A HJELP
-// Legger Fremdrift inn som eget kollapsbart hjelpetema på samme nivå som øvrige funksjoner.
-// Hjelp-komponenten remounter innhold ved åpning/lukking, derfor brukes en liten idempotent DOM-adapter.
+// Expo ProffDok – FASE 35B HJELP
+// Legger Fremdrift og Prosjektinvolverte inn som egne kollapsbare hjelpetemaer.
 
-const HELP_MARKER = 'data-expo-progress-help';
-const PROGRESS_HELP_TITLE = '📅 Fremdrift / fremdriftsplan';
-const PROGRESS_ANCHOR_TITLE = '📐 Prosjektering';
+const PROGRESS_MARKER = 'data-expo-progress-help';
+const PARTICIPANTS_MARKER = 'data-expo-participants-help';
+const PROGRESS_TITLE = '📅 Fremdrift / fremdriftsplan';
+const PARTICIPANTS_TITLE = '👥 Prosjektinvolverte / prosjektmail';
+const ANCHOR_TITLE = '📐 Prosjektering';
 const FALLBACK_ANCHOR_TITLE = '🚀 Startside / kom i gang';
 const HELP_UPDATED_LABEL = 'Sist oppdatert: 04.09.2026';
 
@@ -30,48 +31,10 @@ function appendSection(container, title, items = []) {
   container.appendChild(createList(items));
 }
 
-function createProgressHelpContent() {
-  const content = document.createElement('div');
-  content.style.display = 'none';
-  content.style.marginTop = '14px';
-
-  const purpose = document.createElement('p');
-  purpose.className = 'note';
-  purpose.style.marginTop = '0';
-  purpose.textContent = 'Fremdrift brukes til å planlegge prosjektets arbeidsoperasjoner, rekkefølge, fag, person/firma og planlagte tider. Planen er operativ prosjektdata og endrer aldri tilbud, aksept eller kontrakt.';
-  content.appendChild(purpose);
-
-  appendSection(content, 'Arbeidsflyt', [
-    'Åpne Fremdrift i et lagret prosjekt.',
-    'På prosjekt med akseptert tilbud kan du hente hovedposter og kundens valgte opsjoner som forslag til arbeidsoperasjoner.',
-    'Prosjekter uten tilbud kan bruke de samme standard arbeidsoperasjonene som tilbudsbyggeren, og du kan alltid legge til egne arbeidsoperasjoner.',
-    'Når du legger til en arbeidsoperasjon åpnes den automatisk, og du flyttes til riktig sted i planen.',
-    'Legg inn dato, fra/til, fag og person eller firma. Samme aktivitet kan ha flere separate tider gjennom prosjektet.',
-    'Ved ulagrede endringer følger Lagre fremdriftsplan med i synsfeltet. Du får også varsel hvis du prøver å forlate planen uten å lagre.',
-    'På mobil vises planen som en enklere aktivitetsliste. Desktop er hovedflaten for full ukeoversikt.',
-  ]);
-
-  appendSection(content, 'Viktig', [
-    'Endringer i Fremdrift skriver aldri tilbake til akseptert tilbud, akseptbevis eller kontrakt.',
-    'Underentreprenør med gyldig prosjekttilgang kan lese planen, men ikke redigere den i denne versjonen.',
-    'Kunden ser ikke planen som standard. Slå på Vis fremdriftsplan til kunde når du ønsker å dele den.',
-    'Låste eller avsluttede prosjekter viser planen som historikk uten vanlig redigering.',
-  ]);
-
-  appendSection(content, 'Anbefalt bruk', [
-    'Start med arbeidsoperasjonene og fordel dem i naturlig arbeidsrekkefølge.',
-    'Bruk flere planlagte tider på samme arbeidsoperasjon når samme fag skal komme tilbake flere ganger.',
-    'Legg inn person eller firma når det gjør planen tydeligere for interne ansatte og underentreprenører.',
-    'Del planen med kunde først når datoer og rekkefølge er klare nok til at de er nyttige for kunden.',
-  ]);
-
-  return content;
-}
-
-function createProgressHelpItem() {
+function makeItem({ marker, title, purpose, sections }) {
   const item = document.createElement('div');
   item.className = 'item';
-  item.setAttribute(HELP_MARKER, '1');
+  item.setAttribute(marker, '1');
   item.style.borderColor = '#e2e8f0';
   item.style.background = '#ffffff';
 
@@ -79,37 +42,29 @@ function createProgressHelpItem() {
   button.type = 'button';
   button.className = 'secondary';
   Object.assign(button.style, {
-    width: '100%',
-    justifyContent: 'space-between',
-    textAlign: 'left',
-    background: 'transparent',
-    color: '#0f172a',
-    border: 'none',
-    padding: '0',
-    boxShadow: 'none',
-    fontSize: '16px',
+    width: '100%', justifyContent: 'space-between', textAlign: 'left', background: 'transparent',
+    color: '#0f172a', border: 'none', padding: '0', boxShadow: 'none', fontSize: '16px',
   });
 
   const row = document.createElement('span');
-  Object.assign(row.style, {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '12px',
-    width: '100%',
-  });
-
-  const title = document.createElement('b');
-  title.textContent = PROGRESS_HELP_TITLE;
-
+  Object.assign(row.style, { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', width: '100%' });
+  const titleNode = document.createElement('b');
+  titleNode.textContent = title;
   const state = document.createElement('span');
   state.textContent = 'Åpne';
-  Object.assign(state.style, {
-    fontWeight: '900',
-    color: '#007f89',
-  });
+  Object.assign(state.style, { fontWeight: '900', color: '#007f89' });
+  row.append(titleNode, state);
+  button.appendChild(row);
 
-  const content = createProgressHelpContent();
+  const content = document.createElement('div');
+  content.style.display = 'none';
+  content.style.marginTop = '14px';
+  const purposeNode = document.createElement('p');
+  purposeNode.className = 'note';
+  purposeNode.style.marginTop = '0';
+  purposeNode.textContent = purpose;
+  content.appendChild(purposeNode);
+  sections.forEach((section) => appendSection(content, section.title, section.items));
 
   button.addEventListener('click', () => {
     const opening = content.style.display === 'none';
@@ -119,31 +74,110 @@ function createProgressHelpItem() {
     item.style.background = opening ? '#f8feff' : '#ffffff';
   });
 
-  row.append(title, state);
-  button.appendChild(row);
   item.append(button, content);
   return item;
 }
 
+function createProgressItem() {
+  return makeItem({
+    marker: PROGRESS_MARKER,
+    title: PROGRESS_TITLE,
+    purpose: 'Fremdrift brukes til å planlegge og dele prosjektets arbeidsoperasjoner, rekkefølge, fag, person/firma og planlagte tider. Planen er operativ prosjektdata og endrer aldri tilbud, aksept eller kontrakt.',
+    sections: [
+      {
+        title: 'Arbeidsflyt',
+        items: [
+          'Åpne Fremdrift i et lagret prosjekt.',
+          'På prosjekt med akseptert tilbud kan hovedposter og kundens valgte opsjoner hentes som forslag til arbeidsoperasjoner.',
+          'Prosjekter uten tilbud kan bruke standard arbeidsoperasjoner eller egne arbeidsoperasjoner.',
+          'Legg inn dato, fra/til, fag og person eller firma. Samme aktivitet kan ha flere separate tider.',
+          'Ved ulagrede endringer følger Lagre fremdriftsplan med i synsfeltet, og du varsles hvis du prøver å forlate planen uten å lagre.',
+        ],
+      },
+      {
+        title: 'Gantt, PDF og utskrift',
+        items: [
+          'Åpne Gantt / PDF lager en egen utskriftsvisning av den lagrede planen.',
+          'Gantt-planen bruker Prosjektuke 1, Prosjektuke 2, Prosjektuke 3 osv. Antall prosjektuker bestemmes automatisk av planens faktiske datoer og er ikke begrenset til fem uker.',
+          'Under hver prosjektuke vises også faktisk kalenderuke og datoer.',
+          'Lange planer deles automatisk i flere Gantt-seksjoner slik at ukehodene forblir lesbare.',
+          'I utskriftsvisningen kan du velge Lagre som PDF eller Skriv ut. Utskriftsdialogen åpnes først når du selv velger dette.',
+        ],
+      },
+      {
+        title: 'Deling',
+        items: [
+          'Send til prosjektinvolverte bruker mottakerlisten som er registrert under Prosjektoversikt → Prosjektinvolverte.',
+          'Lagre fremdriftsplanen før den sendes, slik at mottakerne varsles om siste lagrede versjon.',
+          'Innloggede prosjektinvolverte får også et varsel i Expo ProffDok om at prosjektinformasjon kan være endret og at de bør se e-posten.',
+          'Kunden ser ikke Fremdrift som standard. Bruk Vis fremdriftsplan til kunde når planen skal deles i kundeportalen.',
+          'Underentreprenør med gyldig prosjekttilgang kan lese planen, men ikke redigere den i denne versjonen.',
+        ],
+      },
+    ],
+  });
+}
+
+function createParticipantsItem() {
+  return makeItem({
+    marker: PARTICIPANTS_MARKER,
+    title: PARTICIPANTS_TITLE,
+    purpose: 'Prosjektinvolverte er prosjektets felles kontakt- og distribusjonsliste. Seksjonen vises først etter at prosjektet faktisk er opprettet og har fått prosjekt-ID.',
+    sections: [
+      {
+        title: 'Registrering',
+        items: [
+          'Åpne Prosjektoversikt i et lagret prosjekt og gå til Prosjektinvolverte.',
+          'Registrer navn, firma, rolle, e-post og telefon.',
+          'Prosjektmail bestemmer om personen skal være med i felles utsendinger fra prosjektet.',
+          'Lagre prosjektinvolverte før du sender e-post.',
+        ],
+      },
+      {
+        title: 'Send en e-post',
+        items: [
+          'Send en e-post sender samme prosjektmelding til alle prosjektinvolverte som er valgt som prosjektmail-mottakere.',
+          'Før sending vises mottakerne, emne og melding slik at utsendingen kan kontrolleres.',
+          'Personer uten Expo ProffDok-bruker mottar e-posten som vanlig.',
+        ],
+      },
+      {
+        title: 'Varsel ved neste innlogging',
+        items: [
+          'Når en prosjektmail er sendt, registreres et prosjektvarsel for mottakeren.',
+          'Prosjektinvolverte som logger inn med samme e-postadresse får beskjed: «Prosjektinformasjon kan være endret – se e-post.»',
+          'Varslet viser hva som ble sendt og når, og kan markeres som lest.',
+        ],
+      },
+    ],
+  });
+}
+
 function adaptHelp() {
   if (typeof document === 'undefined') return;
-
   Array.from(document.querySelectorAll('span')).forEach((item) => {
     if (clean(item.textContent).startsWith('Sist oppdatert:')) item.textContent = HELP_UPDATED_LABEL;
   });
 
-  const existing = document.querySelector(`[${HELP_MARKER}="1"]`);
-  if (existing?.classList?.contains('item')) return;
-  if (existing) existing.remove();
-
   const labels = Array.from(document.querySelectorAll('button b'));
-  const anchorLabel = labels.find((label) => clean(label.textContent) === PROGRESS_ANCHOR_TITLE)
+  const anchorLabel = labels.find((label) => clean(label.textContent) === ANCHOR_TITLE)
     || labels.find((label) => clean(label.textContent) === FALLBACK_ANCHOR_TITLE);
   const anchorItem = anchorLabel?.closest('.item');
   if (!anchorItem?.parentElement) return;
 
-  const progressItem = createProgressHelpItem();
-  anchorItem.insertAdjacentElement('afterend', progressItem);
+  let progress = document.querySelector(`[${PROGRESS_MARKER}="1"]`);
+  if (!progress?.classList?.contains('item')) {
+    progress?.remove();
+    progress = createProgressItem();
+    anchorItem.insertAdjacentElement('afterend', progress);
+  }
+
+  let participants = document.querySelector(`[${PARTICIPANTS_MARKER}="1"]`);
+  if (!participants?.classList?.contains('item')) {
+    participants?.remove();
+    participants = createParticipantsItem();
+    progress.insertAdjacentElement('afterend', participants);
+  }
 }
 
 let installed = false;
@@ -152,12 +186,10 @@ let timer = null;
 export function installProgressPlanHelpUx() {
   if (installed || typeof document === 'undefined') return;
   installed = true;
-
   const schedule = () => {
     if (timer) window.clearTimeout(timer);
     timer = window.setTimeout(adaptHelp, 20);
   };
-
   const observer = new MutationObserver(schedule);
   observer.observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('click', schedule, true);
