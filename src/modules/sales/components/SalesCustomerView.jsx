@@ -1,3 +1,5 @@
+// Expo ProffDok – FASE 34B
+// Ferdig akseptert kundelenke viser låst aksept med valgte opsjoner og totalsum.
 // Expo ProffDok – FASE 31C
 // Hovedposter uten grunnpris vises som «Kun valgfrie opsjoner» i kundetilbudet.
 // Eksisterende pris-, valg- og akseptlogikk beholdes uendret.
@@ -8,6 +10,7 @@
 
 import { useEffect } from "react";
 import SalesCustomerViewCore from "./SalesCustomerViewCore.jsx";
+import SalesCustomerAcceptedView from "./SalesCustomerAcceptedView.jsx";
 import "./salesCustomerOptionality.css";
 import { decorateRequestForQuantityPresentation } from "../utils/salesOfferQuantityPresentation.js";
 import { decorateRequestForOptionalityPresentation } from "../utils/salesOfferOptionalityPresentation.js";
@@ -238,6 +241,15 @@ export default function SalesCustomerView(props) {
     props.selectedRequest?.offerOptions,
     selectedOptionIds.join("|"),
   ]);
+
+  if (props.mode === "customer-accepted" && presentationRequest) {
+    return (
+      <SalesCustomerAcceptedView
+        selectedRequest={presentationRequest}
+        companyProfile={props.companyProfile}
+      />
+    );
+  }
 
   return (
     <>
