@@ -1,0 +1,1 @@
+Trigger kontrollert patch for å bevare aktivt prosjekt og aktiv fane ved refresh.
