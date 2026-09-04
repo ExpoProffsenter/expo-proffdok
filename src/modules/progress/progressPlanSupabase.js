@@ -65,6 +65,20 @@ function safePreviewStorageKey(projectId = '') {
   return id ? `${SAFE_PREVIEW_STORAGE_PREFIX}${id}` : '';
 }
 
+function hasSafePreviewLocalPlan(projectId = '') {
+  if (typeof window === 'undefined') return false;
+  const host = String(window.location.hostname || '').toLowerCase();
+  const isPreviewHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.vercel.app');
+  if (!isPreviewHost) return false;
+  const key = safePreviewStorageKey(projectId);
+  if (!key) return false;
+  try {
+    return !!window.localStorage.getItem(key);
+  } catch {
+    return false;
+  }
+}
+
 function readSafePreviewPlan(projectId = '') {
   const key = safePreviewStorageKey(projectId);
   if (!key || typeof window === 'undefined') return null;
@@ -250,7 +264,7 @@ export async function loadPortalProgressPlan(client, projectId, role) {
   });
   if (!result?.ok) return unavailable;
 
-  if (isProgressSafePreviewMode()) {
+  if (isProgressSafePreviewMode() || hasSafePreviewLocalPlan(projectId)) {
     const local = readSafePreviewPlan(projectId);
     if (!local) return unavailable;
     return {
