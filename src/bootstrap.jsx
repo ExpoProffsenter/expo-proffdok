@@ -8,7 +8,8 @@
 // FASE 29E1: Aktivert prosjekt bruker gjennomføringsflyt; tidligere salgsflyt beholdes som Salgsgrunnlag.
 // FASE 30D1: Full reload fra intern Befaring/Tilbud bruker en engangsmarkør og åpner
 // salgfanen igjen etter at hovedappen er rendret. main.jsx endres ikke.
-// FASE 35A: Fremdriftsplan ligger i eget prosjektlag og kobles inn uten å gjøre main.jsx større.
+// FASE 35A: Fremdriftsplan ligger i eget prosjektlag. Intern app bruker én navigasjonsadapter;
+// kunde/UE starter fortsatt først ved eksisterende verifiserte portalgrense.
 import { installGlobalStorageImageOptimizer } from './modules/images/imageUploadOptimizer.js';
 import { installProjectWorkflowUx } from './modules/project/projectWorkflowUx.js';
 import { installSalesInspectionHistoryUx } from './modules/project/salesInspectionHistoryUx.js';
@@ -31,96 +32,34 @@ function installProgressPlanAtSecureUiBoundary() {
     hasProjectLink &&
     role !== 'admin' &&
     (role === '' || role === 'kunde' || role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør');
+
+  if (!isPortalRole) {
+    installProgressPlanUx();
+    return;
+  }
+
   const isUnderleverandor =
     role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør';
-
   let observer = null;
-  let placementObserver = null;
-  let placementFrame = null;
-  let retainedInternalProgressButton = null;
-
-  const navLabels = (nav) =>
-    Array.from(nav.querySelectorAll('button')).map((button) =>
-      String(button.textContent || '').replace(/\s+/g, ' ').trim()
-    );
-
-  const findInternalProjectNav = () =>
-    Array.from(document.querySelectorAll('nav')).find((nav) => {
-      const labels = navLabels(nav);
-      return labels.includes('Prosjektoversikt') && labels.includes('Prosjektering') && labels.includes('Sjekklister');
-    }) || null;
 
   const portalNavIsReady = () =>
     Array.from(document.querySelectorAll('nav')).some((nav) => {
-      const labels = navLabels(nav);
+      const labels = Array.from(nav.querySelectorAll('button')).map((button) =>
+        String(button.textContent || '').replace(/\s+/g, ' ').trim()
+      );
       return isUnderleverandor
         ? labels.includes('Prosjektinformasjon') && labels.includes('Sjekklister')
         : labels.includes('Oversikt') && labels.includes('Rapport') && labels.includes('Dokumentasjon');
     });
 
-  const rememberProgressButtonFromNode = (node) => {
-    if (!(node instanceof Element)) return;
-    if (node.matches?.('button[data-expo-progress-nav="1"]')) {
-      retainedInternalProgressButton = node;
-      return;
-    }
-    const nested = node.querySelector?.('button[data-expo-progress-nav="1"]');
-    if (nested instanceof HTMLButtonElement) retainedInternalProgressButton = nested;
-  };
-
-  const placeInternalProgressButton = () => {
-    if (isPortalRole) return;
-    const nav = findInternalProjectNav();
-    if (!nav) return;
-
-    const connectedProgressButton = nav.querySelector('button[data-expo-progress-nav="1"]');
-    if (connectedProgressButton instanceof HTMLButtonElement) {
-      retainedInternalProgressButton = connectedProgressButton;
-    }
-
-    const progressButton = connectedProgressButton || retainedInternalProgressButton;
-    const prosjekteringButton = Array.from(nav.querySelectorAll('button')).find(
-      (button) => String(button.textContent || '').replace(/\s+/g, ' ').trim() === 'Prosjektering'
-    );
-    if (!(progressButton instanceof HTMLButtonElement) || !(prosjekteringButton instanceof HTMLButtonElement)) return;
-
-    if (prosjekteringButton.nextSibling !== progressButton) {
-      nav.insertBefore(progressButton, prosjekteringButton.nextSibling);
-    }
-  };
-
-  const scheduleInternalPlacement = () => {
-    if (isPortalRole || placementFrame) return;
-    placementFrame = window.requestAnimationFrame(() => {
-      placementFrame = null;
-      placeInternalProgressButton();
-    });
-  };
-
-  const uiBoundaryIsReady = () =>
-    isPortalRole ? portalNavIsReady() : !!findInternalProjectNav();
-
   const tryInstall = () => {
-    if (!uiBoundaryIsReady()) return false;
+    if (!portalNavIsReady()) return false;
     observer?.disconnect();
     installProgressPlanUx();
-
-    if (!isPortalRole) {
-      placementObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          mutation.addedNodes.forEach(rememberProgressButtonFromNode);
-          mutation.removedNodes.forEach(rememberProgressButtonFromNode);
-        });
-        scheduleInternalPlacement();
-      });
-      placementObserver.observe(document.documentElement, { childList: true, subtree: true });
-      scheduleInternalPlacement();
-    }
     return true;
   };
 
   if (tryInstall()) return;
-
   observer = new MutationObserver(tryInstall);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 }
