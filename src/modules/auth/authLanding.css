@@ -1,32 +1,41 @@
-/* FASE 36A1 – isolert auth-presentasjon. Vanlige arbeidsflater påvirkes ikke. */
+/* FASE 36A1 – auth-presentasjon, visuelt løftet mot valgt design. */
 
 body.authLandingActive {
   --auth-cyan: #13d6df;
-  --auth-cyan-strong: #05b8c4;
+  --auth-cyan-strong: #08b9c5;
   --auth-ink: #071a24;
   --auth-muted: #6b7f8d;
-  --auth-line: #d8e5eb;
-  --auth-left-width: 58vw;
+  --auth-panel-width: min(36vw, 640px);
+  --auth-panel-gap: 18px;
+  --auth-left-width: calc(100vw - var(--auth-panel-width) - 36px);
   min-height: 100vh;
   margin: 0;
-  overflow-x: hidden;
-  background: #071820;
+  overflow: hidden;
+  background: #061720;
 }
 
 body.authLandingActive #root {
-  width: calc(100vw - var(--auth-left-width));
-  min-height: 100vh;
-  margin-left: var(--auth-left-width);
-  background: #f8fbfc;
+  position: fixed;
+  top: var(--auth-panel-gap);
+  right: var(--auth-panel-gap);
+  bottom: var(--auth-panel-gap);
+  width: var(--auth-panel-width);
+  min-height: 0;
+  margin: 0;
+  overflow: auto;
+  border: 1px solid rgba(214, 228, 235, 0.9);
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 24px 80px rgba(2, 17, 24, 0.32);
 }
 
 body.authLandingActive #root > div {
-  min-height: 100vh;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(circle at 78% 10%, rgba(19, 214, 223, 0.08), transparent 28%),
-    linear-gradient(180deg, #ffffff 0%, #f7fafb 100%);
+    radial-gradient(circle at 82% 8%, rgba(19, 214, 223, 0.085), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #fbfdfe 100%);
 }
 
 body.authLandingActive header {
@@ -37,85 +46,97 @@ body.authLandingActive header {
   border: 0;
   background: transparent;
   backdrop-filter: none;
+  box-shadow: none;
 }
 
 body.authLandingActive header .head {
-  max-width: 560px;
+  max-width: 500px;
   min-height: auto;
   margin: 0 auto;
-  padding: 46px 44px 10px;
+  padding: 42px 38px 4px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 0;
   text-align: center;
 }
 
 body.authLandingActive header .head > div:first-child {
   width: 250px !important;
-  height: 78px !important;
+  height: 82px !important;
   overflow: visible !important;
 }
 
 body.authLandingActive header .head > div:first-child img {
+  display: block;
   max-width: 100% !important;
   max-height: 100% !important;
   object-fit: contain !important;
 }
 
-body.authLandingActive header .head > div:last-child h1,
-body.authLandingActive header .head > div:last-child p {
-  display: none;
+body.authLandingActive header .head > div:last-child {
+  display: none !important;
 }
 
 body.authLandingActive main {
   width: 100%;
-  max-width: 590px;
+  max-width: 500px;
   margin: 0 auto;
-  padding: 24px 48px 44px;
+  padding: 12px 42px 38px;
   flex: 1 1 auto;
+  display: flex;
 }
 
 body.authLandingActive main > section {
+  width: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
   box-shadow: none;
   background: transparent;
+  display: flex;
+  flex-direction: column;
 }
 
 body.authLandingActive main > section > h2 {
-  margin: 0 0 10px;
+  order: 1;
+  margin: 20px 0 8px;
   color: var(--auth-ink);
   font-size: 0;
-  line-height: 1.1;
+  line-height: 1.05;
   letter-spacing: -0.04em;
   text-align: center;
+}
+
+body.authLandingActive main > section > h2 svg,
+body.authLandingActive main > section > h2 > span:first-child {
+  display: none !important;
 }
 
 body.authLandingLogin main > section > h2::after {
   content: 'Velkommen tilbake';
   display: block;
-  font-size: clamp(32px, 2.55vw, 44px);
+  font-size: clamp(34px, 2.45vw, 44px);
   font-weight: 900;
 }
 
 body.authLandingSignup main > section > h2::after {
   content: 'Opprett bruker';
   display: block;
-  font-size: clamp(30px, 2.25vw, 40px);
+  font-size: clamp(32px, 2.2vw, 40px);
   font-weight: 900;
 }
 
 body.authLandingLogin main > section::before,
 body.authLandingSignup main > section::before {
+  order: 2;
   display: block;
   margin: 0 auto 30px;
   color: var(--auth-muted);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.45;
   text-align: center;
 }
 
@@ -124,14 +145,15 @@ body.authLandingLogin main > section::before {
 }
 
 body.authLandingSignup main > section::before {
-  content: 'Ny bruker? Fyll inn opplysningene under. Kontoen aktiveres etter godkjenning.';
-  max-width: 470px;
+  content: 'Fyll inn opplysningene under. Kontoen aktiveres etter godkjenning.';
+  max-width: 430px;
 }
 
 body.authLandingActive main .grid {
+  order: 3;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 15px;
 }
 
 body.authLandingActive main label {
@@ -140,8 +162,9 @@ body.authLandingActive main label {
 }
 
 body.authLandingActive main label > span:first-child {
+  display: block;
   margin: 0 0 7px;
-  color: #425866;
+  color: #405764;
   font-size: 13px;
   font-weight: 800;
 }
@@ -153,17 +176,18 @@ body.authLandingActive main select {
   padding: 15px 16px;
   border: 1px solid #cfdde4;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.98);
   color: var(--auth-ink);
   font-size: 16px;
-  box-shadow: 0 5px 18px rgba(7, 26, 36, 0.035);
+  box-shadow: 0 7px 22px rgba(7, 26, 36, 0.045);
 }
 
 body.authLandingActive main input:focus,
 body.authLandingActive main textarea:focus,
 body.authLandingActive main select:focus {
+  outline: none;
   border-color: var(--auth-cyan-strong);
-  box-shadow: 0 0 0 4px rgba(19, 214, 223, 0.13), 0 8px 24px rgba(7, 26, 36, 0.06);
+  box-shadow: 0 0 0 4px rgba(19, 214, 223, 0.13), 0 10px 28px rgba(7, 26, 36, 0.07);
 }
 
 body.authLandingActive .authPasswordLabel input {
@@ -190,7 +214,7 @@ body.authLandingActive .authPasswordToggle {
 
 body.authLandingActive .authPasswordToggle:hover {
   transform: none;
-  background: #eef7f9;
+  background: #eef8fa;
   color: var(--auth-cyan-strong);
   box-shadow: none;
 }
@@ -206,6 +230,7 @@ body.authLandingActive .authPasswordToggle svg {
 }
 
 body.authLandingActive .authActionRow {
+  order: 4;
   margin-top: 22px !important;
   display: grid !important;
   grid-template-columns: 1fr !important;
@@ -219,30 +244,33 @@ body.authLandingActive .authActionRow > button {
 
 body.authLandingActive .authActionLogin,
 body.authLandingActive .authActionSignupSubmit {
-  min-height: 58px;
+  min-height: 60px;
+  border: 0;
   border-radius: 14px;
-  background: linear-gradient(135deg, #10b8c4 0%, #11d8df 100%);
+  background: linear-gradient(135deg, #0db4c0 0%, #12d7df 100%);
   color: #ffffff;
   font-size: 18px;
   font-weight: 900;
-  box-shadow: 0 16px 34px rgba(16, 190, 201, 0.22);
+  box-shadow: 0 17px 38px rgba(11, 190, 201, 0.24);
 }
 
 body.authLandingActive .authActionLogin:hover,
 body.authLandingActive .authActionSignupSubmit:hover {
-  background: linear-gradient(135deg, #0aa8b4 0%, #0ed0d8 100%);
-  box-shadow: 0 18px 38px rgba(16, 190, 201, 0.29);
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #08a9b5 0%, #10cbd4 100%);
+  box-shadow: 0 20px 42px rgba(11, 190, 201, 0.3);
 }
 
 body.authLandingLogin .authActionReset {
   grid-row: 2;
   width: auto !important;
   justify-self: center;
-  padding: 7px 12px !important;
+  padding: 8px 12px !important;
   border: 0 !important;
   background: transparent !important;
   color: #087d93 !important;
   font-size: 14px;
+  font-weight: 700;
   text-decoration: underline;
   box-shadow: none !important;
 }
@@ -258,26 +286,23 @@ body.authLandingLogin .authActionRow::before {
   grid-row: 3;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
-  margin: 6px 0;
+  margin: 4px 0;
   color: #8799a5;
   font-size: 13px;
-}
-
-body.authLandingLogin .authActionRow::before {
   background:
-    linear-gradient(#dbe5ea, #dbe5ea) left center / calc(50% - 26px) 1px no-repeat,
-    linear-gradient(#dbe5ea, #dbe5ea) right center / calc(50% - 26px) 1px no-repeat;
-  justify-content: center;
+    linear-gradient(#dbe5ea, #dbe5ea) left center / calc(50% - 28px) 1px no-repeat,
+    linear-gradient(#dbe5ea, #dbe5ea) right center / calc(50% - 28px) 1px no-repeat;
 }
 
 body.authLandingLogin .authActionSignup {
   grid-row: 4;
-  min-height: 68px;
+  min-height: 70px;
   padding: 13px 18px !important;
   border: 1px solid #c9d8e0 !important;
   border-radius: 14px;
-  background: #ffffff !important;
+  background: rgba(255, 255, 255, 0.82) !important;
   color: var(--auth-ink) !important;
   font-size: 16px;
   box-shadow: none !important;
@@ -289,9 +314,17 @@ body.authLandingLogin .authActionSignup::before {
   font-weight: 650;
 }
 
+body.authLandingLogin .authActionSignup::after {
+  content: '›';
+  margin-left: 12px;
+  font-size: 28px;
+  line-height: 0;
+  font-weight: 400;
+}
+
 body.authLandingLogin .authActionSignup:hover {
   transform: none;
-  border-color: #96cfd5 !important;
+  border-color: #95d0d7 !important;
   background: #f9fdfe !important;
   box-shadow: 0 8px 24px rgba(7, 26, 36, 0.05) !important;
 }
@@ -311,26 +344,24 @@ body.authLandingSignup .authActionSignupCancel:hover {
 }
 
 body.authLandingActive .authNewUserNote,
-body.authLandingActive .authInstallGuide {
+body.authLandingActive .authInstallGuide,
+body.authLandingActive .authPortalNote {
   display: none !important;
 }
 
-body.authLandingActive .authSecurityNote,
-body.authLandingActive .authPortalNote {
-  margin: 15px auto 0 !important;
-  max-width: 480px;
-  color: #738895 !important;
-  font-size: 12px;
-  line-height: 1.45;
+body.authLandingActive .authSecurityNote {
+  order: 5;
+  margin: 22px auto 0 !important;
+  max-width: 440px;
+  color: #748894 !important;
+  font-size: 11.5px;
+  line-height: 1.5;
   text-align: center;
 }
 
-body.authLandingActive .authPortalNote {
-  margin-top: 5px !important;
-}
-
 body.authLandingSignup main > section > .item:first-of-type {
-  margin: 0 0 22px !important;
+  order: 3;
+  margin: 0 0 18px !important;
   padding: 14px 16px;
   border: 1px solid #d7e8ec;
   border-radius: 14px;
@@ -348,14 +379,14 @@ body.authLandingSignup main > section > .item:first-of-type p {
   position: fixed;
   inset: 0 auto 0 0;
   z-index: 0;
-  width: var(--auth-left-width, 58vw);
+  width: var(--auth-left-width, 64vw);
   min-height: 100vh;
   overflow: hidden;
   color: #ffffff;
   background:
-    linear-gradient(90deg, rgba(4, 20, 29, 0.95) 0%, rgba(4, 20, 29, 0.72) 42%, rgba(4, 20, 29, 0.35) 100%),
-    linear-gradient(180deg, rgba(3, 17, 24, 0.2), rgba(3, 17, 24, 0.78)),
-    url('/auth-bathroom.jpg') center center / cover no-repeat,
+    linear-gradient(90deg, rgba(3, 17, 24, 0.86) 0%, rgba(3, 17, 24, 0.60) 43%, rgba(3, 17, 24, 0.26) 100%),
+    linear-gradient(180deg, rgba(2, 13, 19, 0.10) 0%, rgba(2, 13, 19, 0.42) 62%, rgba(2, 13, 19, 0.82) 100%),
+    url('/auth-bathroom.jpg') center 42% / cover no-repeat,
     #071820;
 }
 
@@ -364,31 +395,40 @@ body.authLandingSignup main > section > .item:first-of-type p {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 72% 42%, rgba(14, 215, 224, 0.12), transparent 25%),
-    linear-gradient(rgba(18, 218, 227, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(18, 218, 227, 0.045) 1px, transparent 1px);
-  background-size: auto, 50px 50px, 50px 50px;
+    radial-gradient(circle at 66% 38%, rgba(18, 218, 227, 0.16), transparent 26%),
+    radial-gradient(circle at 18% 78%, rgba(18, 218, 227, 0.10), transparent 28%),
+    linear-gradient(rgba(18, 218, 227, 0.026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 218, 227, 0.026) 1px, transparent 1px);
+  background-size: auto, auto, 56px 56px, 56px 56px;
+  pointer-events: none;
+}
+
+.authLandingShowcase::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset -40px 0 80px rgba(1, 10, 14, 0.26);
   pointer-events: none;
 }
 
 .authShowcaseShade {
   position: absolute;
   inset: auto 0 0;
-  height: 36%;
-  background: linear-gradient(180deg, transparent, rgba(3, 18, 27, 0.92));
+  height: 28%;
+  background: linear-gradient(180deg, transparent, rgba(2, 15, 22, 0.84));
   pointer-events: none;
 }
 
 .authShowcaseContent {
   position: relative;
   z-index: 1;
-  height: 100%;
   min-height: 100vh;
-  padding: clamp(26px, 3.1vw, 52px) clamp(30px, 4.1vw, 70px) 30px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: clamp(15px, 2vh, 24px);
+  box-sizing: border-box;
+  padding: clamp(26px, 2.5vw, 42px) clamp(34px, 3.6vw, 62px) 26px;
+  display: grid;
+  grid-template-rows: auto auto minmax(245px, 1fr) auto auto;
+  align-content: stretch;
+  gap: clamp(14px, 1.7vh, 21px);
 }
 
 .authShowcaseTop {
@@ -399,12 +439,12 @@ body.authLandingSignup main > section > .item:first-of-type p {
 }
 
 .authShowcaseBrand {
-  width: clamp(195px, 18vw, 280px);
-  padding: 9px 13px;
-  border: 1px solid rgba(255, 255, 255, 0.17);
-  border-radius: 14px;
+  width: clamp(188px, 16vw, 244px);
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.93);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.17);
 }
 
 .authShowcaseBrand img {
@@ -415,12 +455,12 @@ body.authLandingSignup main > section > .item:first-of-type p {
 }
 
 .authShowcasePromise {
-  padding-top: 3px;
+  padding-top: 4px;
   display: grid;
-  gap: 5px;
-  color: rgba(255, 255, 255, 0.73);
-  font-size: clamp(10px, 0.8vw, 13px);
-  letter-spacing: 0.045em;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: clamp(10px, 0.74vw, 12px);
+  letter-spacing: 0.055em;
 }
 
 .authShowcasePromise span::before {
@@ -431,16 +471,18 @@ body.authLandingSignup main > section > .item:first-of-type p {
 }
 
 .authShowcaseCopy {
-  max-width: 830px;
+  max-width: 820px;
+  align-self: end;
+  padding-top: clamp(12px, 1.5vh, 22px);
 }
 
 .authShowcaseCopy h1 {
   margin: 0;
-  font-size: clamp(48px, 5vw, 82px);
-  line-height: 0.98;
-  letter-spacing: -0.055em;
   color: #ffffff;
-  text-shadow: 0 10px 35px rgba(0, 0, 0, 0.22);
+  font-size: clamp(52px, 4.65vw, 78px);
+  line-height: 0.96;
+  letter-spacing: -0.055em;
+  text-shadow: 0 12px 36px rgba(0, 0, 0, 0.34);
 }
 
 .authShowcaseCopy h1 strong {
@@ -448,55 +490,59 @@ body.authLandingSignup main > section > .item:first-of-type p {
 }
 
 .authShowcaseCopy h2 {
-  margin: 15px 0 0;
+  margin: 14px 0 0;
   color: #ffffff;
-  font-size: clamp(20px, 1.75vw, 29px);
-  line-height: 1.15;
-  letter-spacing: -0.025em;
+  font-size: clamp(21px, 1.62vw, 28px);
+  line-height: 1.16;
+  text-shadow: 0 8px 25px rgba(0, 0, 0, 0.28);
 }
 
 .authShowcaseCopy p {
-  max-width: 720px;
-  margin: 15px 0 0;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: clamp(14px, 1.12vw, 18px);
+  max-width: 690px;
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(14px, 1vw, 17px);
   line-height: 1.55;
+  text-shadow: 0 6px 20px rgba(0, 0, 0, 0.34);
 }
 
 .authShowcasePrimary {
+  align-self: end;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(10px, 1.4vw, 20px);
+  gap: clamp(14px, 1.4vw, 22px);
 }
 
 .authShowcaseCard {
-  min-width: 0;
-  height: clamp(220px, 29vh, 315px);
-  padding: clamp(15px, 1.35vw, 22px);
   position: relative;
+  min-width: 0;
+  height: clamp(250px, 28vh, 310px);
+  padding: 22px 22px 0;
   overflow: hidden;
-  border: 1px solid rgba(18, 218, 227, 0.85);
-  border-radius: 21px;
-  background: linear-gradient(145deg, rgba(5, 31, 41, 0.87), rgba(6, 41, 50, 0.56));
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.24), inset 0 0 28px rgba(19, 214, 223, 0.04);
-  backdrop-filter: blur(10px);
+  border: 1px solid rgba(26, 224, 232, 0.88);
+  border-radius: 23px;
+  background: linear-gradient(180deg, rgba(5, 45, 58, 0.86) 0%, rgba(4, 31, 42, 0.72) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 18px 48px rgba(0, 0, 0, 0.22),
+    0 0 28px rgba(13, 214, 223, 0.08);
+  backdrop-filter: blur(8px);
 }
 
 .authShowcaseCardIcon {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
-  border: 2px solid var(--auth-cyan, #13d6df);
+  border: 2px solid var(--auth-cyan);
   border-radius: 999px;
-  color: var(--auth-cyan, #13d6df);
-  box-shadow: 0 0 24px rgba(19, 214, 223, 0.17);
+  color: var(--auth-cyan);
+  background: rgba(4, 25, 34, 0.28);
+  box-shadow: 0 0 22px rgba(19, 214, 223, 0.14);
 }
 
 .authShowcaseCardIcon svg,
 .authShowcaseTools svg {
-  width: 24px;
-  height: 24px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.7;
@@ -504,17 +550,22 @@ body.authLandingSignup main > section > .item:first-of-type p {
   stroke-linejoin: round;
 }
 
+.authShowcaseCardIcon svg {
+  width: 26px;
+  height: 26px;
+}
+
 .authShowcaseCard h3 {
-  margin: 13px 0 4px;
+  margin: 14px 0 4px;
   color: #ffffff;
-  font-size: clamp(17px, 1.25vw, 22px);
+  font-size: clamp(19px, 1.35vw, 24px);
+  line-height: 1.1;
 }
 
 .authShowcaseCard p {
   margin: 0;
-  min-height: 37px;
-  color: rgba(255, 255, 255, 0.83);
-  font-size: clamp(11px, 0.83vw, 14px);
+  color: rgba(255, 255, 255, 0.84);
+  font-size: clamp(12px, 0.82vw, 14px);
   line-height: 1.35;
 }
 
@@ -522,196 +573,227 @@ body.authLandingSignup main > section > .item:first-of-type p {
   position: absolute;
   left: 18px;
   right: 18px;
-  bottom: -22px;
-  height: clamp(95px, 13vh, 135px);
-  padding: 16px 15px;
-  border: 1px solid rgba(198, 224, 231, 0.95);
+  bottom: -18px;
+  height: 132px;
+  padding: 18px 16px;
+  overflow: hidden;
+  border: 1px solid rgba(205, 227, 234, 0.95);
   border-radius: 12px 12px 0 0;
-  background: linear-gradient(180deg, #ffffff, #eaf4f7);
-  color: #15313e;
-  transform: rotate(-2deg);
-  box-shadow: 0 -6px 20px rgba(3, 17, 24, 0.26);
+  background: #f8fcfd;
+  color: #17313d;
+  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.13);
+  transform: rotate(-1.2deg);
 }
 
 .authShowcaseCard:nth-child(2) .authShowcasePreview {
-  transform: rotate(1.5deg);
+  transform: rotate(1.1deg);
 }
 
 .authShowcaseCard:nth-child(3) .authShowcasePreview {
-  transform: rotate(-1deg);
+  transform: rotate(-0.6deg);
 }
 
 .authPreviewLabel {
   display: block;
-  margin-bottom: 11px;
-  font-size: 10px;
+  margin-bottom: 16px;
+  font-size: 11px;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 .authPreviewLine {
   display: block;
-  width: 64%;
+  width: 62%;
   height: 7px;
-  margin-top: 8px;
-  border-radius: 999px;
-  background: #d7e5e9;
+  margin: 9px 0;
+  border-radius: 99px;
+  background: #d8e7ed;
 }
 
-.authPreviewLine--wide { width: 88%; }
-.authPreviewLine--short { width: 46%; }
+.authPreviewLine--wide { width: 86%; }
+.authPreviewLine--short { width: 44%; }
 
 .authPreviewSignature {
   position: absolute;
-  right: 15px;
-  bottom: 18px;
-  color: #07a8b6;
-  font-family: cursive;
+  right: 18px;
+  bottom: 20px;
+  color: #10b9c6;
   font-size: 18px;
-  transform: rotate(-7deg);
+  font-style: italic;
 }
 
 .authPreviewProgress {
   position: absolute;
-  left: 15px;
-  right: 15px;
-  bottom: 18px;
-  height: 7px;
+  left: 16px;
+  right: 16px;
+  bottom: 22px;
+  height: 8px;
   overflow: hidden;
-  border-radius: 999px;
-  background: #d9e7eb;
+  border-radius: 99px;
+  background: #dce9ee;
 }
 
 .authPreviewProgress i {
   display: block;
-  width: 68%;
+  width: 58%;
   height: 100%;
-  background: linear-gradient(90deg, #0cb3bf, #13d6df);
+  border-radius: inherit;
+  background: linear-gradient(90deg, #12c1cc, #14d7df);
 }
 
 .authShowcaseTools {
-  padding: 0 4px;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
+  align-items: stretch;
+  border-top: 1px solid rgba(18, 218, 227, 0.16);
+  border-bottom: 1px solid rgba(18, 218, 227, 0.16);
+  background: rgba(3, 22, 31, 0.22);
+  backdrop-filter: blur(4px);
 }
 
 .authShowcaseTools > div {
   min-width: 0;
-  padding: 6px 5px;
-  display: grid;
-  justify-items: center;
-  gap: 5px;
-  color: var(--auth-cyan, #13d6df);
+  padding: 10px 6px 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: rgba(255, 255, 255, 0.9);
   text-align: center;
+  font-size: clamp(10px, 0.72vw, 12px);
+  line-height: 1.15;
 }
 
 .authShowcaseTools > div + div {
-  border-left: 1px solid rgba(19, 214, 223, 0.29);
+  border-left: 1px solid rgba(18, 218, 227, 0.18);
 }
 
-.authShowcaseTools span {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: clamp(9px, 0.68vw, 12px);
-  line-height: 1.18;
+.authShowcaseTools svg {
+  width: 25px;
+  height: 25px;
+  color: var(--auth-cyan);
 }
 
 .authShowcasePillars {
-  padding-top: 16px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px;
-  border-top: 1px solid rgba(19, 214, 223, 0.28);
+  gap: 20px;
+  border-top: 1px solid rgba(18, 218, 227, 0.2);
+  padding-top: 12px;
 }
 
 .authShowcasePillars > div {
-  min-width: 0;
-  padding-left: 15px;
-  border-left: 3px solid rgba(19, 214, 223, 0.74);
+  position: relative;
+  padding-left: 14px;
 }
 
-.authShowcasePillars b,
-.authShowcasePillars span {
-  display: block;
+.authShowcasePillars > div::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  border-radius: 99px;
+  background: var(--auth-cyan);
+  box-shadow: 0 0 14px rgba(19, 214, 223, 0.25);
 }
 
 .authShowcasePillars b {
+  display: block;
+  margin-bottom: 3px;
   color: #ffffff;
-  font-size: clamp(11px, 0.76vw, 13px);
+  font-size: clamp(11px, 0.82vw, 13px);
 }
 
 .authShowcasePillars span {
-  margin-top: 4px;
-  color: rgba(255, 255, 255, 0.68);
-  font-size: clamp(9px, 0.64vw, 11px);
-  line-height: 1.3;
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: clamp(9px, 0.68vw, 11px);
+  line-height: 1.25;
 }
 
-@media screen and (max-height: 790px) and (min-width: 901px) {
+@media (max-height: 850px) and (min-width: 981px) {
   .authShowcaseContent {
-    padding-top: 25px;
-    padding-bottom: 18px;
     gap: 11px;
+    padding-top: 22px;
+    padding-bottom: 18px;
   }
 
-  .authShowcaseCopy h1 { font-size: clamp(42px, 4.3vw, 70px); }
-  .authShowcaseCopy h2 { margin-top: 10px; }
-  .authShowcaseCopy p { margin-top: 9px; line-height: 1.4; }
-  .authShowcaseCard { height: 220px; }
-  .authShowcaseCardIcon { width: 39px; height: 39px; }
-  .authShowcaseCard h3 { margin-top: 8px; }
-  .authShowcasePillars { padding-top: 10px; }
-
-  body.authLandingActive header .head { padding-top: 28px; }
-  body.authLandingActive main { padding-top: 12px; padding-bottom: 28px; }
-}
-
-/* 36A2 tar full mobilpolering. I 36A1 skal mobil fortsatt være enkel og trygg. */
-@media screen and (max-width: 900px) {
-  body.authLandingActive {
-    --auth-left-width: 0px;
-    min-height: 100vh;
-    overflow-x: hidden;
-    background:
-      radial-gradient(circle at top, rgba(19, 214, 223, 0.16), transparent 34%),
-      #f4f8fa;
+  .authShowcaseCopy h1 {
+    font-size: clamp(46px, 4vw, 64px);
   }
 
-  body.authLandingActive #root {
-    width: 100%;
-    min-height: 100vh;
-    margin-left: 0;
+  .authShowcaseCopy h2 {
+    margin-top: 10px;
+    font-size: 20px;
   }
 
-  .authLandingShowcase {
-    display: none;
+  .authShowcaseCopy p {
+    margin-top: 9px;
+    font-size: 13px;
+  }
+
+  .authShowcaseCard {
+    height: 230px;
+    padding-top: 17px;
+  }
+
+  .authShowcasePreview {
+    height: 112px;
+  }
+
+  .authShowcaseTools > div {
+    padding-top: 7px;
+    padding-bottom: 7px;
   }
 
   body.authLandingActive header .head {
-    display: flex;
-    align-items: center;
-    padding: 22px 18px 5px;
+    padding-top: 26px;
+  }
+
+  body.authLandingActive main {
+    padding-top: 4px;
+    padding-bottom: 24px;
+  }
+}
+
+@media (max-width: 980px) {
+  body.authLandingActive {
+    overflow: auto;
+    background: #f7fafb;
+  }
+
+  body.authLandingActive .authLandingShowcase {
+    display: none !important;
+  }
+
+  body.authLandingActive #root {
+    position: static;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  body.authLandingActive header .head {
+    padding: 28px 22px 0;
   }
 
   body.authLandingActive header .head > div:first-child {
-    width: 210px !important;
-    height: 64px !important;
+    width: 220px !important;
+    height: 72px !important;
   }
 
   body.authLandingActive main {
     max-width: 560px;
-    padding: 18px 18px 34px;
+    padding: 8px 22px 32px;
   }
 
-  body.authLandingLogin main > section > h2::after,
-  body.authLandingSignup main > section > h2::after {
-    font-size: 30px;
-  }
-
-  body.authLandingActive main input,
-  body.authLandingActive main textarea,
-  body.authLandingActive main select {
-    min-height: 54px;
-    font-size: 16px;
+  body.authLandingActive main > section > h2 {
+    margin-top: 12px;
   }
 }
