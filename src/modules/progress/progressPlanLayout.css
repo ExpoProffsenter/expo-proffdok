@@ -22,4 +22,27 @@
   #expo-progress-plan-root .progress-session-heading > * {
     min-width: 0;
   }
+
+  /* Hele arbeidsoperasjonsfeltet bruker den eksisterende tidsknappen som klikkflate.
+     Dermed endres ingen React-logikk, samtidig som treffområdet blir stort og tydelig. */
+  #expo-progress-plan-root .progress-activity-cell {
+    position: relative;
+  }
+
+  #expo-progress-plan-root .progress-time-link {
+    font-size: 14px;
+    line-height: 1.35;
+    padding: 7px 0;
+  }
+
+  #expo-progress-plan-root .progress-time-link::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+  }
+
+  #expo-progress-plan-root .progress-activity-cell:has(.progress-time-link):hover {
+    background: #f5fafb;
+  }
 }
