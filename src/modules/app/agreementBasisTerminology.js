@@ -1,15 +1,22 @@
-// Expo ProffDok – FASE 33B.5 / 33B.6
+// Expo ProffDok – FASE 34B / FASE 33B.5 / 33B.6
 // Kun presentasjon: eksisterende intern tab-/datanøkkel `tilbud` beholdes urørt.
 // Dette lar eldre og direkte opprettede prosjekter fungere uten migrering samtidig
 // som brukerflaten konsekvent omtaler samlet tilbud/kontrakt/endringer som Avtalegrunnlag.
 // Noen få tekniske HJELP-/brukertekster normaliseres også til vanlig proffspråk.
 // FASE 33B.6 presiserer at kontrakt fortsatt er valgfritt for vanlige prosjekter,
 // men kreves før dokumentert tetthetsgaranti kan utstedes.
+// FASE 34B forklarer at digital tilbudsaksept bekreftes på e-post til kunden og
+// varsles til brukeren som publiserte den aksepterte tilbudsversjonen.
 
 const REPLACEMENTS = [
   ["Tilbud / kontrakt", "Avtalegrunnlag"],
   ["Tilbud/kontrakt", "Avtalegrunnlag"],
   ["Sist oppdatert: 31.08.2026", "Sist oppdatert: 01.09.2026"],
+  ["Sist oppdatert: 01.09.2026", "Sist oppdatert: 04.09.2026"],
+  [
+    "Når kunden aksepterer, knyttes aksepten til den publiserte tilbudsversjonen og valgte opsjoner.",
+    "Når kunden aksepterer, knyttes aksepten til den publiserte tilbudsversjonen og valgte opsjoner. Kunden får automatisk en bekreftelse på e-post, og brukeren som publiserte den aksepterte tilbudsversjonen varsles på e-post.",
+  ],
   [
     "Et prosjekt uten tilbud og uten kontrakt er en gyldig normaltilstand; Avtalegrunnlag blir da bare stedet der eventuelle senere avtaledokumenter og endringer kan samles.",
     "Et prosjekt uten tilbud og uten kontrakt er helt normalt. Avtalegrunnlag er da stedet der du kan samle eventuelle avtaledokumenter og senere endringer.",
