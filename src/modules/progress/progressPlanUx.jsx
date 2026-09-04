@@ -3,6 +3,7 @@
 // mens eksport holdes som et eget naturlig ansvar for å unngå å gjøre hovedkomponenten større.
 import React, { useState } from 'react';
 import './progressPlanLayout.css';
+import './progressPlanExport.css';
 import { ProgressPlanExportActions } from './progressPlanExport.jsx';
 import {
   installProgressPlanUx as installProgressPlanUxV2,
