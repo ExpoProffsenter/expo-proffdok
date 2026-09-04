@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { buildProgressPlanPdf } from "../_shared/progress-plan-pdf.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,6 +24,15 @@ const escapeHtml = (value: unknown) => String(value ?? "")
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;")
   .replaceAll("'", "&#039;");
+
+function bytesToBase64(bytes: Uint8Array) {
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(offset, Math.min(offset + chunkSize, bytes.length)));
+  }
+  return btoa(binary);
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -99,11 +109,41 @@ serve(async (req) => {
 
     const projectName = clean(project?.data?.project?.projectName || project?.title || "Prosjekt");
     const projectAddress = clean(project?.data?.project?.address || "");
+    const projectCustomer = clean(project?.data?.project?.customer || project?.data?.project?.customerName || "");
     const companyName = clean(project?.data?.company?.name || project?.data?.company?.companyName || "Expo ProffDok");
     const logoUrl = clean(project?.data?.company?.logoUrl || "https://expo-proffdok.app/expo-logo.png");
     const targetTab = mailKind === "progress_plan" ? "fremdrift" : "prosjektinfo";
     const projectLink = `https://expo-proffdok.app/?project=${encodeURIComponent(projectId)}&tab=${encodeURIComponent(targetTab)}`;
     const safeMessage = escapeHtml(message).replaceAll("\n", "<br>");
+
+    const attachments: Array<{ filename: string; content: string }> = [];
+    let progressPdfFilename = "";
+
+    if (mailKind === "progress_plan") {
+      const { data: progressRow, error: progressError } = await userClient
+        .from("project_progress_plans")
+        .select("plan")
+        .eq("project_id", projectId)
+        .maybeSingle();
+      if (progressError) throw new HttpError(500, "Kunne ikke hente fremdriftsplanen for PDF.");
+      if (!progressRow?.plan) throw new HttpError(400, "Lagre fremdriftsplanen før den sendes som PDF.");
+
+      const progressPdf = await buildProgressPlanPdf({
+        projectName,
+        address: projectAddress,
+        customer: projectCustomer,
+        companyName,
+        plan: progressRow.plan,
+      });
+      if (progressPdf.bytes.length > 6_000_000) {
+        throw new HttpError(400, "Fremdriftsplanens PDF ble for stor til å sendes som vedlegg.");
+      }
+      progressPdfFilename = progressPdf.filename;
+      attachments.push({
+        filename: progressPdf.filename,
+        content: bytesToBase64(progressPdf.bytes),
+      });
+    }
 
     const html = `
       <div style="margin:0;padding:24px;background:#eef3f4;font-family:Arial,Helvetica,sans-serif;color:#172126;">
@@ -119,11 +159,20 @@ serve(async (req) => {
           <div style="padding:28px;">
             <h2 style="margin:0 0 14px;font-size:21px;">${escapeHtml(subject)}</h2>
             ${safeMessage ? `<div style="font-size:15px;line-height:1.65;color:#334155;margin-bottom:24px;">${safeMessage}</div>` : ""}
+            ${mailKind === "progress_plan" ? `<div style="margin:0 0 22px;padding:12px 14px;background:#f2fafb;border:1px solid #cfe6e8;border-radius:10px;color:#275b60;font-size:13px;font-weight:700;">Fremdriftsplanen er vedlagt som PDF.</div>` : ""}
             <a href="${projectLink}" style="display:inline-block;background:#0c858e;color:#fff;text-decoration:none;font-weight:900;padding:13px 20px;border-radius:10px;">Åpne Expo ProffDok</a>
             <p style="margin:26px 0 0;color:#64748b;font-size:12px;">Denne e-posten er sendt til deg fordi du er registrert som prosjektinvolvert.</p>
           </div>
         </div>
       </div>`;
+
+    const resendPayload: Record<string, unknown> = {
+      from: fromEmail,
+      to: [toEmail],
+      subject: `${subject} – ${projectName}`,
+      html,
+    };
+    if (attachments.length) resendPayload.attachments = attachments;
 
     const resendResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -131,7 +180,7 @@ serve(async (req) => {
         Authorization: `Bearer ${resendKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from: fromEmail, to: [toEmail], subject: `${subject} – ${projectName}`, html }),
+      body: JSON.stringify(resendPayload),
     });
     const resendResult = await resendResponse.text();
     if (!resendResponse.ok) throw new HttpError(resendResponse.status, resendResult || "Kunne ikke sende e-post.");
@@ -147,7 +196,11 @@ serve(async (req) => {
       console.error("E-post sendt, men prosjektvarsel kunne ikke lagres:", noticeError.message);
     }
 
-    return new Response(JSON.stringify({ ok: true, noticeSaved: !noticeError }), {
+    return new Response(JSON.stringify({
+      ok: true,
+      noticeSaved: !noticeError,
+      attachment: progressPdfFilename || null,
+    }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
