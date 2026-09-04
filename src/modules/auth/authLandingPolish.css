@@ -4,40 +4,40 @@
 body.authLandingActive .authLandingShowcase {
   background:
     linear-gradient(90deg,
-      rgba(2, 15, 22, 0.82) 0%,
-      rgba(2, 17, 24, 0.58) 28%,
-      rgba(2, 17, 24, 0.20) 58%,
-      rgba(2, 17, 24, 0.06) 100%),
+      rgba(2, 13, 20, 0.76) 0%,
+      rgba(2, 16, 23, 0.50) 28%,
+      rgba(2, 17, 24, 0.16) 58%,
+      rgba(2, 17, 24, 0.03) 100%),
     linear-gradient(180deg,
-      rgba(3, 18, 27, 0.05) 0%,
-      rgba(3, 18, 27, 0.04) 46%,
-      rgba(3, 18, 27, 0.62) 100%),
-    url('https://images.unsplash.com/photo-1716078103276-133ae3e98424?auto=format&fit=crop&fm=jpg&q=78&w=2200') 64% 52% / cover no-repeat,
+      rgba(3, 16, 23, 0.03) 0%,
+      rgba(3, 16, 23, 0.03) 45%,
+      rgba(3, 16, 23, 0.60) 100%),
+    url('https://images.unsplash.com/photo-1716078103276-133ae3e98424?auto=format&fit=crop&fm=jpg&q=82&w=2400') 64% 52% / cover no-repeat,
     url('/auth-bathroom.jpg') 68% 45% / cover no-repeat,
     #061923 !important;
   box-shadow:
-    inset -28px 0 80px rgba(0, 220, 232, 0.14),
-    inset 0 -150px 170px rgba(1, 14, 22, 0.48);
+    inset -36px 0 105px rgba(0, 220, 232, 0.16),
+    inset 0 -150px 180px rgba(1, 13, 21, 0.50);
 }
 
-/* Shiny cyan lys/refleks i glass og gulv, uten neon over hele siden. */
+/* Cyan glasslys + varmere lys rundt speil/tak for mer hotell/premium-følelse. */
 body.authLandingActive .authLandingShowcase::before {
   background:
-    radial-gradient(ellipse at 72% 38%, rgba(22, 225, 235, 0.30) 0%, rgba(11, 190, 204, 0.09) 24%, transparent 48%),
-    radial-gradient(ellipse at 66% 79%, rgba(15, 205, 220, 0.18) 0%, transparent 40%),
-    linear-gradient(90deg, rgba(15, 218, 228, 0.025) 1px, transparent 1px),
-    linear-gradient(rgba(15, 218, 228, 0.025) 1px, transparent 1px) !important;
-  background-size: auto, auto, 54px 54px, 54px 54px !important;
+    radial-gradient(ellipse at 69% 39%, rgba(22, 225, 235, 0.32) 0%, rgba(11, 190, 204, 0.10) 24%, transparent 49%),
+    radial-gradient(ellipse at 66% 79%, rgba(15, 205, 220, 0.20) 0%, transparent 40%),
+    radial-gradient(ellipse at 57% 11%, rgba(255, 182, 104, 0.22) 0%, rgba(255, 170, 88, 0.07) 22%, transparent 43%),
+    linear-gradient(90deg, rgba(15, 218, 228, 0.022) 1px, transparent 1px),
+    linear-gradient(rgba(15, 218, 228, 0.022) 1px, transparent 1px) !important;
+  background-size: auto, auto, auto, 54px 54px, 54px 54px !important;
   mix-blend-mode: screen;
-  opacity: 0.92;
+  opacity: 0.96;
 }
 
 body.authLandingActive .authShowcaseShade {
-  height: 25%;
-  background: linear-gradient(180deg, transparent, rgba(2, 14, 22, 0.70)) !important;
+  height: 23%;
+  background: linear-gradient(180deg, transparent, rgba(2, 14, 22, 0.72)) !important;
 }
 
-/* La mer av badet synes mellom overskrift og funksjonskort. */
 body.authLandingActive .authShowcaseContent {
   padding-top: clamp(24px, 2.6vw, 44px) !important;
   padding-bottom: 24px !important;
@@ -47,35 +47,42 @@ body.authLandingActive .authShowcaseCopy {
   max-width: 760px;
 }
 
+body.authLandingActive .authShowcaseCopy h1,
+body.authLandingActive .authShowcaseCopy h2,
+body.authLandingActive .authShowcaseCopy p {
+  text-shadow: 0 4px 20px rgba(0,0,0,0.48);
+}
+
 body.authLandingActive .authShowcaseCopy p {
   max-width: 690px;
-  text-shadow: 0 2px 16px rgba(0,0,0,0.34);
 }
 
 /* Mer glass, dybde og glød i hovedkortene. */
 body.authLandingActive .authShowcaseCard {
   background:
-    linear-gradient(145deg, rgba(3, 32, 43, 0.72), rgba(2, 21, 31, 0.88)) !important;
-  border-color: rgba(24, 229, 237, 0.92) !important;
+    linear-gradient(145deg, rgba(3, 34, 45, 0.60), rgba(2, 20, 30, 0.79)) !important;
+  border-color: rgba(25, 232, 241, 0.94) !important;
   box-shadow:
-    0 22px 55px rgba(0, 0, 0, 0.32),
-    inset 0 1px 0 rgba(255,255,255,0.11),
-    0 0 34px rgba(8, 209, 221, 0.13) !important;
-  backdrop-filter: blur(10px) saturate(1.14);
+    0 24px 58px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    inset 0 -38px 70px rgba(0, 185, 201, 0.05),
+    0 0 38px rgba(8, 209, 221, 0.16) !important;
+  backdrop-filter: blur(14px) saturate(1.18);
+  -webkit-backdrop-filter: blur(14px) saturate(1.18);
 }
 
 body.authLandingActive .authShowcaseCard:hover {
   transform: translateY(-3px);
   box-shadow:
-    0 28px 62px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255,255,255,0.14),
-    0 0 42px rgba(8, 209, 221, 0.18) !important;
+    0 30px 66px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255,255,255,0.17),
+    0 0 46px rgba(8, 209, 221, 0.21) !important;
 }
 
 body.authLandingActive .authShowcasePreview {
   padding: 0 !important;
   overflow: hidden;
-  background: rgba(246, 251, 252, 0.98) !important;
+  background: rgba(246, 251, 252, 0.985) !important;
   box-shadow:
     0 -10px 30px rgba(2, 22, 30, 0.16),
     0 12px 34px rgba(0,0,0,0.18);
@@ -108,15 +115,11 @@ body.authLandingActive .authPreviewSignRow {
   gap: 9px;
 }
 
-body.authLandingActive .authPreviewDataRow {
-  margin: 7px 0;
-}
+body.authLandingActive .authPreviewDataRow { margin: 7px 0; }
 
 body.authLandingActive .authPreviewDataRow span,
 body.authLandingActive .authPreviewKeyValue span,
-body.authLandingActive .authPreviewSignRow span {
-  color: #38505d;
-}
+body.authLandingActive .authPreviewSignRow span { color: #38505d; }
 
 body.authLandingActive .authPreviewDataRow b,
 body.authLandingActive .authPreviewDataTotal b,
@@ -198,7 +201,7 @@ body.authLandingActive .authPreviewProgressRow > b {
 /* Høyre login-kort flyter over den mørke bakgrunnen som i referansebildet. */
 body.authLandingActive #root {
   background:
-    radial-gradient(circle at 5% 50%, rgba(13, 210, 222, 0.14), transparent 26%),
+    radial-gradient(circle at 4% 48%, rgba(13, 210, 222, 0.16), transparent 26%),
     #061923 !important;
 }
 
@@ -211,23 +214,11 @@ body.authLandingActive #root > div:not([role="status"]) {
     radial-gradient(circle at 72% 8%, rgba(19, 214, 223, 0.09), transparent 25%),
     linear-gradient(180deg, #ffffff 0%, #f8fbfc 100%) !important;
   box-shadow:
-    0 28px 70px rgba(0,0,0,0.28),
-    0 0 0 1px rgba(255,255,255,0.22);
+    0 30px 76px rgba(0,0,0,0.31),
+    0 0 0 1px rgba(255,255,255,0.24);
 }
 
-/* Login skal ikke få intern 100vh-scrollbar på desktop. */
-@media (min-width: 761px) {
-  body.authLandingLogin #root > div:not([role="status"]) {
-    height: calc(100vh - 36px) !important;
-    min-height: 0 !important;
-  }
-
-  body.authLandingLogin #root > div:not([role="status"]) > main {
-    overflow: visible;
-  }
-}
-
-/* AppUpdateNotice kan være et direkte barn av #root. Den må ALDRI arve auth-panelets 100vh. */
+/* AppUpdateNotice må aldri arve auth-panelets høyde. */
 body.authLandingActive #root > div[role="status"] {
   min-height: 0 !important;
   height: auto !important;
@@ -235,10 +226,6 @@ body.authLandingActive #root > div[role="status"] {
   flex: none !important;
   margin: 0 !important;
   background: #ffffff !important;
-}
-
-/* Oppdateringsinfo som kompakt toast i stedet for stor hvit blokk. */
-body.authLandingActive #root > div[role="status"] {
   left: auto !important;
   right: 28px !important;
   bottom: 28px !important;
@@ -259,7 +246,62 @@ body.authLandingActive #root > div[role="status"] button {
   box-shadow: none;
 }
 
+/* Desktop-finish: kortene opp, mer bad synlig og login som faktisk flytende kort. */
+@media (min-width: 1181px) {
+  body.authLandingActive .authShowcaseContent {
+    justify-content: flex-start !important;
+    gap: 12px !important;
+  }
+
+  body.authLandingActive .authShowcaseCopy {
+    margin-top: 16px;
+  }
+
+  body.authLandingActive .authShowcasePrimary {
+    margin-top: clamp(70px, 9vh, 104px) !important;
+  }
+
+  body.authLandingActive .authShowcaseTools,
+  body.authLandingActive .authShowcasePillars {
+    margin-top: 0 !important;
+  }
+
+  body.authLandingLogin #root {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+  }
+
+  body.authLandingLogin #root > div:not([role="status"]) {
+    width: calc(100% - 22px);
+    height: min(820px, calc(100vh - 92px)) !important;
+    min-height: min(720px, calc(100vh - 92px)) !important;
+    max-height: 820px;
+    margin: 0 22px 0 0 !important;
+    border-radius: 34px;
+  }
+
+  body.authLandingLogin header .head {
+    padding-top: 34px !important;
+    padding-bottom: 4px !important;
+  }
+
+  body.authLandingLogin main {
+    padding-top: 14px !important;
+    padding-bottom: 28px !important;
+  }
+
+  body.authLandingLogin #root > div:not([role="status"]) > main {
+    overflow: visible;
+  }
+}
+
 @media (max-width: 1180px) and (min-width: 761px) {
+  body.authLandingLogin #root > div:not([role="status"]) {
+    height: calc(100vh - 36px) !important;
+    min-height: 0 !important;
+  }
+
   body.authLandingActive #root > div[role="status"] {
     right: 18px !important;
     bottom: 18px !important;
