@@ -3,6 +3,10 @@ import {
   STANDARD_PROGRESS_OPERATIONS,
   buildStandardProgressActivity,
 } from '../src/modules/progress/progressPlanStandardOperations.js';
+import {
+  buildProgressPlanIcs,
+  progressPlanCalendarFileName,
+} from '../src/modules/progress/progressPlanCalendarExport.js';
 
 const fail = (message) => {
   console.error(`❌ Fremdriftsplan QA: ${message}`);
@@ -80,6 +84,51 @@ if (standardActivity.sessions.length !== 0 || standardActivity.status !== 'Ikke 
   fail('ny standard arbeidsoperasjon skal starte uten planlagt tid og med status Ikke startet');
 }
 
+// Kalender-eksport skal være ren, standardisert og bruke lagrede arbeidsøkter.
+const calendarFixture = {
+  version: 1,
+  activities: [
+    {
+      id: 'calendar-test-activity',
+      title: 'Rørlegger',
+      trade: 'Rørlegger',
+      resource: 'Testfirma',
+      status: 'Ikke startet',
+      sessions: [
+        {
+          id: 'calendar-test-session',
+          date: '2026-09-07',
+          startTime: '08:00',
+          endTime: '16:00',
+          note: 'Syntetisk kalender-QA',
+        },
+      ],
+    },
+  ],
+};
+
+const ics = buildProgressPlanIcs({
+  projectId: 'calendar-test-project',
+  meta: { title: 'Testprosjekt', address: 'Testveien 1' },
+  plan: calendarFixture,
+  now: new Date('2026-09-04T12:00:00Z'),
+});
+
+for (const required of [
+  'BEGIN:VCALENDAR',
+  'BEGIN:VEVENT',
+  'DTSTART;TZID=Europe/Oslo:20260907T080000',
+  'DTEND;TZID=Europe/Oslo:20260907T160000',
+  'SUMMARY:Rørlegger – Testprosjekt',
+  'LOCATION:Testveien 1',
+  'END:VCALENDAR',
+]) {
+  if (!ics.includes(required)) fail(`kalender-eksport mangler ${required}`);
+}
+if (progressPlanCalendarFileName({ title: 'Test prosjekt' }) !== 'Test-prosjekt-fremdrift.ics') {
+  fail('kalenderfil får ikke forventet filnavn');
+}
+
 const serialized = JSON.stringify(fixture).toLowerCase();
 for (const forbidden of ['@', 'publictoken', 'customeremail', 'amount', 'request_ref']) {
   if (serialized.includes(forbidden)) {
@@ -87,4 +136,4 @@ for (const forbidden of ['@', 'publictoken', 'customeremail', 'amount', 'request
   }
 }
 
-console.log('✅ Expo ProffDok fremdriftsplan check OK – generisk tilbudsimport og 13 standard arbeidsoperasjoner er verifisert');
+console.log('✅ Expo ProffDok fremdriftsplan check OK – tilbudsimport, 13 standard arbeidsoperasjoner og kalender-eksport er verifisert');
