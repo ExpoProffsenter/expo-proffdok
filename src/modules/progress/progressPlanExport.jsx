@@ -1,5 +1,5 @@
 // Expo ProffDok – FASE 35B
-// Profesjonell utskrift / PDF av lagret fremdriftsplan.
+// Utskrift / PDF av lagret fremdriftsplan.
 // Eksporten leser kun lagret prosjekt- og fremdriftsdata og skriver aldri tilbake.
 
 import React, { useState } from 'react';
@@ -349,7 +349,7 @@ export function ProgressPlanExportActions({ projectId, dirty = false }) {
     <div className="progress-export-toolbar" aria-label="Fremdrift eksport">
       <div>
         <span>Fase 35B · Deling og eksport</span>
-        <strong>Profesjonell fremdriftsplan</strong>
+        <strong>Fremdriftsplan</strong>
         <small>{dirty ? 'Lagre endringene før utskrift.' : 'A4 liggende · skriv ut eller lagre som PDF.'}</small>
       </div>
       <button type="button" onClick={print} disabled={!projectId || working || dirty}>
