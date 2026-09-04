@@ -1,10 +1,13 @@
 // Expo ProffDok – FASE 35B HJELP
-// Legger Fremdrift og Prosjektinvolverte inn som egne kollapsbare hjelpetemaer.
+// Legger Fremdrift og Prosjektinvolverte inn som egne kollapsbare hjelpetemaer,
+// og supplerer eksisterende Prosjektinformasjon/beskrivelse med prosjektinvolverte.
 
 const PROGRESS_MARKER = 'data-expo-progress-help';
 const PARTICIPANTS_MARKER = 'data-expo-participants-help';
+const PROJECT_INFO_PARTICIPANTS_MARKER = 'data-expo-project-info-participants-help';
 const PROGRESS_TITLE = '📅 Fremdrift / fremdriftsplan';
 const PARTICIPANTS_TITLE = '👥 Prosjektinvolverte / prosjektmail';
+const PROJECT_INFO_TITLE = '📝 Prosjektinformasjon/beskrivelse';
 const ANCHOR_TITLE = '📐 Prosjektering';
 const FALLBACK_ANCHOR_TITLE = '🚀 Startside / kom i gang';
 const HELP_UPDATED_LABEL = 'Sist oppdatert: 04.09.2026';
@@ -99,7 +102,7 @@ function createProgressItem() {
         items: [
           'Åpne Gantt / PDF lager en egen utskriftsvisning av den lagrede planen.',
           'Gantt-planen bruker Prosjektuke 1, Prosjektuke 2, Prosjektuke 3 osv. Antall prosjektuker bestemmes automatisk av planens faktiske datoer og er ikke begrenset til fem uker.',
-          'Under hver prosjektuke vises også faktisk kalenderuke og datoer.',
+          'Under hver prosjektuke vises også faktisk kalenderuke og datoer. Har samme arbeidsoperasjon flere økter i samme uke, vises hver dato og tid separat.',
           'Lange planer deles automatisk i flere Gantt-seksjoner slik at ukehodene forblir lesbare.',
           'I utskriftsvisningen kan du velge Lagre som PDF eller Skriv ut. Utskriftsdialogen åpnes først når du selv velger dette.',
         ],
@@ -153,6 +156,41 @@ function createParticipantsItem() {
   });
 }
 
+function enrichProjectInfoHelp(labels) {
+  const projectInfoLabel = labels.find((label) => clean(label.textContent) === PROJECT_INFO_TITLE);
+  const item = projectInfoLabel?.closest('.item');
+  if (!item) return;
+
+  const existing = item.querySelector(`[${PROJECT_INFO_PARTICIPANTS_MARKER}="1"]`);
+  if (existing) return;
+
+  const content = Array.from(item.children).find((child) => child.tagName === 'DIV');
+  if (!content) return;
+
+  const section = document.createElement('div');
+  section.setAttribute(PROJECT_INFO_PARTICIPANTS_MARKER, '1');
+
+  const heading = document.createElement('h4');
+  heading.textContent = 'Prosjektinvolverte og prosjektmail';
+  heading.style.marginTop = '18px';
+  heading.style.marginBottom = '6px';
+
+  const intro = document.createElement('p');
+  intro.textContent = 'Når prosjektet er opprettet, får Prosjektoversikt en egen seksjon for Prosjektinvolverte. Den brukes som felles kontakt- og distribusjonsliste for prosjektet.';
+  intro.style.marginTop = '0';
+
+  const list = createList([
+    'Registrer navn, firma, rolle, e-post og telefon på personer som er involvert i prosjektet.',
+    'Velg Prosjektmail på de personene som skal motta felles prosjektmeldinger og fremdriftsplaner.',
+    'Send en e-post brukes til felles utsending til de valgte prosjektinvolverte.',
+    'Innloggede mottakere får ved neste innlogging varsel om at prosjektinformasjon kan være endret, med henvisning til utsendt e-post.',
+    'Prosjektinvolverte registreres først når prosjektet faktisk er opprettet og lagret.',
+  ]);
+
+  section.append(heading, intro, list);
+  content.appendChild(section);
+}
+
 function adaptHelp() {
   if (typeof document === 'undefined') return;
   Array.from(document.querySelectorAll('span')).forEach((item) => {
@@ -160,6 +198,8 @@ function adaptHelp() {
   });
 
   const labels = Array.from(document.querySelectorAll('button b'));
+  enrichProjectInfoHelp(labels);
+
   const anchorLabel = labels.find((label) => clean(label.textContent) === ANCHOR_TITLE)
     || labels.find((label) => clean(label.textContent) === FALLBACK_ANCHOR_TITLE);
   const anchorItem = anchorLabel?.closest('.item');
