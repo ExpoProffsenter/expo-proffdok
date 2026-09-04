@@ -1,7 +1,7 @@
 # Expo ProffDok – Befaring / Tilbud / Aksept / Kontrakt
 
 **Status:** Produksjonskoblet Sales-modul  
-**Oppdatert:** Fase 34B – 04.09.2026
+**Oppdatert:** Fase 35A – 04.09.2026
 
 Sales håndterer flyten fra forespørsel til eventuelt ProffDok-prosjekt. Etter akseptert tilbud kan brukeren frivillig opprette Expo-kontrakt, laste opp egen kontrakt eller gå videre uten kontrakt. Prosjekt kan også opprettes direkte uten Sales/tilbud.
 
@@ -49,6 +49,30 @@ Tilbud kan også opprettes uten befaring.
 - Sales recovery/hydration og IndexedDB-sikring av befaringsbilder skal ikke svekkes.
 - Eksisterende `contractFile` og gamle kontraktdokumenter er gyldig legacy.
 - Brukerflaten heter **Avtalegrunnlag**, mens intern prosjekt-/tabnøkkel `tilbud` / `data.tilbud` beholdes.
+
+## Fase 35A – Sales som kilde til forslag i fremdriftsplan
+
+Når et prosjekt stammer fra et akseptert tilbud kan fremdriftsmodulen lese det **låste aksepterte tilbudsgrunnlaget og de faktisk valgte opsjonene** og bruke hovedpostene som forslag til arbeidsoperasjoner.
+
+Dette er en enveis grense:
+
+```text
+akseptert tilbud + valgte opsjoner
+  → leses av fremdriftsmodulen
+  → kopieres til redigerbare arbeidsoperasjoner i prosjektet
+
+fremdriftsplan
+  ✕ skriver ikke tilbake til sales_offers
+  ✕ skriver ikke tilbake til sales_offer_versions
+  ✕ endrer ikke accepted_payload
+  ✕ endrer ikke kontrakt eller akseptbevis
+```
+
+Kun valgte opsjoner skal kunne påvirke forslagene. Dersom en valgt opsjon tilhører en hovedpost som ikke har grunnpris i tilbudet, kan hovedposten likevel bli en egen arbeidsoperasjon i fremdriftsplanen. Uvalgte opsjoner importeres ikke.
+
+Direkte opprettede prosjekter uten Sales-opphav bygger fremdriftsplan manuelt. Sales er derfor en valgfri kilde til forslag, ikke et krav for fremdriftsplanen.
+
+Selve fremdriftsplanen eies av `src/modules/progress/` og lagres separat fra Sales-historikken.
 
 ## Fase 34B – e-post ved tilbudsaksept
 
@@ -141,7 +165,7 @@ Serververnet ligger på `warranty_registry`. Etter utstedt garanti kan prosjekte
 
 `critical-sales-recovery-check.mjs` er obligatorisk del av build. En tom eller uhydrert tilbudskladd skal aldri overskrive nyere serverdata.
 
-Ved endringer i Sales skal minst følgende verifiseres før merge:
+Ved endringer i Sales eller integrasjoner som leser Sales-grunnlaget skal minst følgende verifiseres før merge:
 
 - critical build
 - critical Sales recovery
@@ -150,4 +174,5 @@ Ved endringer i Sales skal minst følgende verifiseres før merge:
 - gammel og ny salgssak ved relevant endring
 - offentlig tilbud/aksept ved relevant endring
 - e-post-/Edge-status ved kommunikasjonsendringer
+- at immutable tilbud/aksept ikke endres av prosjektfunksjoner
 - HJELP samme runde ved brukerrettet flyt

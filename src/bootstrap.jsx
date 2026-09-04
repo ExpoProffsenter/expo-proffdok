@@ -8,9 +8,13 @@
 // FASE 29E1: Aktivert prosjekt bruker gjennomføringsflyt; tidligere salgsflyt beholdes som Salgsgrunnlag.
 // FASE 30D1: Full reload fra intern Befaring/Tilbud bruker en engangsmarkør og åpner
 // salgfanen igjen etter at hovedappen er rendret. main.jsx endres ikke.
+// FASE 35A: Fremdriftsplan ligger i eget prosjektlag. Den ene navigasjonsadapteren startes
+// først når faktisk intern prosjektmeny eller verifisert kunde-/UE-meny er rendret.
 import { installGlobalStorageImageOptimizer } from './modules/images/imageUploadOptimizer.js';
 import { installProjectWorkflowUx } from './modules/project/projectWorkflowUx.js';
 import { installSalesInspectionHistoryUx } from './modules/project/salesInspectionHistoryUx.js';
+import { installProgressPlanUx } from './modules/progress/progressPlanUx.jsx';
+import { installProgressPlanHelpUx } from './modules/progress/progressPlanHelpUx.js';
 
 installGlobalStorageImageOptimizer({
   maxDimension: 2560,
@@ -18,6 +22,58 @@ installGlobalStorageImageOptimizer({
 });
 installProjectWorkflowUx();
 installSalesInspectionHistoryUx();
+installProgressPlanHelpUx();
+
+function installProgressPlanAtSecureUiBoundary() {
+  const params = new URLSearchParams(window.location.search);
+  const hasProjectLink = params.has('project');
+  const role = String(params.get('role') || params.get('access') || '').trim().toLowerCase();
+  const isPortalRole =
+    hasProjectLink &&
+    role !== 'admin' &&
+    (role === '' || role === 'kunde' || role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør');
+  if (!isPortalRole) return;
+
+  const isUnderleverandor =
+    role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør';
+
+  let observer = null;
+
+  const navLabels = (nav) =>
+    Array.from(nav.querySelectorAll('button')).map((button) =>
+      String(button.textContent || '').replace(/\s+/g, ' ').trim()
+    );
+
+  const internalProjectNavIsReady = () =>
+    Array.from(document.querySelectorAll('nav')).some((nav) => {
+      const labels = navLabels(nav);
+      return labels.includes('Prosjektoversikt') && labels.includes('Prosjektering') && labels.includes('Sjekklister');
+    });
+
+  const portalNavIsReady = () =>
+    Array.from(document.querySelectorAll('nav')).some((nav) => {
+      const labels = navLabels(nav);
+      return isUnderleverandor
+        ? labels.includes('Prosjektinformasjon') && labels.includes('Sjekklister')
+        : labels.includes('Oversikt') && labels.includes('Rapport') && labels.includes('Dokumentasjon');
+    });
+
+  const uiBoundaryIsReady = () =>
+    isPortalRole ? portalNavIsReady() : internalProjectNavIsReady();
+
+  const tryInstall = () => {
+    if (!uiBoundaryIsReady()) return false;
+    observer?.disconnect();
+    installProgressPlanUx();
+    return true;
+  };
+
+  if (tryInstall()) return;
+  observer = new MutationObserver(tryInstall);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+}
+
+installProgressPlanAtSecureUiBoundary();
 
 function installProjectDeviationShortcutRouting() {
   document.addEventListener(

@@ -39,6 +39,7 @@ import AppErrorBoundary from './modules/app/AppErrorBoundary.jsx';
 import AppUpdateNotice from './modules/app/AppUpdateNotice.jsx';
 import AppNewsNotice from './modules/app/AppNewsNotice.jsx';
 import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';
+import { ProgressPlanProjectTab } from './modules/progress/progressPlanUx.jsx';
 import { APP_RUNTIME_STYLES, UNDERENTREPRENOR_RUNTIME_STYLES } from './modules/app/appRuntimeStyles.js';
 import {
   productSections, productCategoryOptions, productCheckpointTypeOptions, productCheckpointTypeLabels,
@@ -884,6 +885,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const dirtyTrackingPausedRef = (0, import_react.useRef)(false);
     const dirtyTrackingResumeTimerRef = (0, import_react.useRef)(null);
     const projectDirtyRef = (0, import_react.useRef)(false);
+    const progressPlanDirtyRef = (0, import_react.useRef)(false);
     const projectDirtyInitializedRef = (0, import_react.useRef)(false);
     const dirtyBaselineRef = (0, import_react.useRef)("");
     const newProjectTouchedRef = (0, import_react.useRef)(false);
@@ -1990,6 +1992,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       ["firma", "Firmaprofil"],
       ...isCompanyAdminUser ? [["firmaadmin", "Firma"]] : [],
       ["prosjektering", "Prosjektering"],
+      ["fremdrift", "Fremdrift"],
       ["produkter", "Produkter"],
       ["overflater", "Overflater og innredning"],
       ["bilder", "Bilder"],
@@ -2061,6 +2064,11 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     };
 
     const confirmLeaveWithUnsavedChanges = async (actionLabel = "fortsette") => {
+      if (progressPlanDirtyRef.current) {
+        const discardProgress = window.confirm(`Du har ulagrede endringer i fremdriftsplanen.\n\nGå videre uten å lagre?`);
+        if (!discardProgress) return false;
+        progressPlanDirtyRef.current = false;
+      }
       if (!projectDirtyRef.current) return true;
       const saveFirst = window.confirm(`Du har ulagrede endringer i prosjektet.\n\nVil du lagre før du ${actionLabel}?\n\nOK = Lagre og fortsett\nAvbryt = Velg om du vil fortsette uten å lagre`);
       if (saveFirst) {
@@ -2157,7 +2165,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       if (!id) return;
       setMobileStatusOpen(false);
       const projectWorkspaceOnlyTabs = new Set([
-        "prosjektinfo", "garanti", "prosjektering", "produkter", "overflater", "bilder", "tilgang",
+        "prosjektinfo", "garanti", "prosjektering", "fremdrift", "produkter", "overflater", "bilder", "tilgang",
         "installasjoner", "sjekklister", "avvik", "tilbud", "chat", "internt", "overtagelse", "rapport"
       ]);
       if (!hasActiveProjectWorkspace && projectWorkspaceOnlyTabs.has(id)) {
@@ -2175,6 +2183,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const canLeave = await confirmLeaveWithUnsavedChanges(`går til fanen "${tabs.find(([tabId]) => tabId === id)?.[1] || id}"`);
       if (!canLeave) return;
       setTab(id);
+      if (projectId && (id === "prosjekt" || projectWorkspaceOnlyTabs.has(id))) {
+        syncInternalProjectUrl(projectId, id);
+      }
       setMobileMenuOpen(false);
       setTimeout(() => scrollToMobileTabTarget(id), 90);
       setTimeout(() => scrollToMobileTabTarget(id), 320);
@@ -2443,9 +2454,11 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
 
     (0, import_react.useEffect)(() => {
       const warnBeforeUnload = (event) => {
-        if (!projectDirtyRef.current) return;
+        if (!projectDirtyRef.current && !progressPlanDirtyRef.current) return;
         event.preventDefault();
-        event.returnValue = "Du har ulagrede endringer i prosjektet.";
+        event.returnValue = progressPlanDirtyRef.current
+          ? "Du har ulagrede endringer i fremdriftsplanen."
+          : "Du har ulagrede endringer i prosjektet.";
         return event.returnValue;
       };
       window.addEventListener("beforeunload", warnBeforeUnload);
@@ -2554,8 +2567,20 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
     };
 
+    const syncInternalProjectUrl = (activeProjectId, activeTab = "prosjekt") => {
+      if (!activeProjectId || typeof window === "undefined") return;
+      const params = new URLSearchParams(window.location.search);
+      params.set("project", String(activeProjectId));
+      params.set("role", "admin");
+      params.delete("access");
+      params.set("tab", String(activeTab || "prosjekt"));
+      const query = params.toString();
+      const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash || ""}`;
+      window.history.replaceState({}, document.title, nextUrl);
+    };
+
     const openProjectById = async (id, targetTab = "rapport", options = {}) => {
-      if (projectDirtyRef.current && id !== projectId) {
+      if ((projectDirtyRef.current || progressPlanDirtyRef.current) && id !== projectId) {
         const canLeave = await confirmLeaveWithUnsavedChanges("åpner et annet prosjekt");
         if (!canLeave) return;
       }
@@ -2572,6 +2597,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setMobileCreatingProject(false);
       setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
       setTab(targetTab);
+      syncInternalProjectUrl(data.id, targetTab);
       setTimeout(() => scrollToMobileTabTarget(targetTab), 180);
       setTimeout(() => scrollToMobileTabTarget(targetTab), 420);
       if (options.showOpenDeviationsOnly) {
@@ -6396,6 +6422,10 @@ ${appLink}`;
             ] })
           ] })
         ] }),
+        tab === "fremdrift" && projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProgressPlanProjectTab, {
+          projectId,
+          onDirtyChange: (value) => { progressPlanDirtyRef.current = !!value; }
+        }),
         tab === "produkter" && renderProductSections({
           effectiveProductSections,
           getManualProductsForSection,
