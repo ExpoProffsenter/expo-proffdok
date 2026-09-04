@@ -21,8 +21,53 @@ installGlobalStorageImageOptimizer({
 });
 installProjectWorkflowUx();
 installSalesInspectionHistoryUx();
-installProgressPlanUx();
 installProgressPlanHelpUx();
+
+function installProgressPlanAtSecureUiBoundary() {
+  const params = new URLSearchParams(window.location.search);
+  const hasProjectLink = params.has('project');
+  const role = String(params.get('role') || params.get('access') || '').trim().toLowerCase();
+  const isPortalRole =
+    hasProjectLink &&
+    role !== 'admin' &&
+    (role === '' || role === 'kunde' || role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør');
+
+  if (!isPortalRole) {
+    installProgressPlanUx();
+    return;
+  }
+
+  const isUnderleverandor =
+    role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør';
+  let observer = null;
+  let timeoutId = null;
+
+  const portalNavIsReady = () =>
+    Array.from(document.querySelectorAll('nav')).some((nav) => {
+      const labels = Array.from(nav.querySelectorAll('button')).map((button) =>
+        String(button.textContent || '').replace(/\s+/g, ' ').trim()
+      );
+      return isUnderleverandor
+        ? labels.includes('Prosjektinformasjon') && labels.includes('Sjekklister')
+        : labels.includes('Oversikt') && labels.includes('Rapport') && labels.includes('Dokumentasjon');
+    });
+
+  const tryInstall = () => {
+    if (!portalNavIsReady()) return false;
+    observer?.disconnect();
+    if (timeoutId) window.clearTimeout(timeoutId);
+    installProgressPlanUx();
+    return true;
+  };
+
+  if (tryInstall()) return;
+
+  observer = new MutationObserver(tryInstall);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  timeoutId = window.setTimeout(() => observer?.disconnect(), 30 * 60 * 1000);
+}
+
+installProgressPlanAtSecureUiBoundary();
 
 function installProjectDeviationShortcutRouting() {
   document.addEventListener(
