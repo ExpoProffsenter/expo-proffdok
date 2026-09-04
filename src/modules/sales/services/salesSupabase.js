@@ -1,4 +1,9 @@
-// Expo ProffDok – FASE 32 / FASE 32A / FASE 30C2
+// Expo ProffDok – FASE 34B / FASE 32 / FASE 32A / FASE 30C2
+// FASE 34B sender serverstyrte, idempotente akseptvarsler til kunden og
+// brukeren som publiserte den eksakte tilbudsversjonen kunden aksepterte.
+// Varsling forsøkes kun som direkte følge av en ny digital aksept; åpning av
+// historiske aksepterte tilbud utløser aldri e-post. Selve aksept-RPC-en beholdes
+// uendret, og e-postfeil kan aldri reversere aksepten.
 // FASE 32 deler én standard Supabase-klient i hele Sales-modulen. Det hindrer
 // flere GoTrue/auth-klienter med samme browser-storage og lar bilde-/Storage-laget
 // bruke samme innloggede session som resten av Sales.
@@ -24,6 +29,7 @@ const TRACEABILITY_PAYLOAD_KEYS = [
   "__createdByName",
   "__createdAt",
 ];
+const ACCEPTANCE_NOTIFY_FUNCTION = "sales-offer-acceptance-notify";
 
 let sharedDefaultSalesSupabaseClient;
 
@@ -163,6 +169,33 @@ async function rememberOfferContentSignatures(client, rows = [], fallbackCompany
       // Fingeravtrykket er kun et ekstra sikkerhetsnett.
     }
   }
+}
+
+async function notifySalesOfferAcceptance(client, token) {
+  const publicOfferToken = String(token || "").trim();
+  if (!client?.functions?.invoke || !publicOfferToken) {
+    return { data: null, error: null };
+  }
+
+  return client.functions.invoke(ACCEPTANCE_NOTIFY_FUNCTION, {
+    body: { publicOfferToken },
+  });
+}
+
+export async function acceptSalesOffer(client, args = {}) {
+  const result = await core.acceptSalesOffer(client, args);
+
+  // Aksept er autoritativ og ferdig før e-post forsøkes. Varslingsfeil skal aldri
+  // gi kunden inntrykk av at aksepten feilet eller prøve å skrive aksepten om igjen.
+  if (!result?.error) {
+    try {
+      await notifySalesOfferAcceptance(client, args?.token);
+    } catch {
+      // Aksepten er allerede lagret. Varsling er sekundær og påvirker ikke aksepten.
+    }
+  }
+
+  return result;
 }
 
 export async function fetchSalesRequests(client, companyId) {
