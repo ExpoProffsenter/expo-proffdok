@@ -32,6 +32,9 @@ function ProgressPlanProjectTabInner({ projectId, onDirtyChange }) {
   return (
     <div className="progress-module-frame">
       <ProgressPlanExportActions projectId={projectId} dirty={dirty} />
+      <div className="progress-mail-attachment-note">
+        <strong>Prosjektmail:</strong> Fremdriftsplanen vedlegges automatisk som PDF ved ekte sending.
+      </div>
       <ProgressPlanCalendarAction projectId={projectId} dirty={dirty} />
       <ProgressPlanProjectTabV2 projectId={projectId} onDirtyChange={handleDirtyChange} />
     </div>
