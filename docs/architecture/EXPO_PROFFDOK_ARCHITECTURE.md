@@ -219,11 +219,14 @@ public.project_participants
 public.project_participant_notices
 ```
 
-Begge tabeller har prosjekt-/tilgangsbasert RLS. Migrasjon:
+Begge tabeller har prosjekt-/tilgangsbasert RLS. Produksjonsmigrasjoner:
 
 ```text
-20260904172100_fase35b_project_participants_and_notices.sql
+20260904172250  fase35b_project_participants_and_notices
+20260904191815  fase35b_participant_notice_read_only_update
 ```
+
+Den siste migrasjonen begrenser `authenticated` til kun å kunne oppdatere `read_at` på prosjektvarsler. Mottaker kan dermed markere varsel som lest, men kan ikke endre varselets prosjekt, mottaker, emne eller melding.
 
 Edge Function:
 
@@ -233,6 +236,8 @@ verify_jwt = true
 ```
 
 Funksjonen krever autentisert/godkjent bruker, verifiserer tilgang til prosjektet og verifiserer at mottakerens e-post finnes som aktiv prosjektinvolvert med `receive_email = true`. Klienten kan derfor ikke bruke funksjonen som vilkårlig e-postsender.
+
+Emne og melding har server-side lengdevern. `mailKind` normaliseres til prosjektmelding eller fremdriftsplan. Lenken i utsendt e-post bygges server-side og kan bare peke til riktig prosjekt/fane på `https://expo-proffdok.app`; klienten kan ikke injisere en ekstern lenke.
 
 Ved utsending opprettes prosjektvarsel i `project_participant_notices`. Innloggede brukere som matcher mottakerens e-post kan få varsel om at prosjektinformasjon kan være endret og markere varslet som lest.
 
@@ -342,7 +347,7 @@ HJELP forklarer i vanlig proffspråk blant annet:
 - flere økter samme uke viser hver dato og tid separat
 - korte PDF/utskrifter unngår unødvendig ekstra side
 - HJELP og arkitekturkart er oppdatert
-- aktive 35B Edge Functions/tabeller og RLS er verifisert
+- aktive 35B Edge Functions/tabeller, RLS og kolonnerettigheter er verifisert
 - utfasete midlertidige V1/V2-filer er fjernet
 
 Kontrollert ekte e-post/varselstest kan gjøres separat før produksjonsbruk dersom mottaker og testprosjekt er eksplisitt valgt. Det skal ikke gjøres gjennom trygg Preview.
