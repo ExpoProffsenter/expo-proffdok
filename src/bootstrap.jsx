@@ -37,6 +37,7 @@ function installProgressPlanAtSecureUiBoundary() {
   let observer = null;
   let placementObserver = null;
   let placementFrame = null;
+  let retainedInternalProgressButton = null;
 
   const navLabels = (nav) =>
     Array.from(nav.querySelectorAll('button')).map((button) =>
@@ -57,12 +58,27 @@ function installProgressPlanAtSecureUiBoundary() {
         : labels.includes('Oversikt') && labels.includes('Rapport') && labels.includes('Dokumentasjon');
     });
 
+  const rememberProgressButtonFromNode = (node) => {
+    if (!(node instanceof Element)) return;
+    if (node.matches?.('button[data-expo-progress-nav="1"]')) {
+      retainedInternalProgressButton = node;
+      return;
+    }
+    const nested = node.querySelector?.('button[data-expo-progress-nav="1"]');
+    if (nested instanceof HTMLButtonElement) retainedInternalProgressButton = nested;
+  };
+
   const placeInternalProgressButton = () => {
     if (isPortalRole) return;
     const nav = findInternalProjectNav();
     if (!nav) return;
 
-    const progressButton = nav.querySelector('button[data-expo-progress-nav="1"]');
+    const connectedProgressButton = nav.querySelector('button[data-expo-progress-nav="1"]');
+    if (connectedProgressButton instanceof HTMLButtonElement) {
+      retainedInternalProgressButton = connectedProgressButton;
+    }
+
+    const progressButton = connectedProgressButton || retainedInternalProgressButton;
     const prosjekteringButton = Array.from(nav.querySelectorAll('button')).find(
       (button) => String(button.textContent || '').replace(/\s+/g, ' ').trim() === 'Prosjektering'
     );
@@ -90,9 +106,15 @@ function installProgressPlanAtSecureUiBoundary() {
     installProgressPlanUx();
 
     if (!isPortalRole) {
-      scheduleInternalPlacement();
-      placementObserver = new MutationObserver(scheduleInternalPlacement);
+      placementObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach(rememberProgressButtonFromNode);
+          mutation.removedNodes.forEach(rememberProgressButtonFromNode);
+        });
+        scheduleInternalPlacement();
+      });
       placementObserver.observe(document.documentElement, { childList: true, subtree: true });
+      scheduleInternalPlacement();
     }
     return true;
   };
