@@ -8,9 +8,11 @@
 // FASE 29E1: Aktivert prosjekt bruker gjennomføringsflyt; tidligere salgsflyt beholdes som Salgsgrunnlag.
 // FASE 30D1: Full reload fra intern Befaring/Tilbud bruker en engangsmarkør og åpner
 // salgfanen igjen etter at hovedappen er rendret. main.jsx endres ikke.
+// FASE 35A: Fremdriftsplan ligger i eget prosjektlag og kobles inn uten å gjøre main.jsx større.
 import { installGlobalStorageImageOptimizer } from './modules/images/imageUploadOptimizer.js';
 import { installProjectWorkflowUx } from './modules/project/projectWorkflowUx.js';
 import { installSalesInspectionHistoryUx } from './modules/project/salesInspectionHistoryUx.js';
+import { installProgressPlanUx } from './modules/progress/progressPlanUx.jsx';
 
 installGlobalStorageImageOptimizer({
   maxDimension: 2560,
@@ -18,6 +20,7 @@ installGlobalStorageImageOptimizer({
 });
 installProjectWorkflowUx();
 installSalesInspectionHistoryUx();
+installProgressPlanUx();
 
 function installProjectDeviationShortcutRouting() {
   document.addEventListener(
