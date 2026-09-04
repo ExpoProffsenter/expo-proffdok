@@ -145,6 +145,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
   const [expandedActivityId, setExpandedActivityId] = useState('');
   const [weekOffset, setWeekOffset] = useState(0);
   const [showOperationPicker, setShowOperationPicker] = useState(false);
+  const [highlightedActivityId, setHighlightedActivityId] = useState('');
 
   const portalMode = mode === 'customer' || mode === 'underleverandor';
   const readOnly = portalMode || !!projectMeta?.locked;
@@ -280,11 +281,24 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
     }));
   };
 
+  const focusActivity = (activityId) => {
+    setExpandedActivityId(activityId);
+    setHighlightedActivityId(activityId);
+    window.setTimeout(() => {
+      const targets = Array.from(document.querySelectorAll(`[data-progress-activity-id="${activityId}"]`));
+      const target = targets.find((element) => element.offsetParent !== null) || targets[0];
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+    window.setTimeout(() => {
+      setHighlightedActivityId((current) => current === activityId ? '' : current);
+    }, 1800);
+  };
+
   const addOwnActivity = () => {
     const activity = newActivity();
     markPlan((prev) => ({ ...prev, activities: [...prev.activities, activity] }));
-    setExpandedActivityId(activity.id);
     setShowOperationPicker(false);
+    focusActivity(activity.id);
   };
 
   const addSuggestedActivity = (operation) => {
@@ -298,6 +312,8 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
     }
     const activity = normalizeActivity(buildStandardProgressActivity(operation, () => makeId('activity')));
     markPlan((prev) => ({ ...prev, activities: [...prev.activities, activity] }));
+    setShowOperationPicker(false);
+    focusActivity(activity.id);
     setNotice(`${operation.title} ble lagt til som arbeidsoperasjon.`);
   };
 
@@ -584,6 +600,20 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
         </div>
       </section>
 
+      {!readOnly ? (
+        <div className="progress-sticky-actions" aria-label="Fremdrift handlinger">
+          <button type="button" className="progress-secondary" onClick={() => setShowOperationPicker((value) => !value)}>
+            + Arbeidsoperasjoner
+          </button>
+          <button type="button" className="progress-secondary" onClick={addOwnActivity}>
+            + Egen arbeidsoperasjon
+          </button>
+          <button type="button" className="progress-primary" onClick={save} disabled={!dirty || saving}>
+            {saving ? 'Lagrer…' : dirty ? 'Lagre fremdriftsplan' : 'Lagret'}
+          </button>
+        </div>
+      ) : null}
+
       {!readOnly && showOperationPicker ? (
         <section className="progress-operation-picker">
           <div className="progress-picker-heading">
@@ -682,7 +712,10 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
                 const activitySessionsThisWeek = activity.sessions.filter((session) => visibleDateSet.has(session.date));
                 return (
                   <React.Fragment key={activity.id}>
-                    <div className="progress-activity-cell progress-sticky-left">
+                    <div
+                      data-progress-activity-id={activity.id}
+                      className={`progress-activity-cell progress-sticky-left${highlightedActivityId === activity.id ? ' progress-activity-highlight' : ''}`}
+                    >
                       <div className="progress-activity-title-row">
                         <strong>{activity.title || 'Arbeidsoperasjon'}</strong>
                         <span className={`progress-status ${statusClass(activity.status)}`}>{activity.status}</span>
@@ -726,7 +759,11 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
       <section className="progress-mobile-list">
         <span className="progress-eyebrow">Fremdrift</span>
         {activities.map((activity, activityIndex) => (
-          <article key={`mobile-${activity.id}`} className="progress-mobile-card">
+          <article
+            key={`mobile-${activity.id}`}
+            data-progress-activity-id={activity.id}
+            className={`progress-mobile-card${highlightedActivityId === activity.id ? ' progress-activity-highlight' : ''}`}
+          >
             <div className="progress-mobile-card-head">
               <strong>{activity.title}</strong>
               <span className={`progress-status ${statusClass(activity.status)}`}>{activity.status}</span>
