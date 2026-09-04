@@ -31,32 +31,69 @@ function installProgressPlanAtSecureUiBoundary() {
     hasProjectLink &&
     role !== 'admin' &&
     (role === '' || role === 'kunde' || role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør');
-
-  if (!isPortalRole) {
-    installProgressPlanUx();
-    return;
-  }
-
   const isUnderleverandor =
     role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør';
+
   let observer = null;
-  let timeoutId = null;
+  let placementObserver = null;
+  let placementFrame = null;
+
+  const navLabels = (nav) =>
+    Array.from(nav.querySelectorAll('button')).map((button) =>
+      String(button.textContent || '').replace(/\s+/g, ' ').trim()
+    );
+
+  const findInternalProjectNav = () =>
+    Array.from(document.querySelectorAll('nav')).find((nav) => {
+      const labels = navLabels(nav);
+      return labels.includes('Prosjektoversikt') && labels.includes('Prosjektering') && labels.includes('Sjekklister');
+    }) || null;
 
   const portalNavIsReady = () =>
     Array.from(document.querySelectorAll('nav')).some((nav) => {
-      const labels = Array.from(nav.querySelectorAll('button')).map((button) =>
-        String(button.textContent || '').replace(/\s+/g, ' ').trim()
-      );
+      const labels = navLabels(nav);
       return isUnderleverandor
         ? labels.includes('Prosjektinformasjon') && labels.includes('Sjekklister')
         : labels.includes('Oversikt') && labels.includes('Rapport') && labels.includes('Dokumentasjon');
     });
 
+  const placeInternalProgressButton = () => {
+    if (isPortalRole) return;
+    const nav = findInternalProjectNav();
+    if (!nav) return;
+
+    const progressButton = nav.querySelector('button[data-expo-progress-nav="1"]');
+    const prosjekteringButton = Array.from(nav.querySelectorAll('button')).find(
+      (button) => String(button.textContent || '').replace(/\s+/g, ' ').trim() === 'Prosjektering'
+    );
+    if (!(progressButton instanceof HTMLButtonElement) || !(prosjekteringButton instanceof HTMLButtonElement)) return;
+
+    if (prosjekteringButton.nextSibling !== progressButton) {
+      nav.insertBefore(progressButton, prosjekteringButton.nextSibling);
+    }
+  };
+
+  const scheduleInternalPlacement = () => {
+    if (isPortalRole || placementFrame) return;
+    placementFrame = window.requestAnimationFrame(() => {
+      placementFrame = null;
+      placeInternalProgressButton();
+    });
+  };
+
+  const uiBoundaryIsReady = () =>
+    isPortalRole ? portalNavIsReady() : !!findInternalProjectNav();
+
   const tryInstall = () => {
-    if (!portalNavIsReady()) return false;
+    if (!uiBoundaryIsReady()) return false;
     observer?.disconnect();
-    if (timeoutId) window.clearTimeout(timeoutId);
     installProgressPlanUx();
+
+    if (!isPortalRole) {
+      scheduleInternalPlacement();
+      placementObserver = new MutationObserver(scheduleInternalPlacement);
+      placementObserver.observe(document.documentElement, { childList: true, subtree: true });
+    }
     return true;
   };
 
@@ -64,7 +101,6 @@ function installProgressPlanAtSecureUiBoundary() {
 
   observer = new MutationObserver(tryInstall);
   observer.observe(document.documentElement, { childList: true, subtree: true });
-  timeoutId = window.setTimeout(() => observer?.disconnect(), 30 * 60 * 1000);
 }
 
 installProgressPlanAtSecureUiBoundary();
