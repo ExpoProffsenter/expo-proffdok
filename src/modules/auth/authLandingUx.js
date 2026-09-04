@@ -32,18 +32,46 @@ const svgIcon = (name) => {
   return icons[name] || icons.docs;
 };
 
+const previewMarkup = (preview) => {
+  if (preview === 'offer') {
+    return `
+      <div class="authPreviewDoc authPreviewDoc--offer">
+        <div class="authPreviewDocTitle">TILBUD</div>
+        <div class="authPreviewDataRow"><span>Rørleggerarbeid</span><b>32 450</b></div>
+        <div class="authPreviewDataRow"><span>Sanitærutstyr</span><b>18 900</b></div>
+        <div class="authPreviewDataRow"><span>Flisarbeid</span><b>27 800</b></div>
+        <div class="authPreviewDataTotal"><span>Sum eks. mva</span><b>79 150</b></div>
+      </div>`;
+  }
+
+  if (preview === 'contract') {
+    return `
+      <div class="authPreviewDoc authPreviewDoc--contract">
+        <div class="authPreviewDocTitle">KONTRAKT</div>
+        <div class="authPreviewKeyValue"><span>Prosjekt:</span><b>Bad totalrenovering</b></div>
+        <div class="authPreviewKeyValue"><span>Kunde:</span><b>Hansen AS</b></div>
+        <div class="authPreviewDivider"></div>
+        <div class="authPreviewSignRow"><span>Signatur</span><em>sign.</em></div>
+      </div>`;
+  }
+
+  return `
+    <div class="authPreviewDoc authPreviewDoc--progress">
+      <div class="authPreviewDocTitle">FREMDRIFT</div>
+      <div class="authPreviewProgressRow"><span>Rigg og klargjøring</span><i><u style="width:100%"></u></i><b>100%</b></div>
+      <div class="authPreviewProgressRow"><span>Rørleggerarbeid</span><i><u style="width:80%"></u></i><b>80%</b></div>
+      <div class="authPreviewProgressRow"><span>Flisarbeid</span><i><u style="width:45%"></u></i><b>45%</b></div>
+      <div class="authPreviewProgressRow"><span>Sluttkontroll</span><i><u style="width:8%"></u></i><b>0%</b></div>
+    </div>`;
+};
+
 const primaryCard = ({ icon, title, text, preview }) => `
   <article class="authShowcaseCard">
     <div class="authShowcaseCardIcon">${svgIcon(icon)}</div>
     <h3>${title}</h3>
     <p>${text}</p>
     <div class="authShowcasePreview authShowcasePreview--${preview}">
-      <span class="authPreviewLabel">${title.toUpperCase()}</span>
-      <span class="authPreviewLine authPreviewLine--wide"></span>
-      <span class="authPreviewLine"></span>
-      <span class="authPreviewLine authPreviewLine--short"></span>
-      ${preview === 'progress' ? '<span class="authPreviewProgress"><i></i></span>' : ''}
-      ${preview === 'contract' ? '<span class="authPreviewSignature">sign.</span>' : ''}
+      ${previewMarkup(preview)}
     </div>
   </article>`;
 
