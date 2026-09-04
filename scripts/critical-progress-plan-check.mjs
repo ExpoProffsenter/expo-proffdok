@@ -81,7 +81,22 @@ if (standardActivity.title !== 'Rørlegger' || standardActivity.trade !== 'Rørl
   fail('standardforslag for Rørlegger bygges ikke korrekt');
 }
 if (standardActivity.sessions.length !== 0 || standardActivity.status !== 'Ikke startet') {
-  fail('ny standard arbeidsoperasjon skal starte uten planlagt tid og med status Ikke startet');
+  fail('standardbygger uten valgt dato skal forbli datonøytral i build-test');
+}
+const scheduledStandardActivity = buildStandardProgressActivity(
+  { ...standardRorlegger, initialSessionDate: '2026-09-07' },
+  (() => {
+    let id = 0;
+    return () => `standard-scheduled-${++id}`;
+  })()
+);
+if (
+  scheduledStandardActivity.sessions.length !== 1 ||
+  scheduledStandardActivity.sessions[0]?.date !== '2026-09-07' ||
+  scheduledStandardActivity.sessions[0]?.startTime !== '08:00' ||
+  scheduledStandardActivity.sessions[0]?.endTime !== '16:00'
+) {
+  fail('standard arbeidsoperasjon med valgt dato skal få første økt 08:00–16:00 automatisk');
 }
 
 // Kalender-eksport skal være ren, standardisert og bruke lagrede arbeidsøkter.
@@ -136,4 +151,4 @@ for (const forbidden of ['@', 'publictoken', 'customeremail', 'amount', 'request
   }
 }
 
-console.log('✅ Expo ProffDok fremdriftsplan check OK – tilbudsimport, 13 standard arbeidsoperasjoner og kalender-eksport er verifisert');
+console.log('✅ Expo ProffDok fremdriftsplan check OK – tilbudsimport, 13 standard arbeidsoperasjoner, automatisk første økt og kalender-eksport er verifisert');
