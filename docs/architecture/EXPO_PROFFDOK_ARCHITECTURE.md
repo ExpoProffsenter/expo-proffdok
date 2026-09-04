@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
-**Fase:** 35B – fremdrift eksport/deling + prosjektinvolverte  
+**Fase:** 35C – fremdriftskalender + PDF-vedlegg  
 **Status:** Feature branch / Preview-QA – ikke merget  
 **Dato:** 04.09.2026  
-**Produksjonsbaseline ved oppstart:** `main` på `60e227efd9b1b95749a20ac141c44f7dfe45d776`  
+**Produksjonsbaseline ved oppstart:** `main` på `4d6fe8b2f8ebf6d09ac47f79683ea453e6e38878`  
 **Supabase:** `dqffxflaoyarbxyiyhop`
 
 Dette kartet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitetskrav som må bevares. Historiske detaljer finnes i Git.
@@ -24,7 +24,8 @@ Dette kartet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitet
 12. Modulisering gjøres bare ved naturlige ansvargrenser som gir reell oversikt eller mindre risiko.
 13. Brukerrettede endringer oppdaterer HJELP samme runde.
 14. Fremdriftsplan er operativ prosjektdata og skal aldri endre låst tilbuds-/aksepthistorikk.
-15. Vercel Preview skal være trygg testmodus for 35B-data og skal ikke sende ekte prosjektmail.
+15. Vercel Preview skal være trygg testmodus for Fremdrift/Prosjektinvolverte og skal aldri sende ekte prosjektmail eller skrive 35B/35C-testdata til produksjon.
+16. Kalender- og PDF-eksport skal alltid lese lagret fremdriftsdata; eksport skal ikke bli en ny sannhetskilde.
 
 ## 2. Plattform
 
@@ -37,7 +38,8 @@ Dette kartet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitet
 | Filer | Supabase Storage | Bilder og private/offentlige dokumenter |
 | E-post | Supabase Edge Functions + Resend | Befaring, tilbud, aksept, kontrakt, portal, chat og prosjektmeldinger |
 | Hosting | Vercel | Preview og Production |
-| PDF | jsPDF + nettleserutskrift | Rapport/tilbud/garanti/kontrakt og fremdriftsplan |
+| PDF | jsPDF + nettleserutskrift + `pdf-lib` i Edge Function | Rapport/tilbud/garanti/kontrakt, Fremdrift-utskrift og servergenerert fremdriftsvedlegg |
+| Kalender | standard `.ics` | Enveis eksport av daterte fremdriftsøkter til kalenderprogram |
 
 Produksjon: `https://expo-proffdok.app`
 
@@ -140,16 +142,18 @@ Direkte opprettede prosjekter uten Sales-opphav kan bygge planen manuelt og er l
 
 Desktop bruker ukeoversikt. Mobil bruker enklere aktivitetskort. Dirty-state er koblet til sentral guard mot å forlate ulagrede endringer. Fremdrift er isolert mot unødvendige parent-rerenderinger fra hovedprosjektets autolagring slik at pågående redigering ikke remountes.
 
-Ved **+ Egen arbeidsoperasjon** opprettes første økt automatisk med dato og standardtid `08:00–16:00`; brukeren kan endre dette og legge til flere økter. Minst én datofestet økt kreves for at aktiviteten skal vises i Gantt.
+Ved både **standard arbeidsoperasjon** og **+ Egen arbeidsoperasjon** opprettes første økt automatisk i synlig/valgt uke med standardtid `08:00–16:00`; brukeren kan endre dette og legge til flere økter. Minst én datofestet økt kreves for at aktiviteten skal vises i Gantt.
 
 ### Modulansvar
 
-- `src/modules/progress/progressPlanUx.jsx` – stabil inngang, Preview-sikkerhet, eksport/deling og prosjektfane.
+- `src/modules/progress/progressPlanUx.jsx` – stabil inngang, Preview-sikkerhet, eksport/deling/kalender og prosjektfane.
 - `src/modules/progress/progressPlanUxV2.jsx` – arbeidsflate, ukevisning, mobil, redigering, dirty-state og read-only portalvisning.
 - `src/modules/progress/progressPlanSupabase.js` – data-/portalbro, separat planlagring og tilbudslesing.
 - `src/modules/progress/progressPlanOfferCore.js` – enveistransformasjon fra akseptert tilbud til arbeidsoperasjoner.
+- `src/modules/progress/progressPlanCalendarExport.js` – ren bygging og nedlasting av `.ics` fra lagret plan.
+- `src/modules/progress/progressPlanCalendarAction.jsx` – liten UI-handling for kalender-eksport.
 - `src/main.jsx` – eier intern Fremdrift-fane, prosjekt-/fane-URL og sentral ulagret-guard.
-- `scripts/critical-progress-plan-check.mjs` – permanent QA av tilbudsimport og 13 standard arbeidsoperasjoner.
+- `scripts/critical-progress-plan-check.mjs` – permanent QA av tilbudsimport, 13 standard arbeidsoperasjoner, første økt og kalenderformat.
 
 Ingen historiske prosjekter backfilles. Plan opprettes først når brukeren faktisk lagrer fremdriftsplanen.
 
@@ -169,9 +173,7 @@ Prosjektuker beregnes dynamisk fra første til siste **datofestede arbeidsøkt**
 
 Utskriftsvisningen er A4 liggende og inneholder firma/prosjekt, kunde, periode, antall prosjektuker, planoversikt og Gantt. **Lagre som PDF** åpner nettleserens utskriftsdialog, der brukeren velger «Lagre som PDF». Korte planer komprimeres for å unngå unødvendige ekstrasider.
 
-Fremdriftsmail sender i 35B en prosjektmelding/oppsummering til valgte prosjektinvolverte og henviser til siste plan i Expo ProffDok. PDF-filen er ikke vedlagt direkte i e-posten i 35B.
-
-Direkte Google/Outlook-synk og `.ics`-eksport er ikke del av 35B og kan vurderes senere.
+35B etablerte prosjektmelding/oppsummering til valgte Prosjektmail-mottakere og henvisning til siste plan i Expo ProffDok. 35C utvider denne flyten med servergenerert PDF-vedlegg og kalender-eksport.
 
 Aktiv eksportkode:
 
@@ -179,7 +181,7 @@ Aktiv eksportkode:
 - `src/modules/progress/progressPlanExportV3.css`
 - `src/modules/progress/progressPlanExport.css`
 
-Midlertidige V1/V2-eksportvarianter fra utviklingen er fjernet før merge.
+Midlertidige V1/V2-eksportvarianter fra utviklingen er fjernet.
 
 ### Prosjektinvolverte
 
@@ -255,7 +257,79 @@ I trygg Preview:
 
 Denne sikkerheten skal ikke aktiveres på produksjonsdomenet.
 
-## 7. Fase 34B – akseptvarsler
+## 7. Fase 35C – kalender og PDF-vedlegg
+
+### Kalender / `.ics`
+
+Kalender-eksporten er en ren enveis eksport fra **lagret fremdriftsplan**. Den gjør ingen databaseendring og oppretter ingen kobling tilbake fra kalenderprogrammet.
+
+```text
+lagret project_progress_plans.plan
+  → daterte arbeidsøkter
+  → standard VCALENDAR / VEVENT
+  → én .ics-fil
+  → Outlook / Google Kalender / Apple Kalender
+```
+
+Viktige kontrakter:
+
+- bare daterte arbeidsøkter eksporteres
+- klokkeslett eksporteres i `Europe/Oslo`
+- arbeidsoperasjon + prosjektnavn brukes som kalendernavn
+- prosjektadresse brukes som LOCATION når den finnes
+- fag, person/firma, status og merknad legges i beskrivelsen når de finnes
+- eksportert kalender er ikke direkte synk; senere endringer i Expo ProffDok oppdaterer ikke en allerede importert avtale automatisk
+- filnavn saniteres og ender på `-fremdrift.ics`
+
+Aktiv kode:
+
+- `src/modules/progress/progressPlanCalendarExport.js`
+- `src/modules/progress/progressPlanCalendarAction.jsx`
+- `src/modules/progress/progressPlanCalendarAction.css`
+
+### PDF som prosjektmail-vedlegg
+
+Når `mailKind = progress_plan` sendes i produksjon, skal PDF-en **ikke** komme fra klienten. Edge Function leser prosjektet og siste lagrede rad i `project_progress_plans`, genererer PDF server-side og sender den som Resend-vedlegg.
+
+```text
+autentisert aktiv bruker
+  → prosjekt-tilgang verifiseres
+  → mottaker må være aktiv Prosjektmail-mottaker
+  → lagret project_progress_plans.plan leses server-side
+  → pdf-lib bygger fremdrifts-PDF
+  → PDF vedlegges Resend-mail
+  → prosjektvarsel registreres
+```
+
+Sikkerhetskrav:
+
+- klienten kan ikke sende vilkårlig fil/base64 som vedlegg
+- prosjekt og plan bestemmes server-side fra `projectId`
+- mottaker må finnes i `project_participants` med `receive_email = true`
+- manglende lagret plan stopper PDF-utsending
+- PDF over 6 MB stoppes før utsending
+- prosjektlenke bygges server-side til `https://expo-proffdok.app`
+- Preview blokkerer klientkallet før ekte e-post kan sendes
+
+Server-PDF bruker A4 liggende, sammendragsside og Gantt-sider med maksimalt 8 prosjektuker per sidegruppe og opptil 13 arbeidsoperasjoner per Gantt-side. Den er en separat servergenerert leveranse og er ikke avhengig av nettleserens utskriftsdialog.
+
+Aktiv serverkode:
+
+- `supabase/functions/project-participants-mailer/index.ts`
+- `supabase/functions/_shared/progress-plan-pdf.ts`
+
+Produksjonsfunksjon ved 35C-QA:
+
+```text
+project-participants-mailer
+version = 3
+status = ACTIVE
+verify_jwt = true
+```
+
+35C ble kontrollert med én eksplisitt ekte utsending til valgt testmottaker. E-posten mottok `Nybygg-bad-fremdrift.pdf`, vedlegget åpnet korrekt, og test-radene i `project_progress_plans`, `project_participants` og `project_participant_notices` ble deretter slettet. Selve prosjektet ble ikke endret/slettet.
+
+## 8. Fase 34B – akseptvarsler
 
 Når en ny kundeaksept er lagret server-side, forsøkes to separate e-poster:
 
@@ -272,7 +346,7 @@ offer_id + offer_version_id + recipient_type
 
 Edge Function `sales-offer-acceptance-notify` verifiserer akseptgrunnlaget server-side og har historikkvern mot utsending fra gamle aksepter.
 
-## 8. Kontraktserver – `sales_contracts`
+## 9. Kontraktserver – `sales_contracts`
 
 Sales-kontrakt knyttes til faktisk firma, `request_ref`, tilbud og eksakt akseptert tilbudsversjon.
 
@@ -290,11 +364,11 @@ Viktige kontrakter:
 - `final_document` kan settes første gang etter signering og er deretter immutable
 - ingen normal DELETE-flyt for kontrakthistorikk
 
-## 9. Endelig Expo-kontrakt og prosjektkobling
+## 10. Endelig Expo-kontrakt og prosjektkobling
 
 Endelig PDF genereres bare fra låst `sales_contracts.snapshot` og registrerte signaturer. Slutt-PDF lagres privat og kobles til prosjektets Avtalegrunnlag uten duplikater.
 
-## 10. Kontrakt som garantikrav
+## 11. Kontrakt som garantikrav
 
 **Dokumentert tetthetsgaranti kan bare utstedes når en signert kontrakt ligger i prosjektets Avtalegrunnlag.** Dette gjør ikke kontrakt obligatorisk for prosjektet i seg selv.
 
@@ -304,7 +378,7 @@ Relevant migrasjon:
 20260831230412  fase33b6_warranty_requires_signed_contract
 ```
 
-## 11. HJELP
+## 12. HJELP
 
 HJELP forklarer i vanlig proffspråk blant annet:
 
@@ -315,18 +389,21 @@ HJELP forklarer i vanlig proffspråk blant annet:
 - UE kan se fremdriftsplanen; kunde ser den bare når bedriften deler den
 - endringer i fremdriftsplanen endrer aldri det aksepterte tilbudet
 - mobil viser aktivitetskort, desktop viser ukeoversikt
-- egen arbeidsoperasjon får første dato/tid automatisk og må ha minst én datofestet økt for Gantt
+- standard og egen arbeidsoperasjon får første dato/tid automatisk i valgt uke
 - Gantt bruker dynamiske prosjektuker og viser dato/tid per økt
 - Gantt/PDF kan lagres via nettleserens PDF-utskrift
+- `.ics` eksporterer daterte arbeidsøkter til kalenderprogram
+- Fremdriftsmail legger siste lagrede plan ved som servergenerert PDF
 - Prosjektinvolverte brukes som kontakt- og distribusjonsliste
 - **Prosjektmail** bestemmer hvem som mottar felles prosjektmeldinger/fremdriftsmeldinger
 - Prosjektinvolverte finnes først etter at prosjektet er opprettet
 - Enter oppretter ny tom personrad; tom rad lagres ikke
 - ulagrede endringer i Prosjektinvolverte varsles før brukeren forlater siden
+- trygg Preview lagrer lokalt og sender ikke ekte e-post
 
-## 12. QA / handover
+## 13. QA / handover
 
-35B skal før merge minst verifisere:
+35C skal før merge minst verifisere:
 
 - `critical-build-check`
 - `critical-sales-recovery-check`
@@ -336,21 +413,19 @@ HJELP forklarer i vanlig proffspråk blant annet:
 - Preview READY på eksakt branch-SHA
 - trygg Preview aktiveres automatisk på Vercel Preview
 - ingen ekte e-post kan sendes i trygg Preview
-- ingen Preview-testdata i `project_progress_plans`, `project_participants` eller `project_participant_notices`
-- Prosjektinvolverte er skjult før prosjekt er opprettet
-- Prosjektinvolverte beholder data/fokus under skriving og parent-rerender
-- Enter-flyt, tom-rad-filter, sticky lagring og ulagret-guard
-- Prosjektmail-komponist henter valgte mottakere
-- Fremdrift-deling henter samme Prosjektmail-mottakere
-- Gantt viser dynamiske prosjektuker over 5 uker
-- plan over 8 prosjektuker deles automatisk i flere Gantt-seksjoner
-- flere økter samme uke viser hver dato og tid separat
-- korte PDF/utskrifter unngår unødvendig ekstra side
+- ingen Preview-/QA-testdata i `project_progress_plans`, `project_participants` eller `project_participant_notices`
+- standard og egen arbeidsoperasjon får automatisk første økt `08:00–16:00` i valgt uke
+- `.ics` lastes ned fra lagret plan
+- `.ics` aksepteres og importeres korrekt i Outlook/kontrollert kalenderprogram
+- `.ics` inneholder korrekt prosjekt, arbeidsoperasjon, dato, tid og adresse
+- Fremdrift-deling henter Prosjektmail-mottakere
+- ekte kontrollert prosjektmail mottar servergenerert PDF-vedlegg
+- PDF-vedlegget åpner korrekt og har prosjektdata + Gantt
+- klienten kan ikke levere vilkårlig vedlegg til mailfunksjonen
+- Edge Function v3 er ACTIVE med `verify_jwt = true`
+- Gantt viser dynamiske prosjektuker og lange planer deles kontrollert
 - HJELP og arkitekturkart er oppdatert
-- aktive 35B Edge Functions/tabeller, RLS og kolonnerettigheter er verifisert
-- utfasete midlertidige V1/V2-filer er fjernet
-
-Kontrollert ekte e-post/varselstest kan gjøres separat før produksjonsbruk dersom mottaker og testprosjekt er eksplisitt valgt. Det skal ikke gjøres gjennom trygg Preview.
+- produksjons-QA-data ryddes selektivt etter ekte e-posttest
 
 Handover-regel:
 
