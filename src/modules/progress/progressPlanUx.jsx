@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import './progressPlanLayout.css';
 import './progressPlanExport.css';
 import { ProgressPlanExportActions } from './progressPlanExportV3.jsx';
-import { installProjectParticipantsUx } from '../project/projectParticipantsUx.jsx';
+import { installProjectParticipantsUx } from '../project/projectParticipantsUxV2.jsx';
 import {
   installProgressPlanUx as installProgressPlanUxV2,
   ProgressPlanProjectTab as ProgressPlanProjectTabV2,
