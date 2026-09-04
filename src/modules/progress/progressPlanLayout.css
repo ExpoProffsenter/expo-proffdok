@@ -65,11 +65,11 @@
   }
 }
 
-/* Handlingslinjen ligger i vanlig dokumentflyt.
-   Kun aktiv Lagre-knapp flyter når det faktisk finnes ulagrede endringer. */
+/* Handlingslinjen ligger normalt i dokumentflyten.
+   Når Lagre er aktiv, skjules sekundærhandlingene og kun Lagre følger synsfeltet. */
 #expo-progress-plan-root .progress-sticky-actions {
   position: static;
-  z-index: 12;
+  z-index: 40;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -82,11 +82,28 @@
   box-shadow: 0 10px 28px rgba(20,42,52,.12);
 }
 
-#expo-progress-plan-root .progress-sticky-actions .progress-primary:not(:disabled) {
-  position: fixed;
-  right: 22px;
-  bottom: 22px;
+#expo-progress-plan-root .progress-sticky-actions:has(.progress-primary:not(:disabled)) {
+  position: sticky;
+  top: calc(100vh - 82px);
+  top: calc(100dvh - 82px);
   z-index: 10020;
+  justify-content: flex-end;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+#expo-progress-plan-root .progress-sticky-actions:has(.progress-primary:not(:disabled)) .progress-secondary {
+  display: none;
+}
+
+#expo-progress-plan-root .progress-sticky-actions:has(.progress-primary:not(:disabled)) .progress-primary {
+  pointer-events: auto;
   min-width: 190px;
   box-shadow: 0 14px 34px rgba(20,42,52,.24);
 }
@@ -110,9 +127,13 @@
     flex: 1 1 auto;
   }
 
-  #expo-progress-plan-root .progress-sticky-actions .progress-primary:not(:disabled) {
-    right: 12px;
-    bottom: 12px;
+  #expo-progress-plan-root .progress-sticky-actions:has(.progress-primary:not(:disabled)) {
+    top: calc(100vh - 72px);
+    top: calc(100dvh - 72px);
+    max-width: calc(100% - 12px);
+  }
+
+  #expo-progress-plan-root .progress-sticky-actions:has(.progress-primary:not(:disabled)) .progress-primary {
     min-width: 0;
     max-width: calc(100vw - 24px);
   }
