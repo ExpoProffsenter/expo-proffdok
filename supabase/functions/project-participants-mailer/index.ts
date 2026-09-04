@@ -26,6 +26,12 @@ const escapeHtml = (value: unknown) => String(value ?? "")
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ ok: false, error: "Kun POST er tillatt." }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
@@ -66,7 +72,12 @@ serve(async (req) => {
     const toEmail = email(body.toEmail);
     const subject = clean(body.subject) || "Oppdatering fra prosjektet";
     const message = clean(body.message);
+    const mailKindRaw = clean(body.mailKind) || "project_update";
+    const mailKind = mailKindRaw === "progress_plan" ? "progress_plan" : "project_update";
+
     if (!projectId || !toEmail) throw new HttpError(400, "Mangler prosjekt eller mottaker.");
+    if (subject.length > 180) throw new HttpError(400, "Emnet er for langt.");
+    if (message.length > 10000) throw new HttpError(400, "Meldingen er for lang.");
 
     const { data: project, error: projectError } = await userClient
       .from("projects")
@@ -90,7 +101,8 @@ serve(async (req) => {
     const projectAddress = clean(project?.data?.project?.address || "");
     const companyName = clean(project?.data?.company?.name || project?.data?.company?.companyName || "Expo ProffDok");
     const logoUrl = clean(project?.data?.company?.logoUrl || "https://expo-proffdok.app/expo-logo.png");
-    const projectLink = clean(body.projectLink || "https://expo-proffdok.app");
+    const targetTab = mailKind === "progress_plan" ? "fremdrift" : "prosjektinfo";
+    const projectLink = `https://expo-proffdok.app/?project=${encodeURIComponent(projectId)}&tab=${encodeURIComponent(targetTab)}`;
     const safeMessage = escapeHtml(message).replaceAll("\n", "<br>");
 
     const html = `
@@ -107,7 +119,7 @@ serve(async (req) => {
           <div style="padding:28px;">
             <h2 style="margin:0 0 14px;font-size:21px;">${escapeHtml(subject)}</h2>
             ${safeMessage ? `<div style="font-size:15px;line-height:1.65;color:#334155;margin-bottom:24px;">${safeMessage}</div>` : ""}
-            <a href="${escapeHtml(projectLink)}" style="display:inline-block;background:#0c858e;color:#fff;text-decoration:none;font-weight:900;padding:13px 20px;border-radius:10px;">Åpne Expo ProffDok</a>
+            <a href="${projectLink}" style="display:inline-block;background:#0c858e;color:#fff;text-decoration:none;font-weight:900;padding:13px 20px;border-radius:10px;">Åpne Expo ProffDok</a>
             <p style="margin:26px 0 0;color:#64748b;font-size:12px;">Denne e-posten er sendt til deg fordi du er registrert som prosjektinvolvert.</p>
           </div>
         </div>
@@ -129,7 +141,7 @@ serve(async (req) => {
       recipient_email: toEmail,
       subject: `${subject} – ${projectName}`,
       message,
-      mail_kind: clean(body.mailKind) || "project_update",
+      mail_kind: mailKind,
     });
     if (noticeError) {
       console.error("E-post sendt, men prosjektvarsel kunne ikke lagres:", noticeError.message);
