@@ -1,5 +1,9 @@
 import { buildAcceptedOfferProgressActivities } from '../src/modules/progress/progressPlanOfferCore.js';
 import { ANDREAS_ACCEPTED_OFFER_TEST_FIXTURE } from '../src/modules/progress/progressPlanTestFixture.js';
+import {
+  STANDARD_PROGRESS_OPERATIONS,
+  buildStandardProgressActivity,
+} from '../src/modules/progress/progressPlanStandardOperations.js';
 
 const fail = (message) => {
   console.error(`❌ Fremdriftsplan QA: ${message}`);
@@ -44,6 +48,22 @@ if (byMainPost.get('elektriker')?.trade !== 'Elektriker') {
   fail('Elektriker fikk feil fagforslag');
 }
 
+if (STANDARD_PROGRESS_OPERATIONS.length !== 13) {
+  fail(`prosjekt uten tilbud skal få 13 standardforslag fra tilbudsbyggeren, fant ${STANDARD_PROGRESS_OPERATIONS.length}`);
+}
+const standardIds = new Set(STANDARD_PROGRESS_OPERATIONS.map((operation) => operation.id));
+for (const required of ['tildekking', 'demontering-riving', 'membran', 'flislegging', 'tomrer', 'rorlegger', 'elektriker', 'rigg-drift', 'avfall']) {
+  if (!standardIds.has(required)) fail(`standardforslag mangler hovedposten ${required}`);
+}
+const standardRorlegger = STANDARD_PROGRESS_OPERATIONS.find((operation) => operation.id === 'rorlegger');
+const standardActivity = buildStandardProgressActivity(standardRorlegger, () => 'standard-test');
+if (standardActivity.title !== 'Rørlegger' || standardActivity.trade !== 'Rørlegger') {
+  fail('standardforslag for Rørlegger bygges ikke korrekt');
+}
+if (standardActivity.sessions.length !== 0 || standardActivity.status !== 'Ikke startet') {
+  fail('ny standard arbeidsoperasjon skal starte uten planlagt tid og med status Ikke startet');
+}
+
 const serialized = JSON.stringify(fixture).toLowerCase();
 for (const forbidden of ['@', 'publictoken', 'customeremail', 'amount']) {
   if (serialized.includes(forbidden)) {
@@ -51,4 +71,4 @@ for (const forbidden of ['@', 'publictoken', 'customeremail', 'amount']) {
   }
 }
 
-console.log('✅ Expo ProffDok fremdriftsplan check OK – 10 valgte opsjoner gir 11 korrekte arbeidsoperasjoner, inkl. Flislegging fra opsjon');
+console.log('✅ Expo ProffDok fremdriftsplan check OK – tilbudsimport, 10 valgte opsjoner og 13 standard arbeidsoperasjoner uten tilbud er verifisert');
