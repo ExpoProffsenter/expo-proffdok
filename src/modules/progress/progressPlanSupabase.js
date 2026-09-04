@@ -2,12 +2,18 @@
 // Egen datatjeneste for prosjektets operative fremdriftsplan.
 // Planen lagres separat fra projects.data slik at vanlig prosjektlagring ikke kan
 // overskrive arbeidsøkter. Kunde/UE leser kun via eksisterende portal-RPC.
+// Preview kan kjøres i eksplisitt trygg testmodus der fremdriftsplanen kun lagres lokalt.
 
 import { createDefaultSalesSupabaseClient } from '../sales/services/salesSupabase.js';
 import {
   readStoredPortalAccessCode,
   verifyProjectPortalAccess,
 } from '../portal/portalSupabase.js';
+import {
+  buildAcceptedOfferProgressActivities,
+  extractAcceptedOfferProgressInput,
+} from './progressPlanOfferCore.js';
+import { ANDREAS_ACCEPTED_OFFER_TEST_FIXTURE } from './progressPlanTestFixture.js';
 
 export const EMPTY_PROGRESS_PLAN = Object.freeze({
   version: 1,
@@ -15,11 +21,79 @@ export const EMPTY_PROGRESS_PLAN = Object.freeze({
   source: null,
 });
 
-export function getProgressSupabaseClient() {
-  return createDefaultSalesSupabaseClient();
-}
+const SAFE_PREVIEW_PARAM = 'progressTest';
+const SAFE_PREVIEW_VALUE = 'andreas';
+const SAFE_PREVIEW_STORAGE_PREFIX = 'expoProffDokProgressSafePreview:';
+const SAFE_PREVIEW_BADGE_ID = 'expo-progress-safe-preview-badge';
 
 const clean = (value = '') => String(value || '').replace(/\s+/g, ' ').trim();
+
+export function isProgressSafePreviewMode() {
+  if (typeof window === 'undefined') return false;
+  const host = String(window.location.hostname || '').toLowerCase();
+  const isPreviewHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.vercel.app');
+  if (!isPreviewHost) return false;
+  const params = new URLSearchParams(window.location.search);
+  return clean(params.get(SAFE_PREVIEW_PARAM) || '').toLowerCase() === SAFE_PREVIEW_VALUE;
+}
+
+function ensureSafePreviewBadge() {
+  if (!isProgressSafePreviewMode() || typeof document === 'undefined') return;
+  if (document.getElementById(SAFE_PREVIEW_BADGE_ID)) return;
+  const badge = document.createElement('div');
+  badge.id = SAFE_PREVIEW_BADGE_ID;
+  badge.textContent = 'TRYGG TESTMODUS · Fremdriftsplan lagres kun i denne nettleseren';
+  Object.assign(badge.style, {
+    position: 'fixed',
+    right: '14px',
+    bottom: '14px',
+    zIndex: '100001',
+    maxWidth: '360px',
+    padding: '10px 13px',
+    borderRadius: '999px',
+    background: '#fff7d6',
+    border: '1px solid #e5b83c',
+    color: '#674d00',
+    font: '800 12px/1.3 Inter, system-ui, sans-serif',
+    boxShadow: '0 10px 28px rgba(41,34,8,.18)',
+  });
+  document.body.append(badge);
+}
+
+function safePreviewStorageKey(projectId = '') {
+  const id = clean(projectId);
+  return id ? `${SAFE_PREVIEW_STORAGE_PREFIX}${id}` : '';
+}
+
+function readSafePreviewPlan(projectId = '') {
+  const key = safePreviewStorageKey(projectId);
+  if (!key || typeof window === 'undefined') return null;
+  ensureSafePreviewBadge();
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(key) || 'null');
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSafePreviewPlan(projectId = '', plan = {}, customerVisible = false) {
+  const key = safePreviewStorageKey(projectId);
+  if (!key || typeof window === 'undefined') throw new Error('Kunne ikke opprette lokal testkopi.');
+  ensureSafePreviewBadge();
+  const saved = {
+    plan: normalizeProgressPlan(plan),
+    customerVisible: !!customerVisible,
+    updatedAt: new Date().toISOString(),
+  };
+  window.localStorage.setItem(key, JSON.stringify(saved));
+  return saved;
+}
+
+export function getProgressSupabaseClient() {
+  ensureSafePreviewBadge();
+  return createDefaultSalesSupabaseClient();
+}
 
 export function normalizeProgressPlan(value = {}) {
   const plan = value && typeof value === 'object' ? value : {};
@@ -31,7 +105,18 @@ export function normalizeProgressPlan(value = {}) {
 }
 
 export async function loadInternalProgressPlan(client, projectId) {
-  if (!client || !projectId) return { ...EMPTY_PROGRESS_PLAN, customerVisible: false };
+  if (!projectId) return { ...EMPTY_PROGRESS_PLAN, customerVisible: false };
+  if (isProgressSafePreviewMode()) {
+    const local = readSafePreviewPlan(projectId);
+    return {
+      ...normalizeProgressPlan(local?.plan || EMPTY_PROGRESS_PLAN),
+      customerVisible: !!local?.customerVisible,
+      updatedAt: local?.updatedAt || '',
+      exists: !!local,
+      localOnly: true,
+    };
+  }
+  if (!client) return { ...EMPTY_PROGRESS_PLAN, customerVisible: false };
   const { data, error } = await client
     .from('project_progress_plans')
     .select('project_id,customer_visible,plan,updated_at')
@@ -47,8 +132,19 @@ export async function loadInternalProgressPlan(client, projectId) {
 }
 
 export async function saveInternalProgressPlan(client, projectId, plan, customerVisible = false) {
-  if (!client || !projectId) throw new Error('Velg et lagret prosjekt først.');
+  if (!projectId) throw new Error('Velg et lagret prosjekt først.');
   const payload = normalizeProgressPlan(plan);
+  if (isProgressSafePreviewMode()) {
+    const saved = writeSafePreviewPlan(projectId, payload, customerVisible);
+    return {
+      ...normalizeProgressPlan(saved.plan),
+      customerVisible: !!saved.customerVisible,
+      updatedAt: saved.updatedAt,
+      exists: true,
+      localOnly: true,
+    };
+  }
+  if (!client) throw new Error('Datatilkobling mangler.');
   const { data, error } = await client
     .from('project_progress_plans')
     .upsert(
@@ -132,12 +228,28 @@ export async function loadPortalProgressPlan(client, projectId, role) {
   };
   const code = readStoredPortalAccessCode(projectId, normalizedRole);
   if (!projectId || !code) return unavailable;
+
+  // Også i trygg Preview-test beholder vi eksisterende portalverifisering.
+  // RPC-en leser prosjekt/tilgang, mens selve fremdriftsplanen hentes lokalt i testmodusen.
   const result = await verifyProjectPortalAccess(client, {
     projectId,
     role: normalizedRole,
     code,
   });
   if (!result?.ok) return unavailable;
+
+  if (isProgressSafePreviewMode()) {
+    const local = readSafePreviewPlan(projectId);
+    if (!local) return unavailable;
+    return {
+      ...normalizeProgressPlan(local.plan),
+      customerVisible: !!local.customerVisible,
+      updatedAt: local.updatedAt || '',
+      unavailable: false,
+      localOnly: true,
+    };
+  }
+
   const value = result?.project?.data?.progressPlan;
   if (!value || typeof value !== 'object') return unavailable;
   return {
@@ -148,63 +260,19 @@ export async function loadPortalProgressPlan(client, projectId, role) {
   };
 }
 
-function inferTrade(title = '') {
-  const value = clean(title).toLowerCase();
-  if (value.includes('rør')) return 'Rørlegger';
-  if (value.includes('elektr')) return 'Elektriker';
-  if (value.includes('mal')) return 'Maler';
-  if (value.includes('tømrer') || value.includes('snekker')) return 'Tømrer';
-  if (
-    value.includes('flis') ||
-    value.includes('membran') ||
-    value.includes('støp') ||
-    value.includes('avrett')
-  ) return 'Murer / flislegger';
-  if (value.includes('demonter') || value.includes('riving')) return 'Tømrer';
-  if (value.includes('tildekk')) return 'Prosjekt / rigg';
-  if (value.includes('avfall') || value.includes('rigg')) return 'Prosjekt / rigg';
-  return '';
-}
-
-function offerMainPostGroups(lines = [], selectedOptions = []) {
-  const groups = new Map();
-  const add = (item = {}) => {
-    if (item?.__companyMeta || item?.__offerTermsMeta) return;
-    const id = clean(item?.mainPostId || item?.mainPostTitle || 'ovrige-arbeider');
-    const title = clean(item?.mainPostTitle || 'Øvrige arbeider');
-    if (!id || !title) return;
-    if (!groups.has(id)) groups.set(id, { id, title });
-  };
-  (Array.isArray(lines) ? lines : []).forEach(add);
-  (Array.isArray(selectedOptions) ? selectedOptions : []).forEach(add);
-  return Array.from(groups.values());
-}
-
 export async function loadAcceptedOfferActivities(client, projectMetaValue = {}) {
+  if (isProgressSafePreviewMode()) {
+    ensureSafePreviewBadge();
+    return buildAcceptedOfferProgressActivities({
+      lines: ANDREAS_ACCEPTED_OFFER_TEST_FIXTURE.lines,
+      selectedOptions: ANDREAS_ACCEPTED_OFFER_TEST_FIXTURE.selectedOptions,
+    });
+  }
+
   const token = clean(projectMetaValue?.publicToken);
   if (!client || !token) return [];
   const { data, error } = await client.rpc('get_sales_offer_by_token', { token });
   if (error) throw error;
-  const offer = data?.offer || {};
-  const version = data?.version || {};
-  const acceptedPayload = offer?.accepted_payload || {};
-  const snapshot = acceptedPayload?.version_snapshot || {};
-  const lines = Array.isArray(snapshot?.lines) && snapshot.lines.length
-    ? snapshot.lines
-    : Array.isArray(version?.lines)
-      ? version.lines
-      : [];
-  const selectedOptions = Array.isArray(acceptedPayload?.selected_options)
-    ? acceptedPayload.selected_options
-    : [];
-
-  return offerMainPostGroups(lines, selectedOptions).map((group) => ({
-    id: crypto.randomUUID(),
-    title: group.title,
-    trade: inferTrade(group.title),
-    resource: '',
-    status: 'Ikke startet',
-    sessions: [],
-    sourceMainPostId: group.id,
-  }));
+  const input = extractAcceptedOfferProgressInput(data || {});
+  return buildAcceptedOfferProgressActivities(input);
 }
