@@ -117,6 +117,20 @@
   100% { box-shadow: none; }
 }
 
+/* 35A beholder trygg lokal Preview-QA, men ingen kundespesifikk fixture inngår i release-koden. */
+body:has(#expo-progress-safe-preview-badge) #expo-progress-plan-root .progress-test-banner span {
+  font-size: 0;
+}
+
+body:has(#expo-progress-safe-preview-badge) #expo-progress-plan-root .progress-test-banner span::after {
+  content: 'Alle endringer i fremdriftsplanen lagres kun lokalt i denne nettleseren. Produksjon skrives ikke til.';
+  font-size: 13px;
+}
+
+body:has(#expo-progress-safe-preview-badge) #expo-progress-plan-root .progress-hero-actions:not(:has(.progress-source-ok)) > .progress-secondary:first-child {
+  display: none;
+}
+
 @media (max-width: 820px) {
   #expo-progress-plan-root .progress-sticky-actions {
     justify-content: stretch;
