@@ -23,26 +23,44 @@
     min-width: 0;
   }
 
-  /* Hele arbeidsoperasjonsfeltet bruker den eksisterende tidsknappen som klikkflate.
-     Dermed endres ingen React-logikk, samtidig som treffområdet blir stort og tydelig. */
-  #expo-progress-plan-root .progress-activity-cell {
+  /* Hele arbeidsoperasjonsfeltet er den eksisterende tidsknappens klikkflate.
+     Knappeteksten beholdes nederst som tydelig handling, men hele kortet kan trykkes. */
+  #expo-progress-plan-root .progress-activity-cell:has(.progress-time-link) {
     position: relative;
+    padding-bottom: 38px;
+    cursor: pointer;
   }
 
   #expo-progress-plan-root .progress-time-link {
-    font-size: 14px;
-    line-height: 1.35;
-    padding: 7px 0;
-  }
-
-  #expo-progress-plan-root .progress-time-link::before {
-    content: "";
     position: absolute;
     inset: 0;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 0 13px 10px;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.35;
+    color: #087f88;
+    font-weight: 900;
     cursor: pointer;
   }
 
   #expo-progress-plan-root .progress-activity-cell:has(.progress-time-link):hover {
     background: #f5fafb;
+  }
+
+  #expo-progress-plan-root .progress-activity-cell:has(.progress-time-link):focus-within {
+    outline: 2px solid #1199a3;
+    outline-offset: -2px;
   }
 }
