@@ -1,0 +1,149 @@
+from pathlib import Path
+
+
+def replace_once(path, old, new):
+    p = Path(path)
+    text = p.read_text(encoding="utf-8")
+    count = text.count(old)
+    if count != 1:
+        raise SystemExit(f"{path}: expected exactly one match, got {count}: {old[:120]!r}")
+    p.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+
+# Progress data: exact active project instead of DOM identity matching.
+replace_once(
+    "src/modules/progress/progressPlanSupabase.js",
+    "export async function listAccessibleProgressProjects(client) {",
+    "export async function loadInternalProgressProjectMeta(client, projectId) {\n"
+    "  const id = clean(projectId);\n"
+    "  if (!client || !id) return null;\n"
+    "  const { data, error } = await client\n"
+    "    .from('projects')\n"
+    "    .select('id,title,data,locked,updated_at')\n"
+    "    .eq('id', id)\n"
+    "    .maybeSingle();\n"
+    "  if (error) throw error;\n"
+    "  return data ? { row: data, ...projectMeta(data) } : null;\n"
+    "}\n\n"
+    "export async function listAccessibleProgressProjects(client) {",
+)
+
+# Progress UI: export a native project tab, load by projectId, keep adapter portal-only.
+replace_once(
+    "src/modules/progress/progressPlanUxV2.jsx",
+    "  loadInternalProgressPlan,\n  loadPortalProgressPlan,",
+    "  loadInternalProgressPlan,\n  loadInternalProgressProjectMeta,\n  loadPortalProgressPlan,",
+)
+replace_once(
+    "src/modules/progress/progressPlanUxV2.jsx",
+    "        const resolved = await resolveInternalProgressProject(client, { identity, requestRef });\n",
+    "        if (portalProjectId) {\n"
+    "          const meta = await loadInternalProgressProjectMeta(client, portalProjectId);\n"
+    "          if (cancelled) return;\n"
+    "          setCandidates(meta ? [meta] : []);\n"
+    "          if (meta) await loadProjectPlan(meta);\n"
+    "          else {\n"
+    "            setError('Prosjektet kunne ikke hentes for fremdriftsplanen.');\n"
+    "            setLoading(false);\n"
+    "          }\n"
+    "          return;\n"
+    "        }\n\n"
+    "        const resolved = await resolveInternalProgressProject(client, { identity, requestRef });\n",
+)
+replace_once(
+    "src/modules/progress/progressPlanUxV2.jsx",
+    "let installed = false;",
+    "export function ProgressPlanProjectTab({ projectId, onDirtyChange }) {\n"
+    "  useEffect(() => { ensureStyle(); }, []);\n"
+    "  if (!projectId) return null;\n"
+    "  return (\n"
+    "    <div id={ROOT_ID}>\n"
+    "      <ProgressPlanWorkspace\n"
+    "        mode=\"internal\"\n"
+    "        identity=\"\"\n"
+    "        requestRef=\"\"\n"
+    "        projectId={projectId}\n"
+    "        role=\"internal\"\n"
+    "        onDirtyChange={onDirtyChange}\n"
+    "      />\n"
+    "    </div>\n"
+    "  );\n"
+    "}\n\n"
+    "let installed = false;",
+)
+replace_once(
+    "src/modules/progress/progressPlanUxV2.jsx",
+    "export function installProgressPlanUx() {\n  if (installed || typeof document === 'undefined') return;",
+    "export function installProgressPlanUx() {\n  if (typeof document === 'undefined' || modeFromLocation() === 'internal') return;\n  if (installed) return;",
+)
+replace_once(
+    "src/modules/progress/progressPlanUx.jsx",
+    "import { installProgressPlanUx as installProgressPlanUxV2 } from './progressPlanUxV2.jsx';",
+    "import {\n  installProgressPlanUx as installProgressPlanUxV2,\n  ProgressPlanProjectTab,\n} from './progressPlanUxV2.jsx';\n\nexport { ProgressPlanProjectTab };",
+)
+
+# Bootstrap no longer installs any internal Fremdrift DOM adapter.
+replace_once(
+    "src/bootstrap.jsx",
+    "  const isUnderleverandor =\n",
+    "  if (!isPortalRole) return;\n\n  const isUnderleverandor =\n",
+)
+
+# main.jsx becomes the sole owner of the internal Fremdrift navigation entry.
+replace_once(
+    "src/main.jsx",
+    "import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';",
+    "import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';\nimport { ProgressPlanProjectTab } from './modules/progress/progressPlanUx.jsx';",
+)
+replace_once(
+    "src/main.jsx",
+    "      [\"prosjektering\", \"Prosjektering\"],\n      [\"produkter\", \"Produkter\"],",
+    "      [\"prosjektering\", \"Prosjektering\"],\n      [\"fremdrift\", \"Fremdrift\"],\n      [\"produkter\", \"Produkter\"],",
+)
+replace_once(
+    "src/main.jsx",
+    "    const projectDirtyRef = (0, import_react.useRef)(false);\n    const projectDirtyInitializedRef",
+    "    const projectDirtyRef = (0, import_react.useRef)(false);\n    const progressPlanDirtyRef = (0, import_react.useRef)(false);\n    const projectDirtyInitializedRef",
+)
+replace_once(
+    "src/main.jsx",
+    "    const confirmLeaveWithUnsavedChanges = async (actionLabel = \"fortsette\") => {\n      if (!projectDirtyRef.current) return true;",
+    "    const confirmLeaveWithUnsavedChanges = async (actionLabel = \"fortsette\") => {\n"
+    "      if (progressPlanDirtyRef.current) {\n"
+    "        const discardProgress = window.confirm(`Du har ulagrede endringer i fremdriftsplanen.\\n\\nGå videre uten å lagre?`);\n"
+    "        if (!discardProgress) return false;\n"
+    "        progressPlanDirtyRef.current = false;\n"
+    "      }\n"
+    "      if (!projectDirtyRef.current) return true;",
+)
+replace_once(
+    "src/main.jsx",
+    "        if (!projectDirtyRef.current) return;\n        event.preventDefault();\n        event.returnValue = \"Du har ulagrede endringer i prosjektet.\";",
+    "        if (!projectDirtyRef.current && !progressPlanDirtyRef.current) return;\n"
+    "        event.preventDefault();\n"
+    "        event.returnValue = progressPlanDirtyRef.current\n"
+    "          ? \"Du har ulagrede endringer i fremdriftsplanen.\"\n"
+    "          : \"Du har ulagrede endringer i prosjektet.\";",
+)
+replace_once(
+    "src/main.jsx",
+    "      if (projectDirtyRef.current && id !== projectId) {",
+    "      if ((projectDirtyRef.current || progressPlanDirtyRef.current) && id !== projectId) {",
+)
+replace_once(
+    "src/main.jsx",
+    "        \"prosjektinfo\", \"garanti\", \"prosjektering\", \"produkter\", \"overflater\", \"bilder\", \"tilgang\",",
+    "        \"prosjektinfo\", \"garanti\", \"prosjektering\", \"fremdrift\", \"produkter\", \"overflater\", \"bilder\", \"tilgang\",",
+)
+replace_once(
+    "src/main.jsx",
+    "        ] }),\n        tab === \"produkter\" && renderProductSections({",
+    "        ] }),\n"
+    "        tab === \"fremdrift\" && projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProgressPlanProjectTab, {\n"
+    "          projectId,\n"
+    "          onDirtyChange: (value) => { progressPlanDirtyRef.current = !!value; }\n"
+    "        }),\n"
+    "        tab === \"produkter\" && renderProductSections({",
+)
+
+print("Native Fremdrift patch applied cleanly.")
