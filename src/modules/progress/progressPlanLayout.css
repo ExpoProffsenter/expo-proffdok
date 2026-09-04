@@ -1,0 +1,25 @@
+/* Expo ProffDok – FASE 35A
+   Layout-tilpasning for native Fremdrift-fane i prosjektflaten.
+   Desktop-gridet skal passe prosjektkortet uten at redigeringsfelter klippes,
+   mens smal skjerm fortsatt bruker eksisterende mobilvisning. */
+
+@media (min-width: 821px) {
+  #expo-progress-plan-root .progress-board {
+    grid-template-columns: minmax(240px, 280px) repeat(var(--progress-days), minmax(90px, 1fr));
+    min-width: 900px;
+  }
+
+  #expo-progress-plan-root .progress-editor,
+  #expo-progress-plan-root .progress-editor-grid,
+  #expo-progress-plan-root .progress-session-heading,
+  #expo-progress-plan-root .progress-session-list,
+  #expo-progress-plan-root .progress-session-editor {
+    min-width: 0;
+  }
+
+  #expo-progress-plan-root .progress-editor-grid > *,
+  #expo-progress-plan-root .progress-session-editor > *,
+  #expo-progress-plan-root .progress-session-heading > * {
+    min-width: 0;
+  }
+}
