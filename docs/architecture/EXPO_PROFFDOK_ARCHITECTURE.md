@@ -146,13 +146,21 @@ En valgt opsjon kan opprette en arbeidsoperasjon selv om den aktuelle hovedposte
 
 Direkte opprettede prosjekter uten Sales-opphav kan bygge planen manuelt og er like gyldige.
 
+### Brukerflyt og responsiv visning
+
+På desktop er Fremdrift en ukeoversikt med arbeidsoperasjonen til venstre og ukedagene i kolonner. Hele arbeidsoperasjonsfeltet kan åpnes for redigering. Når standardpost eller egen arbeidsoperasjon legges til, åpnes posten automatisk, siden scroller til riktig sted og posten markeres kort. Når planen har ulagrede endringer, følger kun **Lagre fremdriftsplan** synsfeltet; sekundærhandlingene blir stående i vanlig dokumentflyt.
+
+På mobil brukes en enklere kort-/aktivitetsvisning i stedet for den brede ukegriden. Intern navigasjon husker prosjekt og aktiv fane i URL-en, slik at refresh på Fremdrift åpner samme prosjekt og fane igjen.
+
 ### Modulansvar
 
-- `src/modules/progress/progressPlanUx.jsx` – prosjekt-/ukevisning, redigering, mobil og read-only portalpresentasjon.
-- `src/modules/progress/progressPlanSupabase.js` – data-/portalbro og lagring.
-- `src/modules/progress/progressPlanOfferCore.js` – ren transformasjon fra akseptert tilbud til arbeidsoperasjoner.
-- `src/bootstrap.jsx` – aktiverer modulen uten å gjøre `main.jsx` større.
-- `scripts/critical-progress-plan-check.mjs` – kritisk import-QA i feature-fasen.
+- `src/modules/progress/progressPlanUx.jsx` – stabil inngang for Fremdrift, layout-import og eksport av native prosjektfane.
+- `src/modules/progress/progressPlanUxV2.jsx` – selve arbeidsflaten: ukevisning, redigering, mobil, dirty-state og read-only portalpresentasjon.
+- `src/modules/progress/progressPlanSupabase.js` – data-/portalbro, separat planlagring og tilbudslesing.
+- `src/modules/progress/progressPlanOfferCore.js` – ren enveistransformasjon fra akseptert tilbud til arbeidsoperasjoner.
+- `src/main.jsx` – eier den interne Fremdrift-fanen, prosjekt-/fane-URL og sentral guard mot å forlate ulagrede endringer.
+- `src/bootstrap.jsx` – starter kun Fremdrift-adapteren for verifisert kunde-/UE-portal; intern navigasjon eies av React i `main.jsx`.
+- `scripts/critical-progress-plan-check.mjs` – permanent, generisk QA med syntetiske tilbudsdata og kontroll av standard arbeidsoperasjoner.
 
 Ingen historiske prosjekter backfilles. En plan opprettes først når brukeren faktisk lagrer fremdriftsplanen.
 
@@ -245,6 +253,8 @@ HJELP forklarer i vanlig proffspråk blant annet:
 - fremdriftsplan kan bygges manuelt eller hente arbeidsoperasjoner fra et akseptert tilbud
 - UE kan se fremdriftsplanen, mens kunde bare ser den når bedriften aktivt deler den
 - endringer i fremdriftsplanen endrer aldri det aksepterte tilbudet
+- mobil viser fremdrift som aktivitetskort, mens desktop viser ukeoversikt
+- nye arbeidsoperasjoner åpnes og fokuseres automatisk, og Lagre følger synsfeltet ved ulagrede endringer
 
 ## 11. QA / handover
 
@@ -252,7 +262,7 @@ HJELP forklarer i vanlig proffspråk blant annet:
 
 - critical-build-check
 - critical-sales-recovery-check
-- kritisk fremdriftsimport-test
+- kritisk fremdriftsimport-test med syntetiske, generiske testdata
 - Vite build
 - diff mot `main`
 - Preview READY på eksakt branch-SHA
@@ -262,8 +272,10 @@ HJELP forklarer i vanlig proffspråk blant annet:
 - kunde skjult som standard
 - UE read-only
 - kunde read-only når deling er aktivert
+- låst prosjekt read-only
+- refresh tilbake til samme prosjekt og Fremdrift-fane
 - ingen fremdriftsdata skrevet til produksjon under isolert Preview-QA
-- midlertidig QA-fixture fjernet før merge
+- midlertidig Andreas-QA-fixture er fjernet fra runtime og repo før merge
 
 34B ble testet med kontrollert QA-tilbud og QA-data ble slettet etter TEST OK.
 
