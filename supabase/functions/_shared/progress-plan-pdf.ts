@@ -11,7 +11,6 @@ const COLORS = {
   dark: rgb(23 / 255, 33 / 255, 38 / 255),
   darkSoft: rgb(38 / 255, 52 / 255, 58 / 255),
   teal: rgb(18 / 255, 174 / 255, 183 / 255),
-  tealDark: rgb(12 / 255, 133 / 255, 142 / 255),
   border: rgb(219 / 255, 230 / 255, 233 / 255),
   light: rgb(248 / 255, 251 / 255, 251 / 255),
   text: rgb(23 / 255, 33 / 255, 38 / 255),
@@ -181,7 +180,48 @@ function drawMeta(page: any, fonts: any, input: any, activities: any[], weeks: a
   }
 }
 
-function drawGanttPage(page: any, fonts: any, input: any, activityGroup: any[], weekGroup: any[], pageIndex: number, pageCount: number, generatedLabel: string, globalActivityOffset: number) {
+function drawFooter(page: any, fonts: any, input: any, pageNumber: number, pageCount: number) {
+  page.drawText(`Expo ProffDok  |  ${safeText(input.projectName)}  |  Side ${pageNumber}/${pageCount}`, {
+    x: MARGIN, y: 16, size: 6, font: fonts.regular, color: COLORS.muted,
+  });
+}
+
+function drawSummaryPage(page: any, fonts: any, input: any, activities: any[], weeks: any[], sessions: any[], generatedLabel: string, pageCount: number) {
+  drawHeader(page, fonts, input, generatedLabel);
+  drawMeta(page, fonts, input, activities, weeks, sessions);
+
+  const headingY = PAGE_HEIGHT - 185;
+  page.drawText("Planoversikt", { x: MARGIN, y: headingY, size: 13, font: fonts.bold, color: COLORS.text });
+  page.drawLine({ start: { x: MARGIN, y: headingY - 5 }, end: { x: PAGE_WIDTH - MARGIN, y: headingY - 5 }, thickness: 1, color: COLORS.dark });
+
+  const visible = activities.slice(0, 24);
+  const perColumn = 12;
+  const columnWidth = (PAGE_WIDTH - (2 * MARGIN) - 18) / 2;
+  visible.forEach((activity, index) => {
+    const column = Math.floor(index / perColumn);
+    const row = index % perColumn;
+    const x = MARGIN + column * (columnWidth + 18);
+    const y = headingY - 30 - row * 25;
+    page.drawRectangle({ x, y, width: columnWidth, height: 21, color: row % 2 ? COLORS.light : rgb(1, 1, 1), borderColor: COLORS.border, borderWidth: 0.5 });
+    page.drawText(String(index + 1), { x: x + 6, y: y + 8, size: 6, font: fonts.bold, color: COLORS.muted });
+    page.drawText(fitText(activity?.title || "Arbeidsoperasjon", fonts.bold, 7.5, columnWidth - 125), { x: x + 23, y: y + 12, size: 7.5, font: fonts.bold, color: COLORS.text });
+    const resource = [clean(activity?.trade), clean(activity?.resource)].filter(Boolean).join(" / ") || "Ansvar ikke valgt";
+    page.drawText(fitText(resource, fonts.regular, 5.5, columnWidth - 125), { x: x + 23, y: y + 4, size: 5.5, font: fonts.regular, color: COLORS.muted });
+    page.drawRectangle({ x: x + columnWidth - 92, y: y + 5, width: 43, height: 11, color: statusColor(activity?.status), borderColor: COLORS.border, borderWidth: 0.4 });
+    page.drawText(fitText(activity?.status || "Ikke startet", fonts.bold, 4.8, 39), { x: x + columnWidth - 90, y: y + 8.5, size: 4.8, font: fonts.bold, color: COLORS.text });
+    const count = Array.isArray(activity?.sessions) ? activity.sessions.filter((session: any) => parseIso(session?.date)).length : 0;
+    page.drawText(`${count} økt${count === 1 ? "" : "er"}`, { x: x + columnWidth - 42, y: y + 8.5, size: 5.2, font: fonts.bold, color: COLORS.muted });
+  });
+
+  if (activities.length > visible.length) {
+    page.drawText(`+ ${activities.length - visible.length} flere arbeidsoperasjoner vises i Gantt-planen.`, {
+      x: MARGIN, y: 48, size: 7, font: fonts.regular, color: COLORS.muted,
+    });
+  }
+  drawFooter(page, fonts, input, 1, pageCount);
+}
+
+function drawGanttPage(page: any, fonts: any, input: any, activityGroup: any[], weekGroup: any[], pageNumber: number, pageCount: number, generatedLabel: string, globalActivityOffset: number) {
   drawHeader(page, fonts, input, generatedLabel);
   const top = PAGE_HEIGHT - 118;
   page.drawText(`Gantt-plan - prosjektuke ${weekGroup[0].index}-${weekGroup[weekGroup.length - 1].index}`, {
@@ -221,22 +261,21 @@ function drawGanttPage(page: any, fonts: any, input: any, activityGroup: any[], 
     weekGroup.forEach((week, weekIndex) => {
       const x = MARGIN + LEFT_COL + (weekIndex * weekWidth);
       if (weekIndex > 0) page.drawLine({ start: { x, y }, end: { x, y: y + rowHeight }, thickness: 0.35, color: COLORS.border });
-      const sessions = sessionsInWeek(activity, week).slice(0, 2);
-      sessions.forEach((session: any, sessionIndex: number) => {
+      const allWeekSessions = sessionsInWeek(activity, week);
+      const visibleSessions = allWeekSessions.slice(0, 2);
+      visibleSessions.forEach((session: any, sessionIndex: number) => {
         const label = `${formatShortDate(session.date)} ${clean(session.startTime) || ""}${clean(session.endTime) ? `-${clean(session.endTime)}` : ""}`.trim();
         const barY = y + 5 + (sessionIndex * 9);
         page.drawRectangle({ x: x + 3, y: barY, width: Math.max(10, weekWidth - 6), height: 7, color: statusColor(activity?.status), borderColor: COLORS.border, borderWidth: 0.35 });
         page.drawText(fitText(label, fonts.bold, 4.7, weekWidth - 10), { x: x + 5, y: barY + 2, size: 4.7, font: fonts.bold, color: COLORS.text });
       });
-      if (sessionsInWeek(activity, week).length > 2) {
-        page.drawText(`+${sessionsInWeek(activity, week).length - 2}`, { x: x + weekWidth - 13, y: y + 2, size: 4.5, font: fonts.bold, color: COLORS.muted });
+      if (allWeekSessions.length > 2) {
+        page.drawText(`+${allWeekSessions.length - 2}`, { x: x + weekWidth - 13, y: y + 2, size: 4.5, font: fonts.bold, color: COLORS.muted });
       }
     });
   });
 
-  page.drawText(`Expo ProffDok  |  ${safeText(input.projectName)}  |  Side ${pageIndex + 1}/${pageCount}`, {
-    x: MARGIN, y: 16, size: 6, font: fonts.regular, color: COLORS.muted,
-  });
+  drawFooter(page, fonts, input, pageNumber, pageCount);
 }
 
 export async function buildProgressPlanPdf(input: {
@@ -253,6 +292,11 @@ export async function buildProgressPlanPdf(input: {
   if (!sessions.length) throw new Error("Fremdriftsplanen har ingen daterte arbeidsøkter.");
 
   const weeks = makeWeeks(activities);
+  const weekGroups = chunk(weeks, MAX_WEEKS_PER_PAGE);
+  const activityGroups = chunk(activities, MAX_ACTIVITIES_PER_PAGE);
+  const pageSpecs = weekGroups.flatMap((weekGroup) => activityGroups.map((activityGroup, activityGroupIndex) => ({ weekGroup, activityGroup, activityGroupIndex })));
+  const pageCount = 1 + pageSpecs.length;
+
   const pdf = await PDFDocument.create();
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -260,27 +304,22 @@ export async function buildProgressPlanPdf(input: {
   const generated = input.generatedAt || new Date();
   const generatedLabel = `Generert ${String(generated.getDate()).padStart(2, "0")}.${String(generated.getMonth() + 1).padStart(2, "0")}.${generated.getFullYear()} ${String(generated.getHours()).padStart(2, "0")}:${String(generated.getMinutes()).padStart(2, "0")}`;
 
-  const weekGroups = chunk(weeks, MAX_WEEKS_PER_PAGE);
-  const activityGroups = chunk(activities, MAX_ACTIVITIES_PER_PAGE);
-  const pageSpecs = weekGroups.flatMap((weekGroup) => activityGroups.map((activityGroup, activityGroupIndex) => ({ weekGroup, activityGroup, activityGroupIndex })));
+  const summary = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  drawSummaryPage(summary, fonts, input, activities, weeks, sessions, generatedLabel, pageCount);
 
-  pageSpecs.forEach((spec, pageIndex) => {
+  pageSpecs.forEach((spec, index) => {
     const page = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
-    if (pageIndex === 0) {
-      drawHeader(page, fonts, input, generatedLabel);
-      drawMeta(page, fonts, input, activities, weeks, sessions);
-      const startY = PAGE_HEIGHT - 179;
-      page.drawText("Fremdriftsplanen er vedlagt direkte fra Expo ProffDok.", {
-        x: MARGIN, y: startY, size: 7, font: regular, color: COLORS.muted,
-      });
-      // Flytt første Gantt-side litt ned ved å bruke egen tegning på neste side hvis planen er stor.
-      if (activities.length > 9) {
-        const ganttPage = pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
-        drawGanttPage(ganttPage, fonts, input, spec.activityGroup, spec.weekGroup, pageIndex + 1, pageSpecs.length + 1, generatedLabel, spec.activityGroupIndex * MAX_ACTIVITIES_PER_PAGE);
-        return;
-      }
-    }
-    drawGanttPage(page, fonts, input, spec.activityGroup, spec.weekGroup, pageIndex, pageSpecs.length, generatedLabel, spec.activityGroupIndex * MAX_ACTIVITIES_PER_PAGE);
+    drawGanttPage(
+      page,
+      fonts,
+      input,
+      spec.activityGroup,
+      spec.weekGroup,
+      index + 2,
+      pageCount,
+      generatedLabel,
+      spec.activityGroupIndex * MAX_ACTIVITIES_PER_PAGE,
+    );
   });
 
   const bytes = await pdf.save();
