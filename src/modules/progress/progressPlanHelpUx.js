@@ -37,8 +37,10 @@ function createProgressHelpBlock() {
 
   appendSection(block, '📅 Fremdriftsplan', [
     'Åpne Fremdrift i et lagret prosjekt for å planlegge arbeidsoperasjoner, fag og hvem som skal utføre arbeidet.',
-    'En aktivitet kan ha flere arbeidsøkter. Legg inn dato og klokkeslett hver gang samme fag eller håndverker skal tilbake på prosjektet.',
-    'På prosjekt som kommer fra et akseptert tilbud kan du hente hovedpostene og kundens valgte opsjoner som forslag til arbeidsoperasjoner. Forslagene kan deretter tilpasses i fremdriftsplanen.',
+    'På prosjekt som kommer fra et akseptert tilbud kan du hente hovedpostene og kundens valgte opsjoner som forslag til arbeidsoperasjoner.',
+    'Prosjekter som er opprettet uten tilbud kan bruke de samme standard arbeidsoperasjonene som tilbudsbyggeren, for eksempel Tildekking, Tømrer, Rørlegger, Elektriker, Membran og Flislegging.',
+    'Du kan alltid legge til egne arbeidsoperasjoner dersom prosjektet inneholder arbeid som ikke passer i standardforslagene.',
+    'Klikk Legg inn tid på en arbeidsoperasjon og registrer dato, fra/til og person eller firma. Samme håndverker kan legges inn flere ganger gjennom prosjektet.',
     'Fremdriftsplanen er prosjektets arbeidsplan. Endringer i planen endrer aldri det aksepterte tilbudet, akseptbeviset eller kontrakten.',
     'Underentreprenør med gyldig prosjekttilgang kan se fremdriftsplanen, men kan ikke redigere den i denne versjonen.',
     'Kunden ser ikke fremdriftsplanen som standard. Slå på Vis fremdriftsplan til kunde når du ønsker å dele den.',
@@ -47,8 +49,8 @@ function createProgressHelpBlock() {
   ]);
 
   appendSection(block, 'Anbefalt bruk', [
-    'Start med hovedaktivitetene og fordel dem i naturlig arbeidsrekkefølge.',
-    'Bruk flere arbeidsøkter i stedet for å lage duplikate aktiviteter når samme fag skal komme tilbake flere ganger.',
+    'Start med arbeidsoperasjonene og fordel dem i naturlig arbeidsrekkefølge.',
+    'Bruk flere planlagte tider på samme arbeidsoperasjon når samme fag skal komme tilbake flere ganger.',
     'Legg inn person eller firma når det gjør planen tydeligere for interne ansatte og underentreprenører.',
     'Del planen med kunde først når datoer og rekkefølge er klare nok til at de er nyttige for kunden.',
   ]);
