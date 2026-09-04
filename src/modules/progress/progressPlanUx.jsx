@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 import {
   EMPTY_PROGRESS_PLAN,
   getProgressSupabaseClient,
+  isProgressSafePreviewMode,
   loadAcceptedOfferActivities,
   loadInternalProgressPlan,
   loadPortalProgressPlan,
@@ -65,9 +66,14 @@ const formatDate = (value) => {
     : value || '';
 };
 
+function makeId(prefix = 'progress') {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 function newActivity(title = 'Ny aktivitet') {
   return {
-    id: crypto.randomUUID(),
+    id: makeId('activity'),
     title,
     trade: '',
     resource: '',
@@ -78,7 +84,7 @@ function newActivity(title = 'Ny aktivitet') {
 
 function newSession(date = '') {
   return {
-    id: crypto.randomUUID(),
+    id: makeId('session'),
     date: date || isoDate(new Date()),
     startTime: '08:00',
     endTime: '16:00',
@@ -88,19 +94,22 @@ function newSession(date = '') {
 
 function normalizeActivity(activity = {}) {
   return {
-    id: activity.id || crypto.randomUUID(),
+    id: activity.id || makeId('activity'),
     title: clean(activity.title || 'Aktivitet'),
     trade: clean(activity.trade || ''),
     resource: clean(activity.resource || ''),
     status: STATUS_OPTIONS.includes(activity.status) ? activity.status : 'Ikke startet',
     sessions: (Array.isArray(activity.sessions) ? activity.sessions : []).map((session) => ({
-      id: session.id || crypto.randomUUID(),
+      id: session.id || makeId('session'),
       date: String(session.date || ''),
       startTime: String(session.startTime || ''),
       endTime: String(session.endTime || ''),
       note: String(session.note || ''),
     })),
     ...(activity.sourceMainPostId ? { sourceMainPostId: activity.sourceMainPostId } : {}),
+    ...(Array.isArray(activity.sourceOptionTitles) && activity.sourceOptionTitles.length
+      ? { sourceOptionTitles: activity.sourceOptionTitles.map(clean).filter(Boolean) }
+      : {}),
   };
 }
 
@@ -113,6 +122,7 @@ function statusClass(status = '') {
 
 function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalProjectId, role, onDirtyChange }) {
   const client = useMemo(() => getProgressSupabaseClient(), []);
+  const safePreview = useMemo(() => isProgressSafePreviewMode(), []);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -146,6 +156,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
       });
       setCustomerVisible(!!value.customerVisible);
       setDirty(false);
+      setExpandedActivityId('');
     } catch (loadError) {
       setError(loadError?.message || 'Kunne ikke hente fremdriftsplanen.');
     } finally {
@@ -177,6 +188,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
           });
           setCustomerVisible(!!value?.customerVisible);
           setDirty(false);
+          setExpandedActivityId('');
           setLoading(false);
           return;
         }
@@ -184,11 +196,8 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
         const resolved = await resolveInternalProgressProject(client, { identity, requestRef });
         if (cancelled) return;
         setCandidates(resolved.candidates || []);
-        if (resolved.project) {
-          await loadProjectPlan(resolved.project);
-        } else {
-          setLoading(false);
-        }
+        if (resolved.project) await loadProjectPlan(resolved.project);
+        else setLoading(false);
       } catch (loadError) {
         if (!cancelled) {
           setError(loadError?.message || 'Kunne ikke finne prosjektet for fremdriftsplanen.');
@@ -274,11 +283,10 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
   };
 
   const addSession = (activityId) => {
+    const activity = activities.find((item) => item.id === activityId);
+    if (!activity) return;
     updateActivity(activityId, {
-      sessions: [
-        ...(activities.find((activity) => activity.id === activityId)?.sessions || []),
-        newSession(isoDate(weekStart)),
-      ],
+      sessions: [...activity.sessions, newSession(isoDate(weekStart))],
     });
   };
 
@@ -291,7 +299,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
   };
 
   const importOffer = async () => {
-    if (!projectMeta?.publicToken) return;
+    if (!projectMeta?.publicToken && !safePreview) return;
     setLoading(true);
     setError('');
     setNotice('');
@@ -302,9 +310,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
         return;
       }
       const existingKeys = new Set(
-        activities.map((activity) =>
-          clean(activity.sourceMainPostId || activity.title).toLowerCase()
-        )
+        activities.map((activity) => clean(activity.sourceMainPostId || activity.title).toLowerCase())
       );
       const additions = imported
         .map(normalizeActivity)
@@ -319,13 +325,17 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
       markPlan((prev) => ({
         ...prev,
         source: {
-          type: 'accepted-offer',
-          requestRef: projectMeta.requestRef || '',
+          type: safePreview ? 'accepted-offer-testcopy' : 'accepted-offer',
+          requestRef: safePreview ? 'F-2026-0053-TESTKOPI' : projectMeta.requestRef || '',
           importedAt: new Date().toISOString(),
         },
         activities: [...prev.activities, ...additions],
       }));
-      setNotice(`${additions.length} arbeidsoperasjoner ble lagt inn som forslag fra tilbudet.`);
+      setNotice(
+        safePreview
+          ? `${additions.length} arbeidsoperasjoner ble lagt inn fra anonymisert Andreas-testkopi.`
+          : `${additions.length} arbeidsoperasjoner ble lagt inn som forslag fra tilbudet.`
+      );
     } catch (importError) {
       setError(importError?.message || 'Kunne ikke hente arbeidsoperasjoner fra tilbudet.');
     } finally {
@@ -333,8 +343,29 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
     }
   };
 
+  const validatePlan = () => {
+    const missingTitle = activities.find((activity) => !clean(activity.title));
+    if (missingTitle) return 'Alle aktiviteter må ha navn før planen kan lagres.';
+    for (const activity of activities) {
+      for (const session of activity.sessions || []) {
+        if (!session.date || !session.startTime || !session.endTime) {
+          return `Arbeidsøkter på «${activity.title}» må ha dato, fra- og til-tid.`;
+        }
+        if (session.endTime <= session.startTime) {
+          return `Til-tid må være senere enn fra-tid på «${activity.title}».`;
+        }
+      }
+    }
+    return '';
+  };
+
   const save = async () => {
     if (!projectMeta?.id || readOnly) return;
+    const validationError = validatePlan();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setSaving(true);
     setError('');
     setNotice('');
@@ -347,7 +378,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
       });
       setCustomerVisible(!!saved.customerVisible);
       setDirty(false);
-      setNotice('Fremdriftsplanen er lagret.');
+      setNotice(saved.localOnly ? 'Testkopien er lagret lokalt i denne nettleseren.' : 'Fremdriftsplanen er lagret.');
     } catch (saveError) {
       setError(saveError?.message || 'Kunne ikke lagre fremdriftsplanen.');
     } finally {
@@ -359,6 +390,78 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
     const candidate = candidates.find((item) => item.id === projectId);
     if (candidate) await loadProjectPlan(candidate);
   };
+
+  const renderSourceOptions = (activity) => {
+    const optionTitles = Array.isArray(activity.sourceOptionTitles) ? activity.sourceOptionTitles : [];
+    if (!optionTitles.length) return null;
+    return (
+      <div className="progress-source-options">
+        <span>Valgte opsjoner i tilbudsgrunnlaget</span>
+        <div>{optionTitles.map((title) => <small key={title}>{title}</small>)}</div>
+      </div>
+    );
+  };
+
+  const renderActivityEditor = (activity, activityIndex, { mobile = false } = {}) => (
+    <div
+      className={`progress-editor${mobile ? ' progress-mobile-editor' : ''}`}
+      {...(!mobile ? { style: { gridColumn: `1 / span ${days.length + 1}` } } : {})}
+    >
+      <div className="progress-editor-topline">
+        <strong>Rediger aktivitet</strong>
+        <button type="button" className="progress-link" onClick={() => setExpandedActivityId('')}>Lukk redigering</button>
+      </div>
+      <div className="progress-editor-grid">
+        <label>
+          <span>Arbeidsoperasjon</span>
+          <input value={activity.title} onChange={(event) => updateActivity(activity.id, { title: event.target.value })} />
+        </label>
+        <label>
+          <span>Fag</span>
+          <input list="expo-progress-trades" value={activity.trade} onChange={(event) => updateActivity(activity.id, { trade: event.target.value })} placeholder="F.eks. Rørlegger" />
+        </label>
+        <label>
+          <span>Person / firma</span>
+          <input value={activity.resource} onChange={(event) => updateActivity(activity.id, { resource: event.target.value })} placeholder="F.eks. montør / UE-firma" />
+        </label>
+        <label>
+          <span>Status</span>
+          <select value={activity.status} onChange={(event) => updateActivity(activity.id, { status: event.target.value })}>
+            {STATUS_OPTIONS.map((status) => <option key={status}>{status}</option>)}
+          </select>
+        </label>
+      </div>
+      {renderSourceOptions(activity)}
+      <datalist id="expo-progress-trades">
+        {TRADE_SUGGESTIONS.map((trade) => <option key={trade} value={trade} />)}
+      </datalist>
+
+      <div className="progress-session-heading">
+        <div>
+          <strong>Arbeidsøkter</strong>
+          <span>Samme håndverker kan legges inn flere ganger på ulike dager og klokkeslett.</span>
+        </div>
+        <button type="button" className="progress-secondary" onClick={() => addSession(activity.id)}>+ Arbeidsøkt</button>
+      </div>
+      <div className="progress-session-list">
+        {activity.sessions.map((session) => (
+          <div key={session.id} className="progress-session-editor">
+            <label><span>Dato</span><input type="date" value={session.date} onChange={(event) => updateSession(activity.id, session.id, { date: event.target.value })} /></label>
+            <label><span>Fra</span><input type="time" value={session.startTime} onChange={(event) => updateSession(activity.id, session.id, { startTime: event.target.value })} /></label>
+            <label><span>Til</span><input type="time" value={session.endTime} onChange={(event) => updateSession(activity.id, session.id, { endTime: event.target.value })} /></label>
+            <label className="progress-session-note"><span>Merknad</span><input value={session.note} onChange={(event) => updateSession(activity.id, session.id, { note: event.target.value })} placeholder="F.eks. grovmontering" /></label>
+            <button type="button" className="progress-danger-link" onClick={() => removeSession(activity.id, session.id)}>Fjern</button>
+          </div>
+        ))}
+        {!activity.sessions.length ? <p className="progress-muted">Ingen arbeidsøkter registrert.</p> : null}
+      </div>
+      <div className="progress-editor-actions">
+        <button type="button" className="progress-secondary" disabled={activityIndex === 0} onClick={() => moveActivity(activity.id, -1)}>Flytt opp</button>
+        <button type="button" className="progress-secondary" disabled={activityIndex === activities.length - 1} onClick={() => moveActivity(activity.id, 1)}>Flytt ned</button>
+        <button type="button" className="progress-danger" onClick={() => removeActivity(activity.id)}>Fjern aktivitet</button>
+      </div>
+    </div>
+  );
 
   if (loading && !projectMeta) {
     return <div className="progress-shell"><div className="progress-card"><b>Laster fremdriftsplan…</b></div></div>;
@@ -402,9 +505,16 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
 
   return (
     <div className="progress-shell">
+      {safePreview ? (
+        <div className="progress-test-banner">
+          <strong>🧪 Trygg Preview-test</strong>
+          <span>Andreas-testkopien og alle endringer i fremdriftsplanen lagres kun i denne nettleseren. Produksjon skrives ikke til.</span>
+        </div>
+      ) : null}
+
       <section className="progress-hero">
         <div>
-          <span className="progress-eyebrow">Fase 35A · prosjektgjennomføring</span>
+          <span className="progress-eyebrow">{safePreview ? 'Testkopi · prosjektgjennomføring' : 'Prosjektgjennomføring'}</span>
           <h2>Fremdriftsplan</h2>
           <p>
             <strong>{projectMeta?.title || identity || 'Prosjekt'}</strong>
@@ -414,9 +524,9 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
         <div className="progress-hero-actions">
           {!readOnly ? (
             <>
-              {projectMeta?.publicToken ? (
+              {(projectMeta?.publicToken || safePreview) ? (
                 <button type="button" className="progress-secondary" onClick={importOffer} disabled={loading || saving}>
-                  Hent arbeidsoperasjoner fra tilbud
+                  {safePreview ? 'Hent Andreas-testkopi' : 'Hent arbeidsoperasjoner fra tilbud'}
                 </button>
               ) : null}
               <button type="button" className="progress-secondary" onClick={addActivity}>+ Aktivitet</button>
@@ -443,6 +553,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
               onChange={(event) => {
                 setCustomerVisible(event.target.checked);
                 setDirty(true);
+                setNotice('');
               }}
             />
             <span>{customerVisible ? 'Kunde kan se planen' : 'Skjult for kunde'}</span>
@@ -481,7 +592,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
             <p>
               {readOnly
                 ? 'Prosjektansvarlig har ikke lagt inn aktiviteter i fremdriftsplanen ennå.'
-                : projectMeta?.publicToken
+                : (projectMeta?.publicToken || safePreview)
                   ? 'Hent naturlige arbeidsoperasjoner fra det aksepterte tilbudet, eller opprett aktiviteter manuelt.'
                   : 'Opprett aktiviteter manuelt og legg håndverkerne inn på de dagene og tidene de skal arbeide.'}
             </p>
@@ -506,6 +617,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
                         <span className={`progress-status ${statusClass(activity.status)}`}>{activity.status}</span>
                       </div>
                       <span>{activity.trade || 'Fag ikke valgt'}{activity.resource ? ` · ${activity.resource}` : ''}</span>
+                      {(activity.sourceOptionTitles || []).length ? <small className="progress-option-count">{activity.sourceOptionTitles.length} valgt(e) opsjon(er)</small> : null}
                       {!readOnly ? (
                         <button type="button" className="progress-link" onClick={() => setExpandedActivityId((value) => value === activity.id ? '' : activity.id)}>
                           {expandedActivityId === activity.id ? 'Lukk redigering' : 'Rediger / timer'}
@@ -527,59 +639,9 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
                         </div>
                       );
                     })}
-
-                    {expandedActivityId === activity.id && !readOnly ? (
-                      <div className="progress-editor" style={{ gridColumn: `1 / span ${days.length + 1}` }}>
-                        <div className="progress-editor-grid">
-                          <label>
-                            <span>Arbeidsoperasjon</span>
-                            <input value={activity.title} onChange={(event) => updateActivity(activity.id, { title: event.target.value })} />
-                          </label>
-                          <label>
-                            <span>Fag</span>
-                            <input list="expo-progress-trades" value={activity.trade} onChange={(event) => updateActivity(activity.id, { trade: event.target.value })} placeholder="F.eks. Rørlegger" />
-                          </label>
-                          <label>
-                            <span>Person / firma</span>
-                            <input value={activity.resource} onChange={(event) => updateActivity(activity.id, { resource: event.target.value })} placeholder="F.eks. Andreas / Elektro AS" />
-                          </label>
-                          <label>
-                            <span>Status</span>
-                            <select value={activity.status} onChange={(event) => updateActivity(activity.id, { status: event.target.value })}>
-                              {STATUS_OPTIONS.map((status) => <option key={status}>{status}</option>)}
-                            </select>
-                          </label>
-                        </div>
-                        <datalist id="expo-progress-trades">
-                          {TRADE_SUGGESTIONS.map((trade) => <option key={trade} value={trade} />)}
-                        </datalist>
-
-                        <div className="progress-session-heading">
-                          <div>
-                            <strong>Arbeidsøkter</strong>
-                            <span>Samme håndverker kan legges inn flere ganger på ulike dager og klokkeslett.</span>
-                          </div>
-                          <button type="button" className="progress-secondary" onClick={() => addSession(activity.id)}>+ Arbeidsøkt</button>
-                        </div>
-                        <div className="progress-session-list">
-                          {activity.sessions.map((session) => (
-                            <div key={session.id} className="progress-session-editor">
-                              <label><span>Dato</span><input type="date" value={session.date} onChange={(event) => updateSession(activity.id, session.id, { date: event.target.value })} /></label>
-                              <label><span>Fra</span><input type="time" value={session.startTime} onChange={(event) => updateSession(activity.id, session.id, { startTime: event.target.value })} /></label>
-                              <label><span>Til</span><input type="time" value={session.endTime} onChange={(event) => updateSession(activity.id, session.id, { endTime: event.target.value })} /></label>
-                              <label className="progress-session-note"><span>Merknad</span><input value={session.note} onChange={(event) => updateSession(activity.id, session.id, { note: event.target.value })} placeholder="F.eks. grovmontering" /></label>
-                              <button type="button" className="progress-danger-link" onClick={() => removeSession(activity.id, session.id)}>Fjern</button>
-                            </div>
-                          ))}
-                          {!activity.sessions.length ? <p className="progress-muted">Ingen arbeidsøkter registrert.</p> : null}
-                        </div>
-                        <div className="progress-editor-actions">
-                          <button type="button" className="progress-secondary" disabled={activityIndex === 0} onClick={() => moveActivity(activity.id, -1)}>Flytt opp</button>
-                          <button type="button" className="progress-secondary" disabled={activityIndex === activities.length - 1} onClick={() => moveActivity(activity.id, 1)}>Flytt ned</button>
-                          <button type="button" className="progress-danger" onClick={() => removeActivity(activity.id)}>Fjern aktivitet</button>
-                        </div>
-                      </div>
-                    ) : null}
+                    {expandedActivityId === activity.id && !readOnly
+                      ? renderActivityEditor(activity, activityIndex)
+                      : null}
                   </React.Fragment>
                 );
               })}
@@ -590,21 +652,37 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
 
       <section className="progress-mobile-list">
         <span className="progress-eyebrow">Mobiloversikt</span>
-        {activities.map((activity) => (
+        {activities.map((activity, activityIndex) => (
           <article key={`mobile-${activity.id}`} className="progress-mobile-card">
-            <div><strong>{activity.title}</strong><span className={`progress-status ${statusClass(activity.status)}`}>{activity.status}</span></div>
+            <div className="progress-mobile-card-head">
+              <strong>{activity.title}</strong>
+              <span className={`progress-status ${statusClass(activity.status)}`}>{activity.status}</span>
+            </div>
             <p>{activity.trade || 'Fag ikke valgt'}{activity.resource ? ` · ${activity.resource}` : ''}</p>
-            {(activity.sessions || []).slice().sort((a, b) => `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`)).map((session) => (
-              <div key={session.id} className="progress-mobile-session">
-                <b>{formatDate(session.date)}</b>
-                <span>{session.startTime || '–'}–{session.endTime || '–'}</span>
-                {session.note ? <small>{session.note}</small> : null}
-              </div>
-            ))}
+            {(activity.sourceOptionTitles || []).length ? <small className="progress-option-count">{activity.sourceOptionTitles.length} valgt(e) opsjon(er) i tilbudsgrunnlaget</small> : null}
+            {(activity.sessions || [])
+              .slice()
+              .sort((a, b) => `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`))
+              .map((session) => (
+                <div key={session.id} className="progress-mobile-session">
+                  <b>{formatDate(session.date)}</b>
+                  <span>{session.startTime || '–'}–{session.endTime || '–'}</span>
+                  {session.note ? <small>{session.note}</small> : null}
+                </div>
+              ))}
             {!activity.sessions.length ? <small>Ingen arbeidsøkter registrert.</small> : null}
             {!readOnly ? (
-              <button type="button" className="progress-secondary" onClick={() => setExpandedActivityId(activity.id)}>Rediger aktivitet</button>
+              <button
+                type="button"
+                className="progress-secondary"
+                onClick={() => setExpandedActivityId((value) => value === activity.id ? '' : activity.id)}
+              >
+                {expandedActivityId === activity.id ? 'Lukk redigering' : 'Rediger aktivitet'}
+              </button>
             ) : null}
+            {expandedActivityId === activity.id && !readOnly
+              ? renderActivityEditor(activity, activityIndex, { mobile: true })
+              : null}
           </article>
         ))}
       </section>
@@ -615,16 +693,18 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
 const STYLE_TEXT = `
 #${ROOT_ID}{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#172126;max-width:1440px;margin:0 auto;padding:20px 18px 80px;box-sizing:border-box}
 .progress-shell{display:grid;gap:16px}.progress-card,.progress-board-card,.progress-share-card{background:#fff;border:1px solid #d9e4e8;border-radius:18px;box-shadow:0 8px 28px rgba(20,42,52,.06)}
-.progress-card{padding:24px}.progress-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;padding:24px 26px;border-radius:20px;background:linear-gradient(135deg,#172126,#26343a);color:#fff;box-shadow:0 14px 34px rgba(11,31,39,.18)}
+.progress-card{padding:24px}.progress-test-banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-radius:14px;background:#fff7d6;border:1px solid #e5b83c;color:#674d00}.progress-test-banner span{font-size:13px}
+.progress-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;padding:24px 26px;border-radius:20px;background:linear-gradient(135deg,#172126,#26343a);color:#fff;box-shadow:0 14px 34px rgba(11,31,39,.18)}
 .progress-hero h2{font-size:30px;margin:5px 0 4px}.progress-hero p{margin:0;color:#d6e4e8}.progress-eyebrow{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:900;color:#0c8f98;margin-bottom:5px}.progress-hero .progress-eyebrow{color:#61dce2}
 .progress-hero-actions,.progress-week-actions,.progress-editor-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.progress-primary,.progress-secondary,.progress-danger{border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:800;cursor:pointer}.progress-primary{background:#12aeb7;color:#fff}.progress-secondary{background:#edf5f6;color:#155d63;border:1px solid #c7e0e3}.progress-danger{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}.progress-primary:disabled,.progress-secondary:disabled{opacity:.5;cursor:not-allowed}.progress-readonly{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);font-weight:800}
 .progress-share-card{padding:18px 20px;display:flex;justify-content:space-between;gap:18px;align-items:center}.progress-share-card p{margin:5px 0 0;color:#5d6b72}.progress-switch{display:flex;align-items:center;gap:9px;font-weight:800}.progress-switch input{width:20px;height:20px}.progress-note,.progress-success,.progress-error{padding:12px 14px;border-radius:12px;font-weight:700}.progress-note{background:#f5f8f9;border:1px solid #dce5e8;color:#526168}.progress-success{background:#ecfdf5;border:1px solid #bbf7d0;color:#166534}.progress-error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
 .progress-board-card{overflow:hidden}.progress-board-toolbar{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:18px 20px;border-bottom:1px solid #e2eaed}.progress-board-toolbar strong{display:block;font-size:17px}.progress-board-scroll{overflow-x:auto}.progress-board{display:grid;grid-template-columns:minmax(270px,320px) repeat(var(--progress-days),minmax(128px,1fr));min-width:1180px}.progress-grid-head{padding:11px 10px;background:#f4f8f9;border-right:1px solid #e1e9ec;border-bottom:1px solid #dce6e9;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;color:#4b5f67;text-align:center}.progress-grid-head.today,.progress-day-cell.today{background:#f0fbfc}.progress-sticky-left{position:sticky;left:0;z-index:3;text-align:left;box-shadow:7px 0 14px rgba(21,44,54,.04)}
-.progress-activity-cell{padding:12px 13px;background:#fff;border-right:1px solid #dce6e9;border-bottom:1px solid #e6edef;min-height:84px}.progress-activity-title-row{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.progress-activity-cell>span{display:block;margin-top:5px;color:#66777e;font-size:13px}.progress-link,.progress-danger-link{border:0;background:none;padding:5px 0;color:#087f88;font:inherit;font-size:12px;font-weight:900;cursor:pointer}.progress-danger-link{color:#be123c}.progress-status{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:900;white-space:nowrap}.progress-status.todo{background:#f1f5f9;color:#475569}.progress-status.active{background:#fef3c7;color:#92400e}.progress-status.waiting{background:#dbeafe;color:#1e40af}.progress-status.done{background:#dcfce7;color:#166534}
-.progress-day-cell{min-height:84px;padding:6px;border-right:1px solid #eef2f4;border-bottom:1px solid #e6edef;background:#fff;display:grid;align-content:start;gap:5px}.progress-session{padding:7px 8px;border-radius:9px;background:#e9f7f8;border-left:4px solid #1199a3;display:grid;gap:2px;font-size:11px}.progress-session.active{background:#fff7d8;border-left-color:#e8a317}.progress-session.waiting{background:#edf4ff;border-left-color:#4c78c2}.progress-session.done{background:#edf9f1;border-left-color:#2f9b63}.progress-session span,.progress-session small{white-space:normal;color:#55666e}.progress-editor{background:#f8fbfc;border-bottom:1px solid #dbe6e9;padding:16px 18px}.progress-editor-grid{display:grid;grid-template-columns:2fr 1fr 1.3fr 1fr;gap:12px}.progress-editor label,.progress-session-editor label{display:grid;gap:5px}.progress-editor label span,.progress-session-editor label span{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;color:#61727a}.progress-editor input,.progress-editor select,.progress-resolver select{width:100%;box-sizing:border-box;border:1px solid #cbd9de;border-radius:9px;padding:9px 10px;background:#fff;font:inherit}.progress-session-heading{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:18px 0 9px}.progress-session-heading span{display:block;color:#63757d;font-size:13px;margin-top:3px}.progress-session-list{display:grid;gap:8px}.progress-session-editor{display:grid;grid-template-columns:150px 110px 110px minmax(220px,1fr) 64px;gap:9px;align-items:end;padding:10px;border-radius:12px;background:#fff;border:1px solid #dbe5e8}.progress-editor-actions{margin-top:14px}.progress-muted{color:#64748b;margin:8px 0}.progress-empty{padding:34px;text-align:center;color:#5f7078}.progress-empty h3{color:#203038;margin:0 0 6px}
-.progress-mobile-list{display:none}.progress-mobile-card{background:#fff;border:1px solid #d9e4e8;border-radius:15px;padding:14px;display:grid;gap:9px}.progress-mobile-card>div:first-child{display:flex;justify-content:space-between;gap:10px}.progress-mobile-card p{margin:0;color:#62737b}.progress-mobile-session{display:grid;grid-template-columns:100px 90px 1fr;gap:7px;padding:8px 9px;border-radius:9px;background:#f3f8f9;font-size:12px}
+.progress-activity-cell{padding:12px 13px;background:#fff;border-right:1px solid #dce6e9;border-bottom:1px solid #e6edef;min-height:84px}.progress-activity-title-row{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.progress-activity-cell>span{display:block;margin-top:5px;color:#66777e;font-size:13px}.progress-option-count{display:block;margin-top:5px;color:#087f88;font-weight:800}.progress-link,.progress-danger-link{border:0;background:none;padding:5px 0;color:#087f88;font:inherit;font-size:12px;font-weight:900;cursor:pointer}.progress-danger-link{color:#be123c}.progress-status{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:900;white-space:nowrap}.progress-status.todo{background:#f1f5f9;color:#475569}.progress-status.active{background:#fef3c7;color:#92400e}.progress-status.waiting{background:#dbeafe;color:#1e40af}.progress-status.done{background:#dcfce7;color:#166534}
+.progress-day-cell{min-height:84px;padding:6px;border-right:1px solid #eef2f4;border-bottom:1px solid #e6edef;background:#fff;display:grid;align-content:start;gap:5px}.progress-session{padding:7px 8px;border-radius:9px;background:#e9f7f8;border-left:4px solid #1199a3;display:grid;gap:2px;font-size:11px}.progress-session.active{background:#fff7d8;border-left-color:#e8a317}.progress-session.waiting{background:#edf4ff;border-left-color:#4c78c2}.progress-session.done{background:#edf9f1;border-left-color:#2f9b63}.progress-session span,.progress-session small{white-space:normal;color:#55666e}
+.progress-editor{background:#f8fbfc;border-bottom:1px solid #dbe6e9;padding:16px 18px}.progress-editor-topline{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.progress-editor-grid{display:grid;grid-template-columns:2fr 1fr 1.3fr 1fr;gap:12px}.progress-editor label,.progress-session-editor label{display:grid;gap:5px}.progress-editor label span,.progress-session-editor label span{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;color:#61727a}.progress-editor input,.progress-editor select,.progress-resolver select{width:100%;box-sizing:border-box;border:1px solid #cbd9de;border-radius:9px;padding:9px 10px;background:#fff;font:inherit}.progress-source-options{margin-top:12px;padding:10px 12px;border-radius:10px;background:#eef8f9;border:1px solid #cfe6e8}.progress-source-options>span{display:block;font-size:11px;font-weight:900;text-transform:uppercase;color:#517078;margin-bottom:6px}.progress-source-options>div{display:flex;gap:6px;flex-wrap:wrap}.progress-source-options small{padding:5px 7px;border-radius:999px;background:#fff;border:1px solid #c9e1e3;color:#275b60}.progress-session-heading{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:18px 0 9px}.progress-session-heading span{display:block;color:#63757d;font-size:13px;margin-top:3px}.progress-session-list{display:grid;gap:8px}.progress-session-editor{display:grid;grid-template-columns:150px 110px 110px minmax(220px,1fr) 64px;gap:9px;align-items:end;padding:10px;border-radius:12px;background:#fff;border:1px solid #dbe5e8}.progress-editor-actions{margin-top:14px}.progress-muted{color:#64748b;margin:8px 0}.progress-empty{padding:34px;text-align:center;color:#5f7078}.progress-empty h3{color:#203038;margin:0 0 6px}
+.progress-mobile-list{display:none}.progress-mobile-card{background:#fff;border:1px solid #d9e4e8;border-radius:15px;padding:14px;display:grid;gap:9px}.progress-mobile-card-head{display:flex;justify-content:space-between;gap:10px}.progress-mobile-card p{margin:0;color:#62737b}.progress-mobile-session{display:grid;grid-template-columns:100px 90px 1fr;gap:7px;padding:8px 9px;border-radius:9px;background:#f3f8f9;font-size:12px}.progress-mobile-editor{margin-top:4px;border:1px solid #d5e3e6;border-radius:12px;background:#f8fbfc;padding:12px}
 .progress-resolver{max-width:760px;margin:30px auto}.progress-resolver h2{margin:4px 0 8px}.progress-resolver p{color:#5b6c73;line-height:1.5}
-@media(max-width:820px){#${ROOT_ID}{padding:12px 10px 60px}.progress-hero{align-items:flex-start;flex-direction:column;padding:20px}.progress-hero h2{font-size:25px}.progress-share-card,.progress-board-toolbar{align-items:flex-start;flex-direction:column}.progress-board-card{display:none}.progress-mobile-list{display:grid;gap:10px}.progress-editor-grid{grid-template-columns:1fr}.progress-session-editor{grid-template-columns:1fr 1fr}.progress-session-note{grid-column:1/-1}.progress-session-editor .progress-danger-link{grid-column:1/-1;text-align:left}.progress-mobile-session{grid-template-columns:1fr 1fr}.progress-mobile-session small{grid-column:1/-1}}
+@media(max-width:820px){#${ROOT_ID}{padding:12px 10px 60px}.progress-hero{align-items:flex-start;flex-direction:column;padding:20px}.progress-hero h2{font-size:25px}.progress-test-banner,.progress-share-card,.progress-board-toolbar{align-items:flex-start;flex-direction:column}.progress-board-card{display:none}.progress-mobile-list{display:grid;gap:10px}.progress-editor-grid{grid-template-columns:1fr}.progress-session-heading{align-items:flex-start;flex-direction:column}.progress-session-editor{grid-template-columns:1fr 1fr}.progress-session-note{grid-column:1/-1}.progress-session-editor .progress-danger-link{grid-column:1/-1;text-align:left}.progress-mobile-session{grid-template-columns:1fr 1fr}.progress-mobile-session small{grid-column:1/-1}.progress-mobile-editor .progress-editor-actions{display:grid;grid-template-columns:1fr 1fr}.progress-mobile-editor .progress-danger{grid-column:1/-1}}
 `;
 
 let installed = false;
@@ -632,6 +712,7 @@ let active = false;
 let reactRoot = null;
 let currentDirty = false;
 let portalAvailability = null;
+let portalAvailabilityContext = '';
 let availabilityBusy = false;
 let observer = null;
 let observerTimer = null;
@@ -690,10 +771,14 @@ async function refreshPortalAvailability(mode) {
   if (mode === 'internal' || availabilityBusy) return;
   const projectId = portalProjectId();
   if (!projectId) return;
+  const context = `${mode}:${projectId}`;
+  if (context !== portalAvailabilityContext) {
+    portalAvailabilityContext = context;
+    portalAvailability = null;
+  }
   availabilityBusy = true;
   try {
-    const value = await loadPortalProgressPlan(getProgressSupabaseClient(), projectId, mode);
-    portalAvailability = value;
+    portalAvailability = await loadPortalProgressPlan(getProgressSupabaseClient(), projectId, mode);
   } catch {
     portalAvailability = null;
   } finally {
@@ -823,6 +908,11 @@ function injectMobileShortcut(mode) {
 function adaptNavigation() {
   ensureStyle();
   const mode = modeFromLocation();
+  const context = mode === 'internal' ? '' : `${mode}:${portalProjectId()}`;
+  if (mode !== 'internal' && context !== portalAvailabilityContext) {
+    portalAvailabilityContext = context;
+    portalAvailability = null;
+  }
   if (mode !== 'internal' && portalAvailability === null && !availabilityBusy) {
     refreshPortalAvailability(mode);
   }
