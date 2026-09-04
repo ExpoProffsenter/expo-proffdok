@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
-**Fase:** 35A – fremdriftsplan  
+**Fase:** 35B – fremdrift eksport/deling + prosjektinvolverte  
 **Status:** Feature branch / Preview-QA – ikke merget  
 **Dato:** 04.09.2026  
-**Produksjonsbaseline ved oppstart:** `main` på `036fc1ef841b7e4ca382ec91fd553f844dfe7d17`  
+**Produksjonsbaseline ved oppstart:** `main` på `60e227efd9b1b95749a20ac141c44f7dfe45d776`  
 **Supabase:** `dqffxflaoyarbxyiyhop`
 
 Dette kartet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitetskrav som må bevares. Historiske detaljer finnes i Git.
@@ -11,20 +11,20 @@ Dette kartet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitet
 ## 1. Styrende prinsipper
 
 1. `main` er kilde til sannhet for produksjonskode.
-2. Produksjon beskyttes foran alt: feature-branch → Vercel Preview → `TEST OK` → merge → verifiser eksakt Production-SHA, HTTP/runtime og relevant Supabase-status.
+2. Produksjon beskyttes foran alt: feature-branch → Vercel Preview → eksplisitt `TEST OK` → merge → verifiser eksakt Production-SHA, HTTP/runtime og relevant Supabase-status.
 3. RLS/server er sikkerhetsgrensen; frontend alene gir aldri tilgang eller siste autoritative validering.
 4. Publiserte tilbud, aksepterte tilbudsversjoner, signerte kontrakter og utstedte garantier er historikk og skal ikke overskrives vilkårlig.
-5. Prosjekt kan opprettes og eksistere uten tilbud.
-6. Prosjekt kan eksistere uten kontrakt. Kontrakt er kun obligatorisk når dokumentert tetthetsgaranti faktisk skal utstedes.
-7. Eksisterende opplasting av bedriftens egen kontrakt er fortsatt gyldig.
-8. Privatkundeorienterte priser vises inkl. mva.
-9. Ingen historisk backfill uten eksplisitt beslutning.
-10. Supportmodus er ikke skrive-bypass og skal ikke registrere systemadmin som feil oppretter, ansvarlig eller signatar.
-11. Sales recovery/hydration og IndexedDB-sikring av befaringsbilder er kritiske kontrakter.
-12. Historiske Storage-paths/URL-er flyttes ikke spontant.
-13. Modulisering gjøres bare ved naturlige ansvargrenser som gir reell oversikt eller mindre risiko.
-14. Brukerrettede endringer oppdaterer HJELP samme runde.
-15. Fremdriftsplan er operativ prosjektdata og skal aldri endre den låste tilbuds-/aksepthistorikken den eventuelt er opprettet fra.
+5. Prosjekt kan opprettes og eksistere uten tilbud og uten kontrakt.
+6. Kontrakt er bare obligatorisk når dokumentert tetthetsgaranti faktisk skal utstedes.
+7. Privatkundeorienterte priser vises inkl. mva.
+8. Ingen historisk backfill uten eksplisitt beslutning.
+9. Supportmodus er ikke skrive-bypass og skal ikke registrere systemadmin som feil oppretter, ansvarlig eller signatar.
+10. Sales recovery/hydration og IndexedDB-sikring av befaringsbilder er kritiske kontrakter.
+11. Historiske Storage-paths/URL-er flyttes ikke spontant.
+12. Modulisering gjøres bare ved naturlige ansvargrenser som gir reell oversikt eller mindre risiko.
+13. Brukerrettede endringer oppdaterer HJELP samme runde.
+14. Fremdriftsplan er operativ prosjektdata og skal aldri endre låst tilbuds-/aksepthistorikk.
+15. Vercel Preview skal være trygg testmodus for 35B-data og skal ikke sende ekte prosjektmail.
 
 ## 2. Plattform
 
@@ -32,12 +32,12 @@ Dette kartet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitet
 |---|---|---|
 | Klient | React + Vite | UI, state, navigasjon og arbeidsflyt |
 | Auth | Supabase Auth | Innlogging og identitet |
-| Data | Supabase Postgres | Prosjekter, Sales, kontrakt, garanti, fremdriftsplan og produktdata |
-| Serverlogikk | Supabase RPC/trigger | Firmascoping, validering, låsing, portalfiltrering og dokumentkobling |
+| Data | Supabase Postgres | Prosjekter, Sales, kontrakt, garanti, fremdriftsplan, prosjektinvolverte og produktdata |
+| Serverlogikk | Supabase RPC/trigger/RLS | Firmascoping, validering, låsing, portalfiltrering og dokumentkobling |
 | Filer | Supabase Storage | Bilder og private/offentlige dokumenter |
-| E-post | Supabase Edge Functions + Resend | Befaring, tilbud, aksept, kontrakt, portal, chat og systemmeldinger |
+| E-post | Supabase Edge Functions + Resend | Befaring, tilbud, aksept, kontrakt, portal, chat og prosjektmeldinger |
 | Hosting | Vercel | Preview og Production |
-| PDF | jsPDF | Rapport, tilbud, akseptbevis, garanti og endelig kontrakt |
+| PDF | jsPDF + nettleserutskrift | Rapport/tilbud/garanti/kontrakt og fremdriftsplan |
 
 Produksjon: `https://expo-proffdok.app`
 
@@ -45,7 +45,7 @@ Produksjon: `https://expo-proffdok.app`
 
 Prosjektet lagres hovedsakelig som samlet JSON i `projects.data`. Den synlige fanen heter **Avtalegrunnlag**, mens intern nøkkel fortsatt er `tilbud` / `data.tilbud` for bakoverkompatibilitet.
 
-Fire vanlige prosjektveier er gyldige:
+Vanlige prosjektveier:
 
 ```text
 A) Direkte prosjekt uten tilbud
@@ -54,7 +54,7 @@ C) Akseptert tilbud → egen opplastet kontrakt → prosjekt
 D) Akseptert tilbud → Expo-kontrakt → prosjekt
 ```
 
-Avtalegrunnlag kan inneholde akseptert tilbud/akseptbevis, signert Expo-kontrakt, bedriftens egen kontrakt, andre avtaledokumenter og senere tillegg/fradrag. Direkte prosjekt uten tilbud eller kontrakt er en normaltilstand.
+Avtalegrunnlag kan inneholde akseptert tilbud/akseptbevis, signert Expo-kontrakt, bedriftens egen kontrakt, andre avtaledokumenter og senere tillegg/fradrag.
 
 ## 4. Sales – tilbud, aksept og kontrakt
 
@@ -67,7 +67,7 @@ Forespørsel
 → kundevalg av opsjoner
 → digital aksept
 → låst akseptbevis
-→ akseptbekreftelse på e-post til kunde og publiserer
+→ akseptbekreftelse
 → valgfritt kontrakt/prosjekt
 ```
 
@@ -82,9 +82,7 @@ Kritiske Sales-kontrakter:
 
 ## 5. Fase 35A – operativ fremdriftsplan
 
-Fremdriftsplanen har egen lagring i `public.project_progress_plans` og ligger **ikke** inne i `projects.data`. Dette er bevisst slik at en vanlig prosjektlagring ikke kan overskrive arbeidsøkter eller kundedelingsvalget.
-
-Én plan er knyttet til ett lagret prosjekt:
+Fremdriftsplanen har egen lagring i `public.project_progress_plans` og ligger **ikke** inne i `projects.data`. Dette hindrer at vanlig prosjektlagring overskriver arbeidsøkter eller kundedelingsvalget.
 
 ```text
 projects.id
@@ -95,46 +93,40 @@ Viktige felt:
 
 ```text
 project_id         prosjektets id / primærnøkkel
-company_scope_id   firmascope kopiert og kontrollert fra prosjektet
-customer_visible   false som standard; må aktiveres eksplisitt
+company_scope_id   firmascope kontrollert fra prosjektet
+customer_visible   false som standard
 plan               JSON med versjon, aktiviteter og arbeidsøkter
 created_by / updated_by + tidsstempel
 ```
 
-En aktivitet kan ha valgfritt antall arbeidsøkter. Arbeidsøktene har dato, fra-/til-tid og merknad. Aktiviteten har blant annet arbeidsoperasjon, fag, person/firma og status. Dette gjør at samme fag/person kan planlegges flere separate ganger i samme uke eller på tvers av uker.
+En aktivitet kan ha valgfritt antall arbeidsøkter. Hver økt har dato, fra-/til-tid og merknad. Aktiviteten har blant annet arbeidsoperasjon, fag, person/firma og status.
 
 ### Tilgang
 
-RLS er aktivert på `project_progress_plans`; `anon` har ingen direkte tabelltilgang. Intern lesing/skriving krever gyldig prosjekt-/firmatilknytning etter planens tilgangsfunksjon. Triggeren `sync_project_progress_plan_scope()` setter firmascope fra den faktiske `projects`-raden og hindrer at klienten velger et annet scope.
-
-Kunde og UE leser aldri tabellen direkte. Eksisterende serververifiserte `verify_project_portal_access(...)` er utvidet med fremdriftsplanen:
+RLS er aktivert på `project_progress_plans`. Intern lesing/skriving krever gyldig prosjekt-/firmatilknytning. Kunde og UE får planen gjennom serververifisert portalgrunnlag, ikke direkte tabelltilgang.
 
 ```text
 intern bruker med prosjekttilgang
   → kan arbeide med planen når prosjektet ikke er låst
 
 UE med gyldig UE-kode
-  → får progressPlan i portalgrunnlaget
-  → read-only i 35A
+  → read-only fremdriftsplan
 
 kunde med gyldig kundekode
-  → får progressPlan bare når customer_visible = true
-  → ellers returnerer serveren ikke planen
+  → får planen bare når customer_visible = true
 ```
 
-Kundedeling er dermed et serverhåndhevet valg og ikke bare skjult frontend. Standard er `false`.
-
-Låst prosjekt viser fremdriftsplanen som historikk og skal ikke redigeres i vanlig brukerflyt.
+Låst prosjekt viser planen som historikk og skal ikke redigeres i vanlig brukerflyt.
 
 ### Akseptert tilbud som forslag – aldri som ny sannhet
 
-Et aktivert prosjekt med Sales-opphav kan lese eksakt akseptert tilbudsgrunnlag og **valgte** opsjoner og omforme hovedpostene til forslag til arbeidsoperasjoner. Fremdriftsmodulen skriver aldri tilbake til `sales_offers` eller `sales_offer_versions`.
+Et prosjekt med Sales-opphav kan lese eksakt akseptert tilbudsgrunnlag og valgte opsjoner og omforme dem til forslag til arbeidsoperasjoner.
 
 ```text
 låst akseptert tilbud + valgte opsjoner
   → leses
-  → grupperes til arbeidsoperasjoner
-  → kopieres som redigerbare forslag i prosjektets fremdriftsplan
+  → grupperes
+  → kopieres som redigerbare forslag
 
 fremdriftsplan
   ✕ endrer ikke tilbud
@@ -142,72 +134,145 @@ fremdriftsplan
   ✕ endrer ikke kontrakt
 ```
 
-En valgt opsjon kan opprette en arbeidsoperasjon selv om den aktuelle hovedposten ikke hadde grunnpris i selve tilbudet. Uvalgte opsjoner skal ikke importeres.
-
 Direkte opprettede prosjekter uten Sales-opphav kan bygge planen manuelt og er like gyldige.
 
-### Brukerflyt og responsiv visning
+### Brukerflyt
 
-På desktop er Fremdrift en ukeoversikt med arbeidsoperasjonen til venstre og ukedagene i kolonner. Hele arbeidsoperasjonsfeltet kan åpnes for redigering. Når standardpost eller egen arbeidsoperasjon legges til, åpnes posten automatisk, siden scroller til riktig sted og posten markeres kort. Når planen har ulagrede endringer, følger kun **Lagre fremdriftsplan** synsfeltet; sekundærhandlingene blir stående i vanlig dokumentflyt.
+Desktop bruker ukeoversikt. Mobil bruker enklere aktivitetskort. Dirty-state er koblet til sentral guard mot å forlate ulagrede endringer. Fremdrift er isolert mot unødvendige parent-rerenderinger fra hovedprosjektets autolagring slik at pågående redigering ikke remountes.
 
-På mobil brukes en enklere kort-/aktivitetsvisning i stedet for den brede ukegriden. Intern navigasjon husker prosjekt og aktiv fane i URL-en, slik at refresh på Fremdrift åpner samme prosjekt og fane igjen.
+Ved **+ Egen arbeidsoperasjon** opprettes første økt automatisk med dato og standardtid `08:00–16:00`; brukeren kan endre dette og legge til flere økter. Minst én datofestet økt kreves for at aktiviteten skal vises i Gantt.
 
 ### Modulansvar
 
-- `src/modules/progress/progressPlanUx.jsx` – stabil inngang for Fremdrift, layout-import og eksport av native prosjektfane.
-- `src/modules/progress/progressPlanUxV2.jsx` – selve arbeidsflaten: ukevisning, redigering, mobil, dirty-state og read-only portalpresentasjon.
+- `src/modules/progress/progressPlanUx.jsx` – stabil inngang, Preview-sikkerhet, eksport/deling og prosjektfane.
+- `src/modules/progress/progressPlanUxV2.jsx` – arbeidsflate, ukevisning, mobil, redigering, dirty-state og read-only portalvisning.
 - `src/modules/progress/progressPlanSupabase.js` – data-/portalbro, separat planlagring og tilbudslesing.
-- `src/modules/progress/progressPlanOfferCore.js` – ren enveistransformasjon fra akseptert tilbud til arbeidsoperasjoner.
-- `src/main.jsx` – eier den interne Fremdrift-fanen, prosjekt-/fane-URL og sentral guard mot å forlate ulagrede endringer.
-- `src/bootstrap.jsx` – starter kun Fremdrift-adapteren for verifisert kunde-/UE-portal; intern navigasjon eies av React i `main.jsx`.
-- `scripts/critical-progress-plan-check.mjs` – permanent, generisk QA med syntetiske tilbudsdata og kontroll av standard arbeidsoperasjoner.
+- `src/modules/progress/progressPlanOfferCore.js` – enveistransformasjon fra akseptert tilbud til arbeidsoperasjoner.
+- `src/main.jsx` – eier intern Fremdrift-fane, prosjekt-/fane-URL og sentral ulagret-guard.
+- `scripts/critical-progress-plan-check.mjs` – permanent QA av tilbudsimport og 13 standard arbeidsoperasjoner.
 
-Ingen historiske prosjekter backfilles. En plan opprettes først når brukeren faktisk lagrer fremdriftsplanen.
+Ingen historiske prosjekter backfilles. Plan opprettes først når brukeren faktisk lagrer fremdriftsplanen.
 
-## 6. Fase 34B – akseptvarsler
+## 6. Fase 35B – eksport, deling og prosjektinvolverte
 
-Når en **ny** kundeaksept er lagret server-side, forsøkes to separate e-poster:
+### Gantt / PDF
+
+Eksport leser bare den lagrede fremdriftsplanen. Den skriver ikke tilbake til Sales, tilbud, aksept eller kontrakt.
+
+Prosjektuker beregnes dynamisk fra første til siste **datofestede arbeidsøkt**:
+
+- første berørte kalenderuke blir **Prosjektuke 1**
+- deretter Prosjektuke 2, 3 osv. uten fast øvre grense
+- kalenderuke og datointervall vises under prosjektuken
+- flere økter på samme aktivitet i samme uke vises med hver sin dato og klokkeslett
+- lange planer deles i seksjoner på maksimalt 8 prosjektuker per Gantt-del
+
+Utskriftsvisningen er A4 liggende og inneholder firma/prosjekt, kunde, periode, antall prosjektuker, planoversikt og Gantt. **Lagre som PDF** åpner nettleserens utskriftsdialog, der brukeren velger «Lagre som PDF». Korte planer komprimeres for å unngå unødvendige ekstrasider.
+
+Fremdriftsmail sender i 35B en prosjektmelding/oppsummering til valgte prosjektinvolverte og henviser til siste plan i Expo ProffDok. PDF-filen er ikke vedlagt direkte i e-posten i 35B.
+
+Direkte Google/Outlook-synk og `.ics`-eksport er ikke del av 35B og kan vurderes senere.
+
+Aktiv eksportkode:
+
+- `src/modules/progress/progressPlanExportV3.jsx`
+- `src/modules/progress/progressPlanExportV3.css`
+- `src/modules/progress/progressPlanExport.css`
+
+Midlertidige V1/V2-eksportvarianter fra utviklingen er fjernet før merge.
+
+### Prosjektinvolverte
+
+Prosjektinvolverte finnes bare når prosjektet faktisk er opprettet og har `projectId`. Et helt nytt, ulagret prosjekt viser ikke seksjonen.
+
+Aktiv klientmodul:
+
+- `src/modules/project/projectParticipantsUxV3.jsx`
+- `src/modules/project/projectParticipants.css`
+
+Felter per person:
+
+```text
+navn
+firma
+rolle
+email
+telefon
+receive_email / Prosjektmail
+```
+
+Arbeidsflyt:
+
+- **+ Legg til** oppretter ny rad
+- Enter i utfylt rad oppretter neste tomme rad
+- helt tom ekstrarad lagres ikke
+- endringer gir tydelig sticky **Lagre prosjektinvolverte**
+- fanebytte/prosjektbytte/refresh varsler om ulagrede endringer
+- panelet bruker stabil root og skal ikke remountes mens brukeren skriver
+
+### Datamodell og sikkerhet
+
+35B bruker:
+
+```text
+public.project_participants
+public.project_participant_notices
+```
+
+Begge tabeller har prosjekt-/tilgangsbasert RLS. Produksjonsmigrasjoner:
+
+```text
+20260904172250  fase35b_project_participants_and_notices
+20260904191815  fase35b_participant_notice_read_only_update
+```
+
+Den siste migrasjonen begrenser `authenticated` til kun å kunne oppdatere `read_at` på prosjektvarsler. Mottaker kan dermed markere varsel som lest, men kan ikke endre varselets prosjekt, mottaker, emne eller melding.
+
+Edge Function:
+
+```text
+project-participants-mailer
+verify_jwt = true
+```
+
+Funksjonen krever autentisert/godkjent bruker, verifiserer tilgang til prosjektet og verifiserer at mottakerens e-post finnes som aktiv prosjektinvolvert med `receive_email = true`. Klienten kan derfor ikke bruke funksjonen som vilkårlig e-postsender.
+
+Emne og melding har server-side lengdevern. `mailKind` normaliseres til prosjektmelding eller fremdriftsplan. Lenken i utsendt e-post bygges server-side og kan bare peke til riktig prosjekt/fane på `https://expo-proffdok.app`; klienten kan ikke injisere en ekstern lenke.
+
+Ved utsending opprettes prosjektvarsel i `project_participant_notices`. Innloggede brukere som matcher mottakerens e-post kan få varsel om at prosjektinformasjon kan være endret og markere varslet som lest.
+
+### Trygg Vercel Preview
+
+`src/modules/app/previewSafetyBootstrap.js` aktiverer trygg testmodus automatisk på Vercel Preview før Fremdrift/Prosjektinvolverte starter.
+
+I trygg Preview:
+
+- fremdriftsplan lagres lokalt i nettleseren
+- prosjektinvolverte lagres lokalt i nettleseren
+- produksjonstabeller skal ikke få testdata
+- ekte prosjektmail er eksplisitt blokkert
+- UI viser tydelig at Preview ikke sender ekte e-post
+
+Denne sikkerheten skal ikke aktiveres på produksjonsdomenet.
+
+## 7. Fase 34B – akseptvarsler
+
+Når en ny kundeaksept er lagret server-side, forsøkes to separate e-poster:
 
 1. kunden får bekreftelse på at aksepten er registrert
 2. brukeren som publiserte den eksakte tilbudsversjonen får beskjed om at tilbudet er akseptert
 
-Mottaker for intern e-post bestemmes av `sales_offer_versions.published_by`, ikke av mutable felt som «Ansvarlig».
+Mottaker for intern e-post bestemmes av `sales_offer_versions.published_by`, ikke mutable «Ansvarlig»-felt. E-postfeil kan aldri reversere eller endre selve aksepten.
 
-E-postgrunnlaget leses server-side fra den allerede lagrede aksepten:
-
-- eksakt akseptert tilbudsversjon
-- `accepted_payload.selected_options`
-- akseptert av / tidspunkt
-- kunde/prosjekt/adresse
-- beregnet akseptert totalsum inkl. mva.
-
-Selve tilbudsaksepten er autoritativ og fullføres **før** e-post forsøkes. E-postfeil kan derfor aldri reversere eller endre aksepten.
-
-### Idempotens og historikkvern
-
-`sales_offer_acceptance_notifications` registrerer én rad per:
+`sales_offer_acceptance_notifications` har uniknøkkel på:
 
 ```text
 offer_id + offer_version_id + recipient_type
 ```
 
-`recipient_type` er `customer` eller `publisher`. Uniknøkkelen hindrer dobbel utsending ved dobbeltklikk/reload.
+Edge Function `sales-offer-acceptance-notify` verifiserer akseptgrunnlaget server-side og har historikkvern mot utsending fra gamle aksepter.
 
-Edge Function `sales-offer-acceptance-notify` bruker offentlig tilbudstoken som begrenset tilgangsnøkkel, verifiserer at tilbudet faktisk er akseptert og leser øvrig grunnlag server-side. Funksjonen har et eksplisitt tidsvern slik at historiske aksepter fra før 34B ikke kan utløse nye e-poster ved senere åpning av gammel kundelenke.
-
-Klienten forsøker varsling kun som del av en vellykket **ny aksept**. Å åpne en allerede akseptert historisk lenke utløser ikke varsling.
-
-Kundens ferdige akseptvisning viser låst tilbudsgrunnlag med valgte opsjoner, totalsum inkl. mva., akseptert av og tidspunkt. Den er read-only.
-
-34B-migrasjoner i produksjonsdatabasen:
-
-```text
-20260904113833  fase34b_sales_offer_acceptance_notifications
-20260904113908  fase34b_sales_offer_acceptance_notifications
-20260904113915  fase34b_sales_offer_acceptance_notification_updated_at
-```
-
-## 7. Kontraktserver – `sales_contracts`
+## 8. Kontraktserver – `sales_contracts`
 
 Sales-kontrakt knyttes til faktisk firma, `request_ref`, tilbud og eksakt akseptert tilbudsversjon.
 
@@ -218,22 +283,20 @@ status: draft | awaiting_customer | signed | external_confirmed | void
 
 Viktige kontrakter:
 
-- RLS er aktivert.
-- Intern kontraktskriving går gjennom kontrollerte RPC-er.
-- Offentlig kunde bruker unik kontrakttoken/RPC, ikke direkte tabelltilgang.
-- Signert snapshot og signaturmetadata låses server-side.
-- `final_document` kan settes første gang etter signering og er deretter immutable.
-- Ingen normal DELETE-flyt for kontrakthistorikk.
+- RLS er aktivert
+- intern kontraktskriving går gjennom kontrollerte RPC-er
+- offentlig kunde bruker unik kontrakttoken/RPC, ikke direkte tabelltilgang
+- signert snapshot og signaturmetadata låses server-side
+- `final_document` kan settes første gang etter signering og er deretter immutable
+- ingen normal DELETE-flyt for kontrakthistorikk
 
-## 8. Endelig Expo-kontrakt og prosjektkobling
+## 9. Endelig Expo-kontrakt og prosjektkobling
 
-Endelig PDF genereres kun fra låst `sales_contracts.snapshot` og registrerte signaturer. Den inneholder kontraktsvilkår, begge signaturer, eksakt akseptert tilbud/opsjoner og aksept-/signaturbevis. Slutt-PDF lagres privat og kobles til prosjektets Avtalegrunnlag uten duplikater.
+Endelig PDF genereres bare fra låst `sales_contracts.snapshot` og registrerte signaturer. Slutt-PDF lagres privat og kobles til prosjektets Avtalegrunnlag uten duplikater.
 
-## 9. Kontrakt som garantikrav
+## 10. Kontrakt som garantikrav
 
-**Dokumentert tetthetsgaranti kan bare utstedes når en signert kontrakt ligger i prosjektets Avtalegrunnlag.** Gyldig grunnlag er ferdig signert Expo-kontrakt/slutt-PDF eller bedriftens egen signerte kontrakt.
-
-Dette gjør ikke kontrakt obligatorisk for prosjektet i seg selv. Frontend gir forhåndskontroll, mens serververnet på `warranty_registry` er autoritativt. Etter utstedt garanti kan siste kontraktsgrunnlag ikke fjernes.
+**Dokumentert tetthetsgaranti kan bare utstedes når en signert kontrakt ligger i prosjektets Avtalegrunnlag.** Dette gjør ikke kontrakt obligatorisk for prosjektet i seg selv.
 
 Relevant migrasjon:
 
@@ -241,43 +304,53 @@ Relevant migrasjon:
 20260831230412  fase33b6_warranty_requires_signed_contract
 ```
 
-## 10. HJELP
+## 11. HJELP
 
 HJELP forklarer i vanlig proffspråk blant annet:
 
 - kontrakt er valgfritt for vanlige prosjekter
 - garantiprosjekt krever signert kontrakt før garantiutstedelse
-- arbeidsstatus og åpne avvik er to forskjellige ting
-- etter ny tilbudsaksept får både kunden og tilbudets publiserer e-postbekreftelse
-- den ferdige kundelenken viser hva som faktisk ble akseptert, inkludert valgte opsjoner
-- fremdriftsplan kan bygges manuelt eller hente arbeidsoperasjoner fra et akseptert tilbud
-- UE kan se fremdriftsplanen, mens kunde bare ser den når bedriften aktivt deler den
+- arbeidsstatus og åpne avvik er forskjellige ting
+- fremdriftsplan kan bygges manuelt eller hente arbeidsoperasjoner fra akseptert tilbud
+- UE kan se fremdriftsplanen; kunde ser den bare når bedriften deler den
 - endringer i fremdriftsplanen endrer aldri det aksepterte tilbudet
-- mobil viser fremdrift som aktivitetskort, mens desktop viser ukeoversikt
-- nye arbeidsoperasjoner åpnes og fokuseres automatisk, og Lagre følger synsfeltet ved ulagrede endringer
+- mobil viser aktivitetskort, desktop viser ukeoversikt
+- egen arbeidsoperasjon får første dato/tid automatisk og må ha minst én datofestet økt for Gantt
+- Gantt bruker dynamiske prosjektuker og viser dato/tid per økt
+- Gantt/PDF kan lagres via nettleserens PDF-utskrift
+- Prosjektinvolverte brukes som kontakt- og distribusjonsliste
+- **Prosjektmail** bestemmer hvem som mottar felles prosjektmeldinger/fremdriftsmeldinger
+- Prosjektinvolverte finnes først etter at prosjektet er opprettet
+- Enter oppretter ny tom personrad; tom rad lagres ikke
+- ulagrede endringer i Prosjektinvolverte varsles før brukeren forlater siden
 
-## 11. QA / handover
+## 12. QA / handover
 
-35A skal før merge minst verifisere:
+35B skal før merge minst verifisere:
 
-- critical-build-check
-- critical-sales-recovery-check
-- kritisk fremdriftsimport-test med syntetiske, generiske testdata
+- `critical-build-check`
+- `critical-sales-recovery-check`
+- `critical-progress-plan-check`
 - Vite build
-- diff mot `main`
+- diff mot `main`; branch skal være foran og ikke bak
 - Preview READY på eksakt branch-SHA
-- desktop og mobil
-- flere arbeidsøkter på samme aktivitet
-- import av bare valgte opsjoner
-- kunde skjult som standard
-- UE read-only
-- kunde read-only når deling er aktivert
-- låst prosjekt read-only
-- refresh tilbake til samme prosjekt og Fremdrift-fane
-- ingen fremdriftsdata skrevet til produksjon under isolert Preview-QA
-- midlertidig Andreas-QA-fixture er fjernet fra runtime og repo før merge
+- trygg Preview aktiveres automatisk på Vercel Preview
+- ingen ekte e-post kan sendes i trygg Preview
+- ingen Preview-testdata i `project_progress_plans`, `project_participants` eller `project_participant_notices`
+- Prosjektinvolverte er skjult før prosjekt er opprettet
+- Prosjektinvolverte beholder data/fokus under skriving og parent-rerender
+- Enter-flyt, tom-rad-filter, sticky lagring og ulagret-guard
+- Prosjektmail-komponist henter valgte mottakere
+- Fremdrift-deling henter samme Prosjektmail-mottakere
+- Gantt viser dynamiske prosjektuker over 5 uker
+- plan over 8 prosjektuker deles automatisk i flere Gantt-seksjoner
+- flere økter samme uke viser hver dato og tid separat
+- korte PDF/utskrifter unngår unødvendig ekstra side
+- HJELP og arkitekturkart er oppdatert
+- aktive 35B Edge Functions/tabeller, RLS og kolonnerettigheter er verifisert
+- utfasete midlertidige V1/V2-filer er fjernet
 
-34B ble testet med kontrollert QA-tilbud og QA-data ble slettet etter TEST OK.
+Kontrollert ekte e-post/varselstest kan gjøres separat før produksjonsbruk dersom mottaker og testprosjekt er eksplisitt valgt. Det skal ikke gjøres gjennom trygg Preview.
 
 Handover-regel:
 

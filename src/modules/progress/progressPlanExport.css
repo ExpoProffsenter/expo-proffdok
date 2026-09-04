@@ -1,0 +1,96 @@
+/* Expo ProffDok – FASE 35B
+   Egen, liten eksportlinje over Fremdrift. Selve A4-layouten ligger i eksportmodulen. */
+
+.progress-module-frame {
+  width: 100%;
+}
+
+.progress-export-toolbar {
+  max-width: 1440px;
+  margin: 0 auto 12px;
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px 18px;
+  align-items: center;
+  border: 1px solid #d6e3e7;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f7fbfb, #edf7f8);
+  box-shadow: 0 8px 24px rgba(20, 42, 52, .06);
+  box-sizing: border-box;
+}
+
+.progress-export-toolbar > div {
+  min-width: 0;
+}
+
+.progress-export-toolbar span,
+.progress-export-toolbar strong,
+.progress-export-toolbar small {
+  display: block;
+}
+
+.progress-export-toolbar span {
+  margin-bottom: 3px;
+  color: #087f88;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.progress-export-toolbar strong {
+  color: #172126;
+  font-size: 16px;
+}
+
+.progress-export-toolbar small {
+  margin-top: 3px;
+  color: #607077;
+  font-size: 12px;
+}
+
+.progress-export-toolbar button {
+  border: 0;
+  border-radius: 11px;
+  padding: 11px 16px;
+  background: #172126;
+  color: #fff;
+  font: inherit;
+  font-weight: 850;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.progress-export-toolbar button:hover:not(:disabled) {
+  background: #26343a;
+}
+
+.progress-export-toolbar button:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
+.progress-export-toolbar p {
+  grid-column: 1 / -1;
+  margin: -3px 0 0;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+@media (max-width: 820px) {
+  .progress-export-toolbar {
+    margin: 0 10px 10px;
+    padding: 12px 13px;
+    grid-template-columns: 1fr;
+  }
+
+  .progress-export-toolbar button {
+    width: 100%;
+  }
+}
