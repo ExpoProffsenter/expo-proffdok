@@ -1,11 +1,11 @@
 # Expo ProffDok – Befaring / Tilbud / Aksept / Kontrakt
 
 **Status:** Produksjonskoblet Sales-modul  
-**Oppdatert:** Fase 33B.6 – 01.09.2026
+**Oppdatert:** Fase 34B – 04.09.2026
 
 Sales håndterer flyten fra forespørsel til eventuelt ProffDok-prosjekt. Etter akseptert tilbud kan brukeren frivillig opprette Expo-kontrakt, laste opp egen kontrakt eller gå videre uten kontrakt. Prosjekt kan også opprettes direkte uten Sales/tilbud.
 
-**Kontrakt er ikke et generelt prosjektkrav.** Fase 33B.6 innfører kun et særskilt krav når dokumentert tetthetsgaranti faktisk skal utstedes: da må signert Expo-kontrakt eller bedriftens egen signerte kontrakt ligge i prosjektets Avtalegrunnlag.
+**Kontrakt er ikke et generelt prosjektkrav.** Signert kontrakt kreves først når dokumentert tetthetsgaranti faktisk skal utstedes.
 
 ## Gyldige prosjektveier
 
@@ -16,7 +16,7 @@ C) Akseptert tilbud → egen opplastet kontrakt → prosjekt
 D) Akseptert tilbud → Expo-kontrakt → prosjekt
 ```
 
-Alle fire er gyldige normaltilstander. Garanti kan aktiveres og dokumentasjonen kan bygges opp, men selve garantiutstedelsen stoppes dersom signert kontrakt mangler.
+Alle fire er gyldige normaltilstander.
 
 ## Sales-hovedflyt
 
@@ -28,17 +28,10 @@ Forespørsel
 → kundelenke/e-post
 → kundevalg av opsjoner
 → digital aksept
+   → kunden får akseptbekreftelse på e-post
+   → brukeren som publiserte eksakt akseptert tilbudsversjon varsles på e-post
 → låst akseptbevis
-→ valgfritt:
-   ├─ Expo-kontrakt
-   │  → utkast
-   │  → bedriften signerer
-   │  → sikker kundelenke
-   │  → kunden signerer
-   │  → endelig privat PDF
-   │  → Avtalegrunnlag på eksisterende eller senere prosjekt
-   ├─ bedriftens egen kontrakt
-   └─ ingen kontrakt
+→ valgfritt kontraktsteg
 → eventuell prosjektaktivering
 ```
 
@@ -47,69 +40,71 @@ Tilbud kan også opprettes uten befaring.
 ## Styrende kontrakter
 
 - Publiserte tilbudsversjoner og kundeaksept overskrives aldri.
-- Kontrakt er egen historikk og muterer ikke akseptert tilbud.
 - Kundeaksept knyttes til eksakt tilbudsversjon og valgte opsjoner.
-- Prosjekt uten tilbud er gyldig.
-- Prosjekt uten kontrakt er gyldig frem til eventuell garantiutstedelse.
 - Privatkundeorienterte priser vises inkl. mva.
+- Prosjekt uten tilbud og/eller kontrakt er gyldig.
 - Ingen historisk backfill uten eksplisitt beslutning.
 - RLS/server er sikkerhetsgrensen; frontend er ikke tilgangskontroll.
 - Supportmodus er ikke skrive-bypass.
 - Sales recovery/hydration og IndexedDB-sikring av befaringsbilder skal ikke svekkes.
 - Eksisterende `contractFile` og gamle kontraktdokumenter er gyldig legacy.
-- Endelig Expo-kontrakt-PDF genereres kun fra serverlåst `sales_contracts.snapshot` og signaturmetadata.
 - Brukerflaten heter **Avtalegrunnlag**, mens intern prosjekt-/tabnøkkel `tilbud` / `data.tilbud` beholdes.
 
-## Struktur
+## Fase 34B – e-post ved tilbudsaksept
+
+Selve aksepten lagres fortsatt gjennom eksisterende `accept_sales_offer(...)`. E-post er et etterfølgende sideutfall og kan aldri reversere en lagret aksept.
+
+Ny Edge Function:
 
 ```text
-src/modules/sales/
-├── SalesModule.jsx
-├── SalesModuleCore.jsx
-├── components/
-│   ├── SalesDetailView.jsx
-│   ├── SalesContractActions.jsx
-│   ├── SalesContractWizard.jsx
-│   ├── SalesContractWizardCore.jsx
-│   ├── SalesContractDocument.jsx
-│   ├── SalesContractDocumentCore.jsx
-│   └── SalesContractCustomerView.jsx
-├── services/
-│   ├── salesContracts.js
-│   ├── salesContractPdf.js
-│   └── ...
-└── utils/
-    └── salesContractModel.js
+sales-offer-acceptance-notify
 ```
 
-Naturlige ansvargrenser:
+Funksjonen mottar kun offentlig tilbudstoken. Den bruker tokenet til å hente den allerede aksepterte saken server-side og bestemmer selv mottakerne:
 
-- `SalesContractActions.jsx`: status, kundelenke, slutt-PDF og prosjekt-synk.
-- `SalesContractWizardCore.jsx`: stegvis utfylling og lokal recovery.
-- `SalesContractWizard.jsx`: bedriftssignatur, låsing, kundelenke/e-post og signeringsstatus.
-- `SalesContractDocumentCore.jsx`: avtaletekst.
-- `SalesContractCustomerView.jsx`: offentlig tokenstyrt, read-only kundesignering.
-- `salesContractPdf.js`: slutt-PDF fra låst kontraktsrad med tilbuds-/akseptvedlegg.
-- `salesContracts.js`: RPC-klient, privat PDF-arkivering og prosjektkobling.
+- **publisher:** `sales_offer_versions.published_by` for den eksakte aksepterte versjonen
+- **customer:** kunde-e-posten som ligger på `sales_offers`
 
-Fase 33B.6 endrer ikke disse Sales-ansvarene.
+Klienten kan dermed ikke velge en vilkårlig mottaker.
 
-## Recovery/hydration
+Varslene inneholder tilbudsnummer, kunde, arbeidssted, akseptert tidspunkt, akseptert sum inkl. mva. og valgte opsjoner.
 
-Sales har vern mot datatap gjennom serverlagret arbeidskopi, lokal tilbudskladd, kontrollert hydrering, reload/appbytte-recovery og IndexedDB-sikring av befaringsbilder.
+### Idempotens
 
-`critical-sales-recovery-check.mjs` er obligatorisk del av build. En tom eller uhydrert tilbudskladd skal aldri overskrive nyere serverdata.
-
-Kontraktens serverlagring er separat fra tilbudskladdens recovery. Ulagrede kontraktfelt og aktivt veivisersteg sikres i `sessionStorage` frem til eksplisitt `Lagre kontraktsutkast`.
-
-## `sales_contracts`
+Tabellen:
 
 ```text
-source: expo | external
-status: draft | awaiting_customer | signed | external_confirmed | void
+sales_offer_acceptance_notifications
 ```
 
-Kontrakten knyttes til faktisk Sales-firma, salgssak og **eksakt akseptert tilbudsversjon**. Tabellen brukes ikke for direkte prosjekter uten Sales.
+har unik nøkkel på:
+
+```text
+offer_id + offer_version_id + recipient_type
+```
+
+Dermed kan refresh, dobbelklikk eller nytt besøk på en allerede akseptert kundelenke ikke sende samme varsel flere ganger.
+
+Nye aksepter gir varslingsforsøk umiddelbart etter at aksept-RPC-en har lykkes. Åpning av en allerede akseptert offentlig tilbudslenke forsøker også varslingsendepunktet som recovery. Serverens uniknøkkel avgjør om e-post faktisk skal sendes.
+
+Edge Function har `verify_jwt=false` fordi kunden ikke er innlogget. Sikkerhetsgrensen er den eksisterende høyt entropiske `publicOffer`-tokenen, serveroppslag mot akseptert tilbud og serverbestemte mottakere. Ingen e-postadresse tas fra klienten.
+
+Migrasjoner:
+
+```text
+20260904113833  fase34b_sales_offer_acceptance_notifications
+20260904113915  fase34b_sales_offer_acceptance_notification_updated_at
+```
+
+## Kontrakt etter aksept
+
+Etter aksept kan saken fortsette med:
+
+- Expo-kontrakt
+- bedriftens egen kontrakt
+- ingen kontrakt
+
+Expo-kontrakten er egen, låst historikk knyttet til eksakt akseptert tilbudsversjon. Bedriften signerer først, deretter kunden via sikker tokenlenke. Når begge har signert, opprettes en privat slutt-PDF med kontrakt, tilbud, aksept og signatursporbarhet.
 
 Viktige RPC-er:
 
@@ -125,99 +120,34 @@ attach_sales_contract_final_document(...)
 sync_sales_contract_final_document_to_project(...)
 ```
 
-Sikkerhet:
-
-- `sales_contracts` har RLS.
-- Intern skriving går gjennom kontrollerte RPC-er.
-- Offentlig kunde bruker unik token/RPC.
-- Signert snapshot/signaturhistorikk er låst.
-- `final_document` settes én gang etter signering og er deretter immutable.
-- Kontrakt-RPC-er bruker ikke supportfirma som write-bypass.
-
-## Endelig signert PDF
-
-Når begge har signert, genereres slutt-PDF fra låst kontraktsrad. Den inneholder:
-
-- kontraktens avtalepunkter
-- begge signaturer med navn/tidspunkt
-- Vedlegg A – eksakt akseptert tilbud og valgte opsjoner
-- Vedlegg B – aksept-/signaturbevis
-- privatkundepriser inkl. mva.
-
-Vedlegg A viderefører kundesynlig tekst som faktisk lå i den aksepterte tilbudsversjonen, blant annet forutsetninger/forbehold, inkludert/ikke inkludert, kundens leveranser, vilkår og betalingsbetingelser. Historiske versjoner backfilles ikke.
-
-Slutt-PDF lagres privat og kobles til prosjektets `data.tilbud.files`. Eksisterende og senere prosjekt bruker samme private Storage-objekt, ikke en kopi.
-
-## Avtalegrunnlag
+## Avtalegrunnlag og garanti
 
 Synlig prosjektfane heter **Avtalegrunnlag**. Intern nøkkel er fortsatt `tilbud`.
 
-Avtalegrunnlag kan inneholde:
+Avtalegrunnlag kan inneholde akseptbevis, signert Expo-kontrakt, bedriftens egen kontrakt og senere avtaledokumenter/endringer. Tom Avtalegrunnlag-flate er normalt for direkte prosjekt uten tilbud/kontrakt.
 
-- akseptert tilbud/akseptbevis
-- signert Expo-kontrakt
-- bedriftens egen kontrakt
-- andre avtaledokumenter
-- senere tillegg/fradrag
-
-Tom Avtalegrunnlag-flate er normalt for direkte prosjekt uten tilbud/kontrakt.
-
-### Bedriftens egen signerte kontrakt
-
-Kontrakter som lastes opp gjennom Sales er allerede merket `documentType=contract`.
-
-Fase 33B.6 legger også en tynn klassifisering i prosjektets Avtalegrunnlag slik at en allerede opplastet fil kan markeres som **bedriftens signerte kontrakt**. Da lagres:
+Ved dokumentert tetthetsgaranti gjelder:
 
 ```text
-documentType = contract
-contractSource = external
+prosjekt lagret
+→ signert kontrakt i Avtalegrunnlag
+→ øvrige garanti-/Sopro-/overtagelseskrav oppfylt
+→ garanti kan utstedes
 ```
 
-Expo-kontrakt merkes automatisk med `contractSource=expo`. Legacy-filer med kontraktnavn gjenkjennes fortsatt for bakoverkompatibilitet.
+Serververnet ligger på `warranty_registry`. Etter utstedt garanti kan prosjektets signerte kontraktsgrunnlag ikke fjernes.
 
-## Garantikobling – 33B.6
+## Recovery og QA
 
-Garantikravet ligger utenfor selve Sales-signeringen, men bruker kontraktdokumentet som Sales/Avtalegrunnlag allerede har produsert.
+`critical-sales-recovery-check.mjs` er obligatorisk del av build. En tom eller uhydrert tilbudskladd skal aldri overskrive nyere serverdata.
 
-Autoritativ regel:
-
-```text
-Ny dokumentert tetthetsgaranti
-→ prosjekt må være lagret
-→ signert kontrakt må finnes i Avtalegrunnlag
-→ øvrige garanti-/Sopro-/overtagelseskrav må være oppfylt
-→ garanti kan registreres
-```
-
-Serververnet ligger på `warranty_registry` før INSERT. Dermed kan frontend aldri omgå kontraktkravet. Etter utstedt garanti kan prosjektets siste kontraktsgrunnlag ikke fjernes.
-
-Dette berører ikke gamle allerede utstedte garantier og kjører ingen backfill.
-
-Migrasjon:
-
-```text
-20260831230412  fase33b6_warranty_requires_signed_contract
-```
-
-## HJELP og QA
-
-HJELP forklarer at kontrakt er valgfritt for vanlige prosjekter, men kreves ved garantiutstedelse. Den forklarer også hvordan egen signert kontrakt markeres i Avtalegrunnlag.
-
-33B.6 skal før merge verifisere:
+Ved endringer i Sales skal minst følgende verifiseres før merge:
 
 - critical build
 - critical Sales recovery
 - Vite build
 - Preview/runtime
-- garanti uten kontrakt stoppes server-side
-- garanti med kontrakt godtas
-- kontrakt kan ikke fjernes etter utstedt garanti
-- faktisk brukerflyt i Avtalegrunnlag og Garanti
-
-```text
-33B.2  servermodell/RLS/RPC                           ← ferdig
-33B.3  intern kontraktveiviser/autofyll                ← ferdig
-33B.4  bedriftssignatur + kundelenke + kundesignering ← ferdig
-33B.5  slutt-PDF + Avtalegrunnlag + prosjektkobling   ← ferdig
-33B.6  garantikobling + slutt-QA/dokumentasjon        ← denne runden
-```
+- gammel og ny salgssak ved relevant endring
+- offentlig tilbud/aksept ved relevant endring
+- e-post-/Edge-status ved kommunikasjonsendringer
+- HJELP samme runde ved brukerrettet flyt
