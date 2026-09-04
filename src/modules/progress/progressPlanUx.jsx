@@ -1,7 +1,7 @@
 // Expo ProffDok – FASE 35B
 // Stabil inngang for fremdriftsmodulen. Selve brukerflyten ligger i V2-modulen,
 // mens eksport og deling holdes som egne naturlige ansvar for å unngå å gjøre hovedkomponenten større.
-import React, { useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import './progressPlanLayout.css';
 import './progressPlanExport.css';
 import { ensureSafePreviewModeFromHost } from '../app/previewSafetyBootstrap.js';
@@ -19,14 +19,14 @@ ensureSafePreviewModeFromHost();
 // prosjektansvar, men startes her for å unngå enda en bootstrap-kobling i 35B.
 installProjectParticipantsUx();
 
-export function ProgressPlanProjectTab({ projectId, onDirtyChange }) {
+function ProgressPlanProjectTabInner({ projectId, onDirtyChange }) {
   const [dirty, setDirty] = useState(false);
 
-  const handleDirtyChange = (value) => {
+  const handleDirtyChange = useCallback((value) => {
     const next = !!value;
     setDirty(next);
     onDirtyChange?.(next);
-  };
+  }, [onDirtyChange]);
 
   return (
     <div className="progress-module-frame">
@@ -35,6 +35,14 @@ export function ProgressPlanProjectTab({ projectId, onDirtyChange }) {
     </div>
   );
 }
+
+// Main-appens autolagring/status oppdaterer ofte parent-komponenten. Fremdrift skal ikke
+// rerendres av slike oppdateringer så lenge vi fortsatt står i samme prosjekt.
+// onDirtyChange peker til samme dirty-ref i main og trenger derfor ikke trigge ny render.
+export const ProgressPlanProjectTab = memo(
+  ProgressPlanProjectTabInner,
+  (previous, next) => previous.projectId === next.projectId
+);
 
 export function installProgressPlanUx() {
   installProgressPlanUxV2();
