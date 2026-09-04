@@ -5,10 +5,15 @@ import React, { useState } from 'react';
 import './progressPlanLayout.css';
 import './progressPlanExport.css';
 import { ProgressPlanExportActions } from './progressPlanExportV2.jsx';
+import { installProjectParticipantsUx } from '../project/projectParticipantsUx.jsx';
 import {
   installProgressPlanUx as installProgressPlanUxV2,
   ProgressPlanProjectTab as ProgressPlanProjectTabV2,
 } from './progressPlanUxV2.jsx';
+
+// progressPlanUx importeres allerede stabilt fra bootstrap. Prosjektinvolverte er et eget
+// prosjektansvar, men startes her for å unngå enda en bootstrap-kobling i 35B.
+installProjectParticipantsUx();
 
 export function ProgressPlanProjectTab({ projectId, onDirtyChange }) {
   const [dirty, setDirty] = useState(false);
