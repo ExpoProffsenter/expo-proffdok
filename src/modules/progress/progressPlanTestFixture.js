@@ -1,5 +1,5 @@
 // Expo ProffDok – FASE 35A TEMP QA FIXTURE
-// Anonymisert strukturkopi av akseptert tilbud F-2026-0053 (publisert av Andreas Pettersen).
+// Anonymisert strukturkopi av akseptert testtilbud med samme arbeids-/opsjonsmønster som Andreas-eksemplet.
 // Personopplysninger, kontaktdata, priser og tokens er bevisst fjernet.
 // Skal brukes kun i sikker Preview-test og fjernes før merge.
 
