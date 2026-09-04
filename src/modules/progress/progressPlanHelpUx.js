@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 35B HJELP
+// Expo ProffDok – FASE 35C HJELP
 // Legger Fremdrift og Prosjektinvolverte inn som egne kollapsbare hjelpetemaer,
 // og supplerer eksisterende Prosjektinformasjon/beskrivelse med prosjektinvolverte.
 
@@ -93,7 +93,7 @@ function createProgressItem() {
           'Åpne Fremdrift i et lagret prosjekt.',
           'På prosjekt med akseptert tilbud kan hovedposter og kundens valgte opsjoner hentes som forslag til arbeidsoperasjoner.',
           'Prosjekter uten tilbud kan bruke standard arbeidsoperasjoner eller egne arbeidsoperasjoner.',
-          'Når du velger + Egen arbeidsoperasjon opprettes første økt automatisk med dato og 08:00–16:00. Endre dato/tid ved behov og legg til flere økter hvis arbeidet skal utføres flere ganger.',
+          'Når du legger til en standard arbeidsoperasjon eller + Egen arbeidsoperasjon, opprettes første økt automatisk i uken du står i med 08:00–16:00. Endre dato/tid ved behov og legg til flere økter hvis arbeidet skal utføres flere ganger.',
           'Minst én datofestet økt må ligge på arbeidsoperasjonen for at den skal vises i Gantt-planen. Fag og person/firma kan registreres på aktiviteten.',
           'Ved ulagrede endringer følger Lagre fremdriftsplan med i synsfeltet, og du varsles hvis du prøver å forlate planen uten å lagre.',
         ],
@@ -109,14 +109,25 @@ function createProgressItem() {
         ],
       },
       {
+        title: 'Kalender',
+        items: [
+          'Last ned kalender (.ics) eksporterer alle daterte arbeidsøkter i den lagrede fremdriftsplanen som én standard kalenderfil.',
+          'Kalenderfilen kan importeres i blant annet Outlook, Google Kalender og Apple Kalender.',
+          'Hver arbeidsøkt får arbeidsoperasjon og prosjektnavn som kalendernavn, samt dato, klokkeslett, adresse og registrert fag/personinformasjon.',
+          'Kalenderen er en eksport. Endringer som senere gjøres i Expo ProffDok oppdaterer ikke automatisk en allerede importert kalenderavtale.',
+        ],
+      },
+      {
         title: 'Deling',
         items: [
           'Send til prosjektinvolverte bruker mottakerlisten som er registrert under Prosjektoversikt → Prosjektinvolverte.',
-          'Lagre fremdriftsplanen før den sendes, slik at mottakerne varsles om siste lagrede versjon.',
-          'I denne versjonen sendes prosjektmelding/oppsummering og henvisning til siste plan i Expo ProffDok. PDF-en legges ikke automatisk ved e-posten.',
+          'Lagre fremdriftsplanen før den sendes, slik at mottakerne får siste lagrede versjon.',
+          'Ved ekte sending genererer serveren en PDF direkte fra den lagrede fremdriftsplanen og legger den automatisk ved prosjektmailen. Klienten kan ikke sende inn et vilkårlig PDF-vedlegg.',
+          'E-posten inneholder også prosjektmelding/oppsummering og lenke til riktig prosjekt i Expo ProffDok.',
           'Innloggede prosjektinvolverte får også et varsel i Expo ProffDok om at prosjektinformasjon kan være endret og at de bør se e-posten.',
           'Kunden ser ikke Fremdrift som standard. Bruk Vis fremdriftsplan til kunde når planen skal deles i kundeportalen.',
           'Underentreprenør med gyldig prosjekttilgang kan lese planen, men ikke redigere den i denne versjonen.',
+          'Trygg Preview sender aldri ekte prosjektmail og oppretter ikke produksjonsdata.',
         ],
       },
     ],
@@ -147,6 +158,7 @@ function createParticipantsItem() {
         items: [
           'Send en e-post sender samme prosjektmelding til alle prosjektinvolverte som er valgt som prosjektmail-mottakere.',
           'Før sending vises mottakerne, emne og melding slik at utsendingen kan kontrolleres.',
+          'Når Fremdrift brukes til utsending, legges siste lagrede fremdriftsplan automatisk ved som PDF.',
           'Personer uten Expo ProffDok-bruker mottar e-posten som vanlig.',
         ],
       },
@@ -191,6 +203,7 @@ function enrichProjectInfoHelp(labels) {
     'Ved endringer vises Lagre prosjektinvolverte tydelig, og du varsles hvis du prøver å forlate siden uten å lagre.',
     'Velg Prosjektmail på de personene som skal motta felles prosjektmeldinger og fremdriftsplaner.',
     'Send en e-post brukes til felles utsending til de valgte prosjektinvolverte.',
+    'Fremdriftsmail kan sende siste lagrede fremdriftsplan som PDF-vedlegg til Prosjektmail-mottakerne.',
     'Innloggede mottakere får ved neste innlogging varsel om at prosjektinformasjon kan være endret, med henvisning til utsendt e-post.',
     'Prosjektinvolverte registreres først når prosjektet faktisk er opprettet og lagret.',
   ]);

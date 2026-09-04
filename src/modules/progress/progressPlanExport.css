@@ -1,5 +1,5 @@
-/* Expo ProffDok – FASE 35B
-   Egen, liten eksportlinje over Fremdrift. Selve A4-layouten ligger i eksportmodulen. */
+/* Expo ProffDok – FASE 35C
+   Eksportlinje over Fremdrift. A4-layout ligger i eksportmodulen, e-post-PDF bygges server-side. */
 
 .progress-module-frame {
   width: 100%;
@@ -83,6 +83,22 @@
   font-weight: 750;
 }
 
+.progress-mail-attachment-note {
+  max-width: 1440px;
+  margin: -4px auto 12px;
+  padding: 9px 13px;
+  box-sizing: border-box;
+  border: 1px solid #cfe6e8;
+  border-radius: 12px;
+  background: #f2fafb;
+  color: #275b60;
+  font-size: 12px;
+}
+
+.progress-mail-attachment-note strong {
+  font-weight: 900;
+}
+
 @media (max-width: 820px) {
   .progress-export-toolbar {
     margin: 0 10px 10px;
@@ -92,5 +108,9 @@
 
   .progress-export-toolbar button {
     width: 100%;
+  }
+
+  .progress-mail-attachment-note {
+    margin: -2px 10px 10px;
   }
 }
