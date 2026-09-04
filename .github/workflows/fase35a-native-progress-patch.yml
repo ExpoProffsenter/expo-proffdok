@@ -24,7 +24,7 @@ jobs:
       - name: Apply native Fremdrift patch
         run: python scripts/fase35a-native-progress-patch.py
       - name: Verify build
-        run: npm ci && npm run build
+        run: npm install --no-audit --no-fund && npm run build
       - name: Commit verified native integration
         run: |
           rm .github/workflows/fase35a-native-progress-patch.yml
