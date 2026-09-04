@@ -13,6 +13,7 @@ import { installGlobalStorageImageOptimizer } from './modules/images/imageUpload
 import { installProjectWorkflowUx } from './modules/project/projectWorkflowUx.js';
 import { installSalesInspectionHistoryUx } from './modules/project/salesInspectionHistoryUx.js';
 import { installProgressPlanUx } from './modules/progress/progressPlanUx.jsx';
+import { installProgressPlanHelpUx } from './modules/progress/progressPlanHelpUx.js';
 
 installGlobalStorageImageOptimizer({
   maxDimension: 2560,
@@ -21,6 +22,7 @@ installGlobalStorageImageOptimizer({
 installProjectWorkflowUx();
 installSalesInspectionHistoryUx();
 installProgressPlanUx();
+installProgressPlanHelpUx();
 
 function installProjectDeviationShortcutRouting() {
   document.addEventListener(
