@@ -1,4 +1,5 @@
 import './authLanding.css';
+import './authLandingPolish.css';
 
 const SHOWCASE_ID = 'expo-proffdok-auth-showcase';
 const BODY_CLASS = 'authLandingActive';
