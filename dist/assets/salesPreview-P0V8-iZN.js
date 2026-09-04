@@ -1,1 +1,0 @@
-import{G as e,H as t,W as n,n as r}from"./preload-helper-BoaPJvTh.js";import"./modulepreload-polyfill-Cf3xff8G.js";import{t as i}from"./SalesModule-CJ71i93s.js";var a=e(n()),o=t(),s=r(),c=document.getElementById(`sales-preview-root`);if(!c)throw Error(`sales-preview-root ble ikke funnet.`);(0,o.createRoot)(c).render((0,s.jsx)(a.StrictMode,{children:(0,s.jsx)(i,{})}));
