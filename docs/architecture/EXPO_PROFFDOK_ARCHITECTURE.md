@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
-**Fase:** 34B – e-postbekreftelse ved tilbudsaksept  
-**Status:** Preview testet – TEST OK 04.09.2026  
+**Fase:** 35A – fremdriftsplan  
+**Status:** Feature branch / Preview-QA – ikke merget  
 **Dato:** 04.09.2026  
-**Produksjonsbaseline ved oppstart:** `main` på `b06b0a5bfa57e14dbd61d83542cb706227248e83`  
+**Produksjonsbaseline ved oppstart:** `main` på `036fc1ef841b7e4ca382ec91fd553f844dfe7d17`  
 **Supabase:** `dqffxflaoyarbxyiyhop`
 
 Dette kartet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitetskrav som må bevares. Historiske detaljer finnes i Git.
@@ -24,6 +24,7 @@ Dette kartet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitet
 12. Historiske Storage-paths/URL-er flyttes ikke spontant.
 13. Modulisering gjøres bare ved naturlige ansvargrenser som gir reell oversikt eller mindre risiko.
 14. Brukerrettede endringer oppdaterer HJELP samme runde.
+15. Fremdriftsplan er operativ prosjektdata og skal aldri endre den låste tilbuds-/aksepthistorikken den eventuelt er opprettet fra.
 
 ## 2. Plattform
 
@@ -31,8 +32,8 @@ Dette kartet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitet
 |---|---|---|
 | Klient | React + Vite | UI, state, navigasjon og arbeidsflyt |
 | Auth | Supabase Auth | Innlogging og identitet |
-| Data | Supabase Postgres | Prosjekter, Sales, kontrakt, garanti og produktdata |
-| Serverlogikk | Supabase RPC/trigger | Firmascoping, validering, låsing og dokumentkobling |
+| Data | Supabase Postgres | Prosjekter, Sales, kontrakt, garanti, fremdriftsplan og produktdata |
+| Serverlogikk | Supabase RPC/trigger | Firmascoping, validering, låsing, portalfiltrering og dokumentkobling |
 | Filer | Supabase Storage | Bilder og private/offentlige dokumenter |
 | E-post | Supabase Edge Functions + Resend | Befaring, tilbud, aksept, kontrakt, portal, chat og systemmeldinger |
 | Hosting | Vercel | Preview og Production |
@@ -79,7 +80,83 @@ Kritiske Sales-kontrakter:
 - kundeaksept knyttes til eksakt versjon og valgte opsjoner
 - `critical-sales-recovery-check.mjs` er obligatorisk del av build
 
-## 5. Fase 34B – akseptvarsler
+## 5. Fase 35A – operativ fremdriftsplan
+
+Fremdriftsplanen har egen lagring i `public.project_progress_plans` og ligger **ikke** inne i `projects.data`. Dette er bevisst slik at en vanlig prosjektlagring ikke kan overskrive arbeidsøkter eller kundedelingsvalget.
+
+Én plan er knyttet til ett lagret prosjekt:
+
+```text
+projects.id
+  1 ── 1 project_progress_plans.project_id
+```
+
+Viktige felt:
+
+```text
+project_id         prosjektets id / primærnøkkel
+company_scope_id   firmascope kopiert og kontrollert fra prosjektet
+customer_visible   false som standard; må aktiveres eksplisitt
+plan               JSON med versjon, aktiviteter og arbeidsøkter
+created_by / updated_by + tidsstempel
+```
+
+En aktivitet kan ha valgfritt antall arbeidsøkter. Arbeidsøktene har dato, fra-/til-tid og merknad. Aktiviteten har blant annet arbeidsoperasjon, fag, person/firma og status. Dette gjør at samme fag/person kan planlegges flere separate ganger i samme uke eller på tvers av uker.
+
+### Tilgang
+
+RLS er aktivert på `project_progress_plans`; `anon` har ingen direkte tabelltilgang. Intern lesing/skriving krever gyldig prosjekt-/firmatilknytning etter planens tilgangsfunksjon. Triggeren `sync_project_progress_plan_scope()` setter firmascope fra den faktiske `projects`-raden og hindrer at klienten velger et annet scope.
+
+Kunde og UE leser aldri tabellen direkte. Eksisterende serververifiserte `verify_project_portal_access(...)` er utvidet med fremdriftsplanen:
+
+```text
+intern bruker med prosjekttilgang
+  → kan arbeide med planen når prosjektet ikke er låst
+
+UE med gyldig UE-kode
+  → får progressPlan i portalgrunnlaget
+  → read-only i 35A
+
+kunde med gyldig kundekode
+  → får progressPlan bare når customer_visible = true
+  → ellers returnerer serveren ikke planen
+```
+
+Kundedeling er dermed et serverhåndhevet valg og ikke bare skjult frontend. Standard er `false`.
+
+Låst prosjekt viser fremdriftsplanen som historikk og skal ikke redigeres i vanlig brukerflyt.
+
+### Akseptert tilbud som forslag – aldri som ny sannhet
+
+Et aktivert prosjekt med Sales-opphav kan lese eksakt akseptert tilbudsgrunnlag og **valgte** opsjoner og omforme hovedpostene til forslag til arbeidsoperasjoner. Fremdriftsmodulen skriver aldri tilbake til `sales_offers` eller `sales_offer_versions`.
+
+```text
+låst akseptert tilbud + valgte opsjoner
+  → leses
+  → grupperes til arbeidsoperasjoner
+  → kopieres som redigerbare forslag i prosjektets fremdriftsplan
+
+fremdriftsplan
+  ✕ endrer ikke tilbud
+  ✕ endrer ikke aksept
+  ✕ endrer ikke kontrakt
+```
+
+En valgt opsjon kan opprette en arbeidsoperasjon selv om den aktuelle hovedposten ikke hadde grunnpris i selve tilbudet. Uvalgte opsjoner skal ikke importeres.
+
+Direkte opprettede prosjekter uten Sales-opphav kan bygge planen manuelt og er like gyldige.
+
+### Modulansvar
+
+- `src/modules/progress/progressPlanUx.jsx` – prosjekt-/ukevisning, redigering, mobil og read-only portalpresentasjon.
+- `src/modules/progress/progressPlanSupabase.js` – data-/portalbro og lagring.
+- `src/modules/progress/progressPlanOfferCore.js` – ren transformasjon fra akseptert tilbud til arbeidsoperasjoner.
+- `src/bootstrap.jsx` – aktiverer modulen uten å gjøre `main.jsx` større.
+- `scripts/critical-progress-plan-check.mjs` – kritisk import-QA i feature-fasen.
+
+Ingen historiske prosjekter backfilles. En plan opprettes først når brukeren faktisk lagrer fremdriftsplanen.
+
+## 6. Fase 34B – akseptvarsler
 
 Når en **ny** kundeaksept er lagret server-side, forsøkes to separate e-poster:
 
@@ -122,7 +199,7 @@ Kundens ferdige akseptvisning viser låst tilbudsgrunnlag med valgte opsjoner, t
 20260904113915  fase34b_sales_offer_acceptance_notification_updated_at
 ```
 
-## 6. Kontraktserver – `sales_contracts`
+## 7. Kontraktserver – `sales_contracts`
 
 Sales-kontrakt knyttes til faktisk firma, `request_ref`, tilbud og eksakt akseptert tilbudsversjon.
 
@@ -140,11 +217,11 @@ Viktige kontrakter:
 - `final_document` kan settes første gang etter signering og er deretter immutable.
 - Ingen normal DELETE-flyt for kontrakthistorikk.
 
-## 7. Endelig Expo-kontrakt og prosjektkobling
+## 8. Endelig Expo-kontrakt og prosjektkobling
 
 Endelig PDF genereres kun fra låst `sales_contracts.snapshot` og registrerte signaturer. Den inneholder kontraktsvilkår, begge signaturer, eksakt akseptert tilbud/opsjoner og aksept-/signaturbevis. Slutt-PDF lagres privat og kobles til prosjektets Avtalegrunnlag uten duplikater.
 
-## 8. Kontrakt som garantikrav
+## 9. Kontrakt som garantikrav
 
 **Dokumentert tetthetsgaranti kan bare utstedes når en signert kontrakt ligger i prosjektets Avtalegrunnlag.** Gyldig grunnlag er ferdig signert Expo-kontrakt/slutt-PDF eller bedriftens egen signerte kontrakt.
 
@@ -156,7 +233,7 @@ Relevant migrasjon:
 20260831230412  fase33b6_warranty_requires_signed_contract
 ```
 
-## 9. HJELP
+## 10. HJELP
 
 HJELP forklarer i vanlig proffspråk blant annet:
 
@@ -165,22 +242,30 @@ HJELP forklarer i vanlig proffspråk blant annet:
 - arbeidsstatus og åpne avvik er to forskjellige ting
 - etter ny tilbudsaksept får både kunden og tilbudets publiserer e-postbekreftelse
 - den ferdige kundelenken viser hva som faktisk ble akseptert, inkludert valgte opsjoner
+- fremdriftsplan kan bygges manuelt eller hente arbeidsoperasjoner fra et akseptert tilbud
+- UE kan se fremdriftsplanen, mens kunde bare ser den når bedriften aktivt deler den
+- endringer i fremdriftsplanen endrer aldri det aksepterte tilbudet
 
-## 10. QA / handover
+## 11. QA / handover
 
-34B er testet med kontrollert QA-tilbud med intern Ringside-kundeadresse og Andreas Pettersen som publiserer. Testen bekreftet korrekt valgte opsjoner, totalsum, begge e-poster og duplikatvern. QA-tilbudet er slettet etter TEST OK.
-
-Obligatorisk kontroll før merge:
+35A skal før merge minst verifisere:
 
 - critical-build-check
 - critical-sales-recovery-check
+- kritisk fremdriftsimport-test
 - Vite build
 - diff mot `main`
 - Preview READY på eksakt branch-SHA
-- runtime error/fatal = 0
-- Supabase-tabell/RLS/Edge Function kontrollert
-- ingen historisk aksept kan utløse nytt varsel
-- QA-data fjernet
+- desktop og mobil
+- flere arbeidsøkter på samme aktivitet
+- import av bare valgte opsjoner
+- kunde skjult som standard
+- UE read-only
+- kunde read-only når deling er aktivert
+- ingen fremdriftsdata skrevet til produksjon under isolert Preview-QA
+- midlertidig QA-fixture fjernet før merge
+
+34B ble testet med kontrollert QA-tilbud og QA-data ble slettet etter TEST OK.
 
 Handover-regel:
 
