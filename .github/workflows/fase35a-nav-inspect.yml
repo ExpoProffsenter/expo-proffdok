@@ -1,0 +1,18 @@
+name: Fase 35A nav inspect
+on:
+  push:
+    branches:
+      - feature/fase35a-progress-plan
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect navigation state
+        run: |
+          echo '--- state candidates ---'
+          grep -nE "useState\(.*(tab|project)|setTab|setProjectId|goToTab" src/main.jsx | head -120 || true
+          echo '--- projectId occurrences ---'
+          grep -n "projectId" src/main.jsx | head -80 || true
+          echo '--- tab occurrences ---'
+          grep -n "setTab\|var tab\|const \[tab\|let tab" src/main.jsx | head -120 || true
