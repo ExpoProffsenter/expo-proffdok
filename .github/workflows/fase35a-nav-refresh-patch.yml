@@ -15,54 +15,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Patch internal project URL state
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const path = 'src/main.jsx';
-          let s = fs.readFileSync(path, 'utf8');
-
-          const openMarker = '    const openProjectById = async (id, targetTab = "rapport", options = {}) => {';
-          if (!s.includes(openMarker)) throw new Error('openProjectById marker not found');
-          const helper = `    const syncInternalProjectUrl = (activeProjectId, activeTab = "prosjekt") => {
-      if (!activeProjectId || typeof window === "undefined") return;
-      const params = new URLSearchParams(window.location.search);
-      params.set("project", String(activeProjectId));
-      params.set("role", "admin");
-      params.delete("access");
-      params.set("tab", String(activeTab || "prosjekt"));
-      const query = params.toString();
-      const nextUrl = \`${'${window.location.pathname}'}${'${query ? `?${query}` : ""}'}${'${window.location.hash || ""}'}\`;
-      window.history.replaceState({}, document.title, nextUrl);
-    };
-
-`;
-          s = s.replace(openMarker, helper + openMarker);
-
-          const openOld = `      setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
-      setTab(targetTab);
-      setTimeout(() => scrollToMobileTabTarget(targetTab), 180);`;
-          const openNew = `      setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
-      setTab(targetTab);
-      syncInternalProjectUrl(data.id, targetTab);
-      setTimeout(() => scrollToMobileTabTarget(targetTab), 180);`;
-          if (!s.includes(openOld)) throw new Error('openProjectById target block not found');
-          s = s.replace(openOld, openNew);
-
-          const tabOld = `      setTab(id);
-      setMobileMenuOpen(false);
-      setTimeout(() => scrollToMobileTabTarget(id), 90);`;
-          const tabNew = `      setTab(id);
-      if (projectId && (id === "prosjekt" || projectWorkspaceOnlyTabs.has(id))) {
-        syncInternalProjectUrl(projectId, id);
-      }
-      setMobileMenuOpen(false);
-      setTimeout(() => scrollToMobileTabTarget(id), 90);`;
-          if (!s.includes(tabOld)) throw new Error('goToTab block not found');
-          s = s.replace(tabOld, tabNew);
-
-          fs.writeFileSync(path, s);
-          NODE
+      - name: Apply refresh navigation patch
+        run: node scripts/fase35a-nav-refresh-patch.cjs
       - name: Verify build
         run: |
           npm ci
@@ -72,8 +26,9 @@ jobs:
           rm -f .github/workflows/fase35a-nav-refresh-patch.yml
           rm -f .github/workflows/fase35a-nav-inspect.yml
           rm -f .github/fase35a-nav-refresh-trigger.txt
+          rm -f scripts/fase35a-nav-refresh-patch.cjs
           git config user.name "ExpoProffsenter"
           git config user.email "firmapost@ringside.no"
-          git add src/main.jsx .github/workflows .github/fase35a-nav-refresh-trigger.txt || true
+          git add src/main.jsx .github scripts/fase35a-nav-refresh-patch.cjs || true
           git commit -m "Fase 35A: behold prosjekt og fane ved refresh"
           git push
