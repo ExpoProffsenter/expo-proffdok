@@ -93,7 +93,8 @@ function createProgressItem() {
           'Åpne Fremdrift i et lagret prosjekt.',
           'På prosjekt med akseptert tilbud kan hovedposter og kundens valgte opsjoner hentes som forslag til arbeidsoperasjoner.',
           'Prosjekter uten tilbud kan bruke standard arbeidsoperasjoner eller egne arbeidsoperasjoner.',
-          'Legg inn dato, fra/til, fag og person eller firma. Samme aktivitet kan ha flere separate tider.',
+          'Når du velger + Egen arbeidsoperasjon opprettes første økt automatisk med dato og 08:00–16:00. Endre dato/tid ved behov og legg til flere økter hvis arbeidet skal utføres flere ganger.',
+          'Minst én datofestet økt må ligge på arbeidsoperasjonen for at den skal vises i Gantt-planen. Fag og person/firma kan registreres på aktiviteten.',
           'Ved ulagrede endringer følger Lagre fremdriftsplan med i synsfeltet, og du varsles hvis du prøver å forlate planen uten å lagre.',
         ],
       },
@@ -112,6 +113,7 @@ function createProgressItem() {
         items: [
           'Send til prosjektinvolverte bruker mottakerlisten som er registrert under Prosjektoversikt → Prosjektinvolverte.',
           'Lagre fremdriftsplanen før den sendes, slik at mottakerne varsles om siste lagrede versjon.',
+          'I denne versjonen sendes prosjektmelding/oppsummering og henvisning til siste plan i Expo ProffDok. PDF-en legges ikke automatisk ved e-posten.',
           'Innloggede prosjektinvolverte får også et varsel i Expo ProffDok om at prosjektinformasjon kan være endret og at de bør se e-posten.',
           'Kunden ser ikke Fremdrift som standard. Bruk Vis fremdriftsplan til kunde når planen skal deles i kundeportalen.',
           'Underentreprenør med gyldig prosjekttilgang kan lese planen, men ikke redigere den i denne versjonen.',
