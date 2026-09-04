@@ -1,10 +1,10 @@
 // Expo ProffDok – FASE 35B
 // Stabil inngang for fremdriftsmodulen. Selve brukerflyten ligger i V2-modulen,
-// mens eksport holdes som et eget naturlig ansvar for å unngå å gjøre hovedkomponenten større.
+// mens eksport og deling holdes som egne naturlige ansvar for å unngå å gjøre hovedkomponenten større.
 import React, { useState } from 'react';
 import './progressPlanLayout.css';
 import './progressPlanExport.css';
-import { ProgressPlanExportActions } from './progressPlanExportV2.jsx';
+import { ProgressPlanExportActions } from './progressPlanExportV3.jsx';
 import { installProjectParticipantsUx } from '../project/projectParticipantsUx.jsx';
 import {
   installProgressPlanUx as installProgressPlanUxV2,
