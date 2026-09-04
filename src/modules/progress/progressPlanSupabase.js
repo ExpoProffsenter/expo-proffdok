@@ -13,7 +13,6 @@ import {
   buildAcceptedOfferProgressActivities,
   extractAcceptedOfferProgressInput,
 } from './progressPlanOfferCore.js';
-import { ANDREAS_ACCEPTED_OFFER_TEST_FIXTURE } from './progressPlanTestFixture.js';
 
 export const EMPTY_PROGRESS_PLAN = Object.freeze({
   version: 1,
@@ -22,7 +21,7 @@ export const EMPTY_PROGRESS_PLAN = Object.freeze({
 });
 
 const SAFE_PREVIEW_PARAM = 'progressTest';
-const SAFE_PREVIEW_VALUE = 'andreas';
+const SAFE_PREVIEW_VALUES = new Set(['safe', 'andreas']); // «andreas» beholdes kun for eksisterende Preview-lenker i 35A-QA.
 const SAFE_PREVIEW_STORAGE_PREFIX = 'expoProffDokProgressSafePreview:';
 const SAFE_PREVIEW_BADGE_ID = 'expo-progress-safe-preview-badge';
 
@@ -34,7 +33,7 @@ export function isProgressSafePreviewMode() {
   const isPreviewHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.vercel.app');
   if (!isPreviewHost) return false;
   const params = new URLSearchParams(window.location.search);
-  return clean(params.get(SAFE_PREVIEW_PARAM) || '').toLowerCase() === SAFE_PREVIEW_VALUE;
+  return SAFE_PREVIEW_VALUES.has(clean(params.get(SAFE_PREVIEW_PARAM) || '').toLowerCase());
 }
 
 function ensureSafePreviewBadge() {
@@ -287,13 +286,9 @@ export async function loadPortalProgressPlan(client, projectId, role) {
 }
 
 export async function loadAcceptedOfferActivities(client, projectMetaValue = {}) {
-  if (isProgressSafePreviewMode()) {
-    ensureSafePreviewBadge();
-    return buildAcceptedOfferProgressActivities({
-      lines: ANDREAS_ACCEPTED_OFFER_TEST_FIXTURE.lines,
-      selectedOptions: ANDREAS_ACCEPTED_OFFER_TEST_FIXTURE.selectedOptions,
-    });
-  }
+  // Trygg Preview skal aldri lese et ekte tilbudsgrunnlag eller skrive fremdriftsdata server-side.
+  // Tilbudsimporten verifiseres separat med syntetisk grunnlag i critical-progress-plan-check.mjs.
+  if (isProgressSafePreviewMode()) return [];
 
   const token = clean(projectMetaValue?.publicToken);
   if (!client || !token) return [];
