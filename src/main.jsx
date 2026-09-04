@@ -2183,6 +2183,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const canLeave = await confirmLeaveWithUnsavedChanges(`går til fanen "${tabs.find(([tabId]) => tabId === id)?.[1] || id}"`);
       if (!canLeave) return;
       setTab(id);
+      if (projectId && (id === "prosjekt" || projectWorkspaceOnlyTabs.has(id))) {
+        syncInternalProjectUrl(projectId, id);
+      }
       setMobileMenuOpen(false);
       setTimeout(() => scrollToMobileTabTarget(id), 90);
       setTimeout(() => scrollToMobileTabTarget(id), 320);
@@ -2564,6 +2567,18 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
     };
 
+    const syncInternalProjectUrl = (activeProjectId, activeTab = "prosjekt") => {
+      if (!activeProjectId || typeof window === "undefined") return;
+      const params = new URLSearchParams(window.location.search);
+      params.set("project", String(activeProjectId));
+      params.set("role", "admin");
+      params.delete("access");
+      params.set("tab", String(activeTab || "prosjekt"));
+      const query = params.toString();
+      const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash || ""}`;
+      window.history.replaceState({}, document.title, nextUrl);
+    };
+
     const openProjectById = async (id, targetTab = "rapport", options = {}) => {
       if ((projectDirtyRef.current || progressPlanDirtyRef.current) && id !== projectId) {
         const canLeave = await confirmLeaveWithUnsavedChanges("åpner et annet prosjekt");
@@ -2582,6 +2597,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setMobileCreatingProject(false);
       setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
       setTab(targetTab);
+      syncInternalProjectUrl(data.id, targetTab);
       setTimeout(() => scrollToMobileTabTarget(targetTab), 180);
       setTimeout(() => scrollToMobileTabTarget(targetTab), 420);
       if (options.showOpenDeviationsOnly) {
