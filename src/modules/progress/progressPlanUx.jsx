@@ -788,7 +788,7 @@ async function refreshPortalAvailability(mode) {
 }
 
 function shouldShowNav(mode) {
-  if (mode === 'internal') return !!document.querySelector('.mobileCurrentProjectBar');
+  if (mode === 'internal') return !!findNav('internal') || !!document.querySelector('.mobileCurrentProjectBar');
   if (mode === 'underleverandor') return true;
   return !!portalAvailability?.customerVisible;
 }
