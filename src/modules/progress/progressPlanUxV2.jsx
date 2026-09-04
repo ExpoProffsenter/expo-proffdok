@@ -295,7 +295,10 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
   };
 
   const addOwnActivity = () => {
-    const activity = newActivity();
+    const activity = {
+      ...newActivity(),
+      sessions: [newSession(isoDate(weekStart))],
+    };
     markPlan((prev) => ({ ...prev, activities: [...prev.activities, activity] }));
     setShowOperationPicker(false);
     focusActivity(activity.id);
@@ -507,7 +510,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
       <div className="progress-session-heading">
         <div>
           <strong>Planlagte tider</strong>
-          <span>Samme håndverker kan legges inn flere ganger på ulike dager og klokkeslett.</span>
+          <span>Minst én dato og tid må registreres for at arbeidsoperasjonen skal vises i Gantt-planen. Flere økter kan legges til ved behov.</span>
         </div>
         <button type="button" className="progress-secondary" onClick={() => addSession(activity.id)}>+ Legg til ny tid</button>
       </div>
@@ -521,7 +524,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
             <button type="button" className="progress-danger-link" onClick={() => removeSession(activity.id, session.id)}>Fjern</button>
           </div>
         ))}
-        {!activity.sessions.length ? <p className="progress-muted">Ingen tider lagt inn ennå.</p> : null}
+        {!activity.sessions.length ? <p className="progress-muted">Ingen tider lagt inn ennå. Legg inn minst én dato og tid for å få arbeidsoperasjonen med i Gantt-planen.</p> : null}
       </div>
       <div className="progress-editor-actions">
         <button type="button" className="progress-secondary" disabled={activityIndex === 0} onClick={() => moveActivity(activity.id, -1)}>Flytt opp</button>
@@ -643,7 +646,7 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
           </div>
           <div className="progress-own-operation">
             <button type="button" className="progress-primary" onClick={addOwnActivity}>+ Egen arbeidsoperasjon</button>
-            <span>Bruk denne for arbeid som ikke passer i standardforslagene.</span>
+            <span>Bruk denne for arbeid som ikke passer i standardforslagene. Første dato og tid opprettes automatisk og kan endres.</span>
           </div>
         </section>
       ) : null}
