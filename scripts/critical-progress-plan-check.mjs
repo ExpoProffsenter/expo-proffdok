@@ -1,5 +1,4 @@
 import { buildAcceptedOfferProgressActivities } from '../src/modules/progress/progressPlanOfferCore.js';
-import { ANDREAS_ACCEPTED_OFFER_TEST_FIXTURE } from '../src/modules/progress/progressPlanTestFixture.js';
 import {
   STANDARD_PROGRESS_OPERATIONS,
   buildStandardProgressActivity,
@@ -10,10 +9,27 @@ const fail = (message) => {
   process.exit(1);
 };
 
-const fixture = ANDREAS_ACCEPTED_OFFER_TEST_FIXTURE;
-if (fixture.selectedOptions.length !== 10) {
-  fail(`forventet 10 valgte opsjoner i testkopien, fant ${fixture.selectedOptions.length}`);
-}
+// Generisk syntetisk tilbudsgrunnlag. Ingen kunde-, prosjekt-, pris- eller tokenverdier.
+const fixture = {
+  lines: [
+    { mainPostId: 'tildekking', mainPostTitle: 'Tildekking', title: 'Tildekking' },
+    { mainPostId: 'demontering-riving', mainPostTitle: 'Demontering / riving', title: 'Demontering' },
+    { mainPostId: 'avretting', mainPostTitle: 'Avretting', title: 'Avretting' },
+    { mainPostId: 'stop', mainPostTitle: 'Støp', title: 'Støp' },
+    { mainPostId: 'membran', mainPostTitle: 'Membran', title: 'Membran' },
+    { mainPostId: 'tomrer', mainPostTitle: 'Tømrer', title: 'Tømrer' },
+    { mainPostId: 'rorlegger', mainPostTitle: 'Rørlegger', title: 'Rørlegger' },
+    { mainPostId: 'elektriker', mainPostTitle: 'Elektriker', title: 'Elektriker' },
+    { mainPostId: 'maler', mainPostTitle: 'Maler', title: 'Maler' },
+    { mainPostId: 'rigg-drift', mainPostTitle: 'Rigg og drift', title: 'Rigg og drift' },
+  ],
+  selectedOptions: [
+    { mainPostId: 'flislegging', mainPostTitle: 'Flislegging', title: 'Flisformat A' },
+    { mainPostId: 'flislegging', mainPostTitle: 'Flislegging', title: 'Flisformat B' },
+    { mainPostId: 'flislegging', mainPostTitle: 'Flislegging', title: 'Flisformat C' },
+    { mainPostId: 'rorlegger', mainPostTitle: 'Rørlegger', title: 'Ekstra rørarbeid' },
+  ],
+};
 
 let nextId = 0;
 const activities = buildAcceptedOfferProgressActivities({
@@ -33,10 +49,10 @@ if (byMainPost.size !== activities.length) {
 
 const flislegging = byMainPost.get('flislegging');
 if (!flislegging) {
-  fail('Flislegging mangler – valgt opsjon må kunne opprette en arbeidsoperasjon som ikke ligger i grunnlinjene');
+  fail('Flislegging mangler – valgt opsjon må kunne opprette en arbeidsoperasjon uten grunnlinje');
 }
 if ((flislegging.sourceOptionTitles || []).length !== 3) {
-  fail('Flislegging skal huske de tre valgte flisopsjonene i testgrunnlaget');
+  fail('Flislegging skal samle valgte opsjoner på samme arbeidsoperasjon');
 }
 if (flislegging.trade !== 'Murer / flislegger') {
   fail('Flislegging fikk feil fagforslag');
@@ -65,10 +81,10 @@ if (standardActivity.sessions.length !== 0 || standardActivity.status !== 'Ikke 
 }
 
 const serialized = JSON.stringify(fixture).toLowerCase();
-for (const forbidden of ['@', 'publictoken', 'customeremail', 'amount']) {
+for (const forbidden of ['@', 'publictoken', 'customeremail', 'amount', 'request_ref']) {
   if (serialized.includes(forbidden)) {
-    fail(`testkopien inneholder felt/verdi som ikke skal ligge i repoet: ${forbidden}`);
+    fail(`syntetisk QA-grunnlag inneholder felt/verdi som ikke skal ligge der: ${forbidden}`);
   }
 }
 
-console.log('✅ Expo ProffDok fremdriftsplan check OK – tilbudsimport, 10 valgte opsjoner og 13 standard arbeidsoperasjoner uten tilbud er verifisert');
+console.log('✅ Expo ProffDok fremdriftsplan check OK – generisk tilbudsimport og 13 standard arbeidsoperasjoner er verifisert');
