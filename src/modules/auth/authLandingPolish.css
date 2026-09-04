@@ -4,60 +4,201 @@
 body.authLandingActive .authLandingShowcase {
   background:
     linear-gradient(90deg,
-      rgba(2, 15, 22, 0.72) 0%,
-      rgba(2, 17, 24, 0.50) 28%,
-      rgba(2, 17, 24, 0.22) 58%,
-      rgba(2, 17, 24, 0.08) 100%),
+      rgba(2, 15, 22, 0.82) 0%,
+      rgba(2, 17, 24, 0.58) 28%,
+      rgba(2, 17, 24, 0.20) 58%,
+      rgba(2, 17, 24, 0.06) 100%),
     linear-gradient(180deg,
-      rgba(3, 18, 27, 0.10) 0%,
-      rgba(3, 18, 27, 0.08) 42%,
-      rgba(3, 18, 27, 0.58) 100%),
+      rgba(3, 18, 27, 0.05) 0%,
+      rgba(3, 18, 27, 0.04) 46%,
+      rgba(3, 18, 27, 0.62) 100%),
+    url('https://images.unsplash.com/photo-1716078103276-133ae3e98424?auto=format&fit=crop&fm=jpg&q=78&w=2200') 64% 52% / cover no-repeat,
     url('/auth-bathroom.jpg') 68% 45% / cover no-repeat,
     #061923 !important;
   box-shadow:
-    inset -26px 0 70px rgba(0, 220, 232, 0.10),
-    inset 0 -140px 150px rgba(1, 14, 22, 0.42);
+    inset -28px 0 80px rgba(0, 220, 232, 0.14),
+    inset 0 -150px 170px rgba(1, 14, 22, 0.48);
 }
 
-/* Shiny cyan lys i glass/dusjområdet, uten å gjøre hele siden neon. */
+/* Shiny cyan lys/refleks i glass og gulv, uten neon over hele siden. */
 body.authLandingActive .authLandingShowcase::before {
   background:
-    radial-gradient(ellipse at 70% 35%, rgba(22, 225, 235, 0.26) 0%, rgba(11, 190, 204, 0.08) 26%, transparent 50%),
-    radial-gradient(ellipse at 50% 72%, rgba(15, 205, 220, 0.12) 0%, transparent 42%),
-    linear-gradient(90deg, rgba(15, 218, 228, 0.030) 1px, transparent 1px),
-    linear-gradient(rgba(15, 218, 228, 0.030) 1px, transparent 1px) !important;
+    radial-gradient(ellipse at 72% 38%, rgba(22, 225, 235, 0.30) 0%, rgba(11, 190, 204, 0.09) 24%, transparent 48%),
+    radial-gradient(ellipse at 66% 79%, rgba(15, 205, 220, 0.18) 0%, transparent 40%),
+    linear-gradient(90deg, rgba(15, 218, 228, 0.025) 1px, transparent 1px),
+    linear-gradient(rgba(15, 218, 228, 0.025) 1px, transparent 1px) !important;
   background-size: auto, auto, 54px 54px, 54px 54px !important;
   mix-blend-mode: screen;
-  opacity: 0.95;
+  opacity: 0.92;
 }
 
 body.authLandingActive .authShowcaseShade {
-  height: 30%;
-  background: linear-gradient(180deg, transparent, rgba(2, 14, 22, 0.72)) !important;
+  height: 25%;
+  background: linear-gradient(180deg, transparent, rgba(2, 14, 22, 0.70)) !important;
 }
 
-/* Litt mer glass og refleks i hovedkortene. */
+/* La mer av badet synes mellom overskrift og funksjonskort. */
+body.authLandingActive .authShowcaseContent {
+  padding-top: clamp(24px, 2.6vw, 44px) !important;
+  padding-bottom: 24px !important;
+}
+
+body.authLandingActive .authShowcaseCopy {
+  max-width: 760px;
+}
+
+body.authLandingActive .authShowcaseCopy p {
+  max-width: 690px;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.34);
+}
+
+/* Mer glass, dybde og glød i hovedkortene. */
 body.authLandingActive .authShowcaseCard {
   background:
-    linear-gradient(145deg, rgba(3, 32, 43, 0.72), rgba(2, 21, 31, 0.86)) !important;
-  border-color: rgba(24, 229, 237, 0.88) !important;
+    linear-gradient(145deg, rgba(3, 32, 43, 0.72), rgba(2, 21, 31, 0.88)) !important;
+  border-color: rgba(24, 229, 237, 0.92) !important;
   box-shadow:
-    0 22px 55px rgba(0, 0, 0, 0.30),
-    inset 0 1px 0 rgba(255,255,255,0.10),
-    0 0 30px rgba(8, 209, 221, 0.10) !important;
-  backdrop-filter: blur(9px) saturate(1.12);
+    0 22px 55px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255,255,255,0.11),
+    0 0 34px rgba(8, 209, 221, 0.13) !important;
+  backdrop-filter: blur(10px) saturate(1.14);
+}
+
+body.authLandingActive .authShowcaseCard:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 28px 62px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    0 0 42px rgba(8, 209, 221, 0.18) !important;
 }
 
 body.authLandingActive .authShowcasePreview {
+  padding: 0 !important;
+  overflow: hidden;
+  background: rgba(246, 251, 252, 0.98) !important;
   box-shadow:
     0 -10px 30px rgba(2, 22, 30, 0.16),
     0 12px 34px rgba(0,0,0,0.18);
 }
 
-/* Høyre login-kort skal flyte over bakgrunnen som i referansebildet. */
+/* Faktisk innhold i Tilbud / Kontrakt / Fremdrift, ikke bare grå streker. */
+body.authLandingActive .authPreviewDoc {
+  min-height: 132px;
+  padding: 15px 15px 13px;
+  color: #0b2632;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+body.authLandingActive .authPreviewDocTitle {
+  margin-bottom: 11px;
+  color: #071a24;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+}
+
+body.authLandingActive .authPreviewDataRow,
+body.authLandingActive .authPreviewDataTotal,
+body.authLandingActive .authPreviewKeyValue,
+body.authLandingActive .authPreviewSignRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+body.authLandingActive .authPreviewDataRow {
+  margin: 7px 0;
+}
+
+body.authLandingActive .authPreviewDataRow span,
+body.authLandingActive .authPreviewKeyValue span,
+body.authLandingActive .authPreviewSignRow span {
+  color: #38505d;
+}
+
+body.authLandingActive .authPreviewDataRow b,
+body.authLandingActive .authPreviewDataTotal b,
+body.authLandingActive .authPreviewKeyValue b {
+  color: #0a2733;
+  font-weight: 800;
+}
+
+body.authLandingActive .authPreviewDataTotal {
+  margin: 10px -15px -13px;
+  padding: 10px 15px;
+  border-top: 1px solid #d9e7eb;
+  background: #eaf5f7;
+  font-weight: 800;
+}
+
+body.authLandingActive .authPreviewKeyValue {
+  justify-content: flex-start;
+  margin: 8px 0;
+}
+
+body.authLandingActive .authPreviewKeyValue span {
+  width: 42px;
+  flex: 0 0 42px;
+}
+
+body.authLandingActive .authPreviewDivider {
+  height: 1px;
+  margin: 12px 0 9px;
+  background: #dbe7eb;
+}
+
+body.authLandingActive .authPreviewSignRow em {
+  color: #0797a7;
+  font-family: 'Segoe Script', 'Bradley Hand', cursive;
+  font-size: 18px;
+  font-style: italic;
+  transform: rotate(-5deg);
+}
+
+body.authLandingActive .authPreviewProgressRow {
+  display: grid;
+  grid-template-columns: minmax(66px, 1.25fr) minmax(42px, 0.9fr) 30px;
+  align-items: center;
+  gap: 7px;
+  margin: 8px 0;
+}
+
+body.authLandingActive .authPreviewProgressRow > span {
+  color: #38505d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.authLandingActive .authPreviewProgressRow > i {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #d8e7eb;
+}
+
+body.authLandingActive .authPreviewProgressRow > i > u {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #08aebc, #18d5df);
+  text-decoration: none;
+}
+
+body.authLandingActive .authPreviewProgressRow > b {
+  color: #0a2733;
+  font-size: 9px;
+  text-align: right;
+}
+
+/* Høyre login-kort flyter over den mørke bakgrunnen som i referansebildet. */
 body.authLandingActive #root {
   background:
-    radial-gradient(circle at 5% 50%, rgba(13, 210, 222, 0.12), transparent 24%),
+    radial-gradient(circle at 5% 50%, rgba(13, 210, 222, 0.14), transparent 26%),
     #061923 !important;
 }
 
@@ -72,6 +213,18 @@ body.authLandingActive #root > div:not([role="status"]) {
   box-shadow:
     0 28px 70px rgba(0,0,0,0.28),
     0 0 0 1px rgba(255,255,255,0.22);
+}
+
+/* Login skal ikke få intern 100vh-scrollbar på desktop. */
+@media (min-width: 761px) {
+  body.authLandingLogin #root > div:not([role="status"]) {
+    height: calc(100vh - 36px) !important;
+    min-height: 0 !important;
+  }
+
+  body.authLandingLogin #root > div:not([role="status"]) > main {
+    overflow: visible;
+  }
 }
 
 /* AppUpdateNotice kan være et direkte barn av #root. Den må ALDRI arve auth-panelets 100vh. */
@@ -106,12 +259,17 @@ body.authLandingActive #root > div[role="status"] button {
   box-shadow: none;
 }
 
-/* På mindre desktop må toasten fortsatt være liten og ikke dekke login. */
 @media (max-width: 1180px) and (min-width: 761px) {
   body.authLandingActive #root > div[role="status"] {
     right: 18px !important;
     bottom: 18px !important;
     width: min(390px, calc(42vw - 36px)) !important;
+  }
+
+  body.authLandingActive .authPreviewDoc {
+    font-size: 9px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }
 
