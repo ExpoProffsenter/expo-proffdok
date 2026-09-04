@@ -181,6 +181,18 @@ function projectMeta(row = {}) {
   };
 }
 
+export async function loadInternalProgressProjectMeta(client, projectId) {
+  const id = clean(projectId);
+  if (!client || !id) return null;
+  const { data, error } = await client
+    .from('projects')
+    .select('id,title,data,locked,updated_at')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? { row: data, ...projectMeta(data) } : null;
+}
+
 export async function listAccessibleProgressProjects(client) {
   if (!client) return [];
   const { data, error } = await client

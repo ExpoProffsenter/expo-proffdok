@@ -32,6 +32,8 @@ function installProgressPlanAtSecureUiBoundary() {
     hasProjectLink &&
     role !== 'admin' &&
     (role === '' || role === 'kunde' || role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør');
+  if (!isPortalRole) return;
+
   const isUnderleverandor =
     role === 'underleverandor' || role === 'underleverandør' || role === 'underentreprenør';
 

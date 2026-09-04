@@ -14,6 +14,7 @@ import {
   isProgressSafePreviewMode,
   loadAcceptedOfferActivities,
   loadInternalProgressPlan,
+  loadInternalProgressProjectMeta,
   loadPortalProgressPlan,
   resolveInternalProgressProject,
   saveInternalProgressPlan,
@@ -204,6 +205,18 @@ function ProgressPlanWorkspace({ mode, identity, requestRef, projectId: portalPr
           setDirty(false);
           setExpandedActivityId('');
           setLoading(false);
+          return;
+        }
+
+        if (portalProjectId) {
+          const meta = await loadInternalProgressProjectMeta(client, portalProjectId);
+          if (cancelled) return;
+          setCandidates(meta ? [meta] : []);
+          if (meta) await loadProjectPlan(meta);
+          else {
+            setError('Prosjektet kunne ikke hentes for fremdriftsplanen.');
+            setLoading(false);
+          }
           return;
         }
 
@@ -757,6 +770,23 @@ const STYLE_TEXT = `
 @media(max-width:820px){#${ROOT_ID}{padding:12px 10px 60px}.progress-hero{align-items:flex-start;flex-direction:column;padding:20px}.progress-hero h2{font-size:25px}.progress-test-banner,.progress-share-card,.progress-board-toolbar,.progress-picker-heading{align-items:flex-start;flex-direction:column}.progress-operation-grid{grid-template-columns:1fr}.progress-board-card{display:none}.progress-mobile-list{display:grid;gap:10px}.progress-editor-grid{grid-template-columns:1fr}.progress-session-heading{align-items:flex-start;flex-direction:column}.progress-session-editor{grid-template-columns:1fr 1fr}.progress-session-note{grid-column:1/-1}.progress-session-editor .progress-danger-link{grid-column:1/-1;text-align:left}.progress-mobile-session{grid-template-columns:1fr 1fr}.progress-mobile-session small{grid-column:1/-1}.progress-mobile-editor .progress-editor-actions{display:grid;grid-template-columns:1fr 1fr}.progress-mobile-editor .progress-danger{grid-column:1/-1}}
 `;
 
+export function ProgressPlanProjectTab({ projectId, onDirtyChange }) {
+  useEffect(() => { ensureStyle(); }, []);
+  if (!projectId) return null;
+  return (
+    <div id={ROOT_ID}>
+      <ProgressPlanWorkspace
+        mode="internal"
+        identity=""
+        requestRef=""
+        projectId={projectId}
+        role="internal"
+        onDirtyChange={onDirtyChange}
+      />
+    </div>
+  );
+}
+
 let installed = false;
 let active = false;
 let reactRoot = null;
@@ -967,7 +997,8 @@ function scheduleAdapt(delay = 40) {
 }
 
 export function installProgressPlanUx() {
-  if (installed || typeof document === 'undefined') return;
+  if (typeof document === 'undefined' || modeFromLocation() === 'internal') return;
+  if (installed) return;
   installed = true;
   ensureStyle();
   ensureRoot();
