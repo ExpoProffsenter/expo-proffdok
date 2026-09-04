@@ -124,20 +124,27 @@ export async function resolveInternalProgressProject(client, { identity = '', re
 
 export async function loadPortalProgressPlan(client, projectId, role) {
   const normalizedRole = role === 'underleverandor' ? 'underleverandor' : 'kunde';
+  const unavailable = {
+    ...EMPTY_PROGRESS_PLAN,
+    customerVisible: false,
+    updatedAt: '',
+    unavailable: true,
+  };
   const code = readStoredPortalAccessCode(projectId, normalizedRole);
-  if (!projectId || !code) return null;
+  if (!projectId || !code) return unavailable;
   const result = await verifyProjectPortalAccess(client, {
     projectId,
     role: normalizedRole,
     code,
   });
-  if (!result?.ok) return null;
+  if (!result?.ok) return unavailable;
   const value = result?.project?.data?.progressPlan;
-  if (!value || typeof value !== 'object') return null;
+  if (!value || typeof value !== 'object') return unavailable;
   return {
     ...normalizeProgressPlan(value),
     customerVisible: !!value.customerVisible,
     updatedAt: value.updatedAt || '',
+    unavailable: false,
   };
 }
 
