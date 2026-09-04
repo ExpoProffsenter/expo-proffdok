@@ -1,11 +1,12 @@
-// Expo ProffDok – FASE 35B
+// Expo ProffDok – FASE 35C
 // Stabil inngang for fremdriftsmodulen. Selve brukerflyten ligger i V2-modulen,
-// mens eksport og deling holdes som egne naturlige ansvar for å unngå å gjøre hovedkomponenten større.
+// mens eksport, deling og kalender holdes som egne naturlige ansvar.
 import React, { memo, useCallback, useState } from 'react';
 import './progressPlanLayout.css';
 import './progressPlanExport.css';
 import { ensureSafePreviewModeFromHost } from '../app/previewSafetyBootstrap.js';
 import { ProgressPlanExportActions } from './progressPlanExportV3.jsx';
+import { ProgressPlanCalendarAction } from './progressPlanCalendarAction.jsx';
 import { installProjectParticipantsUx } from '../project/projectParticipantsUxV3.jsx';
 import {
   installProgressPlanUx as installProgressPlanUxV2,
@@ -16,7 +17,7 @@ import {
 ensureSafePreviewModeFromHost();
 
 // progressPlanUx importeres allerede stabilt fra bootstrap. Prosjektinvolverte er et eget
-// prosjektansvar, men startes her for å unngå enda en bootstrap-kobling i 35B.
+// prosjektansvar, men startes her for å unngå enda en bootstrap-kobling.
 installProjectParticipantsUx();
 
 function ProgressPlanProjectTabInner({ projectId, onDirtyChange }) {
@@ -31,6 +32,7 @@ function ProgressPlanProjectTabInner({ projectId, onDirtyChange }) {
   return (
     <div className="progress-module-frame">
       <ProgressPlanExportActions projectId={projectId} dirty={dirty} />
+      <ProgressPlanCalendarAction projectId={projectId} dirty={dirty} />
       <ProgressPlanProjectTabV2 projectId={projectId} onDirtyChange={handleDirtyChange} />
     </div>
   );
