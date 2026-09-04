@@ -128,10 +128,14 @@ function createParticipantsItem() {
     purpose: 'Prosjektinvolverte er prosjektets felles kontakt- og distribusjonsliste. Seksjonen vises først etter at prosjektet faktisk er opprettet og har fått prosjekt-ID.',
     sections: [
       {
-        title: 'Registrering',
+        title: 'Registrering og lagring',
         items: [
           'Åpne Prosjektoversikt i et lagret prosjekt og gå til Prosjektinvolverte.',
           'Registrer navn, firma, rolle, e-post og telefon.',
+          'Trykk Enter i en utfylt rad for å gå videre til neste prosjektinvolverte. På siste utfylte rad opprettes automatisk en ny tom rad.',
+          'En helt tom ny rad lagres ikke. Først når du begynner å fylle den ut regnes den som en endring.',
+          'Når det finnes ulagrede endringer vises en tydelig Lagre prosjektinvolverte-knapp i synsfeltet.',
+          'Hvis du prøver å bytte fane eller forlate siden med ulagrede endringer, får du varsel før du går videre.',
           'Prosjektmail bestemmer om personen skal være med i felles utsendinger fra prosjektet.',
           'Lagre prosjektinvolverte før du sender e-post.',
         ],
@@ -181,6 +185,8 @@ function enrichProjectInfoHelp(labels) {
 
   const list = createList([
     'Registrer navn, firma, rolle, e-post og telefon på personer som er involvert i prosjektet.',
+    'Enter på siste utfylte rad oppretter neste person automatisk. En helt tom ny rad lagres ikke.',
+    'Ved endringer vises Lagre prosjektinvolverte tydelig, og du varsles hvis du prøver å forlate siden uten å lagre.',
     'Velg Prosjektmail på de personene som skal motta felles prosjektmeldinger og fremdriftsplaner.',
     'Send en e-post brukes til felles utsending til de valgte prosjektinvolverte.',
     'Innloggede mottakere får ved neste innlogging varsel om at prosjektinformasjon kan være endret, med henvisning til utsendt e-post.',
