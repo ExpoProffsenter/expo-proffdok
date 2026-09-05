@@ -30,18 +30,18 @@
     display: none !important;
   }
 
-  /* Referansebildet inneholder en AI-generert logo. Masker kun selve logoarealet
-     med bakgrunnstonen som faktisk ligger rundt logoen i referansebildet. */
+  /* Logoen er bakt inn i referansebildet. Dekk den med en transparent og fjærende
+     bildepatch hentet fra samme veggflate, i stedet for en synlig fargeboks. */
   html body.authLandingActive .authLandingShowcase.authReferenceStatic::before {
     content: '' !important;
     display: block !important;
     position: absolute !important;
     z-index: 8 !important;
-    left: 3.0% !important;
-    top: 2.25% !important;
-    width: 30.0% !important;
-    height: 8.45% !important;
-    background: linear-gradient(90deg, #062839 0%, #062638 100%) !important;
+    left: 2.01% !important;
+    top: 1.95% !important;
+    width: 33.17% !important;
+    height: 11.23% !important;
+    background: url("data:image/webp;base64,UklGRmoBAABXRUJQVlA4WAoAAAAQAAAASQEAcgAAQUxQSHYAAAABd6C4bSQ1tfTDY4yIANYyzvv/nVFUIkICQvf/smRARP/TFwVWkWTFWRyAf3FI4DngJn+TO4kIhWnbMO7QLzrd4x1flqXAV0TEJDUAHcBzBM8JOGfgXIDmCjSXgLkGzA2w3IJKxvn97/e/3/8eIyXE7JXo5TgCVlA4IM4AAACwDQCdASpKAXMAPjEYjESiIaEQJAAgAwS0t3C6FwFZtqBVoAE5X/89VAKsm3RHWSDbRcIL3lNkyCGqpNdtouEGQQ1VIBiDIIaqk122iLD2RiCcUtouEGQGqJHVUmu20XCBgcUtouEGOTMzeZ3X8GQQ1VJrtqAAAP7/yfV/wJr7pUo/5t9LevWp1M2rcsv8wwChrMo2nhMutO2riWBhCpigOXt6T74H8HHZ4TkcLPLSMyDv7CUQAAFW+cX1yxyuROgGSOvmZQiv0AS/2sEAAA==") center center / 100% 100% no-repeat !important;
     box-shadow: none !important;
     border: 0 !important;
     border-radius: 0 !important;
