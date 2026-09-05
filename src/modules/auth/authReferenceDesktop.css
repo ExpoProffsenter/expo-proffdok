@@ -1,6 +1,6 @@
 /* FASE 36A1 – desktop låses til originalens 1536×1024-proporsjoner.
-   Referansebildet vises uten strekk/crop. Logoer skjules kun i auth-visningen;
-   øvrig firma-/brukerbranding i appen røres ikke. */
+   Referansebildet vises uten strekk/crop. Auth-visningen bruker et eget rent
+   referanseasset uten logo; øvrig firma-/brukerbranding i appen røres ikke. */
 @media (min-width: 1181px) {
   html body.authLandingActive {
     --auth-reference-frame-width: min(100vw, 150vh);
@@ -30,26 +30,9 @@
     display: none !important;
   }
 
-  /* AI-logoen er bakt inn i referansebildet. Området bak logoen er en flat,
-     mørk veggflate. Dekk hele logoarealet med den målte veggfargen, og stopp
-     før den diagonale taklinjen begynner. Ingen skygge, blur eller bildepatch. */
-  html body.authLandingActive .authLandingShowcase.authReferenceStatic::before {
-    content: '' !important;
-    display: block !important;
-    position: absolute !important;
-    z-index: 8 !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 37% !important;
-    height: 18% !important;
-    background: #00111b !important;
-    box-shadow: none !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    opacity: 1 !important;
-    pointer-events: none !important;
-  }
-
+  /* Referanseassetet er nå renset for innebygd logo. Ingen maskering eller
+     bildepatch skal ligge over venstresiden. */
+  html body.authLandingActive .authLandingShowcase.authReferenceStatic::before,
   html body.authLandingActive .authLandingShowcase.authReferenceStatic::after {
     display: none !important;
     content: none !important;
