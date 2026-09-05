@@ -19,7 +19,7 @@ const applyReference = () => {
   showcase.classList.add(REFERENCE_CLASS);
   showcase.style.setProperty(
     'background',
-    `#061923 url("${AUTH_REFERENCE_IMAGE}") center center / cover no-repeat`,
+    `#061923 url("${AUTH_REFERENCE_IMAGE}") center center / 100% 100% no-repeat`,
     'important'
   );
   showcase.style.setProperty('box-shadow', 'none', 'important');
