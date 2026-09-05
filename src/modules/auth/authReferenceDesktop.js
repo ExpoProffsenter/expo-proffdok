@@ -3,7 +3,7 @@ import { AUTH_REFERENCE_IMAGE } from './reference/authReferenceImage.js';
 
 const SHOWCASE_ID = 'expo-proffdok-auth-showcase';
 const REFERENCE_CLASS = 'authReferenceStatic';
-const DESKTOP_QUERY = '(min-width: 761px)';
+const DESKTOP_QUERY = '(min-width: 1181px)';
 
 const applyReference = () => {
   const showcase = document.getElementById(SHOWCASE_ID);
@@ -19,7 +19,7 @@ const applyReference = () => {
   showcase.classList.add(REFERENCE_CLASS);
   showcase.style.setProperty(
     'background',
-    `url("${AUTH_REFERENCE_IMAGE}") center center / 100% 100% no-repeat`,
+    `#061923 url("${AUTH_REFERENCE_IMAGE}") center center / cover no-repeat`,
     'important'
   );
   showcase.style.setProperty('box-shadow', 'none', 'important');
