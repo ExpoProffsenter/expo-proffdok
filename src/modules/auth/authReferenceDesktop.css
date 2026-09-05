@@ -1,0 +1,9 @@
+/* FASE 36A1 – desktop bruker det valgte referansebildet direkte, uten ekstra bildeeffekter. */
+@media (min-width: 761px) {
+  body.authLandingActive .authLandingShowcase.authReferenceStatic::before,
+  body.authLandingActive .authLandingShowcase.authReferenceStatic::after,
+  body.authLandingActive .authLandingShowcase.authReferenceStatic .authShowcaseShade,
+  body.authLandingActive .authLandingShowcase.authReferenceStatic .authShowcaseContent {
+    display: none !important;
+  }
+}
