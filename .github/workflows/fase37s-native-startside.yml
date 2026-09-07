@@ -1,0 +1,78 @@
+name: Fase 37S native Startside patch
+
+on:
+  push:
+    branches:
+      - stabilize/fase37s-navigation-clean
+
+permissions:
+  contents: write
+
+jobs:
+  patch-native-startside:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: stabilize/fase37s-navigation-clean
+          fetch-depth: 0
+
+      - name: Apply exact React header patch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/main.jsx')
+          text = path.read_text(encoding='utf-8')
+          lines = text.splitlines()
+
+          home_indexes = [
+              i for i, line in enumerate(lines)
+              if 'projectId &&' in line
+              and 'onClick: leaveProjectWorkspace' in line
+              and 'Til startside' in line
+          ]
+          if len(home_indexes) != 1:
+              raise SystemExit(f'Expected exactly one conditional native Startside button, found {len(home_indexes)}')
+
+          home_index = home_indexes[0]
+          home_line = lines.pop(home_index)
+          native_home_line = home_line.replace('projectId && ', '', 1)
+
+          new_project_indexes = [
+              i for i, line in enumerate(lines)
+              if 'onClick: createNewProject' in line and '+ Nytt prosjekt' in line
+          ]
+          if len(new_project_indexes) != 1:
+              raise SystemExit(f'Expected exactly one top-header Nytt prosjekt button, found {len(new_project_indexes)}')
+
+          new_project_index = new_project_indexes[0]
+          lines.insert(new_project_index, native_home_line)
+
+          result = '\n'.join(lines) + ('\n' if text.endswith('\n') else '')
+          if result.count('onClick: leaveProjectWorkspace, children: "← Til startside"') != 1:
+              raise SystemExit('Native Startside button verification failed')
+          if 'projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: "← Til startside" })' in result:
+              raise SystemExit('Conditional Startside guard still present')
+
+          path.write_text(result, encoding='utf-8')
+          PY
+
+      - name: Build verification
+        run: |
+          npm ci
+          npm run build
+
+      - name: Commit verified patch and remove temporary workflow
+        shell: bash
+        run: |
+          rm .github/workflows/fase37s-native-startside.yml
+          git config user.name "Expo ProffDok QA"
+          git config user.email "firmapost@ringside.no"
+          git add src/main.jsx .github/workflows/fase37s-native-startside.yml
+          git diff --cached --check
+          git commit -m "Fase 37S: use native React Startside navigation"
+          git push origin HEAD:stabilize/fase37s-navigation-clean
