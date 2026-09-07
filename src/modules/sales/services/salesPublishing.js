@@ -1,4 +1,5 @@
-// Expo ProffDok – FASE 32A / FASE 23P / FASE 29B4
+// Expo ProffDok – FASE 37D1 / FASE 32A / FASE 23P / FASE 29B4
+// Butikktilbud bruker valgt Ringside/Bademiljø-logo i det låste firmasnapshotet.
 // FASE 32A beholder serverstemplet publisher og publiseringstid på saken etter
 // publisering. Opplysningene kommer fra publish_sales_offer og er ikke utledet
 // fra ansvarlig eller andre mutable felt.
@@ -68,9 +69,15 @@ export async function publishSalesOfferAndBuildLink({
     companyProfile && typeof companyProfile === "object"
       ? companyProfile
       : await loadCompanyProfile();
+  const storeOfferMeta = (request.offerLines || []).find(
+    (line) => line?.__storeOfferMeta
+  );
   const publishCompanyProfile = {
     ...(resolvedCompanyProfile || {}),
-    logoUrl: resolvedCompanyProfile?.logoUrl || "/expo-logo.png",
+    logoUrl:
+      storeOfferMeta?.brandLogoUrl ||
+      resolvedCompanyProfile?.logoUrl ||
+      "/expo-logo.png",
   };
 
   const { data, error } = await publishSalesOffer(
