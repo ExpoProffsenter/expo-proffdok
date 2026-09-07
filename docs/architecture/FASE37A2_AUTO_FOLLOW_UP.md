@@ -27,11 +27,13 @@ Automatisk oppfølging sendes bare når alle punktene er sanne:
 
 `sales_requests.status` brukes ikke som autoritativ akseptkontroll. Dette er viktig fordi historiske/runtime-synkroniserte saker kan ha request-status `Tilbud` selv om `sales_offers` allerede er `accepted`.
 
+Worker revaliderer tilbud, aktiv versjon, akseptstatus, arkivstatus, mottaker og original utsending umiddelbart før e-posten sendes. En aksept, ny versjon, arkivering, adresseendring eller manuell ny utsending mellom kandidatuttak og e-postutsending stopper derfor påminnelsen.
+
 ## Ingen retroaktiv utsending
 
 Tilbud som ble sendt før 37A2 aktiveres får ikke plutselig automatisk e-post. De beholder dagens manuelle «Må følges opp»-flyt.
 
-Ved ny publisering/utsending starter 7-dagersperioden på nytt for den nye eksakte tilbudsversjonen.
+En ny publisert tilbudsversjon får sin egen 7-dagersperiode og kan få én automatisk påminnelse. En manuell ny utsending av samme versjon regnes som ny kontakt og flytter «Må følges opp»-klokken, men oppretter ikke rett til en ny automatisk påminnelse dersom denne versjonen allerede har fått sin ene automatiske påminnelse.
 
 ## E-post
 
@@ -55,9 +57,9 @@ Butikktilbud bruker låst butikkmerkevare/logo og saksbehandler fra publisert ti
 - tidspunkt for vellykket utsending
 - eventuell feiltekst
 
-Unik constraint på `(offer_id, offer_version_id)` hindrer dobbel automatisk oppfølging.
+Unik constraint på `(offer_id, offer_version_id)` hindrer dobbel automatisk oppfølging. Worker bruker i tillegg betinget reservasjon for å redusere risiko for parallelle utsendinger.
 
-Feilet utsending kan forsøkes på nytt, men antall forsøk begrenses.
+Feilet utsending kan forsøkes på nytt, men antall forsøk begrenses til tre.
 
 ## Planlagt kjøring
 
@@ -69,7 +71,7 @@ Edge Function:
 
 Kallet beskyttes av et tilfeldig serverside-token generert i databasen. Tokenet er ikke tilgjengelig for `anon` eller `authenticated`.
 
-Runtime-konfigurasjonen starter med `enabled = false` under Preview/testing. Den aktiveres først ved sluttføring til produksjon, samtidig som `rollout_at` settes til aktiveringstidspunktet.
+Runtime-konfigurasjonen starter med `enabled = false` under Preview/testing. Den aktiveres først ved sluttføring til produksjon, samtidig som `rollout_at` settes til aktiveringstidspunktet. Dermed kan ingen eksisterende gamle utsendinger bli kandidater ved aktivering.
 
 ## UI
 
@@ -77,9 +79,10 @@ Sales henter kun utsendte oppfølgingsrader innenfor eksisterende firmascope/RLS
 
 Når automatisk påminnelse er sendt:
 
-- detaljvisningen viser tidspunktet
-- tilbudet regnes ikke som «Må følges opp» igjen før det har gått nye 7 dager uten aksept eller ny manuell utsending
-- en manuell ny utsending regnes som ny kontakt og starter ny 7-dagersperiode
+- oversikt og detaljvisning viser «Automatisk påminnelse sendt» med dato
+- tilbudet regnes ikke som «Må følges opp» igjen før det har gått nye 7 dager uten aksept eller ny kontakt
+- en manuell ny utsending regnes som ny kontakt og flytter neste manuelle oppfølgingspunkt
+- audit-data er runtime-metadata og skrives aldri inn i tilbudskladden eller publisert tilbudsversjon
 
 ## Hjelp
 
@@ -89,6 +92,7 @@ Hjelp skal forklare:
 - én automatisk påminnelse sendes etter 7 dager hvis tilbudet fortsatt er ubesvart og uendret
 - gamle tilbud fra før utrulling får ingen retroaktiv automatisk e-post
 - etter ytterligere 7 dager uten respons vises saken igjen som «Må følges opp» for manuell vurdering
+- samme publiserte versjon får aldri mer enn én automatisk påminnelse
 
 ## Ufravikelige grenser
 
@@ -98,3 +102,4 @@ Hjelp skal forklare:
 - ingen automatisk oppfølging av arkiverte tilbud
 - ingen automatisk oppfølging av en gammel versjon etter at en nyere versjon er publisert
 - ingen automatisk oppfølging av akseptert tilbud, selv om request-payload ikke er synkronisert ennå
+- samme tilbudsversjon får maksimalt én automatisk påminnelse
