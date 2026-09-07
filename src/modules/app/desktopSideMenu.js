@@ -151,12 +151,9 @@ function syncDrawerWithSource(sourceNav, shell) {
   const startsideSource = sourceButtons.find(
     (button) => cleanLabel(button.textContent) === 'Startside'
   );
-  const startsideActive = Boolean(
-    startsideSource instanceof HTMLButtonElement && startsideSource.classList.contains('on')
-  );
 
   if (homeButton instanceof HTMLButtonElement) {
-    homeButton.hidden = !(startsideSource instanceof HTMLButtonElement) || startsideActive;
+    homeButton.hidden = !(startsideSource instanceof HTMLButtonElement);
     homeButton.onclick = startsideSource instanceof HTMLButtonElement
       ? () => startsideSource.click()
       : null;
