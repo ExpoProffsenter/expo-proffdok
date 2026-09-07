@@ -29,7 +29,7 @@ export const MODULE_CATALOG = [
 
 const VALID_MODULE_KEYS = new Set(MODULE_CATALOG.map((module) => module.key));
 const FALLBACK_SUPABASE_URL = "https://dqffxflaoyarbxyiyhop.supabase.co";
-const FALLBACK_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
+const FALLBACK_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
 
 function uniqueModuleKeys(keys = []) {
   return [...new Set((Array.isArray(keys) ? keys : []).map((key) => String(key || "").trim()))]
@@ -192,15 +192,32 @@ export async function refreshMyModuleAccess(client = null) {
   }
 }
 
+function managedUserSort(a = {}, b = {}) {
+  const aPending = !a.approved && !a.deactivated;
+  const bPending = !b.approved && !b.deactivated;
+  if (aPending !== bPending) return aPending ? -1 : 1;
+
+  const aCompany = String(a.company_name || "").toLocaleLowerCase("nb-NO");
+  const bCompany = String(b.company_name || "").toLocaleLowerCase("nb-NO");
+  const companyCompare = aCompany.localeCompare(bCompany, "nb");
+  if (companyCompare !== 0) return companyCompare;
+
+  return String(a.email || "").localeCompare(String(b.email || ""), "nb");
+}
+
 export async function listManagedModuleAccess() {
   const payload = await rpcWithStoredSession("list_managed_module_access");
+  const users = (Array.isArray(payload?.users) ? payload.users : [])
+    .map((user) => ({
+      ...user,
+      module_keys: normalizeModuleKeys(user?.module_keys || []),
+    }))
+    .sort(managedUserSort);
+
   return {
     ...payload,
     caller_module_keys: normalizeModuleKeys(payload?.caller_module_keys || []),
-    users: (Array.isArray(payload?.users) ? payload.users : []).map((user) => ({
-      ...user,
-      module_keys: normalizeModuleKeys(user?.module_keys || []),
-    })),
+    users,
   };
 }
 
