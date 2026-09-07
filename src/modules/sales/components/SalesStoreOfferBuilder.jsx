@@ -2,11 +2,13 @@
 // Egen varebygger for Ringside Butikktilbud. Brukeren arbeider med priser inkl. mva.
 // Alternativer registreres som faktiske vare-/monteringspriser; eksisterende Sales-motor
 // mottar kun beregnet prisendring eks. mva. Publisering, aksept og e-post beholdes.
+// Saksbehandler ser både inkl./eks. mva., og kan forhåndsvise kundetilbudet uten publisering.
 
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ExternalLink,
+  Eye,
   FileText,
   GripVertical,
   ImagePlus,
@@ -18,7 +20,9 @@ import {
   Trash2,
   Wrench,
 } from "lucide-react";
-import { formatNok } from "../utils/salesUtils.js";
+import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
+import { buildOfferSnapshot } from "../utils/salesOfferLogic.js";
+import SalesCustomerView from "./SalesCustomerView.jsx";
 import {
   buildNobbItemUrl,
   formatStoreDelta,
@@ -119,6 +123,11 @@ function grossLineAmount(item = {}) {
   return storeGrossTotal(item);
 }
 
+function netFromGross(value) {
+  const gross = Number(value || 0);
+  return Number.isFinite(gross) ? gross / VAT_FACTOR : 0;
+}
+
 function canonicalNetUnit(item = {}) {
   const gross = storeGrossUnitPrice(item);
   const discount = storeDiscount(item.storeDiscountPercent);
@@ -183,6 +192,10 @@ function ProductIdentityFields({ item, onPatch, titleLabel = "Varenavn *", title
 }
 
 function PriceFields({ item, onPatch, priceLabel = "Pris pr. enhet inkl. mva.", totalLabel = "Linjesum inkl. mva." }) {
+  const grossUnit = storeGrossUnitPrice(item);
+  const grossTotal = grossLineAmount(item);
+  const hasUnitPrice = String(item.storeUnitPriceInclVat ?? "").trim() !== "";
+
   return (
     <div className="store-price-grid">
       <label className="sales-field">
@@ -210,6 +223,7 @@ function PriceFields({ item, onPatch, priceLabel = "Pris pr. enhet inkl. mva.", 
           onChange={(event) => onPatch({ storeUnitPriceInclVat: event.target.value })}
           placeholder="0"
         />
+        {hasUnitPrice ? <small className="store-price-net">{formatNok(netFromGross(grossUnit))} eks. mva.</small> : null}
       </label>
       <label className="sales-field">
         <span>Rabatt %</span>
@@ -222,7 +236,8 @@ function PriceFields({ item, onPatch, priceLabel = "Pris pr. enhet inkl. mva.", 
       </label>
       <div className="store-line-total">
         <span>{totalLabel}</span>
-        <strong>{formatNok(grossLineAmount(item))}</strong>
+        <strong>{formatNok(grossTotal)}</strong>
+        <small>{formatNok(netFromGross(grossTotal))} eks. mva.</small>
       </div>
     </div>
   );
@@ -308,17 +323,26 @@ function InstallationCard({ item, index, dragProps, onPatch, onRemove }) {
   );
 }
 
+function DualAmount({ label, gross, delta = false }) {
+  return (
+    <div>
+      <span>{label}</span>
+      <strong>{delta ? formatStoreDelta(gross) : formatNok(gross)} inkl. mva.</strong>
+      <small>{delta ? formatStoreDelta(netFromGross(gross)) : formatNok(netFromGross(gross))} eks. mva.</small>
+    </div>
+  );
+}
+
 function AlternativeSummary({ option, lines }) {
   const breakdown = getStoreAlternativeBreakdown(option, lines);
   return (
     <div className="store-alt-summary">
-      <div><span>Pris på alternativet</span><strong>{formatNok(breakdown.newItemTotal)}</strong></div>
+      <DualAmount label="Pris på alternativet" gross={breakdown.newItemTotal} />
       {breakdown.hasInstallationOverride ? (
-        <div><span>Montering med alternativet</span><strong>{formatNok(breakdown.newInstallationTotal)}</strong></div>
+        <DualAmount label="Montering med alternativet" gross={breakdown.newInstallationTotal} />
       ) : null}
       <div className="store-alt-summary-delta">
-        <span>Prisendring mot grunnpakken</span>
-        <strong>{formatStoreDelta(breakdown.totalDelta)}</strong>
+        <DualAmount label="Prisendring mot grunnpakken" gross={breakdown.totalDelta} delta />
       </div>
     </div>
   );
@@ -328,6 +352,7 @@ function OptionCard({ option, index, productLines, installationLines, dragProps,
   const alternative = option.optionType === "alternative";
   const replacement = [...productLines, ...installationLines].find((line) => line.id === option.replacementLineId);
   const replacesInstallation = replacement?.mainPostId === INSTALLATION_POST.id;
+  const installationGross = parseStoreNumber(option.storeInstallationPriceInclVat, 0);
 
   return (
     <article className="store-item-card store-option-card" {...dragProps}>
@@ -382,13 +407,14 @@ function OptionCard({ option, index, productLines, installationLines, dragProps,
             <span>Montering som påvirkes</span>
             <select value={option.storeInstallationReplacementLineId || ""} onChange={(event) => onInstallationChange(event.target.value)}>
               <option value="">Uendret montering</option>
-              {installationLines.map((line) => <option key={line.id} value={line.id}>{line.description || "Montering"} – {formatNok(storeGrossTotal(line))}</option>)}
+              {installationLines.map((line) => <option key={line.id} value={line.id}>{line.description || "Montering"} – {formatNok(storeGrossTotal(line))} inkl. mva.</option>)}
             </select>
           </label>
           {option.storeInstallationReplacementLineId ? (
             <label className="sales-field">
               <span>Ny monteringspris inkl. mva.</span>
               <input value={option.storeInstallationPriceInclVat ?? ""} onChange={(event) => onPatch({ storeInstallationPriceInclVat: event.target.value })} inputMode="decimal" placeholder="0" />
+              {String(option.storeInstallationPriceInclVat ?? "").trim() ? <small className="store-price-net">{formatNok(netFromGross(installationGross))} eks. mva.</small> : null}
             </label>
           ) : null}
         </div>
@@ -454,6 +480,7 @@ export default function SalesStoreOfferBuilder(props) {
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [templateBusy, setTemplateBusy] = useState(false);
   const [templateMessage, setTemplateMessage] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
   const initializedRequestRef = useRef("");
   const requestId = String(selectedRequest?.id || "");
 
@@ -681,18 +708,81 @@ export default function SalesStoreOfferBuilder(props) {
     handleSaveOffer?.(event);
   }
 
+  function buildDraftPreviewRequest() {
+    const draftRequest = {
+      ...selectedRequest,
+      offerTitle: String(offerForm.title || "").trim(),
+      offerIntro: String(offerForm.intro || "").trim(),
+      offerLines: lines,
+      offerOptions: options,
+      offerReservations: String(offerForm.reservations || "").trim(),
+      offerIncluded: String(offerForm.included || "").trim(),
+      offerExcluded: String(offerForm.excluded || "").trim(),
+      offerCustomerSupplied: String(offerForm.customerSupplied || "").trim(),
+      offerTerms: String(offerForm.terms || "").trim(),
+      offerPaymentTerms: String(offerForm.paymentTerms || "").trim(),
+      offerValidityDays: String(offerForm.validityDays || "30"),
+      offerTotal: getOfferTotal(lines),
+      offerVersions: [],
+      sentOfferVersionId: null,
+      sentOfferVersionNumber: null,
+      sentOfferAt: null,
+    };
+    const snapshot = buildOfferSnapshot(
+      draftRequest,
+      {},
+      new Date().toISOString(),
+      `store-draft-preview-${requestId || Date.now()}`
+    );
+    return {
+      ...draftRequest,
+      offerVersions: [snapshot],
+      sentOfferVersionId: snapshot.id,
+      sentOfferVersionNumber: snapshot.versionNumber,
+      sentOfferAt: snapshot.createdAt,
+    };
+  }
+
+  if (previewOpen) {
+    const previewRequest = buildDraftPreviewRequest();
+    return (
+      <div className="store-draft-preview-shell">
+        <style>{`
+          .store-draft-preview-shell .sales-customer-accept-form{display:none!important}
+          .store-draft-preview-banner{position:sticky;top:0;z-index:25000;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;background:#fff8d9;border-bottom:1px solid #ead78d;color:#493d11;font-weight:800}
+          .store-draft-preview-banner span{font-weight:650}.store-draft-preview-banner button{white-space:nowrap}
+          @media(max-width:620px){.store-draft-preview-banner{align-items:stretch;flex-direction:column}}
+        `}</style>
+        <div className="store-draft-preview-banner">
+          <div><strong>FORHÅNDSVISNING</strong> <span>– ikke publisert, ikke sendt og kan ikke aksepteres av kunden.</span></div>
+          <button type="button" className="sales-secondary-button" onClick={() => setPreviewOpen(false)}><ArrowLeft size={17}/> Tilbake til redigering</button>
+        </div>
+        <SalesCustomerView
+          mode="customer-offer"
+          selectedRequest={previewRequest}
+          companyProfile={{}}
+          acceptanceForm={{ confirmed: false, name: "", selectedOptionIds: [] }}
+          setAcceptanceForm={() => {}}
+          toggleAcceptedOption={() => {}}
+          handleAcceptOffer={(event) => event?.preventDefault?.()}
+          onBack={() => setPreviewOpen(false)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="sales-app store-offer-builder-app">
       <style>{`
         .store-offer-builder-app .sales-shell{max-width:1180px}.store-offer-builder-app .sales-form-panel{display:grid;gap:18px}
         .store-builder-section{border:1px solid #d7e4ea;border-radius:18px;padding:18px;background:#fff}.store-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}.store-section-head h2{margin:0 0 4px;font-size:22px}.store-section-head p{margin:0;color:#60727a}
         .store-item-list{display:grid;gap:14px}.store-item-card{border:1px solid #d9e5ea;border-radius:16px;padding:16px;background:#fbfdfe}.store-option-card{background:#f8fbff}.store-installation-card{background:#fbfaf7}.store-item-heading{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin-bottom:14px}.store-drag-handle{display:grid;place-items:center;color:#70848d;cursor:grab}.store-icon-button{border:0;background:transparent;padding:6px;cursor:pointer;color:#8d3e3e}
-        .store-product-grid{display:grid;grid-template-columns:1.6fr .8fr .9fr 1.5fr;gap:12px}.store-option-top-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:12px}.store-link-field{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}.store-link-field a{display:grid;place-items:center;width:38px;height:38px;border:1px solid #cbdbe2;border-radius:10px}.store-price-grid{display:grid;grid-template-columns:.7fr .7fr 1.25fr .8fr 1.2fr;gap:12px;align-items:end;margin-top:12px}.store-line-total{min-height:70px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;padding:10px 12px;border-radius:12px;background:#eef8fa}.store-line-total span{font-size:12px;color:#5e737b;font-weight:700}.store-line-total strong{font-size:19px}
+        .store-product-grid{display:grid;grid-template-columns:1.6fr .8fr .9fr 1.5fr;gap:12px}.store-option-top-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:12px}.store-link-field{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}.store-link-field a{display:grid;place-items:center;width:38px;height:38px;border:1px solid #cbdbe2;border-radius:10px}.store-price-grid{display:grid;grid-template-columns:.7fr .7fr 1.25fr .8fr 1.2fr;gap:12px;align-items:end;margin-top:12px}.store-price-net{display:block;margin-top:4px;color:#667780;font-size:12px;font-weight:650}.store-line-total{min-height:76px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;padding:10px 12px;border-radius:12px;background:#eef8fa}.store-line-total span{font-size:12px;color:#5e737b;font-weight:700}.store-line-total strong{font-size:19px}.store-line-total small{margin-top:2px;color:#5e737b;font-weight:650}
         .store-drop-zone{margin-top:14px;padding:12px;border:1px dashed #9fc3cc;border-radius:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff}.store-drop-help{color:#65767d;font-size:13px}.store-file-chip{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:#f0f7f8}.store-file-chip img{width:48px;height:48px;border-radius:8px;object-fit:contain}.store-file-chip button{border:0;background:transparent;font-size:20px;cursor:pointer}
-        .store-installation-override{margin-top:14px;padding:14px;border:1px solid #d7e4ea;border-radius:14px;background:#fff8e9;display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px;align-items:end}.store-installation-override p{margin:4px 0 0;color:#6b6250;font-size:13px}.store-alt-summary{margin-top:12px;padding:12px 14px;border-radius:12px;background:#edf9fa;display:flex;gap:24px;align-items:center;flex-wrap:wrap}.store-alt-summary>div{display:grid;gap:3px}.store-alt-summary span{font-size:12px;color:#60727a;font-weight:700}.store-alt-summary strong{font-size:16px}.store-alt-summary-delta{margin-left:auto;text-align:right}
-        .store-empty{padding:18px;border:1px dashed #c5d7dd;border-radius:14px;color:#61737a;text-align:center}.store-summary{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px 18px;border-radius:16px;background:#0f172a;color:#fff}.store-summary strong{font-size:24px}.store-terms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.store-template-grid{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}.store-brand-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.store-brand-card{position:relative;display:grid;gap:10px;padding:14px;border:2px solid #d8e3e8;border-radius:14px;cursor:pointer;background:#fff}.store-brand-card.is-selected{border-color:#16aeb9;box-shadow:0 0 0 3px rgba(22,174,185,.1)}.store-brand-card input{position:absolute;top:10px;right:10px}.store-brand-card img{width:100%;height:72px;object-fit:contain;object-position:left center}.store-signature-preview{margin-top:12px;padding:12px 14px;border-left:3px solid #16aeb9;display:grid;gap:3px}.store-template-message{margin:8px 0 0;color:#42606b;font-weight:650}
+        .store-installation-override{margin-top:14px;padding:14px;border:1px solid #d7e4ea;border-radius:14px;background:#fff8e9;display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px;align-items:end}.store-installation-override p{margin:4px 0 0;color:#6b6250;font-size:13px}.store-alt-summary{margin-top:12px;padding:12px 14px;border-radius:12px;background:#edf9fa;display:flex;gap:24px;align-items:center;flex-wrap:wrap}.store-alt-summary>div{display:grid;gap:3px}.store-alt-summary span{font-size:12px;color:#60727a;font-weight:700}.store-alt-summary strong{font-size:16px}.store-alt-summary small{font-size:12px;color:#60727a;font-weight:650}.store-alt-summary-delta{margin-left:auto;text-align:right}
+        .store-empty{padding:18px;border:1px dashed #c5d7dd;border-radius:14px;color:#61737a;text-align:center}.store-summary{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px 18px;border-radius:16px;background:#0f172a;color:#fff}.store-summary-price{display:grid;gap:2px}.store-summary strong{font-size:24px}.store-summary small{color:#d7e2e7;font-weight:650}.store-summary-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.store-terms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.store-template-grid{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}.store-brand-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.store-brand-card{position:relative;display:grid;gap:10px;padding:14px;border:2px solid #d8e3e8;border-radius:14px;cursor:pointer;background:#fff}.store-brand-card.is-selected{border-color:#16aeb9;box-shadow:0 0 0 3px rgba(22,174,185,.1)}.store-brand-card input{position:absolute;top:10px;right:10px}.store-brand-card img{width:100%;height:72px;object-fit:contain;object-position:left center}.store-signature-preview{margin-top:12px;padding:12px 14px;border-left:3px solid #16aeb9;display:grid;gap:3px}.store-template-message{margin:8px 0 0;color:#42606b;font-weight:650}
         @media(max-width:900px){.store-product-grid,.store-price-grid,.store-terms-grid,.store-installation-override{grid-template-columns:1fr 1fr}.store-product-link,.store-product-name,.store-installation-override>div:first-child{grid-column:1/-1}}
-        @media(max-width:620px){.store-product-grid,.store-price-grid,.store-terms-grid,.store-brand-grid,.store-template-grid,.store-option-top-grid,.store-installation-override{grid-template-columns:1fr}.store-section-head,.store-summary{align-items:stretch;flex-direction:column}.store-line-total{align-items:flex-start}.store-alt-summary-delta{margin-left:0;text-align:left}}
+        @media(max-width:620px){.store-product-grid,.store-price-grid,.store-terms-grid,.store-brand-grid,.store-template-grid,.store-option-top-grid,.store-installation-override{grid-template-columns:1fr}.store-section-head,.store-summary{align-items:stretch;flex-direction:column}.store-line-total{align-items:flex-start}.store-alt-summary-delta{margin-left:0;text-align:left}.store-summary-actions{justify-content:stretch}.store-summary-actions button{width:100%}}
       `}</style>
 
       <div className="sales-shell">
@@ -723,13 +813,16 @@ export default function SalesStoreOfferBuilder(props) {
               <div className="store-terms-grid" style={{marginTop:12}}><label className="sales-field"><span>Betalingsbetingelser</span><input value={offerForm.paymentTerms || ""} onChange={(event) => updateOfferForm("paymentTerms", event.target.value)} placeholder="F.eks. 10 dager netto" /></label><label className="sales-field"><span>Gyldighet (dager)</span><input value={offerForm.validityDays || ""} onChange={(event) => updateOfferForm("validityDays", event.target.value)} inputMode="numeric" placeholder="30" /></label></div>
             </section>
 
-            <section className="store-builder-section"><div className="store-section-head"><div><h2>Varer</h2><p>Prisene registreres inkl. mva. NOBB-nr. gir automatisk direkte NOBB-link når egen produktlink ikke er satt.</p></div><button className="sales-primary-button" type="button" onClick={addProduct}><Plus size={18} /> Legg til vare</button></div><div className="store-item-list">{productLines.length ? productLines.map((item,index)=><ProductCard key={item.id} item={item} index={index} dragProps={draggableProps("line",item.id,"product")} onPatch={(patch)=>patchLine(item.id,patch)} onRemove={()=>removeLine(item.id)} onFiles={(files)=>sendFiles("line",item.id,files)} onRemoveImage={()=>removeOfferLineImage?.(item.id)} onRemoveAttachment={()=>removeOfferLineAttachment?.(item.id)} />) : <div className="store-empty"><ImagePlus size={24}/><br/>Ingen varer ennå. Legg til første vare.</div>}</div></section>
+            <section className="store-builder-section"><div className="store-section-head"><div><h2>Varer</h2><p>Prisene registreres inkl. mva. Saksbehandler ser automatisk tilsvarende pris eks. mva. NOBB-nr. gir direkte NOBB-link når egen produktlink ikke er satt.</p></div><button className="sales-primary-button" type="button" onClick={addProduct}><Plus size={18} /> Legg til vare</button></div><div className="store-item-list">{productLines.length ? productLines.map((item,index)=><ProductCard key={item.id} item={item} index={index} dragProps={draggableProps("line",item.id,"product")} onPatch={(patch)=>patchLine(item.id,patch)} onRemove={()=>removeLine(item.id)} onFiles={(files)=>sendFiles("line",item.id,files)} onRemoveImage={()=>removeOfferLineImage?.(item.id)} onRemoveAttachment={()=>removeOfferLineAttachment?.(item.id)} />) : <div className="store-empty"><ImagePlus size={24}/><br/>Ingen varer ennå. Legg til første vare.</div>}</div></section>
 
             <section className="store-builder-section"><div className="store-section-head"><div><h2>Montering</h2><p>Valgfri egen seksjon. En vareopsjon kan også angi en annen monteringspris.</p></div><button className="sales-secondary-button" type="button" onClick={addInstallation}><Wrench size={18}/> Legg til montering</button></div><div className="store-item-list">{installationLines.length ? installationLines.map((item,index)=><InstallationCard key={item.id} item={item} index={index} dragProps={draggableProps("line",item.id,"installation")} onPatch={(patch)=>patchLine(item.id,patch)} onRemove={()=>removeLine(item.id)} />) : <div className="store-empty">Ingen montering lagt til.</div>}</div></section>
 
             <section className="store-builder-section"><div className="store-section-head"><div><h2>Opsjoner</h2><p>Ved alternativ vare skriver du inn den faktiske nye vareprisen. Expo beregner prisendringen automatisk – også når monteringsprisen endres.</p></div><button className="sales-secondary-button" type="button" onClick={addOption}><Plus size={18}/> Legg til opsjon</button></div><div className="store-item-list">{options.length ? options.map((option,index)=><OptionCard key={option.id} option={option} index={index} productLines={productLines} installationLines={installationLines} dragProps={draggableProps("option",option.id)} onPatch={(patch)=>patchOption(option.id,patch)} onReplacementChange={(replacementId)=>changeReplacement(option.id,replacementId)} onInstallationChange={(lineId)=>changeOptionInstallation(option.id,lineId)} onRemove={()=>removeOption(option.id)} onFiles={(files)=>sendFiles("option",option.id,files)} onRemoveImage={()=>removeOfferOptionImage?.(option.id)} onRemoveAttachment={()=>removeOfferOptionAttachment?.(option.id)} />) : <div className="store-empty">Ingen opsjoner lagt til.</div>}</div></section>
 
-            <div className="store-summary"><div><span>Grunnsum varer + montering</span><strong>{formatNok(baseGrossTotal)}</strong><small> inkl. mva. · opsjoner kommer i tillegg eller erstatter grunnpakken</small></div><button type="submit" className="sales-primary-button" data-sales-save-offer-button="true"><Save size={18}/> Lagre butikktilbud</button></div>
+            <div className="store-summary">
+              <div className="store-summary-price"><span>Grunnsum varer + montering</span><strong>{formatNok(baseGrossTotal)} inkl. mva.</strong><small>{formatNok(netFromGross(baseGrossTotal))} eks. mva.</small><small>Opsjoner kommer i tillegg eller erstatter grunnpakken.</small></div>
+              <div className="store-summary-actions"><button type="button" className="sales-secondary-button" onClick={() => setPreviewOpen(true)} disabled={!productLines.length && !installationLines.length}><Eye size={18}/> Forhåndsvis kundetilbud</button><button type="submit" className="sales-primary-button" data-sales-save-offer-button="true"><Save size={18}/> Lagre butikktilbud</button></div>
+            </div>
           </form>
         </main>
       </div>
