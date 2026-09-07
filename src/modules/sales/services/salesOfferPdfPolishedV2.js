@@ -1,4 +1,5 @@
-// Expo ProffDok – FASE 31C
+// Expo ProffDok – FASE 37D1 / FASE 31C
+// Butikktilbud bruker versjonslåst valgt logo og saksbehandlersignatur i PDF.
 // Hovedposter uten grunnpris vises som «Kun valgfrie opsjoner» i PDF i stedet
 // for en kunstig hovedpostsum på 0 kr. Pris- og publiseringslogikk er uendret.
 // Expo ProffDok – FASE 31A2B
@@ -8,7 +9,7 @@
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import {
   formatNok, formatOfferQuantity, getOfferTermsSnapshot, getOfferTotal,
-  getOfferUnitPrice, getVisibleOfferLines, hasOfferQuantityDetails, sanitizeStoragePart,
+  getOfferUnitPrice, getStoreOfferMeta, getVisibleOfferLines, hasOfferQuantityDetails, sanitizeStoragePart,
 } from "../utils/salesUtils.js";
 import { getImageNaturalSize, readFileAsDataUrl } from "./salesImages.js";
 
@@ -62,6 +63,9 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
   const JsPDF=module.jsPDF||module.default?.jsPDF; if(!JsPDF) throw new Error("PDF-verktøyet kunne ikke lastes.");
   const pdf=new JsPDF({unit:"mm",format:"a4"}); let y=18; let section=0;
 
+  const storeMeta=getStoreOfferMeta(selectedRequest.offerLines||[]);
+  const isStoreOffer=Boolean(storeMeta?.__storeOfferMeta);
+  const signatureName=clean(storeMeta?.signatureName||"");
   const lines=getVisibleOfferLines(selectedRequest.offerLines||[]);
   const options=Array.isArray(selectedRequest.offerOptions)?selectedRequest.offerOptions:[];
   const groups=groupsOf(lines,options);
@@ -75,7 +79,7 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
   const total=Number(selectedRequest.offerTotal||0);
   const title=clean(selectedRequest.offerTitle||selectedRequest.title||"Tilbud");
   const id=clean(selectedRequest.id||"-"); const version=clean(selectedRequest.sentOfferVersionNumber||"-");
-  const company={name:clean(selectedRequest.companyName||""),logo:clean(selectedRequest.companyLogoUrl||"")};
+  const company={name:clean(selectedRequest.companyName||""),logo:clean(storeMeta?.brandLogoUrl||selectedRequest.companyLogoUrl||"")};
 
   const font=(size=9,style="normal",color=C.text)=>{ pdf.setFont("helvetica",style); pdf.setFontSize(size); pdf.setTextColor(...color); };
   const pageHeader=()=>{ pdf.setFillColor(...C.white); pdf.rect(0,0,P.w,14,"F"); pdf.setDrawColor(...C.line); pdf.line(P.l,13,P.r,13); font(8.2,"bold",C.ink); pdf.text(title,P.l,8.5); font(7.7,"normal",C.muted); pdf.text(`Tilbud ${id} - v${version}`,P.r,8.5,{align:"right"}); y=20; };
@@ -156,10 +160,11 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
   await hero(); sectionTitle("Om tilbudet"); textCard("Innledning",selectedRequest.offerIntro||"Ingen innledning registrert.");
   if(clean(reservations)){sectionTitle("Forutsetninger og forbehold");textCard("Forutsetninger og forbehold",reservations);}
   if(clean(included)||clean(excluded)||clean(supplied)){sectionTitle("Leveranseomfang");textCard("Dette er inkludert",included);textCard("Dette er ikke inkludert",excluded);textCard("Dette sørger kunden for",supplied);}
-  sectionTitle("Arbeider og priser","Alle priser er inkl. mva. Opsjoner inngår først når kunden velger dem.");
+  sectionTitle(isStoreOffer?"Varer og priser":"Arbeider og priser",isStoreOffer?"Alle priser er inkl. mva. Opsjoner inngår først når kunden velger dem.":"Alle priser er inkl. mva. Opsjoner inngår først når kunden velger dem.");
   groups.forEach((g,gi)=>{mainHeader(g,gi);g.lines.forEach((line,li)=>lineRow(line,gi,li));if(g.options.length){ensure(8+Math.min(measureOption(g.options[0]),34));font(8.5,"bold",C.ink);pdf.text("Opsjoner",P.l+5,y+5);y+=8;g.options.forEach(o=>optionCard(o,g.lines));}y+=4;});
-  ensure(28);pdf.setFillColor(...C.soft);pdf.setDrawColor(...C.teal);pdf.roundedRect(P.l,y,W,23,3,3,"FD");font(8.5,"bold",C.dark);pdf.text("TILBUDSSUM INKL. MVA.",P.l+6,y+8);font(17,"bold",C.ink);pdf.text(formatNok(total*1.25),P.r-6,y+11.5,{align:"right"});if(options.length){font(7.2,"normal",C.muted);pdf.text("Før valg av opsjoner",P.l+6,y+15.5);pdf.text("Opsjoner legges til eller trekkes fra når kunden velger dem.",P.l+6,y+19.5);}y+=29;
+  ensure(28);pdf.setFillColor(...C.soft);pdf.setDrawColor(...C.teal);pdf.roundedRect(P.l,y,W,23,3,3,"FD");font(8.5,"bold",C.dark);pdf.text(isStoreOffer?"TILBUDSSUM INKL. MVA.":"TILBUDSSUM INKL. MVA.",P.l+6,y+8);font(17,"bold",C.ink);pdf.text(formatNok(total*1.25),P.r-6,y+11.5,{align:"right"});if(options.length){font(7.2,"normal",C.muted);pdf.text("Før valg av opsjoner",P.l+6,y+15.5);pdf.text("Opsjoner legges til eller trekkes fra når kunden velger dem.",P.l+6,y+19.5);}y+=29;
   if(clean(offerTerms)||clean(payment)){sectionTitle("Vilkår og betaling");textCard("Vilkår",offerTerms);textCard("Betalingsbetingelser",payment);}
+  if(signatureName){ensure(24);pdf.setDrawColor(...C.teal);pdf.line(P.l,y,P.l+28,y);y+=6;font(8.6,"normal",C.text);pdf.text("Med vennlig hilsen",P.l,y);y+=5;font(10.2,"bold",C.ink);pdf.text(signatureName,P.l,y);y+=10;}
   ensure(15);pdf.setDrawColor(...C.line);pdf.line(P.l,y,P.r,y);y+=6;font(7.4,"normal",C.muted);pdf.text("Dokumentet er generert fra publisert tilbudsversjon i Expo ProffDok.",P.l,y);if(company.name)pdf.text(company.name,P.r,y,{align:"right"});
   const count=pdf.getNumberOfPages();for(let n=1;n<=count;n++){pdf.setPage(n);font(7,"normal",C.muted);pdf.text(`Tilbud ${id} - v${version}`,P.l,289);pdf.text(`side ${n} av ${count}`,P.r,289,{align:"right"});}
   return {blob:pdf.output("blob"),fileName:`Tilbud-${sanitizeStoragePart(id||"tilbud")}-${sanitizeStoragePart(`v${version||"1"}`)}.pdf`};
