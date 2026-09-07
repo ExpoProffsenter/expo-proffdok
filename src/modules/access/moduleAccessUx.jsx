@@ -18,7 +18,7 @@ import {
 } from "./moduleAccessClient.js";
 
 const PANEL_MOUNT_ID = "expo-module-access-manager";
-const ACCESS_HELP_DATASET = "moduleAccessHelp";
+const ADMIN_ACCESS_HELP_DATASET = "moduleAccessAdminHelp";
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -390,63 +390,62 @@ function createHelpList(items = []) {
   return list;
 }
 
-function ensureModuleAccessHelp(access) {
+function ensureAdminAccessHelp(access) {
   if (!access?.loaded || (!access.isSystemAdmin && !access.isFirmaAdmin)) return;
-  if (document.querySelector(`[data-${ACCESS_HELP_DATASET.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}='1']`)) return;
 
+  // Rydd bort eventuelt gammelt separat hjelpekort fra tidligere 38A-preview.
+  document.querySelectorAll('[data-module-access-help="1"]').forEach((node) => node.remove());
+
+  const targetName = access.isSystemAdmin ? "Systemadministrasjon" : "Firma";
   const helpLabels = Array.from(document.querySelectorAll("button b"));
-  const helpLabel = helpLabels.find((label) => helpTitleName(label.textContent) === "Hjelp");
-  const helpItem = helpLabel?.closest(".item");
-  if (!helpItem) return;
+  const targetLabel = helpLabels.find((label) => helpTitleName(label.textContent) === targetName);
+  const item = targetLabel?.closest(".item");
+  if (!item) return;
+  if (item.querySelector(`[data-${ADMIN_ACCESS_HELP_DATASET.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}="1"]`)) return;
 
-  const item = document.createElement("div");
-  item.className = "item";
-  item.dataset[ACCESS_HELP_DATASET] = "1";
+  const button = targetLabel.closest("button");
+  const content = Array.from(item.children).find(
+    (child) => child instanceof HTMLElement && child !== button && child.tagName === "DIV"
+  );
+  if (!(content instanceof HTMLElement)) return;
 
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "secondary";
-  Object.assign(button.style, {
-    width: "100%",
-    justifyContent: "space-between",
-    textAlign: "left",
-    background: "transparent",
-    color: "#0f172a",
-    border: "none",
-    padding: "0",
-    boxShadow: "none",
-    fontSize: "16px",
-  });
-  const title = document.createElement("b");
-  title.textContent = "🔐 Brukere og tilganger";
-  const action = document.createElement("span");
-  action.textContent = "Åpne";
-  button.append(title, action);
+  const block = document.createElement("div");
+  block.dataset[ADMIN_ACCESS_HELP_DATASET] = "1";
+  block.style.marginTop = "18px";
+  block.style.paddingTop = "12px";
+  block.style.borderTop = "1px solid #dbe5ea";
 
-  const content = document.createElement("div");
-  content.style.display = "none";
-  content.style.marginTop = "14px";
+  const heading = document.createElement("h4");
+  heading.textContent = "Modultilganger";
+  heading.style.marginBottom = "6px";
+  block.appendChild(heading);
+
   const intro = document.createElement("p");
+  intro.className = "note";
   intro.textContent = access.isSystemAdmin
-    ? "Systemadministrator bestemmer hvilke hovedmoduler brukerne får tilgang til."
-    : "Firmaadministrator kan delegere egne modultilganger til brukere i samme firma.";
-  content.appendChild(intro);
-  content.appendChild(createHelpList([
-    "Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Butikktilbud styres som egne hovedtilganger.",
-    "Butikktilbud krever samtidig tilgang til Befaring / Våtromstilbud.",
-    "Firmaadministrator kan aldri gi en bruker en modul firmaadministratoren selv ikke har.",
-    "Systemadministrator kan administrere modultilgang på tvers av firma. Firmaadministrator kan bare administrere eget firma.",
-    "Meny, arbeidsflater og Hjelp følger brukerens tildelte moduler. Datatilgangen kontrolleres i tillegg av server/RLS.",
-    "Ved godkjenning av en ny bruker skal systemadministrator velge minst én relevant modultilgang før Godkjenn bruker brukes.",
-  ]));
+    ? "Systemadministrator setter rammen for hvilke hovedmoduler hver bruker får bruke."
+    : "Firmaadministrator kan administrere modultilgang for egne ansatte innenfor sin egen tildelte ramme.";
+  block.appendChild(intro);
 
-  button.addEventListener("click", () => {
-    const open = content.style.display !== "none";
-    content.style.display = open ? "none" : "block";
-    action.textContent = open ? "Åpne" : "Lukk";
-  });
-  item.append(button, content);
-  helpItem.insertAdjacentElement("beforebegin", item);
+  const items = access.isSystemAdmin
+    ? [
+        "Ved ny bruker: kontroller firma og rolle, velg relevante moduler under Brukere og tilganger, lagre tilgangen og godkjenn deretter brukeren.",
+        "Systemadministrator har alltid Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Butikktilbud.",
+        "Firmaadministrator kan senere delegere videre til egne ansatte, men bare moduler firmaadministratoren selv har.",
+        "Butikktilbud krever samtidig Befaring / Våtromstilbud.",
+        "Rolle, firmatilhørighet og modultilgang er separate kontrollnivåer. Modultilgang gir aldri automatisk tilgang til andre firmaers data.",
+        "Meny og Hjelp følger tildelte moduler. Backend/RLS er den autoritative sikkerhetsgrensen.",
+      ]
+    : [
+        "Du kan bare administrere brukere i eget firma.",
+        "Du kan bare gi videre moduler du selv har fått av systemadministrator.",
+        "Din egen modultilgang kan ikke endres av deg selv; den styres av systemadministrator.",
+        "Butikktilbud krever samtidig Befaring / Våtromstilbud.",
+        "Meny og Hjelp for den ansatte følger modulene du tildeler, mens backend/RLS håndhever den faktiske datatilgangen.",
+      ];
+
+  block.appendChild(createHelpList(items));
+  content.appendChild(block);
 }
 
 function applyHelpAccess(access) {
@@ -484,7 +483,7 @@ function applyHelpAccess(access) {
     }
   });
 
-  ensureModuleAccessHelp(access);
+  ensureAdminAccessHelp(access);
 }
 
 let managerRoot = null;
