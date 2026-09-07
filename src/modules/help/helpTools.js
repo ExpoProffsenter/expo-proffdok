@@ -1,3 +1,4 @@
+// FASE 37D2 HJELP: Butikktilbud dokumenteres som egen varebasert Sales-flyt som avsluttes ved aksept uten prosjektaktivering.
 // FASE 33B.5 HJELP: kontrakt/kundelenke vises direkte på saken, signert kontrakt arkiveres som PDF og følger prosjektet.
 // FASE 33B.5: brukerflaten kaller samlet tilbud/kontrakt/endringer Avtalegrunnlag; intern `tilbud`-nøkkel beholdes.
 // FASE 33B.4 HJELP: bedriften signerer lagret Expo-kontrakt, kunden får sikker lenke og signerer samme låste grunnlag.
@@ -16,7 +17,7 @@ import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
 const SALES_HELP_TITLE = "🧾 Befaring/Tilbud";
 const NEWS_HELP_TITLE = "📢 Nytt i denne versjonen";
 const START_HELP_TITLE = "🚀 Startside / kom i gang";
-const HELP_UPDATED_LABEL = "Sist oppdatert: 31.08.2026";
+const HELP_UPDATED_LABEL = "Sist oppdatert: 07.09.2026";
 
 function textOf(node) {
   return String(node?.textContent || "").trim();
@@ -57,6 +58,16 @@ function createSales31CHelp() {
     "Bilder, PDF-vedlegg og produkt-/FDV-lenker kan knyttes til relevante tilbudslinjer og opsjoner.",
   ]);
 
+  appendHelpSection(block, "Butikktilbud / varesalg", [
+    "Butikktilbud er en egen varebasert tilbudsbygger for brukere som har tilgang til funksjonen. Den bruker samme sikre publisering, kundelenke, PDF, e-post og digitale aksept som øvrige tilbud.",
+    "Registrer varenavn, NOBB-nr. eller varenummer, antall, enhet, pris pr. enhet inkl. mva. og eventuell rabatt. NOBB-nr. kan brukes som direkte produktlenke.",
+    "Bilde og PDF kan knyttes direkte til varen. Montering registreres separat og kan være valgfri del av tilbudet.",
+    "Ved et alternativ registreres faktisk pris på alternativ vare inkl. mva. Dersom monteringsprisen også endres, registreres ny monteringspris. Expo ProffDok beregner prisendringen mot grunnpakken.",
+    "Velg Bademiljø Expo eller Ringside Rørleggerbedrift som merkevare før publisering. Valgt logo og saksbehandler følger den publiserte tilbudsversjonen.",
+    "Lagre tekst og vilkår som mal når formuleringer skal gjenbrukes. Kundedata, varer, NOBB-numre, priser, bilder og vedlegg lagres ikke i tekstmalen.",
+    "Når kunden aksepterer et butikktilbud, avsluttes saken i Sales. Butikktilbud oppretter ikke kontrakt eller ProffDok-prosjekt.",
+  ]);
+
   appendHelpSection(block, "Opsjoner og hovedpost uten grunnpris", [
     "Tillegg / oppgradering brukes når grunnleveransen beholdes og kunden kan velge noe i tillegg.",
     "Alternativ / erstatter brukes når en konkret underpost skal erstattes. Det må finnes en underpost å erstatte.",
@@ -83,7 +94,8 @@ function createSales31CHelp() {
   ]);
 
   appendHelpSection(block, "Kontrakt etter aksept", [
-    "Kontrakt er valgfritt for vanlige prosjekter. Etter akseptert tilbud kan du opprette Expo-kontrakt, laste opp bedriftens egen kontrakt eller fortsette til prosjekt uten kontrakt.",
+    "Kontrakt er valgfritt for vanlige prosjekttilbud. Butikktilbud er unntaket og avsluttes i Sales etter aksept uten kontrakt eller prosjektaktivering.",
+    "Etter akseptert ordinært tilbud kan du opprette Expo-kontrakt, laste opp bedriftens egen kontrakt eller fortsette til prosjekt uten kontrakt.",
     "Prosjekt kan også opprettes direkte uten tilbud. Et prosjekt uten tilbud og uten kontrakt er en gyldig normaltilstand; Avtalegrunnlag blir da bare stedet der eventuelle senere avtaledokumenter og endringer kan samles.",
     "Expo-kontrakten henter firma, kunde, prosjektadresse, tilbudsversjon og avtalesum automatisk. Du fyller hovedsakelig inn avtalt oppstart, forventet varighet i uker og noen få avtalevalg.",
     "Beregnet forventet ferdigstillelse beregnes automatisk fra avtalt oppstart og forventet varighet. Dokumenterte forhold som gir rett til fristforlengelse kan forskyve fristen.",
