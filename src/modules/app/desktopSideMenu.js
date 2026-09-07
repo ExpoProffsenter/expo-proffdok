@@ -6,6 +6,7 @@ const HOME_ID = 'expo-desktop-home-button';
 const DRAWER_ID = 'expo-desktop-menu-drawer';
 const BACKDROP_ID = 'expo-desktop-menu-backdrop';
 const NATIVE_HOME_MARKER = 'data-expo-native-home-source';
+const SALES_NAV_PREFIX = 'expo-proffdok-sales-preview-requests-v1';
 
 const cleanLabel = (value = '') => String(value || '').replace(/\s+/g, ' ').trim();
 
@@ -77,7 +78,27 @@ function cleanStartsideUrl() {
   return next.toString();
 }
 
+function clearRememberedSalesNavigation() {
+  try {
+    const storage = window.localStorage;
+    const keys = [];
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (key?.startsWith(SALES_NAV_PREFIX) && key.endsWith(':navigation')) {
+        keys.push(key);
+      }
+    }
+    keys.forEach((key) => storage.removeItem(key));
+  } catch {
+    // Kun intern navigasjonsstate. Tilbud, kladder og serverdata røres ikke.
+  }
+}
+
 function goToStartside() {
+  // Startside skal også bety at neste åpning av Befaring/Tilbud starter i
+  // saksoversikten, ikke i siste åpne Butikk-/Våtromstilbud.
+  clearRememberedSalesNavigation();
+
   // Reuse the application's native guarded actions whenever a project workspace
   // or a new-project draft is active. Those actions own unsaved-change handling.
   const nativeLeaveWorkspace = findNativeHeaderButton('← Til startside');
