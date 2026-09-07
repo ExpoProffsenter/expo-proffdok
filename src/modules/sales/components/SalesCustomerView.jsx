@@ -1,6 +1,7 @@
-// Expo ProffDok – FASE 37D1 / FASE 34B
+// Expo ProffDok – FASE 37D2 / FASE 37D1 / FASE 34B
 // Butikktilbud bruker versjonslåst valgt logo og viser saksbehandlers avslutning
 // før digital aksept. Ordinære tilbud beholder eksisterende presentasjon.
+// Publisert kundevisning leser butikkmetadata fra den låste tilbudsversjonen.
 // FASE 34B: Ferdig akseptert kundelenke viser låst aksept med valgte opsjoner og totalsum.
 // FASE 31C: Hovedposter uten grunnpris vises som «Kun valgfrie opsjoner» i kundetilbudet.
 // Eksisterende pris-, valg- og akseptlogikk beholdes uendret.
@@ -346,13 +347,20 @@ export default function SalesCustomerView(props) {
     quantityRequest
   );
   const activeVersion = getActiveOfferVersion(presentationRequest || {});
-  const storeMeta = getStoreOfferMeta(
-    activeVersion?.lines || presentationRequest?.offerLines || []
-  );
+  const storeMeta = presentationRequest?.storeOfferMeta?.__storeOfferMeta
+    ? presentationRequest.storeOfferMeta
+    : getStoreOfferMeta(
+        activeVersion?.lines || presentationRequest?.offerLines || []
+      );
   const isStoreOffer = Boolean(storeMeta?.__storeOfferMeta);
   const signatureName = String(storeMeta?.signatureName || "").trim();
   const brandedRequest = presentationRequest && storeMeta?.brandLogoUrl
-    ? { ...presentationRequest, companyLogoUrl: storeMeta.brandLogoUrl }
+    ? {
+        ...presentationRequest,
+        companyLogoUrl: storeMeta.brandLogoUrl,
+        companyName: storeMeta.brandLabel || presentationRequest.companyName || "",
+        storeOfferMeta: storeMeta,
+      }
     : presentationRequest;
   const selectedOptionIds = props.acceptanceForm?.selectedOptionIds || [];
 
@@ -381,6 +389,7 @@ export default function SalesCustomerView(props) {
     props.selectedRequest?.sentOfferVersionId,
     props.selectedRequest?.offerLines,
     props.selectedRequest?.offerOptions,
+    props.selectedRequest?.storeOfferMeta,
     signatureName,
     isStoreOffer,
     selectedOptionIds.join("|"),
