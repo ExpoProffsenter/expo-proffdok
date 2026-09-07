@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// Expo ProffDok – FASE 37A2 / FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// FASE 37A2 viser automatisk påminnelse som eget revisjonsspor og lar
+// 7-dagersklokken regnes fra siste kontakt uten å endre tilbudsdata.
 // FASE 37D1 skiller Butikktilbud og Våtromstilbud i samme Sales-oversikt uten
 // å lage parallell lagring. Eksisterende arbeidsstatus, søk og arkiv beholdes.
 // FASE 37A1 legger søk, arbeidsfaner og trygg arkivering oppå eksisterende Sales-data.
@@ -56,6 +58,16 @@ const WORK_TABS = [
   { id: "all", label: "Alle" },
 ];
 
+function formatShortDate(value) {
+  const date = new Date(String(value || ""));
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("nb-NO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 function getOfferFollowUpInfo(request) {
   if (
     request?.status !== "Tilbud" ||
@@ -75,19 +87,30 @@ function getOfferFollowUpInfo(request) {
     0,
     Math.floor((Date.now() - sentAt.getTime()) / (24 * 60 * 60 * 1000))
   );
-  const sentDate = sentAt.toLocaleDateString("nb-NO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const sentDate = formatShortDate(sentAt);
   const ageText =
     ageInDays === 0
       ? "i dag"
       : `${ageInDays} ${ageInDays === 1 ? "dag" : "dager"} siden`;
 
+  const currentVersionNumber = Number(
+    request?.offerEmailVersionNumber || request?.sentOfferVersionNumber || 0
+  ) || 0;
+  const autoVersionNumber = Number(request?.offerAutoFollowUpVersionNumber || 0) || 0;
+  const autoSentDate = formatShortDate(request?.offerAutoFollowUpSentAt);
+  const automaticFollowUpSent = Boolean(
+    autoSentDate &&
+      currentVersionNumber > 0 &&
+      autoVersionNumber === currentVersionNumber
+  );
+
   return {
-    text: `Sendt ${sentDate} · ${ageText}`,
+    text: `Siste utsending ${sentDate} · ${ageText}`,
     shouldFollowUp: ageInDays >= OFFER_FOLLOW_UP_DAYS,
+    automaticFollowUpSent,
+    automaticText: automaticFollowUpSent
+      ? `Automatisk påminnelse sendt ${autoSentDate}`
+      : "",
   };
 }
 
@@ -659,6 +682,26 @@ export default function SalesListView({
                             <span className="sales-subtitle" style={{ margin: 0 }}>
                               {offerFollowUp.text}
                             </span>
+
+                            {offerFollowUp.automaticFollowUpSent ? (
+                              <span
+                                aria-label="Automatisk tilbudspåminnelse sendt"
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  minHeight: 24,
+                                  padding: "3px 8px",
+                                  borderRadius: 999,
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  background: "#ecfdf5",
+                                  color: "#166534",
+                                  border: "1px solid #bbf7d0",
+                                }}
+                              >
+                                {offerFollowUp.automaticText}
+                              </span>
+                            ) : null}
 
                             {offerFollowUp.shouldFollowUp && !archived ? (
                               <span
