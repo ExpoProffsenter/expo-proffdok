@@ -1,12 +1,6 @@
 // Expo ProffDok – FASE 37D2 / FASE 37D1 / FASE 34B
-// Butikktilbud bruker versjonslåst valgt logo og viser saksbehandlers avslutning
-// før digital aksept. Ordinære tilbud beholder eksisterende presentasjon.
-// Publisert kundevisning leser butikkmetadata fra den låste tilbudsversjonen.
-// FASE 34B: Ferdig akseptert kundelenke viser låst aksept med valgte opsjoner og totalsum.
-// FASE 31C: Hovedposter uten grunnpris vises som «Kun valgfrie opsjoner» i kundetilbudet.
-// Eksisterende pris-, valg- og akseptlogikk beholdes uendret.
-// FASE 31A2B: Kundetilbudet beholder eksisterende, testet Core-visning, men presentasjonen
-// følger nå samme dokumentrekkefølge som PDF og tydeliggjør at opsjoner er valgfrie.
+// Butikktilbud bruker versjonslåst merkevare og saksbehandler og presenteres
+// som et vare-/butikktilbud. Ordinære tilbud beholder eksisterende presentasjon.
 
 import { useEffect } from "react";
 import SalesCustomerViewCore from "./SalesCustomerViewCore.jsx";
@@ -92,6 +86,13 @@ const ORDER_STYLES = `
   color: #0b7f87;
   font-weight: 900;
 }
+.sales-customer-option-card[data-store-alternative="true"] [data-store-price-comparison="1"] {
+  display: block;
+  margin-top: 5px;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
 `;
 
 function classifySection(element) {
@@ -164,21 +165,85 @@ function applyCustomerSectionOrder(signatureName = "") {
     });
 }
 
-function applyStoreOfferCopy(isStoreOffer, signatureName = "") {
+function absoluteAssetUrl(value = "") {
+  const clean = String(value || "").trim();
+  if (!clean || typeof window === "undefined") return clean;
+  try {
+    return new URL(clean, window.location.origin).href;
+  } catch {
+    return clean;
+  }
+}
+
+function applyStoreOfferCopy({
+  isStoreOffer,
+  signatureName = "",
+  brandLabel = "",
+  brandLogoUrl = "",
+  legalCompanyName = "",
+} = {}) {
   if (!isStoreOffer || typeof document === "undefined") return;
+
+  const lead = document.querySelector(".sales-customer-lead");
+  if (lead) {
+    lead.textContent =
+      "Her finner du varene, prisene, eventuell montering og vilkårene samlet. Du kan velge eventuelle alternativer eller tillegg før du aksepterer tilbudet nederst på siden.";
+  }
+
+  const headerBrand = document.querySelector(
+    ".sales-customer-header .sales-brand-copy strong"
+  );
+  if (headerBrand && brandLabel) headerBrand.textContent = brandLabel;
 
   const pricesSection = Array.from(
     document.querySelectorAll(".sales-customer-offer-stack > *")
   ).find((section) => classifySection(section) === "prices");
+
   const heading = pricesSection?.querySelector(".sales-customer-section-heading h2");
   if (heading) heading.textContent = "Varer og priser";
+
+  const sectionNote = pricesSection?.querySelector(".sales-customer-section-note");
+  if (sectionNote) {
+    sectionNote.textContent =
+      "Alle priser er oppgitt inkl. mva. Alternativer erstatter valgt vare og eventuell tilhørende montering. Valgene oppdaterer totalsummen automatisk.";
+  }
 
   const totalLabel = pricesSection?.querySelector(
     ".sales-customer-total-card .sales-customer-total-row:first-child > span"
   );
   if (totalLabel) totalLabel.textContent = "Sum varer og montering inkl. mva.";
 
+  pricesSection?.querySelectorAll(".sales-customer-main-post").forEach((section) => {
+    const groupTitle = String(section.querySelector("h3")?.textContent || "").trim().toLowerCase();
+    const sumLabel = section.querySelector(".sales-customer-main-post-sum > span");
+    if (sumLabel) {
+      sumLabel.textContent = groupTitle.includes("montering")
+        ? "Sum montering"
+        : groupTitle.includes("varer")
+          ? "Sum varer"
+          : "Sum";
+    }
+
+    const optionsHeading = section.querySelector(
+      ".sales-customer-main-post-options-heading"
+    );
+    const optionsTitle = optionsHeading?.querySelector("strong");
+    const optionsHelp = optionsHeading?.querySelector("span");
+    if (optionsTitle) optionsTitle.textContent = "Alternativer og tillegg";
+    if (optionsHelp) {
+      optionsHelp.textContent = `Velg eventuelle alternativer eller tillegg til ${
+        String(section.querySelector(".sales-customer-main-post-heading h3")?.textContent || "leveransen").trim()
+      }.`;
+    }
+  });
+
   const companyCard = document.querySelector(".sales-customer-company-card");
+  const logo = companyCard?.querySelector(".sales-customer-company-logo");
+  if (logo && brandLogoUrl) {
+    logo.src = absoluteAssetUrl(brandLogoUrl);
+    logo.alt = brandLabel || "Tilbudslogo";
+  }
+
   const companyLabel = companyCard?.querySelector(".sales-customer-company-label");
   if (companyLabel) companyLabel.textContent = "Saksbehandler";
 
@@ -194,6 +259,22 @@ function applyStoreOfferCopy(isStoreOffer, signatureName = "") {
       if (!existingName) companyLabel.insertAdjacentElement("afterend", handlerName);
     }
     handlerName.textContent = signatureName;
+  }
+
+  const details = companyCard?.querySelector(".sales-customer-company-details");
+  if (
+    details &&
+    legalCompanyName &&
+    brandLabel &&
+    legalCompanyName.trim().toLowerCase() !== brandLabel.trim().toLowerCase()
+  ) {
+    let legalLine = details.querySelector("[data-store-legal-company='1']");
+    if (!legalLine) {
+      legalLine = document.createElement("span");
+      legalLine.dataset.storeLegalCompany = "1";
+      details.insertAdjacentElement("afterbegin", legalLine);
+    }
+    legalLine.textContent = `Juridisk tilbyder: ${legalCompanyName}`;
   }
 }
 
@@ -240,6 +321,11 @@ function applyStoreAlternativePresentation(request, selectedOptionIds = []) {
     const typeNode = card.querySelector(".sales-customer-option-type");
     if (typeNode) typeNode.textContent = "Alternativ";
 
+    const stateNode = card.querySelector(".sales-customer-option-state");
+    if (stateNode && stateNode.textContent?.trim() === "Velg opsjon") {
+      stateNode.textContent = "Velg alternativ";
+    }
+
     const replacementNode = card.querySelector(".sales-customer-option-replacement");
     if (replacementNode) {
       const replaced = String(option?.replacementLineDescription || "").trim();
@@ -261,6 +347,16 @@ function applyStoreAlternativePresentation(request, selectedOptionIds = []) {
       priceNode.textContent = hasInstallationOverride
         ? `Alternativpris vare + montering: ${formatNok(alternativePrice)} inkl. mva.`
         : `Alternativpris: ${formatNok(alternativePrice)} inkl. mva.`;
+
+      const delta = Number(option?.storeAlternativeDeltaInclVat);
+      if (Number.isFinite(delta) && Math.abs(delta) >= 0.01) {
+        const compare = document.createElement("span");
+        compare.dataset.storePriceComparison = "1";
+        compare.textContent = `${formatNok(Math.abs(delta))} ${
+          delta < 0 ? "lavere" : "høyere"
+        } enn grunnpakken`;
+        priceNode.appendChild(compare);
+      }
     }
   });
 
@@ -277,7 +373,9 @@ function applyStoreAlternativePresentation(request, selectedOptionIds = []) {
     const adjustmentLabel = pricesSection?.querySelector(
       ".sales-customer-total-row.sales-customer-total-muted > span"
     );
-    if (adjustmentLabel) adjustmentLabel.textContent = "Valgt alternativ – justering av totalsum";
+    if (adjustmentLabel) {
+      adjustmentLabel.textContent = "Valgt alternativ – justering av totalsum";
+    }
   }
 }
 
@@ -354,11 +452,14 @@ export default function SalesCustomerView(props) {
       );
   const isStoreOffer = Boolean(storeMeta?.__storeOfferMeta);
   const signatureName = String(storeMeta?.signatureName || "").trim();
-  const brandedRequest = presentationRequest && storeMeta?.brandLogoUrl
+  const brandLabel = String(storeMeta?.brandLabel || "").trim();
+  const brandLogoUrl = String(storeMeta?.brandLogoUrl || "").trim();
+  const legalCompanyName = String(presentationRequest?.companyName || "").trim();
+  const brandedRequest = presentationRequest && brandLogoUrl
     ? {
         ...presentationRequest,
-        companyLogoUrl: storeMeta.brandLogoUrl,
-        companyName: storeMeta.brandLabel || presentationRequest.companyName || "",
+        companyLogoUrl: brandLogoUrl,
+        companyName: brandLabel || presentationRequest.companyName || "",
         storeOfferMeta: storeMeta,
       }
     : presentationRequest;
@@ -371,14 +472,20 @@ export default function SalesCustomerView(props) {
         brandedRequest,
         selectedOptionIds
       );
-      applyStoreOfferCopy(isStoreOffer, signatureName);
+      applyStoreOfferCopy({
+        isStoreOffer,
+        signatureName,
+        brandLabel,
+        brandLogoUrl,
+        legalCompanyName,
+      });
       if (isStoreOffer) {
         applyStoreAlternativePresentation(brandedRequest, selectedOptionIds);
       }
     };
 
     const frame = window.requestAnimationFrame(applyPresentation);
-    const timer = window.setTimeout(applyPresentation, 100);
+    const timer = window.setTimeout(applyPresentation, 120);
     return () => {
       window.cancelAnimationFrame(frame);
       window.clearTimeout(timer);
@@ -391,6 +498,9 @@ export default function SalesCustomerView(props) {
     props.selectedRequest?.offerOptions,
     props.selectedRequest?.storeOfferMeta,
     signatureName,
+    brandLabel,
+    brandLogoUrl,
+    legalCompanyName,
     isStoreOffer,
     selectedOptionIds.join("|"),
   ]);
