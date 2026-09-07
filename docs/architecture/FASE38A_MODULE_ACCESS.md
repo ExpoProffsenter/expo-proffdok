@@ -204,9 +204,14 @@ store_offers  -> Butikktilbud-hjelp
 projects      -> prosjekt-/dokumentasjonshjelp
 ```
 
-System-/firmaadministrator får i tillegg temaet **Brukere og tilganger**.
-
 Hjelp skal ikke lære opp en bruker i en modul vedkommende ikke har tilgang til.
+
+Administratorveiledning skal ikke ligge som en egen parallell Hjelp-modul:
+
+- systemadministrators veiledning om bruker- og modultilganger ligger under **⚙️ Systemadministrasjon**
+- firmaadministrators veiledning om delegering av modultilganger ligger under **👥 Firma**
+
+Dermed følger Hjelp samme informasjonsarkitektur som administrasjonen ellers, og vi unngår et ekstra **Brukere og tilganger**-hjelpekort.
 
 På desktop skal Hjelp være tilgjengelig som hurtigknapp i toppnavigasjonen i tillegg til hovedmenyen. Hjelp er en global appfunksjon, ikke en prosjektmodul.
 
