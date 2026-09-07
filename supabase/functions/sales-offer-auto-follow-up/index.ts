@@ -54,6 +54,12 @@ function formatDate(value: unknown) {
   }).format(date);
 }
 
+function sameInstant(left: unknown, right: unknown) {
+  const leftMs = Date.parse(String(left || ""));
+  const rightMs = Date.parse(String(right || ""));
+  return Number.isFinite(leftMs) && Number.isFinite(rightMs) && leftMs === rightMs;
+}
+
 function emailHtml({
   storeOffer,
   companyName,
@@ -118,12 +124,13 @@ async function reserveNotification(serviceClient: any, candidate: any) {
         updated_at: now,
       })
       .eq("id", existingId)
-      .neq("status", "sent")
+      .eq("status", existingStatus)
+      .eq("attempt_count", existingAttempts)
       .select("id,status,attempt_count")
       .maybeSingle();
 
     if (error) throw new HttpError(500, "Kunne ikke reservere oppfølgingsforsøk.");
-    if (!data) return { shouldSend: false, id: existingId, status: "already_sent" };
+    if (!data) return { shouldSend: false, id: existingId, status: "reserved_elsewhere" };
     return { shouldSend: true, id: data.id, status: data.status };
   }
 
@@ -160,6 +167,60 @@ async function reserveNotification(serviceClient: any, candidate: any) {
   }
 
   throw new HttpError(500, "Kunne ikke reservere automatisk oppfølging.");
+}
+
+async function releaseReservation(serviceClient: any, reservationId: string) {
+  await serviceClient
+    .from("sales_offer_follow_up_notifications")
+    .delete()
+    .eq("id", reservationId)
+    .eq("status", "pending");
+}
+
+async function candidateStillEligible(serviceClient: any, candidate: any, recipient: string) {
+  const { data: offer, error: offerError } = await serviceClient
+    .from("sales_offers")
+    .select("status,accepted_at,active_version_id,customer_email,public_token")
+    .eq("id", candidate.offer_id)
+    .eq("company_id", candidate.company_id)
+    .eq("request_ref", candidate.request_ref)
+    .maybeSingle();
+
+  if (offerError || !offer) return { eligible: false, reason: "offer_missing" };
+  if (offer.status !== "sent" || offer.accepted_at) {
+    return { eligible: false, reason: "offer_no_longer_sent" };
+  }
+  if (String(offer.active_version_id || "") !== String(candidate.offer_version_id || "")) {
+    return { eligible: false, reason: "version_changed" };
+  }
+  if (!offer.public_token || normalizeEmail(offer.customer_email) !== recipient) {
+    return { eligible: false, reason: "customer_changed" };
+  }
+
+  const { data: request, error: requestError } = await serviceClient
+    .from("sales_requests")
+    .select("archived_at,payload")
+    .eq("company_id", candidate.company_id)
+    .eq("request_ref", candidate.request_ref)
+    .maybeSingle();
+
+  if (requestError || !request || request.archived_at) {
+    return { eligible: false, reason: request?.archived_at ? "archived" : "request_missing" };
+  }
+
+  const payload = request.payload || {};
+  const currentVersion = Number(payload.offerEmailVersionNumber || 0) || 0;
+  if (currentVersion !== Number(candidate.version_number || 0)) {
+    return { eligible: false, reason: "emailed_version_changed" };
+  }
+  if (normalizeEmail(payload.offerEmailSentTo) !== recipient || normalizeEmail(payload.email) !== recipient) {
+    return { eligible: false, reason: "recipient_changed" };
+  }
+  if (!sameInstant(payload.offerEmailSentAt, candidate.source_email_sent_at)) {
+    return { eligible: false, reason: "offer_resent" };
+  }
+
+  return { eligible: true, reason: "eligible" };
 }
 
 async function markResult(serviceClient: any, reservationId: string, sent: boolean, errorMessage = "") {
@@ -255,6 +316,18 @@ serve(async (req) => {
       const reservation = await reserveNotification(serviceClient, candidate);
       if (!reservation.shouldSend || !reservation.id) {
         results.push({ requestRef: candidate?.request_ref, sent: false, status: reservation.status });
+        continue;
+      }
+
+      const revalidation = await candidateStillEligible(serviceClient, candidate, recipient);
+      if (!revalidation.eligible) {
+        await releaseReservation(serviceClient, reservation.id);
+        results.push({
+          requestRef: candidate?.request_ref,
+          versionNumber: candidate?.version_number,
+          sent: false,
+          status: `skipped_${revalidation.reason}`,
+        });
         continue;
       }
 
