@@ -1,4 +1,7 @@
-// Expo ProffDok – FASE 34B / FASE 32 / FASE 32A / FASE 30C2
+// Expo ProffDok – FASE 37A1 / FASE 34B / FASE 32 / FASE 32A / FASE 30C2
+// FASE 37A1 speiler eksisterende sales_requests.archived_at inn i runtime-payload
+// slik at Sales-oversikten kan filtrere/arkivere uten ny SQL/RLS/migrasjon.
+// Arkivering oppdaterer kun archived_at på eksisterende salgssak.
 // FASE 34B sender serverstyrte, idempotente akseptvarsler til kunden og
 // brukeren som publiserte den eksakte tilbudsversjonen kunden aksepterte.
 // Varsling forsøkes kun som direkte følge av en ny digital aksept; åpning av
@@ -60,6 +63,16 @@ function stripRuntimeTraceability(payload = {}) {
   const clean = { ...payload };
   TRACEABILITY_PAYLOAD_KEYS.forEach((key) => delete clean[key]);
   return clean;
+}
+
+function hydrateArchiveState(rows = []) {
+  return (Array.isArray(rows) ? rows : []).map((row) => ({
+    ...row,
+    payload: {
+      ...(row?.payload || {}),
+      archivedAt: row?.archived_at || "",
+    },
+  }));
 }
 
 function announceCreatorTraceability(rows = []) {
@@ -198,13 +211,37 @@ export async function acceptSalesOffer(client, args = {}) {
   return result;
 }
 
+export async function setSalesRequestArchivedAt(
+  client,
+  { companyId = "", requestRef = "", archivedAt = null } = {}
+) {
+  const safeCompanyId = String(companyId || "").trim();
+  const safeRequestRef = String(requestRef || "").trim();
+
+  if (!client || !safeCompanyId || !safeRequestRef) {
+    return {
+      data: null,
+      error: new Error("Salgssaken kunne ikke identifiseres for arkivering."),
+    };
+  }
+
+  return client
+    .from("sales_requests")
+    .update({ archived_at: archivedAt || null })
+    .eq("company_id", safeCompanyId)
+    .eq("request_ref", safeRequestRef)
+    .select("request_ref,archived_at")
+    .maybeSingle();
+}
+
 export async function fetchSalesRequests(client, companyId) {
   const result = await core.fetchSalesRequests(client, companyId);
   if (!result?.error) {
+    const archiveHydratedRows = hydrateArchiveState(result?.data || []);
     const hydratedRows = await hydrateCreatorTraceability(
       client,
       companyId,
-      result?.data || []
+      archiveHydratedRows
     );
     result.data = hydratedRows;
     announceCreatorTraceability(hydratedRows);

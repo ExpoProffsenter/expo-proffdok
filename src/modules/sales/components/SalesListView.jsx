@@ -1,4 +1,7 @@
-// Expo ProffDok – FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// Expo ProffDok – FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// FASE 37A1 legger søk, arbeidsfaner og trygg arkivering oppå eksisterende Sales-data.
+// Ingen tilbudsversjoner, aksepter eller prosjektaktivering omskrives. Arkiv bruker
+// eksisterende sales_requests.archived_at og kan alltid gjenopprettes.
 // FASE 30C2 viser ekte lastestatus mens salgssaker hentes, slik at 0 aldri presenteres
 // som et ferdig resultat mens Supabase fortsatt arbeider eller har feilet.
 // Viser når kundetilbud faktisk ble sendt på e-post og markerer tilbud som bør
@@ -7,12 +10,25 @@
 // Expo ProffDok – FASE 23H
 // Presentasjonskomponent for saksoversikten i Befaring / Tilbud / Aksept.
 
-import { useEffect, useState } from "react";
-import { ClipboardList, Home, Hourglass, Plus, Ruler, Send } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Archive,
+  ClipboardList,
+  Home,
+  Hourglass,
+  Plus,
+  RotateCcw,
+  Ruler,
+  Search,
+  Send,
+} from "lucide-react";
 import SalesSupportNotice from "./SalesSupportNotice.jsx";
 import {
+  createDefaultSalesSupabaseClient,
   getSalesRequestsLoadState,
   getSalesSupportCompanyId,
+  resolveSalesCompanyScope,
+  setSalesRequestArchivedAt,
   subscribeSalesRequestsLoadState,
 } from "../services/salesSupabase.js";
 
@@ -24,6 +40,13 @@ const iconMap = {
 };
 
 const OFFER_FOLLOW_UP_DAYS = 7;
+const WORK_TABS = [
+  { id: "work", label: "Under arbeid" },
+  { id: "follow-up", label: "Må følges opp" },
+  { id: "accepted", label: "Akseptert" },
+  { id: "archive", label: "Arkiv" },
+  { id: "all", label: "Alle" },
+];
 
 function getOfferFollowUpInfo(request) {
   if (
@@ -60,16 +83,72 @@ function getOfferFollowUpInfo(request) {
   };
 }
 
+function normalizeSearchText(value) {
+  return String(value ?? "")
+    .toLocaleLowerCase("nb-NO")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function requestMatchesSearch(request, query) {
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) return true;
+
+  const haystack = [
+    request?.customer,
+    request?.title,
+    request?.offerTitle,
+    request?.address,
+    request?.postnr,
+    request?.city,
+    request?.phone,
+    request?.email,
+    request?.id,
+    request?.responsible,
+    request?.surveyResponsible,
+    request?.projectResponsible,
+    request?.source,
+  ]
+    .map(normalizeSearchText)
+    .filter(Boolean)
+    .join(" ");
+
+  return haystack.includes(normalizedQuery);
+}
+
+function isArchivedRequest(request) {
+  return Boolean(String(request?.archivedAt || "").trim());
+}
+
+function requestBucket(request) {
+  if (isArchivedRequest(request)) return "archive";
+  if (request?.status === "Akseptert") return "accepted";
+
+  const followUp = getOfferFollowUpInfo(request);
+  if (followUp?.shouldFollowUp) return "follow-up";
+
+  return "work";
+}
+
+function filterRequestForTab(request, activeTab) {
+  if (activeTab === "all") return true;
+  return requestBucket(request) === activeTab;
+}
+
 export default function SalesListView({
   activeRequests = [],
   activatedRequests = [],
-  summary = [],
   onCreateRequest,
   onOpenRequest,
 }) {
   const supportMode = Boolean(getSalesSupportCompanyId());
   const [loadState, setLoadState] = useState(() => getSalesRequestsLoadState());
   const [longWait, setLongWait] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("work");
+  const [archiveBusyId, setArchiveBusyId] = useState("");
+  const salesClient = useMemo(() => createDefaultSalesSupabaseClient(), []);
 
   useEffect(() => subscribeSalesRequestsLoadState(setLoadState), []);
 
@@ -87,6 +166,108 @@ export default function SalesListView({
   const requestsLoading =
     !hasAnyRequest && ["idle", "loading"].includes(loadState.status);
   const requestsLoadFailed = !hasAnyRequest && loadState.status === "error";
+
+  const requestCounts = useMemo(() => {
+    const counts = {
+      work: 0,
+      "follow-up": 0,
+      accepted: 0,
+      archive: 0,
+      all: activeRequests.length,
+    };
+
+    activeRequests.forEach((request) => {
+      const bucket = requestBucket(request);
+      counts[bucket] = (counts[bucket] || 0) + 1;
+    });
+
+    return counts;
+  }, [activeRequests]);
+
+  const overviewSummary = useMemo(
+    () => [
+      { label: "Under arbeid", value: requestCounts.work },
+      { label: "Må følges opp", value: requestCounts["follow-up"] },
+      { label: "Akseptert", value: requestCounts.accepted },
+      { label: "Arkiv", value: requestCounts.archive },
+    ],
+    [requestCounts]
+  );
+
+  const filteredRequests = useMemo(
+    () =>
+      activeRequests.filter(
+        (request) =>
+          filterRequestForTab(request, activeTab) &&
+          requestMatchesSearch(request, searchQuery)
+      ),
+    [activeRequests, activeTab, searchQuery]
+  );
+
+  const filteredActivatedRequests = useMemo(
+    () =>
+      activatedRequests.filter((request) => requestMatchesSearch(request, searchQuery)),
+    [activatedRequests, searchQuery]
+  );
+
+  async function toggleArchive(request) {
+    if (supportMode || archiveBusyId || !request?.id) return;
+    if (!salesClient) {
+      alert("Kunne ikke koble til serveren for å oppdatere arkivet.");
+      return;
+    }
+
+    setArchiveBusyId(request.id);
+    const restoring = isArchivedRequest(request);
+    const archivedAt = restoring ? null : new Date().toISOString();
+
+    try {
+      const { data: companyId, error: companyError } =
+        await resolveSalesCompanyScope(salesClient);
+
+      if (companyError || !companyId) {
+        throw new Error(
+          companyError?.message || "Firmatilknytningen kunne ikke bekreftes."
+        );
+      }
+
+      const { error } = await setSalesRequestArchivedAt(salesClient, {
+        companyId,
+        requestRef: request.id,
+        archivedAt,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Rehydrer hele Sales-modulen fra server slik at archivedAt blir del av
+      // vanlig request-state før saken eventuelt åpnes/redigeres videre.
+      window.dispatchEvent(new Event("expo-proffdok-sales-rehydrate"));
+    } catch (error) {
+      alert(
+        error?.message ||
+          (restoring
+            ? "Saken kunne ikke gjenopprettes fra arkivet."
+            : "Saken kunne ikke arkiveres.")
+      );
+      setArchiveBusyId("");
+    }
+  }
+
+  const emptyListText = searchQuery.trim()
+    ? "Ingen saker matcher søket i denne fanen."
+    : activeTab === "follow-up"
+      ? "Ingen tilbud må følges opp akkurat nå."
+      : activeTab === "accepted"
+        ? "Ingen aksepterte tilbud venter på videre behandling."
+        : activeTab === "archive"
+          ? "Arkivet er tomt."
+          : activeTab === "all"
+            ? "Ingen salgssaker er registrert."
+            : supportMode
+              ? "Ingen saker under arbeid i dette firmaet."
+              : "Ingen saker under arbeid. Opprett en ny forespørsel for å starte en befaring eller et tilbud.";
 
   return (
     <div className="sales-app">
@@ -172,7 +353,7 @@ export default function SalesListView({
           ) : null}
 
           <section className="sales-summary-grid" aria-label="Oversikt">
-            {summary.map((item) => (
+            {overviewSummary.map((item) => (
               <article className="sales-summary-card" key={item.label}>
                 <span className="sales-summary-label">{item.label}</span>
                 <strong className="sales-summary-value">
@@ -182,10 +363,121 @@ export default function SalesListView({
             ))}
           </section>
 
+          <section
+            className="sales-panel"
+            aria-label="Søk og filtrering"
+            style={{ marginBottom: 18 }}
+          >
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <label
+                style={{
+                  position: "relative",
+                  display: "block",
+                  flex: "1 1 340px",
+                  minWidth: 0,
+                }}
+              >
+                <span className="sr-only">Søk i forespørsler, befaringer og tilbud</span>
+                <Search
+                  size={18}
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    left: 14,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    pointerEvents: "none",
+                    opacity: 0.65,
+                  }}
+                />
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Søk kunde, adresse, e-post, telefon, saksnr., tittel eller ansvarlig"
+                  style={{
+                    width: "100%",
+                    minHeight: 46,
+                    padding: "10px 14px 10px 42px",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: 12,
+                    background: "#fff",
+                    font: "inherit",
+                  }}
+                />
+              </label>
+            </div>
+
+            <div
+              role="tablist"
+              aria-label="Arbeidsstatus"
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+                marginTop: 14,
+              }}
+            >
+              {WORK_TABS.map((tab) => {
+                const selected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 7,
+                      minHeight: 38,
+                      padding: "7px 12px",
+                      borderRadius: 999,
+                      border: selected ? "1px solid #0f5265" : "1px solid #cbd5e1",
+                      background: selected ? "#0f5265" : "#fff",
+                      color: selected ? "#fff" : "#17313a",
+                      fontWeight: 800,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {tab.label}
+                    <span
+                      aria-label={`${requestCounts[tab.id] || 0} saker`}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minWidth: 23,
+                        height: 23,
+                        padding: "0 6px",
+                        borderRadius: 999,
+                        background: selected ? "rgba(255,255,255,0.18)" : "#f1f5f9",
+                        fontSize: 12,
+                      }}
+                    >
+                      {requestCounts[tab.id] || 0}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
           <section className="sales-panel">
             <div className="sales-panel-header">
               <div>
-                <h2 className="sales-panel-title">Aktive forespørsler</h2>
+                <h2 className="sales-panel-title">
+                  {WORK_TABS.find((tab) => tab.id === activeTab)?.label || "Salgssaker"}
+                  {searchQuery.trim() ? ` · ${filteredRequests.length} treff` : ""}
+                </h2>
               </div>
             </div>
 
@@ -215,97 +507,137 @@ export default function SalesListView({
                 </div>
               ) : null}
 
-              {!requestsLoading && !requestsLoadFailed && activeRequests.length === 0 ? (
-                <p className="sales-subtitle">
-                  {supportMode
-                    ? "Ingen aktive forespørsler i dette firmaet."
-                    : "Ingen aktive forespørsler. Opprett en ny forespørsel for å starte en befaring eller et tilbud."}
-                </p>
+              {!requestsLoading && !requestsLoadFailed && filteredRequests.length === 0 ? (
+                <p className="sales-subtitle">{emptyListText}</p>
               ) : null}
 
-              {activeRequests.map((request) => {
+              {filteredRequests.map((request) => {
                 const Icon = iconMap[request.iconName] || ClipboardList;
                 const offerFollowUp = getOfferFollowUpInfo(request);
+                const archived = isArchivedRequest(request);
+                const archiveBusy = archiveBusyId === request.id;
 
                 return (
-                  <button
-                    className="sales-request-card"
+                  <div
                     key={request.id}
-                    type="button"
-                    onClick={() => onOpenRequest?.(request.id)}
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      alignItems: "stretch",
+                      flexWrap: "wrap",
+                    }}
                   >
-                    <div className="sales-request-main">
-                      <h3 className="sales-request-title">{request.title}</h3>
-                      <p className="sales-request-customer">
-                        {request.customer} · {request.address} · {request.id}
-                      </p>
+                    <button
+                      className="sales-request-card"
+                      type="button"
+                      onClick={() => onOpenRequest?.(request.id)}
+                      style={{ flex: "1 1 520px", width: "auto", minWidth: 0 }}
+                    >
+                      <div className="sales-request-main">
+                        <h3 className="sales-request-title">{request.title}</h3>
+                        <p className="sales-request-customer">
+                          {[request.customer, request.address, request.id]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
 
-                      {offerFollowUp ? (
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 8,
-                            flexWrap: "wrap",
-                            marginTop: 7,
-                          }}
-                        >
-                          <span className="sales-subtitle" style={{ margin: 0 }}>
-                            {offerFollowUp.text}
-                          </span>
-
-                          {offerFollowUp.shouldFollowUp ? (
-                            <span
-                              aria-label="Tilbud bør følges opp"
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                minHeight: 24,
-                                padding: "3px 8px",
-                                borderRadius: 999,
-                                fontSize: 12,
-                                fontWeight: 700,
-                                background: "#fff7ed",
-                                color: "#9a3412",
-                                border: "1px solid #fed7aa",
-                              }}
-                            >
-                              Bør følges opp
+                        {offerFollowUp ? (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              flexWrap: "wrap",
+                              marginTop: 7,
+                            }}
+                          >
+                            <span className="sales-subtitle" style={{ margin: 0 }}>
+                              {offerFollowUp.text}
                             </span>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </div>
 
-                    <div className="sales-request-next">
-                      <span className="sales-next-label">Neste steg</span>
-                      <span className="sales-next-step">
-                        <Icon size={16} />
-                        {request.nextStep}
+                            {offerFollowUp.shouldFollowUp && !archived ? (
+                              <span
+                                aria-label="Tilbud bør følges opp"
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  minHeight: 24,
+                                  padding: "3px 8px",
+                                  borderRadius: 999,
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  background: "#fff7ed",
+                                  color: "#9a3412",
+                                  border: "1px solid #fed7aa",
+                                }}
+                              >
+                                Bør følges opp
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div className="sales-request-next">
+                        <span className="sales-next-label">
+                          {archived ? "Arkivert" : "Neste steg"}
+                        </span>
+                        <span className="sales-next-step">
+                          <Icon size={16} />
+                          {archived ? "Kan gjenopprettes" : request.nextStep}
+                        </span>
+                      </div>
+
+                      <span className={`sales-status ${request.statusClass}`}>
+                        {request.status}
                       </span>
-                    </div>
+                    </button>
 
-                    <span className={`sales-status ${request.statusClass}`}>
-                      {request.status}
-                    </span>
-                  </button>
+                    {!supportMode ? (
+                      <button
+                        type="button"
+                        disabled={archiveBusy}
+                        onClick={() => toggleArchive(request)}
+                        title={archived ? "Gjenopprett saken fra arkivet" : "Arkiver saken"}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 7,
+                          flex: "0 0 auto",
+                          minHeight: 44,
+                          padding: "10px 13px",
+                          border: "1px solid #cbd5e1",
+                          borderRadius: 12,
+                          background: archived ? "#effaf5" : "#fff",
+                          color: archived ? "#166534" : "#334155",
+                          fontWeight: 800,
+                          cursor: archiveBusy ? "wait" : "pointer",
+                          opacity: archiveBusy ? 0.65 : 1,
+                        }}
+                      >
+                        {archived ? <RotateCcw size={17} /> : <Archive size={17} />}
+                        {archiveBusy ? "Lagrer …" : archived ? "Gjenopprett" : "Arkiver"}
+                      </button>
+                    ) : null}
+                  </div>
                 );
               })}
             </div>
           </section>
 
-          {activatedRequests.length > 0 ? (
+          {filteredActivatedRequests.length > 0 ? (
             <section className="sales-panel">
               <div className="sales-panel-header">
                 <div>
                   <h2 className="sales-panel-title">
-                    Aktiverte prosjekter ({activatedRequests.length})
+                    Aktiverte prosjekter ({filteredActivatedRequests.length})
                   </h2>
                 </div>
               </div>
 
               <div className="sales-request-list">
-                {activatedRequests.map((request) => {
+                {filteredActivatedRequests.map((request) => {
                   const Icon = iconMap[request.iconName] || ClipboardList;
 
                   return (
@@ -318,7 +650,9 @@ export default function SalesListView({
                       <div className="sales-request-main">
                         <h3 className="sales-request-title">{request.title}</h3>
                         <p className="sales-request-customer">
-                          {request.customer} · {request.address} · {request.id}
+                          {[request.customer, request.address, request.id]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </p>
                       </div>
 
