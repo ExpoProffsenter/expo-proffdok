@@ -41,28 +41,11 @@
   }
 
   .expoDesktopHomeButton {
-    appearance: none;
-    border: 0;
-    background: transparent;
-    color: #24414f;
-    min-height: 36px;
-    padding: 0 4px;
-    display: inline-flex;
-    align-items: center;
-    font: inherit;
-    font-size: 14px;
-    font-weight: 800;
-    cursor: pointer;
     white-space: nowrap;
   }
 
   .expoDesktopHomeButton[hidden] {
     display: none !important;
-  }
-
-  .expoDesktopHomeButton:hover {
-    color: #062738;
-    text-decoration: underline;
   }
 
   .expoDesktopMenuToggle:focus-visible,
