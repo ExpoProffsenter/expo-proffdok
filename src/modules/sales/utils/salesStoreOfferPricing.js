@@ -109,9 +109,17 @@ function generatedAlternativeDescription(option, breakdown) {
   if (nobb) parts.push(`NOBB ${nobb}`);
 
   if (breakdown.replacement?.mainPostId === "butikk-montering") {
-    parts.push(`Ny monteringspris ${Math.round(breakdown.newItemTotal).toLocaleString("nb-NO")} kr inkl. mva.`);
+    parts.push(
+      `Ny monteringspris ${Math.round(breakdown.newItemTotal).toLocaleString(
+        "nb-NO"
+      )} kr inkl. mva.`
+    );
   } else {
-    parts.push(`Alternativ varepris ${Math.round(breakdown.newItemTotal).toLocaleString("nb-NO")} kr inkl. mva.`);
+    parts.push(
+      `Alternativ varepris ${Math.round(breakdown.newItemTotal).toLocaleString(
+        "nb-NO"
+      )} kr inkl. mva.`
+    );
     if (breakdown.hasInstallationOverride) {
       parts.push(
         `Montering med dette alternativet ${Math.round(
@@ -125,6 +133,7 @@ function generatedAlternativeDescription(option, breakdown) {
 }
 
 export function recalculateStoreOption(option = {}, lines = []) {
+  const sourceLines = Array.isArray(lines) ? lines : [];
   const next = { ...option };
 
   if (next.nobbNumber && !String(next.productUrl || "").trim()) {
@@ -153,7 +162,28 @@ export function recalculateStoreOption(option = {}, lines = []) {
     return next;
   }
 
-  const breakdown = getStoreAlternativeBreakdown(next, lines);
+  // 37D1-migrering: eldre butikkalternativer hadde bare én erstattet vare.
+  // Når saken har nøyaktig én monteringspost kobles den inn med uendret pris,
+  // slik at brukeren umiddelbart kan justere monteringen for alternativet.
+  const replacement = sourceLines.find(
+    (line) => String(line?.id || "") === String(next.replacementLineId || "")
+  );
+  if (
+    replacement?.mainPostId === "butikk-varer" &&
+    !next.storeInstallationReplacementLineId
+  ) {
+    const installationLines = sourceLines.filter(
+      (line) => line?.mainPostId === "butikk-montering" && !line?.__storeOfferMeta
+    );
+    if (installationLines.length === 1) {
+      next.storeInstallationReplacementLineId = installationLines[0].id;
+      next.storeInstallationPriceInclVat = storeNumber(
+        storeGrossTotal(installationLines[0])
+      );
+    }
+  }
+
+  const breakdown = getStoreAlternativeBreakdown(next, sourceLines);
   const quantity = storeQuantity(next);
   next.amount = storeNumber((breakdown.totalDelta / VAT_FACTOR) / quantity);
   next.storeAlternativePricingVersion = 2;
@@ -166,7 +196,9 @@ export function recalculateStoreOption(option = {}, lines = []) {
   next.storeInstallationAlternativeTotalInclVat = breakdown.hasInstallationOverride
     ? storeNumber(breakdown.newInstallationTotal)
     : "";
-  next.storeAlternativePackageTotalInclVat = storeNumber(breakdown.newPackageTotal);
+  next.storeAlternativePackageTotalInclVat = storeNumber(
+    breakdown.newPackageTotal
+  );
 
   const generated = generatedAlternativeDescription(next, breakdown);
   if (!String(next.description || "").trim() || next.storeAutoDescription) {
