@@ -84,12 +84,24 @@ export default function SalesProjectActivation({
   const supportMode = Boolean(getSalesSupportCompanyId());
   const storeOffer = isStoreOfferRequest(selectedRequest);
 
-  if (storeOffer || supportMode) {
+  // Behold denne eksplisitte sperren separat. Critical build check verifiserer
+  // at supportmodus aldri kan nå ordinær prosjektaktivering.
+  if (supportMode) {
     return (
       <BlockedActivation
         selectedRequest={selectedRequest}
         onBack={onBack}
-        storeOffer={storeOffer}
+        storeOffer={false}
+      />
+    );
+  }
+
+  if (storeOffer) {
+    return (
+      <BlockedActivation
+        selectedRequest={selectedRequest}
+        onBack={onBack}
+        storeOffer
       />
     );
   }
