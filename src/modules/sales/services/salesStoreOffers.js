@@ -89,6 +89,10 @@ export function createStoreOfferMetaLine({
   return {
     id: STORE_OFFER_META_ID,
     __storeOfferMeta: true,
+    // Generiske Sales-visninger skjuler allerede __companyMeta. Ved publisering
+    // legges den egentlige firmaprofil-snapshoten først i lines, så denne markøren
+    // påvirker aldri hvilket firmasnapshot kunden/PDF-en leser.
+    __companyMeta: true,
     mainPostId: "__store_offer_meta__",
     mainPostTitle: "Butikktilbud metadata",
     lineType: "work",
