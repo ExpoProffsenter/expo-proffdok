@@ -2,6 +2,7 @@ import './desktopSideMenu.css';
 
 const DESKTOP_QUERY = '(min-width: 1181px)';
 const BAR_ID = 'expo-desktop-menu-bar';
+const HOME_ID = 'expo-desktop-home-button';
 const DRAWER_ID = 'expo-desktop-menu-drawer';
 const BACKDROP_ID = 'expo-desktop-menu-backdrop';
 
@@ -24,14 +25,30 @@ function findInternalAppNav() {
   }) || null;
 }
 
+function findTopHeaderProjectButton() {
+  return Array.from(document.querySelectorAll('button')).find((button) => {
+    if (!(button instanceof HTMLButtonElement)) return false;
+    if (cleanLabel(button.textContent) !== '+ Nytt prosjekt') return false;
+
+    const parent = button.parentElement;
+    if (!(parent instanceof HTMLElement)) return false;
+
+    return Array.from(parent.children).some(
+      (candidate) => candidate instanceof HTMLButtonElement && cleanLabel(candidate.textContent) === 'Logg ut'
+    );
+  }) || null;
+}
+
 function buildMenuShell() {
   let bar = document.getElementById(BAR_ID);
+  let homeButton = document.getElementById(HOME_ID);
   let drawer = document.getElementById(DRAWER_ID);
   let backdrop = document.getElementById(BACKDROP_ID);
 
-  if (bar && drawer && backdrop) return { bar, drawer, backdrop };
+  if (bar && homeButton && drawer && backdrop) return { bar, homeButton, drawer, backdrop };
 
   bar?.remove();
+  homeButton?.remove();
   drawer?.remove();
   backdrop?.remove();
 
@@ -49,9 +66,10 @@ function buildMenuShell() {
     <span>Meny</span>
   `;
 
-  const homeButton = document.createElement('button');
+  homeButton = document.createElement('button');
+  homeButton.id = HOME_ID;
   homeButton.type = 'button';
-  homeButton.className = 'expoDesktopHomeButton';
+  homeButton.className = 'secondary expoDesktopHomeButton';
   homeButton.textContent = '← Til Startside';
   homeButton.hidden = true;
 
@@ -59,7 +77,7 @@ function buildMenuShell() {
   current.className = 'expoDesktopMenuCurrent';
   current.setAttribute('aria-live', 'polite');
 
-  bar.append(toggle, homeButton, current);
+  bar.append(toggle, current);
 
   backdrop = document.createElement('div');
   backdrop.id = BACKDROP_ID;
@@ -126,7 +144,7 @@ function buildMenuShell() {
   });
 
   drawer._expoSetOpen = setOpen;
-  return { bar, drawer, backdrop };
+  return { bar, homeButton, drawer, backdrop };
 }
 
 function syncDrawerWithSource(sourceNav, shell) {
@@ -141,7 +159,7 @@ function syncDrawerWithSource(sourceNav, shell) {
   const sourceButtons = Array.from(sourceNav.querySelectorAll(':scope > button'));
   const drawerNav = shell.drawer.querySelector('.expoDesktopDrawerNav');
   const current = shell.bar.querySelector('.expoDesktopMenuCurrent');
-  const homeButton = shell.bar.querySelector('.expoDesktopHomeButton');
+  const homeButton = shell.homeButton;
   if (!(drawerNav instanceof HTMLElement) || !(current instanceof HTMLElement)) return;
 
   const signature = sourceButtons
@@ -157,6 +175,13 @@ function syncDrawerWithSource(sourceNav, shell) {
     homeButton.onclick = startsideSource instanceof HTMLButtonElement
       ? () => startsideSource.click()
       : null;
+
+    const newProjectButton = findTopHeaderProjectButton();
+    if (newProjectButton instanceof HTMLButtonElement && newProjectButton.parentElement) {
+      newProjectButton.parentElement.insertBefore(homeButton, newProjectButton);
+    } else if (homeButton.parentElement !== shell.bar) {
+      shell.bar.insertBefore(homeButton, current);
+    }
   }
 
   if (drawerNav.dataset.sourceSignature === signature) return;
@@ -207,6 +232,7 @@ export function installDesktopSideMenu() {
     sourceNav?.classList.remove('expoDesktopSourceNavHidden');
     sourceNav = null;
     document.getElementById(BAR_ID)?.remove();
+    document.getElementById(HOME_ID)?.remove();
     document.getElementById(DRAWER_ID)?.remove();
     document.getElementById(BACKDROP_ID)?.remove();
   };
