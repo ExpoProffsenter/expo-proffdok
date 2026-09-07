@@ -40,16 +40,16 @@
     background: #0a3447;
   }
 
-  .expoDesktopHomeButton {
+  .expoDesktopHeaderShortcut {
     white-space: nowrap;
   }
 
-  .expoDesktopHomeButton[hidden] {
+  .expoDesktopHeaderShortcut[hidden] {
     display: none !important;
   }
 
   .expoDesktopMenuToggle:focus-visible,
-  .expoDesktopHomeButton:focus-visible,
+  .expoDesktopHeaderShortcut:focus-visible,
   .expoDesktopDrawerClose:focus-visible,
   .expoDesktopDrawerButton:focus-visible {
     outline: 3px solid rgba(24, 195, 207, 0.38);

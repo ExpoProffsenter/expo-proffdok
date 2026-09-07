@@ -3,6 +3,7 @@ import './desktopSideMenu.css';
 const DESKTOP_QUERY = '(min-width: 1181px)';
 const BAR_ID = 'expo-desktop-menu-bar';
 const HOME_ID = 'expo-desktop-home-button';
+const HELP_ID = 'expo-desktop-help-button';
 const DRAWER_ID = 'expo-desktop-menu-drawer';
 const BACKDROP_ID = 'expo-desktop-menu-backdrop';
 const NATIVE_HOME_MARKER = 'data-expo-native-home-source';
@@ -27,12 +28,21 @@ function findInternalAppNav() {
   }) || null;
 }
 
+function findSourceNavButton(labels = []) {
+  const sourceNav = findInternalAppNav();
+  if (!(sourceNav instanceof HTMLElement)) return null;
+  const accepted = new Set((Array.isArray(labels) ? labels : [labels]).map((label) => cleanLabel(label)));
+  return Array.from(sourceNav.querySelectorAll(':scope > button')).find(
+    (button) => accepted.has(cleanLabel(button.textContent))
+  ) || null;
+}
+
 function findTopHeaderButton(label) {
   const normalizedLabel = cleanLabel(label).toLowerCase();
 
   return Array.from(document.querySelectorAll('button')).find((button) => {
     if (!(button instanceof HTMLButtonElement)) return false;
-    if (button.id === HOME_ID) return false;
+    if (button.id === HOME_ID || button.id === HELP_ID) return false;
     if (cleanLabel(button.textContent).toLowerCase() !== normalizedLabel) return false;
 
     const parent = button.parentElement;
@@ -48,7 +58,7 @@ function findNativeHeaderButton(label) {
   const normalizedLabel = cleanLabel(label).toLowerCase();
   return Array.from(document.querySelectorAll('button')).find((button) => {
     if (!(button instanceof HTMLButtonElement)) return false;
-    if (button.id === HOME_ID) return false;
+    if (button.id === HOME_ID || button.id === HELP_ID) return false;
     return cleanLabel(button.textContent).toLowerCase() === normalizedLabel;
   }) || null;
 }
@@ -84,9 +94,7 @@ function clearRememberedSalesNavigation() {
     const keys = [];
     for (let index = 0; index < storage.length; index += 1) {
       const key = storage.key(index);
-      if (key?.startsWith(SALES_NAV_PREFIX) && key.endsWith(':navigation')) {
-        keys.push(key);
-      }
+      if (key?.startsWith(SALES_NAV_PREFIX) && key.endsWith(':navigation')) keys.push(key);
     }
     keys.forEach((key) => storage.removeItem(key));
   } catch {
@@ -95,12 +103,9 @@ function clearRememberedSalesNavigation() {
 }
 
 function goToStartside() {
-  // Startside skal også bety at neste åpning av Befaring/Tilbud starter i
-  // saksoversikten, ikke i siste åpne Butikk-/Våtromstilbud.
   clearRememberedSalesNavigation();
 
-  // Reuse the application's native guarded actions whenever a project workspace
-  // or a new-project draft is active. Those actions own unsaved-change handling.
+  // Prosjektarbeidsflate/new-project eier selv ulagret-varsel og må få førsteprioritet.
   const nativeLeaveWorkspace = findNativeHeaderButton('← Til startside');
   if (nativeLeaveWorkspace instanceof HTMLButtonElement) {
     nativeLeaveWorkspace.click();
@@ -113,75 +118,117 @@ function goToStartside() {
     return;
   }
 
-  // Outside a project workspace there is no unsaved project state to preserve.
+  // Uten aktiv prosjektarbeidsflate bruker vi React-appens ekte Startside-knapp.
+  // Dette er viktig i Sales: samme URL kan ellers gi en no-op og brukeren blir stående.
+  const sourceStart = findSourceNavButton(['Startside']);
+  if (sourceStart instanceof HTMLButtonElement) {
+    sourceStart.click();
+    return;
+  }
+
+  // Kun fallback dersom intern nav ennå ikke finnes.
   window.location.assign(cleanStartsideUrl());
 }
 
-function positionHomeAction(homeButton) {
-  if (!(homeButton instanceof HTMLButtonElement)) return;
+function goToHelp() {
+  const sourceHelp = findSourceNavButton(['Hjelp']);
+  if (sourceHelp instanceof HTMLButtonElement) {
+    sourceHelp.click();
+    return;
+  }
+
+  const nativeHelp = findNativeHeaderButton('Hjelp');
+  if (nativeHelp instanceof HTMLButtonElement) nativeHelp.click();
+}
+
+function styleHeaderShortcut(button, text) {
+  button.textContent = text;
+  button.hidden = false;
+  button.style.position = 'fixed';
+  button.style.zIndex = '40';
+  button.style.margin = '0';
+  button.style.height = '40px';
+  button.style.padding = '0 10px';
+  button.style.fontSize = '13px';
+  button.style.lineHeight = '1';
+  button.style.borderRadius = '13px';
+  button.style.boxShadow = 'none';
+  button.style.whiteSpace = 'nowrap';
+  button.style.visibility = 'hidden';
+  button.style.left = '0';
+  button.style.top = '0';
+}
+
+function positionHeaderActions(homeButton, helpButton) {
+  if (!(homeButton instanceof HTMLButtonElement) || !(helpButton instanceof HTMLButtonElement)) return;
 
   const logoutButton = findTopHeaderButton('Logg ut');
   const newProjectButton = findTopHeaderButton('+ Nytt prosjekt');
 
   if (!(logoutButton instanceof HTMLButtonElement) || !(newProjectButton instanceof HTMLButtonElement)) {
     homeButton.hidden = true;
+    helpButton.hidden = true;
     return;
   }
 
-  homeButton.hidden = false;
-  homeButton.textContent = '← Til Startside';
-  homeButton.style.position = 'fixed';
-  homeButton.style.zIndex = '40';
-  homeButton.style.margin = '0';
-  homeButton.style.height = '40px';
-  homeButton.style.padding = '0 10px';
-  homeButton.style.fontSize = '13px';
-  homeButton.style.lineHeight = '1';
-  homeButton.style.borderRadius = '13px';
-  homeButton.style.boxShadow = 'none';
-  homeButton.style.whiteSpace = 'nowrap';
-  homeButton.style.visibility = 'hidden';
-  homeButton.style.left = '0';
-  homeButton.style.top = '0';
+  styleHeaderShortcut(homeButton, '← Startside');
+  styleHeaderShortcut(helpButton, '? Hjelp');
 
   const logoutRect = logoutButton.getBoundingClientRect();
   const newProjectRect = newProjectButton.getBoundingClientRect();
   const gap = 8;
   const leftEdge = logoutRect.right + gap;
   const rightEdge = newProjectRect.left - gap;
-  const availableWidth = Math.max(0, rightEdge - leftEdge);
+  const availableBetween = Math.max(0, rightEdge - leftEdge);
 
-  let homeWidth = homeButton.offsetWidth;
-  if (homeWidth > availableWidth) {
-    homeButton.textContent = '← Startside';
-    homeWidth = homeButton.offsetWidth;
-  }
+  const homeWidth = homeButton.offsetWidth;
+  const top = newProjectRect.top + (newProjectRect.height - homeButton.offsetHeight) / 2;
 
-  if (homeWidth > availableWidth || availableWidth < 72) {
+  if (homeWidth <= availableBetween && availableBetween >= 72) {
+    const left = leftEdge + Math.max(0, (availableBetween - homeWidth) / 2);
+    homeButton.style.left = `${Math.round(left)}px`;
+    homeButton.style.top = `${Math.round(top)}px`;
+    homeButton.style.visibility = 'visible';
+  } else {
     homeButton.hidden = true;
     homeButton.style.visibility = '';
-    return;
   }
 
-  const homeHeight = homeButton.offsetHeight;
-  const left = leftEdge + Math.max(0, (availableWidth - homeWidth) / 2);
-  const top = newProjectRect.top + (newProjectRect.height - homeHeight) / 2;
-
-  homeButton.style.left = `${Math.round(left)}px`;
-  homeButton.style.top = `${Math.round(top)}px`;
-  homeButton.style.visibility = 'visible';
+  // Hjelp legges på samme toppnivå uten å endre React-headeren. Først prøver vi
+  // rett for Nytt prosjekt; hvis plassen er knapp, prøver vi til venstre for Logg ut.
+  const helpWidth = helpButton.offsetWidth;
+  const rightCandidate = newProjectRect.right + gap;
+  if (rightCandidate + helpWidth <= window.innerWidth - 12) {
+    helpButton.style.left = `${Math.round(rightCandidate)}px`;
+    helpButton.style.top = `${Math.round(top)}px`;
+    helpButton.style.visibility = 'visible';
+  } else {
+    const leftCandidate = logoutRect.left - gap - helpWidth;
+    if (leftCandidate >= 12) {
+      helpButton.style.left = `${Math.round(leftCandidate)}px`;
+      helpButton.style.top = `${Math.round(top)}px`;
+      helpButton.style.visibility = 'visible';
+    } else {
+      helpButton.hidden = true;
+      helpButton.style.visibility = '';
+    }
+  }
 }
 
 function buildMenuShell() {
   let bar = document.getElementById(BAR_ID);
   let homeButton = document.getElementById(HOME_ID);
+  let helpButton = document.getElementById(HELP_ID);
   let drawer = document.getElementById(DRAWER_ID);
   let backdrop = document.getElementById(BACKDROP_ID);
 
-  if (bar && homeButton && drawer && backdrop) return { bar, homeButton, drawer, backdrop };
+  if (bar && homeButton && helpButton && drawer && backdrop) {
+    return { bar, homeButton, helpButton, drawer, backdrop };
+  }
 
   bar?.remove();
   homeButton?.remove();
+  helpButton?.remove();
   drawer?.remove();
   backdrop?.remove();
 
@@ -202,16 +249,23 @@ function buildMenuShell() {
   homeButton = document.createElement('button');
   homeButton.id = HOME_ID;
   homeButton.type = 'button';
-  homeButton.className = 'secondary expoDesktopHomeButton';
-  homeButton.textContent = '← Til Startside';
+  homeButton.className = 'secondary expoDesktopHeaderShortcut';
+  homeButton.textContent = '← Startside';
   homeButton.addEventListener('click', goToStartside);
+
+  helpButton = document.createElement('button');
+  helpButton.id = HELP_ID;
+  helpButton.type = 'button';
+  helpButton.className = 'secondary expoDesktopHeaderShortcut';
+  helpButton.textContent = '? Hjelp';
+  helpButton.addEventListener('click', goToHelp);
 
   const current = document.createElement('div');
   current.className = 'expoDesktopMenuCurrent';
   current.setAttribute('aria-live', 'polite');
 
   bar.append(toggle, current);
-  document.body.append(homeButton);
+  document.body.append(homeButton, helpButton);
 
   backdrop = document.createElement('div');
   backdrop.id = BACKDROP_ID;
@@ -278,7 +332,7 @@ function buildMenuShell() {
   });
 
   drawer._expoSetOpen = setOpen;
-  return { bar, homeButton, drawer, backdrop };
+  return { bar, homeButton, helpButton, drawer, backdrop };
 }
 
 function syncDrawerWithSource(sourceNav, shell) {
@@ -296,7 +350,7 @@ function syncDrawerWithSource(sourceNav, shell) {
   if (!(drawerNav instanceof HTMLElement) || !(current instanceof HTMLElement)) return;
 
   hideNativeWorkspaceHomeButton();
-  positionHomeAction(shell.homeButton);
+  positionHeaderActions(shell.homeButton, shell.helpButton);
 
   const signature = sourceButtons
     .map((button) => `${cleanLabel(button.textContent)}:${button.classList.contains('on') ? '1' : '0'}`)
@@ -355,6 +409,7 @@ export function installDesktopSideMenu() {
     sourceNav = null;
     document.getElementById(BAR_ID)?.remove();
     document.getElementById(HOME_ID)?.remove();
+    document.getElementById(HELP_ID)?.remove();
     document.getElementById(DRAWER_ID)?.remove();
     document.getElementById(BACKDROP_ID)?.remove();
   };
