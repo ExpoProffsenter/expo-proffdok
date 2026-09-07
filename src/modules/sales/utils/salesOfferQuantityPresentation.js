@@ -1,5 +1,7 @@
-// Expo ProffDok – FASE 31A2B
+// Expo ProffDok – FASE 37D2 / FASE 31A2B
 // Felles, ren presentasjonsadapter for antall/enhetspris i kundetilbud og PDF.
+// Butikkalternativer viser faktisk alternativpris i egen presentasjon og skal aldri
+// få den interne prisdifferansen presentert som negativ enhetspris.
 // Endrer aldri lagrede tilbudsdata; returnerer kun kopier til visning.
 
 import {
@@ -46,6 +48,15 @@ function decorateLine(line = {}) {
 }
 
 function decorateOption(option = {}) {
+  // Store-alternativer lagrer differansen mot grunnpakken i amount. Den verdien
+  // er korrekt for beregning, men er ikke en enhetspris kunden skal se.
+  if (
+    option?.optionType === "alternative" &&
+    Number(option?.storeAlternativePricingVersion || 0) >= 2
+  ) {
+    return option;
+  }
+
   const quantityText = getQuantityUnitPriceText(option);
   if (!quantityText || option?.__quantityPresentationDecorated) return option;
 
