@@ -1,6 +1,6 @@
 // Expo ProffDok – FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
 // FASE 33B.5 viser kontraktsstatus, kundelenke og signert PDF direkte i kontraktkortet.
-// FASE 33B.4 gjør akseptbevisets neste-steg-tekst kompatibel med det nye valgfrie kontraktsteget.
+// FASE 33B.4 gjør akseptbevisets neste-steg-tekst kompatibelt med det nye valgfrie kontraktsteget.
 // FASE 33B.3 legger til et frivillig valg om enkel Expo-kontrakt i eksisterende
 // kontraktkort etter aksept. Opplasting av egen kontrakt og prosjektaktivering beholdes urørt.
 // Aktiv kontraktsveiviser huskes i sessionStorage slik at fanebytte/remount ikke
@@ -129,7 +129,7 @@ function buildInternalOfferGroups(lines = [], options = []) {
   }
 
   (Array.isArray(lines) ? lines : []).forEach((line) => {
-    if (line?.__companyMeta || line?.__offerTermsMeta) return;
+    if (line?.__companyMeta || line?.__offerTermsMeta || line?.__storeOfferMeta) return;
     ensureGroup(line).lines.push(line);
   });
 
