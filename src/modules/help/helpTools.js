@@ -1,4 +1,4 @@
-// FASE 37D2 HJELP: Butikktilbud dokumenteres som egen varebasert Sales-flyt som avsluttes ved aksept uten prosjektaktivering.
+// FASE 37D2 HJELP: Butikktilbud vises som eget hjelpetema og avsluttes ved aksept uten prosjektaktivering.
 // FASE 33B.5 HJELP: kontrakt/kundelenke vises direkte på saken, signert kontrakt arkiveres som PDF og følger prosjektet.
 // FASE 33B.5: brukerflaten kaller samlet tilbud/kontrakt/endringer Avtalegrunnlag; intern `tilbud`-nøkkel beholdes.
 // FASE 33B.4 HJELP: bedriften signerer lagret Expo-kontrakt, kunden får sikker lenke og signerer samme låste grunnlag.
@@ -15,6 +15,7 @@ import "../app/agreementBasisTerminology.js";
 import { createHelpCenter as createHelpCenterCore } from "./helpToolsCore.js";
 
 const SALES_HELP_TITLE = "🧾 Befaring/Tilbud";
+const STORE_HELP_TITLE = "🛍️ Butikktilbud";
 const NEWS_HELP_TITLE = "📢 Nytt i denne versjonen";
 const START_HELP_TITLE = "🚀 Startside / kom i gang";
 const HELP_UPDATED_LABEL = "Sist oppdatert: 07.09.2026";
@@ -58,16 +59,6 @@ function createSales31CHelp() {
     "Bilder, PDF-vedlegg og produkt-/FDV-lenker kan knyttes til relevante tilbudslinjer og opsjoner.",
   ]);
 
-  appendHelpSection(block, "Butikktilbud / varesalg", [
-    "Butikktilbud er en egen varebasert tilbudsbygger for brukere som har tilgang til funksjonen. Den bruker samme sikre publisering, kundelenke, PDF, e-post og digitale aksept som øvrige tilbud.",
-    "Registrer varenavn, NOBB-nr. eller varenummer, antall, enhet, pris pr. enhet inkl. mva. og eventuell rabatt. NOBB-nr. kan brukes som direkte produktlenke.",
-    "Bilde og PDF kan knyttes direkte til varen. Montering registreres separat og kan være valgfri del av tilbudet.",
-    "Ved et alternativ registreres faktisk pris på alternativ vare inkl. mva. Dersom monteringsprisen også endres, registreres ny monteringspris. Expo ProffDok beregner prisendringen mot grunnpakken.",
-    "Velg Bademiljø Expo eller Ringside Rørleggerbedrift som merkevare før publisering. Valgt logo og saksbehandler følger den publiserte tilbudsversjonen.",
-    "Lagre tekst og vilkår som mal når formuleringer skal gjenbrukes. Kundedata, varer, NOBB-numre, priser, bilder og vedlegg lagres ikke i tekstmalen.",
-    "Når kunden aksepterer et butikktilbud, avsluttes saken i Sales. Butikktilbud oppretter ikke kontrakt eller ProffDok-prosjekt.",
-  ]);
-
   appendHelpSection(block, "Opsjoner og hovedpost uten grunnpris", [
     "Tillegg / oppgradering brukes når grunnleveransen beholdes og kunden kan velge noe i tillegg.",
     "Alternativ / erstatter brukes når en konkret underpost skal erstattes. Det må finnes en underpost å erstatte.",
@@ -94,8 +85,7 @@ function createSales31CHelp() {
   ]);
 
   appendHelpSection(block, "Kontrakt etter aksept", [
-    "Kontrakt er valgfritt for vanlige prosjekttilbud. Butikktilbud er unntaket og avsluttes i Sales etter aksept uten kontrakt eller prosjektaktivering.",
-    "Etter akseptert ordinært tilbud kan du opprette Expo-kontrakt, laste opp bedriftens egen kontrakt eller fortsette til prosjekt uten kontrakt.",
+    "Kontrakt er valgfritt for ordinære prosjekttilbud. Etter aksept kan du opprette Expo-kontrakt, laste opp bedriftens egen kontrakt eller fortsette til prosjekt uten kontrakt.",
     "Prosjekt kan også opprettes direkte uten tilbud. Et prosjekt uten tilbud og uten kontrakt er en gyldig normaltilstand; Avtalegrunnlag blir da bare stedet der eventuelle senere avtaledokumenter og endringer kan samles.",
     "Expo-kontrakten henter firma, kunde, prosjektadresse, tilbudsversjon og avtalesum automatisk. Du fyller hovedsakelig inn avtalt oppstart, forventet varighet i uker og noen få avtalevalg.",
     "Beregnet forventet ferdigstillelse beregnes automatisk fra avtalt oppstart og forventet varighet. Dokumenterte forhold som gir rett til fristforlengelse kan forskyve fristen.",
@@ -139,6 +129,86 @@ function createSales31CHelp() {
   return block;
 }
 
+function createStoreOfferHelpItem() {
+  const item = document.createElement("div");
+  item.className = "item";
+  item.dataset.storeOfferHelp = "1";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "secondary";
+  button.style.width = "100%";
+  button.style.justifyContent = "space-between";
+  button.style.textAlign = "left";
+  button.style.background = "transparent";
+  button.style.color = "#0f172a";
+  button.style.border = "none";
+  button.style.padding = "0";
+  button.style.boxShadow = "none";
+  button.style.fontSize = "16px";
+
+  const title = document.createElement("b");
+  title.textContent = STORE_HELP_TITLE;
+  const action = document.createElement("span");
+  action.textContent = "Åpne";
+  button.append(title, action);
+
+  const content = document.createElement("div");
+  content.style.display = "none";
+  content.style.marginTop = "14px";
+
+  const purpose = document.createElement("p");
+  purpose.textContent = "Butikktilbud er den varebaserte tilbudsfunksjonen for butikk- og varesalg. Den er separat fra ordinær Befaring/Tilbud og avsluttes i Sales når kunden har akseptert.";
+  content.appendChild(purpose);
+
+  appendHelpSection(content, "Arbeidsflyt", [
+    "Opprett Nytt butikktilbud og registrer kunde, adresse og saksbehandler.",
+    "Legg inn varenavn, NOBB-nr. eller varenummer, antall, enhet, pris pr. enhet inkl. mva. og eventuell rabatt.",
+    "Knytt bilde, produktlenke og PDF-vedlegg direkte til varen når dette er relevant. NOBB-nr. kan brukes som direkte produktlenke.",
+    "Registrer montering separat. Ved alternativ vare kan du også angi en alternativ monteringspris.",
+    "Bruk Forhåndsvis kundetilbud før publisering. Forhåndsvisningen sender ingen e-post og kan ikke aksepteres.",
+    "Velg Bademiljø Expo eller Ringside Rørleggerbedrift som merkevare før publisering. Valgt logo og saksbehandler låses med tilbudsversjonen.",
+    "Publiser og send til kunde. Kunden kan lese tilbudet, åpne vedlegg og produktlenker, velge eventuelle alternativer og akseptere digitalt.",
+    "Ved aksept mottar både kunde og saksbehandler bekreftelse. Saken blir liggende som akseptert butikktilbud og oppretter ikke kontrakt eller ProffDok-prosjekt.",
+  ]);
+
+  appendHelpSection(content, "Alternativer og priser", [
+    "Arbeid med priser inkl. mva. i Butikktilbud. Saksbehandler kan samtidig se beregnet pris eks. mva.",
+    "Et alternativ registreres med faktisk alternativ varepris, ikke bare prisdifferansen.",
+    "Hvis alternativet også endrer monteringsprisen, registreres den nye monteringsprisen på samme alternativ. Expo ProffDok beregner endringen mot grunnpakken automatisk.",
+    "Kunden ser totalsummer inkl. mva. og kan velge alternativet før aksept.",
+  ]);
+
+  appendHelpSection(content, "Maler og dokumentasjon", [
+    "Lagre tekst og vilkår som mal når formuleringer skal gjenbrukes.",
+    "En butikktilbudsmal lagrer ikke kunde, varer, NOBB-numre, priser, bilder eller vedlegg.",
+    "Publiserte og aksepterte tilbudsversjoner skal ikke overskrives. Ved endringer opprettes en ny tilbudsversjon.",
+  ]);
+
+  appendHelpSection(content, "Viktig", [
+    "Butikktilbud er en egen arbeidsflyt og skal ikke brukes som inngang til våtromsprosjekt, kontrakt eller prosjektaktivering.",
+    "Kontroller alltid kunde, vare, antall, rabatt, montering, alternativer, logo og vilkår i forhåndsvisningen før tilbudet sendes.",
+    "Tilgang til Butikktilbud skal senere følge brukerens tildelte modulrettigheter når den generelle tilgangsmodellen er innført.",
+  ]);
+
+  button.addEventListener("click", () => {
+    const open = content.style.display !== "none";
+    content.style.display = open ? "none" : "block";
+    action.textContent = open ? "Åpne" : "Lukk";
+    item.style.borderColor = open ? "#e2e8f0" : "#08b9c3";
+    item.style.background = open ? "#ffffff" : "#f8feff";
+  });
+
+  item.append(button, content);
+  return item;
+}
+
+function ensureStoreOfferHelpItem(salesItem) {
+  if (!salesItem || typeof document === "undefined") return;
+  if (document.querySelector("[data-store-offer-help='1']")) return;
+  salesItem.insertAdjacentElement("afterend", createStoreOfferHelpItem());
+}
+
 function organizePermanentHelp({ closeStart = false } = {}) {
   if (typeof document === "undefined") return;
 
@@ -176,6 +246,8 @@ function organizePermanentHelp({ closeStart = false } = {}) {
   const salesItem = salesLabel?.closest(".item");
   if (!salesItem) return;
 
+  ensureStoreOfferHelpItem(salesItem);
+
   const content = Array.from(salesItem.children).find(
     (child) => child.tagName === "DIV" && !child.dataset.phase31cSalesHelp
   );
@@ -204,9 +276,7 @@ export function createHelpCenter(args) {
 
       const handleHelpClick = (event) => {
         const button = event.target?.closest?.("button");
-        if (!button) return;
-        const label = button.querySelector("b");
-        if (textOf(label) !== SALES_HELP_TITLE) return;
+        if (!button || !button.closest?.(".item")) return;
         window.setTimeout(() => {
           if (!disposed) organizePermanentHelp();
         }, 0);
