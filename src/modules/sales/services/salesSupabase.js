@@ -1,6 +1,8 @@
 // Expo ProffDok – FASE 37A2 / FASE 37A1 / FASE 34B / FASE 32 / FASE 32A / FASE 30C2
 // FASE 37A2 speiler serverens idempotente automatiske oppfølgingslogg inn som
 // runtime-metadata i Sales. Feltene skrives aldri tilbake i sales_requests.payload.
+// Når automatisk påminnelse er nyere enn siste manuelle utsending, brukes den som
+// runtime-kontakttid slik at "Må følges opp" først kommer tilbake etter nye 7 dager.
 // FASE 37A1 speiler eksisterende sales_requests.archived_at inn i runtime-payload
 // slik at Sales-oversikten kan filtrere/arkivere uten ny SQL/RLS/migrasjon.
 // Arkivering oppdaterer kun archived_at på eksisterende salgssak.
@@ -33,6 +35,7 @@ const RUNTIME_PAYLOAD_KEYS = [
   "__createdByUserId",
   "__createdByName",
   "__createdAt",
+  "offerOriginalEmailSentAt",
   "offerAutoFollowUpSentAt",
   "offerAutoFollowUpVersionId",
   "offerAutoFollowUpVersionNumber",
@@ -67,6 +70,14 @@ function parseJson(storage, key) {
 function stripRuntimeTraceability(payload = {}) {
   if (!payload || typeof payload !== "object") return payload;
   const clean = { ...payload };
+
+  // hydrateOfferFollowUpState kan midlertidig gjøre offerEmailSentAt til siste
+  // kontakt (automatisk påminnelse) for visning/7-dagersklokke. Ved lagring må
+  // alltid den ekte, opprinnelige manuelle e-posttiden tilbake i payload.
+  if (Object.prototype.hasOwnProperty.call(clean, "offerOriginalEmailSentAt")) {
+    clean.offerEmailSentAt = clean.offerOriginalEmailSentAt || "";
+  }
+
   RUNTIME_PAYLOAD_KEYS.forEach((key) => delete clean[key]);
   return clean;
 }
@@ -79,6 +90,11 @@ function hydrateArchiveState(rows = []) {
       archivedAt: row?.archived_at || "",
     },
   }));
+}
+
+function validDateMs(value) {
+  const parsed = Date.parse(String(value || ""));
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 async function hydrateOfferFollowUpState(client, companyId, rows = []) {
@@ -137,10 +153,29 @@ async function hydrateOfferFollowUpState(client, companyId, rows = []) {
   return rows.map((row) => {
     const state = latestByRequest.get(String(row?.request_ref || "").trim());
     if (!state) return row;
+
+    const payload = row?.payload || {};
+    const currentVersionNumber = Number(
+      payload.offerEmailVersionNumber || payload.sentOfferVersionNumber || 0
+    ) || 0;
+    const autoVersionMatches =
+      state.versionNumber > 0 &&
+      currentVersionNumber > 0 &&
+      state.versionNumber === currentVersionNumber;
+    const originalEmailSentAt = payload.offerEmailSentAt || "";
+    const autoSentAtMs = validDateMs(state.sentAt);
+    const originalSentAtMs = validDateMs(originalEmailSentAt);
+    const autoIsLatestContact =
+      autoVersionMatches &&
+      autoSentAtMs > 0 &&
+      autoSentAtMs >= originalSentAtMs;
+
     return {
       ...row,
       payload: {
-        ...(row?.payload || {}),
+        ...payload,
+        offerOriginalEmailSentAt: originalEmailSentAt,
+        offerEmailSentAt: autoIsLatestContact ? state.sentAt : originalEmailSentAt,
         offerAutoFollowUpSentAt: state.sentAt,
         offerAutoFollowUpVersionId: state.versionId,
         offerAutoFollowUpVersionNumber: state.versionNumber,
