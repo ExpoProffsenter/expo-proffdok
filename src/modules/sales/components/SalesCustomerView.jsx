@@ -1,12 +1,11 @@
-// Expo ProffDok – FASE 34B
-// Ferdig akseptert kundelenke viser låst aksept med valgte opsjoner og totalsum.
-// Expo ProffDok – FASE 31C
-// Hovedposter uten grunnpris vises som «Kun valgfrie opsjoner» i kundetilbudet.
+// Expo ProffDok – FASE 37D1 / FASE 34B
+// Butikktilbud bruker versjonslåst valgt logo og viser saksbehandlers avslutning
+// før digital aksept. Ordinære tilbud beholder eksisterende presentasjon.
+// FASE 34B: Ferdig akseptert kundelenke viser låst aksept med valgte opsjoner og totalsum.
+// FASE 31C: Hovedposter uten grunnpris vises som «Kun valgfrie opsjoner» i kundetilbudet.
 // Eksisterende pris-, valg- og akseptlogikk beholdes uendret.
-// Expo ProffDok – FASE 31A2B
-// Kundetilbudet beholder eksisterende, testet Core-visning, men presentasjonen
+// FASE 31A2B: Kundetilbudet beholder eksisterende, testet Core-visning, men presentasjonen
 // følger nå samme dokumentrekkefølge som PDF og tydeliggjør at opsjoner er valgfrie.
-// Ingen lagring, aksept, SQL, RLS, Storage eller Edge-logikk endres.
 
 import { useEffect } from "react";
 import SalesCustomerViewCore from "./SalesCustomerViewCore.jsx";
@@ -15,6 +14,7 @@ import "./salesCustomerOptionality.css";
 import { decorateRequestForQuantityPresentation } from "../utils/salesOfferQuantityPresentation.js";
 import { decorateRequestForOptionalityPresentation } from "../utils/salesOfferOptionalityPresentation.js";
 import { getActiveOfferVersion } from "../utils/salesOfferLogic.js";
+import { getStoreOfferMeta } from "../utils/salesUtils.js";
 
 const ORDER_STYLES = `
 .sales-customer-ordered-stack {
@@ -28,6 +28,21 @@ const ORDER_STYLES = `
 .sales-customer-order-prices { order: 40; }
 .sales-customer-order-terms { order: 50; }
 .sales-customer-order-accept { order: 60; }
+.sales-customer-ordered-stack[data-store-signature]::before {
+  content: "Med vennlig hilsen\A" attr(data-store-signature);
+  white-space: pre-line;
+  order: 55;
+  display: block;
+  padding: 20px 22px;
+  border: 1px solid #d7e4ea;
+  border-left: 4px solid #16aeb9;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #223842;
+  font-size: 1rem;
+  line-height: 1.65;
+  font-weight: 650;
+}
 .sales-customer-renumbered-kicker {
   font-size: 0 !important;
 }
@@ -107,12 +122,15 @@ function classifySection(element) {
   return "";
 }
 
-function applyCustomerSectionOrder() {
+function applyCustomerSectionOrder(signatureName = "") {
   if (typeof document === "undefined") return;
   const stack = document.querySelector(".sales-customer-offer-stack");
   if (!stack) return;
 
   stack.classList.add("sales-customer-ordered-stack");
+  if (signatureName) stack.dataset.storeSignature = signatureName;
+  else delete stack.dataset.storeSignature;
+
   const sections = Array.from(stack.children);
   const orderedContent = [];
 
@@ -139,6 +157,21 @@ function applyCustomerSectionOrder() {
       kicker.classList.add("sales-customer-renumbered-kicker");
       kicker.dataset.sectionNumber = String(index + 1).padStart(2, "0");
     });
+}
+
+function applyStoreOfferCopy(isStoreOffer) {
+  if (!isStoreOffer || typeof document === "undefined") return;
+
+  const pricesSection = Array.from(
+    document.querySelectorAll(".sales-customer-offer-stack > *")
+  ).find((section) => classifySection(section) === "prices");
+  const heading = pricesSection?.querySelector(".sales-customer-section-heading h2");
+  if (heading) heading.textContent = "Varer og priser";
+
+  const totalLabel = pricesSection?.querySelector(
+    ".sales-customer-total-card .sales-customer-total-row:first-child > span"
+  );
+  if (totalLabel) totalLabel.textContent = "Sum varer og montering inkl. mva.";
 }
 
 function getOptionsOnlyGroups(request = {}) {
@@ -216,15 +249,25 @@ export default function SalesCustomerView(props) {
   const presentationRequest = decorateRequestForOptionalityPresentation(
     quantityRequest
   );
+  const activeVersion = getActiveOfferVersion(presentationRequest || {});
+  const storeMeta = getStoreOfferMeta(
+    activeVersion?.lines || presentationRequest?.offerLines || []
+  );
+  const isStoreOffer = Boolean(storeMeta?.__storeOfferMeta);
+  const signatureName = String(storeMeta?.signatureName || "").trim();
+  const brandedRequest = presentationRequest && storeMeta?.brandLogoUrl
+    ? { ...presentationRequest, companyLogoUrl: storeMeta.brandLogoUrl }
+    : presentationRequest;
   const selectedOptionIds = props.acceptanceForm?.selectedOptionIds || [];
 
   useEffect(() => {
     const applyPresentation = () => {
-      applyCustomerSectionOrder();
+      applyCustomerSectionOrder(signatureName);
       applyCustomerOptionsOnlyPresentation(
-        presentationRequest,
+        brandedRequest,
         selectedOptionIds
       );
+      applyStoreOfferCopy(isStoreOffer);
     };
 
     const frame = window.requestAnimationFrame(applyPresentation);
@@ -239,13 +282,15 @@ export default function SalesCustomerView(props) {
     props.selectedRequest?.sentOfferVersionId,
     props.selectedRequest?.offerLines,
     props.selectedRequest?.offerOptions,
+    signatureName,
+    isStoreOffer,
     selectedOptionIds.join("|"),
   ]);
 
-  if (props.mode === "customer-accepted" && presentationRequest) {
+  if (props.mode === "customer-accepted" && brandedRequest) {
     return (
       <SalesCustomerAcceptedView
-        selectedRequest={presentationRequest}
+        selectedRequest={brandedRequest}
         companyProfile={props.companyProfile}
       />
     );
@@ -256,7 +301,7 @@ export default function SalesCustomerView(props) {
       <style>{ORDER_STYLES}</style>
       <SalesCustomerViewCore
         {...props}
-        selectedRequest={presentationRequest}
+        selectedRequest={brandedRequest}
       />
     </>
   );
