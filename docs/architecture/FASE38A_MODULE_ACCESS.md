@@ -7,58 +7,50 @@
 
 Dette dokumentet er styrende for Fase 38A og supplerer `EXPO_PROFFDOK_ARCHITECTURE.md`.
 
-## 1. Mål
+## 1. Mål og prinsipp
 
-Expo ProffDok skal skille tydelig mellom:
+Expo ProffDok skiller mellom tre ting:
 
 1. **rolle** – hvem som kan administrere andre brukere
 2. **firmatilhørighet** – hvilke data brukeren tilhører og kan arbeide med
 3. **modultilgang** – hvilke hovedfunksjoner brukeren faktisk får bruke
 
-Modultilgang skal aldri være en ren frontend-funksjon. Meny og Hjelp er bare presentasjon av den serverstyrte tilgangen.
+Modultilgang er serverstyrt. Meny, knapper og Hjelp viser samme tilgang, men er aldri eneste sikkerhetsgrense.
+
+Vi bruker få, grove moduler for å unngå overfragmentering.
 
 ## 2. Hovedmoduler
-
-Fase 38A bruker få, grove tilgangsgrenser for å unngå overfragmentering:
 
 | Nøkkel | Synlig navn | Omfang |
 |---|---|---|
 | `projects` | Prosjekter og dokumentasjon | Prosjekter, produkt-/FDV-dokumentasjon, bilder, sjekklister, avvik, garanti, overtagelse, rapport, fremdrift m.m. |
 | `sales` | Befaring / Våtromstilbud | Forespørsel, befaring, ordinært tilbud, publisering, kundeaksept og ordinær kontrakt/prosjektflyt |
-| `store_offers` | Butikktilbud | Varebaserte tilbud med vare, montering, NOBB, alternativer og butikkpresentasjon |
+| `store_offers` | Butikktilbud | Varebaserte tilbud med varer, NOBB, eventuell montering, alternativer og butikkpresentasjon |
 
-`store_offers` er en **tilleggstilgang til `sales`**. En bruker kan derfor ikke ha Butikktilbud uten samtidig å ha Befaring / Våtromstilbud.
+`store_offers` er tilleggstilgang til `sales`. En bruker kan ikke ha Butikktilbud uten samtidig å ha Befaring / Våtromstilbud.
 
-Startside, Hjelp, innlogging og egen firmaprofil er grunnfunksjoner og er ikke egne moduler.
+Startside, Hjelp, innlogging og egen firmaprofil er globale appfunksjoner og er ikke egne moduler.
 
 ## 3. Roller og delegasjon
 
 ### Systemadministrator
 
-Systemadministrator har effektiv tilgang til alle hovedmoduler og kan tildele eller fjerne modultilgang for alle brukere på tvers av firma.
+Systemadministrator har effektiv tilgang til alle hovedmoduler og kan administrere modultilgang på tvers av firma.
 
-Ved godkjenning av en ny bruker skal systemadministrator velge relevant modultilgang. Nye brukere får ikke automatisk full funksjonstilgang.
+Ved godkjenning av ny bruker skal systemadministrator velge minst én relevant modultilgang før brukeren godkjennes. Nye brukere skal ikke automatisk få full funksjonstilgang.
 
 ### Firmaadministrator
 
-Firmaadministrator kan administrere brukere i **eget firma**, men kan bare delegere moduler firmaadministratoren selv har.
+Firmaadministrator administrerer brukere i eget firma og kan bare delegere moduler firmaadministratoren selv har.
 
-Eksempel:
+Firmaadministrator kan ikke:
 
-```text
-Firmaadmin har:
-  projects
-  sales
+- gi en modul vedkommende selv mangler
+- endre egen modultilgang
+- endre en systemadministrator
+- gi tilgang på tvers av firma
 
-Firmaadmin kan gi ansatt:
-  projects
-  sales
-
-Firmaadmin kan ikke gi:
-  store_offers
-```
-
-Firmaadministrator kan ikke endre egen modultilgang. Den styres av systemadministrator. Firmaadministrator kan heller ikke endre en systemadministrator.
+Systemadministrator styrer dermed rammen, mens firmaadministrator kan ta den praktiske brukeradministrasjonen videre innenfor rammen.
 
 ### Vanlig bruker
 
@@ -66,7 +58,7 @@ Vanlig bruker kan ikke administrere modultilgang og ser bare modulene som er til
 
 ## 4. Datamodell
 
-Ny tabell:
+Modultilgang lagres separat fra `profiles`:
 
 ```text
 public.user_module_access
@@ -79,7 +71,7 @@ public.user_module_access
 PRIMARY KEY (user_id, module_key)
 ```
 
-Tillatte `module_key`-verdier i 38A:
+Tillatte nøkler i 38A:
 
 ```text
 projects
@@ -87,11 +79,11 @@ sales
 store_offers
 ```
 
-Modulrettigheter legges ikke inn som mange boolske kolonner i `profiles`. Egen tabell gjør modellen utvidbar uten å gjøre brukerprofilen til en stadig større rettighetsstruktur.
+Egen tabell gjør modellen utvidbar uten å fylle `profiles` med mange boolske rettighetskolonner.
 
 ## 5. Server er autoritativ
 
-Følgende prinsipp er absolutt:
+Prinsipp:
 
 ```text
 UI / meny / Hjelp
@@ -103,9 +95,7 @@ RLS / SECURITY DEFINER RPC
 avgjør faktisk data- og skrivetilgang
 ```
 
-Frontend kan skjule en knapp for god UX, men frontend kan aldri være eneste sperre.
-
-Sentrale serverfunksjoner:
+Sentrale funksjoner:
 
 ```text
 current_user_has_module_access(module_key)
@@ -115,142 +105,154 @@ list_managed_module_access()
 set_managed_module_access(target_user_id, requested_module_keys)
 ```
 
-Direkte INSERT/UPDATE/DELETE på `user_module_access` er ikke gitt til vanlige `authenticated`-brukere. Endringer går gjennom kontrollert RPC.
+Direkte endring av `user_module_access` gis ikke til ordinære brukere. Endringer går gjennom kontrollert RPC.
 
-## 6. Prosjekttilgang
+## 6. Prosjekt- og Sales-data
 
-Eksisterende firma-/prosjektgrense beholdes. `projects` er et ekstra krav for ikke-systemadministratorer.
+Eksisterende firma-/prosjektgrenser beholdes. `projects` er et ekstra krav for interne prosjektdata.
+
+`current_sales_company_scope_id()` gir ordinært Sales-scope bare når brukeren har `sales`.
+
+Butikktilbud har i tillegg `store_offers`-kontroll på butikkmetadata, butikkmaler og publisering av butikkversjoner.
+
+Modultilgang gir aldri tilgang til andre firmaers data.
+
+Offentlig kundelenke og `accept_sales_offer` fortsetter å bruke tilbudstoken og er ikke avhengig av intern modultilgang. Allerede publiserte tilbud skal derfor fortsatt kunne vises og aksepteres selv om en intern brukers rettigheter senere endres.
+
+## 7. Ny forespørsel og Nytt tilbud – viktig arkitekturgrense
+
+Disse arbeidsflytene skal ikke blandes:
 
 ```text
-gyldig aktiv bruker
-+ projects-modul
-+ eksisterende project/company-scope-regel
-= intern prosjekttilgang
++ Ny forespørsel
+  → eksisterende forespørsel/befaring
+  → tilbud
+  → kundeaksept
+  → ordinær prosjektflyt ved relevant tilbud
 ```
 
-De sentrale funksjonene `project_row_access_allowed` og `project_row_insert_allowed` inkluderer modulkravet, slik at eksisterende RLS-regler på prosjektdata fortsetter å bruke samme sikkerhetsgrense.
+`+ Ny forespørsel` og den eksisterende Befaring/Tilbud-flyten skal ikke omskrives av 38A.
 
-Systemadmin beholder eksisterende support-/lesemuligheter; supportmodus skal fortsatt ikke bli en generell skrive-bypass.
+Direkte tilbud har én felles inngang:
 
-## 7. Sales og Butikktilbud
+```text
++ Nytt tilbud
+  ├─ Våtromstilbud      (krever sales)
+  └─ Butikktilbud       (krever sales + store_offers)
+```
 
-`current_sales_company_scope_id()` returnerer bare firmascope for en ordinær bruker som har `sales`.
+Regler:
 
-Dermed følger eksisterende Sales-RLS automatisk `sales`-tilgangen.
+- bruker med `sales`, men uten `store_offers`, går direkte til ordinært Våtromstilbud som tidligere
+- bruker med både `sales` og `store_offers` får valg mellom Våtromstilbud og Butikktilbud
+- bruker uten `sales` skal ikke se eller kunne bruke Nytt tilbud
+- valg av Butikktilbud endrer ikke Ny forespørsel eller befaringsmotoren
+- Butikktilbud avsluttes ved kundeaksept og kan ikke aktiveres som prosjekt
+- Våtromstilbud beholder eksisterende kontrakt-/prosjektflyt
 
-Butikktilbud har i tillegg egen serverkontroll:
+Dette gjenbruker eksisterende `startNewOfferSignal` og Sales-motor. Vi lager ikke en parallell tilbudsmotor.
 
-- `sales_requests` med butikkmetadata krever `store_offers`
-- butikktekstmaler krever `store_offers`
-- `publish_sales_offer` kontrollerer `sales`
-- publisering av en tilbudsversjon med låst butikkmetadata krever i tillegg `store_offers`
+## 8. Bakoverkompatibilitet
 
-Dette betyr at en bruker uten Butikktilbud ikke kan omgå sperren ved å manipulere klienten og sende en butikk-payload direkte.
+Ved innføring av 38A:
 
-Offentlig kundelenke og `accept_sales_offer` er **ikke** knyttet til intern modultilgang. Kunden bruker den eksisterende sikre tilbudstokenen. En intern rettighetsendring skal aldri gjøre et allerede publisert kundetilbud uleselig eller uaksepterbart for kunden.
+- eksisterende godkjente brukere beholder `projects`
+- eksisterende godkjente brukere beholder `sales`
+- tidligere Butikktilbud-brukere beholder `store_offers`
+- systemadministrator har effektiv tilgang til alle moduler
+- nye brukere får ikke moduler automatisk; tilgang velges i godkjenningsprosessen
 
-## 8. Bakoverkompatibilitet ved innføring
-
-38A skal ikke plutselig ta fra eksisterende brukere funksjoner de allerede bruker.
-
-Ved migrering:
-
-- alle eksisterende godkjente brukere får `projects`
-- alle eksisterende godkjente brukere får `sales`
-- `store_offers` gis bare til brukere som allerede oppfylte den tidligere Butikktilbud-regelen basert på org.nr. `915407692`
-- systemadministrator har uansett effektiv tilgang til alle moduler
-
-Nye brukere opprettet etter 38A får ingen modul automatisk. Systemadministrator velger modulene i godkjenningsprosessen.
-
-Det utføres ingen historisk omskriving av prosjekter, tilbud, tilbudsversjoner, kontrakter eller aksepter.
+Historiske prosjekter, tilbud, tilbudsversjoner, kontrakter og aksepter omskrives ikke.
 
 ## 9. Klientarkitektur
-
-Aktive 38A-moduler:
 
 ```text
 src/modules/access/moduleAccessClient.js
   - modul-katalog
   - RPC-kontrakter
   - normalisering
-  - delt, ikke-autoritativ UI-state
+  - delt UI-cache
 
 src/modules/access/moduleAccessUx.jsx
   - Brukere og tilganger
   - menyprojeksjon
   - Hjelp-filtrering
-  - UI-regler for systemadmin/firmaadmin
+  - systemadmin-/firmaadmin-regler
+
+src/modules/app/desktopSideMenu.js
+  - desktop hovednavigasjon
+  - global Startside-hurtigtilgang
+  - global Hjelp-hurtigtilgang
+  - bruker appens ekte navigasjonsknapper, ikke URL-reload som primærløsning
 
 src/modules/sales/SalesModule.jsx
-  - viser Nytt butikktilbud kun ved store_offers
+  - modultilgang for direkte tilbud
+  - én Nytt tilbud-inngang
+  - typevalg bare når bruker har Butikktilbud
+  - eksisterende SalesModuleCore beholdes som tilbudsmotor
 ```
 
-`index.html` starter det isolerte tilgangs-UX-laget. `main.jsx` skal ikke fragmenteres ytterligere bare for å få inn 38A; modultilgang holdes som et tydelig eget ansvar.
-
-Nettleserstate er kun cache/presentasjon. Refresh eller manipulasjon av `window`/localStorage kan aldri gi servertilgang som ikke finnes i Supabase.
+Vi skal ikke ha flere konkurrerende globale navigasjons-observers. Startside og Hjelp eies samlet av `desktopSideMenu.js` på desktop.
 
 ## 10. Hjelp
 
-Hjelp følger samme modultilgang som arbeidsflaten:
+Hjelp er globalt tilgjengelig, men innholdet filtreres etter faktisk modultilgang:
 
 ```text
 sales         -> Befaring/Tilbud-hjelp
 store_offers  -> Butikktilbud-hjelp
-projects      -> prosjekt-, dokumentasjons-, garanti-, sjekkliste-, avviks-, rapport- osv. hjelp
+projects      -> prosjekt-/dokumentasjonshjelp
 ```
 
-System-/firmaadministrator får i tillegg **Brukere og tilganger** med forklaring av delegasjonsreglene.
+System-/firmaadministrator får i tillegg temaet **Brukere og tilganger**.
 
-Hjelp skal ikke lære opp en bruker i en modul vedkommende ikke har fått tilgang til.
+Hjelp skal ikke lære opp en bruker i en modul vedkommende ikke har tilgang til.
 
-Rollebegrenset adminhjelp beholdes i tillegg til modulfiltreringen.
+På desktop skal Hjelp være tilgjengelig som hurtigknapp i toppnavigasjonen i tillegg til hovedmenyen. Hjelp er en global appfunksjon, ikke en prosjektmodul.
 
 ## 11. Juridisk firma og merkevare
 
 Modultilgang endrer ikke tilbudets juridiske firma eller firmascope.
 
-Butikktilbud kan fortsatt bruke valgt merkevare, for eksempel Bademiljø Expo, mens **juridisk tilbyder følger brukerens/firmaets låste firmaprofil**.
-
 ```text
-modultilgang  -> hva brukeren kan gjøre
-firmascope    -> hvilke data brukeren kan arbeide med
-merkevare     -> hvordan butikktilbudet presenteres
+modultilgang   -> hva brukeren kan gjøre
+firmascope     -> hvilke data brukeren kan arbeide med
+merkevare      -> hvordan tilbudet presenteres
 juridisk firma -> hvem som faktisk er tilbyder
 ```
 
-Disse begrepene skal ikke blandes.
+Butikktilbud kan bruke Bademiljø Expo som merkevare, mens juridisk tilbyder følger brukerens/firmaets låste firmaprofil.
 
-## 12. QA-krav før merge
+## 12. QA før merge
 
-38A skal minst verifisere:
+Minstekrav:
 
-- eksisterende godkjente brukere har ikke mistet tidligere Prosjekt-/Sales-tilgang
-- systemadmin ser alle tre moduler
-- systemadmin kan endre modultilgang for bruker
-- firmaadmin ser bare eget firma
-- firmaadmin kan ikke gi en modul firmaadmin selv mangler
-- firmaadmin kan ikke endre egen modultilgang
+- branch er basert på gjeldende `main` og er ikke bak produksjonsbaseline
+- eksisterende godkjente brukere har ikke mistet Prosjekt-/Sales-tilgang
+- systemadmin har alle moduler og kan administrere andre brukere
+- firmaadmin ser bare eget firma og kan ikke delegere mer enn egen tilgang
+- ny bruker kan ikke godkjennes uten valgt modultilgang
 - `store_offers` medfører `sales`
-- bruker uten `projects` får ikke prosjektdata gjennom RLS
-- bruker uten `sales` får ikke internt Sales-scope/data
-- bruker uten `store_offers` får ikke butikkrader/maler eller publisert butikktilbud server-side
-- eksisterende offentlig kundetilbud/aksept fortsetter å fungere
-- meny skjuler utilgjengelige hovedinnganger
-- Hjelp skjuler tema for utilgjengelige moduler
-- Brukere og tilganger er forståelig på både systemadmin- og firmaadmin-nivå
-- critical build / Sales recovery / Fremdriftsplan er grønne
-- Vercel Preview er READY på eksakt branch-SHA
-- arkitekturdokumentasjon og Hjelp er oppdatert
+- RLS blokkerer prosjekt/Sales/butikkdata uten riktig modul
+- meny og Hjelp følger modultilgang
+- Startside og Hjelp fungerer uten sideheng
+- + Ny forespørsel fungerer som før
+- + Nytt tilbud fungerer som før for bruker uten Butikktilbud
+- + Nytt tilbud viser typevalg for bruker med Butikktilbud
+- Butikktilbud kan ikke aktivere prosjekt
+- offentlig kundetilbud/aksept fungerer videre
+- critical build, Sales recovery og Fremdriftsplan er grønne
+- Preview er READY på eksakt branch-SHA
+- Hjelp og arkitektur er oppdatert
 
 ## 13. Videre utvidelse
 
-Nye moduler skal bare opprettes når det er en reell produkt-/sikkerhetsgrense. Unngå rettigheter som `kan_se_bilder`, `kan_redigere_sjekkpunkt_3` osv. uten et konkret forretningsbehov.
+Nye tilgangsnøkler skal bare opprettes når det finnes en reell produkt-/sikkerhetsgrense. Unngå smårettigheter uten konkret forretningsbehov.
 
-Ved senere utvidelse skal samme mønster brukes:
+Mønster:
 
 ```text
 ny høy-nivå modul
-→ legg til kontrollert module_key
 → server/RLS/RPC først
 → klientmeny og handling
 → Hjelp
