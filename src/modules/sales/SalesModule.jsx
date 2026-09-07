@@ -25,6 +25,11 @@ import {
 } from "../access/moduleAccessClient.js";
 
 const SALES_RELOAD_TAB_KEY = "expo-proffdok:sales:restore-tab-after-reload";
+const SALES_OVERVIEW_INTRO_MARKER = "salesOverviewIntro";
+
+function compactText(value = "") {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
 
 function protectInspectionDraftNavigation(props = {}) {
   const salesStorageKey = buildSalesStorageKey({
@@ -59,6 +64,37 @@ function markSalesTabForReload(props = {}) {
 function getPublicContractToken() {
   if (typeof window === "undefined") return "";
   return new URLSearchParams(window.location.search).get("publicContract") || "";
+}
+
+function findSalesOverviewIntro() {
+  const marked = document.querySelector(`[data-${SALES_OVERVIEW_INTRO_MARKER.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}="1"]`);
+  if (marked instanceof HTMLParagraphElement) return marked;
+
+  return Array.from(document.querySelectorAll("p.note")).find((note) => {
+    const text = compactText(note.textContent);
+    return text.startsWith("Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept") ||
+      text.startsWith("Her håndterer du forespørsler, våtromstilbud og butikktilbud") ||
+      text.startsWith("Opprett og følg varebaserte Butikktilbud") ||
+      text.startsWith("Opprett og følg forespørsler og våtromstilbud");
+  }) || null;
+}
+
+function setSalesOverviewIntro(type = "all") {
+  const note = findSalesOverviewIntro();
+  if (!(note instanceof HTMLParagraphElement)) return false;
+
+  note.dataset[SALES_OVERVIEW_INTRO_MARKER] = "1";
+  if (type === "store") {
+    note.textContent = "Opprett og følg varebaserte Butikktilbud med eventuell montering frem til kundeaksept. Butikktilbud avsluttes ved aksept og opprettes ikke som ProffDok-prosjekt.";
+    return true;
+  }
+  if (type === "wetroom") {
+    note.textContent = "Opprett og følg forespørsler og Våtromstilbud gjennom befaring, tilbud og kundeaksept. Akseptert Våtromstilbud kan aktiveres som ProffDok-prosjekt.";
+    return true;
+  }
+
+  note.textContent = "Her håndterer du forespørsler, Våtromstilbud og Butikktilbud. Våtromstilbud kan gå videre til ProffDok-prosjekt etter aksept, mens Butikktilbud avsluttes ved aksept.";
+  return true;
 }
 
 function OfferTypePicker({ canUseStoreOffers, onWetroom, onStore, onClose }) {
@@ -199,6 +235,33 @@ export default function SalesModule(props) {
       window.removeEventListener(MODULE_ACCESS_EVENT, syncAccess);
     };
   }, [props.integrationMode, props.supabaseClient, props.authUser?.id]);
+
+  useEffect(() => {
+    if (props.integrationMode !== "app") return undefined;
+
+    let frame = window.requestAnimationFrame(() => setSalesOverviewIntro("all"));
+    const onOfferFilterClick = (event) => {
+      const button = event.target instanceof Element ? event.target.closest("button") : null;
+      if (!(button instanceof HTMLButtonElement)) return;
+      if (!button.closest('[aria-label="Søk og filtrering"]')) return;
+
+      const text = compactText(button.textContent);
+      let type = "";
+      if (text.startsWith("Butikktilbud")) type = "store";
+      else if (text.startsWith("Våtromstilbud")) type = "wetroom";
+      else if (text.startsWith("Alle tilbud")) type = "all";
+      if (!type) return;
+
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => setSalesOverviewIntro(type));
+    };
+
+    document.addEventListener("click", onOfferFilterClick);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.removeEventListener("click", onOfferFilterClick);
+    };
+  }, [props.integrationMode]);
 
   const publicContractToken =
     props.integrationMode === "public" ? getPublicContractToken() : "";
