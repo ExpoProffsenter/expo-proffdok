@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 37D1 / FASE 33B.4 / FASE 30D1 / FASE 30C3 / FASE 30C2
+// Expo ProffDok – FASE 38A1 / FASE 37D1 / FASE 33B.4 / FASE 30D1 / FASE 30C3 / FASE 30C2
+// FASE 38A1 lar serverstyrt modultilgang avgjøre om Butikktilbud er tilgjengelig.
+// Firma/org.nr. er ikke lenger tilgangskontroll. Samme rettighet projiseres i meny og Hjelp.
 // Tynn sikkerhets-wrapper rundt eksisterende SalesModule.
 // FASE 37D1 legger til en Ringside-avgrenset inngang for Butikktilbud uten å
 // kopiere tilbuds-, publiserings-, kundelenke-, PDF-, aksept- eller e-postlogikk.
@@ -18,10 +20,13 @@ import {
   loadSalesNavigation,
   saveSalesNavigation,
 } from "./services/salesLocalStorage.js";
+import { markStoreOfferLaunch } from "./services/salesStoreOffers.js";
 import {
-  isRingsideStoreOfferProfile,
-  markStoreOfferLaunch,
-} from "./services/salesStoreOffers.js";
+  MODULE_ACCESS_EVENT,
+  hasModuleAccess,
+  readCachedModuleAccess,
+  refreshMyModuleAccess,
+} from "../access/moduleAccessClient.js";
 
 const SALES_RELOAD_TAB_KEY = "expo-proffdok:sales:restore-tab-after-reload";
 
@@ -67,6 +72,7 @@ export default function SalesModule(props) {
     return 0;
   });
   const [storeOfferSignal, setStoreOfferSignal] = useState(0);
+  const [moduleAccess, setModuleAccess] = useState(() => readCachedModuleAccess());
 
   useEffect(() => {
     const rehydrateSalesModule = () => {
@@ -96,6 +102,30 @@ export default function SalesModule(props) {
     };
   }, []);
 
+  useEffect(() => {
+    if (props.integrationMode !== "app") return undefined;
+
+    let disposed = false;
+    const syncAccess = (event) => {
+      if (disposed) return;
+      setModuleAccess(event?.detail || readCachedModuleAccess());
+    };
+
+    window.addEventListener(MODULE_ACCESS_EVENT, syncAccess);
+    refreshMyModuleAccess(props.supabaseClient)
+      .then((access) => {
+        if (!disposed) setModuleAccess(access);
+      })
+      .catch(() => {
+        if (!disposed) setModuleAccess(readCachedModuleAccess());
+      });
+
+    return () => {
+      disposed = true;
+      window.removeEventListener(MODULE_ACCESS_EVENT, syncAccess);
+    };
+  }, [props.integrationMode, props.supabaseClient, props.authUser?.id]);
+
   const publicContractToken =
     props.integrationMode === "public" ? getPublicContractToken() : "";
 
@@ -110,11 +140,13 @@ export default function SalesModule(props) {
 
   const canUseStoreOffers =
     props.integrationMode === "app" &&
-    isRingsideStoreOfferProfile(props.profile || {});
+    moduleAccess.loaded &&
+    hasModuleAccess(moduleAccess, "store_offers");
   const forwardedStartNewOfferSignal =
     storeOfferSignal || props.startNewOfferSignal || 0;
 
   const startStoreOffer = () => {
+    if (!canUseStoreOffers) return;
     markStoreOfferLaunch();
     setStoreOfferSignal(Date.now());
   };
