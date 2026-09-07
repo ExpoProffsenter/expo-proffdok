@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 31A2
+// Expo ProffDok – FASE 37D1 / FASE 31A2
+// Butikktilbud har en skjult metadata-linje for valgt logo og saksbehandlersignatur.
+// Metadata filtreres alltid bort fra ordinære tilbudslinjer og summer.
 // Tilbudslinjer og opsjoner kan ha valgfritt antall/enhet. amount er fortsatt
 // enhetspris eks. mva.; manglende antall behandles som 1 for full bakoverkompatibilitet.
 // Expo ProffDok – FASE 31A1B
@@ -109,10 +111,19 @@ export function getOfferTermsSnapshot(lines = []) {
     : {};
 }
 
+export function getStoreOfferMeta(lines = []) {
+  return Array.isArray(lines)
+    ? lines.find((line) => line?.__storeOfferMeta) || {}
+    : {};
+}
+
 export function getVisibleOfferLines(lines = []) {
   return Array.isArray(lines)
     ? lines.filter(
-        (line) => !line?.__companyMeta && !line?.__offerTermsMeta
+        (line) =>
+          !line?.__companyMeta &&
+          !line?.__offerTermsMeta &&
+          !line?.__storeOfferMeta
       )
     : [];
 }
@@ -270,6 +281,10 @@ export function formatOfferQuantity(item = {}) {
 
 export function getOfferTotal(lines) {
   return (Array.isArray(lines) ? lines : []).reduce((sum, line) => {
+    if (line?.__companyMeta || line?.__offerTermsMeta || line?.__storeOfferMeta) {
+      return sum;
+    }
+
     const amount = getOfferUnitPrice(line);
     const quantity = getOfferQuantity(line);
 
