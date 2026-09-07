@@ -163,7 +163,7 @@ function applyCustomerSectionOrder(signatureName = "") {
     });
 }
 
-function applyStoreOfferCopy(isStoreOffer) {
+function applyStoreOfferCopy(isStoreOffer, signatureName = "") {
   if (!isStoreOffer || typeof document === "undefined") return;
 
   const pricesSection = Array.from(
@@ -176,6 +176,24 @@ function applyStoreOfferCopy(isStoreOffer) {
     ".sales-customer-total-card .sales-customer-total-row:first-child > span"
   );
   if (totalLabel) totalLabel.textContent = "Sum varer og montering inkl. mva.";
+
+  const companyCard = document.querySelector(".sales-customer-company-card");
+  const companyLabel = companyCard?.querySelector(".sales-customer-company-label");
+  if (companyLabel) companyLabel.textContent = "Saksbehandler";
+
+  if (companyCard && companyLabel && signatureName) {
+    let handlerName = companyCard.querySelector("[data-store-case-handler='1']");
+    if (!handlerName) {
+      const existingName = Array.from(
+        companyCard.querySelectorAll(".sales-customer-company-name")
+      ).find((node) => node.previousElementSibling === companyLabel);
+      handlerName = existingName || document.createElement("strong");
+      handlerName.className = "sales-customer-company-name";
+      handlerName.dataset.storeCaseHandler = "1";
+      if (!existingName) companyLabel.insertAdjacentElement("afterend", handlerName);
+    }
+    handlerName.textContent = signatureName;
+  }
 }
 
 function getOfferParts(request = {}) {
@@ -345,7 +363,7 @@ export default function SalesCustomerView(props) {
         brandedRequest,
         selectedOptionIds
       );
-      applyStoreOfferCopy(isStoreOffer);
+      applyStoreOfferCopy(isStoreOffer, signatureName);
       if (isStoreOffer) {
         applyStoreAlternativePresentation(brandedRequest, selectedOptionIds);
       }
