@@ -93,10 +93,14 @@ export function isStoreOfferRequest(request = {}) {
 }
 
 export function getStoreOfferBrand(brandKey = "") {
-  return (
-    STORE_OFFER_BRANDS.find((brand) => brand.key === brandKey) ||
-    DEFAULT_STORE_OFFER_BRAND
-  );
+  const brand =
+    STORE_OFFER_BRANDS.find((item) => item.key === brandKey) ||
+    DEFAULT_STORE_OFFER_BRAND;
+
+  return {
+    ...brand,
+    logoUrl: absoluteBrandLogoUrl(brand.logoUrl),
+  };
 }
 
 export function createStoreOfferMetaLine({
@@ -121,9 +125,8 @@ export function createStoreOfferMetaLine({
     unit: "",
     brandKey: brand.key,
     brandLabel: brand.label,
-    // Absolutt URL låses sammen med tilbudsversjonen. Da fungerer logoen også i
-    // e-post og andre flater uten nettleserens relative app-origin.
-    brandLogoUrl: absoluteBrandLogoUrl(brand.logoUrl),
+    // Full URL låses sammen med tilbudsversjonen. Da fungerer logoen også i e-post.
+    brandLogoUrl: brand.logoUrl,
     signatureName: String(signatureName || "").trim(),
   };
 }
