@@ -1,3 +1,4 @@
+// FASE 37A2 HJELP: Én vennlig automatisk påminnelse etter 7 dager dokumenteres under eksisterende Befaring/Tilbud og Butikktilbud.
 // FASE 37D2 HJELP: Butikktilbud vises som eget hjelpetema og avsluttes ved aksept uten prosjektaktivering.
 // FASE 33B.5 HJELP: kontrakt/kundelenke vises direkte på saken, signert kontrakt arkiveres som PDF og følger prosjektet.
 // FASE 33B.5: brukerflaten kaller samlet tilbud/kontrakt/endringer Avtalegrunnlag; intern `tilbud`-nøkkel beholdes.
@@ -18,7 +19,7 @@ const SALES_HELP_TITLE = "🧾 Befaring/Tilbud";
 const STORE_HELP_TITLE = "🛍️ Butikktilbud";
 const NEWS_HELP_TITLE = "📢 Nytt i denne versjonen";
 const START_HELP_TITLE = "🚀 Startside / kom i gang";
-const HELP_UPDATED_LABEL = "Sist oppdatert: 07.09.2026";
+const HELP_UPDATED_LABEL = "Sist oppdatert: 08.09.2026";
 
 function textOf(node) {
   return String(node?.textContent || "").trim();
@@ -82,6 +83,16 @@ function createSales31CHelp() {
     "Tilbuds-PDF-en følger samme struktur som kundelinken med hovedposter, underposter, antall, enhetspris og valgfrie opsjoner.",
     "Når kunden aksepterer, knyttes aksepten til den publiserte tilbudsversjonen og valgte opsjoner.",
     "Akseptbeviset er låst dokumentasjon av tilbudsversjon, tidspunkt, kunde, sum og valgte opsjoner.",
+  ]);
+
+  appendHelpSection(block, "Automatisk oppfølging etter 7 dager", [
+    "Første tilbudsmail sendes manuelt som før. Expo ProffDok overtar ikke den første utsendingen.",
+    "For tilbud sendt etter at funksjonen er aktivert, sendes én vennlig automatisk påminnelse når den samme publiserte tilbudsversjonen har vært ubesvart i 7 hele dager.",
+    "Påminnelsen sendes ikke dersom kunden allerede har akseptert, saken er arkivert, kundens e-post er endret eller en nyere tilbudsversjon er publisert.",
+    "Gamle tilbud fra før funksjonen ble aktivert får ingen retroaktiv automatisk e-post og beholder dagens manuelle oppfølging.",
+    "Publiserer og sender du en ny tilbudsversjon, eller sender tilbudet manuelt på nytt, starter en ny 7-dagersperiode fra den nye kontakten.",
+    "Etter at den automatiske påminnelsen er sendt, venter Expo ProffDok nye 7 dager. Er tilbudet fortsatt ubesvart, vises saken igjen under Må følges opp for manuell vurdering.",
+    "Den automatiske e-posten omtales som en påminnelse, ikke en purring, og sendes bare én gang per publisert tilbudsversjon.",
   ]);
 
   appendHelpSection(block, "Kontrakt etter aksept", [
@@ -169,6 +180,7 @@ function createStoreOfferHelpItem() {
     "Bruk Forhåndsvis kundetilbud før publisering. Forhåndsvisningen sender ingen e-post og kan ikke aksepteres.",
     "Velg Bademiljø Expo eller Ringside Rørleggerbedrift som merkevare før publisering. Valgt logo og saksbehandler låses med tilbudsversjonen.",
     "Publiser og send til kunde. Kunden kan lese tilbudet, åpne vedlegg og produktlenker, velge eventuelle alternativer og akseptere digitalt.",
+    "For nye utsendinger sender Expo ProffDok én vennlig automatisk påminnelse etter 7 dager dersom den samme tilbudsversjonen fortsatt er ubesvart. Gamle tilbud får ingen retroaktiv automatisk e-post.",
     "Ved aksept mottar både kunde og saksbehandler bekreftelse. Saken blir liggende som akseptert butikktilbud og oppretter ikke kontrakt eller ProffDok-prosjekt.",
   ]);
 
@@ -188,7 +200,8 @@ function createStoreOfferHelpItem() {
   appendHelpSection(content, "Viktig", [
     "Butikktilbud er en egen arbeidsflyt og skal ikke brukes som inngang til våtromsprosjekt, kontrakt eller prosjektaktivering.",
     "Kontroller alltid kunde, vare, antall, rabatt, montering, alternativer, logo og vilkår i forhåndsvisningen før tilbudet sendes.",
-    "Tilgang til Butikktilbud skal senere følge brukerens tildelte modulrettigheter når den generelle tilgangsmodellen er innført.",
+    "Automatisk påminnelse sendes aldri når butikktilbudet allerede er akseptert, er arkivert eller når en annen tilbudsversjon er blitt gjeldende.",
+    "Tilgang til Butikktilbud følger brukerens tildelte modultilgang. Firmaadministrator kan bare delegere Butikktilbud når firmaadministratoren selv har denne tilgangen.",
   ]);
 
   button.addEventListener("click", () => {
@@ -236,9 +249,18 @@ function organizePermanentHelp({ closeStart = false } = {}) {
   });
 
   Array.from(document.querySelectorAll("li")).forEach((item) => {
-    if (textOf(item) === "Sjekk Nytt i denne versjonen når du lurer på hva som er endret.") {
+    const text = textOf(item);
+    if (text === "Sjekk Nytt i denne versjonen når du lurer på hva som er endret.") {
       item.textContent =
         "Nyheter om en appoppdatering vises i appen når det er relevant; Hjelp beskriver den gjeldende funksjonen.";
+    }
+    if (text === "Oppfølging av sendte tilbud er manuell. Expo ProffDok sender ikke automatisk purring til kunden.") {
+      item.textContent =
+        "Første tilbudsmail sendes manuelt. For nye utsendinger sender Expo ProffDok én vennlig automatisk påminnelse etter 7 dager når den samme tilbudsversjonen fortsatt er ubesvart; eldre tilbud følges opp manuelt.";
+    }
+    if (text === "Åpne saken og bruk Følg opp tilbud for manuell oppfølging. Hvis tilbudet har upubliserte endringer, publiseres riktig ny versjon før den sendes til kunden.") {
+      item.textContent =
+        "Når et tilbud fortsatt er ubesvart 7 dager etter automatisk påminnelse eller annen siste kontakt, vises saken igjen som Må følges opp. Åpne saken og vurder manuell oppfølging; upubliserte endringer må publiseres som ny versjon før utsending.";
     }
   });
 
