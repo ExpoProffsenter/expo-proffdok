@@ -1,5 +1,7 @@
-// Expo ProffDok – FASE 33B.4 / FASE 30D1 / FASE 30C3 / FASE 30C2
+// Expo ProffDok – FASE 37D1 / FASE 33B.4 / FASE 30D1 / FASE 30C3 / FASE 30C2
 // Tynn sikkerhets-wrapper rundt eksisterende SalesModule.
+// FASE 37D1 legger til en Ringside-avgrenset inngang for Butikktilbud uten å
+// kopiere tilbuds-, publiserings-, kundelenke-, PDF-, aksept- eller e-postlogikk.
 // FASE 33B.4: offentlig kontraktslenke går til egen tokenstyrt kundevisning uten
 // å endre eksisterende offentlig tilbudsvisning eller Sales recovery.
 // FASE 30D1: Ved full reload mens befaringsnotatet er åpent lander brukeren
@@ -16,6 +18,10 @@ import {
   loadSalesNavigation,
   saveSalesNavigation,
 } from "./services/salesLocalStorage.js";
+import {
+  isRingsideStoreOfferProfile,
+  markStoreOfferLaunch,
+} from "./services/salesStoreOffers.js";
 
 const SALES_RELOAD_TAB_KEY = "expo-proffdok:sales:restore-tab-after-reload";
 
@@ -60,6 +66,7 @@ export default function SalesModule(props) {
     protectInspectionDraftNavigation(props);
     return 0;
   });
+  const [storeOfferSignal, setStoreOfferSignal] = useState(0);
 
   useEffect(() => {
     const rehydrateSalesModule = () => {
@@ -101,5 +108,54 @@ export default function SalesModule(props) {
     );
   }
 
-  return <SalesModuleCore key={instanceKey} {...props} />;
+  const canUseStoreOffers =
+    props.integrationMode === "app" &&
+    isRingsideStoreOfferProfile(props.profile || {});
+  const forwardedStartNewOfferSignal =
+    storeOfferSignal || props.startNewOfferSignal || 0;
+
+  const startStoreOffer = () => {
+    markStoreOfferLaunch();
+    setStoreOfferSignal(Date.now());
+  };
+
+  const handleStartNewOfferHandled = () => {
+    if (storeOfferSignal) {
+      setStoreOfferSignal(0);
+      return;
+    }
+    props.onStartNewOfferHandled?.();
+  };
+
+  return (
+    <>
+      {canUseStoreOffers ? (
+        <div
+          style={{
+            maxWidth: 1180,
+            margin: "0 auto",
+            padding: "10px 16px 0",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <button
+            type="button"
+            className="secondary"
+            onClick={startStoreOffer}
+            style={{ whiteSpace: "nowrap" }}
+          >
+            + Nytt butikktilbud
+          </button>
+        </div>
+      ) : null}
+
+      <SalesModuleCore
+        key={instanceKey}
+        {...props}
+        startNewOfferSignal={forwardedStartNewOfferSignal}
+        onStartNewOfferHandled={handleStartNewOfferHandled}
+      />
+    </>
+  );
 }

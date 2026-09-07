@@ -1,8 +1,11 @@
-// Expo ProffDok – FASE 23I / FASE 29C1
+// Expo ProffDok – FASE 37D1 / FASE 23I / FASE 29C1
 // Presentasjonskomponent for ny og redigert forespørsel.
+// FASE 37D1 gjenbruker samme direkte tilbudsflyt for Ringside Butikktilbud,
+// men låser type/opprinnelse slik at saken kan identifiseres senere uten ny DB-flyt.
 // Nye saker opprettes ikke i Systemadmin-supportmodus fordi målbedriftens
 // ansvarlige bruker ikke er valgt i denne flyten.
 
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ClipboardList,
@@ -14,6 +17,12 @@ import {
 } from "lucide-react";
 import { requestSources, workTypes } from "../constants/salesConstants.js";
 import { getSalesSupportCompanyId } from "../services/salesSupabase.js";
+import {
+  STORE_OFFER_SOURCE,
+  STORE_OFFER_TITLE,
+  clearStoreOfferLaunch,
+  readStoreOfferLaunch,
+} from "../services/salesStoreOffers.js";
 
 export default function SalesRequestForm({
   form,
@@ -25,6 +34,21 @@ export default function SalesRequestForm({
   onUpdateForm,
 }) {
   const supportMode = Boolean(getSalesSupportCompanyId());
+  const [isStoreOffer] = useState(
+    () => Boolean(isDirectOffer && readStoreOfferLaunch())
+  );
+
+  useEffect(() => {
+    if (!isStoreOffer) return undefined;
+
+    onUpdateForm("title", STORE_OFFER_TITLE);
+    onUpdateForm("source", STORE_OFFER_SOURCE);
+
+    return () => clearStoreOfferLaunch();
+    // Butikkmarkøren leses kun ved mount. Vi vil ikke reklassifisere en vanlig
+    // direkte tilbudssak dersom parent-funksjonene får ny referanse ved rerender.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStoreOffer]);
 
   if (supportMode && !isEditingRequest) {
     return (
@@ -50,7 +74,11 @@ export default function SalesRequestForm({
             <section className="sales-form-hero">
               <p className="sales-eyebrow">Handling sperret i supportmodus</p>
               <h1 className="sales-title">
-                {isDirectOffer ? "Nytt tilbud" : "Ny forespørsel"} må opprettes av firmaet
+                {isStoreOffer
+                  ? "Nytt butikktilbud"
+                  : isDirectOffer
+                    ? "Nytt tilbud"
+                    : "Ny forespørsel"} må opprettes av firmaet
               </h1>
               <p className="sales-subtitle">
                 Systemadministrator kan kontrollere og bistå på eksisterende saker,
@@ -90,7 +118,9 @@ export default function SalesRequestForm({
             </div>
             <div className="sales-brand-copy">
               <strong>Expo ProffDok</strong>
-              <span>Befaring / Tilbud / Aksept</span>
+              <span>
+                {isStoreOffer ? "Butikktilbud / Varesalg" : "Befaring / Tilbud / Aksept"}
+              </span>
             </div>
           </div>
         </header>
@@ -100,9 +130,11 @@ export default function SalesRequestForm({
             <p className="sales-eyebrow">
               {isEditingRequest
                 ? "Rediger forespørsel"
-                : isDirectOffer
-                  ? "Nytt tilbud"
-                  : "Ny forespørsel"}
+                : isStoreOffer
+                  ? "Nytt butikktilbud"
+                  : isDirectOffer
+                    ? "Nytt tilbud"
+                    : "Ny forespørsel"}
             </p>
             <h1
               className="sales-title"
@@ -114,16 +146,20 @@ export default function SalesRequestForm({
             >
               {isEditingRequest
                 ? "Oppdater kundehenvendelse"
-                : isDirectOffer
-                  ? "Registrer kunde og opprett tilbud"
-                  : "Registrer kundehenvendelse"}
+                : isStoreOffer
+                  ? "Registrer kunde og opprett butikktilbud"
+                  : isDirectOffer
+                    ? "Registrer kunde og opprett tilbud"
+                    : "Registrer kundehenvendelse"}
             </h1>
             <p className="sales-subtitle">
               {isEditingRequest
                 ? "Oppdater kunde-, adresse- og prosjektinformasjon uten å opprette en ny sak."
-                : isDirectOffer
-                  ? "Legg inn kunde- og prosjektinformasjon. Du går deretter direkte til tilbudsbyggeren uten forespørsel eller befaring."
-                  : "Fang opp det viktigste raskt. Resten kan fylles ut etter befaring."}
+                : isStoreOffer
+                  ? "For varesalg over disk/showroom. Du går direkte til den samme tilbudsbyggeren, kundelenken og e-postutsendingen som hovedtilbudet – uten befaring."
+                  : isDirectOffer
+                    ? "Legg inn kunde- og prosjektinformasjon. Du går deretter direkte til tilbudsbyggeren uten forespørsel eller befaring."
+                    : "Fang opp det viktigste raskt. Resten kan fylles ut etter befaring."}
             </p>
           </section>
 
@@ -204,33 +240,47 @@ export default function SalesRequestForm({
                 />
               </label>
 
-              <label className="sales-field">
-                <span>Type arbeid</span>
-                <select
-                  value={form.title}
-                  onChange={(event) => onUpdateForm("title", event.target.value)}
-                >
-                  {workTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {isStoreOffer ? (
+                <label className="sales-field">
+                  <span>Type tilbud</span>
+                  <input value={STORE_OFFER_TITLE} readOnly />
+                </label>
+              ) : (
+                <label className="sales-field">
+                  <span>Type arbeid</span>
+                  <select
+                    value={form.title}
+                    onChange={(event) => onUpdateForm("title", event.target.value)}
+                  >
+                    {workTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
-              <label className="sales-field">
-                <span>{isDirectOffer ? "Tilbudet kom via" : "Forespørselen kom via"}</span>
-                <select
-                  value={form.source}
-                  onChange={(event) => onUpdateForm("source", event.target.value)}
-                >
-                  {requestSources.map((source) => (
-                    <option key={source} value={source}>
-                      {source}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {isStoreOffer ? (
+                <label className="sales-field">
+                  <span>Salgskanal</span>
+                  <input value="Butikk / showroom" readOnly />
+                </label>
+              ) : (
+                <label className="sales-field">
+                  <span>{isDirectOffer ? "Tilbudet kom via" : "Forespørselen kom via"}</span>
+                  <select
+                    value={form.source}
+                    onChange={(event) => onUpdateForm("source", event.target.value)}
+                  >
+                    {requestSources.map((source) => (
+                      <option key={source} value={source}>
+                        {source}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
               <label className="sales-field sales-field-full">
                 <span>Kort notat</span>
@@ -238,9 +288,11 @@ export default function SalesRequestForm({
                   value={form.note}
                   onChange={(event) => onUpdateForm("note", event.target.value)}
                   placeholder={
-                    isDirectOffer
-                      ? "Kort intern merknad om tilbudet eller kundens behov."
-                      : "Kunden ønsker befaring for modernisering av bad. Sluk må vurderes."
+                    isStoreOffer
+                      ? "Kort intern merknad om produktene, kunden eller leveringen."
+                      : isDirectOffer
+                        ? "Kort intern merknad om tilbudet eller kundens behov."
+                        : "Kunden ønsker befaring for modernisering av bad. Sluk må vurderes."
                   }
                   rows={4}
                 />
@@ -253,7 +305,7 @@ export default function SalesRequestForm({
               <div className="sales-preview-lines">
                 <span>
                   <ClipboardList size={16} />
-                  {form.title}
+                  {isStoreOffer ? STORE_OFFER_TITLE : form.title}
                 </span>
                 <span>
                   <MapPin size={16} />
@@ -285,9 +337,11 @@ export default function SalesRequestForm({
                 <Save size={18} />
                 {isEditingRequest
                   ? "Lagre endringer"
-                  : isDirectOffer
-                    ? "Opprett tilbud"
-                    : "Lagre forespørsel"}
+                  : isStoreOffer
+                    ? "Opprett butikktilbud"
+                    : isDirectOffer
+                      ? "Opprett tilbud"
+                      : "Lagre forespørsel"}
               </button>
             </div>
           </form>

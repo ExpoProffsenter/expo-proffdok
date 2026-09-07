@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 31A2
+// Expo ProffDok – FASE 37D1 / FASE 31A2
+// Butikktilbud beholder sin skjulte, versjonslåste metadata også når et publisert
+// tilbud mappes til kundevisning. Metadata vises aldri som prislinje.
 // Antall/enhet beholdes i eksisterende flat lines/options-modell uten SQL-endring.
 // Manglende antall betyr 1. Prosentbasert administrasjon beregnes av faktisk
 // linjesum (antall × enhetspris), og ugyldig antall stoppes før ordinær lagring.
@@ -17,7 +19,7 @@ import {
   hasPendingOfferDraftRecovery,
   pruneEmptyOfferDraftRows,
 } from "../services/salesLocalStorage.js";
-import { getOfferTotal } from "./salesUtils.js";
+import { getOfferTotal, getStoreOfferMeta } from "./salesUtils.js";
 import {
   prepareOfferFormForSave as prepareOfferFormForSaveCore,
 } from "./salesOfferLogicCore.js";
@@ -192,5 +194,19 @@ export function prepareOfferFormForSave(formValue = {}) {
       null,
     invalidLineQuantity: invalidLineQuantity || null,
     invalidOptionQuantity: invalidOptionQuantity || null,
+  };
+}
+
+export function mapPublicOfferToRequest(result) {
+  const mapped = core.mapPublicOfferToRequest(result);
+  if (!mapped) return null;
+
+  const publishedLines = Array.isArray(result?.version?.lines)
+    ? result.version.lines
+    : [];
+
+  return {
+    ...mapped,
+    storeOfferMeta: getStoreOfferMeta(publishedLines),
   };
 }

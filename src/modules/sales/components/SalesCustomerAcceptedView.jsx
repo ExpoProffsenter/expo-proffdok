@@ -1,6 +1,7 @@
-// Expo ProffDok – FASE 34B
-// Kundens ferdig aksepterte tilbud viser låst aksept med valgte opsjoner,
+// Expo ProffDok – FASE 37D2 / FASE 34B
+// Kundens ferdig aksepterte tilbud viser låst aksept med valgte alternativer/opsjoner,
 // akseptert totalsum inkl. mva. og signaturtidspunkt. Ingen akseptdata endres.
+// Butikktilbud bruker valgt merkevare, saksbehandler og faktisk alternativpris.
 
 import { CheckCircle2 } from "lucide-react";
 import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
@@ -38,11 +39,29 @@ function getAcceptedTotalExVat(request = {}, options = []) {
   return getOfferTotal(request.acceptedOfferLines || []) + getOfferTotal(options);
 }
 
-function optionTypeLabel(option = {}) {
+function optionTypeLabel(option = {}, isStoreOffer = false) {
   const amount = getOfferTotal([option]);
-  if (option.optionType === "alternative") return "Valgt alternativ / prisendring";
+  if (option.optionType === "alternative") {
+    return isStoreOffer ? "Valgt alternativ" : "Valgt alternativ / prisendring";
+  }
   if (amount < 0) return "Valgt fradrag";
-  return "Valgt tillegg";
+  return isStoreOffer ? "Valgt tillegg" : "Valgt tillegg";
+}
+
+function getAcceptedOptionAmountInclVat(option = {}, isStoreOffer = false) {
+  if (
+    isStoreOffer &&
+    option?.optionType === "alternative" &&
+    Number(option?.storeAlternativePricingVersion || 0) >= 2
+  ) {
+    const packageTotal = Number(option?.storeAlternativePackageTotalInclVat);
+    if (Number.isFinite(packageTotal)) return packageTotal;
+
+    const itemTotal = Number(option?.storeAlternativeItemTotalInclVat);
+    if (Number.isFinite(itemTotal)) return itemTotal;
+  }
+
+  return getOfferTotal([option]) * 1.25;
 }
 
 export default function SalesCustomerAcceptedView({
@@ -51,6 +70,11 @@ export default function SalesCustomerAcceptedView({
 }) {
   const options = getAcceptedOptions(selectedRequest);
   const acceptedTotalExVat = getAcceptedTotalExVat(selectedRequest, options);
+  const storeMeta = selectedRequest?.storeOfferMeta?.__storeOfferMeta
+    ? selectedRequest.storeOfferMeta
+    : null;
+  const isStoreOffer = Boolean(storeMeta);
+  const caseHandler = String(storeMeta?.signatureName || "").trim();
   const companyName =
     selectedRequest.companyName || companyProfile.companyName || "Utførende bedrift";
   const companyLogoUrl =
@@ -84,8 +108,9 @@ export default function SalesCustomerAcceptedView({
                 Din aksept er registrert
               </h1>
               <p className="sales-subtitle sales-customer-lead">
-                Dette er den registrerte og låste aksepten. Valgte opsjoner og
-                totalsum nedenfor er hentet fra tilbudsversjonen du aksepterte.
+                {isStoreOffer
+                  ? "Dette er den registrerte og låste aksepten. Valgte alternativer eller tillegg og totalsummen nedenfor er hentet fra tilbudsversjonen du aksepterte."
+                  : "Dette er den registrerte og låste aksepten. Valgte opsjoner og totalsum nedenfor er hentet fra tilbudsversjonen du aksepterte."}
               </p>
 
               <div className="sales-customer-meta-grid">
@@ -124,8 +149,12 @@ export default function SalesCustomerAcceptedView({
                   alt={companyName}
                 />
               ) : null}
-              <span className="sales-customer-company-label">Tilbud fra</span>
-              <strong className="sales-customer-company-name">{companyName}</strong>
+              <span className="sales-customer-company-label">
+                {isStoreOffer ? "Saksbehandler" : "Tilbud fra"}
+              </span>
+              <strong className="sales-customer-company-name">
+                {isStoreOffer && caseHandler ? caseHandler : companyName}
+              </strong>
               <span style={{ marginTop: 16, color: "#64748b" }}>
                 {selectedRequest.acceptedOfferTitle || selectedRequest.offerTitle || "Tilbud"}
               </span>
@@ -137,7 +166,7 @@ export default function SalesCustomerAcceptedView({
               <div className="sales-customer-section-heading">
                 <div>
                   <span className="sales-section-kicker">01</span>
-                  <h2>Valgte opsjoner</h2>
+                  <h2>{isStoreOffer ? "Valgte alternativer og tillegg" : "Valgte opsjoner"}</h2>
                 </div>
                 <span className="sales-customer-section-note">
                   Valgene er låst som en del av aksepten.
@@ -147,7 +176,12 @@ export default function SalesCustomerAcceptedView({
               {options.length ? (
                 <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
                   {options.map((option, index) => {
-                    const amountInclVat = getOfferTotal([option]) * 1.25;
+                    const amountInclVat = getAcceptedOptionAmountInclVat(option, isStoreOffer);
+                    const isStoreAlternative = Boolean(
+                      isStoreOffer &&
+                        option?.optionType === "alternative" &&
+                        Number(option?.storeAlternativePricingVersion || 0) >= 2
+                    );
                     return (
                       <div
                         key={option.id || `accepted-option-${index}`}
@@ -171,10 +205,10 @@ export default function SalesCustomerAcceptedView({
                               marginBottom: 4,
                             }}
                           >
-                            {optionTypeLabel(option)}
+                            {optionTypeLabel(option, isStoreOffer)}
                           </span>
                           <strong style={{ display: "block", color: "#0f172a" }}>
-                            {option.title || option.description || "Valgt opsjon"}
+                            {option.title || option.description || (isStoreOffer ? "Valg" : "Valgt opsjon")}
                           </strong>
                           {option.description && option.title ? (
                             <span style={{ display: "block", marginTop: 4, color: "#52616b" }}>
@@ -182,8 +216,13 @@ export default function SalesCustomerAcceptedView({
                             </span>
                           ) : null}
                         </div>
-                        <strong style={{ whiteSpace: "nowrap", color: "#0f172a" }}>
+                        <strong style={{ whiteSpace: "nowrap", color: "#0f172a", textAlign: "right" }}>
                           {formatNok(amountInclVat)} inkl. mva.
+                          {isStoreAlternative ? (
+                            <span style={{ display: "block", marginTop: 4, color: "#64748b", fontSize: 12, fontWeight: 700 }}>
+                              Alternativpris
+                            </span>
+                          ) : null}
                         </strong>
                       </div>
                     );
@@ -191,7 +230,9 @@ export default function SalesCustomerAcceptedView({
                 </div>
               ) : (
                 <p className="sales-subtitle" style={{ marginTop: 16 }}>
-                  Ingen opsjoner ble valgt i denne aksepten.
+                  {isStoreOffer
+                    ? "Ingen alternativer eller tillegg ble valgt i denne aksepten."
+                    : "Ingen opsjoner ble valgt i denne aksepten."}
                 </p>
               )}
             </article>
@@ -216,7 +257,9 @@ export default function SalesCustomerAcceptedView({
                   {formatNok(acceptedTotalExVat * 1.25)} inkl. mva.
                 </strong>
                 <span style={{ display: "block", marginTop: 6, color: "#52616b" }}>
-                  Inkluderer de valgte opsjonene ovenfor.
+                  {isStoreOffer
+                    ? "Inkluderer valgte alternativer eller tillegg ovenfor."
+                    : "Inkluderer de valgte opsjonene ovenfor."}
                 </span>
               </div>
             </article>
@@ -226,8 +269,9 @@ export default function SalesCustomerAcceptedView({
               <div>
                 <h2>Aksepten er ferdig registrert</h2>
                 <p>
-                  Ingen ytterligere handling er nødvendig i denne lenken.
-                  Utførende bedrift følger opp saken videre.
+                  {isStoreOffer
+                    ? "Ingen ytterligere handling er nødvendig i denne lenken. Butikktilbudet er ferdig registrert og saksbehandler følger opp ved behov."
+                    : "Ingen ytterligere handling er nødvendig i denne lenken. Utførende bedrift følger opp saken videre."}
                 </p>
               </div>
             </article>

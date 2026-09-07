@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 32A / FASE 23P / FASE 29B4
+// Expo ProffDok – FASE 37D1 / FASE 32A / FASE 23P / FASE 29B4
+// Butikktilbud bruker valgt Ringside/Bademiljø-merkevare i det låste firmasnapshotet
+// og binder saksbehandlerens bruker/e-post når den kan bekreftes mot ansvarlig på saken.
 // FASE 32A beholder serverstemplet publisher og publiseringstid på saken etter
 // publisering. Opplysningene kommer fra publish_sales_offer og er ikke utledet
 // fra ansvarlig eller andre mutable felt.
@@ -10,6 +12,7 @@
 import { buildPublishPayload } from "../utils/salesOfferLogic.js";
 import {
   getSalesOfferByToken,
+  getSalesSession,
   publishSalesOffer,
 } from "./salesSupabase.js";
 
@@ -20,6 +23,60 @@ export function buildCustomerOfferLink(currentUrl, token) {
   url.searchParams.delete("salesSupportCompany");
   url.searchParams.set("publicOffer", token);
   return url.toString();
+}
+
+function sameName(left = "", right = "") {
+  const normalize = (value) =>
+    String(value || "")
+      .trim()
+      .toLocaleLowerCase("nb-NO")
+      .replace(/\s+/g, " ");
+  return Boolean(normalize(left) && normalize(left) === normalize(right));
+}
+
+async function enrichStoreOfferForPublish(client, request = {}) {
+  const lines = Array.isArray(request.offerLines) ? request.offerLines : [];
+  const storeMeta = lines.find((line) => line?.__storeOfferMeta);
+  if (!storeMeta) return { request, storeMeta: null };
+
+  const responsibleName = String(
+    request.responsible || request.projectResponsible || ""
+  ).trim();
+  const signatureName = String(
+    storeMeta.signatureName || responsibleName || ""
+  ).trim();
+
+  let signatureEmail = String(storeMeta.signatureEmail || "").trim();
+  let signatureUserId = String(storeMeta.signatureUserId || "").trim();
+
+  // Ikke bind den som publiserer til en annen navngitt saksbehandler. Når navnene
+  // samsvarer, låses bruker-id/e-post sammen med tilbudsversjonen slik at senere
+  // akseptvarsler går til faktisk saksbehandler og ikke bare "siste publisher".
+  if (!signatureEmail && (!signatureName || sameName(signatureName, responsibleName))) {
+    try {
+      const { data: sessionData } = await getSalesSession(client);
+      const user = sessionData?.session?.user || null;
+      if (user?.email) signatureEmail = String(user.email).trim().toLowerCase();
+      if (user?.id) signatureUserId = String(user.id).trim();
+    } catch {
+      // Publisher-fallback på server håndterer eldre tilbud dersom sesjonen ikke kan leses.
+    }
+  }
+
+  const enrichedMeta = {
+    ...storeMeta,
+    signatureName,
+    signatureEmail,
+    signatureUserId,
+  };
+  const enrichedLines = lines.map((line) =>
+    line?.__storeOfferMeta ? enrichedMeta : line
+  );
+
+  return {
+    request: { ...request, offerLines: enrichedLines },
+    storeMeta: enrichedMeta,
+  };
 }
 
 export async function publishSalesOfferAndBuildLink({
@@ -68,14 +125,23 @@ export async function publishSalesOfferAndBuildLink({
     companyProfile && typeof companyProfile === "object"
       ? companyProfile
       : await loadCompanyProfile();
+  const { request: publishRequest, storeMeta: storeOfferMeta } =
+    await enrichStoreOfferForPublish(client, request);
   const publishCompanyProfile = {
     ...(resolvedCompanyProfile || {}),
-    logoUrl: resolvedCompanyProfile?.logoUrl || "/expo-logo.png",
+    companyName:
+      storeOfferMeta?.brandLabel ||
+      resolvedCompanyProfile?.companyName ||
+      "",
+    logoUrl:
+      storeOfferMeta?.brandLogoUrl ||
+      resolvedCompanyProfile?.logoUrl ||
+      "/expo-logo.png",
   };
 
   const { data, error } = await publishSalesOffer(
     client,
-    buildPublishPayload(request, publishCompanyProfile)
+    buildPublishPayload(publishRequest, publishCompanyProfile)
   );
 
   if (error) throw error;
@@ -88,6 +154,7 @@ export async function publishSalesOfferAndBuildLink({
     item.id === request.id
       ? {
           ...item,
+          offerLines: publishRequest.offerLines,
           salesOfferId: data.offer_id,
           sentOfferVersionId: data.version_id,
           sentOfferVersionNumber: data.version_number,
