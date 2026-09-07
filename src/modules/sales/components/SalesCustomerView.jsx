@@ -14,7 +14,7 @@ import "./salesCustomerOptionality.css";
 import { decorateRequestForQuantityPresentation } from "../utils/salesOfferQuantityPresentation.js";
 import { decorateRequestForOptionalityPresentation } from "../utils/salesOfferOptionalityPresentation.js";
 import { getActiveOfferVersion } from "../utils/salesOfferLogic.js";
-import { getStoreOfferMeta } from "../utils/salesUtils.js";
+import { formatNok, getStoreOfferMeta } from "../utils/salesUtils.js";
 
 const ORDER_STYLES = `
 .sales-customer-ordered-stack {
@@ -86,6 +86,10 @@ const ORDER_STYLES = `
   content: "Prisen inngår kun dersom opsjonen velges.";
   font-size: 0.9rem;
   line-height: 1.45;
+}
+.sales-customer-option-card[data-store-alternative="true"] .sales-customer-option-type {
+  color: #0b7f87;
+  font-weight: 900;
 }
 `;
 
@@ -174,20 +178,94 @@ function applyStoreOfferCopy(isStoreOffer) {
   if (totalLabel) totalLabel.textContent = "Sum varer og montering inkl. mva.";
 }
 
+function getOfferParts(request = {}) {
+  const activeVersion = getActiveOfferVersion(request);
+  return {
+    lines: Array.isArray(activeVersion?.lines)
+      ? activeVersion.lines
+      : Array.isArray(request.offerLines)
+        ? request.offerLines
+        : [],
+    options: Array.isArray(activeVersion?.options)
+      ? activeVersion.options
+      : Array.isArray(request.offerOptions)
+        ? request.offerOptions
+        : [],
+  };
+}
+
+function applyStoreAlternativePresentation(request, selectedOptionIds = []) {
+  if (typeof document === "undefined") return;
+
+  const { options } = getOfferParts(request || {});
+  const alternatives = options.filter(
+    (option) =>
+      option?.optionType === "alternative" &&
+      Number(option?.storeAlternativePricingVersion || 0) >= 2
+  );
+  if (!alternatives.length) return;
+
+  const cards = Array.from(document.querySelectorAll(".sales-customer-option-card"));
+  const usedCards = new Set();
+
+  alternatives.forEach((option) => {
+    const title = String(option?.title || "").trim();
+    const card = cards.find((candidate) => {
+      if (usedCards.has(candidate)) return false;
+      return String(candidate.querySelector("h3")?.textContent || "").trim() === title;
+    });
+    if (!card) return;
+    usedCards.add(card);
+    card.dataset.storeAlternative = "true";
+
+    const typeNode = card.querySelector(".sales-customer-option-type");
+    if (typeNode) typeNode.textContent = "Alternativ";
+
+    const replacementNode = card.querySelector(".sales-customer-option-replacement");
+    if (replacementNode) {
+      const replaced = String(option?.replacementLineDescription || "").trim();
+      replacementNode.textContent = replaced
+        ? `Erstatter ${replaced}.`
+        : "Erstatter valgt vare eller montering.";
+    }
+
+    const hasInstallationOverride = String(
+      option?.storeInstallationAlternativeTotalInclVat ?? ""
+    ).trim();
+    const alternativePrice = Number(
+      hasInstallationOverride
+        ? option?.storeAlternativePackageTotalInclVat
+        : option?.storeAlternativeItemTotalInclVat
+    );
+    const priceNode = card.querySelector(".sales-customer-option-price");
+    if (priceNode && Number.isFinite(alternativePrice)) {
+      priceNode.textContent = hasInstallationOverride
+        ? `Alternativpris vare + montering: ${formatNok(alternativePrice)} inkl. mva.`
+        : `Alternativpris: ${formatNok(alternativePrice)} inkl. mva.`;
+    }
+  });
+
+  const selectedIds = new Set(
+    (Array.isArray(selectedOptionIds) ? selectedOptionIds : []).map(String)
+  );
+  const hasSelectedAlternative = alternatives.some((option) =>
+    selectedIds.has(String(option?.id || ""))
+  );
+  if (hasSelectedAlternative) {
+    const pricesSection = Array.from(
+      document.querySelectorAll(".sales-customer-offer-stack > *")
+    ).find((section) => classifySection(section) === "prices");
+    const adjustmentLabel = pricesSection?.querySelector(
+      ".sales-customer-total-row.sales-customer-total-muted > span"
+    );
+    if (adjustmentLabel) adjustmentLabel.textContent = "Valgt alternativ – justering av totalsum";
+  }
+}
+
 function getOptionsOnlyGroups(request = {}) {
   if (!request) return [];
 
-  const activeVersion = getActiveOfferVersion(request);
-  const lines = Array.isArray(activeVersion?.lines)
-    ? activeVersion.lines
-    : Array.isArray(request.offerLines)
-      ? request.offerLines
-      : [];
-  const options = Array.isArray(activeVersion?.options)
-    ? activeVersion.options
-    : Array.isArray(request.offerOptions)
-      ? request.offerOptions
-      : [];
+  const { lines, options } = getOfferParts(request);
   const lineMainPostIds = new Set(
     lines.map((line) => String(line?.mainPostId || "").trim()).filter(Boolean)
   );
@@ -268,6 +346,9 @@ export default function SalesCustomerView(props) {
         selectedOptionIds
       );
       applyStoreOfferCopy(isStoreOffer);
+      if (isStoreOffer) {
+        applyStoreAlternativePresentation(brandedRequest, selectedOptionIds);
+      }
     };
 
     const frame = window.requestAnimationFrame(applyPresentation);
