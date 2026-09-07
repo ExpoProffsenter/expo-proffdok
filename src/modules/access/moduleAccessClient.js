@@ -209,8 +209,15 @@ export async function setManagedModuleAccess(userId, moduleKeys) {
     target_user_id: userId,
     requested_module_keys: normalizeModuleKeys(moduleKeys),
   });
-  return {
+  const result = {
     ...payload,
     module_keys: normalizeModuleKeys(payload?.module_keys || []),
   };
+
+  // Systemadmin-godkjenning bruker et separat eksisterende panel. Gi UX-laget
+  // beskjed om å hente ferske rettigheter før Godkjenn bruker kan trykkes.
+  if (typeof window !== "undefined") {
+    window.setTimeout(() => window.dispatchEvent(new Event("focus")), 0);
+  }
+  return result;
 }
