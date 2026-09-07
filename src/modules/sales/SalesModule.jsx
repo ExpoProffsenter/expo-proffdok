@@ -1,15 +1,11 @@
 // Expo ProffDok – FASE 38A1 / FASE 37D1 / FASE 33B.4 / FASE 30D1 / FASE 30C3 / FASE 30C2
-// FASE 38A1 lar serverstyrt modultilgang avgjøre om Butikktilbud er tilgjengelig.
-// Firma/org.nr. er ikke lenger tilgangskontroll. Samme rettighet projiseres i meny og Hjelp.
+// FASE 38A1 lar serverstyrt modultilgang avgjøre hvilke direkte tilbudstyper brukeren kan starte.
+// + Ny forespørsel og eksisterende Befaring/Tilbud-flyt er urørt. + Nytt tilbud er én inngang:
+// Våtromstilbud for Sales-brukere, og i tillegg Butikktilbud når store_offers er tildelt.
+// Firma/org.nr. er ikke tilgangskontroll. Samme rettighet projiseres i meny og Hjelp.
 // Tynn sikkerhets-wrapper rundt eksisterende SalesModule.
-// FASE 37D1 legger til en Ringside-avgrenset inngang for Butikktilbud uten å
-// kopiere tilbuds-, publiserings-, kundelenke-, PDF-, aksept- eller e-postlogikk.
-// FASE 33B.4: offentlig kontraktslenke går til egen tokenstyrt kundevisning uten
-// å endre eksisterende offentlig tilbudsvisning eller Sales recovery.
-// FASE 30D1: Ved full reload mens befaringsnotatet er åpent lander brukeren
-// trygt på saken først. Lokal kladd/bilder beholdes og hydreres ved ny åpning,
-// slik at tom initial React-state ikke kan overskrive befaringskladden.
-// FASE 30C3: starter ny hydration-cycle før mount/remount for tilbudskladd.
+// FASE 37D1 legger Butikktilbud oppå samme tilbudsmotor uten å kopiere
+// publisering, kundelenke, PDF, aksept eller e-postlogikk.
 
 import { useEffect, useState } from "react";
 import SalesModuleCore from "./SalesModuleCore.jsx";
@@ -65,6 +61,82 @@ function getPublicContractToken() {
   return new URLSearchParams(window.location.search).get("publicContract") || "";
 }
 
+function OfferTypePicker({ canUseStoreOffers, onWetroom, onStore, onClose }) {
+  return (
+    <div
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 10020,
+        background: "rgba(5, 18, 25, 0.42)",
+        display: "grid",
+        placeItems: "center",
+        padding: 18,
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sales-offer-type-title"
+        style={{
+          width: "min(560px, 100%)",
+          borderRadius: 20,
+          background: "#fff",
+          padding: 22,
+          boxShadow: "0 24px 70px rgba(5,18,25,.28)",
+        }}
+      >
+        <h2 id="sales-offer-type-title" style={{ margin: "0 0 7px" }}>
+          Nytt tilbud
+        </h2>
+        <p className="note" style={{ marginTop: 0 }}>
+          Velg tilbudstype. Dette oppretter et tilbud direkte og endrer ikke Ny forespørsel eller befaringsflyten.
+        </p>
+
+        <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
+          <button
+            type="button"
+            onClick={onWetroom}
+            style={{ textAlign: "left", padding: "14px 16px" }}
+          >
+            <strong style={{ display: "block" }}>Våtromstilbud</strong>
+            <small style={{ display: "block", marginTop: 4, fontWeight: 600 }}>
+              Opprett ordinært tilbud direkte uten å registrere befaring først.
+            </small>
+          </button>
+
+          {canUseStoreOffers ? (
+            <button
+              type="button"
+              className="secondary"
+              onClick={onStore}
+              style={{ textAlign: "left", padding: "14px 16px" }}
+            >
+              <strong style={{ display: "block" }}>Butikktilbud</strong>
+              <small style={{ display: "block", marginTop: 4, fontWeight: 600 }}>
+                Varebasert tilbud med eventuell montering. Avsluttes ved kundeaksept.
+              </small>
+            </button>
+          ) : null}
+        </div>
+
+        <button
+          type="button"
+          className="secondary"
+          onClick={onClose}
+          style={{ marginTop: 14 }}
+        >
+          Avbryt
+        </button>
+      </section>
+    </div>
+  );
+}
+
 export default function SalesModule(props) {
   const [instanceKey, setInstanceKey] = useState(() => {
     beginOfferDraftHydrationCycle();
@@ -72,6 +144,8 @@ export default function SalesModule(props) {
     return 0;
   });
   const [storeOfferSignal, setStoreOfferSignal] = useState(0);
+  const [standardOfferSignal, setStandardOfferSignal] = useState(0);
+  const [offerTypePickerOpen, setOfferTypePickerOpen] = useState(false);
   const [moduleAccess, setModuleAccess] = useState(() => readCachedModuleAccess());
 
   useEffect(() => {
@@ -129,6 +203,35 @@ export default function SalesModule(props) {
   const publicContractToken =
     props.integrationMode === "public" ? getPublicContractToken() : "";
 
+  const canUseSales =
+    props.integrationMode === "app" &&
+    moduleAccess.loaded &&
+    hasModuleAccess(moduleAccess, "sales");
+  const canUseStoreOffers =
+    canUseSales && hasModuleAccess(moduleAccess, "store_offers");
+
+  // Startsidens eksisterende + Nytt tilbud-signal skal fortsatt fungere. Dersom
+  // brukeren også har Butikktilbud, stopper wrapperen signalet før Core og lar
+  // brukeren velge type. Uten Butikktilbud går signalet urørt til ordinær flyt.
+  useEffect(() => {
+    if (
+      props.integrationMode !== "app" ||
+      !props.startNewOfferSignal ||
+      !moduleAccess.loaded ||
+      !canUseStoreOffers
+    ) {
+      return;
+    }
+
+    setOfferTypePickerOpen(true);
+    props.onStartNewOfferHandled?.();
+  }, [
+    props.integrationMode,
+    props.startNewOfferSignal,
+    moduleAccess.loaded,
+    canUseStoreOffers,
+  ]);
+
   if (publicContractToken) {
     return (
       <SalesContractCustomerView
@@ -138,17 +241,35 @@ export default function SalesModule(props) {
     );
   }
 
-  const canUseStoreOffers =
-    props.integrationMode === "app" &&
-    moduleAccess.loaded &&
-    hasModuleAccess(moduleAccess, "store_offers");
+  const originalOfferSignal =
+    props.integrationMode !== "app"
+      ? props.startNewOfferSignal
+      : moduleAccess.loaded && !canUseStoreOffers
+        ? props.startNewOfferSignal
+        : 0;
   const forwardedStartNewOfferSignal =
-    storeOfferSignal || props.startNewOfferSignal || 0;
+    storeOfferSignal || standardOfferSignal || originalOfferSignal || 0;
+
+  const startWetroomOffer = () => {
+    if (!canUseSales) return;
+    setOfferTypePickerOpen(false);
+    setStandardOfferSignal(Date.now());
+  };
 
   const startStoreOffer = () => {
     if (!canUseStoreOffers) return;
+    setOfferTypePickerOpen(false);
     markStoreOfferLaunch();
     setStoreOfferSignal(Date.now());
+  };
+
+  const startDirectOffer = () => {
+    if (!canUseSales) return;
+    if (canUseStoreOffers) {
+      setOfferTypePickerOpen(true);
+      return;
+    }
+    startWetroomOffer();
   };
 
   const handleStartNewOfferHandled = () => {
@@ -156,12 +277,16 @@ export default function SalesModule(props) {
       setStoreOfferSignal(0);
       return;
     }
+    if (standardOfferSignal) {
+      setStandardOfferSignal(0);
+      return;
+    }
     props.onStartNewOfferHandled?.();
   };
 
   return (
     <>
-      {canUseStoreOffers ? (
+      {canUseSales ? (
         <div
           style={{
             maxWidth: 1180,
@@ -174,12 +299,21 @@ export default function SalesModule(props) {
           <button
             type="button"
             className="secondary"
-            onClick={startStoreOffer}
+            onClick={startDirectOffer}
             style={{ whiteSpace: "nowrap" }}
           >
-            + Nytt butikktilbud
+            + Nytt tilbud
           </button>
         </div>
+      ) : null}
+
+      {offerTypePickerOpen ? (
+        <OfferTypePicker
+          canUseStoreOffers={canUseStoreOffers}
+          onWetroom={startWetroomOffer}
+          onStore={startStoreOffer}
+          onClose={() => setOfferTypePickerOpen(false)}
+        />
       ) : null}
 
       <SalesModuleCore
