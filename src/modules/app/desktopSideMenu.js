@@ -49,11 +49,17 @@ function buildMenuShell() {
     <span>Meny</span>
   `;
 
+  const homeButton = document.createElement('button');
+  homeButton.type = 'button';
+  homeButton.className = 'expoDesktopHomeButton';
+  homeButton.textContent = '← Til Startside';
+  homeButton.hidden = true;
+
   const current = document.createElement('div');
   current.className = 'expoDesktopMenuCurrent';
   current.setAttribute('aria-live', 'polite');
 
-  bar.append(toggle, current);
+  bar.append(toggle, homeButton, current);
 
   backdrop = document.createElement('div');
   backdrop.id = BACKDROP_ID;
@@ -135,11 +141,26 @@ function syncDrawerWithSource(sourceNav, shell) {
   const sourceButtons = Array.from(sourceNav.querySelectorAll(':scope > button'));
   const drawerNav = shell.drawer.querySelector('.expoDesktopDrawerNav');
   const current = shell.bar.querySelector('.expoDesktopMenuCurrent');
+  const homeButton = shell.bar.querySelector('.expoDesktopHomeButton');
   if (!(drawerNav instanceof HTMLElement) || !(current instanceof HTMLElement)) return;
 
   const signature = sourceButtons
     .map((button) => `${cleanLabel(button.textContent)}:${button.classList.contains('on') ? '1' : '0'}`)
     .join('|');
+
+  const startsideSource = sourceButtons.find(
+    (button) => cleanLabel(button.textContent) === 'Startside'
+  );
+  const startsideActive = Boolean(
+    startsideSource instanceof HTMLButtonElement && startsideSource.classList.contains('on')
+  );
+
+  if (homeButton instanceof HTMLButtonElement) {
+    homeButton.hidden = !(startsideSource instanceof HTMLButtonElement) || startsideActive;
+    homeButton.onclick = startsideSource instanceof HTMLButtonElement
+      ? () => startsideSource.click()
+      : null;
+  }
 
   if (drawerNav.dataset.sourceSignature === signature) return;
   drawerNav.dataset.sourceSignature = signature;
