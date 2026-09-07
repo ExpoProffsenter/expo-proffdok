@@ -1,11 +1,28 @@
 // Expo ProffDok – FASE 37D1
-// Avgrenser Butikktilbud til Ringside og holder lanserings-/identifikasjonslogikk samlet.
-// Butikktilbud bruker eksisterende Sales-publisering, kundelenke, PDF, aksept og e-post.
+// Avgrenser Butikktilbud til Ringside og holder lanserings-, merkevare- og
+// metadataregler samlet. Publisering, kundelenke, PDF, aksept og e-post gjenbrukes.
 
 export const RINGSIDE_STORE_OFFER_ORG_NUMBER = "915407692";
 export const STORE_OFFER_SOURCE = "Butikktilbud / varesalg";
 export const STORE_OFFER_TITLE = "Butikktilbud";
 export const STORE_OFFER_SESSION_KEY = "expo-proffdok:sales:store-offer-launch";
+export const STORE_OFFER_META_ID = "__expo_store_offer_meta__";
+export const STORE_TEXT_TEMPLATE_KIND = "store-offer-text-v1";
+
+export const STORE_OFFER_BRANDS = [
+  {
+    key: "bademiljo-expo",
+    label: "Bademiljø Expo",
+    logoUrl: "/brands/bademiljo-expo-ringside.png",
+  },
+  {
+    key: "ringside-rorleggerbedrift",
+    label: "Ringside Rørleggerbedrift",
+    logoUrl: "/brands/ringside-rorleggerbedrift.png",
+  },
+];
+
+export const DEFAULT_STORE_OFFER_BRAND = STORE_OFFER_BRANDS[0];
 
 function digitsOnly(value = "") {
   return String(value || "").replace(/\D/g, "");
@@ -54,4 +71,34 @@ export function isStoreOfferRequest(request = {}) {
     request?.directOffer &&
       String(request?.source || "").trim() === STORE_OFFER_SOURCE
   );
+}
+
+export function getStoreOfferBrand(brandKey = "") {
+  return (
+    STORE_OFFER_BRANDS.find((brand) => brand.key === brandKey) ||
+    DEFAULT_STORE_OFFER_BRAND
+  );
+}
+
+export function createStoreOfferMetaLine({
+  brandKey = DEFAULT_STORE_OFFER_BRAND.key,
+  signatureName = "",
+} = {}) {
+  const brand = getStoreOfferBrand(brandKey);
+
+  return {
+    id: STORE_OFFER_META_ID,
+    __storeOfferMeta: true,
+    mainPostId: "__store_offer_meta__",
+    mainPostTitle: "Butikktilbud metadata",
+    lineType: "work",
+    description: "Butikktilbud metadata",
+    amount: "0",
+    quantity: "1",
+    unit: "",
+    brandKey: brand.key,
+    brandLabel: brand.label,
+    brandLogoUrl: brand.logoUrl,
+    signatureName: String(signatureName || "").trim(),
+  };
 }
