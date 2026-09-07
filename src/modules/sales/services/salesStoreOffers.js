@@ -1,6 +1,8 @@
-// Expo ProffDok – FASE 37D1
+// Expo ProffDok – FASE 37D2 / FASE 37D1
 // Avgrenser Butikktilbud til Ringside og holder lanserings-, merkevare- og
 // metadataregler samlet. Publisering, kundelenke, PDF, aksept og e-post gjenbrukes.
+// Butikktilbud kan også gjenkjennes fra versjonslåst metadata etter publisering,
+// slik at kundevisning og sperrer ikke er avhengig av mutable saksfelt.
 
 export const RINGSIDE_STORE_OFFER_ORG_NUMBER = "915407692";
 export const STORE_OFFER_SOURCE = "Butikktilbud / varesalg";
@@ -67,6 +69,13 @@ export function clearStoreOfferLaunch() {
 }
 
 export function isStoreOfferRequest(request = {}) {
+  const lockedMeta = request?.storeOfferMeta;
+  const lineMeta = Array.isArray(request?.offerLines)
+    ? request.offerLines.find((line) => line?.__storeOfferMeta)
+    : null;
+
+  if (lockedMeta?.__storeOfferMeta || lineMeta?.__storeOfferMeta) return true;
+
   return Boolean(
     request?.directOffer &&
       String(request?.source || "").trim() === STORE_OFFER_SOURCE
