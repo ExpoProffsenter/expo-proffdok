@@ -26,6 +26,23 @@ function findInternalAppNav() {
   }) || null;
 }
 
+function findTopHeaderButton(label) {
+  const normalizedLabel = cleanLabel(label).toLowerCase();
+
+  return Array.from(document.querySelectorAll('button')).find((button) => {
+    if (!(button instanceof HTMLButtonElement)) return false;
+    if (button.id === HOME_ID) return false;
+    if (cleanLabel(button.textContent).toLowerCase() !== normalizedLabel) return false;
+
+    const parent = button.parentElement;
+    if (!(parent instanceof HTMLElement)) return false;
+
+    return Array.from(parent.children).some(
+      (candidate) => candidate instanceof HTMLButtonElement && cleanLabel(candidate.textContent) === 'Logg ut'
+    );
+  }) || null;
+}
+
 function findNativeHeaderButton(label) {
   const normalizedLabel = cleanLabel(label).toLowerCase();
   return Array.from(document.querySelectorAll('button')).find((button) => {
@@ -76,9 +93,62 @@ function goToStartside() {
   }
 
   // Outside a project workspace there is no unsaved project state to preserve.
-  // A clean app-root navigation is deterministic and does not proxy-click hidden
-  // React navigation controls.
   window.location.assign(cleanStartsideUrl());
+}
+
+function positionHomeAction(homeButton) {
+  if (!(homeButton instanceof HTMLButtonElement)) return;
+
+  const logoutButton = findTopHeaderButton('Logg ut');
+  const newProjectButton = findTopHeaderButton('+ Nytt prosjekt');
+
+  if (!(logoutButton instanceof HTMLButtonElement) || !(newProjectButton instanceof HTMLButtonElement)) {
+    homeButton.hidden = true;
+    return;
+  }
+
+  homeButton.hidden = false;
+  homeButton.textContent = '← Til Startside';
+  homeButton.style.position = 'fixed';
+  homeButton.style.zIndex = '40';
+  homeButton.style.margin = '0';
+  homeButton.style.height = '40px';
+  homeButton.style.padding = '0 10px';
+  homeButton.style.fontSize = '13px';
+  homeButton.style.lineHeight = '1';
+  homeButton.style.borderRadius = '13px';
+  homeButton.style.boxShadow = 'none';
+  homeButton.style.whiteSpace = 'nowrap';
+  homeButton.style.visibility = 'hidden';
+  homeButton.style.left = '0';
+  homeButton.style.top = '0';
+
+  const logoutRect = logoutButton.getBoundingClientRect();
+  const newProjectRect = newProjectButton.getBoundingClientRect();
+  const gap = 8;
+  const leftEdge = logoutRect.right + gap;
+  const rightEdge = newProjectRect.left - gap;
+  const availableWidth = Math.max(0, rightEdge - leftEdge);
+
+  let homeWidth = homeButton.offsetWidth;
+  if (homeWidth > availableWidth) {
+    homeButton.textContent = '← Startside';
+    homeWidth = homeButton.offsetWidth;
+  }
+
+  if (homeWidth > availableWidth || availableWidth < 72) {
+    homeButton.hidden = true;
+    homeButton.style.visibility = '';
+    return;
+  }
+
+  const homeHeight = homeButton.offsetHeight;
+  const left = leftEdge + Math.max(0, (availableWidth - homeWidth) / 2);
+  const top = newProjectRect.top + (newProjectRect.height - homeHeight) / 2;
+
+  homeButton.style.left = `${Math.round(left)}px`;
+  homeButton.style.top = `${Math.round(top)}px`;
+  homeButton.style.visibility = 'visible';
 }
 
 function buildMenuShell() {
@@ -119,7 +189,8 @@ function buildMenuShell() {
   current.className = 'expoDesktopMenuCurrent';
   current.setAttribute('aria-live', 'polite');
 
-  bar.append(toggle, homeButton, current);
+  bar.append(toggle, current);
+  document.body.append(homeButton);
 
   backdrop = document.createElement('div');
   backdrop.id = BACKDROP_ID;
@@ -204,6 +275,7 @@ function syncDrawerWithSource(sourceNav, shell) {
   if (!(drawerNav instanceof HTMLElement) || !(current instanceof HTMLElement)) return;
 
   hideNativeWorkspaceHomeButton();
+  positionHomeAction(shell.homeButton);
 
   const signature = sourceButtons
     .map((button) => `${cleanLabel(button.textContent)}:${button.classList.contains('on') ? '1' : '0'}`)
@@ -312,6 +384,7 @@ export function installDesktopSideMenu() {
   const media = window.matchMedia(DESKTOP_QUERY);
   media.addEventListener?.('change', scheduleEnsure);
   window.addEventListener('resize', scheduleEnsure, { passive: true });
+  window.addEventListener('scroll', scheduleEnsure, { passive: true });
 
   scheduleEnsure();
 }
