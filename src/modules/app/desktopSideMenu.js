@@ -26,22 +26,6 @@ function findInternalAppNav() {
   }) || null;
 }
 
-function findTopHeaderButton(label) {
-  const normalizedLabel = cleanLabel(label).toLowerCase();
-  return Array.from(document.querySelectorAll('button')).find((button) => {
-    if (!(button instanceof HTMLButtonElement)) return false;
-    if (button.id === HOME_ID) return false;
-    if (cleanLabel(button.textContent).toLowerCase() !== normalizedLabel) return false;
-
-    const parent = button.parentElement;
-    if (!(parent instanceof HTMLElement)) return false;
-
-    return Array.from(parent.children).some(
-      (candidate) => candidate instanceof HTMLButtonElement && cleanLabel(candidate.textContent) === 'Logg ut'
-    );
-  }) || null;
-}
-
 function findNativeHeaderButton(label) {
   const normalizedLabel = cleanLabel(label).toLowerCase();
   return Array.from(document.querySelectorAll('button')).find((button) => {
@@ -97,42 +81,6 @@ function goToStartside() {
   window.location.assign(cleanStartsideUrl());
 }
 
-function positionHomeAction(homeButton) {
-  if (!(homeButton instanceof HTMLButtonElement)) return;
-
-  const newProjectButton = findTopHeaderButton('+ Nytt prosjekt');
-  const logoutButton = findTopHeaderButton('Logg ut');
-
-  if (!(newProjectButton instanceof HTMLButtonElement)) {
-    homeButton.hidden = true;
-    return;
-  }
-
-  homeButton.hidden = false;
-  homeButton.style.position = 'absolute';
-  homeButton.style.zIndex = '40';
-  homeButton.style.margin = '0';
-  homeButton.style.whiteSpace = 'nowrap';
-
-  // Measure after the button is visible. It remains a child of <body>, outside
-  // React's managed header DOM, but is visually aligned between the two native
-  // header actions.
-  const newProjectRect = newProjectButton.getBoundingClientRect();
-  const logoutRect = logoutButton instanceof HTMLButtonElement
-    ? logoutButton.getBoundingClientRect()
-    : null;
-  const homeWidth = homeButton.offsetWidth;
-  const homeHeight = homeButton.offsetHeight;
-  const gap = 8;
-
-  let left = newProjectRect.left - homeWidth - gap;
-  if (logoutRect) left = Math.max(left, logoutRect.right + gap);
-
-  const top = newProjectRect.top + (newProjectRect.height - homeHeight) / 2;
-  homeButton.style.left = `${Math.round(left + window.scrollX)}px`;
-  homeButton.style.top = `${Math.round(top + window.scrollY)}px`;
-}
-
 function buildMenuShell() {
   let bar = document.getElementById(BAR_ID);
   let homeButton = document.getElementById(HOME_ID);
@@ -171,8 +119,7 @@ function buildMenuShell() {
   current.className = 'expoDesktopMenuCurrent';
   current.setAttribute('aria-live', 'polite');
 
-  bar.append(toggle, current);
-  document.body.append(homeButton);
+  bar.append(toggle, homeButton, current);
 
   backdrop = document.createElement('div');
   backdrop.id = BACKDROP_ID;
@@ -257,7 +204,6 @@ function syncDrawerWithSource(sourceNav, shell) {
   if (!(drawerNav instanceof HTMLElement) || !(current instanceof HTMLElement)) return;
 
   hideNativeWorkspaceHomeButton();
-  positionHomeAction(shell.homeButton);
 
   const signature = sourceButtons
     .map((button) => `${cleanLabel(button.textContent)}:${button.classList.contains('on') ? '1' : '0'}`)
@@ -366,7 +312,6 @@ export function installDesktopSideMenu() {
   const media = window.matchMedia(DESKTOP_QUERY);
   media.addEventListener?.('change', scheduleEnsure);
   window.addEventListener('resize', scheduleEnsure, { passive: true });
-  window.addEventListener('scroll', scheduleEnsure, { passive: true });
 
   scheduleEnsure();
 }
