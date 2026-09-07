@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 37A1 / FASE 34B / FASE 32 / FASE 32A / FASE 30C2
+// Expo ProffDok – FASE 37A2 / FASE 37A1 / FASE 34B / FASE 32 / FASE 32A / FASE 30C2
+// FASE 37A2 speiler serverens idempotente automatiske oppfølgingslogg inn som
+// runtime-metadata i Sales. Feltene skrives aldri tilbake i sales_requests.payload.
 // FASE 37A1 speiler eksisterende sales_requests.archived_at inn i runtime-payload
 // slik at Sales-oversikten kan filtrere/arkivere uten ny SQL/RLS/migrasjon.
 // Arkivering oppdaterer kun archived_at på eksisterende salgssak.
@@ -27,10 +29,14 @@ import {
 } from "../utils/salesOfferDraftSignature.js";
 
 const OFFER_SERVER_BASELINE_PREFIX = `${STORAGE_KEY}:offer-server-baseline`;
-const TRACEABILITY_PAYLOAD_KEYS = [
+const RUNTIME_PAYLOAD_KEYS = [
   "__createdByUserId",
   "__createdByName",
   "__createdAt",
+  "offerAutoFollowUpSentAt",
+  "offerAutoFollowUpVersionId",
+  "offerAutoFollowUpVersionNumber",
+  "offerAutoFollowUpSourceSentAt",
 ];
 const ACCEPTANCE_NOTIFY_FUNCTION = "sales-offer-acceptance-notify";
 
@@ -61,7 +67,7 @@ function parseJson(storage, key) {
 function stripRuntimeTraceability(payload = {}) {
   if (!payload || typeof payload !== "object") return payload;
   const clean = { ...payload };
-  TRACEABILITY_PAYLOAD_KEYS.forEach((key) => delete clean[key]);
+  RUNTIME_PAYLOAD_KEYS.forEach((key) => delete clean[key]);
   return clean;
 }
 
@@ -73,6 +79,75 @@ function hydrateArchiveState(rows = []) {
       archivedAt: row?.archived_at || "",
     },
   }));
+}
+
+async function hydrateOfferFollowUpState(client, companyId, rows = []) {
+  if (!client || !companyId || !Array.isArray(rows) || rows.length === 0) {
+    return rows;
+  }
+
+  const { data: notificationRows, error } = await client
+    .from("sales_offer_follow_up_notifications")
+    .select("request_ref,offer_version_id,status,sent_at,source_email_sent_at")
+    .eq("company_id", companyId)
+    .eq("status", "sent")
+    .order("sent_at", { ascending: false });
+
+  // 37A2 kan rulles tilbake uavhengig av UI. Manglende tabell/tilgang skal aldri
+  // stoppe lasting av Sales-saker.
+  if (error || !Array.isArray(notificationRows) || notificationRows.length === 0) {
+    return rows;
+  }
+
+  const versionIds = [
+    ...new Set(
+      notificationRows
+        .map((row) => String(row?.offer_version_id || "").trim())
+        .filter(Boolean)
+    ),
+  ];
+
+  let versionNumberById = new Map();
+  if (versionIds.length > 0) {
+    const { data: versionRows, error: versionError } = await client
+      .from("sales_offer_versions")
+      .select("id,version_number")
+      .in("id", versionIds);
+
+    if (!versionError && Array.isArray(versionRows)) {
+      versionNumberById = new Map(
+        versionRows.map((row) => [String(row.id || ""), Number(row.version_number) || 0])
+      );
+    }
+  }
+
+  const latestByRequest = new Map();
+  notificationRows.forEach((row) => {
+    const requestRef = String(row?.request_ref || "").trim();
+    if (!requestRef || latestByRequest.has(requestRef)) return;
+    const versionId = String(row?.offer_version_id || "").trim();
+    latestByRequest.set(requestRef, {
+      sentAt: row?.sent_at || "",
+      versionId,
+      versionNumber: Number(versionNumberById.get(versionId) || 0),
+      sourceSentAt: row?.source_email_sent_at || "",
+    });
+  });
+
+  return rows.map((row) => {
+    const state = latestByRequest.get(String(row?.request_ref || "").trim());
+    if (!state) return row;
+    return {
+      ...row,
+      payload: {
+        ...(row?.payload || {}),
+        offerAutoFollowUpSentAt: state.sentAt,
+        offerAutoFollowUpVersionId: state.versionId,
+        offerAutoFollowUpVersionNumber: state.versionNumber,
+        offerAutoFollowUpSourceSentAt: state.sourceSentAt,
+      },
+    };
+  });
 }
 
 function announceCreatorTraceability(rows = []) {
@@ -238,10 +313,15 @@ export async function fetchSalesRequests(client, companyId) {
   const result = await core.fetchSalesRequests(client, companyId);
   if (!result?.error) {
     const archiveHydratedRows = hydrateArchiveState(result?.data || []);
-    const hydratedRows = await hydrateCreatorTraceability(
+    const followUpHydratedRows = await hydrateOfferFollowUpState(
       client,
       companyId,
       archiveHydratedRows
+    );
+    const hydratedRows = await hydrateCreatorTraceability(
+      client,
+      companyId,
+      followUpHydratedRows
     );
     result.data = hydratedRows;
     announceCreatorTraceability(hydratedRows);
