@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// Expo ProffDok – FASE 37D2 / FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// Butikktilbud avsluttes ved aksept: prosjektsteg, kontrakt og prosjektaktivering
+// fjernes fra butikkflyten, mens ordinære tilbud beholder eksisterende flyt.
 // FASE 33B.5 viser kontraktsstatus, kundelenke og signert PDF direkte i kontraktkortet.
 // FASE 33B.4 gjør akseptbevisets neste-steg-tekst kompatibelt med det nye valgfrie kontraktsteget.
 // FASE 33B.3 legger til et frivillig valg om enkel Expo-kontrakt i eksisterende
@@ -17,6 +19,7 @@ import SalesContractActions from "./SalesContractActions.jsx";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
 import { createAcceptanceProofPdf } from "../services/salesAcceptancePdf.js";
+import { isStoreOfferRequest } from "../services/salesStoreOffers.js";
 import { rewriteAcceptedPresentation } from "./SalesAcceptedPresentation.jsx";
 import { rewriteSalesTraceability } from "./SalesTraceabilityPresentation.jsx";
 
@@ -245,6 +248,69 @@ function reactNodeText(node) {
   if (Array.isArray(node)) return node.map(reactNodeText).join(" ").trim();
   if (!isValidElement(node)) return "";
   return Children.toArray(node.props.children).map(reactNodeText).join(" ").trim();
+}
+
+function rewriteStoreOfferAcceptedFlow(node) {
+  if (typeof node === "string") {
+    const replacements = new Map([
+      ["Klar for prosjektaktivering", "Butikktilbud akseptert"],
+      [
+        "Kunden har akseptert tilbudet. Akseptert innhold låses i denne flyten før senere prosjektaktivering.",
+        "Kunden har akseptert butikktilbudet. Aksepten og den publiserte tilbudsversjonen er låst, og saken avsluttes i Sales.",
+      ],
+      [
+        "Akseptbeviset er opprettet og lagret. Fortsett direkte til prosjektaktivering når du er klar.",
+        "Akseptbeviset er opprettet og lagret. Butikktilbudet er ferdig behandlet.",
+      ],
+      [
+        "Akseptbeviset er opprettet og lagret. Du kan nå opprette kontrakt eller fortsette til prosjektaktivering.",
+        "Akseptbeviset er opprettet og lagret. Butikktilbudet er ferdig behandlet.",
+      ],
+      [
+        "Låst dokument - følger automatisk med til prosjektet.",
+        "Låst dokumentasjon av det aksepterte butikktilbudet.",
+      ],
+      [
+        "Neste steg er å aktivere saken som et vanlig ProffDok-prosjekt.",
+        "Butikktilbudet er akseptert og avsluttet i Sales. Det opprettes ikke ProffDok-prosjekt.",
+      ],
+    ]);
+    return replacements.get(node) || node;
+  }
+
+  if (Array.isArray(node)) {
+    return node.map(rewriteStoreOfferAcceptedFlow).filter(Boolean);
+  }
+
+  if (!isValidElement(node)) return node;
+
+  const text = reactNodeText(node).replace(/\s+/g, " ").trim();
+  if (
+    node.type === "button" &&
+    (text === "Aktiver som prosjekt" || text === "Fortsett til prosjektaktivering")
+  ) {
+    return null;
+  }
+
+  if (
+    String(node.props?.className || "").includes("sales-workflow-step") &&
+    text === "Prosjekt"
+  ) {
+    return null;
+  }
+
+  const directChildren = Children.toArray(node.props.children);
+  const firstText = reactNodeText(directChildren[0]).replace(/\s+/g, " ").trim();
+  const secondText = reactNodeText(directChildren[1]).replace(/\s+/g, " ").trim();
+  if (
+    firstText === "Kontrakt" &&
+    secondText.includes("Håndverksbedriften kan laste opp sin egen ferdigstilte kontrakt")
+  ) {
+    return null;
+  }
+
+  const children = Children.map(node.props.children, rewriteStoreOfferAcceptedFlow);
+  return cloneElement(node, undefined, children);
 }
 
 function rewriteContractChoice(node, request, onOpenWizard) {
@@ -586,6 +652,7 @@ function AcceptanceProofPreviewButton({ request, companyProfile }) {
 
 export default function SalesDetailView(props) {
   const selectedRequestId = String(props?.selectedRequest?.id || "");
+  const storeOffer = isStoreOfferRequest(props?.selectedRequest);
   const [contractWizardOpen, setContractWizardOpen] = useState(() =>
     isContractWizardRememberedOpen(selectedRequestId)
   );
@@ -602,10 +669,13 @@ export default function SalesDetailView(props) {
   );
 
   useEffect(() => {
-    setContractWizardOpen(isContractWizardRememberedOpen(selectedRequestId));
-  }, [selectedRequestId]);
+    setContractWizardOpen(
+      storeOffer ? false : isContractWizardRememberedOpen(selectedRequestId)
+    );
+  }, [selectedRequestId, storeOffer]);
 
   function openContractWizard() {
+    if (storeOffer) return;
     rememberContractWizardOpen(selectedRequestId, true);
     setContractWizardOpen(true);
   }
@@ -615,7 +685,11 @@ export default function SalesDetailView(props) {
     setContractWizardOpen(false);
   }
 
-  if (contractWizardOpen && coreProps?.selectedRequest?.status === "Akseptert") {
+  if (
+    !storeOffer &&
+    contractWizardOpen &&
+    coreProps?.selectedRequest?.status === "Akseptert"
+  ) {
     return (
       <SalesContractWizard
         request={coreProps.selectedRequest}
@@ -628,12 +702,16 @@ export default function SalesDetailView(props) {
   tree = rewriteInternalOfferPresentation(tree, coreProps?.selectedRequest);
   tree = rewriteAcceptedPresentation(tree, coreProps?.selectedRequest);
   tree = rewriteSalesTraceability(tree, coreProps?.selectedRequest);
-  tree = rewriteContractChoice(
-    tree,
-    coreProps?.selectedRequest,
-    openContractWizard
-  );
-  tree = rewriteAcceptanceProofContinuationText(tree);
+  if (!storeOffer) {
+    tree = rewriteContractChoice(
+      tree,
+      coreProps?.selectedRequest,
+      openContractWizard
+    );
+    tree = rewriteAcceptanceProofContinuationText(tree);
+  } else {
+    tree = rewriteStoreOfferAcceptedFlow(tree);
+  }
 
   if (hasExistingOfferDraft) {
     // SalesDetailViewCore er bevisst hook-fri. Vi materialiserer derfor treet her
