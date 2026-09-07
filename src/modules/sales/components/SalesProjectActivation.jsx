@@ -1,6 +1,6 @@
-// Expo ProffDok – FASE 23N / FASE 29C1
+// Expo ProffDok – FASE 37D2 / FASE 23N / FASE 29C1
 // Presentasjonskomponent for aktivering av en akseptert salgssak som ProffDok-prosjekt.
-// Prosjektaktivering er eksplisitt sperret i Systemadmin-supportmodus.
+// Butikktilbud og Systemadmin-supportmodus er eksplisitt sperret fra prosjektaktivering.
 
 import {
   ArrowLeft,
@@ -12,6 +12,66 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { getSalesSupportCompanyId } from "../services/salesSupabase.js";
+import { isStoreOfferRequest } from "../services/salesStoreOffers.js";
+
+function BlockedActivation({ selectedRequest, onBack, storeOffer = false }) {
+  return (
+    <div className="sales-app">
+      <div className="sales-shell">
+        <header className="sales-header">
+          <button
+            className="sales-back-button"
+            type="button"
+            onClick={onBack}
+          >
+            <ArrowLeft size={18} />
+            Tilbake
+          </button>
+
+          <div className="sales-brand sales-brand-compact">
+            <div className="sales-brand-mark">
+              <ShieldCheck size={22} />
+            </div>
+            <div className="sales-brand-copy">
+              <strong>{storeOffer ? "Butikktilbud" : "Systemadmin-support"}</strong>
+              <span>Prosjektaktivering er sperret</span>
+            </div>
+          </div>
+        </header>
+
+        <main className="sales-main">
+          <section className="sales-form-hero">
+            <p className="sales-eyebrow">Handling sperret</p>
+            <h1 className="sales-title">{selectedRequest.title}</h1>
+            <p className="sales-subtitle">
+              {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
+            </p>
+          </section>
+
+          <div className="sales-form-panel">
+            <div className="sales-form-preview" style={{ marginTop: 0 }}>
+              <h2>
+                {storeOffer
+                  ? "Butikktilbud avsluttes i Sales"
+                  : "Aktivering utføres av firmaet"}
+              </h2>
+              <p className="sales-subtitle">
+                {storeOffer
+                  ? "Et akseptert butikktilbud oppretter ikke ProffDok-prosjekt. Aksept og dokumentasjon blir liggende på salgssaken."
+                  : "Systemadministrator kan kontrollere aksept, dokumenter og prosjektgrunnlag, men oppretter ikke prosjektet på vegne av målbedriften. Dette beskytter eierskap og ansvarlig bruker."}
+              </p>
+            </div>
+
+            <button className="sales-primary-button" type="button" onClick={onBack}>
+              <ArrowLeft size={18} />
+              Tilbake til saken
+            </button>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
 
 export default function SalesProjectActivation({
   selectedRequest,
@@ -22,59 +82,15 @@ export default function SalesProjectActivation({
   onUpdateProjectForm,
 }) {
   const supportMode = Boolean(getSalesSupportCompanyId());
+  const storeOffer = isStoreOfferRequest(selectedRequest);
 
-  if (supportMode) {
+  if (storeOffer || supportMode) {
     return (
-      <div className="sales-app">
-        <div className="sales-shell">
-          <header className="sales-header">
-            <button
-              className="sales-back-button"
-              type="button"
-              onClick={onBack}
-            >
-              <ArrowLeft size={18} />
-              Tilbake
-            </button>
-
-            <div className="sales-brand sales-brand-compact">
-              <div className="sales-brand-mark">
-                <ShieldCheck size={22} />
-              </div>
-              <div className="sales-brand-copy">
-                <strong>Systemadmin-support</strong>
-                <span>Prosjektaktivering er sperret</span>
-              </div>
-            </div>
-          </header>
-
-          <main className="sales-main">
-            <section className="sales-form-hero">
-              <p className="sales-eyebrow">Handling sperret i supportmodus</p>
-              <h1 className="sales-title">{selectedRequest.title}</h1>
-              <p className="sales-subtitle">
-                {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
-              </p>
-            </section>
-
-            <div className="sales-form-panel">
-              <div className="sales-form-preview" style={{ marginTop: 0 }}>
-                <h2>Aktivering utføres av firmaet</h2>
-                <p className="sales-subtitle">
-                  Systemadministrator kan kontrollere aksept, dokumenter og
-                  prosjektgrunnlag, men oppretter ikke prosjektet på vegne av
-                  målbedriften. Dette beskytter eierskap og ansvarlig bruker.
-                </p>
-              </div>
-
-              <button className="sales-primary-button" type="button" onClick={onBack}>
-                <ArrowLeft size={18} />
-                Tilbake til saken
-              </button>
-            </div>
-          </main>
-        </div>
-      </div>
+      <BlockedActivation
+        selectedRequest={selectedRequest}
+        onBack={onBack}
+        storeOffer={storeOffer}
+      />
     );
   }
 
