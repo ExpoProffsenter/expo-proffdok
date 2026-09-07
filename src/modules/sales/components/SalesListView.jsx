@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// Expo ProffDok – FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// FASE 37D1 skiller Butikktilbud og Våtromstilbud i samme Sales-oversikt uten
+// å lage parallell lagring. Eksisterende arbeidsstatus, søk og arkiv beholdes.
 // FASE 37A1 legger søk, arbeidsfaner og trygg arkivering oppå eksisterende Sales-data.
 // Ingen tilbudsversjoner, aksepter eller prosjektaktivering omskrives. Arkiv bruker
 // eksisterende sales_requests.archived_at og kan alltid gjenopprettes.
@@ -31,6 +33,7 @@ import {
   setSalesRequestArchivedAt,
   subscribeSalesRequestsLoadState,
 } from "../services/salesSupabase.js";
+import { isStoreOfferRequest } from "../services/salesStoreOffers.js";
 
 const iconMap = {
   clipboard: ClipboardList,
@@ -40,6 +43,11 @@ const iconMap = {
 };
 
 const OFFER_FOLLOW_UP_DAYS = 7;
+const OFFER_TYPE_TABS = [
+  { id: "all", label: "Alle tilbud" },
+  { id: "wetroom", label: "Våtromstilbud" },
+  { id: "store", label: "Butikktilbud" },
+];
 const WORK_TABS = [
   { id: "work", label: "Under arbeid" },
   { id: "follow-up", label: "Må følges opp" },
@@ -136,6 +144,12 @@ function filterRequestForTab(request, activeTab) {
   return requestBucket(request) === activeTab;
 }
 
+function filterRequestForType(request, activeOfferType) {
+  if (activeOfferType === "all") return true;
+  const storeOffer = isStoreOfferRequest(request);
+  return activeOfferType === "store" ? storeOffer : !storeOffer;
+}
+
 export default function SalesListView({
   activeRequests = [],
   activatedRequests = [],
@@ -146,6 +160,7 @@ export default function SalesListView({
   const [loadState, setLoadState] = useState(() => getSalesRequestsLoadState());
   const [longWait, setLongWait] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeOfferType, setActiveOfferType] = useState("all");
   const [activeTab, setActiveTab] = useState("work");
   const [archiveBusyId, setArchiveBusyId] = useState("");
   const salesClient = useMemo(() => createDefaultSalesSupabaseClient(), []);
@@ -167,22 +182,34 @@ export default function SalesListView({
     !hasAnyRequest && ["idle", "loading"].includes(loadState.status);
   const requestsLoadFailed = !hasAnyRequest && loadState.status === "error";
 
+  const offerTypeCounts = useMemo(() => {
+    const store = activeRequests.filter(isStoreOfferRequest).length;
+    return {
+      all: activeRequests.length,
+      store,
+      wetroom: Math.max(0, activeRequests.length - store),
+    };
+  }, [activeRequests]);
+
   const requestCounts = useMemo(() => {
+    const typeScopedRequests = activeRequests.filter((request) =>
+      filterRequestForType(request, activeOfferType)
+    );
     const counts = {
       work: 0,
       "follow-up": 0,
       accepted: 0,
       archive: 0,
-      all: activeRequests.length,
+      all: typeScopedRequests.length,
     };
 
-    activeRequests.forEach((request) => {
+    typeScopedRequests.forEach((request) => {
       const bucket = requestBucket(request);
       counts[bucket] = (counts[bucket] || 0) + 1;
     });
 
     return counts;
-  }, [activeRequests]);
+  }, [activeRequests, activeOfferType]);
 
   const overviewSummary = useMemo(
     () => [
@@ -198,16 +225,21 @@ export default function SalesListView({
     () =>
       activeRequests.filter(
         (request) =>
+          filterRequestForType(request, activeOfferType) &&
           filterRequestForTab(request, activeTab) &&
           requestMatchesSearch(request, searchQuery)
       ),
-    [activeRequests, activeTab, searchQuery]
+    [activeRequests, activeOfferType, activeTab, searchQuery]
   );
 
   const filteredActivatedRequests = useMemo(
     () =>
-      activatedRequests.filter((request) => requestMatchesSearch(request, searchQuery)),
-    [activatedRequests, searchQuery]
+      activatedRequests.filter(
+        (request) =>
+          filterRequestForType(request, activeOfferType) &&
+          requestMatchesSearch(request, searchQuery)
+      ),
+    [activatedRequests, activeOfferType, searchQuery]
   );
 
   async function toggleArchive(request) {
@@ -241,8 +273,6 @@ export default function SalesListView({
         throw error;
       }
 
-      // Rehydrer hele Sales-modulen fra server slik at archivedAt blir del av
-      // vanlig request-state før saken eventuelt åpnes/redigeres videre.
       window.dispatchEvent(new Event("expo-proffdok-sales-rehydrate"));
     } catch (error) {
       alert(
@@ -269,6 +299,9 @@ export default function SalesListView({
               ? "Ingen saker under arbeid i dette firmaet."
               : "Ingen saker under arbeid. Opprett en ny forespørsel for å starte en befaring eller et tilbud.";
 
+  const activeTypeLabel =
+    OFFER_TYPE_TABS.find((tab) => tab.id === activeOfferType)?.label || "Alle tilbud";
+
   return (
     <div className="sales-app">
       <div className="sales-shell">
@@ -289,10 +322,10 @@ export default function SalesListView({
 
           <section className="sales-hero">
             <div>
-              <h1 className="sales-title">Forespørsler</h1>
+              <h1 className="sales-title">Forespørsler og tilbud</h1>
               <p className="sales-subtitle">
-                Samle kundehenvendelser, befaring, tilbud og aksept før jobben
-                aktiveres som et vanlig ProffDok-prosjekt.
+                Våtromstilbud og Butikktilbud ligger i samme sikre tilbudsmotor,
+                men kan filtreres separat under.
               </p>
             </div>
 
@@ -415,6 +448,60 @@ export default function SalesListView({
               </label>
             </div>
 
+            <div style={{ marginTop: 14 }}>
+              <strong style={{ display: "block", marginBottom: 7, fontSize: 13 }}>
+                Tilbudstype
+              </strong>
+              <div
+                role="tablist"
+                aria-label="Tilbudstype"
+                style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+              >
+                {OFFER_TYPE_TABS.map((tab) => {
+                  const selected = activeOfferType === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      onClick={() => setActiveOfferType(tab.id)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 7,
+                        minHeight: 38,
+                        padding: "7px 12px",
+                        borderRadius: 999,
+                        border: selected ? "1px solid #0f5265" : "1px solid #cbd5e1",
+                        background: selected ? "#0f5265" : "#fff",
+                        color: selected ? "#fff" : "#17313a",
+                        fontWeight: 800,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {tab.label}
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          minWidth: 23,
+                          height: 23,
+                          padding: "0 6px",
+                          borderRadius: 999,
+                          background: selected ? "rgba(255,255,255,0.18)" : "#f1f5f9",
+                          fontSize: 12,
+                        }}
+                      >
+                        {offerTypeCounts[tab.id] || 0}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div
               role="tablist"
               aria-label="Arbeidsstatus"
@@ -475,7 +562,7 @@ export default function SalesListView({
             <div className="sales-panel-header">
               <div>
                 <h2 className="sales-panel-title">
-                  {WORK_TABS.find((tab) => tab.id === activeTab)?.label || "Salgssaker"}
+                  {activeTypeLabel} · {WORK_TABS.find((tab) => tab.id === activeTab)?.label || "Salgssaker"}
                   {searchQuery.trim() ? ` · ${filteredRequests.length} treff` : ""}
                 </h2>
               </div>
@@ -516,6 +603,7 @@ export default function SalesListView({
                 const offerFollowUp = getOfferFollowUpInfo(request);
                 const archived = isArchivedRequest(request);
                 const archiveBusy = archiveBusyId === request.id;
+                const storeOffer = isStoreOfferRequest(request);
 
                 return (
                   <div
@@ -534,7 +622,24 @@ export default function SalesListView({
                       style={{ flex: "1 1 520px", width: "auto", minWidth: 0 }}
                     >
                       <div className="sales-request-main">
-                        <h3 className="sales-request-title">{request.title}</h3>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                          <h3 className="sales-request-title">{request.title}</h3>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              minHeight: 23,
+                              padding: "2px 8px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 900,
+                              background: storeOffer ? "#e8f9fb" : "#f1f5f9",
+                              color: storeOffer ? "#0b737b" : "#475569",
+                            }}
+                          >
+                            {storeOffer ? "Butikktilbud" : "Våtromstilbud"}
+                          </span>
+                        </div>
                         <p className="sales-request-customer">
                           {[request.customer, request.address, request.id]
                             .filter(Boolean)
