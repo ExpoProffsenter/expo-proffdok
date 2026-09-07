@@ -30,6 +30,16 @@ function digitsOnly(value = "") {
   return String(value || "").replace(/\D/g, "");
 }
 
+function absoluteBrandLogoUrl(value = "") {
+  const clean = String(value || "").trim();
+  if (!clean || typeof window === "undefined") return clean;
+  try {
+    return new URL(clean, window.location.origin).href;
+  } catch {
+    return clean;
+  }
+}
+
 export function isRingsideStoreOfferProfile(profile = {}) {
   const orgNumber =
     profile?.org_number ||
@@ -111,7 +121,9 @@ export function createStoreOfferMetaLine({
     unit: "",
     brandKey: brand.key,
     brandLabel: brand.label,
-    brandLogoUrl: brand.logoUrl,
+    // Absolutt URL låses sammen med tilbudsversjonen. Da fungerer logoen også i
+    // e-post og andre flater uten nettleserens relative app-origin.
+    brandLogoUrl: absoluteBrandLogoUrl(brand.logoUrl),
     signatureName: String(signatureName || "").trim(),
   };
 }
