@@ -79,6 +79,7 @@ const panel = fs.readFileSync(path.join(root, "src/modules/storeCatalog/StoreCat
 const offerTools = fs.readFileSync(path.join(root, "src/modules/storeCatalog/StoreCatalogOfferTools.jsx"), "utf8");
 const client = fs.readFileSync(path.join(root, "src/modules/storeCatalog/storeCatalogClient.js"), "utf8");
 const wrapper = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx"), "utf8");
+const builder = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesStoreOfferBuilder.jsx"), "utf8");
 const router = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesOfferBuilder.jsx"), "utf8");
 const textBlockCss = fs.readFileSync(path.join(root, "src/modules/sales/storeOfferTextBlocks.css"), "utf8");
 const salesModule = fs.readFileSync(path.join(root, "src/modules/sales/SalesModule.jsx"), "utf8");
@@ -96,10 +97,11 @@ for (const needle of [
 assert(!client.includes("completedBatches < 1000"), "klienten skal ikke lenger duplisere katalogen i aktiveringsbatcher.");
 
 for (const needle of [
-  "StoreCatalogInlinePortals", "StoreCatalogOptionInlinePortals", "searchStoreCatalog",
-  "getStoreCatalogAlternatives", "Søk vareregister: varenavn, varenummer eller GTIN/EAN",
-  "Søk vare til opsjonen", "StoreCatalogAdminOnlyPanel", "canManageInternalStoreCatalog",
+  "StoreCatalogInlineLookup", "searchStoreCatalog", "getStoreCatalogAlternatives",
+  "Søk vareregister: varenavn, varenummer eller GTIN/EAN", "StoreCatalogAdminOnlyPanel",
+  "canManageInternalStoreCatalog",
 ]) assert(offerTools.includes(needle), `inline varesøk/adminavgrensning mangler: ${needle}`);
+assert(!offerTools.includes("createPortal"), "varesøk skal ikke monteres via DOM-portaler.");
 
 assert(wrapper.includes("customer_price_incl_vat"), "kundepris inkl. mva. skal kopieres til tilbudslinjen.");
 assert(wrapper.includes("customer_price_ex_vat"), "kundepris eks. mva. skal kopieres til Sales amount.");
@@ -108,14 +110,17 @@ assert(wrapper.includes("storeCatalogItemId"), "tilbudslinjen skal beholde en uf
 assert(wrapper.includes('TEXT_BLOCK_LINE_TYPE = "store_text"'), "Butikktilbud skal støtte prisnøytrale tekstavsnitt.");
 assert(wrapper.includes('TEXT_BLOCK_MARKER = "#expo-store-text-block"'), "tekstavsnitt skal ha sikker presentasjonsmarkør.");
 assert(wrapper.includes("storeAfterLineId"), "tekstavsnitt skal kunne plasseres mellom varer.");
-assert(wrapper.includes("<StoreCatalogInlinePortals"), "varesøk skal monteres direkte i varekortene.");
-assert(wrapper.includes("<StoreCatalogOptionInlinePortals"), "varesøk skal også monteres direkte i opsjonskortene.");
-assert(wrapper.includes("recalculateStoreOption"), "katalogvalg i opsjon skal rekalkulere alternativ/tillegg.");
+assert(wrapper.includes("renderCatalogLookup={renderCatalogLookup}"), "katalogsøk skal injiseres som vanlig React-innhold i byggeren.");
 assert(wrapper.includes("title: description"), "katalogvare i opsjon skal fylle opsjonsnavnet.");
 assert(
   wrapper.lastIndexOf("<StoreCatalogAdminOnlyPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilder"),
   "prisadministrasjon skal ligge nederst etter selve Butikktilbud-byggeren."
 );
+
+assert(builder.includes('renderCatalogLookup?.({ kind: "line"'), "varesøk skal rendres nativt i varekortet.");
+assert(builder.includes('renderCatalogLookup?.({ kind: "option"'), "varesøk skal rendres nativt i opsjonskortet.");
+assert(builder.includes("recalculateStoreOption"), "katalogvalg i opsjon skal gå gjennom eksisterende opsjonsrekalkulering.");
+
 assert(textBlockCss.includes('#expo-store-text-block'), "kundepresentasjonen skal kjenne igjen tekstavsnitt.");
 assert(textBlockCss.includes(".sales-customer-line-price"), "tekstavsnitt skal skjule pris i kundevisningen.");
 assert(salesModule.includes('import "./storeOfferTextBlocks.css"'), "tekstblokk-presentasjon skal lastes i Sales.");
