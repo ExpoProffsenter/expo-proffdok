@@ -51,7 +51,18 @@ for (const needle of [
   "erstatter eksisterende avsnitt, poster, montering og opsjoner",
   "katalogpris",
   "Manuelle poster beholder prisen",
+  "Bruk firmamal",
+  "Lagre som mal",
+  "createPortal",
+  "data-store-complete-template-top-host",
+  "data-store-complete-template-save-host",
 ]) assert(panel.includes(needle), `malpanelet mangler: ${needle}`);
+
+for (const forbidden of [
+  "store-complete-template-trigger",
+  "store-complete-template-backdrop",
+  "position:fixed",
+]) assert(!panel.includes(forbidden), `mal-UI skal følge Våtromstilbud og ikke bruke flytende modal: ${forbidden}`);
 
 const outer = read(
   "src/modules/sales/components/SalesStoreOfferBuilderCatalogTemplates.jsx"
