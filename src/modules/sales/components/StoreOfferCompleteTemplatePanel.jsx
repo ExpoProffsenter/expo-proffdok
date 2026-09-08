@@ -12,9 +12,7 @@ import {
   saveCompleteStoreOfferTemplate,
   summarizeStoreOfferTemplate,
 } from "../services/salesStoreOfferCompleteTemplates.js";
-import {
-  recalculateStoreOption,
-} from "../utils/salesStoreOfferPricing.js";
+import { recalculateStoreOption } from "../utils/salesStoreOfferPricing.js";
 
 const TEXT_FIELDS = [
   "title",
@@ -168,7 +166,6 @@ export default function StoreOfferCompleteTemplatePanel({
         : "";
 
       setMessage(`✓ Malen «${template.name}» er brukt. ${priceMessage}${missingMessage}`);
-      setOpen(false);
     } catch (error) {
       setMessage(error?.message || "Malen kunne ikke brukes.");
     } finally {
