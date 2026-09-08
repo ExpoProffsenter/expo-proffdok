@@ -1,6 +1,7 @@
 /* Expo ProffDok – FASE 39B.2
    Tekstavsnitt i Butikktilbud lagres som prisnøytrale linjer i Varer-gruppen.
-   Den interne markørlenken skjules i kundevisning/PDF, og kortet vises som ren tekst. */
+   Den interne markørlenken skjules i kundevisning/PDF, og kortet vises som ren tekst.
+   Forhåndsvisning skal aldri vise interne redigeringsverktøy eller kundehandlinger. */
 
 .sales-customer-line-card:has(.sales-customer-line-media a[href="#expo-store-text-block"]) {
   grid-template-columns: 1fr !important;
@@ -34,4 +35,22 @@
   font-size: 1.08rem;
   font-weight: 900;
   line-height: 1.35;
+}
+
+/* Draft preview: kunden skal kun se selve tilbudet, aldri redigeringsverktøy eller beslutningsknapper. */
+.store-draft-preview-shell .sales-customer-accept-form,
+.store-draft-preview-shell .store-customer-decision-shell {
+  display: none !important;
+}
+
+/* Katalog-wrapperen rendrer editorverktøy som søsken etter preview-komponenten. Skjul dem i preview. */
+.store-draft-preview-shell ~ section,
+.store-draft-preview-shell ~ .catalog-panel {
+  display: none !important;
+}
+
+/* JS-template-literal i kundevisningen bruker \A feil som tekst. Overstyr direkte i ekte CSS. */
+.sales-customer-ordered-stack[data-store-signature]::before {
+  content: "Med vennlig hilsen\A" attr(data-store-signature) !important;
+  white-space: pre-line !important;
 }
