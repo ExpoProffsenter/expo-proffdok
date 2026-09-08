@@ -142,28 +142,32 @@ function createCatalogOfferLine(item = {}) {
 function StoreOfferTextBlocks({ lines, onChange }) {
   const textBlocks = lines.filter(isTextBlock);
   const productLines = lines.filter(isProductLine);
+  const builderLines = lines.filter((line) => !isTextBlock(line));
+
+  function applyBlocks(nextBlocks) {
+    onChange(mergeTextBlocks(builderLines, nextBlocks));
+  }
 
   function addBlock() {
-    onChange([...lines, createTextBlock()]);
+    applyBlocks([...textBlocks, createTextBlock()]);
   }
 
   function patchBlock(id, patch) {
-    onChange(
-      lines.map((line) => {
-        if (line.id !== id) return line;
-        const next = { ...line, ...patch };
-        return {
-          ...next,
-          description: textBlockDescription(next),
-          productUrl: TEXT_BLOCK_MARKER,
-          amount: "0",
-        };
-      })
-    );
+    const nextBlocks = textBlocks.map((block) => {
+      if (block.id !== id) return block;
+      const next = { ...block, ...patch };
+      return {
+        ...next,
+        description: textBlockDescription(next),
+        productUrl: TEXT_BLOCK_MARKER,
+        amount: "0",
+      };
+    });
+    applyBlocks(nextBlocks);
   }
 
   function removeBlock(id) {
-    onChange(lines.filter((line) => line.id !== id));
+    applyBlocks(textBlocks.filter((block) => block.id !== id));
   }
 
   return (
