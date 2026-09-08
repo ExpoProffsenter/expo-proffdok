@@ -5,7 +5,10 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import SalesStoreOfferBuilder from "./SalesStoreOfferBuilder.jsx";
-import StoreCatalogPanel from "../../storeCatalog/StoreCatalogPanel.jsx";
+import {
+  StoreCatalogAdminOnlyPanel,
+  StoreCatalogInlinePortals,
+} from "../../storeCatalog/StoreCatalogOfferTools.jsx";
 import { buildNobbItemUrl } from "../utils/salesStoreOfferPricing.js";
 
 const PRODUCT_POST = { id: "butikk-varer", title: "Varer" };
@@ -107,7 +110,7 @@ function mergeTextBlocks(nextLines = [], textBlocks = []) {
   return [...beforeProducts, ...productSection, ...afterProducts];
 }
 
-function createCatalogOfferLine(item = {}) {
+function catalogFields(item = {}) {
   const supplierProductNumber = String(item.supplier_product_number || "").trim();
   const nobbNumber = String(item.nobb_number || "").trim();
   const productUrl = String(item.product_url || "").trim() || buildNobbItemUrl(nobbNumber);
@@ -115,27 +118,33 @@ function createCatalogOfferLine(item = {}) {
   const exVat = Number(item.customer_price_ex_vat || 0);
 
   return {
-    id: `line-${typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`}`,
-    mainPostId: PRODUCT_POST.id,
-    mainPostTitle: PRODUCT_POST.title,
-    lineType: "work",
     description: String(item.description || "").trim(),
     nobbNumber,
     supplierProductNumber,
     internalProductNumber: supplierProductNumber,
-    quantity: "1",
-    unit: "stk",
     storeUnitPriceInclVat: Number.isFinite(inclVat) ? String(inclVat) : "",
     storeDiscountPercent: "",
     amount: Number.isFinite(exVat) ? String(exVat) : "",
     productUrl,
     storeAutoProductUrl: Boolean(nobbNumber && productUrl === buildNobbItemUrl(nobbNumber)),
-    imageDataUrl: "",
-    imageName: "",
-    attachmentFile: null,
     // Kun ufarlige katalogreferanser følger tilbudslinjen. Nettopris/salgsavanse gjør det ikke.
     storeCatalogItemId: String(item.id || ""),
     storeCatalogGtin: String(item.gtin || ""),
+  };
+}
+
+function createCatalogOfferLine(item = {}) {
+  return {
+    id: createId("line"),
+    mainPostId: PRODUCT_POST.id,
+    mainPostTitle: PRODUCT_POST.title,
+    lineType: "work",
+    ...catalogFields(item),
+    quantity: "1",
+    unit: "stk",
+    imageDataUrl: "",
+    imageName: "",
+    attachmentFile: null,
   };
 }
 
@@ -289,6 +298,18 @@ export default function SalesStoreOfferBuilderCatalog(props) {
     props.updateOfferForm?.("lines", nextLines);
   }
 
+  function useCatalogItemInLine(lineId, item) {
+    const patch = catalogFields(item);
+    props.updateOfferForm?.(
+      "lines",
+      currentLines.map((line) =>
+        String(line?.id || "") === String(lineId || "")
+          ? { ...line, ...patch }
+          : line
+      )
+    );
+  }
+
   function addCatalogItem(item) {
     const line = createCatalogOfferLine(item);
     const nextLines = [...currentLines];
@@ -317,8 +338,12 @@ export default function SalesStoreOfferBuilderCatalog(props) {
         offerForm={{ ...props.offerForm, lines: builderLines }}
         updateOfferForm={updateBuilderOfferForm}
       />
+      <StoreCatalogInlinePortals
+        lines={currentLines}
+        onUseItem={useCatalogItemInLine}
+      />
       <StoreOfferTextBlocks lines={currentLines} onChange={updateTextBlocks} />
-      <StoreCatalogPanel onSelectItem={addCatalogItem} />
+      <StoreCatalogAdminOnlyPanel onSelectItem={addCatalogItem} />
     </>
   );
 }
