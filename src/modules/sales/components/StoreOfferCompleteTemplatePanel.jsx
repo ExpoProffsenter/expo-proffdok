@@ -359,6 +359,7 @@ export default function StoreOfferCompleteTemplatePanel({
         .store-grouped-builder .store-template-grid,.store-grouped-builder .store-template-message{display:none!important}
         .store-complete-template-save-host{display:contents}
         .store-complete-template-note{margin-top:12px;padding:10px 12px;border-radius:10px;background:#eef8fa;color:#315965;font-weight:650;line-height:1.45}
+        @media(min-width:901px){.store-grouped-builder .store-summary-actions{flex-wrap:nowrap}.store-grouped-builder .store-summary-actions button{white-space:nowrap}}
       `}</style>
       {topHost ? createPortal(templateTools, topHost) : null}
       {saveHost ? createPortal(saveButton, saveHost) : null}
