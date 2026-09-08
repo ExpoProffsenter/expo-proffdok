@@ -1,3 +1,4 @@
+// FASE 39B.2 HJELP: Butikktilbud dokumenterer tilbudsposter/avsnitt, internt vareregister, katalogvalg, montering/opsjoner, autosave/recovery og låst historikk.
 // FASE 37A2 HJELP: Butikktilbud har versjonslåst, valgfri automatisk oppfølging med brukerdefinert intervall og maks antall. Ordinære tilbud følges manuelt.
 // FASE 37D2 HJELP: Butikktilbud vises som eget hjelpetema og avsluttes ved aksept eller avvisning uten prosjektaktivering.
 // FASE 33B.5 HJELP: kontrakt/kundelenke vises direkte på saken, signert kontrakt arkiveres som PDF og følger prosjektet.
@@ -182,27 +183,42 @@ function createStoreOfferHelpItem() {
   const purpose = document.createElement("p");
   purpose.className = "note";
   purpose.style.marginTop = "0";
-  purpose.textContent = "Butikktilbud er den varebaserte tilbudsfunksjonen for butikk- og varesalg. Den er separat fra ordinær Befaring/Tilbud og avsluttes i Sales når kunden har akseptert eller avvist.";
+  purpose.textContent = "Butikktilbud brukes til butikk-, vare- og mindre service-/leveransetilbud. Leveransen bygges med tilbudsposter og avsnitt, og kan bruke det interne vareregisteret som valgfritt oppslag. Butikktilbud er separat fra ordinær våtromsflyt og avsluttes i Sales når kunden aksepterer eller avviser.";
   content.appendChild(purpose);
 
   appendHelpSection(content, "Arbeidsflyt", [
     "Opprett Nytt tilbud og velg Butikktilbud når brukeren har denne modultilgangen. Registrer kunde, adresse og saksbehandler.",
-    "Legg inn varenavn, NOBB-nr. eller varenummer, antall, enhet, pris pr. enhet inkl. mva. og eventuell rabatt.",
-    "Knytt bilde, produktlenke og PDF-vedlegg direkte til varen når dette er relevant. NOBB-nr. kan brukes som direkte produktlenke.",
-    "Registrer montering separat. Ved alternativ vare kan du også angi en alternativ monteringspris.",
-    "Velg betalingsbetingelser og gyldighet. Begge er obligatoriske før Butikktilbudet kan lagres/publiseres.",
-    "Velg om dette tilbudet skal ha automatisk oppfølging og eventuelt første påminnelse, gjentakelsesintervall og maks antall påminnelser.",
-    "Bruk Forhåndsvis kundetilbud før publisering. Forhåndsvisningen sender ingen e-post og kan ikke aksepteres eller avvises.",
+    "Bygg tilbudet med Tilbudsposter og avsnitt. Avsnitt kan for eksempel hete Bad 1, Varmepumpe eller Elektriker og brukes som tydelige overskrifter i internvisning, kundelenke og PDF.",
+    "Avsnittsnavn og kundetekst er redigerbare. Poster kan også gis en kundevennlig beskrivelse selv om varen opprinnelig ble hentet fra vareregisteret.",
+    "Bruk + Legg til post for vanlige vare-/arbeidsposter, + Legg til avsnitt for gruppering og Kun montering når arbeidet ikke skal knyttes til en varepost.",
+    "Enter i prisfeltet kan opprette neste post i samme avsnitt. En helt tom ny post beholdes ikke som reell tilbudslinje.",
+    "Velg betalingsbetingelser og gyldighet før publisering. Velg også eventuell automatisk oppfølgingsplan.",
+    "Bruk Forhåndsvis kundetilbud før publisering. Forhåndsvisningen er skrivebeskyttet og sender ingen e-post.",
     "Velg Bademiljø Expo eller Ringside Rørleggerbedrift som merkevare før publisering. Valgt logo, saksbehandler, vilkår og oppfølgingsplan låses med tilbudsversjonen.",
-    "Publiser og send til kunde. Kunden kan lese tilbudet, åpne vedlegg og produktlenker, velge eventuelle alternativer og enten akseptere eller avvise digitalt.",
+    "Publiser og send til kunde. Kunden kan lese tilbudet, åpne relevante lenker/vedlegg, velge opsjoner og akseptere eller avvise digitalt.",
     "Ved aksept eller avvisning avsluttes Butikktilbudet i Sales. Det opprettes ikke kontrakt eller ProffDok-prosjekt.",
   ]);
 
-  appendHelpSection(content, "Alternativer og priser", [
-    "Arbeid med priser inkl. mva. i Butikktilbud. Saksbehandler kan samtidig se beregnet pris eks. mva.",
-    "Et alternativ registreres med faktisk alternativ varepris, ikke bare prisdifferansen.",
-    "Hvis alternativet også endrer monteringsprisen, registreres den nye monteringsprisen på samme alternativ. Expo ProffDok beregner endringen mot grunnpakken automatisk.",
-    "Kunden ser totalsummer inkl. mva. og kan velge alternativet før aksept.",
+  appendHelpSection(content, "Internt vareregister", [
+    "Vareregisteret er et valgfritt internt oppslag i en tilbudspost. Du kan fortsatt opprette helt manuelle poster for servicearbeid, elektriker, maler, avfall, rigg og andre leveranser.",
+    "Søk på leverandør, varenummer, GTIN/EAN eller varetekst og klikk på ønsket treff for å fylle posten med kundeegnet produktinformasjon og gjeldende salgspris.",
+    "Når flere leverandører har samme normaliserte GTIN/EAN kan leverandøralternativer vises. Samme varenummer alene brukes ikke som sikker kobling mellom leverandører.",
+    "Innkjøps-/nettopris er kun intern kataloginformasjon og skal aldri vises i kundelenke, tilbuds-PDF, publisert tilbud eller akseptbevis.",
+    "Vareregisteret er kun tilgjengelig for godkjente brukere med Butikktilbud-tilgang i Ringside Rørleggerbedrift AS eller Bademiljø Expo. Expo Proffsenter har ikke katalogtilgang.",
+  ]);
+
+  appendHelpSection(content, "Montering og opsjoner", [
+    "Montering kan knyttes direkte til en konkret post. Antall/timer og pris pr. enhet beregner monteringssummen automatisk.",
+    "En opsjon kan være tillegg/oppgradering eller alternativ/erstatter for en konkret post.",
+    "For en alternativ vare velger du om eksisterende montering beholdes, om alternativet skal ha egen monteringsmengde/pris eller om alternativet ikke skal ha montering.",
+    "Kunden ser totalsummer inkl. mva. og kan velge relevante opsjoner før aksept. Uvalgte opsjoner inngår ikke i tilbudssummen.",
+  ]);
+
+  appendHelpSection(content, "Autosave og gjenoppretting", [
+    "Butikktilbud lagres fortløpende som kladd. Tilbake fra redigering lagrer kladden og går tilbake uten den gamle lagre-/valideringsdialogen.",
+    "En tom lokal startkladd får ikke overstyre et eksisterende servertilbud med innhold. Serverdata brukes ved recovery når lokal kladd åpenbart er tom/stale.",
+    "Ved vanlig inngang til Befaring/Tilbud åpnes sakslisten. En full reload mens du står inne i en sak kan gjenåpne samme sak.",
+    "Publiserte, aksepterte og avviste tilbudsversjoner er låst historikk og overskrives ikke av senere kladdendringer.",
   ]);
 
   appendHelpSection(content, "Betaling, gyldighet og automatisk oppfølging", [
@@ -216,14 +232,14 @@ function createStoreOfferHelpItem() {
   ]);
 
   appendHelpSection(content, "Maler og dokumentasjon", [
-    "Lagre tekst og vilkår som mal når formuleringer skal gjenbrukes.",
-    "En butikktilbudsmal lagrer ikke kunde, varer, NOBB-numre, priser, bilder eller vedlegg.",
+    "Dagens Butikktilbud-mal lagrer tilbudstittel, intro, forbehold, vilkår, betaling og gyldighet. Den lagrer ikke komplett post-/avsnittsstruktur ennå.",
     "Publiserte, aksepterte og avviste tilbudsversjoner skal ikke overskrives. Ved endringer opprettes en ny tilbudsversjon.",
+    "Avsnitt vises som overskrifter uten linjenummer og uten 0-kroners pris i internvisning, kundelenke, tilbuds-PDF og akseptbevis.",
   ]);
 
   appendHelpSection(content, "Viktig", [
     "Butikktilbud er en egen arbeidsflyt og skal ikke brukes som inngang til våtromsprosjekt, kontrakt eller prosjektaktivering.",
-    "Kontroller alltid kunde, vare, antall, rabatt, montering, alternativer, logo, betalingsbetingelser, gyldighet og oppfølgingsplan i forhåndsvisningen før tilbudet sendes.",
+    "Kontroller alltid kunde, avsnitt/poster, varevalg, montering, opsjoner, logo, betalingsbetingelser, gyldighet og oppfølgingsplan i forhåndsvisningen før tilbudet sendes.",
     "Automatiske påminnelser gjelder kun Butikktilbud og sendes aldri når tilbudet allerede er akseptert, avvist, utløpt, arkivert eller når en annen tilbudsversjon er blitt gjeldende.",
     "Tilgang til Butikktilbud følger brukerens tildelte modultilgang. Firmaadministrator kan bare delegere Butikktilbud når firmaadministratoren selv har denne tilgangen.",
   ]);
