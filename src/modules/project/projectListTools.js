@@ -1,5 +1,5 @@
-// Expo ProffDok – FASE 28C1
-// Startsideoppfølging bygges på eksisterende prosjektlistedata uten nye databasefelt.
+// Expo ProffDok – FASE 39A
+// Prosjektlistesøk skjer lokalt på allerede hentede prosjektdata uten nye databasefelt.
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 
 const import_jsx_runtime = { jsx, jsxs, Fragment };
@@ -15,7 +15,7 @@ export const normalizeSearchText = (value = "") => String(value ?? "")
   .replace(/Å/g, "a")
   .toLowerCase();
 
-export const compactSearchText = (value = "") => normalizeSearchText(value).replace(/[\s.\-+()_/:;,]/g, "");
+export const compactSearchText = (value = "") => normalizeSearchText(value).replace(/[^a-z0-9]/g, "");
 
 export const makeSearchableText = (values = []) => {
   const raw = values.filter((value) => value !== null && value !== void 0 && value !== false).map((value) => {
@@ -30,10 +30,13 @@ export const makeSearchableText = (values = []) => {
 export const projectMatchesSearch = (searchable = "", searchTerm = "") => {
   const normalizedTerm = normalizeSearchText(searchTerm).trim();
   if (!normalizedTerm) return true;
-  const compactTerm = compactSearchText(searchTerm);
-  const terms = normalizedTerm.split(/\s+/).filter(Boolean);
-  const compactTerms = terms.map(compactSearchText).filter(Boolean);
-  return terms.every((term, index) => searchable.includes(term) || (compactTerms[index] && searchable.includes(compactTerms[index]))) || (!!compactTerm && searchable.includes(compactTerm));
+  const normalizedSearchable = normalizeSearchText(searchable);
+  const compactSearchable = compactSearchText(searchable);
+  const terms = normalizedTerm.split(/[\s,;:/|\\]+/).map((term) => term.trim()).filter(Boolean);
+  return terms.every((term) => {
+    const compactTerm = compactSearchText(term);
+    return normalizedSearchable.includes(term) || (!!compactTerm && compactSearchable.includes(compactTerm));
+  });
 };
 
 export function createProjectListTools({
@@ -82,11 +85,12 @@ export function createProjectListTools({
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item projectListSearchPanel", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk etter prosjekt, kunde, adresse, e-post, telefon, garantinr., ansvarlig eller produkt", value: projectSearch, onChange: setProjectSearch }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Søk i prosjektlisten", value: projectSearch, onChange: setProjectSearch }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Statusfilter", value: projectStatusFilter, onChange: setProjectStatusFilter, options: ["alle", "draft", "progress", "waiting", "customer_ready", "deviation", "done", "locked"], optionLabels: { alle: "Alle", draft: "Utkast", progress: "Pågår", waiting: "Avventer", customer_ready: "Klar for kunde", deviation: "Avvik åpent", done: "Ferdigstilt", locked: "Arkivert / låst" } })
             ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "6px" }, children: "Treffene oppdateres mens du skriver. Søk på prosjektnavn, kunde, adresse, e-post, telefon, ansvarlig, garanti eller produkt." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "projectListToolbar", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => loadProjects(authUser, true), children: "Søk" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => loadProjects(authUser, true), children: "Oppdater liste" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectUnreadOnly ? "" : "secondary", onClick: () => setProjectUnreadOnly((v) => !v), children: projectUnreadOnly ? "Vis alle" : "Kun uleste" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "alle" ? "secondary" : "", onClick: () => setProjectStatusFilter("alle"), children: "Alle" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: projectStatusFilter === "progress" || projectStatusFilter === "open" ? "" : "secondary", onClick: () => setProjectStatusFilter(projectStatusFilter === "progress" || projectStatusFilter === "open" ? "alle" : "progress"), children: "Aktive" }),
@@ -105,7 +109,7 @@ export function createProjectListTools({
               " prosjekter. Status: Åpen, Pågår, Ferdigstilt eller Avsluttet/låst."
             ] })
           ] }),
-          projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter hentet ennå. Trykk Søk." }),
+          projects.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter hentet ennå. Trykk Oppdater liste." }),
           projects.length > 0 && filteredProjectListRows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "16px" }, children: "Ingen prosjekter matcher søket eller filteret." }),
           filteredProjectListRows.map(({ row: p, listProject, listStatus, unreadForAdminInList, latestMessage, imageSummary, openDeviationCount, productSummary, listWarranty, projectCompanyName, projectOwnerEmail }) => {
             const locationLine = [listProject.address, listProject.postnr, listProject.city].filter(Boolean).join(", ");
