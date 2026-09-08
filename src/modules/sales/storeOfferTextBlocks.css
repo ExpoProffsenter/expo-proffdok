@@ -38,7 +38,7 @@
 }
 
 /* Draft preview skal vise nøyaktig hvilke valg kunden får, men være helt klikk-sikker. */
-.store-draft-preview-shell .sales-customer-accept-form,
+.store-draft-preview-shell.store-draft-preview-shell .sales-customer-accept-form,
 .store-draft-preview-shell .store-customer-decision-shell {
   display: block !important;
   pointer-events: none !important;
