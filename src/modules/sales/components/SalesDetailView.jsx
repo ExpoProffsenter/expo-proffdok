@@ -2,7 +2,8 @@
 // Butikktilbud avsluttes ved aksept: prosjektsteg, kontrakt og prosjektaktivering
 // fjernes fra butikkflyten, mens ordinære tilbud beholder eksisterende flyt.
 // FASE 39B.2: avvist Butikktilbud får eget avsluttet neste-steg-kort og skal aldri
-// falle tilbake til tekst om befaring eller planlegging.
+// falle tilbake til tekst om befaring eller planlegging. Den avviste publiserte
+// versjonen kan fortsatt åpnes skrivebeskyttet fra saken.
 // FASE 33B.5 viser kontraktsstatus, kundelenke og signert PDF direkte i kontraktkortet.
 // FASE 33B.4 gjør akseptbevisets neste-steg-tekst kompatibelt med det nye valgfrie kontraktsteget.
 // FASE 33B.3 legger til et frivillig valg om enkel Expo-kontrakt i eksisterende
@@ -320,6 +321,18 @@ function rewriteStoreOfferAcceptedFlow(node) {
   return cloneElement(node, undefined, children);
 }
 
+function buildDeclinedOfferHref(publicToken = "") {
+  const token = String(publicToken || "").trim();
+  if (!token || typeof window === "undefined") return "";
+
+  const params = new URLSearchParams();
+  if (window.location.hostname.endsWith(".vercel.app")) {
+    params.set("progressTest", "safe");
+  }
+  params.set("publicOffer", token);
+  return `${window.location.pathname}?${params.toString()}`;
+}
+
 function rewriteStoreOfferDeclinedFlow(node, request = {}) {
   if (Array.isArray(node)) {
     return node.map((child) => rewriteStoreOfferDeclinedFlow(child, request));
@@ -331,6 +344,7 @@ function rewriteStoreOfferDeclinedFlow(node, request = {}) {
     String(node.props?.className || "").includes("sales-next-card")
   ) {
     const declinedBy = String(request?.declinedBy || "").trim();
+    const customerHref = buildDeclinedOfferHref(request?.publicToken);
     return cloneElement(node, undefined, [
       <span className="sales-next-label" key="store-declined-label">Neste steg</span>,
       <h2 key="store-declined-title">Tilbudet er avvist</h2>,
@@ -339,9 +353,21 @@ function rewriteStoreOfferDeclinedFlow(node, request = {}) {
           ? `Kunden har avvist tilbudet. Avvisningen er registrert av ${declinedBy}, og saken er avsluttet i Sales.`
           : "Kunden har avvist tilbudet. Avvisningen er registrert, og saken er avsluttet i Sales."}
       </p>,
-      <p key="store-declined-action" style={{ marginBottom: 0 }}>
-        Det sendes ikke flere automatiske påminnelser. Ved behov kan du opprette et nytt eller revidert tilbud.
+      <p key="store-declined-action" style={{ marginBottom: customerHref ? 14 : 0 }}>
+        Det sendes ikke flere automatiske påminnelser. Det avviste tilbudet beholdes som historikk og slettes ikke.
       </p>,
+      customerHref ? (
+        <a
+          key="store-declined-open-offer"
+          className="sales-secondary-button"
+          href={customerHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ justifySelf: "start", width: "fit-content" }}
+        >
+          Se avvist tilbud
+        </a>
+      ) : null,
     ]);
   }
 
