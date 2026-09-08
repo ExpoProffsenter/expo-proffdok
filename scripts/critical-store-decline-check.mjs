@@ -50,4 +50,13 @@ for (const needle of [
   "overflow-wrap: anywhere",
 ]) assert(customerCss.includes(needle), `mobil avvisning mangler: ${needle}`);
 
+const salesDetail = read("src/modules/sales/components/SalesDetailView.jsx");
+for (const needle of [
+  "rewriteStoreOfferDeclinedFlow",
+  'request?.status === "Avvist"',
+  "saken er avsluttet i Sales",
+  "Det sendes ikke flere automatiske påminnelser",
+  "Ved behov kan du opprette et nytt eller revidert tilbud",
+]) assert(salesDetail.includes(needle), `intern avvist-visning mangler: ${needle}`);
+
 console.log("✅ Expo ProffDok Butikktilbud-avvisning check OK");
