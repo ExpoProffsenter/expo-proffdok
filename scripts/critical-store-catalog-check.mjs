@@ -66,16 +66,21 @@ for (const needle of [
   "get_pending_internal_store_catalog_import",
   "drop index if exists public.internal_store_catalog_items_active_idx",
 ]) assert(singleCopyMigration.includes(needle), `single-copy-import mangler: ${needle}`);
-
 assert(
   !singleCopyMigration.includes("insert into public.internal_store_catalog_stage"),
   "nye ERP-batcher skal ikke lage en full staging-kopi."
 );
 
+const adminMigration = fs.readFileSync(path.join(root, "supabase/migrations/20260908115800_fase39b2_catalog_systemadmin_only.sql"), "utf8");
+assert(adminMigration.includes("current_profile_is_systemadmin()"), "kun systemadmin skal kunne administrere prisimport.");
+assert(!adminMigration.includes("current_profile_is_firmaadmin()"), "firmaadmin skal ikke kunne administrere prisimport.");
+
 const panel = fs.readFileSync(path.join(root, "src/modules/storeCatalog/StoreCatalogPanel.jsx"), "utf8");
 const client = fs.readFileSync(path.join(root, "src/modules/storeCatalog/storeCatalogClient.js"), "utf8");
 const wrapper = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx"), "utf8");
 const router = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesOfferBuilder.jsx"), "utf8");
+const textBlockCss = fs.readFileSync(path.join(root, "src/modules/sales/storeOfferTextBlocks.css"), "utf8");
+const salesModule = fs.readFileSync(path.join(root, "src/modules/sales/SalesModule.jsx"), "utf8");
 
 for (const needle of [
   "searchStoreCatalog", "getStoreCatalogAlternatives", "beginStoreCatalogImport",
@@ -93,6 +98,16 @@ assert(wrapper.includes("customer_price_incl_vat"), "kundepris inkl. mva. skal k
 assert(wrapper.includes("customer_price_ex_vat"), "kundepris eks. mva. skal kopieres til Sales amount.");
 assert(!wrapper.includes("purchase_net_ex_vat"), "nettopris skal aldri kopieres til offerForm-wrapperen.");
 assert(wrapper.includes("storeCatalogItemId"), "tilbudslinjen skal beholde en ufarlig katalogreferanse.");
+assert(wrapper.includes('TEXT_BLOCK_LINE_TYPE = "store_text"'), "Butikktilbud skal støtte prisnøytrale tekstavsnitt.");
+assert(wrapper.includes('TEXT_BLOCK_MARKER = "#expo-store-text-block"'), "tekstavsnitt skal ha sikker presentasjonsmarkør.");
+assert(wrapper.includes("storeAfterLineId"), "tekstavsnitt skal kunne plasseres mellom varer.");
+assert(
+  wrapper.lastIndexOf("<StoreCatalogPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilder"),
+  "internt vareregister skal ligge etter selve Butikktilbud-byggeren."
+);
+assert(textBlockCss.includes('#expo-store-text-block'), "kundepresentasjonen skal kjenne igjen tekstavsnitt.");
+assert(textBlockCss.includes(".sales-customer-line-price"), "tekstavsnitt skal skjule pris i kundevisningen.");
+assert(salesModule.includes('import "./storeOfferTextBlocks.css"'), "tekstblokk-presentasjon skal lastes i Sales.");
 assert(router.includes("SalesStoreOfferBuilderCatalog"), "Butikktilbud skal bruke katalog-wrapperen.");
 
 console.log("✅ Expo ProffDok internt vareregister check OK");
