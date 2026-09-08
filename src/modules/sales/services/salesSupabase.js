@@ -2,24 +2,9 @@
 // FASE 37A2 speiler serverens idempotente automatiske oppfølgingslogg inn som
 // runtime-metadata i Sales. Feltene skrives aldri tilbake i sales_requests.payload.
 // Når automatisk påminnelse er nyere enn siste manuelle utsending, brukes den som
-// runtime-kontakttid slik at "Må følges opp" først kommer tilbake etter nye 7 dager.
-// FASE 37A1 speiler eksisterende sales_requests.archived_at inn i runtime-payload
-// slik at Sales-oversikten kan filtrere/arkivere uten ny SQL/RLS/migrasjon.
-// Arkivering oppdaterer kun archived_at på eksisterende salgssak.
-// FASE 34B sender serverstyrte, idempotente akseptvarsler til kunden og
-// brukeren som publiserte den eksakte tilbudsversjonen kunden aksepterte.
-// Varsling forsøkes kun som direkte følge av en ny digital aksept; åpning av
-// historiske aksepterte tilbud utløser aldri e-post. Selve aksept-RPC-en beholdes
-// uendret, og e-postfeil kan aldri reversere aksepten.
-// FASE 32 deler én standard Supabase-klient i hele Sales-modulen. Det hindrer
-// flere GoTrue/auth-klienter med samme browser-storage og lar bilde-/Storage-laget
-// bruke samme innloggede session som resten av Sales.
-// FASE 32A henter serverstemplet creator-snapshot for nye salgssaker uten å
-// blande Opprettet av med ansvarlig. Sporbarhetsfeltene er kun runtime-metadata
-// og skrives ikke tilbake i sales_requests.payload.
-// Tynn wrapper rundt eksisterende Supabase-service.
-// Legger et innholdsbasert fingeravtrykk på bekreftet serverbaseline slik at
-// samme tilbud ikke utløser recovery bare fordi lokal savedAt er nyere.
+// runtime-kontakttid. Butikktilbud kan i tillegg avvises digitalt via låst RPC.
+// FASE 37A1 speiler eksisterende sales_requests.archived_at inn i runtime-payload.
+// FASE 34B sender serverstyrte, idempotente akseptvarsler til kunden og publisher.
 
 export * from "./salesSupabaseBase.js";
 
@@ -40,6 +25,7 @@ const RUNTIME_PAYLOAD_KEYS = [
   "offerAutoFollowUpVersionId",
   "offerAutoFollowUpVersionNumber",
   "offerAutoFollowUpSourceSentAt",
+  "offerAutoFollowUpReminderNumber",
 ];
 const ACCEPTANCE_NOTIFY_FUNCTION = "sales-offer-acceptance-notify";
 
@@ -71,9 +57,6 @@ function stripRuntimeTraceability(payload = {}) {
   if (!payload || typeof payload !== "object") return payload;
   const clean = { ...payload };
 
-  // hydrateOfferFollowUpState kan midlertidig gjøre offerEmailSentAt til siste
-  // kontakt (automatisk påminnelse) for visning/7-dagersklokke. Ved lagring må
-  // alltid den ekte, opprinnelige manuelle e-posttiden tilbake i payload.
   if (Object.prototype.hasOwnProperty.call(clean, "offerOriginalEmailSentAt")) {
     clean.offerEmailSentAt = clean.offerOriginalEmailSentAt || "";
   }
@@ -104,13 +87,11 @@ async function hydrateOfferFollowUpState(client, companyId, rows = []) {
 
   const { data: notificationRows, error } = await client
     .from("sales_offer_follow_up_notifications")
-    .select("request_ref,offer_version_id,status,sent_at,source_email_sent_at")
+    .select("request_ref,offer_version_id,reminder_number,status,sent_at,source_email_sent_at")
     .eq("company_id", companyId)
     .eq("status", "sent")
     .order("sent_at", { ascending: false });
 
-  // 37A2 kan rulles tilbake uavhengig av UI. Manglende tabell/tilgang skal aldri
-  // stoppe lasting av Sales-saker.
   if (error || !Array.isArray(notificationRows) || notificationRows.length === 0) {
     return rows;
   }
@@ -147,6 +128,7 @@ async function hydrateOfferFollowUpState(client, companyId, rows = []) {
       versionId,
       versionNumber: Number(versionNumberById.get(versionId) || 0),
       sourceSentAt: row?.source_email_sent_at || "",
+      reminderNumber: Number(row?.reminder_number || 0),
     });
   });
 
@@ -166,9 +148,7 @@ async function hydrateOfferFollowUpState(client, companyId, rows = []) {
     const autoSentAtMs = validDateMs(state.sentAt);
     const originalSentAtMs = validDateMs(originalEmailSentAt);
     const autoIsLatestContact =
-      autoVersionMatches &&
-      autoSentAtMs > 0 &&
-      autoSentAtMs >= originalSentAtMs;
+      autoVersionMatches && autoSentAtMs > 0 && autoSentAtMs >= originalSentAtMs;
 
     return {
       ...row,
@@ -180,6 +160,7 @@ async function hydrateOfferFollowUpState(client, companyId, rows = []) {
         offerAutoFollowUpVersionId: state.versionId,
         offerAutoFollowUpVersionNumber: state.versionNumber,
         offerAutoFollowUpSourceSentAt: state.sourceSentAt,
+        offerAutoFollowUpReminderNumber: state.reminderNumber,
       },
     };
   });
@@ -187,54 +168,36 @@ async function hydrateOfferFollowUpState(client, companyId, rows = []) {
 
 function announceCreatorTraceability(rows = []) {
   if (typeof window === "undefined") return;
-
-  if (!window.__expoProffDokSalesTraceability) {
-    window.__expoProffDokSalesTraceability = {};
-  }
+  if (!window.__expoProffDokSalesTraceability) window.__expoProffDokSalesTraceability = {};
 
   (Array.isArray(rows) ? rows : []).forEach((row) => {
     const payload = row?.payload || {};
     const creatorName = String(payload.__createdByName || "").trim();
     if (!creatorName || !row?.request_ref) return;
-
     const detail = {
       requestRef: String(row.request_ref),
       createdByUserId: String(payload.__createdByUserId || ""),
       createdByName: creatorName,
       createdAt: payload.__createdAt || "",
     };
-
     window.__expoProffDokSalesTraceability[detail.requestRef] = detail;
-    window.dispatchEvent(
-      new CustomEvent("expo-proffdok-sales-traceability", { detail })
-    );
+    window.dispatchEvent(new CustomEvent("expo-proffdok-sales-traceability", { detail }));
   });
 }
 
 async function hydrateCreatorTraceability(client, companyId, rows = []) {
-  if (!client || !companyId || !Array.isArray(rows) || rows.length === 0) {
-    return rows;
-  }
-
+  if (!client || !companyId || !Array.isArray(rows) || rows.length === 0) return rows;
   const { data: traceRows, error } = await client
     .from("sales_requests")
     .select("request_ref,created_by,created_by_name,created_at")
     .eq("company_id", companyId);
-
   if (error || !Array.isArray(traceRows)) return rows;
 
-  const traceByRef = new Map(
-    traceRows.map((row) => [String(row.request_ref || ""), row])
-  );
-
+  const traceByRef = new Map(traceRows.map((row) => [String(row.request_ref || ""), row]));
   return rows.map((row) => {
     const trace = traceByRef.get(String(row?.request_ref || ""));
     const creatorName = String(trace?.created_by_name || "").trim();
-
-    // Gamle saker backfilles ikke. Uten serverstemplet navn vises heller ingen
-    // kunstig creator basert på ansvarlig eller andre mutable felt.
     if (!creatorName) return row;
-
     return {
       ...row,
       payload: {
@@ -250,7 +213,6 @@ async function hydrateCreatorTraceability(client, companyId, rows = []) {
 async function rememberOfferContentSignatures(client, rows = [], fallbackCompanyId = "") {
   const storage = browserStorage();
   if (!storage || !client?.auth?.getSession) return;
-
   let userId = "";
   try {
     const { data } = await client.auth.getSession();
@@ -261,21 +223,17 @@ async function rememberOfferContentSignatures(client, rows = [], fallbackCompany
   if (!userId) return;
 
   const observedAt = new Date().toISOString();
-
   for (const row of Array.isArray(rows) ? rows : []) {
     const companyId = String(row?.company_id || fallbackCompanyId || "").trim();
     const requestRef = String(row?.request_ref || "").trim();
     if (!companyId || !requestRef) continue;
-
     const payload = row?.payload || {};
     const offerDraftSignature = createOfferDraftContentSignature(
       buildOfferFormForSignatureFromRequest(payload)
     );
     if (!offerDraftSignature) continue;
-
     const key = `${OFFER_SERVER_BASELINE_PREFIX}:${userId}:${companyId}:${requestRef}`;
     const previous = parseJson(storage, key) || {};
-
     try {
       storage.setItem(
         key,
@@ -296,10 +254,7 @@ async function rememberOfferContentSignatures(client, rows = [], fallbackCompany
 
 async function notifySalesOfferAcceptance(client, token) {
   const publicOfferToken = String(token || "").trim();
-  if (!client?.functions?.invoke || !publicOfferToken) {
-    return { data: null, error: null };
-  }
-
+  if (!client?.functions?.invoke || !publicOfferToken) return { data: null, error: null };
   return client.functions.invoke(ACCEPTANCE_NOTIFY_FUNCTION, {
     body: { publicOfferToken },
   });
@@ -307,18 +262,24 @@ async function notifySalesOfferAcceptance(client, token) {
 
 export async function acceptSalesOffer(client, args = {}) {
   const result = await core.acceptSalesOffer(client, args);
-
-  // Aksept er autoritativ og ferdig før e-post forsøkes. Varslingsfeil skal aldri
-  // gi kunden inntrykk av at aksepten feilet eller prøve å skrive aksepten om igjen.
   if (!result?.error) {
     try {
       await notifySalesOfferAcceptance(client, args?.token);
     } catch {
-      // Aksepten er allerede lagret. Varsling er sekundær og påvirker ikke aksepten.
+      // Aksepten er allerede lagret. Varsling er sekundær.
     }
   }
-
   return result;
+}
+
+export function declineSalesOffer(client, { token, declinedName }) {
+  if (!client?.rpc) {
+    return Promise.resolve({ data: null, error: new Error("Supabase er ikke tilgjengelig.") });
+  }
+  return client.rpc("decline_sales_offer", {
+    token,
+    declined_name: String(declinedName || "").trim(),
+  });
 }
 
 export async function setSalesRequestArchivedAt(
@@ -327,14 +288,9 @@ export async function setSalesRequestArchivedAt(
 ) {
   const safeCompanyId = String(companyId || "").trim();
   const safeRequestRef = String(requestRef || "").trim();
-
   if (!client || !safeCompanyId || !safeRequestRef) {
-    return {
-      data: null,
-      error: new Error("Salgssaken kunne ikke identifiseres for arkivering."),
-    };
+    return { data: null, error: new Error("Salgssaken kunne ikke identifiseres for arkivering.") };
   }
-
   return client
     .from("sales_requests")
     .update({ archived_at: archivedAt || null })
@@ -348,16 +304,8 @@ export async function fetchSalesRequests(client, companyId) {
   const result = await core.fetchSalesRequests(client, companyId);
   if (!result?.error) {
     const archiveHydratedRows = hydrateArchiveState(result?.data || []);
-    const followUpHydratedRows = await hydrateOfferFollowUpState(
-      client,
-      companyId,
-      archiveHydratedRows
-    );
-    const hydratedRows = await hydrateCreatorTraceability(
-      client,
-      companyId,
-      followUpHydratedRows
-    );
+    const followUpHydratedRows = await hydrateOfferFollowUpState(client, companyId, archiveHydratedRows);
+    const hydratedRows = await hydrateCreatorTraceability(client, companyId, followUpHydratedRows);
     result.data = hydratedRows;
     announceCreatorTraceability(hydratedRows);
     await rememberOfferContentSignatures(client, hydratedRows, companyId);
@@ -373,21 +321,12 @@ export async function upsertSalesRequests(client, rows) {
   const result = await core.upsertSalesRequests(client, safeRows);
   if (!result?.error) {
     await rememberOfferContentSignatures(client, safeRows || []);
-
     const companyIds = [
-      ...new Set(
-        safeRows.map((row) => String(row?.company_id || "").trim()).filter(Boolean)
-      ),
+      ...new Set(safeRows.map((row) => String(row?.company_id || "").trim()).filter(Boolean)),
     ];
     for (const companyId of companyIds) {
-      const companyRows = safeRows.filter(
-        (row) => String(row?.company_id || "").trim() === companyId
-      );
-      const hydratedRows = await hydrateCreatorTraceability(
-        client,
-        companyId,
-        companyRows
-      );
+      const companyRows = safeRows.filter((row) => String(row?.company_id || "").trim() === companyId);
+      const hydratedRows = await hydrateCreatorTraceability(client, companyId, companyRows);
       announceCreatorTraceability(hydratedRows);
     }
   }
