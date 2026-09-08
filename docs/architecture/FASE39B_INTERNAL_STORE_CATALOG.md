@@ -1,39 +1,64 @@
-# EXPO PROFFDOK – FASE 39B.1
-## Internt vareregister – Ringside / Bademiljø Expo
+# EXPO PROFFDOK – FASE 39B.2
+## Internt vareregister + Butikktilbud
 
-### Formål
-FASE 39B.1 etablerer grunnmuren for et stort, søkbart vareregister til Butikktilbud uten å endre eksisterende publisering, kundelenker, aksept eller historikk.
+**Status:** Implementert og Preview-testet 08.09.2026  
+**Scope:** Ringside Rørleggerbedrift AS / Bademiljø Expo  
+**Katalog:** 468 425 aktive brukbare varer etter validering
 
-Vareregisteret inneholder Ringsides innkjøps-/nettopriser og er derfor en egen intern sikkerhetssone.
+## 1. Formål
 
-### Sikkerhetsgrense
-Tilgang til katalogen krever samtidig:
+FASE 39B etablerer et stort internt ERP-vareregister og kobler dette trygt til Butikktilbud. Målet er raskere tilbudsarbeid uten at interne innkjøpspriser lekker til kundegrunnlag eller historiske tilbud endres ved senere prisoppdateringer.
+
+Butikktilbud er samtidig utvidet fra en ren varelinjeflyt til en generell tilbudsbygger for butikk, service og mindre leveranser. Et tilbud bygges med **tilbudsposter og avsnitt**, der vareregisteret er et valgfritt oppslag – ikke et krav.
+
+## 2. Sikkerhetsgrense
+
+Katalogtilgang krever samtidig:
 
 1. godkjent og aktiv bruker,
 2. `store_offers`-modultilgang,
-3. faktisk medlemskap i Sales-firmascopet:
+3. faktisk medlemskap i tillatt Sales-firmascop:
    - `Ringside Rørleggerbedrift AS`, eller
    - `Bademiljø Expo`.
 
-Org.nr. brukes **ikke** som sikkerhetsgrense. Dette er bevisst fordi flere Ringside-profiler/merkevarer kan dele samme juridiske organisasjonsnummer.
+`Expo Proffsenter` har ikke katalogtilgang selv om juridisk organisasjonsnummer kan være felles. **Org.nr. er ikke sikkerhetsgrense.** Faktisk firma-/Sales-scope er grensen.
 
-Systemadministrator får ikke katalogtilgang bare fordi rollen er systemadministrator; brukeren må også være medlem av et av de to tillatte firmascopene.
+RLS/RPC er autoritativ tilgangskontroll. Frontend alene gir aldri katalogtilgang.
 
-Direkte INSERT/UPDATE/DELETE fra klient er sperret. Import skjer kun gjennom security-definer RPC-er og krever i tillegg systemadministrator- eller firmaadministratorrolle.
+Kun **systemadministrator** kan starte/aktivere ERP-oppdatering. Firmaadministrator kan ikke administrere katalogen.
 
-### Ingen nettopris i kundedata
-`purchase_net_ex_vat` ligger kun i intern katalog/staging.
+Direkte klient-INSERT/UPDATE/DELETE mot katalogtabellene er sperret.
 
-Når katalog senere kobles til Butikktilbud skal kundens tilbudslinje bare få kundeegnet produktinformasjon og salgspris. Intern nettopris skal ikke kopieres til publisert tilbudsversjon, PDF eller offentlig kundelenke.
+## 3. Ingen nettopris i kundedata
 
-### ERP-format
-Den faste ERP-eksporten behandles som:
+Katalogen kan inneholde:
+
+- leverandør/bruttopris eks. mva.
+- innkjøpsrabatt
+- netto innkjøpspris eks. mva.
+- påslag/DG
+- kundepris eks. og inkl. mva.
+
+`purchase_net_ex_vat` og øvrig intern kalkulasjonsinformasjon skal **aldri** kopieres til:
+
+- Sales-kladd som kundedata,
+- `sales_offer_versions`,
+- offentlig kundelenke,
+- tilbuds-PDF,
+- akseptbevis,
+- kunde-e-post.
+
+Når bruker velger en katalogvare kopieres bare kundeegnet produktsnapshot og salgspris til tilbudet. Intern katalogreferanse kan beholdes separat for sporbarhet.
+
+## 4. ERP-format
+
+Fast ERP-eksport behandles som:
 
 - Windows-1252
 - én fysisk vare per linje
 - semikolon som skilletegn
 - nøyaktig 18 felt
-- ingen CSV-quote-tolkning; varetekster kan inneholde dobbelapostrof uten at feltstrukturen endres
+- ingen CSV-quote-tolkning
 
 Kartlegging:
 
@@ -50,79 +75,228 @@ Kartlegging:
 | 9 | Kundepris inkl. mva. |
 | 10 | Produktgruppe |
 | 11 | Prisdato `YYYYMMDD` |
-| 12–15 | ERP-flagg, bevart uten å tillegge dem forretningsbetydning |
+| 12–15 | ERP-flagg |
 | 16 | Varetekst |
 | 17 | GTIN/EAN |
-| 18 | Foreløpig tomt/reservert |
+| 18 | Reservert/tomt |
 
-Varer droppes før staging dersom:
-- varenummer mangler,
+Rader avvises dersom:
+
+- leverandørens varenummer mangler,
 - netto innkjøpspris er `<= 0`,
 - kundepris eks. mva. er `<= 0`, eller
 - kundepris inkl. mva. er `<= 0`.
 
-### Validering mot eksport 2026-09-08
-Den analyserte ERP-eksporten hadde:
-- 489 923 fysiske linjer,
-- 18 felt på samtlige linjer,
-- 468 426 brukbare linjer etter nullpris-/varenummerfilter,
-- 3 linjer uten varenummer,
-- 21 494 linjer med null/ikke positiv netto- eller utsalgspris,
-- kun én duplikat på kombinasjonen leverandør + varenummer i det brukbare datasettet.
+ERP-filen og prisdata skal aldri legges i GitHub-repositoriet.
 
-Selve ERP-filen og prisdata skal **aldri** legges i GitHub-repositoriet.
+## 5. Validering mot ERP-eksport 08.09.2026
 
-### Identitet og leverandøralternativer
+Eksporten inneholdt:
+
+- 489 923 rå linjer
+- nøyaktig 18 felt på samtlige linjer
+- 21 494 rader hoppet over på grunn av null/ikke positiv pris
+- 3 rader uten varenummer
+- 1 duplikat på leverandør + varenummer
+- **468 425 unike brukbare varer**
+
+Rundt 261 700 av de brukbare varene hadde plausibel GTIN/EAN og kan brukes til leverandøralternativer.
+
+## 6. Vareidentitet og leverandøralternativer
+
 Primær intern vareidentitet er:
 
-`leverandør + leverandørens varenummer`
+```text
+leverandør + leverandørens varenummer
+```
 
-Samme varenummer på tvers av leverandører er ikke en sikker produktidentitet.
+Varenummer alene er ikke trygt på tvers av leverandører.
 
-Leverandøralternativer kobles derfor kun automatisk når aktiv vare har samme normaliserte GTIN/EAN. Dersom GTIN mangler, vises ikke automatiske leverandøralternativer basert kun på varenummer.
+Leverandøralternativer kobles bare automatisk når varer har samme normaliserte GTIN/EAN. Manglende GTIN gir ingen automatisk alternativkobling basert kun på varenummer.
 
-### NOBB og produktlink
-ERP-filen inneholder ikke et eget NOBB-nummer eller produkt-URL.
+ERP-filen inneholder ikke NOBB-nummer eller produkt-URL. Feltene `nobb_number`, `product_url` og `image_url` er klargjort for senere berikelse, men ekstern NOBB/Byggtjeneste-integrasjon er ikke en avhengighet i FASE 39B.2.
 
-Katalogtabellen har likevel feltene:
-- `nobb_number`
-- `product_url`
-- `image_url`
+## 7. Prisoppdatering – single-copy
 
-Disse er klargjort for en senere berikelsesfase, for eksempel via GTIN mot NOBB/Byggtjeneste. Ingen ekstern NOBB-integrasjon er aktivert i 39B.1.
+Den første staging/aktiveringsmodellen ble forkastet etter at dobbel katalogkopi og indeks/WAL-belastning ga unødvendig diskpress.
 
-### Prisoppdatering
-Prisoppdatering bruker staging:
+Gjeldende modell er **single-copy**:
 
-1. Start import.
-2. Les ERP-filen lokalt i nettleseren som Windows-1252.
-3. Valider hver linje.
-4. Send kun gyldige varer i batcher på maks 2 500 rader.
-5. Hele den gamle aktive katalogen brukes fortsatt mens importen pågår.
-6. Ved `finalize` låses aktiveringen i én databasetransaksjon.
-7. Nye/endrede varer upsertes, varer som ikke finnes i ny fil blir inaktive.
-8. Staging slettes etter vellykket aktivering.
-9. Tidligere publiserte/aksepterte tilbud påvirkes ikke.
+1. Systemadministrator starter import i Systemadmin.
+2. Vareregister-søk låses mens importen pågår.
+3. TXT-filen parses lokalt i nettleseren.
+4. Gyldige varer sendes i kontrollerte batcher direkte til den primære katalogen/importkonteksten.
+5. Det holdes ikke en ekstra full aktiv katalogkopi gjennom hele importen.
+6. Avsluttende aktivering er liten og gjør ny katalog søkbar.
+7. Midlertidig importtilstand ryddes etter ferdig import.
+8. Historiske publiserte/aksepterte tilbud endres aldri.
 
-Dette gjør kvartalsvise prisoppdateringer trygge uten å beholde fire komplette katalogkopier per år.
+Denne modellen reduserer database-/WAL-belastning og holder katalogen rundt 283 MB ved 468 425 varer i målt produksjonsdatabase.
 
-### Søkemodell
-Aktive varer indekseres på:
-- leverandør + varenummer,
-- GTIN,
-- samlet søketekst med trigramindeks.
+## 8. Søkemodell
 
-Søk-RPC returnerer maks 50 treff og krever samme interne katalogtilgang.
+Aktive varer kan søkes på:
 
-### Neste runde – FASE 39B.2
-39B.2 kobler grunnmuren til Butikktilbud:
+- leverandør
+- leverandørens varenummer
+- GTIN/EAN
+- varetekst / samlet søketekst
 
-- søkefelt i varebygger,
-- velg vare fra katalog,
-- vis leverandøralternativer via GTIN,
-- kopier kun kundeegnet snapshot til tilbudet,
-- behold valgt intern katalogreferanse separat fra kundedata,
-- ERP-vareliste etter kundeaksept,
-- enkel importside med fremdrift og kontrolltall.
+Søk returnerer begrenset antall relevante treff og krever katalogtilgang på server.
 
-FASE 39B.1 endrer ikke eksisterende Butikktilbud-UI.
+Hele treffraden i Butikktilbud er klikkbar. Valg fyller posten med kundeegnet produktinformasjon og gjeldende salgspris.
+
+## 9. Butikktilbud – post-/avsnittsmodell
+
+Butikktilbud bruker følgende hovedmodell:
+
+```text
+Tilbud
+  ├─ Avsnitt: Varmepumpe
+  │   ├─ Post: Thermia Calibra
+  │   │   ├─ knyttet montering
+  │   │   └─ opsjoner / alternativer
+  │   ├─ Post: Akkumulatortank
+  │   └─ Post: Rør og deler
+  └─ Avsnitt: Elektriker
+      └─ Post: Elektrikerarbeid
+```
+
+Avsnitt er interne `store_text`-linjer med `storeSectionMode = "group"`. De har ingen pris og skal presenteres som overskrifter – aldri som `0 kr`-linjer.
+
+Robust seksjonsdeteksjon må også kjenne igjen eldre/migrerte markører, blant annet `store-section-*` og seksjonsmarkør i produkt-URL/metadata.
+
+Avsnitt skal behandles likt i:
+
+- tilbudsbygger
+- intern Sales-visning
+- kundelenke
+- tilbuds-PDF
+- akseptbevis
+
+De skal ikke bruke prislinjenummer. Nummerering gjelder bare reelle tilbudsposter.
+
+## 10. Poster, montering og opsjoner
+
+En post kan være:
+
+- manuelt arbeid/service
+- katalogvare
+- annen vare/materiale
+- elektriker/maler/avfall/rigg o.l.
+
+Katalogkobling låser ikke kundeteksten. Bruker kan gjøre beskrivelsen mer kundevennlig uten å miste katalogreferansen.
+
+Montering kan:
+
+- knyttes direkte til en post
+- registreres som antall/timer × pris pr. enhet
+- opprettes som selvstendig «Kun montering»
+
+Opsjoner kan være:
+
+- tillegg/oppgradering
+- alternativ/erstatter
+
+Ved alternativ vare velges monteringsmodell:
+
+- samme montering som grunnpost
+- egen/endret monteringsmengde og enhetspris
+- ingen montering
+
+## 11. Autosave, recovery og navigasjon
+
+Butikktilbud har serverautosave av aktuell sak i stedet for å være avhengig av full omskriving av hele Sales-listen.
+
+Kritiske kontrakter:
+
+- tom/stale lokal kladd skal aldri overstyre et eksisterende servertilbud med reelt innhold
+- tom Enter-opprettet post prunes ved lagring
+- avsnitt skal overleve normalisering som `store_text`, ikke bli vanlig `work`-linje
+- Tilbake fra Butikktilbud lagrer kladden direkte uten gammel full tilbudsvalideringsdialog
+- vanlig klikk på Befaring/Tilbud åpner sakslisten
+- full reload inne i en Sales-sak kan gjenåpne aktuell sak
+
+Firmascopet lokal Sales-cache kan brukes for rask førstevisning, men Supabase er alltid autoritativ og overskriver cachen etter serverlasting.
+
+## 12. Publisering og historikk
+
+Butikktilbud følger eksisterende Sales-versjonering:
+
+```text
+redigerbar kladd
+→ publisert låst versjon
+→ kundelenke/e-post
+→ kunde velger opsjoner
+→ aksepterer eller avviser
+→ saken avsluttes i Sales
+```
+
+Butikktilbud oppretter **ikke** ProffDok-prosjekt eller kontrakt ved aksept.
+
+Publiserte, aksepterte og avviste versjoner er immutable snapshots. Senere ERP-prisoppdatering påvirker dem ikke.
+
+Automatisk oppfølging fra FASE 37A2 beholdes uendret og er en egen låst oppfølgingsplan per publisert Butikktilbud-versjon.
+
+## 13. Systemadmin
+
+Vareregistervedlikehold ligger i Systemadministrasjon.
+
+Systemadministrator skal kunne:
+
+- velge ERP TXT-fil
+- starte oppdatering
+- se importstatus/fremdrift
+- kontrollere tellinger for leste, gyldige/hoppede og aktive varer
+- se at katalogsøk er sperret under import
+
+Vanlig Butikktilbud-editor skal ikke vise det store administrasjonspanelet for katalogimport.
+
+## 14. Viktige filer
+
+Klient/katalog:
+
+```text
+src/modules/storeCatalog/
+src/modules/storeCatalog/systemAdminStoreCatalogUx.jsx
+src/modules/sales/components/SalesStoreOfferBuilderGrouped.jsx
+src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx
+src/modules/sales/services/salesStoreOfferAutosave.js
+src/modules/sales/services/salesStoreOffers.js
+src/modules/sales/utils/storeSectionLine.js
+```
+
+Presentasjon/historikk:
+
+```text
+src/modules/sales/components/SalesDetailView.jsx
+src/modules/sales/components/SalesCustomerViewCore.jsx
+src/modules/sales/services/salesOfferPdf.js
+src/modules/sales/services/salesAcceptanceProofPdf.js
+```
+
+QA:
+
+```text
+scripts/critical-store-catalog-check.mjs
+scripts/critical-sales-recovery-check.mjs
+```
+
+Supabase-migrasjoner i FASE 39B inkluderer blant annet:
+
+```text
+20260908105500_fase39b1_internal_store_catalog.sql
+20260908114500_fase39b2_single_copy_catalog_import.sql
+20260908115800_fase39b2_catalog_systemadmin_only.sql
+```
+
+## 15. Utsatt videreutvikling
+
+Ikke del av ferdig 39B.2:
+
+- ekstern NOBB/Byggtjeneste-berikelse via GTIN
+- komplett Butikktilbud-mal med avsnitt/poster/opsjoner
+- ERP-vareliste/PDF etter aksept gruppert per leverandør
+- eventuell CSV/Excel-eksport av varebehov
+
+Disse må bygges som egne runder uten å svekke katalogsikkerhet eller immutable tilbudshistorikk.
