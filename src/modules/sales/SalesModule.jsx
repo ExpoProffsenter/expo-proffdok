@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 38A1 / FASE 37D1 / FASE 33B.4 / FASE 30D1 / FASE 30C3 / FASE 30C2
+// Expo ProffDok – FASE 39B.2C / FASE 38A1 / FASE 37D1 / FASE 33B.4 / FASE 30D1 / FASE 30C3 / FASE 30C2
+// FASE 39B.2C skiller vanlig inngang til Befaring/Tilbud fra faktisk side-reload:
+// vanlig inngang åpner alltid sakslisten, mens reload inne i Sales kan gjenåpne samme sak.
 // FASE 38A1 lar serverstyrt modultilgang avgjøre hvilke direkte tilbudstyper brukeren kan starte.
 // + Ny forespørsel og eksisterende Befaring/Tilbud-flyt er urørt. + Nytt tilbud er én inngang:
 // Våtromstilbud for Sales-brukere, og i tillegg Butikktilbud når store_offers er tildelt.
@@ -8,6 +10,7 @@
 // publisering, kundelenke, PDF, aksept eller e-postlogikk.
 
 import { useEffect, useState } from "react";
+import "./storeOfferTextBlocks.css";
 import SalesModuleCore from "./SalesModuleCore.jsx";
 import SalesContractCustomerView from "./components/SalesContractCustomerView.jsx";
 import {
@@ -25,19 +28,24 @@ import {
 } from "../access/moduleAccessClient.js";
 
 const SALES_RELOAD_TAB_KEY = "expo-proffdok:sales:restore-tab-after-reload";
+const SALES_RELOAD_NAVIGATION_KEY = "expo-proffdok:sales:restore-navigation-after-reload";
 const SALES_OVERVIEW_INTRO_MARKER = "salesOverviewIntro";
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
-function protectInspectionDraftNavigation(props = {}) {
-  const salesStorageKey = buildSalesStorageKey({
+function salesStorageKeyForProps(props = {}) {
+  return buildSalesStorageKey({
     integrationMode: props.integrationMode || "preview",
     companyName:
       props.profile?.company_name || props.profile?.companyName || "",
     userId: props.authUser?.id || "anonymous",
   });
+}
+
+function protectInspectionDraftNavigation(props = {}) {
+  const salesStorageKey = salesStorageKeyForProps(props);
   const navigation = loadSalesNavigation(salesStorageKey);
 
   if (
@@ -52,12 +60,42 @@ function protectInspectionDraftNavigation(props = {}) {
   }
 }
 
+function consumeSalesReloadNavigationMarker(props = {}) {
+  if (props.integrationMode !== "app") return false;
+  try {
+    const shouldRestore =
+      window.sessionStorage?.getItem(SALES_RELOAD_NAVIGATION_KEY) === "1";
+    window.sessionStorage?.removeItem(SALES_RELOAD_NAVIGATION_KEY);
+    return shouldRestore;
+  } catch {
+    return false;
+  }
+}
+
+function prepareSalesEntryNavigation(props = {}) {
+  if (props.integrationMode !== "app") {
+    protectInspectionDraftNavigation(props);
+    return;
+  }
+
+  const shouldRestoreNavigation = consumeSalesReloadNavigationMarker(props);
+  if (shouldRestoreNavigation) {
+    protectInspectionDraftNavigation(props);
+    return;
+  }
+
+  // Vanlig klikk på Befaring/Tilbud skal alltid lande på oversikten. Det er kun
+  // en reell browser-reload fra Sales som får gjenåpne sist valgte sak.
+  saveSalesNavigation(salesStorageKeyForProps(props), "list", null);
+}
+
 function markSalesTabForReload(props = {}) {
   if (props.integrationMode !== "app") return;
   try {
     window.sessionStorage?.setItem(SALES_RELOAD_TAB_KEY, "1");
+    window.sessionStorage?.setItem(SALES_RELOAD_NAVIGATION_KEY, "1");
   } catch {
-    // Engangsmarkøren er kun navigasjonshjelp. Salgsdata påvirkes ikke.
+    // Engangsmarkørene påvirker kun navigasjonshjelp.
   }
 }
 
@@ -176,7 +214,7 @@ function OfferTypePicker({ canUseStoreOffers, onWetroom, onStore, onClose }) {
 export default function SalesModule(props) {
   const [instanceKey, setInstanceKey] = useState(() => {
     beginOfferDraftHydrationCycle();
-    protectInspectionDraftNavigation(props);
+    prepareSalesEntryNavigation(props);
     return 0;
   });
   const [storeOfferSignal, setStoreOfferSignal] = useState(0);

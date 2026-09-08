@@ -1,5 +1,6 @@
-// Expo ProffDok – FASE 37D1
+// Expo ProffDok – FASE 39B.2 / FASE 37D1
 // Router mellom ordinær tilbudsbygger og egen produktbygger for Butikktilbud.
+// 39B.2 legger internt vareregister som en tynn wrapper rundt eksisterende Butikktilbud.
 // Ordinær Sales recovery/validering er flyttet uendret til SalesOfferBuilderStandard.jsx.
 // Følgende recovery-markører beholdes her slik critical-sales-recovery-check fortsatt
 // dokumenterer kontrakten som denne routeren delegerer til standardbyggeren:
@@ -12,12 +13,21 @@
 // text: "⚠ Lagret lokalt – serveren er ikke tilgjengelig. Endringene beholdes på denne enheten."
 
 import SalesOfferBuilderStandard from "./SalesOfferBuilderStandard.jsx";
-import SalesStoreOfferBuilder from "./SalesStoreOfferBuilder.jsx";
+import SalesStoreOfferBuilderCatalog from "./SalesStoreOfferBuilderCatalog.jsx";
 import { isStoreOfferRequest } from "../services/salesStoreOffers.js";
 
 export default function SalesOfferBuilder(props) {
   if (isStoreOfferRequest(props?.selectedRequest)) {
-    return <SalesStoreOfferBuilder {...props} />;
+    return (
+      <SalesStoreOfferBuilderCatalog
+        {...props}
+        onBack={() =>
+          props.handleSaveOffer?.({
+            preventDefault() {},
+          })
+        }
+      />
+    );
   }
 
   return <SalesOfferBuilderStandard {...props} />;

@@ -9,3 +9,19 @@
 .sales-customer-main-post-options-heading span::after {
   content: " Disse postene påvirker kun prisen dersom du velger dem.";
 }
+
+/* FASE 39B.2: Butikktilbud – avvisningsbekreftelsen skal være stabil på mobil.
+   Safari kan ellers strekke checkboxen når labelen ligger i flex. */
+.store-customer-decline-card .store-customer-decline-check > input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  flex: 0 0 18px !important;
+  margin: 2px 0 0 !important;
+}
+
+.store-customer-decline-card .store-customer-decline-check > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

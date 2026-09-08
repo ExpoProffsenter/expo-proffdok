@@ -1,0 +1,191 @@
+/* Expo ProffDok – FASE 39B.2 / 39B.2C
+   Butikktilbud-avsnitt lagres som prisnøytrale linjer i Varer-gruppen.
+   Markørlenken skjules i kundevisning/PDF, og avsnittet vises som en tydelig
+   rom-/leveranseoverskrift uten antall, pris eller varenummerering.
+   Forhåndsvisning viser kundens valg, men kan aldri sende aksept/avvisning. */
+
+/* Når Varer-gruppen har avsnitt, er varenavnene tydelige nok alene. Skjul den
+   tekniske linjenummereringen slik at første vare ikke starter på f.eks. 01.2. */
+.sales-customer-main-post:has(.sales-customer-line-media a[href="#expo-store-text-block"]) .sales-customer-line-card {
+  grid-template-columns: 1fr auto !important;
+}
+
+.sales-customer-main-post:has(.sales-customer-line-media a[href="#expo-store-text-block"]) .sales-customer-line-number {
+  display: none !important;
+}
+
+/* Selve avsnittet er en visuell skillelinje, ikke en prispost. */
+.sales-customer-line-card:has(.sales-customer-line-media a[href="#expo-store-text-block"]) {
+  grid-template-columns: 1fr !important;
+  gap: 0 !important;
+  margin: 12px 0 4px !important;
+  padding: 20px 22px !important;
+  border: 1px solid #c9e8ec !important;
+  border-left: 5px solid #16aeb9 !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #f1fbfc 0%, #ffffff 100%) !important;
+  box-shadow: 0 6px 18px rgba(17, 94, 103, 0.06) !important;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.sales-customer-line-card:has(.sales-customer-line-media a[href="#expo-store-text-block"]) .sales-customer-line-number,
+.sales-customer-line-card:has(.sales-customer-line-media a[href="#expo-store-text-block"]) .sales-customer-line-price,
+.sales-customer-line-card:has(.sales-customer-line-media a[href="#expo-store-text-block"]) .sales-customer-line-media {
+  display: none !important;
+}
+
+.sales-customer-line-card:has(.sales-customer-line-media a[href="#expo-store-text-block"]) .sales-customer-line-body {
+  min-width: 0;
+}
+
+.sales-customer-line-card:has(.sales-customer-line-media a[href="#expo-store-text-block"]) .sales-customer-line-body h3 {
+  margin: 0;
+  white-space: pre-line;
+  color: #435b64;
+  font-size: 0.96rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.sales-customer-line-card:has(.sales-customer-line-media a[href="#expo-store-text-block"]) .sales-customer-line-body h3::first-line {
+  color: #10212b;
+  font-size: 1.18rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+/* Avsnittsfeltene i intern editor skal se redigerbare ut – ikke som statisk tekst. */
+.store-grouped-builder .store-room-title label > span::after {
+  content: "Rediger";
+  display: inline-block;
+  margin-left: 7px;
+  padding: 2px 6px;
+  border: 1px solid #b9d8de;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #34717a;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: none;
+  vertical-align: 1px;
+}
+
+.store-grouped-builder .store-room-title input,
+.store-grouped-builder .store-room-title textarea {
+  border: 1px solid #c7dce2 !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: inset 0 0 0 1px rgba(22, 174, 185, 0.03);
+  cursor: text;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.store-grouped-builder .store-room-title input:hover,
+.store-grouped-builder .store-room-title textarea:hover {
+  border-color: #87cbd2 !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 3px rgba(22, 174, 185, 0.07);
+}
+
+.store-grouped-builder .store-room-title input:focus,
+.store-grouped-builder .store-room-title textarea:focus {
+  border-color: #16aeb9 !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 3px rgba(22, 174, 185, 0.12);
+}
+
+/* Draft preview skal vise nøyaktig hvilke valg kunden får, men være helt klikk-sikker. */
+.store-draft-preview-shell.store-draft-preview-shell .sales-customer-accept-form,
+.store-draft-preview-shell .store-customer-decision-shell {
+  display: block !important;
+  pointer-events: none !important;
+}
+
+.store-draft-preview-shell .sales-customer-accept-form button,
+.store-draft-preview-shell .store-customer-decision-shell button,
+.store-draft-preview-shell .sales-customer-accept-form input,
+.store-draft-preview-shell .store-customer-decision-shell input {
+  cursor: default !important;
+}
+
+/* Katalog-wrapperen rendrer editorverktøy som søsken etter preview-komponenten. Skjul dem i preview. */
+.store-draft-preview-shell ~ section,
+.store-draft-preview-shell ~ .catalog-panel {
+  display: none !important;
+}
+
+/* Avvisning skal være et lite sekundært valg, ikke en stor egen kundeprosess. */
+.store-customer-decline-card {
+  padding: 14px 16px !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  background: #fff !important;
+}
+
+.store-customer-decline-card h2 {
+  margin: 0 !important;
+  font-size: 1rem !important;
+}
+
+.store-customer-decline-card > p {
+  display: none !important;
+}
+
+.store-customer-decline-fields {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin-top: 10px !important;
+}
+
+.store-customer-decline-fields > .sales-field {
+  flex: 1 1 260px;
+  margin: 0 !important;
+}
+
+.store-customer-decline-check {
+  flex: 0 1 auto;
+  align-items: center !important;
+  min-height: 44px;
+  margin: 0 !important;
+  font-size: .9rem;
+}
+
+.store-customer-decline-button {
+  min-height: 40px !important;
+  padding: 8px 13px !important;
+  margin: 0 !important;
+}
+
+.store-customer-decline-error {
+  flex-basis: 100%;
+  margin: 0 !important;
+}
+
+@media (max-width: 620px) {
+  .sales-customer-main-post:has(.sales-customer-line-media a[href="#expo-store-text-block"]) .sales-customer-line-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sales-customer-line-card:has(.sales-customer-line-media a[href="#expo-store-text-block"]) {
+    padding: 16px 17px !important;
+  }
+
+  .store-customer-decline-fields {
+    align-items: stretch !important;
+  }
+  .store-customer-decline-fields > .sales-field,
+  .store-customer-decline-check,
+  .store-customer-decline-button {
+    width: 100%;
+    flex-basis: 100%;
+  }
+}
+
+/* JS-template-literal i kundevisningen bruker \A feil som tekst. Overstyr direkte i ekte CSS. */
+.sales-customer-ordered-stack[data-store-signature]::before {
+  content: "Med vennlig hilsen\A" attr(data-store-signature) !important;
+  white-space: pre-line !important;
+}

@@ -1,7 +1,8 @@
-// Expo ProffDok – FASE 37D2 / FASE 31A2B
+// Expo ProffDok – FASE 37D2 / FASE 31A2B / FASE 39B.2C
 // Felles, ren presentasjonsadapter for antall/enhetspris i kundetilbud og PDF.
 // Butikkalternativer viser faktisk alternativpris i egen presentasjon og skal aldri
 // få den interne prisdifferansen presentert som negativ enhetspris.
+// Prisnøytrale Butikktilbud-avsnitt skal aldri dekoreres som varelinjer.
 // Endrer aldri lagrede tilbudsdata; returnerer kun kopier til visning.
 
 import {
@@ -11,8 +12,32 @@ import {
   hasOfferQuantityDetails,
 } from "./salesUtils.js";
 
+const STORE_SECTION_MARKER = "#expo-store-text-block";
+
+export function isStoreSectionLine(item = {}) {
+  return Boolean(
+    item?.lineType === "store_text" ||
+      item?.storeSectionMode === "group" ||
+      String(item?.productUrl || "").trim() === STORE_SECTION_MARKER ||
+      String(item?.id || "").startsWith("store-section-")
+  );
+}
+
+export function getStoreSectionTitle(item = {}) {
+  const title = String(item?.storeTextTitle || "").trim();
+  const body = String(item?.storeTextBody || "").trim();
+  if (title && title !== "Nytt avsnitt") return title;
+  if (title === "Nytt avsnitt" && body) return body;
+
+  const description = String(item?.description || "").trim();
+  if (description.toLowerCase().startsWith("nytt avsnitt")) {
+    return description.slice("nytt avsnitt".length).trim() || body || "Avsnitt";
+  }
+  return description || body || "Avsnitt";
+}
+
 function getQuantityUnitPriceText(item = {}) {
-  if (!hasOfferQuantityDetails(item)) return "";
+  if (isStoreSectionLine(item) || !hasOfferQuantityDetails(item)) return "";
 
   return `Antall/enhetspris: ${formatOfferQuantity(item)} × ${formatNok(
     getOfferUnitPrice(item) * 1.25
@@ -31,7 +56,9 @@ function appendQuantityPresentation(value, item, fallback) {
 }
 
 function decorateLine(line = {}) {
-  if (line?.__companyMeta || line?.__offerTermsMeta) return line;
+  if (line?.__companyMeta || line?.__offerTermsMeta || isStoreSectionLine(line)) {
+    return line;
+  }
 
   const quantityText = getQuantityUnitPriceText(line);
   if (!quantityText || line?.__quantityPresentationDecorated) return line;

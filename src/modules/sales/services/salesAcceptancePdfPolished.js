@@ -1,7 +1,8 @@
-// Expo ProffDok – FASE 31C / FASE 31A2B
+// Expo ProffDok – FASE 31C / FASE 31A2B / FASE 39B.2C
 // Profesjonelt, låst akseptbevis basert på den allerede aksepterte tilbudsversjonen.
 // Hovedpostnummer beholdes fra tilbudsversjonen selv om uvalgte opsjonsposter utelates.
 // Ingen endring i akseptlogikk, Supabase, RLS, Storage-path eller prosjektaktivering.
+// Butikktilbud-avsnitt vises som prisnøytrale overskrifter uten varenummer.
 
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import {
@@ -14,6 +15,10 @@ import {
   hasOfferQuantityDetails,
   sanitizeStoragePart,
 } from "../utils/salesUtils.js";
+import {
+  getStoreSectionTitle,
+  isStoreSectionLine,
+} from "../utils/salesOfferQuantityPresentation.js";
 import { getImageNaturalSize, readFileAsDataUrl } from "./salesImages.js";
 
 const PAGE = { width: 210, height: 297, left: 17, right: 193, bottom: 279 };
@@ -90,7 +95,7 @@ function optionLabel(option = {}, lines = []) {
 }
 
 function quantityText(item = {}) {
-  if (!hasOfferQuantityDetails(item)) return "";
+  if (isStoreSectionLine(item) || !hasOfferQuantityDetails(item)) return "";
   return `${formatOfferQuantity(item)} x ${formatNok(
     getOfferUnitPrice(item) * 1.25
   )} pr. enhet`;
@@ -254,6 +259,7 @@ export async function createAcceptanceProofPdfPolished({
   const company = companySnapshot(selectedRequest, companyProfile, accepted.rawLines);
   const groups = buildGroups(accepted.lines, accepted.options);
   const versionNumberMap = getAcceptedVersionNumberMap(selectedRequest, accepted);
+  const isStoreOffer = accepted.rawLines.some((line) => line?.__storeOfferMeta);
   const offerId = clean(selectedRequest.id || "-");
   const acceptedBy = clean(selectedRequest.acceptedBy || selectedRequest.acceptedPayload?.accepted_by || "Kunde");
   const acceptedAt = selectedRequest.acceptedAt || selectedRequest.acceptedPayload?.accepted_at || "";
@@ -397,6 +403,7 @@ export async function createAcceptanceProofPdfPolished({
   const qty = (item) => quantityText(item);
 
   const measureLine = (line, replaced = false) => {
+    if (isStoreSectionLine(line)) return clean(line.storeTextBody) ? 18 : 14;
     const qText = qty(line);
     const note = replaced ? "Erstattet av valgt alternativ" : "";
     font(8.7, "bold", COLORS.ink);
@@ -419,8 +426,13 @@ export async function createAcceptanceProofPdfPolished({
         : 12;
     ensure(19 + Math.min(nextHeight, 36));
 
-    const groupTotal = (getOfferTotal(group.lines) + getOfferTotal(group.options)) * 1.25;
+    const pricedLines = group.lines.filter((line) => !isStoreSectionLine(line));
+    const groupTotal = (getOfferTotal(pricedLines) + getOfferTotal(group.options)) * 1.25;
     const groupNumber = versionNumberMap.get(group.id) || groupIndex + 1;
+    const visibleTitle =
+      isStoreOffer && clean(group.title).toLowerCase() === "varer"
+        ? "Leveranse"
+        : clean(group.title);
     pdf.setFillColor(...COLORS.tealSoft);
     pdf.setDrawColor(...COLORS.line);
     pdf.roundedRect(PAGE.left, y, WIDTH, 17, 2, 2, "FD");
@@ -429,7 +441,7 @@ export async function createAcceptanceProofPdfPolished({
     font(7.7, "bold", COLORS.white);
     pdf.text(String(groupNumber).padStart(2, "0"), PAGE.left + 8, y + 9.2, { align: "center" });
     font(11.2, "bold", COLORS.ink);
-    pdf.text(clean(group.title), PAGE.left + 16, y + 10);
+    pdf.text(visibleTitle, PAGE.left + 16, y + 10);
     font(7.1, "bold", COLORS.muted);
     pdf.text("Akseptert sum", PAGE.right - 4, y + 5.5, { align: "right" });
     font(11.2, "bold", COLORS.ink);
@@ -437,6 +449,34 @@ export async function createAcceptanceProofPdfPolished({
     font(6.8, "normal", COLORS.muted);
     pdf.text("inkl. mva.", PAGE.right - 4, y + 14.3, { align: "right" });
     y += 19;
+  };
+
+  const storeSectionRow = (line) => {
+    const title = getStoreSectionTitle(line);
+    const body = clean(line.storeTextBody || "");
+    const titleRows = pdf.splitTextToSize(title, WIDTH - 18).slice(0, 2);
+    const bodyRows = body ? pdf.splitTextToSize(body, WIDTH - 18).slice(0, 2) : [];
+    const height = Math.max(13, 7 + titleRows.length * 4.2 + bodyRows.length * 3.6);
+    ensure(height + 2);
+    pdf.setFillColor(...COLORS.tealSoft);
+    pdf.setDrawColor(...COLORS.line);
+    pdf.roundedRect(PAGE.left + 2, y, WIDTH - 2, height, 2, 2, "FD");
+    pdf.setFillColor(...COLORS.teal);
+    pdf.rect(PAGE.left + 2, y, 2, height, "F");
+    let textY = y + 6.5;
+    font(10, "bold", COLORS.ink);
+    titleRows.forEach((row) => {
+      pdf.text(row, PAGE.left + 9, textY);
+      textY += 4.2;
+    });
+    if (bodyRows.length) {
+      font(7.6, "normal", COLORS.muted);
+      bodyRows.forEach((row) => {
+        pdf.text(row, PAGE.left + 9, textY);
+        textY += 3.6;
+      });
+    }
+    y += height + 2;
   };
 
   const lineRow = (line, group, groupIndex, lineIndex) => {
@@ -685,14 +725,22 @@ export async function createAcceptanceProofPdfPolished({
   }
 
   sectionTitle(
-    "Aksepterte arbeider og priser",
+    isStoreOffer ? "Akseptert leveranse og priser" : "Aksepterte arbeider og priser",
     "Alle priser er inkl. mva. Kun opsjoner kunden faktisk valgte er med i akseptbeviset.",
     42
   );
 
   groups.forEach((group, groupIndex) => {
     mainHeader(group, groupIndex);
-    group.lines.forEach((line, lineIndex) => lineRow(line, group, groupIndex, lineIndex));
+    let pricedLineIndex = 0;
+    group.lines.forEach((line) => {
+      if (isStoreSectionLine(line)) {
+        storeSectionRow(line);
+      } else {
+        lineRow(line, group, groupIndex, pricedLineIndex);
+        pricedLineIndex += 1;
+      }
+    });
     if (group.options.length) {
       ensure(12 + 27);
       font(8.5, "bold", COLORS.green);

@@ -12,12 +12,16 @@
 // først når faktisk intern prosjektmeny eller verifisert kunde-/UE-meny er rendret.
 // FASE 36A1: Auth-presentasjonen ligger i eget isolert UX-lag. Supabase-auth og callbacks i
 // main.jsx endres ikke; bootstrap aktiverer kun designet når ordinær login/signup faktisk er rendret.
+// FASE 39B.2C: Vareregisteradministrasjon monteres i eksisterende Systemadmin-flate,
+// og Butikktilbud bruker generisk kundetekst for varer, service og fagarbeid.
 import { installGlobalStorageImageOptimizer } from './modules/images/imageUploadOptimizer.js';
 import { installProjectWorkflowUx } from './modules/project/projectWorkflowUx.js';
 import { installSalesInspectionHistoryUx } from './modules/project/salesInspectionHistoryUx.js';
 import { installProgressPlanUx } from './modules/progress/progressPlanUx.jsx';
 import { installProgressPlanHelpUx } from './modules/progress/progressPlanHelpUx.js';
 import { installAuthLandingUx } from './modules/auth/authLandingUx.js';
+import { installSystemAdminStoreCatalogUx } from './modules/storeCatalog/systemAdminStoreCatalogUx.jsx';
+import { installStoreOfferCustomerTerminologyUx } from './modules/sales/storeOfferCustomerTerminologyUx.js';
 
 installGlobalStorageImageOptimizer({
   maxDimension: 2560,
@@ -27,6 +31,8 @@ installProjectWorkflowUx();
 installSalesInspectionHistoryUx();
 installProgressPlanHelpUx();
 installAuthLandingUx();
+installSystemAdminStoreCatalogUx();
+installStoreOfferCustomerTerminologyUx();
 
 function installProgressPlanAtSecureUiBoundary() {
   const params = new URLSearchParams(window.location.search);

@@ -1,5 +1,6 @@
-// Expo ProffDok – FASE 39B.1
-// Tynn klient mot det interne vareregisterets sikkerhets-RPC-er.
+// Expo ProffDok – FASE 39B.2
+// Tynn klient mot internt vareregister.
+// ERP-batcher oppdaterer én katalogkopi direkte; søk sperres til importen er ferdig aktivert.
 
 function ensureClient(supabase) {
   if (!supabase?.rpc) throw new Error("Supabase-klient mangler.");
@@ -37,13 +38,20 @@ export async function uploadStoreCatalogBatch(supabase, importId, items) {
   return unwrap(data, error, "Kunne ikke laste opp varebatch.");
 }
 
-export async function finalizeStoreCatalogImport(
+export async function getPendingStoreCatalogImport(supabase) {
+  const { data, error } = await ensureClient(supabase).rpc(
+    "get_pending_internal_store_catalog_import"
+  );
+  return unwrap(data || null, error, "Kunne ikke hente uferdig vareimport.");
+}
+
+export async function prepareStoreCatalogActivation(
   supabase,
   importId,
   summary = {}
 ) {
   const { data, error } = await ensureClient(supabase).rpc(
-    "finalize_internal_store_catalog_import",
+    "prepare_internal_store_catalog_activation",
     {
       p_import_id: importId,
       p_total_rows: summary.totalRows || 0,
@@ -52,7 +60,28 @@ export async function finalizeStoreCatalogImport(
       p_malformed_rows: summary.malformedRows || 0,
     }
   );
-  return unwrap(data, error, "Kunne ikke aktivere vareregister.");
+  return unwrap(data, error, "Kunne ikke klargjøre vareregisteret.");
+}
+
+export async function completeStoreCatalogActivation(supabase, importId) {
+  const { data, error } = await ensureClient(supabase).rpc(
+    "complete_internal_store_catalog_activation",
+    { p_import_id: importId }
+  );
+  return unwrap(data, error, "Kunne ikke aktivere vareregisteret.");
+}
+
+export async function finalizeStoreCatalogImport(
+  supabase,
+  importId,
+  summary = {},
+  onProgress = null
+) {
+  const prepared = await prepareStoreCatalogActivation(supabase, importId, summary);
+  const expectedRows = Number(prepared?.accepted_rows || summary.uniqueRows || summary.acceptedRows || 0);
+
+  onProgress?.({ processedRows: expectedRows, totalRows: expectedRows, remainingRows: 0 });
+  return completeStoreCatalogActivation(supabase, importId);
 }
 
 export async function cancelStoreCatalogImport(supabase, importId) {
