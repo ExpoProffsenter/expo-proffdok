@@ -29,7 +29,8 @@ scripts/
 ├── critical-build-check.mjs
 ├── critical-sales-recovery-check.mjs
 ├── critical-progress-plan-check.mjs
-└── critical-store-catalog-check.mjs
+├── critical-store-catalog-check.mjs
+└── critical-store-decline-check.mjs
 ```
 
 Detaljert nå-arkitektur: [docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md](docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md)
@@ -78,6 +79,7 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 - Privatkundepriser vises inkl. mva.
 - Intern ERP-nettopris skal aldri lekke til kundelenke, tilbuds-PDF eller publisert Sales-historikk.
 - Butikktilbud skal ikke aktivere ProffDok-prosjekt.
+- Aksept-/avvisningsvarsler skal være sekundære sideutfall: en e-postfeil skal aldri reversere kundens allerede lagrede beslutning.
 - `main.jsx` og store Core-filer skal bare splittes når det gir reell vedlikeholdsgevinst.
 
 ## Start her som ny utvikler
