@@ -18,7 +18,16 @@ import { isStoreOfferRequest } from "../services/salesStoreOffers.js";
 
 export default function SalesOfferBuilder(props) {
   if (isStoreOfferRequest(props?.selectedRequest)) {
-    return <SalesStoreOfferBuilderCatalog {...props} />;
+    return (
+      <SalesStoreOfferBuilderCatalog
+        {...props}
+        onBack={() =>
+          props.handleSaveOffer?.({
+            preventDefault() {},
+          })
+        }
+      />
+    );
   }
 
   return <SalesOfferBuilderStandard {...props} />;
