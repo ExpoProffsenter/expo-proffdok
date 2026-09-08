@@ -146,12 +146,14 @@ function setOwnText(element, nextText) {
     (node) => node.nodeType === Node.TEXT_NODE && cleanText(node.textContent)
   );
   if (directText) {
-    if (cleanText(directText.textContent) !== nextText) {
+    if (cleanText(directText.textContent) !== cleanText(nextText)) {
       directText.textContent = ` ${nextText}`;
     }
     return;
   }
-  if (cleanText(element.textContent) !== nextText) element.textContent = nextText;
+  if (cleanText(element.textContent) !== cleanText(nextText)) {
+    element.textContent = nextText;
+  }
 }
 
 function rewriteEditorTerminology(root) {
@@ -189,7 +191,7 @@ function rewriteEditorTerminology(root) {
     if (text === "Vare") setOwnText(button, "Post");
     else if (text === "Legg til vare") setOwnText(button, "Legg til post");
     else if (text.startsWith("Legg til vare i ")) {
-      setOwnText(button, text.replace(/^Legg til vare i /, "Legg til post i "));
+      setOwnText(button, "Legg til post i ");
     } else if (text === "Montering på denne varen") {
       setOwnText(button, "Montering på denne posten");
     } else if (text === "Opsjon på denne varen") {
