@@ -82,6 +82,9 @@ const router = fs.readFileSync(path.join(root, "src/modules/sales/components/Sal
 const textBlockCss = fs.readFileSync(path.join(root, "src/modules/sales/storeOfferTextBlocks.css"), "utf8");
 const quantityPresentation = fs.readFileSync(path.join(root, "src/modules/sales/utils/salesOfferQuantityPresentation.js"), "utf8");
 const salesModule = fs.readFileSync(path.join(root, "src/modules/sales/SalesModule.jsx"), "utf8");
+const systemAdminCatalogUx = fs.readFileSync(path.join(root, "src/modules/storeCatalog/systemAdminStoreCatalogUx.jsx"), "utf8");
+const customerTerminologyUx = fs.readFileSync(path.join(root, "src/modules/sales/storeOfferCustomerTerminologyUx.js"), "utf8");
+const bootstrap = fs.readFileSync(path.join(root, "src/bootstrap.jsx"), "utf8");
 
 for (const needle of [
   "searchStoreCatalog", "getStoreCatalogAlternatives", "beginStoreCatalogImport",
@@ -110,9 +113,25 @@ assert(wrapper.includes("customer_price_ex_vat"), "kundepris eks. mva. skal kopi
 assert(!wrapper.includes("purchase_net_ex_vat"), "nettopris skal aldri kopieres til offerForm-wrapperen.");
 assert(wrapper.includes("storeCatalogItemId"), "tilbudslinjen skal beholde en ufarlig katalogreferanse.");
 assert(wrapper.includes("SalesStoreOfferBuilderGrouped"), "Butikktilbud skal bruke grouped builder i 39B.2C.");
+assert(wrapper.includes("StoreCatalogInlineLookup"), "katalogsøk skal ligge direkte i den enkelte tilbudspost.");
 assert(wrapper.includes("renderCatalogLookup={renderCatalogLookup}"), "katalogsøk skal injiseres som vanlig React-innhold i byggeren.");
 assert(wrapper.includes("title: description"), "katalogvare i opsjon skal fylle opsjonsnavnet.");
-assert(wrapper.lastIndexOf("<StoreCatalogAdminOnlyPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilderGrouped"), "prisadministrasjon skal ligge nederst etter selve Butikktilbud-byggeren.");
+assert(!wrapper.includes("StoreCatalogAdminOnlyPanel"), "prisadministrasjon skal ikke ligge i tilbudsbyggeren.");
+for (const needle of [
+  "normalizeSectionLine", "storeSectionMode", "SECTION_MARKER", "Nytt avsnitt",
+  "Tilbudsposter og avsnitt", "Legg til post", "Post / beskrivelse *",
+]) assert(wrapper.includes(needle), `generiske tilbudsposter/avsnittsreparasjon mangler: ${needle}`);
+
+for (const needle of [
+  "StoreCatalogAdminOnlyPanel", "Systemadmin", "Internt vareregister",
+  "Oppdatering av ERP-vareregisteret er en systemadmin-oppgave",
+]) assert(systemAdminCatalogUx.includes(needle), `Systemadmin-vareregister mangler: ${needle}`);
+assert(bootstrap.includes("installSystemAdminStoreCatalogUx"), "bootstrap skal aktivere vareregister i Systemadmin.");
+assert(bootstrap.includes("installStoreOfferCustomerTerminologyUx"), "bootstrap skal aktivere generisk Butikktilbud-presentasjon.");
+for (const needle of [
+  "Leveranse og priser", "Sum leveranse og montering inkl. mva.",
+  "Erstatter valgt post eller montering.", "Alternativpris post + montering:",
+]) assert(customerTerminologyUx.includes(needle), `generisk kundepresentasjon mangler: ${needle}`);
 
 for (const needle of [
   'SECTION_LINE_TYPE = "store_text"',
@@ -154,7 +173,7 @@ for (const needle of [
   "stripTransientPhotoData(request)", "resolveSalesCompanyScope(client)",
 ]) assert(autosave.includes(needle), `Butikktilbud-autosave mangler: ${needle}`);
 assert(!autosave.includes("purchase_net_ex_vat"), "Butikktilbud-autosave skal aldri kjenne katalogens nettopris.");
-assert(wrapper.includes("persistStoreOfferDraft(props.selectedRequest, props.offerForm)"), "Butikktilbud-wrapperen skal lagre aktuell kladd separat.");
+assert(wrapper.includes("persistStoreOfferDraft(props.selectedRequest, repairedOfferForm)"), "Butikktilbud-wrapperen skal lagre reparert aktuell kladd separat.");
 assert(wrapper.includes("850"), "Butikktilbud-autosave skal kjøre etter ordinær 500 ms Sales-autosave.");
 
 assert(textBlockCss.includes('#expo-store-text-block'), "kundepresentasjonen skal kjenne igjen avsnitt.");
