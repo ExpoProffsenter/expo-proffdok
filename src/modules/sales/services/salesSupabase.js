@@ -1,4 +1,5 @@
-// Expo ProffDok – FASE 37A2 / FASE 37A1 / FASE 34B / FASE 32 / FASE 32A / FASE 30C2
+// Expo ProffDok – FASE 39B.2 / FASE 37A2 / FASE 37A1 / FASE 34B / FASE 32 / FASE 32A / FASE 30C2
+// FASE 39B.2 sender serverstyrt, idempotent varsel til publisher ved avvist Butikktilbud.
 // FASE 37A2 speiler serverens idempotente automatiske oppfølgingslogg inn som
 // runtime-metadata i Sales. Feltene skrives aldri tilbake i sales_requests.payload.
 // Når automatisk påminnelse er nyere enn siste manuelle utsending, brukes den som
@@ -28,6 +29,7 @@ const RUNTIME_PAYLOAD_KEYS = [
   "offerAutoFollowUpReminderNumber",
 ];
 const ACCEPTANCE_NOTIFY_FUNCTION = "sales-offer-acceptance-notify";
+const DECLINE_NOTIFY_FUNCTION = "sales-offer-decline-notify";
 
 let sharedDefaultSalesSupabaseClient;
 
@@ -260,6 +262,27 @@ async function notifySalesOfferAcceptance(client, token) {
   });
 }
 
+async function notifySalesOfferDecline(client, token) {
+  const publicOfferToken = String(token || "").trim();
+  if (!client?.functions?.invoke || !publicOfferToken) return { data: null, error: null };
+  return client.functions.invoke(DECLINE_NOTIFY_FUNCTION, {
+    body: { publicOfferToken },
+  });
+}
+
+export async function getSalesOfferByToken(client, token) {
+  const result = await core.getSalesOfferByToken(client, token);
+  const offer = result?.data?.offer || {};
+  if (!result?.error && (offer?.status === "declined" || offer?.declined_at || offer?.declined_payload)) {
+    try {
+      await notifySalesOfferDecline(client, token);
+    } catch {
+      // Avvisningen er allerede lagret. Varsling er sekundær og idempotent.
+    }
+  }
+  return result;
+}
+
 export async function acceptSalesOffer(client, args = {}) {
   const result = await core.acceptSalesOffer(client, args);
   if (!result?.error) {
@@ -272,14 +295,22 @@ export async function acceptSalesOffer(client, args = {}) {
   return result;
 }
 
-export function declineSalesOffer(client, { token, declinedName }) {
+export async function declineSalesOffer(client, { token, declinedName }) {
   if (!client?.rpc) {
-    return Promise.resolve({ data: null, error: new Error("Supabase er ikke tilgjengelig.") });
+    return { data: null, error: new Error("Supabase er ikke tilgjengelig.") };
   }
-  return client.rpc("decline_sales_offer", {
+  const result = await client.rpc("decline_sales_offer", {
     token,
     declined_name: String(declinedName || "").trim(),
   });
+  if (!result?.error) {
+    try {
+      await notifySalesOfferDecline(client, token);
+    } catch {
+      // Avvisningen er allerede lagret. Varsling er sekundær og må aldri reversere svaret.
+    }
+  }
+  return result;
 }
 
 export async function setSalesRequestArchivedAt(
