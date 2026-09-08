@@ -3,7 +3,6 @@
 // Prisadministrasjon nederst er kun synlig for systemadministrator.
 
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import { Search } from "lucide-react";
 import { createDefaultSalesSupabaseClient } from "../sales/services/salesSupabase.js";
 import {
@@ -14,8 +13,6 @@ import {
 } from "./storeCatalogClient.js";
 import StoreCatalogPanel from "./StoreCatalogPanel.jsx";
 
-const PRODUCT_POST_ID = "butikk-varer";
-const TEXT_BLOCK_LINE_TYPE = "store_text";
 const money = new Intl.NumberFormat("nb-NO", {
   style: "currency",
   currency: "NOK",
@@ -25,36 +22,6 @@ const money = new Intl.NumberFormat("nb-NO", {
 function formatMoney(value) {
   const number = Number(value || 0);
   return Number.isFinite(number) ? money.format(number) : "–";
-}
-
-function isProductLine(line = {}) {
-  return (
-    line?.mainPostId === PRODUCT_POST_ID &&
-    !line?.__storeOfferMeta &&
-    line?.lineType !== TEXT_BLOCK_LINE_TYPE
-  );
-}
-
-function isCatalogOption(option = {}) {
-  return option?.mainPostId === PRODUCT_POST_ID;
-}
-
-function findSectionCardTargets(sectionTitle) {
-  if (typeof document === "undefined") return [];
-  const sections = Array.from(
-    document.querySelectorAll(".store-offer-builder-app .store-builder-section")
-  );
-  const section = sections.find((candidate) => {
-    const heading = candidate.querySelector(":scope > .store-section-head h2");
-    return String(heading?.textContent || "").trim() === sectionTitle;
-  });
-  if (!section) return [];
-
-  return Array.from(
-    section.querySelectorAll(":scope > .store-item-list > .store-item-card")
-  )
-    .map((card) => card.querySelector(":scope > .store-item-heading"))
-    .filter(Boolean);
 }
 
 function InlineCatalogResult({ item, onUse, onAlternatives }) {
@@ -83,7 +50,10 @@ function InlineCatalogResult({ item, onUse, onAlternatives }) {
   );
 }
 
-function InlineCatalogLookup({ onUse, placeholder = "Søk vareregister: varenavn, varenummer eller GTIN/EAN" }) {
+export function StoreCatalogInlineLookup({
+  onUse,
+  placeholder = "Søk vareregister: varenavn, varenummer eller GTIN/EAN",
+}) {
   const [client] = useState(() => createDefaultSalesSupabaseClient());
   const [access, setAccess] = useState(false);
   const [query, setQuery] = useState("");
@@ -195,107 +165,12 @@ function InlineCatalogLookup({ onUse, placeholder = "Søk vareregister: varenavn
       ) : null}
       {message ? <small className="store-inline-catalog-message is-error">{message}</small> : null}
       <style>{`
-        .store-inline-catalog-slot{grid-column:1/-1;width:100%;margin-top:4px}
-        .store-inline-catalog{display:grid;gap:8px;padding:10px;border:1px solid #cfe1e6;border-radius:12px;background:#f4fafb}
+        .store-inline-catalog{display:grid;gap:8px;padding:10px;border:1px solid #cfe1e6;border-radius:12px;background:#f4fafb;margin:0 0 12px}
         .store-inline-catalog-search{position:relative}.store-inline-catalog-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#60757e;pointer-events:none}.store-inline-catalog-search input{width:100%;min-height:44px;box-sizing:border-box;padding:0 12px 0 38px;border:1px solid #bcd0d7;border-radius:11px;background:#fff;font:inherit;color:#10212b;outline:none}.store-inline-catalog-search input:focus{border-color:#18aeb8;box-shadow:0 0 0 3px rgba(24,174,184,.12)}
         .store-inline-catalog-results{display:grid;gap:7px;max-height:330px;overflow:auto}.store-inline-catalog-result{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:9px 10px;border:1px solid #d6e4e8;border-radius:10px;background:#fff}.store-inline-catalog-copy{display:grid;gap:2px;min-width:0}.store-inline-catalog-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.store-inline-catalog-copy span,.store-inline-catalog-copy small,.store-inline-catalog-price small{color:#60737b;font-size:12px}.store-inline-catalog-price{display:grid;text-align:right;gap:2px;white-space:nowrap}.store-inline-catalog-actions{display:flex;gap:6px}.store-inline-catalog-actions button{width:auto;min-height:38px;padding:7px 10px}.store-inline-catalog-message{color:#60737b;font-weight:650}.store-inline-catalog-message.is-error{color:#a33232}.store-inline-catalog-alternative-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.store-inline-catalog-alternative-head button{border:0;background:transparent;color:#087b82;font-weight:800;cursor:pointer}
         @media(max-width:760px){.store-inline-catalog-result{grid-template-columns:1fr}.store-inline-catalog-price{text-align:left}.store-inline-catalog-actions{justify-content:flex-start}.store-inline-catalog-actions button{width:auto}}
       `}</style>
     </div>
-  );
-}
-
-function InlinePortals({ items = [], targets = [], prefix, placeholder, onUseItem }) {
-  return items.map((item, index) => {
-    const target = targets[index];
-    if (!target) return null;
-    const key = `${prefix}-${item.id}`;
-    return createPortal(
-      <div className="store-inline-catalog-slot" key={key}>
-        <InlineCatalogLookup
-          placeholder={placeholder}
-          onUse={(catalogItem) => onUseItem?.(item.id, catalogItem)}
-        />
-      </div>,
-      target,
-      key
-    );
-  });
-}
-
-export function StoreCatalogInlinePortals({ lines = [], onUseItem }) {
-  const productLines = lines.filter(isProductLine);
-  const [targets, setTargets] = useState([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    let frame = 0;
-    let attempts = 0;
-
-    const locate = () => {
-      if (cancelled) return;
-      const nextTargets = findSectionCardTargets("Varer");
-      setTargets(nextTargets);
-      attempts += 1;
-      if (nextTargets.length < productLines.length && attempts < 8) {
-        frame = window.requestAnimationFrame(locate);
-      }
-    };
-
-    frame = window.requestAnimationFrame(locate);
-    return () => {
-      cancelled = true;
-      window.cancelAnimationFrame(frame);
-    };
-  }, [productLines.length, lines]);
-
-  return (
-    <InlinePortals
-      items={productLines}
-      targets={targets}
-      prefix="catalog-line"
-      onUseItem={onUseItem}
-    />
-  );
-}
-
-export function StoreCatalogOptionInlinePortals({ options = [], onUseItem }) {
-  const catalogOptions = options.filter(isCatalogOption);
-  const [targets, setTargets] = useState([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    let frame = 0;
-    let attempts = 0;
-
-    const locate = () => {
-      if (cancelled) return;
-      const allTargets = findSectionCardTargets("Opsjoner");
-      const visibleTargets = options
-        .map((option, index) => (isCatalogOption(option) ? allTargets[index] : null))
-        .filter(Boolean);
-      setTargets(visibleTargets);
-      attempts += 1;
-      if (visibleTargets.length < catalogOptions.length && attempts < 8) {
-        frame = window.requestAnimationFrame(locate);
-      }
-    };
-
-    frame = window.requestAnimationFrame(locate);
-    return () => {
-      cancelled = true;
-      window.cancelAnimationFrame(frame);
-    };
-  }, [catalogOptions.length, options]);
-
-  return (
-    <InlinePortals
-      items={catalogOptions}
-      targets={targets}
-      prefix="catalog-option"
-      placeholder="Søk vare til opsjonen: varenavn, varenummer eller GTIN/EAN"
-      onUseItem={onUseItem}
-    />
   );
 }
 
