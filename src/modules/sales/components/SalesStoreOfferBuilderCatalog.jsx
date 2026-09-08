@@ -7,13 +7,9 @@ import { Plus, Trash2 } from "lucide-react";
 import SalesStoreOfferBuilder from "./SalesStoreOfferBuilder.jsx";
 import {
   StoreCatalogAdminOnlyPanel,
-  StoreCatalogInlinePortals,
-  StoreCatalogOptionInlinePortals,
+  StoreCatalogInlineLookup,
 } from "../../storeCatalog/StoreCatalogOfferTools.jsx";
-import {
-  buildNobbItemUrl,
-  recalculateStoreOption,
-} from "../utils/salesStoreOfferPricing.js";
+import { buildNobbItemUrl } from "../utils/salesStoreOfferPricing.js";
 
 const PRODUCT_POST = { id: "butikk-varer", title: "Varer" };
 const TEXT_BLOCK_LINE_TYPE = "store_text";
@@ -131,7 +127,6 @@ function catalogFields(item = {}) {
     amount: Number.isFinite(exVat) ? String(exVat) : "",
     productUrl,
     storeAutoProductUrl: Boolean(nobbNumber && productUrl === buildNobbItemUrl(nobbNumber)),
-    // Kun ufarlige katalogreferanser følger tilbudslinjen. Nettopris/salgsavanse gjør det ikke.
     storeCatalogItemId: String(item.id || ""),
     storeCatalogGtin: String(item.gtin || ""),
   };
@@ -295,7 +290,6 @@ function StoreOfferTextBlocks({ lines, onChange }) {
 
 export default function SalesStoreOfferBuilderCatalog(props) {
   const currentLines = Array.isArray(props.offerForm?.lines) ? props.offerForm.lines : [];
-  const currentOptions = Array.isArray(props.offerForm?.options) ? props.offerForm.options : [];
   const textBlocks = currentLines.filter(isTextBlock);
   const builderLines = currentLines.filter((line) => !isTextBlock(line));
 
@@ -312,25 +306,16 @@ export default function SalesStoreOfferBuilderCatalog(props) {
     props.updateOfferForm?.("lines", nextLines);
   }
 
-  function useCatalogItemInLine(lineId, item) {
-    const patch = catalogFields(item);
-    props.updateOfferForm?.(
-      "lines",
-      currentLines.map((line) =>
-        String(line?.id || "") === String(lineId || "")
-          ? { ...line, ...patch }
-          : line
-      )
+  function renderCatalogLookup({ kind, onPatch }) {
+    const option = kind === "option";
+    return (
+      <StoreCatalogInlineLookup
+        placeholder={option
+          ? "Søk vare til opsjonen: varenavn, varenummer eller GTIN/EAN"
+          : "Søk vareregister: varenavn, varenummer eller GTIN/EAN"}
+        onUse={(item) => onPatch(option ? catalogOptionFields(item) : catalogFields(item))}
+      />
     );
-  }
-
-  function useCatalogItemInOption(optionId, item) {
-    const patch = catalogOptionFields(item);
-    const nextOptions = currentOptions.map((option) => {
-      if (String(option?.id || "") !== String(optionId || "")) return option;
-      return recalculateStoreOption({ ...option, ...patch }, builderLines);
-    });
-    props.updateOfferForm?.("options", nextOptions);
   }
 
   function addCatalogItem(item) {
@@ -360,14 +345,7 @@ export default function SalesStoreOfferBuilderCatalog(props) {
         {...props}
         offerForm={{ ...props.offerForm, lines: builderLines }}
         updateOfferForm={updateBuilderOfferForm}
-      />
-      <StoreCatalogInlinePortals
-        lines={currentLines}
-        onUseItem={useCatalogItemInLine}
-      />
-      <StoreCatalogOptionInlinePortals
-        options={currentOptions}
-        onUseItem={useCatalogItemInOption}
+        renderCatalogLookup={renderCatalogLookup}
       />
       <StoreOfferTextBlocks lines={currentLines} onChange={updateTextBlocks} />
       <StoreCatalogAdminOnlyPanel onSelectItem={addCatalogItem} />
