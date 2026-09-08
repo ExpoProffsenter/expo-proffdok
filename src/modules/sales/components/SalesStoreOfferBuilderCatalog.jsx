@@ -8,8 +8,12 @@ import SalesStoreOfferBuilder from "./SalesStoreOfferBuilder.jsx";
 import {
   StoreCatalogAdminOnlyPanel,
   StoreCatalogInlinePortals,
+  StoreCatalogOptionInlinePortals,
 } from "../../storeCatalog/StoreCatalogOfferTools.jsx";
-import { buildNobbItemUrl } from "../utils/salesStoreOfferPricing.js";
+import {
+  buildNobbItemUrl,
+  recalculateStoreOption,
+} from "../utils/salesStoreOfferPricing.js";
 
 const PRODUCT_POST = { id: "butikk-varer", title: "Varer" };
 const TEXT_BLOCK_LINE_TYPE = "store_text";
@@ -130,6 +134,15 @@ function catalogFields(item = {}) {
     // Kun ufarlige katalogreferanser følger tilbudslinjen. Nettopris/salgsavanse gjør det ikke.
     storeCatalogItemId: String(item.id || ""),
     storeCatalogGtin: String(item.gtin || ""),
+  };
+}
+
+function catalogOptionFields(item = {}) {
+  const fields = catalogFields(item);
+  const { description, ...shared } = fields;
+  return {
+    ...shared,
+    title: description,
   };
 }
 
@@ -282,6 +295,7 @@ function StoreOfferTextBlocks({ lines, onChange }) {
 
 export default function SalesStoreOfferBuilderCatalog(props) {
   const currentLines = Array.isArray(props.offerForm?.lines) ? props.offerForm.lines : [];
+  const currentOptions = Array.isArray(props.offerForm?.options) ? props.offerForm.options : [];
   const textBlocks = currentLines.filter(isTextBlock);
   const builderLines = currentLines.filter((line) => !isTextBlock(line));
 
@@ -308,6 +322,15 @@ export default function SalesStoreOfferBuilderCatalog(props) {
           : line
       )
     );
+  }
+
+  function useCatalogItemInOption(optionId, item) {
+    const patch = catalogOptionFields(item);
+    const nextOptions = currentOptions.map((option) => {
+      if (String(option?.id || "") !== String(optionId || "")) return option;
+      return recalculateStoreOption({ ...option, ...patch }, builderLines);
+    });
+    props.updateOfferForm?.("options", nextOptions);
   }
 
   function addCatalogItem(item) {
@@ -341,6 +364,10 @@ export default function SalesStoreOfferBuilderCatalog(props) {
       <StoreCatalogInlinePortals
         lines={currentLines}
         onUseItem={useCatalogItemInLine}
+      />
+      <StoreCatalogOptionInlinePortals
+        options={currentOptions}
+        onUseItem={useCatalogItemInOption}
       />
       <StoreOfferTextBlocks lines={currentLines} onChange={updateTextBlocks} />
       <StoreCatalogAdminOnlyPanel onSelectItem={addCatalogItem} />
