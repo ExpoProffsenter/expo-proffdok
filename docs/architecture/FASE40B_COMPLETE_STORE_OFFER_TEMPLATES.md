@@ -66,14 +66,47 @@ Ved bruk av mal beholdes eksisterende `__storeOfferMeta` fra den aktuelle kladde
 - saksbehandler/signatur
 - automatisk oppfølgingsplan
 
-Disse kontrolleres og låses først når den aktuelle tilbudsversjonen publiseres.
+Kunde, adresse og øvrig saksidentitet beholdes også fra den aktuelle salgssaken. Disse kontrolleres og låses først når den aktuelle tilbudsversjonen publiseres.
+
+## Endelig UX
+
+40B følger samme mentale modell som ordinære tilbudsmaler uten å bygge om den eksisterende grouped builderen:
+
+- `Bruk firmamal` vises øverst i Butikktilbud-skjemaet.
+- `Lagre som mal` ligger i den avsluttende handlingslinjen sammen med `Forhåndsvis kundetilbud` og `Lagre butikktilbud`.
+- På desktop over 900 px holdes de tre avsluttende handlingene på én linje når plassen tillater det.
+- Nettbrett og mobil beholder responsiv wrapping/stabling; ingen tilbudsinformasjon eller handling skjules på mobil.
+- Etter lagring, bruk eller sletting av mal vises tydelig handlingsfeedback der brukeren befinner seg. Ved malbruk opplyses også hvor mange katalogpriser som ble hentet på nytt, og manglende katalogvarer varsles særskilt.
+- Den eksisterende meldingen i malpanelet beholdes som varig kontekst i tillegg til den kortvarige handlingsfeedbacken.
+- Portaler monteres med endelige, tidsbegrensede installasjonsforsøk. Det brukes ikke `MutationObserver` i Butikktilbud-editoren.
+
+## Verifisert QA 08.09.2026
+
+Funksjonen ble testet i Preview mot midlertidig sak `TEST-40B-MALER` og mal `40B testmal`.
+
+Verifisert lagring og gjenbruk:
+
+- 2 avsnitt
+- 5 tilbudsposter
+- 2 monteringsposter
+- 1 opsjon
+- relasjonene mellom avsnitt, poster, montering og opsjon ble bevart etter materialisering
+- katalogvaren CALIBRA var bevisst lagret med 140 000 kr i testkladden og ble oppdatert til aktiv katalogpris 149 520 kr ved bruk av malen
+- manuell post `Akk tank` beholdt malpris 6 000 kr
+- autosave lagret den materialiserte kladden på server
+- kunde-/saksidentitet ble beholdt og malpayloaden inneholdt ikke bilder, vedlegg eller historiske publiseringsdata
+- tydelig handlingsfeedback etter `Bruk valgt mal` ble manuelt godkjent i Preview
+- desktop sluttlinje med `Forhåndsvis kundetilbud` → `Lagre som mal` → `Lagre butikktilbud` ble manuelt godkjent
+
+De midlertidige QA-dataene er en merge-gate og skal slettes og verifiseres borte før PR/merge. Historisk sak F-2026-0062 skal ikke endres i denne oppryddingen.
 
 ## Filer
 
 - `src/modules/sales/services/salesStoreOfferCompleteTemplates.js` – lagring/materialisering/prisoppdatering/ID-remapping.
-- `src/modules/sales/components/StoreOfferCompleteTemplatePanel.jsx` – lagre, bruke og slette mal.
+- `src/modules/sales/components/StoreOfferCompleteTemplatePanel.jsx` – lagre, bruke og slette mal, samt tydelig handlingsfeedback.
 - `src/modules/sales/components/SalesStoreOfferBuilderCatalogTemplates.jsx` – tynn wrapper rundt eksisterende Butikktilbud-bygger.
 - `src/modules/sales/components/SalesOfferBuilder.jsx` – ruter kun Butikktilbud gjennom 40B-wrapperen.
+- `src/modules/help/helpTools.js` – gjeldende brukerveiledning for komplett Butikktilbud-mal.
 - `scripts/critical-store-template-check.mjs` – permanent QA-sperre.
 
 ## Sikkerhetskontrakt
@@ -84,3 +117,5 @@ Disse kontrolleres og låses først når den aktuelle tilbudsversjonen publisere
 4. Publisert/akseptert/avvist historikk er uforanderlig.
 5. Malbruk erstatter kun redigerbar Butikktilbud-kladd etter eksplisitt bekreftelse dersom kladden allerede har strukturert innhold.
 6. Autosave/recovery fortsetter å være eksisterende Butikktilbud-autosave etter at malinnholdet er lagt inn i `offerForm`.
+7. Kunde, adresse, ansvarlig/signatur, merkevare/avsender og oppfølgingsplan skal komme fra aktuell sak, ikke fra malen.
+8. Bilder, PDF/vedlegg, public token, tilbudsversjoner, aksept/avvisning, prosjektkobling og annen saks-/historikkmetadata skal aldri kopieres fra en komplett firmamal.
