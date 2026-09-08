@@ -1,6 +1,8 @@
 // Expo ProffDok – FASE 37D2 / FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX / FASE 39B.2C
 // Butikktilbud avsluttes ved aksept: prosjektsteg, kontrakt og prosjektaktivering
 // fjernes fra butikkflyten, mens ordinære tilbud beholder eksisterende flyt.
+// FASE 39B.2: avvist Butikktilbud får eget avsluttet neste-steg-kort og skal aldri
+// falle tilbake til tekst om befaring eller planlegging.
 // FASE 33B.5 viser kontraktsstatus, kundelenke og signert PDF direkte i kontraktkortet.
 // FASE 33B.4 gjør akseptbevisets neste-steg-tekst kompatibelt med det nye valgfrie kontraktsteget.
 // FASE 33B.3 legger til et frivillig valg om enkel Expo-kontrakt i eksisterende
@@ -315,6 +317,37 @@ function rewriteStoreOfferAcceptedFlow(node) {
   }
 
   const children = Children.map(node.props.children, rewriteStoreOfferAcceptedFlow);
+  return cloneElement(node, undefined, children);
+}
+
+function rewriteStoreOfferDeclinedFlow(node, request = {}) {
+  if (Array.isArray(node)) {
+    return node.map((child) => rewriteStoreOfferDeclinedFlow(child, request));
+  }
+  if (!isValidElement(node)) return node;
+
+  if (
+    request?.status === "Avvist" &&
+    String(node.props?.className || "").includes("sales-next-card")
+  ) {
+    const declinedBy = String(request?.declinedBy || "").trim();
+    return cloneElement(node, undefined, [
+      <span className="sales-next-label" key="store-declined-label">Neste steg</span>,
+      <h2 key="store-declined-title">Tilbudet er avvist</h2>,
+      <p key="store-declined-summary" style={{ marginBottom: 10 }}>
+        {declinedBy
+          ? `Kunden har avvist tilbudet. Avvisningen er registrert av ${declinedBy}, og saken er avsluttet i Sales.`
+          : "Kunden har avvist tilbudet. Avvisningen er registrert, og saken er avsluttet i Sales."}
+      </p>,
+      <p key="store-declined-action" style={{ marginBottom: 0 }}>
+        Det sendes ikke flere automatiske påminnelser. Ved behov kan du opprette et nytt eller revidert tilbud.
+      </p>,
+    ]);
+  }
+
+  const children = Children.map(node.props.children, (child) =>
+    rewriteStoreOfferDeclinedFlow(child, request)
+  );
   return cloneElement(node, undefined, children);
 }
 
@@ -757,6 +790,7 @@ export default function SalesDetailView(props) {
     tree = rewriteAcceptanceProofContinuationText(tree);
   } else {
     tree = rewriteStoreOfferAcceptedFlow(tree);
+    tree = rewriteStoreOfferDeclinedFlow(tree, coreProps?.selectedRequest);
   }
 
   if (hasExistingOfferDraft) {
