@@ -45,24 +45,48 @@ const missingSkuFields = acceptedLine.split(";");
 missingSkuFields[1] = "";
 assert(parseStoreCatalogLine(missingSkuFields.join(";"), 10).status === "skipped_missing_sku", "vare uten varenummer skal droppes.");
 
-const migration = fs.readFileSync(path.join(root, "supabase/migrations/20260908105500_fase39b1_internal_store_catalog.sql"), "utf8");
+const foundationMigration = fs.readFileSync(path.join(root, "supabase/migrations/20260908105500_fase39b1_internal_store_catalog.sql"), "utf8");
 for (const needle of [
   "internal_store_catalog_items", "internal_store_catalog_stage",
   "current_user_has_internal_store_catalog_access", "current_user_has_module_access('store_offers')",
   "Ringside Rørleggerbedrift AS", "Bademiljø Expo", "purchase_net_ex_vat",
   "enable row level security", "revoke all on public.internal_store_catalog_items from anon, authenticated",
   "search_internal_store_catalog", "internal_store_catalog_alternatives",
-]) assert(migration.includes(needle), `migreringen mangler sikkerhets-/grunnmurkrav: ${needle}`);
-assert(!migration.includes("915407692"), "katalogtilgang skal ikke låses til org.nr.");
+]) assert(foundationMigration.includes(needle), `migreringen mangler sikkerhets-/grunnmurkrav: ${needle}`);
+assert(!foundationMigration.includes("915407692"), "katalogtilgang skal ikke låses til org.nr.");
+
+const activationMigration = fs.readFileSync(path.join(root, "supabase/migrations/20260908112600_fase39b2_batched_catalog_activation.sql"), "utf8");
+for (const needle of [
+  "status in ('loading','activating','active','archived','cancelled','failed')",
+  "unique (last_import_id, supplier_key, supplier_product_number_key)",
+  "get_pending_internal_store_catalog_import",
+  "prepare_internal_store_catalog_activation",
+  "activate_internal_store_catalog_batch",
+  "complete_internal_store_catalog_activation",
+  "limit v_limit",
+  "imp.status = 'active'",
+]) assert(activationMigration.includes(needle), `39B.2 batch-aktivering mangler: ${needle}`);
+
+const cancelMigration = fs.readFileSync(path.join(root, "supabase/migrations/20260908113400_fase39b2_safe_catalog_cancel.sql"), "utf8");
+assert(cancelMigration.includes("v_status <> 'loading'"), "Avbryt skal ikke kunne slette staging etter at aktivering har startet.");
 
 const panel = fs.readFileSync(path.join(root, "src/modules/storeCatalog/StoreCatalogPanel.jsx"), "utf8");
+const client = fs.readFileSync(path.join(root, "src/modules/storeCatalog/storeCatalogClient.js"), "utf8");
 const wrapper = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx"), "utf8");
 const router = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesOfferBuilder.jsx"), "utf8");
 
 for (const needle of [
   "searchStoreCatalog", "getStoreCatalogAlternatives", "beginStoreCatalogImport",
-  "streamStoreCatalogFile", "Aktiver nytt vareregister", "purchase_net_ex_vat",
+  "streamStoreCatalogFile", "getPendingStoreCatalogImport", "Fortsett aktivering",
+  "purchase_net_ex_vat",
 ]) assert(panel.includes(needle), `39B.2 katalogpanel mangler: ${needle}`);
+
+for (const needle of [
+  "prepare_internal_store_catalog_activation",
+  "activate_internal_store_catalog_batch",
+  "complete_internal_store_catalog_activation",
+  "completedBatches < 1000",
+]) assert(client.includes(needle), `39B.2 katalogklient mangler gjenopptakbar aktivering: ${needle}`);
 
 assert(wrapper.includes("customer_price_incl_vat"), "kundepris inkl. mva. skal kopieres til tilbudslinjen.");
 assert(wrapper.includes("customer_price_ex_vat"), "kundepris eks. mva. skal kopieres til Sales amount.");
