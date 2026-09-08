@@ -292,6 +292,11 @@ function rewriteStoreOfferAcceptedFlow(node) {
 
   if (!isValidElement(node)) return node;
 
+  const classNames = String(node.props?.className || "").split(/\s+/).filter(Boolean);
+  if (classNames.includes("sales-workflow")) {
+    return null;
+  }
+
   const text = reactNodeText(node).replace(/\s+/g, " ").trim();
   if (
     node.type === "button" &&
