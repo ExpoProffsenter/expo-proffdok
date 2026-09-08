@@ -1,5 +1,6 @@
-// Expo ProffDok – FASE 39B.1
+// Expo ProffDok – FASE 39B.2
 // Tynn klient mot det interne vareregisterets sikkerhets-RPC-er.
+// Store katalogaktiveringer deles i små, gjenopptakbare databasebatcher.
 
 function ensureClient(supabase) {
   if (!supabase?.rpc) throw new Error("Supabase-klient mangler.");
@@ -37,13 +38,20 @@ export async function uploadStoreCatalogBatch(supabase, importId, items) {
   return unwrap(data, error, "Kunne ikke laste opp varebatch.");
 }
 
-export async function finalizeStoreCatalogImport(
+export async function getPendingStoreCatalogImport(supabase) {
+  const { data, error } = await ensureClient(supabase).rpc(
+    "get_pending_internal_store_catalog_import"
+  );
+  return unwrap(data || null, error, "Kunne ikke hente uferdig vareimport.");
+}
+
+export async function prepareStoreCatalogActivation(
   supabase,
   importId,
   summary = {}
 ) {
   const { data, error } = await ensureClient(supabase).rpc(
-    "finalize_internal_store_catalog_import",
+    "prepare_internal_store_catalog_activation",
     {
       p_import_id: importId,
       p_total_rows: summary.totalRows || 0,
@@ -52,7 +60,72 @@ export async function finalizeStoreCatalogImport(
       p_malformed_rows: summary.malformedRows || 0,
     }
   );
-  return unwrap(data, error, "Kunne ikke aktivere vareregister.");
+  return unwrap(data, error, "Kunne ikke klargjøre vareregisteret.");
+}
+
+export async function activateStoreCatalogBatch(
+  supabase,
+  importId,
+  limit = 2500
+) {
+  const { data, error } = await ensureClient(supabase).rpc(
+    "activate_internal_store_catalog_batch",
+    {
+      p_import_id: importId,
+      p_limit: limit,
+    }
+  );
+  return unwrap(data, error, "Kunne ikke aktivere neste varebatch.");
+}
+
+export async function completeStoreCatalogActivation(supabase, importId) {
+  const { data, error } = await ensureClient(supabase).rpc(
+    "complete_internal_store_catalog_activation",
+    { p_import_id: importId }
+  );
+  return unwrap(data, error, "Kunne ikke fullføre aktivering av vareregisteret.");
+}
+
+export async function finalizeStoreCatalogImport(
+  supabase,
+  importId,
+  summary = {},
+  onProgress = null
+) {
+  const prepared = await prepareStoreCatalogActivation(supabase, importId, summary);
+  const expectedRows = Number(prepared?.accepted_rows || summary.acceptedRows || 0);
+  let processedRows = Number(prepared?.prepared_rows || 0);
+
+  onProgress?.({
+    processedRows,
+    totalRows: expectedRows,
+    remainingRows: Math.max(expectedRows - processedRows, 0),
+  });
+
+  let completedBatches = 0;
+  while (completedBatches < 1000) {
+    const batch = await activateStoreCatalogBatch(supabase, importId, 2500);
+    const batchRows = Number(batch?.processed_rows || 0);
+    processedRows += batchRows;
+    completedBatches += 1;
+
+    onProgress?.({
+      processedRows,
+      totalRows: expectedRows,
+      remainingRows: Math.max(expectedRows - processedRows, 0),
+    });
+
+    if (batch?.done === true) break;
+    if (batchRows <= 0) {
+      throw new Error("Aktiveringen stoppet uten fremdrift. Prøv Aktiver nytt vareregister igjen.");
+    }
+  }
+
+  if (completedBatches >= 1000) {
+    throw new Error("Aktiveringen brukte uventet mange batcher og ble stoppet av sikkerhetshensyn.");
+  }
+
+  return completeStoreCatalogActivation(supabase, importId);
 }
 
 export async function cancelStoreCatalogImport(supabase, importId) {
