@@ -96,9 +96,9 @@ for (const needle of [
 assert(!client.includes("completedBatches < 1000"), "klienten skal ikke lenger duplisere katalogen i aktiveringsbatcher.");
 
 for (const needle of [
-  "StoreCatalogInlinePortals", "searchStoreCatalog", "getStoreCatalogAlternatives",
-  "Søk vareregister: varenavn, varenummer eller GTIN/EAN", "StoreCatalogAdminOnlyPanel",
-  "canManageInternalStoreCatalog",
+  "StoreCatalogInlinePortals", "StoreCatalogOptionInlinePortals", "searchStoreCatalog",
+  "getStoreCatalogAlternatives", "Søk vareregister: varenavn, varenummer eller GTIN/EAN",
+  "Søk vare til opsjonen", "StoreCatalogAdminOnlyPanel", "canManageInternalStoreCatalog",
 ]) assert(offerTools.includes(needle), `inline varesøk/adminavgrensning mangler: ${needle}`);
 
 assert(wrapper.includes("customer_price_incl_vat"), "kundepris inkl. mva. skal kopieres til tilbudslinjen.");
@@ -109,6 +109,9 @@ assert(wrapper.includes('TEXT_BLOCK_LINE_TYPE = "store_text"'), "Butikktilbud sk
 assert(wrapper.includes('TEXT_BLOCK_MARKER = "#expo-store-text-block"'), "tekstavsnitt skal ha sikker presentasjonsmarkør.");
 assert(wrapper.includes("storeAfterLineId"), "tekstavsnitt skal kunne plasseres mellom varer.");
 assert(wrapper.includes("<StoreCatalogInlinePortals"), "varesøk skal monteres direkte i varekortene.");
+assert(wrapper.includes("<StoreCatalogOptionInlinePortals"), "varesøk skal også monteres direkte i opsjonskortene.");
+assert(wrapper.includes("recalculateStoreOption"), "katalogvalg i opsjon skal rekalkulere alternativ/tillegg.");
+assert(wrapper.includes("title: description"), "katalogvare i opsjon skal fylle opsjonsnavnet.");
 assert(
   wrapper.lastIndexOf("<StoreCatalogAdminOnlyPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilder"),
   "prisadministrasjon skal ligge nederst etter selve Butikktilbud-byggeren."
