@@ -55,6 +55,7 @@ const PRODUCT_POST = { id: "butikk-varer", title: "Varer" };
 const INSTALLATION_POST = { id: "butikk-montering", title: "Montering" };
 const PAYMENT_CHOICES = ["10 dager netto", "14 dager netto", "30 dager netto", "Betaling ved bestilling"];
 const VALIDITY_CHOICES = ["7", "14", "30", "60", "90"];
+const CUSTOM_CHOICE = "__custom_store_choice__";
 
 function createId(prefix) {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -236,13 +237,19 @@ function StoreBrandSelector({ brandKey, signatureName, onBrandChange, onSignatur
 function choiceForPayment(value) {
   const clean = String(value || "").trim();
   if (!clean) return "";
+  if (clean === CUSTOM_CHOICE) return "custom";
   return PAYMENT_CHOICES.includes(clean) ? clean : "custom";
 }
 
 function choiceForValidity(value) {
   const clean = String(value || "").trim();
   if (!clean) return "";
+  if (clean === CUSTOM_CHOICE) return "custom";
   return VALIDITY_CHOICES.includes(clean) ? clean : "custom";
+}
+
+function customFieldValue(value) {
+  return String(value || "") === CUSTOM_CHOICE ? "" : String(value || "");
 }
 
 export default function SalesStoreOfferBuilder(props) {
@@ -361,7 +368,8 @@ export default function SalesStoreOfferBuilder(props) {
 
   function submitStoreOffer(event) {
     if (!productLines.length && !installationLines.length) { event.preventDefault(); alert("Legg inn minst én vare eller monteringspost før du lagrer tilbudet."); return; }
-    if (!String(offerForm.paymentTerms || "").trim()) { event.preventDefault(); alert("Velg betalingsbetingelser før Butikktilbudet lagres."); return; }
+    const paymentTerms = String(offerForm.paymentTerms || "").trim();
+    if (!paymentTerms || paymentTerms === CUSTOM_CHOICE) { event.preventDefault(); alert("Velg eller skriv betalingsbetingelser før Butikktilbudet lagres."); return; }
     const validityDays = Number.parseInt(String(offerForm.validityDays || ""), 10);
     if (!Number.isFinite(validityDays) || validityDays < 1 || validityDays > 365) { event.preventDefault(); alert("Velg gyldighet for Butikktilbudet (1–365 dager)."); return; }
     const rawFirst = Number.parseInt(String(metaLine?.followUpFirstDays ?? followUp.firstDays), 10);
@@ -372,7 +380,9 @@ export default function SalesStoreOfferBuilder(props) {
   }
 
   function buildDraftPreviewRequest() {
-    const draftRequest = { ...selectedRequest, offerTitle: String(offerForm.title || "").trim(), offerIntro: String(offerForm.intro || "").trim(), offerLines: lines, offerOptions: options, offerReservations: String(offerForm.reservations || "").trim(), offerIncluded: String(offerForm.included || "").trim(), offerExcluded: String(offerForm.excluded || "").trim(), offerCustomerSupplied: String(offerForm.customerSupplied || "").trim(), offerTerms: String(offerForm.terms || "").trim(), offerPaymentTerms: String(offerForm.paymentTerms || "").trim(), offerValidityDays: String(offerForm.validityDays || ""), offerTotal: getOfferTotal(lines), offerVersions: [], sentOfferVersionId: null, sentOfferVersionNumber: null, sentOfferAt: null };
+    const safePaymentTerms = customFieldValue(offerForm.paymentTerms).trim();
+    const safeValidityDays = customFieldValue(offerForm.validityDays).trim();
+    const draftRequest = { ...selectedRequest, offerTitle: String(offerForm.title || "").trim(), offerIntro: String(offerForm.intro || "").trim(), offerLines: lines, offerOptions: options, offerReservations: String(offerForm.reservations || "").trim(), offerIncluded: String(offerForm.included || "").trim(), offerExcluded: String(offerForm.excluded || "").trim(), offerCustomerSupplied: String(offerForm.customerSupplied || "").trim(), offerTerms: String(offerForm.terms || "").trim(), offerPaymentTerms: safePaymentTerms, offerValidityDays: safeValidityDays, offerTotal: getOfferTotal(lines), offerVersions: [], sentOfferVersionId: null, sentOfferVersionNumber: null, sentOfferAt: null };
     const snapshot = buildOfferSnapshot(draftRequest, {}, new Date().toISOString(), `store-draft-preview-${requestId || Date.now()}`);
     return { ...draftRequest, offerVersions: [snapshot], sentOfferVersionId: snapshot.id, sentOfferVersionNumber: snapshot.versionNumber, sentOfferAt: snapshot.createdAt };
   }
@@ -408,8 +418,8 @@ export default function SalesStoreOfferBuilder(props) {
               {templateMessage ? <p className="store-template-message">{templateMessage}</p> : null}
               <div className="sales-form-grid" style={{marginTop:14}}><label className="sales-field sales-field-full"><span>Overskrift</span><input value={offerForm.title || ""} onChange={(event) => updateOfferForm("title", event.target.value)} placeholder="Valgfri overskrift" /></label><label className="sales-field sales-field-full"><span>Kort innledning</span><textarea value={offerForm.intro || ""} onChange={(event) => updateOfferForm("intro", event.target.value)} placeholder="Valgfri innledning" rows={3} /></label><label className="sales-field sales-field-full"><span>Vilkår / betingelser</span><textarea value={offerForm.terms || ""} onChange={(event) => updateOfferForm("terms", event.target.value)} rows={4} placeholder="Valgfritt" /></label><label className="sales-field sales-field-full"><span>Forbehold / merknader</span><textarea value={offerForm.reservations || ""} onChange={(event) => updateOfferForm("reservations", event.target.value)} rows={3} placeholder="Valgfritt" /></label></div>
               <div className="store-terms-grid" style={{marginTop:12}}>
-                <label className="sales-field"><span>Betalingsbetingelser *</span><select value={paymentChoice} onChange={(event) => { const value = event.target.value; if (!value) updateOfferForm("paymentTerms", ""); else if (value === "custom") { if (PAYMENT_CHOICES.includes(String(offerForm.paymentTerms || ""))) updateOfferForm("paymentTerms", ""); } else updateOfferForm("paymentTerms", value); }} required><option value="">Velg betalingsbetingelser</option>{PAYMENT_CHOICES.map((item) => <option key={item} value={item}>{item}</option>)}<option value="custom">Egendefinert</option></select>{paymentChoice === "custom" ? <input style={{marginTop:8}} value={offerForm.paymentTerms || ""} onChange={(event) => updateOfferForm("paymentTerms", event.target.value)} placeholder="Skriv betalingsbetingelser" required /> : null}</label>
-                <label className="sales-field"><span>Gyldighet *</span><select value={validityChoice} onChange={(event) => { const value = event.target.value; if (!value) updateOfferForm("validityDays", ""); else if (value === "custom") { if (VALIDITY_CHOICES.includes(String(offerForm.validityDays || ""))) updateOfferForm("validityDays", ""); } else updateOfferForm("validityDays", value); }} required><option value="">Velg gyldighet</option>{VALIDITY_CHOICES.map((item) => <option key={item} value={item}>{item} dager</option>)}<option value="custom">Egendefinert</option></select>{validityChoice === "custom" ? <input style={{marginTop:8}} value={offerForm.validityDays || ""} onChange={(event) => updateOfferForm("validityDays", event.target.value)} inputMode="numeric" placeholder="Antall dager (1–365)" required /> : null}</label>
+                <label className="sales-field"><span>Betalingsbetingelser *</span><select value={paymentChoice} onChange={(event) => { const value = event.target.value; if (!value) updateOfferForm("paymentTerms", ""); else if (value === "custom") updateOfferForm("paymentTerms", CUSTOM_CHOICE); else updateOfferForm("paymentTerms", value); }} required><option value="">Velg betalingsbetingelser</option>{PAYMENT_CHOICES.map((item) => <option key={item} value={item}>{item}</option>)}<option value="custom">Egendefinert</option></select>{paymentChoice === "custom" ? <input style={{marginTop:8}} value={customFieldValue(offerForm.paymentTerms)} onChange={(event) => updateOfferForm("paymentTerms", event.target.value || CUSTOM_CHOICE)} placeholder="Skriv betalingsbetingelser" required /> : null}</label>
+                <label className="sales-field"><span>Gyldighet *</span><select value={validityChoice} onChange={(event) => { const value = event.target.value; if (!value) updateOfferForm("validityDays", ""); else if (value === "custom") updateOfferForm("validityDays", CUSTOM_CHOICE); else updateOfferForm("validityDays", value); }} required><option value="">Velg gyldighet</option>{VALIDITY_CHOICES.map((item) => <option key={item} value={item}>{item} dager</option>)}<option value="custom">Egendefinert</option></select>{validityChoice === "custom" ? <input style={{marginTop:8}} value={customFieldValue(offerForm.validityDays)} onChange={(event) => updateOfferForm("validityDays", event.target.value || CUSTOM_CHOICE)} inputMode="numeric" placeholder="Antall dager (1–365)" required /> : null}</label>
               </div>
             </section>
 
@@ -421,7 +431,7 @@ export default function SalesStoreOfferBuilder(props) {
 
             <section className="store-builder-section"><div className="store-section-head"><div><h2>Varer</h2><p>Prisene registreres inkl. mva. Saksbehandler ser automatisk tilsvarende pris eks. mva. NOBB-nr. gir direkte NOBB-link når egen produktlink ikke er satt.</p></div><button className="sales-primary-button" type="button" onClick={addProduct}><Plus size={18} /> Legg til vare</button></div><div className="store-item-list">{productLines.length ? productLines.map((item,index)=><ProductCard key={item.id} item={item} index={index} dragProps={draggableProps("line",item.id,"product")} onPatch={(patch)=>patchLine(item.id,patch)} onRemove={()=>removeLine(item.id)} onFiles={(files)=>sendFiles("line",item.id,files)} onRemoveImage={()=>removeOfferLineImage?.(item.id)} onRemoveAttachment={()=>removeOfferLineAttachment?.(item.id)} />) : <div className="store-empty"><ImagePlus size={24}/><br/>Ingen varer ennå. Legg til første vare.</div>}</div></section>
             <section className="store-builder-section"><div className="store-section-head"><div><h2>Montering</h2><p>Valgfri egen seksjon. En vareopsjon kan også angi en annen monteringspris.</p></div><button className="sales-secondary-button" type="button" onClick={addInstallation}><Wrench size={18}/> Legg til montering</button></div><div className="store-item-list">{installationLines.length ? installationLines.map((item,index)=><InstallationCard key={item.id} item={item} index={index} dragProps={draggableProps("line",item.id,"installation")} onPatch={(patch)=>patchLine(item.id,patch)} onRemove={()=>removeLine(item.id)} />) : <div className="store-empty">Ingen montering lagt til.</div>}</div></section>
-            <section className="store-builder-section"><div className="store-section-head"><div><h2>Opsjoner</h2><p>Ved alternativ vare skriver du inn den faktiske nye vareprisen. Expo beregner prisendringen automatisk – også når monteringsprisen endres.</p></div><button className="sales-secondary-button" type="button" onClick={addOption}><Plus size={18}/> Legg til opsjon</button></div><div className="store-item-list">{options.length ? options.map((option,index)=><OptionCard key={option.id} option={option} index={index} productLines={productLines} installationLines={installationLines} dragProps={draggableProps("option",option.id)} onPatch={(patch)=>patchOption(option.id,patch)} onReplacementChange={(replacementId)=>changeReplacement(option.id,replacementId)} onInstallationChange={(lineId)=>changeOptionInstallation(option.id,lineId)} onRemove={()=>removeOption(option.id)} onFiles={(files)=>sendFiles("option",option.id,files)} onRemoveImage={()=>removeOfferOptionImage?.(option.id)} onRemoveAttachment={()=>removeOfferOptionAttachment?.(option.id)} />) : <div className="store-empty">Ingen opsjoner lagt til.</div>}</div></section>
+            <section className="store-builder-section"><div className="store-section-head"><div><h2>Opsjoner</h2><p>Ved alternativ vare skriver du inn den faktiske nye vareprisen. Expo beregner prisendringen automatisk – også når monteringsprisen endres.</p></div><button className="sales-secondary-button" type="button" onClick={addOption}><Plus size={18}/> Legg til opsjon</button></div><div className="store-item-list">{options.length ? options.map((option,index)=><OptionCard key={option.id} option={option} index={index} productLines={productLines} installationLines={installationLines} dragProps={draggableProps("option",option.id)} onPatch={(patch)=>patchOption(option.id,patch)} onReplacementChange={(replacementId)=>changeReplacement(option.id,replacementId)} onInstallationChange={(lineId)=>changeOptionInstallation(option.id,lineId)} onRemove={()=>removeOption(option.id)} onFiles={(files)=>sendFiles("option",option.id,files)} onRemoveImage={()=>removeOfferOptionImage?.(option.id)} onRemoveAttachment={()=>removeOfferOptionAttachment?.(option.id)} />) : <div className="store-empty">Ingen opsjoner lagt til.</div>}</section>
             <div className="store-summary"><div className="store-summary-price"><span>Grunnsum varer + montering</span><strong>{formatNok(baseGrossTotal)} inkl. mva.</strong><small>{formatNok(netFromGross(baseGrossTotal))} eks. mva.</small><small>Opsjoner kommer i tillegg eller erstatter grunnpakken.</small></div><div className="store-summary-actions"><button type="button" className="sales-secondary-button" onClick={() => setPreviewOpen(true)} disabled={!productLines.length && !installationLines.length}><Eye size={18}/> Forhåndsvis kundetilbud</button><button type="submit" className="sales-primary-button" data-sales-save-offer-button="true"><Save size={18}/> Lagre butikktilbud</button></div></div>
           </form>
         </main>
