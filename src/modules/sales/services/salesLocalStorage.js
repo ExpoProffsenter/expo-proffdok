@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 30C3 / FASE 30C2
+// Expo ProffDok – FASE 39B.2C / FASE 30C3 / FASE 30C2
+// Firmascopet Sales-cache kan vises umiddelbart mens Supabase hydreres. Serveren
+// er fortsatt fasit og erstatter cachen så snart den normale serverlastingen er ferdig.
 // Sikkerhets-wrapper rundt lokal tilbudslagring.
 // Beholder komplett revisjonshistorikk for reelle tilbudsendringer, fjerner kun
 // strukturelt tomme rader og lar recovery prioritere siste faktiske offline-versjon.
@@ -52,6 +54,22 @@ export function isOfferDraftHydratedForCurrentCycle(requestId = "") {
 
 function storage() {
   return typeof window !== "undefined" ? window.localStorage : null;
+}
+
+export function loadRequests(storageKey = STORAGE_KEY) {
+  if (storageKey === STORAGE_KEY) return core.loadRequests(storageKey);
+
+  const store = storage();
+  if (!store) return [];
+
+  try {
+    const raw = store.getItem(storageKey);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 function parseJson(store, key) {
@@ -257,7 +275,7 @@ function appendAuditSnapshot(stableKey, formValue) {
   if (!store || !stableKey) return;
 
   const form = compactForAudit(formValue);
-  const historyRaw = parseJson(store, auditKey(stableKey));
+  const historyRaw = stableKey ? parseJson(store, auditKey(stableKey)) : null;
   const history = Array.isArray(historyRaw) ? historyRaw : [];
   const last = history[history.length - 1] || null;
 
