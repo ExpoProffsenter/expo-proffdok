@@ -3,14 +3,16 @@
 // Katalogens nettopris blir aldri kopiert til offerForm eller kundens tilbudsversjon.
 // Prisnøytrale tekstavsnitt holdes utenfor varebyggeren, men følger tilbudsversjonen.
 // Ferdige varekort komprimeres kun i intern redigering; kunderekkefølge og data er urørt.
+// Butikktilbud får i tillegg en egen server-autosave av kun aktuell salgssak.
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import SalesStoreOfferBuilder from "./SalesStoreOfferBuilder.jsx";
 import {
   StoreCatalogAdminOnlyPanel,
   StoreCatalogInlineLookup,
 } from "../../storeCatalog/StoreCatalogOfferTools.jsx";
+import { persistStoreOfferDraft } from "../services/salesStoreOfferAutosave.js";
 import { buildNobbItemUrl } from "../utils/salesStoreOfferPricing.js";
 
 const PRODUCT_POST = { id: "butikk-varer", title: "Varer" };
@@ -158,6 +160,41 @@ function createCatalogOfferLine(item = {}) {
   };
 }
 
+function compactAttachment(file) {
+  if (!file) return null;
+  return {
+    id: file.id || "",
+    name: file.name || "",
+    path: file.path || "",
+    url: file.url || "",
+    size: Number(file.size || 0),
+  };
+}
+
+function compactAutosaveRow(item = {}) {
+  return {
+    ...item,
+    imageDataUrl: item.imageDataUrl ? `image:${String(item.imageDataUrl).length}` : "",
+    attachmentFile: compactAttachment(item.attachmentFile),
+  };
+}
+
+function createStoreAutosaveSignature(form = {}) {
+  return JSON.stringify({
+    title: form.title || "",
+    intro: form.intro || "",
+    reservations: form.reservations || "",
+    included: form.included || "",
+    excluded: form.excluded || "",
+    customerSupplied: form.customerSupplied || "",
+    terms: form.terms || "",
+    paymentTerms: form.paymentTerms || "",
+    validityDays: form.validityDays || "",
+    lines: (Array.isArray(form.lines) ? form.lines : []).map(compactAutosaveRow),
+    options: (Array.isArray(form.options) ? form.options : []).map(compactAutosaveRow),
+  });
+}
+
 function findProductSection() {
   if (typeof document === "undefined") return null;
   return Array.from(
@@ -177,8 +214,15 @@ function readCompactProductSummary(card) {
 
 function StoreOfferProductEditingUx({ products = [] }) {
   const productIdentity = products.map((item) => String(item?.id || "")).join("|");
+  const previousProductIdentityRef = useRef(productIdentity);
 
   useEffect(() => {
+    const previousIds = previousProductIdentityRef.current.split("|").filter(Boolean);
+    const currentIds = productIdentity.split("|").filter(Boolean);
+    const previousSet = new Set(previousIds);
+    const addedProductId = currentIds.find((id) => !previousSet.has(id)) || "";
+    previousProductIdentityRef.current = productIdentity;
+
     const section = findProductSection();
     if (!section) return undefined;
 
@@ -230,17 +274,18 @@ function StoreOfferProductEditingUx({ products = [] }) {
       if (!(heading instanceof HTMLElement)) return;
       const onHeadingClick = (event) => {
         if (event.target instanceof Element && event.target.closest("button")) return;
-        if (!card.classList.contains("is-store-product-collapsed")) return;
-        setActiveCard(card, { focusSearch: false });
+        const collapsed = card.classList.contains("is-store-product-collapsed");
+        setActiveCard(collapsed ? card : null, { focusSearch: false });
       };
       heading.addEventListener("click", onHeadingClick);
       listeners.push([heading, onHeadingClick]);
     });
 
+    const addedIndex = addedProductId ? currentIds.indexOf(addedProductId) : -1;
+    const addedCard = addedIndex >= 0 ? cards[addedIndex] : null;
     const existingActive = cards.find((card) => card.dataset.storeProductActive === "1");
-    const activeCard = existingActive || cards[cards.length - 1];
-    const shouldFocusNew = !existingActive && cards.length > 1;
-    setActiveCard(activeCard, { focusSearch: shouldFocusNew });
+    const activeCard = addedCard || existingActive || cards[cards.length - 1];
+    setActiveCard(activeCard, { focusSearch: Boolean(addedCard) });
 
     let footerButton = section.querySelector(":scope > .store-add-product-footer");
     let createdFooter = false;
@@ -267,6 +312,7 @@ function StoreOfferProductEditingUx({ products = [] }) {
       .store-item-card.is-store-product-collapsed{padding:10px 14px;background:#fff;cursor:pointer}
       .store-item-card.is-store-product-collapsed > :not(.store-item-heading){display:none!important}
       .store-item-card.is-store-product-collapsed .store-item-heading{margin-bottom:0;cursor:pointer}
+      .store-item-card:not(.is-store-product-collapsed) .store-item-heading{cursor:pointer}
       .store-collapsed-product-summary{display:none;grid-column:2;grid-row:2;color:#60727a;font-size:13px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .store-item-card.is-store-product-collapsed .store-collapsed-product-summary{display:block}
       .store-item-card.is-store-product-collapsed .store-item-heading>.store-icon-button{grid-column:3;grid-row:1/3}
@@ -413,6 +459,45 @@ export default function SalesStoreOfferBuilderCatalog(props) {
   const textBlocks = currentLines.filter(isTextBlock);
   const builderLines = currentLines.filter((line) => !isTextBlock(line));
   const productLines = builderLines.filter(isProductLine);
+  const requestId = String(props.selectedRequest?.id || "");
+  const [storeDraftSaveStatus, setStoreDraftSaveStatus] = useState("idle");
+  const autosaveTimerRef = useRef(null);
+  const autosaveRequestRef = useRef(requestId);
+  const autosaveSignatureRef = useRef(createStoreAutosaveSignature(props.offerForm || {}));
+
+  useEffect(() => {
+    const nextSignature = createStoreAutosaveSignature(props.offerForm || {});
+
+    if (!requestId) return undefined;
+    if (autosaveRequestRef.current !== requestId) {
+      autosaveRequestRef.current = requestId;
+      autosaveSignatureRef.current = nextSignature;
+      setStoreDraftSaveStatus("idle");
+      return undefined;
+    }
+    if (autosaveSignatureRef.current === nextSignature) return undefined;
+
+    autosaveSignatureRef.current = nextSignature;
+    setStoreDraftSaveStatus("idle");
+    if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
+
+    autosaveTimerRef.current = window.setTimeout(() => {
+      setStoreDraftSaveStatus("saving");
+      void persistStoreOfferDraft(props.selectedRequest, props.offerForm)
+        .then(() => setStoreDraftSaveStatus("saved"))
+        .catch((error) => {
+          console.error("Kunne ikke mellomlagre Butikktilbud varig", error);
+          setStoreDraftSaveStatus("error");
+        });
+    }, 850);
+
+    return () => {
+      if (autosaveTimerRef.current) {
+        window.clearTimeout(autosaveTimerRef.current);
+        autosaveTimerRef.current = null;
+      }
+    };
+  }, [requestId, props.offerForm, props.selectedRequest]);
 
   function updateBuilderOfferForm(field, value) {
     if (field !== "lines") {
@@ -460,10 +545,15 @@ export default function SalesStoreOfferBuilderCatalog(props) {
     props.updateOfferForm?.("lines", nextLines);
   }
 
+  const visibleSaveStatus = storeDraftSaveStatus === "idle"
+    ? props.offerDraftSaveStatus
+    : storeDraftSaveStatus;
+
   return (
     <>
       <SalesStoreOfferBuilder
         {...props}
+        offerDraftSaveStatus={visibleSaveStatus}
         offerForm={{ ...props.offerForm, lines: builderLines }}
         updateOfferForm={updateBuilderOfferForm}
         renderCatalogLookup={renderCatalogLookup}
