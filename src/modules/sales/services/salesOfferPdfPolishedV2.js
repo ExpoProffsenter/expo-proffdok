@@ -1,14 +1,19 @@
-// Expo ProffDok – FASE 37D2 / FASE 37D1 / FASE 31C
+// Expo ProffDok – FASE 37D2 / FASE 37D1 / FASE 31C / FASE 39B.2C
 // Butikktilbud bruker versjonslåst valgt logo og saksbehandlersignatur i PDF.
 // Butikkalternativer viser faktisk alternativpris, ikke intern prisdifferanse som
 // enhetspris. Ordinære tilbud beholder eksisterende PDF-presentasjon.
 // Hovedposter uten grunnpris vises som «Kun valgfrie opsjoner» i ordinære tilbud.
+// Butikktilbud-avsnitt vises som prisnøytrale overskrifter og bruker ikke varenummer.
 
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import {
   formatNok, formatOfferQuantity, getOfferTermsSnapshot, getOfferTotal,
   getOfferUnitPrice, getStoreOfferMeta, getVisibleOfferLines, hasOfferQuantityDetails, sanitizeStoragePart,
 } from "../utils/salesUtils.js";
+import {
+  getStoreSectionTitle,
+  isStoreSectionLine,
+} from "../utils/salesOfferQuantityPresentation.js";
 import { getImageNaturalSize, readFileAsDataUrl } from "./salesImages.js";
 
 const P = { w:210, h:297, l:17, r:193, bottom:279 };
@@ -47,7 +52,7 @@ function optionType(option={}, lines=[]) {
 }
 
 function qty(item={}) {
-  if(storeAlt(item)) return "";
+  if(isStoreSectionLine(item) || storeAlt(item)) return "";
   if(!hasOfferQuantityDetails(item)) return "";
   return `${formatOfferQuantity(item)} x ${formatNok(getOfferUnitPrice(item)*1.25)} pr. enhet`;
 }
@@ -121,23 +126,42 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
     }
   };
 
-  const measureLine=(line)=>{ const qt=qty(line); const width=qt?96:102; font(8.7,"bold",C.ink); const tl=pdf.splitTextToSize(lineTitle(line),width); font(7.4,"normal",C.muted); const ql=qt?pdf.splitTextToSize(qt,width):[]; return Math.max(12,5+tl.length*4.2+ql.length*3.8); };
+  const measureLine=(line)=>{
+    if(isStoreSectionLine(line)) return clean(line.storeTextBody)?18:14;
+    const qt=qty(line); const width=qt?96:102; font(8.7,"bold",C.ink); const tl=pdf.splitTextToSize(lineTitle(line),width); font(7.4,"normal",C.muted); const ql=qt?pdf.splitTextToSize(qt,width):[]; return Math.max(12,5+tl.length*4.2+ql.length*3.8);
+  };
   const measureOption=(o)=>{ font(9,"bold",C.ink); const tl=pdf.splitTextToSize(clean(o.title)||(isStoreOffer?"Valg":"Opsjon"),108); font(7.6,"normal",C.text); const dl=clean(o.description)?pdf.splitTextToSize(clean(o.description),108):[]; const ql=qty(o)?pdf.splitTextToSize(qty(o),108):[]; return 15+tl.length*4.2+dl.length*3.8+ql.length*3.8; };
 
   const mainHeader=(g,gi)=>{
     const next=g.lines.length?measureLine(g.lines[0]):g.options.length?8+measureOption(g.options[0]):12; ensure(19+Math.min(next,34));
     const optionsOnly=g.lines.length===0&&g.options.length>0;
+    const visibleTitle=isStoreOffer&&clean(g.title).toLowerCase()==="varer"?"Leveranse":clean(g.title);
+    const pricedLines=g.lines.filter((line)=>!isStoreSectionLine(line));
     pdf.setFillColor(...C.soft); pdf.setDrawColor(...C.line); pdf.roundedRect(P.l,y,W,17,2,2,"FD"); pdf.setFillColor(...C.teal); pdf.circle(P.l+8,y+8.5,4.7,"F");
-    font(7.7,"bold",C.white); pdf.text(String(gi+1).padStart(2,"0"),P.l+8,y+9.2,{align:"center"}); font(11.2,"bold",C.ink); pdf.text(clean(g.title),P.l+16,y+10);
+    font(7.7,"bold",C.white); pdf.text(String(gi+1).padStart(2,"0"),P.l+8,y+9.2,{align:"center"}); font(11.2,"bold",C.ink); pdf.text(visibleTitle,P.l+16,y+10);
     if(optionsOnly){
       font(7.2,"bold",C.muted);pdf.text(isStoreOffer?"Type":"Hovedposttype",P.r-4,y+5.5,{align:"right"});
       font(9.4,"bold",C.ink);pdf.text(isStoreOffer?"Kun valgfrie alternativer/tillegg":"Kun valgfrie opsjoner",P.r-4,y+11,{align:"right"});
     } else {
       const groupTitle=clean(g.title).toLowerCase();
-      const sumLabel=isStoreOffer?(groupTitle.includes("montering")?"Sum montering":groupTitle.includes("varer")?"Sum varer":"Sum"):"Sum hovedpost";
-      font(7.2,"bold",C.muted);pdf.text(sumLabel,P.r-4,y+5.5,{align:"right"});font(11.3,"bold",C.ink);pdf.text(formatNok(getOfferTotal(g.lines)*1.25),P.r-4,y+11,{align:"right"});font(6.9,"normal",C.muted);pdf.text("inkl. mva.",P.r-4,y+14.3,{align:"right"});
+      const sumLabel=isStoreOffer?(groupTitle.includes("montering")?"Sum montering":groupTitle.includes("varer")?"Sum leveranse":"Sum"):"Sum hovedpost";
+      font(7.2,"bold",C.muted);pdf.text(sumLabel,P.r-4,y+5.5,{align:"right"});font(11.3,"bold",C.ink);pdf.text(formatNok(getOfferTotal(pricedLines)*1.25),P.r-4,y+11,{align:"right"});font(6.9,"normal",C.muted);pdf.text("inkl. mva.",P.r-4,y+14.3,{align:"right"});
     }
     y+=19;
+  };
+
+  const storeSectionRow=(line)=>{
+    const title=getStoreSectionTitle(line);
+    const body=clean(line.storeTextBody||"");
+    const titleRows=pdf.splitTextToSize(title,W-18).slice(0,2);
+    const bodyRows=body?pdf.splitTextToSize(body,W-18).slice(0,2):[];
+    const h=Math.max(13,7+titleRows.length*4.2+bodyRows.length*3.6);
+    ensure(h+2);
+    pdf.setFillColor(...C.soft); pdf.setDrawColor(...C.line); pdf.roundedRect(P.l+2,y,W-2,h,2,2,"FD");
+    pdf.setFillColor(...C.teal); pdf.rect(P.l+2,y,2,h,"F");
+    let ty=y+6.5; font(10,"bold",C.ink); titleRows.forEach((row)=>{pdf.text(row,P.l+9,ty);ty+=4.2;});
+    if(bodyRows.length){font(7.6,"normal",C.muted);bodyRows.forEach((row)=>{pdf.text(row,P.l+9,ty);ty+=3.6;});}
+    y+=h+2;
   };
 
   const lineRow=(line,gi,li)=>{
@@ -177,10 +201,19 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
   if(clean(reservations)){sectionTitle("Forutsetninger og forbehold");textCard("Forutsetninger og forbehold",reservations);}
   if(clean(included)||clean(excluded)||clean(supplied)){sectionTitle("Leveranseomfang");textCard("Dette er inkludert",included);textCard("Dette er ikke inkludert",excluded);textCard("Dette sørger kunden for",supplied);}
   sectionTitle(
-    isStoreOffer?"Varer og priser":"Arbeider og priser",
+    isStoreOffer?"Leveranse og priser":"Arbeider og priser",
     isStoreOffer?"Alle priser er inkl. mva. Alternativer og tillegg inngår først når kunden velger dem.":"Alle priser er inkl. mva. Opsjoner inngår først når kunden velger dem."
   );
-  groups.forEach((g,gi)=>{mainHeader(g,gi);g.lines.forEach((line,li)=>lineRow(line,gi,li));if(g.options.length){ensure(8+Math.min(measureOption(g.options[0]),34));font(8.5,"bold",C.ink);pdf.text(isStoreOffer?"Alternativer og tillegg":"Opsjoner",P.l+5,y+5);y+=8;g.options.forEach(o=>optionCard(o,g.lines));}y+=4;});
+  groups.forEach((g,gi)=>{
+    mainHeader(g,gi);
+    let pricedIndex=0;
+    g.lines.forEach((line)=>{
+      if(isStoreSectionLine(line)) storeSectionRow(line);
+      else { lineRow(line,gi,pricedIndex); pricedIndex+=1; }
+    });
+    if(g.options.length){ensure(8+Math.min(measureOption(g.options[0]),34));font(8.5,"bold",C.ink);pdf.text(isStoreOffer?"Alternativer og tillegg":"Opsjoner",P.l+5,y+5);y+=8;g.options.forEach(o=>optionCard(o,g.lines));}
+    y+=4;
+  });
   ensure(28);pdf.setFillColor(...C.soft);pdf.setDrawColor(...C.teal);pdf.roundedRect(P.l,y,W,23,3,3,"FD");font(8.5,"bold",C.dark);pdf.text("TILBUDSSUM INKL. MVA.",P.l+6,y+8);font(17,"bold",C.ink);pdf.text(formatNok(total*1.25),P.r-6,y+11.5,{align:"right"});if(options.length){font(7.2,"normal",C.muted);pdf.text(isStoreOffer?"Før valg av alternativer og tillegg":"Før valg av opsjoner",P.l+6,y+15.5);pdf.text(isStoreOffer?"Valg oppdaterer totalsummen automatisk.":"Opsjoner legges til eller trekkes fra når kunden velger dem.",P.l+6,y+19.5);}y+=29;
   if(clean(offerTerms)||clean(payment)){sectionTitle("Vilkår og betaling");textCard("Vilkår",offerTerms);textCard("Betalingsbetingelser",payment);}
   if(signatureName){ensure(24);pdf.setDrawColor(...C.teal);pdf.line(P.l,y,P.l+28,y);y+=6;font(8.6,"normal",C.text);pdf.text("Med vennlig hilsen",P.l,y);y+=5;font(10.2,"bold",C.ink);pdf.text(signatureName,P.l,y);y+=10;}
