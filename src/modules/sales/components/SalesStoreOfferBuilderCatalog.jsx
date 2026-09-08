@@ -2,7 +2,9 @@
 // Tynn katalog-wrapper rundt eksisterende Butikktilbud-bygger.
 // Katalogens nettopris blir aldri kopiert til offerForm eller kundens tilbudsversjon.
 // Prisnøytrale tekstavsnitt holdes utenfor varebyggeren, men følger tilbudsversjonen.
+// Ferdige varekort komprimeres kun i intern redigering; kunderekkefølge og data er urørt.
 
+import { useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import SalesStoreOfferBuilder from "./SalesStoreOfferBuilder.jsx";
 import {
@@ -156,6 +158,124 @@ function createCatalogOfferLine(item = {}) {
   };
 }
 
+function findProductSection() {
+  if (typeof document === "undefined") return null;
+  return Array.from(
+    document.querySelectorAll(".store-offer-builder-app .store-builder-section")
+  ).find((section) => {
+    const heading = section.querySelector(":scope > .store-section-head h2");
+    return String(heading?.textContent || "").trim() === "Varer";
+  }) || null;
+}
+
+function readCompactProductSummary(card) {
+  const name = String(card.querySelector(".store-product-name input")?.value || "").trim();
+  const price = String(card.querySelector(".store-line-total strong")?.textContent || "").trim();
+  const priceText = price && price !== "0 kr" ? price : "";
+  return [name || "Uten varenavn", priceText].filter(Boolean).join(" · ");
+}
+
+function StoreOfferProductEditingUx({ products = [] }) {
+  const productIdentity = products.map((item) => String(item?.id || "")).join("|");
+
+  useEffect(() => {
+    const section = findProductSection();
+    if (!section) return undefined;
+
+    const list = section.querySelector(":scope > .store-item-list");
+    const addButton = section.querySelector(":scope > .store-section-head button");
+    if (!(list instanceof HTMLElement) || !(addButton instanceof HTMLButtonElement)) {
+      return undefined;
+    }
+
+    const cards = Array.from(list.querySelectorAll(":scope > .store-item-card"));
+    if (!cards.length) return undefined;
+
+    const listeners = [];
+
+    function syncSummary(card) {
+      const heading = card.querySelector(":scope > .store-item-heading");
+      if (!(heading instanceof HTMLElement)) return;
+      let summary = heading.querySelector(":scope > .store-collapsed-product-summary");
+      if (!(summary instanceof HTMLElement)) {
+        summary = document.createElement("span");
+        summary.className = "store-collapsed-product-summary";
+        const deleteButton = heading.querySelector(":scope > .store-icon-button");
+        heading.insertBefore(summary, deleteButton || null);
+      }
+      summary.textContent = readCompactProductSummary(card);
+    }
+
+    function setActiveCard(nextCard, { focusSearch = false } = {}) {
+      cards.forEach((card) => {
+        syncSummary(card);
+        const active = card === nextCard;
+        card.classList.toggle("is-store-product-collapsed", !active);
+        if (active) card.dataset.storeProductActive = "1";
+        else delete card.dataset.storeProductActive;
+      });
+
+      if (!nextCard || !focusSearch) return;
+      window.requestAnimationFrame(() => {
+        nextCard.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.requestAnimationFrame(() => {
+          const searchInput = nextCard.querySelector(".store-inline-catalog-search input");
+          if (searchInput instanceof HTMLInputElement) searchInput.focus();
+        });
+      });
+    }
+
+    cards.forEach((card) => {
+      const heading = card.querySelector(":scope > .store-item-heading");
+      if (!(heading instanceof HTMLElement)) return;
+      const onHeadingClick = (event) => {
+        if (event.target instanceof Element && event.target.closest("button")) return;
+        if (!card.classList.contains("is-store-product-collapsed")) return;
+        setActiveCard(card, { focusSearch: false });
+      };
+      heading.addEventListener("click", onHeadingClick);
+      listeners.push([heading, onHeadingClick]);
+    });
+
+    const existingActive = cards.find((card) => card.dataset.storeProductActive === "1");
+    const activeCard = existingActive || cards[cards.length - 1];
+    const shouldFocusNew = !existingActive && cards.length > 1;
+    setActiveCard(activeCard, { focusSearch: shouldFocusNew });
+
+    let footerButton = section.querySelector(":scope > .store-add-product-footer");
+    let createdFooter = false;
+    if (!(footerButton instanceof HTMLButtonElement)) {
+      footerButton = document.createElement("button");
+      footerButton.type = "button";
+      footerButton.className = "sales-primary-button store-add-product-footer";
+      footerButton.innerHTML = "+&nbsp; Legg til vare";
+      section.appendChild(footerButton);
+      createdFooter = true;
+    }
+    const onFooterClick = () => addButton.click();
+    footerButton.addEventListener("click", onFooterClick);
+
+    return () => {
+      listeners.forEach(([node, handler]) => node.removeEventListener("click", handler));
+      footerButton?.removeEventListener("click", onFooterClick);
+      if (createdFooter) footerButton?.remove();
+    };
+  }, [productIdentity]);
+
+  return (
+    <style>{`
+      .store-item-card.is-store-product-collapsed{padding:10px 14px;background:#fff;cursor:pointer}
+      .store-item-card.is-store-product-collapsed > :not(.store-item-heading){display:none!important}
+      .store-item-card.is-store-product-collapsed .store-item-heading{margin-bottom:0;cursor:pointer}
+      .store-collapsed-product-summary{display:none;grid-column:2;grid-row:2;color:#60727a;font-size:13px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .store-item-card.is-store-product-collapsed .store-collapsed-product-summary{display:block}
+      .store-item-card.is-store-product-collapsed .store-item-heading>.store-icon-button{grid-column:3;grid-row:1/3}
+      .store-add-product-footer{position:sticky;bottom:12px;z-index:8;display:flex;margin:12px 0 0 auto;width:max-content;box-shadow:0 10px 26px rgba(15,23,42,.16)}
+      @media(max-width:620px){.store-add-product-footer{width:100%;justify-content:center}.store-collapsed-product-summary{white-space:normal}}
+    `}</style>
+  );
+}
+
 function StoreOfferTextBlocks({ lines, onChange }) {
   const textBlocks = lines.filter(isTextBlock);
   const productLines = lines.filter(isProductLine);
@@ -292,6 +412,7 @@ export default function SalesStoreOfferBuilderCatalog(props) {
   const currentLines = Array.isArray(props.offerForm?.lines) ? props.offerForm.lines : [];
   const textBlocks = currentLines.filter(isTextBlock);
   const builderLines = currentLines.filter((line) => !isTextBlock(line));
+  const productLines = builderLines.filter(isProductLine);
 
   function updateBuilderOfferForm(field, value) {
     if (field !== "lines") {
@@ -347,6 +468,7 @@ export default function SalesStoreOfferBuilderCatalog(props) {
         updateOfferForm={updateBuilderOfferForm}
         renderCatalogLookup={renderCatalogLookup}
       />
+      <StoreOfferProductEditingUx products={productLines} />
       <StoreOfferTextBlocks lines={currentLines} onChange={updateTextBlocks} />
       <StoreCatalogAdminOnlyPanel onSelectItem={addCatalogItem} />
     </>
