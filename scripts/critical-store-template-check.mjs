@@ -59,6 +59,11 @@ for (const needle of [
   ".store-summary-actions",
   "data-sales-save-offer-button",
   "insertBefore(createdSaveHost, saveOfferButton)",
+  "data-store-template-action-notice",
+  "setActionNotice",
+  'materialized.missingCatalogItems ? "warning" : "success"',
+  'aria-live="polite"',
+  "document.body",
 ]) assert(panel.includes(needle), `malpanelet mangler: ${needle}`);
 
 for (const forbidden of [
