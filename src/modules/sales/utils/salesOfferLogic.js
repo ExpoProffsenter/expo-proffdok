@@ -1,6 +1,7 @@
 // Expo ProffDok – FASE 39B.2C / FASE 37A2 / FASE 37D1 / FASE 31A2
 // Tom lokal nettleserkladd får aldri overstyre et eksisterende, meningsfullt
-// servertilbud ved hydrering. Butikktilbud beholder ellers eksisterende recovery.
+// servertilbud ved hydrering. Butikktilbud-avsnitt holdes utenfor ordinær
+// pris/antall-validering og bevarer egen linjetype gjennom lagring/recovery.
 // Butikktilbud beholder skjult, versjonslåst metadata i kundevisning.
 // FASE 37A2 mapper i tillegg publiseringstid og digital avvisning slik at kunde-
 // og internpresentasjon kan avslutte Butikktilbud uten prosjektaktivering.
@@ -16,6 +17,9 @@ import {
   prepareOfferFormForSave as prepareOfferFormForSaveCore,
 } from "./salesOfferLogicCore.js";
 import * as core from "./salesOfferLogicCore.js";
+
+const STORE_SECTION_LINE_TYPE = "store_text";
+const STORE_SECTION_MARKER = "#expo-store-text-block";
 
 function normalizeOfferAmountForValidation(value) {
   return String(value ?? "")
@@ -67,6 +71,44 @@ function isOfferMetaLine(line = {}) {
   );
 }
 
+function isStoreSectionLine(line = {}) {
+  return Boolean(
+    line?.lineType === STORE_SECTION_LINE_TYPE ||
+      line?.storeSectionMode === "group" ||
+      String(line?.productUrl || "").trim() === STORE_SECTION_MARKER ||
+      String(line?.id || "").startsWith("store-section-")
+  );
+}
+
+function normalizeStoreSectionLine(line = {}) {
+  let title = String(line.storeTextTitle || "").trim();
+  let body = String(line.storeTextBody || "").trim();
+
+  if (title === "Nytt avsnitt" && body) {
+    title = body;
+    body = "";
+  } else if (title === "Nytt avsnitt") {
+    title = "";
+  }
+
+  const description =
+    [title, body].filter(Boolean).join("\n") || String(line.description || "").trim();
+
+  return {
+    ...line,
+    lineType: STORE_SECTION_LINE_TYPE,
+    storeSectionMode: "group",
+    storeSectionId: line.storeSectionId || line.id || "",
+    storeTextTitle: title,
+    storeTextBody: body,
+    description,
+    productUrl: STORE_SECTION_MARKER,
+    amount: "0",
+    quantity: "0",
+    unit: "",
+  };
+}
+
 function meaningfulOfferRowCount(form = {}) {
   const clean = pruneEmptyOfferDraftRows(form || {});
   const lines = (Array.isArray(clean.lines) ? clean.lines : []).filter(
@@ -89,21 +131,34 @@ function hasMeaningfulLocalDraftText(form = {}) {
 }
 
 export function recalculateAdministrationLines(lines = []) {
-  const normalizedLines = core.normalizeOfferLines(lines).map(normalizeQuantityFields);
-  const baseTotals = normalizedLines.reduce((totals, line) => {
+  const rawLines = Array.isArray(lines) ? lines : [];
+  const ordinaryLines = rawLines.filter((line) => !isStoreSectionLine(line));
+  const normalizedOrdinary = core
+    .normalizeOfferLines(ordinaryLines)
+    .map(normalizeQuantityFields);
+
+  const baseTotals = normalizedOrdinary.reduce((totals, line) => {
     if (line.lineType === "administration") return totals;
     const current = totals.get(line.mainPostId) || 0;
     totals.set(line.mainPostId, current + getOfferTotal([line]));
     return totals;
   }, new Map());
 
-  return normalizedLines.map((line) => {
+  const recalculatedOrdinary = normalizedOrdinary.map((line) => {
     if (line.lineType !== "administration" || line.adminMode === "fixed") return line;
     const percentText = String(line.adminPercent ?? "").trim();
     if (!percentText) return { ...line, amount: "" };
     const percent = parseOfferNumber(percentText);
     const baseTotal = baseTotals.get(line.mainPostId) || 0;
     return { ...line, amount: toStoredOfferAmount(baseTotal * (percent / 100)) };
+  });
+
+  let ordinaryIndex = 0;
+  return rawLines.map((line) => {
+    if (isStoreSectionLine(line)) return normalizeStoreSectionLine(line);
+    const normalized = recalculatedOrdinary[ordinaryIndex];
+    ordinaryIndex += 1;
+    return normalized || line;
   });
 }
 
@@ -115,7 +170,7 @@ export function buildOfferFormFromRequest(request) {
   const form = core.buildOfferFormFromRequest(request);
   return {
     ...form,
-    lines: recalculateAdministrationLines(form.lines || []),
+    lines: recalculateAdministrationLines(request?.offerLines || form.lines || []),
     options: normalizeOptionsWithQuantity(form.options || []),
   };
 }
@@ -137,9 +192,15 @@ export function normalizeStoredOfferDraft(storedDraft, request) {
     ? requestForm
     : core.normalizeStoredOfferDraft(storedDraft, request);
 
+  const sourceLines = preferServerDraft
+    ? requestForm.lines || []
+    : Array.isArray(storedDraft?.lines)
+      ? storedDraft.lines
+      : requestForm.lines || [];
+
   return {
     ...form,
-    lines: recalculateAdministrationLines(form.lines || []),
+    lines: recalculateAdministrationLines(sourceLines),
     options: normalizeOptionsWithQuantity(form.options || []),
   };
 }
@@ -157,20 +218,78 @@ export function mergeOfferDraftIntoRequests(currentRequests, formValue, requestI
 }
 
 export function prepareOfferFormForSave(formValue = {}) {
-  const prepared = prepareOfferFormForSaveCore(pruneEmptyOfferDraftRows(formValue));
-  const cleanLines = recalculateAdministrationLines(prepared.cleanLines || []).map(normalizeQuantityFields);
+  const pruned = pruneEmptyOfferDraftRows(formValue);
+  const originalLines = Array.isArray(pruned.lines) ? pruned.lines : [];
+  const ordinaryLines = originalLines.filter((line) => !isStoreSectionLine(line));
+  const prepared = prepareOfferFormForSaveCore({ ...pruned, lines: ordinaryLines });
+  const cleanOrdinaryLines = recalculateAdministrationLines(
+    prepared.cleanLines || []
+  ).map(normalizeQuantityFields);
   const cleanOptions = normalizeOptionsWithQuantity(prepared.cleanOptions || []);
-  const invalidLineAmount = cleanLines.find((line) => line.amount !== "" && !isValidOfferAmount(line.amount));
-  const invalidOptionAmount = cleanOptions.find((option) => option.amount !== "" && !isValidOfferAmount(option.amount));
-  const invalidLineQuantity = cleanLines.find((line) => line.quantity !== "" && !isValidOfferQuantity(line.quantity));
-  const invalidOptionQuantity = cleanOptions.find((option) => option.quantity !== "" && !isValidOfferQuantity(option.quantity));
+
+  const cleanOrdinaryById = new Map(
+    cleanOrdinaryLines
+      .filter((line) => line?.id)
+      .map((line) => [String(line.id), line])
+  );
+  const usedOrdinaryIds = new Set();
+  let fallbackOrdinaryIndex = 0;
+  const cleanLines = [];
+
+  originalLines.forEach((line) => {
+    if (isStoreSectionLine(line)) {
+      const section = normalizeStoreSectionLine(line);
+      if (section.description) cleanLines.push(section);
+      return;
+    }
+
+    const id = String(line?.id || "");
+    const byId = id ? cleanOrdinaryById.get(id) : null;
+    if (byId) {
+      cleanLines.push(byId);
+      usedOrdinaryIds.add(id);
+      return;
+    }
+
+    while (
+      fallbackOrdinaryIndex < cleanOrdinaryLines.length &&
+      usedOrdinaryIds.has(String(cleanOrdinaryLines[fallbackOrdinaryIndex]?.id || ""))
+    ) {
+      fallbackOrdinaryIndex += 1;
+    }
+    const fallback = cleanOrdinaryLines[fallbackOrdinaryIndex];
+    if (fallback && !fallback?.id) {
+      cleanLines.push(fallback);
+      fallbackOrdinaryIndex += 1;
+    }
+  });
+
+  cleanOrdinaryLines.forEach((line) => {
+    const id = String(line?.id || "");
+    if (id && !usedOrdinaryIds.has(id)) cleanLines.push(line);
+  });
+
+  const invalidLineAmount = cleanOrdinaryLines.find(
+    (line) => line.amount !== "" && !isValidOfferAmount(line.amount)
+  );
+  const invalidOptionAmount = cleanOptions.find(
+    (option) => option.amount !== "" && !isValidOfferAmount(option.amount)
+  );
+  const invalidLineQuantity = cleanOrdinaryLines.find(
+    (line) => line.quantity !== "" && !isValidOfferQuantity(line.quantity)
+  );
+  const invalidOptionQuantity = cleanOptions.find(
+    (option) => option.quantity !== "" && !isValidOfferQuantity(option.quantity)
+  );
 
   return {
     ...prepared,
     cleanLines,
     cleanOptions,
-    incompleteLine: prepared.incompleteLine || invalidLineAmount || invalidLineQuantity || null,
-    incompleteOption: prepared.incompleteOption || invalidOptionAmount || invalidOptionQuantity || null,
+    incompleteLine:
+      prepared.incompleteLine || invalidLineAmount || invalidLineQuantity || null,
+    incompleteOption:
+      prepared.incompleteOption || invalidOptionAmount || invalidOptionQuantity || null,
     invalidLineQuantity: invalidLineQuantity || null,
     invalidOptionQuantity: invalidOptionQuantity || null,
   };
@@ -180,7 +299,9 @@ export function mapPublicOfferToRequest(result) {
   const mapped = core.mapPublicOfferToRequest(result);
   if (!mapped) return null;
 
-  const publishedLines = Array.isArray(result?.version?.lines) ? result.version.lines : [];
+  const publishedLines = Array.isArray(result?.version?.lines)
+    ? result.version.lines
+    : [];
   const offerStatus = String(result?.offer?.status || "").trim().toLowerCase();
   const declined = offerStatus === "declined";
 
