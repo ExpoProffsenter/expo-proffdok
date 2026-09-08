@@ -238,7 +238,27 @@ Publiserte, aksepterte og avviste versjoner er immutable snapshots. Senere ERP-p
 
 Automatisk oppfølging fra FASE 37A2 beholdes uendret og er en egen låst oppfølgingsplan per publisert Butikktilbud-versjon.
 
-## 13. Systemadmin
+## 13. Avvisning og serverstyrt varsel
+
+Digital avvisning lagres først av `decline_sales_offer(...)` med eksakt publisert versjon i `declined_payload`. Deretter kan Edge Function:
+
+```text
+sales-offer-decline-notify
+```
+
+sende varsel til brukeren som publiserte akkurat den avviste tilbudsversjonen. Klienten kan ikke angi mottaker.
+
+Idempotens ligger i:
+
+```text
+public.sales_offer_decline_notifications
+```
+
+med unik nøkkel på `offer_id + offer_version_id + recipient_type`. Tabellen har RLS aktivert og ingen klientpolicyer; bare service-role bruker loggen.
+
+Åpning av en allerede avvist offentlig tilbudslenke kan forsøke varselet på nytt som recovery. Uniknøkkelen sørger for at samme versjon ikke gir flere e-poster. Varslingsfeil kan aldri reversere kundens allerede registrerte avvisning.
+
+## 14. Systemadmin
 
 Vareregistervedlikehold ligger i Systemadministrasjon.
 
@@ -252,7 +272,7 @@ Systemadministrator skal kunne:
 
 Vanlig Butikktilbud-editor skal ikke vise det store administrasjonspanelet for katalogimport.
 
-## 14. Viktige filer
+## 15. Viktige filer
 
 Klient/katalog:
 
@@ -263,6 +283,7 @@ src/modules/sales/components/SalesStoreOfferBuilderGrouped.jsx
 src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx
 src/modules/sales/services/salesStoreOfferAutosave.js
 src/modules/sales/services/salesStoreOffers.js
+src/modules/sales/services/salesSupabase.js
 src/modules/sales/utils/storeSectionLine.js
 ```
 
@@ -270,15 +291,19 @@ Presentasjon/historikk:
 
 ```text
 src/modules/sales/components/SalesDetailView.jsx
+src/modules/sales/components/SalesCustomerView.jsx
 src/modules/sales/components/SalesCustomerViewCore.jsx
 src/modules/sales/services/salesOfferPdf.js
 src/modules/sales/services/salesAcceptanceProofPdf.js
 ```
 
-QA:
+Server/QA:
 
 ```text
+supabase/functions/sales-offer-decline-notify/
+supabase/migrations/20260908165435_fase39b2_store_decline_notifications.sql
 scripts/critical-store-catalog-check.mjs
+scripts/critical-store-decline-check.mjs
 scripts/critical-sales-recovery-check.mjs
 ```
 
@@ -288,14 +313,15 @@ Supabase-migrasjoner i FASE 39B inkluderer blant annet:
 20260908105500_fase39b1_internal_store_catalog.sql
 20260908114500_fase39b2_single_copy_catalog_import.sql
 20260908115800_fase39b2_catalog_systemadmin_only.sql
+20260908165435_fase39b2_store_decline_notifications.sql
 ```
 
-## 15. Utsatt videreutvikling
+## 16. Utsatt videreutvikling
 
 Ikke del av ferdig 39B.2:
 
 - ekstern NOBB/Byggtjeneste-berikelse via GTIN
-- komplett Butikktilbud-mal med avsnitt/poster/opsjoner
+- komplett Butikktilbud-mal med avsnitt/poster/montering/opsjoner
 - ERP-vareliste/PDF etter aksept gruppert per leverandør
 - eventuell CSV/Excel-eksport av varebehov
 
