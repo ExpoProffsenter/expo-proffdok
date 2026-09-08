@@ -80,6 +80,7 @@ const groupedBuilder = fs.readFileSync(path.join(root, "src/modules/sales/compon
 const autosave = fs.readFileSync(path.join(root, "src/modules/sales/services/salesStoreOfferAutosave.js"), "utf8");
 const router = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesOfferBuilder.jsx"), "utf8");
 const textBlockCss = fs.readFileSync(path.join(root, "src/modules/sales/storeOfferTextBlocks.css"), "utf8");
+const quantityPresentation = fs.readFileSync(path.join(root, "src/modules/sales/utils/salesOfferQuantityPresentation.js"), "utf8");
 const salesModule = fs.readFileSync(path.join(root, "src/modules/sales/SalesModule.jsx"), "utf8");
 
 for (const needle of [
@@ -114,13 +115,39 @@ assert(wrapper.includes("title: description"), "katalogvare i opsjon skal fylle 
 assert(wrapper.lastIndexOf("<StoreCatalogAdminOnlyPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilderGrouped"), "prisadministrasjon skal ligge nederst etter selve Butikktilbud-byggeren.");
 
 for (const needle of [
-  'SECTION_LINE_TYPE = "store_text"', 'SECTION_MARKER = "#expo-store-text-block"',
-  "storeSectionId", "storeParentProductId", "composeLines", "Legg til avsnitt",
-  "Montering på denne varen", "Opsjon på denne varen", "Kun montering", "store-workbar",
-  'renderCatalogLookup?.({ kind: "line"', 'renderCatalogLookup?.({ kind: "option"',
-  "recalculateStoreOption", "storeInstallationMode", "storeInstallationUnitPriceInclVat",
-  "event.key === \"Enter\"",
+  'SECTION_LINE_TYPE = "store_text"',
+  'SECTION_MARKER = "#expo-store-text-block"',
+  "storeSectionId",
+  "storeParentProductId",
+  "composeLines",
+  "Legg til avsnitt",
+  "Avsnittsnavn",
+  "Montering på denne varen",
+  "Opsjon på denne varen",
+  "Kun montering",
+  "store-workbar",
+  "renderCatalogLookup?.(",
+  'kind: "line"',
+  'kind: "option"',
+  "recalculateStoreOption",
+  "storeInstallationMode",
+  "storeInstallationUnitPriceInclVat",
+  "handleProductPriceEnter",
+  "handleOptionPriceEnter",
+  "focusStoreProductTitle",
+  "focusStoreOptionTitle",
+  "normalizeLegacySection",
+  "hasStoreProductDraftContent",
+  "hasStoreOptionDraftContent",
+  'event.key !== "Enter"',
+  "window.scrollTo({ top: 0",
 ]) assert(groupedBuilder.includes(needle), `39B.2C grouped builder mangler: ${needle}`);
+
+assert(
+  quantityPresentation.includes("isStoreSectionLine") &&
+    quantityPresentation.includes('lineType === "store_text"'),
+  "Butikktilbud-avsnitt skal aldri få antall/enhetspris i kundevisning/PDF."
+);
 
 for (const needle of [
   "persistStoreOfferDraft", "upsertSalesRequests(client, [row])",
@@ -132,6 +159,7 @@ assert(wrapper.includes("850"), "Butikktilbud-autosave skal kjøre etter ordinæ
 
 assert(textBlockCss.includes('#expo-store-text-block'), "kundepresentasjonen skal kjenne igjen avsnitt.");
 assert(textBlockCss.includes(".sales-customer-line-price"), "avsnitt skal skjule pris i kundevisningen.");
+assert(textBlockCss.includes("border-left: 5px solid #16aeb9"), "avsnitt skal ha tydelig kundepresentasjon.");
 assert(salesModule.includes('import "./storeOfferTextBlocks.css"'), "avsnitt-presentasjon skal lastes i Sales.");
 assert(router.includes("SalesStoreOfferBuilderCatalog"), "Butikktilbud skal bruke katalog-wrapperen.");
 
