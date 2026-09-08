@@ -309,12 +309,16 @@ export default function SalesStoreOfferBuilderCatalog(props) {
   useEffect(() => {
     const root = editorRootRef.current;
     if (!root) return undefined;
-    const rewrite = () => rewriteEditorTerminology(root);
-    const observer = new MutationObserver(rewrite);
-    observer.observe(root, { childList: true, subtree: true, characterData: true });
-    rewrite();
-    return () => observer.disconnect();
-  }, [requestId]);
+
+    // Viktig: ingen MutationObserver her. Editorens React-render kan gjøre mange
+    // DOM-endringer samtidig. En observer som omskriver samme tre under mount kan
+    // ellers skape en kostbar feedback-loop og fryse nettleseren.
+    const frame = window.requestAnimationFrame(() => {
+      rewriteEditorTerminology(root);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  });
 
   useEffect(() => {
     const nextSignature = createStoreAutosaveSignature(repairedOfferForm || {});
