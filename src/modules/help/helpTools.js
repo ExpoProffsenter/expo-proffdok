@@ -1,4 +1,4 @@
-// FASE 39B.2 HJELP: Butikktilbud dokumenterer tilbudsposter/avsnitt, internt vareregister, katalogvalg, montering/opsjoner, autosave/recovery og låst historikk.
+// FASE 39B.2 HJELP: Butikktilbud dokumenterer tilbudsposter/avsnitt, internt vareregister, katalogvalg, montering/opsjoner, autosave/recovery, avvisningsvarsel og låst historikk.
 // FASE 37A2 HJELP: Butikktilbud har versjonslåst, valgfri automatisk oppfølging med brukerdefinert intervall og maks antall. Ordinære tilbud følges manuelt.
 // FASE 37D2 HJELP: Butikktilbud vises som eget hjelpetema og avsluttes ved aksept eller avvisning uten prosjektaktivering.
 // FASE 33B.5 HJELP: kontrakt/kundelenke vises direkte på saken, signert kontrakt arkiveres som PDF og følger prosjektet.
@@ -197,6 +197,7 @@ function createStoreOfferHelpItem() {
     "Bruk Forhåndsvis kundetilbud før publisering. Forhåndsvisningen er skrivebeskyttet og sender ingen e-post.",
     "Velg Bademiljø Expo eller Ringside Rørleggerbedrift som merkevare før publisering. Valgt logo, saksbehandler, vilkår og oppfølgingsplan låses med tilbudsversjonen.",
     "Publiser og send til kunde. Kunden kan lese tilbudet, åpne relevante lenker/vedlegg, velge opsjoner og akseptere eller avvise digitalt.",
+    "Når kunden avviser, varsles brukeren som publiserte den aktuelle tilbudsversjonen på e-post. Varslingen er serverstyrt og sendes bare én gang per versjon.",
     "Ved aksept eller avvisning avsluttes Butikktilbudet i Sales. Det opprettes ikke kontrakt eller ProffDok-prosjekt.",
   ]);
 
@@ -242,6 +243,7 @@ function createStoreOfferHelpItem() {
     "Butikktilbud er en egen arbeidsflyt og skal ikke brukes som inngang til våtromsprosjekt, kontrakt eller prosjektaktivering.",
     "Kontroller alltid kunde, avsnitt/poster, varevalg, montering, opsjoner, logo, betalingsbetingelser, gyldighet og oppfølgingsplan i forhåndsvisningen før tilbudet sendes.",
     "Automatiske påminnelser gjelder kun Butikktilbud og sendes aldri når tilbudet allerede er akseptert, avvist, utløpt, arkivert eller når en annen tilbudsversjon er blitt gjeldende.",
+    "En e-postfeil ved avvisningsvarsling endrer ikke kundens allerede registrerte avvisning.",
     "Tilgang til Butikktilbud følger brukerens tildelte modultilgang. Firmaadministrator kan bare delegere Butikktilbud når firmaadministratoren selv har denne tilgangen.",
   ]);
 
