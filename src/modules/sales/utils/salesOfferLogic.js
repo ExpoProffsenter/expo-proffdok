@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 37A2 / FASE 37D1 / FASE 31A2
+// Expo ProffDok – FASE 39B.2C / FASE 37A2 / FASE 37D1 / FASE 31A2
+// Tom lokal nettleserkladd får aldri overstyre et eksisterende, meningsfullt
+// servertilbud ved hydrering. Butikktilbud beholder ellers eksisterende recovery.
 // Butikktilbud beholder skjult, versjonslåst metadata i kundevisning.
 // FASE 37A2 mapper i tillegg publiseringstid og digital avvisning slik at kunde-
 // og internpresentasjon kan avslutte Butikktilbud uten prosjektaktivering.
@@ -59,6 +61,33 @@ function normalizeQuantityFields(item = {}) {
   };
 }
 
+function isOfferMetaLine(line = {}) {
+  return Boolean(
+    line?.__companyMeta || line?.__offerTermsMeta || line?.__storeOfferMeta
+  );
+}
+
+function meaningfulOfferRowCount(form = {}) {
+  const clean = pruneEmptyOfferDraftRows(form || {});
+  const lines = (Array.isArray(clean.lines) ? clean.lines : []).filter(
+    (line) => !isOfferMetaLine(line)
+  );
+  const options = Array.isArray(clean.options) ? clean.options : [];
+  return lines.length + options.length;
+}
+
+function hasMeaningfulLocalDraftText(form = {}) {
+  return [
+    form?.title,
+    form?.intro,
+    form?.reservations,
+    form?.included,
+    form?.excluded,
+    form?.customerSupplied,
+    form?.terms,
+  ].some((value) => String(value || "").trim());
+}
+
 export function recalculateAdministrationLines(lines = []) {
   const normalizedLines = core.normalizeOfferLines(lines).map(normalizeQuantityFields);
   const baseTotals = normalizedLines.reduce((totals, line) => {
@@ -92,7 +121,22 @@ export function buildOfferFormFromRequest(request) {
 }
 
 export function normalizeStoredOfferDraft(storedDraft, request) {
-  const form = core.normalizeStoredOfferDraft(storedDraft, request);
+  const requestForm = buildOfferFormFromRequest(request);
+  const serverRows = meaningfulOfferRowCount(requestForm);
+  const localRows = meaningfulOfferRowCount(storedDraft || {});
+  const localHasText = hasMeaningfulLocalDraftText(storedDraft || {});
+
+  // Recovery-first: dersom serveren allerede har reelt tilbudsinnhold, skal en
+  // strukturelt tom lokal kladd fra reload/remount aldri få nullstille editoren.
+  // En faktisk lokal kladd med poster/opsjoner eller egen tekst beholdes som før.
+  const preferServerDraft = Boolean(
+    storedDraft && serverRows > 0 && localRows === 0 && !localHasText
+  );
+
+  const form = preferServerDraft
+    ? requestForm
+    : core.normalizeStoredOfferDraft(storedDraft, request);
+
   return {
     ...form,
     lines: recalculateAdministrationLines(form.lines || []),
