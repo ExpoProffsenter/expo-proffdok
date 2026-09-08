@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 37D2 / FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX
+// Expo ProffDok – FASE 37D2 / FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX / FASE 39B.2C
 // Butikktilbud avsluttes ved aksept: prosjektsteg, kontrakt og prosjektaktivering
 // fjernes fra butikkflyten, mens ordinære tilbud beholder eksisterende flyt.
 // FASE 33B.5 viser kontraktsstatus, kundelenke og signert PDF direkte i kontraktkortet.
@@ -11,6 +11,7 @@
 // disse med ansvarlig. Gamle saker uten nye snapshot-felt får ingen kunstig creator.
 // Intern tilbudsvisning og låst akseptvisning følger samme hovedpostrekkefølge
 // som kundelink og dokumenter. Akseptdata, lagring og prosjektaktivering er uendret.
+// FASE 39B.2C viser Butikktilbud-avsnitt som prisnøytrale overskrifter uten linjenummer.
 
 import { Children, cloneElement, isValidElement, useEffect, useState } from "react";
 import SalesDetailViewCore from "./SalesDetailViewCore.jsx";
@@ -18,6 +19,10 @@ import SalesContractWizard from "./SalesContractWizard.jsx";
 import SalesContractActions from "./SalesContractActions.jsx";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
+import {
+  getStoreSectionTitle,
+  isStoreSectionLine,
+} from "../utils/salesOfferQuantityPresentation.js";
 import { createAcceptanceProofPdf } from "../services/salesAcceptancePdf.js";
 import { isStoreOfferRequest } from "../services/salesStoreOffers.js";
 import { rewriteAcceptedPresentation } from "./SalesAcceptedPresentation.jsx";
@@ -373,6 +378,7 @@ function rewriteInternalOfferPresentation(node, request) {
       request?.offerLines || [],
       request?.offerOptions || []
     );
+    const storeOffer = isStoreOfferRequest(request);
 
     return cloneElement(
       node,
@@ -385,7 +391,13 @@ function rewriteInternalOfferPresentation(node, request) {
       },
       groups.map((group, groupIndex) => {
         const groupNumber = String(groupIndex + 1).padStart(2, "0");
-        const groupBaseTotal = getOfferTotal(group.lines);
+        const pricedLines = group.lines.filter((line) => !isStoreSectionLine(line));
+        const groupBaseTotal = getOfferTotal(pricedLines);
+        const visibleGroupTitle =
+          storeOffer && String(group.title || "").trim().toLowerCase() === "varer"
+            ? "Leveranse"
+            : group.title;
+        let pricedLineIndex = 0;
 
         return (
           <section
@@ -441,7 +453,7 @@ function rewriteInternalOfferPresentation(node, request) {
                     color: "#0f172a",
                   }}
                 >
-                  {group.title}
+                  {visibleGroupTitle}
                 </strong>
               </div>
 
@@ -454,7 +466,9 @@ function rewriteInternalOfferPresentation(node, request) {
                     fontWeight: 800,
                   }}
                 >
-                  Sum hovedpost
+                  {storeOffer && String(group.title || "").trim().toLowerCase() === "varer"
+                    ? "Sum leveranse"
+                    : "Sum hovedpost"}
                 </span>
                 <strong style={{ display: "block", fontSize: 16 }}>
                   {formatNok(groupBaseTotal)}
@@ -465,25 +479,57 @@ function rewriteInternalOfferPresentation(node, request) {
 
             {group.lines.length ? (
               <div style={{ display: "grid", gap: 8, padding: "12px 16px" }}>
-                {group.lines.map((line, lineIndex) => (
-                  <div
-                    key={line.id || `${group.id}-${lineIndex}`}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "64px 1fr minmax(140px, auto)",
-                      gap: 10,
-                      alignItems: "start",
-                    }}
-                  >
-                    <strong style={{ color: "#0f7f87" }}>
-                      {groupNumber}.{lineIndex + 1}
-                    </strong>
-                    <span>{line.description || "Tilbudspost"}</span>
-                    <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                      {formatNok(getOfferTotal([line]))} eks. mva.
-                    </strong>
-                  </div>
-                ))}
+                {group.lines.map((line, lineIndex) => {
+                  if (isStoreSectionLine(line)) {
+                    const body = String(line?.storeTextBody || "").trim();
+                    return (
+                      <div
+                        key={line.id || `${group.id}-section-${lineIndex}`}
+                        style={{
+                          display: "grid",
+                          gap: body ? 4 : 0,
+                          margin: "6px 0 2px",
+                          padding: "14px 16px",
+                          border: "1px solid #c9e8ec",
+                          borderLeft: "5px solid #16aeb9",
+                          borderRadius: 12,
+                          background: "linear-gradient(135deg,#edf9fb 0%,#ffffff 100%)",
+                        }}
+                      >
+                        <strong style={{ color: "#10212b", fontSize: 18 }}>
+                          {getStoreSectionTitle(line)}
+                        </strong>
+                        {body ? (
+                          <span style={{ color: "#52616b", lineHeight: 1.45 }}>
+                            {body}
+                          </span>
+                        ) : null}
+                      </div>
+                    );
+                  }
+
+                  const displayIndex = pricedLineIndex + 1;
+                  pricedLineIndex += 1;
+                  return (
+                    <div
+                      key={line.id || `${group.id}-${lineIndex}`}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "64px 1fr minmax(140px, auto)",
+                        gap: 10,
+                        alignItems: "start",
+                      }}
+                    >
+                      <strong style={{ color: "#0f7f87" }}>
+                        {groupNumber}.{displayIndex}
+                      </strong>
+                      <span>{line.description || "Tilbudspost"}</span>
+                      <strong style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                        {formatNok(getOfferTotal([line]))} eks. mva.
+                      </strong>
+                    </div>
+                  );
+                })}
               </div>
             ) : null}
 
