@@ -66,10 +66,7 @@ for (const needle of [
   "get_pending_internal_store_catalog_import",
   "drop index if exists public.internal_store_catalog_items_active_idx",
 ]) assert(singleCopyMigration.includes(needle), `single-copy-import mangler: ${needle}`);
-assert(
-  !singleCopyMigration.includes("insert into public.internal_store_catalog_stage"),
-  "nye ERP-batcher skal ikke lage en full staging-kopi."
-);
+assert(!singleCopyMigration.includes("insert into public.internal_store_catalog_stage"), "nye ERP-batcher skal ikke lage en full staging-kopi.");
 
 const adminMigration = fs.readFileSync(path.join(root, "supabase/migrations/20260908115800_fase39b2_catalog_systemadmin_only.sql"), "utf8");
 assert(adminMigration.includes("current_profile_is_systemadmin()"), "kun systemadmin skal kunne administrere prisimport.");
@@ -79,7 +76,7 @@ const panel = fs.readFileSync(path.join(root, "src/modules/storeCatalog/StoreCat
 const offerTools = fs.readFileSync(path.join(root, "src/modules/storeCatalog/StoreCatalogOfferTools.jsx"), "utf8");
 const client = fs.readFileSync(path.join(root, "src/modules/storeCatalog/storeCatalogClient.js"), "utf8");
 const wrapper = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx"), "utf8");
-const builder = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesStoreOfferBuilder.jsx"), "utf8");
+const groupedBuilder = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesStoreOfferBuilderGrouped.jsx"), "utf8");
 const autosave = fs.readFileSync(path.join(root, "src/modules/sales/services/salesStoreOfferAutosave.js"), "utf8");
 const router = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesOfferBuilder.jsx"), "utf8");
 const textBlockCss = fs.readFileSync(path.join(root, "src/modules/sales/storeOfferTextBlocks.css"), "utf8");
@@ -103,25 +100,27 @@ for (const needle of [
   "canManageInternalStoreCatalog",
 ]) assert(offerTools.includes(needle), `inline varesøk/adminavgrensning mangler: ${needle}`);
 assert(!offerTools.includes("createPortal"), "varesøk skal ikke monteres via DOM-portaler.");
+for (const forbidden of ["findStoreSection", "setControlledValue", "addInstallationForProduct", "addOptionForProduct", "document.querySelector"]) {
+  assert(!offerTools.includes(forbidden), `39B.2C skal ikke bruke DOM-hurtigkobling: ${forbidden}`);
+}
 
 assert(wrapper.includes("customer_price_incl_vat"), "kundepris inkl. mva. skal kopieres til tilbudslinjen.");
 assert(wrapper.includes("customer_price_ex_vat"), "kundepris eks. mva. skal kopieres til Sales amount.");
 assert(!wrapper.includes("purchase_net_ex_vat"), "nettopris skal aldri kopieres til offerForm-wrapperen.");
 assert(wrapper.includes("storeCatalogItemId"), "tilbudslinjen skal beholde en ufarlig katalogreferanse.");
-assert(wrapper.includes('TEXT_BLOCK_LINE_TYPE = "store_text"'), "Butikktilbud skal støtte prisnøytrale tekstavsnitt.");
-assert(wrapper.includes('TEXT_BLOCK_MARKER = "#expo-store-text-block"'), "tekstavsnitt skal ha sikker presentasjonsmarkør.");
-assert(wrapper.includes("storeAfterLineId"), "tekstavsnitt skal kunne plasseres mellom varer.");
+assert(wrapper.includes("SalesStoreOfferBuilderGrouped"), "Butikktilbud skal bruke grouped builder i 39B.2C.");
 assert(wrapper.includes("renderCatalogLookup={renderCatalogLookup}"), "katalogsøk skal injiseres som vanlig React-innhold i byggeren.");
 assert(wrapper.includes("title: description"), "katalogvare i opsjon skal fylle opsjonsnavnet.");
+assert(wrapper.lastIndexOf("<StoreCatalogAdminOnlyPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilderGrouped"), "prisadministrasjon skal ligge nederst etter selve Butikktilbud-byggeren.");
+
 for (const needle of [
-  "StoreOfferProductEditingUx", "is-store-product-collapsed", "store-add-product-footer",
-  "scrollIntoView", ".store-inline-catalog-search input", "addedProductId",
-  "setActiveCard(collapsed ? card : null",
-]) assert(wrapper.includes(needle), `kompakt vareinnlegging mangler: ${needle}`);
-assert(
-  wrapper.lastIndexOf("<StoreCatalogAdminOnlyPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilder"),
-  "prisadministrasjon skal ligge nederst etter selve Butikktilbud-byggeren."
-);
+  'SECTION_LINE_TYPE = "store_text"', 'SECTION_MARKER = "#expo-store-text-block"',
+  "storeSectionId", "storeParentProductId", "composeLines", "Legg til avsnitt",
+  "Montering på denne varen", "Opsjon på denne varen", "Kun montering", "store-workbar",
+  'renderCatalogLookup?.({ kind: "line"', 'renderCatalogLookup?.({ kind: "option"',
+  "recalculateStoreOption", "storeInstallationMode", "storeInstallationUnitPriceInclVat",
+  "event.key === \"Enter\"",
+]) assert(groupedBuilder.includes(needle), `39B.2C grouped builder mangler: ${needle}`);
 
 for (const needle of [
   "persistStoreOfferDraft", "upsertSalesRequests(client, [row])",
@@ -131,13 +130,9 @@ assert(!autosave.includes("purchase_net_ex_vat"), "Butikktilbud-autosave skal al
 assert(wrapper.includes("persistStoreOfferDraft(props.selectedRequest, props.offerForm)"), "Butikktilbud-wrapperen skal lagre aktuell kladd separat.");
 assert(wrapper.includes("850"), "Butikktilbud-autosave skal kjøre etter ordinær 500 ms Sales-autosave.");
 
-assert(builder.includes('renderCatalogLookup?.({ kind: "line"'), "varesøk skal rendres nativt i varekortet.");
-assert(builder.includes('renderCatalogLookup?.({ kind: "option"'), "varesøk skal rendres nativt i opsjonskortet.");
-assert(builder.includes("recalculateStoreOption"), "katalogvalg i opsjon skal gå gjennom eksisterende opsjonsrekalkulering.");
-
-assert(textBlockCss.includes('#expo-store-text-block'), "kundepresentasjonen skal kjenne igjen tekstavsnitt.");
-assert(textBlockCss.includes(".sales-customer-line-price"), "tekstavsnitt skal skjule pris i kundevisningen.");
-assert(salesModule.includes('import "./storeOfferTextBlocks.css"'), "tekstblokk-presentasjon skal lastes i Sales.");
+assert(textBlockCss.includes('#expo-store-text-block'), "kundepresentasjonen skal kjenne igjen avsnitt.");
+assert(textBlockCss.includes(".sales-customer-line-price"), "avsnitt skal skjule pris i kundevisningen.");
+assert(salesModule.includes('import "./storeOfferTextBlocks.css"'), "avsnitt-presentasjon skal lastes i Sales.");
 assert(router.includes("SalesStoreOfferBuilderCatalog"), "Butikktilbud skal bruke katalog-wrapperen.");
 
 console.log("✅ Expo ProffDok internt vareregister check OK");
