@@ -11,6 +11,7 @@ import {
   canManageInternalStoreCatalog,
   cancelStoreCatalogImport,
   finalizeStoreCatalogImport,
+  getPendingStoreCatalogImport,
   getStoreCatalogAlternatives,
   searchStoreCatalog,
   uploadStoreCatalogBatch,
@@ -65,13 +66,50 @@ function CatalogItem({ item, onUse, onAlternatives, primary = false }) {
   );
 }
 
+function toPendingSummary(pending = {}) {
+  const acceptedRows = Number(pending.accepted_rows || 0);
+  return {
+    totalRows: Number(pending.total_rows || 0),
+    acceptedRows,
+    skippedZeroPriceRows: Number(pending.skipped_zero_price_rows || 0),
+    skippedMissingSkuRows: Number(pending.skipped_missing_sku_rows || 0),
+    malformedRows: Number(pending.malformed_rows || 0),
+    duplicateRows: Number(pending.duplicate_rows || 0),
+    uploadedRows: acceptedRows,
+  };
+}
+
 function ImportPanel({ client, onActivated }) {
   const [file, setFile] = useState(null);
+  const [sourceName, setSourceName] = useState("");
   const [busy, setBusy] = useState(false);
   const [importId, setImportId] = useState("");
+  const [importStatus, setImportStatus] = useState("");
   const [summary, setSummary] = useState(null);
   const [message, setMessage] = useState("");
   const abortRef = useRef(null);
+
+  useEffect(() => {
+    let active = true;
+    getPendingStoreCatalogImport(client)
+      .then((pending) => {
+        if (!active || !pending?.id) return;
+        setImportId(String(pending.id));
+        setImportStatus(String(pending.status || "loading"));
+        setSourceName(String(pending.source_filename || "ERP-import"));
+        setSummary(toPendingSummary(pending));
+        const prepared = Number(pending.prepared_rows || 0);
+        setMessage(
+          pending.status === "activating"
+            ? `Uferdig aktivering funnet. ${formatNumber(prepared)} varer er allerede klargjort. Trykk Fortsett aktivering.`
+            : "Uferdig import funnet. Filen er allerede lastet opp – du trenger ikke velge den på nytt."
+        );
+      })
+      .catch(() => {
+        // Manglende pending-import er ikke en feil for brukeren.
+      });
+    return () => { active = false; };
+  }, [client]);
 
   useEffect(() => {
     if (!busy) return undefined;
@@ -88,13 +126,17 @@ function ImportPanel({ client, onActivated }) {
     if (id) {
       try {
         await cancelStoreCatalogImport(client, id);
-      } catch {
-        // En avbrutt import påvirker aldri aktiv katalog. UI kan derfor nullstilles selv om opprydding feiler.
+      } catch (error) {
+        setMessage(error?.message || "Kunne ikke avbryte importen.");
+        return;
       }
     }
     setBusy(false);
     setImportId("");
+    setImportStatus("");
     setSummary(null);
+    setSourceName("");
+    setFile(null);
     setMessage("Importen er avbrutt. Aktivt vareregister er ikke endret.");
   }
 
@@ -113,6 +155,8 @@ function ImportPanel({ client, onActivated }) {
         sourceSizeBytes: file.size,
       });
       setImportId(nextImportId);
+      setImportStatus("loading");
+      setSourceName(file.name);
       const result = await streamStoreCatalogFile(file, {
         batchSize: STORE_CATALOG_DEFAULT_BATCH_SIZE,
         signal: controller.signal,
@@ -133,7 +177,9 @@ function ImportPanel({ client, onActivated }) {
         }
       }
       setImportId("");
+      setImportStatus("");
       setSummary(null);
+      setSourceName("");
       setMessage(
         error?.name === "AbortError"
           ? "Importen er avbrutt. Aktivt vareregister er ikke endret."
@@ -152,46 +198,59 @@ function ImportPanel({ client, onActivated }) {
       return;
     }
     const confirmed = window.confirm(
-      `Aktiver nytt vareregister med ${formatNumber(summary.acceptedRows)} gyldige varer?\n\n` +
+      `Aktiver nytt vareregister med ${formatNumber(summary.acceptedRows)} gyldige/unike varer?\n\n` +
         "Eksisterende publiserte og aksepterte tilbud endres ikke."
     );
     if (!confirmed) return;
 
     setBusy(true);
-    setMessage("Aktiverer nytt vareregister …");
+    setImportStatus("activating");
+    setMessage("Klargjør nytt vareregister …");
     try {
-      const result = await finalizeStoreCatalogImport(client, importId, summary);
+      const result = await finalizeStoreCatalogImport(
+        client,
+        importId,
+        summary,
+        ({ processedRows, totalRows }) => {
+          setMessage(`Aktiverer … ${formatNumber(processedRows)} av ${formatNumber(totalRows)} varer klargjort`);
+        }
+      );
       setMessage(`✓ Nytt vareregister er aktivert med ${formatNumber(result?.accepted_rows || summary.acceptedRows)} varer.`);
       setImportId("");
+      setImportStatus("");
       setSummary(null);
+      setSourceName("");
       setFile(null);
       onActivated?.();
     } catch (error) {
-      setMessage(`Kunne ikke aktivere vareregisteret: ${error?.message || "Ukjent feil"}`);
+      setMessage(`Aktiveringen stoppet: ${error?.message || "Ukjent feil"}. Trykk Fortsett aktivering for å fortsette fra siste ferdige batch.`);
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <details className="catalog-import">
+    <details className="catalog-import" open={Boolean(importId)}>
       <summary><RefreshCw size={16} /> Oppdater vareregister</summary>
       <div className="catalog-import-body">
         <p>
           Bruk Ringsides faste ERP-eksport (.txt). Filen leses som Windows-1252 med 18 semikolonseparerte felt.
           Varer med 0 i nettopris eller utsalgspris blir automatisk hoppet over.
         </p>
-        <input
-          type="file"
-          accept=".txt,text/plain"
-          disabled={busy || Boolean(importId)}
-          onChange={(event) => {
-            setFile(event.target.files?.[0] || null);
-            setMessage("");
-            setSummary(null);
-          }}
-        />
+        {!importId ? (
+          <input
+            type="file"
+            accept=".txt,text/plain"
+            disabled={busy}
+            onChange={(event) => {
+              setFile(event.target.files?.[0] || null);
+              setMessage("");
+              setSummary(null);
+            }}
+          />
+        ) : null}
         {file ? <small>{file.name} · {(file.size / 1024 / 1024).toFixed(1)} MB</small> : null}
+        {!file && sourceName ? <small>{sourceName} · allerede lastet opp</small> : null}
         <div className="catalog-import-actions">
           {!importId ? (
             <button type="button" className="catalog-primary" disabled={!file || busy} onClick={uploadFile}>
@@ -200,18 +259,20 @@ function ImportPanel({ client, onActivated }) {
           ) : (
             <>
               <button type="button" className="catalog-primary" disabled={busy || !summary} onClick={activateImport}>
-                Aktiver nytt vareregister
+                {busy ? "Aktiverer …" : importStatus === "activating" ? "Fortsett aktivering" : "Aktiver nytt vareregister"}
               </button>
-              <button type="button" className="catalog-secondary" disabled={busy} onClick={() => cancelCurrent()}>
-                Avbryt import
-              </button>
+              {importStatus !== "activating" ? (
+                <button type="button" className="catalog-secondary" disabled={busy} onClick={() => cancelCurrent()}>
+                  Avbryt import
+                </button>
+              ) : null}
             </>
           )}
         </div>
         {summary ? (
           <div className="catalog-summary">
             <span>Linjer <strong>{formatNumber(summary.totalRows)}</strong></span>
-            <span>Gyldige <strong>{formatNumber(summary.acceptedRows)}</strong></span>
+            <span>Gyldige/unike <strong>{formatNumber(summary.acceptedRows)}</strong></span>
             <span>0-pris hoppet over <strong>{formatNumber(summary.skippedZeroPriceRows)}</strong></span>
             <span>Mangler varenr. <strong>{formatNumber(summary.skippedMissingSkuRows)}</strong></span>
             <span>Strukturfeil <strong>{formatNumber(summary.malformedRows)}</strong></span>
