@@ -8,6 +8,7 @@
 // publisering, kundelenke, PDF, aksept eller e-postlogikk.
 
 import { useEffect, useState } from "react";
+import "./storeOfferTextBlocks.css";
 import SalesModuleCore from "./SalesModuleCore.jsx";
 import SalesContractCustomerView from "./components/SalesContractCustomerView.jsx";
 import {
