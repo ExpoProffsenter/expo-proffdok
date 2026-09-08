@@ -81,6 +81,9 @@ const autosave = fs.readFileSync(path.join(root, "src/modules/sales/services/sal
 const router = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesOfferBuilder.jsx"), "utf8");
 const textBlockCss = fs.readFileSync(path.join(root, "src/modules/sales/storeOfferTextBlocks.css"), "utf8");
 const quantityPresentation = fs.readFileSync(path.join(root, "src/modules/sales/utils/salesOfferQuantityPresentation.js"), "utf8");
+const salesDetailView = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesDetailView.jsx"), "utf8");
+const offerPdf = fs.readFileSync(path.join(root, "src/modules/sales/services/salesOfferPdfPolishedV2.js"), "utf8");
+const acceptancePdf = fs.readFileSync(path.join(root, "src/modules/sales/services/salesAcceptancePdfPolished.js"), "utf8");
 const salesModule = fs.readFileSync(path.join(root, "src/modules/sales/SalesModule.jsx"), "utf8");
 const systemAdminCatalogUx = fs.readFileSync(path.join(root, "src/modules/storeCatalog/systemAdminStoreCatalogUx.jsx"), "utf8");
 const customerTerminologyUx = fs.readFileSync(path.join(root, "src/modules/sales/storeOfferCustomerTerminologyUx.js"), "utf8");
@@ -162,11 +165,27 @@ for (const needle of [
   "window.scrollTo({ top: 0",
 ]) assert(groupedBuilder.includes(needle), `39B.2C grouped builder mangler: ${needle}`);
 
-assert(
-  quantityPresentation.includes("isStoreSectionLine") &&
-    quantityPresentation.includes('lineType === "store_text"'),
-  "Butikktilbud-avsnitt skal aldri få antall/enhetspris i kundevisning/PDF."
-);
+for (const needle of [
+  "export function isStoreSectionLine",
+  "export function getStoreSectionTitle",
+  'lineType === "store_text"',
+  'storeSectionMode === "group"',
+  'STORE_SECTION_MARKER',
+  'startsWith("store-section-")',
+]) assert(quantityPresentation.includes(needle), `robust Butikktilbud-avsnittsdeteksjon mangler: ${needle}`);
+
+for (const [source, label] of [
+  [salesDetailView, "intern tilbudsvisning"],
+  [offerPdf, "publisert tilbuds-PDF"],
+  [acceptancePdf, "akseptbevis-PDF"],
+]) {
+  for (const needle of ["isStoreSectionLine", "getStoreSectionTitle"]) {
+    assert(source.includes(needle), `${label} mangler felles avsnittspresentasjon: ${needle}`);
+  }
+}
+assert(salesDetailView.includes("pricedLineIndex"), "intern tilbudsvisning skal nummerere prisposter uten å telle avsnitt.");
+assert(offerPdf.includes("storeSectionRow") && offerPdf.includes("pricedIndex"), "tilbuds-PDF skal vise avsnitt uten pris/varenummer.");
+assert(acceptancePdf.includes("storeSectionRow") && acceptancePdf.includes("pricedLineIndex"), "akseptbevis skal vise avsnitt uten pris/varenummer.");
 
 for (const needle of [
   "persistStoreOfferDraft", "upsertSalesRequests(client, [row])",
