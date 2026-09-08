@@ -112,6 +112,10 @@ assert(wrapper.includes('TEXT_BLOCK_MARKER = "#expo-store-text-block"'), "teksta
 assert(wrapper.includes("storeAfterLineId"), "tekstavsnitt skal kunne plasseres mellom varer.");
 assert(wrapper.includes("renderCatalogLookup={renderCatalogLookup}"), "katalogsøk skal injiseres som vanlig React-innhold i byggeren.");
 assert(wrapper.includes("title: description"), "katalogvare i opsjon skal fylle opsjonsnavnet.");
+for (const needle of [
+  "StoreOfferProductEditingUx", "is-store-product-collapsed", "store-add-product-footer",
+  "scrollIntoView", ".store-inline-catalog-search input",
+]) assert(wrapper.includes(needle), `kompakt vareinnlegging mangler: ${needle}`);
 assert(
   wrapper.lastIndexOf("<StoreCatalogAdminOnlyPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilder"),
   "prisadministrasjon skal ligge nederst etter selve Butikktilbud-byggeren."
