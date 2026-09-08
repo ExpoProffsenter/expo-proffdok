@@ -1,20 +1,19 @@
-// Expo ProffDok – FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// Expo ProffDok – FASE 37A2 / FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// FASE 37A2 viser automatisk Butikktilbud-oppfølging som eget revisjonsspor.
+// Butikktilbud med aktiv automatisk plan havner ikke i manuell «Må følges opp»
+// mens serveren fortsatt skal purre. Aksepterte/avviste Butikktilbud avsluttes i
+// Sales og viser aldri prosjektaktivering. Ordinære tilbud beholder 7-dagersvisning.
 // FASE 37D1 skiller Butikktilbud og Våtromstilbud i samme Sales-oversikt uten
-// å lage parallell lagring. Eksisterende arbeidsstatus, søk og arkiv beholdes.
+// å lage parallell lagring. Eksisterende søk og arkiv beholdes.
 // FASE 37A1 legger søk, arbeidsfaner og trygg arkivering oppå eksisterende Sales-data.
 // Ingen tilbudsversjoner, aksepter eller prosjektaktivering omskrives. Arkiv bruker
 // eksisterende sales_requests.archived_at og kan alltid gjenopprettes.
-// FASE 30C2 viser ekte lastestatus mens salgssaker hentes, slik at 0 aldri presenteres
-// som et ferdig resultat mens Supabase fortsatt arbeider eller har feilet.
-// Viser når kundetilbud faktisk ble sendt på e-post og markerer tilbud som bør
-// følges opp etter 7 dager uten aksept. I Systemadmin-support kan eksisterende
-// saker åpnes, men nye forespørsler opprettes ikke uten ansvarlig i målbedriften.
-// Expo ProffDok – FASE 23H
-// Presentasjonskomponent for saksoversikten i Befaring / Tilbud / Aksept.
+// FASE 30C2 viser ekte lastestatus mens salgssaker hentes.
 
 import { useEffect, useMemo, useState } from "react";
 import {
   Archive,
+  CheckCircle2,
   ClipboardList,
   Home,
   Hourglass,
@@ -23,6 +22,7 @@ import {
   Ruler,
   Search,
   Send,
+  XCircle,
 } from "lucide-react";
 import SalesSupportNotice from "./SalesSupportNotice.jsx";
 import {
@@ -33,16 +33,22 @@ import {
   setSalesRequestArchivedAt,
   subscribeSalesRequestsLoadState,
 } from "../services/salesSupabase.js";
-import { isStoreOfferRequest } from "../services/salesStoreOffers.js";
+import {
+  getStoreFollowUpConfig,
+  isStoreOfferRequest,
+} from "../services/salesStoreOffers.js";
 
 const iconMap = {
   clipboard: ClipboardList,
   ruler: Ruler,
   send: Send,
   home: Home,
+  check: CheckCircle2,
+  declined: XCircle,
 };
 
 const OFFER_FOLLOW_UP_DAYS = 7;
+const DAY_MS = 24 * 60 * 60 * 1000;
 const OFFER_TYPE_TABS = [
   { id: "all", label: "Alle tilbud" },
   { id: "wetroom", label: "Våtromstilbud" },
@@ -52,42 +58,91 @@ const WORK_TABS = [
   { id: "work", label: "Under arbeid" },
   { id: "follow-up", label: "Må følges opp" },
   { id: "accepted", label: "Akseptert" },
+  { id: "declined", label: "Avvist" },
   { id: "archive", label: "Arkiv" },
   { id: "all", label: "Alle" },
 ];
+
+function formatShortDate(value) {
+  const date = new Date(String(value || ""));
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("nb-NO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+function validDateMs(value) {
+  const parsed = Date.parse(String(value || ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getStoreMeta(request = {}) {
+  if (request?.storeOfferMeta?.__storeOfferMeta) return request.storeOfferMeta;
+  return (Array.isArray(request?.offerLines) ? request.offerLines : []).find(
+    (line) => line?.__storeOfferMeta
+  ) || {};
+}
 
 function getOfferFollowUpInfo(request) {
   if (
     request?.status !== "Tilbud" ||
     request?.acceptedAt ||
+    request?.declinedAt ||
     !request?.offerEmailSentAt
   ) {
     return null;
   }
 
-  const sentAt = new Date(request.offerEmailSentAt);
+  const sentAtMs = validDateMs(request.offerEmailSentAt);
+  if (!sentAtMs) return null;
 
-  if (Number.isNaN(sentAt.getTime())) {
-    return null;
-  }
-
-  const ageInDays = Math.max(
-    0,
-    Math.floor((Date.now() - sentAt.getTime()) / (24 * 60 * 60 * 1000))
-  );
-  const sentDate = sentAt.toLocaleDateString("nb-NO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const ageInDays = Math.max(0, Math.floor((Date.now() - sentAtMs) / DAY_MS));
+  const sentDate = formatShortDate(request.offerEmailSentAt);
   const ageText =
     ageInDays === 0
       ? "i dag"
       : `${ageInDays} ${ageInDays === 1 ? "dag" : "dager"} siden`;
 
+  const currentVersionNumber = Number(
+    request?.offerEmailVersionNumber || request?.sentOfferVersionNumber || 0
+  ) || 0;
+  const autoVersionNumber = Number(request?.offerAutoFollowUpVersionNumber || 0) || 0;
+  const autoSentDate = formatShortDate(request?.offerAutoFollowUpSentAt);
+  const reminderNumber = Number(request?.offerAutoFollowUpReminderNumber || 0) || 0;
+  const automaticFollowUpSent = Boolean(
+    autoSentDate &&
+      currentVersionNumber > 0 &&
+      autoVersionNumber === currentVersionNumber &&
+      reminderNumber > 0
+  );
+
+  if (!isStoreOfferRequest(request)) {
+    return {
+      text: `Siste utsending ${sentDate} · ${ageText}`,
+      shouldFollowUp: ageInDays >= OFFER_FOLLOW_UP_DAYS,
+      automaticFollowUpSent: false,
+      automaticText: "",
+    };
+  }
+
+  const config = getStoreFollowUpConfig(getStoreMeta(request));
+  const automaticSequencePending =
+    config.enabled && reminderNumber < config.maxReminders;
+  const manualDueDays =
+    config.enabled && reminderNumber >= config.maxReminders
+      ? config.repeatDays
+      : OFFER_FOLLOW_UP_DAYS;
+
   return {
-    text: `Sendt ${sentDate} · ${ageText}`,
-    shouldFollowUp: ageInDays >= OFFER_FOLLOW_UP_DAYS,
+    text: `Siste kontakt ${sentDate} · ${ageText}`,
+    shouldFollowUp: !automaticSequencePending && ageInDays >= manualDueDays,
+    automaticFollowUpSent,
+    automaticText: automaticFollowUpSent
+      ? `Automatisk påminnelse ${reminderNumber} av ${config.maxReminders} sendt ${autoSentDate}`
+      : "",
+    automaticSequencePending,
   };
 }
 
@@ -132,6 +187,7 @@ function isArchivedRequest(request) {
 function requestBucket(request) {
   if (isArchivedRequest(request)) return "archive";
   if (request?.status === "Akseptert") return "accepted";
+  if (request?.status === "Avvist") return "declined";
 
   const followUp = getOfferFollowUpInfo(request);
   if (followUp?.shouldFollowUp) return "follow-up";
@@ -148,6 +204,19 @@ function filterRequestForType(request, activeOfferType) {
   if (activeOfferType === "all") return true;
   const storeOffer = isStoreOfferRequest(request);
   return activeOfferType === "store" ? storeOffer : !storeOffer;
+}
+
+function getDisplayedNextStep(request, { archived, storeOffer }) {
+  if (archived) return "Kan gjenopprettes";
+  if (storeOffer && request?.status === "Akseptert") return "Akseptert – avsluttet";
+  if (storeOffer && request?.status === "Avvist") return "Avvist – avsluttet";
+  return request?.nextStep || "Åpne saken";
+}
+
+function getDisplayedIcon(request, { storeOffer }) {
+  if (storeOffer && request?.status === "Akseptert") return CheckCircle2;
+  if (storeOffer && request?.status === "Avvist") return XCircle;
+  return iconMap[request?.iconName] || ClipboardList;
 }
 
 export default function SalesListView({
@@ -199,6 +268,7 @@ export default function SalesListView({
       work: 0,
       "follow-up": 0,
       accepted: 0,
+      declined: 0,
       archive: 0,
       all: typeScopedRequests.length,
     };
@@ -216,6 +286,7 @@ export default function SalesListView({
       { label: "Under arbeid", value: requestCounts.work },
       { label: "Må følges opp", value: requestCounts["follow-up"] },
       { label: "Akseptert", value: requestCounts.accepted },
+      { label: "Avvist", value: requestCounts.declined },
       { label: "Arkiv", value: requestCounts.archive },
     ],
     [requestCounts]
@@ -269,10 +340,7 @@ export default function SalesListView({
         archivedAt,
       });
 
-      if (error) {
-        throw error;
-      }
-
+      if (error) throw error;
       window.dispatchEvent(new Event("expo-proffdok-sales-rehydrate"));
     } catch (error) {
       alert(
@@ -288,16 +356,18 @@ export default function SalesListView({
   const emptyListText = searchQuery.trim()
     ? "Ingen saker matcher søket i denne fanen."
     : activeTab === "follow-up"
-      ? "Ingen tilbud må følges opp akkurat nå."
+      ? "Ingen tilbud må følges opp manuelt akkurat nå."
       : activeTab === "accepted"
-        ? "Ingen aksepterte tilbud venter på videre behandling."
-        : activeTab === "archive"
-          ? "Arkivet er tomt."
-          : activeTab === "all"
-            ? "Ingen salgssaker er registrert."
-            : supportMode
-              ? "Ingen saker under arbeid i dette firmaet."
-              : "Ingen saker under arbeid. Opprett en ny forespørsel for å starte en befaring eller et tilbud.";
+        ? "Ingen aksepterte tilbud i denne visningen."
+        : activeTab === "declined"
+          ? "Ingen avviste tilbud i denne visningen."
+          : activeTab === "archive"
+            ? "Arkivet er tomt."
+            : activeTab === "all"
+              ? "Ingen salgssaker er registrert."
+              : supportMode
+                ? "Ingen saker under arbeid i dette firmaet."
+                : "Ingen saker under arbeid. Opprett en ny forespørsel for å starte en befaring eller et tilbud.";
 
   const activeTypeLabel =
     OFFER_TYPE_TABS.find((tab) => tab.id === activeOfferType)?.label || "Alle tilbud";
@@ -374,10 +444,7 @@ export default function SalesListView({
               <div>
                 <div>Henter saker fra server …</div>
                 {longWait ? (
-                  <div
-                    className="sales-subtitle"
-                    style={{ marginTop: 4, fontWeight: 700 }}
-                  >
+                  <div className="sales-subtitle" style={{ marginTop: 4, fontWeight: 700 }}>
                     Dette tar lengre tid enn normalt. Vi venter fortsatt på serveren.
                   </div>
                 ) : null}
@@ -396,27 +463,9 @@ export default function SalesListView({
             ))}
           </section>
 
-          <section
-            className="sales-panel"
-            aria-label="Søk og filtrering"
-            style={{ marginBottom: 18 }}
-          >
-            <div
-              style={{
-                display: "flex",
-                gap: 12,
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              <label
-                style={{
-                  position: "relative",
-                  display: "block",
-                  flex: "1 1 340px",
-                  minWidth: 0,
-                }}
-              >
+          <section className="sales-panel" aria-label="Søk og filtrering" style={{ marginBottom: 18 }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <label style={{ position: "relative", display: "block", flex: "1 1 340px", minWidth: 0 }}>
                 <span className="sr-only">Søk i forespørsler, befaringer og tilbud</span>
                 <Search
                   size={18}
@@ -452,11 +501,7 @@ export default function SalesListView({
               <strong style={{ display: "block", marginBottom: 7, fontSize: 13 }}>
                 Tilbudstype
               </strong>
-              <div
-                role="tablist"
-                aria-label="Tilbudstype"
-                style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
-              >
+              <div role="tablist" aria-label="Tilbudstype" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {OFFER_TYPE_TABS.map((tab) => {
                   const selected = activeOfferType === tab.id;
                   return (
@@ -505,12 +550,7 @@ export default function SalesListView({
             <div
               role="tablist"
               aria-label="Arbeidsstatus"
-              style={{
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap",
-                marginTop: 14,
-              }}
+              style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}
             >
               {WORK_TABS.map((tab) => {
                 const selected = activeTab === tab.id;
@@ -587,9 +627,7 @@ export default function SalesListView({
                     Befaring/Tilbud på nytt når forbindelsen er stabil.
                   </div>
                   {loadState.error ? (
-                    <div style={{ marginTop: 6, fontSize: 13 }}>
-                      {loadState.error}
-                    </div>
+                    <div style={{ marginTop: 6, fontSize: 13 }}>{loadState.error}</div>
                   ) : null}
                 </div>
               ) : null}
@@ -599,21 +637,20 @@ export default function SalesListView({
               ) : null}
 
               {filteredRequests.map((request) => {
-                const Icon = iconMap[request.iconName] || ClipboardList;
                 const offerFollowUp = getOfferFollowUpInfo(request);
                 const archived = isArchivedRequest(request);
                 const archiveBusy = archiveBusyId === request.id;
                 const storeOffer = isStoreOfferRequest(request);
+                const Icon = getDisplayedIcon(request, { storeOffer });
+                const displayedNextStep = getDisplayedNextStep(request, {
+                  archived,
+                  storeOffer,
+                });
 
                 return (
                   <div
                     key={request.id}
-                    style={{
-                      display: "flex",
-                      gap: 10,
-                      alignItems: "stretch",
-                      flexWrap: "wrap",
-                    }}
+                    style={{ display: "flex", gap: 10, alignItems: "stretch", flexWrap: "wrap" }}
                   >
                     <button
                       className="sales-request-card"
@@ -641,9 +678,7 @@ export default function SalesListView({
                           </span>
                         </div>
                         <p className="sales-request-customer">
-                          {[request.customer, request.address, request.id]
-                            .filter(Boolean)
-                            .join(" · ")}
+                          {[request.customer, request.address, request.id].filter(Boolean).join(" · ")}
                         </p>
 
                         {offerFollowUp ? (
@@ -659,6 +694,26 @@ export default function SalesListView({
                             <span className="sales-subtitle" style={{ margin: 0 }}>
                               {offerFollowUp.text}
                             </span>
+
+                            {offerFollowUp.automaticFollowUpSent ? (
+                              <span
+                                aria-label="Automatisk tilbudspåminnelse sendt"
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  minHeight: 24,
+                                  padding: "3px 8px",
+                                  borderRadius: 999,
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  background: "#ecfdf5",
+                                  color: "#166534",
+                                  border: "1px solid #bbf7d0",
+                                }}
+                              >
+                                {offerFollowUp.automaticText}
+                              </span>
+                            ) : null}
 
                             {offerFollowUp.shouldFollowUp && !archived ? (
                               <span
@@ -685,11 +740,15 @@ export default function SalesListView({
 
                       <div className="sales-request-next">
                         <span className="sales-next-label">
-                          {archived ? "Arkivert" : "Neste steg"}
+                          {archived
+                            ? "Arkivert"
+                            : storeOffer && ["Akseptert", "Avvist"].includes(request.status)
+                              ? "Avsluttet"
+                              : "Neste steg"}
                         </span>
                         <span className="sales-next-step">
                           <Icon size={16} />
-                          {archived ? "Kan gjenopprettes" : request.nextStep}
+                          {displayedNextStep}
                         </span>
                       </div>
 
@@ -744,7 +803,6 @@ export default function SalesListView({
               <div className="sales-request-list">
                 {filteredActivatedRequests.map((request) => {
                   const Icon = iconMap[request.iconName] || ClipboardList;
-
                   return (
                     <button
                       className="sales-request-card"
@@ -755,9 +813,7 @@ export default function SalesListView({
                       <div className="sales-request-main">
                         <h3 className="sales-request-title">{request.title}</h3>
                         <p className="sales-request-customer">
-                          {[request.customer, request.address, request.id]
-                            .filter(Boolean)
-                            .join(" · ")}
+                          {[request.customer, request.address, request.id].filter(Boolean).join(" · ")}
                         </p>
                       </div>
 

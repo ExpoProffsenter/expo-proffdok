@@ -1,8 +1,8 @@
-// Expo ProffDok – FASE 37D2 / FASE 37D1
-// Avgrenser Butikktilbud til Ringside og holder lanserings-, merkevare- og
+// Expo ProffDok – FASE 37A2 / FASE 37D2 / FASE 37D1
+// Avgrenser Butikktilbud og holder lanserings-, merkevare-, oppfølgings- og
 // metadataregler samlet. Publisering, kundelenke, PDF, aksept og e-post gjenbrukes.
-// Butikktilbud kan også gjenkjennes fra versjonslåst metadata etter publisering,
-// slik at kundevisning og sperrer ikke er avhengig av mutable saksfelt.
+// Butikktilbud gjenkjennes fra versjonslåst metadata etter publisering, slik at
+// kundevisning, avslutning og oppfølging ikke avhenger av mutable saksfelt.
 
 export const RINGSIDE_STORE_OFFER_ORG_NUMBER = "915407692";
 export const STORE_OFFER_SOURCE = "Butikktilbud / varesalg";
@@ -10,6 +10,13 @@ export const STORE_OFFER_TITLE = "Butikktilbud";
 export const STORE_OFFER_SESSION_KEY = "expo-proffdok:sales:store-offer-launch";
 export const STORE_OFFER_META_ID = "__expo_store_offer_meta__";
 export const STORE_TEXT_TEMPLATE_KIND = "store-offer-text-v1";
+
+export const DEFAULT_STORE_FOLLOW_UP = {
+  enabled: true,
+  firstDays: 7,
+  repeatDays: 7,
+  maxReminders: 3,
+};
 
 export const STORE_OFFER_BRANDS = [
   {
@@ -38,6 +45,12 @@ function absoluteBrandLogoUrl(value = "") {
   } catch {
     return clean;
   }
+}
+
+function boundedInteger(value, fallback, min, max) {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
 }
 
 export function isRingsideStoreOfferProfile(profile = {}) {
@@ -103,11 +116,43 @@ export function getStoreOfferBrand(brandKey = "") {
   };
 }
 
+export function getStoreFollowUpConfig(meta = {}) {
+  const enabled = meta?.followUpEnabled !== false;
+  return {
+    enabled,
+    firstDays: boundedInteger(
+      meta?.followUpFirstDays,
+      DEFAULT_STORE_FOLLOW_UP.firstDays,
+      1,
+      90
+    ),
+    repeatDays: boundedInteger(
+      meta?.followUpRepeatDays,
+      DEFAULT_STORE_FOLLOW_UP.repeatDays,
+      1,
+      90
+    ),
+    maxReminders: boundedInteger(
+      meta?.followUpMaxReminders,
+      DEFAULT_STORE_FOLLOW_UP.maxReminders,
+      1,
+      10
+    ),
+  };
+}
+
 export function createStoreOfferMetaLine({
   brandKey = DEFAULT_STORE_OFFER_BRAND.key,
   signatureName = "",
+  followUp = DEFAULT_STORE_FOLLOW_UP,
 } = {}) {
   const brand = getStoreOfferBrand(brandKey);
+  const followUpConfig = getStoreFollowUpConfig({
+    followUpEnabled: followUp?.enabled,
+    followUpFirstDays: followUp?.firstDays,
+    followUpRepeatDays: followUp?.repeatDays,
+    followUpMaxReminders: followUp?.maxReminders,
+  });
 
   return {
     id: STORE_OFFER_META_ID,
@@ -128,5 +173,11 @@ export function createStoreOfferMetaLine({
     // Full URL låses sammen med tilbudsversjonen. Da fungerer logoen også i e-post.
     brandLogoUrl: brand.logoUrl,
     signatureName: String(signatureName || "").trim(),
+    // Oppfølgingsplanen låses sammen med tilbudsversjonen. Ny versjon kan velge
+    // en ny plan uten å omskrive tidligere publisert historikk.
+    followUpEnabled: followUpConfig.enabled,
+    followUpFirstDays: followUpConfig.firstDays,
+    followUpRepeatDays: followUpConfig.repeatDays,
+    followUpMaxReminders: followUpConfig.maxReminders,
   };
 }

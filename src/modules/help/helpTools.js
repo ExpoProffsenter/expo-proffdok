@@ -1,4 +1,5 @@
-// FASE 37D2 HJELP: Butikktilbud vises som eget hjelpetema og avsluttes ved aksept uten prosjektaktivering.
+// FASE 37A2 HJELP: Butikktilbud har versjonslåst, valgfri automatisk oppfølging med brukerdefinert intervall og maks antall. Ordinære tilbud følges manuelt.
+// FASE 37D2 HJELP: Butikktilbud vises som eget hjelpetema og avsluttes ved aksept eller avvisning uten prosjektaktivering.
 // FASE 33B.5 HJELP: kontrakt/kundelenke vises direkte på saken, signert kontrakt arkiveres som PDF og følger prosjektet.
 // FASE 33B.5: brukerflaten kaller samlet tilbud/kontrakt/endringer Avtalegrunnlag; intern `tilbud`-nøkkel beholdes.
 // FASE 33B.4 HJELP: bedriften signerer lagret Expo-kontrakt, kunden får sikker lenke og signerer samme låste grunnlag.
@@ -18,7 +19,7 @@ const SALES_HELP_TITLE = "🧾 Befaring/Tilbud";
 const STORE_HELP_TITLE = "🛍️ Butikktilbud";
 const NEWS_HELP_TITLE = "📢 Nytt i denne versjonen";
 const START_HELP_TITLE = "🚀 Startside / kom i gang";
-const HELP_UPDATED_LABEL = "Sist oppdatert: 07.09.2026";
+const HELP_UPDATED_LABEL = "Sist oppdatert: 08.09.2026";
 
 function textOf(node) {
   return String(node?.textContent || "").trim();
@@ -84,6 +85,14 @@ function createSales31CHelp() {
     "Akseptbeviset er låst dokumentasjon av tilbudsversjon, tidspunkt, kunde, sum og valgte opsjoner.",
   ]);
 
+  appendHelpSection(block, "Oppfølging av ordinære tilbud", [
+    "Første tilbudsmail sendes manuelt som før.",
+    "Ordinære Våtromstilbud får ikke automatisk e-postoppfølging i Fase 37A2. Automatisk oppfølgingsplan gjelder kun Butikktilbud.",
+    "Bruk Må følges opp og Følg opp tilbud for manuell oppfølging av ordinære tilbud.",
+    "Hvis tilbudet har upubliserte endringer, publiser riktig ny versjon før den sendes til kunden.",
+    "En manuell ny utsending regnes som ny kontakt og flytter tidspunktet for neste manuelle vurdering.",
+  ]);
+
   appendHelpSection(block, "Kontrakt etter aksept", [
     "Kontrakt er valgfritt for ordinære prosjekttilbud. Etter aksept kan du opprette Expo-kontrakt, laste opp bedriftens egen kontrakt eller fortsette til prosjekt uten kontrakt.",
     "Prosjekt kan også opprettes direkte uten tilbud. Et prosjekt uten tilbud og uten kontrakt er en gyldig normaltilstand; Avtalegrunnlag blir da bare stedet der eventuelle senere avtaledokumenter og endringer kan samles.",
@@ -133,10 +142,13 @@ function createStoreOfferHelpItem() {
   const item = document.createElement("div");
   item.className = "item";
   item.dataset.storeOfferHelp = "1";
+  item.style.borderColor = "#e2e8f0";
+  item.style.background = "#ffffff";
 
   const button = document.createElement("button");
   button.type = "button";
   button.className = "secondary";
+  button.setAttribute("aria-expanded", "false");
   button.style.width = "100%";
   button.style.justifyContent = "space-between";
   button.style.textAlign = "left";
@@ -147,29 +159,43 @@ function createStoreOfferHelpItem() {
   button.style.boxShadow = "none";
   button.style.fontSize = "16px";
 
+  const headerRow = document.createElement("span");
+  headerRow.style.display = "flex";
+  headerRow.style.alignItems = "center";
+  headerRow.style.justifyContent = "space-between";
+  headerRow.style.gap = "12px";
+  headerRow.style.width = "100%";
+
   const title = document.createElement("b");
   title.textContent = STORE_HELP_TITLE;
   const action = document.createElement("span");
   action.textContent = "Åpne";
-  button.append(title, action);
+  action.style.fontWeight = "900";
+  action.style.color = "#007f89";
+  headerRow.append(title, action);
+  button.appendChild(headerRow);
 
   const content = document.createElement("div");
   content.style.display = "none";
   content.style.marginTop = "14px";
 
   const purpose = document.createElement("p");
-  purpose.textContent = "Butikktilbud er den varebaserte tilbudsfunksjonen for butikk- og varesalg. Den er separat fra ordinær Befaring/Tilbud og avsluttes i Sales når kunden har akseptert.";
+  purpose.className = "note";
+  purpose.style.marginTop = "0";
+  purpose.textContent = "Butikktilbud er den varebaserte tilbudsfunksjonen for butikk- og varesalg. Den er separat fra ordinær Befaring/Tilbud og avsluttes i Sales når kunden har akseptert eller avvist.";
   content.appendChild(purpose);
 
   appendHelpSection(content, "Arbeidsflyt", [
-    "Opprett Nytt butikktilbud og registrer kunde, adresse og saksbehandler.",
+    "Opprett Nytt tilbud og velg Butikktilbud når brukeren har denne modultilgangen. Registrer kunde, adresse og saksbehandler.",
     "Legg inn varenavn, NOBB-nr. eller varenummer, antall, enhet, pris pr. enhet inkl. mva. og eventuell rabatt.",
     "Knytt bilde, produktlenke og PDF-vedlegg direkte til varen når dette er relevant. NOBB-nr. kan brukes som direkte produktlenke.",
     "Registrer montering separat. Ved alternativ vare kan du også angi en alternativ monteringspris.",
-    "Bruk Forhåndsvis kundetilbud før publisering. Forhåndsvisningen sender ingen e-post og kan ikke aksepteres.",
-    "Velg Bademiljø Expo eller Ringside Rørleggerbedrift som merkevare før publisering. Valgt logo og saksbehandler låses med tilbudsversjonen.",
-    "Publiser og send til kunde. Kunden kan lese tilbudet, åpne vedlegg og produktlenker, velge eventuelle alternativer og akseptere digitalt.",
-    "Ved aksept mottar både kunde og saksbehandler bekreftelse. Saken blir liggende som akseptert butikktilbud og oppretter ikke kontrakt eller ProffDok-prosjekt.",
+    "Velg betalingsbetingelser og gyldighet. Begge er obligatoriske før Butikktilbudet kan lagres/publiseres.",
+    "Velg om dette tilbudet skal ha automatisk oppfølging og eventuelt første påminnelse, gjentakelsesintervall og maks antall påminnelser.",
+    "Bruk Forhåndsvis kundetilbud før publisering. Forhåndsvisningen sender ingen e-post og kan ikke aksepteres eller avvises.",
+    "Velg Bademiljø Expo eller Ringside Rørleggerbedrift som merkevare før publisering. Valgt logo, saksbehandler, vilkår og oppfølgingsplan låses med tilbudsversjonen.",
+    "Publiser og send til kunde. Kunden kan lese tilbudet, åpne vedlegg og produktlenker, velge eventuelle alternativer og enten akseptere eller avvise digitalt.",
+    "Ved aksept eller avvisning avsluttes Butikktilbudet i Sales. Det opprettes ikke kontrakt eller ProffDok-prosjekt.",
   ]);
 
   appendHelpSection(content, "Alternativer og priser", [
@@ -179,22 +205,34 @@ function createStoreOfferHelpItem() {
     "Kunden ser totalsummer inkl. mva. og kan velge alternativet før aksept.",
   ]);
 
+  appendHelpSection(content, "Betaling, gyldighet og automatisk oppfølging", [
+    "Betalingsbetingelser og gyldighet er tvungne valg for nye Butikktilbud. Egendefinerte verdier kan brukes når standardvalgene ikke passer.",
+    "Automatisk oppfølging kan slås av eller på per Butikktilbud.",
+    "Når oppfølging er aktiv velger saksbehandler første påminnelse etter 1–90 dager, gjentakelse hver 1–90 dager og maks 1–10 automatiske påminnelser.",
+    "Oppfølgingsplanen låses til den publiserte tilbudsversjonen. En ny versjon får sin egen plan og sitt eget revisjonsspor.",
+    "Automatiske påminnelser stopper dersom kunden aksepterer, avviser eller tilbudet utløper, dersom saken arkiveres, mottaker endres eller en annen tilbudsversjon blir gjeldende.",
+    "Tilbud sendt før produksjonsaktivering får ingen retroaktiv automatisk e-post.",
+    "Hver utsending reserveres og logges med påminnelsesnummer slik at samme påminnelse ikke sendes dobbelt ved parallelle kjøringer.",
+  ]);
+
   appendHelpSection(content, "Maler og dokumentasjon", [
     "Lagre tekst og vilkår som mal når formuleringer skal gjenbrukes.",
     "En butikktilbudsmal lagrer ikke kunde, varer, NOBB-numre, priser, bilder eller vedlegg.",
-    "Publiserte og aksepterte tilbudsversjoner skal ikke overskrives. Ved endringer opprettes en ny tilbudsversjon.",
+    "Publiserte, aksepterte og avviste tilbudsversjoner skal ikke overskrives. Ved endringer opprettes en ny tilbudsversjon.",
   ]);
 
   appendHelpSection(content, "Viktig", [
     "Butikktilbud er en egen arbeidsflyt og skal ikke brukes som inngang til våtromsprosjekt, kontrakt eller prosjektaktivering.",
-    "Kontroller alltid kunde, vare, antall, rabatt, montering, alternativer, logo og vilkår i forhåndsvisningen før tilbudet sendes.",
-    "Tilgang til Butikktilbud skal senere følge brukerens tildelte modulrettigheter når den generelle tilgangsmodellen er innført.",
+    "Kontroller alltid kunde, vare, antall, rabatt, montering, alternativer, logo, betalingsbetingelser, gyldighet og oppfølgingsplan i forhåndsvisningen før tilbudet sendes.",
+    "Automatiske påminnelser gjelder kun Butikktilbud og sendes aldri når tilbudet allerede er akseptert, avvist, utløpt, arkivert eller når en annen tilbudsversjon er blitt gjeldende.",
+    "Tilgang til Butikktilbud følger brukerens tildelte modultilgang. Firmaadministrator kan bare delegere Butikktilbud når firmaadministratoren selv har denne tilgangen.",
   ]);
 
   button.addEventListener("click", () => {
     const open = content.style.display !== "none";
     content.style.display = open ? "none" : "block";
     action.textContent = open ? "Åpne" : "Lukk";
+    button.setAttribute("aria-expanded", open ? "false" : "true");
     item.style.borderColor = open ? "#e2e8f0" : "#08b9c3";
     item.style.background = open ? "#ffffff" : "#f8feff";
   });
@@ -236,9 +274,18 @@ function organizePermanentHelp({ closeStart = false } = {}) {
   });
 
   Array.from(document.querySelectorAll("li")).forEach((item) => {
-    if (textOf(item) === "Sjekk Nytt i denne versjonen når du lurer på hva som er endret.") {
+    const text = textOf(item);
+    if (text === "Sjekk Nytt i denne versjonen når du lurer på hva som er endret.") {
       item.textContent =
         "Nyheter om en appoppdatering vises i appen når det er relevant; Hjelp beskriver den gjeldende funksjonen.";
+    }
+    if (text === "Oppfølging av sendte tilbud er manuell. Expo ProffDok sender ikke automatisk purring til kunden.") {
+      item.textContent =
+        "Oppfølging av ordinære Våtromstilbud er manuell. Butikktilbud kan ha en egen versjonslåst automatisk oppfølgingsplan som velges av saksbehandler.";
+    }
+    if (text === "Åpne saken og bruk Følg opp tilbud for manuell oppfølging. Hvis tilbudet har upubliserte endringer, publiseres riktig ny versjon før den sendes til kunden.") {
+      item.textContent =
+        "For ordinære tilbud bruker du Følg opp tilbud manuelt. Hvis tilbudet har upubliserte endringer, publiseres riktig ny versjon før den sendes til kunden. Butikktilbud følger eventuell låst oppfølgingsplan på den publiserte versjonen.";
     }
   });
 

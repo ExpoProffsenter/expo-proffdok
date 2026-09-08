@@ -1,3 +1,5 @@
+// FASE 37A2 UX: Vis automatisk tilbudspåminnelse som eget revisjonsspor og
+// regn ny manuell oppfølging først etter 7 nye dager fra siste kontakt.
 // FASE 30C2 UX: En sak i Befaring skal alltid kunne gå direkte til tilbud uten befaringsnotat.
 // Denne alternative veien er eksplisitt merket slik at critical-build-check kan stoppe regresjoner.
 // FASE 30B UX: Gjør lagret befaringsgrunnlag og bilder tydelig før tilbud opprettes,
@@ -9,7 +11,6 @@
 // Expo ProffDok – FASE 28B2
 // Viser sendt-/oppfølgingsstatus inne på tilbudssaken og gjør eksisterende
 // manuelle e-postutsending til tydelig "Følg opp tilbud" etter 7 dager uten aksept.
-// Ingen SQL-, Supabase-, Storage- eller automatisk e-postendring.
 // Expo ProffDok – FASE 23L
 // Presentasjonskomponent for intern saksdetalj i Befaring / Tilbud / Aksept.
 // Ingen egen React-state, Supabase-kall, Storage-kall eller forretningslogikk.
@@ -41,6 +42,16 @@ import {
 
 const OFFER_FOLLOW_UP_DAYS = 7;
 
+function formatShortDate(value) {
+  const date = new Date(String(value || ""));
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("nb-NO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 function getOfferFollowUpInfo(request) {
   if (
     request?.status !== "Tilbud" ||
@@ -60,19 +71,27 @@ function getOfferFollowUpInfo(request) {
     0,
     Math.floor((Date.now() - sentAt.getTime()) / (24 * 60 * 60 * 1000))
   );
-  const sentDate = sentAt.toLocaleDateString("nb-NO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const sentDate = formatShortDate(sentAt);
   const ageText =
     ageInDays === 0
       ? "i dag"
       : `${ageInDays} ${ageInDays === 1 ? "dag" : "dager"} siden`;
+  const currentVersionNumber = Number(
+    request?.offerEmailVersionNumber || request?.sentOfferVersionNumber || 0
+  ) || 0;
+  const autoVersionNumber = Number(request?.offerAutoFollowUpVersionNumber || 0) || 0;
+  const autoSentDate = formatShortDate(request?.offerAutoFollowUpSentAt);
+  const automaticFollowUpSent = Boolean(
+    autoSentDate && currentVersionNumber > 0 && autoVersionNumber === currentVersionNumber
+  );
 
   return {
-    text: `Sendt ${sentDate} · ${ageText}`,
+    text: `Siste utsending ${sentDate} · ${ageText}`,
     shouldFollowUp: ageInDays >= OFFER_FOLLOW_UP_DAYS,
+    automaticFollowUpSent,
+    automaticText: automaticFollowUpSent
+      ? `Automatisk påminnelse sendt ${autoSentDate}`
+      : "",
   };
 }
 
@@ -1042,6 +1061,24 @@ export default function SalesDetailView({
                           <span style={{ fontWeight: 800 }}>
                             {offerFollowUp.text}
                           </span>
+                          {offerFollowUp.automaticFollowUpSent ? (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                minHeight: 24,
+                                padding: "3px 8px",
+                                borderRadius: 999,
+                                fontSize: 12,
+                                fontWeight: 800,
+                                background: "#ecfdf5",
+                                color: "#166534",
+                                border: "1px solid #bbf7d0",
+                              }}
+                            >
+                              {offerFollowUp.automaticText}
+                            </span>
+                          ) : null}
                           {offerFollowUp.shouldFollowUp &&
                           !hasUnpublishedOfferChanges ? (
                             <span
