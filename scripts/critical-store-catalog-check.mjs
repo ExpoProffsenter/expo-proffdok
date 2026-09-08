@@ -80,6 +80,7 @@ const offerTools = fs.readFileSync(path.join(root, "src/modules/storeCatalog/Sto
 const client = fs.readFileSync(path.join(root, "src/modules/storeCatalog/storeCatalogClient.js"), "utf8");
 const wrapper = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx"), "utf8");
 const builder = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesStoreOfferBuilder.jsx"), "utf8");
+const autosave = fs.readFileSync(path.join(root, "src/modules/sales/services/salesStoreOfferAutosave.js"), "utf8");
 const router = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesOfferBuilder.jsx"), "utf8");
 const textBlockCss = fs.readFileSync(path.join(root, "src/modules/sales/storeOfferTextBlocks.css"), "utf8");
 const salesModule = fs.readFileSync(path.join(root, "src/modules/sales/SalesModule.jsx"), "utf8");
@@ -114,12 +115,21 @@ assert(wrapper.includes("renderCatalogLookup={renderCatalogLookup}"), "katalogs�
 assert(wrapper.includes("title: description"), "katalogvare i opsjon skal fylle opsjonsnavnet.");
 for (const needle of [
   "StoreOfferProductEditingUx", "is-store-product-collapsed", "store-add-product-footer",
-  "scrollIntoView", ".store-inline-catalog-search input",
+  "scrollIntoView", ".store-inline-catalog-search input", "addedProductId",
+  "setActiveCard(collapsed ? card : null",
 ]) assert(wrapper.includes(needle), `kompakt vareinnlegging mangler: ${needle}`);
 assert(
   wrapper.lastIndexOf("<StoreCatalogAdminOnlyPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilder"),
   "prisadministrasjon skal ligge nederst etter selve Butikktilbud-byggeren."
 );
+
+for (const needle of [
+  "persistStoreOfferDraft", "upsertSalesRequests(client, [row])",
+  "stripTransientPhotoData(request)", "resolveSalesCompanyScope(client)",
+]) assert(autosave.includes(needle), `Butikktilbud-autosave mangler: ${needle}`);
+assert(!autosave.includes("purchase_net_ex_vat"), "Butikktilbud-autosave skal aldri kjenne katalogens nettopris.");
+assert(wrapper.includes("persistStoreOfferDraft(props.selectedRequest, props.offerForm)"), "Butikktilbud-wrapperen skal lagre aktuell kladd separat.");
+assert(wrapper.includes("850"), "Butikktilbud-autosave skal kjøre etter ordinær 500 ms Sales-autosave.");
 
 assert(builder.includes('renderCatalogLookup?.({ kind: "line"'), "varesøk skal rendres nativt i varekortet.");
 assert(builder.includes('renderCatalogLookup?.({ kind: "option"'), "varesøk skal rendres nativt i opsjonskortet.");
