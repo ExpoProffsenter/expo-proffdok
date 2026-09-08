@@ -1,5 +1,5 @@
 // Expo ProffDok – FASE 39B.2
-// Butikkbrukeren søker katalogen direkte i hver varelinje.
+// Butikkbrukeren søker katalogen direkte i hver varelinje og vareopsjon.
 // Prisadministrasjon nederst er kun synlig for systemadministrator.
 
 import { useEffect, useState } from "react";
@@ -35,19 +35,23 @@ function isProductLine(line = {}) {
   );
 }
 
-function findProductCardTargets() {
+function isCatalogOption(option = {}) {
+  return option?.mainPostId === PRODUCT_POST_ID;
+}
+
+function findSectionCardTargets(sectionTitle) {
   if (typeof document === "undefined") return [];
   const sections = Array.from(
     document.querySelectorAll(".store-offer-builder-app .store-builder-section")
   );
-  const productSection = sections.find((section) => {
-    const heading = section.querySelector(":scope > .store-section-head h2");
-    return String(heading?.textContent || "").trim() === "Varer";
+  const section = sections.find((candidate) => {
+    const heading = candidate.querySelector(":scope > .store-section-head h2");
+    return String(heading?.textContent || "").trim() === sectionTitle;
   });
-  if (!productSection) return [];
+  if (!section) return [];
 
   return Array.from(
-    productSection.querySelectorAll(":scope > .store-item-list > .store-item-card")
+    section.querySelectorAll(":scope > .store-item-list > .store-item-card")
   )
     .map((card) => card.querySelector(":scope > .store-item-heading"))
     .filter(Boolean);
@@ -79,7 +83,7 @@ function InlineCatalogResult({ item, onUse, onAlternatives }) {
   );
 }
 
-function InlineCatalogLookup({ onUse }) {
+function InlineCatalogLookup({ onUse, placeholder = "Søk vareregister: varenavn, varenummer eller GTIN/EAN" }) {
   const [client] = useState(() => createDefaultSalesSupabaseClient());
   const [access, setAccess] = useState(false);
   const [query, setQuery] = useState("");
@@ -161,7 +165,7 @@ function InlineCatalogLookup({ onUse }) {
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Søk vareregister: varenavn, varenummer eller GTIN/EAN"
+          placeholder={placeholder}
           autoComplete="off"
         />
       </div>
@@ -201,6 +205,24 @@ function InlineCatalogLookup({ onUse }) {
   );
 }
 
+function InlinePortals({ items = [], targets = [], prefix, placeholder, onUseItem }) {
+  return items.map((item, index) => {
+    const target = targets[index];
+    if (!target) return null;
+    const key = `${prefix}-${item.id}`;
+    return createPortal(
+      <div className="store-inline-catalog-slot" key={key}>
+        <InlineCatalogLookup
+          placeholder={placeholder}
+          onUse={(catalogItem) => onUseItem?.(item.id, catalogItem)}
+        />
+      </div>,
+      target,
+      key
+    );
+  });
+}
+
 export function StoreCatalogInlinePortals({ lines = [], onUseItem }) {
   const productLines = lines.filter(isProductLine);
   const [targets, setTargets] = useState([]);
@@ -212,7 +234,7 @@ export function StoreCatalogInlinePortals({ lines = [], onUseItem }) {
 
     const locate = () => {
       if (cancelled) return;
-      const nextTargets = findProductCardTargets();
+      const nextTargets = findSectionCardTargets("Varer");
       setTargets(nextTargets);
       attempts += 1;
       if (nextTargets.length < productLines.length && attempts < 8) {
@@ -227,17 +249,54 @@ export function StoreCatalogInlinePortals({ lines = [], onUseItem }) {
     };
   }, [productLines.length, lines]);
 
-  return productLines.map((line, index) => {
-    const target = targets[index];
-    if (!target) return null;
-    return createPortal(
-      <div className="store-inline-catalog-slot" key={`catalog-${line.id}`}>
-        <InlineCatalogLookup onUse={(item) => onUseItem?.(line.id, item)} />
-      </div>,
-      target,
-      `catalog-${line.id}`
-    );
-  });
+  return (
+    <InlinePortals
+      items={productLines}
+      targets={targets}
+      prefix="catalog-line"
+      onUseItem={onUseItem}
+    />
+  );
+}
+
+export function StoreCatalogOptionInlinePortals({ options = [], onUseItem }) {
+  const catalogOptions = options.filter(isCatalogOption);
+  const [targets, setTargets] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let frame = 0;
+    let attempts = 0;
+
+    const locate = () => {
+      if (cancelled) return;
+      const allTargets = findSectionCardTargets("Opsjoner");
+      const visibleTargets = options
+        .map((option, index) => (isCatalogOption(option) ? allTargets[index] : null))
+        .filter(Boolean);
+      setTargets(visibleTargets);
+      attempts += 1;
+      if (visibleTargets.length < catalogOptions.length && attempts < 8) {
+        frame = window.requestAnimationFrame(locate);
+      }
+    };
+
+    frame = window.requestAnimationFrame(locate);
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(frame);
+    };
+  }, [catalogOptions.length, options]);
+
+  return (
+    <InlinePortals
+      items={catalogOptions}
+      targets={targets}
+      prefix="catalog-option"
+      placeholder="Søk vare til opsjonen: varenavn, varenummer eller GTIN/EAN"
+      onUseItem={onUseItem}
+    />
+  );
 }
 
 export function StoreCatalogAdminOnlyPanel({ onSelectItem }) {
