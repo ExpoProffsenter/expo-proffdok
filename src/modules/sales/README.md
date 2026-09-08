@@ -81,6 +81,7 @@ Butikktilbud er egnet for butikk, service, vareleveranser, varmepumpe, elektrike
 - Brukerflaten heter **Avtalegrunnlag**, mens intern prosjekt-/tabnøkkel `tilbud` / `data.tilbud` beholdes.
 - Butikktilbud skal aldri aktivere prosjekt.
 - Intern ERP-nettopris skal aldri inn i kundedata, publisert tilbud, PDF eller akseptbevis.
+- E-postvarsling etter aksept/avvisning er et sekundært sideutfall og må aldri kunne reversere kundens allerede lagrede beslutning.
 
 ## 5. Butikktilbud – tilbudsposter og avsnitt
 
@@ -235,13 +236,39 @@ sales-offer-acceptance-notify
 
 Funksjonen mottar offentlig tilbudstoken og bestemmer mottakerne server-side. Idempotens ligger i `sales_offer_acceptance_notifications` med unik nøkkel på `offer_id + offer_version_id + recipient_type`.
 
-## 13. Kontrakt etter ordinær aksept
+## 13. Fase 39B.2 – e-post ved avvist Butikktilbud
+
+Digital avvisning lagres først gjennom `decline_sales_offer(...)`. Etter vellykket lagring kalles Edge Function:
+
+```text
+sales-offer-decline-notify
+```
+
+Funksjonen mottar kun offentlig tilbudstoken og henter avvisningen og eksakt publisert tilbudsversjon server-side. Mottakeren kan ikke velges av klienten: varselet går til brukeren i `sales_offer_versions.published_by` for versjonen kunden faktisk avviste.
+
+Idempotens ligger i:
+
+```text
+public.sales_offer_decline_notifications
+```
+
+med unik nøkkel på:
+
+```text
+offer_id + offer_version_id + recipient_type
+```
+
+Tabellen har RLS aktivert og ingen klientpolicyer; den brukes som intern service-role-logg. `getSalesOfferByToken(...)` kan forsøke samme varslingsendepunkt på nytt som recovery når en allerede avvist kundelenke åpnes. Uniknøkkelen avgjør om e-post faktisk skal sendes.
+
+En e-postfeil endrer aldri den allerede registrerte avvisningen. Automatisk Butikktilbud-oppfølging stopper på avvist status uavhengig av om varslingsmailen lykkes.
+
+## 14. Kontrakt etter ordinær aksept
 
 Etter ordinær aksept kan saken fortsette med Expo-kontrakt, bedriftens egen kontrakt eller ingen kontrakt.
 
 Expo-kontrakten er låst historikk knyttet til eksakt akseptert tilbudsversjon. Bedriften signerer først, kunden deretter via sikker tokenlenke. Når begge har signert opprettes privat slutt-PDF med kontrakt, tilbud, aksept og signatursporbarhet.
 
-## 14. Avtalegrunnlag og garanti
+## 15. Avtalegrunnlag og garanti
 
 Synlig prosjektfane heter **Avtalegrunnlag**. Intern nøkkel er fortsatt `tilbud`.
 
@@ -249,7 +276,7 @@ Avtalegrunnlag kan inneholde akseptbevis, signert Expo-kontrakt, bedriftens egen
 
 Ved dokumentert tetthetsgaranti kreves signert kontrakt i Avtalegrunnlag sammen med øvrige garanti-/Sopro-/overtagelseskrav.
 
-## 15. Viktige filer i Sales 39B.2
+## 16. Viktige filer i Sales 39B.2
 
 ```text
 src/modules/sales/SalesModuleCore.jsx
@@ -257,10 +284,12 @@ src/modules/sales/components/SalesOfferBuilder.jsx
 src/modules/sales/components/SalesStoreOfferBuilderGrouped.jsx
 src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx
 src/modules/sales/components/SalesCustomerViewCore.jsx
+src/modules/sales/components/SalesCustomerView.jsx
 src/modules/sales/components/SalesDetailView.jsx
 src/modules/sales/services/salesStoreOfferAutosave.js
 src/modules/sales/services/salesStoreOfferTemplates.js
 src/modules/sales/services/salesStoreOffers.js
+src/modules/sales/services/salesSupabase.js
 src/modules/sales/services/salesOfferPdf.js
 src/modules/sales/services/salesAcceptanceProofPdf.js
 src/modules/sales/services/salesLocalStorage.js
@@ -268,32 +297,35 @@ src/modules/sales/utils/salesOfferLogic.js
 src/modules/sales/utils/salesOfferLogicCore.js
 src/modules/sales/utils/storeSectionLine.js
 src/modules/storeCatalog/
+supabase/functions/sales-offer-decline-notify/
+supabase/migrations/20260908165435_fase39b2_store_decline_notifications.sql
 ```
 
-## 16. Recovery og QA før merge
+## 17. Recovery og QA før merge
 
 Ved Sales-/Butikktilbud-endringer skal minst følgende verifiseres:
 
 - `critical-build-check.mjs`
 - `critical-sales-recovery-check.mjs`
 - `critical-store-catalog-check.mjs` når katalog/Butikktilbud påvirkes
+- `critical-store-decline-check.mjs` når digital avvisning/varsling påvirkes
 - Vite build
 - Vercel Preview/runtime
 - vanlig Befaring/Tilbud-liste og ordinær Sales-sak
 - Butikktilbud redigering, Enter, autosave og Tilbake
 - avsnitt i internvisning, kundelenke og PDF
 - katalogsøk og tilgang
-- offentlig tilbud/aksept ved relevant endring
+- offentlig tilbud/aksept/avvisning ved relevant endring
 - e-post-/Edge-status ved kommunikasjonsendringer
-- at immutable tilbud/aksept ikke endres
+- at immutable tilbud/aksept/avvisning ikke endres
 - HJELP samme runde ved brukerrettet flyt
 - arkitektur samme runde ved datamodell/RLS/RPC/modulendring
 
-## 17. Utsatt Butikktilbud-videreutvikling
+## 18. Utsatt Butikktilbud-videreutvikling
 
 Ikke del av ferdig 39B.2:
 
-- komplett mal som lagrer avsnitt, poster og opsjoner
+- komplett mal som lagrer avsnitt, poster, montering og opsjoner
 - NOBB/Byggtjeneste-berikelse via GTIN
 - ERP-vareliste/PDF etter aksept gruppert på leverandør
 - CSV/Excel-eksport av varebehov
