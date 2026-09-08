@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const DEFAULT_APP_ORIGIN = "https://expo-proffdok.app";
-const MAX_ATTEMPTS = 3;
+const MAX_DELIVERY_ATTEMPTS = 3;
 
 class HttpError extends Error {
   status: number;
@@ -32,15 +32,17 @@ function findCompanySnapshot(lines: any[] = []) {
   ) || null;
 }
 
+function boundedInteger(value: unknown, fallback: number, min: number, max: number) {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
 function resolveAssetUrl(value: unknown) {
   const asset = String(value || "").trim();
   if (!asset) return "";
   if (/^https?:\/\//i.test(asset)) return asset;
-  try {
-    return new URL(asset, DEFAULT_APP_ORIGIN).href;
-  } catch {
-    return asset;
-  }
+  try { return new URL(asset, DEFAULT_APP_ORIGIN).href; } catch { return asset; }
 }
 
 function formatDate(value: unknown) {
@@ -61,7 +63,6 @@ function sameInstant(left: unknown, right: unknown) {
 }
 
 function emailHtml({
-  storeOffer,
   companyName,
   logoUrl,
   requestRef,
@@ -71,45 +72,25 @@ function emailHtml({
   responsibleName,
   originalSentAt,
   customerUrl,
+  reminderNumber,
+  maxReminders,
 }: any) {
   const safeLogo = resolveAssetUrl(logoUrl);
-  const title = storeOffer ? "En liten påminnelse om butikktilbudet" : "En liten påminnelse om tilbudet";
-  const intro = storeOffer
-    ? "Vi minner om butikktilbudet du mottok for en uke siden. Tilbudet er fortsatt tilgjengelig via knappen nedenfor. Har du spørsmål, er du velkommen til å ta kontakt."
-    : "Vi minner om tilbudet du mottok for en uke siden. Tilbudet er fortsatt tilgjengelig via knappen nedenfor. Har du spørsmål, er du velkommen til å ta kontakt.";
+  const title = "En liten påminnelse om butikktilbudet";
+  const intro = "Vi minner om butikktilbudet du har mottatt. Tilbudet er fortsatt tilgjengelig via knappen nedenfor. Du kan akseptere eller avvise tilbudet digitalt. Har du spørsmål, er du velkommen til å ta kontakt.";
+  const reminderText = `Automatisk påminnelse ${reminderNumber} av ${maxReminders} via Expo ProffDok.`;
 
-  return `<!doctype html><html><body style="margin:0;background:#eef3f5;font-family:Arial,Helvetica,sans-serif;color:#172126">
-  <div style="max-width:720px;margin:0 auto;padding:24px 12px">
-    <div style="background:#fff;border:1px solid #d7e0e3;border-radius:18px;overflow:hidden">
-      <div style="padding:24px 28px;background:#20292d;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:20px">
-        <div><div style="font-size:26px;font-weight:900;color:#13c4cb">EXPO</div><div style="font-size:30px;font-weight:900">ProffDok</div></div>
-        ${safeLogo ? `<img src="${escapeHtml(safeLogo)}" alt="${escapeHtml(companyName)}" style="max-width:160px;max-height:66px;background:#fff;padding:5px;border-radius:6px">` : ""}
-      </div>
-      <div style="padding:30px 28px">
-        <h1 style="margin:0 0 10px;font-size:24px">${escapeHtml(title)}</h1>
-        <p style="margin:0 0 24px;line-height:1.65;color:#435158">${escapeHtml(intro)}</p>
-        <div style="background:#f5f8f9;border:1px solid #dbe4e7;border-radius:14px;padding:18px;line-height:1.7">
-          <div><strong>Tilbud:</strong> ${escapeHtml(requestRef)}${offerTitle ? ` – ${escapeHtml(offerTitle)}` : ""}</div>
-          <div><strong>Kunde:</strong> ${escapeHtml(customerName)}</div>
-          ${customerAddress ? `<div><strong>Adresse:</strong> ${escapeHtml(customerAddress)}</div>` : ""}
-          ${responsibleName ? `<div><strong>${storeOffer ? "Saksbehandler" : "Prosjektansvarlig"}:</strong> ${escapeHtml(responsibleName)}</div>` : ""}
-          ${originalSentAt ? `<div><strong>Opprinnelig sendt:</strong> ${escapeHtml(formatDate(originalSentAt))}</div>` : ""}
-        </div>
-        <a href="${escapeHtml(customerUrl)}" style="display:inline-block;margin-top:24px;background:#087f88;color:#fff;text-decoration:none;font-weight:800;padding:13px 20px;border-radius:10px">Åpne tilbudet</a>
-        <p style="margin:28px 0 0;color:#66767d;font-size:13px;line-height:1.5">Med vennlig hilsen<br><strong>${escapeHtml(companyName)}</strong></p>
-        <p style="margin:16px 0 0;color:#88979d;font-size:12px;line-height:1.5">Denne påminnelsen er sendt automatisk én gang via Expo ProffDok.</p>
-      </div>
-    </div>
-  </div></body></html>`;
+  return `<!doctype html><html><body style="margin:0;background:#eef3f5;font-family:Arial,Helvetica,sans-serif;color:#172126"><div style="max-width:720px;margin:0 auto;padding:24px 12px"><div style="background:#fff;border:1px solid #d7e0e3;border-radius:18px;overflow:hidden"><div style="padding:24px 28px;background:#20292d;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:20px"><div><div style="font-size:26px;font-weight:900;color:#13c4cb">EXPO</div><div style="font-size:30px;font-weight:900">ProffDok</div></div>${safeLogo ? `<img src="${escapeHtml(safeLogo)}" alt="${escapeHtml(companyName)}" style="max-width:160px;max-height:66px;background:#fff;padding:5px;border-radius:6px">` : ""}</div><div style="padding:30px 28px"><h1 style="margin:0 0 10px;font-size:24px">${escapeHtml(title)}</h1><p style="margin:0 0 24px;line-height:1.65;color:#435158">${escapeHtml(intro)}</p><div style="background:#f5f8f9;border:1px solid #dbe4e7;border-radius:14px;padding:18px;line-height:1.7"><div><strong>Tilbud:</strong> ${escapeHtml(requestRef)}${offerTitle ? ` – ${escapeHtml(offerTitle)}` : ""}</div><div><strong>Kunde:</strong> ${escapeHtml(customerName)}</div>${customerAddress ? `<div><strong>Adresse:</strong> ${escapeHtml(customerAddress)}</div>` : ""}${responsibleName ? `<div><strong>Saksbehandler:</strong> ${escapeHtml(responsibleName)}</div>` : ""}${originalSentAt ? `<div><strong>Opprinnelig sendt:</strong> ${escapeHtml(formatDate(originalSentAt))}</div>` : ""}</div><a href="${escapeHtml(customerUrl)}" style="display:inline-block;margin-top:24px;background:#087f88;color:#fff;text-decoration:none;font-weight:800;padding:13px 20px;border-radius:10px">Åpne tilbudet</a><p style="margin:28px 0 0;color:#66767d;font-size:13px;line-height:1.5">Med vennlig hilsen<br><strong>${escapeHtml(companyName)}</strong></p><p style="margin:16px 0 0;color:#88979d;font-size:12px;line-height:1.5">${escapeHtml(reminderText)}</p></div></div></div></body></html>`;
 }
 
 async function reserveNotification(serviceClient: any, candidate: any) {
   const now = new Date().toISOString();
+  const reminderNumber = boundedInteger(candidate?.reminder_number, 1, 1, 10);
   const existingId = String(candidate?.existing_notification_id || "").trim();
   const existingStatus = String(candidate?.existing_notification_status || "").trim();
   const existingAttempts = Number(candidate?.existing_attempt_count || 0) || 0;
 
-  if (existingStatus === "sent" || existingAttempts >= MAX_ATTEMPTS) {
+  if (existingStatus === "sent" || existingAttempts >= MAX_DELIVERY_ATTEMPTS) {
     return { shouldSend: false, id: existingId || null, status: existingStatus || "exhausted" };
   }
 
@@ -128,7 +109,6 @@ async function reserveNotification(serviceClient: any, candidate: any) {
       .eq("attempt_count", existingAttempts)
       .select("id,status,attempt_count")
       .maybeSingle();
-
     if (error) throw new HttpError(500, "Kunne ikke reservere oppfølgingsforsøk.");
     if (!data) return { shouldSend: false, id: existingId, status: "reserved_elsewhere" };
     return { shouldSend: true, id: data.id, status: data.status };
@@ -143,6 +123,7 @@ async function reserveNotification(serviceClient: any, candidate: any) {
       request_ref: candidate.request_ref,
       recipient_email: candidate.customer_email,
       source_email_sent_at: candidate.source_email_sent_at,
+      reminder_number: reminderNumber,
       status: "pending",
       attempt_count: 1,
       last_attempt_at: now,
@@ -151,21 +132,16 @@ async function reserveNotification(serviceClient: any, candidate: any) {
     .single();
 
   if (!error) return { shouldSend: true, id: data.id, status: data.status };
-
   if (error.code === "23505") {
     const { data: existing } = await serviceClient
       .from("sales_offer_follow_up_notifications")
       .select("id,status,attempt_count")
       .eq("offer_id", candidate.offer_id)
       .eq("offer_version_id", candidate.offer_version_id)
+      .eq("reminder_number", reminderNumber)
       .maybeSingle();
-    return {
-      shouldSend: false,
-      id: existing?.id || null,
-      status: existing?.status || "existing",
-    };
+    return { shouldSend: false, id: existing?.id || null, status: existing?.status || "existing" };
   }
-
   throw new HttpError(500, "Kunne ikke reservere automatisk oppfølging.");
 }
 
@@ -178,17 +154,18 @@ async function releaseReservation(serviceClient: any, reservationId: string) {
 }
 
 async function candidateStillEligible(serviceClient: any, candidate: any, recipient: string) {
+  if (candidate?.store_offer !== true) return { eligible: false, reason: "not_store_offer" };
+
   const { data: offer, error: offerError } = await serviceClient
     .from("sales_offers")
-    .select("status,accepted_at,active_version_id,customer_email,public_token")
+    .select("status,accepted_at,declined_at,active_version_id,customer_email,public_token")
     .eq("id", candidate.offer_id)
     .eq("company_id", candidate.company_id)
     .eq("request_ref", candidate.request_ref)
     .maybeSingle();
-
   if (offerError || !offer) return { eligible: false, reason: "offer_missing" };
-  if (offer.status !== "sent" || offer.accepted_at) {
-    return { eligible: false, reason: "offer_no_longer_sent" };
+  if (offer.status !== "sent" || offer.accepted_at || offer.declined_at) {
+    return { eligible: false, reason: "offer_no_longer_open" };
   }
   if (String(offer.active_version_id || "") !== String(candidate.offer_version_id || "")) {
     return { eligible: false, reason: "version_changed" };
@@ -197,17 +174,36 @@ async function candidateStillEligible(serviceClient: any, candidate: any, recipi
     return { eligible: false, reason: "customer_changed" };
   }
 
+  const { data: version, error: versionError } = await serviceClient
+    .from("sales_offer_versions")
+    .select("created_at,validity_days,lines")
+    .eq("id", candidate.offer_version_id)
+    .eq("offer_id", candidate.offer_id)
+    .maybeSingle();
+  if (versionError || !version) return { eligible: false, reason: "version_missing" };
+
+  const storeMeta = findStoreMeta(Array.isArray(version.lines) ? version.lines : []);
+  if (!storeMeta?.__storeOfferMeta) return { eligible: false, reason: "not_store_offer" };
+  if (storeMeta.followUpEnabled === false) return { eligible: false, reason: "follow_up_disabled" };
+  const maxReminders = boundedInteger(storeMeta.followUpMaxReminders, 3, 1, 10);
+  const reminderNumber = boundedInteger(candidate.reminder_number, 1, 1, 10);
+  if (reminderNumber > maxReminders) return { eligible: false, reason: "reminder_limit" };
+
+  const createdMs = Date.parse(String(version.created_at || ""));
+  const validityDays = boundedInteger(version.validity_days, 30, 1, 365);
+  if (!Number.isFinite(createdMs) || Date.now() >= createdMs + validityDays * 86400000) {
+    return { eligible: false, reason: "expired" };
+  }
+
   const { data: request, error: requestError } = await serviceClient
     .from("sales_requests")
     .select("archived_at,payload")
     .eq("company_id", candidate.company_id)
     .eq("request_ref", candidate.request_ref)
     .maybeSingle();
-
   if (requestError || !request || request.archived_at) {
     return { eligible: false, reason: request?.archived_at ? "archived" : "request_missing" };
   }
-
   const payload = request.payload || {};
   const currentVersion = Number(payload.offerEmailVersionNumber || 0) || 0;
   if (currentVersion !== Number(candidate.version_number || 0)) {
@@ -218,6 +214,17 @@ async function candidateStillEligible(serviceClient: any, candidate: any, recipi
   }
   if (!sameInstant(payload.offerEmailSentAt, candidate.source_email_sent_at)) {
     return { eligible: false, reason: "offer_resent" };
+  }
+
+  const { count: sentCount, error: countError } = await serviceClient
+    .from("sales_offer_follow_up_notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("offer_id", candidate.offer_id)
+    .eq("offer_version_id", candidate.offer_version_id)
+    .eq("status", "sent");
+  if (countError) return { eligible: false, reason: "audit_unavailable" };
+  if (Number(sentCount || 0) !== reminderNumber - 1) {
+    return { eligible: false, reason: "reminder_sequence_changed" };
   }
 
   return { eligible: true, reason: "eligible" };
@@ -250,7 +257,6 @@ serve(async (req) => {
     const serviceClient = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-
     const { data: runtime, error: runtimeError } = await serviceClient
       .from("sales_offer_follow_up_runtime")
       .select("enabled,rollout_at,cron_secret")
@@ -264,12 +270,7 @@ serve(async (req) => {
     }
 
     let body: any = {};
-    try {
-      body = await req.json();
-    } catch {
-      body = {};
-    }
-
+    try { body = await req.json(); } catch { body = {}; }
     const dryRun = body?.dryRun === true;
     if (!runtime.enabled && !dryRun) {
       return new Response(JSON.stringify({ ok: true, enabled: false, sent: 0 }), {
@@ -283,9 +284,13 @@ serve(async (req) => {
       "list_sales_offer_follow_up_candidates",
       { p_limit: limit, p_ignore_enabled: dryRun }
     );
-    if (candidateError) throw new HttpError(500, candidateError.message || "Kunne ikke hente tilbud for oppfølging.");
+    if (candidateError) {
+      throw new HttpError(500, candidateError.message || "Kunne ikke hente tilbud for oppfølging.");
+    }
 
-    const candidateRows = Array.isArray(candidates) ? candidates : [];
+    const candidateRows = (Array.isArray(candidates) ? candidates : []).filter(
+      (item: any) => item?.store_offer === true
+    );
     if (dryRun) {
       return new Response(JSON.stringify({
         ok: true,
@@ -295,12 +300,11 @@ serve(async (req) => {
         candidates: candidateRows.map((item: any) => ({
           requestRef: item.request_ref,
           versionNumber: item.version_number,
+          reminderNumber: item.reminder_number,
+          maxReminders: item.max_reminders,
           sourceEmailSentAt: item.source_email_sent_at,
         })),
-      }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
     const apiFrom = Deno.env.get("CHAT_FROM_EMAIL") || "Expo ProffDok <onboarding@resend.dev>";
@@ -315,45 +319,28 @@ serve(async (req) => {
 
       const reservation = await reserveNotification(serviceClient, candidate);
       if (!reservation.shouldSend || !reservation.id) {
-        results.push({ requestRef: candidate?.request_ref, sent: false, status: reservation.status });
+        results.push({ requestRef: candidate?.request_ref, reminderNumber: candidate?.reminder_number, sent: false, status: reservation.status });
         continue;
       }
 
       const revalidation = await candidateStillEligible(serviceClient, candidate, recipient);
       if (!revalidation.eligible) {
         await releaseReservation(serviceClient, reservation.id);
-        results.push({
-          requestRef: candidate?.request_ref,
-          versionNumber: candidate?.version_number,
-          sent: false,
-          status: `skipped_${revalidation.reason}`,
-        });
+        results.push({ requestRef: candidate?.request_ref, reminderNumber: candidate?.reminder_number, sent: false, status: `skipped_${revalidation.reason}` });
         continue;
       }
 
       const lines = Array.isArray(candidate?.lines) ? candidate.lines : [];
       const storeMeta = findStoreMeta(lines);
       const companySnapshot = findCompanySnapshot(lines);
-      const storeOffer = Boolean(storeMeta?.__storeOfferMeta);
-      const companyName = String(
-        storeOffer
-          ? (storeMeta?.brandLabel || companySnapshot?.companyName || "Expo ProffDok")
-          : (companySnapshot?.companyName || candidate?.request_payload?.companyName || "Expo ProffDok")
-      ).trim();
-      const logoUrl = String(
-        storeOffer
-          ? (storeMeta?.brandLogoUrl || companySnapshot?.logoUrl || "")
-          : (companySnapshot?.logoUrl || candidate?.request_payload?.companyLogoUrl || "")
-      ).trim();
-      const responsibleName = String(
-        storeOffer
-          ? (storeMeta?.signatureName || candidate?.published_by_name || candidate?.request_payload?.projectResponsible || "")
-          : (candidate?.published_by_name || candidate?.request_payload?.projectResponsible || candidate?.request_payload?.responsible || "")
-      ).trim();
+      const companyName = String(storeMeta?.brandLabel || companySnapshot?.companyName || "Expo ProffDok").trim();
+      const logoUrl = String(storeMeta?.brandLogoUrl || companySnapshot?.logoUrl || "").trim();
+      const responsibleName = String(storeMeta?.signatureName || candidate?.published_by_name || candidate?.request_payload?.projectResponsible || "").trim();
       const customerUrl = `${DEFAULT_APP_ORIGIN}/?publicOffer=${encodeURIComponent(String(candidate.public_token || ""))}`;
-      const subject = `${storeOffer ? "Påminnelse om butikktilbud" : "Påminnelse om tilbud"} – ${candidate.request_ref}`;
+      const reminderNumber = boundedInteger(candidate?.reminder_number, 1, 1, 10);
+      const maxReminders = boundedInteger(candidate?.max_reminders, reminderNumber, reminderNumber, 10);
+      const subject = `Påminnelse om butikktilbud – ${candidate.request_ref}`;
       const html = emailHtml({
-        storeOffer,
         companyName,
         logoUrl,
         requestRef: candidate.request_ref,
@@ -363,6 +350,8 @@ serve(async (req) => {
         responsibleName,
         originalSentAt: candidate.source_email_sent_at,
         customerUrl,
+        reminderNumber,
+        maxReminders,
       });
 
       try {
@@ -372,22 +361,28 @@ serve(async (req) => {
             Authorization: `Bearer ${resendKey}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            from: apiFrom,
-            to: [recipient],
-            subject,
-            html,
-          }),
+          body: JSON.stringify({ from: apiFrom, to: [recipient], subject, html }),
         });
         const responseText = await response.text();
         if (!response.ok) throw new Error(responseText || `Resend ${response.status}`);
-
         await markResult(serviceClient, reservation.id, true);
-        results.push({ requestRef: candidate.request_ref, versionNumber: candidate.version_number, sent: true, status: "sent" });
+        results.push({
+          requestRef: candidate.request_ref,
+          versionNumber: candidate.version_number,
+          reminderNumber,
+          sent: true,
+          status: "sent",
+        });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         await markResult(serviceClient, reservation.id, false, message);
-        results.push({ requestRef: candidate.request_ref, versionNumber: candidate.version_number, sent: false, status: "failed" });
+        results.push({
+          requestRef: candidate.request_ref,
+          versionNumber: candidate.version_number,
+          reminderNumber,
+          sent: false,
+          status: "failed",
+        });
       }
     }
 
@@ -398,18 +393,12 @@ serve(async (req) => {
       sent: results.filter((item) => item.sent).length,
       failed: results.filter((item) => item.status === "failed").length,
       results,
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     const status = error instanceof HttpError ? error.status : 500;
     return new Response(JSON.stringify({
       ok: false,
       error: error instanceof Error ? error.message : String(error),
-    }), {
-      status,
-      headers: { "Content-Type": "application/json" },
-    });
+    }), { status, headers: { "Content-Type": "application/json" } });
   }
 });
