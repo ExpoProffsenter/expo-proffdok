@@ -76,6 +76,7 @@ assert(adminMigration.includes("current_profile_is_systemadmin()"), "kun systema
 assert(!adminMigration.includes("current_profile_is_firmaadmin()"), "firmaadmin skal ikke kunne administrere prisimport.");
 
 const panel = fs.readFileSync(path.join(root, "src/modules/storeCatalog/StoreCatalogPanel.jsx"), "utf8");
+const offerTools = fs.readFileSync(path.join(root, "src/modules/storeCatalog/StoreCatalogOfferTools.jsx"), "utf8");
 const client = fs.readFileSync(path.join(root, "src/modules/storeCatalog/storeCatalogClient.js"), "utf8");
 const wrapper = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx"), "utf8");
 const router = fs.readFileSync(path.join(root, "src/modules/sales/components/SalesOfferBuilder.jsx"), "utf8");
@@ -94,6 +95,12 @@ for (const needle of [
 ]) assert(client.includes(needle), `39B.2 katalogklient mangler: ${needle}`);
 assert(!client.includes("completedBatches < 1000"), "klienten skal ikke lenger duplisere katalogen i aktiveringsbatcher.");
 
+for (const needle of [
+  "StoreCatalogInlinePortals", "searchStoreCatalog", "getStoreCatalogAlternatives",
+  "Søk vareregister: varenavn, varenummer eller GTIN/EAN", "StoreCatalogAdminOnlyPanel",
+  "canManageInternalStoreCatalog",
+]) assert(offerTools.includes(needle), `inline varesøk/adminavgrensning mangler: ${needle}`);
+
 assert(wrapper.includes("customer_price_incl_vat"), "kundepris inkl. mva. skal kopieres til tilbudslinjen.");
 assert(wrapper.includes("customer_price_ex_vat"), "kundepris eks. mva. skal kopieres til Sales amount.");
 assert(!wrapper.includes("purchase_net_ex_vat"), "nettopris skal aldri kopieres til offerForm-wrapperen.");
@@ -101,9 +108,10 @@ assert(wrapper.includes("storeCatalogItemId"), "tilbudslinjen skal beholde en uf
 assert(wrapper.includes('TEXT_BLOCK_LINE_TYPE = "store_text"'), "Butikktilbud skal støtte prisnøytrale tekstavsnitt.");
 assert(wrapper.includes('TEXT_BLOCK_MARKER = "#expo-store-text-block"'), "tekstavsnitt skal ha sikker presentasjonsmarkør.");
 assert(wrapper.includes("storeAfterLineId"), "tekstavsnitt skal kunne plasseres mellom varer.");
+assert(wrapper.includes("<StoreCatalogInlinePortals"), "varesøk skal monteres direkte i varekortene.");
 assert(
-  wrapper.lastIndexOf("<StoreCatalogPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilder"),
-  "internt vareregister skal ligge etter selve Butikktilbud-byggeren."
+  wrapper.lastIndexOf("<StoreCatalogAdminOnlyPanel") > wrapper.lastIndexOf("<SalesStoreOfferBuilder"),
+  "prisadministrasjon skal ligge nederst etter selve Butikktilbud-byggeren."
 );
 assert(textBlockCss.includes('#expo-store-text-block'), "kundepresentasjonen skal kjenne igjen tekstavsnitt.");
 assert(textBlockCss.includes(".sales-customer-line-price"), "tekstavsnitt skal skjule pris i kundevisningen.");
