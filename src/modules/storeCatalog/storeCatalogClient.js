@@ -1,6 +1,6 @@
 // Expo ProffDok – FASE 39B.2
-// Tynn klient mot det interne vareregisterets sikkerhets-RPC-er.
-// Store katalogaktiveringer deles i små, gjenopptakbare databasebatcher.
+// Tynn klient mot internt vareregister.
+// ERP-batcher oppdaterer én katalogkopi direkte; søk sperres til importen er ferdig aktivert.
 
 function ensureClient(supabase) {
   if (!supabase?.rpc) throw new Error("Supabase-klient mangler.");
@@ -63,27 +63,12 @@ export async function prepareStoreCatalogActivation(
   return unwrap(data, error, "Kunne ikke klargjøre vareregisteret.");
 }
 
-export async function activateStoreCatalogBatch(
-  supabase,
-  importId,
-  limit = 2500
-) {
-  const { data, error } = await ensureClient(supabase).rpc(
-    "activate_internal_store_catalog_batch",
-    {
-      p_import_id: importId,
-      p_limit: limit,
-    }
-  );
-  return unwrap(data, error, "Kunne ikke aktivere neste varebatch.");
-}
-
 export async function completeStoreCatalogActivation(supabase, importId) {
   const { data, error } = await ensureClient(supabase).rpc(
     "complete_internal_store_catalog_activation",
     { p_import_id: importId }
   );
-  return unwrap(data, error, "Kunne ikke fullføre aktivering av vareregisteret.");
+  return unwrap(data, error, "Kunne ikke aktivere vareregisteret.");
 }
 
 export async function finalizeStoreCatalogImport(
@@ -93,38 +78,9 @@ export async function finalizeStoreCatalogImport(
   onProgress = null
 ) {
   const prepared = await prepareStoreCatalogActivation(supabase, importId, summary);
-  const expectedRows = Number(prepared?.accepted_rows || summary.acceptedRows || 0);
-  let processedRows = Number(prepared?.prepared_rows || 0);
+  const expectedRows = Number(prepared?.accepted_rows || summary.uniqueRows || summary.acceptedRows || 0);
 
-  onProgress?.({
-    processedRows,
-    totalRows: expectedRows,
-    remainingRows: Math.max(expectedRows - processedRows, 0),
-  });
-
-  let completedBatches = 0;
-  while (completedBatches < 1000) {
-    const batch = await activateStoreCatalogBatch(supabase, importId, 2500);
-    const batchRows = Number(batch?.processed_rows || 0);
-    processedRows += batchRows;
-    completedBatches += 1;
-
-    onProgress?.({
-      processedRows,
-      totalRows: expectedRows,
-      remainingRows: Math.max(expectedRows - processedRows, 0),
-    });
-
-    if (batch?.done === true) break;
-    if (batchRows <= 0) {
-      throw new Error("Aktiveringen stoppet uten fremdrift. Prøv Aktiver nytt vareregister igjen.");
-    }
-  }
-
-  if (completedBatches >= 1000) {
-    throw new Error("Aktiveringen brukte uventet mange batcher og ble stoppet av sikkerhetshensyn.");
-  }
-
+  onProgress?.({ processedRows: expectedRows, totalRows: expectedRows, remainingRows: 0 });
   return completeStoreCatalogActivation(supabase, importId);
 }
 
