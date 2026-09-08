@@ -1,7 +1,9 @@
-// Expo ProffDok – FASE 37A2 / FASE 37D2 / FASE 37D1 / FASE 34B
+// Expo ProffDok – FASE 37A2 / FASE 37D2 / FASE 37D1 / FASE 34B / FASE 39B.2
 // Butikktilbud bruker versjonslåst merkevare og saksbehandler og presenteres
 // som et vare-/butikktilbud. FASE 37A2 lar kunden akseptere eller avvise,
 // og stopper begge beslutninger når Butikktilbudets gyldighet er utløpt.
+// FASE 39B.2 viser avvist Butikktilbud som låst historikk med hele publiserte
+// tilbudet synlig, men uten nye aksept-, avvisnings- eller opsjonsvalg.
 // Ordinære tilbud beholder eksisterende presentasjon og akseptflyt.
 
 import { useEffect, useMemo, useState } from "react";
@@ -116,6 +118,9 @@ const ORDER_STYLES = `
 .store-customer-decline-check { display: flex; gap: 10px; align-items: flex-start; font-weight: 700; }
 .store-customer-decline-error { color: #a83232 !important; font-weight: 800; }
 .store-customer-expired-card { border-color: #e4c86b; background: #fffbea; }
+.store-customer-history-readonly .sales-customer-accept-form { display: none !important; }
+.store-customer-history-readonly .sales-customer-option-topline { display: none !important; }
+.store-customer-history-readonly .sales-customer-option-card { cursor: default !important; }
 `;
 
 function classifySection(element) {
@@ -162,17 +167,27 @@ function absoluteAssetUrl(value = "") {
   try { return new URL(clean, window.location.origin).href; } catch { return clean; }
 }
 
-function applyStoreOfferCopy({ isStoreOffer, signatureName = "", brandLabel = "", brandLogoUrl = "", legalCompanyName = "" } = {}) {
+function applyStoreOfferCopy({ isStoreOffer, signatureName = "", brandLabel = "", brandLogoUrl = "", legalCompanyName = "", readOnlyDeclined = false } = {}) {
   if (!isStoreOffer || typeof document === "undefined") return;
+  const eyebrow = document.querySelector(".sales-customer-hero .sales-eyebrow");
   const lead = document.querySelector(".sales-customer-lead");
-  if (lead) lead.textContent = "Her finner du varene, prisene, eventuell montering og vilkårene samlet. Du kan velge eventuelle alternativer eller tillegg før du aksepterer eller avviser tilbudet nederst på siden.";
+  if (readOnlyDeclined) {
+    if (eyebrow) eyebrow.textContent = "Butikktilbud avvist · historisk visning";
+    if (lead) lead.textContent = "Dette er den publiserte tilbudsversjonen som ble avvist. Innhold, priser og vilkår beholdes som låst historikk og kan ikke endres eller aksepteres her.";
+  } else if (lead) {
+    lead.textContent = "Her finner du varene, prisene, eventuell montering og vilkårene samlet. Du kan velge eventuelle alternativer eller tillegg før du aksepterer eller avviser tilbudet nederst på siden.";
+  }
   const headerBrand = document.querySelector(".sales-customer-header .sales-brand-copy strong");
   if (headerBrand && brandLabel) headerBrand.textContent = brandLabel;
   const pricesSection = Array.from(document.querySelectorAll(".sales-customer-offer-stack > *")).find((section) => classifySection(section) === "prices");
   const heading = pricesSection?.querySelector(".sales-customer-section-heading h2");
   if (heading) heading.textContent = "Varer og priser";
   const sectionNote = pricesSection?.querySelector(".sales-customer-section-note");
-  if (sectionNote) sectionNote.textContent = "Alle priser er oppgitt inkl. mva. Alternativer erstatter valgt vare og eventuell tilhørende montering. Valgene oppdaterer totalsummen automatisk.";
+  if (sectionNote) {
+    sectionNote.textContent = readOnlyDeclined
+      ? "Alle priser er oppgitt inkl. mva. Opsjoner og alternativer vises som del av tilbudsversjonen, men kan ikke velges i historisk visning."
+      : "Alle priser er oppgitt inkl. mva. Alternativer erstatter valgt vare og eventuell tilhørende montering. Valgene oppdaterer totalsummen automatisk.";
+  }
   const totalLabel = pricesSection?.querySelector(".sales-customer-total-card .sales-customer-total-row:first-child > span");
   if (totalLabel) totalLabel.textContent = "Sum varer og montering inkl. mva.";
   pricesSection?.querySelectorAll(".sales-customer-main-post").forEach((section) => {
@@ -183,7 +198,11 @@ function applyStoreOfferCopy({ isStoreOffer, signatureName = "", brandLabel = ""
     const optionsTitle = optionsHeading?.querySelector("strong");
     const optionsHelp = optionsHeading?.querySelector("span");
     if (optionsTitle) optionsTitle.textContent = "Alternativer og tillegg";
-    if (optionsHelp) optionsHelp.textContent = `Velg eventuelle alternativer eller tillegg til ${String(section.querySelector(".sales-customer-main-post-heading h3")?.textContent || "leveransen").trim()}.`;
+    if (optionsHelp) {
+      optionsHelp.textContent = readOnlyDeclined
+        ? `Alternativer og tillegg som inngikk i tilbudsversjonen for ${String(section.querySelector(".sales-customer-main-post-heading h3")?.textContent || "leveransen").trim()}.`
+        : `Velg eventuelle alternativer eller tillegg til ${String(section.querySelector(".sales-customer-main-post-heading h3")?.textContent || "leveransen").trim()}.`;
+    }
   });
   const companyCard = document.querySelector(".sales-customer-company-card");
   const logo = companyCard?.querySelector(".sales-customer-company-logo");
@@ -304,29 +323,6 @@ function storeOfferIsExpired(request, activeVersion, isStoreOffer) {
   return Date.now() >= publishedAt + validityDays * 24 * 60 * 60 * 1000;
 }
 
-function StoreDeclinedView({ request, declinedBy }) {
-  return (
-    <div className="sales-app">
-      <style>{ORDER_STYLES}</style>
-      <div className="sales-shell">
-        <main className="sales-main">
-          <section className="sales-form-panel">
-            <p className="sales-eyebrow">Butikktilbud avvist</p>
-            <h1 className="sales-title">Svaret er registrert</h1>
-            <p className="sales-subtitle">
-              {declinedBy ? `Tilbudet er registrert som avvist av ${declinedBy}.` : "Tilbudet er registrert som avvist."}
-            </p>
-            <div className="sales-next-card" style={{ marginTop: 22 }}>
-              <h2>{request?.offerTitle || "Butikktilbud"}</h2>
-              <p>Det sendes ikke flere automatiske påminnelser om denne tilbudsversjonen. Ta kontakt med saksbehandler dersom du ønsker et nytt eller endret tilbud.</p>
-            </div>
-          </section>
-        </main>
-      </div>
-    </div>
-  );
-}
-
 export default function SalesCustomerView(props) {
   const quantityRequest = decorateRequestForQuantityPresentation(props.selectedRequest);
   const presentationRequest = decorateRequestForOptionalityPresentation(quantityRequest);
@@ -352,18 +348,21 @@ export default function SalesCustomerView(props) {
   const expired = storeOfferIsExpired(brandedRequest, activeVersion, isStoreOffer);
   const declined = Boolean(localDecline || brandedRequest?.status === "Avvist" || brandedRequest?.declinedAt);
   const declinedBy = String(localDecline?.declined_by || brandedRequest?.declinedBy || "").trim();
+  const readOnlyDeclined = Boolean(isStoreOffer && declined && brandedRequest);
 
   useEffect(() => {
     const applyPresentation = () => {
       applyCustomerSectionOrder(signatureName);
       applyCustomerOptionsOnlyPresentation(brandedRequest, selectedOptionIds);
-      applyStoreOfferCopy({ isStoreOffer, signatureName, brandLabel, brandLogoUrl, legalCompanyName });
+      applyStoreOfferCopy({ isStoreOffer, signatureName, brandLabel, brandLogoUrl, legalCompanyName, readOnlyDeclined });
       if (isStoreOffer) applyStoreAlternativePresentation(brandedRequest, selectedOptionIds);
+      const root = document.querySelector(".sales-customer-offer-app");
+      if (root) root.classList.toggle("store-customer-history-readonly", readOnlyDeclined);
     };
     const frame = window.requestAnimationFrame(applyPresentation);
     const timer = window.setTimeout(applyPresentation, 120);
     return () => { window.cancelAnimationFrame(frame); window.clearTimeout(timer); };
-  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId, props.selectedRequest?.offerLines, props.selectedRequest?.offerOptions, props.selectedRequest?.storeOfferMeta, signatureName, brandLabel, brandLogoUrl, legalCompanyName, isStoreOffer, selectedOptionIds.join("|")]);
+  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId, props.selectedRequest?.offerLines, props.selectedRequest?.offerOptions, props.selectedRequest?.storeOfferMeta, signatureName, brandLabel, brandLogoUrl, legalCompanyName, isStoreOffer, readOnlyDeclined, selectedOptionIds.join("|")]);
 
   async function handleDecline(event) {
     event.preventDefault();
@@ -393,22 +392,40 @@ export default function SalesCustomerView(props) {
     return <SalesCustomerAcceptedView selectedRequest={brandedRequest} companyProfile={props.companyProfile} />;
   }
 
-  if (isStoreOffer && declined && brandedRequest) {
-    return <StoreDeclinedView request={brandedRequest} declinedBy={declinedBy} />;
-  }
-
-  const acceptHandler = expired
-    ? (event) => {
-        event?.preventDefault?.();
-        alert("Butikktilbudet er utløpt. Ta kontakt med saksbehandler for et nytt tilbud.");
-      }
-    : props.handleAcceptOffer;
+  const acceptHandler = readOnlyDeclined
+    ? (event) => event?.preventDefault?.()
+    : expired
+      ? (event) => {
+          event?.preventDefault?.();
+          alert("Butikktilbudet er utløpt. Ta kontakt med saksbehandler for et nytt tilbud.");
+        }
+      : props.handleAcceptOffer;
 
   return (
     <>
-      <style>{ORDER_STYLES}{isStoreOffer && expired ? ".sales-customer-accept-form{display:none!important}" : ""}</style>
-      <SalesCustomerViewCore {...props} selectedRequest={brandedRequest} handleAcceptOffer={acceptHandler} />
-      {isStoreOffer && props.mode === "customer-offer" ? (
+      <style>
+        {ORDER_STYLES}
+        {isStoreOffer && (expired || readOnlyDeclined) ? ".sales-customer-accept-form{display:none!important}" : ""}
+      </style>
+      <SalesCustomerViewCore
+        {...props}
+        selectedRequest={brandedRequest}
+        handleAcceptOffer={acceptHandler}
+        toggleAcceptedOption={readOnlyDeclined ? () => {} : props.toggleAcceptedOption}
+      />
+      {isStoreOffer && readOnlyDeclined ? (
+        <div className="store-customer-decision-shell">
+          <section className="store-customer-decline-card">
+            <h2>Tilbudet er avvist</h2>
+            <p>
+              {declinedBy
+                ? `Avvisningen er registrert av ${declinedBy}. Dette er den låste tilbudsversjonen som ble avvist.`
+                : "Dette er den låste tilbudsversjonen som ble avvist."}
+            </p>
+          </section>
+        </div>
+      ) : null}
+      {isStoreOffer && props.mode === "customer-offer" && !readOnlyDeclined ? (
         <div className="store-customer-decision-shell">
           {expired ? (
             <section className="store-customer-expired-card">
