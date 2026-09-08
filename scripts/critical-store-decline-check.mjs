@@ -56,7 +56,9 @@ for (const needle of [
   'request?.status === "Avvist"',
   "saken er avsluttet i Sales",
   "Det sendes ikke flere automatiske påminnelser",
-  "Ved behov kan du opprette et nytt eller revidert tilbud",
+  "Det avviste tilbudet beholdes som historikk og slettes ikke",
+  "Se avvist tilbud",
+  "buildDeclinedOfferHref",
 ]) assert(salesDetail.includes(needle), `intern avvist-visning mangler: ${needle}`);
 
 console.log("✅ Expo ProffDok Butikktilbud-avvisning check OK");
