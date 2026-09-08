@@ -144,10 +144,13 @@ function createStoreOfferHelpItem() {
   const item = document.createElement("div");
   item.className = "item";
   item.dataset.storeOfferHelp = "1";
+  item.style.borderColor = "#e2e8f0";
+  item.style.background = "#ffffff";
 
   const button = document.createElement("button");
   button.type = "button";
   button.className = "secondary";
+  button.setAttribute("aria-expanded", "false");
   button.style.width = "100%";
   button.style.justifyContent = "space-between";
   button.style.textAlign = "left";
@@ -158,17 +161,29 @@ function createStoreOfferHelpItem() {
   button.style.boxShadow = "none";
   button.style.fontSize = "16px";
 
+  const headerRow = document.createElement("span");
+  headerRow.style.display = "flex";
+  headerRow.style.alignItems = "center";
+  headerRow.style.justifyContent = "space-between";
+  headerRow.style.gap = "12px";
+  headerRow.style.width = "100%";
+
   const title = document.createElement("b");
   title.textContent = STORE_HELP_TITLE;
   const action = document.createElement("span");
   action.textContent = "Åpne";
-  button.append(title, action);
+  action.style.fontWeight = "900";
+  action.style.color = "#007f89";
+  headerRow.append(title, action);
+  button.appendChild(headerRow);
 
   const content = document.createElement("div");
   content.style.display = "none";
   content.style.marginTop = "14px";
 
   const purpose = document.createElement("p");
+  purpose.className = "note";
+  purpose.style.marginTop = "0";
   purpose.textContent = "Butikktilbud er den varebaserte tilbudsfunksjonen for butikk- og varesalg. Den er separat fra ordinær Befaring/Tilbud og avsluttes i Sales når kunden har akseptert.";
   content.appendChild(purpose);
 
@@ -208,6 +223,7 @@ function createStoreOfferHelpItem() {
     const open = content.style.display !== "none";
     content.style.display = open ? "none" : "block";
     action.textContent = open ? "Åpne" : "Lukk";
+    button.setAttribute("aria-expanded", open ? "false" : "true");
     item.style.borderColor = open ? "#e2e8f0" : "#08b9c3";
     item.style.background = open ? "#ffffff" : "#f8feff";
   });
