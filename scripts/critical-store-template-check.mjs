@@ -56,13 +56,17 @@ for (const needle of [
   "createPortal",
   "data-store-complete-template-top-host",
   "data-store-complete-template-save-host",
+  ".store-summary-actions",
+  "data-sales-save-offer-button",
+  "insertBefore(createdSaveHost, saveOfferButton)",
 ]) assert(panel.includes(needle), `malpanelet mangler: ${needle}`);
 
 for (const forbidden of [
   "store-complete-template-trigger",
   "store-complete-template-backdrop",
   "position:fixed",
-]) assert(!panel.includes(forbidden), `mal-UI skal følge Våtromstilbud og ikke bruke flytende modal: ${forbidden}`);
+  ".store-workbar",
+]) assert(!panel.includes(forbidden), `mal-UI skal følge Våtromstilbud og ikke bruke flytende/arbeidslinje-plassering: ${forbidden}`);
 
 const outer = read(
   "src/modules/sales/components/SalesStoreOfferBuilderCatalogTemplates.jsx"
