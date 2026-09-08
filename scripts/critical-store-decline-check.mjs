@@ -61,4 +61,16 @@ for (const needle of [
   "buildDeclinedOfferHref",
 ]) assert(salesDetail.includes(needle), `intern avvist-visning mangler: ${needle}`);
 
+const customerView = read("src/modules/sales/components/SalesCustomerView.jsx");
+for (const needle of [
+  "readOnlyDeclined",
+  "store-customer-history-readonly",
+  "Butikktilbud avvist · historisk visning",
+  "den publiserte tilbudsversjonen som ble avvist",
+  ".sales-customer-accept-form { display: none !important; }",
+  ".sales-customer-option-topline { display: none !important; }",
+  "toggleAcceptedOption={readOnlyDeclined ? () => {} : props.toggleAcceptedOption}",
+]) assert(customerView.includes(needle), `historisk avvist tilbud mangler read-only-krav: ${needle}`);
+assert(!customerView.includes("return <StoreDeclinedView"), "avvist tilbud skal ikke stoppe på kvitteringsside uten tilbudsinnhold.");
+
 console.log("✅ Expo ProffDok Butikktilbud-avvisning check OK");
