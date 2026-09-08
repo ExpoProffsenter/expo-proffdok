@@ -1,6 +1,6 @@
 // Expo ProffDok – FASE 40B
 // Komplette Butikktilbud-maler med samme arbeidsmønster som ordinært Våtromstilbud:
-// «Bruk firmamal» øverst i tilbudsskjemaet og «Lagre som mal» i nederste knappelinje.
+// «Bruk firmamal» øverst i tilbudsskjemaet og «Lagre som mal» i nederste handlingslinje.
 // Eksisterende grouped builder endres ikke; UI monteres inn via to finite portal-hosts.
 
 import { useEffect, useState } from "react";
@@ -110,17 +110,25 @@ export default function StoreOfferCompleteTemplatePanel({
         setTopHost(createdTopHost);
       }
 
-      const workbar = document.querySelector(
-        ".store-grouped-builder .store-workbar"
+      const summaryActions = document.querySelector(
+        ".store-grouped-builder .store-summary-actions"
       );
-      if (workbar && !createdSaveHost) {
-        workbar
+      if (summaryActions && !createdSaveHost) {
+        summaryActions
           .querySelector("[data-store-complete-template-save-host='1']")
           ?.remove();
         createdSaveHost = document.createElement("span");
         createdSaveHost.dataset.storeCompleteTemplateSaveHost = "1";
         createdSaveHost.className = "store-complete-template-save-host";
-        workbar.insertBefore(createdSaveHost, workbar.firstChild);
+
+        const saveOfferButton = summaryActions.querySelector(
+          '[data-sales-save-offer-button="true"]'
+        );
+        if (saveOfferButton) {
+          summaryActions.insertBefore(createdSaveHost, saveOfferButton);
+        } else {
+          summaryActions.appendChild(createdSaveHost);
+        }
         setSaveHost(createdSaveHost);
       }
     };
