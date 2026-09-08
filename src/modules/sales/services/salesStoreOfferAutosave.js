@@ -2,6 +2,7 @@
 // Egen, liten sikkerhetsventil for Butikktilbud-kladd.
 // Lagrer kun aktuell salgssak i Supabase slik at vareinnlegging ikke er avhengig
 // av at hele Sales-listen kan sendes i samme autosave-kall.
+// Helt tomme nye vare-/monterings-/opsjonsrader sendes ikke til server.
 
 import {
   createDefaultSalesSupabaseClient,
@@ -16,23 +17,74 @@ import {
 
 const defaultClient = createDefaultSalesSupabaseClient();
 
+function attachmentHasContent(file) {
+  return Boolean(String(file?.url || file?.path || file?.name || "").trim());
+}
+
+function lineHasDraftContent(line = {}) {
+  if (line?.__storeOfferMeta) return true;
+  if (line?.lineType === "store_text") {
+    return Boolean(
+      String(line.storeTextTitle || "").trim() ||
+      String(line.storeTextBody || "").trim() ||
+      String(line.description || "").trim()
+    );
+  }
+
+  return Boolean(
+    String(line.description || "").trim() ||
+    String(line.amount ?? "").trim() ||
+    String(line.storeUnitPriceInclVat ?? "").trim() ||
+    String(line.supplierProductNumber || line.internalProductNumber || "").trim() ||
+    String(line.nobbNumber || "").trim() ||
+    String(line.productUrl || "").trim() ||
+    String(line.storeCatalogItemId || "").trim() ||
+    line.imageDataUrl ||
+    attachmentHasContent(line.attachmentFile)
+  );
+}
+
+function optionHasDraftContent(option = {}) {
+  return Boolean(
+    String(option.title || "").trim() ||
+    String(option.description || "").trim() ||
+    String(option.amount ?? "").trim() ||
+    String(option.storeUnitPriceInclVat ?? "").trim() ||
+    String(option.supplierProductNumber || option.internalProductNumber || "").trim() ||
+    String(option.nobbNumber || "").trim() ||
+    String(option.productUrl || "").trim() ||
+    String(option.storeCatalogItemId || "").trim() ||
+    option.imageDataUrl ||
+    attachmentHasContent(option.attachmentFile)
+  );
+}
+
+export function pruneStoreOfferDraftRows(offerForm = {}) {
+  return {
+    ...offerForm,
+    lines: (Array.isArray(offerForm?.lines) ? offerForm.lines : []).filter(lineHasDraftContent),
+    options: (Array.isArray(offerForm?.options) ? offerForm.options : []).filter(optionHasDraftContent),
+  };
+}
+
 export function buildStoreOfferDraftRequest(selectedRequest = {}, offerForm = {}, savedAt = new Date().toISOString()) {
-  const lines = Array.isArray(offerForm?.lines) ? offerForm.lines : [];
-  const options = Array.isArray(offerForm?.options) ? offerForm.options : [];
+  const prunedForm = pruneStoreOfferDraftRows(offerForm);
+  const lines = prunedForm.lines || [];
+  const options = prunedForm.options || [];
 
   return {
     ...selectedRequest,
-    offerTitle: String(offerForm?.title || ""),
-    offerIntro: String(offerForm?.intro || ""),
+    offerTitle: String(prunedForm?.title || ""),
+    offerIntro: String(prunedForm?.intro || ""),
     offerLines: lines,
     offerOptions: options,
-    offerReservations: String(offerForm?.reservations || ""),
-    offerIncluded: String(offerForm?.included || ""),
-    offerExcluded: String(offerForm?.excluded || ""),
-    offerCustomerSupplied: String(offerForm?.customerSupplied || ""),
-    offerTerms: String(offerForm?.terms || ""),
-    offerPaymentTerms: String(offerForm?.paymentTerms || ""),
-    offerValidityDays: String(offerForm?.validityDays || ""),
+    offerReservations: String(prunedForm?.reservations || ""),
+    offerIncluded: String(prunedForm?.included || ""),
+    offerExcluded: String(prunedForm?.excluded || ""),
+    offerCustomerSupplied: String(prunedForm?.customerSupplied || ""),
+    offerTerms: String(prunedForm?.terms || ""),
+    offerPaymentTerms: String(prunedForm?.paymentTerms || ""),
+    offerValidityDays: String(prunedForm?.validityDays || ""),
     offerTotal: getOfferTotal(lines),
     offerDraftSavedAt: savedAt,
   };
