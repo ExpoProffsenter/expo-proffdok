@@ -5,6 +5,8 @@
 // Butikktilbud beholder skjult, versjonslåst metadata i kundevisning.
 // FASE 37A2 mapper i tillegg publiseringstid og digital avvisning slik at kunde-
 // og internpresentasjon kan avslutte Butikktilbud uten prosjektaktivering.
+// Recovery-kontrakt: prepareOfferFormForSaveCore(pruneEmptyOfferDraftRows(formValue))
+// er fortsatt prinsippet; 39B.2C skiller bare ut store_text-avsnitt før core-validering.
 
 export * from "./salesOfferLogicCore.js";
 
