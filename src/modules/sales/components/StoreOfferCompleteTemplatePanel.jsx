@@ -70,6 +70,7 @@ export default function StoreOfferCompleteTemplatePanel({
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [actionNotice, setActionNotice] = useState(null);
   const [topHost, setTopHost] = useState(null);
   const [saveHost, setSaveHost] = useState(null);
 
@@ -88,6 +89,12 @@ export default function StoreOfferCompleteTemplatePanel({
       active = false;
     };
   }, [requestId]);
+
+  useEffect(() => {
+    if (!actionNotice || typeof window === "undefined") return undefined;
+    const timer = window.setTimeout(() => setActionNotice(null), 6000);
+    return () => window.clearTimeout(timer);
+  }, [actionNotice]);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -145,6 +152,10 @@ export default function StoreOfferCompleteTemplatePanel({
     };
   }, [requestId]);
 
+  function showActionNotice(type, text) {
+    setActionNotice({ type, text });
+  }
+
   async function saveTemplate() {
     if (busy || typeof window === "undefined") return;
 
@@ -167,11 +178,13 @@ export default function StoreOfferCompleteTemplatePanel({
       const summary = summarizeStoreOfferTemplate(offerForm);
       const saved = await saveCompleteStoreOfferTemplate(templateName, offerForm);
       await refresh(saved?.id || "");
-      setMessage(
-        `✓ Komplett mal lagret: ${summary.sections} avsnitt, ${summary.posts} poster, ${summary.installations} montering og ${summary.options} opsjoner.`
-      );
+      const successText = `✓ Komplett mal lagret: ${summary.sections} avsnitt, ${summary.posts} poster, ${summary.installations} montering og ${summary.options} opsjoner.`;
+      setMessage(successText);
+      showActionNotice("success", successText);
     } catch (error) {
-      setMessage(error?.message || "Malen kunne ikke lagres.");
+      const errorText = error?.message || "Malen kunne ikke lagres.";
+      setMessage(errorText);
+      showActionNotice("error", errorText);
     } finally {
       setBusy(false);
     }
@@ -204,9 +217,9 @@ export default function StoreOfferCompleteTemplatePanel({
       });
 
       if (materialized.mode === "legacy-text") {
-        setMessage(
-          `✓ Den eldre tekstmalen «${template.name}» er brukt. Eksisterende poster og priser er beholdt.`
-        );
+        const successText = `✓ Den eldre tekstmalen «${template.name}» er brukt. Eksisterende poster og priser er beholdt.`;
+        setMessage(successText);
+        showActionNotice("success", successText);
         return;
       }
 
@@ -236,12 +249,17 @@ export default function StoreOfferCompleteTemplatePanel({
             materialized.missingCatalogItems === 1 ? "" : "r"
           } finnes ikke lenger i aktivt vareregister og må velges/prissettes på nytt.`
         : "";
+      const successText = `✓ Malen «${template.name}» er brukt. ${priceMessage}${missingMessage}`;
 
-      setMessage(
-        `✓ Malen «${template.name}» er brukt. ${priceMessage}${missingMessage}`
+      setMessage(successText);
+      showActionNotice(
+        materialized.missingCatalogItems ? "warning" : "success",
+        successText
       );
     } catch (error) {
-      setMessage(error?.message || "Malen kunne ikke brukes.");
+      const errorText = error?.message || "Malen kunne ikke brukes.";
+      setMessage(errorText);
+      showActionNotice("error", errorText);
     } finally {
       setBusy(false);
     }
@@ -353,6 +371,43 @@ export default function StoreOfferCompleteTemplatePanel({
     </button>
   );
 
+  const actionNoticeElement = actionNotice ? (
+    <div
+      data-store-template-action-notice="1"
+      role={actionNotice.type === "error" ? "alert" : "status"}
+      aria-live="polite"
+      style={{
+        position: "fixed",
+        top: 18,
+        right: 18,
+        zIndex: 30000,
+        width: "min(560px, calc(100vw - 28px))",
+        maxHeight: "calc(100vh - 28px)",
+        overflow: "auto",
+        padding: "14px 16px",
+        borderRadius: 16,
+        border:
+          actionNotice.type === "error"
+            ? "1px solid #e8aaaa"
+            : actionNotice.type === "warning"
+              ? "1px solid #e6c76d"
+              : "1px solid #8be4e8",
+        background:
+          actionNotice.type === "error"
+            ? "#fff3f3"
+            : actionNotice.type === "warning"
+              ? "#fff8dc"
+              : "#e9fafb",
+        color: "#18343a",
+        boxShadow: "0 16px 44px rgba(15,23,42,.2)",
+        fontWeight: 800,
+        lineHeight: 1.45,
+      }}
+    >
+      {actionNotice.text}
+    </div>
+  ) : null;
+
   return (
     <>
       <style>{`
@@ -363,6 +418,9 @@ export default function StoreOfferCompleteTemplatePanel({
       `}</style>
       {topHost ? createPortal(templateTools, topHost) : null}
       {saveHost ? createPortal(saveButton, saveHost) : null}
+      {actionNoticeElement && typeof document !== "undefined"
+        ? createPortal(actionNoticeElement, document.body)
+        : null}
     </>
   );
 }
