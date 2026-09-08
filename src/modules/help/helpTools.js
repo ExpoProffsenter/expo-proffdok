@@ -20,6 +20,7 @@ const SALES_HELP_TITLE = "🧾 Befaring/Tilbud";
 const STORE_HELP_TITLE = "🛍️ Butikktilbud";
 const NEWS_HELP_TITLE = "📢 Nytt i denne versjonen";
 const START_HELP_TITLE = "🚀 Startside / kom i gang";
+const SYSTEMADMIN_HELP_TITLE = "⚙️ Systemadministrasjon";
 const HELP_UPDATED_LABEL = "Sist oppdatert: 08.09.2026";
 
 function textOf(node) {
@@ -263,6 +264,39 @@ function ensureStoreOfferHelpItem(salesItem) {
   salesItem.insertAdjacentElement("afterend", createStoreOfferHelpItem());
 }
 
+function ensureSystemAdminCatalogHelp(labels) {
+  const systemLabel = labels.find((label) => textOf(label) === SYSTEMADMIN_HELP_TITLE);
+  const systemItem = systemLabel?.closest(".item");
+  if (!systemItem || systemItem.querySelector("[data-phase39b2-catalog-help='1']")) return;
+
+  const content = Array.from(systemItem.children).find((child) => child.tagName === "DIV");
+  if (!content) return;
+
+  const block = document.createElement("div");
+  block.dataset.phase39b2CatalogHelp = "1";
+  block.style.marginTop = "18px";
+  block.style.paddingTop = "4px";
+  block.style.borderTop = "1px solid #dbe5ea";
+
+  appendHelpSection(block, "Internt vareregister – ERP", [
+    "Internt vareregister vedlikeholdes fra Systemadministrasjon. Kun systemadministrator kan starte eller aktivere en ERP-prisoppdatering.",
+    "Last opp den faste ERP TXT-eksporten. Importen validerer 18 semikolonseparerte felt i Windows-1252 og hopper over varer uten varenummer eller med ikke-positive netto-/salgspriser.",
+    "Katalogen oppdateres i kontrollerte batcher. Søk i vareregisteret låses mens importen pågår, og åpnes igjen når aktiveringen er ferdig.",
+    "Kontroller antall leste, gyldige, hoppede og aktive varer etter import før oppdateringen regnes som ferdig.",
+    "Prisfilen inneholder intern innkjøpsinformasjon og skal aldri legges i GitHub eller deles med kunder.",
+  ]);
+
+  appendHelpSection(block, "Tilgang og sikkerhet", [
+    "Vanlige brukere kan bare søke i katalogen når de både har Butikktilbud-modultilgang og tilhører Ringside Rørleggerbedrift AS eller Bademiljø Expo.",
+    "Expo Proffsenter har ikke katalogtilgang selv om juridisk organisasjonsnummer kan være felles. Faktisk firmascop er sikkerhetsgrensen.",
+    "Direkte klientskriving til katalogtabellene er sperret. RLS/RPC er den reelle sikkerhetsgrensen.",
+    "Intern netto innkjøpspris skal ikke kopieres til Sales-kladd, publisert tilbud, PDF, kundelenke eller akseptbevis.",
+    "En prisoppdatering endrer aldri historiske publiserte eller aksepterte tilbud. Nye katalogpriser brukes først når en vare velges på nytt i en redigerbar kladd.",
+  ]);
+
+  content.appendChild(block);
+}
+
 function organizePermanentHelp({ closeStart = false } = {}) {
   if (typeof document === "undefined") return;
 
@@ -304,6 +338,8 @@ function organizePermanentHelp({ closeStart = false } = {}) {
         "For ordinære tilbud bruker du Følg opp tilbud manuelt. Hvis tilbudet har upubliserte endringer, publiseres riktig ny versjon før den sendes til kunden. Butikktilbud følger eventuell låst oppfølgingsplan på den publiserte versjonen.";
     }
   });
+
+  ensureSystemAdminCatalogHelp(labels);
 
   const salesLabel = labels.find((label) => textOf(label) === SALES_HELP_TITLE);
   const salesItem = salesLabel?.closest(".item");
