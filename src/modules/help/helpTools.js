@@ -1,3 +1,4 @@
+// FASE 40B HJELP: Butikktilbud har nå komplette firmamaler med avsnitt, poster, montering, opsjoner, gjeldende katalogpris og trygg bevaring av aktuell sak.
 // FASE 39B.2 HJELP: Butikktilbud dokumenterer tilbudsposter/avsnitt, internt vareregister, katalogvalg, montering/opsjoner, autosave/recovery, avvisningsvarsel og låst historikk.
 // FASE 37A2 HJELP: Butikktilbud har versjonslåst, valgfri automatisk oppfølging med brukerdefinert intervall og maks antall. Ordinære tilbud følges manuelt.
 // FASE 37D2 HJELP: Butikktilbud vises som eget hjelpetema og avsluttes ved aksept eller avvisning uten prosjektaktivering.
@@ -234,7 +235,13 @@ function createStoreOfferHelpItem() {
   ]);
 
   appendHelpSection(content, "Maler og dokumentasjon", [
-    "Dagens Butikktilbud-mal lagrer tilbudstittel, intro, forbehold, vilkår, betaling og gyldighet. Den lagrer ikke komplett post-/avsnittsstruktur ennå.",
+    "Komplette Butikktilbud-maler er firmadelte. Bruk Bruk firmamal øverst i tilbudet når du vil hente inn en mal, og Lagre som mal nederst sammen med Forhåndsvis kundetilbud og Lagre butikktilbud når et ferdig oppsett skal gjenbrukes.",
+    "En komplett mal kan gjenbruke tilbudstittel og kundetekster, betalingsbetingelser og gyldighet, avsnitt og rekkefølge, tilbudsposter, knyttet montering, opsjoner og alternativer som erstatter konkrete poster.",
+    "Katalogvarer beholder katalogkoblingen, men ikke gammel katalogpris. Når malen brukes hentes gjeldende aktiv kundepris på nytt fra vareregisteret. Manuelle poster uten katalogkobling beholder prisen som ble lagret i malen.",
+    "Hvis en katalogvare ikke lenger finnes aktivt, brukes ikke den gamle prisen som fallback. Posten må velges eller prissettes på nytt, og brukeren får en tydelig advarsel.",
+    "Kunde, adresse, saksbehandler/signatur, valgt merkevare/avsender og automatisk oppfølgingsplan beholdes fra den aktuelle saken og kopieres ikke fra malen. Bilder og PDF-/andre vedlegg lagres heller ikke i malen.",
+    "Eldre Butikktilbud-tekstmaler støttes fortsatt. De endrer bare tekst/vilkår og skal ikke slette eksisterende poster eller priser i kladden.",
+    "Når en komplett mal brukes på en kladd som allerede har strukturert innhold, må brukeren bekrefte at avsnitt, poster, montering og opsjoner skal erstattes. Etterpå vises tydelig beskjed om at malen er brukt og hvor mange katalogpriser som ble hentet på nytt.",
     "Publiserte, aksepterte og avviste tilbudsversjoner skal ikke overskrives. Ved endringer opprettes en ny tilbudsversjon.",
     "Avsnitt vises som overskrifter uten linjenummer og uten 0-kroners pris i internvisning, kundelenke, tilbuds-PDF og akseptbevis.",
   ]);
@@ -242,6 +249,7 @@ function createStoreOfferHelpItem() {
   appendHelpSection(content, "Viktig", [
     "Butikktilbud er en egen arbeidsflyt og skal ikke brukes som inngang til våtromsprosjekt, kontrakt eller prosjektaktivering.",
     "Kontroller alltid kunde, avsnitt/poster, varevalg, montering, opsjoner, logo, betalingsbetingelser, gyldighet og oppfølgingsplan i forhåndsvisningen før tilbudet sendes.",
+    "Når en firmamal er brukt, kontroller spesielt katalogvarer som er prisoppdatert og eventuelle katalogvarer som ikke lenger finnes aktivt før tilbudet lagres eller publiseres.",
     "Automatiske påminnelser gjelder kun Butikktilbud og sendes aldri når tilbudet allerede er akseptert, avvist, utløpt, arkivert eller når en annen tilbudsversjon er blitt gjeldende.",
     "En e-postfeil ved avvisningsvarsling endrer ikke kundens allerede registrerte avvisning.",
     "Tilgang til Butikktilbud følger brukerens tildelte modultilgang. Firmaadministrator kan bare delegere Butikktilbud når firmaadministratoren selv har denne tilgangen.",
