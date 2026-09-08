@@ -1,7 +1,7 @@
 /* Expo ProffDok – FASE 39B.2
    Tekstavsnitt i Butikktilbud lagres som prisnøytrale linjer i Varer-gruppen.
    Den interne markørlenken skjules i kundevisning/PDF, og kortet vises som ren tekst.
-   Forhåndsvisning skal aldri vise interne redigeringsverktøy eller kundehandlinger. */
+   Forhåndsvisning viser kundens valg, men kan aldri sende aksept/avvisning. */
 
 .sales-customer-line-card:has(.sales-customer-line-media a[href="#expo-store-text-block"]) {
   grid-template-columns: 1fr !important;
@@ -37,16 +37,85 @@
   line-height: 1.35;
 }
 
-/* Draft preview: kunden skal kun se selve tilbudet, aldri redigeringsverktøy eller beslutningsknapper. */
+/* Draft preview skal vise nøyaktig hvilke valg kunden får, men være helt klikk-sikker. */
 .store-draft-preview-shell .sales-customer-accept-form,
 .store-draft-preview-shell .store-customer-decision-shell {
-  display: none !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+.store-draft-preview-shell .sales-customer-accept-form button,
+.store-draft-preview-shell .store-customer-decision-shell button,
+.store-draft-preview-shell .sales-customer-accept-form input,
+.store-draft-preview-shell .store-customer-decision-shell input {
+  cursor: default !important;
 }
 
 /* Katalog-wrapperen rendrer editorverktøy som søsken etter preview-komponenten. Skjul dem i preview. */
 .store-draft-preview-shell ~ section,
 .store-draft-preview-shell ~ .catalog-panel {
   display: none !important;
+}
+
+/* Avvisning skal være et lite sekundært valg, ikke en stor egen kundeprosess. */
+.store-customer-decline-card {
+  padding: 14px 16px !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  background: #fff !important;
+}
+
+.store-customer-decline-card h2 {
+  margin: 0 !important;
+  font-size: 1rem !important;
+}
+
+.store-customer-decline-card > p {
+  display: none !important;
+}
+
+.store-customer-decline-fields {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin-top: 10px !important;
+}
+
+.store-customer-decline-fields > .sales-field {
+  flex: 1 1 260px;
+  margin: 0 !important;
+}
+
+.store-customer-decline-check {
+  flex: 0 1 auto;
+  align-items: center !important;
+  min-height: 44px;
+  margin: 0 !important;
+  font-size: .9rem;
+}
+
+.store-customer-decline-button {
+  min-height: 40px !important;
+  padding: 8px 13px !important;
+  margin: 0 !important;
+}
+
+.store-customer-decline-error {
+  flex-basis: 100%;
+  margin: 0 !important;
+}
+
+@media (max-width: 620px) {
+  .store-customer-decline-fields {
+    align-items: stretch !important;
+  }
+  .store-customer-decline-fields > .sales-field,
+  .store-customer-decline-check,
+  .store-customer-decline-button {
+    width: 100%;
+    flex-basis: 100%;
+  }
 }
 
 /* JS-template-literal i kundevisningen bruker \A feil som tekst. Overstyr direkte i ekte CSS. */
