@@ -12,8 +12,28 @@ import {
   hasOfferQuantityDetails,
 } from "./salesUtils.js";
 
-function isStoreSectionLine(item = {}) {
-  return item?.lineType === "store_text" || item?.storeSectionMode === "group";
+const STORE_SECTION_MARKER = "#expo-store-text-block";
+
+export function isStoreSectionLine(item = {}) {
+  return Boolean(
+    item?.lineType === "store_text" ||
+      item?.storeSectionMode === "group" ||
+      String(item?.productUrl || "").trim() === STORE_SECTION_MARKER ||
+      String(item?.id || "").startsWith("store-section-")
+  );
+}
+
+export function getStoreSectionTitle(item = {}) {
+  const title = String(item?.storeTextTitle || "").trim();
+  const body = String(item?.storeTextBody || "").trim();
+  if (title && title !== "Nytt avsnitt") return title;
+  if (title === "Nytt avsnitt" && body) return body;
+
+  const description = String(item?.description || "").trim();
+  if (description.toLowerCase().startsWith("nytt avsnitt")) {
+    return description.slice("nytt avsnitt".length).trim() || body || "Avsnitt";
+  }
+  return description || body || "Avsnitt";
 }
 
 function getQuantityUnitPriceText(item = {}) {
