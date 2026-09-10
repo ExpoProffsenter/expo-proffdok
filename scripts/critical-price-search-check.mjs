@@ -118,9 +118,28 @@ if (!unifiedAdmin.includes("targetIsSystemAdmin") || !unifiedAdmin.includes("dis
   throw new Error("Systemadministrator-rader skal være låst og alltid ha alle tilganger.");
 }
 
+const help = requireNeedles("src/modules/help/priceSearchHelpUx.js", [
+  "🔎 Prissøk",
+  "Prissøk oppretter eller endrer aldri tilbud, prosjekter eller vareregisteret",
+  "Se interne nettopriser",
+  "Uten rettigheten sendes de sensitive prisfeltene ikke fra serveren",
+  "Systemadmin behandler nå brukerstatus, firma, rolle, hovedmoduler og eventuell nto-pristilgang på samme brukerkort",
+]);
+if (help.includes("new MutationObserver")) {
+  throw new Error("Prissøk-Hjelp skal ikke innføre en ny global MutationObserver.");
+}
+
+requireNeedles("docs/architecture/FASE41B2_PRICE_SEARCH_AND_SENSITIVE_ACCESS.md", [
+  "Prissøk, sensitiv nto-tilgang og samlet brukeradministrasjon",
+  "view_internal_net_prices",
+  "server-side",
+  "FASE 41B.3",
+]);
+
 requireNeedles("index.html", [
   "installStorePriceSearchUx",
   "installSystemAdminUnifiedUserAccessUx",
+  "installPriceSearchHelpUx",
 ]);
 
 console.log("✅ Expo ProffDok Prissøk / sensitiv tilgang check OK");
