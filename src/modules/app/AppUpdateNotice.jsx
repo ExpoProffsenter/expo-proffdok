@@ -1,12 +1,12 @@
-// Expo ProffDok – FASE 28D1
+// Expo ProffDok – FASE 28D1 / 41B.3F
 // Oppdager nyere Vite/Vercel-deploy ved å sammenligne lastet entry-asset med fersk index.html.
+// Kontroll kjøres straks appen åpnes/kommer tilbake i fokus, spesielt viktig på mobil.
 // Ingen SQL, Supabase, Service Worker eller automatisk tvangsreload.
 
 import { useEffect, useRef, useState } from "react";
 import { RefreshCw, X } from "lucide-react";
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000;
-const INITIAL_CHECK_DELAY_MS = 30 * 1000;
 const SNOOZE_MS = 15 * 60 * 1000;
 const MIN_CHECK_GAP_MS = 30 * 1000;
 
@@ -130,16 +130,16 @@ export default function AppUpdateNotice() {
     }
 
     function handleFocus() {
-      void checkForUpdate();
+      void checkForUpdate({ force: true });
     }
 
     function handleOnline() {
       void checkForUpdate({ force: true });
     }
 
-    const initialTimer = window.setTimeout(() => {
-      void checkForUpdate({ force: true });
-    }, INITIAL_CHECK_DELAY_MS);
+    // 41B.3F: Ikke vent 30 sekunder på første kontroll. Gamle mobilfaner skal
+    // oppdage ny deploy med en gang de åpnes eller kommer tilbake i forgrunnen.
+    void checkForUpdate({ force: true });
 
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") {
@@ -153,7 +153,6 @@ export default function AppUpdateNotice() {
 
     return () => {
       cancelled = true;
-      window.clearTimeout(initialTimer);
       window.clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("focus", handleFocus);
