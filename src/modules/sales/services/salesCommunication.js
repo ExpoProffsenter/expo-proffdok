@@ -1,8 +1,9 @@
-// Expo ProffDok – FASE 23Q / FASE 29B4
+// Expo ProffDok – FASE 23Q / FASE 29B4 / FASE 41B.3
 // Samler henting av firmaprofil, sending av kunde-e-post og tekst til befaringsbekreftelse.
 // FASE 29B4 bruker samme logoregel som hovedappen: firmaets opplastede logo
 // når den finnes, ellers Expo Proffsenter-logoen. I systemadmin-supportmodus
 // hentes firmaprofilen fra valgt Sales-firma, ikke fra systemadministratorens firma.
+// FASE 41B.3 bruker serverstyrt aktiv arbeidsprofil når brukeren har flerfirmatilgang.
 
 import {
   formatInspectionDateTime,
@@ -29,6 +30,26 @@ function withLogoFallback(profile) {
     ...profile,
     logoUrl: profile.logoUrl || DEFAULT_COMPANY_LOGO_URL,
   };
+}
+
+async function fetchActiveWorkProfile(client) {
+  try {
+    const { data, error } = await client.rpc("get_my_work_profile_state");
+    if (error) return null;
+    const profile = data?.active_company_profile || null;
+    if (!profile?.companyName) return null;
+    return withLogoFallback({
+      companyName: profile.companyName || "",
+      orgNumber: profile.orgNumber || "",
+      address: profile.address || "",
+      phone: profile.phone || "",
+      email: profile.email || "",
+      website: profile.website || "",
+      logoUrl: profile.logoUrl || DEFAULT_COMPANY_LOGO_URL,
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function fetchSalesCompanyProfile(client) {
@@ -60,6 +81,9 @@ export async function fetchSalesCompanyProfile(client) {
   }
 
   if (!user?.id) return null;
+
+  const activeWorkProfile = await fetchActiveWorkProfile(client);
+  if (hasCompanyProfile(activeWorkProfile)) return activeWorkProfile;
 
   const { data, error } = await fetchProfileById(
     client,

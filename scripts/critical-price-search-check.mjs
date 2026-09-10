@@ -8,7 +8,7 @@ function requireNeedles(path, needles) {
   const text = read(path);
   for (const needle of needles) {
     if (!text.includes(needle)) {
-      throw new Error(`${path}: mangler kritisk 41B.2-guard: ${needle}`);
+      throw new Error(`${path}: mangler kritisk 41B.2/41B.3-guard: ${needle}`);
     }
   }
   return text;
@@ -73,11 +73,40 @@ const view = requireNeedles("src/modules/storeCatalog/StorePriceSearchView.jsx",
   "Intern netto eks. mva.",
   "hasNetPrice",
   "Intern nto-pris vises bare for brukere med egen tilgang",
-  "uten å opprette et tilbud",
+  "selectedProducts",
+  "Valgte varer",
+  "Midlertidig arbeidsliste",
+  "Tøm liste",
+  "purchase_discount_percent",
+  "gross_margin_percent",
+  "setSelectedProducts",
+  "sessionStorage.getItem",
+  "sessionStorage.setItem",
+  "sessionStorage.removeItem",
+  "toStoredReference",
+  "restoreStoredProducts",
+  "Skriv ut",
+  "Inkluder interne priser",
+  "window.print()",
+  "createPortal",
+  "priceSearchPrintPortal",
 ]);
 
 if (/\b(?:supabase|client)\s*\.\s*from\s*\(/.test(view) || /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(view)) {
   throw new Error("StorePriceSearchView skal ikke skrive direkte til database.");
+}
+if (/(?:window\.)?localStorage\s*\.\s*(?:getItem|setItem|removeItem|clear)\s*\(|\bindexedDB\s*\./i.test(view)) {
+  throw new Error("Prissøk-arbeidslisten skal ikke bruke varig lokal lagring.");
+}
+const storedReferenceBlock = view.match(/function toStoredReference\(item\) \{[\s\S]*?\n\}/)?.[0] || "";
+if (!storedReferenceBlock || /purchase_net_ex_vat|purchase_discount_percent|gross_margin_percent|customer_price_/i.test(storedReferenceBlock)) {
+  throw new Error("sessionStorage skal bare lagre vare-ID/oppslagsnøkler, aldri pris- eller marginfelt.");
+}
+if (!view.includes("restoreStoredProducts") || !view.includes("searchPrices(lookup, 10)")) {
+  throw new Error("Mobil-sikker arbeidsliste skal rehydreres via backend etter reload.");
+}
+if (/Tilbake til Expo ProffDok|priceSearchShell|aria-modal=/.test(view)) {
+  throw new Error("Prissøk skal ligge inne i appens arbeidsflate, ikke som fullskjerm-overlay.");
 }
 
 const storeOfferTools = requireNeedles("src/modules/storeCatalog/StoreCatalogOfferTools.jsx", [
@@ -96,6 +125,8 @@ const ux = requireNeedles("src/modules/storeCatalog/storePriceSearchUx.jsx", [
   "bademiljo expo",
   "expo proffsenter",
   "SYSTEMADMIN SUPPORTMODUS",
+  "expoPriceSearchActive",
+  "StorePriceSearchView",
 ]);
 
 if (/\b(?:supabase|client)\s*\.\s*from\s*\(/.test(ux) || /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(ux)) {
@@ -150,4 +181,4 @@ requireNeedles("index.html", [
   "installPriceSearchHelpUx",
 ]);
 
-console.log("✅ Expo ProffDok Prissøk / sensitiv tilgang check OK");
+console.log("✅ Expo ProffDok Prissøk / sensitiv tilgang / mobil-sikker arbeidsliste / utskrift check OK");
