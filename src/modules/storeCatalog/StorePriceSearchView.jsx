@@ -1,12 +1,17 @@
 // Expo ProffDok – FASE 41B.2 / 41B.2A / 41B.3 / 41B.3C
 // Read-only Prissøk mot aktivt ERP-vareregister.
 // FASE 41B.3 viser Prissøk som en ordinær arbeidsflate inne i Expo ProffDok.
-// FASE 41B.3C bruker en midlertidig React-arbeidsliste som forsvinner ved
-// sidebytte/refresh. Valgte varer ligger over søket og kan foldes sammen.
+// FASE 41B.3C bruker en midlertidig arbeidsliste i sessionStorage slik at vanlig
+// mobil-dvale/refresh tåles. Kun vare-ID/oppslagsnøkkel lagres; priser hentes på
+// nytt gjennom backend. Arbeidslisten kan også skrives ut uten å lagre historikk.
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, ExternalLink, Plus, Search, Trash2 } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ChevronDown, ChevronUp, ExternalLink, Plus, Printer, Search, Trash2 } from "lucide-react";
 import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
+
+const WORKLIST_SESSION_KEY = "expo-proffdok:price-search:worklist:v1";
+const MAX_STORED_WORKLIST_ITEMS = 30;
 
 const moneyIncl = new Intl.NumberFormat("nb-NO", {
   style: "currency",
@@ -38,12 +43,75 @@ function formatDate(value) {
     : new Intl.DateTimeFormat("nb-NO").format(date);
 }
 
+function formatPrintTimestamp() {
+  return new Intl.DateTimeFormat("nb-NO", {
+    dateStyle: "long",
+    timeStyle: "short",
+  }).format(new Date());
+}
+
 async function searchPrices(query, limit = 30) {
   const payload = await rpcWithStoredSession("search_internal_store_catalog_prices", {
     p_query: query,
     p_limit: limit,
   });
   return Array.isArray(payload) ? payload : [];
+}
+
+function toStoredReference(item) {
+  return {
+    id: String(item?.id || ""),
+    supplier_product_number: String(item?.supplier_product_number || ""),
+    gtin: String(item?.gtin || ""),
+  };
+}
+
+function readStoredReferences() {
+  if (typeof window === "undefined") return [];
+  try {
+    const parsed = JSON.parse(window.sessionStorage.getItem(WORKLIST_SESSION_KEY) || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((item) => item && item.id && (item.supplier_product_number || item.gtin))
+      .slice(0, MAX_STORED_WORKLIST_ITEMS)
+      .map((item) => ({
+        id: String(item.id),
+        supplier_product_number: String(item.supplier_product_number || ""),
+        gtin: String(item.gtin || ""),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function persistStoredReferences(items) {
+  if (typeof window === "undefined") return;
+  try {
+    const refs = items.slice(0, MAX_STORED_WORKLIST_ITEMS).map(toStoredReference);
+    if (!refs.length) {
+      window.sessionStorage.removeItem(WORKLIST_SESSION_KEY);
+      return;
+    }
+    window.sessionStorage.setItem(WORKLIST_SESSION_KEY, JSON.stringify(refs));
+  } catch {
+    // sessionStorage kan være utilgjengelig i enkelte nettlesermoduser. Prissøk skal fortsatt virke.
+  }
+}
+
+async function restoreStoredProducts(refs) {
+  const restored = [];
+  for (const ref of refs) {
+    const lookup = ref.supplier_product_number || ref.gtin;
+    if (!lookup) continue;
+    try {
+      const items = await searchPrices(lookup, 10);
+      const exact = items.find((item) => String(item.id) === String(ref.id));
+      if (exact) restored.push(exact);
+    } catch {
+      // En utilgjengelig/utgått vare droppes ved gjenoppretting.
+    }
+  }
+  return restored;
 }
 
 function PriceResult({ item, selected, onSelect }) {
@@ -117,10 +185,11 @@ function PriceResult({ item, selected, onSelect }) {
   );
 }
 
-function SelectedProduct({ item, onRemove }) {
+function SelectedProduct({ item, onRemove, printMode = false, includeInternal = true }) {
   const hasNetPrice = item.purchase_net_ex_vat !== null && item.purchase_net_ex_vat !== undefined;
   const hasDiscount = item.purchase_discount_percent !== null && item.purchase_discount_percent !== undefined;
   const hasMargin = item.gross_margin_percent !== null && item.gross_margin_percent !== undefined;
+  const showInternal = hasNetPrice && includeInternal;
 
   return (
     <article className="priceSearchSelectedProduct">
@@ -136,9 +205,11 @@ function SelectedProduct({ item, onRemove }) {
             <strong>{item.description || "Vare uten beskrivelse"}</strong>
             <span>{item.supplier_name || "Ukjent leverandør"}</span>
           </div>
-          <button type="button" className="secondary priceSearchRemove" onClick={() => onRemove(item.id)}>
-            <Trash2 size={16} /> Slett
-          </button>
+          {!printMode ? (
+            <button type="button" className="secondary priceSearchRemove" onClick={() => onRemove(item.id)}>
+              <Trash2 size={16} /> Slett
+            </button>
+          ) : null}
         </div>
 
         <div className="priceSearchSelectedFacts">
@@ -158,19 +229,19 @@ function SelectedProduct({ item, onRemove }) {
             <span>Kundepris eks. mva.</span>
             <strong>{formatMoney(item.customer_price_ex_vat)}</strong>
           </div>
-          {hasNetPrice ? (
+          {showInternal ? (
             <div className="priceSearchSensitivePrice">
               <span>Intern netto eks. mva.</span>
               <strong>{formatMoney(item.purchase_net_ex_vat)}</strong>
             </div>
           ) : null}
-          {hasNetPrice && hasDiscount ? (
+          {showInternal && hasDiscount ? (
             <div className="priceSearchSensitivePrice">
               <span>Innkjøpsrabatt</span>
               <strong>{formatPercent(item.purchase_discount_percent)}</strong>
             </div>
           ) : null}
-          {hasNetPrice && hasMargin ? (
+          {showInternal && hasMargin ? (
             <div className="priceSearchSensitivePrice">
               <span>Bruttomargin</span>
               <strong>{formatPercent(item.gross_margin_percent)}</strong>
@@ -178,7 +249,7 @@ function SelectedProduct({ item, onRemove }) {
           ) : null}
         </div>
 
-        {item.product_url ? (
+        {!printMode && item.product_url ? (
           <a className="priceSearchProductLink" href={item.product_url} target="_blank" rel="noreferrer">
             Åpne produktinformasjon <ExternalLink size={15} />
           </a>
@@ -188,18 +259,49 @@ function SelectedProduct({ item, onRemove }) {
   );
 }
 
+function PrintDocument({ items, includeInternal }) {
+  return (
+    <div className="priceSearchPrintPortal" aria-hidden="true">
+      <header className="priceSearchPrintHeader">
+        <small>Expo ProffDok</small>
+        <h1>Prissøk – valgte varer</h1>
+        <p>{items.length} {items.length === 1 ? "vare" : "varer"} · skrevet ut {formatPrintTimestamp()}</p>
+        {includeInternal ? <p><strong>Interne priser er inkludert.</strong></p> : null}
+      </header>
+      <main className="priceSearchPrintList">
+        {items.map((item) => (
+          <SelectedProduct
+            key={item.id}
+            item={item}
+            onRemove={() => {}}
+            printMode
+            includeInternal={includeInternal}
+          />
+        ))}
+      </main>
+    </div>
+  );
+}
+
 export default function StorePriceSearchView() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [selectedExpanded, setSelectedExpanded] = useState(true);
+  const [includeInternalPrint, setIncludeInternalPrint] = useState(false);
+  const [restoringSelected, setRestoringSelected] = useState(false);
   const [searching, setSearching] = useState(false);
   const [message, setMessage] = useState("");
   const searchInputRef = useRef(null);
+  const restoredSelectionRef = useRef(false);
 
   const cleanQuery = query.trim();
   const selectedIds = useMemo(
     () => new Set(selectedProducts.map((item) => String(item.id))),
+    [selectedProducts]
+  );
+  const canPrintInternal = useMemo(
+    () => selectedProducts.some((item) => item.purchase_net_ex_vat !== null && item.purchase_net_ex_vat !== undefined),
     [selectedProducts]
   );
   const resultLabel = useMemo(() => {
@@ -207,6 +309,39 @@ export default function StorePriceSearchView() {
     if (cleanQuery.length < 2) return "Skriv minst 2 tegn for å søke.";
     return `${results.length} treff`;
   }, [cleanQuery.length, results.length, searching]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const refs = readStoredReferences();
+    if (!refs.length) {
+      restoredSelectionRef.current = true;
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setRestoringSelected(true);
+    void restoreStoredProducts(refs).then((items) => {
+      if (cancelled) return;
+      restoredSelectionRef.current = true;
+      setSelectedProducts(items);
+      persistStoredReferences(items);
+      setRestoringSelected(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!restoredSelectionRef.current) return;
+    persistStoredReferences(selectedProducts);
+  }, [selectedProducts]);
+
+  useEffect(() => {
+    if (!canPrintInternal && includeInternalPrint) setIncludeInternalPrint(false);
+  }, [canPrintInternal, includeInternalPrint]);
 
   useEffect(() => {
     if (cleanQuery.length < 2) {
@@ -256,8 +391,21 @@ export default function StorePriceSearchView() {
   const clearSelectedProducts = () => {
     setSelectedProducts([]);
     setSelectedExpanded(true);
+    setIncludeInternalPrint(false);
     window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
+
+  const printSelectedProducts = () => {
+    if (!selectedProducts.length) return;
+    window.print();
+  };
+
+  const printPortal = typeof document !== "undefined" && selectedProducts.length
+    ? createPortal(
+        <PrintDocument items={selectedProducts} includeInternal={canPrintInternal && includeInternalPrint} />,
+        document.body
+      )
+    : null;
 
   return (
     <div className="priceSearchInlineView" aria-label="Prissøk">
@@ -267,15 +415,32 @@ export default function StorePriceSearchView() {
         <p>Søk etter varer og legg dem i en midlertidig arbeidsliste mens du sammenligner produkter og priser.</p>
       </section>
 
+      {restoringSelected && !selectedProducts.length ? (
+        <div className="priceSearchMessage">Gjenoppretter midlertidig arbeidsliste …</div>
+      ) : null}
+
       {selectedProducts.length ? (
         <section className="priceSearchSelected" aria-label="Valgte varer">
           <div className="priceSearchSelectedHeader">
             <div>
               <small>Midlertidig arbeidsliste</small>
               <h3>Valgte varer ({selectedProducts.length})</h3>
-              <p>Listen forsvinner når du forlater Prissøk eller laster siden på nytt.</p>
+              <p>Listen lagres bare i denne nettleserfanen og tåler vanlig refresh/dvale. Prisene hentes på nytt etter reload.</p>
             </div>
             <div className="priceSearchSelectedHeaderActions">
+              {canPrintInternal ? (
+                <label className="priceSearchPrintOption">
+                  <input
+                    type="checkbox"
+                    checked={includeInternalPrint}
+                    onChange={(event) => setIncludeInternalPrint(event.target.checked)}
+                  />
+                  Inkluder interne priser
+                </label>
+              ) : null}
+              <button type="button" className="secondary" onClick={printSelectedProducts}>
+                <Printer size={16} /> Skriv ut
+              </button>
               <button
                 type="button"
                 className="secondary"
@@ -290,13 +455,11 @@ export default function StorePriceSearchView() {
               </button>
             </div>
           </div>
-          {selectedExpanded ? (
-            <div className="priceSearchSelectedList">
-              {selectedProducts.map((item) => (
-                <SelectedProduct key={item.id} item={item} onRemove={removeSelectedProduct} />
-              ))}
-            </div>
-          ) : null}
+          <div className={`priceSearchSelectedList${selectedExpanded ? "" : " isCollapsed"}`}>
+            {selectedProducts.map((item) => (
+              <SelectedProduct key={item.id} item={item} onRemove={removeSelectedProduct} />
+            ))}
+          </div>
         </section>
       ) : null}
 
@@ -316,7 +479,7 @@ export default function StorePriceSearchView() {
         </div>
         <div className="priceSearchMeta" aria-live="polite">
           <span>{resultLabel}</span>
-          <small>Valgte varer lagres ikke. Intern nto-pris vises bare for brukere med egen tilgang.</small>
+          <small>Arbeidslisten lagres kun midlertidig i denne fanen. Intern nto-pris vises bare for brukere med egen tilgang.</small>
         </div>
       </section>
 
@@ -338,9 +501,12 @@ export default function StorePriceSearchView() {
         </section>
       ) : null}
 
+      {printPortal}
+
       <style>{`
         main.expoPriceSearchActive > :not(#expo-price-search-inline){display:none!important}
         .priceSearchInlineView{width:100%;color:#10212b;font-family:inherit}
+        .priceSearchPrintPortal{display:none}
         .priceSearchIntro{margin-bottom:18px}
         .priceSearchIntro small,.priceSearchSelectedHeader small{font-weight:800;color:#159aa3}
         .priceSearchIntro h2{margin:4px 0 6px;font-size:34px}
@@ -360,7 +526,10 @@ export default function StorePriceSearchView() {
         .priceSearchSelectedHeader h3{margin:3px 0 5px;font-size:21px}
         .priceSearchSelectedHeaderActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
         .priceSearchSelectedHeader button,.priceSearchResultActions button,.priceSearchRemove{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+        .priceSearchPrintOption{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 10px;border:1px solid #f0cd83;border-radius:11px;background:#fff8e8;color:#7b5314;font-size:13px;font-weight:800;white-space:nowrap}
+        .priceSearchPrintOption input{width:17px;height:17px;margin:0}
         .priceSearchSelectedList{display:grid;gap:12px;margin-top:15px}
+        .priceSearchSelectedList.isCollapsed{display:none}
         .priceSearchSelectedProduct{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;padding:16px;border:1px solid #d6e4e8;border-radius:15px;background:#fff}
         .priceSearchSelectedImage{width:96px;height:96px;display:grid;place-items:center;border:1px solid #e0e9ec;border-radius:12px;overflow:hidden;background:#fff}
         .priceSearchSelectedImage img{max-width:100%;max-height:100%;object-fit:contain}
@@ -407,7 +576,7 @@ export default function StorePriceSearchView() {
           .priceSearchInputWrap input{font-size:16px;min-height:52px}
           .priceSearchMeta,.priceSearchSelectedHeader,.priceSearchSelectedHeading{align-items:stretch;flex-direction:column}
           .priceSearchSelectedHeaderActions{justify-content:stretch}
-          .priceSearchSelectedHeaderActions button{width:100%}
+          .priceSearchPrintOption,.priceSearchSelectedHeaderActions button{width:100%;box-sizing:border-box;justify-content:center}
           .priceSearchSelectedProduct{grid-template-columns:1fr;padding:14px}
           .priceSearchSelectedImage{width:100%;height:160px}
           .priceSearchRemove{width:100%}
@@ -416,6 +585,23 @@ export default function StorePriceSearchView() {
           .priceSearchPrices>div{white-space:normal}
           .priceSearchResultActions{align-items:stretch;flex-direction:column}
           .priceSearchResultActions button,.priceSearchProductLink{width:100%;box-sizing:border-box;justify-content:center}
+        }
+        @media print{
+          @page{size:A4;margin:12mm}
+          #root{display:none!important}
+          .priceSearchPrintPortal{display:block!important;font-family:Arial,sans-serif;color:#111;background:#fff;font-size:10pt}
+          .priceSearchPrintHeader{margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #111}
+          .priceSearchPrintHeader small{font-weight:700}
+          .priceSearchPrintHeader h1{margin:3px 0 5px;font-size:20pt}
+          .priceSearchPrintHeader p{margin:2px 0}
+          .priceSearchPrintList{display:grid;gap:8px}
+          .priceSearchPrintPortal .priceSearchSelectedProduct{break-inside:avoid;page-break-inside:avoid;padding:10px;border:1px solid #bbb;border-radius:6px;grid-template-columns:auto minmax(0,1fr);box-shadow:none}
+          .priceSearchPrintPortal .priceSearchSelectedImage{width:70px;height:70px}
+          .priceSearchPrintPortal .priceSearchSelectedDetails{gap:7px}
+          .priceSearchPrintPortal .priceSearchSelectedFacts>div,.priceSearchPrintPortal .priceSearchSelectedPrices>div{padding:5px 7px;min-width:90px;border:1px solid #ddd;background:#fff}
+          .priceSearchPrintPortal .priceSearchSelectedFacts span,.priceSearchPrintPortal .priceSearchSelectedPrices span{font-size:8pt}
+          .priceSearchPrintPortal .priceSearchSelectedFacts strong,.priceSearchPrintPortal .priceSearchSelectedPrices strong{font-size:9pt}
+          .priceSearchPrintPortal .priceSearchSelectedPrices .priceSearchPrimaryPrice,.priceSearchPrintPortal .priceSearchSelectedPrices .priceSearchSensitivePrice{background:#fff;border:1px solid #bbb}
         }
       `}</style>
     </div>
