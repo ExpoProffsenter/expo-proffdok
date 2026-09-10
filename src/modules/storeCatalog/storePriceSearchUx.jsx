@@ -1,6 +1,7 @@
-// Expo ProffDok – FASE 41B.2
-// Kobler read-only Prissøk inn i eksisterende desktop- og mobilnavigasjon uten å
-// gjøre main.jsx større. Backend-RPC er autoritativ tilgangskontroll.
+// Expo ProffDok – FASE 41B.2 / FASE 41B.3
+// Kobler read-only Prissøk inn i eksisterende desktop- og mobilnavigasjon.
+// FASE 41B.3 viser Prissøk i samme app-arbeidsflate i stedet for fullskjerm-overlay.
+// Backend-RPC er fortsatt autoritativ tilgangskontroll.
 
 import React from "react";
 import { createRoot } from "react-dom/client";
@@ -8,7 +9,7 @@ import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
 import StorePriceSearchView from "./StorePriceSearchView.jsx";
 
 const NAV_BUTTON_ID = "expo-price-search-nav-button";
-const OVERLAY_ID = "expo-price-search-overlay";
+const INLINE_ID = "expo-price-search-inline";
 const MOBILE_OPTION_VALUE = "__expo_price_search__";
 const SUPPORT_LABEL = "SYSTEMADMIN SUPPORTMODUS";
 const ALLOWED_COMPANIES = new Set([
@@ -20,8 +21,8 @@ const ALLOWED_COMPANIES = new Set([
 let backendAllowed = false;
 let accessResolved = false;
 let accessPromise = null;
-let overlayRoot = null;
-let previousBodyOverflow = "";
+let inlineRoot = null;
+let priceSearchOpen = false;
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -61,6 +62,10 @@ function findInternalNav() {
   }) || null;
 }
 
+function findAppMain() {
+  return document.querySelector("#root main") || document.querySelector("main");
+}
+
 function activeNativeLabel() {
   const nav = findInternalNav();
   const active = nav
@@ -71,35 +76,74 @@ function activeNativeLabel() {
   return compactText(active?.textContent);
 }
 
+function syncActiveNavigation() {
+  const nav = findInternalNav();
+  const priceButton = document.getElementById(NAV_BUTTON_ID);
+  if (!nav || !priceButton) return;
+
+  priceButton.classList.toggle("on", priceSearchOpen);
+  if (priceSearchOpen) {
+    Array.from(nav.querySelectorAll(":scope > button.on")).forEach((button) => {
+      if (button.id !== NAV_BUTTON_ID) button.classList.remove("on");
+    });
+  }
+
+  const selects = Array.from(document.querySelectorAll('.mobileNavSelectWrap select[aria-label="Velg side"]'));
+  selects.forEach((select) => {
+    if (priceSearchOpen && Array.from(select.options).some((option) => option.value === MOBILE_OPTION_VALUE)) {
+      select.value = MOBILE_OPTION_VALUE;
+    }
+  });
+}
+
 function closePriceSearch() {
-  overlayRoot?.unmount?.();
-  overlayRoot = null;
-  document.getElementById(OVERLAY_ID)?.remove();
-  document.body.style.overflow = previousBodyOverflow;
+  priceSearchOpen = false;
+  inlineRoot?.unmount?.();
+  inlineRoot = null;
+  document.getElementById(INLINE_ID)?.remove();
+  findAppMain()?.classList.remove("expoPriceSearchActive");
+  syncActiveNavigation();
 }
 
 function openPriceSearch() {
   if (!uiAllowed()) return;
-  if (document.getElementById(OVERLAY_ID)) return;
+  const main = findAppMain();
+  if (!(main instanceof HTMLElement)) return;
 
-  previousBodyOverflow = document.body.style.overflow || "";
-  document.body.style.overflow = "hidden";
+  if (priceSearchOpen && document.getElementById(INLINE_ID)) {
+    syncActiveNavigation();
+    document.getElementById("expo-price-search-input")?.focus?.();
+    return;
+  }
+
+  closePriceSearch();
+  priceSearchOpen = true;
 
   const mount = document.createElement("div");
-  mount.id = OVERLAY_ID;
-  document.body.appendChild(mount);
-  overlayRoot = createRoot(mount);
-  overlayRoot.render(<StorePriceSearchView onClose={closePriceSearch} />);
+  mount.id = INLINE_ID;
+  main.appendChild(mount);
+  main.classList.add("expoPriceSearchActive");
+  inlineRoot = createRoot(mount);
+  inlineRoot.render(<StorePriceSearchView />);
+  syncActiveNavigation();
+  window.requestAnimationFrame(() => {
+    main.scrollIntoView({ block: "start" });
+    document.getElementById("expo-price-search-input")?.focus?.();
+  });
 }
 
 function syncNavButton() {
   const nav = findInternalNav();
   const existing = document.getElementById(NAV_BUTTON_ID);
   if (!nav || !uiAllowed()) {
+    if (priceSearchOpen) closePriceSearch();
     existing?.remove();
     return;
   }
-  if (existing && existing.parentElement === nav) return;
+  if (existing && existing.parentElement === nav) {
+    syncActiveNavigation();
+    return;
+  }
   existing?.remove();
 
   const salesButton = Array.from(nav.querySelectorAll(":scope > button")).find(
@@ -111,8 +155,12 @@ function syncNavButton() {
   button.id = NAV_BUTTON_ID;
   button.type = "button";
   button.textContent = "Prissøk";
-  button.addEventListener("click", openPriceSearch);
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    openPriceSearch();
+  });
   salesButton.insertAdjacentElement("afterend", button);
+  syncActiveNavigation();
 }
 
 function syncMobileOption() {
@@ -123,11 +171,13 @@ function syncMobileOption() {
       existing?.remove();
       return;
     }
-    if (existing) return;
-    const option = document.createElement("option");
-    option.value = MOBILE_OPTION_VALUE;
-    option.textContent = "Prissøk";
-    select.appendChild(option);
+    if (!existing) {
+      const option = document.createElement("option");
+      option.value = MOBILE_OPTION_VALUE;
+      option.textContent = "Prissøk";
+      select.appendChild(option);
+    }
+    if (priceSearchOpen) select.value = MOBILE_OPTION_VALUE;
   });
 }
 
@@ -142,6 +192,10 @@ function restoreMobileSelection(select) {
 function syncUi() {
   syncNavButton();
   syncMobileOption();
+  if (priceSearchOpen && !document.getElementById(INLINE_ID)) {
+    priceSearchOpen = false;
+  }
+  syncActiveNavigation();
 }
 
 async function refreshAccess() {
@@ -155,6 +209,7 @@ async function refreshAccess() {
     })
     .catch(() => {
       backendAllowed = false;
+      if (priceSearchOpen) closePriceSearch();
       syncUi();
       return false;
     })
@@ -182,18 +237,27 @@ export function installStorePriceSearchUx() {
     "change",
     (event) => {
       const select = event.target;
-      if (!(select instanceof HTMLSelectElement) || select.value !== MOBILE_OPTION_VALUE) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      openPriceSearch();
-      window.requestAnimationFrame(() => restoreMobileSelection(select));
+      if (!(select instanceof HTMLSelectElement)) return;
+      if (select.value === MOBILE_OPTION_VALUE) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        openPriceSearch();
+        return;
+      }
+      if (priceSearchOpen && select.closest(".mobileNavSelectWrap")) {
+        closePriceSearch();
+        window.requestAnimationFrame(() => restoreMobileSelection(select));
+      }
     },
     true
   );
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && document.getElementById(OVERLAY_ID)) closePriceSearch();
-  });
+  document.addEventListener("click", (event) => {
+    if (!priceSearchOpen) return;
+    const button = event.target instanceof Element ? event.target.closest("nav > button") : null;
+    if (!(button instanceof HTMLButtonElement) || button.id === NAV_BUTTON_ID) return;
+    closePriceSearch();
+  }, true);
 
   window.addEventListener("focus", () => {
     void refreshAccess();
