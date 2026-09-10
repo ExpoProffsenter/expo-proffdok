@@ -159,20 +159,38 @@ function styleHeaderShortcut(button, text) {
   button.style.top = '0';
 }
 
-function positionHeaderActions(homeButton, helpButton) {
-  if (!(homeButton instanceof HTMLButtonElement) || !(helpButton instanceof HTMLButtonElement)) return;
+function styleBarHelpButton(helpButton) {
+  if (!(helpButton instanceof HTMLButtonElement)) return;
+  helpButton.textContent = '? Hjelp';
+  helpButton.hidden = false;
+  helpButton.style.position = 'static';
+  helpButton.style.zIndex = 'auto';
+  helpButton.style.margin = '0 0 0 auto';
+  helpButton.style.height = '40px';
+  helpButton.style.padding = '0 12px';
+  helpButton.style.fontSize = '13px';
+  helpButton.style.lineHeight = '1';
+  helpButton.style.borderRadius = '13px';
+  helpButton.style.boxShadow = 'none';
+  helpButton.style.whiteSpace = 'nowrap';
+  helpButton.style.visibility = 'visible';
+  helpButton.style.left = '';
+  helpButton.style.top = '';
+  helpButton.style.flex = '0 0 auto';
+}
+
+function positionHeaderActions(homeButton) {
+  if (!(homeButton instanceof HTMLButtonElement)) return;
 
   const logoutButton = findTopHeaderButton('Logg ut');
   const newProjectButton = findTopHeaderButton('+ Nytt prosjekt');
 
   if (!(logoutButton instanceof HTMLButtonElement) || !(newProjectButton instanceof HTMLButtonElement)) {
     homeButton.hidden = true;
-    helpButton.hidden = true;
     return;
   }
 
   styleHeaderShortcut(homeButton, '← Startside');
-  styleHeaderShortcut(helpButton, '? Hjelp');
 
   const logoutRect = logoutButton.getBoundingClientRect();
   const newProjectRect = newProjectButton.getBoundingClientRect();
@@ -193,26 +211,6 @@ function positionHeaderActions(homeButton, helpButton) {
     homeButton.hidden = true;
     homeButton.style.visibility = '';
   }
-
-  // Hjelp legges på samme toppnivå uten å endre React-headeren. Først prøver vi
-  // rett for Nytt prosjekt; hvis plassen er knapp, prøver vi til venstre for Logg ut.
-  const helpWidth = helpButton.offsetWidth;
-  const rightCandidate = newProjectRect.right + gap;
-  if (rightCandidate + helpWidth <= window.innerWidth - 12) {
-    helpButton.style.left = `${Math.round(rightCandidate)}px`;
-    helpButton.style.top = `${Math.round(top)}px`;
-    helpButton.style.visibility = 'visible';
-  } else {
-    const leftCandidate = logoutRect.left - gap - helpWidth;
-    if (leftCandidate >= 12) {
-      helpButton.style.left = `${Math.round(leftCandidate)}px`;
-      helpButton.style.top = `${Math.round(top)}px`;
-      helpButton.style.visibility = 'visible';
-    } else {
-      helpButton.hidden = true;
-      helpButton.style.visibility = '';
-    }
-  }
 }
 
 function buildMenuShell() {
@@ -223,6 +221,8 @@ function buildMenuShell() {
   let backdrop = document.getElementById(BACKDROP_ID);
 
   if (bar && homeButton && helpButton && drawer && backdrop) {
+    if (helpButton.parentElement !== bar) bar.append(helpButton);
+    styleBarHelpButton(helpButton);
     return { bar, homeButton, helpButton, drawer, backdrop };
   }
 
@@ -259,13 +259,14 @@ function buildMenuShell() {
   helpButton.className = 'secondary expoDesktopHeaderShortcut';
   helpButton.textContent = '? Hjelp';
   helpButton.addEventListener('click', goToHelp);
+  styleBarHelpButton(helpButton);
 
   const current = document.createElement('div');
   current.className = 'expoDesktopMenuCurrent';
   current.setAttribute('aria-live', 'polite');
 
-  bar.append(toggle, current);
-  document.body.append(homeButton, helpButton);
+  bar.append(toggle, current, helpButton);
+  document.body.append(homeButton);
 
   backdrop = document.createElement('div');
   backdrop.id = BACKDROP_ID;
@@ -350,7 +351,8 @@ function syncDrawerWithSource(sourceNav, shell) {
   if (!(drawerNav instanceof HTMLElement) || !(current instanceof HTMLElement)) return;
 
   hideNativeWorkspaceHomeButton();
-  positionHeaderActions(shell.homeButton, shell.helpButton);
+  positionHeaderActions(shell.homeButton);
+  styleBarHelpButton(shell.helpButton);
 
   const signature = sourceButtons
     .map((button) => `${cleanLabel(button.textContent)}:${button.classList.contains('on') ? '1' : '0'}`)

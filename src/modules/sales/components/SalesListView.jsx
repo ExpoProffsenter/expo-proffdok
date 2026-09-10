@@ -1,4 +1,8 @@
-// Expo ProffDok – FASE 37A2 / FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// Expo ProffDok – FASE 41B.1 / FASE 37A2 / FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// FASE 41B.1 gjør Sales-søket mer robust: flere søkeord kan kombineres på tvers av
+// kunde, adresse, kontaktdata, saksnr., ansvarlig, status, tilbudstype og tilbudsinnhold.
+// Når et nytt hovedsøk starter, åpnes Alle statuser automatisk. Brukeren kan deretter
+// snevre inn søket manuelt. Sales-headeren er vanlig innhold og arver ikke appens sticky header.
 // FASE 37A2 viser automatisk Butikktilbud-oppfølging som eget revisjonsspor.
 // Butikktilbud med aktiv automatisk plan havner ikke i manuell «Må følges opp»
 // mens serveren fortsatt skal purre. Aksepterte/avviste Butikktilbud avsluttes i
@@ -151,14 +155,28 @@ function normalizeSearchText(value) {
     .toLocaleLowerCase("nb-NO")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/æ/g, "ae")
+    .replace(/ø/g, "o")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
-function requestMatchesSearch(request, query) {
-  const normalizedQuery = normalizeSearchText(query);
-  if (!normalizedQuery) return true;
+function compactSearchText(value) {
+  return normalizeSearchText(value).replace(/\s+/g, "");
+}
 
-  const haystack = [
+function requestSearchValues(request = {}) {
+  const storeOffer = isStoreOfferRequest(request);
+  const bucket = requestBucket(request);
+  const typeLabel = storeOffer ? "Butikktilbud butikk tilbud" : "Våtromstilbud våtrom tilbud";
+  const bucketLabel = WORK_TABS.find((tab) => tab.id === bucket)?.label || "";
+  const offerItems = [
+    ...(Array.isArray(request?.offerLines) ? request.offerLines : []),
+    ...(Array.isArray(request?.offerOptions) ? request.offerOptions : []),
+  ];
+
+  return [
     request?.customer,
     request?.title,
     request?.offerTitle,
@@ -172,12 +190,38 @@ function requestMatchesSearch(request, query) {
     request?.surveyResponsible,
     request?.projectResponsible,
     request?.source,
-  ]
+    request?.status,
+    request?.nextStep,
+    request?.__createdByName,
+    typeLabel,
+    bucketLabel,
+    ...offerItems.flatMap((item) => [
+      item?.title,
+      item?.description,
+      item?.internalProductNumber,
+      item?.storeSupplierName,
+      item?.storeSupplierProductNumber,
+      item?.gtin,
+      item?.nobbNumber,
+    ]),
+  ];
+}
+
+function requestMatchesSearch(request, query) {
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) return true;
+
+  const queryTokens = normalizedQuery.split(" ").filter(Boolean);
+  const haystack = requestSearchValues(request)
     .map(normalizeSearchText)
     .filter(Boolean)
     .join(" ");
+  const compactHaystack = compactSearchText(haystack);
 
-  return haystack.includes(normalizedQuery);
+  return queryTokens.every((token) => {
+    if (haystack.includes(token)) return true;
+    return compactHaystack.includes(compactSearchText(token));
+  });
 }
 
 function isArchivedRequest(request) {
@@ -313,6 +357,13 @@ export default function SalesListView({
     [activatedRequests, activeOfferType, searchQuery]
   );
 
+  function handleSearchChange(event) {
+    const nextQuery = event.target.value;
+    const startsNewSearch = !searchQuery.trim() && Boolean(nextQuery.trim());
+    setSearchQuery(nextQuery);
+    if (startsNewSearch && activeTab !== "all") setActiveTab("all");
+  }
+
   async function toggleArchive(request) {
     if (supportMode || archiveBusyId || !request?.id) return;
     if (!salesClient) {
@@ -375,7 +426,7 @@ export default function SalesListView({
   return (
     <div className="sales-app">
       <div className="sales-shell">
-        <header className="sales-header">
+        <div className="sales-header">
           <div className="sales-brand">
             <div className="sales-brand-mark">
               <ClipboardList size={22} />
@@ -385,7 +436,7 @@ export default function SalesListView({
               <span>Befaring / Tilbud / Aksept</span>
             </div>
           </div>
-        </header>
+        </div>
 
         <main className="sales-main">
           <SalesSupportNotice />
@@ -482,8 +533,8 @@ export default function SalesListView({
                 <input
                   type="search"
                   value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Søk kunde, adresse, e-post, telefon, saksnr., tittel eller ansvarlig"
+                  onChange={handleSearchChange}
+                  placeholder="Søk kunde, adresse, e-post, telefon, saksnr., tittel, ansvarlig eller tilbudsinnhold"
                   style={{
                     width: "100%",
                     minHeight: 46,
