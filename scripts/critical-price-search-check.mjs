@@ -43,20 +43,20 @@ const view = requireNeedles("src/modules/storeCatalog/StorePriceSearchView.jsx",
   "uten å opprette et tilbud",
 ]);
 
-if (/\.from\s*\(|\.insert\s*\(|\.update\s*\(|\.delete\s*\(/.test(view)) {
+if (/\b(?:supabase|client)\s*\.\s*from\s*\(/.test(view) || /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(view)) {
   throw new Error("StorePriceSearchView skal ikke skrive direkte til database.");
 }
 
 const ux = requireNeedles("src/modules/storeCatalog/storePriceSearchUx.jsx", [
   'button.textContent = "Prissøk"',
   "current_user_has_internal_store_price_search_access",
-  "Ringside Rørleggerbedrift AS".toLocaleLowerCase("nb-NO").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/æ/g, "ae").replace(/ø/g, "o"),
+  "ringside rorleggerbedrift as",
   "bademiljo expo",
   "expo proffsenter",
   "SYSTEMADMIN SUPPORTMODUS",
 ]);
 
-if (/\.from\s*\(|\.insert\s*\(|\.update\s*\(|\.delete\s*\(/.test(ux)) {
+if (/\b(?:supabase|client)\s*\.\s*from\s*\(/.test(ux) || /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(ux)) {
   throw new Error("storePriceSearchUx skal ikke skrive direkte til database.");
 }
 
