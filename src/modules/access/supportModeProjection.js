@@ -30,6 +30,7 @@ let activeProjection = null;
 let syncPromise = null;
 let republishTimer = null;
 let publishingProjection = false;
+let ownHeaderBranding = null;
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -42,6 +43,30 @@ function normalizeCompanyName(value = "") {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/æ/g, "ae")
     .replace(/ø/g, "o");
+}
+
+function getMainHeaderLogo() {
+  if (typeof document === "undefined") return null;
+  const image = document.querySelector("header .head img");
+  return image instanceof HTMLImageElement ? image : null;
+}
+
+function rememberOwnHeaderBranding() {
+  const image = getMainHeaderLogo();
+  if (!image || ownHeaderBranding) return;
+  ownHeaderBranding = {
+    src: image.getAttribute("src") || "",
+    alt: image.getAttribute("alt") || "",
+  };
+}
+
+function restoreOwnHeaderBranding() {
+  const image = getMainHeaderLogo();
+  if (!image || !ownHeaderBranding) return;
+  if (ownHeaderBranding.src) image.setAttribute("src", ownHeaderBranding.src);
+  else image.removeAttribute("src");
+  if (ownHeaderBranding.alt) image.setAttribute("alt", ownHeaderBranding.alt);
+  else image.removeAttribute("alt");
 }
 
 function visibleProjectSupportContext() {
@@ -169,7 +194,6 @@ async function clearProjection() {
   if (hadManagedSalesScope) setManagedSalesSupportCompany("");
   if (hadProjection || hadManagedSalesScope) await refreshMyModuleAccess();
 
-  // Eksisterende Sales-supportvisning lytter på popstate for å rydde logo/banner.
   if (typeof window !== "undefined" && (hadProjection || hadManagedSalesScope)) {
     window.dispatchEvent(new Event("popstate"));
   }
@@ -252,6 +276,11 @@ function scheduleSync(delays = [0, 120, 400]) {
   });
 }
 
+function scheduleBrandingRestore(delays = [0, 120, 450]) {
+  if (typeof window === "undefined") return;
+  delays.forEach((delay) => window.setTimeout(restoreOwnHeaderBranding, delay));
+}
+
 function salesNavigationButton(button) {
   return compactText(button?.textContent) === "Befaring/Tilbud";
 }
@@ -263,6 +292,7 @@ function exitSupportButton(button) {
 export function installSupportModeProjection() {
   if (typeof window === "undefined" || window.__expoSupportModeProjectionInstalled) return;
   window.__expoSupportModeProjectionInstalled = true;
+  rememberOwnHeaderBranding();
 
   document.addEventListener(
     "click",
@@ -274,12 +304,16 @@ export function installSupportModeProjection() {
       }
 
       const context = visibleProjectSupportContext();
+      if (!context) rememberOwnHeaderBranding();
 
       // La hovedappens egen exit-handler rydde prosjektet først. Deretter fjerner
-      // broen kun sitt Sales-scope og gjenoppretter innlogget brukers modultilgang.
+      // broen kun sitt Sales-scope, gjenoppretter innlogget bruker og original logo.
       if (context && exitSupportButton(button)) {
         window.setTimeout(() => {
-          void clearProjection().finally(() => scheduleSync([120, 400]));
+          void clearProjection().finally(() => {
+            scheduleBrandingRestore();
+            scheduleSync([120, 400]);
+          });
         }, 0);
         return;
       }
