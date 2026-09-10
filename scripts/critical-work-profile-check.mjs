@@ -79,6 +79,10 @@ const switcher = requireNeedles("src/modules/access/workProfileUx.jsx", [
   "active_company_profile",
   "SYSTEMADMIN SUPPORTMODUS",
   "id === activeId && !state?.selection_required",
+  "let rootHost = null",
+  "rootHost !== host",
+  "host.parentElement !== head",
+  "!state?.selection_required ? (",
 ]);
 if (/localStorage\s*\.\s*setItem/.test(switcher)) {
   throw new Error("Aktiv arbeidsprofil skal lagres server-side, ikke i localStorage.");
