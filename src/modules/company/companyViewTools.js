@@ -1,5 +1,5 @@
 // FASE 27E FIRMA: Mekanisk uttrekk av eksisterende Firmaprofil- og Firmaadministrasjon-visninger fra main.jsx.
-// Ingen funksjons-, auth-, database-, RLS-, Storage-, Edge Function-, e-post- eller rolleendring.
+// FASE 41B.3E: Tydeliggjør forskjellen mellom brukerens primære firmaprofil og systemadmins Representerer-scope.
 import React, * as ReactNS from 'react';
 import { Building2, Plus } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
@@ -7,6 +7,27 @@ import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 const import_react = { default: React, ...ReactNS };
 const import_lucide_react = { Building2, Plus };
 const import_jsx_runtime = { jsx, jsxs, Fragment };
+
+function getSystemAdminRepresentationContext(companyName = '') {
+  if (typeof window === 'undefined') return null;
+  const state = window.__expoProffDokWorkProfile || null;
+  if (!state?.is_systemadmin) return null;
+
+  const activeId = String(state.active_company_id || '');
+  const primaryId = String(state.primary_company_id || '');
+  if (!activeId || !primaryId || activeId === primaryId) return null;
+
+  const workspaces = Array.isArray(state.workspaces) ? state.workspaces : [];
+  const active = workspaces.find((workspace) => String(workspace?.company_id || '') === activeId);
+  if (!active?.company_name) return null;
+
+  return {
+    activeCompanyName: String(active.company_name || '').trim(),
+    primaryCompanyName: String(companyName || '').trim()
+      || String(workspaces.find((workspace) => String(workspace?.company_id || '') === primaryId)?.company_name || '').trim()
+      || 'ditt primærfirma'
+  };
+}
 
 export function createCompanyViewTools({
   Section,
@@ -23,13 +44,18 @@ export function createCompanyViewTools({
     uploadLogo,
     saveProfile
   }) {
+    const representation = getSystemAdminRepresentationContext(company?.companyName);
+    const profileNote = representation
+      ? `Du representerer nå ${representation.activeCompanyName} for nye tilbud og prosjekter. Her redigerer du fortsatt din primære firmaprofil: ${representation.primaryCompanyName}.`
+      : 'Firmaprofilen lagres på brukeren din og brukes som standard i prosjekter og rapporter.';
+
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, {
       title: "Firmaprofil",
       icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Building2, {}),
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
           className: "note",
-          children: "Firmaprofilen lagres på brukeren din og brukes automatisk i prosjekter og rapporter."
+          children: profileNote
         }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, {
           title: "Firmainfo og logo",
