@@ -75,6 +75,18 @@ if (/insert\s+into\s+public\.sales_company_memberships/i.test(adminRepresentatio
   throw new Error("Systemadmins representasjonsvalg skal ikke opprette ekstra firmamedlemskap.");
 }
 
+const companyProfileGuard = requireNeedles("supabase/migrations/20260910162600_fase41b3e_company_profile_source_guard.sql", [
+  "work_profile_company_profile",
+  "sales_normalize_company_name(p.company_name) = s.normalized_name",
+  "/brands/ringside-rorleggerbedrift.png",
+  "/brands/bademiljo-expo-ringside.png",
+  "Expo Proffsenter",
+  "'/expo-logo.png'",
+]);
+if (!companyProfileGuard.includes("Ekstra arbeidsprofil") || !companyProfileGuard.includes("aldri kunne låne logo/kontaktdata")) {
+  throw new Error("Firmabranding må være eksplisitt beskyttet mot data fra ekstra arbeidsprofiler.");
+}
+
 requireNeedles("src/modules/access/workProfileClient.js", [
   "get_my_work_profile_state",
   "set_active_work_profile",
@@ -113,6 +125,12 @@ requireNeedles("src/modules/access/systemAdminWorkProfileUx.jsx", [
   "target?.closest(`[${MOUNT_ATTR}]`)",
 ]);
 
+requireNeedles("src/modules/company/companyViewTools.js", [
+  "getSystemAdminRepresentationContext",
+  "Du representerer nå ${representation.activeCompanyName} for nye tilbud og prosjekter",
+  "Her redigerer du fortsatt din primære firmaprofil",
+]);
+
 requireNeedles("src/modules/sales/services/salesCommunication.js", [
   "get_my_work_profile_state",
   "active_company_profile",
@@ -132,4 +150,4 @@ requireNeedles("index.html", [
   "installWorkProfileProjectListUx",
 ]);
 
-console.log("✅ Expo ProffDok arbeidsprofiler / flerfirma / systemadmin representasjon check OK");
+console.log("✅ Expo ProffDok arbeidsprofiler / flerfirma / systemadmin representasjon / firmabranding check OK");
