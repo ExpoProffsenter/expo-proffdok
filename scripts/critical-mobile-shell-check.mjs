@@ -27,9 +27,11 @@ if (updateNotice.includes("INITIAL_CHECK_DELAY_MS")) {
 }
 
 requireNeedles("src/modules/access/workProfileUx.jsx", [
-  "#${HOST_ID}{width:100%!important;min-width:0!important;justify-self:stretch!important}",
-  ".workProfileButton{width:100%!important;max-width:none!important}",
-  "white-space:normal;overflow:visible;text-overflow:clip",
+  'const MOBILE_QUERY = "(max-width: 700px)"',
+  'head.insertAdjacentElement("afterend", host)',
+  "display:block!important;width:100%!important;min-width:0!important;padding:0 12px 8px!important",
+  ".workProfileButton{width:100%!important;max-width:none!important;min-height:54px!important}",
+  "white-space:nowrap;overflow:hidden;text-overflow:ellipsis",
   "Representerer",
   "Arbeidsprofil",
 ]);
