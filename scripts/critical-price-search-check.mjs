@@ -22,6 +22,8 @@ const migration = requireNeedles(
     "Ringside Rørleggerbedrift AS",
     "Bademiljø Expo",
     "Expo Proffsenter",
+    "coalesce(p.approved, false) = true",
+    "coalesce(p.deactivated, false) = false",
     "security definer",
     "grant execute",
   ]
@@ -124,6 +126,12 @@ const help = requireNeedles("src/modules/help/priceSearchHelpUx.js", [
   "Se interne nettopriser",
   "Uten rettigheten sendes de sensitive prisfeltene ikke fra serveren",
   "Systemadmin behandler nå brukerstatus, firma, rolle, hovedmoduler og eventuell nto-pristilgang på samme brukerkort",
+  "godkjente og aktive brukere",
+  "applyStoreHelpEligibility",
+  "approvedActiveHelpHidden",
+  'hasModuleAccess(access, "store_offers")',
+  'button.setAttribute("aria-expanded", "false")',
+  'headerRow.style.justifyContent = "space-between"',
 ]);
 if (help.includes("new MutationObserver")) {
   throw new Error("Prissøk-Hjelp skal ikke innføre en ny global MutationObserver.");
