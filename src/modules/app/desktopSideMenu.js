@@ -37,23 +37,6 @@ function findSourceNavButton(labels = []) {
   ) || null;
 }
 
-function findTopHeaderButton(label) {
-  const normalizedLabel = cleanLabel(label).toLowerCase();
-
-  return Array.from(document.querySelectorAll('button')).find((button) => {
-    if (!(button instanceof HTMLButtonElement)) return false;
-    if (button.id === HOME_ID || button.id === HELP_ID) return false;
-    if (cleanLabel(button.textContent).toLowerCase() !== normalizedLabel) return false;
-
-    const parent = button.parentElement;
-    if (!(parent instanceof HTMLElement)) return false;
-
-    return Array.from(parent.children).some(
-      (candidate) => candidate instanceof HTMLButtonElement && cleanLabel(candidate.textContent) === 'Logg ut'
-    );
-  }) || null;
-}
-
 function findNativeHeaderButton(label) {
   const normalizedLabel = cleanLabel(label).toLowerCase();
   return Array.from(document.querySelectorAll('button')).find((button) => {
@@ -141,22 +124,24 @@ function goToHelp() {
   if (nativeHelp instanceof HTMLButtonElement) nativeHelp.click();
 }
 
-function styleHeaderShortcut(button, text) {
-  button.textContent = text;
-  button.hidden = false;
-  button.style.position = 'fixed';
-  button.style.zIndex = '40';
-  button.style.margin = '0';
-  button.style.height = '40px';
-  button.style.padding = '0 10px';
-  button.style.fontSize = '13px';
-  button.style.lineHeight = '1';
-  button.style.borderRadius = '13px';
-  button.style.boxShadow = 'none';
-  button.style.whiteSpace = 'nowrap';
-  button.style.visibility = 'hidden';
-  button.style.left = '0';
-  button.style.top = '0';
+function styleBarHomeButton(homeButton) {
+  if (!(homeButton instanceof HTMLButtonElement)) return;
+  homeButton.textContent = '← Startside';
+  homeButton.hidden = false;
+  homeButton.style.position = 'static';
+  homeButton.style.zIndex = 'auto';
+  homeButton.style.margin = '0';
+  homeButton.style.height = '40px';
+  homeButton.style.padding = '0 12px';
+  homeButton.style.fontSize = '13px';
+  homeButton.style.lineHeight = '1';
+  homeButton.style.borderRadius = '13px';
+  homeButton.style.boxShadow = 'none';
+  homeButton.style.whiteSpace = 'nowrap';
+  homeButton.style.visibility = 'visible';
+  homeButton.style.left = '';
+  homeButton.style.top = '';
+  homeButton.style.flex = '0 0 auto';
 }
 
 function styleBarHelpButton(helpButton) {
@@ -179,40 +164,6 @@ function styleBarHelpButton(helpButton) {
   helpButton.style.flex = '0 0 auto';
 }
 
-function positionHeaderActions(homeButton) {
-  if (!(homeButton instanceof HTMLButtonElement)) return;
-
-  const logoutButton = findTopHeaderButton('Logg ut');
-  const newProjectButton = findTopHeaderButton('+ Nytt prosjekt');
-
-  if (!(logoutButton instanceof HTMLButtonElement) || !(newProjectButton instanceof HTMLButtonElement)) {
-    homeButton.hidden = true;
-    return;
-  }
-
-  styleHeaderShortcut(homeButton, '← Startside');
-
-  const logoutRect = logoutButton.getBoundingClientRect();
-  const newProjectRect = newProjectButton.getBoundingClientRect();
-  const gap = 8;
-  const leftEdge = logoutRect.right + gap;
-  const rightEdge = newProjectRect.left - gap;
-  const availableBetween = Math.max(0, rightEdge - leftEdge);
-
-  const homeWidth = homeButton.offsetWidth;
-  const top = newProjectRect.top + (newProjectRect.height - homeButton.offsetHeight) / 2;
-
-  if (homeWidth <= availableBetween && availableBetween >= 72) {
-    const left = leftEdge + Math.max(0, (availableBetween - homeWidth) / 2);
-    homeButton.style.left = `${Math.round(left)}px`;
-    homeButton.style.top = `${Math.round(top)}px`;
-    homeButton.style.visibility = 'visible';
-  } else {
-    homeButton.hidden = true;
-    homeButton.style.visibility = '';
-  }
-}
-
 function buildMenuShell() {
   let bar = document.getElementById(BAR_ID);
   let homeButton = document.getElementById(HOME_ID);
@@ -221,7 +172,12 @@ function buildMenuShell() {
   let backdrop = document.getElementById(BACKDROP_ID);
 
   if (bar && homeButton && helpButton && drawer && backdrop) {
+    const toggle = bar.querySelector('.expoDesktopMenuToggle');
+    const current = bar.querySelector('.expoDesktopMenuCurrent');
+    if (toggle && homeButton.parentElement !== bar) toggle.after(homeButton);
+    if (current && homeButton.nextElementSibling !== current) current.before(homeButton);
     if (helpButton.parentElement !== bar) bar.append(helpButton);
+    styleBarHomeButton(homeButton);
     styleBarHelpButton(helpButton);
     return { bar, homeButton, helpButton, drawer, backdrop };
   }
@@ -252,6 +208,7 @@ function buildMenuShell() {
   homeButton.className = 'secondary expoDesktopHeaderShortcut';
   homeButton.textContent = '← Startside';
   homeButton.addEventListener('click', goToStartside);
+  styleBarHomeButton(homeButton);
 
   helpButton = document.createElement('button');
   helpButton.id = HELP_ID;
@@ -265,8 +222,7 @@ function buildMenuShell() {
   current.className = 'expoDesktopMenuCurrent';
   current.setAttribute('aria-live', 'polite');
 
-  bar.append(toggle, current, helpButton);
-  document.body.append(homeButton);
+  bar.append(toggle, homeButton, current, helpButton);
 
   backdrop = document.createElement('div');
   backdrop.id = BACKDROP_ID;
@@ -351,7 +307,7 @@ function syncDrawerWithSource(sourceNav, shell) {
   if (!(drawerNav instanceof HTMLElement) || !(current instanceof HTMLElement)) return;
 
   hideNativeWorkspaceHomeButton();
-  positionHeaderActions(shell.homeButton);
+  styleBarHomeButton(shell.homeButton);
   styleBarHelpButton(shell.helpButton);
 
   const signature = sourceButtons
@@ -391,7 +347,7 @@ function syncDrawerWithSource(sourceNav, shell) {
     drawerNav.append(button);
   });
 
-  current.textContent = activeLabel || 'Expo ProffDok';
+  current.textContent = activeLabel ? `Du er i: ${activeLabel}` : 'Expo ProffDok';
 }
 
 export function installDesktopSideMenu() {
