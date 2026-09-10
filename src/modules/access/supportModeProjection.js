@@ -16,6 +16,7 @@ import {
 } from "../sales/services/salesSupabase.js";
 
 const SUPPORT_LABEL = "SYSTEMADMIN SUPPORTMODUS";
+const EXIT_SUPPORT_LABEL = "Avslutt supportmodus";
 const SALES_SUPPORT_PARAM = "salesSupportCompany";
 const MANAGED_SALES_SUPPORT_KEY = "expo-proffdok:project-support-sales-company";
 const STORE_ALLOWED_COMPANIES = new Set([
@@ -50,8 +51,10 @@ function visibleProjectSupportContext() {
   );
   if (!label) return null;
 
-  const banner = label.parentElement?.parentElement || label.parentElement;
-  const text = compactText(banner?.textContent);
+  // Les kun detaljlinjen. Hele bannerets textContent inkluderer knappeteksten
+  // «Avslutt supportmodus» direkte etter e-postadressen i enkelte nettlesere.
+  const details = label.parentElement?.querySelector("small");
+  const text = compactText(details?.textContent);
   const company = text.match(/Firma:\s*(.*?)\s*·\s*Prosjekt:/i)?.[1] || "";
   const owner =
     text.match(
@@ -165,6 +168,11 @@ async function clearProjection() {
   restoreSupportSpecificVisibility();
   if (hadManagedSalesScope) setManagedSalesSupportCompany("");
   if (hadProjection || hadManagedSalesScope) await refreshMyModuleAccess();
+
+  // Eksisterende Sales-supportvisning lytter på popstate for å rydde logo/banner.
+  if (typeof window !== "undefined" && (hadProjection || hadManagedSalesScope)) {
+    window.dispatchEvent(new Event("popstate"));
+  }
 }
 
 async function buildProjection(context) {
@@ -248,6 +256,10 @@ function salesNavigationButton(button) {
   return compactText(button?.textContent) === "Befaring/Tilbud";
 }
 
+function exitSupportButton(button) {
+  return compactText(button?.textContent) === EXIT_SUPPORT_LABEL;
+}
+
 export function installSupportModeProjection() {
   if (typeof window === "undefined" || window.__expoSupportModeProjectionInstalled) return;
   window.__expoSupportModeProjectionInstalled = true;
@@ -262,6 +274,16 @@ export function installSupportModeProjection() {
       }
 
       const context = visibleProjectSupportContext();
+
+      // La hovedappens egen exit-handler rydde prosjektet først. Deretter fjerner
+      // broen kun sitt Sales-scope og gjenoppretter innlogget brukers modultilgang.
+      if (context && exitSupportButton(button)) {
+        window.setTimeout(() => {
+          void clearProjection().finally(() => scheduleSync([120, 400]));
+        }, 0);
+        return;
+      }
+
       if (
         context &&
         salesNavigationButton(button) &&
