@@ -1,0 +1,110 @@
+/* Expo ProffDok – FASE 41A.1
+   Tverrgående mobilrettinger for rapportert tekstforskyvning.
+   Kun presentasjon: ingen Sales-data, priser, tilgangslogikk, RLS eller mobilmeny endres.
+*/
+
+/* Intern tilbudsvisning: grupperte tilbudslinjer fikk ny DOM-struktur i 39B.2C,
+   mens eldre mobil-CSS fortsatt traff den gamle direkte-listestrukturen. */
+@media screen and (max-width: 760px) {
+  .sales-offer-detail-lines-list,
+  .sales-offer-detail-lines-list > section {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .sales-offer-detail-lines-list > section > div:first-child {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    min-width: 0 !important;
+  }
+
+  .sales-offer-detail-lines-list > section > div:first-child > div {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .sales-offer-detail-lines-list > section > div:first-child > div:last-child {
+    text-align: left !important;
+    white-space: normal !important;
+  }
+
+  .sales-offer-detail-lines-list
+    > section
+    > div
+    > div:has(> strong:first-child + span + strong:last-child) {
+    display: grid !important;
+    grid-template-columns: 54px minmax(0, 1fr) !important;
+    gap: 4px 10px !important;
+    align-items: start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .sales-offer-detail-lines-list
+    > section
+    > div
+    > div:has(> strong:first-child + span + strong:last-child)
+    > strong:first-child {
+    grid-column: 1 !important;
+    grid-row: 1 / span 2 !important;
+  }
+
+  .sales-offer-detail-lines-list
+    > section
+    > div
+    > div:has(> strong:first-child + span + strong:last-child)
+    > span {
+    grid-column: 2 !important;
+    min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .sales-offer-detail-lines-list
+    > section
+    > div
+    > div:has(> strong:first-child + span + strong:last-child)
+    > strong:last-child {
+    grid-column: 2 !important;
+    text-align: left !important;
+    white-space: normal !important;
+    min-width: 0 !important;
+  }
+}
+
+@media screen and (max-width: 430px) {
+  .sales-offer-detail-lines-list
+    > section
+    > div
+    > div:has(> strong:first-child + span + strong:last-child) {
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+  }
+}
+
+/* Brukere og tilganger: globale input-regler gir ellers checkbox 100 % bredde
+   og skyver modulteksten ut av kortet på mobil. */
+@media screen and (max-width: 700px) {
+  #expo-module-access-manager label {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #expo-module-access-manager input[type="checkbox"] {
+    width: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    height: 24px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 2px 0 0 !important;
+    flex: 0 0 24px !important;
+  }
+
+  #expo-module-access-manager label > span {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+}
