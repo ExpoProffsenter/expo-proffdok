@@ -57,7 +57,7 @@ function WorkProfileControls({ user, companies, onReload }) {
   }, [user.user_id, JSON.stringify(initialIds)]);
 
   if (!primaryId || !companies.some((company) => String(company.company_id) === primaryId)) return null;
-  if (user.system_role === "systemadmin") return null;
+  if (!user.approved || user.deactivated || user.system_role === "systemadmin") return null;
 
   const dirty = !sameIds(draftIds, initialIds);
   const toggle = (companyId, checked) => {
