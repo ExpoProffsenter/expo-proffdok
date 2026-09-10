@@ -29,6 +29,9 @@ const support = requireNeedles("src/modules/access/supportModeProjection.js", [
   'url.searchParams.delete("project")',
   'url.searchParams.set("tab", "systemadmin")',
   "window.location.replace",
+  'compactText(button.textContent) !== "Systemadmin"',
+  "supportSystemAdminHidden",
+  "data-support-system-admin-hidden",
   "Denne brukeren har ikke tilgang til Befaring/Tilbud.",
 ]);
 
