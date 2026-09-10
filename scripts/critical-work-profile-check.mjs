@@ -69,7 +69,7 @@ const adminRepresentation = requireNeedles("supabase/migrations/20260910161200_f
   "'is_systemadmin', state.is_systemadmin",
   "not state.is_systemadmin",
   "not public.current_profile_is_systemadmin() and not exists",
-  "Nye tilbud og prosjekter",
+  "Dette er ikke supportmodus",
 ]);
 if (/insert\s+into\s+public\.sales_company_memberships/i.test(adminRepresentation)) {
   throw new Error("Systemadmins representasjonsvalg skal ikke opprette ekstra firmamedlemskap.");
