@@ -13,6 +13,8 @@ const MOUNT_ATTR = "data-systemadmin-work-profiles";
 const roots = new Map();
 let snapshot = null;
 let loadPromise = null;
+let initialUserFilterNormalized = false;
+let userFilterTouched = false;
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -22,6 +24,20 @@ function findUserPanel() {
   return Array.from(document.querySelectorAll("h3"))
     .find((node) => compactText(node.textContent) === "Brukere og tilganger")
     ?.closest(".item") || null;
+}
+
+function normalizeInitialUserFilter(panel) {
+  if (initialUserFilterNormalized || userFilterTouched || !panel) return;
+  const buttons = Array.from(panel.querySelectorAll("button"));
+  const pending = buttons.find((button) => compactText(button.textContent) === "Nye (0)");
+  const all = buttons.find((button) => /^Alle \(\d+\)$/.test(compactText(button.textContent)));
+  if (!(pending instanceof HTMLButtonElement) || !(all instanceof HTMLButtonElement)) return;
+  if (pending.classList.contains("secondary")) {
+    initialUserFilterNormalized = true;
+    return;
+  }
+  initialUserFilterNormalized = true;
+  all.click();
 }
 
 function findUserCard(panel, email) {
@@ -141,6 +157,7 @@ function renderControls() {
   if (!snapshot?.is_systemadmin) return;
   const panel = findUserPanel();
   if (!panel) return;
+  normalizeInitialUserFilter(panel);
 
   (snapshot.users || []).forEach((user) => {
     const card = findUserCard(panel, user.email);
@@ -204,6 +221,10 @@ export function installSystemAdminWorkProfileUx() {
     const button = event.target instanceof Element ? event.target.closest("button") : null;
     if (!button) return;
     const text = compactText(button.textContent);
+    if (event.isTrusted && /^(Nye|Godkjente|Deaktiverte|Systemadmin|Alle) \(\d+\)$/.test(text)) {
+      userFilterTouched = true;
+      initialUserFilterNormalized = true;
+    }
     if (text.includes("Brukere og tilganger") || text === "Oppdater brukerliste" || text === "Godkjenn bruker" || text === "Deaktiver bruker" || text === "Reaktiver bruker") {
       refreshSoon();
     }
