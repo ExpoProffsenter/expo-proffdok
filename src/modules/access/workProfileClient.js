@@ -1,5 +1,6 @@
-// Expo ProffDok – FASE 41B.3
-// Klientkontrakt for serverstyrte arbeidsprofiler. Database/RLS er autoritativ.
+// Expo ProffDok – FASE 41B.3 / 41B.3D
+// Klientkontrakt for serverstyrte arbeidsprofiler og systemadmins representasjonsfirma.
+// Database/RLS er autoritativ.
 
 import { rpcWithStoredSession } from "./moduleAccessClient.js";
 
@@ -11,6 +12,7 @@ function normalizeState(payload = {}) {
   return {
     ...payload,
     workspaces,
+    is_systemadmin: Boolean(payload?.is_systemadmin),
     can_switch: Boolean(payload?.can_switch),
     selection_required: Boolean(payload?.selection_required),
     active_company_id: String(payload?.active_company_id || ""),

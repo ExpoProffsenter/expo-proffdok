@@ -63,17 +63,32 @@ requireNeedles("supabase/migrations/20260910152200_fase41b3_work_profile_target_
   "Kun systemadministrator kan endre arbeidsprofiler",
 ]);
 
+const adminRepresentation = requireNeedles("supabase/migrations/20260910161200_fase41b3d_systemadmin_representation.sql", [
+  "current_profile_is_systemadmin()",
+  "is_internal_work_profile_company(a.company_id)",
+  "'is_systemadmin', state.is_systemadmin",
+  "not state.is_systemadmin",
+  "not public.current_profile_is_systemadmin() and not exists",
+  "Dette er ikke supportmodus",
+]);
+if (/insert\s+into\s+public\.sales_company_memberships/i.test(adminRepresentation)) {
+  throw new Error("Systemadmins representasjonsvalg skal ikke opprette ekstra firmamedlemskap.");
+}
+
 requireNeedles("src/modules/access/workProfileClient.js", [
   "get_my_work_profile_state",
   "set_active_work_profile",
   "list_managed_work_profiles",
   "set_managed_work_profiles",
   "WORK_PROFILE_EVENT",
+  "is_systemadmin: Boolean(payload?.is_systemadmin)",
 ]);
 
 const switcher = requireNeedles("src/modules/access/workProfileUx.jsx", [
   "Velg arbeidsprofil",
   "Arbeidsprofil",
+  "Representerer",
+  "Nye tilbud og prosjekter opprettes på valgt firma",
   "setActiveWorkProfile",
   "window.location.assign(window.location.pathname)",
   "active_company_profile",
@@ -117,4 +132,4 @@ requireNeedles("index.html", [
   "installWorkProfileProjectListUx",
 ]);
 
-console.log("✅ Expo ProffDok arbeidsprofiler / flerfirma check OK");
+console.log("✅ Expo ProffDok arbeidsprofiler / flerfirma / systemadmin representasjon check OK");
