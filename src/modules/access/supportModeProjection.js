@@ -281,6 +281,18 @@ function scheduleBrandingRestore(delays = [0, 120, 450]) {
   delays.forEach((delay) => window.setTimeout(restoreOwnHeaderBranding, delay));
 }
 
+function returnToOwnSystemAdminWorkspace() {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  url.searchParams.delete("project");
+  url.searchParams.delete(SALES_SUPPORT_PARAM);
+  if (String(url.searchParams.get("role") || "").trim().toLowerCase() === "admin") {
+    url.searchParams.delete("role");
+  }
+  url.searchParams.set("tab", "systemadmin");
+  window.location.replace(`${url.pathname}${url.search}${url.hash}`);
+}
+
 function salesNavigationButton(button) {
   return compactText(button?.textContent) === "Befaring/Tilbud";
 }
@@ -307,12 +319,14 @@ export function installSupportModeProjection() {
       if (!context) rememberOwnHeaderBranding();
 
       // La hovedappens egen exit-handler rydde prosjektet først. Deretter fjerner
-      // broen kun sitt Sales-scope, gjenoppretter innlogget bruker og original logo.
+      // broen sitt Sales-scope/modulprojeksjon og går tilbake til en ren Systemadmin-
+      // URL. Den kontrollerte reloaden gjør at hovedappen gjenbruker innlogget profil
+      // og bygger korrekt firma-/logo-state uten at brukeren må logge ut og inn.
       if (context && exitSupportButton(button)) {
         window.setTimeout(() => {
           void clearProjection().finally(() => {
-            scheduleBrandingRestore();
-            scheduleSync([120, 400]);
+            scheduleBrandingRestore([0, 80]);
+            window.setTimeout(returnToOwnSystemAdminWorkspace, 120);
           });
         }, 0);
         return;
