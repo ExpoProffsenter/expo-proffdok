@@ -1,6 +1,7 @@
-// Expo ProffDok – FASE 39B.2C
+// Expo ProffDok – FASE 39B.2C / 41B.2A
 // Katalogverktøyet gjør kun søk/leverandørvalg.
 // Vare -> montering/opsjon håndteres nativt av grouped Butikktilbud-bygger.
+// Intern nto vises bare når backend returnerer feltet for autorisert bruker.
 
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
@@ -20,11 +21,14 @@ const money = new Intl.NumberFormat("nb-NO", {
 });
 
 function formatMoney(value) {
-  const number = Number(value || 0);
+  if (value === null || value === undefined || value === "") return "–";
+  const number = Number(value);
   return Number.isFinite(number) ? money.format(number) : "–";
 }
 
 function InlineCatalogResult({ item, onUse, onAlternatives }) {
+  const hasNetPrice = item.purchase_net_ex_vat !== null && item.purchase_net_ex_vat !== undefined;
+
   function chooseFromRow(event) {
     if (event.target instanceof Element && event.target.closest("button")) return;
     onUse(item);
@@ -50,7 +54,7 @@ function InlineCatalogResult({ item, onUse, onAlternatives }) {
       </div>
       <div className="store-inline-catalog-price">
         <strong>{formatMoney(item.customer_price_incl_vat)} inkl. mva.</strong>
-        <small>Intern nto {formatMoney(item.purchase_net_ex_vat)} eks. mva.</small>
+        {hasNetPrice ? <small>Intern nto {formatMoney(item.purchase_net_ex_vat)} eks. mva.</small> : null}
       </div>
       <div className="store-inline-catalog-actions">
         {item.gtin ? <button type="button" className="sales-secondary-button" onClick={(event) => { event.stopPropagation(); onAlternatives(item); }}>Leverandører</button> : null}
