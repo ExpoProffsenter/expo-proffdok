@@ -2,7 +2,11 @@
 // Brukerrettet hjelp for Prissøk og sensitiv nto-tilgang.
 // Ingen egen MutationObserver: vi reagerer på Hjelp-klikk og eksisterende render.
 
-import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
+import {
+  hasModuleAccess,
+  readCachedModuleAccess,
+  rpcWithStoredSession,
+} from "../access/moduleAccessClient.js";
 
 const PRICE_SEARCH_TITLE = "🔎 Prissøk";
 const SALES_HELP_TITLE = "🧾 Befaring/Tilbud";
@@ -35,17 +39,28 @@ function createPriceSearchHelpItem() {
   item.className = "item";
   item.dataset.priceSearchHelp = "1";
   item.style.borderColor = "#e2e8f0";
-  item.style.background = "#fff";
+  item.style.background = "#ffffff";
 
   const button = document.createElement("button");
   button.type = "button";
   button.className = "secondary";
-  Object.assign(button.style, {
-    width: "100%",
-    justifyContent: "space-between",
-    textAlign: "left",
-    fontWeight: "900",
-  });
+  button.setAttribute("aria-expanded", "false");
+  button.style.width = "100%";
+  button.style.justifyContent = "space-between";
+  button.style.textAlign = "left";
+  button.style.background = "transparent";
+  button.style.color = "#0f172a";
+  button.style.border = "none";
+  button.style.padding = "0";
+  button.style.boxShadow = "none";
+  button.style.fontSize = "16px";
+
+  const headerRow = document.createElement("span");
+  headerRow.style.display = "flex";
+  headerRow.style.alignItems = "center";
+  headerRow.style.justifyContent = "space-between";
+  headerRow.style.gap = "12px";
+  headerRow.style.width = "100%";
 
   const title = document.createElement("b");
   title.textContent = PRICE_SEARCH_TITLE;
@@ -53,29 +68,35 @@ function createPriceSearchHelpItem() {
   action.textContent = "Åpne";
   action.style.fontWeight = "900";
   action.style.color = "#007f89";
-  button.append(title, action);
+  headerRow.append(title, action);
+  button.appendChild(headerRow);
 
   const content = document.createElement("div");
-  content.hidden = true;
-  content.style.paddingTop = "12px";
+  content.style.display = "none";
+  content.style.marginTop = "14px";
 
   const intro = document.createElement("p");
   intro.className = "note";
+  intro.style.marginTop = "0";
   intro.textContent = "Prissøk brukes til å slå opp aktive ERP-varer og gjeldende kundepris uten å opprette et tilbud.";
   content.appendChild(intro);
 
   content.appendChild(createHelpList([
     "Søk på varenavn, leverandør, varenummer eller GTIN/EAN. Treffene kommer fra siste aktiverte ERP-prisliste.",
     "Prissøk oppretter eller endrer aldri tilbud, prosjekter eller vareregisteret.",
-    "Kundepris vises for godkjente brukere med Prissøk-tilgang i Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter.",
+    "Kundepris vises for godkjente og aktive brukere med Prissøk-tilgang i Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter.",
     "Intern nto-pris, rabatt og margin vises bare når systemadministrator har gitt brukeren den separate rettigheten Se interne nettopriser.",
     "Samme nto-rettighet gjelder varesøket inne i Butikktilbud. Uten rettigheten sendes de sensitive prisfeltene ikke fra serveren.",
     "Oppdatering, import og aktivering av vareregisteret gjøres fortsatt bare i Systemadmin – Internt vareregister.",
   ]));
 
   button.addEventListener("click", () => {
-    content.hidden = !content.hidden;
-    action.textContent = content.hidden ? "Åpne" : "Lukk";
+    const open = content.style.display !== "none";
+    content.style.display = open ? "none" : "block";
+    action.textContent = open ? "Åpne" : "Lukk";
+    button.setAttribute("aria-expanded", open ? "false" : "true");
+    item.style.borderColor = open ? "#e2e8f0" : "#08b9c3";
+    item.style.background = open ? "#ffffff" : "#f8feff";
   });
 
   item.append(button, content);
@@ -106,14 +127,42 @@ function ensureSystemAdminHelp() {
   content.appendChild(block);
 }
 
+function applyStoreHelpEligibility(canUsePriceSearch) {
+  const item = findHelpItem(STORE_HELP_TITLE);
+  if (!(item instanceof HTMLElement)) return;
+
+  const access = readCachedModuleAccess();
+  const allowed = Boolean(
+    access?.loaded &&
+      (access.isSystemAdmin || (canUsePriceSearch && hasModuleAccess(access, "store_offers")))
+  );
+
+  if (allowed) {
+    if (item.dataset.approvedActiveHelpHidden === "1") {
+      item.style.removeProperty("display");
+      delete item.dataset.approvedActiveHelpHidden;
+    }
+    return;
+  }
+
+  item.dataset.approvedActiveHelpHidden = "1";
+  item.style.display = "none";
+}
+
 function ensurePriceSearchHelp(canUsePriceSearch) {
-  if (!canUsePriceSearch || document.querySelector("[data-price-search-help='1']")) {
+  applyStoreHelpEligibility(canUsePriceSearch);
+
+  const existing = document.querySelector("[data-price-search-help='1']");
+  if (!canUsePriceSearch) {
+    existing?.remove();
     ensureSystemAdminHelp();
     return;
   }
 
-  const anchor = findHelpItem(STORE_HELP_TITLE) || findHelpItem(SALES_HELP_TITLE);
-  if (anchor) anchor.insertAdjacentElement("afterend", createPriceSearchHelpItem());
+  if (!existing) {
+    const anchor = findHelpItem(STORE_HELP_TITLE) || findHelpItem(SALES_HELP_TITLE);
+    if (anchor) anchor.insertAdjacentElement("afterend", createPriceSearchHelpItem());
+  }
   ensureSystemAdminHelp();
 }
 
