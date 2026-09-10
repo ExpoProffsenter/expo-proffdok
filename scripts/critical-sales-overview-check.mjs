@@ -59,9 +59,15 @@ const desktopMenu = requireNeedles("src/modules/app/desktopSideMenu.js", [
   "bar.append(toggle, homeButton, current, helpButton)",
   "styleBarHomeButton(shell.homeButton)",
   "styleBarHelpButton(shell.helpButton)",
-  "Du er i: ${activeLabel}",
+  "const showContext = Boolean(activeLabel && activeLabel !== 'Startside')",
+  "shell.homeButton.hidden = !showContext",
+  "current.hidden = !showContext",
+  "current.textContent = showContext ? activeLabel : ''",
 ]);
 
+if (desktopMenu.includes("Du er i: ${activeLabel}")) {
+  throw new Error("Desktopmenylinjen skal ikke gjenta 'Du er i:' foran aktivt område.");
+}
 if (desktopMenu.includes("document.body.append(homeButton)")) {
   throw new Error("Startside-knappen skal ligge stabilt i desktopmenylinjen, ikke flyte over prosjekt-headeren.");
 }
@@ -77,4 +83,4 @@ if (fs.existsSync("src/modules/sales/salesOverviewSearchUx.js")) {
   throw new Error("salesOverviewSearchUx.js er overflødig etter at søket flyttet inn i SalesListView.");
 }
 
-console.log("✅ Expo ProffDok Sales-oversikt/supportmodus check OK");
+console.log("✅ Expo ProffDok Sales-oversikt/supportmodus/navigation check OK");
