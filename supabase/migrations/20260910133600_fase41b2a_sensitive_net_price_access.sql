@@ -57,7 +57,7 @@ $$;
 
 -- Bevar eksisterende produksjonsadferd for brukere som allerede kunne se nto i Butikktilbud.
 insert into public.user_feature_access (user_id, feature_key, granted_by)
-select distinct p.id, 'view_internal_net_prices', null
+select distinct p.id, 'view_internal_net_prices', null::uuid
 from public.profiles p
 join public.sales_company_memberships m on m.user_id = p.id
 join public.sales_company_scopes s on s.id = m.company_id
