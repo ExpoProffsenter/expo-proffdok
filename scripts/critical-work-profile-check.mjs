@@ -78,6 +78,7 @@ const switcher = requireNeedles("src/modules/access/workProfileUx.jsx", [
   "window.location.assign(window.location.pathname)",
   "active_company_profile",
   "SYSTEMADMIN SUPPORTMODUS",
+  "id === activeId && !state?.selection_required",
 ]);
 if (/localStorage\s*\.\s*setItem/.test(switcher)) {
   throw new Error("Aktiv arbeidsprofil skal lagres server-side, ikke i localStorage.");
@@ -90,6 +91,7 @@ requireNeedles("src/modules/access/systemAdminWorkProfileUx.jsx", [
   "setManagedWorkProfiles",
   "disabled={isPrimary || saving}",
   "!user.approved || user.deactivated || user.system_role === \"systemadmin\"",
+  "target?.closest(`[${MOUNT_ATTR}]`)",
 ]);
 
 requireNeedles("src/modules/sales/services/salesCommunication.js", [
