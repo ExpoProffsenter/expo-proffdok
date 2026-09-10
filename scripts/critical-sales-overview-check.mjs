@@ -54,12 +54,17 @@ if (salesList.includes('<header className="sales-header">')) {
 }
 
 const desktopMenu = requireNeedles("src/modules/app/desktopSideMenu.js", [
+  "styleBarHomeButton",
   "styleBarHelpButton",
-  "bar.append(toggle, current, helpButton)",
-  "document.body.append(homeButton)",
+  "bar.append(toggle, homeButton, current, helpButton)",
+  "styleBarHomeButton(shell.homeButton)",
   "styleBarHelpButton(shell.helpButton)",
+  "Du er i: ${activeLabel}",
 ]);
 
+if (desktopMenu.includes("document.body.append(homeButton)")) {
+  throw new Error("Startside-knappen skal ligge stabilt i desktopmenylinjen, ikke flyte over prosjekt-headeren.");
+}
 if (desktopMenu.includes("document.body.append(homeButton, helpButton)")) {
   throw new Error("Hjelp-knappen skal ligge stabilt i desktopmenylinjen, ikke flyte over headeren.");
 }
