@@ -77,7 +77,8 @@ function WorkProfileSwitcher({ initialState }) {
 
   async function choose(companyId) {
     const id = String(companyId || "");
-    if (!id || id === activeId || switching) {
+    if (!id || switching) return;
+    if (id === activeId && !state?.selection_required) {
       setOpen(false);
       return;
     }
@@ -178,9 +179,9 @@ function mountSwitcher(state = readCachedWorkProfileState()) {
   applyActiveBranding(state);
   const head = findHeaderHead();
   if (!head || !state?.can_switch || (state?.workspaces || []).length < 2) {
-    document.getElementById(HOST_ID)?.remove();
     root?.unmount?.();
     root = null;
+    document.getElementById(HOST_ID)?.remove();
     return;
   }
 
