@@ -310,6 +310,13 @@ function syncDrawerWithSource(sourceNav, shell) {
   styleBarHomeButton(shell.homeButton);
   styleBarHelpButton(shell.helpButton);
 
+  const activeSourceButton = sourceButtons.find((button) => button.classList.contains('on')) || null;
+  const activeLabel = cleanLabel(activeSourceButton?.textContent || '');
+  const showContext = Boolean(activeLabel && activeLabel !== 'Startside');
+  shell.homeButton.hidden = !showContext;
+  current.hidden = !showContext;
+  current.textContent = showContext ? activeLabel : '';
+
   const signature = sourceButtons
     .map((button) => `${cleanLabel(button.textContent)}:${button.classList.contains('on') ? '1' : '0'}`)
     .join('|');
@@ -318,14 +325,11 @@ function syncDrawerWithSource(sourceNav, shell) {
   drawerNav.dataset.sourceSignature = signature;
   drawerNav.replaceChildren();
 
-  let activeLabel = '';
-
   sourceButtons.forEach((sourceButton) => {
     const label = cleanLabel(sourceButton.textContent);
     if (!label) return;
 
     const isActive = sourceButton.classList.contains('on');
-    if (isActive) activeLabel = label;
 
     const button = document.createElement('button');
     button.type = 'button';
@@ -346,8 +350,6 @@ function syncDrawerWithSource(sourceNav, shell) {
 
     drawerNav.append(button);
   });
-
-  current.textContent = activeLabel ? `Du er i: ${activeLabel}` : 'Expo ProffDok';
 }
 
 export function installDesktopSideMenu() {
