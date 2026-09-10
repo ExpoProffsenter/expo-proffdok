@@ -16,6 +16,7 @@ import {
 const HOST_ID = "expo-work-profile-switcher";
 const SUPPORT_LABEL = "SYSTEMADMIN SUPPORTMODUS";
 let root = null;
+let rootHost = null;
 let loadPromise = null;
 
 function compactText(value = "") {
@@ -105,42 +106,44 @@ function WorkProfileSwitcher({ initialState }) {
 
   return (
     <>
-      <div className="workProfileControl">
-        <button
-          type="button"
-          className="secondary workProfileButton"
-          onClick={() => setOpen((current) => !current)}
-          aria-expanded={open}
-          disabled={switching}
-        >
-          <Building2 size={17} />
-          <span>
-            <small>Arbeidsprofil</small>
-            <b>{active?.company_name || "Velg firma"}</b>
-          </span>
-          <ChevronDown size={15} />
-        </button>
-        {open ? (
-          <div className="workProfileMenu">
-            {workspaces.map((workspace) => {
-              const selected = String(workspace.company_id) === activeId;
-              return (
-                <button
-                  key={workspace.company_id}
-                  type="button"
-                  className={selected ? "isActive" : ""}
-                  onClick={() => choose(workspace.company_id)}
-                  disabled={switching}
-                >
-                  <span>{workspace.company_name}</span>
-                  {workspace.is_primary ? <small>Primærfirma</small> : selected ? <small>Aktiv</small> : null}
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
-        {error ? <small className="workProfileError">{error}</small> : null}
-      </div>
+      {!state?.selection_required ? (
+        <div className="workProfileControl">
+          <button
+            type="button"
+            className="secondary workProfileButton"
+            onClick={() => setOpen((current) => !current)}
+            aria-expanded={open}
+            disabled={switching}
+          >
+            <Building2 size={17} />
+            <span>
+              <small>Arbeidsprofil</small>
+              <b>{active?.company_name || "Velg firma"}</b>
+            </span>
+            <ChevronDown size={15} />
+          </button>
+          {open ? (
+            <div className="workProfileMenu">
+              {workspaces.map((workspace) => {
+                const selected = String(workspace.company_id) === activeId;
+                return (
+                  <button
+                    key={workspace.company_id}
+                    type="button"
+                    className={selected ? "isActive" : ""}
+                    onClick={() => choose(workspace.company_id)}
+                    disabled={switching}
+                  >
+                    <span>{workspace.company_name}</span>
+                    {workspace.is_primary ? <small>Primærfirma</small> : selected ? <small>Aktiv</small> : null}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+          {error ? <small className="workProfileError">{error}</small> : null}
+        </div>
+      ) : null}
 
       {state?.selection_required ? (
         <div className="workProfileRequiredBackdrop" role="dialog" aria-modal="true" aria-label="Velg arbeidsprofil">
@@ -175,23 +178,37 @@ function WorkProfileSwitcher({ initialState }) {
   );
 }
 
+function destroyRoot() {
+  root?.unmount?.();
+  root = null;
+  rootHost = null;
+}
+
 function mountSwitcher(state = readCachedWorkProfileState()) {
   applyActiveBranding(state);
   const head = findHeaderHead();
   if (!head || !state?.can_switch || (state?.workspaces || []).length < 2) {
-    root?.unmount?.();
-    root = null;
+    destroyRoot();
     document.getElementById(HOST_ID)?.remove();
     return;
   }
 
   let host = document.getElementById(HOST_ID);
+  if (host && host.parentElement !== head) {
+    if (rootHost === host) destroyRoot();
+    host.remove();
+    host = null;
+  }
   if (!host) {
     host = document.createElement("div");
     host.id = HOST_ID;
     head.appendChild(host);
   }
-  if (!root) root = createRoot(host);
+  if (root && rootHost !== host) destroyRoot();
+  if (!root) {
+    rootHost = host;
+    root = createRoot(host);
+  }
   root.render(<WorkProfileSwitcher initialState={state} />);
 }
 
