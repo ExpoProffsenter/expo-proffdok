@@ -25,6 +25,10 @@ const support = requireNeedles("src/modules/access/supportModeProjection.js", [
   "publishModuleAccess",
   "clearProjection",
   "restoreOwnHeaderBranding",
+  "returnToOwnSystemAdminWorkspace",
+  'url.searchParams.delete("project")',
+  'url.searchParams.set("tab", "systemadmin")',
+  "window.location.replace",
   "Denne brukeren har ikke tilgang til Befaring/Tilbud.",
 ]);
 
