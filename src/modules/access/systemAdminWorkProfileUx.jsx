@@ -208,7 +208,11 @@ export function installSystemAdminWorkProfileUx() {
       refreshSoon();
     }
   }, true);
-  document.addEventListener("change", refreshSoon, true);
+  document.addEventListener("change", (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest(`[${MOUNT_ATTR}]`)) return;
+    refreshSoon();
+  }, true);
   window.addEventListener("focus", loadSnapshot);
 
   loadSnapshot();
