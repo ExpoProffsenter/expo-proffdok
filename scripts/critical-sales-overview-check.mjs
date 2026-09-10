@@ -24,8 +24,10 @@ const support = requireNeedles("src/modules/access/supportModeProjection.js", [
   "Denne brukeren har ikke tilgang til Befaring/Tilbud.",
 ]);
 
-if (/\.from\(|\.insert\(|\.update\(|\.delete\(/.test(support)) {
-  throw new Error("supportModeProjection.js skal ikke skrive direkte til database.");
+for (const forbidden of [".insert(", ".update(", ".upsert(", ".delete("]) {
+  if (support.includes(forbidden)) {
+    throw new Error(`supportModeProjection.js skal ikke skrive direkte til database: ${forbidden}`);
+  }
 }
 
 requireNeedles("src/modules/sales/components/SalesListView.jsx", [
