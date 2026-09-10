@@ -1,8 +1,8 @@
 // Expo ProffDok – FASE 41B.1 / FASE 37A2 / FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
 // FASE 41B.1 gjør Sales-søket mer robust: flere søkeord kan kombineres på tvers av
 // kunde, adresse, kontaktdata, saksnr., ansvarlig, status, tilbudstype og tilbudsinnhold.
-// Telefon, e-post og saksnummer tåler også søk med eller uten mellomrom/skilletegn.
-// Eksisterende arbeidsfaner, arkiv, dataflyt og statuslogikk er uendret.
+// Når et nytt hovedsøk starter, åpnes Alle statuser automatisk. Brukeren kan deretter
+// snevre inn søket manuelt. Sales-headeren er vanlig innhold og arver ikke appens sticky header.
 // FASE 37A2 viser automatisk Butikktilbud-oppfølging som eget revisjonsspor.
 // Butikktilbud med aktiv automatisk plan havner ikke i manuell «Må følges opp»
 // mens serveren fortsatt skal purre. Aksepterte/avviste Butikktilbud avsluttes i
@@ -357,6 +357,13 @@ export default function SalesListView({
     [activatedRequests, activeOfferType, searchQuery]
   );
 
+  function handleSearchChange(event) {
+    const nextQuery = event.target.value;
+    const startsNewSearch = !searchQuery.trim() && Boolean(nextQuery.trim());
+    setSearchQuery(nextQuery);
+    if (startsNewSearch && activeTab !== "all") setActiveTab("all");
+  }
+
   async function toggleArchive(request) {
     if (supportMode || archiveBusyId || !request?.id) return;
     if (!salesClient) {
@@ -419,7 +426,7 @@ export default function SalesListView({
   return (
     <div className="sales-app">
       <div className="sales-shell">
-        <header className="sales-header">
+        <div className="sales-header">
           <div className="sales-brand">
             <div className="sales-brand-mark">
               <ClipboardList size={22} />
@@ -429,7 +436,7 @@ export default function SalesListView({
               <span>Befaring / Tilbud / Aksept</span>
             </div>
           </div>
-        </header>
+        </div>
 
         <main className="sales-main">
           <SalesSupportNotice />
@@ -526,7 +533,7 @@ export default function SalesListView({
                 <input
                   type="search"
                   value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onChange={handleSearchChange}
                   placeholder="Søk kunde, adresse, e-post, telefon, saksnr., tittel, ansvarlig eller tilbudsinnhold"
                   style={{
                     width: "100%",
