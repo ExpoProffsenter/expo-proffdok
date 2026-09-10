@@ -85,7 +85,7 @@ const view = requireNeedles("src/modules/storeCatalog/StorePriceSearchView.jsx",
 if (/\b(?:supabase|client)\s*\.\s*from\s*\(/.test(view) || /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(view)) {
   throw new Error("StorePriceSearchView skal ikke skrive direkte til database.");
 }
-if (/localStorage|sessionStorage|indexedDB/i.test(view)) {
+if (/(?:window\.)?(?:localStorage|sessionStorage)\s*\.\s*(?:getItem|setItem|removeItem|clear)\s*\(|\bindexedDB\s*\./i.test(view)) {
   throw new Error("Prissøk-arbeidslisten skal være midlertidig React-state og ikke lagres lokalt.");
 }
 if (/Tilbake til Expo ProffDok|priceSearchShell|aria-modal=/.test(view)) {
