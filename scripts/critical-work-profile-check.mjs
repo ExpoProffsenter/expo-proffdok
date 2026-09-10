@@ -47,6 +47,22 @@ if (/\b(insert|update|delete|truncate)\b/i.test(sharedProjects.replace(/--.*$/gm
   throw new Error("Felles prosjektliste skal være read-only.");
 }
 
+requireNeedles("supabase/migrations/20260910151800_fase41b3_managed_work_profile_metadata.sql", [
+  "list_managed_work_profiles",
+  "system_role",
+  "approved",
+  "deactivated",
+  "workspace_company_ids",
+]);
+
+requireNeedles("supabase/migrations/20260910152200_fase41b3_work_profile_target_guard.sql", [
+  "Systemadministrator bruker ikke ekstra arbeidsprofiler",
+  "Arbeidsprofiler kan bare gis til godkjente, aktive brukere",
+  "coalesce(v_profile.approved,false)",
+  "coalesce(v_profile.deactivated,false)",
+  "Kun systemadministrator kan endre arbeidsprofiler",
+]);
+
 requireNeedles("src/modules/access/workProfileClient.js", [
   "get_my_work_profile_state",
   "set_active_work_profile",
@@ -73,6 +89,7 @@ requireNeedles("src/modules/access/systemAdminWorkProfileUx.jsx", [
   "Primærfirma",
   "setManagedWorkProfiles",
   "disabled={isPrimary || saving}",
+  "!user.approved || user.deactivated || user.system_role === \"systemadmin\"",
 ]);
 
 requireNeedles("src/modules/sales/services/salesCommunication.js", [
