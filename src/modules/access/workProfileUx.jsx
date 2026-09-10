@@ -1,7 +1,8 @@
-// Expo ProffDok – FASE 41B.3
-// Viser arbeidsprofilvelger bare for godkjente brukere med flere interne firma.
-// Valg lagres server-side og etterfølges av kontrollert reload slik at RLS, Sales
-// og øvrige arbeidsflater henter nytt firmascope fra samme kilde.
+// Expo ProffDok – FASE 41B.3 / 41B.3D
+// Viser arbeidsprofilvelger for godkjente flerfirma-brukere og en egen
+// «Representerer»-velger for systemadministrator. Valg lagres server-side og
+// etterfølges av kontrollert reload slik at RLS, Sales og prosjektflyt henter
+// samme aktive firmascope. Supportmodus er fortsatt separat.
 
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -69,6 +70,8 @@ function WorkProfileSwitcher({ initialState }) {
 
   const workspaces = Array.isArray(state?.workspaces) ? state.workspaces : [];
   const activeId = String(state?.active_company_id || "");
+  const isSystemAdmin = Boolean(state?.is_systemadmin);
+  const selectorLabel = isSystemAdmin ? "Representerer" : "Arbeidsprofil";
   const active = useMemo(
     () => workspaces.find((workspace) => String(workspace.company_id) === activeId) || workspaces[0] || null,
     [activeId, workspaces]
@@ -87,9 +90,10 @@ function WorkProfileSwitcher({ initialState }) {
     if (!target) return;
 
     if (!state?.selection_required) {
-      const ok = window.confirm(
-        `Bytte arbeidsprofil til ${target.company_name}?\n\nAppen lastes på nytt. Sørg for at eventuelle endringer er lagret.`
-      );
+      const message = isSystemAdmin
+        ? `Representere ${target.company_name}?\n\nNye tilbud og prosjekter opprettes på valgt firma. Appen lastes på nytt. Sørg for at eventuelle endringer er lagret.`
+        : `Bytte arbeidsprofil til ${target.company_name}?\n\nAppen lastes på nytt. Sørg for at eventuelle endringer er lagret.`;
+      const ok = window.confirm(message);
       if (!ok) return;
     }
 
@@ -99,7 +103,10 @@ function WorkProfileSwitcher({ initialState }) {
       await setActiveWorkProfile(id);
       window.location.assign(window.location.pathname);
     } catch (switchError) {
-      setError(switchError?.message || "Kunne ikke bytte arbeidsprofil.");
+      setError(
+        switchError?.message ||
+          (isSystemAdmin ? "Kunne ikke bytte representert firma." : "Kunne ikke bytte arbeidsprofil.")
+      );
       setSwitching(false);
     }
   }
@@ -113,11 +120,12 @@ function WorkProfileSwitcher({ initialState }) {
             className="secondary workProfileButton"
             onClick={() => setOpen((current) => !current)}
             aria-expanded={open}
+            aria-label={`${selectorLabel}: ${active?.company_name || "Velg firma"}`}
             disabled={switching}
           >
             <Building2 size={17} />
             <span>
-              <small>Arbeidsprofil</small>
+              <small>{selectorLabel}</small>
               <b>{active?.company_name || "Velg firma"}</b>
             </span>
             <ChevronDown size={15} />
@@ -126,6 +134,17 @@ function WorkProfileSwitcher({ initialState }) {
             <div className="workProfileMenu">
               {workspaces.map((workspace) => {
                 const selected = String(workspace.company_id) === activeId;
+                const meta = isSystemAdmin
+                  ? selected
+                    ? "Aktiv"
+                    : workspace.is_primary
+                      ? "Standardfirma"
+                      : ""
+                  : workspace.is_primary
+                    ? "Primærfirma"
+                    : selected
+                      ? "Aktiv"
+                      : "";
                 return (
                   <button
                     key={workspace.company_id}
@@ -135,7 +154,7 @@ function WorkProfileSwitcher({ initialState }) {
                     disabled={switching}
                   >
                     <span>{workspace.company_name}</span>
-                    {workspace.is_primary ? <small>Primærfirma</small> : selected ? <small>Aktiv</small> : null}
+                    {meta ? <small>{meta}</small> : null}
                   </button>
                 );
               })}
