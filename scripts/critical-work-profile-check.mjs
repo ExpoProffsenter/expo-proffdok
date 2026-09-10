@@ -108,7 +108,8 @@ const switcher = requireNeedles("src/modules/access/workProfileUx.jsx", [
   "id === activeId && !state?.selection_required",
   "let rootHost = null",
   "rootHost !== host",
-  "host.parentElement !== head",
+  "host.parentElement !== targetParent",
+  'head.insertAdjacentElement("afterend", host)',
   "!state?.selection_required ? (",
 ]);
 if (/localStorage\s*\.\s*setItem/.test(switcher)) {

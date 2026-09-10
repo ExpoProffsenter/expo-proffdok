@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 41B.3 / 41B.3D
+// Expo ProffDok – FASE 41B.3 / 41B.3D / 41B.3F
 // Viser arbeidsprofilvelger for godkjente flerfirma-brukere og en egen
 // «Representerer»-velger for systemadministrator. Valg lagres server-side og
 // etterfølges av kontrollert reload slik at RLS, Sales og prosjektflyt henter
@@ -16,6 +16,7 @@ import {
 
 const HOST_ID = "expo-work-profile-switcher";
 const SUPPORT_LABEL = "SYSTEMADMIN SUPPORTMODUS";
+const MOBILE_QUERY = "(max-width: 700px)";
 let root = null;
 let rootHost = null;
 let loadPromise = null;
@@ -191,7 +192,7 @@ function WorkProfileSwitcher({ initialState }) {
 
       <style>{`
         .workProfileControl{position:relative;margin-left:auto;min-width:220px}.workProfileButton{display:flex!important;align-items:center;gap:8px;min-height:46px!important;padding:7px 10px!important;text-align:left}.workProfileButton>span{display:grid;gap:0;min-width:0;flex:1}.workProfileButton small{font-size:10px;color:#64748b;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.workProfileButton b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}.workProfileMenu{position:absolute;z-index:1200;right:0;top:calc(100% + 6px);display:grid;gap:5px;width:min(330px,90vw);padding:8px;border:1px solid #cfe1e6;border-radius:13px;background:#fff;box-shadow:0 18px 44px rgba(15,23,42,.16)}.workProfileMenu button{display:flex;justify-content:space-between;gap:10px;align-items:center;width:100%;padding:10px 12px;border:0;border-radius:9px;background:#fff;color:#10212b;text-align:left;box-shadow:none}.workProfileMenu button:hover,.workProfileMenu button.isActive{background:#e8f9fa}.workProfileMenu small{color:#087f88;font-weight:800}.workProfileError{display:block;margin-top:5px;color:#991b1b;font-weight:800}.workProfileRequiredBackdrop{position:fixed;z-index:5000;inset:0;display:grid;place-items:center;padding:18px;background:rgba(15,23,42,.58)}.workProfileRequiredCard{width:min(520px,100%);padding:24px;border-radius:20px;background:#fff;box-shadow:0 30px 80px rgba(15,23,42,.28);text-align:center}.workProfileRequiredCard>svg{color:#159aa3}.workProfileRequiredCard h2{margin:8px 0}.workProfileRequiredCard p{color:#60737b}.workProfileRequiredCard>div{display:grid;gap:9px;margin-top:18px}.workProfileRequiredCard button{width:100%;min-height:48px}
-        @media(max-width:760px){.workProfileControl{width:100%;min-width:0;margin:8px 0 0}.workProfileButton{width:100%!important}.workProfileButton b{max-width:none}.workProfileMenu{left:0;right:auto;width:100%;box-sizing:border-box}}
+        @media(max-width:760px){#${HOST_ID}{display:block!important;width:100%!important;min-width:0!important;padding:0 12px 8px!important}.workProfileControl{width:100%!important;min-width:0;margin:0}.workProfileButton{width:100%!important;max-width:none!important;min-height:54px!important}.workProfileButton b{max-width:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}.workProfileMenu{left:12px;right:12px;width:auto;box-sizing:border-box}}
       `}</style>
     </>
   );
@@ -212,8 +213,12 @@ function mountSwitcher(state = readCachedWorkProfileState()) {
     return;
   }
 
+  const mobile = window.matchMedia(MOBILE_QUERY).matches;
+  const targetParent = mobile ? head.parentElement : head;
+  if (!(targetParent instanceof HTMLElement)) return;
+
   let host = document.getElementById(HOST_ID);
-  if (host && host.parentElement !== head) {
+  if (host && host.parentElement !== targetParent) {
     if (rootHost === host) destroyRoot();
     host.remove();
     host = null;
@@ -221,7 +226,11 @@ function mountSwitcher(state = readCachedWorkProfileState()) {
   if (!host) {
     host = document.createElement("div");
     host.id = HOST_ID;
-    head.appendChild(host);
+    if (mobile) {
+      head.insertAdjacentElement("afterend", host);
+    } else {
+      head.appendChild(host);
+    }
   }
   if (root && rootHost !== host) destroyRoot();
   if (!root) {
