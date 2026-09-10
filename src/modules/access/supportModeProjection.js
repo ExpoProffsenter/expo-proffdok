@@ -53,7 +53,10 @@ function visibleProjectSupportContext() {
   const banner = label.parentElement?.parentElement || label.parentElement;
   const text = compactText(banner?.textContent);
   const company = text.match(/Firma:\s*(.*?)\s*·\s*Prosjekt:/i)?.[1] || "";
-  const owner = text.match(/Prosjekteier:\s*([^·]+?)(?:\s*$|\s*·)/i)?.[1] || "";
+  const owner =
+    text.match(
+      /Prosjekteier:\s*([^\s·]+@[^\s·]+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i
+    )?.[1] || "";
 
   if (!compactText(company) || !compactText(owner)) return null;
   return {
