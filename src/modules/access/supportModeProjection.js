@@ -145,22 +145,33 @@ function moduleAccessEqual(a = {}, b = {}) {
   );
 }
 
+function setSupportHidden(node, hidden, datasetKey) {
+  if (!(node instanceof HTMLElement)) return;
+  if (hidden) {
+    node.dataset[datasetKey] = "1";
+    node.style.display = "none";
+    return;
+  }
+  if (node.dataset[datasetKey] === "1") {
+    node.style.removeProperty("display");
+    delete node.dataset[datasetKey];
+  }
+}
+
 function applySupportSpecificVisibility() {
   if (typeof document === "undefined" || !activeProjection) return;
   const canStore = activeProjection.access.moduleKeys.includes("store_offers");
+  const canSystemAdmin = Boolean(activeProjection.access.isSystemAdmin);
 
   document.querySelectorAll('[role="tablist"][aria-label="Tilbudstype"] button').forEach((button) => {
     const storeTab = compactText(button.textContent).startsWith("Butikktilbud");
     if (!storeTab) return;
-    if (canStore) {
-      if (button.dataset.supportStoreHidden === "1") {
-        button.style.removeProperty("display");
-        delete button.dataset.supportStoreHidden;
-      }
-    } else {
-      button.dataset.supportStoreHidden = "1";
-      button.style.display = "none";
-    }
+    setSupportHidden(button, !canStore, "supportStoreHidden");
+  });
+
+  document.querySelectorAll("button").forEach((button) => {
+    if (compactText(button.textContent) !== "Systemadmin") return;
+    setSupportHidden(button, !canSystemAdmin, "supportSystemAdminHidden");
   });
 }
 
@@ -169,6 +180,10 @@ function restoreSupportSpecificVisibility() {
   document.querySelectorAll('[data-support-store-hidden="1"]').forEach((node) => {
     node.style.removeProperty("display");
     delete node.dataset.supportStoreHidden;
+  });
+  document.querySelectorAll('[data-support-system-admin-hidden="1"]').forEach((node) => {
+    node.style.removeProperty("display");
+    delete node.dataset.supportSystemAdminHidden;
   });
 }
 
