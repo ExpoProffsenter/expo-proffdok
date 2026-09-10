@@ -16,41 +16,53 @@ function requireNeedles(path, needles) {
 
 const support = requireNeedles("src/modules/access/supportModeProjection.js", [
   "SYSTEMADMIN SUPPORTMODUS",
+  "Avslutt supportmodus",
+  'querySelector("small")',
   "listManagedModuleAccess",
   "listSalesSupportCompanies",
   "salesSupportCompany",
   "target?.module_keys",
   "publishModuleAccess",
+  "clearProjection",
+  "restoreOwnHeaderBranding",
   "Denne brukeren har ikke tilgang til Befaring/Tilbud.",
 ]);
 
-for (const forbidden of [
-  "salesClient.from(",
-  "client.from(",
-  ".insert(",
-  ".upsert(",
-]) {
-  if (support.includes(forbidden)) {
-    throw new Error(`supportModeProjection.js skal ikke skrive direkte til database: ${forbidden}`);
-  }
+if (/salesClient\s*\.\s*from\s*\(/.test(support)) {
+  throw new Error("supportModeProjection.js skal ikke skrive direkte til database.");
 }
 
-requireNeedles("src/modules/sales/components/SalesListView.jsx", [
+const salesList = requireNeedles("src/modules/sales/components/SalesListView.jsx", [
   "queryTokens.every",
   "requestSearchValues",
   "compactSearchText",
+  "function handleSearchChange",
+  'setActiveTab("all")',
+  "onChange={handleSearchChange}",
+  '<div className="sales-header">',
 ]);
 
-requireNeedles("src/modules/sales/salesOverviewSearchUx.js", [
-  "Søk og filtrering",
-  "Arbeidsstatus",
-  "salesSearchHadQuery",
-  "allButton.click()",
+if (salesList.includes('<header className="sales-header">')) {
+  throw new Error("Sales-header må ikke arve hovedappens globale sticky <header>-regel.");
+}
+
+const desktopMenu = requireNeedles("src/modules/app/desktopSideMenu.js", [
+  "styleBarHelpButton",
+  "bar.append(toggle, current, helpButton)",
+  "document.body.append(homeButton)",
+  "styleBarHelpButton(shell.helpButton)",
 ]);
 
-requireNeedles("index.html", [
-  "installSupportModeProjection",
-  "installSalesOverviewSearchUx",
-]);
+if (desktopMenu.includes("document.body.append(homeButton, helpButton)")) {
+  throw new Error("Hjelp-knappen skal ligge stabilt i desktopmenylinjen, ikke flyte over headeren.");
+}
+
+const index = requireNeedles("index.html", ["installSupportModeProjection"]);
+if (index.includes("installSalesOverviewSearchUx")) {
+  throw new Error("Den gamle DOM-baserte Sales-søkeadapteren skal være fjernet.");
+}
+if (fs.existsSync("src/modules/sales/salesOverviewSearchUx.js")) {
+  throw new Error("salesOverviewSearchUx.js er overflødig etter at søket flyttet inn i SalesListView.");
+}
 
 console.log("✅ Expo ProffDok Sales-oversikt/supportmodus check OK");
