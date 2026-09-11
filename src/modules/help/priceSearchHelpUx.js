@@ -1,5 +1,5 @@
-// Expo ProffDok – FASE 41B.2 HJELP
-// Brukerrettet hjelp for Prissøk og sensitiv nto-tilgang.
+// Expo ProffDok – FASE 41B.2 / 41B.5C HJELP
+// Brukerrettet hjelp for Prissøk, Butikktilbud-tilgang og sensitiv nto-tilgang.
 // Ingen egen MutationObserver: vi reagerer på Hjelp-klikk og eksisterende render.
 
 import {
@@ -84,8 +84,9 @@ function createPriceSearchHelpItem() {
   content.appendChild(createHelpList([
     "Søk på varenavn, leverandør, varenummer eller GTIN/EAN. Treffene kommer fra siste aktiverte ERP-prisliste.",
     "Prissøk oppretter eller endrer aldri tilbud, prosjekter eller vareregisteret.",
-    "Kundepris vises for godkjente og aktive brukere med Prissøk-tilgang i Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter.",
-    "Intern nto-pris, rabatt og margin vises bare når systemadministrator har gitt brukeren den separate rettigheten Se interne nettopriser.",
+    "Prissøk og Butikktilbud er en intern handelsadgang som bare systemadministrator kan tildele. Tilgangen kan kun gis til brukere i Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter.",
+    "Brukere uten denne tildelingen får verken Butikktilbud-meny, Prissøk-meny eller katalogdata fra serveren.",
+    "Intern nto-pris, rabatt og margin krever i tillegg den separate rettigheten Se interne nettopriser, som også bare systemadministrator kan tildele.",
     "Samme nto-rettighet gjelder varesøket inne i Butikktilbud. Uten rettigheten sendes de sensitive prisfeltene ikke fra serveren.",
     "Oppdatering, import og aktivering av vareregisteret gjøres fortsatt bare i Systemadmin – Internt vareregister.",
   ]));
@@ -115,13 +116,15 @@ function ensureSystemAdminHelp() {
   block.style.borderTop = "1px solid #dbe5ea";
 
   const heading = document.createElement("h4");
-  heading.textContent = "Brukere, Prissøk og nto-priser";
+  heading.textContent = "Brukere, Butikktilbud, Prissøk og nto-priser";
   heading.style.marginBottom = "6px";
   block.appendChild(heading);
   block.appendChild(createHelpList([
-    "Systemadmin behandler nå brukerstatus, firma, rolle, hovedmoduler og eventuell nto-pristilgang på samme brukerkort under Brukere og tilganger.",
-    "Se interne nettopriser er en sensitiv brukerrettighet, ikke en hovedmodul. Kun systemadministrator kan gi eller fjerne den.",
-    "Nto-rettigheten kan bare gis til brukere i Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter.",
+    "Systemadmin behandler brukerstatus, firma, rolle, hovedmoduler og eventuell nto-pristilgang på samme brukerkort under Brukere og tilganger.",
+    "Butikktilbud er den eksplisitte tilgangen som også åpner Prissøk og det interne vareregisteret. Bare systemadministrator kan gi eller fjerne denne tilgangen.",
+    "Butikktilbud/Prissøk kan bare gis til brukere i Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter. Firmaadministrator kan ikke delegere denne tilgangen videre.",
+    "Se interne nettopriser er en ekstra sensitiv brukerrettighet. Kun systemadministrator kan gi eller fjerne den.",
+    "Nto-rettigheten kan bare gis til brukere i de samme tre interne firmaene.",
     "Systemadministrator har alltid tilgang til interne nettopriser.",
   ]));
   content.appendChild(block);
