@@ -92,6 +92,7 @@ declare
   v_invalid text;
   v_had_store boolean := false;
   v_wants_store boolean := false;
+  v_store_granted_by uuid;
   v_target_company_id uuid;
 begin
   if v_uid is null then
@@ -142,10 +143,13 @@ begin
     v_requested := array_append(v_requested, 'sales');
   end if;
 
-  select exists (
-    select 1 from public.user_module_access uma
-    where uma.user_id = target_user_id and uma.module_key = 'store_offers'
-  ) into v_had_store;
+  select true, uma.granted_by
+  into v_had_store, v_store_granted_by
+  from public.user_module_access uma
+  where uma.user_id = target_user_id
+    and uma.module_key = 'store_offers'
+  limit 1;
+  v_had_store := coalesce(v_had_store,false);
   v_wants_store := 'store_offers' = any(v_requested);
 
   if not v_is_systemadmin and v_had_store is distinct from v_wants_store then
@@ -179,27 +183,15 @@ begin
   where user_id = target_user_id;
 
   insert into public.user_module_access (user_id, module_key, granted_by)
-  select target_user_id, k,
+  select
+    target_user_id,
+    k,
     case
-      when k = 'store_offers' then coalesce((
-        select uma.granted_by
-        from public.user_module_access uma
-        where false
-      ), v_uid)
+      when k = 'store_offers' and not v_is_systemadmin
+        then v_store_granted_by
       else v_uid
     end
   from unnest(v_requested) k;
-
-  -- Firmaadmin kan oppdatere øvrige moduler, men skal ikke omskrive hvem som
-  -- tildelte en eksisterende store_offers-rettighet. Behold eksisterende grantor.
-  if not v_is_systemadmin and v_had_store then
-    update public.user_module_access uma
-    set granted_by = old_grant.granted_by
-    from (
-      select null::uuid as granted_by
-    ) old_grant
-    where false;
-  end if;
 
   return jsonb_build_object(
     'user_id', target_user_id,
