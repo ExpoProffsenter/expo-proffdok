@@ -1,13 +1,15 @@
 // Expo ProffDok – FASE 42A
-// Mobilvennlig badskisse for befaring. Rette, sammenhengende vegger er standard,
-// mens frihånd er et valgfritt verktøy. Ingen SQL/RLS/Storage-policy-endring.
+// Badskisse Light: fullskjerm-popup, rette sammenhengende vegger som standard,
+// veggmerking A/B/C, rask målliste, dør-/vindusmål og valgfri frihånd.
+// Ingen SQL/RLS/Storage-policy-endring.
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 const WIDTH = 720;
 const HEIGHT = 460;
 const GRID = 20;
-const SKETCH_VERSION = 2;
+const SKETCH_VERSION = 3;
 const CLOSE_DISTANCE = 34;
 
 const EMPTY_SKETCH = Object.freeze({
@@ -57,6 +59,21 @@ function newId(prefix) {
 function distance(a, b) {
   if (!a || !b) return Number.POSITIVE_INFINITY;
   return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function wallPixelLength(wall) {
+  return Math.hypot(wall.x2 - wall.x1, wall.y2 - wall.y1);
+}
+
+function wallLetter(index) {
+  let value = Number(index) + 1;
+  let result = "";
+  while (value > 0) {
+    value -= 1;
+    result = String.fromCharCode(65 + (value % 26)) + result;
+    value = Math.floor(value / 26);
+  }
+  return result || "A";
 }
 
 export function normalizeBathroomSketch(value) {
@@ -194,12 +211,16 @@ export function bathroomSketchDataUrl(value) {
 
   const wallsById = new Map(sketch.walls.map((wall) => [wall.id, wall]));
   const walls = sketch.walls
-    .map((wall) => {
+    .map((wall, index) => {
       const point = wallPoint(wall, 0.5);
-      const dimension = wall.lengthMm
-        ? `<text x="${point.x}" y="${point.y - 12}" text-anchor="middle" font-size="15" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#ffffff;stroke-width:5px;stroke-linejoin:round">${escapeXml(wall.lengthMm)} mm</text>`
-        : "";
-      return `<line x1="${wall.x1}" y1="${wall.y1}" x2="${wall.x2}" y2="${wall.y2}" stroke="#172126" stroke-width="7" stroke-linecap="round" />${dimension}`;
+      const label = wallLetter(index);
+      const dimension = wall.lengthMm ? `${escapeXml(wall.lengthMm)} mm` : "mål mangler";
+      return `<g>
+        <line x1="${wall.x1}" y1="${wall.y1}" x2="${wall.x2}" y2="${wall.y2}" stroke="#172126" stroke-width="7" stroke-linecap="round" />
+        <circle cx="${point.x}" cy="${point.y}" r="15" fill="#087f88" />
+        <text x="${point.x}" y="${point.y + 5}" text-anchor="middle" font-size="13" font-weight="800" fill="#ffffff">${label}</text>
+        <text x="${point.x}" y="${point.y - 22}" text-anchor="middle" font-size="14" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#ffffff;stroke-width:5px;stroke-linejoin:round">${dimension}</text>
+      </g>`;
     })
     .join("");
   const openings = sketch.openings
@@ -247,6 +268,64 @@ function toolbarButtonStyle(active, disabled) {
   };
 }
 
+function scaleWallsFromDimensions(walls, changedWallId, nextLengthMm) {
+  const nextWalls = walls.map((wall) =>
+    wall.id === changedWallId ? { ...wall, lengthMm: nextLengthMm } : { ...wall }
+  );
+  if (!nextWalls.length) return nextWalls;
+
+  const anchorIndex = nextWalls.findIndex(
+    (wall) => Number(wall.lengthMm) > 0 && wallPixelLength(wall) > 0
+  );
+  if (anchorIndex < 0) return nextWalls;
+
+  const anchor = nextWalls[anchorIndex];
+  const pxPerMm = wallPixelLength(anchor) / Number(anchor.lengthMm);
+  if (!Number.isFinite(pxPerMm) || pxPerMm <= 0) return nextWalls;
+
+  const firstStart = { x: nextWalls[0].x1, y: nextWalls[0].y1 };
+  const wasClosed =
+    nextWalls.length >= 3 &&
+    distance(
+      { x: nextWalls[nextWalls.length - 1].x2, y: nextWalls[nextWalls.length - 1].y2 },
+      firstStart
+    ) <= CLOSE_DISTANCE;
+
+  let previousEnd = firstStart;
+  return nextWalls.map((wall, index) => {
+    const currentPixelLength = Math.max(1, wallPixelLength(wall));
+    const dx = wall.x2 - wall.x1;
+    const dy = wall.y2 - wall.y1;
+    const ux = dx / currentPixelLength;
+    const uy = dy / currentPixelLength;
+    const requestedMm = Number(wall.lengthMm);
+    const targetPixelLength =
+      Number.isFinite(requestedMm) && requestedMm > 0
+        ? requestedMm * pxPerMm
+        : currentPixelLength;
+
+    const start = index === 0 ? firstStart : previousEnd;
+    let end = {
+      x: start.x + ux * targetPixelLength,
+      y: start.y + uy * targetPixelLength,
+    };
+
+    if (wasClosed && index === nextWalls.length - 1) {
+      end = firstStart;
+    }
+
+    const rebuilt = {
+      ...wall,
+      x1: clamp(start.x, 0, WIDTH),
+      y1: clamp(start.y, 0, HEIGHT),
+      x2: clamp(end.x, 0, WIDTH),
+      y2: clamp(end.y, 0, HEIGHT),
+    };
+    previousEnd = { x: rebuilt.x2, y: rebuilt.y2 };
+    return rebuilt;
+  });
+}
+
 export default function SalesBathroomSketch({
   value,
   onChange,
@@ -261,16 +340,16 @@ export default function SalesBathroomSketch({
   const [selected, setSelected] = useState(null);
   const [history, setHistory] = useState([]);
   const [activeStroke, setActiveStroke] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (!isFullscreen) return undefined;
+    if (!isOpen || typeof document === "undefined") return undefined;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [isFullscreen]);
+  }, [isOpen]);
 
   const selectedWall =
     selected?.kind === "wall"
@@ -287,11 +366,15 @@ export default function SalesBathroomSketch({
         return "Trykk første hjørne. Deretter kobles hver nye rette vegg automatisk til enden av den forrige.";
       }
       return chainSegmentCount >= 2
-        ? "Trykk neste hjørne. Trykk nær den grønne startmarkøren for å lukke rommet automatisk."
+        ? "Trykk neste hjørne. Trykk nær startmarkøren for å lukke rommet automatisk."
         : "Trykk neste hjørne. Neste vegg starter automatisk der denne slutter.";
     }
-    if (tool === "freehand") return "Dra fingeren for å tegne frihånd. Bruk dette bare der rette vegger ikke passer.";
-    if (tool === "select") return "Trykk på vegg, dør, vindu, markør eller frihåndsstrek for å velge den.";
+    if (tool === "freehand") {
+      return "Dra fingeren for å tegne frihånd. Bruk dette bare der rette vegger ikke passer.";
+    }
+    if (tool === "select") {
+      return "Trykk på vegg, dør, vindu, markør eller frihåndsstrek for å velge den.";
+    }
     if (tool === "door" || tool === "window") {
       return `Trykk på veggen der ${tool === "door" ? "døren" : "vinduet"} skal stå. Legg deretter inn mål.`;
     }
@@ -462,15 +545,10 @@ export default function SalesBathroomSketch({
     setSelected({ kind, id });
   }
 
-  function updateSelectedWallLength(valueText) {
-    if (!selectedWall) return;
+  function updateWallDimension(wallId, valueText) {
     const clean = cleanMm(valueText);
-    commit({
-      ...sketch,
-      walls: sketch.walls.map((wall) =>
-        wall.id === selectedWall.id ? { ...wall, lengthMm: clean } : wall
-      ),
-    });
+    const scaledWalls = scaleWallsFromDimensions(sketch.walls, wallId, clean);
+    commit({ ...sketch, walls: scaledWalls });
   }
 
   function updateSelectedOpening(field, valueText) {
@@ -540,457 +618,475 @@ export default function SalesBathroomSketch({
   }
 
   const wallsById = new Map(sketch.walls.map((wall) => [wall.id, wall]));
-  const sectionStyle = isFullscreen
-    ? {
-        position: "fixed",
-        inset: 0,
-        zIndex: 10000,
-        background: "#f8fbfc",
-        padding: 10,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }
-    : {
-        border: "1px solid #d7e4ea",
-        borderRadius: 16,
-        padding: 14,
-        background: "#f8fbfc",
-      };
+  const previewUrl = bathroomSketchDataUrl(sketch);
 
-  const canvasStyle = isFullscreen
-    ? { flex: "1 1 auto", minHeight: 0 }
-    : {};
-
-  return (
-    <section data-sales-bathroom-sketch="true" style={sectionStyle}>
+  function renderEditor() {
+    return (
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Badskisse"
+        data-sales-bathroom-sketch-modal="true"
         style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 10000,
+          background: "#f8fbfc",
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 10,
-          flexWrap: "wrap",
+          flexDirection: "column",
+          width: "100vw",
+          maxWidth: "100vw",
+          height: "100dvh",
+          maxHeight: "100dvh",
+          overflow: "hidden",
         }}
       >
-        <div>
-          <strong style={{ display: "block", fontSize: 17 }}>Badskisse</strong>
-          <span style={{ color: "#5d6a70", fontSize: 13 }}>
-            Rette vegger kobles automatisk. Frihånd brukes bare ved behov.
-          </span>
-        </div>
-        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+        <div
+          style={{
+            flex: "0 0 auto",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 10,
+            padding: "max(10px, env(safe-area-inset-top)) 12px 10px",
+            borderBottom: "1px solid #d7e4ea",
+            background: "#ffffff",
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <strong style={{ display: "block", fontSize: 18 }}>Badskisse</strong>
+            <span style={{ display: "block", color: "#5d6a70", fontSize: 12 }}>
+              Vegger A, B, C … · mål i mm
+            </span>
+          </div>
           <button
             type="button"
             className="sales-primary-button"
-            disabled={disabled}
-            onClick={() => setIsFullscreen((current) => !current)}
+            onClick={() => setIsOpen(false)}
           >
-            {isFullscreen ? "Ferdig" : "Åpne stor tegneflate"}
-          </button>
-          <button
-            type="button"
-            className="sales-secondary-button"
-            disabled={disabled || !history.length}
-            onClick={undoLast}
-          >
-            Angre
-          </button>
-          <button
-            type="button"
-            className="sales-secondary-button"
-            disabled={disabled || !selected}
-            onClick={deleteSelected}
-          >
-            Slett valgt
-          </button>
-          <button
-            type="button"
-            className="sales-secondary-button"
-            disabled={disabled || !bathroomSketchHasContent(sketch)}
-            onClick={clearSketch}
-          >
-            Tøm
+            Lukk
           </button>
         </div>
-      </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 7,
-          overflowX: "auto",
-          paddingBottom: 4,
-          marginTop: 10,
-          WebkitOverflowScrolling: "touch",
-        }}
-      >
-        {TOOL_BUTTONS.map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            disabled={disabled}
-            aria-pressed={tool === key}
-            onClick={() => chooseTool(key)}
-            style={toolbarButtonStyle(tool === key, disabled)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      <p style={{ margin: "7px 0", color: "#435158", fontSize: 13 }}>
-        {instruction}
-      </p>
-
-      <div
-        style={{
-          ...canvasStyle,
-          border: "1px solid #cbd9de",
-          borderRadius: 12,
-          overflow: "hidden",
-          background: "#ffffff",
-          touchAction: "none",
-          display: "flex",
-        }}
-      >
-        <svg
-          ref={svgRef}
-          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-          role="img"
-          aria-label="Redigerbar badskisse"
-          onPointerDown={handleCanvasPointerDown}
-          onPointerMove={handleCanvasPointerMove}
-          onPointerUp={finishFreehandStroke}
-          onPointerCancel={finishFreehandStroke}
+        <div
           style={{
-            display: "block",
-            width: "100%",
-            height: isFullscreen ? "100%" : "auto",
-            minHeight: isFullscreen ? 0 : 270,
+            flex: "0 0 auto",
+            display: "flex",
+            gap: 7,
+            overflowX: "auto",
+            padding: "9px 10px 5px",
+            background: "#f8fbfc",
+            WebkitOverflowScrolling: "touch",
           }}
         >
-          <rect width={WIDTH} height={HEIGHT} fill="#ffffff" />
-          {Array.from({ length: Math.floor(WIDTH / GRID) + 1 }, (_, index) => (
-            <line
-              key={`gx-${index}`}
-              x1={index * GRID}
-              y1="0"
-              x2={index * GRID}
-              y2={HEIGHT}
-              stroke="#e8eef1"
-              strokeWidth="1"
-              pointerEvents="none"
-            />
+          {TOOL_BUTTONS.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              disabled={disabled}
+              aria-pressed={tool === key}
+              onClick={() => chooseTool(key)}
+              style={toolbarButtonStyle(tool === key, disabled)}
+            >
+              {label}
+            </button>
           ))}
-          {Array.from({ length: Math.floor(HEIGHT / GRID) + 1 }, (_, index) => (
-            <line
-              key={`gy-${index}`}
-              x1="0"
-              y1={index * GRID}
-              x2={WIDTH}
-              y2={index * GRID}
-              stroke="#e8eef1"
-              strokeWidth="1"
-              pointerEvents="none"
-            />
-          ))}
+        </div>
 
-          {sketch.strokes.map((stroke) => {
-            const points = stroke.points.map((point) => `${point.x},${point.y}`).join(" ");
-            const active = selected?.kind === "stroke" && selected.id === stroke.id;
-            return (
-              <g key={stroke.id}>
-                {tool === "select" ? (
+        <div style={{ flex: "0 0 auto", padding: "4px 12px 8px", fontSize: 13, color: "#435158" }}>
+          {instruction}
+        </div>
+
+        <div
+          style={{
+            flex: "1 1 auto",
+            minHeight: 260,
+            margin: "0 10px",
+            border: "1px solid #cbd9de",
+            borderRadius: 12,
+            overflow: "hidden",
+            background: "#ffffff",
+            touchAction: "none",
+          }}
+        >
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+            preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label="Redigerbar badskisse"
+            onPointerDown={handleCanvasPointerDown}
+            onPointerMove={handleCanvasPointerMove}
+            onPointerUp={finishFreehandStroke}
+            onPointerCancel={finishFreehandStroke}
+            style={{ display: "block", width: "100%", height: "100%", maxWidth: "100%" }}
+          >
+            <rect width={WIDTH} height={HEIGHT} fill="#ffffff" />
+            {Array.from({ length: Math.floor(WIDTH / GRID) + 1 }, (_, index) => (
+              <line
+                key={`gx-${index}`}
+                x1={index * GRID}
+                y1="0"
+                x2={index * GRID}
+                y2={HEIGHT}
+                stroke="#e8eef1"
+                strokeWidth="1"
+                pointerEvents="none"
+              />
+            ))}
+            {Array.from({ length: Math.floor(HEIGHT / GRID) + 1 }, (_, index) => (
+              <line
+                key={`gy-${index}`}
+                x1="0"
+                y1={index * GRID}
+                x2={WIDTH}
+                y2={index * GRID}
+                stroke="#e8eef1"
+                strokeWidth="1"
+                pointerEvents="none"
+              />
+            ))}
+
+            {sketch.strokes.map((stroke) => {
+              const points = stroke.points.map((point) => `${point.x},${point.y}`).join(" ");
+              const active = selected?.kind === "stroke" && selected.id === stroke.id;
+              return (
+                <g key={stroke.id}>
+                  {tool === "select" ? (
+                    <polyline
+                      points={points}
+                      fill="none"
+                      stroke="transparent"
+                      strokeWidth="26"
+                      onPointerDown={(event) => handleObjectPointer(event, "stroke", stroke.id)}
+                    />
+                  ) : null}
                   <polyline
                     points={points}
                     fill="none"
-                    stroke="transparent"
-                    strokeWidth="26"
-                    onPointerDown={(event) => handleObjectPointer(event, "stroke", stroke.id)}
+                    stroke={active ? "#087f88" : "#172126"}
+                    strokeWidth={active ? 7 : 5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    pointerEvents="none"
                   />
-                ) : null}
-                <polyline
-                  points={points}
-                  fill="none"
-                  stroke={active ? "#087f88" : "#172126"}
-                  strokeWidth={active ? 7 : 5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  pointerEvents="none"
-                />
-              </g>
-            );
-          })}
+                </g>
+              );
+            })}
 
-          {activeStroke ? (
-            <polyline
-              points={activeStroke.points.map((point) => `${point.x},${point.y}`).join(" ")}
-              fill="none"
-              stroke="#087f88"
-              strokeWidth="5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              pointerEvents="none"
-            />
-          ) : null}
+            {activeStroke ? (
+              <polyline
+                points={activeStroke.points.map((point) => `${point.x},${point.y}`).join(" ")}
+                fill="none"
+                stroke="#087f88"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                pointerEvents="none"
+              />
+            ) : null}
 
-          {sketch.walls.map((wall) => {
-            const midpoint = wallPoint(wall, 0.5);
-            const active = selected?.kind === "wall" && selected.id === wall.id;
-            return (
-              <g key={wall.id}>
-                {["select", "door", "window"].includes(tool) ? (
+            {sketch.walls.map((wall, index) => {
+              const midpoint = wallPoint(wall, 0.5);
+              const active = selected?.kind === "wall" && selected.id === wall.id;
+              const label = wallLetter(index);
+              return (
+                <g key={wall.id}>
+                  {["select", "door", "window"].includes(tool) ? (
+                    <line
+                      x1={wall.x1}
+                      y1={wall.y1}
+                      x2={wall.x2}
+                      y2={wall.y2}
+                      stroke="transparent"
+                      strokeWidth="34"
+                      onPointerDown={(event) => handleWallPointer(event, wall)}
+                    />
+                  ) : null}
                   <line
                     x1={wall.x1}
                     y1={wall.y1}
                     x2={wall.x2}
                     y2={wall.y2}
-                    stroke="transparent"
-                    strokeWidth="32"
-                    onPointerDown={(event) => handleWallPointer(event, wall)}
+                    stroke={active ? "#087f88" : "#172126"}
+                    strokeWidth={active ? 9 : 7}
+                    strokeLinecap="round"
+                    pointerEvents="none"
                   />
-                ) : null}
-                <line
-                  x1={wall.x1}
-                  y1={wall.y1}
-                  x2={wall.x2}
-                  y2={wall.y2}
-                  stroke={active ? "#087f88" : "#172126"}
-                  strokeWidth={active ? 9 : 7}
-                  strokeLinecap="round"
-                  pointerEvents="none"
-                />
-                {wall.lengthMm ? (
+                  <circle cx={midpoint.x} cy={midpoint.y} r="16" fill="#087f88" pointerEvents="none" />
                   <text
                     x={midpoint.x}
-                    y={midpoint.y - 12}
+                    y={midpoint.y + 5}
                     textAnchor="middle"
-                    fontSize="15"
+                    fontSize="13"
+                    fontWeight="900"
+                    fill="#ffffff"
+                    pointerEvents="none"
+                  >
+                    {label}
+                  </text>
+                  {wall.lengthMm ? (
+                    <text
+                      x={midpoint.x}
+                      y={midpoint.y - 24}
+                      textAnchor="middle"
+                      fontSize="14"
+                      fontWeight="800"
+                      fill="#172126"
+                      stroke="#ffffff"
+                      strokeWidth="5"
+                      paintOrder="stroke"
+                      pointerEvents="none"
+                    >
+                      {wall.lengthMm} mm
+                    </text>
+                  ) : null}
+                </g>
+              );
+            })}
+
+            {sketch.openings.map((opening) => {
+              const wall = wallsById.get(opening.wallId);
+              if (!wall) return null;
+              const point = wallPoint(wall, opening.t);
+              const angle =
+                (Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1) * 180) /
+                Math.PI;
+              const active = selected?.kind === "opening" && selected.id === opening.id;
+              const visualWidth = opening.type === "window" ? 48 : 40;
+              return (
+                <g
+                  key={opening.id}
+                  transform={`translate(${point.x} ${point.y}) rotate(${angle})`}
+                  onPointerDown={(event) => handleObjectPointer(event, "opening", opening.id)}
+                >
+                  <rect
+                    x={-visualWidth / 2}
+                    y="-12"
+                    width={visualWidth}
+                    height="24"
+                    rx="4"
+                    fill="#ffffff"
+                    stroke={active ? "#087f88" : "#4b5b62"}
+                    strokeWidth={active ? 4 : 3}
+                  />
+                  <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="800" fill="#172126" pointerEvents="none">
+                    {opening.type === "window" ? "V" : "D"}
+                  </text>
+                  <text
+                    x="0"
+                    y="-19"
+                    textAnchor="middle"
+                    fontSize="12"
                     fontWeight="800"
                     fill="#172126"
                     stroke="#ffffff"
-                    strokeWidth="5"
+                    strokeWidth="4"
                     paintOrder="stroke"
-                    strokeLinejoin="round"
                     pointerEvents="none"
                   >
-                    {wall.lengthMm} mm
+                    {openingDimensionLabel(opening)}
                   </text>
-                ) : null}
-              </g>
-            );
-          })}
+                </g>
+              );
+            })}
 
-          {sketch.openings.map((opening) => {
-            const wall = wallsById.get(opening.wallId);
-            if (!wall) return null;
-            const point = wallPoint(wall, opening.t);
-            const angle =
-              (Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1) * 180) /
-              Math.PI;
-            const active =
-              selected?.kind === "opening" && selected.id === opening.id;
-            const visualWidth = opening.type === "window" ? 48 : 40;
-            return (
-              <g
-                key={opening.id}
-                transform={`translate(${point.x} ${point.y}) rotate(${angle})`}
-                onPointerDown={(event) =>
-                  handleObjectPointer(event, "opening", opening.id)
-                }
-              >
-                <rect
-                  x={-visualWidth / 2}
-                  y="-12"
-                  width={visualWidth}
-                  height="24"
-                  rx="4"
-                  fill="#ffffff"
-                  stroke={active ? "#087f88" : "#4b5b62"}
-                  strokeWidth={active ? 4 : 3}
-                />
-                <text
-                  x="0"
-                  y="5"
-                  textAnchor="middle"
-                  fontSize="14"
-                  fontWeight="800"
-                  fill="#172126"
-                  pointerEvents="none"
+            {sketch.markers.map((marker) => {
+              const active = selected?.kind === "marker" && selected.id === marker.id;
+              return (
+                <g
+                  key={marker.id}
+                  transform={`translate(${marker.x} ${marker.y})`}
+                  onPointerDown={(event) => handleObjectPointer(event, "marker", marker.id)}
                 >
-                  {opening.type === "window" ? "V" : "D"}
-                </text>
-                <text
-                  x="0"
-                  y="-19"
-                  textAnchor="middle"
-                  fontSize="12"
-                  fontWeight="800"
-                  fill="#172126"
-                  stroke="#ffffff"
-                  strokeWidth="4"
-                  paintOrder="stroke"
-                  pointerEvents="none"
-                >
-                  {openingDimensionLabel(opening)}
-                </text>
-              </g>
-            );
-          })}
+                  <circle r="20" fill="#ffffff" stroke={active ? "#087f88" : "#4b5b62"} strokeWidth={active ? 4 : 3} />
+                  <text x="0" y="4" textAnchor="middle" fontSize="10" fontWeight="800" fill="#172126" pointerEvents="none">
+                    {MARKER_LABELS[marker.type]}
+                  </text>
+                </g>
+              );
+            })}
 
-          {sketch.markers.map((marker) => {
-            const active = selected?.kind === "marker" && selected.id === marker.id;
-            return (
-              <g
-                key={marker.id}
-                transform={`translate(${marker.x} ${marker.y})`}
-                onPointerDown={(event) =>
-                  handleObjectPointer(event, "marker", marker.id)
-                }
-              >
-                <circle
-                  r="20"
-                  fill="#ffffff"
-                  stroke={active ? "#087f88" : "#4b5b62"}
-                  strokeWidth={active ? 4 : 3}
-                />
-                <text
-                  x="0"
-                  y="4"
-                  textAnchor="middle"
-                  fontSize="10"
-                  fontWeight="800"
-                  fill="#172126"
-                  pointerEvents="none"
-                >
-                  {MARKER_LABELS[marker.type]}
-                </text>
-              </g>
-            );
-          })}
+            {chainStart ? (
+              <circle cx={chainStart.x} cy={chainStart.y} r="12" fill="#ffffff" stroke="#087f88" strokeWidth="4" pointerEvents="none" />
+            ) : null}
+            {wallStart ? (
+              <circle cx={wallStart.x} cy={wallStart.y} r="7" fill="#087f88" stroke="#ffffff" strokeWidth="2" pointerEvents="none" />
+            ) : null}
+          </svg>
+        </div>
 
-          {chainStart ? (
-            <circle
-              cx={chainStart.x}
-              cy={chainStart.y}
-              r="12"
-              fill="#ffffff"
-              stroke="#087f88"
-              strokeWidth="4"
-              pointerEvents="none"
-            />
+        <div
+          style={{
+            flex: "0 0 auto",
+            maxHeight: "38dvh",
+            overflowY: "auto",
+            padding: "9px 10px max(12px, env(safe-area-inset-bottom))",
+            borderTop: "1px solid #d7e4ea",
+            background: "#ffffff",
+          }}
+        >
+          <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 9 }}>
+            <button
+              type="button"
+              className="sales-secondary-button"
+              disabled={disabled || !history.length}
+              onClick={undoLast}
+            >
+              Angre
+            </button>
+            <button
+              type="button"
+              className="sales-secondary-button"
+              disabled={disabled || !selected}
+              onClick={deleteSelected}
+            >
+              Slett valgt
+            </button>
+            {tool === "wall" && wallStart ? (
+              <button type="button" className="sales-secondary-button" onClick={finishWallChain}>
+                Avslutt veggkjede
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="sales-secondary-button"
+              disabled={disabled || !bathroomSketchHasContent(sketch)}
+              onClick={clearSketch}
+            >
+              Tøm
+            </button>
+          </div>
+
+          {sketch.walls.length ? (
+            <div style={{ marginBottom: 12 }}>
+              <strong style={{ display: "block", marginBottom: 7 }}>Mål vegger</strong>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(135px, 1fr))", gap: 8 }}>
+                {sketch.walls.map((wall, index) => (
+                  <label key={wall.id} className="sales-field" style={{ minWidth: 0 }}>
+                    <span>Vegg {wallLetter(index)} (mm)</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="999999"
+                      inputMode="numeric"
+                      value={wall.lengthMm}
+                      placeholder="f.eks. 2450"
+                      onFocus={() => setSelected({ kind: "wall", id: wall.id })}
+                      onChange={(event) => updateWallDimension(wall.id, event.target.value)}
+                    />
+                  </label>
+                ))}
+              </div>
+              <div style={{ marginTop: 6, fontSize: 12, color: "#5d6a70" }}>
+                Første vegg med mål brukes som målestokk. Øvrige mål skalerer skissen i samme tegnede retning.
+              </div>
+            </div>
           ) : null}
-          {wallStart ? (
-            <circle
-              cx={wallStart.x}
-              cy={wallStart.y}
-              r="7"
-              fill="#087f88"
-              stroke="#ffffff"
-              strokeWidth="2"
-              pointerEvents="none"
-            />
+
+          {selectedOpening ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 8 }}>
+              <label className="sales-field">
+                <span>{selectedOpening.type === "window" ? "Vindusbredde" : "Dørbredde"} (mm)</span>
+                <input
+                  type="number"
+                  min="1"
+                  inputMode="numeric"
+                  value={selectedOpening.widthMm}
+                  placeholder={selectedOpening.type === "window" ? "1200" : "900"}
+                  onChange={(event) => updateSelectedOpening("widthMm", event.target.value)}
+                />
+              </label>
+              <label className="sales-field">
+                <span>{selectedOpening.type === "window" ? "Vindushøyde" : "Dørhøyde"} (mm)</span>
+                <input
+                  type="number"
+                  min="1"
+                  inputMode="numeric"
+                  value={selectedOpening.heightMm}
+                  placeholder={selectedOpening.type === "window" ? "800" : "2100"}
+                  onChange={(event) => updateSelectedOpening("heightMm", event.target.value)}
+                />
+              </label>
+              {selectedOpening.type === "window" ? (
+                <label className="sales-field">
+                  <span>Gulv → underkant vindu (mm)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    inputMode="numeric"
+                    value={selectedOpening.sillHeightMm}
+                    placeholder="900"
+                    onChange={(event) => updateSelectedOpening("sillHeightMm", event.target.value)}
+                  />
+                </label>
+              ) : null}
+            </div>
           ) : null}
-        </svg>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <section
+      data-sales-bathroom-sketch="true"
+      style={{
+        border: "1px solid #d7e4ea",
+        borderRadius: 16,
+        padding: 14,
+        background: "#f8fbfc",
+        maxWidth: "100%",
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div>
+          <strong style={{ display: "block", fontSize: 17 }}>Badskisse</strong>
+          <span style={{ color: "#5d6a70", fontSize: 13 }}>
+            Tegn rommet, legg inn mål og marker eksisterende sluk/rør.
+          </span>
+        </div>
+        <button
+          type="button"
+          className="sales-primary-button"
+          disabled={disabled}
+          onClick={() => setIsOpen(true)}
+        >
+          {bathroomSketchHasContent(sketch) ? "Åpne / rediger skisse" : "Lag badskisse"}
+        </button>
       </div>
 
       <div
         style={{
-          marginTop: 8,
-          display: "flex",
-          gap: 10,
-          alignItems: "flex-end",
-          flexWrap: "wrap",
-          maxHeight: isFullscreen ? "33vh" : "none",
-          overflowY: isFullscreen ? "auto" : "visible",
+          marginTop: 10,
+          width: "100%",
+          maxWidth: "100%",
+          border: "1px solid #d7e4ea",
+          borderRadius: 12,
+          overflow: "hidden",
+          background: "#ffffff",
+          minHeight: 130,
+          display: "grid",
+          placeItems: "center",
         }}
       >
-        {tool === "wall" && wallStart ? (
-          <button
-            type="button"
-            className="sales-secondary-button"
-            disabled={disabled}
-            onClick={finishWallChain}
-          >
-            Avslutt veggkjede
-          </button>
-        ) : null}
-
-        {selectedWall ? (
-          <label className="sales-field" style={{ minWidth: 210, flex: "1 1 210px" }}>
-            <span>Mål på valgt vegg (mm)</span>
-            <input
-              type="number"
-              min="1"
-              max="999999"
-              inputMode="numeric"
-              value={selectedWall.lengthMm}
-              disabled={disabled}
-              placeholder="f.eks. 2450"
-              onChange={(event) => updateSelectedWallLength(event.target.value)}
-            />
-          </label>
-        ) : null}
-
-        {selectedOpening ? (
-          <>
-            <label className="sales-field" style={{ minWidth: 170, flex: "1 1 170px" }}>
-              <span>{selectedOpening.type === "window" ? "Vindusbredde" : "Dørbredde"} (mm)</span>
-              <input
-                type="number"
-                min="1"
-                max="999999"
-                inputMode="numeric"
-                value={selectedOpening.widthMm}
-                disabled={disabled}
-                placeholder={selectedOpening.type === "window" ? "f.eks. 1200" : "f.eks. 900"}
-                onChange={(event) =>
-                  updateSelectedOpening("widthMm", event.target.value)
-                }
-              />
-            </label>
-            <label className="sales-field" style={{ minWidth: 170, flex: "1 1 170px" }}>
-              <span>{selectedOpening.type === "window" ? "Vindushøyde" : "Dørhøyde"} (mm)</span>
-              <input
-                type="number"
-                min="1"
-                max="999999"
-                inputMode="numeric"
-                value={selectedOpening.heightMm}
-                disabled={disabled}
-                placeholder={selectedOpening.type === "window" ? "f.eks. 800" : "f.eks. 2100"}
-                onChange={(event) =>
-                  updateSelectedOpening("heightMm", event.target.value)
-                }
-              />
-            </label>
-            {selectedOpening.type === "window" ? (
-              <label className="sales-field" style={{ minWidth: 220, flex: "1 1 220px" }}>
-                <span>Gulv → underkant vindu (mm)</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="999999"
-                  inputMode="numeric"
-                  value={selectedOpening.sillHeightMm}
-                  disabled={disabled}
-                  placeholder="f.eks. 900"
-                  onChange={(event) =>
-                    updateSelectedOpening("sillHeightMm", event.target.value)
-                  }
-                />
-              </label>
-            ) : null}
-          </>
-        ) : null}
+        {previewUrl ? (
+          <img
+            src={previewUrl}
+            alt="Forhåndsvisning av badskisse"
+            style={{ display: "block", width: "100%", maxWidth: "100%", height: "auto" }}
+          />
+        ) : (
+          <span style={{ padding: 24, color: "#5d6a70", textAlign: "center" }}>
+            Ingen badskisse registrert ennå.
+          </span>
+        )}
       </div>
 
-      {!isFullscreen ? (
-        <div style={{ marginTop: 10, fontSize: 13, color: "#5d6a70", lineHeight: 1.45 }}>
-          <strong>Tips:</strong> På mobil bør du bruke «Åpne stor tegneflate». D/V viser bredde × høyde. På vindu betyr UK høyde fra gulv til underkant vindu.
-        </div>
-      ) : null}
+      {isOpen && typeof document !== "undefined"
+        ? createPortal(renderEditor(), document.body)
+        : null}
     </section>
   );
 }
