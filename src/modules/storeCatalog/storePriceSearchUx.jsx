@@ -1,8 +1,8 @@
 // Expo ProffDok – FASE 41B.2 / FASE 41B.3 / FASE 41B.3G
 // Kobler read-only Prissøk inn i eksisterende desktop- og mobilnavigasjon.
 // FASE 41B.3 viser Prissøk i samme app-arbeidsflate i stedet for fullskjerm-overlay.
-// FASE 41B.3G støtter den faktiske mobile «Alle funksjoner»-menyen i tillegg til
-// eldre mobil-select. Backend-RPC er fortsatt autoritativ tilgangskontroll.
+// FASE 41B.3G viser Prissøk som hurtigtilgang i dagens mobilmeny. Eldre
+// mobil-select støttes fortsatt. Backend-RPC er autoritativ tilgangskontroll.
 
 import React from "react";
 import { createRoot } from "react-dom/client";
@@ -64,8 +64,8 @@ function findInternalNav() {
   }) || null;
 }
 
-function findMobileFunctionsGrid() {
-  return document.querySelector(".mobileAllFunctionsGrid");
+function findMobileQuickGrid() {
+  return document.querySelector(".mobileMenuQuickGrid");
 }
 
 function findAppMain() {
@@ -97,8 +97,8 @@ function syncActiveNavigation() {
   const mobileButton = document.getElementById(MOBILE_BUTTON_ID);
   if (mobileButton instanceof HTMLButtonElement) {
     mobileButton.className = priceSearchOpen
-      ? "mobileMenuAllButton"
-      : "secondary mobileMenuAllButton";
+      ? "mobileMenuQuickButton"
+      : "secondary mobileMenuQuickButton";
     mobileButton.setAttribute("aria-current", priceSearchOpen ? "page" : "false");
   }
 
@@ -177,7 +177,7 @@ function syncNavButton() {
 }
 
 function syncMobileButton() {
-  const grid = findMobileFunctionsGrid();
+  const grid = findMobileQuickGrid();
   const existing = document.getElementById(MOBILE_BUTTON_ID);
   if (!(grid instanceof HTMLElement) || !uiAllowed()) {
     existing?.remove();
@@ -192,8 +192,16 @@ function syncMobileButton() {
   const button = document.createElement("button");
   button.id = MOBILE_BUTTON_ID;
   button.type = "button";
-  button.className = "secondary mobileMenuAllButton";
-  button.textContent = "Prissøk";
+  button.className = "secondary mobileMenuQuickButton";
+  button.style.gridColumn = "1 / -1";
+
+  const icon = document.createElement("span");
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = "🔎";
+  const label = document.createElement("span");
+  label.textContent = "Prissøk";
+  button.append(icon, label);
+
   button.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -270,7 +278,7 @@ export function installStorePriceSearchUx() {
     frame = window.requestAnimationFrame(() => {
       frame = 0;
       syncUi();
-      if (!accessResolved && (findInternalNav() || findMobileFunctionsGrid())) void refreshAccess();
+      if (!accessResolved && (findInternalNav() || findMobileQuickGrid())) void refreshAccess();
     });
   };
 
@@ -296,7 +304,7 @@ export function installStorePriceSearchUx() {
   document.addEventListener("click", (event) => {
     if (!priceSearchOpen) return;
     const target = event.target instanceof Element ? event.target : null;
-    const button = target?.closest("nav > button, .mobileMenuQuickGrid button, .mobileAllFunctionsGrid button");
+    const button = target?.closest("nav > button, .mobileMenuQuickGrid button");
     if (!(button instanceof HTMLButtonElement)) return;
     if (button.id === NAV_BUTTON_ID || button.id === MOBILE_BUTTON_ID) return;
     closePriceSearch();
