@@ -84,7 +84,7 @@ function createPriceSearchHelpItem() {
   content.appendChild(createHelpList([
     "Søk på varenavn, leverandør, varenummer eller GTIN/EAN. Treffene kommer fra siste aktiverte ERP-prisliste.",
     "Prissøk oppretter eller endrer aldri tilbud, prosjekter eller vareregisteret.",
-    "Prissøk og Butikktilbud er en intern handelsadgang som bare systemadministrator kan tildele. Tilgangen kan kun gis til brukere i Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter.",
+    "Prissøk og Butikktilbud er en intern handelsadgang som bare systemadministrator kan tildele. Tilgangen kan kun gis til godkjente og aktive brukere i Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter.",
     "Brukere uten denne tildelingen får verken Butikktilbud-meny, Prissøk-meny eller katalogdata fra serveren.",
     "Intern nto-pris, rabatt og margin krever i tillegg den separate rettigheten Se interne nettopriser, som også bare systemadministrator kan tildele.",
     "Samme nto-rettighet gjelder varesøket inne i Butikktilbud. Uten rettigheten sendes de sensitive prisfeltene ikke fra serveren.",
@@ -120,7 +120,7 @@ function ensureSystemAdminHelp() {
   heading.style.marginBottom = "6px";
   block.appendChild(heading);
   block.appendChild(createHelpList([
-    "Systemadmin behandler brukerstatus, firma, rolle, hovedmoduler og eventuell nto-pristilgang på samme brukerkort under Brukere og tilganger.",
+    "Systemadmin behandler nå brukerstatus, firma, rolle, hovedmoduler og eventuell nto-pristilgang på samme brukerkort under Brukere og tilganger.",
     "Butikktilbud er den eksplisitte tilgangen som også åpner Prissøk og det interne vareregisteret. Bare systemadministrator kan gi eller fjerne denne tilgangen.",
     "Butikktilbud/Prissøk kan bare gis til brukere i Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter. Firmaadministrator kan ikke delegere denne tilgangen videre.",
     "Se interne nettopriser er en ekstra sensitiv brukerrettighet. Kun systemadministrator kan gi eller fjerne den.",
