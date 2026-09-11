@@ -1,7 +1,8 @@
 // Expo ProffDok – FASE 42A
 // Badskisse Light: fullskjerm-popup, 90°-vegger, dragbare hjørner,
 // mål som styrer geometri, proporsjonale dør-/vindusåpninger,
-// flyttbar målsatt kasse, automatisk rom-zoom, installasjonsmarkører og valgfri frihånd.
+// flyttbare målsatte kasser og baderomsobjekter, automatisk rom-zoom,
+// installasjonsmarkører og valgfri frihånd.
 // Ingen SQL/RLS/Storage-policy-endring.
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -10,7 +11,7 @@ import { createPortal } from "react-dom";
 const WIDTH = 720;
 const HEIGHT = 460;
 const GRID = 20;
-const SKETCH_VERSION = 7;
+const SKETCH_VERSION = 8;
 const CLOSE_DISTANCE = 38;
 const CONNECT_DISTANCE = 7;
 const BOX_SNAP_DISTANCE = 34;
@@ -33,12 +34,25 @@ const MARKER_LABELS = {
   hot: "VV",
 };
 
+const FIXTURE_BOX_PRESETS = {
+  toilet: { label: "WC", widthMm: "360", depthMm: "550", fixedSize: true },
+  sink: { label: "Servant", widthMm: "600", depthMm: "450", fixedSize: false },
+  shower: { label: "Dusj", widthMm: "900", depthMm: "900", fixedSize: false },
+  bath: { label: "Badekar", widthMm: "1700", depthMm: "750", fixedSize: false },
+};
+
+const FIXTURE_LABELS = new Set(Object.values(FIXTURE_BOX_PRESETS).map((preset) => preset.label));
+
 const TOOL_BUTTONS = [
   ["wall", "90° vegger"],
   ["select", "Velg / flytt"],
   ["box", "Kasse"],
   ["door", "Dør"],
   ["window", "Vindu"],
+  ["toilet", "WC"],
+  ["sink", "Servant"],
+  ["shower", "Dusj"],
+  ["bath", "Badekar"],
   ["drain", "Sluk"],
   ["waste", "Avløp"],
   ["cold", "Kaldt vann"],
@@ -114,6 +128,14 @@ function escapeXml(value = "") {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&apos;");
+}
+
+function fixturePresetFromLabel(label) {
+  return Object.values(FIXTURE_BOX_PRESETS).find((preset) => preset.label === label) || null;
+}
+
+function isFixtureBox(box) {
+  return Boolean(box && FIXTURE_LABELS.has(String(box.label || "")));
 }
 
 function dedupeAccidentalBoxes(boxes) {
@@ -499,8 +521,47 @@ function openingMarkup(opening, wall, walls) {
   </g>`;
 }
 
+function fixtureBoxMarkup(box, size) {
+  const w = size.width;
+  const d = size.depth;
+  const stroke = "#087f88";
+  const fill = "#fff";
+
+  if (box.label === "WC") {
+    return `<g transform="translate(${box.x} ${box.y})">
+      <rect x="-${w * 0.42}" y="-${d / 2}" width="${w * 0.84}" height="${Math.max(10, d * 0.2)}" rx="4" fill="${fill}" stroke="${stroke}" stroke-width="3" />
+      <ellipse cx="0" cy="${d * 0.08}" rx="${Math.max(11, w * 0.34)}" ry="${Math.max(16, d * 0.31)}" fill="${fill}" stroke="${stroke}" stroke-width="3" />
+    </g>`;
+  }
+
+  if (box.label === "Servant") {
+    return `<g transform="translate(${box.x} ${box.y})">
+      <rect x="-${w / 2}" y="-${d / 2}" width="${w}" height="${d}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="3" />
+      <ellipse cx="0" cy="0" rx="${Math.max(10, w * 0.3)}" ry="${Math.max(9, d * 0.28)}" fill="none" stroke="${stroke}" stroke-width="2" />
+      <circle cx="0" cy="${-d * 0.28}" r="2.5" fill="${stroke}" />
+    </g>`;
+  }
+
+  if (box.label === "Dusj") {
+    return `<g transform="translate(${box.x} ${box.y})">
+      <rect x="-${w / 2}" y="-${d / 2}" width="${w}" height="${d}" fill="none" stroke="${stroke}" stroke-width="3" />
+      <path d="M ${-w / 2} ${d / 2} Q 0 ${-d / 2} ${w / 2} ${d / 2}" fill="none" stroke="${stroke}" stroke-width="2" stroke-dasharray="6 4" />
+      <circle cx="0" cy="0" r="4" fill="none" stroke="${stroke}" stroke-width="2" />
+    </g>`;
+  }
+
+  return `<g transform="translate(${box.x} ${box.y})">
+    <rect x="-${w / 2}" y="-${d / 2}" width="${w}" height="${d}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="3" />
+    <rect x="${-w / 2 + Math.min(10, w * 0.08)}" y="${-d / 2 + Math.min(9, d * 0.12)}" width="${Math.max(10, w - Math.min(20, w * 0.16))}" height="${Math.max(10, d - Math.min(18, d * 0.24))}" rx="9" fill="none" stroke="${stroke}" stroke-width="2" />
+  </g>`;
+}
+
 function boxMarkup(box, walls) {
   const size = boxSizePx(box, walls);
+  if (isFixtureBox(box)) {
+    return `${fixtureBoxMarkup(box, size)}
+      <text x="${box.x}" y="${box.y - size.depth / 2 - 9}" text-anchor="middle" font-size="12" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:4px">${boxDimensionLabel(box)}</text>`;
+  }
   return `<g transform="translate(${box.x} ${box.y})">
     <rect x="-${size.width / 2}" y="-${size.depth / 2}" width="${size.width}" height="${size.depth}" rx="4" fill="#f5fbfc" fill-opacity=".92" stroke="#087f88" stroke-width="3" />
     <text x="0" y="4" text-anchor="middle" font-size="12" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:4px">${boxDimensionLabel(box)}</text>
@@ -621,6 +682,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
   const selectedBox = selected?.kind === "box"
     ? sketch.boxes.find((box) => box.id === selected.id) || null
     : null;
+  const selectedFixturePreset = selectedBox ? fixturePresetFromLabel(selectedBox.label) : null;
 
   const instruction = (() => {
     if (tool === "wall") {
@@ -629,9 +691,10 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
         ? "Trykk neste hjørne. Neste vegg starter i forrige ende. Trykk nær startpunktet for å lukke rommet."
         : "Trykk neste hjørne. Stiplet linje viser 90°-retningen før du setter punktet.";
     }
-    if (tool === "select") return "Trykk direkte på vegg, dør, vindu eller kasse for å redigere. Vegghjørner og kasser kan dras med fingeren.";
+    if (tool === "select") return "Trykk direkte på vegg, dør, vindu, kasse eller baderomsobjekt for å redigere. Objekter kan dras med fingeren.";
     if (tool === "box") return "Trykk i fritt område for ny kasse. Trykk på en eksisterende kasse for å redigere den.";
     if (tool === "door" || tool === "window") return `Trykk på veggen for ny ${tool === "door" ? "dør" : "vindu"}. Trykk på en eksisterende åpning for å redigere den.`;
+    if (FIXTURE_BOX_PRESETS[tool]) return `Trykk i rommet for å sette inn ${FIXTURE_BOX_PRESETS[tool].label}. Flytt objektet etterpå med fingeren.`;
     if (tool === "freehand") return "Dra fingeren for frihånd. Denne modusen har ingen 90°-lås.";
     return `Trykk i skissen der ${MARKER_LABELS[tool] || "markøren"} skal plasseres.`;
   })();
@@ -739,14 +802,15 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
       return;
     }
 
-    if (tool === "box") {
+    if (tool === "box" || FIXTURE_BOX_PRESETS[tool]) {
+      const preset = FIXTURE_BOX_PRESETS[tool] || { label: "Kasse", widthMm: "600", depthMm: "300" };
       const provisional = {
         id: newId("box"),
         x: rawPoint.x,
         y: rawPoint.y,
-        widthMm: "600",
-        depthMm: "300",
-        label: "Kasse",
+        widthMm: preset.widthMm,
+        depthMm: preset.depthMm,
+        label: preset.label,
         snap: "free",
         createdAt: Date.now(),
       };
@@ -916,6 +980,15 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     commit({ ...sketch, boxes });
   }
 
+  function rotateSelectedBox() {
+    if (!selectedBox) return;
+    const boxes = sketch.boxes.map((box) => box.id === selectedBox.id
+      ? { ...box, widthMm: box.depthMm, depthMm: box.widthMm }
+      : box
+    );
+    commit({ ...sketch, boxes });
+  }
+
   function deleteSelected() {
     if (!selected || disabled) return;
     if (selected.kind === "wall") {
@@ -966,6 +1039,63 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     setDragCorner(null);
     setDragBox(null);
     if (nextTool !== "wall") finishWallChain();
+  }
+
+  function renderInteractiveBoxShape(box, size, active) {
+    const stroke = active ? "#087f88" : "#4b5b62";
+    const strokeWidth = active ? 5 : 3;
+
+    if (box.label === "WC") {
+      return (
+        <>
+          <rect x={-size.width * 0.42} y={-size.depth / 2} width={size.width * 0.84} height={Math.max(10, size.depth * 0.2)} rx="4" fill="#fff" stroke={stroke} strokeWidth={strokeWidth} />
+          <ellipse cx="0" cy={size.depth * 0.08} rx={Math.max(11, size.width * 0.34)} ry={Math.max(16, size.depth * 0.31)} fill="#fff" stroke={stroke} strokeWidth={strokeWidth} />
+        </>
+      );
+    }
+
+    if (box.label === "Servant") {
+      return (
+        <>
+          <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx="6" fill="#fff" stroke={stroke} strokeWidth={strokeWidth} />
+          <ellipse cx="0" cy="0" rx={Math.max(10, size.width * 0.3)} ry={Math.max(9, size.depth * 0.28)} fill="none" stroke="#087f88" strokeWidth="2" />
+          <circle cx="0" cy={-size.depth * 0.28} r="2.5" fill="#087f88" />
+        </>
+      );
+    }
+
+    if (box.label === "Dusj") {
+      return (
+        <>
+          <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} fill="none" stroke={stroke} strokeWidth={strokeWidth} />
+          <path d={`M ${-size.width / 2} ${size.depth / 2} Q 0 ${-size.depth / 2} ${size.width / 2} ${size.depth / 2}`} fill="none" stroke="#087f88" strokeWidth="2" strokeDasharray="6 4" />
+          <circle cx="0" cy="0" r="4" fill="none" stroke="#087f88" strokeWidth="2" />
+        </>
+      );
+    }
+
+    if (box.label === "Badekar") {
+      return (
+        <>
+          <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx="12" fill="#fff" stroke={stroke} strokeWidth={strokeWidth} />
+          <rect x={-size.width / 2 + Math.min(10, size.width * 0.08)} y={-size.depth / 2 + Math.min(9, size.depth * 0.12)} width={Math.max(10, size.width - Math.min(20, size.width * 0.16))} height={Math.max(10, size.depth - Math.min(18, size.depth * 0.24))} rx="9" fill="none" stroke="#087f88" strokeWidth="2" />
+        </>
+      );
+    }
+
+    return (
+      <rect
+        x={-size.width / 2}
+        y={-size.depth / 2}
+        width={size.width}
+        height={size.depth}
+        rx="4"
+        fill="#f5fbfc"
+        fillOpacity="0.92"
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+      />
+    );
   }
 
   const wallsById = new Map(sketch.walls.map((wall) => [wall.id, wall]));
@@ -1086,23 +1216,14 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
             {sketch.boxes.map((box) => {
               const size = boxSizePx(box, sketch.walls);
               const active = selected?.kind === "box" && selected.id === box.id;
+              const fixture = isFixtureBox(box);
               const snapText = dragBox?.id === box.id && dragBox?.snap && dragBox.snap !== "free"
                 ? dragBox.snap === "corner" ? "Festet til hjørne" : "Festet til vegg"
                 : "";
               return (
                 <g key={box.id} transform={`translate(${box.x} ${box.y})`} onPointerDown={(event) => startBoxPointer(event, box)}>
-                  <rect
-                    x={-size.width / 2}
-                    y={-size.depth / 2}
-                    width={size.width}
-                    height={size.depth}
-                    rx="4"
-                    fill="#f5fbfc"
-                    fillOpacity="0.92"
-                    stroke={active ? "#087f88" : "#4b5b62"}
-                    strokeWidth={active ? 5 : 3}
-                  />
-                  <text x="0" y="4" textAnchor="middle" fontSize="12" fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="4" paintOrder="stroke" pointerEvents="none">
+                  {renderInteractiveBoxShape(box, size, active)}
+                  <text x="0" y={fixture ? -size.depth / 2 - 9 : 4} textAnchor="middle" fontSize="12" fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="4" paintOrder="stroke" pointerEvents="none">
                     {box.label || "Kasse"} {box.widthMm || "?"}×{box.depthMm || "?"} mm
                   </text>
                   {snapText ? (
@@ -1238,23 +1359,43 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
 
           {selectedBox ? (
             <div style={{ marginBottom: 12 }}>
-              <strong style={{ display: "block", marginBottom: 7 }}>Målsatt kasse / sjakt</strong>
+              <strong style={{ display: "block", marginBottom: 7 }}>
+                {selectedFixturePreset ? selectedFixturePreset.label : "Målsatt kasse / sjakt"}
+              </strong>
+              {selectedFixturePreset?.fixedSize ? (
+                <div style={{ marginBottom: 8, color: "#435158", fontSize: 13 }}>
+                  Standardmål WC: 360 × 550 mm. Størrelsen er låst, men retningen kan roteres.
+                </div>
+              ) : null}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 }}>
-                <label className="sales-field">
-                  <span>Navn</span>
-                  <input type="text" value={selectedBox.label} placeholder="Kasse" onChange={(event) => updateSelectedBox("label", event.target.value)} />
-                </label>
-                <label className="sales-field">
-                  <span>Bredde (mm)</span>
-                  <input type="number" min="1" inputMode="numeric" value={selectedBox.widthMm} placeholder="600" onChange={(event) => updateSelectedBox("widthMm", event.target.value)} />
-                </label>
-                <label className="sales-field">
-                  <span>Dybde (mm)</span>
-                  <input type="number" min="1" inputMode="numeric" value={selectedBox.depthMm} placeholder="300" onChange={(event) => updateSelectedBox("depthMm", event.target.value)} />
-                </label>
+                {!selectedFixturePreset ? (
+                  <label className="sales-field">
+                    <span>Navn</span>
+                    <input type="text" value={selectedBox.label} placeholder="Kasse" onChange={(event) => updateSelectedBox("label", event.target.value)} />
+                  </label>
+                ) : null}
+                {!selectedFixturePreset?.fixedSize ? (
+                  <>
+                    <label className="sales-field">
+                      <span>Bredde (mm)</span>
+                      <input type="number" min="1" inputMode="numeric" value={selectedBox.widthMm} placeholder="600" onChange={(event) => updateSelectedBox("widthMm", event.target.value)} />
+                    </label>
+                    <label className="sales-field">
+                      <span>Dybde (mm)</span>
+                      <input type="number" min="1" inputMode="numeric" value={selectedBox.depthMm} placeholder="300" onChange={(event) => updateSelectedBox("depthMm", event.target.value)} />
+                    </label>
+                  </>
+                ) : null}
               </div>
+              {selectedFixturePreset ? (
+                <button type="button" className="sales-secondary-button" style={{ marginTop: 8 }} onClick={rotateSelectedBox}>
+                  Roter 90°
+                </button>
+              ) : null}
               <div style={{ marginTop: 6, fontSize: 12, color: "#5d6a70" }}>
-                Dra kassen i «Velg / flytt». Snap-indikatoren vises bare mens kassen fester seg mot vegg eller hjørne.
+                {selectedFixturePreset
+                  ? "Dra objektet med fingeren. Servant, dusj og badekar kan målsattes; WC bruker fast standardmål."
+                  : "Dra kassen i «Velg / flytt». Snap-indikatoren vises bare mens kassen fester seg mot vegg eller hjørne."}
               </div>
             </div>
           ) : null}
