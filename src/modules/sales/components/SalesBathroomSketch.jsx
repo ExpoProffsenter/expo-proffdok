@@ -1,7 +1,7 @@
 // Expo ProffDok – FASE 42A
-// Badskisse Light: fullskjerm-popup, rette sammenhengende vegger som standard,
-// veggmerking A/B/C, rask målliste, dør-/vindusmål og valgfri frihånd.
-// Ingen SQL/RLS/Storage-policy-endring.
+// Badskisse Light: fullskjerm-popup, 90-graders vegger som standard,
+// sammenhengende vegger, dragbare hjørner, A/B/C-mål, dør-/vindusmål
+// og valgfri frihånd. Ingen SQL/RLS/Storage-policy-endring.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -9,8 +9,9 @@ import { createPortal } from "react-dom";
 const WIDTH = 720;
 const HEIGHT = 460;
 const GRID = 20;
-const SKETCH_VERSION = 3;
-const CLOSE_DISTANCE = 34;
+const SKETCH_VERSION = 4;
+const CLOSE_DISTANCE = 38;
+const CONNECT_DISTANCE = 6;
 
 const EMPTY_SKETCH = Object.freeze({
   version: SKETCH_VERSION,
@@ -28,9 +29,9 @@ const MARKER_LABELS = {
 };
 
 const TOOL_BUTTONS = [
-  ["wall", "Rette vegger"],
+  ["wall", "90° vegger"],
   ["freehand", "Frihånd"],
-  ["select", "Velg"],
+  ["select", "Velg / flytt"],
   ["door", "Dør"],
   ["window", "Vindu"],
   ["drain", "Sluk"],
@@ -74,6 +75,16 @@ function wallLetter(index) {
     value = Math.floor(value / 26);
   }
   return result || "A";
+}
+
+function snapOrthogonal(start, point) {
+  if (!start) return point;
+  const dx = point.x - start.x;
+  const dy = point.y - start.y;
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return { x: point.x, y: start.y };
+  }
+  return { x: start.x, y: point.y };
 }
 
 export function normalizeBathroomSketch(value) {
@@ -274,45 +285,32 @@ function scaleWallsFromDimensions(walls, changedWallId, nextLengthMm) {
   );
   if (!nextWalls.length) return nextWalls;
 
-  const anchorIndex = nextWalls.findIndex(
+  const anchor = nextWalls.find(
     (wall) => Number(wall.lengthMm) > 0 && wallPixelLength(wall) > 0
   );
-  if (anchorIndex < 0) return nextWalls;
+  if (!anchor) return nextWalls;
 
-  const anchor = nextWalls[anchorIndex];
   const pxPerMm = wallPixelLength(anchor) / Number(anchor.lengthMm);
   if (!Number.isFinite(pxPerMm) || pxPerMm <= 0) return nextWalls;
 
   const firstStart = { x: nextWalls[0].x1, y: nextWalls[0].y1 };
-  const wasClosed =
-    nextWalls.length >= 3 &&
-    distance(
-      { x: nextWalls[nextWalls.length - 1].x2, y: nextWalls[nextWalls.length - 1].y2 },
-      firstStart
-    ) <= CLOSE_DISTANCE;
-
   let previousEnd = firstStart;
+
   return nextWalls.map((wall, index) => {
-    const currentPixelLength = Math.max(1, wallPixelLength(wall));
-    const dx = wall.x2 - wall.x1;
-    const dy = wall.y2 - wall.y1;
-    const ux = dx / currentPixelLength;
-    const uy = dy / currentPixelLength;
+    const horizontal = Math.abs(wall.x2 - wall.x1) >= Math.abs(wall.y2 - wall.y1);
+    const sign = horizontal
+      ? Math.sign(wall.x2 - wall.x1) || 1
+      : Math.sign(wall.y2 - wall.y1) || 1;
     const requestedMm = Number(wall.lengthMm);
     const targetPixelLength =
       Number.isFinite(requestedMm) && requestedMm > 0
         ? requestedMm * pxPerMm
-        : currentPixelLength;
+        : wallPixelLength(wall);
 
     const start = index === 0 ? firstStart : previousEnd;
-    let end = {
-      x: start.x + ux * targetPixelLength,
-      y: start.y + uy * targetPixelLength,
-    };
-
-    if (wasClosed && index === nextWalls.length - 1) {
-      end = firstStart;
-    }
+    const end = horizontal
+      ? { x: start.x + sign * targetPixelLength, y: start.y }
+      : { x: start.x, y: start.y + sign * targetPixelLength };
 
     const rebuilt = {
       ...wall,
@@ -326,6 +324,21 @@ function scaleWallsFromDimensions(walls, changedWallId, nextLengthMm) {
   });
 }
 
+function moveSharedCorner(walls, oldPoint, nextPoint) {
+  return walls.map((wall) => {
+    const next = { ...wall };
+    if (distance({ x: wall.x1, y: wall.y1 }, oldPoint) <= CONNECT_DISTANCE) {
+      next.x1 = nextPoint.x;
+      next.y1 = nextPoint.y;
+    }
+    if (distance({ x: wall.x2, y: wall.y2 }, oldPoint) <= CONNECT_DISTANCE) {
+      next.x2 = nextPoint.x;
+      next.y2 = nextPoint.y;
+    }
+    return next;
+  });
+}
+
 export default function SalesBathroomSketch({
   value,
   onChange,
@@ -333,6 +346,9 @@ export default function SalesBathroomSketch({
 }) {
   const svgRef = useRef(null);
   const sketch = useMemo(() => normalizeBathroomSketch(value), [value]);
+  const sketchRef = useRef(sketch);
+  sketchRef.current = sketch;
+
   const [tool, setTool] = useState("wall");
   const [wallStart, setWallStart] = useState(null);
   const [chainStart, setChainStart] = useState(null);
@@ -340,6 +356,7 @@ export default function SalesBathroomSketch({
   const [selected, setSelected] = useState(null);
   const [history, setHistory] = useState([]);
   const [activeStroke, setActiveStroke] = useState(null);
+  const [dragCorner, setDragCorner] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -363,17 +380,17 @@ export default function SalesBathroomSketch({
   const instruction = (() => {
     if (tool === "wall") {
       if (!wallStart) {
-        return "Trykk første hjørne. Deretter kobles hver nye rette vegg automatisk til enden av den forrige.";
+        return "Trykk første hjørne. Veggen låses automatisk vannrett eller loddrett (90°).";
       }
       return chainSegmentCount >= 2
-        ? "Trykk neste hjørne. Trykk nær startmarkøren for å lukke rommet automatisk."
-        : "Trykk neste hjørne. Neste vegg starter automatisk der denne slutter.";
+        ? "Trykk neste hjørne. Neste vegg starter i forrige ende. Trykk nær startpunktet for å lukke rommet."
+        : "Trykk neste hjørne. Appen velger nærmeste 90°-retning automatisk.";
     }
     if (tool === "freehand") {
-      return "Dra fingeren for å tegne frihånd. Bruk dette bare der rette vegger ikke passer.";
+      return "Dra fingeren for frihånd. Denne modusen har ingen 90°-lås.";
     }
     if (tool === "select") {
-      return "Trykk på vegg, dør, vindu, markør eller frihåndsstrek for å velge den.";
+      return "Velg en vegg. Dra de store hjørnepunktene for å rette formen; tilkoblede nabovegger følger med.";
     }
     if (tool === "door" || tool === "window") {
       return `Trykk på veggen der ${tool === "door" ? "døren" : "vinduet"} skal stå. Legg deretter inn mål.`;
@@ -413,7 +430,7 @@ export default function SalesBathroomSketch({
   function commit(nextSketch, { remember = true } = {}) {
     const normalized = normalizeBathroomSketch(nextSketch);
     if (remember) {
-      setHistory((current) => [...current.slice(-24), sketch]);
+      setHistory((current) => [...current.slice(-24), sketchRef.current]);
     }
     onChange?.(normalized, bathroomSketchDataUrl(normalized));
   }
@@ -424,8 +441,19 @@ export default function SalesBathroomSketch({
     setChainSegmentCount(0);
   }
 
+  function continueFromEnd() {
+    const sourceWall = selectedWall || sketch.walls[sketch.walls.length - 1];
+    if (!sourceWall) return;
+    const point = { x: sourceWall.x2, y: sourceWall.y2 };
+    setTool("wall");
+    setSelected(null);
+    setWallStart(point);
+    setChainStart(point);
+    setChainSegmentCount(0);
+  }
+
   function handleCanvasPointerDown(event) {
-    if (disabled) return;
+    if (disabled || dragCorner) return;
 
     if (tool === "freehand") {
       const point = pointerPoint(event, false);
@@ -439,12 +467,12 @@ export default function SalesBathroomSketch({
       return;
     }
 
-    const point = pointerPoint(event, true);
+    const rawPoint = pointerPoint(event, true);
 
     if (tool === "wall") {
       if (!wallStart) {
-        setWallStart(point);
-        setChainStart(point);
+        setWallStart(rawPoint);
+        setChainStart(rawPoint);
         setChainSegmentCount(0);
         setSelected(null);
         return;
@@ -453,8 +481,11 @@ export default function SalesBathroomSketch({
       const shouldClose =
         chainStart &&
         chainSegmentCount >= 2 &&
-        distance(point, chainStart) <= CLOSE_DISTANCE;
-      const endPoint = shouldClose ? chainStart : point;
+        distance(rawPoint, chainStart) <= CLOSE_DISTANCE;
+      const endPoint = shouldClose
+        ? chainStart
+        : snapOrthogonal(wallStart, rawPoint);
+
       if (endPoint.x === wallStart.x && endPoint.y === wallStart.y) return;
 
       const wall = {
@@ -482,8 +513,8 @@ export default function SalesBathroomSketch({
       const marker = {
         id: newId("marker"),
         type: tool,
-        x: point.x,
-        y: point.y,
+        x: rawPoint.x,
+        y: rawPoint.y,
         createdAt: Date.now(),
       };
       commit({ ...sketch, markers: [...sketch.markers, marker] });
@@ -495,7 +526,28 @@ export default function SalesBathroomSketch({
   }
 
   function handleCanvasPointerMove(event) {
-    if (disabled || tool !== "freehand" || !activeStroke) return;
+    if (disabled) return;
+
+    if (dragCorner) {
+      const current = sketchRef.current;
+      const wall = current.walls.find((item) => item.id === dragCorner.wallId);
+      if (!wall) return;
+      const oldPoint = dragCorner.oldPoint;
+      const otherPoint =
+        dragCorner.endpoint === "start"
+          ? { x: wall.x2, y: wall.y2 }
+          : { x: wall.x1, y: wall.y1 };
+      const raw = pointerPoint(event, true);
+      const nextPoint = snapOrthogonal(otherPoint, raw);
+      const walls = moveSharedCorner(current.walls, oldPoint, nextPoint);
+      onChange?.(
+        normalizeBathroomSketch({ ...current, walls }),
+        bathroomSketchDataUrl({ ...current, walls })
+      );
+      return;
+    }
+
+    if (tool !== "freehand" || !activeStroke) return;
     const point = pointerPoint(event, false);
     const lastPoint = activeStroke.points[activeStroke.points.length - 1];
     if (distance(point, lastPoint) < 4) return;
@@ -504,11 +556,16 @@ export default function SalesBathroomSketch({
     );
   }
 
-  function finishFreehandStroke(event) {
+  function finishPointerInteraction(event) {
+    if (dragCorner) {
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+      setDragCorner(null);
+      return;
+    }
     if (tool !== "freehand" || !activeStroke) return;
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     if (activeStroke.points.length > 1) {
-      commit({ ...sketch, strokes: [...sketch.strokes, activeStroke] });
+      commit({ ...sketchRef.current, strokes: [...sketchRef.current.strokes, activeStroke] });
       setSelected({ kind: "stroke", id: activeStroke.id });
     }
     setActiveStroke(null);
@@ -543,6 +600,17 @@ export default function SalesBathroomSketch({
     if (disabled || tool !== "select") return;
     event.stopPropagation();
     setSelected({ kind, id });
+  }
+
+  function startCornerDrag(event, wall, endpoint) {
+    if (disabled || tool !== "select") return;
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const oldPoint =
+      endpoint === "start"
+        ? { x: wall.x1, y: wall.y1 }
+        : { x: wall.x2, y: wall.y2 };
+    setDragCorner({ wallId: wall.id, endpoint, oldPoint });
   }
 
   function updateWallDimension(wallId, valueText) {
@@ -597,6 +665,7 @@ export default function SalesBathroomSketch({
     setHistory((current) => current.slice(0, -1));
     setSelected(null);
     setActiveStroke(null);
+    setDragCorner(null);
     finishWallChain();
     commit(previous, { remember: false });
   }
@@ -607,6 +676,7 @@ export default function SalesBathroomSketch({
     commit(EMPTY_SKETCH);
     setSelected(null);
     setActiveStroke(null);
+    setDragCorner(null);
     finishWallChain();
   }
 
@@ -614,6 +684,7 @@ export default function SalesBathroomSketch({
     setTool(nextTool);
     setSelected(null);
     setActiveStroke(null);
+    setDragCorner(null);
     if (nextTool !== "wall") finishWallChain();
   }
 
@@ -656,7 +727,7 @@ export default function SalesBathroomSketch({
           <div style={{ minWidth: 0 }}>
             <strong style={{ display: "block", fontSize: 18 }}>Badskisse</strong>
             <span style={{ display: "block", color: "#5d6a70", fontSize: 12 }}>
-              Vegger A, B, C … · mål i mm
+              90° vegger · A, B, C … · mål i mm
             </span>
           </div>
           <button
@@ -700,7 +771,7 @@ export default function SalesBathroomSketch({
         <div
           style={{
             flex: "1 1 auto",
-            minHeight: 260,
+            minHeight: 250,
             margin: "0 10px",
             border: "1px solid #cbd9de",
             borderRadius: 12,
@@ -717,8 +788,8 @@ export default function SalesBathroomSketch({
             aria-label="Redigerbar badskisse"
             onPointerDown={handleCanvasPointerDown}
             onPointerMove={handleCanvasPointerMove}
-            onPointerUp={finishFreehandStroke}
-            onPointerCancel={finishFreehandStroke}
+            onPointerUp={finishPointerInteraction}
+            onPointerCancel={finishPointerInteraction}
             style={{ display: "block", width: "100%", height: "100%", maxWidth: "100%" }}
           >
             <rect width={WIDTH} height={HEIGHT} fill="#ffffff" />
@@ -841,6 +912,28 @@ export default function SalesBathroomSketch({
                       {wall.lengthMm} mm
                     </text>
                   ) : null}
+                  {active && tool === "select" ? (
+                    <>
+                      <circle
+                        cx={wall.x1}
+                        cy={wall.y1}
+                        r="18"
+                        fill="#ffffff"
+                        stroke="#087f88"
+                        strokeWidth="5"
+                        onPointerDown={(event) => startCornerDrag(event, wall, "start")}
+                      />
+                      <circle
+                        cx={wall.x2}
+                        cy={wall.y2}
+                        r="18"
+                        fill="#ffffff"
+                        stroke="#087f88"
+                        strokeWidth="5"
+                        onPointerDown={(event) => startCornerDrag(event, wall, "end")}
+                      />
+                    </>
+                  ) : null}
                 </g>
               );
             })}
@@ -943,6 +1036,16 @@ export default function SalesBathroomSketch({
             >
               Slett valgt
             </button>
+            {sketch.walls.length ? (
+              <button
+                type="button"
+                className="sales-secondary-button"
+                disabled={disabled}
+                onClick={continueFromEnd}
+              >
+                Fortsett fra ende
+              </button>
+            ) : null}
             {tool === "wall" && wallStart ? (
               <button type="button" className="sales-secondary-button" onClick={finishWallChain}>
                 Avslutt veggkjede
@@ -979,7 +1082,7 @@ export default function SalesBathroomSketch({
                 ))}
               </div>
               <div style={{ marginTop: 6, fontSize: 12, color: "#5d6a70" }}>
-                Første vegg med mål brukes som målestokk. Øvrige mål skalerer skissen i samme tegnede retning.
+                Første vegg med mål brukes som målestokk. Øvrige mål justerer forholdet mellom de 90°-låste veggene.
               </div>
             </div>
           ) : null}
@@ -1044,7 +1147,7 @@ export default function SalesBathroomSketch({
         <div>
           <strong style={{ display: "block", fontSize: 17 }}>Badskisse</strong>
           <span style={{ color: "#5d6a70", fontSize: 13 }}>
-            Tegn rommet, legg inn mål og marker eksisterende sluk/rør.
+            Tegn 90°-vegger, legg inn mål og marker eksisterende sluk/rør.
           </span>
         </div>
         <button
