@@ -1,7 +1,8 @@
-// Expo ProffDok – FASE 41B.2 / FASE 41B.3
+// Expo ProffDok – FASE 41B.2 / FASE 41B.3 / FASE 41B.3G
 // Kobler read-only Prissøk inn i eksisterende desktop- og mobilnavigasjon.
 // FASE 41B.3 viser Prissøk i samme app-arbeidsflate i stedet for fullskjerm-overlay.
-// Backend-RPC er fortsatt autoritativ tilgangskontroll.
+// FASE 41B.3G viser Prissøk som hurtigtilgang i dagens mobilmeny. Eldre
+// mobil-select støttes fortsatt. Backend-RPC er autoritativ tilgangskontroll.
 
 import React from "react";
 import { createRoot } from "react-dom/client";
@@ -9,6 +10,7 @@ import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
 import StorePriceSearchView from "./StorePriceSearchView.jsx";
 
 const NAV_BUTTON_ID = "expo-price-search-nav-button";
+const MOBILE_BUTTON_ID = "expo-price-search-mobile-button";
 const INLINE_ID = "expo-price-search-inline";
 const MOBILE_OPTION_VALUE = "__expo_price_search__";
 const SUPPORT_LABEL = "SYSTEMADMIN SUPPORTMODUS";
@@ -62,6 +64,10 @@ function findInternalNav() {
   }) || null;
 }
 
+function findMobileQuickGrid() {
+  return document.querySelector(".mobileMenuQuickGrid");
+}
+
 function findAppMain() {
   return document.querySelector("#root main") || document.querySelector("main");
 }
@@ -79,13 +85,21 @@ function activeNativeLabel() {
 function syncActiveNavigation() {
   const nav = findInternalNav();
   const priceButton = document.getElementById(NAV_BUTTON_ID);
-  if (!nav || !priceButton) return;
+  if (nav && priceButton) {
+    priceButton.classList.toggle("on", priceSearchOpen);
+    if (priceSearchOpen) {
+      Array.from(nav.querySelectorAll(":scope > button.on")).forEach((button) => {
+        if (button.id !== NAV_BUTTON_ID) button.classList.remove("on");
+      });
+    }
+  }
 
-  priceButton.classList.toggle("on", priceSearchOpen);
-  if (priceSearchOpen) {
-    Array.from(nav.querySelectorAll(":scope > button.on")).forEach((button) => {
-      if (button.id !== NAV_BUTTON_ID) button.classList.remove("on");
-    });
+  const mobileButton = document.getElementById(MOBILE_BUTTON_ID);
+  if (mobileButton instanceof HTMLButtonElement) {
+    mobileButton.className = priceSearchOpen
+      ? "mobileMenuQuickButton"
+      : "secondary mobileMenuQuickButton";
+    mobileButton.setAttribute("aria-current", priceSearchOpen ? "page" : "false");
   }
 
   const selects = Array.from(document.querySelectorAll('.mobileNavSelectWrap select[aria-label="Velg side"]'));
@@ -136,7 +150,6 @@ function syncNavButton() {
   const nav = findInternalNav();
   const existing = document.getElementById(NAV_BUTTON_ID);
   if (!nav || !uiAllowed()) {
-    if (priceSearchOpen) closePriceSearch();
     existing?.remove();
     return;
   }
@@ -160,6 +173,41 @@ function syncNavButton() {
     openPriceSearch();
   });
   salesButton.insertAdjacentElement("afterend", button);
+  syncActiveNavigation();
+}
+
+function syncMobileButton() {
+  const grid = findMobileQuickGrid();
+  const existing = document.getElementById(MOBILE_BUTTON_ID);
+  if (!(grid instanceof HTMLElement) || !uiAllowed()) {
+    existing?.remove();
+    return;
+  }
+  if (existing && existing.parentElement === grid) {
+    syncActiveNavigation();
+    return;
+  }
+  existing?.remove();
+
+  const button = document.createElement("button");
+  button.id = MOBILE_BUTTON_ID;
+  button.type = "button";
+  button.className = "secondary mobileMenuQuickButton";
+  button.style.gridColumn = "1 / -1";
+
+  const icon = document.createElement("span");
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = "🔎";
+  const label = document.createElement("span");
+  label.textContent = "Prissøk";
+  button.append(icon, label);
+
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openPriceSearch();
+  });
+  grid.appendChild(button);
   syncActiveNavigation();
 }
 
@@ -191,6 +239,7 @@ function restoreMobileSelection(select) {
 
 function syncUi() {
   syncNavButton();
+  syncMobileButton();
   syncMobileOption();
   if (priceSearchOpen && !document.getElementById(INLINE_ID)) {
     priceSearchOpen = false;
@@ -229,7 +278,7 @@ export function installStorePriceSearchUx() {
     frame = window.requestAnimationFrame(() => {
       frame = 0;
       syncUi();
-      if (!accessResolved && findInternalNav()) void refreshAccess();
+      if (!accessResolved && (findInternalNav() || findMobileQuickGrid())) void refreshAccess();
     });
   };
 
@@ -254,8 +303,10 @@ export function installStorePriceSearchUx() {
 
   document.addEventListener("click", (event) => {
     if (!priceSearchOpen) return;
-    const button = event.target instanceof Element ? event.target.closest("nav > button") : null;
-    if (!(button instanceof HTMLButtonElement) || button.id === NAV_BUTTON_ID) return;
+    const target = event.target instanceof Element ? event.target : null;
+    const button = target?.closest("nav > button, .mobileMenuQuickGrid button");
+    if (!(button instanceof HTMLButtonElement)) return;
+    if (button.id === NAV_BUTTON_ID || button.id === MOBILE_BUTTON_ID) return;
     closePriceSearch();
   }, true);
 
@@ -263,7 +314,10 @@ export function installStorePriceSearchUx() {
     void refreshAccess();
     scheduleSync();
   });
-  window.addEventListener("expo-proffdok-module-access", scheduleSync);
+  window.addEventListener("expo-proffdok-module-access", () => {
+    void refreshAccess();
+    scheduleSync();
+  });
 
   const observer = new MutationObserver(scheduleSync);
   observer.observe(document.documentElement, { childList: true, subtree: true });

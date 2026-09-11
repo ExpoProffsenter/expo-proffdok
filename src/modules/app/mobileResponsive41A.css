@@ -1,6 +1,6 @@
-/* Expo ProffDok – FASE 41A.1
+/* Expo ProffDok – FASE 41A.1 / FASE 41B.3G
    Tverrgående mobilrettinger for rapportert tekstforskyvning.
-   Kun presentasjon: ingen Sales-data, priser, tilgangslogikk, RLS eller mobilmeny endres.
+   FASE 41B.3G utvider checkbox-reglene til de faktiske nye Systemadmin-kortene.
 */
 
 /* Intern tilbudsvisning: grupperte tilbudslinjer fikk ny DOM-struktur i 39B.2C,
@@ -83,28 +83,59 @@
 }
 
 /* Brukere og tilganger: globale input-regler gir ellers checkbox 100 % bredde
-   og skyver modulteksten ut av kortet på mobil. */
+   og skyver modul-/arbeidsprofiltekst ut av kortet på mobil. Både det eldre
+   tilgangspanelet og de faktiske 41B.2/41B.3 Systemadmin-mountene dekkes. */
 @media screen and (max-width: 700px) {
-  #expo-module-access-manager label {
-    min-width: 0 !important;
+  #expo-module-access-manager,
+  [data-systemadmin-unified-access],
+  [data-systemadmin-work-profiles] {
+    width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
   }
 
-  #expo-module-access-manager input[type="checkbox"] {
+  #expo-module-access-manager label,
+  [data-systemadmin-unified-access] label,
+  [data-systemadmin-work-profiles] label {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  #expo-module-access-manager input[type="checkbox"],
+  [data-systemadmin-unified-access] input[type="checkbox"],
+  [data-systemadmin-work-profiles] input[type="checkbox"] {
     width: 24px !important;
     min-width: 24px !important;
     max-width: 24px !important;
     height: 24px !important;
-    min-height: 0 !important;
+    min-height: 24px !important;
+    max-height: 24px !important;
     padding: 0 !important;
     margin: 2px 0 0 !important;
     flex: 0 0 24px !important;
   }
 
-  #expo-module-access-manager label > span {
+  #expo-module-access-manager label > span,
+  [data-systemadmin-unified-access] label > span,
+  [data-systemadmin-work-profiles] label > span {
+    flex: 1 1 auto !important;
     min-width: 0 !important;
     max-width: 100% !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
+  }
+
+  [data-systemadmin-unified-access] > div,
+  [data-systemadmin-work-profiles] > div {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  [data-systemadmin-unified-access] div[style*="grid-template-columns"],
+  [data-systemadmin-work-profiles] div[style*="grid-template-columns"] {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 }
