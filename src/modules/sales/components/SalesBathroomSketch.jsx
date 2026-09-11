@@ -1,8 +1,6 @@
 // Expo ProffDok – FASE 42A
-// Badskisse Light: fullskjerm-popup, 90°-vegger, dragbare hjørner,
-// mål som styrer geometri, proporsjonale dør-/vindusåpninger,
-// flyttbare målsatte kasser og baderomsobjekter, automatisk rom-zoom,
-// installasjonsmarkører og valgfri frihånd.
+// Badskisse Light: mobil fullskjerm, 90°-vegger, målsatte åpninger,
+// flyttbare/snapbare kasser og baderomsobjekter, kompakte mål og frihånd.
 // Ingen SQL/RLS/Storage-policy-endring.
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -11,10 +9,10 @@ import { createPortal } from "react-dom";
 const WIDTH = 720;
 const HEIGHT = 460;
 const GRID = 20;
-const SKETCH_VERSION = 8;
+const SKETCH_VERSION = 9;
 const CLOSE_DISTANCE = 38;
 const CONNECT_DISTANCE = 7;
-const BOX_SNAP_DISTANCE = 34;
+const SNAP_DISTANCE = 38;
 const BASE_PX_PER_MM = 0.12;
 const CANVAS_MARGIN = 34;
 
@@ -34,14 +32,14 @@ const MARKER_LABELS = {
   hot: "VV",
 };
 
-const FIXTURE_BOX_PRESETS = {
+const FIXTURE_PRESETS = {
   toilet: { label: "WC", widthMm: "360", depthMm: "550", fixedSize: true },
   sink: { label: "Servant", widthMm: "600", depthMm: "450", fixedSize: false },
   shower: { label: "Dusj", widthMm: "900", depthMm: "900", fixedSize: false },
   bath: { label: "Badekar", widthMm: "1700", depthMm: "750", fixedSize: false },
 };
 
-const FIXTURE_LABELS = new Set(Object.values(FIXTURE_BOX_PRESETS).map((preset) => preset.label));
+const FIXTURE_LABELS = new Set(Object.values(FIXTURE_PRESETS).map((item) => item.label));
 
 const TOOL_BUTTONS = [
   ["wall", "90° vegger"],
@@ -60,13 +58,13 @@ const TOOL_BUTTONS = [
   ["freehand", "Frihånd"],
 ];
 
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function numberOr(value, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
 }
 
 function cleanMm(value) {
@@ -91,6 +89,17 @@ function wallPixelLength(wall) {
   return Math.hypot(wall.x2 - wall.x1, wall.y2 - wall.y1);
 }
 
+function wallPoint(wall, t = 0.5) {
+  return {
+    x: wall.x1 + (wall.x2 - wall.x1) * t,
+    y: wall.y1 + (wall.y2 - wall.y1) * t,
+  };
+}
+
+function wallAngle(wall) {
+  return (Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1) * 180) / Math.PI;
+}
+
 function wallLetter(index) {
   let value = Number(index) + 1;
   let result = "";
@@ -106,19 +115,9 @@ function snapOrthogonal(start, point) {
   if (!start) return point;
   const dx = point.x - start.x;
   const dy = point.y - start.y;
-  if (Math.abs(dx) >= Math.abs(dy)) return { x: point.x, y: start.y };
-  return { x: start.x, y: point.y };
-}
-
-function wallPoint(wall, t = 0.5) {
-  return {
-    x: wall.x1 + (wall.x2 - wall.x1) * t,
-    y: wall.y1 + (wall.y2 - wall.y1) * t,
-  };
-}
-
-function wallAngle(wall) {
-  return (Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1) * 180) / Math.PI;
+  return Math.abs(dx) >= Math.abs(dy)
+    ? { x: point.x, y: start.y }
+    : { x: start.x, y: point.y };
 }
 
 function escapeXml(value = "") {
@@ -131,7 +130,7 @@ function escapeXml(value = "") {
 }
 
 function fixturePresetFromLabel(label) {
-  return Object.values(FIXTURE_BOX_PRESETS).find((preset) => preset.label === label) || null;
+  return Object.values(FIXTURE_PRESETS).find((preset) => preset.label === label) || null;
 }
 
 function isFixtureBox(box) {
@@ -140,7 +139,7 @@ function isFixtureBox(box) {
 
 function dedupeAccidentalBoxes(boxes) {
   return boxes.filter((box, index, all) => {
-    const laterDuplicate = all.findIndex((candidate, candidateIndex) => {
+    return !all.some((candidate, candidateIndex) => {
       if (candidateIndex <= index) return false;
       return (
         Math.abs(numberOr(candidate.x) - numberOr(box.x)) <= 4 &&
@@ -148,13 +147,12 @@ function dedupeAccidentalBoxes(boxes) {
         String(candidate.label || "Kasse") === String(box.label || "Kasse")
       );
     });
-    return laterDuplicate === -1;
   });
 }
 
 function dedupeAccidentalOpenings(openings) {
   return openings.filter((opening, index, all) => {
-    const laterDuplicate = all.findIndex((candidate, candidateIndex) => {
+    return !all.some((candidate, candidateIndex) => {
       if (candidateIndex <= index) return false;
       return (
         candidate.type === opening.type &&
@@ -162,7 +160,6 @@ function dedupeAccidentalOpenings(openings) {
         Math.abs(numberOr(candidate.t, 0.5) - numberOr(opening.t, 0.5)) <= 0.015
       );
     });
-    return laterDuplicate === -1;
   });
 }
 
@@ -266,6 +263,14 @@ function measuredPxPerMm(walls) {
   return samples[Math.floor(samples.length / 2)];
 }
 
+function boxSizePx(box, walls) {
+  const scale = measuredPxPerMm(walls);
+  return {
+    width: clamp((mmValue(box?.widthMm) || 600) * scale, 24, 320),
+    depth: clamp((mmValue(box?.depthMm) || 300) * scale, 24, 260),
+  };
+}
+
 function openingVisualWidth(opening, wall, walls) {
   const openingMm = mmValue(opening?.widthMm);
   const wallMm = mmValue(wall?.lengthMm);
@@ -279,41 +284,33 @@ function openingVisualWidth(opening, wall, walls) {
   return opening?.type === "window" ? 48 : 40;
 }
 
-function openingDimensionLabel(opening) {
-  const width = cleanMm(opening?.widthMm);
-  const height = cleanMm(opening?.heightMm);
-  const prefix = opening?.type === "window" ? "V" : "D";
-  const size = width || height ? `${width || "?"}×${height || "?"} mm` : "mål mangler";
-  const sill =
-    opening?.type === "window"
-      ? ` · UK ${cleanMm(opening?.sillHeightMm) || "?"} mm`
-      : "";
-  return `${prefix} ${size}${sill}`;
+function openingLabelLines(opening) {
+  const width = cleanMm(opening?.widthMm) || "?";
+  const height = cleanMm(opening?.heightMm) || "?";
+  const first = `${opening?.type === "window" ? "V" : "D"} ${width}×${height}`;
+  const second = opening?.type === "window"
+    ? `UK ${cleanMm(opening?.sillHeightMm) || "?"}`
+    : "";
+  return { first, second };
 }
 
-function boxSizePx(box, walls) {
-  const scale = measuredPxPerMm(walls);
+function boxLabelLines(box) {
   return {
-    width: clamp((mmValue(box?.widthMm) || 600) * scale, 24, 320),
-    depth: clamp((mmValue(box?.depthMm) || 300) * scale, 24, 260),
+    first: String(box?.label || "Kasse"),
+    second: `${cleanMm(box?.widthMm) || "?"}×${cleanMm(box?.depthMm) || "?"}`,
   };
-}
-
-function boxDimensionLabel(box) {
-  return `${escapeXml(box?.label || "Kasse")} ${cleanMm(box?.widthMm) || "?"}×${cleanMm(box?.depthMm) || "?"} mm`;
 }
 
 function sketchViewBox(sketch) {
   const walls = Array.isArray(sketch?.walls) ? sketch.walls : [];
   const measuredWallCount = walls.filter((wall) => mmValue(wall?.lengthMm) >= 100).length;
-  if (walls.length < 3 || measuredWallCount < 2) {
-    return `0 0 ${WIDTH} ${HEIGHT}`;
-  }
+  if (walls.length < 3 || measuredWallCount < 2) return `0 0 ${WIDTH} ${HEIGHT}`;
 
   const points = [];
-  walls.forEach((wall) => {
-    points.push({ x: wall.x1, y: wall.y1 }, { x: wall.x2, y: wall.y2 });
-  });
+  walls.forEach((wall) => points.push(
+    { x: wall.x1, y: wall.y1 },
+    { x: wall.x2, y: wall.y2 }
+  ));
 
   (sketch.boxes || []).forEach((box) => {
     const size = boxSizePx(box, walls);
@@ -323,9 +320,10 @@ function sketchViewBox(sketch) {
     );
   });
 
-  (sketch.markers || []).forEach((marker) => {
-    points.push({ x: marker.x - 24, y: marker.y - 24 }, { x: marker.x + 24, y: marker.y + 24 });
-  });
+  (sketch.markers || []).forEach((marker) => points.push(
+    { x: marker.x - 20, y: marker.y - 20 },
+    { x: marker.x + 20, y: marker.y + 20 }
+  ));
 
   (sketch.strokes || []).forEach((stroke) => {
     (stroke.points || []).forEach((point) => points.push(point));
@@ -339,7 +337,7 @@ function sketchViewBox(sketch) {
   let maxY = Math.max(...ys);
   const rawWidth = Math.max(1, maxX - minX);
   const rawHeight = Math.max(1, maxY - minY);
-  const padding = clamp(Math.max(rawWidth, rawHeight) * 0.16, 48, 90);
+  const padding = clamp(Math.max(rawWidth, rawHeight) * 0.14, 40, 78);
 
   minX -= padding;
   maxX += padding;
@@ -375,17 +373,16 @@ function closestPointOnWall(wall, point) {
 
 function snapBoxPosition(point, box, walls) {
   const size = boxSizePx(box, walls);
-  const corners = [];
-  walls.forEach((wall) => {
-    corners.push({ x: wall.x1, y: wall.y1 });
-    corners.push({ x: wall.x2, y: wall.y2 });
-  });
+  const corners = walls.flatMap((wall) => [
+    { x: wall.x1, y: wall.y1 },
+    { x: wall.x2, y: wall.y2 },
+  ]);
 
   const nearestCorner = corners
     .map((corner) => ({ corner, d: distance(point, corner) }))
     .sort((a, b) => a.d - b.d)[0];
 
-  if (nearestCorner && nearestCorner.d <= BOX_SNAP_DISTANCE * 1.25) {
+  if (nearestCorner && nearestCorner.d <= SNAP_DISTANCE * 1.35) {
     const sx = point.x >= nearestCorner.corner.x ? 1 : -1;
     const sy = point.y >= nearestCorner.corner.y ? 1 : -1;
     return {
@@ -396,13 +393,13 @@ function snapBoxPosition(point, box, walls) {
   }
 
   let bestWall = null;
-  for (const wall of walls) {
+  walls.forEach((wall) => {
     const projected = closestPointOnWall(wall, point);
     const d = distance(projected, point);
     if (!bestWall || d < bestWall.d) bestWall = { wall, projected, d };
-  }
+  });
 
-  if (bestWall && bestWall.d <= BOX_SNAP_DISTANCE) {
+  if (bestWall && bestWall.d <= SNAP_DISTANCE) {
     const horizontal = Math.abs(bestWall.wall.x2 - bestWall.wall.x1) >= Math.abs(bestWall.wall.y2 - bestWall.wall.y1);
     if (horizontal) {
       const side = point.y >= bestWall.projected.y ? 1 : -1;
@@ -480,15 +477,16 @@ function rebuildWallsFromDimensions(sketch) {
   if (scaledMinY < CANVAS_MARGIN) dy = CANVAS_MARGIN - scaledMinY;
   else if (scaledMaxY > HEIGHT - CANVAS_MARGIN) dy = HEIGHT - CANVAS_MARGIN - scaledMaxY;
 
-  const walls = scaled.map((wall) => ({
-    ...wall,
-    x1: wall.x1 + dx,
-    y1: wall.y1 + dy,
-    x2: wall.x2 + dx,
-    y2: wall.y2 + dy,
-  }));
-
-  return { ...sketch, walls };
+  return {
+    ...sketch,
+    walls: scaled.map((wall) => ({
+      ...wall,
+      x1: wall.x1 + dx,
+      y1: wall.y1 + dy,
+      x2: wall.x2 + dx,
+      y2: wall.y2 + dy,
+    })),
+  };
 }
 
 function moveConnectedCorner(walls, refs, nextPoint) {
@@ -507,79 +505,78 @@ function moveConnectedCorner(walls, refs, nextPoint) {
   });
 }
 
-function openingMarkup(opening, wall, walls) {
-  if (!wall) return "";
-  const point = wallPoint(wall, opening.t);
-  const angle = wallAngle(wall);
-  const width = openingVisualWidth(opening, wall, walls);
-  return `<g transform="translate(${point.x} ${point.y})">
-    <g transform="rotate(${angle})">
-      <rect x="-${width / 2}" y="-11" width="${width}" height="22" rx="3" fill="#ffffff" stroke="#087f88" stroke-width="3" />
-    </g>
-    <text x="0" y="5" text-anchor="middle" font-size="14" font-weight="800" fill="#172126">${opening.type === "window" ? "V" : "D"}</text>
-    <text x="0" y="-18" text-anchor="middle" font-size="12" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:4px">${escapeXml(openingDimensionLabel(opening))}</text>
-  </g>`;
-}
-
-function fixtureBoxMarkup(box, size) {
+function fixtureShapeSvg(box, size) {
   const w = size.width;
   const d = size.depth;
   const stroke = "#087f88";
-  const fill = "#fff";
 
   if (box.label === "WC") {
     return `<g transform="translate(${box.x} ${box.y})">
-      <rect x="-${w * 0.42}" y="-${d / 2}" width="${w * 0.84}" height="${Math.max(10, d * 0.2)}" rx="4" fill="${fill}" stroke="${stroke}" stroke-width="3" />
-      <ellipse cx="0" cy="${d * 0.08}" rx="${Math.max(11, w * 0.34)}" ry="${Math.max(16, d * 0.31)}" fill="${fill}" stroke="${stroke}" stroke-width="3" />
+      <rect x="-${w * 0.42}" y="-${d / 2}" width="${w * 0.84}" height="${Math.max(10, d * 0.2)}" rx="4" fill="#fff" stroke="${stroke}" stroke-width="2" />
+      <ellipse cx="0" cy="${d * 0.08}" rx="${Math.max(11, w * 0.34)}" ry="${Math.max(16, d * 0.31)}" fill="#fff" stroke="${stroke}" stroke-width="2" />
     </g>`;
   }
-
   if (box.label === "Servant") {
     return `<g transform="translate(${box.x} ${box.y})">
-      <rect x="-${w / 2}" y="-${d / 2}" width="${w}" height="${d}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="3" />
-      <ellipse cx="0" cy="0" rx="${Math.max(10, w * 0.3)}" ry="${Math.max(9, d * 0.28)}" fill="none" stroke="${stroke}" stroke-width="2" />
-      <circle cx="0" cy="${-d * 0.28}" r="2.5" fill="${stroke}" />
+      <rect x="-${w / 2}" y="-${d / 2}" width="${w}" height="${d}" rx="5" fill="#fff" stroke="${stroke}" stroke-width="2" />
+      <ellipse cx="0" cy="0" rx="${Math.max(10, w * 0.3)}" ry="${Math.max(9, d * 0.28)}" fill="none" stroke="${stroke}" stroke-width="1.5" />
     </g>`;
   }
-
   if (box.label === "Dusj") {
     return `<g transform="translate(${box.x} ${box.y})">
-      <rect x="-${w / 2}" y="-${d / 2}" width="${w}" height="${d}" fill="none" stroke="${stroke}" stroke-width="3" />
-      <path d="M ${-w / 2} ${d / 2} Q 0 ${-d / 2} ${w / 2} ${d / 2}" fill="none" stroke="${stroke}" stroke-width="2" stroke-dasharray="6 4" />
-      <circle cx="0" cy="0" r="4" fill="none" stroke="${stroke}" stroke-width="2" />
+      <rect x="-${w / 2}" y="-${d / 2}" width="${w}" height="${d}" fill="none" stroke="${stroke}" stroke-width="2" />
+      <path d="M ${-w / 2} ${d / 2} Q 0 ${-d / 2} ${w / 2} ${d / 2}" fill="none" stroke="${stroke}" stroke-width="1.5" stroke-dasharray="5 4" />
     </g>`;
   }
-
-  return `<g transform="translate(${box.x} ${box.y})">
-    <rect x="-${w / 2}" y="-${d / 2}" width="${w}" height="${d}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="3" />
-    <rect x="${-w / 2 + Math.min(10, w * 0.08)}" y="${-d / 2 + Math.min(9, d * 0.12)}" width="${Math.max(10, w - Math.min(20, w * 0.16))}" height="${Math.max(10, d - Math.min(18, d * 0.24))}" rx="9" fill="none" stroke="${stroke}" stroke-width="2" />
-  </g>`;
+  if (box.label === "Badekar") {
+    return `<g transform="translate(${box.x} ${box.y})">
+      <rect x="-${w / 2}" y="-${d / 2}" width="${w}" height="${d}" rx="10" fill="#fff" stroke="${stroke}" stroke-width="2" />
+      <rect x="${-w / 2 + 8}" y="${-d / 2 + 7}" width="${Math.max(10, w - 16)}" height="${Math.max(10, d - 14)}" rx="8" fill="none" stroke="${stroke}" stroke-width="1.5" />
+    </g>`;
+  }
+  return "";
 }
 
 function boxMarkup(box, walls) {
   const size = boxSizePx(box, walls);
-  if (isFixtureBox(box)) {
-    return `${fixtureBoxMarkup(box, size)}
-      <text x="${box.x}" y="${box.y - size.depth / 2 - 9}" text-anchor="middle" font-size="12" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:4px">${boxDimensionLabel(box)}</text>`;
-  }
-  return `<g transform="translate(${box.x} ${box.y})">
-    <rect x="-${size.width / 2}" y="-${size.depth / 2}" width="${size.width}" height="${size.depth}" rx="4" fill="#f5fbfc" fill-opacity=".92" stroke="#087f88" stroke-width="3" />
-    <text x="0" y="4" text-anchor="middle" font-size="12" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:4px">${boxDimensionLabel(box)}</text>
+  const labels = boxLabelLines(box);
+  const shape = isFixtureBox(box)
+    ? fixtureShapeSvg(box, size)
+    : `<g transform="translate(${box.x} ${box.y})"><rect x="-${size.width / 2}" y="-${size.depth / 2}" width="${size.width}" height="${size.depth}" rx="4" fill="#f5fbfc" fill-opacity=".92" stroke="#087f88" stroke-width="2" /></g>`;
+
+  return `${shape}
+    <g transform="translate(${box.x} ${box.y})">
+      <text x="0" y="-2" text-anchor="middle" font-size="8" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:3px">${escapeXml(labels.first)}</text>
+      <text x="0" y="8" text-anchor="middle" font-size="7" font-weight="700" fill="#435158" style="paint-order:stroke;stroke:#fff;stroke-width:3px">${escapeXml(labels.second)}</text>
+    </g>`;
+}
+
+function openingMarkup(opening, wall, walls) {
+  if (!wall) return "";
+  const point = wallPoint(wall, opening.t);
+  const width = openingVisualWidth(opening, wall, walls);
+  const labels = openingLabelLines(opening);
+  return `<g transform="translate(${point.x} ${point.y})">
+    <g transform="rotate(${wallAngle(wall)})">
+      <rect x="-${width / 2}" y="-9" width="${width}" height="18" rx="3" fill="#fff" stroke="#087f88" stroke-width="2" />
+    </g>
+    <text x="0" y="-13" text-anchor="middle" font-size="8" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:3px">${escapeXml(labels.first)}</text>
+    ${labels.second ? `<text x="0" y="-4" text-anchor="middle" font-size="7" font-weight="700" fill="#435158" style="paint-order:stroke;stroke:#fff;stroke-width:3px">${escapeXml(labels.second)}</text>` : ""}
   </g>`;
 }
 
 function markerMarkup(marker) {
   const label = MARKER_LABELS[marker.type] || "";
   return `<g transform="translate(${marker.x} ${marker.y})">
-    <circle r="18" fill="#fff" stroke="#087f88" stroke-width="3" />
-    <text x="0" y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#172126">${escapeXml(label)}</text>
+    <circle r="14" fill="#fff" stroke="#087f88" stroke-width="2" />
+    <text x="0" y="3" text-anchor="middle" font-size="8" font-weight="800" fill="#172126">${escapeXml(label)}</text>
   </g>`;
 }
 
 function strokeMarkup(stroke) {
   const points = (stroke?.points || []).map((point) => `${point.x},${point.y}`).join(" ");
   return points
-    ? `<polyline points="${points}" fill="none" stroke="#172126" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />`
+    ? `<polyline points="${points}" fill="none" stroke="#172126" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />`
     : "";
 }
 
@@ -598,12 +595,11 @@ export function bathroomSketchDataUrl(value) {
   const wallsById = new Map(sketch.walls.map((wall) => [wall.id, wall]));
   const walls = sketch.walls.map((wall, index) => {
     const point = wallPoint(wall, 0.5);
-    const dimension = wall.lengthMm ? `${escapeXml(wall.lengthMm)} mm` : "mål mangler";
     return `<g>
-      <line x1="${wall.x1}" y1="${wall.y1}" x2="${wall.x2}" y2="${wall.y2}" stroke="#172126" stroke-width="7" stroke-linecap="round" />
-      <circle cx="${point.x}" cy="${point.y}" r="15" fill="#087f88" />
-      <text x="${point.x}" y="${point.y + 5}" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${wallLetter(index)}</text>
-      <text x="${point.x}" y="${point.y - 22}" text-anchor="middle" font-size="14" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:5px">${dimension}</text>
+      <line x1="${wall.x1}" y1="${wall.y1}" x2="${wall.x2}" y2="${wall.y2}" stroke="#172126" stroke-width="6" stroke-linecap="round" />
+      <circle cx="${point.x}" cy="${point.y}" r="11" fill="#087f88" />
+      <text x="${point.x}" y="${point.y + 3}" text-anchor="middle" font-size="9" font-weight="800" fill="#fff">${wallLetter(index)}</text>
+      ${wall.lengthMm ? `<text x="${point.x}" y="${point.y - 16}" text-anchor="middle" font-size="10" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:3px">${escapeXml(wall.lengthMm)} mm</text>` : ""}
     </g>`;
   }).join("");
 
@@ -646,6 +642,37 @@ function toolbarButtonStyle(active, disabled) {
   };
 }
 
+function InteractiveFixtureShape({ box, size, active }) {
+  const stroke = active ? "#087f88" : "#4b5b62";
+  const sw = active ? 4 : 2.5;
+
+  if (box.label === "WC") {
+    return <>
+      <rect x={-size.width * 0.42} y={-size.depth / 2} width={size.width * 0.84} height={Math.max(10, size.depth * 0.2)} rx="4" fill="#fff" stroke={stroke} strokeWidth={sw} />
+      <ellipse cx="0" cy={size.depth * 0.08} rx={Math.max(11, size.width * 0.34)} ry={Math.max(16, size.depth * 0.31)} fill="#fff" stroke={stroke} strokeWidth={sw} />
+    </>;
+  }
+  if (box.label === "Servant") {
+    return <>
+      <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx="5" fill="#fff" stroke={stroke} strokeWidth={sw} />
+      <ellipse cx="0" cy="0" rx={Math.max(10, size.width * 0.3)} ry={Math.max(9, size.depth * 0.28)} fill="none" stroke="#087f88" strokeWidth="1.7" />
+    </>;
+  }
+  if (box.label === "Dusj") {
+    return <>
+      <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} fill="none" stroke={stroke} strokeWidth={sw} />
+      <path d={`M ${-size.width / 2} ${size.depth / 2} Q 0 ${-size.depth / 2} ${size.width / 2} ${size.depth / 2}`} fill="none" stroke="#087f88" strokeWidth="1.7" strokeDasharray="5 4" />
+    </>;
+  }
+  if (box.label === "Badekar") {
+    return <>
+      <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx="10" fill="#fff" stroke={stroke} strokeWidth={sw} />
+      <rect x={-size.width / 2 + 8} y={-size.depth / 2 + 7} width={Math.max(10, size.width - 16)} height={Math.max(10, size.depth - 14)} rx="8" fill="none" stroke="#087f88" strokeWidth="1.7" />
+    </>;
+  }
+  return <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx="4" fill="#f5fbfc" fillOpacity="0.92" stroke={stroke} strokeWidth={sw} />;
+}
+
 export default function SalesBathroomSketch({ value, onChange, disabled = false }) {
   const svgRef = useRef(null);
   const sketch = useMemo(() => normalizeBathroomSketch(value), [value]);
@@ -686,16 +713,16 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
 
   const instruction = (() => {
     if (tool === "wall") {
-      if (!wallStart) return "Trykk første hjørne. Veggen låses automatisk vannrett eller loddrett (90°).";
+      if (!wallStart) return "Trykk første hjørne. Veggen låses vannrett eller loddrett.";
       return chainSegmentCount >= 2
-        ? "Trykk neste hjørne. Neste vegg starter i forrige ende. Trykk nær startpunktet for å lukke rommet."
-        : "Trykk neste hjørne. Stiplet linje viser 90°-retningen før du setter punktet.";
+        ? "Trykk neste hjørne. Trykk nær startpunktet for å lukke rommet."
+        : "Trykk neste hjørne. Den stiplede linjen viser 90°-retningen.";
     }
-    if (tool === "select") return "Trykk direkte på vegg, dør, vindu, kasse eller baderomsobjekt for å redigere. Objekter kan dras med fingeren.";
-    if (tool === "box") return "Trykk i fritt område for ny kasse. Trykk på en eksisterende kasse for å redigere den.";
-    if (tool === "door" || tool === "window") return `Trykk på veggen for ny ${tool === "door" ? "dør" : "vindu"}. Trykk på en eksisterende åpning for å redigere den.`;
-    if (FIXTURE_BOX_PRESETS[tool]) return `Trykk i rommet for å sette inn ${FIXTURE_BOX_PRESETS[tool].label}. Flytt objektet etterpå med fingeren.`;
-    if (tool === "freehand") return "Dra fingeren for frihånd. Denne modusen har ingen 90°-lås.";
+    if (tool === "select") return "Trykk eller dra direkte på et objekt. Objekter snapper mot vegg/hjørne når du drar dem.";
+    if (tool === "box") return "Trykk i rommet for å sette inn én kasse. Deretter går appen automatisk til Velg / flytt.";
+    if (tool === "door" || tool === "window") return `Trykk på veggen for å sette inn én ${tool === "door" ? "dør" : "vindu"}.`;
+    if (FIXTURE_PRESETS[tool]) return `Trykk i rommet for å sette inn én ${FIXTURE_PRESETS[tool].label}. Deretter kan den dras og snappes.`;
+    if (tool === "freehand") return "Dra fingeren for frihånd. Frihånd har ingen 90°-lås.";
     return `Trykk i skissen der ${MARKER_LABELS[tool] || "markøren"} skal plasseres.`;
   })();
 
@@ -739,6 +766,14 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     setWallPreview(null);
   }
 
+  function selectObject(kind, id) {
+    setSelected({ kind, id });
+    setTool("select");
+    setActiveStroke(null);
+    setDragCorner(null);
+    finishWallChain();
+  }
+
   function continueFromEnd() {
     const sourceWall = selectedWall || sketch.walls[sketch.walls.length - 1];
     if (!sourceWall) return;
@@ -749,14 +784,6 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     setChainStart(point);
     setChainSegmentCount(0);
     setWallPreview(null);
-  }
-
-  function selectObject(kind, id) {
-    setSelected({ kind, id });
-    setTool("select");
-    setActiveStroke(null);
-    setDragCorner(null);
-    finishWallChain();
   }
 
   function handleCanvasPointerDown(event) {
@@ -802,8 +829,8 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
       return;
     }
 
-    if (tool === "box" || FIXTURE_BOX_PRESETS[tool]) {
-      const preset = FIXTURE_BOX_PRESETS[tool] || { label: "Kasse", widthMm: "600", depthMm: "300" };
+    if (tool === "box" || FIXTURE_PRESETS[tool]) {
+      const preset = FIXTURE_PRESETS[tool] || { label: "Kasse", widthMm: "600", depthMm: "300" };
       const provisional = {
         id: newId("box"),
         x: rawPoint.x,
@@ -814,8 +841,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
         snap: "free",
         createdAt: Date.now(),
       };
-      const snapped = snapBoxPosition(rawPoint, provisional, sketch.walls);
-      const box = { ...provisional, ...snapped };
+      const box = { ...provisional, ...snapBoxPosition(rawPoint, provisional, sketch.walls) };
       commit({ ...sketch, boxes: [...sketch.boxes, box] });
       setSelected({ kind: "box", id: box.id });
       setTool("select");
@@ -916,7 +942,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
       setTool("select");
       return;
     }
-    setSelected({ kind: "wall", id: wall.id });
+    selectObject("wall", wall.id);
   }
 
   function handleObjectPointer(event, kind, id) {
@@ -944,6 +970,8 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     if (disabled) return;
     event.stopPropagation();
 
+    // Alle kasser/objekter har en usynlig full trefflate. Derfor velges et
+    // eksisterende objekt alltid før canvas får anledning til å lage et nytt.
     if (tool !== "select") {
       selectObject("box", box.id);
       return;
@@ -976,17 +1004,21 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
   function updateSelectedBox(field, valueText) {
     if (!selectedBox) return;
     const value = field === "label" ? String(valueText ?? "").slice(0, 30) : cleanMm(valueText);
-    const boxes = sketch.boxes.map((box) => box.id === selectedBox.id ? { ...box, [field]: value } : box);
-    commit({ ...sketch, boxes });
+    commit({
+      ...sketch,
+      boxes: sketch.boxes.map((box) => box.id === selectedBox.id ? { ...box, [field]: value } : box),
+    });
   }
 
   function rotateSelectedBox() {
     if (!selectedBox) return;
-    const boxes = sketch.boxes.map((box) => box.id === selectedBox.id
-      ? { ...box, widthMm: box.depthMm, depthMm: box.widthMm }
-      : box
-    );
-    commit({ ...sketch, boxes });
+    commit({
+      ...sketch,
+      boxes: sketch.boxes.map((box) => box.id === selectedBox.id
+        ? { ...box, widthMm: box.depthMm, depthMm: box.widthMm }
+        : box
+      ),
+    });
   }
 
   function deleteSelected() {
@@ -1039,63 +1071,6 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     setDragCorner(null);
     setDragBox(null);
     if (nextTool !== "wall") finishWallChain();
-  }
-
-  function renderInteractiveBoxShape(box, size, active) {
-    const stroke = active ? "#087f88" : "#4b5b62";
-    const strokeWidth = active ? 5 : 3;
-
-    if (box.label === "WC") {
-      return (
-        <>
-          <rect x={-size.width * 0.42} y={-size.depth / 2} width={size.width * 0.84} height={Math.max(10, size.depth * 0.2)} rx="4" fill="#fff" stroke={stroke} strokeWidth={strokeWidth} />
-          <ellipse cx="0" cy={size.depth * 0.08} rx={Math.max(11, size.width * 0.34)} ry={Math.max(16, size.depth * 0.31)} fill="#fff" stroke={stroke} strokeWidth={strokeWidth} />
-        </>
-      );
-    }
-
-    if (box.label === "Servant") {
-      return (
-        <>
-          <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx="6" fill="#fff" stroke={stroke} strokeWidth={strokeWidth} />
-          <ellipse cx="0" cy="0" rx={Math.max(10, size.width * 0.3)} ry={Math.max(9, size.depth * 0.28)} fill="none" stroke="#087f88" strokeWidth="2" />
-          <circle cx="0" cy={-size.depth * 0.28} r="2.5" fill="#087f88" />
-        </>
-      );
-    }
-
-    if (box.label === "Dusj") {
-      return (
-        <>
-          <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} fill="none" stroke={stroke} strokeWidth={strokeWidth} />
-          <path d={`M ${-size.width / 2} ${size.depth / 2} Q 0 ${-size.depth / 2} ${size.width / 2} ${size.depth / 2}`} fill="none" stroke="#087f88" strokeWidth="2" strokeDasharray="6 4" />
-          <circle cx="0" cy="0" r="4" fill="none" stroke="#087f88" strokeWidth="2" />
-        </>
-      );
-    }
-
-    if (box.label === "Badekar") {
-      return (
-        <>
-          <rect x={-size.width / 2} y={-size.depth / 2} width={size.width} height={size.depth} rx="12" fill="#fff" stroke={stroke} strokeWidth={strokeWidth} />
-          <rect x={-size.width / 2 + Math.min(10, size.width * 0.08)} y={-size.depth / 2 + Math.min(9, size.depth * 0.12)} width={Math.max(10, size.width - Math.min(20, size.width * 0.16))} height={Math.max(10, size.depth - Math.min(18, size.depth * 0.24))} rx="9" fill="none" stroke="#087f88" strokeWidth="2" />
-        </>
-      );
-    }
-
-    return (
-      <rect
-        x={-size.width / 2}
-        y={-size.depth / 2}
-        width={size.width}
-        height={size.depth}
-        rx="4"
-        fill="#f5fbfc"
-        fillOpacity="0.92"
-        stroke={stroke}
-        strokeWidth={strokeWidth}
-      />
-    );
   }
 
   const wallsById = new Map(sketch.walls.map((wall) => [wall.id, wall]));
@@ -1203,31 +1178,43 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
               const active = selected?.kind === "stroke" && selected.id === stroke.id;
               return (
                 <g key={stroke.id}>
-                  <polyline points={points} fill="none" stroke="transparent" strokeWidth="26" onPointerDown={(event) => handleObjectPointer(event, "stroke", stroke.id)} />
-                  <polyline points={points} fill="none" stroke={active ? "#087f88" : "#172126"} strokeWidth={active ? 7 : 5} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />
+                  <polyline points={points} fill="none" stroke="transparent" strokeWidth="24" onPointerDown={(event) => handleObjectPointer(event, "stroke", stroke.id)} />
+                  <polyline points={points} fill="none" stroke={active ? "#087f88" : "#172126"} strokeWidth={active ? 6 : 4} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />
                 </g>
               );
             })}
 
             {activeStroke ? (
-              <polyline points={activeStroke.points.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke="#087f88" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />
+              <polyline points={activeStroke.points.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke="#087f88" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />
             ) : null}
 
             {sketch.boxes.map((box) => {
               const size = boxSizePx(box, sketch.walls);
               const active = selected?.kind === "box" && selected.id === box.id;
-              const fixture = isFixtureBox(box);
+              const labels = boxLabelLines(box);
               const snapText = dragBox?.id === box.id && dragBox?.snap && dragBox.snap !== "free"
-                ? dragBox.snap === "corner" ? "Festet til hjørne" : "Festet til vegg"
+                ? dragBox.snap === "corner" ? "Snap hjørne" : "Snap vegg"
                 : "";
               return (
                 <g key={box.id} transform={`translate(${box.x} ${box.y})`} onPointerDown={(event) => startBoxPointer(event, box)}>
-                  {renderInteractiveBoxShape(box, size, active)}
-                  <text x="0" y={fixture ? -size.depth / 2 - 9 : 4} textAnchor="middle" fontSize="12" fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="4" paintOrder="stroke" pointerEvents="none">
-                    {box.label || "Kasse"} {box.widthMm || "?"}×{box.depthMm || "?"} mm
+                  <rect
+                    x={-size.width / 2 - 8}
+                    y={-size.depth / 2 - 8}
+                    width={size.width + 16}
+                    height={size.depth + 16}
+                    fill="transparent"
+                    stroke="none"
+                    pointerEvents="all"
+                  />
+                  <InteractiveFixtureShape box={box} size={size} active={active} />
+                  <text x="0" y="-2" textAnchor="middle" fontSize={active ? "9" : "8"} fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">
+                    {labels.first}
+                  </text>
+                  <text x="0" y="8" textAnchor="middle" fontSize={active ? "8" : "7"} fontWeight="700" fill="#435158" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">
+                    {labels.second}
                   </text>
                   {snapText ? (
-                    <text x="0" y={size.depth / 2 + 18} textAnchor="middle" fontSize="11" fontWeight="800" fill="#087f88" pointerEvents="none">
+                    <text x="0" y={size.depth / 2 + 16} textAnchor="middle" fontSize="8" fontWeight="800" fill="#087f88" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">
                       {snapText}
                     </text>
                   ) : null}
@@ -1237,8 +1224,8 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
 
             {wallPreview && wallStart ? (
               <g pointerEvents="none">
-                <line x1={wallStart.x} y1={wallStart.y} x2={wallPreview.x} y2={wallPreview.y} stroke="#087f88" strokeWidth="4" strokeDasharray="12 8" />
-                <text x={(wallStart.x + wallPreview.x) / 2} y={(wallStart.y + wallPreview.y) / 2 - 12} textAnchor="middle" fontSize="13" fontWeight="800" fill="#087f88">90°</text>
+                <line x1={wallStart.x} y1={wallStart.y} x2={wallPreview.x} y2={wallPreview.y} stroke="#087f88" strokeWidth="3" strokeDasharray="10 7" />
+                <text x={(wallStart.x + wallPreview.x) / 2} y={(wallStart.y + wallPreview.y) / 2 - 10} textAnchor="middle" fontSize="10" fontWeight="800" fill="#087f88">90°</text>
               </g>
             ) : null}
 
@@ -1248,20 +1235,18 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
               return (
                 <g key={wall.id}>
                   {["select", "door", "window"].includes(tool) ? (
-                    <line x1={wall.x1} y1={wall.y1} x2={wall.x2} y2={wall.y2} stroke="transparent" strokeWidth="36" onPointerDown={(event) => handleWallPointer(event, wall)} />
+                    <line x1={wall.x1} y1={wall.y1} x2={wall.x2} y2={wall.y2} stroke="transparent" strokeWidth="34" onPointerDown={(event) => handleWallPointer(event, wall)} />
                   ) : null}
-                  <line x1={wall.x1} y1={wall.y1} x2={wall.x2} y2={wall.y2} stroke={active ? "#087f88" : "#172126"} strokeWidth={active ? 9 : 7} strokeLinecap="round" pointerEvents="none" />
-                  <circle cx={midpoint.x} cy={midpoint.y} r="16" fill="#087f88" pointerEvents="none" />
-                  <text x={midpoint.x} y={midpoint.y + 5} textAnchor="middle" fontSize="13" fontWeight="900" fill="#fff" pointerEvents="none">{wallLetter(index)}</text>
+                  <line x1={wall.x1} y1={wall.y1} x2={wall.x2} y2={wall.y2} stroke={active ? "#087f88" : "#172126"} strokeWidth={active ? 8 : 6} strokeLinecap="round" pointerEvents="none" />
+                  <circle cx={midpoint.x} cy={midpoint.y} r="11" fill="#087f88" pointerEvents="none" />
+                  <text x={midpoint.x} y={midpoint.y + 3} textAnchor="middle" fontSize="9" fontWeight="900" fill="#fff" pointerEvents="none">{wallLetter(index)}</text>
                   {wall.lengthMm ? (
-                    <text x={midpoint.x} y={midpoint.y - 24} textAnchor="middle" fontSize="14" fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="5" paintOrder="stroke" pointerEvents="none">{wall.lengthMm} mm</text>
+                    <text x={midpoint.x} y={midpoint.y - 16} textAnchor="middle" fontSize="10" fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">{wall.lengthMm} mm</text>
                   ) : null}
-                  {active && tool === "select" ? (
-                    <>
-                      <circle cx={wall.x1} cy={wall.y1} r="18" fill="#fff" stroke="#087f88" strokeWidth="5" onPointerDown={(event) => startCornerDrag(event, wall, "start")} />
-                      <circle cx={wall.x2} cy={wall.y2} r="18" fill="#fff" stroke="#087f88" strokeWidth="5" onPointerDown={(event) => startCornerDrag(event, wall, "end")} />
-                    </>
-                  ) : null}
+                  {active && tool === "select" ? <>
+                    <circle cx={wall.x1} cy={wall.y1} r="17" fill="#fff" stroke="#087f88" strokeWidth="4" onPointerDown={(event) => startCornerDrag(event, wall, "start")} />
+                    <circle cx={wall.x2} cy={wall.y2} r="17" fill="#fff" stroke="#087f88" strokeWidth="4" onPointerDown={(event) => startCornerDrag(event, wall, "end")} />
+                  </> : null}
                 </g>
               );
             })}
@@ -1270,16 +1255,17 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
               const wall = wallsById.get(opening.wallId);
               if (!wall) return null;
               const point = wallPoint(wall, opening.t);
-              const angle = wallAngle(wall);
               const active = selected?.kind === "opening" && selected.id === opening.id;
               const visualWidth = openingVisualWidth(opening, wall, sketch.walls);
+              const labels = openingLabelLines(opening);
               return (
                 <g key={opening.id} transform={`translate(${point.x} ${point.y})`} onPointerDown={(event) => handleObjectPointer(event, "opening", opening.id)}>
-                  <g transform={`rotate(${angle})`}>
-                    <rect x={-visualWidth / 2} y="-12" width={visualWidth} height="24" rx="3" fill="#fff" stroke={active ? "#087f88" : "#4b5b62"} strokeWidth={active ? 4 : 3} />
+                  <rect x={-visualWidth / 2 - 8} y="-20" width={visualWidth + 16} height="40" fill="transparent" stroke="none" pointerEvents="all" />
+                  <g transform={`rotate(${wallAngle(wall)})`} pointerEvents="none">
+                    <rect x={-visualWidth / 2} y="-9" width={visualWidth} height="18" rx="3" fill="#fff" stroke={active ? "#087f88" : "#4b5b62"} strokeWidth={active ? 3.5 : 2} />
                   </g>
-                  <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="800" fill="#172126" pointerEvents="none">{opening.type === "window" ? "V" : "D"}</text>
-                  <text x="0" y="-19" textAnchor="middle" fontSize="12" fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="4" paintOrder="stroke" pointerEvents="none">{openingDimensionLabel(opening)}</text>
+                  <text x="0" y="-12" textAnchor="middle" fontSize={active ? "9" : "8"} fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">{labels.first}</text>
+                  {labels.second ? <text x="0" y="-3" textAnchor="middle" fontSize={active ? "8" : "7"} fontWeight="700" fill="#435158" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">{labels.second}</text> : null}
                 </g>
               );
             })}
@@ -1288,14 +1274,14 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
               const active = selected?.kind === "marker" && selected.id === marker.id;
               return (
                 <g key={marker.id} transform={`translate(${marker.x} ${marker.y})`} onPointerDown={(event) => handleObjectPointer(event, "marker", marker.id)}>
-                  <circle r="20" fill="#fff" stroke={active ? "#087f88" : "#4b5b62"} strokeWidth={active ? 4 : 3} />
-                  <text x="0" y="4" textAnchor="middle" fontSize="10" fontWeight="800" fill="#172126" pointerEvents="none">{MARKER_LABELS[marker.type]}</text>
+                  <circle r="15" fill="#fff" stroke={active ? "#087f88" : "#4b5b62"} strokeWidth={active ? 3.5 : 2} />
+                  <text x="0" y="3" textAnchor="middle" fontSize="8" fontWeight="800" fill="#172126" pointerEvents="none">{MARKER_LABELS[marker.type]}</text>
                 </g>
               );
             })}
 
-            {chainStart ? <circle cx={chainStart.x} cy={chainStart.y} r="12" fill="#fff" stroke="#087f88" strokeWidth="4" pointerEvents="none" /> : null}
-            {wallStart ? <circle cx={wallStart.x} cy={wallStart.y} r="7" fill="#087f88" stroke="#fff" strokeWidth="2" pointerEvents="none" /> : null}
+            {chainStart ? <circle cx={chainStart.x} cy={chainStart.y} r="11" fill="#fff" stroke="#087f88" strokeWidth="3" pointerEvents="none" /> : null}
+            {wallStart ? <circle cx={wallStart.x} cy={wallStart.y} r="6" fill="#087f88" stroke="#fff" strokeWidth="2" pointerEvents="none" /> : null}
           </svg>
         </div>
 
@@ -1332,9 +1318,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
 
           {selectedOpening ? (
             <div style={{ marginBottom: 12 }}>
-              <strong style={{ display: "block", marginBottom: 7 }}>
-                Manuelle mål – {selectedOpening.type === "window" ? "vindu" : "dør"}
-              </strong>
+              <strong style={{ display: "block", marginBottom: 7 }}>Manuelle mål – {selectedOpening.type === "window" ? "vindu" : "dør"}</strong>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 8 }}>
                 <label className="sales-field">
                   <span>{selectedOpening.type === "window" ? "Vindusbredde" : "Dørbredde"} (mm)</span>
@@ -1351,21 +1335,14 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
                   </label>
                 ) : null}
               </div>
-              <div style={{ marginTop: 6, fontSize: 12, color: "#5d6a70" }}>
-                Målene vises direkte på skissen og er ment som grunnlag for videre opptegning.
-              </div>
             </div>
           ) : null}
 
           {selectedBox ? (
             <div style={{ marginBottom: 12 }}>
-              <strong style={{ display: "block", marginBottom: 7 }}>
-                {selectedFixturePreset ? selectedFixturePreset.label : "Målsatt kasse / sjakt"}
-              </strong>
+              <strong style={{ display: "block", marginBottom: 7 }}>{selectedFixturePreset ? selectedFixturePreset.label : "Målsatt kasse / sjakt"}</strong>
               {selectedFixturePreset?.fixedSize ? (
-                <div style={{ marginBottom: 8, color: "#435158", fontSize: 13 }}>
-                  Standardmål WC: 360 × 550 mm. Størrelsen er låst, men retningen kan roteres.
-                </div>
+                <div style={{ marginBottom: 8, color: "#435158", fontSize: 13 }}>Standardmål WC: 360 × 550 mm.</div>
               ) : null}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 }}>
                 {!selectedFixturePreset ? (
@@ -1374,28 +1351,22 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
                     <input type="text" value={selectedBox.label} placeholder="Kasse" onChange={(event) => updateSelectedBox("label", event.target.value)} />
                   </label>
                 ) : null}
-                {!selectedFixturePreset?.fixedSize ? (
-                  <>
-                    <label className="sales-field">
-                      <span>Bredde (mm)</span>
-                      <input type="number" min="1" inputMode="numeric" value={selectedBox.widthMm} placeholder="600" onChange={(event) => updateSelectedBox("widthMm", event.target.value)} />
-                    </label>
-                    <label className="sales-field">
-                      <span>Dybde (mm)</span>
-                      <input type="number" min="1" inputMode="numeric" value={selectedBox.depthMm} placeholder="300" onChange={(event) => updateSelectedBox("depthMm", event.target.value)} />
-                    </label>
-                  </>
-                ) : null}
+                {!selectedFixturePreset?.fixedSize ? <>
+                  <label className="sales-field">
+                    <span>Bredde (mm)</span>
+                    <input type="number" min="1" inputMode="numeric" value={selectedBox.widthMm} placeholder="600" onChange={(event) => updateSelectedBox("widthMm", event.target.value)} />
+                  </label>
+                  <label className="sales-field">
+                    <span>Dybde (mm)</span>
+                    <input type="number" min="1" inputMode="numeric" value={selectedBox.depthMm} placeholder="300" onChange={(event) => updateSelectedBox("depthMm", event.target.value)} />
+                  </label>
+                </> : null}
               </div>
               {selectedFixturePreset ? (
-                <button type="button" className="sales-secondary-button" style={{ marginTop: 8 }} onClick={rotateSelectedBox}>
-                  Roter 90°
-                </button>
+                <button type="button" className="sales-secondary-button" style={{ marginTop: 8 }} onClick={rotateSelectedBox}>Roter 90°</button>
               ) : null}
               <div style={{ marginTop: 6, fontSize: 12, color: "#5d6a70" }}>
-                {selectedFixturePreset
-                  ? "Dra objektet med fingeren. Servant, dusj og badekar kan målsattes; WC bruker fast standardmål."
-                  : "Dra kassen i «Velg / flytt». Snap-indikatoren vises bare mens kassen fester seg mot vegg eller hjørne."}
+                Dra objektet direkte med fingeren. Det snapper mot vegg/hjørne. Snap-teksten vises kun mens du drar.
               </div>
             </div>
           ) : null}
@@ -1409,7 +1380,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
         <div>
           <strong style={{ display: "block", fontSize: 17 }}>Badskisse</strong>
-          <span style={{ color: "#5d6a70", fontSize: 13 }}>Tegn rommet, legg inn manuelle mål og marker eksisterende sluk/rør.</span>
+          <span style={{ color: "#5d6a70", fontSize: 13 }}>Tegn rommet, legg inn mål og marker eksisterende installasjoner.</span>
         </div>
         <button type="button" className="sales-primary-button" disabled={disabled} onClick={() => setIsOpen(true)}>
           {bathroomSketchHasContent(sketch) ? "Åpne / rediger skisse" : "Lag badskisse"}
