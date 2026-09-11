@@ -1,7 +1,7 @@
 // Expo ProffDok – FASE 42A
 // Badskisse Light: fullskjerm-popup, 90°-vegger, dragbare hjørner,
-// mål som faktisk styrer geometri, proporsjonale dør-/vindusåpninger,
-// A/B/C-merking, installasjonsmarkører og valgfri frihånd.
+// mål som styrer geometri, proporsjonale dør-/vindusåpninger,
+// flyttbar målsatt kasse, installasjonsmarkører og valgfri frihånd.
 // Ingen SQL/RLS/Storage-policy-endring.
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -10,9 +10,10 @@ import { createPortal } from "react-dom";
 const WIDTH = 720;
 const HEIGHT = 460;
 const GRID = 20;
-const SKETCH_VERSION = 5;
+const SKETCH_VERSION = 6;
 const CLOSE_DISTANCE = 38;
 const CONNECT_DISTANCE = 7;
+const BOX_SNAP_DISTANCE = 34;
 const BASE_PX_PER_MM = 0.12;
 const CANVAS_MARGIN = 34;
 
@@ -21,6 +22,7 @@ const EMPTY_SKETCH = Object.freeze({
   walls: [],
   openings: [],
   markers: [],
+  boxes: [],
   strokes: [],
 });
 
@@ -33,14 +35,15 @@ const MARKER_LABELS = {
 
 const TOOL_BUTTONS = [
   ["wall", "90° vegger"],
-  ["freehand", "Frihånd"],
   ["select", "Velg / flytt"],
+  ["box", "Kasse"],
   ["door", "Dør"],
   ["window", "Vindu"],
   ["drain", "Sluk"],
   ["waste", "Avløp"],
   ["cold", "Kaldt vann"],
   ["hot", "Varmt vann"],
+  ["freehand", "Frihånd"],
 ];
 
 function numberOr(value, fallback = 0) {
@@ -147,6 +150,18 @@ export function normalizeBathroomSketch(value) {
             createdAt: numberOr(marker?.createdAt, 0),
           }))
       : [],
+    boxes: Array.isArray(source.boxes)
+      ? source.boxes.map((box) => ({
+          id: String(box?.id || newId("box")),
+          x: clamp(numberOr(box?.x, WIDTH / 2), 0, WIDTH),
+          y: clamp(numberOr(box?.y, HEIGHT / 2), 0, HEIGHT),
+          widthMm: String(box?.widthMm || "600"),
+          depthMm: String(box?.depthMm || "300"),
+          label: String(box?.label || "Kasse"),
+          snap: String(box?.snap || "free"),
+          createdAt: numberOr(box?.createdAt, 0),
+        }))
+      : [],
     strokes: Array.isArray(source.strokes)
       ? source.strokes
           .map((stroke) => ({
@@ -170,6 +185,7 @@ export function bathroomSketchHasContent(value) {
     sketch.walls.length ||
       sketch.openings.length ||
       sketch.markers.length ||
+      sketch.boxes.length ||
       sketch.strokes.length
   );
 }
@@ -192,121 +208,103 @@ function openingVisualWidth(opening, wall, walls) {
   const wallMm = mmValue(wall?.lengthMm);
   const wallPx = wallPixelLength(wall);
   if (openingMm > 0 && wallMm > 0 && wallPx > 0) {
-    return clamp((openingMm / wallMm) * wallPx, 18, Math.max(18, wallPx * 0.9));
+    return clamp((openingMm / wallMm) * wallPx, 18, Math.max(18, wallPx * 0.94));
   }
   if (openingMm > 0) {
-    return clamp(openingMm * measuredPxPerMm(walls), 18, Math.max(18, wallPx * 0.9));
+    return clamp(openingMm * measuredPxPerMm(walls), 18, Math.max(18, wallPx * 0.94));
   }
   return opening?.type === "window" ? 48 : 40;
 }
 
 function openingDimensionLabel(opening) {
-  const size = [opening.widthMm, opening.heightMm].filter(Boolean).join("×");
-  const prefix = opening.type === "window" ? "V" : "D";
+  const width = cleanMm(opening?.widthMm);
+  const height = cleanMm(opening?.heightMm);
+  const prefix = opening?.type === "window" ? "V" : "D";
+  const size = width || height ? `${width || "?"}×${height || "?"} mm` : "mål mangler";
   const sill =
-    opening.type === "window" && opening.sillHeightMm
-      ? ` · UK ${opening.sillHeightMm}`
+    opening?.type === "window"
+      ? ` · UK ${cleanMm(opening?.sillHeightMm) || "?"} mm`
       : "";
-  return `${prefix}${size ? ` ${size}` : ""}${sill}`;
+  return `${prefix} ${size}${sill}`;
 }
 
-function openingMarkup(opening, wall, walls) {
-  if (!wall) return "";
-  const point = wallPoint(wall, opening.t);
-  const angle = (Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1) * 180) / Math.PI;
-  const width = openingVisualWidth(opening, wall, walls);
-  const label = opening.type === "window" ? "V" : "D";
-  const dimensionLabel = openingDimensionLabel(opening);
-  return `<g transform="translate(${point.x} ${point.y}) rotate(${angle})">
-    <rect x="-${width / 2}" y="-11" width="${width}" height="22" rx="3" fill="#ffffff" stroke="#087f88" stroke-width="3" />
-    <text x="0" y="5" text-anchor="middle" font-size="14" font-weight="800" fill="#172126">${label}</text>
-    <text x="0" y="-18" text-anchor="middle" font-size="12" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:4px">${escapeXml(dimensionLabel)}</text>
-  </g>`;
+function boxSizePx(box, walls) {
+  const scale = measuredPxPerMm(walls);
+  return {
+    width: clamp((mmValue(box?.widthMm) || 600) * scale, 24, 320),
+    depth: clamp((mmValue(box?.depthMm) || 300) * scale, 24, 260),
+  };
 }
 
-function markerMarkup(marker) {
-  const label = MARKER_LABELS[marker.type] || "";
-  return `<g transform="translate(${marker.x} ${marker.y})">
-    <circle r="18" fill="#fff" stroke="#087f88" stroke-width="3" />
-    <text x="0" y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#172126">${escapeXml(label)}</text>
-  </g>`;
+function boxDimensionLabel(box) {
+  return `${escapeXml(box?.label || "Kasse")} ${cleanMm(box?.widthMm) || "?"}×${cleanMm(box?.depthMm) || "?"} mm`;
 }
 
-function strokeMarkup(stroke) {
-  const points = (stroke?.points || []).map((point) => `${point.x},${point.y}`).join(" ");
-  return points
-    ? `<polyline points="${points}" fill="none" stroke="#172126" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />`
-    : "";
-}
-
-export function bathroomSketchDataUrl(value) {
-  const sketch = normalizeBathroomSketch(value);
-  if (!bathroomSketchHasContent(sketch)) return "";
-
-  const grid = [];
-  for (let x = 0; x <= WIDTH; x += GRID) {
-    grid.push(`<line x1="${x}" y1="0" x2="${x}" y2="${HEIGHT}" stroke="#e8eef1" stroke-width="1" />`);
-  }
-  for (let y = 0; y <= HEIGHT; y += GRID) {
-    grid.push(`<line x1="0" y1="${y}" x2="${WIDTH}" y2="${y}" stroke="#e8eef1" stroke-width="1" />`);
-  }
-
-  const wallsById = new Map(sketch.walls.map((wall) => [wall.id, wall]));
-  const walls = sketch.walls
-    .map((wall, index) => {
-      const point = wallPoint(wall, 0.5);
-      const label = wallLetter(index);
-      const dimension = wall.lengthMm ? `${escapeXml(wall.lengthMm)} mm` : "mål mangler";
-      return `<g>
-        <line x1="${wall.x1}" y1="${wall.y1}" x2="${wall.x2}" y2="${wall.y2}" stroke="#172126" stroke-width="7" stroke-linecap="round" />
-        <circle cx="${point.x}" cy="${point.y}" r="15" fill="#087f88" />
-        <text x="${point.x}" y="${point.y + 5}" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${label}</text>
-        <text x="${point.x}" y="${point.y - 22}" text-anchor="middle" font-size="14" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:5px">${dimension}</text>
-      </g>`;
-    })
-    .join("");
-  const openings = sketch.openings
-    .map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls))
-    .join("");
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
-    <rect width="100%" height="100%" fill="#fff" />
-    ${grid.join("")}
-    ${sketch.strokes.map(strokeMarkup).join("")}
-    ${walls}
-    ${openings}
-    ${sketch.markers.map(markerMarkup).join("")}
-    <text x="18" y="${HEIGHT - 18}" font-size="13" fill="#5d6a70">Badskisse – Expo ProffDok</text>
-  </svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
-function pointOnWallFromEvent(wall, point) {
+function closestPointOnWall(wall, point) {
   const dx = wall.x2 - wall.x1;
   const dy = wall.y2 - wall.y1;
   const lengthSquared = dx * dx + dy * dy;
-  if (!lengthSquared) return 0.5;
-  return clamp(((point.x - wall.x1) * dx + (point.y - wall.y1) * dy) / lengthSquared, 0.03, 0.97);
+  if (!lengthSquared) return { x: wall.x1, y: wall.y1, t: 0 };
+  const t = clamp(((point.x - wall.x1) * dx + (point.y - wall.y1) * dy) / lengthSquared, 0, 1);
+  return { x: wall.x1 + dx * t, y: wall.y1 + dy * t, t };
 }
 
-function toolbarButtonStyle(active, disabled) {
+function snapBoxPosition(point, box, walls) {
+  const size = boxSizePx(box, walls);
+  const corners = [];
+  walls.forEach((wall) => {
+    corners.push({ x: wall.x1, y: wall.y1 });
+    corners.push({ x: wall.x2, y: wall.y2 });
+  });
+
+  const nearestCorner = corners
+    .map((corner) => ({ corner, d: distance(point, corner) }))
+    .sort((a, b) => a.d - b.d)[0];
+
+  if (nearestCorner && nearestCorner.d <= BOX_SNAP_DISTANCE * 1.25) {
+    const sx = point.x >= nearestCorner.corner.x ? 1 : -1;
+    const sy = point.y >= nearestCorner.corner.y ? 1 : -1;
+    return {
+      x: clamp(nearestCorner.corner.x + sx * size.width / 2, size.width / 2, WIDTH - size.width / 2),
+      y: clamp(nearestCorner.corner.y + sy * size.depth / 2, size.depth / 2, HEIGHT - size.depth / 2),
+      snap: "corner",
+    };
+  }
+
+  let bestWall = null;
+  for (const wall of walls) {
+    const projected = closestPointOnWall(wall, point);
+    const d = distance(projected, point);
+    if (!bestWall || d < bestWall.d) bestWall = { wall, projected, d };
+  }
+
+  if (bestWall && bestWall.d <= BOX_SNAP_DISTANCE) {
+    const horizontal = Math.abs(bestWall.wall.x2 - bestWall.wall.x1) >= Math.abs(bestWall.wall.y2 - bestWall.wall.y1);
+    if (horizontal) {
+      const side = point.y >= bestWall.projected.y ? 1 : -1;
+      return {
+        x: clamp(bestWall.projected.x, size.width / 2, WIDTH - size.width / 2),
+        y: clamp(bestWall.projected.y + side * size.depth / 2, size.depth / 2, HEIGHT - size.depth / 2),
+        snap: "wall",
+      };
+    }
+    const side = point.x >= bestWall.projected.x ? 1 : -1;
+    return {
+      x: clamp(bestWall.projected.x + side * size.width / 2, size.width / 2, WIDTH - size.width / 2),
+      y: clamp(bestWall.projected.y, size.depth / 2, HEIGHT - size.depth / 2),
+      snap: "wall",
+    };
+  }
+
   return {
-    minHeight: 44,
-    flex: "0 0 auto",
-    borderRadius: 10,
-    border: active ? "2px solid #087f88" : "1px solid #cbd9de",
-    background: active ? "#e9fafb" : "#fff",
-    color: "#172126",
-    fontWeight: 800,
-    padding: "9px 12px",
-    opacity: disabled ? 0.55 : 1,
+    x: clamp(point.x, size.width / 2, WIDTH - size.width / 2),
+    y: clamp(point.y, size.depth / 2, HEIGHT - size.depth / 2),
+    snap: "free",
   };
 }
 
 function rebuildWallsFromDimensions(sketch) {
-  if (!sketch.walls.length || !sketch.walls.some((wall) => mmValue(wall.lengthMm) > 0)) {
-    return sketch;
-  }
+  if (!sketch.walls.length || !sketch.walls.some((wall) => mmValue(wall.lengthMm) > 0)) return sketch;
 
   const origin = { x: sketch.walls[0].x1, y: sketch.walls[0].y1 };
   let previousEnd = origin;
@@ -366,22 +364,7 @@ function rebuildWallsFromDimensions(sketch) {
     y2: wall.y2 + dy,
   }));
 
-  // Bare eventuell global fit/forflytning brukes på frie markører og frihånd.
-  // Selve vegglengdene kan endres individuelt uten å flytte installasjoner vilkårlig.
-  const transformLoosePoint = (point) => ({
-    x: clamp(origin.x + (point.x - origin.x) * fitScale + dx, 0, WIDTH),
-    y: clamp(origin.y + (point.y - origin.y) * fitScale + dy, 0, HEIGHT),
-  });
-
-  return {
-    ...sketch,
-    walls,
-    markers: sketch.markers.map((marker) => ({ ...marker, ...transformLoosePoint(marker) })),
-    strokes: sketch.strokes.map((stroke) => ({
-      ...stroke,
-      points: stroke.points.map(transformLoosePoint),
-    })),
-  };
+  return { ...sketch, walls };
 }
 
 function moveConnectedCorner(walls, refs, nextPoint) {
@@ -400,6 +383,105 @@ function moveConnectedCorner(walls, refs, nextPoint) {
   });
 }
 
+function openingMarkup(opening, wall, walls) {
+  if (!wall) return "";
+  const point = wallPoint(wall, opening.t);
+  const angle = (Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1) * 180) / Math.PI;
+  const width = openingVisualWidth(opening, wall, walls);
+  return `<g transform="translate(${point.x} ${point.y}) rotate(${angle})">
+    <rect x="-${width / 2}" y="-11" width="${width}" height="22" rx="3" fill="#ffffff" stroke="#087f88" stroke-width="3" />
+    <text x="0" y="5" text-anchor="middle" font-size="14" font-weight="800" fill="#172126">${opening.type === "window" ? "V" : "D"}</text>
+    <text x="0" y="-18" text-anchor="middle" font-size="12" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:4px">${escapeXml(openingDimensionLabel(opening))}</text>
+  </g>`;
+}
+
+function boxMarkup(box, walls) {
+  const size = boxSizePx(box, walls);
+  return `<g transform="translate(${box.x} ${box.y})">
+    <rect x="-${size.width / 2}" y="-${size.depth / 2}" width="${size.width}" height="${size.depth}" rx="4" fill="#f5fbfc" fill-opacity=".92" stroke="#087f88" stroke-width="3" />
+    <text x="0" y="4" text-anchor="middle" font-size="12" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:4px">${boxDimensionLabel(box)}</text>
+  </g>`;
+}
+
+function markerMarkup(marker) {
+  const label = MARKER_LABELS[marker.type] || "";
+  return `<g transform="translate(${marker.x} ${marker.y})">
+    <circle r="18" fill="#fff" stroke="#087f88" stroke-width="3" />
+    <text x="0" y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#172126">${escapeXml(label)}</text>
+  </g>`;
+}
+
+function strokeMarkup(stroke) {
+  const points = (stroke?.points || []).map((point) => `${point.x},${point.y}`).join(" ");
+  return points
+    ? `<polyline points="${points}" fill="none" stroke="#172126" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />`
+    : "";
+}
+
+export function bathroomSketchDataUrl(value) {
+  const sketch = normalizeBathroomSketch(value);
+  if (!bathroomSketchHasContent(sketch)) return "";
+
+  const grid = [];
+  for (let x = 0; x <= WIDTH; x += GRID) {
+    grid.push(`<line x1="${x}" y1="0" x2="${x}" y2="${HEIGHT}" stroke="#e8eef1" stroke-width="1" />`);
+  }
+  for (let y = 0; y <= HEIGHT; y += GRID) {
+    grid.push(`<line x1="0" y1="${y}" x2="${WIDTH}" y2="${y}" stroke="#e8eef1" stroke-width="1" />`);
+  }
+
+  const wallsById = new Map(sketch.walls.map((wall) => [wall.id, wall]));
+  const walls = sketch.walls.map((wall, index) => {
+    const point = wallPoint(wall, 0.5);
+    const dimension = wall.lengthMm ? `${escapeXml(wall.lengthMm)} mm` : "mål mangler";
+    return `<g>
+      <line x1="${wall.x1}" y1="${wall.y1}" x2="${wall.x2}" y2="${wall.y2}" stroke="#172126" stroke-width="7" stroke-linecap="round" />
+      <circle cx="${point.x}" cy="${point.y}" r="15" fill="#087f88" />
+      <text x="${point.x}" y="${point.y + 5}" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">${wallLetter(index)}</text>
+      <text x="${point.x}" y="${point.y - 22}" text-anchor="middle" font-size="14" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:5px">${dimension}</text>
+    </g>`;
+  }).join("");
+
+  const openings = sketch.openings
+    .map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls))
+    .join("");
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
+    <rect width="100%" height="100%" fill="#fff" />
+    ${grid.join("")}
+    ${sketch.strokes.map(strokeMarkup).join("")}
+    ${sketch.boxes.map((box) => boxMarkup(box, sketch.walls)).join("")}
+    ${walls}
+    ${openings}
+    ${sketch.markers.map(markerMarkup).join("")}
+    <text x="18" y="${HEIGHT - 18}" font-size="13" fill="#5d6a70">Badskisse – Expo ProffDok</text>
+  </svg>`;
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function pointOnWallFromEvent(wall, point) {
+  const dx = wall.x2 - wall.x1;
+  const dy = wall.y2 - wall.y1;
+  const lengthSquared = dx * dx + dy * dy;
+  if (!lengthSquared) return 0.5;
+  return clamp(((point.x - wall.x1) * dx + (point.y - wall.y1) * dy) / lengthSquared, 0.03, 0.97);
+}
+
+function toolbarButtonStyle(active, disabled) {
+  return {
+    minHeight: 44,
+    flex: "0 0 auto",
+    borderRadius: 10,
+    border: active ? "2px solid #087f88" : "1px solid #cbd9de",
+    background: active ? "#e9fafb" : "#fff",
+    color: "#172126",
+    fontWeight: 800,
+    padding: "9px 12px",
+    opacity: disabled ? 0.55 : 1,
+  };
+}
+
 export default function SalesBathroomSketch({ value, onChange, disabled = false }) {
   const svgRef = useRef(null);
   const sketch = useMemo(() => normalizeBathroomSketch(value), [value]);
@@ -415,6 +497,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
   const [history, setHistory] = useState([]);
   const [activeStroke, setActiveStroke] = useState(null);
   const [dragCorner, setDragCorner] = useState(null);
+  const [dragBox, setDragBox] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -426,14 +509,15 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     };
   }, [isOpen]);
 
-  const selectedWall =
-    selected?.kind === "wall"
-      ? sketch.walls.find((wall) => wall.id === selected.id) || null
-      : null;
-  const selectedOpening =
-    selected?.kind === "opening"
-      ? sketch.openings.find((opening) => opening.id === selected.id) || null
-      : null;
+  const selectedWall = selected?.kind === "wall"
+    ? sketch.walls.find((wall) => wall.id === selected.id) || null
+    : null;
+  const selectedOpening = selected?.kind === "opening"
+    ? sketch.openings.find((opening) => opening.id === selected.id) || null
+    : null;
+  const selectedBox = selected?.kind === "box"
+    ? sketch.boxes.find((box) => box.id === selected.id) || null
+    : null;
 
   const instruction = (() => {
     if (tool === "wall") {
@@ -442,11 +526,10 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
         ? "Trykk neste hjørne. Neste vegg starter i forrige ende. Trykk nær startpunktet for å lukke rommet."
         : "Trykk neste hjørne. Stiplet linje viser 90°-retningen før du setter punktet.";
     }
+    if (tool === "select") return "Velg vegg eller kasse. Vegghjørner og kasser kan dras med fingeren.";
+    if (tool === "box") return "Trykk der kassen skal stå. Dra den etterpå i Velg / flytt. Den snapper mot vegg/hjørne, men kan også ligge fritt.";
+    if (tool === "door" || tool === "window") return `Trykk på veggen der ${tool === "door" ? "døren" : "vinduet"} skal stå. Legg inn manuelle mål under skissen.`;
     if (tool === "freehand") return "Dra fingeren for frihånd. Denne modusen har ingen 90°-lås.";
-    if (tool === "select") return "Velg en vegg og dra de store hjørnepunktene. Tilkoblede nabovegger følger samme hjørne.";
-    if (tool === "door" || tool === "window") {
-      return `Trykk på veggen der ${tool === "door" ? "døren" : "vinduet"} skal stå. Målt bredde tegnes proporsjonalt.`;
-    }
     return `Trykk i skissen der ${MARKER_LABELS[tool] || "markøren"} skal plasseres.`;
   })();
 
@@ -503,7 +586,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
   }
 
   function handleCanvasPointerDown(event) {
-    if (disabled || dragCorner) return;
+    if (disabled || dragCorner || dragBox) return;
 
     if (tool === "freehand") {
       const point = pointerPoint(event, false);
@@ -522,8 +605,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
         setSelected(null);
         return;
       }
-      const shouldClose =
-        chainStart && chainSegmentCount >= 2 && distance(rawPoint, chainStart) <= CLOSE_DISTANCE;
+      const shouldClose = chainStart && chainSegmentCount >= 2 && distance(rawPoint, chainStart) <= CLOSE_DISTANCE;
       const endPoint = shouldClose ? chainStart : snapOrthogonal(wallStart, rawPoint);
       if (endPoint.x === wallStart.x && endPoint.y === wallStart.y) return;
       const wall = {
@@ -546,6 +628,25 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
       return;
     }
 
+    if (tool === "box") {
+      const provisional = {
+        id: newId("box"),
+        x: rawPoint.x,
+        y: rawPoint.y,
+        widthMm: "600",
+        depthMm: "300",
+        label: "Kasse",
+        snap: "free",
+        createdAt: Date.now(),
+      };
+      const snapped = snapBoxPosition(rawPoint, provisional, sketch.walls);
+      const box = { ...provisional, ...snapped };
+      commit({ ...sketch, boxes: [...sketch.boxes, box] });
+      setSelected({ kind: "box", id: box.id });
+      setTool("select");
+      return;
+    }
+
     if (["drain", "waste", "cold", "hot"].includes(tool)) {
       const marker = {
         id: newId("marker"),
@@ -558,6 +659,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
       setSelected({ kind: "marker", id: marker.id });
       return;
     }
+
     if (tool === "select") setSelected(null);
   }
 
@@ -569,10 +671,18 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
       const nextPoint = snapOrthogonal(dragCorner.otherPoint, raw);
       const current = sketchRef.current;
       const walls = moveConnectedCorner(current.walls, dragCorner.refs, nextPoint);
-      onChange?.(
-        normalizeBathroomSketch({ ...current, walls }),
-        bathroomSketchDataUrl({ ...current, walls })
-      );
+      onChange?.(normalizeBathroomSketch({ ...current, walls }), bathroomSketchDataUrl({ ...current, walls }));
+      return;
+    }
+
+    if (dragBox) {
+      const current = sketchRef.current;
+      const box = current.boxes.find((item) => item.id === dragBox.id);
+      if (!box) return;
+      const raw = pointerPoint(event, false);
+      const snapped = snapBoxPosition(raw, box, current.walls);
+      const boxes = current.boxes.map((item) => item.id === box.id ? { ...item, ...snapped } : item);
+      onChange?.(normalizeBathroomSketch({ ...current, boxes }), bathroomSketchDataUrl({ ...current, boxes }));
       return;
     }
 
@@ -585,15 +695,18 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     const point = pointerPoint(event, false);
     const lastPoint = activeStroke.points[activeStroke.points.length - 1];
     if (distance(point, lastPoint) < 4) return;
-    setActiveStroke((current) =>
-      current ? { ...current, points: [...current.points, point] } : current
-    );
+    setActiveStroke((current) => current ? { ...current, points: [...current.points, point] } : current);
   }
 
   function finishPointerInteraction(event) {
     if (dragCorner) {
       event.currentTarget.releasePointerCapture?.(event.pointerId);
       setDragCorner(null);
+      return;
+    }
+    if (dragBox) {
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+      setDragBox(null);
       return;
     }
     if (tool !== "freehand" || !activeStroke) return;
@@ -622,6 +735,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
       };
       commit({ ...sketch, openings: [...sketch.openings, opening] });
       setSelected({ kind: "opening", id: opening.id });
+      setTool("select");
       return;
     }
     setSelected({ kind: "wall", id: wall.id });
@@ -637,30 +751,33 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     if (disabled || tool !== "select") return;
     event.stopPropagation();
     event.currentTarget.setPointerCapture?.(event.pointerId);
+    setHistory((current) => [...current.slice(-24), sketchRef.current]);
     const point = endpoint === "start" ? { x: wall.x1, y: wall.y1 } : { x: wall.x2, y: wall.y2 };
     const otherPoint = endpoint === "start" ? { x: wall.x2, y: wall.y2 } : { x: wall.x1, y: wall.y1 };
     const refs = [];
     sketchRef.current.walls.forEach((candidate) => {
-      if (distance({ x: candidate.x1, y: candidate.y1 }, point) <= CONNECT_DISTANCE) {
-        refs.push({ id: candidate.id, endpoint: "start" });
-      }
-      if (distance({ x: candidate.x2, y: candidate.y2 }, point) <= CONNECT_DISTANCE) {
-        refs.push({ id: candidate.id, endpoint: "end" });
-      }
+      if (distance({ x: candidate.x1, y: candidate.y1 }, point) <= CONNECT_DISTANCE) refs.push({ id: candidate.id, endpoint: "start" });
+      if (distance({ x: candidate.x2, y: candidate.y2 }, point) <= CONNECT_DISTANCE) refs.push({ id: candidate.id, endpoint: "end" });
     });
     setDragCorner({ refs, otherPoint });
+  }
+
+  function startBoxDrag(event, box) {
+    if (disabled || tool !== "select") return;
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setHistory((current) => [...current.slice(-24), sketchRef.current]);
+    setSelected({ kind: "box", id: box.id });
+    setDragBox({ id: box.id });
   }
 
   function updateWallDimension(wallId, valueText) {
     const clean = cleanMm(valueText);
     const updated = {
       ...sketch,
-      walls: sketch.walls.map((wall) =>
-        wall.id === wallId ? { ...wall, lengthMm: clean } : wall
-      ),
+      walls: sketch.walls.map((wall) => wall.id === wallId ? { ...wall, lengthMm: clean } : wall),
     };
-    const rebuilt = mmValue(clean) >= 100 ? rebuildWallsFromDimensions(updated) : updated;
-    commit(rebuilt);
+    commit(mmValue(clean) >= 100 ? rebuildWallsFromDimensions(updated) : updated);
   }
 
   function updateSelectedOpening(field, valueText) {
@@ -668,10 +785,15 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     const clean = cleanMm(valueText);
     commit({
       ...sketch,
-      openings: sketch.openings.map((opening) =>
-        opening.id === selectedOpening.id ? { ...opening, [field]: clean } : opening
-      ),
+      openings: sketch.openings.map((opening) => opening.id === selectedOpening.id ? { ...opening, [field]: clean } : opening),
     });
+  }
+
+  function updateSelectedBox(field, valueText) {
+    if (!selectedBox) return;
+    const value = field === "label" ? String(valueText || "").slice(0, 30) : cleanMm(valueText);
+    const boxes = sketch.boxes.map((box) => box.id === selectedBox.id ? { ...box, [field]: value } : box);
+    commit({ ...sketch, boxes });
   }
 
   function deleteSelected() {
@@ -686,6 +808,8 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
       commit({ ...sketch, openings: sketch.openings.filter((opening) => opening.id !== selected.id) });
     } else if (selected.kind === "marker") {
       commit({ ...sketch, markers: sketch.markers.filter((marker) => marker.id !== selected.id) });
+    } else if (selected.kind === "box") {
+      commit({ ...sketch, boxes: sketch.boxes.filter((box) => box.id !== selected.id) });
     } else if (selected.kind === "stroke") {
       commit({ ...sketch, strokes: sketch.strokes.filter((stroke) => stroke.id !== selected.id) });
     }
@@ -699,6 +823,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     setSelected(null);
     setActiveStroke(null);
     setDragCorner(null);
+    setDragBox(null);
     finishWallChain();
     commit(previous, { remember: false });
   }
@@ -710,6 +835,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     setSelected(null);
     setActiveStroke(null);
     setDragCorner(null);
+    setDragBox(null);
     finishWallChain();
   }
 
@@ -718,6 +844,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     setSelected(null);
     setActiveStroke(null);
     setDragCorner(null);
+    setDragBox(null);
     if (nextTool !== "wall") finishWallChain();
   }
 
@@ -745,39 +872,33 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
           overflow: "hidden",
         }}
       >
-        <div
-          style={{
-            flex: "0 0 auto",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 10,
-            padding: "max(10px, env(safe-area-inset-top)) 12px 10px",
-            borderBottom: "1px solid #d7e4ea",
-            background: "#fff",
-          }}
-        >
+        <div style={{
+          flex: "0 0 auto",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 10,
+          padding: "max(10px, env(safe-area-inset-top)) 12px 10px",
+          borderBottom: "1px solid #d7e4ea",
+          background: "#fff",
+        }}>
           <div style={{ minWidth: 0 }}>
             <strong style={{ display: "block", fontSize: 18 }}>Badskisse</strong>
             <span style={{ display: "block", color: "#5d6a70", fontSize: 12 }}>
-              90° vegger · mål styrer størrelsen · mm
+              90° vegger · manuelle mål i mm · mål styrer størrelsen
             </span>
           </div>
-          <button type="button" className="sales-primary-button" onClick={() => setIsOpen(false)}>
-            Lukk
-          </button>
+          <button type="button" className="sales-primary-button" onClick={() => setIsOpen(false)}>Lukk</button>
         </div>
 
-        <div
-          style={{
-            flex: "0 0 auto",
-            display: "flex",
-            gap: 7,
-            overflowX: "auto",
-            padding: "9px 10px 5px",
-            WebkitOverflowScrolling: "touch",
-          }}
-        >
+        <div style={{
+          flex: "0 0 auto",
+          display: "flex",
+          gap: 7,
+          overflowX: "auto",
+          padding: "9px 10px 5px",
+          WebkitOverflowScrolling: "touch",
+        }}>
           {TOOL_BUTTONS.map(([key, label]) => (
             <button
               key={key}
@@ -796,18 +917,16 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
           {instruction}
         </div>
 
-        <div
-          style={{
-            flex: "1 1 auto",
-            minHeight: 245,
-            margin: "0 10px",
-            border: "1px solid #cbd9de",
-            borderRadius: 12,
-            overflow: "hidden",
-            background: "#fff",
-            touchAction: "none",
-          }}
-        >
+        <div style={{
+          flex: "1 1 auto",
+          minHeight: 245,
+          margin: "0 10px",
+          border: "1px solid #cbd9de",
+          borderRadius: 12,
+          overflow: "hidden",
+          background: "#fff",
+          touchAction: "none",
+        }}>
           <svg
             ref={svgRef}
             viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
@@ -822,28 +941,10 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
           >
             <rect width={WIDTH} height={HEIGHT} fill="#fff" />
             {Array.from({ length: Math.floor(WIDTH / GRID) + 1 }, (_, index) => (
-              <line
-                key={`gx-${index}`}
-                x1={index * GRID}
-                y1="0"
-                x2={index * GRID}
-                y2={HEIGHT}
-                stroke="#e8eef1"
-                strokeWidth="1"
-                pointerEvents="none"
-              />
+              <line key={`gx-${index}`} x1={index * GRID} y1="0" x2={index * GRID} y2={HEIGHT} stroke="#e8eef1" strokeWidth="1" pointerEvents="none" />
             ))}
             {Array.from({ length: Math.floor(HEIGHT / GRID) + 1 }, (_, index) => (
-              <line
-                key={`gy-${index}`}
-                x1="0"
-                y1={index * GRID}
-                x2={WIDTH}
-                y2={index * GRID}
-                stroke="#e8eef1"
-                strokeWidth="1"
-                pointerEvents="none"
-              />
+              <line key={`gy-${index}`} x1="0" y1={index * GRID} x2={WIDTH} y2={index * GRID} stroke="#e8eef1" strokeWidth="1" pointerEvents="none" />
             ))}
 
             {sketch.strokes.map((stroke) => {
@@ -852,60 +953,49 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
               return (
                 <g key={stroke.id}>
                   {tool === "select" ? (
-                    <polyline
-                      points={points}
-                      fill="none"
-                      stroke="transparent"
-                      strokeWidth="26"
-                      onPointerDown={(event) => handleObjectPointer(event, "stroke", stroke.id)}
-                    />
+                    <polyline points={points} fill="none" stroke="transparent" strokeWidth="26" onPointerDown={(event) => handleObjectPointer(event, "stroke", stroke.id)} />
                   ) : null}
-                  <polyline
-                    points={points}
-                    fill="none"
-                    stroke={active ? "#087f88" : "#172126"}
-                    strokeWidth={active ? 7 : 5}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    pointerEvents="none"
-                  />
+                  <polyline points={points} fill="none" stroke={active ? "#087f88" : "#172126"} strokeWidth={active ? 7 : 5} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />
                 </g>
               );
             })}
 
             {activeStroke ? (
-              <polyline
-                points={activeStroke.points.map((point) => `${point.x},${point.y}`).join(" ")}
-                fill="none"
-                stroke="#087f88"
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                pointerEvents="none"
-              />
+              <polyline points={activeStroke.points.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke="#087f88" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />
             ) : null}
+
+            {sketch.boxes.map((box) => {
+              const size = boxSizePx(box, sketch.walls);
+              const active = selected?.kind === "box" && selected.id === box.id;
+              return (
+                <g key={box.id} transform={`translate(${box.x} ${box.y})`} onPointerDown={(event) => startBoxDrag(event, box)}>
+                  <rect
+                    x={-size.width / 2}
+                    y={-size.depth / 2}
+                    width={size.width}
+                    height={size.depth}
+                    rx="4"
+                    fill="#f5fbfc"
+                    fillOpacity="0.92"
+                    stroke={active ? "#087f88" : "#4b5b62"}
+                    strokeWidth={active ? 5 : 3}
+                  />
+                  <text x="0" y="4" textAnchor="middle" fontSize="12" fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="4" paintOrder="stroke" pointerEvents="none">
+                    {box.label || "Kasse"} {box.widthMm || "?"}×{box.depthMm || "?"} mm
+                  </text>
+                  {active ? (
+                    <text x="0" y={size.depth / 2 + 18} textAnchor="middle" fontSize="11" fontWeight="800" fill="#087f88" pointerEvents="none">
+                      {box.snap === "corner" ? "Festet til hjørne" : box.snap === "wall" ? "Festet til vegg" : "Fritt plassert"}
+                    </text>
+                  ) : null}
+                </g>
+              );
+            })}
 
             {wallPreview && wallStart ? (
               <g pointerEvents="none">
-                <line
-                  x1={wallStart.x}
-                  y1={wallStart.y}
-                  x2={wallPreview.x}
-                  y2={wallPreview.y}
-                  stroke="#087f88"
-                  strokeWidth="4"
-                  strokeDasharray="12 8"
-                />
-                <text
-                  x={(wallStart.x + wallPreview.x) / 2}
-                  y={(wallStart.y + wallPreview.y) / 2 - 12}
-                  textAnchor="middle"
-                  fontSize="13"
-                  fontWeight="800"
-                  fill="#087f88"
-                >
-                  90°
-                </text>
+                <line x1={wallStart.x} y1={wallStart.y} x2={wallPreview.x} y2={wallPreview.y} stroke="#087f88" strokeWidth="4" strokeDasharray="12 8" />
+                <text x={(wallStart.x + wallPreview.x) / 2} y={(wallStart.y + wallPreview.y) / 2 - 12} textAnchor="middle" fontSize="13" fontWeight="800" fill="#087f88">90°</text>
               </g>
             ) : null}
 
@@ -915,66 +1005,18 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
               return (
                 <g key={wall.id}>
                   {["select", "door", "window"].includes(tool) ? (
-                    <line
-                      x1={wall.x1}
-                      y1={wall.y1}
-                      x2={wall.x2}
-                      y2={wall.y2}
-                      stroke="transparent"
-                      strokeWidth="36"
-                      onPointerDown={(event) => handleWallPointer(event, wall)}
-                    />
+                    <line x1={wall.x1} y1={wall.y1} x2={wall.x2} y2={wall.y2} stroke="transparent" strokeWidth="36" onPointerDown={(event) => handleWallPointer(event, wall)} />
                   ) : null}
-                  <line
-                    x1={wall.x1}
-                    y1={wall.y1}
-                    x2={wall.x2}
-                    y2={wall.y2}
-                    stroke={active ? "#087f88" : "#172126"}
-                    strokeWidth={active ? 9 : 7}
-                    strokeLinecap="round"
-                    pointerEvents="none"
-                  />
+                  <line x1={wall.x1} y1={wall.y1} x2={wall.x2} y2={wall.y2} stroke={active ? "#087f88" : "#172126"} strokeWidth={active ? 9 : 7} strokeLinecap="round" pointerEvents="none" />
                   <circle cx={midpoint.x} cy={midpoint.y} r="16" fill="#087f88" pointerEvents="none" />
-                  <text x={midpoint.x} y={midpoint.y + 5} textAnchor="middle" fontSize="13" fontWeight="900" fill="#fff" pointerEvents="none">
-                    {wallLetter(index)}
-                  </text>
+                  <text x={midpoint.x} y={midpoint.y + 5} textAnchor="middle" fontSize="13" fontWeight="900" fill="#fff" pointerEvents="none">{wallLetter(index)}</text>
                   {wall.lengthMm ? (
-                    <text
-                      x={midpoint.x}
-                      y={midpoint.y - 24}
-                      textAnchor="middle"
-                      fontSize="14"
-                      fontWeight="800"
-                      fill="#172126"
-                      stroke="#fff"
-                      strokeWidth="5"
-                      paintOrder="stroke"
-                      pointerEvents="none"
-                    >
-                      {wall.lengthMm} mm
-                    </text>
+                    <text x={midpoint.x} y={midpoint.y - 24} textAnchor="middle" fontSize="14" fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="5" paintOrder="stroke" pointerEvents="none">{wall.lengthMm} mm</text>
                   ) : null}
                   {active && tool === "select" ? (
                     <>
-                      <circle
-                        cx={wall.x1}
-                        cy={wall.y1}
-                        r="18"
-                        fill="#fff"
-                        stroke="#087f88"
-                        strokeWidth="5"
-                        onPointerDown={(event) => startCornerDrag(event, wall, "start")}
-                      />
-                      <circle
-                        cx={wall.x2}
-                        cy={wall.y2}
-                        r="18"
-                        fill="#fff"
-                        stroke="#087f88"
-                        strokeWidth="5"
-                        onPointerDown={(event) => startCornerDrag(event, wall, "end")}
-                      />
+                      <circle cx={wall.x1} cy={wall.y1} r="18" fill="#fff" stroke="#087f88" strokeWidth="5" onPointerDown={(event) => startCornerDrag(event, wall, "start")} />
+                      <circle cx={wall.x2} cy={wall.y2} r="18" fill="#fff" stroke="#087f88" strokeWidth="5" onPointerDown={(event) => startCornerDrag(event, wall, "end")} />
                     </>
                   ) : null}
                 </g>
@@ -989,38 +1031,10 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
               const active = selected?.kind === "opening" && selected.id === opening.id;
               const visualWidth = openingVisualWidth(opening, wall, sketch.walls);
               return (
-                <g
-                  key={opening.id}
-                  transform={`translate(${point.x} ${point.y}) rotate(${angle})`}
-                  onPointerDown={(event) => handleObjectPointer(event, "opening", opening.id)}
-                >
-                  <rect
-                    x={-visualWidth / 2}
-                    y="-12"
-                    width={visualWidth}
-                    height="24"
-                    rx="3"
-                    fill="#fff"
-                    stroke={active ? "#087f88" : "#4b5b62"}
-                    strokeWidth={active ? 4 : 3}
-                  />
-                  <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="800" fill="#172126" pointerEvents="none">
-                    {opening.type === "window" ? "V" : "D"}
-                  </text>
-                  <text
-                    x="0"
-                    y="-19"
-                    textAnchor="middle"
-                    fontSize="12"
-                    fontWeight="800"
-                    fill="#172126"
-                    stroke="#fff"
-                    strokeWidth="4"
-                    paintOrder="stroke"
-                    pointerEvents="none"
-                  >
-                    {openingDimensionLabel(opening)}
-                  </text>
+                <g key={opening.id} transform={`translate(${point.x} ${point.y}) rotate(${angle})`} onPointerDown={(event) => handleObjectPointer(event, "opening", opening.id)}>
+                  <rect x={-visualWidth / 2} y="-12" width={visualWidth} height="24" rx="3" fill="#fff" stroke={active ? "#087f88" : "#4b5b62"} strokeWidth={active ? 4 : 3} />
+                  <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="800" fill="#172126" pointerEvents="none">{opening.type === "window" ? "V" : "D"}</text>
+                  <text x="0" y="-19" textAnchor="middle" fontSize="12" fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="4" paintOrder="stroke" pointerEvents="none">{openingDimensionLabel(opening)}</text>
                 </g>
               );
             })}
@@ -1028,58 +1042,32 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
             {sketch.markers.map((marker) => {
               const active = selected?.kind === "marker" && selected.id === marker.id;
               return (
-                <g
-                  key={marker.id}
-                  transform={`translate(${marker.x} ${marker.y})`}
-                  onPointerDown={(event) => handleObjectPointer(event, "marker", marker.id)}
-                >
+                <g key={marker.id} transform={`translate(${marker.x} ${marker.y})`} onPointerDown={(event) => handleObjectPointer(event, "marker", marker.id)}>
                   <circle r="20" fill="#fff" stroke={active ? "#087f88" : "#4b5b62"} strokeWidth={active ? 4 : 3} />
-                  <text x="0" y="4" textAnchor="middle" fontSize="10" fontWeight="800" fill="#172126" pointerEvents="none">
-                    {MARKER_LABELS[marker.type]}
-                  </text>
+                  <text x="0" y="4" textAnchor="middle" fontSize="10" fontWeight="800" fill="#172126" pointerEvents="none">{MARKER_LABELS[marker.type]}</text>
                 </g>
               );
             })}
 
-            {chainStart ? (
-              <circle cx={chainStart.x} cy={chainStart.y} r="12" fill="#fff" stroke="#087f88" strokeWidth="4" pointerEvents="none" />
-            ) : null}
-            {wallStart ? (
-              <circle cx={wallStart.x} cy={wallStart.y} r="7" fill="#087f88" stroke="#fff" strokeWidth="2" pointerEvents="none" />
-            ) : null}
+            {chainStart ? <circle cx={chainStart.x} cy={chainStart.y} r="12" fill="#fff" stroke="#087f88" strokeWidth="4" pointerEvents="none" /> : null}
+            {wallStart ? <circle cx={wallStart.x} cy={wallStart.y} r="7" fill="#087f88" stroke="#fff" strokeWidth="2" pointerEvents="none" /> : null}
           </svg>
         </div>
 
-        <div
-          style={{
-            flex: "0 0 auto",
-            maxHeight: "40dvh",
-            overflowY: "auto",
-            padding: "9px 10px max(12px, env(safe-area-inset-bottom))",
-            borderTop: "1px solid #d7e4ea",
-            background: "#fff",
-          }}
-        >
+        <div style={{
+          flex: "0 0 auto",
+          maxHeight: "42dvh",
+          overflowY: "auto",
+          padding: "9px 10px max(12px, env(safe-area-inset-bottom))",
+          borderTop: "1px solid #d7e4ea",
+          background: "#fff",
+        }}>
           <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 9 }}>
-            <button type="button" className="sales-secondary-button" disabled={disabled || !history.length} onClick={undoLast}>
-              Angre
-            </button>
-            <button type="button" className="sales-secondary-button" disabled={disabled || !selected} onClick={deleteSelected}>
-              Slett valgt
-            </button>
-            {sketch.walls.length ? (
-              <button type="button" className="sales-secondary-button" onClick={continueFromEnd}>
-                Fortsett fra ende
-              </button>
-            ) : null}
-            {tool === "wall" && wallStart ? (
-              <button type="button" className="sales-secondary-button" onClick={finishWallChain}>
-                Avslutt veggkjede
-              </button>
-            ) : null}
-            <button type="button" className="sales-secondary-button" disabled={disabled || !bathroomSketchHasContent(sketch)} onClick={clearSketch}>
-              Tøm
-            </button>
+            <button type="button" className="sales-secondary-button" disabled={disabled || !history.length} onClick={undoLast}>Angre</button>
+            <button type="button" className="sales-secondary-button" disabled={disabled || !selected} onClick={deleteSelected}>Slett valgt</button>
+            {sketch.walls.length ? <button type="button" className="sales-secondary-button" onClick={continueFromEnd}>Fortsett fra ende</button> : null}
+            {tool === "wall" && wallStart ? <button type="button" className="sales-secondary-button" onClick={finishWallChain}>Avslutt veggkjede</button> : null}
+            <button type="button" className="sales-secondary-button" disabled={disabled || !bathroomSketchHasContent(sketch)} onClick={clearSketch}>Tøm</button>
           </div>
 
           {sketch.walls.length ? (
@@ -1089,62 +1077,61 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
                 {sketch.walls.map((wall, index) => (
                   <label key={wall.id} className="sales-field" style={{ minWidth: 0 }}>
                     <span>Vegg {wallLetter(index)} (mm)</span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="999999"
-                      inputMode="numeric"
-                      value={wall.lengthMm}
-                      placeholder="f.eks. 2450"
-                      onFocus={() => setSelected({ kind: "wall", id: wall.id })}
-                      onChange={(event) => updateWallDimension(wall.id, event.target.value)}
-                    />
+                    <input type="number" min="1" max="999999" inputMode="numeric" value={wall.lengthMm} placeholder="f.eks. 2450" onFocus={() => setSelected({ kind: "wall", id: wall.id })} onChange={(event) => updateWallDimension(wall.id, event.target.value)} />
                   </label>
                 ))}
               </div>
-              <div style={{ marginTop: 6, fontSize: 12, color: "#5d6a70" }}>
-                Mål over 100 mm tegnes direkte i riktig forhold. 3000 mm blir f.eks. 50 % lengre enn 2000 mm.
-              </div>
+              <div style={{ marginTop: 6, fontSize: 12, color: "#5d6a70" }}>Mål over 100 mm tegnes direkte i riktig forhold.</div>
             </div>
           ) : null}
 
           {selectedOpening ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 8 }}>
-              <label className="sales-field">
-                <span>{selectedOpening.type === "window" ? "Vindusbredde" : "Dørbredde"} (mm)</span>
-                <input
-                  type="number"
-                  min="1"
-                  inputMode="numeric"
-                  value={selectedOpening.widthMm}
-                  placeholder={selectedOpening.type === "window" ? "1200" : "900"}
-                  onChange={(event) => updateSelectedOpening("widthMm", event.target.value)}
-                />
-              </label>
-              <label className="sales-field">
-                <span>{selectedOpening.type === "window" ? "Vindushøyde" : "Dørhøyde"} (mm)</span>
-                <input
-                  type="number"
-                  min="1"
-                  inputMode="numeric"
-                  value={selectedOpening.heightMm}
-                  placeholder={selectedOpening.type === "window" ? "800" : "2100"}
-                  onChange={(event) => updateSelectedOpening("heightMm", event.target.value)}
-                />
-              </label>
-              {selectedOpening.type === "window" ? (
+            <div style={{ marginBottom: 12 }}>
+              <strong style={{ display: "block", marginBottom: 7 }}>
+                Manuelle mål – {selectedOpening.type === "window" ? "vindu" : "dør"}
+              </strong>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 8 }}>
                 <label className="sales-field">
-                  <span>Gulv → underkant vindu (mm)</span>
-                  <input
-                    type="number"
-                    min="0"
-                    inputMode="numeric"
-                    value={selectedOpening.sillHeightMm}
-                    placeholder="900"
-                    onChange={(event) => updateSelectedOpening("sillHeightMm", event.target.value)}
-                  />
+                  <span>{selectedOpening.type === "window" ? "Vindusbredde" : "Dørbredde"} (mm)</span>
+                  <input type="number" min="1" inputMode="numeric" value={selectedOpening.widthMm} placeholder={selectedOpening.type === "window" ? "1200" : "900"} onChange={(event) => updateSelectedOpening("widthMm", event.target.value)} />
                 </label>
-              ) : null}
+                <label className="sales-field">
+                  <span>{selectedOpening.type === "window" ? "Vindushøyde" : "Dørhøyde"} (mm)</span>
+                  <input type="number" min="1" inputMode="numeric" value={selectedOpening.heightMm} placeholder={selectedOpening.type === "window" ? "800" : "2100"} onChange={(event) => updateSelectedOpening("heightMm", event.target.value)} />
+                </label>
+                {selectedOpening.type === "window" ? (
+                  <label className="sales-field">
+                    <span>Ferdig gulv → underkant vindu (mm)</span>
+                    <input type="number" min="0" inputMode="numeric" value={selectedOpening.sillHeightMm} placeholder="900" onChange={(event) => updateSelectedOpening("sillHeightMm", event.target.value)} />
+                  </label>
+                ) : null}
+              </div>
+              <div style={{ marginTop: 6, fontSize: 12, color: "#5d6a70" }}>
+                Målene vises direkte på skissen og er ment som grunnlag for videre opptegning.
+              </div>
+            </div>
+          ) : null}
+
+          {selectedBox ? (
+            <div style={{ marginBottom: 12 }}>
+              <strong style={{ display: "block", marginBottom: 7 }}>Målsatt kasse / sjakt</strong>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 }}>
+                <label className="sales-field">
+                  <span>Navn</span>
+                  <input type="text" value={selectedBox.label} placeholder="Kasse" onChange={(event) => updateSelectedBox("label", event.target.value)} />
+                </label>
+                <label className="sales-field">
+                  <span>Bredde (mm)</span>
+                  <input type="number" min="1" inputMode="numeric" value={selectedBox.widthMm} placeholder="600" onChange={(event) => updateSelectedBox("widthMm", event.target.value)} />
+                </label>
+                <label className="sales-field">
+                  <span>Dybde (mm)</span>
+                  <input type="number" min="1" inputMode="numeric" value={selectedBox.depthMm} placeholder="300" onChange={(event) => updateSelectedBox("depthMm", event.target.value)} />
+                </label>
+              </div>
+              <div style={{ marginTop: 6, fontSize: 12, color: "#5d6a70" }}>
+                Dra kassen i «Velg / flytt». Den fester seg mot vegg eller hjørne når du nærmer deg, men kan også plasseres fritt.
+              </div>
             </div>
           ) : null}
         </div>
@@ -1153,55 +1140,26 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
   }
 
   return (
-    <section
-      data-sales-bathroom-sketch="true"
-      style={{
-        border: "1px solid #d7e4ea",
-        borderRadius: 16,
-        padding: 14,
-        background: "#f8fbfc",
-        maxWidth: "100%",
-        overflow: "hidden",
-      }}
-    >
+    <section data-sales-bathroom-sketch="true" style={{ border: "1px solid #d7e4ea", borderRadius: 16, padding: 14, background: "#f8fbfc", maxWidth: "100%", overflow: "hidden" }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
         <div>
           <strong style={{ display: "block", fontSize: 17 }}>Badskisse</strong>
-          <span style={{ color: "#5d6a70", fontSize: 13 }}>
-            Tegn rommet, legg inn mål og marker eksisterende sluk/rør.
-          </span>
+          <span style={{ color: "#5d6a70", fontSize: 13 }}>Tegn rommet, legg inn manuelle mål og marker eksisterende sluk/rør.</span>
         </div>
         <button type="button" className="sales-primary-button" disabled={disabled} onClick={() => setIsOpen(true)}>
           {bathroomSketchHasContent(sketch) ? "Åpne / rediger skisse" : "Lag badskisse"}
         </button>
       </div>
 
-      <div
-        style={{
-          marginTop: 10,
-          width: "100%",
-          maxWidth: "100%",
-          border: "1px solid #d7e4ea",
-          borderRadius: 12,
-          overflow: "hidden",
-          background: "#fff",
-          minHeight: 130,
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
+      <div style={{ marginTop: 10, width: "100%", maxWidth: "100%", border: "1px solid #d7e4ea", borderRadius: 12, overflow: "hidden", background: "#fff", minHeight: 130, display: "grid", placeItems: "center" }}>
         {previewUrl ? (
           <img src={previewUrl} alt="Forhåndsvisning av badskisse" style={{ display: "block", width: "100%", maxWidth: "100%", height: "auto" }} />
         ) : (
-          <span style={{ padding: 24, color: "#5d6a70", textAlign: "center" }}>
-            Ingen badskisse registrert ennå.
-          </span>
+          <span style={{ padding: 24, color: "#5d6a70", textAlign: "center" }}>Ingen badskisse registrert ennå.</span>
         )}
       </div>
 
-      {isOpen && typeof document !== "undefined"
-        ? createPortal(renderEditor(), document.body)
-        : null}
+      {isOpen && typeof document !== "undefined" ? createPortal(renderEditor(), document.body) : null}
     </section>
   );
 }
