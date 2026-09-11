@@ -1,7 +1,9 @@
-// Expo ProffDok – FASE 41B.5B
+// Expo ProffDok – FASE 41B.5B / 41B.5C
 // Lar en eksisterende Befaring fortsette som Våtromstilbud eller Butikktilbud.
 // Samme salgssak beholdes; kunde, befaring, bilder og historikk flyttes ikke til ny sak.
 // Ingen prosjektopprettelse skjer i denne overgangen.
+// 41B.5C begrenser Butikktilbud til de tre interne Ringside/Expo-firmaene og
+// krever eksplisitt store_offers-modultilgang fra systemadministrator.
 
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -31,6 +33,7 @@ const HOST_ID = "expo-store-offer-from-survey-picker";
 const ALLOWED_STORE_COMPANIES = new Set([
   "Ringside Rørleggerbedrift AS",
   "Bademiljø Expo",
+  "Expo Proffsenter",
 ]);
 
 let root = null;
@@ -79,7 +82,7 @@ async function resolveContext() {
       ""
   ).trim();
   if (!ALLOWED_STORE_COMPANIES.has(companyName)) {
-    throw new Error("Butikktilbud kan bare opprettes for Ringside Rørleggerbedrift AS eller Bademiljø Expo.");
+    throw new Error("Butikktilbud kan bare opprettes for Ringside Rørleggerbedrift AS, Bademiljø Expo eller Expo Proffsenter.");
   }
 
   let companyId = String(workProfile?.active_company_id || "").trim();
