@@ -1,6 +1,6 @@
 // Expo ProffDok – FASE 42A
 // Badskisse Light: mobil fullskjerm, direkte objektredigering, 90°-vegger,
-// riktige plan-symboler for dør/vindu, målsatte åpninger og snapbare baderomsobjekter.
+// riktige plan-symboler for dør/vindu, snubart dørslag, målsatte åpninger og snapbare baderomsobjekter.
 // Ingen SQL/RLS/Storage-policy-endring.
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -9,7 +9,7 @@ import { createPortal } from "react-dom";
 const WIDTH = 720;
 const HEIGHT = 460;
 const GRID = 20;
-const SKETCH_VERSION = 11;
+const SKETCH_VERSION = 12;
 const CLOSE_DISTANCE = 38;
 const CONNECT_DISTANCE = 7;
 const SNAP_DISTANCE = 38;
@@ -180,6 +180,8 @@ export function normalizeBathroomSketch(value) {
           widthMm: String(opening?.widthMm ?? ""),
           heightMm: String(opening?.heightMm ?? ""),
           sillHeightMm: String(opening?.sillHeightMm ?? ""),
+          hingeSide: opening?.hingeSide === "end" ? "end" : "start",
+          swingSide: opening?.swingSide === "positive" ? "positive" : "negative",
           createdAt: numberOr(opening?.createdAt, 0),
         }))
       : []
@@ -572,14 +574,22 @@ function FixtureShape({ box, size, active = false }) {
 function OpeningPlanSymbol({ opening, wall, visualWidth, active = false }) {
   const stroke = active ? "#087f88" : "#4b5b62";
   const jamb = Math.max(7, Math.min(12, visualWidth * 0.1));
+  const hingeAtEnd = opening?.hingeSide === "end";
+  const swingPositive = opening?.swingSide === "positive";
+  const hingeSign = hingeAtEnd ? 1 : -1;
+  const swingSign = swingPositive ? 1 : -1;
+  const hingeX = hingeSign * visualWidth / 2;
+  const latchX = -hingeX;
+  const swingY = swingSign * visualWidth;
+  const sweep = hingeSign === swingSign ? 0 : 1;
   return (
     <g transform={`rotate(${wallAngle(wall)})`} pointerEvents="none">
       <line x1={-visualWidth / 2} y1="0" x2={visualWidth / 2} y2="0" stroke="#fff" strokeWidth="12" />
       {opening.type === "door" ? <>
         <line x1={-visualWidth / 2} y1={-jamb} x2={-visualWidth / 2} y2={jamb} stroke={stroke} strokeWidth="2.4" />
         <line x1={visualWidth / 2} y1={-jamb} x2={visualWidth / 2} y2={jamb} stroke={stroke} strokeWidth="2.4" />
-        <line x1={-visualWidth / 2} y1="0" x2={-visualWidth / 2} y2={-visualWidth} stroke={stroke} strokeWidth="2.2" />
-        <path d={`M ${visualWidth / 2} 0 A ${visualWidth} ${visualWidth} 0 0 0 ${-visualWidth / 2} ${-visualWidth}`} fill="none" stroke={stroke} strokeWidth="1.6" strokeDasharray="4 3" />
+        <line x1={hingeX} y1="0" x2={hingeX} y2={swingY} stroke={stroke} strokeWidth="2.2" />
+        <path d={`M ${latchX} 0 A ${visualWidth} ${visualWidth} 0 0 ${sweep} ${hingeX} ${swingY}`} fill="none" stroke={stroke} strokeWidth="1.6" strokeDasharray="4 3" />
       </> : <>
         <line x1={-visualWidth / 2} y1={-7} x2={visualWidth / 2} y2={-7} stroke={stroke} strokeWidth="1.8" />
         <line x1={-visualWidth / 2} y1="0" x2={visualWidth / 2} y2="0" stroke={stroke} strokeWidth="2.2" />
@@ -685,7 +695,15 @@ function openingMarkup(opening, wall, walls) {
   let symbol = "";
   if (opening.type === "door") {
     const jamb = Math.max(7, Math.min(12, width * 0.1));
-    symbol = `<g transform="translate(${point.x} ${point.y}) rotate(${angle})"><line x1="${-width / 2}" y1="0" x2="${width / 2}" y2="0" stroke="#fff" stroke-width="12"/><line x1="${-width / 2}" y1="${-jamb}" x2="${-width / 2}" y2="${jamb}" stroke="#087f88" stroke-width="2.4"/><line x1="${width / 2}" y1="${-jamb}" x2="${width / 2}" y2="${jamb}" stroke="#087f88" stroke-width="2.4"/><line x1="${-width / 2}" y1="0" x2="${-width / 2}" y2="${-width}" stroke="#087f88" stroke-width="2.2"/><path d="M ${width / 2} 0 A ${width} ${width} 0 0 0 ${-width / 2} ${-width}" fill="none" stroke="#087f88" stroke-width="1.6" stroke-dasharray="4 3"/></g>`;
+    const hingeAtEnd = opening?.hingeSide === "end";
+    const swingPositive = opening?.swingSide === "positive";
+    const hingeSign = hingeAtEnd ? 1 : -1;
+    const swingSign = swingPositive ? 1 : -1;
+    const hingeX = hingeSign * width / 2;
+    const latchX = -hingeX;
+    const swingY = swingSign * width;
+    const sweep = hingeSign === swingSign ? 0 : 1;
+    symbol = `<g transform="translate(${point.x} ${point.y}) rotate(${angle})"><line x1="${-width / 2}" y1="0" x2="${width / 2}" y2="0" stroke="#fff" stroke-width="12"/><line x1="${-width / 2}" y1="${-jamb}" x2="${-width / 2}" y2="${jamb}" stroke="#087f88" stroke-width="2.4"/><line x1="${width / 2}" y1="${-jamb}" x2="${width / 2}" y2="${jamb}" stroke="#087f88" stroke-width="2.4"/><line x1="${hingeX}" y1="0" x2="${hingeX}" y2="${swingY}" stroke="#087f88" stroke-width="2.2"/><path d="M ${latchX} 0 A ${width} ${width} 0 0 ${sweep} ${hingeX} ${swingY}" fill="none" stroke="#087f88" stroke-width="1.6" stroke-dasharray="4 3"/></g>`;
   } else {
     symbol = `<g transform="translate(${point.x} ${point.y}) rotate(${angle})"><line x1="${-width / 2}" y1="0" x2="${width / 2}" y2="0" stroke="#fff" stroke-width="12"/><line x1="${-width / 2}" y1="-7" x2="${width / 2}" y2="-7" stroke="#087f88" stroke-width="1.8"/><line x1="${-width / 2}" y1="0" x2="${width / 2}" y2="0" stroke="#087f88" stroke-width="2.2"/><line x1="${-width / 2}" y1="7" x2="${width / 2}" y2="7" stroke="#087f88" stroke-width="1.8"/><line x1="${-width / 2}" y1="-9" x2="${-width / 2}" y2="9" stroke="#087f88" stroke-width="2"/><line x1="${width / 2}" y1="-9" x2="${width / 2}" y2="9" stroke="#087f88" stroke-width="2"/></g>`;
   }
@@ -1021,6 +1039,8 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
         widthMm: "",
         heightMm: "",
         sillHeightMm: "",
+        hingeSide: "start",
+        swingSide: "negative",
         createdAt: Date.now(),
       };
       commit({ ...sketch, openings: [...sketch.openings, opening] });
@@ -1092,6 +1112,26 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     commit({
       ...sketch,
       openings: sketch.openings.map((opening) => opening.id === selectedOpening.id ? { ...opening, [field]: clean } : opening),
+    });
+  }
+
+  function toggleSelectedDoorHinge() {
+    if (!selectedOpening || selectedOpening.type !== "door") return;
+    commit({
+      ...sketch,
+      openings: sketch.openings.map((opening) => opening.id === selectedOpening.id
+        ? { ...opening, hingeSide: opening.hingeSide === "end" ? "start" : "end" }
+        : opening),
+    });
+  }
+
+  function toggleSelectedDoorSwing() {
+    if (!selectedOpening || selectedOpening.type !== "door") return;
+    commit({
+      ...sketch,
+      openings: sketch.openings.map((opening) => opening.id === selectedOpening.id
+        ? { ...opening, swingSide: opening.swingSide === "positive" ? "negative" : "positive" }
+        : opening),
     });
   }
 
@@ -1263,7 +1303,13 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
               </label>
             ) : null}
           </div>
-          <div style={{ marginTop: 7, fontSize: 12, color: "#5d6a70" }}>Dra langs veggen. Hjørnemål vises automatisk når vegg- og åpningsmål er satt.</div>
+          {selectedOpening.type === "door" ? (
+            <div style={{ display: "flex", gap: 8, marginTop: 9, flexWrap: "wrap" }}>
+              <button type="button" className="sales-secondary-button" onClick={toggleSelectedDoorHinge}>Bytt hengsling</button>
+              <button type="button" className="sales-secondary-button" onClick={toggleSelectedDoorSwing}>Snu slagretning</button>
+            </div>
+          ) : null}
+          <div style={{ marginTop: 7, fontSize: 12, color: "#5d6a70" }}>Dra langs veggen. Hjørnemål vises automatisk når vegg- og åpningsmål er satt.{selectedOpening.type === "door" ? " Hengsling og slagretning lagres med skissen." : ""}</div>
           <button type="button" className="sales-secondary-button" style={{ marginTop: 8 }} onClick={deleteSelected}>Slett</button>
         </div>
       );
@@ -1371,11 +1417,15 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
               const active = selected?.kind === "opening" && selected.id === opening.id;
               const visualWidth = openingVisualWidth(opening, wall, sketch.walls);
               const labels = openingLabelLines(opening);
+              const doorHitY = opening.type === "door"
+                ? opening.swingSide === "positive" ? -18 : -visualWidth - 18
+                : -24;
+              const doorHitHeight = opening.type === "door" ? visualWidth + 42 : 48;
               return (
                 <g key={opening.id}>
                   <OpeningPlacementDimensions opening={opening} wall={wall} />
                   <g transform={`translate(${point.x} ${point.y})`} onPointerDown={(event) => startOpeningPointer(event, opening)}>
-                    <rect x={-visualWidth / 2 - 12} y={opening.type === "door" ? -visualWidth - 18 : -24} width={visualWidth + 24} height={opening.type === "door" ? visualWidth + 42 : 48} fill="transparent" stroke="none" pointerEvents="all" />
+                    <rect x={-visualWidth / 2 - 12} y={doorHitY} width={visualWidth + 24} height={doorHitHeight} fill="transparent" stroke="none" pointerEvents="all" />
                     <OpeningPlanSymbol opening={opening} wall={wall} visualWidth={visualWidth} active={active} />
                   </g>
                   <text x={labelPoint.x} y={labelPoint.y - 2} textAnchor="middle" fontSize={active ? "8" : "7"} fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">{labels.first}</text>
