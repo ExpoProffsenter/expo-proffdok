@@ -32,17 +32,22 @@ if (/coalesce\(new\.approved,\s*false\)\s*<>\s*true/i.test(approvalGuard)) {
 
 const priceSearch = requireNeedles("src/modules/storeCatalog/storePriceSearchUx.jsx", [
   'const MOBILE_BUTTON_ID = "expo-price-search-mobile-button"',
-  'document.querySelector(".mobileAllFunctionsGrid")',
-  'button.className = "secondary mobileMenuAllButton"',
-  'button.textContent = "Prissøk"',
+  'document.querySelector(".mobileMenuQuickGrid")',
+  'button.className = "secondary mobileMenuQuickButton"',
+  'button.style.gridColumn = "1 / -1"',
+  'icon.textContent = "🔎"',
+  'label.textContent = "Prissøk"',
   "grid.appendChild(button)",
-  "findInternalNav() || findMobileFunctionsGrid()",
+  "findInternalNav() || findMobileQuickGrid()",
   'window.addEventListener("expo-proffdok-module-access"',
   'rpcWithStoredSession("current_user_has_internal_store_price_search_access")',
 ]);
 
 if (!priceSearch.includes("syncMobileButton();")) {
-  throw new Error("Prissøk må synkroniseres inn i dagens mobile Alle funksjoner-meny.");
+  throw new Error("Prissøk må synkroniseres inn som mobil hurtigtilgang.");
+}
+if (priceSearch.includes('document.querySelector(".mobileAllFunctionsGrid")')) {
+  throw new Error("Prissøk skal ikke lenger plasseres nederst i Alle funksjoner.");
 }
 
 requireNeedles("src/modules/app/mobileResponsive41A.css", [
@@ -53,4 +58,4 @@ requireNeedles("src/modules/app/mobileResponsive41A.css", [
   "grid-template-columns: minmax(0, 1fr) !important",
 ]);
 
-console.log("✅ Expo ProffDok mobil Prissøk / Systemadmin-layout / godkjenningsgrense check OK");
+console.log("✅ Expo ProffDok mobil Prissøk hurtigtilgang / Systemadmin-layout / godkjenningsgrense check OK");
