@@ -1,19 +1,21 @@
 // Expo ProffDok – FASE 42A
-// Enkel mobilvennlig badskisse for befaring. Ingen CAD-avhengighet, SQL eller Storage.
-// Skissen lagres som strukturert JSON + SVG-preview i eksisterende sales_requests-payload.
+// Mobilvennlig badskisse for befaring. Rette, sammenhengende vegger er standard,
+// mens frihånd er et valgfritt verktøy. Ingen SQL/RLS/Storage-policy-endring.
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const WIDTH = 720;
 const HEIGHT = 460;
 const GRID = 20;
-const SKETCH_VERSION = 1;
+const SKETCH_VERSION = 2;
+const CLOSE_DISTANCE = 34;
 
 const EMPTY_SKETCH = Object.freeze({
   version: SKETCH_VERSION,
   walls: [],
   openings: [],
   markers: [],
+  strokes: [],
 });
 
 const MARKER_LABELS = {
@@ -24,7 +26,8 @@ const MARKER_LABELS = {
 };
 
 const TOOL_BUTTONS = [
-  ["wall", "Vegg"],
+  ["wall", "Rette vegger"],
+  ["freehand", "Frihånd"],
   ["select", "Velg"],
   ["door", "Dør"],
   ["window", "Vindu"],
@@ -43,8 +46,17 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+function cleanMm(value) {
+  return String(value || "").replace(/[^0-9]/g, "").slice(0, 6);
+}
+
 function newId(prefix) {
   return `${prefix}-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
+}
+
+function distance(a, b) {
+  if (!a || !b) return Number.POSITIVE_INFINITY;
+  return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
 export function normalizeBathroomSketch(value) {
@@ -68,6 +80,9 @@ export function normalizeBathroomSketch(value) {
           type: opening?.type === "window" ? "window" : "door",
           wallId: String(opening?.wallId || ""),
           t: clamp(numberOr(opening?.t, 0.5), 0.08, 0.92),
+          widthMm: String(opening?.widthMm || ""),
+          heightMm: String(opening?.heightMm || ""),
+          sillHeightMm: String(opening?.sillHeightMm || ""),
           createdAt: numberOr(opening?.createdAt, 0),
         }))
       : [],
@@ -82,12 +97,31 @@ export function normalizeBathroomSketch(value) {
             createdAt: numberOr(marker?.createdAt, 0),
           }))
       : [],
+    strokes: Array.isArray(source.strokes)
+      ? source.strokes
+          .map((stroke) => ({
+            id: String(stroke?.id || newId("stroke")),
+            points: Array.isArray(stroke?.points)
+              ? stroke.points.map((point) => ({
+                  x: clamp(numberOr(point?.x), 0, WIDTH),
+                  y: clamp(numberOr(point?.y), 0, HEIGHT),
+                }))
+              : [],
+            createdAt: numberOr(stroke?.createdAt, 0),
+          }))
+          .filter((stroke) => stroke.points.length > 1)
+      : [],
   };
 }
 
 export function bathroomSketchHasContent(value) {
   const sketch = normalizeBathroomSketch(value);
-  return Boolean(sketch.walls.length || sketch.openings.length || sketch.markers.length);
+  return Boolean(
+    sketch.walls.length ||
+      sketch.openings.length ||
+      sketch.markers.length ||
+      sketch.strokes.length
+  );
 }
 
 function escapeXml(value = "") {
@@ -106,15 +140,27 @@ function wallPoint(wall, t = 0.5) {
   };
 }
 
+function openingDimensionLabel(opening) {
+  const size = [opening.widthMm, opening.heightMm].filter(Boolean).join("×");
+  const prefix = opening.type === "window" ? "V" : "D";
+  const sill =
+    opening.type === "window" && opening.sillHeightMm
+      ? ` · UK ${opening.sillHeightMm}`
+      : "";
+  return `${prefix}${size ? ` ${size}` : ""}${sill}`;
+}
+
 function openingMarkup(opening, wall) {
   if (!wall) return "";
   const point = wallPoint(wall, opening.t);
   const angle = (Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1) * 180) / Math.PI;
   const label = opening.type === "window" ? "V" : "D";
-  const width = opening.type === "window" ? 46 : 38;
+  const dimensionLabel = openingDimensionLabel(opening);
+  const visualWidth = opening.type === "window" ? 48 : 40;
   return `<g transform="translate(${point.x} ${point.y}) rotate(${angle})">
-    <rect x="-${width / 2}" y="-10" width="${width}" height="20" rx="4" fill="#ffffff" stroke="#087f88" stroke-width="3" />
+    <rect x="-${visualWidth / 2}" y="-10" width="${visualWidth}" height="20" rx="4" fill="#ffffff" stroke="#087f88" stroke-width="3" />
     <text x="0" y="5" text-anchor="middle" font-size="14" font-weight="700" fill="#172126">${label}</text>
+    <text x="0" y="-18" text-anchor="middle" font-size="12" font-weight="700" fill="#172126" style="paint-order:stroke;stroke:#ffffff;stroke-width:4px">${escapeXml(dimensionLabel)}</text>
   </g>`;
 }
 
@@ -124,6 +170,14 @@ function markerMarkup(marker) {
     <circle r="18" fill="#ffffff" stroke="#087f88" stroke-width="3" />
     <text x="0" y="4" text-anchor="middle" font-size="10" font-weight="800" fill="#172126">${escapeXml(label)}</text>
   </g>`;
+}
+
+function strokeMarkup(stroke) {
+  const points = (stroke?.points || [])
+    .map((point) => `${point.x},${point.y}`)
+    .join(" ");
+  if (!points) return "";
+  return `<polyline points="${points}" fill="none" stroke="#172126" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />`;
 }
 
 export function bathroomSketchDataUrl(value) {
@@ -152,10 +206,12 @@ export function bathroomSketchDataUrl(value) {
     .map((opening) => openingMarkup(opening, wallsById.get(opening.wallId)))
     .join("");
   const markers = sketch.markers.map(markerMarkup).join("");
+  const strokes = sketch.strokes.map(strokeMarkup).join("");
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
     <rect width="100%" height="100%" fill="#ffffff" />
     ${grid.join("")}
+    ${strokes}
     ${walls}
     ${openings}
     ${markers}
@@ -170,18 +226,23 @@ function pointOnWallFromEvent(wall, point) {
   const dy = wall.y2 - wall.y1;
   const lengthSquared = dx * dx + dy * dy;
   if (!lengthSquared) return 0.5;
-  return clamp(((point.x - wall.x1) * dx + (point.y - wall.y1) * dy) / lengthSquared, 0.08, 0.92);
+  return clamp(
+    ((point.x - wall.x1) * dx + (point.y - wall.y1) * dy) / lengthSquared,
+    0.08,
+    0.92
+  );
 }
 
 function toolbarButtonStyle(active, disabled) {
   return {
-    minHeight: 42,
+    minHeight: 44,
+    flex: "0 0 auto",
     borderRadius: 10,
     border: active ? "2px solid #087f88" : "1px solid #cbd9de",
     background: active ? "#e9fafb" : "#ffffff",
     color: "#172126",
     fontWeight: 800,
-    padding: "8px 11px",
+    padding: "9px 12px",
     opacity: disabled ? 0.55 : 1,
   };
 }
@@ -195,23 +256,44 @@ export default function SalesBathroomSketch({
   const sketch = useMemo(() => normalizeBathroomSketch(value), [value]);
   const [tool, setTool] = useState("wall");
   const [wallStart, setWallStart] = useState(null);
+  const [chainStart, setChainStart] = useState(null);
+  const [chainSegmentCount, setChainSegmentCount] = useState(0);
   const [selected, setSelected] = useState(null);
   const [history, setHistory] = useState([]);
+  const [activeStroke, setActiveStroke] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (!isFullscreen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFullscreen]);
 
   const selectedWall =
     selected?.kind === "wall"
       ? sketch.walls.find((wall) => wall.id === selected.id) || null
       : null;
+  const selectedOpening =
+    selected?.kind === "opening"
+      ? sketch.openings.find((opening) => opening.id === selected.id) || null
+      : null;
 
   const instruction = (() => {
     if (tool === "wall") {
-      return wallStart
-        ? "Trykk neste punkt for å tegne veggen. Fortsett rundt rommet, eller trykk «Avslutt vegg»."
-        : "Trykk på startpunktet til første vegg.";
+      if (!wallStart) {
+        return "Trykk første hjørne. Deretter kobles hver nye rette vegg automatisk til enden av den forrige.";
+      }
+      return chainSegmentCount >= 2
+        ? "Trykk neste hjørne. Trykk nær den grønne startmarkøren for å lukke rommet automatisk."
+        : "Trykk neste hjørne. Neste vegg starter automatisk der denne slutter.";
     }
-    if (tool === "select") return "Trykk på en vegg, åpning eller markør for å velge den.";
+    if (tool === "freehand") return "Dra fingeren for å tegne frihånd. Bruk dette bare der rette vegger ikke passer.";
+    if (tool === "select") return "Trykk på vegg, dør, vindu, markør eller frihåndsstrek for å velge den.";
     if (tool === "door" || tool === "window") {
-      return `Trykk på veggen der ${tool === "door" ? "døren" : "vinduet"} skal stå.`;
+      return `Trykk på veggen der ${tool === "door" ? "døren" : "vinduet"} skal stå. Legg deretter inn mål.`;
     }
     return `Trykk i skissen der ${MARKER_LABELS[tool] || "markøren"} skal plasseres.`;
   })();
@@ -219,11 +301,25 @@ export default function SalesBathroomSketch({
   function pointerPoint(event, snap = true) {
     const svg = svgRef.current;
     if (!svg) return { x: 0, y: 0 };
-    const rect = svg.getBoundingClientRect();
-    const rawX = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * WIDTH;
-    const rawY = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * HEIGHT;
-    const x = clamp(rawX, 0, WIDTH);
-    const y = clamp(rawY, 0, HEIGHT);
+
+    let x = 0;
+    let y = 0;
+    const ctm = svg.getScreenCTM?.();
+    if (ctm && svg.createSVGPoint) {
+      const point = svg.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      const transformed = point.matrixTransform(ctm.inverse());
+      x = transformed.x;
+      y = transformed.y;
+    } else {
+      const rect = svg.getBoundingClientRect();
+      x = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * WIDTH;
+      y = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * HEIGHT;
+    }
+
+    x = clamp(x, 0, WIDTH);
+    y = clamp(y, 0, HEIGHT);
     if (!snap) return { x, y };
     return {
       x: clamp(Math.round(x / GRID) * GRID, 0, WIDTH),
@@ -234,34 +330,68 @@ export default function SalesBathroomSketch({
   function commit(nextSketch, { remember = true } = {}) {
     const normalized = normalizeBathroomSketch(nextSketch);
     if (remember) {
-      setHistory((current) => [...current.slice(-19), sketch]);
+      setHistory((current) => [...current.slice(-24), sketch]);
     }
     onChange?.(normalized, bathroomSketchDataUrl(normalized));
   }
 
-  function handleCanvasPointer(event) {
+  function finishWallChain() {
+    setWallStart(null);
+    setChainStart(null);
+    setChainSegmentCount(0);
+  }
+
+  function handleCanvasPointerDown(event) {
     if (disabled) return;
+
+    if (tool === "freehand") {
+      const point = pointerPoint(event, false);
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      setSelected(null);
+      setActiveStroke({
+        id: newId("stroke"),
+        points: [point],
+        createdAt: Date.now(),
+      });
+      return;
+    }
+
     const point = pointerPoint(event, true);
 
     if (tool === "wall") {
       if (!wallStart) {
         setWallStart(point);
+        setChainStart(point);
+        setChainSegmentCount(0);
         setSelected(null);
         return;
       }
-      if (point.x === wallStart.x && point.y === wallStart.y) return;
+
+      const shouldClose =
+        chainStart &&
+        chainSegmentCount >= 2 &&
+        distance(point, chainStart) <= CLOSE_DISTANCE;
+      const endPoint = shouldClose ? chainStart : point;
+      if (endPoint.x === wallStart.x && endPoint.y === wallStart.y) return;
+
       const wall = {
         id: newId("wall"),
         x1: wallStart.x,
         y1: wallStart.y,
-        x2: point.x,
-        y2: point.y,
+        x2: endPoint.x,
+        y2: endPoint.y,
         lengthMm: "",
         createdAt: Date.now(),
       };
       commit({ ...sketch, walls: [...sketch.walls, wall] });
-      setWallStart(point);
       setSelected({ kind: "wall", id: wall.id });
+
+      if (shouldClose) {
+        finishWallChain();
+      } else {
+        setWallStart(endPoint);
+        setChainSegmentCount((count) => count + 1);
+      }
       return;
     }
 
@@ -281,9 +411,30 @@ export default function SalesBathroomSketch({
     if (tool === "select") setSelected(null);
   }
 
+  function handleCanvasPointerMove(event) {
+    if (disabled || tool !== "freehand" || !activeStroke) return;
+    const point = pointerPoint(event, false);
+    const lastPoint = activeStroke.points[activeStroke.points.length - 1];
+    if (distance(point, lastPoint) < 4) return;
+    setActiveStroke((current) =>
+      current ? { ...current, points: [...current.points, point] } : current
+    );
+  }
+
+  function finishFreehandStroke(event) {
+    if (tool !== "freehand" || !activeStroke) return;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    if (activeStroke.points.length > 1) {
+      commit({ ...sketch, strokes: [...sketch.strokes, activeStroke] });
+      setSelected({ kind: "stroke", id: activeStroke.id });
+    }
+    setActiveStroke(null);
+  }
+
   function handleWallPointer(event, wall) {
-    event.stopPropagation();
     if (disabled) return;
+    if (!["select", "door", "window"].includes(tool)) return;
+    event.stopPropagation();
 
     if (tool === "door" || tool === "window") {
       const point = pointerPoint(event, false);
@@ -292,6 +443,9 @@ export default function SalesBathroomSketch({
         type: tool,
         wallId: wall.id,
         t: pointOnWallFromEvent(wall, point),
+        widthMm: "",
+        heightMm: "",
+        sillHeightMm: "",
         createdAt: Date.now(),
       };
       commit({ ...sketch, openings: [...sketch.openings, opening] });
@@ -299,24 +453,35 @@ export default function SalesBathroomSketch({
       return;
     }
 
-    if (tool === "select" || tool === "wall") {
-      setSelected({ kind: "wall", id: wall.id });
-    }
+    setSelected({ kind: "wall", id: wall.id });
   }
 
   function handleObjectPointer(event, kind, id) {
+    if (disabled || tool !== "select") return;
     event.stopPropagation();
-    if (disabled) return;
-    if (tool === "select") setSelected({ kind, id });
+    setSelected({ kind, id });
   }
 
   function updateSelectedWallLength(valueText) {
     if (!selectedWall) return;
-    const clean = String(valueText || "").replace(/[^0-9]/g, "").slice(0, 6);
+    const clean = cleanMm(valueText);
     commit({
       ...sketch,
       walls: sketch.walls.map((wall) =>
         wall.id === selectedWall.id ? { ...wall, lengthMm: clean } : wall
+      ),
+    });
+  }
+
+  function updateSelectedOpening(field, valueText) {
+    if (!selectedOpening) return;
+    const clean = cleanMm(valueText);
+    commit({
+      ...sketch,
+      openings: sketch.openings.map((opening) =>
+        opening.id === selectedOpening.id
+          ? { ...opening, [field]: clean }
+          : opening
       ),
     });
   }
@@ -339,6 +504,11 @@ export default function SalesBathroomSketch({
         ...sketch,
         markers: sketch.markers.filter((marker) => marker.id !== selected.id),
       });
+    } else if (selected.kind === "stroke") {
+      commit({
+        ...sketch,
+        strokes: sketch.strokes.filter((stroke) => stroke.id !== selected.id),
+      });
     }
     setSelected(null);
   }
@@ -348,7 +518,8 @@ export default function SalesBathroomSketch({
     const previous = history[history.length - 1];
     setHistory((current) => current.slice(0, -1));
     setSelected(null);
-    setWallStart(null);
+    setActiveStroke(null);
+    finishWallChain();
     commit(previous, { remember: false });
   }
 
@@ -357,48 +528,103 @@ export default function SalesBathroomSketch({
     if (!window.confirm("Tømme hele badskissen?")) return;
     commit(EMPTY_SKETCH);
     setSelected(null);
-    setWallStart(null);
+    setActiveStroke(null);
+    finishWallChain();
   }
 
   function chooseTool(nextTool) {
     setTool(nextTool);
     setSelected(null);
-    if (nextTool !== "wall") setWallStart(null);
+    setActiveStroke(null);
+    if (nextTool !== "wall") finishWallChain();
   }
 
   const wallsById = new Map(sketch.walls.map((wall) => [wall.id, wall]));
-
-  return (
-    <section
-      data-sales-bathroom-sketch="true"
-      style={{
+  const sectionStyle = isFullscreen
+    ? {
+        position: "fixed",
+        inset: 0,
+        zIndex: 10000,
+        background: "#f8fbfc",
+        padding: 10,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }
+    : {
         border: "1px solid #d7e4ea",
         borderRadius: 16,
         padding: 14,
         background: "#f8fbfc",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+      };
+
+  const canvasStyle = isFullscreen
+    ? { flex: "1 1 auto", minHeight: 0 }
+    : {};
+
+  return (
+    <section data-sales-bathroom-sketch="true" style={sectionStyle}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 10,
+          flexWrap: "wrap",
+        }}
+      >
         <div>
           <strong style={{ display: "block", fontSize: 17 }}>Badskisse</strong>
-          <span style={{ color: "#5d6a70", fontSize: 14 }}>
-            Rette vegger, mål og eksisterende installasjoner. Ikke målestokktegning.
+          <span style={{ color: "#5d6a70", fontSize: 13 }}>
+            Rette vegger kobles automatisk. Frihånd brukes bare ved behov.
           </span>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button type="button" className="sales-secondary-button" disabled={disabled || !history.length} onClick={undoLast}>
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className="sales-primary-button"
+            disabled={disabled}
+            onClick={() => setIsFullscreen((current) => !current)}
+          >
+            {isFullscreen ? "Ferdig" : "Åpne stor tegneflate"}
+          </button>
+          <button
+            type="button"
+            className="sales-secondary-button"
+            disabled={disabled || !history.length}
+            onClick={undoLast}
+          >
             Angre
           </button>
-          <button type="button" className="sales-secondary-button" disabled={disabled || !selected} onClick={deleteSelected}>
+          <button
+            type="button"
+            className="sales-secondary-button"
+            disabled={disabled || !selected}
+            onClick={deleteSelected}
+          >
             Slett valgt
           </button>
-          <button type="button" className="sales-secondary-button" disabled={disabled || !bathroomSketchHasContent(sketch)} onClick={clearSketch}>
+          <button
+            type="button"
+            className="sales-secondary-button"
+            disabled={disabled || !bathroomSketchHasContent(sketch)}
+            onClick={clearSketch}
+          >
             Tøm
           </button>
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 7,
+          overflowX: "auto",
+          paddingBottom: 4,
+          marginTop: 10,
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         {TOOL_BUTTONS.map(([key, label]) => (
           <button
             key={key}
@@ -413,17 +639,19 @@ export default function SalesBathroomSketch({
         ))}
       </div>
 
-      <p style={{ margin: "12px 0 8px", color: "#435158", fontSize: 14 }}>
+      <p style={{ margin: "7px 0", color: "#435158", fontSize: 13 }}>
         {instruction}
       </p>
 
       <div
         style={{
+          ...canvasStyle,
           border: "1px solid #cbd9de",
           borderRadius: 12,
           overflow: "hidden",
           background: "#ffffff",
           touchAction: "none",
+          display: "flex",
         }}
       >
         <svg
@@ -431,31 +659,98 @@ export default function SalesBathroomSketch({
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           role="img"
           aria-label="Redigerbar badskisse"
-          onPointerDown={handleCanvasPointer}
-          style={{ display: "block", width: "100%", height: "auto", minHeight: 260 }}
+          onPointerDown={handleCanvasPointerDown}
+          onPointerMove={handleCanvasPointerMove}
+          onPointerUp={finishFreehandStroke}
+          onPointerCancel={finishFreehandStroke}
+          style={{
+            display: "block",
+            width: "100%",
+            height: isFullscreen ? "100%" : "auto",
+            minHeight: isFullscreen ? 0 : 270,
+          }}
         >
           <rect width={WIDTH} height={HEIGHT} fill="#ffffff" />
           {Array.from({ length: Math.floor(WIDTH / GRID) + 1 }, (_, index) => (
-            <line key={`gx-${index}`} x1={index * GRID} y1="0" x2={index * GRID} y2={HEIGHT} stroke="#e8eef1" strokeWidth="1" />
+            <line
+              key={`gx-${index}`}
+              x1={index * GRID}
+              y1="0"
+              x2={index * GRID}
+              y2={HEIGHT}
+              stroke="#e8eef1"
+              strokeWidth="1"
+              pointerEvents="none"
+            />
           ))}
           {Array.from({ length: Math.floor(HEIGHT / GRID) + 1 }, (_, index) => (
-            <line key={`gy-${index}`} x1="0" y1={index * GRID} x2={WIDTH} y2={index * GRID} stroke="#e8eef1" strokeWidth="1" />
+            <line
+              key={`gy-${index}`}
+              x1="0"
+              y1={index * GRID}
+              x2={WIDTH}
+              y2={index * GRID}
+              stroke="#e8eef1"
+              strokeWidth="1"
+              pointerEvents="none"
+            />
           ))}
+
+          {sketch.strokes.map((stroke) => {
+            const points = stroke.points.map((point) => `${point.x},${point.y}`).join(" ");
+            const active = selected?.kind === "stroke" && selected.id === stroke.id;
+            return (
+              <g key={stroke.id}>
+                {tool === "select" ? (
+                  <polyline
+                    points={points}
+                    fill="none"
+                    stroke="transparent"
+                    strokeWidth="26"
+                    onPointerDown={(event) => handleObjectPointer(event, "stroke", stroke.id)}
+                  />
+                ) : null}
+                <polyline
+                  points={points}
+                  fill="none"
+                  stroke={active ? "#087f88" : "#172126"}
+                  strokeWidth={active ? 7 : 5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  pointerEvents="none"
+                />
+              </g>
+            );
+          })}
+
+          {activeStroke ? (
+            <polyline
+              points={activeStroke.points.map((point) => `${point.x},${point.y}`).join(" ")}
+              fill="none"
+              stroke="#087f88"
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              pointerEvents="none"
+            />
+          ) : null}
 
           {sketch.walls.map((wall) => {
             const midpoint = wallPoint(wall, 0.5);
             const active = selected?.kind === "wall" && selected.id === wall.id;
             return (
               <g key={wall.id}>
-                <line
-                  x1={wall.x1}
-                  y1={wall.y1}
-                  x2={wall.x2}
-                  y2={wall.y2}
-                  stroke="transparent"
-                  strokeWidth="28"
-                  onPointerDown={(event) => handleWallPointer(event, wall)}
-                />
+                {["select", "door", "window"].includes(tool) ? (
+                  <line
+                    x1={wall.x1}
+                    y1={wall.y1}
+                    x2={wall.x2}
+                    y2={wall.y2}
+                    stroke="transparent"
+                    strokeWidth="32"
+                    onPointerDown={(event) => handleWallPointer(event, wall)}
+                  />
+                ) : null}
                 <line
                   x1={wall.x1}
                   y1={wall.y1}
@@ -491,27 +786,54 @@ export default function SalesBathroomSketch({
             const wall = wallsById.get(opening.wallId);
             if (!wall) return null;
             const point = wallPoint(wall, opening.t);
-            const angle = (Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1) * 180) / Math.PI;
-            const active = selected?.kind === "opening" && selected.id === opening.id;
-            const width = opening.type === "window" ? 46 : 38;
+            const angle =
+              (Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1) * 180) /
+              Math.PI;
+            const active =
+              selected?.kind === "opening" && selected.id === opening.id;
+            const visualWidth = opening.type === "window" ? 48 : 40;
             return (
               <g
                 key={opening.id}
                 transform={`translate(${point.x} ${point.y}) rotate(${angle})`}
-                onPointerDown={(event) => handleObjectPointer(event, "opening", opening.id)}
+                onPointerDown={(event) =>
+                  handleObjectPointer(event, "opening", opening.id)
+                }
               >
                 <rect
-                  x={-width / 2}
-                  y="-11"
-                  width={width}
-                  height="22"
+                  x={-visualWidth / 2}
+                  y="-12"
+                  width={visualWidth}
+                  height="24"
                   rx="4"
                   fill="#ffffff"
                   stroke={active ? "#087f88" : "#4b5b62"}
                   strokeWidth={active ? 4 : 3}
                 />
-                <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="800" fill="#172126" pointerEvents="none">
+                <text
+                  x="0"
+                  y="5"
+                  textAnchor="middle"
+                  fontSize="14"
+                  fontWeight="800"
+                  fill="#172126"
+                  pointerEvents="none"
+                >
                   {opening.type === "window" ? "V" : "D"}
+                </text>
+                <text
+                  x="0"
+                  y="-19"
+                  textAnchor="middle"
+                  fontSize="12"
+                  fontWeight="800"
+                  fill="#172126"
+                  stroke="#ffffff"
+                  strokeWidth="4"
+                  paintOrder="stroke"
+                  pointerEvents="none"
+                >
+                  {openingDimensionLabel(opening)}
                 </text>
               </g>
             );
@@ -523,53 +845,152 @@ export default function SalesBathroomSketch({
               <g
                 key={marker.id}
                 transform={`translate(${marker.x} ${marker.y})`}
-                onPointerDown={(event) => handleObjectPointer(event, "marker", marker.id)}
+                onPointerDown={(event) =>
+                  handleObjectPointer(event, "marker", marker.id)
+                }
               >
-                <circle r="19" fill="#ffffff" stroke={active ? "#087f88" : "#4b5b62"} strokeWidth={active ? 4 : 3} />
-                <text x="0" y="4" textAnchor="middle" fontSize="10" fontWeight="800" fill="#172126" pointerEvents="none">
+                <circle
+                  r="20"
+                  fill="#ffffff"
+                  stroke={active ? "#087f88" : "#4b5b62"}
+                  strokeWidth={active ? 4 : 3}
+                />
+                <text
+                  x="0"
+                  y="4"
+                  textAnchor="middle"
+                  fontSize="10"
+                  fontWeight="800"
+                  fill="#172126"
+                  pointerEvents="none"
+                >
                   {MARKER_LABELS[marker.type]}
                 </text>
               </g>
             );
           })}
 
+          {chainStart ? (
+            <circle
+              cx={chainStart.x}
+              cy={chainStart.y}
+              r="12"
+              fill="#ffffff"
+              stroke="#087f88"
+              strokeWidth="4"
+              pointerEvents="none"
+            />
+          ) : null}
           {wallStart ? (
-            <circle cx={wallStart.x} cy={wallStart.y} r="8" fill="#087f88" stroke="#ffffff" strokeWidth="3" pointerEvents="none" />
+            <circle
+              cx={wallStart.x}
+              cy={wallStart.y}
+              r="7"
+              fill="#087f88"
+              stroke="#ffffff"
+              strokeWidth="2"
+              pointerEvents="none"
+            />
           ) : null}
         </svg>
       </div>
 
-      {tool === "wall" && wallStart ? (
-        <button
-          type="button"
-          className="sales-secondary-button"
-          disabled={disabled}
-          onClick={() => setWallStart(null)}
-          style={{ marginTop: 10 }}
-        >
-          Avslutt vegg
-        </button>
-      ) : null}
-
-      {selectedWall ? (
-        <label className="sales-field" style={{ marginTop: 12, maxWidth: 280 }}>
-          <span>Mål på valgt vegg (mm)</span>
-          <input
-            type="number"
-            min="1"
-            max="999999"
-            inputMode="numeric"
-            value={selectedWall.lengthMm}
+      <div
+        style={{
+          marginTop: 8,
+          display: "flex",
+          gap: 10,
+          alignItems: "flex-end",
+          flexWrap: "wrap",
+          maxHeight: isFullscreen ? "33vh" : "none",
+          overflowY: isFullscreen ? "auto" : "visible",
+        }}
+      >
+        {tool === "wall" && wallStart ? (
+          <button
+            type="button"
+            className="sales-secondary-button"
             disabled={disabled}
-            placeholder="f.eks. 2450"
-            onChange={(event) => updateSelectedWallLength(event.target.value)}
-          />
-        </label>
-      ) : null}
+            onClick={finishWallChain}
+          >
+            Avslutt veggkjede
+          </button>
+        ) : null}
 
-      <div style={{ marginTop: 12, fontSize: 13, color: "#5d6a70", lineHeight: 1.45 }}>
-        <strong>Forklaring:</strong> D = dør, V = vindu, SLUK = sluk, AVL = avløp, KV = kaldtvann, VV = varmtvann.
+        {selectedWall ? (
+          <label className="sales-field" style={{ minWidth: 210, flex: "1 1 210px" }}>
+            <span>Mål på valgt vegg (mm)</span>
+            <input
+              type="number"
+              min="1"
+              max="999999"
+              inputMode="numeric"
+              value={selectedWall.lengthMm}
+              disabled={disabled}
+              placeholder="f.eks. 2450"
+              onChange={(event) => updateSelectedWallLength(event.target.value)}
+            />
+          </label>
+        ) : null}
+
+        {selectedOpening ? (
+          <>
+            <label className="sales-field" style={{ minWidth: 170, flex: "1 1 170px" }}>
+              <span>{selectedOpening.type === "window" ? "Vindusbredde" : "Dørbredde"} (mm)</span>
+              <input
+                type="number"
+                min="1"
+                max="999999"
+                inputMode="numeric"
+                value={selectedOpening.widthMm}
+                disabled={disabled}
+                placeholder={selectedOpening.type === "window" ? "f.eks. 1200" : "f.eks. 900"}
+                onChange={(event) =>
+                  updateSelectedOpening("widthMm", event.target.value)
+                }
+              />
+            </label>
+            <label className="sales-field" style={{ minWidth: 170, flex: "1 1 170px" }}>
+              <span>{selectedOpening.type === "window" ? "Vindushøyde" : "Dørhøyde"} (mm)</span>
+              <input
+                type="number"
+                min="1"
+                max="999999"
+                inputMode="numeric"
+                value={selectedOpening.heightMm}
+                disabled={disabled}
+                placeholder={selectedOpening.type === "window" ? "f.eks. 800" : "f.eks. 2100"}
+                onChange={(event) =>
+                  updateSelectedOpening("heightMm", event.target.value)
+                }
+              />
+            </label>
+            {selectedOpening.type === "window" ? (
+              <label className="sales-field" style={{ minWidth: 220, flex: "1 1 220px" }}>
+                <span>Gulv → underkant vindu (mm)</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="999999"
+                  inputMode="numeric"
+                  value={selectedOpening.sillHeightMm}
+                  disabled={disabled}
+                  placeholder="f.eks. 900"
+                  onChange={(event) =>
+                    updateSelectedOpening("sillHeightMm", event.target.value)
+                  }
+                />
+              </label>
+            ) : null}
+          </>
+        ) : null}
       </div>
+
+      {!isFullscreen ? (
+        <div style={{ marginTop: 10, fontSize: 13, color: "#5d6a70", lineHeight: 1.45 }}>
+          <strong>Tips:</strong> På mobil bør du bruke «Åpne stor tegneflate». D/V viser bredde × høyde. På vindu betyr UK høyde fra gulv til underkant vindu.
+        </div>
+      ) : null}
     </section>
   );
 }
