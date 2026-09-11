@@ -1,11 +1,10 @@
-// Expo ProffDok – FASE 30D1
+// Expo ProffDok – FASE 42A / FASE 30D1
+// Badskisse Light ligger direkte i befaringsnotatet. Ferdig skisse lagres som
+// vanlig befaringsbilde i eksisterende private Storage-flyt. Redigerbar geometri
+// beholdes lokalt på enheten i 42A, uten SQL/RLS/Storage-policy-endring.
 // Befaringsbilder lagres binært i IndexedDB før de tas inn i skjemaet. Lokalt
 // sikrede bilder kan dermed gjenopprettes etter reload/appbytte før serverlagring.
 // Eksisterende Supabase-opplasting ved «Lagre befaringsnotat» beholdes uendret.
-// Expo ProffDok – FASE 30B
-// Sikrer befaringsbilder mot rask lagring/navigering og viser tydelig status.
-// Expo ProffDok – FASE 23K
-// Presentasjonskomponent for befaringsnotat og befaringsbilder.
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -17,6 +16,10 @@ import {
   Plus,
   Save,
 } from "lucide-react";
+import SalesBathroomSketch, {
+  bathroomSketchHasContent,
+  normalizeBathroomSketch,
+} from "./SalesBathroomSketch.jsx";
 import {
   isInspectionDraftDbAvailable,
   listInspectionPhotoBlobs,
@@ -25,8 +28,45 @@ import {
   saveInspectionPhotoBlob,
 } from "../services/salesInspectionDraftDb.js";
 
+const BATHROOM_SKETCH_PREFIX = "bathroom-sketch-";
+
 function normalizeText(value = "") {
   return String(value || "").trim();
+}
+
+function isBathroomSketchPhoto(photo) {
+  return (
+    photo?.kind === "bathroom-sketch" ||
+    String(photo?.id || "").startsWith(BATHROOM_SKETCH_PREFIX)
+  );
+}
+
+function bathroomSketchStorageKey(requestId = "") {
+  return `expo-proffdok:bathroom-sketch:v1:${String(requestId || "").trim()}`;
+}
+
+function loadBathroomSketchDraft(requestId = "") {
+  if (typeof window === "undefined" || !requestId) return normalizeBathroomSketch(null);
+  try {
+    const raw = window.localStorage.getItem(bathroomSketchStorageKey(requestId));
+    return normalizeBathroomSketch(raw ? JSON.parse(raw) : null);
+  } catch {
+    return normalizeBathroomSketch(null);
+  }
+}
+
+function saveBathroomSketchDraft(requestId = "", sketch = null) {
+  if (typeof window === "undefined" || !requestId) return;
+  const key = bathroomSketchStorageKey(requestId);
+  try {
+    if (bathroomSketchHasContent(sketch)) {
+      window.localStorage.setItem(key, JSON.stringify(normalizeBathroomSketch(sketch)));
+    } else {
+      window.localStorage.removeItem(key);
+    }
+  } catch {
+    // Skissebildet i skjemaet kan fortsatt lagres selv om localStorage er fullt/blokkert.
+  }
 }
 
 async function blobFromPreviewSource(source = "") {
@@ -51,9 +91,14 @@ export default function SalesInspectionNote({
   const [photoReadError, setPhotoReadError] = useState("");
   const [photoRestoreBusy, setPhotoRestoreBusy] = useState(false);
   const [saveBusy, setSaveBusy] = useState(false);
+  const [bathroomSketch, setBathroomSketch] = useState(() =>
+    loadBathroomSketchDraft(selectedRequest?.id)
+  );
   const objectUrlsRef = useRef(new Set());
 
-  const photos = Array.isArray(inspectionForm.photos) ? inspectionForm.photos : [];
+  const allMedia = Array.isArray(inspectionForm.photos) ? inspectionForm.photos : [];
+  const sketchPhoto = allMedia.find(isBathroomSketchPhoto) || null;
+  const photos = allMedia.filter((photo) => !isBathroomSketchPhoto(photo));
   const storedPhotoCount = photos.filter((photo) => photo?.path).length;
   const localSafePhotoCount = photos.filter(
     (photo) => !photo?.path && photo?.localDraftKey
@@ -61,9 +106,13 @@ export default function SalesInspectionNote({
   const unsafeLocalPhotoCount = photos.filter(
     (photo) => !photo?.path && photo?.dataUrl && !photo?.localDraftKey
   ).length;
-  const initialPhotos = Array.isArray(selectedRequest?.inspectionPhotos)
+  const initialMedia = Array.isArray(selectedRequest?.inspectionPhotos)
     ? selectedRequest.inspectionPhotos
     : [];
+
+  useEffect(() => {
+    setBathroomSketch(loadBathroomSketchDraft(selectedRequest?.id));
+  }, [selectedRequest?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -87,7 +136,7 @@ export default function SalesInspectionNote({
             ? selectedRequest.inspectionPhotos
             : []
           )
-            .filter((photo) => photo?.path)
+            .filter((photo) => photo?.path && !isBathroomSketchPhoto(photo))
             .map((photo) => String(photo?.id || ""))
             .filter(Boolean)
         );
@@ -103,7 +152,6 @@ export default function SalesInspectionNote({
           recordById.delete(String(record?.id || ""));
         }
 
-        // Migrer eldre DataURL/blob-URL-kladd til IndexedDB når den fortsatt kan leses.
         for (const photo of photos) {
           const photoId = String(photo?.id || "");
           if (
@@ -127,8 +175,7 @@ export default function SalesInspectionNote({
             });
             recordById.set(photoId, migrated);
           } catch {
-            // Eldre lokal URL kan være utløpt etter reload. Eventuelle andre
-            // IndexedDB-kopier gjenopprettes fortsatt nedenfor.
+            // Eldre lokal URL kan være utløpt etter reload.
           }
         }
 
@@ -192,8 +239,6 @@ export default function SalesInspectionNote({
           changed = true;
         }
 
-        // Dersom en lokal post finnes i IndexedDB, men ikke lenger i React-formen,
-        // skal den gjenoppstå. Dette dekker krasj/sovemodus mellom IDB-write og state-update.
         if (!changed && records.length) {
           changed = records.some(
             (record) => !currentById.has(String(record?.id || ""))
@@ -201,7 +246,10 @@ export default function SalesInspectionNote({
         }
 
         if (!cancelled && changed) {
-          onUpdateInspectionForm("photos", merged);
+          onUpdateInspectionForm(
+            "photos",
+            sketchPhoto ? [...merged, sketchPhoto] : merged
+          );
         }
       } catch (error) {
         console.error("Kunne ikke gjenopprette lokalt sikrede befaringsbilder", error);
@@ -222,7 +270,7 @@ export default function SalesInspectionNote({
       objectUrls.forEach((url) => URL.revokeObjectURL(url));
       objectUrls.clear();
     };
-    // Gjenoppretting skal kjøre én gang per åpnet salgssak, ikke ved hver state-endring.
+    // Gjenoppretting skal kjøre én gang per åpnet salgssak.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRequest?.id]);
 
@@ -235,13 +283,14 @@ export default function SalesInspectionNote({
         normalizeText(selectedRequest?.inspectionMeasurements) ||
       normalizeText(inspectionForm.observations) !==
         normalizeText(selectedRequest?.inspectionObservations) ||
-      photos.length !== initialPhotos.length ||
-      photos.some((photo, index) => {
-        const initial = initialPhotos[index];
+      allMedia.length !== initialMedia.length ||
+      allMedia.some((photo, index) => {
+        const initial = initialMedia[index];
         if (!initial) return true;
         return (
           String(photo?.path || "") !== String(initial?.path || "") ||
-          String(photo?.id || "") !== String(initial?.id || "")
+          String(photo?.id || "") !== String(initial?.id || "") ||
+          String(photo?.dataUrl || "") !== String(initial?.dataUrl || "")
         );
       })
   );
@@ -251,7 +300,9 @@ export default function SalesInspectionNote({
       !normalizeText(inspectionForm.existingConditions) &&
       !normalizeText(inspectionForm.measurements) &&
       !normalizeText(inspectionForm.observations) &&
-      photos.length === 0
+      photos.length === 0 &&
+      !sketchPhoto &&
+      !bathroomSketchHasContent(bathroomSketch)
   );
 
   async function handlePhotoSelection(event) {
@@ -308,7 +359,12 @@ export default function SalesInspectionNote({
     }
 
     if (preparedPhotos.length) {
-      onUpdateInspectionForm("photos", [...photos, ...preparedPhotos]);
+      onUpdateInspectionForm(
+        "photos",
+        sketchPhoto
+          ? [...photos, ...preparedPhotos, sketchPhoto]
+          : [...photos, ...preparedPhotos]
+      );
     }
 
     if (failedCount) {
@@ -339,13 +395,35 @@ export default function SalesInspectionNote({
     onRemoveInspectionPhoto(photo.id);
   }
 
+  function handleBathroomSketchChange(nextSketch, dataUrl) {
+    const requestId = String(selectedRequest?.id || "").trim();
+    const normalized = normalizeBathroomSketch(nextSketch);
+    setBathroomSketch(normalized);
+    saveBathroomSketchDraft(requestId, normalized);
+
+    const withoutSketch = allMedia.filter((item) => !isBathroomSketchPhoto(item));
+    if (!bathroomSketchHasContent(normalized) || !dataUrl) {
+      onUpdateInspectionForm("photos", withoutSketch);
+      return;
+    }
+
+    const nextSketchPhoto = {
+      id: `${BATHROOM_SKETCH_PREFIX}${requestId || "draft"}`,
+      name: "Badskisse.svg",
+      kind: "bathroom-sketch",
+      dataUrl,
+      createdAt: sketchPhoto?.createdAt || new Date().toISOString(),
+    };
+    onUpdateInspectionForm("photos", [...withoutSketch, nextSketchPhoto]);
+  }
+
   function handleBack() {
     if (photoReadBusy || photoRestoreBusy || saveBusy) return;
 
     if (
       hasUnsavedChanges &&
       !window.confirm(
-        "Du har endringer eller bilder som ikke er lagret varig på server ennå. Vil du gå tilbake uten å fullføre befaringsnotatet? Lokalt sikrede bilder beholdes på denne enheten."
+        "Du har endringer, skisse eller bilder som ikke er lagret varig på server ennå. Vil du gå tilbake uten å fullføre befaringsnotatet? Lokalt sikrede bilder beholdes på denne enheten; skissedraften beholdes også lokalt."
       )
     ) {
       return;
@@ -361,7 +439,7 @@ export default function SalesInspectionNote({
     if (
       inspectionIsEmpty &&
       !window.confirm(
-        "Befaringsnotatet er helt tomt og har ingen bilder. Vil du likevel markere befaringen som gjennomført?"
+        "Befaringsnotatet er helt tomt og har ingen bilder eller badskisse. Vil du likevel markere befaringen som gjennomført?"
       )
     ) {
       return;
@@ -377,319 +455,278 @@ export default function SalesInspectionNote({
   }
 
   const busy = photoReadBusy || photoRestoreBusy || saveBusy;
+  const editableSketchAvailable = bathroomSketchHasContent(bathroomSketch);
+  const hasSavedSketchImage = Boolean(sketchPhoto?.dataUrl);
 
   return (
-      <div className="sales-app">
-        <div className="sales-shell">
-          <header className="sales-header">
-            <button
-              className="sales-back-button"
-              type="button"
-              onClick={handleBack}
-              disabled={busy}
-            >
-              <ArrowLeft size={18} />
-              Tilbake
-            </button>
+    <div className="sales-app">
+      <div className="sales-shell">
+        <header className="sales-header">
+          <button
+            className="sales-back-button"
+            type="button"
+            onClick={handleBack}
+            disabled={busy}
+          >
+            <ArrowLeft size={18} />
+            Tilbake
+          </button>
 
-            <div className="sales-brand sales-brand-compact">
-              <div className="sales-brand-mark">
-                <ClipboardList size={22} />
-              </div>
-              <div className="sales-brand-copy">
-                <strong>Expo ProffDok</strong>
-                <span>Befaring / Tilbud / Aksept</span>
-              </div>
+          <div className="sales-brand sales-brand-compact">
+            <div className="sales-brand-mark">
+              <ClipboardList size={22} />
             </div>
-          </header>
+            <div className="sales-brand-copy">
+              <strong>Expo ProffDok</strong>
+              <span>Befaring / Tilbud / Aksept</span>
+            </div>
+          </div>
+        </header>
 
-          <main className="sales-main">
-            <section className="sales-form-hero">
-              <p className="sales-eyebrow">Befaringsnotat</p>
-              <h1 className="sales-title">{selectedRequest.title}</h1>
-              <p className="sales-subtitle">
-                {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
-              </p>
-            </section>
+        <main className="sales-main">
+          <section className="sales-form-hero">
+            <p className="sales-eyebrow">Befaringsnotat</p>
+            <h1 className="sales-title">{selectedRequest.title}</h1>
+            <p className="sales-subtitle">
+              {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
+            </p>
+          </section>
 
-            <form className="sales-form-panel" onSubmit={handleSubmit}>
-              {(selectedRequest.note || selectedRequest.surveyDate || selectedRequest.surveyNote) ? (
-                <div className="sales-form-preview" style={{ marginTop: 0, marginBottom: 22 }}>
-                  <h2>Grunnlag fra saken</h2>
-                  <div className="sales-detail-lines">
-                    {selectedRequest.note ? (
-                      <p><strong>Forespørsel:</strong> {selectedRequest.note}</p>
-                    ) : null}
-                    {selectedRequest.surveyDate ? (
-                      <span>
-                        <CalendarDays size={16} />
-                        Befaring planlagt {selectedRequest.surveyDate}
-                        {selectedRequest.surveyTime ? ` kl. ${selectedRequest.surveyTime}` : ""}
-                      </span>
-                    ) : null}
-                    {selectedRequest.surveyResponsible ? (
-                      <span>
-                        <CheckCircle2 size={16} />
-                        Prosjektansvarlig: {loggedInResponsible}
-                      </span>
-                    ) : null}
-                    {selectedRequest.surveyNote ? (
-                      <p><strong>Intern merknad:</strong> {selectedRequest.surveyNote}</p>
-                    ) : null}
-                  </div>
+          <form className="sales-form-panel" onSubmit={handleSubmit}>
+            {(selectedRequest.note || selectedRequest.surveyDate || selectedRequest.surveyNote) ? (
+              <div className="sales-form-preview" style={{ marginTop: 0, marginBottom: 22 }}>
+                <h2>Grunnlag fra saken</h2>
+                <div className="sales-detail-lines">
+                  {selectedRequest.note ? (
+                    <p><strong>Forespørsel:</strong> {selectedRequest.note}</p>
+                  ) : null}
+                  {selectedRequest.surveyDate ? (
+                    <span>
+                      <CalendarDays size={16} />
+                      Befaring planlagt {selectedRequest.surveyDate}
+                      {selectedRequest.surveyTime ? ` kl. ${selectedRequest.surveyTime}` : ""}
+                    </span>
+                  ) : null}
+                  {selectedRequest.surveyResponsible ? (
+                    <span>
+                      <CheckCircle2 size={16} />
+                      Prosjektansvarlig: {loggedInResponsible}
+                    </span>
+                  ) : null}
+                  {selectedRequest.surveyNote ? (
+                    <p><strong>Intern merknad:</strong> {selectedRequest.surveyNote}</p>
+                  ) : null}
                 </div>
-              ) : null}
+              </div>
+            ) : null}
 
-              <div className="sales-form-grid">
-                <label className="sales-field sales-field-full">
-                  <span>Kundens ønsker</span>
-                  <textarea
-                    value={inspectionForm.customerWishes}
-                    disabled={photoRestoreBusy}
-                    onChange={(event) =>
-                      onUpdateInspectionForm("customerWishes", event.target.value)
-                    }
-                    placeholder="Hva ønsker kunden utført? Beskriv løsninger, uttrykk og viktige prioriteringer."
-                    rows={5}
-                  />
-                </label>
+            <div className="sales-form-grid">
+              <label className="sales-field sales-field-full">
+                <span>Kundens ønsker</span>
+                <textarea
+                  value={inspectionForm.customerWishes}
+                  disabled={photoRestoreBusy}
+                  onChange={(event) =>
+                    onUpdateInspectionForm("customerWishes", event.target.value)
+                  }
+                  placeholder="Hva ønsker kunden utført? Beskriv løsninger, uttrykk og viktige prioriteringer."
+                  rows={5}
+                />
+              </label>
 
-                <label className="sales-field sales-field-full">
-                  <span>Eksisterende forhold</span>
-                  <textarea
-                    value={inspectionForm.existingConditions}
-                    disabled={photoRestoreBusy}
-                    onChange={(event) =>
-                      onUpdateInspectionForm("existingConditions", event.target.value)
-                    }
-                    placeholder="Beskriv eksisterende bad, underlag, sluk, fall, rørføringer og andre synlige forhold."
-                    rows={5}
-                  />
-                </label>
+              <label className="sales-field sales-field-full">
+                <span>Eksisterende forhold</span>
+                <textarea
+                  value={inspectionForm.existingConditions}
+                  disabled={photoRestoreBusy}
+                  onChange={(event) =>
+                    onUpdateInspectionForm("existingConditions", event.target.value)
+                  }
+                  placeholder="Beskriv eksisterende bad, underlag, sluk, fall, rørføringer og andre synlige forhold."
+                  rows={5}
+                />
+              </label>
 
-                <label className="sales-field sales-field-full">
-                  <span>Målinger</span>
-                  <textarea
-                    value={inspectionForm.measurements}
-                    disabled={photoRestoreBusy}
-                    onChange={(event) =>
-                      onUpdateInspectionForm("measurements", event.target.value)
-                    }
-                    placeholder="Eksempel: Rom 2,40 x 2,15 m. Takhøyde 2,42 m. Sluk 82 cm fra vegg."
-                    rows={4}
-                  />
-                </label>
+              <label className="sales-field sales-field-full">
+                <span>Målinger</span>
+                <textarea
+                  value={inspectionForm.measurements}
+                  disabled={photoRestoreBusy}
+                  onChange={(event) =>
+                    onUpdateInspectionForm("measurements", event.target.value)
+                  }
+                  placeholder="Eksempel: Rom 2,40 x 2,15 m. Takhøyde 2,42 m. Sluk 82 cm fra vegg."
+                  rows={4}
+                />
+              </label>
 
-                <label className="sales-field sales-field-full">
-                  <span>Faglige observasjoner</span>
-                  <textarea
-                    value={inspectionForm.observations}
-                    disabled={photoRestoreBusy}
-                    onChange={(event) =>
-                      onUpdateInspectionForm("observations", event.target.value)
-                    }
-                    placeholder="Forhold som må vurderes, avklares eller tas med videre i tilbudet."
-                    rows={5}
-                  />
-                </label>
-
-                <div className="sales-field sales-field-full">
-                  <span>Bilder fra befaring</span>
-                  <label
-                    className="sales-secondary-button"
-                    aria-disabled={busy ? "true" : undefined}
+              <div className="sales-field sales-field-full">
+                <span>Badskisse</span>
+                {!editableSketchAvailable && hasSavedSketchImage ? (
+                  <div
                     style={{
-                      width: "fit-content",
-                      opacity: busy ? 0.65 : 1,
-                      pointerEvents: busy ? "none" : "auto",
+                      marginBottom: 12,
+                      padding: 12,
+                      border: "1px solid #d7e4ea",
+                      borderRadius: 12,
+                      background: "#ffffff",
                     }}
                   >
-                    <Plus size={18} />
-                    {photoRestoreBusy
-                      ? "Gjenoppretter lokale bilder …"
-                      : photoReadBusy
-                        ? `Sikrer ${photoReadCount} bilde(r) lokalt …`
-                        : "Ta bilde eller velg bilder"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      multiple
-                      disabled={busy}
-                      onChange={handlePhotoSelection}
-                      style={{ display: "none" }}
+                    <strong>Lagret badskisse fra en annen enhet / tidligere lokal økt.</strong>
+                    <p className="sales-subtitle" style={{ marginTop: 6 }}>
+                      Skissen er dokumentert på saken. Tegner du en ny skisse her, erstatter den skissebildet ved neste lagring.
+                    </p>
+                    <img
+                      src={sketchPhoto.dataUrl}
+                      alt="Lagret badskisse"
+                      style={{ width: "100%", maxWidth: 720, marginTop: 10, borderRadius: 10, border: "1px solid #e0e7ea" }}
                     />
-                  </label>
-
-                  {photoRestoreBusy ? (
-                    <div
-                      role="status"
-                      style={{
-                        marginTop: 10,
-                        padding: "12px 14px",
-                        border: "1px solid #b9d9df",
-                        borderRadius: 12,
-                        background: "#f2fafb",
-                        fontWeight: 800,
-                      }}
-                    >
-                      ⏳ Kontrollerer lokalt sikrede befaringsbilder før skjemaet kan brukes.
-                    </div>
-                  ) : null}
-
-                  {photoReadBusy ? (
-                    <div
-                      role="status"
-                      style={{
-                        marginTop: 10,
-                        padding: "12px 14px",
-                        border: "1px solid #b9d9df",
-                        borderRadius: 12,
-                        background: "#f2fafb",
-                        fontWeight: 800,
-                      }}
-                    >
-                      ⏳ Sikrer {photoReadCount} bilde(r) på denne enheten. Vent til bildene vises nedenfor.
-                    </div>
-                  ) : null}
-
-                  {photoReadError ? (
-                    <div
-                      role="alert"
-                      style={{
-                        marginTop: 10,
-                        padding: "12px 14px",
-                        border: "1px solid #e8aaaa",
-                        borderRadius: 12,
-                        background: "#fff3f3",
-                        fontWeight: 800,
-                      }}
-                    >
-                      {photoReadError}
-                    </div>
-                  ) : null}
-
-                  {photos.length ? (
-                    <>
-                      <div
-                        style={{
-                          marginTop: 10,
-                          padding: "12px 14px",
-                          border: "1px solid #d7e4ea",
-                          borderRadius: 12,
-                          background: "#f8fbfc",
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        <strong>{photos.length} bilde(r) i befaringen.</strong>{" "}
-                        {localSafePhotoCount > 0 ? (
-                          <span>
-                            {localSafePhotoCount} nye bilde(r) er lokalt sikret på denne enheten og lastes til server når du trykker «Lagre befaringsnotat».
-                          </span>
-                        ) : storedPhotoCount > 0 ? (
-                          <span>Alle {storedPhotoCount} bilde(r) er lagret på saken.</span>
-                        ) : null}
-                        {unsafeLocalPhotoCount > 0 ? (
-                          <span>
-                            {" "}⚠ {unsafeLocalPhotoCount} eldre lokal(e) bildekopi(er) er ikke bekreftet i sikkerhetslageret ennå.
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <div className="sales-photo-grid">
-                        {photos.map((photo) => (
-                          <div className="sales-photo-card" key={photo.id}>
-                            <img src={photo.dataUrl} alt={photo.name || "Befaringsbilde"} />
-                            <button
-                              type="button"
-                              className="sales-secondary-button"
-                              disabled={busy}
-                              onClick={() => void handleRemovePhoto(photo)}
-                            >
-                              Fjern
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <p className="sales-subtitle">Ingen bilder registrert ennå.</p>
-                  )}
-                </div>
+                  </div>
+                ) : null}
+                <SalesBathroomSketch
+                  value={bathroomSketch}
+                  onChange={handleBathroomSketchChange}
+                  disabled={busy}
+                />
               </div>
 
-              <div className="sales-form-preview">
-                <h2>Oppsummering fra befaring</h2>
-                <div className="sales-preview-lines">
-                  <span>
-                    <ClipboardList size={16} />
-                    {inspectionForm.customerWishes
-                      ? "Kundens ønsker registrert"
-                      : "Kundens ønsker ikke registrert"}
-                  </span>
-                  <span>
-                    <CheckCircle2 size={16} />
-                    {inspectionForm.existingConditions
-                      ? "Eksisterende forhold registrert"
-                      : "Eksisterende forhold ikke registrert"}
-                  </span>
-                  <span>
-                    <MapPin size={16} />
-                    {inspectionForm.measurements
-                      ? "Målinger registrert"
-                      : "Målinger ikke registrert"}
-                  </span>
-                  <span>
-                    <Plus size={16} />
-                    {photos.length} bilde(r)
-                  </span>
-                </div>
-              </div>
+              <label className="sales-field sales-field-full">
+                <span>Faglige observasjoner</span>
+                <textarea
+                  value={inspectionForm.observations}
+                  disabled={photoRestoreBusy}
+                  onChange={(event) =>
+                    onUpdateInspectionForm("observations", event.target.value)
+                  }
+                  placeholder="Forhold som må vurderes, avklares eller tas med videre i tilbudet."
+                  rows={5}
+                />
+              </label>
 
-              {saveBusy ? (
-                <div
-                  role="status"
+              <div className="sales-field sales-field-full">
+                <span>Bilder fra befaring</span>
+                <label
+                  className="sales-secondary-button"
+                  aria-disabled={busy ? "true" : undefined}
                   style={{
-                    marginBottom: 14,
-                    padding: "14px 16px",
-                    border: "1px solid #8be4e8",
-                    borderRadius: 14,
-                    background: "#e9fafb",
-                    fontWeight: 800,
+                    width: "fit-content",
+                    opacity: busy ? 0.65 : 1,
+                    pointerEvents: busy ? "none" : "auto",
                   }}
                 >
-                  ⏳ Laster opp og lagrer befaringsnotatet. Ikke lukk siden før du er tilbake på saken.
-                </div>
-              ) : null}
-
-              <div className="sales-form-actions">
-                <button
-                  className="sales-secondary-button"
-                  type="button"
-                  disabled={busy}
-                  onClick={handleBack}
-                >
-                  Avbryt
-                </button>
-
-                <button
-                  className="sales-primary-button"
-                  type="submit"
-                  disabled={busy}
-                >
-                  <Save size={18} />
+                  <Plus size={18} />
                   {photoRestoreBusy
-                    ? "Vent – gjenoppretter bilder …"
+                    ? "Gjenoppretter lokale bilder …"
                     : photoReadBusy
-                      ? "Vent – sikrer bilder lokalt …"
-                      : saveBusy
-                        ? "Laster opp og lagrer …"
-                        : `Lagre befaringsnotat${photos.length ? ` · ${photos.length} bilde(r)` : ""}`}
-                </button>
+                      ? `Sikrer ${photoReadCount} bilde(r) lokalt …`
+                      : "Ta bilde eller velg bilder"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    multiple
+                    disabled={busy}
+                    onChange={handlePhotoSelection}
+                    style={{ display: "none" }}
+                  />
+                </label>
+
+                {photoRestoreBusy ? (
+                  <div role="status" style={{ marginTop: 10, padding: "12px 14px", border: "1px solid #b9d9df", borderRadius: 12, background: "#f2fafb", fontWeight: 800 }}>
+                    ⏳ Kontrollerer lokalt sikrede befaringsbilder før skjemaet kan brukes.
+                  </div>
+                ) : null}
+
+                {photoReadBusy ? (
+                  <div role="status" style={{ marginTop: 10, padding: "12px 14px", border: "1px solid #b9d9df", borderRadius: 12, background: "#f2fafb", fontWeight: 800 }}>
+                    ⏳ Sikrer {photoReadCount} bilde(r) på denne enheten. Vent til bildene vises nedenfor.
+                  </div>
+                ) : null}
+
+                {photoReadError ? (
+                  <div role="alert" style={{ marginTop: 10, padding: "12px 14px", border: "1px solid #e8aaaa", borderRadius: 12, background: "#fff3f3", fontWeight: 800 }}>
+                    {photoReadError}
+                  </div>
+                ) : null}
+
+                {photos.length ? (
+                  <>
+                    <div style={{ marginTop: 10, padding: "12px 14px", border: "1px solid #d7e4ea", borderRadius: 12, background: "#f8fbfc", lineHeight: 1.5 }}>
+                      <strong>{photos.length} bilde(r) i befaringen.</strong>{" "}
+                      {localSafePhotoCount > 0 ? (
+                        <span>{localSafePhotoCount} nye bilde(r) er lokalt sikret på denne enheten og lastes til server når du trykker «Lagre befaringsnotat».</span>
+                      ) : storedPhotoCount > 0 ? (
+                        <span>Alle {storedPhotoCount} bilde(r) er lagret på saken.</span>
+                      ) : null}
+                      {unsafeLocalPhotoCount > 0 ? (
+                        <span>{" "}⚠ {unsafeLocalPhotoCount} eldre lokal(e) bildekopi(er) er ikke bekreftet i sikkerhetslageret ennå.</span>
+                      ) : null}
+                    </div>
+
+                    <div className="sales-photo-grid">
+                      {photos.map((photo) => (
+                        <div className="sales-photo-card" key={photo.id}>
+                          <img src={photo.dataUrl} alt={photo.name || "Befaringsbilde"} />
+                          <button type="button" className="sales-secondary-button" disabled={busy} onClick={() => void handleRemovePhoto(photo)}>
+                            Fjern
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="sales-subtitle">Ingen vanlige bilder registrert ennå.</p>
+                )}
               </div>
-            </form>
-          </main>
-        </div>
+            </div>
+
+            <div className="sales-form-preview">
+              <h2>Oppsummering fra befaring</h2>
+              <div className="sales-preview-lines">
+                <span>
+                  <ClipboardList size={16} />
+                  {inspectionForm.customerWishes ? "Kundens ønsker registrert" : "Kundens ønsker ikke registrert"}
+                </span>
+                <span>
+                  <CheckCircle2 size={16} />
+                  {inspectionForm.existingConditions ? "Eksisterende forhold registrert" : "Eksisterende forhold ikke registrert"}
+                </span>
+                <span>
+                  <MapPin size={16} />
+                  {inspectionForm.measurements ? "Målinger registrert" : "Målinger ikke registrert"}
+                </span>
+                <span>
+                  <Plus size={16} />
+                  {photos.length} bilde(r){sketchPhoto ? " · badskisse registrert" : ""}
+                </span>
+              </div>
+            </div>
+
+            {saveBusy ? (
+              <div role="status" style={{ marginBottom: 14, padding: "14px 16px", border: "1px solid #8be4e8", borderRadius: 14, background: "#e9fafb", fontWeight: 800 }}>
+                ⏳ Laster opp og lagrer befaringsnotatet. Ikke lukk siden før du er tilbake på saken.
+              </div>
+            ) : null}
+
+            <div className="sales-form-actions">
+              <button className="sales-secondary-button" type="button" disabled={busy} onClick={handleBack}>
+                Avbryt
+              </button>
+
+              <button className="sales-primary-button" type="submit" disabled={busy}>
+                <Save size={18} />
+                {photoRestoreBusy
+                  ? "Vent – gjenoppretter bilder …"
+                  : photoReadBusy
+                    ? "Vent – sikrer bilder lokalt …"
+                    : saveBusy
+                      ? "Laster opp og lagrer …"
+                      : `Lagre befaringsnotat${photos.length ? ` · ${photos.length} bilde(r)` : ""}${sketchPhoto ? " · badskisse" : ""}`}
+              </button>
+            </div>
+          </form>
+        </main>
       </div>
+    </div>
   );
 }

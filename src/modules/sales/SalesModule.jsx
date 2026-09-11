@@ -1,4 +1,7 @@
-// Expo ProffDok – FASE 39B.2C / FASE 38A1 / FASE 37D1 / FASE 33B.4 / FASE 30D1 / FASE 30C3 / FASE 30C2
+// Expo ProffDok – FASE 42A / FASE 39B.2C / FASE 38A1 / FASE 37D1
+// FASE 42A gjør Sales robust når mobil Safari legger appen i dvale: aktiv sak og
+// befaringsnotat gjenåpnes etter reload/remount uten å omgå eksisterende lokal
+// kladd-/recoveryflyt. Ingen SQL/RLS/Storage-policy-endring.
 // FASE 39B.2C skiller vanlig inngang til Befaring/Tilbud fra faktisk side-reload:
 // vanlig inngang åpner alltid sakslisten, mens reload inne i Sales kan gjenåpne samme sak.
 // FASE 38A1 lar serverstyrt modultilgang avgjøre hvilke direkte tilbudstyper brukeren kan starte.
@@ -29,6 +32,9 @@ import {
 
 const SALES_RELOAD_TAB_KEY = "expo-proffdok:sales:restore-tab-after-reload";
 const SALES_RELOAD_NAVIGATION_KEY = "expo-proffdok:sales:restore-navigation-after-reload";
+const SALES_BACKGROUND_RESUME_KEY = "expo-proffdok:sales:background-resume-v1";
+const SALES_REOPEN_INSPECTION_KEY = "expo-proffdok:sales:reopen-inspection-after-reload";
+const SALES_BACKGROUND_RESUME_MAX_AGE_MS = 2 * 60 * 60 * 1000;
 const SALES_OVERVIEW_INTRO_MARKER = "salesOverviewIntro";
 
 function compactText(value = "") {
@@ -44,6 +50,16 @@ function salesStorageKeyForProps(props = {}) {
   });
 }
 
+function rememberInspectionReopen(requestId = "") {
+  const normalized = String(requestId || "").trim();
+  if (!normalized) return;
+  try {
+    window.sessionStorage?.setItem(SALES_REOPEN_INSPECTION_KEY, normalized);
+  } catch {
+    // Kun UX-gjenoppretting. Lokal inspeksjonskladd er fortsatt fasit.
+  }
+}
+
 function protectInspectionDraftNavigation(props = {}) {
   const salesStorageKey = salesStorageKeyForProps(props);
   const navigation = loadSalesNavigation(salesStorageKey);
@@ -52,6 +68,10 @@ function protectInspectionDraftNavigation(props = {}) {
     navigation?.mode === "inspection-note" &&
     navigation?.selectedRequestId
   ) {
+    // Core åpnes først på trygg saksdetalj. Wrapperen gjenåpner deretter
+    // befaringsnotatet via eksisterende openInspectionNote(), som laster lokal
+    // kladd/skisse på samme måte som et vanlig brukerklikk.
+    rememberInspectionReopen(navigation.selectedRequestId);
     saveSalesNavigation(
       salesStorageKey,
       "detail",
@@ -60,12 +80,45 @@ function protectInspectionDraftNavigation(props = {}) {
   }
 }
 
+function clearBackgroundResumeMarkers() {
+  try {
+    window.localStorage?.removeItem(SALES_BACKGROUND_RESUME_KEY);
+    window.sessionStorage?.removeItem(SALES_RELOAD_TAB_KEY);
+    window.sessionStorage?.removeItem(SALES_RELOAD_NAVIGATION_KEY);
+  } catch {
+    // UX-markører er valgfrie.
+  }
+}
+
 function consumeSalesReloadNavigationMarker(props = {}) {
   if (props.integrationMode !== "app") return false;
+  const salesStorageKey = salesStorageKeyForProps(props);
+
   try {
-    const shouldRestore =
+    let shouldRestore =
       window.sessionStorage?.getItem(SALES_RELOAD_NAVIGATION_KEY) === "1";
+
     window.sessionStorage?.removeItem(SALES_RELOAD_NAVIGATION_KEY);
+    window.sessionStorage?.removeItem(SALES_RELOAD_TAB_KEY);
+
+    if (!shouldRestore) {
+      const raw = window.localStorage?.getItem(SALES_BACKGROUND_RESUME_KEY);
+      if (raw) {
+        try {
+          const marker = JSON.parse(raw);
+          const age = Date.now() - Number(marker?.at || 0);
+          shouldRestore = Boolean(
+            marker?.storageKey === salesStorageKey &&
+              age >= 0 &&
+              age <= SALES_BACKGROUND_RESUME_MAX_AGE_MS
+          );
+        } catch {
+          shouldRestore = false;
+        }
+      }
+    }
+
+    window.localStorage?.removeItem(SALES_BACKGROUND_RESUME_KEY);
     return shouldRestore;
   } catch {
     return false;
@@ -85,15 +138,20 @@ function prepareSalesEntryNavigation(props = {}) {
   }
 
   // Vanlig klikk på Befaring/Tilbud skal alltid lande på oversikten. Det er kun
-  // en reell browser-reload fra Sales som får gjenåpne sist valgte sak.
+  // reload/dvale fra Sales som får gjenåpne sist valgte sak.
   saveSalesNavigation(salesStorageKeyForProps(props), "list", null);
 }
 
 function markSalesTabForReload(props = {}) {
   if (props.integrationMode !== "app") return;
   try {
+    const storageKey = salesStorageKeyForProps(props);
     window.sessionStorage?.setItem(SALES_RELOAD_TAB_KEY, "1");
     window.sessionStorage?.setItem(SALES_RELOAD_NAVIGATION_KEY, "1");
+    window.localStorage?.setItem(
+      SALES_BACKGROUND_RESUME_KEY,
+      JSON.stringify({ at: Date.now(), storageKey })
+    );
   } catch {
     // Engangsmarkørene påvirker kun navigasjonshjelp.
   }
@@ -233,12 +291,26 @@ export default function SalesModule(props) {
       beginOfferDraftHydrationCycle();
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        // iOS/Safari sender ikke alltid en klassisk reload før appen blir kastet
+        // fra minnet. Merk aktiv Sales-økt allerede når telefonen går i bakgrunnen.
+        markSalesTabForReload(props);
+        return;
+      }
+
+      // Dersom samme side overlevde dvalen, skal markøren ikke påvirke et senere
+      // bevisst fanebytte inne i appen.
+      clearBackgroundResumeMarkers();
+    };
+
     window.addEventListener(
       "expo-proffdok-sales-rehydrate",
       rehydrateSalesModule
     );
     window.addEventListener("beforeunload", blockPreHydrationUnloadSave);
     window.addEventListener("pagehide", blockPreHydrationUnloadSave);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener(
@@ -247,6 +319,7 @@ export default function SalesModule(props) {
       );
       window.removeEventListener("beforeunload", blockPreHydrationUnloadSave);
       window.removeEventListener("pagehide", blockPreHydrationUnloadSave);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
@@ -273,6 +346,57 @@ export default function SalesModule(props) {
       window.removeEventListener(MODULE_ACCESS_EVENT, syncAccess);
     };
   }, [props.integrationMode, props.supabaseClient, props.authUser?.id]);
+
+  useEffect(() => {
+    if (props.integrationMode !== "app") return undefined;
+
+    let requestId = "";
+    try {
+      requestId = String(window.sessionStorage?.getItem(SALES_REOPEN_INSPECTION_KEY) || "").trim();
+    } catch {
+      requestId = "";
+    }
+    if (!requestId) return undefined;
+
+    let cancelled = false;
+    let timer = null;
+    let attempts = 0;
+
+    const tryReopenInspection = () => {
+      if (cancelled) return;
+      attempts += 1;
+
+      const navigation = loadSalesNavigation(salesStorageKeyForProps(props));
+      const correctRequest = String(navigation?.selectedRequestId || "") === requestId;
+      const buttons = Array.from(document.querySelectorAll("button"));
+      const inspectionButton = correctRequest
+        ? buttons.find((button) => {
+            const text = compactText(button.textContent).toLowerCase();
+            return text === "befaringsnotat" || text.includes("fullfør befaringsnotat");
+          })
+        : null;
+
+      if (inspectionButton instanceof HTMLButtonElement) {
+        try {
+          window.sessionStorage?.removeItem(SALES_REOPEN_INSPECTION_KEY);
+        } catch {
+          // Markøren er kun UX-støtte.
+        }
+        inspectionButton.click();
+        return;
+      }
+
+      if (attempts < 50) {
+        timer = window.setTimeout(tryReopenInspection, 120);
+      }
+    };
+
+    timer = window.setTimeout(tryReopenInspection, 80);
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [instanceKey, props.integrationMode, props.authUser?.id, props.profile?.company_name, props.profile?.companyName]);
 
   useEffect(() => {
     if (props.integrationMode !== "app") return undefined;
@@ -311,9 +435,6 @@ export default function SalesModule(props) {
   const canUseStoreOffers =
     canUseSales && hasModuleAccess(moduleAccess, "store_offers");
 
-  // Startsidens eksisterende + Nytt tilbud-signal skal fortsatt fungere. Dersom
-  // brukeren også har Butikktilbud, stopper wrapperen signalet før Core og lar
-  // brukeren velge type. Uten Butikktilbud går signalet urørt til ordinær flyt.
   useEffect(() => {
     if (
       props.integrationMode !== "app" ||
