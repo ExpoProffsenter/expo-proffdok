@@ -423,7 +423,7 @@ export default function SalesInspectionNote({
     if (
       hasUnsavedChanges &&
       !window.confirm(
-        "Du har endringer, skisse eller bilder som ikke er lagret varig på server ennå. Vil du gå tilbake uten å fullføre befaringsnotatet? Lokalt sikrede bilder og skissedraft beholdes på denne enheten."
+        "Du har endringer, skisse eller bilder som ikke er lagret varig på server ennå. Vil du gå tilbake uten å fullføre befaringsnotatet? Lokalt sikrede bilder beholdes på denne enheten; skissedraften beholdes også lokalt."
       )
     ) {
       return;
