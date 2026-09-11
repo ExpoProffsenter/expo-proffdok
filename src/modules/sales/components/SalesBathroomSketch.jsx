@@ -1,7 +1,7 @@
 // Expo ProffDok – FASE 42A
 // Badskisse Light: fullskjerm-popup, 90°-vegger, dragbare hjørner,
 // mål som styrer geometri, proporsjonale dør-/vindusåpninger,
-// flyttbar målsatt kasse, installasjonsmarkører og valgfri frihånd.
+// flyttbar målsatt kasse, automatisk rom-zoom, installasjonsmarkører og valgfri frihånd.
 // Ingen SQL/RLS/Storage-policy-endring.
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -155,8 +155,8 @@ export function normalizeBathroomSketch(value) {
           id: String(box?.id || newId("box")),
           x: clamp(numberOr(box?.x, WIDTH / 2), 0, WIDTH),
           y: clamp(numberOr(box?.y, HEIGHT / 2), 0, HEIGHT),
-          widthMm: String(box?.widthMm || "600"),
-          depthMm: String(box?.depthMm || "300"),
+          widthMm: String(box?.widthMm ?? "600"),
+          depthMm: String(box?.depthMm ?? "300"),
           label: String(box?.label || "Kasse"),
           snap: String(box?.snap || "free"),
           createdAt: numberOr(box?.createdAt, 0),
@@ -238,6 +238,67 @@ function boxSizePx(box, walls) {
 
 function boxDimensionLabel(box) {
   return `${escapeXml(box?.label || "Kasse")} ${cleanMm(box?.widthMm) || "?"}×${cleanMm(box?.depthMm) || "?"} mm`;
+}
+
+function sketchViewBox(sketch) {
+  const walls = Array.isArray(sketch?.walls) ? sketch.walls : [];
+  const measuredWallCount = walls.filter((wall) => mmValue(wall?.lengthMm) >= 100).length;
+  if (walls.length < 3 || measuredWallCount < 2) {
+    return `0 0 ${WIDTH} ${HEIGHT}`;
+  }
+
+  const points = [];
+  walls.forEach((wall) => {
+    points.push({ x: wall.x1, y: wall.y1 }, { x: wall.x2, y: wall.y2 });
+  });
+
+  (sketch.boxes || []).forEach((box) => {
+    const size = boxSizePx(box, walls);
+    points.push(
+      { x: box.x - size.width / 2, y: box.y - size.depth / 2 },
+      { x: box.x + size.width / 2, y: box.y + size.depth / 2 }
+    );
+  });
+
+  (sketch.markers || []).forEach((marker) => {
+    points.push({ x: marker.x - 24, y: marker.y - 24 }, { x: marker.x + 24, y: marker.y + 24 });
+  });
+
+  (sketch.strokes || []).forEach((stroke) => {
+    (stroke.points || []).forEach((point) => points.push(point));
+  });
+
+  const xs = points.map((point) => point.x);
+  const ys = points.map((point) => point.y);
+  let minX = Math.min(...xs);
+  let maxX = Math.max(...xs);
+  let minY = Math.min(...ys);
+  let maxY = Math.max(...ys);
+  const rawWidth = Math.max(1, maxX - minX);
+  const rawHeight = Math.max(1, maxY - minY);
+  const padding = clamp(Math.max(rawWidth, rawHeight) * 0.16, 48, 90);
+
+  minX -= padding;
+  maxX += padding;
+  minY -= padding;
+  maxY += padding;
+
+  let viewWidth = Math.max(220, maxX - minX);
+  let viewHeight = Math.max(150, maxY - minY);
+  const targetAspect = WIDTH / HEIGHT;
+  const currentAspect = viewWidth / viewHeight;
+
+  if (currentAspect < targetAspect) {
+    const targetWidth = viewHeight * targetAspect;
+    minX -= (targetWidth - viewWidth) / 2;
+    viewWidth = targetWidth;
+  } else if (currentAspect > targetAspect) {
+    const targetHeight = viewWidth / targetAspect;
+    minY -= (targetHeight - viewHeight) / 2;
+    viewHeight = targetHeight;
+  }
+
+  return `${minX} ${minY} ${viewWidth} ${viewHeight}`;
 }
 
 function closestPointOnWall(wall, point) {
@@ -446,15 +507,14 @@ export function bathroomSketchDataUrl(value) {
     .map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls))
     .join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
-    <rect width="100%" height="100%" fill="#fff" />
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="${sketchViewBox(sketch)}">
+    <rect x="-2000" y="-2000" width="5000" height="5000" fill="#fff" />
     ${grid.join("")}
     ${sketch.strokes.map(strokeMarkup).join("")}
     ${sketch.boxes.map((box) => boxMarkup(box, sketch.walls)).join("")}
     ${walls}
     ${openings}
     ${sketch.markers.map(markerMarkup).join("")}
-    <text x="18" y="${HEIGHT - 18}" font-size="13" fill="#5d6a70">Badskisse – Expo ProffDok</text>
   </svg>`;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
@@ -850,6 +910,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
 
   const wallsById = new Map(sketch.walls.map((wall) => [wall.id, wall]));
   const previewUrl = bathroomSketchDataUrl(sketch);
+  const editorViewBox = sketchViewBox(sketch);
 
   function renderEditor() {
     return (
@@ -929,7 +990,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
         }}>
           <svg
             ref={svgRef}
-            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+            viewBox={editorViewBox}
             preserveAspectRatio="xMidYMid meet"
             role="img"
             aria-label="Redigerbar badskisse"
@@ -939,7 +1000,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
             onPointerCancel={finishPointerInteraction}
             style={{ display: "block", width: "100%", height: "100%", maxWidth: "100%" }}
           >
-            <rect width={WIDTH} height={HEIGHT} fill="#fff" />
+            <rect x="-2000" y="-2000" width="5000" height="5000" fill="#fff" />
             {Array.from({ length: Math.floor(WIDTH / GRID) + 1 }, (_, index) => (
               <line key={`gx-${index}`} x1={index * GRID} y1="0" x2={index * GRID} y2={HEIGHT} stroke="#e8eef1" strokeWidth="1" pointerEvents="none" />
             ))}
