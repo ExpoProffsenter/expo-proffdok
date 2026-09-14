@@ -4,6 +4,7 @@ import {
   clearStructurallyEmptyInspectionDraftsForServerRows,
   hasMeaningfulInspectionContent,
   mapSalesServerRowsToRequests,
+  mergeInspectionMediaForDisplay,
   mergeSalesServerRowsIntoCache,
   shouldGateSalesCoreUntilServerCache,
 } from "../src/modules/sales/services/salesServerCacheHydration.mjs";
@@ -40,7 +41,9 @@ function memoryStorage(initial = {}) {
 }
 
 const wrapperPath = "src/modules/sales/SalesModule.jsx";
+const inspectionNotePath = "src/modules/sales/components/SalesInspectionNote.jsx";
 const wrapper = readFileSync(wrapperPath, "utf8");
+const inspectionNote = readFileSync(inspectionNotePath, "utf8");
 
 const serverRow = {
   request_ref: "F-2026-0043",
@@ -53,10 +56,25 @@ const serverRow = {
     inspectionMeasurements: "Rommet måler 3x2 meter.",
     inspectionObservations:
       "Sluket må flyttes. Vindu bør byttes og slagretning på dør vurderes.",
-    inspectionPhotos: Array.from({ length: 4 }, (_, index) => ({
-      id: `photo-${index + 1}`,
-      path: `demo/photo-${index + 1}.jpg`,
-    })),
+    inspectionPhotos: [
+      {
+        id: "photo-1",
+        path: "demo/photo-1.jpg",
+      },
+      {
+        id: "photo-2",
+        path: "demo/photo-2.jpg",
+      },
+      {
+        id: "photo-3",
+        path: "demo/photo-3.jpg",
+      },
+      {
+        id: "bathroom-sketch-F-2026-0043",
+        name: "Badskisse.svg",
+        path: "demo/badskisse.jpg",
+      },
+    ],
     offerTitle: "Tilbud – Modernisering av bad",
     offerLines: Array.from({ length: 15 }, (_, index) => ({
       id: `line-${index + 1}`,
@@ -181,6 +199,54 @@ requireCondition(
   "Serverhydrering: tom kladd for en faktisk ny befaring ble feilaktig slettet."
 );
 
+const currentInspectionMedia = [
+  { id: "photo-1", path: "demo/photo-1.jpg", dataUrl: "" },
+  {
+    id: "bathroom-sketch-F-2026-0043",
+    name: "Badskisse.svg",
+    path: "demo/badskisse.jpg",
+    dataUrl: "",
+  },
+  {
+    id: "local-only-photo",
+    name: "Nytt lokalt bilde.jpg",
+    dataUrl: "blob:local-safe-copy",
+    localDraftKey: "indexeddb:local-only-photo",
+  },
+];
+const serverInspectionMedia = [
+  {
+    id: "photo-1",
+    path: "demo/photo-1.jpg",
+    dataUrl: "https://signed.example/photo-1.jpg",
+  },
+  {
+    id: "bathroom-sketch-F-2026-0043",
+    name: "Badskisse.svg",
+    path: "demo/badskisse.jpg",
+    dataUrl: "https://signed.example/badskisse.jpg",
+  },
+];
+const displayMedia = mergeInspectionMediaForDisplay(
+  currentInspectionMedia,
+  serverInspectionMedia
+);
+requireCondition(
+  displayMedia.find((item) => item.id === "photo-1")?.dataUrl ===
+    "https://signed.example/photo-1.jpg",
+  "Serverhydrering: lagret befaringsbilde får ikke fersk signert URL i åpent skjema."
+);
+requireCondition(
+  displayMedia.find((item) => item.id === "bathroom-sketch-F-2026-0043")
+    ?.dataUrl === "https://signed.example/badskisse.jpg",
+  "Serverhydrering: lagret Badskisse-bilde får ikke fersk signert URL i åpent skjema."
+);
+requireCondition(
+  displayMedia.find((item) => item.id === "local-only-photo")?.dataUrl ===
+    "blob:local-safe-copy",
+  "Serverhydrering: lokalt usynkronisert befaringsbilde ble overskrevet av servervisningen."
+);
+
 requireCondition(
   shouldGateSalesCoreUntilServerCache({
     integrationMode: "app",
@@ -226,6 +292,11 @@ requireText(
   "Henter siste lagrede salgssaker",
   `${wrapperPath}: bruker får ingen trygg ventestatus mens serverdata hentes.`
 );
+requireText(
+  inspectionNote,
+  "mergeInspectionMediaForDisplay",
+  `${inspectionNotePath}: åpent befaringsnotat kan ikke ta imot ferske signerte server-URL-er for bilder/Badskisse.`
+);
 
 if (failures.length) {
   console.error("❌ Expo ProffDok Sales server hydration check feilet:");
@@ -234,5 +305,5 @@ if (failures.length) {
 }
 
 console.log(
-  "✅ Expo ProffDok Sales server hydration check OK – ny nettleser/stale cache må laste tilbud og befaringsnotat fra server før editor mountes"
+  "✅ Expo ProffDok Sales server hydration check OK – ny nettleser/stale cache må laste tilbud, befaringsnotat, bilder og Badskisse fra server uten å miste lokale kladder"
 );
