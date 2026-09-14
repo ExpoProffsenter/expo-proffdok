@@ -91,10 +91,10 @@ const BASE_SECTIONS = [
       "Åpne befaringsnotatet og velg Badskisse.",
       "Tegn vegger med 90° som standard. Veggkjeden fortsetter fra forrige endepunkt og kan lukkes tilbake til start.",
       "Legg inn faktiske veggmål i millimeter. Målene styrer proporsjonene i skissen, og hjørner kan flyttes ved behov.",
-      "Plasser dør og vindu på vegg og angi mål. Vindu kan registreres med høyde fra ferdig gulv til underkant.",
+      "Plasser dør og vindu på vegg og fyll inn målene i de tomme målfeltene. Vindu kan også registreres med høyde fra ferdig gulv til underkant.",
       "Dør kan få korrekt hengsling og slagretning.",
-      "Marker sluk, avløp, kaldt vann og varmt vann, og legg inn målbar kasse/sjakt som kan flyttes og snappes mot vegg eller hjørne.",
-      "WC har standard størrelse. Servant, dusj og badekar kan plasseres, flyttes, roteres der det er relevant og målsattes.",
+      "Sluk, avløp, kaldt vann og varmt vann kan plasseres fritt og dras senere. Avløp starter som grønn Ø110 mm, kaldt vann som blå Ø30 mm og varmt vann som rød Ø30 mm. Markørene kan også plasseres inne i kasse/sjakt eller overlappe utstyr.",
+      "WC har standard størrelse. Servant, dusj og badekar kan plasseres, flyttes, roteres der det er relevant og målsattes. Utstyr snapper først når det føres tett inntil vegg eller hjørne, slik at fri avstand kan beholdes.",
       "Trykk på et objekt for å velge og redigere det. Når befaringsnotatet lagres følger ferdig Badskisse med som befaringsbilde."
     ],
     [
