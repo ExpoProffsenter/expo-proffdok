@@ -39,8 +39,9 @@ if (component) {
   requireText(component, "function placeWallAttachedFixtureAtSideDistance", `${componentPath}: eksakt flytting etter sideveggmål mangler.`);
   requireText(component, "Senteravstand fra nærmeste sidevegg (mm)", `${componentPath}: felt for sideveggmål mangler.`);
   requireText(component, "const normal = wallExteriorNormal(data.wall, walls);\n  const offset = 18;", `${componentPath}: sideveggmål ligger ikke utvendig langs aktuell vegg.`);
-  if (component.includes("<FixtureWallOffsetDimension box={box}")) failures.push(`${componentPath}: avstand fra bakvegg skal ikke tegnes inne i skissen.`);
-  if (component.includes("fixtureWallOffsetDimensionMarkup(box, sketch.walls)")) failures.push(`${componentPath}: eksportert skisse tegner fortsatt avstand fra bakvegg inne i rommet.`);
+  requireText(component, "<FixtureWallOffsetDimension box={box}", `${componentPath}: avstand fra vegg vises ikke som utvendig målbånd i editor.`);
+  requireText(component, "fixtureWallOffsetDimensionMarkup(box, sketch.walls)", `${componentPath}: eksportert skisse mangler utvendig veggavstand.`);
+  requireText(component, "sideData.anchor === \"start\" ? -18 : 18", `${componentPath}: veggavstand flyttes ikke utenfor nærmeste sidehjørne.`);
   requireText(component, "showFixtureDimensions && !isFixtureBox(box)", `${componentPath}: produktstørrelser skjules ikke fra selve skissen.`);
   requireText(component, "placeholder=\"0\"", `${componentPath}: nullavstand vises ikke som placeholder.`);
   requireText(component, "if (!wallAttached) {", `${componentPath}: WC/servant er ikke eksplisitt unntatt hjørnesnap.`);
@@ -75,7 +76,7 @@ if (help) {
   requireText(help, "fyll inn målene i de tomme målfeltene", `${helpPath}: Hjelp beskriver ikke forbedret målvisning.`);
   requireText(help, "åpningsmål nærmest veggen og totalmålet lenger ut", `${helpPath}: Hjelp beskriver ikke separate målbånd for åpning og vegg.`);
   requireText(help, "Senteravstand fra nærmeste sidevegg vises som et utvendig målbånd", `${helpPath}: Hjelp beskriver ikke utvendig sideveggmål for WC/servant.`);
-  requireText(help, "Avstand fra vegg vises i redigeringsboksen", `${helpPath}: Hjelp beskriver ikke at bakveggavstand er flyttet ut av skissen.`);
+  requireText(help, "Avstand fra vegg og Senteravstand fra nærmeste sidevegg vises som utvendige målbånd", `${helpPath}: Hjelp beskriver ikke utvendige plasseringsmål for WC/servant.`);
   requireText(help, "Bruk Målvisning for å slå Vegger, Dør / vindu og Utstyr / installasjoner av eller på hver for seg", `${helpPath}: Hjelp beskriver ikke valgbar målvisning.`);
 }
 

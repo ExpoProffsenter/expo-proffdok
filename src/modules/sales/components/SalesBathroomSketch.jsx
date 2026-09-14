@@ -875,20 +875,21 @@ function FixtureWallOffsetDimension({ box, walls }) {
   if (!isWallAttachedFixture(box) || !box?.snapWallId) return null;
   const wall = (walls || []).find((item) => item.id === box.snapWallId);
   const offsetMm = mmValue(box?.wallOffsetMm);
-  if (!wall || offsetMm <= 0) return null;
-  const projected = closestPointOnWall(wall, { x: box.x, y: box.y });
-  const interior = wallInteriorNormal(wall, walls);
-  const backPoint = shiftedPoint(projected, interior, offsetMm * measuredPxPerMm(walls));
-  const mid = { x: (projected.x + backPoint.x) / 2, y: (projected.y + backPoint.y) / 2 };
+  const sideData = fixtureSideDistanceData(box, walls);
+  if (!wall || !sideData || offsetMm <= 0) return null;
   const wallLength = wallPixelLength(wall) || 1;
   const tangent = { x: (wall.x2 - wall.x1) / wallLength, y: (wall.y2 - wall.y1) / wallLength };
+  const interior = wallInteriorNormal(wall, walls);
+  const base = shiftedPoint(sideData.sidePoint, tangent, sideData.anchor === "start" ? -18 : 18);
+  const end = shiftedPoint(base, interior, offsetMm * measuredPxPerMm(walls));
+  const mid = { x: (base.x + end.x) / 2, y: (base.y + end.y) / 2 };
   const tick = 4;
   const tickLine = (point, key) => <line key={key} x1={point.x - tangent.x * tick} y1={point.y - tangent.y * tick} x2={point.x + tangent.x * tick} y2={point.y + tangent.y * tick} stroke="#75858c" strokeWidth="1" />;
   return (
     <g pointerEvents="none">
-      <line x1={projected.x} y1={projected.y} x2={backPoint.x} y2={backPoint.y} stroke="#75858c" strokeWidth="1" />
-      {tickLine(projected, "wa")}{tickLine(backPoint, "wb")}
-      <SvgTextBadge x={mid.x} y={mid.y} text={String(offsetMm)} fontSize={7} fontWeight={700} color="#58666c" />
+      <line x1={base.x} y1={base.y} x2={end.x} y2={end.y} stroke="#75858c" strokeWidth="1" />
+      {tickLine(base, "wa")}{tickLine(end, "wb")}
+      <SvgTextBadge x={mid.x} y={mid.y} text={String(offsetMm)} fontSize={7} fontWeight={700} color="#58666c" angle={readableWallTextAngle({ x1: base.x, y1: base.y, x2: end.x, y2: end.y })} />
     </g>
   );
 }
@@ -991,16 +992,18 @@ function fixtureWallOffsetDimensionMarkup(box, walls) {
   if (!isWallAttachedFixture(box) || !box?.snapWallId) return "";
   const wall = (walls || []).find((item) => item.id === box.snapWallId);
   const offsetMm = mmValue(box?.wallOffsetMm);
-  if (!wall || offsetMm <= 0) return "";
-  const projected = closestPointOnWall(wall, { x: box.x, y: box.y });
-  const interior = wallInteriorNormal(wall, walls);
-  const backPoint = shiftedPoint(projected, interior, offsetMm * measuredPxPerMm(walls));
-  const mid = { x: (projected.x + backPoint.x) / 2, y: (projected.y + backPoint.y) / 2 };
+  const sideData = fixtureSideDistanceData(box, walls);
+  if (!wall || !sideData || offsetMm <= 0) return "";
   const wallLength = wallPixelLength(wall) || 1;
   const tangent = { x: (wall.x2 - wall.x1) / wallLength, y: (wall.y2 - wall.y1) / wallLength };
+  const interior = wallInteriorNormal(wall, walls);
+  const base = shiftedPoint(sideData.sidePoint, tangent, sideData.anchor === "start" ? -18 : 18);
+  const end = shiftedPoint(base, interior, offsetMm * measuredPxPerMm(walls));
+  const mid = { x: (base.x + end.x) / 2, y: (base.y + end.y) / 2 };
   const tick = 4;
   const tickSvg = (point) => `<line x1="${point.x - tangent.x * tick}" y1="${point.y - tangent.y * tick}" x2="${point.x + tangent.x * tick}" y2="${point.y + tangent.y * tick}" stroke="#75858c" stroke-width="1"/>`;
-  return `<g><line x1="${projected.x}" y1="${projected.y}" x2="${backPoint.x}" y2="${backPoint.y}" stroke="#75858c" stroke-width="1"/>${tickSvg(projected)}${tickSvg(backPoint)}${svgTextBadgeMarkup(mid.x, mid.y, String(offsetMm), 7, 700, "#58666c")}</g>`;
+  const angle = readableWallTextAngle({ x1: base.x, y1: base.y, x2: end.x, y2: end.y });
+  return `<g><line x1="${base.x}" y1="${base.y}" x2="${end.x}" y2="${end.y}" stroke="#75858c" stroke-width="1"/>${tickSvg(base)}${tickSvg(end)}${svgTextBadgeMarkup(mid.x, mid.y, String(offsetMm), 7, 700, "#58666c", angle)}</g>`;
 }
 
 function fixtureSideDimensionMarkup(box, walls) {
@@ -1047,7 +1050,7 @@ export function bathroomSketchDataUrl(value) {
     return `<polyline points="${points}" fill="none" stroke="#172126" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;
   }).join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="${sketchViewBox(sketch)}"><rect x="-2000" y="-2000" width="5000" height="5000" fill="#fff"/>${grid.join("")}${strokes}${walls}${sketch.openings.map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls, dimensions.openings)).join("")}${sketch.boxes.map((box) => `${dimensions.fixtures ? fixtureSideDimensionMarkup(box, sketch.walls) : ""}${boxMarkup(box, sketch.walls, dimensions.fixtures)}`).join("")}${sketch.markers.map((marker) => markerMarkup(marker, sketch.walls, dimensions.fixtures)).join("")}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="${sketchViewBox(sketch)}"><rect x="-2000" y="-2000" width="5000" height="5000" fill="#fff"/>${grid.join("")}${strokes}${walls}${sketch.openings.map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls, dimensions.openings)).join("")}${sketch.boxes.map((box) => `${dimensions.fixtures ? `${fixtureWallOffsetDimensionMarkup(box, sketch.walls)}${fixtureSideDimensionMarkup(box, sketch.walls)}` : ""}${boxMarkup(box, sketch.walls, dimensions.fixtures)}`).join("")}${sketch.markers.map((marker) => markerMarkup(marker, sketch.walls, dimensions.fixtures)).join("")}</svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
@@ -1877,7 +1880,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
         const showFixtureDimensions = (sketch.dimensions || DEFAULT_DIMENSION_VISIBILITY).fixtures !== false;
         return (
           <g key={box.id}>
-            {showFixtureDimensions && isWallAttachedFixture(box) ? <FixtureSideDimension box={box} walls={sketch.walls} /> : null}
+            {showFixtureDimensions && isWallAttachedFixture(box) ? <><FixtureWallOffsetDimension box={box} walls={sketch.walls} /><FixtureSideDimension box={box} walls={sketch.walls} /></> : null}
             <g transform={`translate(${box.x} ${box.y})`} onPointerDown={(event) => startBoxPointer(event, box)}>
                   <rect x={-size.width / 2 - 10} y={-size.depth / 2 - 10} width={size.width + 20} height={size.depth + 20} fill="transparent" stroke="none" pointerEvents="all" />
                   {isWallAttachedFixture(box) ? (
