@@ -896,8 +896,8 @@ function FixtureWallOffsetDimension({ box, walls }) {
 function FixtureSideDimension({ box, walls }) {
   const data = fixtureSideDistanceData(box, walls);
   if (!data) return null;
-  const normal = wallInteriorNormal(data.wall, walls);
-  const offset = 14;
+  const normal = wallExteriorNormal(data.wall, walls);
+  const offset = 18;
   const tick = 4;
   const a = shiftedPoint(data.sidePoint, normal, offset);
   const b = shiftedPoint(data.projected, normal, offset);
@@ -1006,8 +1006,8 @@ function fixtureWallOffsetDimensionMarkup(box, walls) {
 function fixtureSideDimensionMarkup(box, walls) {
   const data = fixtureSideDistanceData(box, walls);
   if (!data) return "";
-  const normal = wallInteriorNormal(data.wall, walls);
-  const offset = 14;
+  const normal = wallExteriorNormal(data.wall, walls);
+  const offset = 18;
   const tick = 4;
   const a = shiftedPoint(data.sidePoint, normal, offset);
   const b = shiftedPoint(data.projected, normal, offset);
@@ -1047,7 +1047,7 @@ export function bathroomSketchDataUrl(value) {
     return `<polyline points="${points}" fill="none" stroke="#172126" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;
   }).join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="${sketchViewBox(sketch)}"><rect x="-2000" y="-2000" width="5000" height="5000" fill="#fff"/>${grid.join("")}${strokes}${walls}${sketch.openings.map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls, dimensions.openings)).join("")}${sketch.boxes.map((box) => `${dimensions.fixtures ? `${fixtureWallOffsetDimensionMarkup(box, sketch.walls)}${fixtureSideDimensionMarkup(box, sketch.walls)}` : ""}${boxMarkup(box, sketch.walls, dimensions.fixtures)}`).join("")}${sketch.markers.map((marker) => markerMarkup(marker, sketch.walls, dimensions.fixtures)).join("")}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="${sketchViewBox(sketch)}"><rect x="-2000" y="-2000" width="5000" height="5000" fill="#fff"/>${grid.join("")}${strokes}${walls}${sketch.openings.map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls, dimensions.openings)).join("")}${sketch.boxes.map((box) => `${dimensions.fixtures ? fixtureSideDimensionMarkup(box, sketch.walls) : ""}${boxMarkup(box, sketch.walls, dimensions.fixtures)}`).join("")}${sketch.markers.map((marker) => markerMarkup(marker, sketch.walls, dimensions.fixtures)).join("")}</svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
@@ -1877,7 +1877,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
         const showFixtureDimensions = (sketch.dimensions || DEFAULT_DIMENSION_VISIBILITY).fixtures !== false;
         return (
           <g key={box.id}>
-            {showFixtureDimensions && isWallAttachedFixture(box) ? <><FixtureWallOffsetDimension box={box} walls={sketch.walls} /><FixtureSideDimension box={box} walls={sketch.walls} /></> : null}
+            {showFixtureDimensions && isWallAttachedFixture(box) ? <FixtureSideDimension box={box} walls={sketch.walls} /> : null}
             <g transform={`translate(${box.x} ${box.y})`} onPointerDown={(event) => startBoxPointer(event, box)}>
                   <rect x={-size.width / 2 - 10} y={-size.depth / 2 - 10} width={size.width + 20} height={size.depth + 20} fill="transparent" stroke="none" pointerEvents="all" />
                   {isWallAttachedFixture(box) ? (
