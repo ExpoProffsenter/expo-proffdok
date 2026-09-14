@@ -65,10 +65,20 @@ assert(
   "ÅVP-filteret skal tåle små bokstaver og omkringliggende mellomrom."
 );
 
+const avpZeroFields = [...baseFields];
+avpZeroFields[0] = "ÅVP Oras";
+avpZeroFields[1] = "AVP-ZERO";
+avpZeroFields[4] = "0,00";
+const avpZero = parseStoreCatalogLine(avpZeroFields.join(";"), 5);
+assert(
+  avpZero.status === "skipped_zero_price",
+  "ÅVP-vare med 0-pris skal fortsatt telles i eksisterende 0-pris-kategori, ikke dobbelt som ÅVP."
+);
+
 const normalGeberitFields = [...baseFields];
 normalGeberitFields[0] = "Geberit";
 normalGeberitFields[1] = "GEB-001";
-const normalGeberit = parseStoreCatalogLine(normalGeberitFields.join(";"), 5);
+const normalGeberit = parseStoreCatalogLine(normalGeberitFields.join(";"), 6);
 assert(
   normalGeberit.status === "accepted",
   "vanlig Geberit uten ÅVP-prefiks skal fortsatt importeres."
@@ -79,7 +89,7 @@ wrongFlagFields[1] = "1001026";
 wrongFlagFields[12] = "0";
 wrongFlagFields[13] = "0";
 wrongFlagFields[14] = "1";
-const wrongFlag = parseStoreCatalogLine(wrongFlagFields.join(";"), 6);
+const wrongFlag = parseStoreCatalogLine(wrongFlagFields.join(";"), 7);
 assert(
   wrongFlag.status === "accepted",
   "det er kun Cordels tredje statusflagg som skal tolkes som Utgått."
