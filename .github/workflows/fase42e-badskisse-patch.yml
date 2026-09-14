@@ -17,14 +17,17 @@ jobs:
         with:
           ref: feature/fase42e-badskisse-forbedringer
           fetch-depth: 0
+      - name: Correct temporary patch anchors
+        run: python scripts/temp-fase42e-fix-patch.py
       - name: Apply targeted Badskisse patch
         run: python scripts/temp-fase42e-badskisse-patch.py
       - name: Commit component and remove temporary patch files
         run: |
           rm .github/workflows/fase42e-badskisse-patch.yml
           rm scripts/temp-fase42e-badskisse-patch.py
+          rm scripts/temp-fase42e-fix-patch.py
           git config user.name "ExpoProffsenter"
           git config user.email "firmapost@ringside.no"
-          git add src/modules/sales/components/SalesBathroomSketch.jsx .github/workflows/fase42e-badskisse-patch.yml scripts/temp-fase42e-badskisse-patch.py
+          git add src/modules/sales/components/SalesBathroomSketch.jsx .github/workflows/fase42e-badskisse-patch.yml scripts/temp-fase42e-badskisse-patch.py scripts/temp-fase42e-fix-patch.py
           git commit -m "FASE 42E: forbedre målvisning og sideavstand i Badskisse"
           git push origin HEAD:feature/fase42e-badskisse-forbedringer
