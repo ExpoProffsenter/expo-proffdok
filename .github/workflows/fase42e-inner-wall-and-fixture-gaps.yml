@@ -17,6 +17,20 @@ jobs:
         with:
           ref: feature/fase42e-badskisse-forbedringer
           fetch-depth: 0
+      - name: Correct QA anchor in temporary patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("scripts/temp-fase42e-inner-wall-and-fixture-gaps.py")
+          lines = path.read_text().splitlines()
+          for index, line in enumerate(lines):
+              if line.startswith("qa_anchor = "):
+                  lines[index] = "qa_anchor = \"  requireText(component, 'const SNAP_EDGE_DISTANCE = 10;', `${componentPath}: kontrollert kant-snapping mangler.`);\\n\""
+                  break
+          else:
+              raise SystemExit("qa_anchor not found")
+          path.write_text("\n".join(lines) + "\n")
+          PY
       - name: Apply patch
         run: python scripts/temp-fase42e-inner-wall-and-fixture-gaps.py
       - name: Commit result and remove temporary files
