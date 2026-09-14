@@ -6,6 +6,7 @@ import {
   mapSalesServerRowsToRequests,
   mergeInspectionMediaForDisplay,
   mergeSalesServerRowsIntoCache,
+  mergeServerInspectionMediaIntoLocalDraftsForServerRows,
   shouldGateSalesCoreUntilServerCache,
 } from "../src/modules/sales/services/salesServerCacheHydration.mjs";
 
@@ -72,6 +73,7 @@ const serverRow = {
       {
         id: "bathroom-sketch-F-2026-0043",
         name: "Badskisse.svg",
+        kind: "bathroom-sketch",
         path: "demo/badskisse.jpg",
       },
     ],
@@ -199,14 +201,64 @@ requireCondition(
   "Serverhydrering: tom kladd for en faktisk ny befaring ble feilaktig slettet."
 );
 
+// Kritisk regresjon fra Fase 42F: En meningsfull lokal kladd kan ha tre bilder,
+// mens serveren også har en fjerde fil som er Badskissen. Servermedia skal flettes
+// inn i kladden uten å endre tekst/savedAt eller kaste lokale usynkroniserte bilder.
+const partialInspectionStorage = memoryStorage({
+  [emptyInspectionKey]: JSON.stringify({
+    form: {
+      customerWishes: "Ny lokal tekst beholdes",
+      existingConditions: "",
+      measurements: "",
+      observations: "",
+      photos: [
+        { id: "photo-1", path: "demo/photo-1.jpg", dataUrl: "" },
+        { id: "photo-2", path: "demo/photo-2.jpg", dataUrl: "" },
+        { id: "photo-3", path: "demo/photo-3.jpg", dataUrl: "" },
+        {
+          id: "local-only-photo",
+          name: "Nytt lokalt bilde.jpg",
+          dataUrl: "blob:local-safe-copy",
+          localDraftKey: "indexeddb:local-only-photo",
+        },
+      ],
+    },
+    savedAt: "2026-09-14T19:06:00.000Z",
+  }),
+});
+const mediaMergedDraftKeys = mergeServerInspectionMediaIntoLocalDraftsForServerRows(
+  [serverRow],
+  partialInspectionStorage
+);
+const mediaMergedDraft = JSON.parse(
+  partialInspectionStorage.getItem(emptyInspectionKey)
+);
+const mergedDraftSketch = mediaMergedDraft?.form?.photos?.find(
+  (photo) => photo?.id === "bathroom-sketch-F-2026-0043"
+);
+requireCondition(
+  mediaMergedDraftKeys.includes(emptyInspectionKey) && Boolean(mergedDraftSketch?.path),
+  "Serverhydrering: lokal befaringskladd med tre bilder får ikke serverens manglende Badskisse tilbake."
+);
+requireCondition(
+  mediaMergedDraft?.savedAt === "2026-09-14T19:06:00.000Z" &&
+    mediaMergedDraft?.form?.customerWishes === "Ny lokal tekst beholdes",
+  "Serverhydrering: fletting av servermedia endrer lokal tekst eller kladdens tidsstempel."
+);
+requireCondition(
+  mediaMergedDraft?.form?.photos?.some(
+    (photo) => photo?.id === "local-only-photo" && photo?.dataUrl === "blob:local-safe-copy"
+  ),
+  "Serverhydrering: lokalt usynkronisert bilde ble mistet da servermedia ble flettet inn."
+);
+requireCondition(
+  mergedDraftSketch?.serverHydrating === true &&
+    String(mergedDraftSketch?.dataUrl || "").startsWith("data:image/svg+xml"),
+  "Serverhydrering: manglende signert Badskisse-URL gir ikke tydelig hentestatus mens servermedia lastes."
+);
+
 const currentInspectionMedia = [
   { id: "photo-1", path: "demo/photo-1.jpg", dataUrl: "" },
-  {
-    id: "bathroom-sketch-F-2026-0043",
-    name: "Badskisse.svg",
-    path: "demo/badskisse.jpg",
-    dataUrl: "",
-  },
   {
     id: "local-only-photo",
     name: "Nytt lokalt bilde.jpg",
@@ -223,6 +275,7 @@ const serverInspectionMedia = [
   {
     id: "bathroom-sketch-F-2026-0043",
     name: "Badskisse.svg",
+    kind: "bathroom-sketch",
     path: "demo/badskisse.jpg",
     dataUrl: "https://signed.example/badskisse.jpg",
   },
@@ -239,12 +292,25 @@ requireCondition(
 requireCondition(
   displayMedia.find((item) => item.id === "bathroom-sketch-F-2026-0043")
     ?.dataUrl === "https://signed.example/badskisse.jpg",
-  "Serverhydrering: lagret Badskisse-bilde får ikke fersk signert URL i åpent skjema."
+  "Serverhydrering: serverens Badskisse legges ikke tilbake når den mangler i lokal kladd."
 );
 requireCondition(
   displayMedia.find((item) => item.id === "local-only-photo")?.dataUrl ===
     "blob:local-safe-copy",
   "Serverhydrering: lokalt usynkronisert befaringsbilde ble overskrevet av servervisningen."
+);
+
+const waitingDisplayMedia = mergeInspectionMediaForDisplay(
+  currentInspectionMedia,
+  serverRow.payload.inspectionPhotos
+);
+const waitingSketch = waitingDisplayMedia.find(
+  (item) => item.id === "bathroom-sketch-F-2026-0043"
+);
+requireCondition(
+  waitingSketch?.serverHydrating === true &&
+    String(waitingSketch?.dataUrl || "").startsWith("data:image/svg+xml"),
+  "Serverhydrering: Badskisse viser ikke en trygg «henter fra server»-placeholder før signert URL er klar."
 );
 
 requireCondition(
