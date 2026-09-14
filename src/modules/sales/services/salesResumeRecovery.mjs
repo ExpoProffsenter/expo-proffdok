@@ -180,8 +180,8 @@ export function shouldBootstrapRestoreSales({
   if (raw) {
     const marker = parseBackgroundMarker(raw);
     const shouldRestore = isFreshSalesBackgroundResumeMarker(marker, { now });
+    if (!shouldRestore) safeRemove(local, SALES_BACKGROUND_RESUME_KEY);
     if (shouldRestore) return true;
-    safeRemove(local, SALES_BACKGROUND_RESUME_KEY);
   }
 
   const workspaceSnapshot = readSalesWorkspaceResumeSnapshot({
