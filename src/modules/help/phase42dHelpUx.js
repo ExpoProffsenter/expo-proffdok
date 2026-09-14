@@ -2,6 +2,7 @@
 // Brukerrettet hjelp for Badskisse, nyere Befaring/Tilbud-flyt,
 // Butikktilbud, arbeidsprofil og oppdatert Cordel-vareregister.
 // Hjelp om Prissøk/vareregister vises kun når serveren bekrefter intern handelstilgang.
+// Viktig: ekstra hjelpeinnhold legges kun i React sin åpne innholds-DIV, aldri direkte i .item.
 
 import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
 
@@ -10,9 +11,16 @@ const STORE_HELP_TITLE = "🛍️ Butikktilbud";
 const START_HELP_TITLE = "🚀 Startside / kom i gang";
 const SYSTEMADMIN_HELP_TITLE = "⚙️ Systemadministrasjon";
 const HELP_UPDATED_LABEL = "Sist oppdatert: 14.09.2026";
+const TARGET_HELP_TITLES = new Set([
+  SALES_HELP_TITLE,
+  STORE_HELP_TITLE,
+  START_HELP_TITLE,
+  SYSTEMADMIN_HELP_TITLE,
+]);
 
 let internalCommerceAccessLoaded = false;
 let canUseInternalCommerce = false;
+let ensureTimer = null;
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -27,7 +35,19 @@ function findHelpItem(title) {
 
 function helpContent(item) {
   if (!(item instanceof HTMLElement)) return null;
-  return item.querySelector("button + div") || item;
+
+  // HelpCenter rendrer innholdet som en direkte DIV-søster etter knappen bare når
+  // seksjonen er åpen. Vi bruker samme mønster som eksisterende helpTools.js.
+  // Ingen fallback til selve .item: det var årsaken til synlig innhold når seksjonen
+  // var lukket, duplisering og ustabil React-DOM.
+  return (
+    Array.from(item.children).find(
+      (child) =>
+        child instanceof HTMLDivElement &&
+        !child.dataset.help42d &&
+        !child.dataset.phase31cSalesHelp
+    ) || null
+  );
 }
 
 function createList(items = []) {
@@ -42,7 +62,8 @@ function createList(items = []) {
 }
 
 function appendSectionOnce(container, key, title, items) {
-  if (!(container instanceof HTMLElement) || container.querySelector(`[data-help42d='${key}']`)) return;
+  if (!(container instanceof HTMLElement)) return;
+  if (container.querySelector(`[data-help42d='${key}']`)) return;
 
   const block = document.createElement("div");
   block.dataset.help42d = key;
@@ -61,6 +82,14 @@ function appendSectionOnce(container, key, title, items) {
 
 function removeSection(key) {
   document.querySelectorAll(`[data-help42d='${key}']`).forEach((node) => node.remove());
+}
+
+function removeOrphanSections() {
+  document.querySelectorAll("[data-help42d]").forEach((node) => {
+    const item = node.closest(".item");
+    const content = helpContent(item);
+    if (!content || !content.contains(node)) node.remove();
+  });
 }
 
 function ensureSalesHelp() {
@@ -171,6 +200,7 @@ function updateHelpDate() {
 }
 
 function ensureHelp42D() {
+  removeOrphanSections();
   updateHelpDate();
   ensureSalesHelp();
   ensureStoreHelp();
@@ -179,11 +209,18 @@ function ensureHelp42D() {
   correctOlderRestrictedHelpText();
 }
 
-function scheduleEnsure() {
-  window.requestAnimationFrame(ensureHelp42D);
-  window.setTimeout(ensureHelp42D, 80);
-  window.setTimeout(ensureHelp42D, 260);
-  window.setTimeout(ensureHelp42D, 650);
+function scheduleEnsure(delay = 40) {
+  if (ensureTimer) window.clearTimeout(ensureTimer);
+  ensureTimer = window.setTimeout(() => {
+    ensureTimer = null;
+    ensureHelp42D();
+  }, delay);
+}
+
+function isTargetHelpSectionButton(button) {
+  if (!(button instanceof HTMLButtonElement)) return false;
+  const title = compactText(button.querySelector("b")?.textContent);
+  return TARGET_HELP_TITLES.has(title);
 }
 
 async function refreshInternalCommerceAccess() {
@@ -195,7 +232,7 @@ async function refreshInternalCommerceAccess() {
     canUseInternalCommerce = false;
   } finally {
     internalCommerceAccessLoaded = true;
-    scheduleEnsure();
+    scheduleEnsure(80);
   }
 }
 
@@ -207,13 +244,18 @@ export function installPhase42DHelpUx() {
     "click",
     (event) => {
       const button = event.target instanceof Element ? event.target.closest("button") : null;
-      if (!button) return;
+      if (!(button instanceof HTMLButtonElement)) return;
+
       const text = compactText(button.textContent);
-      if (text === "Hjelp" || text === "? Hjelp" || text.includes("Hjelp")) scheduleEnsure();
+      const opensHelp = text === "Hjelp" || text === "? Hjelp" || text.includes("Hjelp");
+      if (opensHelp || isTargetHelpSectionButton(button)) {
+        // React + eksisterende helpTools.js får fullføre sin egen oppdatering først.
+        scheduleEnsure(60);
+      }
     },
     true
   );
 
   void refreshInternalCommerceAccess();
-  scheduleEnsure();
+  scheduleEnsure(120);
 }
