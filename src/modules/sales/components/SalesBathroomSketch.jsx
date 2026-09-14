@@ -883,11 +883,11 @@ function FixtureWallOffsetDimension({ box, walls }) {
   const base = shiftedPoint(sideData.sidePoint, tangent, sideData.anchor === "start" ? -18 : 18);
   const end = shiftedPoint(base, interior, offsetMm * measuredPxPerMm(walls));
   const mid = { x: (base.x + end.x) / 2, y: (base.y + end.y) / 2 };
-  const tick = 4;
-  const tickLine = (point, key) => <line key={key} x1={point.x - tangent.x * tick} y1={point.y - tangent.y * tick} x2={point.x + tangent.x * tick} y2={point.y + tangent.y * tick} stroke="#75858c" strokeWidth="1" />;
+  const tick = 6;
+  const tickLine = (point, key) => <line key={key} x1={point.x - tangent.x * tick} y1={point.y - tangent.y * tick} x2={point.x + tangent.x * tick} y2={point.y + tangent.y * tick} stroke="#75858c" strokeWidth="1.35" />;
   return (
     <g pointerEvents="none">
-      <line x1={base.x} y1={base.y} x2={end.x} y2={end.y} stroke="#75858c" strokeWidth="1" />
+      <line x1={base.x} y1={base.y} x2={end.x} y2={end.y} stroke="#75858c" strokeWidth="1.35" />
       {tickLine(base, "wa")}{tickLine(end, "wb")}
       <SvgTextBadge x={mid.x} y={mid.y} text={String(offsetMm)} fontSize={7} fontWeight={700} color="#58666c" angle={readableWallTextAngle({ x1: base.x, y1: base.y, x2: end.x, y2: end.y })} />
     </g>
@@ -899,14 +899,14 @@ function FixtureSideDimension({ box, walls }) {
   if (!data) return null;
   const normal = wallExteriorNormal(data.wall, walls);
   const offset = 18;
-  const tick = 4;
+  const tick = 6;
   const a = shiftedPoint(data.sidePoint, normal, offset);
   const b = shiftedPoint(data.projected, normal, offset);
   const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-  const tickLine = (point, key) => <line key={key} x1={point.x - normal.x * tick} y1={point.y - normal.y * tick} x2={point.x + normal.x * tick} y2={point.y + normal.y * tick} stroke="#75858c" strokeWidth="1" />;
+  const tickLine = (point, key) => <line key={key} x1={point.x - normal.x * tick} y1={point.y - normal.y * tick} x2={point.x + normal.x * tick} y2={point.y + normal.y * tick} stroke="#75858c" strokeWidth="1.35" />;
   return (
     <g pointerEvents="none">
-      <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="#75858c" strokeWidth="1" />
+      <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="#75858c" strokeWidth="1.35" />
       {tickLine(a, "fa")}{tickLine(b, "fb")}
       <SvgTextBadge x={mid.x} y={mid.y} text={String(data.distanceMm)} fontSize={7} fontWeight={700} color="#58666c" angle={readableWallTextAngle(data.wall)} />
     </g>
@@ -1000,10 +1000,10 @@ function fixtureWallOffsetDimensionMarkup(box, walls) {
   const base = shiftedPoint(sideData.sidePoint, tangent, sideData.anchor === "start" ? -18 : 18);
   const end = shiftedPoint(base, interior, offsetMm * measuredPxPerMm(walls));
   const mid = { x: (base.x + end.x) / 2, y: (base.y + end.y) / 2 };
-  const tick = 4;
-  const tickSvg = (point) => `<line x1="${point.x - tangent.x * tick}" y1="${point.y - tangent.y * tick}" x2="${point.x + tangent.x * tick}" y2="${point.y + tangent.y * tick}" stroke="#75858c" stroke-width="1"/>`;
+  const tick = 6;
+  const tickSvg = (point) => `<line x1="${point.x - tangent.x * tick}" y1="${point.y - tangent.y * tick}" x2="${point.x + tangent.x * tick}" y2="${point.y + tangent.y * tick}" stroke="#75858c" stroke-width="1.35"/>`;
   const angle = readableWallTextAngle({ x1: base.x, y1: base.y, x2: end.x, y2: end.y });
-  return `<g><line x1="${base.x}" y1="${base.y}" x2="${end.x}" y2="${end.y}" stroke="#75858c" stroke-width="1"/>${tickSvg(base)}${tickSvg(end)}${svgTextBadgeMarkup(mid.x, mid.y, String(offsetMm), 7, 700, "#58666c", angle)}</g>`;
+  return `<g><line x1="${base.x}" y1="${base.y}" x2="${end.x}" y2="${end.y}" stroke="#75858c" stroke-width="1.35"/>${tickSvg(base)}${tickSvg(end)}${svgTextBadgeMarkup(mid.x, mid.y, String(offsetMm), 7, 700, "#58666c", angle)}</g>`;
 }
 
 function fixtureSideDimensionMarkup(box, walls) {
@@ -1011,12 +1011,12 @@ function fixtureSideDimensionMarkup(box, walls) {
   if (!data) return "";
   const normal = wallExteriorNormal(data.wall, walls);
   const offset = 18;
-  const tick = 4;
+  const tick = 6;
   const a = shiftedPoint(data.sidePoint, normal, offset);
   const b = shiftedPoint(data.projected, normal, offset);
   const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-  const tickSvg = (point) => `<line x1="${point.x - normal.x * tick}" y1="${point.y - normal.y * tick}" x2="${point.x + normal.x * tick}" y2="${point.y + normal.y * tick}" stroke="#75858c" stroke-width="1"/>`;
-  return `<g><line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#75858c" stroke-width="1"/>${tickSvg(a)}${tickSvg(b)}${svgTextBadgeMarkup(mid.x, mid.y, String(data.distanceMm), 7, 700, "#58666c", readableWallTextAngle(data.wall))}</g>`;
+  const tickSvg = (point) => `<line x1="${point.x - normal.x * tick}" y1="${point.y - normal.y * tick}" x2="${point.x + normal.x * tick}" y2="${point.y + normal.y * tick}" stroke="#75858c" stroke-width="1.35"/>`;
+  return `<g><line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#75858c" stroke-width="1.35"/>${tickSvg(a)}${tickSvg(b)}${svgTextBadgeMarkup(mid.x, mid.y, String(data.distanceMm), 7, 700, "#58666c", readableWallTextAngle(data.wall))}</g>`;
 }
 
 function markerMarkup(marker, walls, showDimensions = true) {
@@ -1500,7 +1500,8 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
 
   function updateSelectedBox(field, valueText) {
     if (!selectedBox) return;
-    const nextValue = field === "label" ? String(valueText ?? "").slice(0, 30) : cleanMm(valueText);
+    const rawValue = field === "label" ? String(valueText ?? "").slice(0, 30) : cleanMm(valueText);
+    const nextValue = field === "wallOffsetMm" ? rawValue.replace(/^0+(?=\d)/, "") : rawValue;
     let nextBox = { ...selectedBox, [field]: nextValue };
     if (field === "wallOffsetMm" && nextBox.snapWallId && isWallAttachedFixture(nextBox)) {
       const wall = sketch.walls.find((item) => item.id === nextBox.snapWallId);
@@ -1751,7 +1752,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
             {selectedWallAttachedFixture ? (
               <label className="sales-field" style={{ gridColumn: "1 / -1" }}>
                 <span>Avstand fra vegg (mm)</span>
-                <input type="number" inputMode="numeric" min="0" value={mmValue(selectedBox.wallOffsetMm) > 0 ? selectedBox.wallOffsetMm : ""} placeholder="0" onFocus={(event) => event.currentTarget.select?.()} onChange={(event) => updateSelectedBox("wallOffsetMm", event.target.value)} />
+                <input type="number" inputMode="numeric" min="0" value={mmValue(selectedBox.wallOffsetMm) > 0 ? String(mmValue(selectedBox.wallOffsetMm)) : ""} placeholder="0" onFocus={(event) => event.currentTarget.select?.()} onClick={(event) => event.currentTarget.select?.()} onChange={(event) => updateSelectedBox("wallOffsetMm", event.target.value)} />
               </label>
             ) : null}
             {sideDistance ? (

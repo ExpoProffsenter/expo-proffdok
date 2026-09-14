@@ -44,6 +44,9 @@ if (component) {
   requireText(component, "sideData.anchor === \"start\" ? -18 : 18", `${componentPath}: veggavstand flyttes ikke utenfor nærmeste sidehjørne.`);
   requireText(component, "showFixtureDimensions && !isFixtureBox(box)", `${componentPath}: produktstørrelser skjules ikke fra selve skissen.`);
   requireText(component, "placeholder=\"0\"", `${componentPath}: nullavstand vises ikke som placeholder.`);
+  requireText(component, "rawValue.replace(/^0+(?=\\d)/, \"\")", `${componentPath}: veggavstand normaliserer ikke ledende nuller.`);
+  requireText(component, "String(mmValue(selectedBox.wallOffsetMm))", `${componentPath}: veggavstand viser ikke normalisert tallverdi.`);
+  requireText(component, "onClick={(event) => event.currentTarget.select?.()}", `${componentPath}: veggavstand er ikke mobilvennlig ved ny inntasting.`);
   requireText(component, "if (!wallAttached) {", `${componentPath}: WC/servant er ikke eksplisitt unntatt hjørnesnap.`);
   requireText(component, "const interior = wallInteriorNormal(wall, walls);", `${componentPath}: WC/servant orienteres ikke etter innsiden av rommet.`);
   requireText(component, "interior.x < 0 ? 90 : 270", `${componentPath}: WC/servant kan ikke roteres automatisk langs sidevegger.`);
