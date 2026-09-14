@@ -112,17 +112,6 @@ export function parseStoreCatalogLine(line, sourceLineNo = null) {
     };
   }
 
-  // ÅVP-prefikset brukes på gamle leverandørfiler i Cordel som ikke skal inn i ProffDok.
-  // Utgått sjekkes først, slik at tellerne for samme ERP-fil forblir entydige.
-  if (isExcludedAvpSupplierName(supplierName)) {
-    return {
-      status: "skipped_avp_supplier",
-      reason: "legacy_avp_supplier",
-      sourceLineNo,
-      fieldCount: fields.length,
-    };
-  }
-
   const supplierListPriceExVat = parseStoreCatalogDecimal(fields[2]);
   const purchaseDiscountPercent = parseStoreCatalogDecimal(fields[3]);
   const purchaseNetExVat = parseStoreCatalogDecimal(fields[4]);
@@ -142,6 +131,18 @@ export function parseStoreCatalogLine(line, sourceLineNo = null) {
     return {
       status: "skipped_zero_price",
       reason: "non_positive_net_or_sale_price",
+      sourceLineNo,
+      fieldCount: fields.length,
+    };
+  }
+
+  // ÅVP-prefikset brukes på gamle leverandørfiler i Cordel som ikke skal inn i ProffDok.
+  // Dette sjekkes etter eksisterende Utgått/0-pris-filter slik at ÅVP-telleren viser varer
+  // som ellers faktisk ville blitt importert.
+  if (isExcludedAvpSupplierName(supplierName)) {
+    return {
+      status: "skipped_avp_supplier",
+      reason: "legacy_avp_supplier",
       sourceLineNo,
       fieldCount: fields.length,
     };
