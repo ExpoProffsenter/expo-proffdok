@@ -27,6 +27,7 @@ import {
   requestPersistentInspectionStorage,
   saveInspectionPhotoBlob,
 } from "../services/salesInspectionDraftDb.js";
+import { mergeInspectionMediaForDisplay } from "../services/salesServerCacheHydration.mjs";
 
 const BATHROOM_SKETCH_PREFIX = "bathroom-sketch-";
 
@@ -96,7 +97,12 @@ export default function SalesInspectionNote({
   );
   const objectUrlsRef = useRef(new Set());
 
-  const allMedia = Array.isArray(inspectionForm.photos) ? inspectionForm.photos : [];
+  const allMedia = mergeInspectionMediaForDisplay(
+    Array.isArray(inspectionForm.photos) ? inspectionForm.photos : [],
+    Array.isArray(selectedRequest?.inspectionPhotos)
+      ? selectedRequest.inspectionPhotos
+      : []
+  );
   const sketchPhoto = allMedia.find(isBathroomSketchPhoto) || null;
   const photos = allMedia.filter((photo) => !isBathroomSketchPhoto(photo));
   const storedPhotoCount = photos.filter((photo) => photo?.path).length;
