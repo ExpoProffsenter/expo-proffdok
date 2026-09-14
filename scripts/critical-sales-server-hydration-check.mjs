@@ -1,5 +1,8 @@
 import { readFileSync } from "node:fs";
 import {
+  buildServerInspectionForm,
+  clearStructurallyEmptyInspectionDraftsForServerRows,
+  hasMeaningfulInspectionContent,
   mapSalesServerRowsToRequests,
   mergeSalesServerRowsIntoCache,
   shouldGateSalesCoreUntilServerCache,
@@ -15,6 +18,27 @@ function requireText(source, needle, message) {
   if (!source.includes(needle)) failures.push(message);
 }
 
+function memoryStorage(initial = {}) {
+  const entries = new Map(Object.entries(initial));
+  return {
+    get length() {
+      return entries.size;
+    },
+    key(index) {
+      return [...entries.keys()][index] ?? null;
+    },
+    getItem(key) {
+      return entries.has(key) ? entries.get(key) : null;
+    },
+    setItem(key, value) {
+      entries.set(key, String(value));
+    },
+    removeItem(key) {
+      entries.delete(key);
+    },
+  };
+}
+
 const wrapperPath = "src/modules/sales/SalesModule.jsx";
 const wrapper = readFileSync(wrapperPath, "utf8");
 
@@ -22,6 +46,17 @@ const serverRow = {
   request_ref: "F-2026-0043",
   payload: {
     customer: "Test Demo",
+    inspectionCustomerWishes:
+      "Kunden ønsker et moderne bad med storformat fliser og nytt utstyr.",
+    inspectionExistingConditions:
+      "Eksisterende bad fra 60-tallet med slitt innredning.",
+    inspectionMeasurements: "Rommet måler 3x2 meter.",
+    inspectionObservations:
+      "Sluket må flyttes. Vindu bør byttes og slagretning på dør vurderes.",
+    inspectionPhotos: Array.from({ length: 4 }, (_, index) => ({
+      id: `photo-${index + 1}`,
+      path: `demo/photo-${index + 1}.jpg`,
+    })),
     offerTitle: "Tilbud – Modernisering av bad",
     offerLines: Array.from({ length: 15 }, (_, index) => ({
       id: `line-${index + 1}`,
@@ -66,6 +101,84 @@ requireCondition(
 requireCondition(
   merged.some((request) => request.id === "LOCAL-ONLY-1"),
   "Serverhydrering: lokal-only sak ble kastet før den kan synkroniseres."
+);
+
+const serverInspectionForm = buildServerInspectionForm(mapped[0]);
+requireCondition(
+  hasMeaningfulInspectionContent(serverInspectionForm) &&
+    serverInspectionForm.photos.length === 4,
+  "Serverhydrering: serverens befaringsnotat/bilder ble ikke gjenkjent som meningsfullt innhold."
+);
+
+const emptyInspectionKey =
+  "expo-proffdok:sales:v1:test:user:inspection-draft:F-2026-0043";
+const emptyInspectionStorage = memoryStorage({
+  [emptyInspectionKey]: JSON.stringify({
+    form: {
+      customerWishes: "",
+      existingConditions: "",
+      measurements: "",
+      observations: "",
+      photos: [],
+    },
+    savedAt: "2026-09-14T19:00:00.000Z",
+  }),
+});
+const clearedEmptyDrafts = clearStructurallyEmptyInspectionDraftsForServerRows(
+  [serverRow],
+  emptyInspectionStorage
+);
+requireCondition(
+  clearedEmptyDrafts.includes(emptyInspectionKey) &&
+    emptyInspectionStorage.getItem(emptyInspectionKey) === null,
+  "Serverhydrering: tom lokal befaringskladd kan fortsatt skjule serverens eksisterende notat."
+);
+
+const meaningfulInspectionStorage = memoryStorage({
+  [emptyInspectionKey]: JSON.stringify({
+    form: {
+      customerWishes: "Ny lokal endring som ikke er lagret på server ennå",
+      existingConditions: "",
+      measurements: "",
+      observations: "",
+      photos: [],
+    },
+    savedAt: "2026-09-14T19:05:00.000Z",
+  }),
+});
+clearStructurallyEmptyInspectionDraftsForServerRows(
+  [serverRow],
+  meaningfulInspectionStorage
+);
+requireCondition(
+  Boolean(meaningfulInspectionStorage.getItem(emptyInspectionKey)),
+  "Serverhydrering: meningsfull lokal befaringskladd ble feilaktig slettet."
+);
+
+const noServerInspectionRow = {
+  request_ref: "F-EMPTY",
+  payload: { customer: "Ny befaring uten notat" },
+};
+const freshEmptyKey =
+  "expo-proffdok:sales:v1:test:user:inspection-draft:F-EMPTY";
+const freshEmptyStorage = memoryStorage({
+  [freshEmptyKey]: JSON.stringify({
+    form: {
+      customerWishes: "",
+      existingConditions: "",
+      measurements: "",
+      observations: "",
+      photos: [],
+    },
+  }),
+});
+clearStructurallyEmptyInspectionDraftsForServerRows(
+  [noServerInspectionRow],
+  freshEmptyStorage
+);
+requireCondition(
+  Boolean(freshEmptyStorage.getItem(freshEmptyKey)),
+  "Serverhydrering: tom kladd for en faktisk ny befaring ble feilaktig slettet."
 );
 
 requireCondition(
@@ -121,5 +234,5 @@ if (failures.length) {
 }
 
 console.log(
-  "✅ Expo ProffDok Sales server hydration check OK – ny nettleser/stale cache må laste servertilbud før editor mountes"
+  "✅ Expo ProffDok Sales server hydration check OK – ny nettleser/stale cache må laste tilbud og befaringsnotat fra server før editor mountes"
 );
