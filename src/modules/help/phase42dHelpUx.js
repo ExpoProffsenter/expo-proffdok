@@ -1,12 +1,18 @@
 // Expo ProffDok – FASE 42D HJELP
 // Brukerrettet hjelp for Badskisse, nyere Befaring/Tilbud-flyt,
 // Butikktilbud, arbeidsprofil og oppdatert Cordel-vareregister.
+// Hjelp om Prissøk/vareregister vises kun når serveren bekrefter intern handelstilgang.
+
+import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
 
 const SALES_HELP_TITLE = "🧾 Befaring/Tilbud";
 const STORE_HELP_TITLE = "🛍️ Butikktilbud";
 const START_HELP_TITLE = "🚀 Startside / kom i gang";
 const SYSTEMADMIN_HELP_TITLE = "⚙️ Systemadministrasjon";
 const HELP_UPDATED_LABEL = "Sist oppdatert: 14.09.2026";
+
+let internalCommerceAccessLoaded = false;
+let canUseInternalCommerce = false;
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -51,6 +57,10 @@ function appendSectionOnce(container, key, title, items) {
   block.appendChild(heading);
   block.appendChild(createList(items));
   container.appendChild(block);
+}
+
+function removeSection(key) {
+  document.querySelectorAll(`[data-help42d='${key}']`).forEach((node) => node.remove());
 }
 
 function ensureSalesHelp() {
@@ -99,7 +109,13 @@ function ensureStartHelp() {
   ]);
 }
 
-function ensureSystemAdminHelp() {
+function ensureRestrictedSystemAdminHelp() {
+  if (!internalCommerceAccessLoaded || !canUseInternalCommerce) {
+    removeSection("catalog-import");
+    removeSection("internal-commerce-scope");
+    return;
+  }
+
   const content = helpContent(findHelpItem(SYSTEMADMIN_HELP_TITLE));
   if (!content) return;
 
@@ -118,7 +134,9 @@ function ensureSystemAdminHelp() {
   ]);
 }
 
-function correctOlderHelpText() {
+function correctOlderRestrictedHelpText() {
+  if (!internalCommerceAccessLoaded || !canUseInternalCommerce) return;
+
   Array.from(document.querySelectorAll("li")).forEach((item) => {
     const text = compactText(item.textContent);
     if (
@@ -157,8 +175,8 @@ function ensureHelp42D() {
   ensureSalesHelp();
   ensureStoreHelp();
   ensureStartHelp();
-  ensureSystemAdminHelp();
-  correctOlderHelpText();
+  ensureRestrictedSystemAdminHelp();
+  correctOlderRestrictedHelpText();
 }
 
 function scheduleEnsure() {
@@ -166,6 +184,19 @@ function scheduleEnsure() {
   window.setTimeout(ensureHelp42D, 80);
   window.setTimeout(ensureHelp42D, 260);
   window.setTimeout(ensureHelp42D, 650);
+}
+
+async function refreshInternalCommerceAccess() {
+  try {
+    canUseInternalCommerce = Boolean(
+      await rpcWithStoredSession("current_user_has_internal_store_price_search_access")
+    );
+  } catch {
+    canUseInternalCommerce = false;
+  } finally {
+    internalCommerceAccessLoaded = true;
+    scheduleEnsure();
+  }
 }
 
 export function installPhase42DHelpUx() {
@@ -183,5 +214,6 @@ export function installPhase42DHelpUx() {
     true
   );
 
+  void refreshInternalCommerceAccess();
   scheduleEnsure();
 }
