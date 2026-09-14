@@ -26,11 +26,22 @@ const help42d = requireNeedles("src/modules/help/phase42dHelpUx.js", [
   'removeSection("catalog-import")',
   'removeSection("internal-commerce-scope")',
   "correctOlderRestrictedHelpText",
+  "removeOrphanSections",
+  "Array.from(item.children).find",
+  "isTargetHelpSectionButton",
   "Sist oppdatert: 14.09.2026",
 ]);
 
 if (!help42d.includes("if (!internalCommerceAccessLoaded || !canUseInternalCommerce)")) {
   throw new Error("Vareregister-/Prissøk-hjelp skal være deny-by-default uten bekreftet intern handelstilgang.");
+}
+
+if (help42d.includes('querySelector("button + div") || item') || help42d.includes("return item;")) {
+  throw new Error("FASE 42D Hjelp må aldri falle tilbake til å injisere innhold direkte i .item.");
+}
+
+if (!help42d.includes("child instanceof HTMLDivElement")) {
+  throw new Error("FASE 42D Hjelp skal kun skrive i React sin åpne, direkte innholds-DIV.");
 }
 
 if (help42d.includes("new MutationObserver")) {
@@ -42,4 +53,4 @@ requireNeedles("index.html", [
   "/src/modules/help/phase42dHelpUx.js",
 ]);
 
-console.log("✅ Expo ProffDok Hjelp / Badskisse / tilgangsstyrt vareregister check OK");
+console.log("✅ Expo ProffDok Hjelp / Badskisse / tilgangsstyrt vareregister / stabil kollaps check OK");
