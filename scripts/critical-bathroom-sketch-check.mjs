@@ -39,9 +39,9 @@ if (component) {
 }
 
 if (help) {
-  requireText(help, "Markørene kan flyttes etterpå og kan plasseres i eller over andre objekter", `${helpPath}: Hjelp beskriver ikke fri plassering/flytting av installasjonsmarkører.`);
-  requireText(help, "Avløp starter med Ø110 mm, kaldt og varmt vann med Ø30 mm", `${helpPath}: Hjelp beskriver ikke standarddiameter for AVL/KV/VV.`);
-  requireText(help, "dør/vindu viser tydelig at mål må fylles inn", `${helpPath}: Hjelp beskriver ikke forbedret målvisning.`);
+  requireText(help, "Sluk, avløp, kaldt vann og varmt vann kan plasseres fritt og dras senere.", `${helpPath}: Hjelp beskriver ikke fri plassering/flytting av installasjonsmarkører.`);
+  requireText(help, "Avløp starter som grønn Ø110 mm, kaldt vann som blå Ø30 mm og varmt vann som rød Ø30 mm.", `${helpPath}: Hjelp beskriver ikke standarddiameter for AVL/KV/VV.`);
+  requireText(help, "fyll inn målene i de tomme målfeltene", `${helpPath}: Hjelp beskriver ikke forbedret målvisning.`);
 }
 
 if (failures.length) {
