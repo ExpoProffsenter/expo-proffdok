@@ -1,4 +1,14 @@
 import { readFileSync } from "node:fs";
+import {
+  SALES_BACKGROUND_RESUME_KEY,
+  SALES_BACKGROUND_RESUME_MAX_AGE_MS,
+  SALES_RELOAD_NAVIGATION_KEY,
+  SALES_RELOAD_TAB_KEY,
+  clearSalesResumeMarkers,
+  consumeSalesResumeNavigation,
+  markSalesResumeForBackground,
+  shouldBootstrapRestoreSales,
+} from "../src/modules/sales/services/salesResumeRecovery.mjs";
 
 const failures = [];
 
@@ -19,8 +29,29 @@ function forbidText(source, needle, message) {
   if (source.includes(needle)) failures.push(message);
 }
 
+function requireRecovery(condition, message) {
+  if (!condition) failures.push(`Sales resume scenario: ${message}`);
+}
+
+function memoryStorage(initial = {}, { throwOnSet = false } = {}) {
+  const entries = new Map(Object.entries(initial));
+  return {
+    getItem(key) {
+      return entries.has(key) ? entries.get(key) : null;
+    },
+    setItem(key, value) {
+      if (throwOnSet) throw new Error("storage set blocked");
+      entries.set(key, String(value));
+    },
+    removeItem(key) {
+      entries.delete(key);
+    },
+  };
+}
+
 const bootstrapPath = "src/bootstrap.jsx";
 const salesModulePath = "src/modules/sales/SalesModule.jsx";
+const salesResumeRecoveryPath = "src/modules/sales/services/salesResumeRecovery.mjs";
 const salesModuleCorePath = "src/modules/sales/SalesModuleCore.jsx";
 const offerBuilderPath = "src/modules/sales/components/SalesOfferBuilder.jsx";
 const inspectionNotePath = "src/modules/sales/components/SalesInspectionNote.jsx";
@@ -37,6 +68,7 @@ const helpCorePath = "src/modules/help/helpToolsCore.js";
 
 const bootstrap = read(bootstrapPath);
 const salesModule = read(salesModulePath);
+const salesResumeRecovery = read(salesResumeRecoveryPath);
 const salesModuleCore = read(salesModuleCorePath);
 const offerBuilder = read(offerBuilderPath);
 const inspectionNote = read(inspectionNotePath);
@@ -52,11 +84,23 @@ const help = read(helpPath);
 const helpCore = read(helpCorePath);
 
 if (bootstrap) {
-  requireText(bootstrap, "expo-proffdok:sales:restore-tab-after-reload", `${bootstrapPath}: engangsmarkør for retur til salgfanen mangler.`);
+  requireText(bootstrap, "shouldBootstrapRestoreSales", `${bootstrapPath}: bootstrap bruker ikke delt Sales resume-vakt.`);
   requireText(bootstrap, "function restoreSalesTabAfterReload()", `${bootstrapPath}: bootstrap kan ikke gjenåpne salgfanen etter full reload.`);
+  requireText(bootstrap, "const shouldRestore = shouldBootstrapRestoreSales();", `${bootstrapPath}: bootstrap vurderer ikke localStorage-fallback før Startsiden velges.`);
   requireText(bootstrap, "document.querySelectorAll('button')", `${bootstrapPath}: salgfanen finnes ikke kontrollert etter at hovedappen er rendret.`);
   requireText(bootstrap, ".trim() === 'Befaring/Tilbud'", `${bootstrapPath}: reload-retur peker ikke eksplisitt på Befaring/Tilbud.`);
   requireText(bootstrap, ".then(() => restoreSalesTabAfterReload())", `${bootstrapPath}: reload-retur kjøres ikke etter lasting av main.`);
+}
+
+if (salesResumeRecovery) {
+  requireText(salesResumeRecovery, 'expo-proffdok:sales:restore-tab-after-reload', `${salesResumeRecoveryPath}: delt tab-markør mangler.`);
+  requireText(salesResumeRecovery, 'expo-proffdok:sales:restore-navigation-after-reload', `${salesResumeRecoveryPath}: delt navigasjonsmarkør mangler.`);
+  requireText(salesResumeRecovery, 'expo-proffdok:sales:background-resume-v1', `${salesResumeRecoveryPath}: bakgrunnsmarkør mangler.`);
+  requireText(salesResumeRecovery, "2 * 60 * 60 * 1000", `${salesResumeRecoveryPath}: recovery-markør har ikke eksplisitt stale-grense.`);
+  requireText(salesResumeRecovery, "markerStorageKey !== String(storageKey).trim()", `${salesResumeRecoveryPath}: Sales-sak valideres ikke mot riktig bruker/firmascope.`);
+  requireText(salesResumeRecovery, "safeSet(session, SALES_RELOAD_TAB_KEY, \"1\")", `${salesResumeRecoveryPath}: sessionStorage-markør skrives ikke separat.`);
+  requireText(salesResumeRecovery, "safeSet(\n    local,\n    SALES_BACKGROUND_RESUME_KEY", `${salesResumeRecoveryPath}: localStorage-fallback skrives ikke uavhengig av sessionStorage.`);
+  requireText(salesResumeRecovery, "if (!shouldRestore) safeRemove(local, SALES_BACKGROUND_RESUME_KEY)", `${salesResumeRecoveryPath}: ugyldig/stale bootstrap-markør ryddes ikke.`);
 }
 
 if (salesModule) {
@@ -65,12 +109,115 @@ if (salesModule) {
   requireText(salesModule, "beginOfferDraftHydrationCycle", `${salesModulePath}: ny salgsmount starter ikke en ny tilbuds-hydration-cycle.`);
   requireText(salesModule, 'window.addEventListener("beforeunload", blockPreHydrationUnloadSave)', `${salesModulePath}: sidegjenlasting sperrer ikke pre-hydration cleanup-save.`);
   requireText(salesModule, 'window.addEventListener("pagehide", blockPreHydrationUnloadSave)', `${salesModulePath}: pagehide sperrer ikke pre-hydration cleanup-save.`);
+  requireText(salesModule, 'document.addEventListener("visibilitychange", handleVisibilityChange)', `${salesModulePath}: mobil bakgrunn/dvale markeres ikke før siden kan forkastes.`);
   requireText(salesModule, "protectInspectionDraftNavigation", `${salesModulePath}: reload-vernet for befaringskladd mangler.`);
   requireText(salesModule, 'navigation?.mode === "inspection-note"', `${salesModulePath}: reload direkte i befaringsnotat normaliseres ikke til trygg saksvisning.`);
   requireText(salesModule, 'saveSalesNavigation(\n      salesStorageKey,\n      "detail",', `${salesModulePath}: befaringsreload bevarer ikke valgt sak mens modusen flyttes til detail.`);
-  requireText(salesModule, "expo-proffdok:sales:restore-tab-after-reload", `${salesModulePath}: salgfanen markeres ikke for engangsretur ved full reload.`);
+  requireText(salesModule, "markSalesResumeForBackground(salesStorageKeyForProps(props))", `${salesModulePath}: unload/pagehide skriver ikke delt Sales resume-state.`);
+  requireText(salesModule, "consumeSalesResumeNavigation(salesStorageKeyForProps(props))", `${salesModulePath}: SalesModule bruker ikke samme recovery-state som bootstrap.`);
+  requireText(salesModule, "clearSalesResumeMarkers();", `${salesModulePath}: recovery-markører kan ikke ryddes ved bevisst navigasjon.`);
+  requireText(salesModule, "Bevisst navigasjon bort fra Sales skal aldri gjenopplive en gammel sak.", `${salesModulePath}: eksplisitt utgang fra Sales er ikke beskyttet mot gammel markør.`);
   requireText(salesModule, 'props.integrationMode !== "app"', `${salesModulePath}: offentlig/standalone salg kan feilaktig markere intern salgfaneretning.`);
   requireText(salesModule, "markSalesTabForReload(props)", `${salesModulePath}: unload/pagehide setter ikke reload-markøren.`);
+}
+
+// FASE 42F: reelle scenario-invarianter. Disse kjøres i hver build og låser
+// akkurat regresjonen som sendte brukeren til Startsiden etter dvale/appbytte.
+{
+  const now = 2_000_000_000_000;
+  const storageKey = "expo-proffdok:sales:v1:app:test-company:test-user";
+
+  // A: sessionStorage mangler, men fersk localStorage-markør skal få bootstrap
+  // inn i Sales og SalesModule skal deretter kunne konsumere samme sak/scope.
+  const sessionA = memoryStorage();
+  const localA = memoryStorage({
+    [SALES_BACKGROUND_RESUME_KEY]: JSON.stringify({ at: now - 5_000, storageKey }),
+  });
+  requireRecovery(
+    shouldBootstrapRestoreSales({ sessionStorage: sessionA, localStorage: localA, now }),
+    "A: bootstrap åpner ikke Sales fra gyldig localStorage når sessionStorage mangler."
+  );
+  requireRecovery(
+    consumeSalesResumeNavigation(storageKey, { sessionStorage: sessionA, localStorage: localA, now }),
+    "A: SalesModule gjenoppretter ikke navigasjonen fra samme localStorage-markør."
+  );
+
+  // B: begge lagre finnes. Én recovery skal konsumeres én gang uten konflikt.
+  const sessionB = memoryStorage();
+  const localB = memoryStorage();
+  markSalesResumeForBackground(storageKey, {
+    sessionStorage: sessionB,
+    localStorage: localB,
+    now,
+  });
+  requireRecovery(
+    sessionB.getItem(SALES_RELOAD_TAB_KEY) === "1" &&
+      sessionB.getItem(SALES_RELOAD_NAVIGATION_KEY) === "1" &&
+      Boolean(localB.getItem(SALES_BACKGROUND_RESUME_KEY)),
+    "B: sessionStorage og localStorage får ikke samme recovery-intensjon."
+  );
+  requireRecovery(
+    shouldBootstrapRestoreSales({ sessionStorage: sessionB, localStorage: localB, now }),
+    "B: bootstrap avviser recovery når begge markører finnes."
+  );
+  requireRecovery(
+    consumeSalesResumeNavigation(storageKey, { sessionStorage: sessionB, localStorage: localB, now }),
+    "B: SalesModule kan ikke konsumere recovery når begge markører finnes."
+  );
+  requireRecovery(
+    !consumeSalesResumeNavigation(storageKey, { sessionStorage: sessionB, localStorage: localB, now }),
+    "B: samme recovery kan konsumeres flere ganger og kan lage navigasjonsloop."
+  );
+
+  // C: eksplisitt utgang til Startside rydder markørene og skal ikke tvinge
+  // brukeren tilbake til en gammel Sales-sak.
+  const sessionC = memoryStorage();
+  const localC = memoryStorage();
+  markSalesResumeForBackground(storageKey, {
+    sessionStorage: sessionC,
+    localStorage: localC,
+    now,
+  });
+  clearSalesResumeMarkers({ sessionStorage: sessionC, localStorage: localC });
+  requireRecovery(
+    !shouldBootstrapRestoreSales({ sessionStorage: sessionC, localStorage: localC, now }),
+    "C: ryddet/bevisst Startside kan fortsatt bli tvunget tilbake til Sales."
+  );
+
+  // D: gammel markør skal verken åpne Sales eller bli liggende og trigge senere.
+  const sessionD = memoryStorage();
+  const localD = memoryStorage({
+    [SALES_BACKGROUND_RESUME_KEY]: JSON.stringify({
+      at: now - SALES_BACKGROUND_RESUME_MAX_AGE_MS - 1,
+      storageKey,
+    }),
+  });
+  requireRecovery(
+    !shouldBootstrapRestoreSales({ sessionStorage: sessionD, localStorage: localD, now }),
+    "D: stale markør åpner gammel Sales-økt."
+  );
+  requireRecovery(
+    localD.getItem(SALES_BACKGROUND_RESUME_KEY) === null,
+    "D: stale markør blir liggende etter bootstrap-kontroll."
+  );
+
+  // E: mobil/browser kan blokkere ett web storage-lager. localStorage-fallback
+  // må fortsatt skrives selv om sessionStorage.setItem kaster.
+  const sessionE = memoryStorage({}, { throwOnSet: true });
+  const localE = memoryStorage();
+  markSalesResumeForBackground(storageKey, {
+    sessionStorage: sessionE,
+    localStorage: localE,
+    now,
+  });
+  requireRecovery(
+    Boolean(localE.getItem(SALES_BACKGROUND_RESUME_KEY)),
+    "E: sessionStorage-feil hindrer localStorage-markør før browserforkasting."
+  );
+  requireRecovery(
+    shouldBootstrapRestoreSales({ sessionStorage: sessionE, localStorage: localE, now }),
+    "E: bootstrap kan ikke gjenopprette etter sessionStorage-feil."
+  );
 }
 
 if (salesModuleCore) {
