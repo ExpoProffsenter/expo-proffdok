@@ -14,18 +14,19 @@ def replace_once(text, old, new, label):
         raise SystemExit(f"{label}: expected 1 match, got {count}")
     return text.replace(old, new, 1)
 
-# Flytt senteravstand langs vegg til utsiden av rommet.
-component = replace_once(
+def replace_exact(text, old, new, expected, label):
+    count = text.count(old)
+    if count != expected:
+        raise SystemExit(f"{label}: expected {expected} matches, got {count}")
+    return text.replace(old, new)
+
+# Både editor og eksport bruker samme sideveggmål. Flytt begge til utsiden av rommet.
+component = replace_exact(
     component,
     '  const normal = wallInteriorNormal(data.wall, walls);\n  const offset = 14;',
     '  const normal = wallExteriorNormal(data.wall, walls);\n  const offset = 18;',
-    'jsx fixture side dimension outside',
-)
-component = replace_once(
-    component,
-    '  const normal = wallInteriorNormal(data.wall, walls);\n  const offset = 14;',
-    '  const normal = wallExteriorNormal(data.wall, walls);\n  const offset = 18;',
-    'svg fixture side dimension outside',
+    2,
+    'fixture side dimensions outside',
 )
 
 # Avstand fra bakvegg skal kun stå i redigeringsboksen, ikke tegnes i skissen.
