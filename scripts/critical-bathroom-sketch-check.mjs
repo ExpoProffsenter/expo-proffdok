@@ -67,6 +67,9 @@ if (help) {
   requireText(help, "WC og servant følger vegg uten hjørnesnap", `${helpPath}: Hjelp beskriver ikke WC/servant uten hjørnesnap.`);
   requireText(help, "Avstand fra vegg i millimeter", `${helpPath}: Hjelp beskriver ikke veggavstand for WC/servant.`);
   requireText(help, "fyll inn målene i de tomme målfeltene", `${helpPath}: Hjelp beskriver ikke forbedret målvisning.`);
+  requireText(help, "åpningsmål nærmest veggen og totalmålet lenger ut", `${helpPath}: Hjelp beskriver ikke separate målbånd for åpning og vegg.`);
+  requireText(help, "Senteravstand fra nærmeste sidevegg", `${helpPath}: Hjelp beskriver ikke eksakt sideveggmål for WC/servant.`);
+  requireText(help, "Bruk Målvisning for å slå Vegger, Dør / vindu og Utstyr / installasjoner av eller på hver for seg", `${helpPath}: Hjelp beskriver ikke valgbar målvisning.`);
 }
 
 if (failures.length) {

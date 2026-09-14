@@ -90,11 +90,12 @@ const BASE_SECTIONS = [
     [
       "Åpne befaringsnotatet og velg Badskisse.",
       "Tegn vegger med 90° som standard. Veggkjeden fortsetter fra forrige endepunkt og kan lukkes tilbake til start.",
-      "Legg inn faktiske veggmål i millimeter. Målene styrer proporsjonene i skissen, og hjørner kan flyttes ved behov.",
+      "Legg inn faktiske veggmål i millimeter. Målene styrer proporsjonene i skissen, og hjørner kan flyttes ved behov. Veggens totalmål ligger på eget utvendig målbånd og følger veggens retning; når veggen har dør eller vindu ligger åpningsmål nærmest veggen og totalmålet lenger ut.",
       "Plasser dør og vindu på vegg og fyll inn målene i de tomme målfeltene. Vindu kan også registreres med høyde fra ferdig gulv til underkant.",
       "Dør kan få korrekt hengsling og slagretning.",
       "Sluk, avløp, kaldt vann og varmt vann kan plasseres fritt og dras senere. Avløp starter som grønn Ø110 mm, kaldt vann som blå Ø30 mm og varmt vann som rød Ø30 mm. AVL/KV/VV vises som helfargede sirkler proporsjonalt etter registrert diameter, og markørene kan plasseres inne i kasse/sjakt eller overlappe utstyr.",
-      "WC og servant følger vegg uten hjørnesnap, snur automatisk slik at bakkanten vender mot veggen og kan få angitt Avstand fra vegg i millimeter. Servant har eget plansymbol og kan målsattes. Dusj og badekar kan plasseres, flyttes, roteres der det er relevant og målsattes.",
+      "WC og servant følger vegg uten hjørnesnap, snur automatisk slik at bakkanten vender mot veggen og kan få angitt Avstand fra vegg i millimeter. Når objektet følger en vegg kan du også angi Senteravstand fra nærmeste sidevegg i millimeter. Servant har eget plansymbol og kan målsattes. Dusj og badekar kan plasseres, flyttes, roteres der det er relevant og målsattes.",
+      "Bruk Målvisning for å slå Vegger, Dør / vindu og Utstyr / installasjoner av eller på hver for seg. Valget lagres med skissen og brukes også i skissebildet som følger befaringsnotatet.",
       "Trykk på et objekt for å velge og redigere det. Når befaringsnotatet lagres følger ferdig Badskisse med som befaringsbilde."
     ],
     [
