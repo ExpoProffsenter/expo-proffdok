@@ -12,7 +12,7 @@ export const SALES_WORKSPACE_RESUME_KEY = "expo-proffdok:sales:workspace-resume-
 export const SALES_BACKGROUND_RESUME_MAX_AGE_MS = 2 * 60 * 60 * 1000;
 
 const SALES_RESUME_GUARD_FLAG = "__expoProffDokSalesResumeGuardV2";
-const RESUME_RETRY_DELAYS_MS = [0, 120, 500, 1500, 4000, 10000];
+const RESUME_RETRY_DELAYS_MS = [0, 120, 500, 1500, 4000, 10000, 20000, 30000];
 
 function browserStorage(kind) {
   if (typeof window === "undefined") return null;
@@ -411,17 +411,14 @@ function tryRecoverSalesWorkspace() {
   // Hovedappen er blitt sendt til Startsiden mens fanen var i bakgrunnen.
   // Re-armer navigasjonen rett før vi åpner Sales, slik at wrapperens normale
   // mount beholder offer-builder/befaringsnotat i stedet for å nullstille til list.
+  // Snapshotet beholdes gjennom hele returfasen; auth/React kan fortsatt remounte
+  // hovedappen etter første vellykkede åpning. Det ryddes ved bevisst navigasjon
+  // utenfor Sales eller når TTL-en utløper.
   restoreSalesWorkspaceNavigation(snapshot, {
     localStorage: local,
     sessionStorage: session,
   });
   salesButton.click();
-
-  window.setTimeout(() => {
-    if (salesSurfaceIsMounted()) {
-      clearSalesWorkspaceResumeSnapshot({ localStorage: local });
-    }
-  }, 250);
   return true;
 }
 
