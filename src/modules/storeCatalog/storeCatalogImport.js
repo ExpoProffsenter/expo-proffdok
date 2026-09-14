@@ -1,6 +1,7 @@
-// Expo ProffDok – FASE 42B / FASE 39B.1
+// Expo ProffDok – FASE 42C / FASE 39B.1
 // Parser for Ringsides faste ERP-eksport: Windows-1252, semikolon, 18 felt.
-// Cordels tredje statusflagg er «Utgått» og slike varer skal ikke inn i aktiv katalog.
+// Cordels tredje statusflagg er «Utgått». Leverandører som starter med «ÅVP» er gamle ERP-filer
+// og skal heller ikke inn i aktiv katalog.
 // Nettopris behandles kun internt og skal aldri kopieres til kunde-/tilbuds-JSON.
 
 export const STORE_CATALOG_ENCODING = "windows-1252";
@@ -10,6 +11,10 @@ export const STORE_CATALOG_MAX_BATCH_SIZE = 2500;
 
 function trimText(value = "") {
   return String(value ?? "").trim();
+}
+
+export function isExcludedAvpSupplierName(value = "") {
+  return trimText(value).toLocaleUpperCase("nb-NO").startsWith("ÅVP");
 }
 
 export function parseStoreCatalogDecimal(value) {
@@ -107,6 +112,17 @@ export function parseStoreCatalogLine(line, sourceLineNo = null) {
     };
   }
 
+  // ÅVP-prefikset brukes på gamle leverandørfiler i Cordel som ikke skal inn i ProffDok.
+  // Utgått sjekkes først, slik at tellerne for samme ERP-fil forblir entydige.
+  if (isExcludedAvpSupplierName(supplierName)) {
+    return {
+      status: "skipped_avp_supplier",
+      reason: "legacy_avp_supplier",
+      sourceLineNo,
+      fieldCount: fields.length,
+    };
+  }
+
   const supplierListPriceExVat = parseStoreCatalogDecimal(fields[2]);
   const purchaseDiscountPercent = parseStoreCatalogDecimal(fields[3]);
   const purchaseNetExVat = parseStoreCatalogDecimal(fields[4]);
@@ -184,6 +200,7 @@ export function createStoreCatalogImportSummary() {
     totalRows: 0,
     acceptedRows: 0,
     skippedDiscontinuedRows: 0,
+    skippedAvpSupplierRows: 0,
     skippedZeroPriceRows: 0,
     skippedMissingSkuRows: 0,
     malformedRows: 0,
@@ -195,6 +212,7 @@ function registerParsedLine(summary, parsed) {
   summary.totalRows += 1;
   if (parsed.status === "accepted") summary.acceptedRows += 1;
   else if (parsed.status === "skipped_discontinued") summary.skippedDiscontinuedRows += 1;
+  else if (parsed.status === "skipped_avp_supplier") summary.skippedAvpSupplierRows += 1;
   else if (parsed.status === "skipped_zero_price") summary.skippedZeroPriceRows += 1;
   else if (parsed.status === "skipped_missing_sku") summary.skippedMissingSkuRows += 1;
   else summary.malformedRows += 1;
