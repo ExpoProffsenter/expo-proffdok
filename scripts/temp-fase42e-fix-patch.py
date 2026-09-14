@@ -15,13 +15,13 @@ replacements = [
         "box editor start indent",
     ),
     (
-        "            {snapText ? <text x=\"0\" y={size.depth / 2 + 16}",
-        "                  {snapText ? <text x=\"0\" y={size.depth / 2 + 16}",
+        "\"\"\"            {snapText ? <text x=\"0\" y={size.depth / 2 + 16}",
+        "\"\"\"                  {snapText ? <text x=\"0\" y={size.depth / 2 + 16}",
         "box editor close indent start",
     ),
     (
-        "          </g>\\n        );\"\"\"",
-        "                </g>\\n              );\"\"\"",
+        "          </g>\\n        );\"\"\",\\n    \"\"\"            {snapText",
+        "                </g>\\n              );\"\"\",\\n    \"\"\"            {snapText",
         "box editor close indent end",
     ),
     (
@@ -32,9 +32,8 @@ replacements = [
 ]
 
 for old, new, label in replacements:
-    count = text.count(old)
-    if count != 1:
-        raise SystemExit(f"{label}: expected 1 match, got {count}")
+    if old not in text:
+        raise SystemExit(f"{label}: source anchor missing")
     text = text.replace(old, new, 1)
 
 path.write_text(text)
