@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 42B / FASE 39B.2
+// Expo ProffDok – FASE 42C / FASE 39B.2
 // Tynn klient mot internt vareregister.
 // ERP-batcher oppdaterer én katalogkopi direkte; søk sperres til importen er ferdig aktivert.
 // En sjelden PostgreSQL statement timeout håndteres med én retry og deretter mindre delbatcher.
@@ -126,7 +126,7 @@ export async function prepareStoreCatalogActivation(
   summary = {}
 ) {
   const { data, error } = await ensureClient(supabase).rpc(
-    "prepare_internal_store_catalog_activation_v2",
+    "prepare_internal_store_catalog_activation_v3",
     {
       p_import_id: importId,
       p_total_rows: summary.totalRows || 0,
@@ -134,6 +134,7 @@ export async function prepareStoreCatalogActivation(
       p_skipped_missing_sku_rows: summary.skippedMissingSkuRows || 0,
       p_malformed_rows: summary.malformedRows || 0,
       p_skipped_discontinued_rows: summary.skippedDiscontinuedRows || 0,
+      p_skipped_avp_supplier_rows: summary.skippedAvpSupplierRows || 0,
     }
   );
   return unwrap(data, error, "Kunne ikke klargjøre vareregisteret.");
