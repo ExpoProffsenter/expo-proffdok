@@ -90,11 +90,13 @@ const BASE_SECTIONS = [
     [
       "Åpne befaringsnotatet og velg Badskisse.",
       "Tegn vegger med 90° som standard. Veggkjeden fortsetter fra forrige endepunkt og kan lukkes tilbake til start.",
-      "Legg inn faktiske veggmål i millimeter. Målene styrer proporsjonene i skissen, og hjørner kan flyttes ved behov.",
-      "Plasser dør og vindu på vegg og angi mål. Vindu kan registreres med høyde fra ferdig gulv til underkant.",
+      "Legg inn faktiske veggmål i millimeter. Målene styrer proporsjonene i skissen, og hjørner kan flyttes ved behov. Veggens totalmål ligger på eget utvendig målbånd og følger veggens retning; når veggen har dør eller vindu ligger åpningsmål nærmest veggen og totalmålet lenger ut.",
+      "Plasser dør og vindu på vegg og fyll inn målene i de tomme målfeltene. Vindu kan også registreres med høyde fra ferdig gulv til underkant.",
       "Dør kan få korrekt hengsling og slagretning.",
-      "Marker sluk, avløp, kaldt vann og varmt vann, og legg inn målbar kasse/sjakt som kan flyttes og snappes mot vegg eller hjørne.",
-      "WC har standard størrelse. Servant, dusj og badekar kan plasseres, flyttes, roteres der det er relevant og målsattes.",
+      "Sluk, avløp, kaldt vann og varmt vann kan plasseres fritt og dras senere. Avløp starter som grønn Ø110 mm, kaldt vann som blå Ø30 mm og varmt vann som rød Ø30 mm. AVL/KV/VV vises som helfargede sirkler proporsjonalt etter registrert diameter uten tekstetiketter i selve skissen; trykk på markøren for å se type og diameter. Markørene kan plasseres inne i kasse/sjakt eller overlappe utstyr.",
+      "WC og servant følger vegg uten hjørnesnap, snur automatisk slik at bakkanten vender mot veggen og kan få angitt Avstand fra vegg i millimeter. Avstand fra vegg og Senteravstand fra nærmeste sidevegg vises som utvendige målbånd ved aktuell vegg, samtidig som verdiene kan redigeres i redigeringsboksen. Veggstrekens innside representerer innvendig veggliv, slik at utstyr ligger inntil innsiden og plasseringsmål tas fra innvendig veggliv. Produktmål vises i redigeringsboksen når du trykker på WC, servant, dusj eller badekar. Servant har eget plansymbol. Dusj og badekar kan plasseres, flyttes og roteres der det er relevant; avstand til nærmeste vannrette og loddrette vegg vises som utvendige målbånd når avstanden er større enn null.",
+      "Bruk Målvisning for å slå Vegger, Dør / vindu og Utstyr / installasjoner av eller på hver for seg. Valget lagres med skissen og brukes også i skissebildet som følger befaringsnotatet.",
+      "Når en eksisterende skisse åpnes igjen starter Badskisse i Velg / flytt, slik at et trykk i tegningen ikke starter en ny vegg. Dusj og badekar viser produktmålet under symbolet når Utstyr / installasjoner er slått på; øvrige produktmål kan leses i redigeringsboksen.",
       "Trykk på et objekt for å velge og redigere det. Når befaringsnotatet lagres følger ferdig Badskisse med som befaringsbilde."
     ],
     [
@@ -173,7 +175,7 @@ const BASE_SECTIONS = [
     "Tilgang brukes til å dele prosjektet med kunde og underentreprenører gjennom separate portaler.",
     ["Send riktig portaltilgang til mottakeren og kontroller e-postadressen før utsending."],
     ["Tilgangskode skal ikke ligge i URL, og kunder skal ikke se interne notater."],
-    ["Hold tilgangslisten ryddig og fjern tilganger som ikke lenger er nødvendige."]
+    ["Hold tilgangslisten ryddig og fjern tilganger som ikke lenger er nødvendige." ]
   ),
   section(
     "fagUtstyr",
