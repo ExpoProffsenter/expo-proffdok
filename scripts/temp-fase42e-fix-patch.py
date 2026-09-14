@@ -15,14 +15,13 @@ replacements = [
         "box editor start indent",
     ),
     (
-        "\"\"\"            {snapText ? <text x=\"0\" y={size.depth / 2 + 16}",
-        "\"\"\"                  {snapText ? <text x=\"0\" y={size.depth / 2 + 16}",
-        "box editor close indent start",
-    ),
-    (
-        "          </g>\\n        );\"\"\",\\n    \"\"\"            {snapText",
-        "                </g>\\n              );\"\"\",\\n    \"\"\"            {snapText",
-        "box editor close indent end",
+        '''    """            {snapText ? <text x="0" y={size.depth / 2 + 16} textAnchor="middle" fontSize="8" fontWeight="800" fill="#087f88" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">{snapText}</text> : null}
+          </g>
+        );""",''',
+        '''    """                  {snapText ? <text x="0" y={size.depth / 2 + 16} textAnchor="middle" fontSize="8" fontWeight="800" fill="#087f88" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">{snapText}</text> : null}
+                </g>
+              );""",''',
+        "box editor close target",
     ),
     (
         "'        const label = markerDisplayLabel(marker);'",
