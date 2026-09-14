@@ -21,7 +21,9 @@ const component = read(componentPath);
 const help = read(helpPath);
 
 if (component) {
-  requireText(component, "const SKETCH_VERSION = 14;", `${componentPath}: Badskisse-versjon 14 mangler.`);
+  requireText(component, "const SKETCH_VERSION = 15;", `${componentPath}: Badskisse-versjon 15 mangler.`);
+  requireText(component, "const DEFAULT_DIMENSION_VISIBILITY", `${componentPath}: standardvalg for målvisning mangler.`);
+  requireText(component, "source?.dimensions?.walls !== false", `${componentPath}: eldre skisser får ikke standard målvisning.`);
   requireText(component, 'waste: { label: "AVL", diameterMm: "110", fill: "#2f8f46"', `${componentPath}: avløp mangler grønn standardmarkør Ø110.`);
   requireText(component, 'cold: { label: "KV", diameterMm: "30", fill: "#1976d2"', `${componentPath}: KV mangler blå standardmarkør Ø30.`);
   requireText(component, 'hot: { label: "VV", diameterMm: "30", fill: "#d64545"', `${componentPath}: VV mangler rød standardmarkør Ø30.`);
@@ -32,6 +34,10 @@ if (component) {
   requireText(component, 'wallOffsetMm: String(box?.wallOffsetMm ?? "0")', `${componentPath}: avstand fra vegg lagres ikke på WC/servant.`);
   requireText(component, 'snapWallId: String(box?.snapWallId || "")', `${componentPath}: tilknyttet vegg lagres ikke på WC/servant.`);
   requireText(component, "function placeWallAttachedFixture", `${componentPath}: plassering av WC/servant mot vegg mangler.`);
+  requireText(component, "function fixtureSideDistanceData", `${componentPath}: senteravstand til nærmeste sidevegg mangler.`);
+  requireText(component, "function placeWallAttachedFixtureAtSideDistance", `${componentPath}: eksakt flytting etter sideveggmål mangler.`);
+  requireText(component, "Senteravstand fra nærmeste sidevegg (mm)", `${componentPath}: felt for sideveggmål mangler.`);
+  requireText(component, "placeholder=\"0\"", `${componentPath}: nullavstand vises ikke som placeholder.`);
   requireText(component, "if (!wallAttached) {", `${componentPath}: WC/servant er ikke eksplisitt unntatt hjørnesnap.`);
   requireText(component, "const interior = wallInteriorNormal(wall, walls);", `${componentPath}: WC/servant orienteres ikke etter innsiden av rommet.`);
   requireText(component, "interior.x < 0 ? 90 : 270", `${componentPath}: WC/servant kan ikke roteres automatisk langs sidevegger.`);
@@ -42,6 +48,10 @@ if (component) {
   requireText(component, "function boxEdgeGapToWall", `${componentPath}: kantbasert snapping mot vegg mangler.`);
   requireText(component, '`${isWindow ? "Vindu" : "Dør"} – fyll inn mål`', `${componentPath}: dør/vindu viser ikke tydelig at mål mangler.`);
   requireText(component, "function SvgTextBadge", `${componentPath}: lesbar mål-badge mangler.`);
+  requireText(component, "function readableWallTextAngle", `${componentPath}: veggmål følger ikke veggens retning.`);
+  requireText(component, "return hasOpeningDimensions ? 72 : 48;", `${componentPath}: separate målbånd for vegg og åpning mangler.`);
+  requireText(component, "Målvisning", `${componentPath}: mål av/på-funksjon mangler.`);
+  requireText(component, 'dimensions: { ...current, [key]: current[key] === false }', `${componentPath}: målvisning lagres ikke i skissen.`);
   requireText(component, "const [dragMarker, setDragMarker] = useState(null);", `${componentPath}: flyttbar installasjonsmarkør mangler drag-state.`);
   requireText(component, "if (dragMarker) {", `${componentPath}: flytting av installasjonsmarkør håndteres ikke.`);
   requireText(component, "setDragMarker({ id: marker.id });", `${componentPath}: markør kan ikke startes som dra-operasjon.`);
@@ -66,4 +76,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("✅ Expo ProffDok Badskisse check OK – mål, WC/servant-vegglogikk og proporsjonale installasjonsmarkører er verifisert");
+console.log("✅ Expo ProffDok Badskisse check OK – målretning, målbånd, WC/servant-sideavstand, målvisning og installasjonsmarkører er verifisert");
