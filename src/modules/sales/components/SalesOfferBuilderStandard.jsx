@@ -1,3 +1,6 @@
+// Expo ProffDok – FASE 42F UX
+// Tydeliggjør hva lokal versjon og serverversjon betyr i recovery-valget.
+// Endrer kun presentasjon/tekst; eksisterende recovery-, lagrings- og navigasjonslogikk er urørt.
 // Expo ProffDok – FASE 31A2
 // Validerer også valgfritt antall før lagring. Antall må være positivt og kan
 // skrives med komma/punktum. Feilen peker direkte til riktig antallsfelt uten
@@ -168,7 +171,7 @@ function getSaveStatus(status) {
   if (status === "offline") {
     return {
       className: "sales-offer-save-offline",
-      text: "⚠ Lagret lokalt – venter på server.",
+      text: "🟠 Lagret på denne enheten – venter på synkronisering med server.",
     };
   }
   if (status === "saving") {
@@ -186,7 +189,7 @@ function getSaveStatus(status) {
   if (status === "error") {
     return {
       className: "sales-offer-save-error",
-      text: "⚠ Lagret lokalt – serveren er ikke tilgjengelig. Endringene beholdes på denne enheten.",
+      text: "🟠 Lagret på denne enheten – serveren er ikke tilgjengelig ennå. Vi prøver å synkronisere når forbindelsen er tilbake.",
     };
   }
   return {
@@ -502,13 +505,13 @@ export default function SalesOfferBuilder(props) {
           content: "Lagrer på server …";
         }
         .sales-offer-save-offline .sales-form-hero::after {
-          content: "⚠ Lagret lokalt – venter på server.";
+          content: "🟠 Lagret på denne enheten – venter på synkronisering med server.";
           color: #8a5a00;
           font-weight: 750;
         }
         .sales-offer-save-error .sales-form-hero::after {
-          content: "⚠ Lagret lokalt – serveren er ikke tilgjengelig. Endringene beholdes på denne enheten.";
-          color: #9a3412;
+          content: "🟠 Lagret på denne enheten – serveren er ikke tilgjengelig ennå. Vi prøver å synkronisere når forbindelsen er tilbake.";
+          color: #8a5a00;
           font-weight: 750;
         }
         .sales-offer-save-idle .sales-form-hero::after {
@@ -654,43 +657,60 @@ export default function SalesOfferBuilder(props) {
               id="sales-offer-recovery-title"
               style={{ margin: "0 0 12px", fontSize: 24, lineHeight: 1.2 }}
             >
-              {isHistoryRecovery
-                ? "Lokal sikkerhetskopi funnet"
-                : "Nyere lokal kladd funnet"}
+              To versjoner av tilbudet er funnet
             </h2>
 
             <p style={{ margin: "0 0 16px", lineHeight: 1.55 }}>
               {isHistoryRecovery
-                ? "Vi fant en lokal sikkerhetskopi med mer innhold enn siste kladd. Velg hvilken versjon du vil fortsette med."
-                : "Denne enheten har en nyere tilbudskladd enn den siste versjonen som er bekreftet av serveren. Velg hvilken versjon du vil fortsette med."}
+                ? "Expo ProffDok fant en lokal sikkerhetskopi med mer innhold enn kladden som sist var aktiv. Velg hvilken versjon du vil fortsette med."
+                : "Dette kan skje hvis appen ble satt i bakgrunnen før siste endring rakk å bli synkronisert. Begge versjonene er beholdt til du velger hvilken du vil fortsette med."}
             </p>
 
             <div
               style={{
                 display: "grid",
-                gap: 10,
+                gap: 12,
                 marginBottom: 18,
-                padding: 16,
-                borderRadius: 14,
-                background: "#f8fafc",
-                border: "1px solid #dbe7ee",
               }}
             >
-              <div>
+              <div
+                style={{
+                  padding: 16,
+                  borderRadius: 14,
+                  background: "#f8fafc",
+                  border: "1px solid #dbe7ee",
+                }}
+              >
                 <strong>
-                  Lokal sikkerhetskopi: {Number(visibleRecovery.localLines || 0)} tilbudslinjer og {Number(visibleRecovery.localOptions || 0)} opsjoner
+                  Denne enheten – lokal versjon: {Number(visibleRecovery.localLines || 0)} tilbudslinjer og {Number(visibleRecovery.localOptions || 0)} opsjoner
                 </strong>
-                <div style={{ marginTop: 3, color: "#52616b", fontSize: 14 }}>
-                  {formatRecoveryTime(localTime)}
+                <div style={{ marginTop: 4, color: "#52616b", fontSize: 14 }}>
+                  Lagret på denne enheten {formatRecoveryTime(localTime)}
                 </div>
+                <p style={{ margin: "8px 0 0", lineHeight: 1.45, color: "#334155" }}>
+                  Velger du denne, fortsetter du med arbeidet fra denne enheten. Expo ProffDok forsøker deretter å lagre versjonen på serveren.
+                </p>
               </div>
-              <div>
+
+              <div
+                style={{
+                  padding: 16,
+                  borderRadius: 14,
+                  background: "#f8fafc",
+                  border: "1px solid #dbe7ee",
+                }}
+              >
                 <strong>
-                  {isHistoryRecovery ? "Siste kladd" : "Server"}: {Number(visibleRecovery.serverLines || 0)} tilbudslinjer og {Number(visibleRecovery.serverOptions || 0)} opsjoner
+                  {isHistoryRecovery ? "Siste aktive kladd" : "Server – sist bekreftet lagret"}: {Number(visibleRecovery.serverLines || 0)} tilbudslinjer og {Number(visibleRecovery.serverOptions || 0)} opsjoner
                 </strong>
-                <div style={{ marginTop: 3, color: "#52616b", fontSize: 14 }}>
-                  {formatRecoveryTime(otherTime)}
+                <div style={{ marginTop: 4, color: "#52616b", fontSize: 14 }}>
+                  {isHistoryRecovery ? "Sist aktiv " : "Bekreftet på server "}{formatRecoveryTime(otherTime)}
                 </div>
+                <p style={{ margin: "8px 0 0", lineHeight: 1.45, color: "#334155" }}>
+                  {isHistoryRecovery
+                    ? "Velger du denne, beholder du kladden som var aktiv før sikkerhetskopien ble funnet."
+                    : "Velger du denne, fortsetter du med serverversjonen. Endringer som bare finnes på denne enheten blir ikke brukt."}
+                </p>
               </div>
             </div>
 
@@ -705,7 +725,7 @@ export default function SalesOfferBuilder(props) {
                 fontWeight: 650,
               }}
             >
-              Autosave er stoppet mens dette valget står åpent. Fokusskifte eller Escape velger ingenting.
+              Automatisk lagring er satt på vent mens dette valget står åpent. Fokusskifte eller Escape velger ingenting.
             </p>
 
             <div
@@ -722,8 +742,8 @@ export default function SalesOfferBuilder(props) {
                 onClick={() => chooseRecovery("server")}
               >
                 {isHistoryRecovery
-                  ? `Behold siste ${Number(visibleRecovery.serverLines || 0)} linjer`
-                  : `Bruk serverens ${Number(visibleRecovery.serverLines || 0)} linjer`}
+                  ? "Bruk siste aktive kladd"
+                  : "Bruk serverversjonen"}
               </button>
               <button
                 type="button"
@@ -732,7 +752,7 @@ export default function SalesOfferBuilder(props) {
                 onClick={() => chooseRecovery("local")}
                 autoFocus
               >
-                Gjenopprett {Number(visibleRecovery.localLines || 0)} linjer
+                Bruk versjonen fra denne enheten
               </button>
             </div>
           </div>
