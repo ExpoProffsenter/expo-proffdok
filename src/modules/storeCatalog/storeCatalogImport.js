@@ -1,5 +1,6 @@
-// Expo ProffDok – FASE 39B.1
+// Expo ProffDok – FASE 42B / FASE 39B.1
 // Parser for Ringsides faste ERP-eksport: Windows-1252, semikolon, 18 felt.
+// Cordels tredje statusflagg er «Utgått» og slike varer skal ikke inn i aktiv katalog.
 // Nettopris behandles kun internt og skal aldri kopieres til kunde-/tilbuds-JSON.
 
 export const STORE_CATALOG_ENCODING = "windows-1252";
@@ -90,6 +91,22 @@ export function parseStoreCatalogLine(line, sourceLineNo = null) {
     };
   }
 
+  const sourceFlag1 = parseFlag(fields[11]);
+  const sourceFlag2 = parseFlag(fields[12]);
+  const sourceFlag3 = parseFlag(fields[13]);
+  const sourceFlag4 = parseFlag(fields[14]);
+
+  // I Ringsides faste Cordel-eksport er tredje statusflagg feltet «Utgått».
+  // Varen skal da verken lastes opp eller kunne dukke opp i varesøk.
+  if (sourceFlag3) {
+    return {
+      status: "skipped_discontinued",
+      reason: "cordel_discontinued",
+      sourceLineNo,
+      fieldCount: fields.length,
+    };
+  }
+
   const supplierListPriceExVat = parseStoreCatalogDecimal(fields[2]);
   const purchaseDiscountPercent = parseStoreCatalogDecimal(fields[3]);
   const purchaseNetExVat = parseStoreCatalogDecimal(fields[4]);
@@ -129,10 +146,10 @@ export function parseStoreCatalogLine(line, sourceLineNo = null) {
       customerPriceInclVat,
       productGroup: trimText(fields[9]),
       priceDate: parseStoreCatalogDate(fields[10]),
-      sourceFlag1: parseFlag(fields[11]),
-      sourceFlag2: parseFlag(fields[12]),
-      sourceFlag3: parseFlag(fields[13]),
-      sourceFlag4: parseFlag(fields[14]),
+      sourceFlag1,
+      sourceFlag2,
+      sourceFlag3,
+      sourceFlag4,
       description: cleanDescription(fields[15]),
       gtin: normalizeStoreCatalogGtin(fields[16]),
     },
@@ -166,6 +183,7 @@ export function createStoreCatalogImportSummary() {
   return {
     totalRows: 0,
     acceptedRows: 0,
+    skippedDiscontinuedRows: 0,
     skippedZeroPriceRows: 0,
     skippedMissingSkuRows: 0,
     malformedRows: 0,
@@ -176,6 +194,7 @@ export function createStoreCatalogImportSummary() {
 function registerParsedLine(summary, parsed) {
   summary.totalRows += 1;
   if (parsed.status === "accepted") summary.acceptedRows += 1;
+  else if (parsed.status === "skipped_discontinued") summary.skippedDiscontinuedRows += 1;
   else if (parsed.status === "skipped_zero_price") summary.skippedZeroPriceRows += 1;
   else if (parsed.status === "skipped_missing_sku") summary.skippedMissingSkuRows += 1;
   else summary.malformedRows += 1;
