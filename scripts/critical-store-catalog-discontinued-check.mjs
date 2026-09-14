@@ -2,10 +2,13 @@ import {
   parseStoreCatalogLine,
   STORE_CATALOG_FIELD_COUNT,
 } from "../src/modules/storeCatalog/storeCatalogImport.js";
-import { uploadStoreCatalogBatch } from "../src/modules/storeCatalog/storeCatalogClient.js";
+import {
+  prepareStoreCatalogActivation,
+  uploadStoreCatalogBatch,
+} from "../src/modules/storeCatalog/storeCatalogClient.js";
 
 function assert(condition, message) {
-  if (!condition) throw new Error(`FASE 42B critical check: ${message}`);
+  if (!condition) throw new Error(`FASE 42C critical check: ${message}`);
 }
 
 assert(STORE_CATALOG_FIELD_COUNT === 18, "ERP-formatet skal fortsatt ha 18 felt.");
@@ -38,15 +41,80 @@ assert(
   "utgått vare skal aldri serialiseres eller kunne lastes opp til aktiv katalog."
 );
 
+const avpFields = [...baseFields];
+avpFields[0] = "ÅVP Geberit";
+avpFields[1] = "AVP-001";
+avpFields[13] = "0";
+const avp = parseStoreCatalogLine(avpFields.join(";"), 3);
+assert(
+  avp.status === "skipped_avp_supplier",
+  "leverandør som starter med ÅVP skal hoppes over."
+);
+assert(
+  avp.reason === "legacy_avp_supplier",
+  "ÅVP-vare skal få eksplisitt legacy-leverandørårsak."
+);
+assert(!avp.item, "ÅVP-vare skal aldri serialiseres eller lastes opp.");
+
+const avpCaseFields = [...baseFields];
+avpCaseFields[0] = "  åvp Macro  ";
+avpCaseFields[1] = "AVP-002";
+const avpCase = parseStoreCatalogLine(avpCaseFields.join(";"), 4);
+assert(
+  avpCase.status === "skipped_avp_supplier",
+  "ÅVP-filteret skal tåle små bokstaver og omkringliggende mellomrom."
+);
+
+const normalGeberitFields = [...baseFields];
+normalGeberitFields[0] = "Geberit";
+normalGeberitFields[1] = "GEB-001";
+const normalGeberit = parseStoreCatalogLine(normalGeberitFields.join(";"), 5);
+assert(
+  normalGeberit.status === "accepted",
+  "vanlig Geberit uten ÅVP-prefiks skal fortsatt importeres."
+);
+
 const wrongFlagFields = [...baseFields];
 wrongFlagFields[1] = "1001026";
 wrongFlagFields[12] = "0";
 wrongFlagFields[13] = "0";
 wrongFlagFields[14] = "1";
-const wrongFlag = parseStoreCatalogLine(wrongFlagFields.join(";"), 3);
+const wrongFlag = parseStoreCatalogLine(wrongFlagFields.join(";"), 6);
 assert(
   wrongFlag.status === "accepted",
   "det er kun Cordels tredje statusflagg som skal tolkes som Utgått."
+);
+
+let activationRpc = null;
+const activationClient = {
+  async rpc(name, args) {
+    activationRpc = { name, args };
+    return { data: { accepted_rows: 300000, duplicate_rows: 1 }, error: null };
+  },
+};
+await prepareStoreCatalogActivation(
+  activationClient,
+  "00000000-0000-0000-0000-000000000042",
+  {
+    totalRows: 489923,
+    skippedDiscontinuedRows: 66356,
+    skippedAvpSupplierRows: 94917,
+    skippedZeroPriceRows: 19255,
+    skippedMissingSkuRows: 3,
+    malformedRows: 0,
+  }
+);
+assert(
+  activationRpc?.name === "prepare_internal_store_catalog_activation_v3",
+  "klargjøring skal bruke v3-RPC med ÅVP-teller."
+);
+assert(
+  activationRpc?.args?.p_skipped_avp_supplier_rows === 94917,
+  "ÅVP-telleren skal sendes eksplisitt til backend."
+);
+assert(
+  activationRpc?.args?.p_skipped_discontinued_rows === 66356,
+  "Utgått-telleren skal fortsatt sendes separat."
 );
 
 let rpcCalls = 0;
@@ -89,4 +157,4 @@ assert(recoveryEvents.some((event) => event.type === "retry"), "timeout skal fø
 assert(recoveryEvents.some((event) => event.type === "split"), "gjentatt timeout skal dele batchen.");
 assert(recovered?.recovered === true, "vellykket deling skal rapporteres som gjenopprettet batch.");
 
-console.log("✅ Expo ProffDok Cordel Utgått-filter / timeout recovery check OK");
+console.log("✅ Expo ProffDok Cordel Utgått / ÅVP-filter / timeout recovery check OK");
