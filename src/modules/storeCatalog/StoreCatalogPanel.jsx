@@ -1,6 +1,6 @@
-// Expo ProffDok – FASE 42B / FASE 39B.2
+// Expo ProffDok – FASE 42C / FASE 39B.2
 // Intern katalogvelger og lagringseffektiv ERP-prisoppdatering for Ringside/Bademiljø Expo.
-// Cordel-varer merket «Utgått» filtreres i parseren og vises som egen importteller.
+// Cordel-varer merket «Utgått» og gamle ÅVP-leverandørfiler filtreres i parseren og vises som egne importtellere.
 // Nettopris vises kun internt og kopieres aldri til kunde-/tilbuds-JSON.
 
 import { useEffect, useRef, useState } from "react";
@@ -72,7 +72,8 @@ function pendingSummary(pending = {}) {
     totalRows: Number(pending.total_rows || 0),
     acceptedRows: Number(pending.accepted_rows || 0),
     uniqueRows: Number(pending.accepted_rows || 0),
-    skippedDiscontinuedRows: null,
+    skippedDiscontinuedRows: Number(pending.skipped_discontinued_rows || 0),
+    skippedAvpSupplierRows: Number(pending.skipped_avp_supplier_rows || 0),
     skippedZeroPriceRows: Number(pending.skipped_zero_price_rows || 0),
     skippedMissingSkuRows: Number(pending.skipped_missing_sku_rows || 0),
     malformedRows: Number(pending.malformed_rows || 0),
@@ -90,9 +91,8 @@ function ImportSummary({ summary }) {
       <span>Linjer <strong>{formatNumber(summary.totalRows)}</strong></span>
       <span>Gyldige/unike <strong>{formatNumber(uniqueRows)}</strong></span>
       <span>Duplikater <strong>{formatNumber(duplicateRows)}</strong></span>
-      {summary.skippedDiscontinuedRows != null ? (
-        <span>Utgått i Cordel <strong>{formatNumber(summary.skippedDiscontinuedRows)}</strong></span>
-      ) : null}
+      <span>Utgått i Cordel <strong>{formatNumber(summary.skippedDiscontinuedRows)}</strong></span>
+      <span>ÅVP hoppet over <strong>{formatNumber(summary.skippedAvpSupplierRows)}</strong></span>
       <span>0-pris hoppet over <strong>{formatNumber(summary.skippedZeroPriceRows)}</strong></span>
       <span>Mangler varenr. <strong>{formatNumber(summary.skippedMissingSkuRows)}</strong></span>
       <span>Strukturfeil <strong>{formatNumber(summary.malformedRows)}</strong></span>
@@ -236,7 +236,7 @@ function ImportPanel({ client, onActivated }) {
       <div className="catalog-import-body">
         <p>
           Bruk Ringsides faste ERP-eksport (.txt). Filen leses som Windows-1252 med 18 semikolonseparerte felt.
-          Varer merket Utgått i Cordel, eller med 0 i nettopris/utsalgspris, blir automatisk hoppet over. Varesøk er midlertidig låst mens prisoppdateringen pågår.
+          Varer merket Utgått i Cordel, gamle ÅVP-leverandørfiler og varer med 0 i nettopris/utsalgspris blir automatisk hoppet over. Varesøk er midlertidig låst mens prisoppdateringen pågår.
         </p>
 
         {!importId ? (
@@ -373,7 +373,7 @@ export default function StoreCatalogPanel({ onSelectItem }) {
         .catalog-search{position:relative;margin-top:12px}.catalog-search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#5d727a}.catalog-search input{width:100%;box-sizing:border-box;padding:12px 14px 12px 42px;border:1px solid #b9ccd4;border-radius:12px;background:#fff;font:inherit}
         .catalog-results{display:grid;gap:8px;margin-top:10px;max-height:420px;overflow:auto}.catalog-result{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:11px 12px;border:1px solid #d5e2e7;border-radius:12px;background:#fff}.catalog-result.is-primary{border-width:2px}.catalog-result-copy{min-width:0}.catalog-result-copy strong,.catalog-result-copy span,.catalog-result-copy small{display:block}.catalog-result-copy span{color:#40545c;margin-top:3px}.catalog-result-copy small{color:#71838a;margin-top:2px}.catalog-prices{text-align:right;white-space:nowrap}.catalog-prices span,.catalog-prices small{display:block;color:#64777e}.catalog-prices strong{display:block;margin:2px 0}.catalog-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
         .catalog-primary,.catalog-secondary{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;padding:9px 12px;font-weight:750;cursor:pointer}.catalog-primary{border:1px solid #0a6977;background:#0a6977;color:#fff}.catalog-secondary{border:1px solid #b9ccd4;background:#fff;color:#183a45}.catalog-primary:disabled,.catalog-secondary:disabled{opacity:.5;cursor:not-allowed}
-        .catalog-import{margin-top:10px;border-top:1px solid #d9e5e9;padding-top:9px}.catalog-import summary{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-weight:750;color:#254954}.catalog-import-body{padding:10px 0 2px}.catalog-import-body p{margin:0 0 10px;color:#52676f}.catalog-import-body input{display:block;margin-bottom:6px}.catalog-import-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.catalog-summary{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin-top:12px}.catalog-summary span{padding:8px;border-radius:9px;background:#eaf3f6;font-size:12px}.catalog-summary strong{display:block;font-size:15px;margin-top:2px}.catalog-message{margin-top:10px!important;font-weight:700;color:#234650!important}
+        .catalog-import{margin-top:10px;border-top:1px solid #d9e5e9;padding-top:9px}.catalog-import summary{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-weight:750;color:#254954}.catalog-import-body{padding:10px 0 2px}.catalog-import-body p{margin:0 0 10px;color:#52676f}.catalog-import-body input{display:block;margin-bottom:6px}.catalog-import-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.catalog-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:7px;margin-top:12px}.catalog-summary span{padding:8px;border-radius:9px;background:#eaf3f6;font-size:12px}.catalog-summary strong{display:block;font-size:15px;margin-top:2px}.catalog-message{margin-top:10px!important;font-weight:700;color:#234650!important}
         .catalog-alt-backdrop{position:fixed;inset:0;z-index:30000;background:rgba(5,20,28,.45);display:grid;place-items:center;padding:18px}.catalog-alt-modal{width:min(900px,100%);max-height:85vh;overflow:auto;background:#fff;border-radius:18px;padding:18px;box-shadow:0 28px 90px rgba(0,0,0,.28)}.catalog-alt-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}.catalog-alt-head h3{margin:0}.catalog-alt-close{border:0;background:#eef4f6;border-radius:50%;width:36px;height:36px;display:grid;place-items:center;cursor:pointer}
         @media(max-width:760px){.catalog-panel{border-radius:0;margin-bottom:10px}.catalog-result{grid-template-columns:1fr}.catalog-prices{text-align:left}.catalog-actions{justify-content:flex-start}.catalog-summary{grid-template-columns:1fr 1fr}}
       `}</style>
