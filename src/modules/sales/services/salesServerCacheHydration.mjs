@@ -71,6 +71,45 @@ export function hasMeaningfulInspectionContent(value = {}) {
   );
 }
 
+function mediaIdentity(value = {}) {
+  const id = String(value?.id || "").trim();
+  const path = String(value?.path || "").trim();
+  return { id, path };
+}
+
+export function mergeInspectionMediaForDisplay(currentMedia = [], serverMedia = []) {
+  const current = Array.isArray(currentMedia) ? currentMedia : [];
+  const server = Array.isArray(serverMedia) ? serverMedia : [];
+
+  const serverById = new Map();
+  const serverByPath = new Map();
+  server.forEach((item) => {
+    const { id, path } = mediaIdentity(item);
+    if (id) serverById.set(id, item);
+    if (path) serverByPath.set(path, item);
+  });
+
+  return current.map((item) => {
+    const { id, path } = mediaIdentity(item);
+    if (!path) return item;
+
+    const serverItem =
+      (id ? serverById.get(id) : null) ||
+      (path ? serverByPath.get(path) : null) ||
+      null;
+    const freshDataUrl = String(serverItem?.dataUrl || "").trim();
+
+    if (!freshDataUrl || freshDataUrl === String(item?.dataUrl || "").trim()) {
+      return item;
+    }
+
+    return {
+      ...item,
+      dataUrl: freshDataUrl,
+    };
+  });
+}
+
 export function clearStructurallyEmptyInspectionDraftsForServerRows(
   rows = [],
   storage = browserStorage()
