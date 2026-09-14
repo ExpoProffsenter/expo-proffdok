@@ -29,7 +29,8 @@ if (component) {
   requireText(component, 'hot: { label: "VV", diameterMm: "30", fill: "#d64545"', `${componentPath}: VV mangler rød standardmarkør Ø30.`);
   requireText(component, 'diameterMm: String(marker?.diameterMm ?? preset.diameterMm ?? "")', `${componentPath}: eldre markører normaliseres ikke med standard diameter.`);
   requireText(component, "return clamp(rawRadius, 1.8, 28);", `${componentPath}: AVL/KV/VV bruker ikke felles proporsjonal målskala.`);
-  requireText(component, "function markerDisplayLabel", `${componentPath}: små installasjonsmarkører mangler separat lesbar etikett.`);
+  requireText(component, "function markerDisplayLabel", `${componentPath}: markørtype/diameter kan fortsatt brukes i redigeringsinformasjon.`);
+  requireText(component, ": null}", `${componentPath}: AVL/KV/VV skal ikke ha tekstetiketter i selve tegningen.`);
   requireText(component, 'const WALL_ATTACHED_FIXTURE_LABELS = new Set(["WC", "Servant"]);', `${componentPath}: WC og servant deler ikke vegglogikk.`);
   requireText(component, 'wallOffsetMm: String(box?.wallOffsetMm ?? "0")', `${componentPath}: avstand fra vegg lagres ikke på WC/servant.`);
   requireText(component, 'snapWallId: String(box?.snapWallId || "")', `${componentPath}: tilknyttet vegg lagres ikke på WC/servant.`);
@@ -37,6 +38,8 @@ if (component) {
   requireText(component, "function fixtureSideDistanceData", `${componentPath}: senteravstand til nærmeste sidevegg mangler.`);
   requireText(component, "function placeWallAttachedFixtureAtSideDistance", `${componentPath}: eksakt flytting etter sideveggmål mangler.`);
   requireText(component, "Senteravstand fra nærmeste sidevegg (mm)", `${componentPath}: felt for sideveggmål mangler.`);
+  requireText(component, "function FixtureWallOffsetDimension", `${componentPath}: synlig avstand fra bakvegg mangler.`);
+  requireText(component, "showFixtureDimensions && !isFixtureBox(box)", `${componentPath}: produktstørrelser skjules ikke fra selve skissen.`);
   requireText(component, "placeholder=\"0\"", `${componentPath}: nullavstand vises ikke som placeholder.`);
   requireText(component, "if (!wallAttached) {", `${componentPath}: WC/servant er ikke eksplisitt unntatt hjørnesnap.`);
   requireText(component, "const interior = wallInteriorNormal(wall, walls);", `${componentPath}: WC/servant orienteres ikke etter innsiden av rommet.`);
@@ -49,7 +52,7 @@ if (component) {
   requireText(component, '`${isWindow ? "Vindu" : "Dør"} – fyll inn mål`', `${componentPath}: dør/vindu viser ikke tydelig at mål mangler.`);
   requireText(component, "function SvgTextBadge", `${componentPath}: lesbar mål-badge mangler.`);
   requireText(component, "function readableWallTextAngle", `${componentPath}: veggmål følger ikke veggens retning.`);
-  requireText(component, "return hasOpeningDimensions ? 72 : 48;", `${componentPath}: separate målbånd for vegg og åpning mangler.`);
+  requireText(component, "return hasOpeningDimensions ? 52 : 24;", `${componentPath}: veggmål ligger ikke nær veggen med eget bånd utenfor åpningsmål.`);
   requireText(component, "Målvisning", `${componentPath}: mål av/på-funksjon mangler.`);
   requireText(component, 'dimensions: { ...current, [key]: current[key] === false }', `${componentPath}: målvisning lagres ikke i skissen.`);
   requireText(component, "const [dragMarker, setDragMarker] = useState(null);", `${componentPath}: flyttbar installasjonsmarkør mangler drag-state.`);
@@ -63,9 +66,10 @@ if (component) {
 if (help) {
   requireText(help, "Sluk, avløp, kaldt vann og varmt vann kan plasseres fritt og dras senere.", `${helpPath}: Hjelp beskriver ikke fri plassering/flytting av installasjonsmarkører.`);
   requireText(help, "Avløp starter som grønn Ø110 mm, kaldt vann som blå Ø30 mm og varmt vann som rød Ø30 mm.", `${helpPath}: Hjelp beskriver ikke standarddiameter for AVL/KV/VV.`);
-  requireText(help, "AVL/KV/VV vises som helfargede sirkler proporsjonalt etter registrert diameter", `${helpPath}: Hjelp beskriver ikke proporsjonal visning av AVL/KV/VV.`);
+  requireText(help, "AVL/KV/VV vises som helfargede sirkler proporsjonalt etter registrert diameter uten tekstetiketter i selve skissen", `${helpPath}: Hjelp beskriver ikke ryddig visning av AVL/KV/VV.`);
   requireText(help, "WC og servant følger vegg uten hjørnesnap", `${helpPath}: Hjelp beskriver ikke WC/servant uten hjørnesnap.`);
   requireText(help, "Avstand fra vegg i millimeter", `${helpPath}: Hjelp beskriver ikke veggavstand for WC/servant.`);
+  requireText(help, "Produktmål vises i redigeringsboksen", `${helpPath}: Hjelp beskriver ikke at produktmål er flyttet ut av tegningen.`);
   requireText(help, "fyll inn målene i de tomme målfeltene", `${helpPath}: Hjelp beskriver ikke forbedret målvisning.`);
   requireText(help, "åpningsmål nærmest veggen og totalmålet lenger ut", `${helpPath}: Hjelp beskriver ikke separate målbånd for åpning og vegg.`);
   requireText(help, "Senteravstand fra nærmeste sidevegg", `${helpPath}: Hjelp beskriver ikke eksakt sideveggmål for WC/servant.`);

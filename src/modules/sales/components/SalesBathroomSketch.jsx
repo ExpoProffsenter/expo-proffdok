@@ -167,7 +167,7 @@ function wallDimensionOffset(wall, sketch, showOpeningDimensions = true) {
   const hasOpeningDimensions = showOpeningDimensions && (sketch?.openings || []).some(
     (opening) => opening.wallId === wall.id && openingPlacementData(opening, wall)
   );
-  return hasOpeningDimensions ? 72 : 48;
+  return hasOpeningDimensions ? 52 : 24;
 }
 
 function wallLetter(index) {
@@ -871,6 +871,28 @@ function OpeningPlacementDimensions({ opening, wall, walls }) {
   );
 }
 
+function FixtureWallOffsetDimension({ box, walls }) {
+  if (!isWallAttachedFixture(box) || !box?.snapWallId) return null;
+  const wall = (walls || []).find((item) => item.id === box.snapWallId);
+  const offsetMm = mmValue(box?.wallOffsetMm);
+  if (!wall || offsetMm <= 0) return null;
+  const projected = closestPointOnWall(wall, { x: box.x, y: box.y });
+  const interior = wallInteriorNormal(wall, walls);
+  const backPoint = shiftedPoint(projected, interior, offsetMm * measuredPxPerMm(walls));
+  const mid = { x: (projected.x + backPoint.x) / 2, y: (projected.y + backPoint.y) / 2 };
+  const wallLength = wallPixelLength(wall) || 1;
+  const tangent = { x: (wall.x2 - wall.x1) / wallLength, y: (wall.y2 - wall.y1) / wallLength };
+  const tick = 4;
+  const tickLine = (point, key) => <line key={key} x1={point.x - tangent.x * tick} y1={point.y - tangent.y * tick} x2={point.x + tangent.x * tick} y2={point.y + tangent.y * tick} stroke="#75858c" strokeWidth="1" />;
+  return (
+    <g pointerEvents="none">
+      <line x1={projected.x} y1={projected.y} x2={backPoint.x} y2={backPoint.y} stroke="#75858c" strokeWidth="1" />
+      {tickLine(projected, "wa")}{tickLine(backPoint, "wb")}
+      <SvgTextBadge x={mid.x} y={mid.y} text={String(offsetMm)} fontSize={7} fontWeight={700} color="#58666c" />
+    </g>
+  );
+}
+
 function FixtureSideDimension({ box, walls }) {
   const data = fixtureSideDistanceData(box, walls);
   if (!data) return null;
@@ -916,7 +938,7 @@ function boxMarkup(box, walls, showDimensions = true) {
   const shape = fixtureMarkup(box, walls);
   const rotateShape = isWallAttachedFixture(box);
   const shapeMarkup = rotateShape ? `<g transform="rotate(${normalizedRotation(box.rotation)})">${shape}</g>` : shape;
-  const sizeLabel = showDimensions ? `<text x="0" y="8" text-anchor="middle" font-size="7" font-weight="700" fill="#435158" style="paint-order:stroke;stroke:#fff;stroke-width:3px">${escapeXml(labels.second)}</text>` : "";
+  const sizeLabel = showDimensions && !isFixtureBox(box) ? `<text x="0" y="8" text-anchor="middle" font-size="7" font-weight="700" fill="#435158" style="paint-order:stroke;stroke:#fff;stroke-width:3px">${escapeXml(labels.second)}</text>` : "";
   return `<g transform="translate(${box.x} ${box.y})">${shapeMarkup}<text x="0" y="-2" text-anchor="middle" font-size="8" font-weight="800" fill="#172126" style="paint-order:stroke;stroke:#fff;stroke-width:3px">${escapeXml(labels.first)}</text>${sizeLabel}</g>`;
 }
 
@@ -965,6 +987,22 @@ function openingMarkup(opening, wall, walls, showDimensions = true) {
   return `${showDimensions ? openingDimensionMarkup(opening, wall, walls) : ""}${symbol}${svgTextBadgeMarkup(labelX, labels.second ? labelY - 7 : labelY, labels.first, 7, 800, "#172126")}${labels.second ? svgTextBadgeMarkup(labelX, labelY + 7, labels.second, 6.5, 700, "#435158") : ""}`;
 }
 
+function fixtureWallOffsetDimensionMarkup(box, walls) {
+  if (!isWallAttachedFixture(box) || !box?.snapWallId) return "";
+  const wall = (walls || []).find((item) => item.id === box.snapWallId);
+  const offsetMm = mmValue(box?.wallOffsetMm);
+  if (!wall || offsetMm <= 0) return "";
+  const projected = closestPointOnWall(wall, { x: box.x, y: box.y });
+  const interior = wallInteriorNormal(wall, walls);
+  const backPoint = shiftedPoint(projected, interior, offsetMm * measuredPxPerMm(walls));
+  const mid = { x: (projected.x + backPoint.x) / 2, y: (projected.y + backPoint.y) / 2 };
+  const wallLength = wallPixelLength(wall) || 1;
+  const tangent = { x: (wall.x2 - wall.x1) / wallLength, y: (wall.y2 - wall.y1) / wallLength };
+  const tick = 4;
+  const tickSvg = (point) => `<line x1="${point.x - tangent.x * tick}" y1="${point.y - tangent.y * tick}" x2="${point.x + tangent.x * tick}" y2="${point.y + tangent.y * tick}" stroke="#75858c" stroke-width="1"/>`;
+  return `<g><line x1="${projected.x}" y1="${projected.y}" x2="${backPoint.x}" y2="${backPoint.y}" stroke="#75858c" stroke-width="1"/>${tickSvg(projected)}${tickSvg(backPoint)}${svgTextBadgeMarkup(mid.x, mid.y, String(offsetMm), 7, 700, "#58666c")}</g>`;
+}
+
 function fixtureSideDimensionMarkup(box, walls) {
   const data = fixtureSideDistanceData(box, walls);
   if (!data) return "";
@@ -984,8 +1022,7 @@ function markerMarkup(marker, walls, showDimensions = true) {
   if (marker.type === "drain") {
     return `<g transform="translate(${marker.x} ${marker.y})"><circle r="${radius}" fill="${visual.fill}" stroke="${visual.stroke}" stroke-width="2"/><text x="0" y="3" text-anchor="middle" font-size="8" font-weight="800" fill="${visual.text}">SLUK</text></g>`;
   }
-  const label = showDimensions ? markerDisplayLabel(marker) : (MARKER_LABELS[marker.type] || "");
-  return `<g transform="translate(${marker.x} ${marker.y})"><circle r="${radius}" fill="${visual.fill}" stroke="${visual.stroke}" stroke-width="1.5"/>${svgTextBadgeMarkup(radius + 18, 0, label, 6.5, 800, "#172126")}</g>`;
+  return `<g transform="translate(${marker.x} ${marker.y})"><circle r="${radius}" fill="${visual.fill}" stroke="${visual.stroke}" stroke-width="1.5"/></g>`;
 }
 
 export function bathroomSketchDataUrl(value) {
@@ -1010,7 +1047,7 @@ export function bathroomSketchDataUrl(value) {
     return `<polyline points="${points}" fill="none" stroke="#172126" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;
   }).join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="${sketchViewBox(sketch)}"><rect x="-2000" y="-2000" width="5000" height="5000" fill="#fff"/>${grid.join("")}${strokes}${walls}${sketch.openings.map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls, dimensions.openings)).join("")}${sketch.boxes.map((box) => `${dimensions.fixtures ? fixtureSideDimensionMarkup(box, sketch.walls) : ""}${boxMarkup(box, sketch.walls, dimensions.fixtures)}`).join("")}${sketch.markers.map((marker) => markerMarkup(marker, sketch.walls, dimensions.fixtures)).join("")}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="${sketchViewBox(sketch)}"><rect x="-2000" y="-2000" width="5000" height="5000" fill="#fff"/>${grid.join("")}${strokes}${walls}${sketch.openings.map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls, dimensions.openings)).join("")}${sketch.boxes.map((box) => `${dimensions.fixtures ? `${fixtureWallOffsetDimensionMarkup(box, sketch.walls)}${fixtureSideDimensionMarkup(box, sketch.walls)}` : ""}${boxMarkup(box, sketch.walls, dimensions.fixtures)}`).join("")}${sketch.markers.map((marker) => markerMarkup(marker, sketch.walls, dimensions.fixtures)).join("")}</svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
@@ -1840,14 +1877,14 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
         const showFixtureDimensions = (sketch.dimensions || DEFAULT_DIMENSION_VISIBILITY).fixtures !== false;
         return (
           <g key={box.id}>
-            {showFixtureDimensions && isWallAttachedFixture(box) ? <FixtureSideDimension box={box} walls={sketch.walls} /> : null}
+            {showFixtureDimensions && isWallAttachedFixture(box) ? <><FixtureWallOffsetDimension box={box} walls={sketch.walls} /><FixtureSideDimension box={box} walls={sketch.walls} /></> : null}
             <g transform={`translate(${box.x} ${box.y})`} onPointerDown={(event) => startBoxPointer(event, box)}>
                   <rect x={-size.width / 2 - 10} y={-size.depth / 2 - 10} width={size.width + 20} height={size.depth + 20} fill="transparent" stroke="none" pointerEvents="all" />
                   {isWallAttachedFixture(box) ? (
                     <g transform={`rotate(${normalizedRotation(box.rotation)})`} pointerEvents="none"><FixtureShape box={box} size={baseSize} active={active} /></g>
                   ) : <FixtureShape box={box} size={size} active={active} />}
                   <text x="0" y="-2" textAnchor="middle" fontSize={active ? "9" : "8"} fontWeight="800" fill="#172126" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">{labels.first}</text>
-                  {showFixtureDimensions ? <text x="0" y="8" textAnchor="middle" fontSize={active ? "8" : "7"} fontWeight="700" fill="#435158" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">{labels.second}</text> : null}
+                  {showFixtureDimensions && !isFixtureBox(box) ? <text x="0" y="8" textAnchor="middle" fontSize={active ? "8" : "7"} fontWeight="700" fill="#435158" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">{labels.second}</text> : null}
             {snapText ? <text x="0" y={size.depth / 2 + 16} textAnchor="middle" fontSize="8" fontWeight="800" fill="#087f88" stroke="#fff" strokeWidth="3" paintOrder="stroke" pointerEvents="none">{snapText}</text> : null}
             </g>
           </g>
@@ -1866,7 +1903,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
                   <circle r={radius} fill={visual.fill} stroke={visual.stroke} strokeWidth={active ? 2.5 : marker.type === "drain" ? 2 : 1.5} pointerEvents="none" />
                   {marker.type === "drain"
                     ? <text x="0" y="3" textAnchor="middle" fontSize="8" fontWeight="800" fill={visual.text} pointerEvents="none">SLUK</text>
-                    : <SvgTextBadge x={radius + 18} y={0} text={label} fontSize={6.5} fontWeight={800} />}
+                    : null}
                 </g>
               );
             })}
