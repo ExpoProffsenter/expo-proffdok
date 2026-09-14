@@ -256,16 +256,28 @@ export function consumeSalesResumeNavigation(
   return shouldRestore;
 }
 
-export function clearSalesResumeMarkers({ sessionStorage, localStorage } = {}) {
+export function clearSalesResumeMarkers({
+  sessionStorage,
+  localStorage,
+  preserveWorkspace,
+} = {}) {
+  const useBrowserDefaults =
+    sessionStorage === undefined && localStorage === undefined;
+  const keepWorkspace = preserveWorkspace ?? useBrowserDefaults;
   const session = resolveStorage(sessionStorage, "sessionStorage");
   const local = resolveStorage(localStorage, "localStorage");
 
   safeRemove(session, SALES_RELOAD_TAB_KEY);
   safeRemove(session, SALES_RELOAD_NAVIGATION_KEY);
   safeRemove(local, SALES_BACKGROUND_RESUME_KEY);
-  // SALES_WORKSPACE_RESUME_KEY ryddes med vilje ikke her. Denne markøren er
-  // uavhengig av React-cleanup og ryddes av den globale resume-vakten etter
-  // bekreftet brukerinteraksjon eller vellykket gjenoppretting.
+
+  // SalesModule kaller denne uten argumenter når en synlig fane er tilbake eller
+  // React unmountes. Da må arbeidsbilde-snapshotet overleve akkurat lenge nok til
+  // at den globale foreground-vakten kan reparere eventuell Startside-reset.
+  // Eksplisitte kall med lagre (tester/hard clear) rydder derimot alt.
+  if (!keepWorkspace) {
+    safeRemove(local, SALES_WORKSPACE_RESUME_KEY);
+  }
 }
 
 function isInternalSalesRoute() {
