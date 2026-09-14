@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import {
   SALES_BACKGROUND_RESUME_MAX_AGE_MS,
   SALES_RELOAD_NAVIGATION_KEY,
@@ -45,6 +46,10 @@ const navigation = {
   mode: "offer-builder",
   selectedRequestId: "F-2026-0066",
 };
+const recoverySource = readFileSync(
+  "src/modules/sales/services/salesResumeRecovery.mjs",
+  "utf8"
+);
 
 // 1) Dette er den faktiske integrasjonsveien SalesModule bruker når fanen går
 // i bakgrunnen. Den må lagre både gammel reload-markør OG nøyaktig arbeidsbilde.
@@ -148,6 +153,19 @@ clearSalesWorkspaceResumeSnapshot({ localStorage: localD });
 requireResume(
   localD.getItem(SALES_WORKSPACE_RESUME_KEY) === null,
   "Arbeidsbilde-snapshot kan ikke ryddes etter eksplisitt utgang fra Sales."
+);
+
+// 7) Recovery må ikke slette snapshotet automatisk like etter første gjenåpning.
+// Auth/React kan fortsatt remounte hovedappen etter at Sales først er synlig.
+requireResume(
+  !recoverySource.includes(
+    "clearSalesWorkspaceResumeSnapshot({ localStorage: local });"
+  ),
+  "Fanereturen rydder fortsatt recovery-snapshotet for tidlig etter første gjenåpning."
+);
+requireResume(
+  recoverySource.includes("20000") && recoverySource.includes("30000"),
+  "Fanereturen mangler sen recovery-kontroll dersom auth/React resetter Startsiden forsinket."
 );
 
 if (failures.length) {
