@@ -93,8 +93,8 @@ const BASE_SECTIONS = [
       "Legg inn faktiske veggmål i millimeter. Målene styrer proporsjonene i skissen, og hjørner kan flyttes ved behov.",
       "Plasser dør og vindu på vegg og fyll inn målene i de tomme målfeltene. Vindu kan også registreres med høyde fra ferdig gulv til underkant.",
       "Dør kan få korrekt hengsling og slagretning.",
-      "Sluk, avløp, kaldt vann og varmt vann kan plasseres fritt og dras senere. Avløp starter som grønn Ø110 mm, kaldt vann som blå Ø30 mm og varmt vann som rød Ø30 mm. Markørene kan også plasseres inne i kasse/sjakt eller overlappe utstyr.",
-      "WC har standard størrelse. Servant, dusj og badekar kan plasseres, flyttes, roteres der det er relevant og målsattes. Utstyr snapper først når det føres tett inntil vegg eller hjørne, slik at fri avstand kan beholdes.",
+      "Sluk, avløp, kaldt vann og varmt vann kan plasseres fritt og dras senere. Avløp starter som grønn Ø110 mm, kaldt vann som blå Ø30 mm og varmt vann som rød Ø30 mm. AVL/KV/VV vises som helfargede sirkler proporsjonalt etter registrert diameter, og markørene kan plasseres inne i kasse/sjakt eller overlappe utstyr.",
+      "WC og servant følger vegg uten hjørnesnap, snur automatisk slik at bakkanten vender mot veggen og kan få angitt Avstand fra vegg i millimeter. Servant har eget plansymbol og kan målsattes. Dusj og badekar kan plasseres, flyttes, roteres der det er relevant og målsattes.",
       "Trykk på et objekt for å velge og redigere det. Når befaringsnotatet lagres følger ferdig Badskisse med som befaringsbilde."
     ],
     [
@@ -173,7 +173,7 @@ const BASE_SECTIONS = [
     "Tilgang brukes til å dele prosjektet med kunde og underentreprenører gjennom separate portaler.",
     ["Send riktig portaltilgang til mottakeren og kontroller e-postadressen før utsending."],
     ["Tilgangskode skal ikke ligge i URL, og kunder skal ikke se interne notater."],
-    ["Hold tilgangslisten ryddig og fjern tilganger som ikke lenger er nødvendige."]
+    ["Hold tilgangslisten ryddig og fjern tilganger som ikke lenger er nødvendige." ]
   ),
   section(
     "fagUtstyr",
