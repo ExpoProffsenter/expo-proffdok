@@ -1,4 +1,8 @@
-// Expo ProffDok – FASE 42A / FASE 39B.2C / FASE 38A1 / FASE 37D1
+// Expo ProffDok – FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1 / FASE 37D1
+// FASE 42F deler recovery-markører med bootstrap og lar localStorage-recovery
+// overleve selv om sessionStorage er utilgjengelig. Bevisst utgang fra Sales rydder markørene.
+// FASE 42F primer i tillegg firmascopet servercache før SalesModuleCore mountes,
+// slik at ny nettleser/stale cache aldri kan åpne en eksisterende tilbudssak tom.
 // FASE 42A gjør Sales robust når mobil Safari legger appen i dvale: aktiv sak og
 // befaringsnotat gjenåpnes etter reload/remount uten å omgå eksisterende lokal
 // kladd-/recoveryflyt. Ingen SQL/RLS/Storage-policy-endring.
@@ -19,9 +23,25 @@ import SalesContractCustomerView from "./components/SalesContractCustomerView.js
 import {
   beginOfferDraftHydrationCycle,
   buildSalesStorageKey,
+  loadRequests,
   loadSalesNavigation,
+  saveRequests,
   saveSalesNavigation,
 } from "./services/salesLocalStorage.js";
+import {
+  clearSalesResumeMarkers,
+  consumeSalesResumeNavigation,
+  markSalesResumeForBackground,
+} from "./services/salesResumeRecovery.mjs";
+import {
+  createDefaultSalesSupabaseClient,
+  fetchSalesRequests,
+  resolveSalesCompanyScope,
+} from "./services/salesSupabase.js";
+import {
+  mergeSalesServerRowsIntoCache,
+  shouldGateSalesCoreUntilServerCache,
+} from "./services/salesServerCacheHydration.mjs";
 import { markStoreOfferLaunch } from "./services/salesStoreOffers.js";
 import {
   MODULE_ACCESS_EVENT,
@@ -30,12 +50,9 @@ import {
   refreshMyModuleAccess,
 } from "../access/moduleAccessClient.js";
 
-const SALES_RELOAD_TAB_KEY = "expo-proffdok:sales:restore-tab-after-reload";
-const SALES_RELOAD_NAVIGATION_KEY = "expo-proffdok:sales:restore-navigation-after-reload";
-const SALES_BACKGROUND_RESUME_KEY = "expo-proffdok:sales:background-resume-v1";
 const SALES_REOPEN_INSPECTION_KEY = "expo-proffdok:sales:reopen-inspection-after-reload";
-const SALES_BACKGROUND_RESUME_MAX_AGE_MS = 2 * 60 * 60 * 1000;
 const SALES_OVERVIEW_INTRO_MARKER = "salesOverviewIntro";
+const fallbackSalesSupabase = createDefaultSalesSupabaseClient();
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -81,48 +98,12 @@ function protectInspectionDraftNavigation(props = {}) {
 }
 
 function clearBackgroundResumeMarkers() {
-  try {
-    window.localStorage?.removeItem(SALES_BACKGROUND_RESUME_KEY);
-    window.sessionStorage?.removeItem(SALES_RELOAD_TAB_KEY);
-    window.sessionStorage?.removeItem(SALES_RELOAD_NAVIGATION_KEY);
-  } catch {
-    // UX-markører er valgfrie.
-  }
+  clearSalesResumeMarkers();
 }
 
 function consumeSalesReloadNavigationMarker(props = {}) {
   if (props.integrationMode !== "app") return false;
-  const salesStorageKey = salesStorageKeyForProps(props);
-
-  try {
-    let shouldRestore =
-      window.sessionStorage?.getItem(SALES_RELOAD_NAVIGATION_KEY) === "1";
-
-    window.sessionStorage?.removeItem(SALES_RELOAD_NAVIGATION_KEY);
-    window.sessionStorage?.removeItem(SALES_RELOAD_TAB_KEY);
-
-    if (!shouldRestore) {
-      const raw = window.localStorage?.getItem(SALES_BACKGROUND_RESUME_KEY);
-      if (raw) {
-        try {
-          const marker = JSON.parse(raw);
-          const age = Date.now() - Number(marker?.at || 0);
-          shouldRestore = Boolean(
-            marker?.storageKey === salesStorageKey &&
-              age >= 0 &&
-              age <= SALES_BACKGROUND_RESUME_MAX_AGE_MS
-          );
-        } catch {
-          shouldRestore = false;
-        }
-      }
-    }
-
-    window.localStorage?.removeItem(SALES_BACKGROUND_RESUME_KEY);
-    return shouldRestore;
-  } catch {
-    return false;
-  }
+  return consumeSalesResumeNavigation(salesStorageKeyForProps(props));
 }
 
 function prepareSalesEntryNavigation(props = {}) {
@@ -144,17 +125,7 @@ function prepareSalesEntryNavigation(props = {}) {
 
 function markSalesTabForReload(props = {}) {
   if (props.integrationMode !== "app") return;
-  try {
-    const storageKey = salesStorageKeyForProps(props);
-    window.sessionStorage?.setItem(SALES_RELOAD_TAB_KEY, "1");
-    window.sessionStorage?.setItem(SALES_RELOAD_NAVIGATION_KEY, "1");
-    window.localStorage?.setItem(
-      SALES_BACKGROUND_RESUME_KEY,
-      JSON.stringify({ at: Date.now(), storageKey })
-    );
-  } catch {
-    // Engangsmarkørene påvirker kun navigasjonshjelp.
-  }
+  markSalesResumeForBackground(salesStorageKeyForProps(props));
 }
 
 function getPublicContractToken() {
@@ -279,6 +250,9 @@ export default function SalesModule(props) {
   const [standardOfferSignal, setStandardOfferSignal] = useState(0);
   const [offerTypePickerOpen, setOfferTypePickerOpen] = useState(false);
   const [moduleAccess, setModuleAccess] = useState(() => readCachedModuleAccess());
+  const [serverCacheReady, setServerCacheReady] = useState(
+    () => props.integrationMode !== "app"
+  );
 
   useEffect(() => {
     const rehydrateSalesModule = () => {
@@ -320,6 +294,8 @@ export default function SalesModule(props) {
       window.removeEventListener("beforeunload", blockPreHydrationUnloadSave);
       window.removeEventListener("pagehide", blockPreHydrationUnloadSave);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      // Bevisst navigasjon bort fra Sales skal aldri gjenopplive en gammel sak.
+      clearBackgroundResumeMarkers();
     };
   }, []);
 
@@ -346,6 +322,72 @@ export default function SalesModule(props) {
       window.removeEventListener(MODULE_ACCESS_EVENT, syncAccess);
     };
   }, [props.integrationMode, props.supabaseClient, props.authUser?.id]);
+
+  useEffect(() => {
+    if (props.integrationMode !== "app") {
+      setServerCacheReady(true);
+      return undefined;
+    }
+
+    if (!props.authUser?.id) {
+      setServerCacheReady(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    const activeSupabase = props.supabaseClient || fallbackSalesSupabase;
+    const storageKey = salesStorageKeyForProps(props);
+    setServerCacheReady(false);
+
+    async function primeSalesServerCacheBeforeCore() {
+      try {
+        if (!activeSupabase) {
+          throw new Error("Supabase er ikke tilgjengelig.");
+        }
+
+        const { data: companyId, error: companyError } =
+          await resolveSalesCompanyScope(activeSupabase);
+        if (companyError || !companyId) {
+          throw companyError || new Error("Firmatilknytningen kunne ikke bekreftes.");
+        }
+
+        const { data: rows, error } = await fetchSalesRequests(
+          activeSupabase,
+          companyId
+        );
+        if (error) throw error;
+        if (cancelled) return;
+
+        const localRequests = loadRequests(storageKey);
+        const primedRequests = mergeSalesServerRowsIntoCache(
+          rows || [],
+          localRequests
+        );
+        saveRequests(primedRequests, storageKey);
+      } catch (error) {
+        // Ved reell offline/serverfeil beholdes eksisterende lokal-first-flyt.
+        // Gaten skal hindre stale cache-race når serveren svarer, ikke blokkere
+        // brukeren fra lokalt sikret arbeid når nettet faktisk er nede.
+        console.warn(
+          "Kunne ikke prime Sales-cache før mount; bruker eksisterende lokal cache",
+          error
+        );
+      } finally {
+        if (!cancelled) setServerCacheReady(true);
+      }
+    }
+
+    void primeSalesServerCacheBeforeCore();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    props.integrationMode,
+    props.supabaseClient,
+    props.authUser?.id,
+    props.profile?.company_name,
+    props.profile?.companyName,
+  ]);
 
   useEffect(() => {
     if (props.integrationMode !== "app") return undefined;
@@ -460,6 +502,31 @@ export default function SalesModule(props) {
         supabaseClient={props.supabaseClient}
         contractToken={publicContractToken}
       />
+    );
+  }
+
+  const gateSalesCore = shouldGateSalesCoreUntilServerCache({
+    integrationMode: props.integrationMode,
+    authUserId: props.authUser?.id,
+    serverCacheReady,
+  });
+
+  if (gateSalesCore) {
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <main className="sales-main">
+            <section className="sales-form-hero" role="status" aria-live="polite">
+              <p className="sales-eyebrow">Befaring / Tilbud</p>
+              <h1 className="sales-title">Henter siste lagrede salgssaker …</h1>
+              <p className="sales-subtitle">
+                Vi kontrollerer serverversjonen før arbeidsbildet åpnes, slik at
+                en eldre lokal cache ikke kan erstatte nyere tilbudsdata.
+              </p>
+            </section>
+          </main>
+        </div>
+      </div>
     );
   }
 

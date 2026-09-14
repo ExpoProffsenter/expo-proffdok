@@ -8,6 +8,8 @@
 // FASE 29E1: Aktivert prosjekt bruker gjennomføringsflyt; tidligere salgsflyt beholdes som Salgsgrunnlag.
 // FASE 30D1: Full reload fra intern Befaring/Tilbud bruker en engangsmarkør og åpner
 // salgfanen igjen etter at hovedappen er rendret. main.jsx endres ikke.
+// FASE 42F: Bootstrap leser også en fersk bakgrunnsmarkør i localStorage, slik at
+// nettleserforkasting/dvale kan returnere til Sales selv når sessionStorage ikke rekker å overleve.
 // FASE 35A: Fremdriftsplan ligger i eget prosjektlag. Den ene navigasjonsadapteren startes
 // først når faktisk intern prosjektmeny eller verifisert kunde-/UE-meny er rendret.
 // FASE 36A1: Auth-presentasjonen ligger i eget isolert UX-lag. Supabase-auth og callbacks i
@@ -22,6 +24,10 @@ import { installProgressPlanHelpUx } from './modules/progress/progressPlanHelpUx
 import { installAuthLandingUx } from './modules/auth/authLandingUx.js';
 import { installSystemAdminStoreCatalogUx } from './modules/storeCatalog/systemAdminStoreCatalogUx.jsx';
 import { installStoreOfferCustomerTerminologyUx } from './modules/sales/storeOfferCustomerTerminologyUx.js';
+import {
+  SALES_RELOAD_TAB_KEY,
+  shouldBootstrapRestoreSales,
+} from './modules/sales/services/salesResumeRecovery.mjs';
 
 installGlobalStorageImageOptimizer({
   maxDimension: 2560,
@@ -118,7 +124,6 @@ function installProjectDeviationShortcutRouting() {
 installProjectDeviationShortcutRouting();
 
 const SALES_IMAGE_LIGHTBOX_ID = 'sales-customer-image-lightbox';
-const SALES_RELOAD_TAB_KEY = 'expo-proffdok:sales:restore-tab-after-reload';
 
 function openSalesImageLightbox(src, alt = 'Tilbudsbilde') {
   if (!src) return;
@@ -301,12 +306,7 @@ document.addEventListener(
 );
 
 function restoreSalesTabAfterReload() {
-  let shouldRestore = false;
-  try {
-    shouldRestore = window.sessionStorage?.getItem(SALES_RELOAD_TAB_KEY) === '1';
-  } catch {
-    shouldRestore = false;
-  }
+  const shouldRestore = shouldBootstrapRestoreSales();
   if (!shouldRestore) return;
 
   let observer = null;
