@@ -53,6 +53,9 @@ if (component) {
 if (help) {
   requireText(help, "Sluk, avløp, kaldt vann og varmt vann kan plasseres fritt og dras senere.", `${helpPath}: Hjelp beskriver ikke fri plassering/flytting av installasjonsmarkører.`);
   requireText(help, "Avløp starter som grønn Ø110 mm, kaldt vann som blå Ø30 mm og varmt vann som rød Ø30 mm.", `${helpPath}: Hjelp beskriver ikke standarddiameter for AVL/KV/VV.`);
+  requireText(help, "AVL/KV/VV vises som helfargede sirkler proporsjonalt etter registrert diameter", `${helpPath}: Hjelp beskriver ikke proporsjonal visning av AVL/KV/VV.`);
+  requireText(help, "WC og servant følger vegg uten hjørnesnap", `${helpPath}: Hjelp beskriver ikke WC/servant uten hjørnesnap.`);
+  requireText(help, "Avstand fra vegg i millimeter", `${helpPath}: Hjelp beskriver ikke veggavstand for WC/servant.`);
   requireText(help, "fyll inn målene i de tomme målfeltene", `${helpPath}: Hjelp beskriver ikke forbedret målvisning.`);
 }
 
