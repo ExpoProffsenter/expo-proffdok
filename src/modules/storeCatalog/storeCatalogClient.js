@@ -126,13 +126,14 @@ export async function prepareStoreCatalogActivation(
   summary = {}
 ) {
   const { data, error } = await ensureClient(supabase).rpc(
-    "prepare_internal_store_catalog_activation",
+    "prepare_internal_store_catalog_activation_v2",
     {
       p_import_id: importId,
       p_total_rows: summary.totalRows || 0,
       p_skipped_zero_price_rows: summary.skippedZeroPriceRows || 0,
       p_skipped_missing_sku_rows: summary.skippedMissingSkuRows || 0,
       p_malformed_rows: summary.malformedRows || 0,
+      p_skipped_discontinued_rows: summary.skippedDiscontinuedRows || 0,
     }
   );
   return unwrap(data, error, "Kunne ikke klargjøre vareregisteret.");
