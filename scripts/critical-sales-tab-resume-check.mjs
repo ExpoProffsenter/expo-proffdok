@@ -5,6 +5,7 @@ import {
   SALES_WORKSPACE_RESUME_KEY,
   clearSalesResumeMarkers,
   clearSalesWorkspaceResumeSnapshot,
+  markSalesResumeForBackground,
   markSalesWorkspaceResumeSnapshot,
   readSalesWorkspaceResumeSnapshot,
   restoreSalesWorkspaceNavigation,
@@ -45,16 +46,27 @@ const navigation = {
   selectedRequestId: "F-2026-0066",
 };
 
-// 1) Browserfanen går i bakgrunnen mens brukeren står i Rediger tilbud.
-const localA = memoryStorage();
+// 1) Dette er den faktiske integrasjonsveien SalesModule bruker når fanen går
+// i bakgrunnen. Den må lagre både gammel reload-markør OG nøyaktig arbeidsbilde.
+const localA = memoryStorage({
+  [`${storageKey}:navigation`]: JSON.stringify(navigation),
+});
 const sessionA = memoryStorage();
-markSalesWorkspaceResumeSnapshot(
-  { storageKey, navigation },
-  { localStorage: localA, now }
-);
+markSalesResumeForBackground(storageKey, {
+  sessionStorage: sessionA,
+  localStorage: localA,
+  now,
+});
+const capturedA = readSalesWorkspaceResumeSnapshot({ localStorage: localA, now });
 requireResume(
   Boolean(localA.getItem(SALES_WORKSPACE_RESUME_KEY)),
-  "Arbeidsbilde-snapshot blir ikke lagret ved fanebytte."
+  "Den faktiske background-handleren lagrer ikke arbeidsbilde-snapshot."
+);
+requireResume(
+  capturedA?.storageKey === storageKey &&
+    capturedA?.navigation?.mode === navigation.mode &&
+    capturedA?.navigation?.selectedRequestId === navigation.selectedRequestId,
+  "Den faktiske background-handleren fanger ikke Rediger tilbud + riktig sak."
 );
 
 // 2) React/auth kan unmount Sales og rydde de gamle markørene. Det separate
@@ -81,8 +93,8 @@ requireResume(
   "Sales-tab og intern navigasjon re-armeres ikke før gjenåpning."
 );
 
-// 4) Full browserforkasting skal også kunne bruke snapshotet alene, selv om både
-// sessionStorage-markør og ordinær background-marker er borte.
+// 4) Full browserforkasting / mobil dvale skal også kunne bruke snapshotet alene,
+// selv om både sessionStorage-markør og ordinær background-marker er borte.
 const localB = memoryStorage();
 const sessionB = memoryStorage();
 markSalesWorkspaceResumeSnapshot(
@@ -95,7 +107,7 @@ requireResume(
     localStorage: localB,
     now,
   }),
-  "Bootstrap gjenåpner ikke Sales fra arbeidsbilde-snapshot etter browserforkasting."
+  "Bootstrap gjenåpner ikke Sales fra arbeidsbilde-snapshot etter browserforkasting/mobil dvale."
 );
 requireResume(
   sessionB.getItem(SALES_RELOAD_NAVIGATION_KEY) === "1" &&
@@ -121,8 +133,8 @@ requireResume(
   "Utløpt arbeidsbilde-snapshot blir ikke ryddet."
 );
 
-// 6) Etter bekreftet brukerinteraksjon i Sales skal vakten kunne rydde snapshotet,
-// slik at en senere bevisst tur til Startsiden ikke gjenoppliver gammel sak.
+// 6) Snapshot må fortsatt kunne ryddes ved eksplisitt utgang fra Sales, slik at
+// en senere bevisst tur til Startsiden ikke gjenoppliver gammel sak.
 const localD = memoryStorage();
 markSalesWorkspaceResumeSnapshot(
   { storageKey, navigation },
@@ -131,7 +143,7 @@ markSalesWorkspaceResumeSnapshot(
 clearSalesWorkspaceResumeSnapshot({ localStorage: localD });
 requireResume(
   localD.getItem(SALES_WORKSPACE_RESUME_KEY) === null,
-  "Arbeidsbilde-snapshot kan ikke ryddes etter bevisst brukerinteraksjon."
+  "Arbeidsbilde-snapshot kan ikke ryddes etter eksplisitt utgang fra Sales."
 );
 
 if (failures.length) {
@@ -142,5 +154,5 @@ if (failures.length) {
 }
 
 console.log(
-  "✅ Expo ProffDok Sales browser-tab resume check OK – Rediger tilbud / befaring bevares ved fanebytte"
+  "✅ Expo ProffDok Sales browser-tab resume check OK – Rediger tilbud / befaring / mobil dvale bevares"
 );
