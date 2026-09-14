@@ -75,7 +75,6 @@ if (help) {
   requireText(help, "Produktmål vises i redigeringsboksen", `${helpPath}: Hjelp beskriver ikke at produktmål er flyttet ut av tegningen.`);
   requireText(help, "fyll inn målene i de tomme målfeltene", `${helpPath}: Hjelp beskriver ikke forbedret målvisning.`);
   requireText(help, "åpningsmål nærmest veggen og totalmålet lenger ut", `${helpPath}: Hjelp beskriver ikke separate målbånd for åpning og vegg.`);
-  requireText(help, "Senteravstand fra nærmeste sidevegg vises som et utvendig målbånd", `${helpPath}: Hjelp beskriver ikke utvendig sideveggmål for WC/servant.`);
   requireText(help, "Avstand fra vegg og Senteravstand fra nærmeste sidevegg vises som utvendige målbånd", `${helpPath}: Hjelp beskriver ikke utvendige plasseringsmål for WC/servant.`);
   requireText(help, "Bruk Målvisning for å slå Vegger, Dør / vindu og Utstyr / installasjoner av eller på hver for seg", `${helpPath}: Hjelp beskriver ikke valgbar målvisning.`);
 }
