@@ -4,6 +4,8 @@
 // lokal-only saker beholdes som sikkerhetsnett dersom de ennå ikke finnes på server.
 // Strukturelt tomme lokale befaringskladder får aldri overstyre et eksisterende,
 // meningsfullt serverlagret befaringsnotat på ny nettleser/Preview eller etter remount.
+// Serverlagrede bilder og Badskisse flettes alltid tilbake inn i en meningsfull
+// lokal kladd, uten å overskrive lokale usynkroniserte bilder.
 
 function browserStorage() {
   try {
@@ -77,6 +79,33 @@ function mediaIdentity(value = {}) {
   return { id, path };
 }
 
+function isBathroomSketchMedia(value = {}) {
+  return Boolean(
+    value?.kind === "bathroom-sketch" ||
+      String(value?.id || "").startsWith("bathroom-sketch-")
+  );
+}
+
+function serverMediaLoadingDataUrl(value = {}) {
+  const label = isBathroomSketchMedia(value)
+    ? "Henter lagret badskisse fra server …"
+    : "Henter lagret bilde fra server …";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540"><rect width="960" height="540" fill="#f2fafb"/><rect x="24" y="24" width="912" height="492" rx="20" fill="none" stroke="#b9d9df" stroke-width="4"/><text x="480" y="270" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-size="30" font-weight="700" fill="#355864">${label}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function prepareServerMediaForDisplay(item = {}) {
+  const dataUrl = String(item?.dataUrl || "").trim();
+  if (dataUrl || !String(item?.path || "").trim()) {
+    return { ...item, serverHydrating: false };
+  }
+  return {
+    ...item,
+    dataUrl: serverMediaLoadingDataUrl(item),
+    serverHydrating: true,
+  };
+}
+
 export function mergeInspectionMediaForDisplay(currentMedia = [], serverMedia = []) {
   const current = Array.isArray(currentMedia) ? currentMedia : [];
   const server = Array.isArray(serverMedia) ? serverMedia : [];
@@ -89,25 +118,53 @@ export function mergeInspectionMediaForDisplay(currentMedia = [], serverMedia = 
     if (path) serverByPath.set(path, item);
   });
 
-  return current.map((item) => {
+  const includedIds = new Set();
+  const includedPaths = new Set();
+  const merged = current.map((item) => {
     const { id, path } = mediaIdentity(item);
+    if (id) includedIds.add(id);
+    if (path) includedPaths.add(path);
+
+    // Lokale, ennå usynkroniserte bilder/skisser skal aldri overskrives av en
+    // eldre serverkopi bare fordi de tilfeldigvis har samme id.
     if (!path) return item;
 
     const serverItem =
       (id ? serverById.get(id) : null) ||
       (path ? serverByPath.get(path) : null) ||
       null;
-    const freshDataUrl = String(serverItem?.dataUrl || "").trim();
+    if (!serverItem) return item;
 
-    if (!freshDataUrl || freshDataUrl === String(item?.dataUrl || "").trim()) {
-      return item;
+    const freshDataUrl = String(serverItem?.dataUrl || "").trim();
+    if (freshDataUrl) {
+      return {
+        ...item,
+        kind: item?.kind || serverItem?.kind,
+        name: item?.name || serverItem?.name,
+        dataUrl: freshDataUrl,
+        serverHydrating: false,
+      };
     }
 
-    return {
-      ...item,
-      dataUrl: freshDataUrl,
-    };
+    if (!String(item?.dataUrl || "").trim() || item?.serverHydrating) {
+      return prepareServerMediaForDisplay({ ...serverItem, ...item });
+    }
+
+    return item;
   });
+
+  // Kritisk: lokal kladd kan være meningsfull og samtidig mangle ett eller flere
+  // serverlagrede medier (typisk Badskisse). De skal legges tilbake, ikke bare
+  // få oppdatert URL dersom de allerede finnes lokalt.
+  server.forEach((item) => {
+    const { id, path } = mediaIdentity(item);
+    if ((id && includedIds.has(id)) || (path && includedPaths.has(path))) return;
+    merged.push(prepareServerMediaForDisplay(item));
+    if (id) includedIds.add(id);
+    if (path) includedPaths.add(path);
+  });
+
+  return merged;
 }
 
 export function clearStructurallyEmptyInspectionDraftsForServerRows(
@@ -148,11 +205,80 @@ export function clearStructurallyEmptyInspectionDraftsForServerRows(
   return keysToRemove;
 }
 
+export function mergeServerInspectionMediaIntoLocalDraftsForServerRows(
+  rows = [],
+  storage = browserStorage()
+) {
+  if (!storage) return [];
+
+  const serverRequests = mapSalesServerRowsToRequests(rows)
+    .map((request) => ({
+      requestId: String(request?.id || "").trim(),
+      photos: buildServerInspectionForm(request).photos,
+    }))
+    .filter(
+      ({ requestId, photos }) => requestId && Array.isArray(photos) && photos.length > 0
+    );
+  if (!serverRequests.length) return [];
+
+  const updatedKeys = [];
+
+  try {
+    for (let index = 0; index < storage.length; index += 1) {
+      const key = storage.key(index);
+      if (!key || !key.includes(":inspection-draft:")) continue;
+
+      const serverRequest = serverRequests.find(({ requestId }) =>
+        key.endsWith(`:inspection-draft:${requestId}`)
+      );
+      if (!serverRequest) continue;
+
+      const draft = parseStoredJson(storage, key);
+      if (!draft?.form || !hasMeaningfulInspectionContent(draft.form)) continue;
+
+      const currentPhotos = Array.isArray(draft.form.photos) ? draft.form.photos : [];
+      const mergedPhotos = mergeInspectionMediaForDisplay(
+        currentPhotos,
+        serverRequest.photos
+      );
+
+      let changed = false;
+      try {
+        changed = JSON.stringify(currentPhotos) !== JSON.stringify(mergedPhotos);
+      } catch {
+        changed = true;
+      }
+      if (!changed) continue;
+
+      storage.setItem(
+        key,
+        JSON.stringify({
+          ...draft,
+          form: {
+            ...draft.form,
+            photos: mergedPhotos,
+          },
+        })
+      );
+      updatedKeys.push(key);
+    }
+  } catch {
+    return updatedKeys;
+  }
+
+  return updatedKeys;
+}
+
 export function mergeSalesServerRowsIntoCache(rows = [], localRequests = []) {
   // Kjør før SalesModuleCore mountes. Da kan ikke en tom lokal befaringskladd
   // fra en tidligere race vinne over serverens faktiske notat når openInspectionNote()
   // senere velger mellom lokal kladd og request-data.
   clearStructurallyEmptyInspectionDraftsForServerRows(rows);
+
+  // En reell lokal kladd kan være nyere i tekstfeltene, men samtidig mangle et
+  // allerede serverlagret bilde/Badskisse. Flett servermedia inn uten å endre
+  // kladdens savedAt eller overskrive lokale usynkroniserte medier.
+  mergeServerInspectionMediaIntoLocalDraftsForServerRows(rows);
 
   const serverRequests = mapSalesServerRowsToRequests(rows);
   const serverIds = new Set(serverRequests.map((request) => String(request.id || "")));
