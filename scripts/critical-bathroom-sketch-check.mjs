@@ -55,6 +55,11 @@ if (component) {
   requireText(component, "Avstand fra vegg (mm)", `${componentPath}: redigeringsfelt for veggavstand mangler.`);
   requireText(component, "const outerPath =", `${componentPath}: servant har ikke eget plansymbol.`);
   requireText(component, 'const SNAP_EDGE_DISTANCE = 10;', `${componentPath}: kontrollert kant-snapping mangler.`);
+  requireText(component, "const WALL_STROKE_WIDTH = 6;", `${componentPath}: visuell veggtykkelse er ikke definert eksplisitt.`);
+  requireText(component, "function wallDisplaySegment", `${componentPath}: veggen tegnes ikke med logisk innside som innvendig veggliv.`);
+  requireText(component, "function fixturePlacementGapData", `${componentPath}: dusj/badekar mangler plasseringsmål mot nærmeste vegger.`);
+  requireText(component, "<FixtureFreePlacementDimensions box={box}", `${componentPath}: dusj/badekar mangler utvendige plasseringsmål i editor.`);
+  requireText(component, "fixtureFreePlacementDimensionMarkup(box, sketch.walls)", `${componentPath}: eksportert skisse mangler plasseringsmål for dusj/badekar.`);
   requireText(component, "function boxEdgeGapToWall", `${componentPath}: kantbasert snapping mot vegg mangler.`);
   requireText(component, '`${isWindow ? "Vindu" : "Dør"} – fyll inn mål`', `${componentPath}: dør/vindu viser ikke tydelig at mål mangler.`);
   requireText(component, "function SvgTextBadge", `${componentPath}: lesbar mål-badge mangler.`);
@@ -80,6 +85,8 @@ if (help) {
   requireText(help, "fyll inn målene i de tomme målfeltene", `${helpPath}: Hjelp beskriver ikke forbedret målvisning.`);
   requireText(help, "åpningsmål nærmest veggen og totalmålet lenger ut", `${helpPath}: Hjelp beskriver ikke separate målbånd for åpning og vegg.`);
   requireText(help, "Avstand fra vegg og Senteravstand fra nærmeste sidevegg vises som utvendige målbånd", `${helpPath}: Hjelp beskriver ikke utvendige plasseringsmål for WC/servant.`);
+  requireText(help, "Veggstrekens innside representerer innvendig veggliv", `${helpPath}: Hjelp beskriver ikke måling fra innvendig veggliv.`);
+  requireText(help, "avstand til nærmeste vannrette og loddrette vegg vises som utvendige målbånd", `${helpPath}: Hjelp beskriver ikke utvendige plasseringsmål for dusj/badekar.`);
   requireText(help, "Bruk Målvisning for å slå Vegger, Dør / vindu og Utstyr / installasjoner av eller på hver for seg", `${helpPath}: Hjelp beskriver ikke valgbar målvisning.`);
 }
 
