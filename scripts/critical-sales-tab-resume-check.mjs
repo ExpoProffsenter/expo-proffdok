@@ -69,12 +69,16 @@ requireResume(
   "Den faktiske background-handleren fanger ikke Rediger tilbud + riktig sak."
 );
 
-// 2) React/auth kan unmount Sales og rydde de gamle markørene. Det separate
-// arbeidsbilde-snapshotet MÅ overleve akkurat denne cleanupen.
-clearSalesResumeMarkers({ sessionStorage: sessionA, localStorage: localA });
+// 2) Foreground/React-cleanup må kunne rydde de korte markørene uten å miste
+// arbeidsbildet før den globale resume-vakten har fått kontrollert resultatet.
+clearSalesResumeMarkers({
+  sessionStorage: sessionA,
+  localStorage: localA,
+  preserveWorkspace: true,
+});
 requireResume(
   Boolean(localA.getItem(SALES_WORKSPACE_RESUME_KEY)),
-  "React-cleanup sletter arbeidsbilde-snapshotet og kan sende brukeren til Startsiden."
+  "Foreground-cleanup sletter arbeidsbilde-snapshotet før recovery er ferdig."
 );
 
 // 3) Ved retur skal nøyaktig samme interne mode/sak legges tilbake før Sales åpnes.
