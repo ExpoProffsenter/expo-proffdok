@@ -218,6 +218,17 @@ export function markSalesResumeForBackground(
     SALES_BACKGROUND_RESUME_KEY,
     JSON.stringify({ at: Number(now), storageKey: normalizedStorageKey })
   );
+
+  // Fang arbeidsbildet i samme synkrone operasjon som SalesModule faktisk kaller
+  // ved visibilitychange/pagehide. Da er vi ikke avhengige av listener-rekkefølge,
+  // microtasks eller at en bestemt React-komponent fortsatt finnes i DOM-et.
+  const navigation = parseJson(
+    safeGet(local, `${normalizedStorageKey}:navigation`)
+  );
+  markSalesWorkspaceResumeSnapshot(
+    { storageKey: normalizedStorageKey, navigation },
+    { localStorage: local, now }
+  );
 }
 
 export function consumeSalesResumeNavigation(
@@ -431,6 +442,8 @@ export function installSalesBackgroundResumeGuard() {
   const clearSnapshotAfterTrustedSalesInteraction = (event) => {
     if (!event?.isTrusted || document.visibilityState === "hidden") return;
     if (!salesSurfaceIsMounted()) return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest(".sales-app")) return;
     clearSalesWorkspaceResumeSnapshot();
   };
 
