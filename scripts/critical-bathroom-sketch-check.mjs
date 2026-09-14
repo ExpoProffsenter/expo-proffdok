@@ -58,6 +58,10 @@ if (component) {
   requireText(component, "const WALL_STROKE_WIDTH = 6;", `${componentPath}: visuell veggtykkelse er ikke definert eksplisitt.`);
   requireText(component, "function wallDisplaySegment", `${componentPath}: veggen tegnes ikke med logisk innside som innvendig veggliv.`);
   requireText(component, "function fixturePlacementGapData", `${componentPath}: dusj/badekar mangler plasseringsmål mot nærmeste vegger.`);
+  requireText(component, "function FixtureProductSizeDimension", `${componentPath}: dusj/badekar mangler produktmål under symbolet.`);
+  requireText(component, "fixtureProductSizeDimensionMarkup(box, sketch.walls)", `${componentPath}: eksportert skisse mangler produktmål for dusj/badekar.`);
+  requireText(component, "function openSketchEditor()", `${componentPath}: trygg gjenåpning av eksisterende Badskisse mangler.`);
+  requireText(component, "setTool(bathroomSketchHasContent(sketch) ? \"select\" : \"wall\")", `${componentPath}: eksisterende skisse åpner ikke i Velg/flytt.`);
   requireText(component, "<FixtureFreePlacementDimensions box={box}", `${componentPath}: dusj/badekar mangler utvendige plasseringsmål i editor.`);
   requireText(component, "fixtureFreePlacementDimensionMarkup(box, sketch.walls)", `${componentPath}: eksportert skisse mangler plasseringsmål for dusj/badekar.`);
   requireText(component, "function boxEdgeGapToWall", `${componentPath}: kantbasert snapping mot vegg mangler.`);
@@ -87,6 +91,8 @@ if (help) {
   requireText(help, "Avstand fra vegg og Senteravstand fra nærmeste sidevegg vises som utvendige målbånd", `${helpPath}: Hjelp beskriver ikke utvendige plasseringsmål for WC/servant.`);
   requireText(help, "Veggstrekens innside representerer innvendig veggliv", `${helpPath}: Hjelp beskriver ikke måling fra innvendig veggliv.`);
   requireText(help, "avstand til nærmeste vannrette og loddrette vegg vises som utvendige målbånd", `${helpPath}: Hjelp beskriver ikke utvendige plasseringsmål for dusj/badekar.`);
+  requireText(help, "starter Badskisse i Velg / flytt", `${helpPath}: Hjelp beskriver ikke trygg gjenåpning av eksisterende skisse.`);
+  requireText(help, "Dusj og badekar viser produktmålet under symbolet", `${helpPath}: Hjelp beskriver ikke produktmål for dusj/badekar.`);
   requireText(help, "Bruk Målvisning for å slå Vegger, Dør / vindu og Utstyr / installasjoner av eller på hver for seg", `${helpPath}: Hjelp beskriver ikke valgbar målvisning.`);
 }
 

@@ -988,6 +988,20 @@ function FixtureFreePlacementDimensions({ box, walls }) {
   );
 }
 
+function FixtureProductSizeDimension({ box, walls }) {
+  if (!isFreePlacementFixture(box)) return null;
+  const size = boxSizePx(box, walls);
+  const label = boxLabelLines(box).second;
+  return <SvgTextBadge x={box.x} y={box.y + size.depth / 2 + 14} text={label} fontSize={7} fontWeight={700} color="#58666c" />;
+}
+
+function fixtureProductSizeDimensionMarkup(box, walls) {
+  if (!isFreePlacementFixture(box)) return "";
+  const size = boxSizePx(box, walls);
+  const label = boxLabelLines(box).second;
+  return svgTextBadgeMarkup(box.x, box.y + size.depth / 2 + 14, label, 7, 700, "#58666c");
+}
+
 function fixtureMarkup(box, walls) {
   const base = boxBaseSizePx(box, walls);
   const w = base.width;
@@ -1140,7 +1154,7 @@ export function bathroomSketchDataUrl(value) {
     return `<polyline points="${points}" fill="none" stroke="#172126" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;
   }).join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="${sketchViewBox(sketch)}"><rect x="-2000" y="-2000" width="5000" height="5000" fill="#fff"/>${grid.join("")}${strokes}${walls}${sketch.openings.map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls, dimensions.openings)).join("")}${sketch.boxes.map((box) => `${dimensions.fixtures ? `${fixtureWallOffsetDimensionMarkup(box, sketch.walls)}${fixtureSideDimensionMarkup(box, sketch.walls)}${fixtureFreePlacementDimensionMarkup(box, sketch.walls)}` : ""}${boxMarkup(box, sketch.walls, dimensions.fixtures)}`).join("")}${sketch.markers.map((marker) => markerMarkup(marker, sketch.walls, dimensions.fixtures)).join("")}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="${sketchViewBox(sketch)}"><rect x="-2000" y="-2000" width="5000" height="5000" fill="#fff"/>${grid.join("")}${strokes}${walls}${sketch.openings.map((opening) => openingMarkup(opening, wallsById.get(opening.wallId), sketch.walls, dimensions.openings)).join("")}${sketch.boxes.map((box) => `${dimensions.fixtures ? `${fixtureWallOffsetDimensionMarkup(box, sketch.walls)}${fixtureSideDimensionMarkup(box, sketch.walls)}${fixtureFreePlacementDimensionMarkup(box, sketch.walls)}${fixtureProductSizeDimensionMarkup(box, sketch.walls)}` : ""}${boxMarkup(box, sketch.walls, dimensions.fixtures)}`).join("")}${sketch.markers.map((marker) => markerMarkup(marker, sketch.walls, dimensions.fixtures)).join("")}</svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
@@ -1708,6 +1722,20 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
     finishWallChain();
   }
 
+  function openSketchEditor() {
+    setSelected(null);
+    setShowWallList(false);
+    setShowDimensionSettings(false);
+    setActiveStroke(null);
+    setDragCorner(null);
+    setDragBox(null);
+    setDragOpening(null);
+    setDragMarker(null);
+    finishWallChain();
+    setTool(bathroomSketchHasContent(sketch) ? "select" : "wall");
+    setIsOpen(true);
+  }
+
   const wallsById = new Map(sketch.walls.map((wall) => [wall.id, wall]));
   const previewUrl = bathroomSketchDataUrl(sketch);
   const editorViewBox = sketchViewBox(sketch);
@@ -1975,7 +2003,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
         return (
           <g key={box.id}>
             {showFixtureDimensions && isWallAttachedFixture(box) ? <><FixtureWallOffsetDimension box={box} walls={sketch.walls} /><FixtureSideDimension box={box} walls={sketch.walls} /></> : null}
-            {showFixtureDimensions && isFreePlacementFixture(box) ? <FixtureFreePlacementDimensions box={box} walls={sketch.walls} /> : null}
+            {showFixtureDimensions && isFreePlacementFixture(box) ? <><FixtureFreePlacementDimensions box={box} walls={sketch.walls} /><FixtureProductSizeDimension box={box} walls={sketch.walls} /></> : null}
             <g transform={`translate(${box.x} ${box.y})`} onPointerDown={(event) => startBoxPointer(event, box)}>
                   <rect x={-size.width / 2 - 10} y={-size.depth / 2 - 10} width={size.width + 20} height={size.depth + 20} fill="transparent" stroke="none" pointerEvents="all" />
                   {isWallAttachedFixture(box) ? (
@@ -2031,7 +2059,7 @@ export default function SalesBathroomSketch({ value, onChange, disabled = false 
           <strong style={{ display: "block", fontSize: 17 }}>Badskisse</strong>
           <span style={{ color: "#5d6a70", fontSize: 13 }}>Tegn rommet, mål direkte og marker eksisterende installasjoner.</span>
         </div>
-        <button type="button" className="sales-primary-button" disabled={disabled} onClick={() => setIsOpen(true)}>{bathroomSketchHasContent(sketch) ? "Åpne / rediger skisse" : "Lag badskisse"}</button>
+        <button type="button" className="sales-primary-button" disabled={disabled} onClick={openSketchEditor}>{bathroomSketchHasContent(sketch) ? "Åpne / rediger skisse" : "Lag badskisse"}</button>
       </div>
 
       <div style={{ marginTop: 10, width: "100%", maxWidth: "100%", border: "1px solid #d7e4ea", borderRadius: 12, overflow: "hidden", background: "#fff", minHeight: 130, display: "grid", placeItems: "center" }}>
