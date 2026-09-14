@@ -1,9 +1,12 @@
-// Expo ProffDok – FASE 42F
+// Expo ProffDok – FASE 42F HOTFIX / FASE 42F
 // Delt, liten recovery-hjelper for intern Befaring/Tilbud.
 // Holder bootstrap og SalesModule på samme markører/TTL uten å endre salgsdata.
 // I tillegg bevares et separat arbeidsbilde-snapshot når nettleserfanen går i
 // bakgrunnen. Det snapshotet påvirkes ikke av React-unmount/auth-refresh og kan
 // derfor gjenåpne nøyaktig samme Sales-arbeidsbilde ved retur.
+// HOTFIX: enhver ekte brukerinteraksjon i den interne appen avslutter gammel
+// foreground-recovery før handlingen behandles. Automatisk recovery får dermed
+// aldri overstyre Tilbake/Lagre/Avbryt/meny eller annen bevisst navigasjon.
 
 export const SALES_RELOAD_TAB_KEY = "expo-proffdok:sales:restore-tab-after-reload";
 export const SALES_RELOAD_NAVIGATION_KEY = "expo-proffdok:sales:restore-navigation-after-reload";
@@ -280,6 +283,18 @@ export function clearSalesResumeMarkers({
   }
 }
 
+export function shouldCancelSalesRecoveryForTrustedInteraction({
+  isTrusted = false,
+  visibilityState = "visible",
+  internalRoute = true,
+} = {}) {
+  return Boolean(
+    isTrusted &&
+      visibilityState !== "hidden" &&
+      internalRoute
+  );
+}
+
 function isInternalSalesRoute() {
   if (typeof window === "undefined") return false;
   try {
@@ -412,8 +427,8 @@ function tryRecoverSalesWorkspace() {
   // Re-armer navigasjonen rett før vi åpner Sales, slik at wrapperens normale
   // mount beholder offer-builder/befaringsnotat i stedet for å nullstille til list.
   // Snapshotet beholdes gjennom hele returfasen; auth/React kan fortsatt remounte
-  // hovedappen etter første vellykkede åpning. Det ryddes ved bevisst navigasjon
-  // utenfor Sales eller når TTL-en utløper.
+  // hovedappen etter første vellykkede åpning. Neste ekte brukerinteraksjon i den
+  // interne appen avslutter derimot recovery umiddelbart, uansett arbeidsflate.
   restoreSalesWorkspaceNavigation(snapshot, {
     localStorage: local,
     sessionStorage: session,
@@ -448,12 +463,21 @@ export function installSalesBackgroundResumeGuard() {
     scheduleCaptureCurrentSalesWorkspace();
   };
 
-  const clearSnapshotAfterTrustedSalesInteraction = (event) => {
-    if (!event?.isTrusted || document.visibilityState === "hidden") return;
-    if (!salesSurfaceIsMounted()) return;
-    const target = event.target instanceof Element ? event.target : null;
-    if (target?.closest(".sales-app")) return;
-    clearSalesWorkspaceResumeSnapshot();
+  const cancelRecoveryAfterTrustedAppInteraction = (event) => {
+    if (
+      !shouldCancelSalesRecoveryForTrustedInteraction({
+        isTrusted: Boolean(event?.isTrusted),
+        visibilityState: document.visibilityState,
+        internalRoute: isInternalSalesRoute(),
+      })
+    ) {
+      return;
+    }
+
+    // Når brukeren faktisk gjør noe i appen igjen, er foreground-recovery ferdig.
+    // Rydd alle midlertidige markører FØR React/button-handleren kjører, slik at
+    // senere retry-timere aldri kan reversere Tilbake/Lagre/Avbryt/menyvalg.
+    clearSalesResumeMarkers({ preserveWorkspace: false });
   };
 
   document.addEventListener("visibilitychange", onVisibilityChange);
@@ -462,7 +486,12 @@ export function installSalesBackgroundResumeGuard() {
   window.addEventListener("focus", scheduleSalesWorkspaceRecovery);
   document.addEventListener(
     "pointerdown",
-    clearSnapshotAfterTrustedSalesInteraction,
+    cancelRecoveryAfterTrustedAppInteraction,
+    true
+  );
+  document.addEventListener(
+    "keydown",
+    cancelRecoveryAfterTrustedAppInteraction,
     true
   );
 }

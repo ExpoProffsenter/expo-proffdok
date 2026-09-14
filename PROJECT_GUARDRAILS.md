@@ -32,6 +32,7 @@ Følgende er ikke-forhandlebare regresjonskrav:
 6. Bevisst navigasjon til Startsiden skal respekteres; gammel recovery-state skal ikke tvinge brukeren tilbake.
 7. Ingen tom initialform får overskrive eksisterende serverdata under mount/remount/hydrering.
 8. Mobil Safari/Chrome og desktop fanebytte skal følge samme sikkerhetsprinsipp: lokal sikring først, server som varig fasit, recovery bare ved reell konflikt.
+9. **Bevisst brukerhandling vinner alltid over automatisk recovery i hele den interne appen.** Etter fanebytte/dvale skal første ekte brukerinteraksjon avslutte gammel foreground-recovery før `Tilbake`, `Lagre`, `Avbryt`, menyvalg, Startside eller annen navigasjon behandles. Senere recovery-timere må aldri kunne reversere brukerens valg.
 
 ## 4. Server-first + local safety
 

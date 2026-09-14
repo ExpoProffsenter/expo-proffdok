@@ -11,6 +11,7 @@ import {
   readSalesWorkspaceResumeSnapshot,
   restoreSalesWorkspaceNavigation,
   shouldBootstrapRestoreSales,
+  shouldCancelSalesRecoveryForTrustedInteraction,
 } from "../src/modules/sales/services/salesResumeRecovery.mjs";
 
 const failures = [];
@@ -168,6 +169,54 @@ requireResume(
   "Fanereturen mangler sen recovery-kontroll dersom auth/React resetter Startsiden forsinket."
 );
 
+// 8) APP-REGEL: automatisk recovery skal aldri overstyre en bevisst brukerhandling.
+// Dette må gjelde Tilbake/Lagre/Avbryt/meny og øvrige handlinger i hele internappen.
+requireResume(
+  shouldCancelSalesRecoveryForTrustedInteraction({
+    isTrusted: true,
+    visibilityState: "visible",
+    internalRoute: true,
+  }),
+  "Ekte brukerinteraksjon i internappen stopper ikke gammel recovery."
+);
+requireResume(
+  !shouldCancelSalesRecoveryForTrustedInteraction({
+    isTrusted: false,
+    visibilityState: "visible",
+    internalRoute: true,
+  }),
+  "Programmatisk recovery blir feilaktig behandlet som bevisst brukerhandling."
+);
+requireResume(
+  !shouldCancelSalesRecoveryForTrustedInteraction({
+    isTrusted: true,
+    visibilityState: "hidden",
+    internalRoute: true,
+  }),
+  "Bakgrunnshendelser rydder recovery før fanen faktisk er tilbake."
+);
+requireResume(
+  !shouldCancelSalesRecoveryForTrustedInteraction({
+    isTrusted: true,
+    visibilityState: "visible",
+    internalRoute: false,
+  }),
+  "Offentlig kunde/UE-visning påvirkes av intern recovery-regel."
+);
+requireResume(
+  recoverySource.includes('document.addEventListener(\n    "pointerdown",\n    cancelRecoveryAfterTrustedAppInteraction') &&
+    recoverySource.includes('document.addEventListener(\n    "keydown",\n    cancelRecoveryAfterTrustedAppInteraction'),
+  "Global recovery-vakt lytter ikke på både touch/mus og tastaturinteraksjon."
+);
+requireResume(
+  !recoverySource.includes('if (target?.closest(".sales-app")) return;'),
+  "Klikk inne i Sales kan fortsatt bli overstyrt av et gammelt recovery-snapshot."
+);
+requireResume(
+  recoverySource.includes("clearSalesResumeMarkers({ preserveWorkspace: false })"),
+  "Ekte brukerhandling rydder ikke alle midlertidige recovery-markører før navigasjon."
+);
+
 if (failures.length) {
   console.error("\n❌ Expo ProffDok Sales browser-tab resume check FEILET:\n");
   failures.forEach((failure) => console.error(`- ${failure}`));
@@ -176,5 +225,5 @@ if (failures.length) {
 }
 
 console.log(
-  "✅ Expo ProffDok Sales browser-tab resume check OK – Rediger tilbud / befaring / mobil dvale bevares"
+  "✅ Expo ProffDok Sales browser-tab resume check OK – fanebytte/dvale gjenopprettes, mens bevisst brukerhandling alltid vinner"
 );
