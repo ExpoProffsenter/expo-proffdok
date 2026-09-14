@@ -883,13 +883,14 @@ function FixtureWallOffsetDimension({ box, walls }) {
   const base = shiftedPoint(sideData.sidePoint, tangent, sideData.anchor === "start" ? -18 : 18);
   const end = shiftedPoint(base, interior, offsetMm * measuredPxPerMm(walls));
   const mid = { x: (base.x + end.x) / 2, y: (base.y + end.y) / 2 };
+  const label = shiftedPoint(mid, tangent, sideData.anchor === "start" ? -16 : 16);
   const tick = 6;
   const tickLine = (point, key) => <line key={key} x1={point.x - tangent.x * tick} y1={point.y - tangent.y * tick} x2={point.x + tangent.x * tick} y2={point.y + tangent.y * tick} stroke="#75858c" strokeWidth="1.35" />;
   return (
     <g pointerEvents="none">
       <line x1={base.x} y1={base.y} x2={end.x} y2={end.y} stroke="#75858c" strokeWidth="1.35" />
       {tickLine(base, "wa")}{tickLine(end, "wb")}
-      <SvgTextBadge x={mid.x} y={mid.y} text={String(offsetMm)} fontSize={7} fontWeight={700} color="#58666c" angle={readableWallTextAngle({ x1: base.x, y1: base.y, x2: end.x, y2: end.y })} />
+      <SvgTextBadge x={label.x} y={label.y} text={String(offsetMm)} fontSize={7} fontWeight={700} color="#58666c" angle={readableWallTextAngle({ x1: base.x, y1: base.y, x2: end.x, y2: end.y })} />
     </g>
   );
 }
@@ -1000,10 +1001,11 @@ function fixtureWallOffsetDimensionMarkup(box, walls) {
   const base = shiftedPoint(sideData.sidePoint, tangent, sideData.anchor === "start" ? -18 : 18);
   const end = shiftedPoint(base, interior, offsetMm * measuredPxPerMm(walls));
   const mid = { x: (base.x + end.x) / 2, y: (base.y + end.y) / 2 };
+  const label = shiftedPoint(mid, tangent, sideData.anchor === "start" ? -16 : 16);
   const tick = 6;
   const tickSvg = (point) => `<line x1="${point.x - tangent.x * tick}" y1="${point.y - tangent.y * tick}" x2="${point.x + tangent.x * tick}" y2="${point.y + tangent.y * tick}" stroke="#75858c" stroke-width="1.35"/>`;
   const angle = readableWallTextAngle({ x1: base.x, y1: base.y, x2: end.x, y2: end.y });
-  return `<g><line x1="${base.x}" y1="${base.y}" x2="${end.x}" y2="${end.y}" stroke="#75858c" stroke-width="1.35"/>${tickSvg(base)}${tickSvg(end)}${svgTextBadgeMarkup(mid.x, mid.y, String(offsetMm), 7, 700, "#58666c", angle)}</g>`;
+  return `<g><line x1="${base.x}" y1="${base.y}" x2="${end.x}" y2="${end.y}" stroke="#75858c" stroke-width="1.35"/>${tickSvg(base)}${tickSvg(end)}${svgTextBadgeMarkup(label.x, label.y, String(offsetMm), 7, 700, "#58666c", angle)}</g>`;
 }
 
 function fixtureSideDimensionMarkup(box, walls) {

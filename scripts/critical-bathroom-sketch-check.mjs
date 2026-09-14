@@ -42,6 +42,7 @@ if (component) {
   requireText(component, "<FixtureWallOffsetDimension box={box}", `${componentPath}: avstand fra vegg vises ikke som utvendig målbånd i editor.`);
   requireText(component, "fixtureWallOffsetDimensionMarkup(box, sketch.walls)", `${componentPath}: eksportert skisse mangler utvendig veggavstand.`);
   requireText(component, "sideData.anchor === \"start\" ? -18 : 18", `${componentPath}: veggavstand flyttes ikke utenfor nærmeste sidehjørne.`);
+  requireText(component, "const label = shiftedPoint(mid, tangent, sideData.anchor === \"start\" ? -16 : 16);", `${componentPath}: kort veggavstand skjuler fortsatt mållinje/endehaker.`);
   requireText(component, "showFixtureDimensions && !isFixtureBox(box)", `${componentPath}: produktstørrelser skjules ikke fra selve skissen.`);
   requireText(component, "placeholder=\"0\"", `${componentPath}: nullavstand vises ikke som placeholder.`);
   requireText(component, "rawValue.replace(/^0+(?=\\d)/, \"\")", `${componentPath}: veggavstand normaliserer ikke ledende nuller.`);
