@@ -1,0 +1,29 @@
+name: TEMP FASE42E exterior fixture dimensions
+
+on:
+  push:
+    branches:
+      - feature/fase42e-badskisse-forbedringer
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/fase42e-badskisse-forbedringer
+          fetch-depth: 0
+      - name: Apply exterior dimension patch
+        run: python scripts/temp-fase42e-exterior-fixture-dimensions.py
+      - name: Commit result and remove temporary files
+        run: |
+          rm scripts/temp-fase42e-exterior-fixture-dimensions.py .github/workflows/fase42e-exterior-fixture-dimensions.yml
+          git config user.name "ExpoProffsenter"
+          git config user.email "firmapost@ringside.no"
+          git add src/modules/sales/components/SalesBathroomSketch.jsx src/modules/help/helpToolsCore.js scripts/critical-bathroom-sketch-check.mjs scripts/temp-fase42e-exterior-fixture-dimensions.py .github/workflows/fase42e-exterior-fixture-dimensions.yml
+          git commit -m "FASE 42E: flytt WC/servant-plasseringsmål ut av rommet"
+          git push origin HEAD:feature/fase42e-badskisse-forbedringer
