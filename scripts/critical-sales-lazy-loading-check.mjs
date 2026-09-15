@@ -22,6 +22,7 @@ function forbidText(source, needle, message) {
 const supabasePath = "src/modules/sales/services/salesSupabase.js";
 const lazyPath = "src/modules/sales/services/salesRequestLazyLoading.js";
 const listPath = "src/modules/sales/components/SalesListView.jsx";
+const homeFollowUpPath = "src/modules/sales/components/SalesHomeFollowUp.jsx";
 const wrapperPath = "src/modules/sales/SalesModule.jsx";
 const localStoragePath = "src/modules/sales/services/salesLocalStorageCore.js";
 const migrationPath = "supabase/migrations/20260915134500_fase42i_sales_list_projection.sql";
@@ -30,6 +31,7 @@ const indexMigrationPath = "supabase/migrations/20260915135500_fase42i_sales_sum
 const supabase = read(supabasePath);
 const lazy = read(lazyPath);
 const list = read(listPath);
+const homeFollowUp = read(homeFollowUpPath);
 const wrapper = read(wrapperPath);
 const localStorage = read(localStoragePath);
 const migration = read(migrationPath);
@@ -119,6 +121,24 @@ if (list) {
   );
 }
 
+if (homeFollowUp) {
+  forbidText(
+    homeFollowUp,
+    "fetchSalesRequests",
+    `${homeFollowUpPath}: Startsiden kan konsumere en primet komplett Sales-sak før recovery/editor rekker å bruke den.`
+  );
+  requireText(
+    homeFollowUp,
+    'client.rpc("list_sales_request_summaries"',
+    `${homeFollowUpPath}: Startsiden bruker ikke egen lett summary-henting.`
+  );
+  requireText(
+    homeFollowUp,
+    "getSalesSupportCompanyId",
+    `${homeFollowUpPath}: Startsiden bevarer ikke Systemadmin-supportscope ved summary-henting.`
+  );
+}
+
 if (wrapper) {
   requireText(
     wrapper,
@@ -157,13 +177,8 @@ if (wrapper) {
   );
   requireText(
     wrapper,
-    'setServerCacheReady(false);\n      setInstanceKey((current) => current + 1);',
-    `${wrapperPath}: recovery-remount lukker ikke server-first-gaten før Core remountes.`
-  );
-  requireText(
-    wrapper,
-    'props.openRequestSignal,\n    instanceKey,\n    serverCacheRetryKey,',
-    `${wrapperPath}: recovery-remount re-primer ikke valgt sak før Core får mounte igjen.`
+    "instanceKey,",
+    `${wrapperPath}: recovery-remount trigger ikke ny server-first prime av valgt sak.`
   );
   forbidText(
     wrapper,
@@ -243,5 +258,5 @@ if (failures.length) {
 }
 
 console.log(
-  "✅ Expo ProffDok Sales lazy-loading check OK – oversikten bruker lett projeksjon, valgt sak hydreres komplett før redigering, recovery-remount re-primer server-first, summary kan ikke lagres tilbake og nettfeil blokkerer ufullstendig editor"
+  "✅ Expo ProffDok Sales lazy-loading check OK – oversikten bruker lett projeksjon, Startsiden kan ikke konsumere primet detalj, valgt sak hydreres komplett før redigering, recovery-remount re-primer server-first, summary kan ikke lagres tilbake og nettfeil blokkerer ufullstendig editor"
 );
