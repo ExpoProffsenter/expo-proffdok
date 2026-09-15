@@ -8,7 +8,7 @@ function requireNeedles(path, needles) {
   const text = read(path);
   for (const needle of needles) {
     if (!text.includes(needle)) {
-      throw new Error(`${path}: mangler kritisk 41B.1-guard: ${needle}`);
+      throw new Error(`${path}: mangler kritisk Sales-oversikt-guard: ${needle}`);
     }
   }
   return text;
@@ -47,10 +47,19 @@ const salesList = requireNeedles("src/modules/sales/components/SalesListView.jsx
   'setActiveTab("all")',
   "onChange={handleSearchChange}",
   '<div className="sales-header">',
+  '{ id: "requests", label: "Forespørsler" }',
+  'if (request?.status === "Forespørsel") return "requests";',
+  "requests: 0,",
+  '{ label: "Forespørsler", value: requestCounts.requests }',
+  'activeTab === "requests"',
+  "Ingen ubokede forespørsler. Nye forespørsler vises her til befaring er planlagt.",
 ]);
 
 if (salesList.includes('<header className="sales-header">')) {
   throw new Error("Sales-header må ikke arve hovedappens globale sticky <header>-regel.");
+}
+if (salesList.indexOf('if (request?.status === "Forespørsel") return "requests";') > salesList.indexOf("const followUp = getOfferFollowUpInfo(request);")) {
+  throw new Error("Forespørsler må skilles ut før vanlig Under arbeid/oppfølgingsbucket beregnes.");
 }
 
 const desktopMenu = requireNeedles("src/modules/app/desktopSideMenu.js", [
@@ -83,4 +92,4 @@ if (fs.existsSync("src/modules/sales/salesOverviewSearchUx.js")) {
   throw new Error("salesOverviewSearchUx.js er overflødig etter at søket flyttet inn i SalesListView.");
 }
 
-console.log("✅ Expo ProffDok Sales-oversikt/supportmodus/navigation check OK");
+console.log("✅ Expo ProffDok Sales-oversikt / forespørselskø / supportmodus / navigation check OK");
