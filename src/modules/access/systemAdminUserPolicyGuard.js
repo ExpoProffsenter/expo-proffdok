@@ -2,6 +2,7 @@
 // Smalt UX-sikkerhetsnett for nye brukere i Systemadministrasjon.
 // Backend/RLS er autoritativ. Denne filen speiler serverreglene i eksisterende
 // brukerkort uten å endre main.jsx eller den etablerte godkjenningsflyten.
+// Hjelp-innhold rendres fortsatt kun gjennom React-kjernen i helpToolsCore.js.
 
 import { listManagedModuleAccess } from "./moduleAccessClient.js";
 
@@ -78,46 +79,11 @@ function applyStoreOfferCompanyPolicy() {
   });
 }
 
-function appendHelpLine(list, text) {
-  if (!(list instanceof HTMLUListElement)) return;
-  const exists = Array.from(list.querySelectorAll(":scope > li")).some(
-    (item) => compactText(item.textContent) === compactText(text)
-  );
-  if (exists) return;
-  const item = document.createElement("li");
-  item.textContent = text;
-  list.appendChild(item);
-}
-
-function applySystemAdminHelpPolicy() {
-  if (!snapshot?.is_systemadmin) return;
-  const label = Array.from(document.querySelectorAll("button b")).find(
-    (node) => compactText(node.textContent) === "⚙️ Systemadministrasjon"
-  );
-  const card = label?.closest(".item");
-  const list = card?.querySelector("ul");
-  if (!(list instanceof HTMLUListElement)) return;
-
-  appendHelpLine(
-    list,
-    "Firma må være valgt før en ny bruker kan godkjennes. Expo Proffsenter-logo brukes bare som standardlogo når firmaet ikke har lastet opp egen logo."
-  );
-  appendHelpLine(
-    list,
-    "Butikktilbud kan bare tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter. Andre firma kan få Befaring / Våtromstilbud uten Butikktilbud."
-  );
-}
-
-function applyPolicy() {
-  applyStoreOfferCompanyPolicy();
-  applySystemAdminHelpPolicy();
-}
-
 function scheduleApply() {
   if (frame) return;
   frame = window.requestAnimationFrame(() => {
     frame = 0;
-    applyPolicy();
+    applyStoreOfferCompanyPolicy();
   });
 }
 
