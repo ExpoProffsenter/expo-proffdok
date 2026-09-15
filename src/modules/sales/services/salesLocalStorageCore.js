@@ -114,14 +114,81 @@ function hasMeaningfulInspectionDraft(formValue = {}) {
   );
 }
 
+function currentSupportCompanyScope() {
+  if (typeof window === "undefined") return "";
+  try {
+    return String(
+      new URLSearchParams(window.location.search).get("salesSupportCompany") || ""
+    ).trim();
+  } catch {
+    return "";
+  }
+}
+
+function inspectionRequestIdFromDraftKey(draftKey = "") {
+  const normalized = String(draftKey || "").trim();
+  const marker = ":inspection-draft:";
+  const markerIndex = normalized.lastIndexOf(marker);
+  return markerIndex >= 0
+    ? normalized.slice(markerIndex + marker.length).trim()
+    : "";
+}
+
+function collectInspectionDraftKeys(draftKey = "") {
+  const store = storage();
+  if (!store) return [];
+
+  const normalizedDraftKey = String(draftKey || "").trim();
+  const requestId = inspectionRequestIdFromDraftKey(normalizedDraftKey);
+  const suffix = requestId ? `:inspection-draft:${requestId}` : "";
+  const userId = currentUserId(store);
+  const supportScope = currentSupportCompanyScope();
+  const keys = normalizedDraftKey ? [normalizedDraftKey] : [];
+
+  if (!suffix) return [...new Set(keys)];
+
+  for (let index = 0; index < store.length; index += 1) {
+    const key = store.key(index);
+    if (!key?.startsWith(STORAGE_KEY) || !key.endsWith(suffix)) continue;
+    if (userId && !key.includes(`:${userId}`)) continue;
+
+    if (supportScope) {
+      if (!key.includes(`:support:${supportScope}:`)) continue;
+    } else if (key.includes(":support:")) {
+      continue;
+    }
+
+    keys.push(key);
+  }
+
+  return [...new Set(keys)];
+}
+
+function latestMeaningfulInspectionDraft(draftKey = "") {
+  return (
+    collectInspectionDraftKeys(draftKey)
+      .map((key) => {
+        const record = base.loadInspectionDraft(key);
+        if (!record?.form || !hasMeaningfulInspectionDraft(record.form)) {
+          return null;
+        }
+        return {
+          key,
+          record,
+          savedAt: Date.parse(record.savedAt || "") || 0,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.savedAt - a.savedAt)[0] || null
+  );
+}
+
 export function loadInspectionDraft(draftKey) {
-  const draft = base.loadInspectionDraft(draftKey);
-  if (draft?.form && !hasMeaningfulInspectionDraft(draft.form)) return null;
-  return draft;
+  return latestMeaningfulInspectionDraft(draftKey)?.record || null;
 }
 
 export function saveInspectionDraft(draftKey, formValue = {}) {
-  const existing = base.loadInspectionDraft(draftKey);
+  const existing = latestMeaningfulInspectionDraft(draftKey)?.record || null;
   if (
     existing?.form &&
     hasMeaningfulInspectionDraft(existing.form) &&
@@ -131,6 +198,12 @@ export function saveInspectionDraft(draftKey, formValue = {}) {
   }
   base.saveInspectionDraft(draftKey, formValue);
   return true;
+}
+
+export function clearInspectionDraft(draftKey) {
+  collectInspectionDraftKeys(draftKey).forEach((key) => {
+    base.clearInspectionDraft(key);
+  });
 }
 
 export function normalizeSalesNavigationRecord(value = null) {
