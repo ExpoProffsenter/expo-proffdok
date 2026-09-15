@@ -1,7 +1,7 @@
 # Expo ProffDok – Sales / Befaring / Tilbud / Butikktilbud / Aksept / Kontrakt
 
 **Status:** Produksjonskoblet Sales-modul  
-**Oppdatert:** Fase 39B.2 – 08.09.2026
+**Oppdatert:** Fase 42H – 15.09.2026
 
 Sales håndterer både ordinær Befaring/Tilbud-flyt og den separate Butikktilbud-flyten.
 
@@ -46,6 +46,20 @@ Forespørsel
 ```
 
 Tilbud kan også opprettes uten befaring.
+
+### 2.1 Forespørselskø – Fase 42H
+
+Nye saker med status `Forespørsel` vises i en egen arbeidsfane **Forespørsler** i Sales-oversikten. Dette er køen for saker som er registrert, men hvor befaring ennå ikke er planlagt.
+
+```text
+Ny forespørsel
+→ Forespørsler
+→ åpne saken
+→ Planlegg befaring
+→ saken går videre til ordinær Under arbeid-flyt
+```
+
+Køen endrer ikke lagring eller statusmodell. Den er kun en tydelig visning av eksisterende `Forespørsel`-status. Arkiverte, aksepterte og avviste saker følger fortsatt sine eksisterende arbeidsfaner. Søk på tvers av saker fungerer fortsatt uavhengig av arbeidsfanen.
 
 ## 3. Butikktilbud-hovedflyt
 
@@ -276,10 +290,11 @@ Avtalegrunnlag kan inneholde akseptbevis, signert Expo-kontrakt, bedriftens egen
 
 Ved dokumentert tetthetsgaranti kreves signert kontrakt i Avtalegrunnlag sammen med øvrige garanti-/Sopro-/overtagelseskrav.
 
-## 16. Viktige filer i Sales 39B.2
+## 16. Viktige filer i Sales 42H
 
 ```text
 src/modules/sales/SalesModuleCore.jsx
+src/modules/sales/components/SalesListView.jsx
 src/modules/sales/components/SalesOfferBuilder.jsx
 src/modules/sales/components/SalesStoreOfferBuilderGrouped.jsx
 src/modules/sales/components/SalesStoreOfferBuilderCatalog.jsx
@@ -307,11 +322,14 @@ Ved Sales-/Butikktilbud-endringer skal minst følgende verifiseres:
 
 - `critical-build-check.mjs`
 - `critical-sales-recovery-check.mjs`
+- `critical-sales-overview-check.mjs` ved endringer i saksoversikt/søk/arbeidskø
 - `critical-store-catalog-check.mjs` når katalog/Butikktilbud påvirkes
 - `critical-store-decline-check.mjs` når digital avvisning/varsling påvirkes
 - Vite build
 - Vercel Preview/runtime
 - vanlig Befaring/Tilbud-liste og ordinær Sales-sak
+- Forespørsler-fanen viser bare ubokede saker med status `Forespørsel`
+- planlegging av befaring flytter saken ut av Forespørsler-køen uten å endre øvrig Sales-flyt
 - Butikktilbud redigering, Enter, autosave og Tilbake
 - avsnitt i internvisning, kundelenke og PDF
 - katalogsøk og tilgang
