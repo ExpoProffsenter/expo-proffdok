@@ -13,6 +13,7 @@ Fase 42K er en avgrenset stabiliseringsrunde før demo. Målet er å forbedre de
 Fasen endrer kun:
 
 - desktop prosjektveiviser/hurtigvalg
+- gjenkjenning av eldre prosjektmeny som viser `Salgsgrunnlag` i stedet for `Befaring/Tilbud`
 - Prissøk workspace-resume ved appbytte/dvale
 - systemadmin UX-policy for Firma og Butikktilbud
 - backend-policy for godkjenning uten Firma og intern tilgang ved firmabytte
@@ -45,6 +46,12 @@ Oversikt
 Full **Meny** beholdes som før for Bilder, Produkter, Sjekklister, Avvik, Chat, Overtagelse osv.
 
 Dette er en anbefalt arbeidsrekkefølge, ikke en ny teknisk sperre. Prosjekt uten tilbud og prosjekt uten kontrakt er fortsatt gyldige prosjektveier.
+
+### 1.1 Eldre prosjektmenyer
+
+Enkelte eldre prosjekter viser `Salgsgrunnlag` i native prosjektmeny i stedet for `Befaring/Tilbud`. Desktop-adapteren skal derfor kjenne igjen en prosjektarbeidsflate på stabile prosjektfaner (`Prosjektoversikt`, `Prosjektering`, `Sjekklister`, `Avtalegrunnlag`, `Hjelp`) og ikke være avhengig av Sales-etiketten.
+
+Dette endrer ikke gamle prosjektdata eller native faner. Det sørger bare for at samme kollapsede desktopmeny og anbefalte prosjektveiviser brukes på både eldre og nye prosjekter.
 
 ## 2. Firma før godkjenning
 
@@ -106,11 +113,22 @@ Fasen må bestå eksisterende full `npm run build` med alle critical checks, plu
 
 - anbefalt prosjektløp må være `Oversikt → Avtalegrunnlag → Prosjektering → Fremdrift`
 - hurtigvalgene må fortsatt klikke native prosjektfaner
+- eldre prosjektmeny med `Salgsgrunnlag` må fortsatt fanges av desktopmenyen
 - Prissøk må ha sessionStorage-basert workspace-resume
 - Prissøk må rydde resume-markør ved bevisst navigasjon
 - nye brukere må ha Firma før godkjenning
 - policy-migrasjonen skal ikke backfille eksisterende profiler
 - ekstern firmatilhørighet skal ikke kunne beholde intern Butikktilbud/nto-tilgang etter firmabytte
+
+### 5.1 Backend-verifikasjon uten testbruker
+
+Policylogikken kan verifiseres uten å opprette eller endre reelle brukere ved å bruke midlertidige tabeller i en transaksjon som rulles tilbake. Følgende scenarier skal være grønne:
+
+- godkjenning uten Firma stoppes
+- godkjenning med Firma tillates
+- internt → eksternt firmabytte fjerner `store_offers` og `view_internal_net_prices`
+- vanlig `sales` beholdes ved slikt firmabytte
+- internt → internt firmabytte beholder interne tilganger
 
 ## 6. Merge-/produksjonsregel
 
