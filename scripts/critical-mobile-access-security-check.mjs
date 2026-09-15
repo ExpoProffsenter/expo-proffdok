@@ -56,10 +56,23 @@ const companyPolicyUx = requireNeedles("src/modules/access/systemAdminUserPolicy
   "Kun Ringside, Bademiljø Expo og Expo Proffsenter",
   "listManagedModuleAccess",
   "guardApprovalWithoutCompany",
+  "Hjelp-innhold rendres fortsatt kun gjennom React-kjernen",
 ]);
 
 if (companyPolicyUx.includes("supabase.from(") || companyPolicyUx.includes(".update(")) {
   throw new Error("42K Systemadmin UX-guard skal ikke skrive direkte til database.");
+}
+if (companyPolicyUx.includes("appendHelpLine") || companyPolicyUx.includes("applySystemAdminHelpPolicy")) {
+  throw new Error("42K tilgangs-UX skal ikke manipulere Hjelp utenfor React-kjernen.");
+}
+
+const help = requireNeedles("src/modules/help/helpToolsCore.js", [
+  "Firma må være valgt før en ny bruker kan godkjennes",
+  "Butikktilbud kan bare tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter",
+  "Expo Proffsenter-logo kan brukes som standardlogo",
+]);
+if (help.includes("DOM-innsprøyting") && !help.includes("Ingen DOM-innsprøyting")) {
+  throw new Error("React-Hjelp skal ikke erstattes med DOM-innsprøyting.");
 }
 
 const priceSearch = requireNeedles("src/modules/storeCatalog/storePriceSearchUx.jsx", [
@@ -94,4 +107,4 @@ requireNeedles("index.html", [
   "installSystemAdminUserPolicyGuard",
 ]);
 
-console.log("✅ Expo ProffDok mobil Prissøk / Systemadmin-layout / firma- og godkjenningsgrense check OK");
+console.log("✅ Expo ProffDok mobil Prissøk / Systemadmin-layout / React-Hjelp / firma- og godkjenningsgrense check OK");
