@@ -4,6 +4,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DEMO_REQUEST_REFS } from "./demoCaseSafety.js";
+import { clearDemoBrowserState } from "./demoLocalState.js";
 import { getDemoSuiteStatus, resetDemoSuite } from "./demoSuiteClient.js";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 
@@ -99,6 +100,7 @@ export function DemoTestPanel() {
     setError("");
     try {
       const result = await resetDemoSuite();
+      clearDemoBrowserState();
       setMessage(
         `${creating ? "Demo/Test er opprettet" : "Demo/Test er tilbakestilt"} og klar for ${result.companyName}. ` +
           `Tilbudsgrunnlag: ${result.sourceTemplateName}. Åpne Startsiden for visning.`
