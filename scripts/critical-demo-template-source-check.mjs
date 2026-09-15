@@ -59,13 +59,23 @@ assertContains(
 );
 assertContains(
   workProfileClient,
-  "1777576456114-pm0wocm9lamolv4joy-Expo_proffsenter.png",
-  "42L: eksisterende Expo Proffsenter-logo fra Storage må brukes som fallback for firmaet."
+  'EXPO_PROFFSENTER_DEFAULT_LOGO_URL = "/expo-logo.png"',
+  "42L: appens etablerte Expo-logo skal være default for Expo Proffsenter."
 );
 assertContains(
   workProfileClient,
-  "if (explicitLogo || companyName !== EXPO_PROFFSENTER_COMPANY_NAME) return profile;",
-  "42L: eksplisitte firmalogoer og andre firmaer må passere urørt."
+  'Bademilj-_EXPO_En-del-av-Ringside.png',
+  "42L: kjent feiltilordnet Bademiljø-logo må gjenkjennes eksplisitt."
+);
+assertContains(
+  workProfileClient,
+  'if (companyName !== EXPO_PROFFSENTER_COMPANY_NAME) return profile;',
+  "42L: andre firmaers branding må passere urørt."
+);
+assertContains(
+  workProfileClient,
+  'explicitLogo.includes(EXPO_PROFFSENTER_KNOWN_WRONG_LOGO_FRAGMENT)',
+  "42L: kjent feil-logo må korrigeres kun i Expo Proffsenter-profilen."
 );
 assertContains(
   workProfileUx,
