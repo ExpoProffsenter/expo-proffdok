@@ -7,6 +7,21 @@ import { rpcWithStoredSession } from "./moduleAccessClient.js";
 export const WORK_PROFILE_EVENT = "expo-proffdok-work-profile";
 export const WORK_PROFILE_GLOBAL = "__expoProffDokWorkProfile";
 
+const EXPO_PROFFSENTER_COMPANY_NAME = "Expo Proffsenter";
+const EXPO_PROFFSENTER_DEFAULT_LOGO_URL =
+  "https://dqffxflaoyarbxyiyhop.supabase.co/storage/v1/object/public/project-images/sjekklister/1777576456114-pm0wocm9lamolv4joy-Expo_proffsenter.png";
+
+function normalizeCompanyProfile(profile = null) {
+  if (!profile || typeof profile !== "object") return null;
+  const companyName = String(profile?.companyName || profile?.company_name || "").trim();
+  const explicitLogo = String(profile?.logoUrl || profile?.logo_url || "").trim();
+  if (explicitLogo || companyName !== EXPO_PROFFSENTER_COMPANY_NAME) return profile;
+  return {
+    ...profile,
+    logoUrl: EXPO_PROFFSENTER_DEFAULT_LOGO_URL,
+  };
+}
+
 function normalizeState(payload = {}) {
   const workspaces = Array.isArray(payload?.workspaces) ? payload.workspaces : [];
   return {
@@ -17,7 +32,7 @@ function normalizeState(payload = {}) {
     selection_required: Boolean(payload?.selection_required),
     active_company_id: String(payload?.active_company_id || ""),
     primary_company_id: String(payload?.primary_company_id || ""),
-    active_company_profile: payload?.active_company_profile || null,
+    active_company_profile: normalizeCompanyProfile(payload?.active_company_profile || null),
   };
 }
 
