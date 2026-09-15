@@ -23,6 +23,8 @@ function assertBefore(source, first, second, message) {
 const safety = read("src/modules/demo/demoCaseSafety.js");
 const client = read("src/modules/demo/demoSuiteClient.js");
 const panel = read("src/modules/demo/DemoTestPanel.jsx");
+const launcher = read("src/modules/demo/DemoHomeLauncher.jsx");
+const navigation = read("src/modules/demo/demoStageNavigation.js");
 const mount = read("src/modules/storeCatalog/systemAdminStoreCatalogUx.jsx");
 const publishing = read("src/modules/sales/services/salesPublishing.js");
 const acceptancePdf = read("src/modules/sales/services/salesAcceptancePdf.js");
@@ -55,17 +57,32 @@ if (/\.delete\(\)[\s\S]{0,160}(title|customer|ilike)/.test(client)) {
   throw new Error("42L: demo-reset må aldri slette prosjekt basert på navn/kunde/fritekst.");
 }
 
-assertContains(panel, "Velg steget du vil vise", "42L: Demo/Test-panelet må være enkelt å bruke fra ett sted.");
+assertContains(panel, "Opprett eller tilbakestill demosuiten her", "42L: Systemadmin skal bare brukes til demo-oppsett/reset.");
+assertContains(panel, "Demo/Test-hurtigvalget på Startsiden", "42L: Systemadmin må peke systemadmin videre til Startsiden for visning.");
 assertContains(panel, "Tilbakestill demosaker", "42L: reset-handling mangler i Systemadmin-panelet.");
 assertContains(panel, "Opprette Demo/Test", "42L: første opprettelse må ha egen, forståelig bekreftelsestekst.");
-assertContains(panel, "queueDemoSalesOpen", "42L: demosteg må kunne åpnes direkte uten manuell leting i Sales-listen.");
-assertContains(panel, 'button.sales-request-card', "42L: direkte demosteg skal bruke eksisterende Sales-kort, ikke parallell editor.");
-assertContains(panel, 'button[role=\"tab\"]', "42L: direkte demosteg må kunne finne saken uavhengig av aktiv Sales-fane.");
 assertContains(panel, "const refreshInFlightRef = useRef(false)", "42L: Demo/Test må sperre parallelle arbeidsprofil/status-refresh.");
 assertContains(panel, "if (refreshInFlightRef.current) return;", "42L: WORK_PROFILE_EVENT må ignoreres mens Demo/Test selv refresher.");
 assertContains(panel, "nextCompanyId === currentCompanyId", "42L: uendret Representerer-firma må ikke starte ny statusrefresh.");
+assertNotContains(panel, "button.sales-request-card", "42L: Systemadmin-panelet skal ikke eie demo-navigasjon.");
 assertNotContains(panel, "const onWorkProfile = () => refresh();", "42L: direkte WORK_PROFILE_EVENT→refresh kan skape rekursiv refresh-loop.");
+
+assertContains(launcher, "Kun systemadmin", "42L: Startside-hurtigvalget må være tydelig systemadmin-only.");
+assertContains(launcher, "if (hidden || !status?.ready) return null", "42L: Demo/Test skal ikke vises på Startsiden før en gyldig systemadmin-suite er klar.");
+assertContains(launcher, "openDemoSalesStage", "42L: Startside-hurtigvalget må bruke isolert native Sales-navigasjon.");
+assertContains(launcher, "openDemoProject", "42L: Startside-hurtigvalget må kunne åpne demo-prosjektet.");
+assertContains(launcher, "nextCompanyId === currentCompanyId", "42L: Startside-hurtigvalget må følge Representerer uten refresh-loop.");
+
+assertContains(navigation, 'button.sales-request-card', "42L: direkte demosteg skal bruke eksisterende Sales-kort, ikke parallell editor.");
+assertContains(navigation, 'button[role=\"tab\"]', "42L: direkte demosteg må kunne finne saken uavhengig av aktiv Sales-fane.");
+assertContains(navigation, "nativeSalesButton.click()", "42L: Demo/Test skal åpne Sales gjennom eksisterende native inngang.");
+assertContains(navigation, "window.location.assign", "42L: demo-prosjekt skal bruke eksisterende admin-prosjektlenke.");
+
 assertContains(mount, "<DemoTestPanel />", "42L: Demo/Test er ikke montert i Systemadmin.");
+assertContains(mount, "<DemoHomeLauncher />", "42L: Demo/Test-hurtigvalg er ikke montert på Startsiden.");
+assertContains(mount, ".mobileProjectChooser", "42L: Demo/Test må støtte mobil Startsiden.");
+assertContains(mount, ".desktopNoProjectWelcome", "42L: Demo/Test må støtte desktop Startsiden.");
+assertNotContains(mount, "src/main.jsx", "42L: Demo/Test-mount skal ikke introdusere parallell main-navigation.");
 
 assertContains(publishing, "isDemoRequest(request)", "42L: tilbudspublisering må kjenne demosaker.");
 assertBefore(
@@ -86,4 +103,4 @@ assertContains(
   "42L: demo-regresjonscheck må kjøres i package scripts."
 );
 
-console.log("✅ Demo/Test 42L safety / reset / direct stage open / publishing / project cleanup / work-profile stability / Help check OK");
+console.log("✅ Demo/Test 42L safety / Startside launcher / native stage open / reset / publishing / project cleanup / work-profile stability / Help check OK");
