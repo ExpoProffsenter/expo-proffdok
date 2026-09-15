@@ -6,7 +6,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { DEMO_REQUEST_REFS } from "./demoCaseSafety.js";
 import { getDemoSuiteStatus } from "./demoSuiteClient.js";
 import { openDemoProject, openDemoSalesStage } from "./demoStageNavigation.js";
-import DemoCustomerOfferPreview from "./DemoCustomerOfferPreview.jsx";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 
 const STAGES = [
@@ -30,7 +29,6 @@ export function DemoHomeLauncher() {
   const [hidden, setHidden] = useState(false);
   const [error, setError] = useState("");
   const [openingStage, setOpeningStage] = useState("");
-  const [showCustomerOffer, setShowCustomerOffer] = useState(false);
   const refreshInFlightRef = useRef(false);
   const statusRef = useRef(null);
 
@@ -72,7 +70,6 @@ export function DemoHomeLauncher() {
       const nextCompanyId = String(event?.detail?.active_company_id || "").trim();
       const currentCompanyId = String(statusRef.current?.companyId || "").trim();
       if (nextCompanyId && nextCompanyId === currentCompanyId) return;
-      setShowCustomerOffer(false);
       setOpeningStage("");
       void refresh({ companySwitch: true });
     };
@@ -121,83 +118,91 @@ export function DemoHomeLauncher() {
     }
   };
 
+  const openCustomerOfferPreview = () => {
+    setError("");
+    const previewWindow = window.open("/demo-offer-preview.html", "_blank");
+    if (!previewWindow) {
+      setError("Nettleseren blokkerte kundevisningen. Tillat popup/ny fane og prøv igjen.");
+      return;
+    }
+    try {
+      previewWindow.opener = null;
+    } catch {
+      // Best effort. Kundevisningen er uansett read-only og Kenneth-only.
+    }
+  };
+
   return (
-    <>
-      <div
-        className="item"
-        data-demo-home-launcher
-        style={{
-          marginTop: 12,
-          marginBottom: 12,
-          border: "1px solid #9bdfe4",
-          background: "#f2fcfd",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <div>
-            <b style={{ fontSize: 18 }}>Demo/Test</b>
-            <p className="note" style={{ margin: "4px 0 0" }}>
-              {status.companyName}: gjenbrukbar presentasjonsløype med ferdige stoppunkter.
-            </p>
-            {status.sourceTemplateName ? (
-              <small className="note" style={{ display: "block", marginTop: 3 }}>
-                Tilbudsgrunnlag: {status.sourceTemplateName}
-              </small>
-            ) : null}
-          </div>
-          <span style={{ fontWeight: 800, color: "#087f88" }}>Kun Kenneth</span>
+    <div
+      className="item"
+      data-demo-home-launcher
+      style={{
+        marginTop: 12,
+        marginBottom: 12,
+        border: "1px solid #9bdfe4",
+        background: "#f2fcfd",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <b style={{ fontSize: 18 }}>Demo/Test</b>
+          <p className="note" style={{ margin: "4px 0 0" }}>
+            {status.companyName}: gjenbrukbar presentasjonsløype med ferdige stoppunkter.
+          </p>
+          {status.sourceTemplateName ? (
+            <small className="note" style={{ display: "block", marginTop: 3 }}>
+              Tilbudsgrunnlag: {status.sourceTemplateName}
+            </small>
+          ) : null}
         </div>
-
-        <div style={{ marginTop: 12 }}>
-          <b style={{ display: "block", marginBottom: 7 }}>Kundereise</b>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {stages.map((stage) => (
-              <button
-                key={stage.ref}
-                type="button"
-                className={stage.key === "request" ? "" : "secondary"}
-                onClick={() => void openStage(stage)}
-                disabled={
-                  Boolean(openingStage) ||
-                  !stage.current ||
-                  (stage.key === "project" && !stage.current?.projectId)
-                }
-              >
-                {openingStage === stage.key ? "Åpner …" : stage.label}
-              </button>
-            ))}
-            <button type="button" className="secondary" onClick={() => setShowCustomerOffer(true)}>
-              Kundevisning tilbud
-            </button>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 12 }}>
-          <b style={{ display: "block", marginBottom: 7 }}>Prosjekt og dokumentasjon</b>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {PROJECT_SHOWCASE.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                className="secondary"
-                onClick={() => openProjectShowcase(item.tab)}
-                disabled={!projectId}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {error ? (
-          <p style={{ color: "#991b1b", fontWeight: 800, margin: "10px 0 0" }}>{error}</p>
-        ) : null}
+        <span style={{ fontWeight: 800, color: "#087f88" }}>Kun Kenneth</span>
       </div>
 
-      {showCustomerOffer ? (
-        <DemoCustomerOfferPreview onClose={() => setShowCustomerOffer(false)} />
+      <div style={{ marginTop: 12 }}>
+        <b style={{ display: "block", marginBottom: 7 }}>Kundereise</b>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {stages.map((stage) => (
+            <button
+              key={stage.ref}
+              type="button"
+              className={stage.key === "request" ? "" : "secondary"}
+              onClick={() => void openStage(stage)}
+              disabled={
+                Boolean(openingStage) ||
+                !stage.current ||
+                (stage.key === "project" && !stage.current?.projectId)
+              }
+            >
+              {openingStage === stage.key ? "Åpner …" : stage.label}
+            </button>
+          ))}
+          <button type="button" className="secondary" onClick={openCustomerOfferPreview}>
+            Kundevisning tilbud
+          </button>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 12 }}>
+        <b style={{ display: "block", marginBottom: 7 }}>Prosjekt og dokumentasjon</b>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {PROJECT_SHOWCASE.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className="secondary"
+              onClick={() => openProjectShowcase(item.tab)}
+              disabled={!projectId}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {error ? (
+        <p style={{ color: "#991b1b", fontWeight: 800, margin: "10px 0 0" }}>{error}</p>
       ) : null}
-    </>
+    </div>
   );
 }
 
