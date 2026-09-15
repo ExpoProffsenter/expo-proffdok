@@ -7,6 +7,34 @@ const SANDBOX_KEY = "sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR";
 const DEMO_EMAIL = "demo@expo-proffdok.no";
 const PRODUCTION_REPO = "ExpoProffsenter/expo-proffdok";
 const SANDBOX_PRODUCTION_BASELINE = "1b98fef90fe57c24996982f39619a5bc0ce8a4f2";
+const DEMO_SKETCH_REQUEST_IDS = ["DEMO-01-FORESPORSEL", "DEMO-02-BEFARING"];
+const DEMO_BATHROOM_SKETCH = {
+  version: 15,
+  dimensions: { walls: true, openings: true, fixtures: true },
+  walls: [
+    { id: "demo-wall-top", x1: 120, y1: 70, x2: 600, y2: 70, lengthMm: "2420", createdAt: 1 },
+    { id: "demo-wall-right", x1: 600, y1: 70, x2: 600, y2: 390, lengthMm: "2150", createdAt: 2 },
+    { id: "demo-wall-bottom", x1: 600, y1: 390, x2: 120, y2: 390, lengthMm: "2420", createdAt: 3 },
+    { id: "demo-wall-left", x1: 120, y1: 390, x2: 120, y2: 70, lengthMm: "2150", createdAt: 4 },
+  ],
+  openings: [
+    { id: "demo-door", type: "door", wallId: "demo-wall-left", t: 0.72, widthMm: "800", heightMm: "2100", sillHeightMm: "", hingeSide: "end", swingSide: "positive", createdAt: 5 },
+    { id: "demo-window", type: "window", wallId: "demo-wall-top", t: 0.66, widthMm: "900", heightMm: "600", sillHeightMm: "1300", hingeSide: "start", swingSide: "negative", createdAt: 6 },
+  ],
+  markers: [
+    { id: "demo-drain", type: "drain", x: 520, y: 315, diameterMm: "", createdAt: 7 },
+    { id: "demo-waste", type: "waste", x: 235, y: 320, diameterMm: "110", createdAt: 8 },
+    { id: "demo-cold", type: "cold", x: 285, y: 135, diameterMm: "30", createdAt: 9 },
+    { id: "demo-hot", type: "hot", x: 335, y: 135, diameterMm: "30", createdAt: 10 },
+  ],
+  boxes: [
+    { id: "demo-sink", x: 255, y: 125, widthMm: "600", depthMm: "450", label: "Servant", snap: "wall", snapWallId: "demo-wall-top", wallOffsetMm: "0", rotation: 0, createdAt: 11 },
+    { id: "demo-toilet", x: 250, y: 335, widthMm: "360", depthMm: "550", label: "WC", snap: "wall", snapWallId: "demo-wall-bottom", wallOffsetMm: "0", rotation: 180, createdAt: 12 },
+    { id: "demo-shower", x: 515, y: 300, widthMm: "900", depthMm: "900", label: "Dusj", snap: "free", snapWallId: "", wallOffsetMm: "0", rotation: 0, createdAt: 13 },
+  ],
+  strokes: [],
+};
+
 const supabase = createClient(SANDBOX_URL, SANDBOX_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
@@ -19,6 +47,7 @@ const dangerButton = { ...button, background: "#fff4f2", borderColor: "#f2b8ae",
 
 const LABELS = {
   production_baseline: "Produksjonskode synkron",
+  local_sketch: "Redigerbar Badskisse på denne enheten",
   sales: "Fem demo-stopp",
   offer: "Tilbudsgrunnlag",
   main_project: "HOVED-prosjekt",
@@ -35,6 +64,39 @@ const LABELS = {
   storage: "Storage",
   snapshot: "Golden snapshot",
 };
+
+function bathroomSketchStorageKey(requestId = "") {
+  return `expo-proffdok:bathroom-sketch:v1:${String(requestId || "").trim()}`;
+}
+
+function seedLocalDemoState() {
+  let seeded = 0;
+  for (const requestId of DEMO_SKETCH_REQUEST_IDS) {
+    try {
+      window.localStorage.setItem(bathroomSketchStorageKey(requestId), JSON.stringify(DEMO_BATHROOM_SKETCH));
+      seeded += 1;
+    } catch {}
+  }
+  return seeded;
+}
+
+function checkLocalDemoAssets() {
+  let valid = 0;
+  for (const requestId of DEMO_SKETCH_REQUEST_IDS) {
+    try {
+      const raw = window.localStorage.getItem(bathroomSketchStorageKey(requestId));
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed?.version === 15 && Array.isArray(parsed?.walls) && parsed.walls.length >= 4 && Array.isArray(parsed?.boxes) && parsed.boxes.length >= 3) valid += 1;
+    } catch {}
+  }
+  return {
+    ok: valid === DEMO_SKETCH_REQUEST_IDS.length,
+    key: "local_sketch",
+    detail: valid === DEMO_SKETCH_REQUEST_IDS.length
+      ? `Klar for DEMO-01 og DEMO-02 (${valid}/${DEMO_SKETCH_REQUEST_IDS.length})`
+      : `${valid}/${DEMO_SKETCH_REQUEST_IDS.length} lokal(e) skisse(r) installert. Trykk «Installer demoskisse».`,
+  };
+}
 
 function clearLocalDemoState() {
   const removed = [];
@@ -104,7 +166,8 @@ async function runFullPreflight() {
     checkProductionBaseline(),
   ]);
   const serverChecks = Array.isArray(serverResult?.checks) ? serverResult.checks : [];
-  const checks = [baselineCheck, ...serverChecks.filter((item) => item?.key !== "production_baseline")];
+  const localSketchCheck = checkLocalDemoAssets();
+  const checks = [baselineCheck, localSketchCheck, ...serverChecks.filter((item) => item?.key !== "production_baseline" && item?.key !== "local_sketch")];
   return {
     ...serverResult,
     checks,
@@ -159,11 +222,12 @@ function App() {
     try {
       const restored = await callRpc("demo_sandbox_reset");
       const removed = clearLocalDemoState();
+      const seeded = seedLocalDemoState();
       const checked = await runFullPreflight();
       setPreflight(checked);
       setMessage(checked.ok
-        ? `✅ Demo tilbakestilt: ${restored.sales || 0} Sales-saker / ${restored.projects || 0} prosjekter. ${removed.length} lokale demo-/recovery-nøkler ryddet. Innlogging er beholdt.`
-        : `⚠️ Demo-data er tilbakestilt, men preflight er ikke grønn. ${removed.length} lokale demo-/recovery-nøkler ble ryddet. Ikke start kundedemo før røde punkter er avklart.`
+        ? `✅ Demo tilbakestilt: ${restored.sales || 0} Sales-saker / ${restored.projects || 0} prosjekter. ${removed.length} lokale demo-/recovery-nøkler ryddet og ${seeded} redigerbare Badskisser installert. Innlogging er beholdt.`
+        : `⚠️ Demo-data er tilbakestilt, men preflight er ikke grønn. ${removed.length} lokale demo-/recovery-nøkler ble ryddet og ${seeded} Badskisser installert. Ikke start kundedemo før røde punkter er avklart.`
       );
     } catch (error) {
       setMessage(`Reset stoppet uten å fortsette: ${error.message}`);
@@ -176,7 +240,7 @@ function App() {
     try {
       const baseline = await checkProductionBaseline();
       if (!baseline.ok) {
-        setPreflight({ ok: false, checks: [baseline] });
+        setPreflight({ ok: false, checks: [baseline, checkLocalDemoAssets()] });
         setMessage("⚠️ Golden Demo ble ikke oppdatert fordi sandboxen ikke er verifisert synkron med gjeldende main.");
         return;
       }
@@ -188,10 +252,18 @@ function App() {
     } finally { setBusy(""); }
   };
 
-  const clearLocal = () => {
-    if (!window.confirm("Rydde lokale demo-kladd/recovery-data på denne enheten? Innlogging beholdes.")) return;
+  const resetLocal = async () => {
+    if (!window.confirm("Rydde lokale demo-kladd/recovery-data på denne enheten og installere ren DEMO-Badskisse? Innlogging beholdes.")) return;
     const removed = clearLocalDemoState();
-    setMessage(`✅ ${removed.length} lokale demo-/recovery-nøkler ryddet. Åpne sandbox-appen på nytt.`);
+    const seeded = seedLocalDemoState();
+    setMessage(`✅ ${removed.length} lokale demo-/recovery-nøkler ryddet. ${seeded} DEMO-Badskisser installert. Innlogging er beholdt.`);
+    await runPreflight();
+  };
+
+  const installSketch = async () => {
+    const seeded = seedLocalDemoState();
+    setMessage(`✅ ${seeded} redigerbare DEMO-Badskisser installert på denne enheten.`);
+    await runPreflight();
   };
 
   useEffect(() => {
@@ -217,7 +289,7 @@ function App() {
         <h2 style={{ marginTop: 0 }}>Slik viser du flyten</h2>
         <ol style={{ lineHeight: 1.7 }}>
           <li>Start i <b>DEMO-01 – Forespørsel</b> og følg vanlig flyt så langt du ønsker.</li>
-          <li>Vis live-handlinger som planlegg befaring, tilbud, kundevisning og «Hent fra tilbud» når det passer.</li>
+          <li>Vis live-handlinger som planlegg befaring, Badskisse, tilbud, kundevisning og «Hent fra tilbud» når det passer.</li>
           <li>Hvis du vil spare tid, åpne et ferdig checkpoint i Sales-listen.</li>
           <li>For sluttfasen kan du åpne <b>DEMO – RESERVE – Ferdig våtrom med garanti</b> i Prosjektlisten.</li>
           <li>Etter møtet: trykk <b>Tilbakestill demo</b> her. Neste demo starter likt.</li>
@@ -230,10 +302,11 @@ function App() {
 
       <div style={card}>
         <h2 style={{ marginTop: 0 }}>Demo klar?</h2>
-        <p style={{ marginTop: -4, color: "#61747f" }}>Første kontroll er alltid at sandboxen bygger på samme produksjonsbaseline som gjeldende <code>main</code>. Hvis Production har gått videre, blir dette punktet rødt til main er synkronisert inn i sandboxen.</p>
+        <p style={{ marginTop: -4, color: "#61747f" }}>Første kontroll er alltid at sandboxen bygger på samme produksjonsbaseline som gjeldende <code>main</code>. I tillegg må denne nettleseren ha den redigerbare DEMO-Badskissen. Hvis Production har gått videre eller skissen mangler, blir kontrollen rød.</p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
           <button style={primaryButton} disabled={!!busy} onClick={runPreflight}>{busy === "preflight" ? "Kontrollerer…" : "Kjør preflight"}</button>
-          <button style={button} disabled={!!busy} onClick={clearLocal}>Rydd lokal demo-state</button>
+          <button style={button} disabled={!!busy} onClick={installSketch}>Installer demoskisse</button>
+          <button style={button} disabled={!!busy} onClick={resetLocal}>Rydd lokal demo-state</button>
         </div>
         {checks.length > 0 && <div style={{ display: "grid", gap: 8 }}>
           {checks.map((item) => <div key={item.key} style={{ padding: "10px 12px", border: "1px solid #dce9ed", borderRadius: 12, background: item.ok ? "#f3fcf8" : "#fff6f4" }}><StatusDot ok={item.ok}/><b>{LABELS[item.key] || item.key}</b><span style={{ color: "#61747f", marginLeft: 8 }}>{item.detail}</span></div>)}
@@ -242,7 +315,7 @@ function App() {
 
       <div style={card}>
         <h2 style={{ marginTop: 0 }}>Tilbakestill neste demo</h2>
-        <p>Reseten kjører på serveren og gjenoppretter bare DEMO-saker/prosjekter i den isolerte sandboxen. Den rydder deretter lokal demo-/recovery-state på denne enheten, men beholder innloggingen.</p>
+        <p>Reseten kjører på serveren og gjenoppretter bare DEMO-saker/prosjekter i den isolerte sandboxen. Den rydder deretter lokal demo-/recovery-state på denne enheten, installerer ren redigerbar Badskisse og beholder innloggingen.</p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button style={dangerButton} disabled={!!busy} onClick={resetDemo}>{busy === "reset" ? "Tilbakestiller…" : "Tilbakestill demo"}</button>
           <button style={button} disabled={!!busy} onClick={captureGolden}>{busy === "capture" ? "Lagrer gullkopi…" : "Oppdater Golden Demo (kun når godkjent)"}</button>
