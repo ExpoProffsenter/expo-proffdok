@@ -7,6 +7,8 @@
 // brede systemadmin-rettigheter ved et uhell projiseres inn i vanlig prosjektarbeid.
 
 import {
+  WORK_PROFILE_EVENT,
+  WORK_PROFILE_GLOBAL,
   getMyWorkProfileState,
   readCachedWorkProfileState,
 } from "./workProfileClient.js";
@@ -16,6 +18,7 @@ const NO_COMPANY_SCOPE = "00000000-0000-0000-0000-000000000000";
 const GUARDED_METHODS = new Set(["GET", "HEAD", "PATCH", "DELETE"]);
 
 let statePromise = null;
+let resolvedState = null;
 
 function requestMethod(input, init = {}) {
   return String(init?.method || (input instanceof Request ? input.method : "GET") || "GET").toUpperCase();
@@ -34,13 +37,26 @@ function isSupabaseProjectsRequest(url) {
   return Boolean(url && url.pathname.endsWith(PROJECTS_REST_PATH));
 }
 
+function readPublishedState() {
+  if (!window[WORK_PROFILE_GLOBAL] || typeof window[WORK_PROFILE_GLOBAL] !== "object") return null;
+  return readCachedWorkProfileState();
+}
+
 async function resolveWorkProfileState() {
-  const cached = readCachedWorkProfileState();
-  if (cached?.is_systemadmin) return cached;
+  const published = readPublishedState();
+  if (published) {
+    resolvedState = published;
+    return published;
+  }
+  if (resolvedState) return resolvedState;
 
   if (!statePromise) {
     statePromise = getMyWorkProfileState()
-      .catch(() => readCachedWorkProfileState())
+      .then((state) => {
+        resolvedState = state || null;
+        return resolvedState;
+      })
+      .catch(() => null)
       .finally(() => {
         statePromise = null;
       });
@@ -69,6 +85,10 @@ export function installSystemAdminProjectScopeGuard() {
   window.__expoSystemAdminProjectScopeGuardInstalled = true;
 
   const nativeFetch = window.fetch.bind(window);
+
+  window.addEventListener(WORK_PROFILE_EVENT, (event) => {
+    resolvedState = event?.detail || readCachedWorkProfileState();
+  });
 
   window.fetch = async (input, init = undefined) => {
     const method = requestMethod(input, init || {});
