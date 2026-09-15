@@ -4,6 +4,7 @@
 
 export const DEMO_SUITE_KEY = "expo-proffdok-demo-42l";
 export const DEMO_REQUEST_PREFIX = "DEMO42L-";
+export const DEMO_OPERATOR_EMAIL = "kenneth@ringside.no";
 
 export const DEMO_REQUEST_REFS = Object.freeze({
   request: "DEMO42L-01-FORESPORSEL",
@@ -14,6 +15,17 @@ export const DEMO_REQUEST_REFS = Object.freeze({
 });
 
 const DEMO_REQUEST_REF_SET = new Set(Object.values(DEMO_REQUEST_REFS));
+
+export function isDemoOperatorEmail(email = "") {
+  return String(email || "").trim().toLowerCase() === DEMO_OPERATOR_EMAIL;
+}
+
+export function assertDemoOperator(user = {}, workProfile = {}) {
+  if (!workProfile?.is_systemadmin || !isDemoOperatorEmail(user?.email)) {
+    throw new Error("Demo/Test er bare tilgjengelig for demoansvarlig.");
+  }
+  return true;
+}
 
 export function isDemoRequest(request = {}) {
   const requestRef = String(request?.id || request?.request_ref || "").trim();
