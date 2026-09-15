@@ -1,6 +1,7 @@
 // Expo ProffDok – FASE 42J / FASE 42I / FASE 30C2
-// FASE 42J bevarer også en ulagret Ny forespørsel / Nytt tilbud ved mobil
-// appbytte (f.eks. SMS) uten å opprette en Sales-sak før brukeren selv lagrer.
+// FASE 42J bevarer også ulagret Ny forespørsel / Nytt tilbud / Rediger forespørsel
+// ved PC-fanebytte og mobil appbytte (f.eks. SMS) uten å opprette en Sales-sak
+// før brukeren selv lagrer.
 // FASE 42I holder firmascopet sakslist-cache liten. Komplett tilbud/bilder skal aldri
 // serialiseres som hel saksoversikt i localStorage; tilbudskladd og inspeksjonskladd
 // har egne recovery-lagre. Preview beholder eksisterende full lokal lagring.
@@ -17,7 +18,8 @@ import {
 
 const OFFER_SERVER_BASELINE_PREFIX = `${STORAGE_KEY}:offer-server-baseline`;
 const ENTRY_DRAFT_SUFFIX = ":entry-draft-v1";
-const RECOVERABLE_ENTRY_MODES = new Set(["new", "new-offer"]);
+const RECOVERABLE_ENTRY_MODES = new Set(["new", "new-offer", "edit-request"]);
+const REQUEST_ID_OPTIONAL_ENTRY_MODES = new Set(["new", "new-offer"]);
 let activeSalesStorageKey = "";
 
 function storage() {
@@ -107,9 +109,7 @@ export function normalizeSalesNavigationRecord(value = null) {
   const mode = String(value.mode || "").trim();
   const selectedRequestId = String(value.selectedRequestId || "").trim();
 
-  // Ny forespørsel / nytt direkte tilbud har med vilje ingen request_ref før
-  // brukeren lagrer. De må likevel være gyldige arbeidsbilder ved SMS/appbytte.
-  if (RECOVERABLE_ENTRY_MODES.has(mode)) {
+  if (REQUEST_ID_OPTIONAL_ENTRY_MODES.has(mode)) {
     return { mode, selectedRequestId: null };
   }
 
@@ -140,10 +140,6 @@ export function saveSalesNavigation(storageKey, mode, selectedRequestId) {
   return base.saveSalesNavigation(storageKey, mode, selectedRequestId);
 }
 
-function entryDraftKey(storageKey, mode) {
-  return `${storageKey}${ENTRY_DRAFT_SUFFIX}:${mode}`;
-}
-
 function activeEntryNavigation(store) {
   if (!store || !activeSalesStorageKey) return null;
   return normalizeSalesNavigationRecord(
@@ -151,30 +147,47 @@ function activeEntryNavigation(store) {
   );
 }
 
-function entryResumeIsArmed(store, mode) {
-  if (!store || !activeSalesStorageKey || !RECOVERABLE_ENTRY_MODES.has(mode)) {
-    return false;
-  }
+function entryDraftKey(storageKey, mode, requestId = "") {
+  return `${storageKey}${ENTRY_DRAFT_SUFFIX}:${mode}${
+    requestId ? `:${requestId}` : ""
+  }`;
+}
 
-  const snapshot = readSalesWorkspaceResumeSnapshot({ localStorage: store });
+function entryContext(mode) {
+  const store = storage();
+  const navigation = activeEntryNavigation(store);
+  if (!store || !activeSalesStorageKey || !navigation) return null;
+  if (navigation.mode !== mode) return null;
+
+  const requestId = String(navigation.selectedRequestId || "").trim();
+  if (mode === "edit-request" && !requestId) return null;
+  return { store, navigation, requestId };
+}
+
+function entryResumeIsArmed(mode) {
+  const context = entryContext(mode);
+  if (!context || !RECOVERABLE_ENTRY_MODES.has(mode)) return false;
+
+  const snapshot = readSalesWorkspaceResumeSnapshot({ localStorage: context.store });
   if (!snapshot || snapshot.storageKey !== activeSalesStorageKey) return false;
 
-  const navigation = activeEntryNavigation(store);
-  return Boolean(navigation?.mode === mode && !navigation?.selectedRequestId);
+  return Boolean(
+    snapshot.navigation?.mode === mode &&
+      String(snapshot.navigation?.selectedRequestId || "") === context.requestId
+  );
 }
 
 export function saveSalesEntryDraft(mode, formValue = {}) {
   const normalizedMode = String(mode || "").trim();
-  const store = storage();
-  if (!store || !activeSalesStorageKey || !RECOVERABLE_ENTRY_MODES.has(normalizedMode)) {
-    return false;
-  }
+  const context = entryContext(normalizedMode);
+  if (!context || !RECOVERABLE_ENTRY_MODES.has(normalizedMode)) return false;
 
   try {
-    store.setItem(
-      entryDraftKey(activeSalesStorageKey, normalizedMode),
+    context.store.setItem(
+      entryDraftKey(activeSalesStorageKey, normalizedMode, context.requestId),
       JSON.stringify({
         mode: normalizedMode,
+        requestId: context.requestId,
         form: formValue && typeof formValue === "object" ? formValue : {},
         savedAt: new Date().toISOString(),
       })
@@ -187,13 +200,17 @@ export function saveSalesEntryDraft(mode, formValue = {}) {
 
 export function loadSalesEntryDraft(mode) {
   const normalizedMode = String(mode || "").trim();
-  const store = storage();
-  if (!entryResumeIsArmed(store, normalizedMode)) return null;
+  if (!entryResumeIsArmed(normalizedMode)) return null;
 
-  const record = parseJson(
-    store,
-    entryDraftKey(activeSalesStorageKey, normalizedMode)
+  const context = entryContext(normalizedMode);
+  if (!context) return null;
+
+  const key = entryDraftKey(
+    activeSalesStorageKey,
+    normalizedMode,
+    context.requestId
   );
+  const record = parseJson(context.store, key);
   if (!record?.form || record.mode !== normalizedMode) return null;
 
   const savedAt = Date.parse(record.savedAt || "") || 0;
@@ -203,7 +220,7 @@ export function loadSalesEntryDraft(mode) {
     Date.now() - savedAt > SALES_BACKGROUND_RESUME_MAX_AGE_MS
   ) {
     try {
-      store.removeItem(entryDraftKey(activeSalesStorageKey, normalizedMode));
+      context.store.removeItem(key);
     } catch {
       // Utløpt kladd er kun lokal UX-state.
     }
@@ -215,12 +232,12 @@ export function loadSalesEntryDraft(mode) {
 
 export function clearSalesEntryDraft(mode) {
   const normalizedMode = String(mode || "").trim();
-  const store = storage();
-  if (!store || !activeSalesStorageKey || !RECOVERABLE_ENTRY_MODES.has(normalizedMode)) {
-    return;
-  }
+  const context = entryContext(normalizedMode);
+  if (!context || !RECOVERABLE_ENTRY_MODES.has(normalizedMode)) return;
   try {
-    store.removeItem(entryDraftKey(activeSalesStorageKey, normalizedMode));
+    context.store.removeItem(
+      entryDraftKey(activeSalesStorageKey, normalizedMode, context.requestId)
+    );
   } catch {
     // Lokal entry-kladd er kun UX-støtte.
   }
