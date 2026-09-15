@@ -6,6 +6,7 @@ const requireCheck = (condition, message) => {
 };
 
 const guide = fs.readFileSync("src/modules/app/projectWorkspaceHeaderGuide.js", "utf8");
+const desktopMenu = fs.readFileSync("src/modules/app/desktopSideMenu.js", "utf8");
 const css = fs.readFileSync("src/modules/app/projectWorkspaceHeaderGuide.css", "utf8");
 const index = fs.readFileSync("index.html", "utf8");
 
@@ -36,6 +37,15 @@ requireCheck(
   "Prosjektveiviseren lager en ny navigasjonsmotor i stedet for å gjenbruke eksisterende meny."
 );
 requireCheck(
+  desktopMenu.includes("const projectWorkspaceNav =") &&
+    desktopMenu.includes("labels.includes('Prosjektoversikt')") &&
+    desktopMenu.includes("labels.includes('Prosjektering')") &&
+    desktopMenu.includes("labels.includes('Sjekklister')") &&
+    desktopMenu.includes("labels.includes('Avtalegrunnlag')") &&
+    desktopMenu.includes("return labels.includes('Hjelp') && (globalNav || projectWorkspaceNav);"),
+  "Desktopmenyen må kjenne igjen prosjektarbeidsflate også når eldre prosjekt viser Salgsgrunnlag i stedet for Befaring/Tilbud."
+);
+requireCheck(
   css.includes("@media (max-width: 1180px)") && css.includes("display: none !important"),
   "Desktop-veiviseren lekker inn i mobilskallet."
 );
@@ -51,4 +61,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("✅ Expo ProffDok project navigation check OK – anbefalt løp bruker trygge native hurtigvalg");
+console.log("✅ Expo ProffDok project navigation check OK – anbefalt løp og legacy prosjektmeny bruker trygge native hurtigvalg");
