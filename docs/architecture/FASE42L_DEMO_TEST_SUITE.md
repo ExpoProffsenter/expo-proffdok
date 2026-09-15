@@ -25,11 +25,13 @@ Hurtigvalget:
 - vises ikke for vanlige brukere;
 - vises ikke før demosuiten er komplett;
 - følger aktivt firma under **Representerer**;
-- åpner Sales-steg ved å bruke den eksisterende native `Befaring/Tilbud`-inngangen og eksisterende `sales-request-card`/lazy loading;
+- sender Sales-steg til den allerede etablerte `openSalesRequestFromHome(requestId)`-flyten via et isolert 42L-event;
+- bruker dermed eksisterende `salesOpenRequestSignal`, server-first priming og lazy loading for den konkrete saken;
+- endrer ikke Sales-listens filtre, klikker ikke DOM-kort og innfører ingen parallell editor-/recoverylogikk;
 - åpner prosjekt gjennom eksisterende admin-prosjektlenke;
-- skriver ikke direkte til Sales-navigation, editorstate eller prosjektstate.
+- skriver ikke direkte til Sales-editorstate eller prosjektstate.
 
-Dermed brukes Systemadmin som kontrollflate, mens selve demoen kan gjennomføres naturlig fra Startsiden.
+Dermed brukes Systemadmin som kontrollflate, mens selve demoen kan gjennomføres naturlig fra Startsiden. Forespørsel, Befaring, Tilbud, Akseptert og Prosjekt er ferdige stoppunkter som kan åpnes direkte; systemadministrator trenger ikke føre én og samme sak gjennom hele løpet under visningen.
 
 ## Sikkerhetsgrense
 
@@ -77,7 +79,8 @@ Det innføres ingen ny Production-tabell, RLS-policy, Storage-policy eller Edge 
 - at akseptbevis sperres før PDF/Storage;
 - at Systemadmin-panelet bare eier opprett/reset;
 - at Demo/Test-hurtigvalget er montert på eksisterende mobil- og desktop-Startside;
-- at hurtigvalget bruker native Sales-kort og eksisterende prosjektlenke fremfor parallell navigasjon;
+- at demoåpning bruker eksisterende `openSalesRequestFromHome` → `salesOpenRequestSignal` i stedet for DOM-polling, Sales-kortklikking eller filtermanipulering;
+- at prosjektåpning fortsatt bruker eksisterende prosjektlenke;
 - at arbeidsprofil-refresh ikke kan starte rekursiv `WORK_PROFILE_EVENT`-loop.
 
 Checken kjøres både av `npm run check:critical` og `npm run build`.
@@ -88,7 +91,7 @@ Preview skal minst verifisere:
 
 1. Velg `Representerer Expo Proffsenter` og opprett/reset demosuiten i Systemadmin.
 2. Gå til Startsiden og kontroller at kun systemadministrator ser Demo/Test-hurtigvalget.
-3. Åpne Forespørsel, Befaring, Tilbud og Akseptert direkte fra Startsiden og kontroller at riktig ordinær Sales-sak åpnes.
+3. Åpne Forespørsel, Befaring, Tilbud og Akseptert direkte fra Startsiden og kontroller at riktig ordinær Sales-sak åpnes uten å gå via Sales-listen.
 4. Forsøk å publisere DEMO-tilbud og bekreft at handlingen stoppes uten kundelenke/versjon.
 5. Åpne `Akseptert` fra Startsiden, aktiver som prosjekt og kontroller ordinær prosjektflate.
 6. Åpne ferdig `Prosjekt` fra Startsiden og kontroller anbefalt prosjektløp: Oversikt → Avtalegrunnlag → Prosjektering → Fremdrift.
