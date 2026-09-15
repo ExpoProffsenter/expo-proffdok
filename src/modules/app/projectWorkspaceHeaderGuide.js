@@ -1,7 +1,8 @@
-// Expo ProffDok – FASE 42J
+// Expo ProffDok – FASE 42J / FASE 42K
 // Tydelig veiviser og få hurtigvalg i kollapset desktop-prosjektmeny.
 // Leser eksisterende native nav og klikker de samme knappene; lager ingen ny
 // navigasjonsmotor og endrer ingen prosjektdata.
+// FASE 42K viser anbefalt prosjektløp: Oversikt → Avtalegrunnlag → Prosjektering → Fremdrift.
 
 import "./projectWorkspaceHeaderGuide.css";
 
@@ -10,9 +11,9 @@ const GUIDE_ID = "expo-project-workspace-guide";
 const BAR_ID = "expo-desktop-menu-bar";
 const SHORTCUTS = [
   { label: "Oversikt", source: "Prosjektoversikt" },
-  { label: "Bilder", source: "Bilder" },
-  { label: "Sjekklister", source: "Sjekklister" },
-  { label: "Chat", source: "Chat" },
+  { label: "Avtalegrunnlag", source: "Avtalegrunnlag" },
+  { label: "Prosjektering", source: "Prosjektering" },
+  { label: "Fremdrift", source: "Fremdrift" },
 ];
 
 const clean = (value = "") => String(value || "").replace(/\s+/g, " ").trim();
@@ -64,7 +65,7 @@ function buildGuide() {
 
   const hint = document.createElement("span");
   hint.className = "expoProjectWorkspaceHint";
-  hint.textContent = "Velg prosjektinnhold fra Meny";
+  hint.textContent = "Anbefalt prosjektløp";
 
   const actions = document.createElement("div");
   actions.className = "expoProjectWorkspaceQuickActions";
