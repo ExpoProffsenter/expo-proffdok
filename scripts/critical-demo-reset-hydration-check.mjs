@@ -33,7 +33,7 @@ requireText(navigation, "resumedRequestRef !== cleanRef", "42L: demo-resume må 
 requireText(navigation, 'resumedMode !== "detail"', "42L: demo-resume må kun remounte detaljvisning; offer-builder og øvrige arbeidsbilder skal bruke ordinær 42J-recovery.");
 requireText(navigation, 'document.addEventListener("visibilitychange"', "42L: app/fanebytte må kunne re-prime aktiv DEMO42L-detaljvisning.");
 requireText(navigation, 'new CustomEvent("expo-proffdok-sales-rehydrate")', "42L: full DEMO-detalj må remountes via eksisterende Sales-recovery-event.");
-requireText(navigation, "etablert 42J-recoveryen", "42L: kildekoden må dokumentere at editor-recovery ikke overstyres av demo-laget.");
+requireText(navigation, "etablerte 42J-recoveryen", "42L: kildekoden må dokumentere at editor-recovery ikke overstyres av demo-laget.");
 requireText(launcher, "await openDemoSalesStage", "42L: Startsiden må vente på full server-first demo-hydrering.");
 requireText(launcher, "Åpner …", "42L: demoåpning må blokkere dobbeltklikk mens saken primes.");
 
