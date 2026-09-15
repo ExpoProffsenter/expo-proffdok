@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 42F HOTFIX / FASE 42F
+// Expo ProffDok – FASE 42J / FASE 42F HOTFIX / FASE 42F
 // Delt, liten recovery-hjelper for intern Befaring/Tilbud.
 // Holder bootstrap og SalesModule på samme markører/TTL uten å endre salgsdata.
 // I tillegg bevares et separat arbeidsbilde-snapshot når nettleserfanen går i
@@ -7,6 +7,8 @@
 // HOTFIX: enhver ekte brukerinteraksjon i den interne appen avslutter gammel
 // foreground-recovery før handlingen behandles. Automatisk recovery får dermed
 // aldri overstyre Tilbake/Lagre/Avbryt/meny eller annen bevisst navigasjon.
+// FASE 42J: nye forespørsler/direkte tilbud har ingen request_ref før første lagring,
+// men er likevel gyldige arbeidsbilder ved PC-fanebytte og mobil appbytte.
 
 export const SALES_RELOAD_TAB_KEY = "expo-proffdok:sales:restore-tab-after-reload";
 export const SALES_RELOAD_NAVIGATION_KEY = "expo-proffdok:sales:restore-navigation-after-reload";
@@ -16,6 +18,7 @@ export const SALES_BACKGROUND_RESUME_MAX_AGE_MS = 2 * 60 * 60 * 1000;
 
 const SALES_RESUME_GUARD_FLAG = "__expoProffDokSalesResumeGuardV2";
 const RESUME_RETRY_DELAYS_MS = [0, 120, 500, 1500, 4000, 10000, 20000, 30000];
+const REQUEST_ID_OPTIONAL_MODES = new Set(["new", "new-offer"]);
 
 function browserStorage(kind) {
   if (typeof window === "undefined") return null;
@@ -71,10 +74,19 @@ function parseBackgroundMarker(raw) {
 
 function normalizeNavigation(value = null) {
   if (!value || typeof value !== "object") return null;
+  const mode = String(value.mode || "detail").trim() || "detail";
   const selectedRequestId = String(value.selectedRequestId || "").trim();
+
+  // Ny forespørsel / nytt direkte tilbud finnes ennå ikke på server og har derfor
+  // ingen request_ref. Arbeidsbildet må likevel overleve SMS, Outlook, annen fane
+  // og mobil dvale uten at brukeren sendes tilbake til Startsiden.
+  if (REQUEST_ID_OPTIONAL_MODES.has(mode)) {
+    return { mode, selectedRequestId: null };
+  }
+
   if (!selectedRequestId) return null;
   return {
-    mode: String(value.mode || "detail").trim() || "detail",
+    mode,
     selectedRequestId,
   };
 }

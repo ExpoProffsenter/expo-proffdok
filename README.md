@@ -4,7 +4,7 @@ Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsnin
 
 Produksjon: https://expo-proffdok.app
 
-Gjeldende dokumentert baseline: **Fase 42F i produksjon / Fase 42G systemadmin firmascoping i Preview-QA (15.09.2026)**.
+Gjeldende dokumentert baseline: **Fase 42G i produksjon / Fase 42H–42J i Preview-QA (15.09.2026)**.
 
 ## Teknologi
 
@@ -22,7 +22,7 @@ Gjeldende dokumentert baseline: **Fase 42F i produksjon / Fase 42G systemadmin f
 src/
 ├── main.jsx                 # sentral app-orkestrering
 ├── bootstrap.jsx
-└── modules/                 # access, sales, storeCatalog, project, progress, portal, help, report m.fl.
+└── modules/                 # app, access, sales, storeCatalog, project, progress, portal, help, report m.fl.
 
 docs/
 └── architecture/            # gjeldende arkitekturkart og fasespesifikke sikkerhetsnotater
@@ -30,7 +30,12 @@ docs/
 scripts/
 ├── critical-build-check.mjs
 ├── critical-sales-recovery-check.mjs
+├── critical-sales-tab-resume-check.mjs
+├── critical-sales-entry-resume-check.mjs
+├── critical-sales-server-hydration-check.mjs
+├── critical-sales-lazy-loading-check.mjs
 ├── critical-work-profile-check.mjs
+├── critical-project-navigation-check.mjs
 ├── critical-progress-plan-check.mjs
 ├── critical-store-catalog-check.mjs
 └── øvrige målrettede guards
@@ -42,6 +47,15 @@ Sales-domene: [src/modules/sales/README.md](src/modules/sales/README.md)
 
 Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md)
 
+## Nåværende kritiske arkitektur
+
+- Sales-oversikten bruker lett summary/lazy loading; komplett sak hentes først når brukeren åpner den.
+- Komplett valgt Sales-sak skal være server-hydrert før editor/autosave aktiveres.
+- Ny forespørsel og nytt tilbud skal tåle PC-fanebytte og mobil appbytte også før saken har fått `request_ref`.
+- Bevisst brukerhandling vinner alltid over automatisk recovery.
+- Systemadmins ordinære prosjektarbeidsflate følger valgt **Representerer**-firma; brede supportrettigheter skal ikke blande firma i vanlig prosjektliste.
+- Desktop prosjektarbeidsflate bruker kollapset meny med få native hurtigvalg; full funksjonsliste ligger fortsatt i Meny.
+
 ## Utviklings- og mergepolicy
 
 `main` er produksjonsbranch og kilde til sannhet.
@@ -51,11 +65,9 @@ For brukerrettede endringer:
 1. Opprett feature-branch fra gjeldende `main`.
 2. Kjør `npm run build` og relevante kritiske kontroller.
 3. Test Vercel Preview på desktop og mobil der relevant.
-4. Kontroller eksisterende funksjon, ny funksjon, reload/persistens og eldre data der det er relevant.
+4. Kontroller eksisterende funksjon, ny funksjon, reload/persistens og historikk der det er relevant.
 5. Ikke merge før eksplisitt `TEST OK`.
 6. Etter merge: bekreft eksakt `main`-SHA, Vercel Production `READY`, HTTP 200 og runtime uten fatale feil.
-
-Dokumentasjonsendringer uten runtimepåvirkning skal fortsatt gå kontrollert via feature-branch, men trenger ikke kunstig bruker-/UI-test dersom ingen brukerflyt er endret.
 
 ## Dokumentasjonsregel
 
@@ -75,11 +87,11 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 
 - RLS og serverkontroll er sikkerhetsgrensen; frontend alene er ikke nok.
 - Ikke svekk company-scoping eller bruk systemadmin/supportmodus som write-bypass.
-- Aktiv arbeidsprofil/representert firma skal styre normal arbeidsflate; systemadmins brede rettigheter skal ikke blande tverrfirma-prosjekter inn i vanlig prosjektarbeid.
+- Aktiv arbeidsprofil/representert firma skal styre normal arbeidsflate.
 - Publiserte og aksepterte tilbud er immutable historikk.
 - Ingen historisk backfill uten eksplisitt beslutning.
-- Gamle prosjekter og prosjekter uten tilbud skal fortsatt fungere.
-- Bevar Sales recovery/hydration, regelen «brukerhandling vinner» og IndexedDB-/serverbevaring av befaringsbilder og Badskisse.
+- Bevar Sales recovery/hydration, lazy loading, regelen «brukerhandling vinner» og IndexedDB-/serverbevaring av befaringsbilder og Badskisse.
+- Summary-data skal aldri skrives tilbake som komplett Sales-payload.
 - Ikke endre Storage-policyer, offentlige/private filer eller historiske URL-er uten egen migreringsplan.
 - Privatkundepriser vises inkl. mva.
 - Intern ERP-nettopris skal aldri lekke til kundelenke, tilbuds-PDF eller publisert Sales-historikk.
@@ -90,7 +102,7 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 ## Start her som ny utvikler
 
 1. Les [arkitekturkartet](docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md).
-2. Les [Sales README](src/modules/sales/README.md) før endringer i befaring/tilbud/aksept/Butikktilbud/recovery.
+2. Les [Sales README](src/modules/sales/README.md) før endringer i befaring/tilbud/aksept/Butikktilbud/recovery/lazy loading.
 3. Les [Fase 39B](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md) før endringer i vareregister, ERP-import eller katalogtilgang.
 4. Les relevante HJELP-moduler før brukerrettede endringer.
 5. Kontroller åpne GitHub issues og siste legitime `main`-SHA.

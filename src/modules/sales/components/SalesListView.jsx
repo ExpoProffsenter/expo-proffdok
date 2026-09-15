@@ -1,18 +1,7 @@
-// Expo ProffDok – FASE 41B.1 / FASE 37A2 / FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
-// FASE 41B.1 gjør Sales-søket mer robust: flere søkeord kan kombineres på tvers av
-// kunde, adresse, kontaktdata, saksnr., ansvarlig, status, tilbudstype og tilbudsinnhold.
-// Når et nytt hovedsøk starter, åpnes Alle statuser automatisk. Brukeren kan deretter
-// snevre inn søket manuelt. Sales-headeren er vanlig innhold og arver ikke appens sticky header.
-// FASE 37A2 viser automatisk Butikktilbud-oppfølging som eget revisjonsspor.
-// Butikktilbud med aktiv automatisk plan havner ikke i manuell «Må følges opp»
-// mens serveren fortsatt skal purre. Aksepterte/avviste Butikktilbud avsluttes i
-// Sales og viser aldri prosjektaktivering. Ordinære tilbud beholder 7-dagersvisning.
-// FASE 37D1 skiller Butikktilbud og Våtromstilbud i samme Sales-oversikt uten
-// å lage parallell lagring. Eksisterende søk og arkiv beholdes.
-// FASE 37A1 legger søk, arbeidsfaner og trygg arkivering oppå eksisterende Sales-data.
-// Ingen tilbudsversjoner, aksepter eller prosjektaktivering omskrives. Arkiv bruker
-// eksisterende sales_requests.archived_at og kan alltid gjenopprettes.
-// FASE 30C2 viser ekte lastestatus mens salgssaker hentes.
+// Expo ProffDok – FASE 42I / FASE 42H / FASE 41B.1 / FASE 37A2 / FASE 37D1 / FASE 37A1
+// FASE 42I viser kun lett saksmetadata i oversikten. Komplett tilbud, bilder og historikk
+// hentes først når brukeren åpner den konkrete saken. FASE 42H gir ubokede forespørsler
+// en egen arbeidskø.
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -37,6 +26,7 @@ import {
   setSalesRequestArchivedAt,
   subscribeSalesRequestsLoadState,
 } from "../services/salesSupabase.js";
+import { loadSalesRequestDetailForOpen } from "../services/salesRequestLazyLoading.js";
 import {
   getStoreFollowUpConfig,
   isStoreOfferRequest,
@@ -59,6 +49,7 @@ const OFFER_TYPE_TABS = [
   { id: "store", label: "Butikktilbud" },
 ];
 const WORK_TABS = [
+  { id: "requests", label: "Forespørsler" },
   { id: "work", label: "Under arbeid" },
   { id: "follow-up", label: "Må følges opp" },
   { id: "accepted", label: "Akseptert" },
@@ -177,6 +168,7 @@ function requestSearchValues(request = {}) {
   ];
 
   return [
+    request?.__searchText,
     request?.customer,
     request?.title,
     request?.offerTitle,
@@ -232,6 +224,7 @@ function requestBucket(request) {
   if (isArchivedRequest(request)) return "archive";
   if (request?.status === "Akseptert") return "accepted";
   if (request?.status === "Avvist") return "declined";
+  if (request?.status === "Forespørsel") return "requests";
 
   const followUp = getOfferFollowUpInfo(request);
   if (followUp?.shouldFollowUp) return "follow-up";
@@ -274,8 +267,9 @@ export default function SalesListView({
   const [longWait, setLongWait] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeOfferType, setActiveOfferType] = useState("all");
-  const [activeTab, setActiveTab] = useState("work");
+  const [activeTab, setActiveTab] = useState("requests");
   const [archiveBusyId, setArchiveBusyId] = useState("");
+  const [openBusyId, setOpenBusyId] = useState("");
   const salesClient = useMemo(() => createDefaultSalesSupabaseClient(), []);
 
   useEffect(() => subscribeSalesRequestsLoadState(setLoadState), []);
@@ -290,9 +284,8 @@ export default function SalesListView({
     return () => window.clearTimeout(timer);
   }, [loadState.status]);
 
+  const requestsLoading = ["idle", "loading"].includes(loadState.status);
   const hasAnyRequest = activeRequests.length > 0 || activatedRequests.length > 0;
-  const requestsLoading =
-    !hasAnyRequest && ["idle", "loading"].includes(loadState.status);
   const requestsLoadFailed = !hasAnyRequest && loadState.status === "error";
 
   const offerTypeCounts = useMemo(() => {
@@ -309,6 +302,7 @@ export default function SalesListView({
       filterRequestForType(request, activeOfferType)
     );
     const counts = {
+      requests: 0,
       work: 0,
       "follow-up": 0,
       accepted: 0,
@@ -327,6 +321,7 @@ export default function SalesListView({
 
   const overviewSummary = useMemo(
     () => [
+      { label: "Forespørsler", value: requestCounts.requests },
       { label: "Under arbeid", value: requestCounts.work },
       { label: "Må følges opp", value: requestCounts["follow-up"] },
       { label: "Akseptert", value: requestCounts.accepted },
@@ -362,6 +357,49 @@ export default function SalesListView({
     const startsNewSearch = !searchQuery.trim() && Boolean(nextQuery.trim());
     setSearchQuery(nextQuery);
     if (startsNewSearch && activeTab !== "all") setActiveTab("all");
+  }
+
+  async function openRequest(request) {
+    if (!request?.id || openBusyId) return;
+    if (!request.__summaryOnly) {
+      onOpenRequest?.(request.id);
+      return;
+    }
+    if (!salesClient) {
+      alert("Kunne ikke koble til serveren for å hente saken.");
+      return;
+    }
+
+    setOpenBusyId(request.id);
+    try {
+      const { data: companyId, error: companyError } =
+        await resolveSalesCompanyScope(salesClient);
+      if (companyError || !companyId) {
+        throw new Error(
+          companyError?.message || "Firmatilknytningen kunne ikke bekreftes."
+        );
+      }
+
+      const { data: detail, error } = await loadSalesRequestDetailForOpen(
+        salesClient,
+        companyId,
+        request.id
+      );
+      if (error || !detail) throw error || new Error("Saken kunne ikke hentes.");
+
+      // request er samme objekt som SalesCore holder i requests-arrayet. Vi fyller
+      // objektet før onOpenRequest endrer mode; neste render får derfor komplett
+      // serverdata uten at en tom/lett summary noen gang kan nå editor/autosave.
+      Object.assign(request, detail, {
+        __summaryOnly: false,
+        __detailLoaded: true,
+      });
+      onOpenRequest?.(request.id);
+    } catch (error) {
+      alert(error?.message || "Kunne ikke hente saken fra serveren.");
+    } finally {
+      setOpenBusyId("");
+    }
   }
 
   async function toggleArchive(request) {
@@ -406,19 +444,21 @@ export default function SalesListView({
 
   const emptyListText = searchQuery.trim()
     ? "Ingen saker matcher søket i denne fanen."
-    : activeTab === "follow-up"
-      ? "Ingen tilbud må følges opp manuelt akkurat nå."
-      : activeTab === "accepted"
-        ? "Ingen aksepterte tilbud i denne visningen."
-        : activeTab === "declined"
-          ? "Ingen avviste tilbud i denne visningen."
-          : activeTab === "archive"
-            ? "Arkivet er tomt."
-            : activeTab === "all"
-              ? "Ingen salgssaker er registrert."
-              : supportMode
-                ? "Ingen saker under arbeid i dette firmaet."
-                : "Ingen saker under arbeid. Opprett en ny forespørsel for å starte en befaring eller et tilbud.";
+    : activeTab === "requests"
+      ? "Ingen ubokede forespørsler. Nye forespørsler vises her til befaring er planlagt."
+      : activeTab === "follow-up"
+        ? "Ingen tilbud må følges opp manuelt akkurat nå."
+        : activeTab === "accepted"
+          ? "Ingen aksepterte tilbud i denne visningen."
+          : activeTab === "declined"
+            ? "Ingen avviste tilbud i denne visningen."
+            : activeTab === "archive"
+              ? "Arkivet er tomt."
+              : activeTab === "all"
+                ? "Ingen salgssaker er registrert."
+                : supportMode
+                  ? "Ingen saker under arbeid i dette firmaet."
+                  : "Ingen saker under arbeid. Opprett en ny forespørsel for å starte en befaring eller et tilbud.";
 
   const activeTypeLabel =
     OFFER_TYPE_TABS.find((tab) => tab.id === activeOfferType)?.label || "Alle tilbud";
@@ -493,7 +533,7 @@ export default function SalesListView({
             >
               <Hourglass size={28} aria-hidden="true" />
               <div>
-                <div>Henter saker fra server …</div>
+                <div>Henter saksoversikt fra server …</div>
                 {longWait ? (
                   <div className="sales-subtitle" style={{ marginTop: 4, fontWeight: 700 }}>
                     Dette tar lengre tid enn normalt. Vi venter fortsatt på serveren.
@@ -675,7 +715,7 @@ export default function SalesListView({
                   <strong>Sakene kunne ikke hentes fra serveren.</strong>
                   <div style={{ marginTop: 4 }}>
                     Vi viser derfor ikke 0 som om listen er tom. Vent litt og åpne
-                    Befaring/Tilbud på nytt når forbindelsen er stabil.
+                    Forespørsler/Befaring/Tilbud på nytt når forbindelsen er stabil.
                   </div>
                   {loadState.error ? (
                     <div style={{ marginTop: 6, fontSize: 13 }}>{loadState.error}</div>
@@ -691,12 +731,12 @@ export default function SalesListView({
                 const offerFollowUp = getOfferFollowUpInfo(request);
                 const archived = isArchivedRequest(request);
                 const archiveBusy = archiveBusyId === request.id;
+                const opening = openBusyId === request.id;
                 const storeOffer = isStoreOfferRequest(request);
                 const Icon = getDisplayedIcon(request, { storeOffer });
-                const displayedNextStep = getDisplayedNextStep(request, {
-                  archived,
-                  storeOffer,
-                });
+                const displayedNextStep = opening
+                  ? "Henter saken fra server …"
+                  : getDisplayedNextStep(request, { archived, storeOffer });
 
                 return (
                   <div
@@ -706,8 +746,16 @@ export default function SalesListView({
                     <button
                       className="sales-request-card"
                       type="button"
-                      onClick={() => onOpenRequest?.(request.id)}
-                      style={{ flex: "1 1 520px", width: "auto", minWidth: 0 }}
+                      onClick={() => void openRequest(request)}
+                      disabled={Boolean(openBusyId)}
+                      aria-busy={opening ? "true" : undefined}
+                      style={{
+                        flex: "1 1 520px",
+                        width: "auto",
+                        minWidth: 0,
+                        opacity: openBusyId && !opening ? 0.68 : 1,
+                        cursor: opening ? "wait" : "pointer",
+                      }}
                     >
                       <div className="sales-request-main">
                         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -791,14 +839,16 @@ export default function SalesListView({
 
                       <div className="sales-request-next">
                         <span className="sales-next-label">
-                          {archived
-                            ? "Arkivert"
-                            : storeOffer && ["Akseptert", "Avvist"].includes(request.status)
-                              ? "Avsluttet"
-                              : "Neste steg"}
+                          {opening
+                            ? "Laster"
+                            : archived
+                              ? "Arkivert"
+                              : storeOffer && ["Akseptert", "Avvist"].includes(request.status)
+                                ? "Avsluttet"
+                                : "Neste steg"}
                         </span>
                         <span className="sales-next-step">
-                          <Icon size={16} />
+                          {opening ? <Hourglass size={16} /> : <Icon size={16} />}
                           {displayedNextStep}
                         </span>
                       </div>
@@ -811,7 +861,7 @@ export default function SalesListView({
                     {!supportMode ? (
                       <button
                         type="button"
-                        disabled={archiveBusy}
+                        disabled={archiveBusy || Boolean(openBusyId)}
                         onClick={() => toggleArchive(request)}
                         title={archived ? "Gjenopprett saken fra arkivet" : "Arkiver saken"}
                         style={{
@@ -854,12 +904,15 @@ export default function SalesListView({
               <div className="sales-request-list">
                 {filteredActivatedRequests.map((request) => {
                   const Icon = iconMap[request.iconName] || ClipboardList;
+                  const opening = openBusyId === request.id;
                   return (
                     <button
                       className="sales-request-card"
                       key={request.id}
                       type="button"
-                      onClick={() => onOpenRequest?.(request.id)}
+                      onClick={() => void openRequest(request)}
+                      disabled={Boolean(openBusyId)}
+                      aria-busy={opening ? "true" : undefined}
                     >
                       <div className="sales-request-main">
                         <h3 className="sales-request-title">{request.title}</h3>
@@ -869,10 +922,10 @@ export default function SalesListView({
                       </div>
 
                       <div className="sales-request-next">
-                        <span className="sales-next-label">Prosjekt</span>
+                        <span className="sales-next-label">{opening ? "Laster" : "Prosjekt"}</span>
                         <span className="sales-next-step">
-                          <Icon size={16} />
-                          {request.nextStep}
+                          {opening ? <Hourglass size={16} /> : <Icon size={16} />}
+                          {opening ? "Henter saken fra server …" : request.nextStep}
                         </span>
                       </div>
 

@@ -1,0 +1,72 @@
+/* Expo ProffDok – FASE 42J */
+
+.expoProjectWorkspaceGuide {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.expoProjectWorkspaceHint {
+  color: #6b7a86;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.expoProjectWorkspaceQuickActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.expoProjectWorkspaceQuickButton {
+  min-height: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 11px;
+  box-shadow: none;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+  background: #fff;
+  color: #17303c;
+  border: 1px solid #cbd9df;
+}
+
+.expoProjectWorkspaceQuickButton:hover,
+.expoProjectWorkspaceQuickButton:focus-visible {
+  border-color: #48c8d3;
+}
+
+.expoProjectWorkspaceQuickButton.isActive {
+  background: #123c4b;
+  color: #fff;
+  border-color: #123c4b;
+}
+
+@media (max-width: 1450px) {
+  .expoProjectWorkspaceHint {
+    display: none;
+  }
+}
+
+@media (max-width: 1280px) {
+  .expoProjectWorkspaceQuickButton {
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .expoProjectWorkspaceQuickButton[data-source-label="Sjekklister"] {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .expoProjectWorkspaceGuide {
+    display: none !important;
+  }
+}

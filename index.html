@@ -17,6 +17,10 @@
     installDesktopSideMenu();
   </script>
   <script type="module">
+    import { installProjectWorkspaceHeaderGuide } from '/src/modules/app/projectWorkspaceHeaderGuide.js';
+    installProjectWorkspaceHeaderGuide();
+  </script>
+  <script type="module">
     import { installSystemAdminProjectScopeGuard } from '/src/modules/access/systemAdminProjectScopeGuard.js';
     installSystemAdminProjectScopeGuard();
     await import('/src/bootstrap.jsx');

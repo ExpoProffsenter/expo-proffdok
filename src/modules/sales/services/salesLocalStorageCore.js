@@ -1,15 +1,26 @@
-// Expo ProffDok – FASE 30C2
-// Tynn wrapper rundt eksisterende localStorage-kjerne.
-// Falsk recovery undertrykkes kun når lokal kladd og bekreftet serverbaseline
-// har identisk innholdsfingeravtrykk. Reelle forskjeller går videre til dialog.
+// Expo ProffDok – FASE 42J / FASE 42I / FASE 30C2
+// FASE 42J bevarer også ulagret Ny forespørsel / Nytt tilbud / Rediger forespørsel
+// ved PC-fanebytte og mobil appbytte (f.eks. SMS) uten å opprette en Sales-sak
+// før brukeren selv lagrer.
+// FASE 42I holder firmascopet sakslist-cache liten. Komplett tilbud/bilder skal aldri
+// serialiseres som hel saksoversikt i localStorage; tilbudskladd og inspeksjonskladd
+// har egne recovery-lagre. Preview beholder eksisterende full lokal lagring.
 
 export * from "./salesLocalStorageBase.js";
 
 import * as base from "./salesLocalStorageBase.js";
 import { STORAGE_KEY } from "../constants/salesConstants.js";
 import { createOfferDraftContentSignature } from "../utils/salesOfferDraftSignature.js";
+import {
+  SALES_BACKGROUND_RESUME_MAX_AGE_MS,
+  readSalesWorkspaceResumeSnapshot,
+} from "./salesResumeRecovery.mjs";
 
 const OFFER_SERVER_BASELINE_PREFIX = `${STORAGE_KEY}:offer-server-baseline`;
+const ENTRY_DRAFT_SUFFIX = ":entry-draft-v1";
+const RECOVERABLE_ENTRY_MODES = new Set(["new", "new-offer", "edit-request"]);
+const REQUEST_ID_OPTIONAL_ENTRY_MODES = new Set(["new", "new-offer"]);
+let activeSalesStorageKey = "";
 
 function storage() {
   return typeof window !== "undefined" && window.localStorage
@@ -91,6 +102,211 @@ function suppressEquivalentServerConflict(requestId = "") {
 
   base.resolvePendingOfferDraftRecovery(requestId, "server");
   return null;
+}
+
+export function normalizeSalesNavigationRecord(value = null) {
+  if (!value || typeof value !== "object") return null;
+  const mode = String(value.mode || "").trim();
+  const selectedRequestId = String(value.selectedRequestId || "").trim();
+
+  if (REQUEST_ID_OPTIONAL_ENTRY_MODES.has(mode)) {
+    return { mode, selectedRequestId: null };
+  }
+
+  if (!selectedRequestId) return null;
+  return {
+    mode: mode || "detail",
+    selectedRequestId,
+  };
+}
+
+export function loadSalesNavigation(storageKey) {
+  const normalizedStorageKey = String(storageKey || "").trim();
+  if (normalizedStorageKey) activeSalesStorageKey = normalizedStorageKey;
+
+  const store = storage();
+  const parsed = normalizedStorageKey
+    ? parseJson(store, `${normalizedStorageKey}:navigation`)
+    : null;
+  const normalized = normalizeSalesNavigationRecord(parsed);
+  if (normalized) return normalized;
+
+  return base.loadSalesNavigation(storageKey);
+}
+
+export function saveSalesNavigation(storageKey, mode, selectedRequestId) {
+  const normalizedStorageKey = String(storageKey || "").trim();
+  if (normalizedStorageKey) activeSalesStorageKey = normalizedStorageKey;
+  return base.saveSalesNavigation(storageKey, mode, selectedRequestId);
+}
+
+function activeEntryNavigation(store) {
+  if (!store || !activeSalesStorageKey) return null;
+  return normalizeSalesNavigationRecord(
+    parseJson(store, `${activeSalesStorageKey}:navigation`)
+  );
+}
+
+function entryDraftKey(storageKey, mode, requestId = "") {
+  return `${storageKey}${ENTRY_DRAFT_SUFFIX}:${mode}${
+    requestId ? `:${requestId}` : ""
+  }`;
+}
+
+function entryContext(mode) {
+  const store = storage();
+  const navigation = activeEntryNavigation(store);
+  if (!store || !activeSalesStorageKey || !navigation) return null;
+  if (navigation.mode !== mode) return null;
+
+  const requestId = String(navigation.selectedRequestId || "").trim();
+  if (mode === "edit-request" && !requestId) return null;
+  return { store, navigation, requestId };
+}
+
+function entryResumeIsArmed(mode) {
+  const context = entryContext(mode);
+  if (!context || !RECOVERABLE_ENTRY_MODES.has(mode)) return false;
+
+  const snapshot = readSalesWorkspaceResumeSnapshot({ localStorage: context.store });
+  if (!snapshot || snapshot.storageKey !== activeSalesStorageKey) return false;
+
+  return Boolean(
+    snapshot.navigation?.mode === mode &&
+      String(snapshot.navigation?.selectedRequestId || "") === context.requestId
+  );
+}
+
+export function saveSalesEntryDraft(mode, formValue = {}) {
+  const normalizedMode = String(mode || "").trim();
+  const context = entryContext(normalizedMode);
+  if (!context || !RECOVERABLE_ENTRY_MODES.has(normalizedMode)) return false;
+
+  try {
+    context.store.setItem(
+      entryDraftKey(activeSalesStorageKey, normalizedMode, context.requestId),
+      JSON.stringify({
+        mode: normalizedMode,
+        requestId: context.requestId,
+        form: formValue && typeof formValue === "object" ? formValue : {},
+        savedAt: new Date().toISOString(),
+      })
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function loadSalesEntryDraft(mode) {
+  const normalizedMode = String(mode || "").trim();
+  if (!entryResumeIsArmed(normalizedMode)) return null;
+
+  const context = entryContext(normalizedMode);
+  if (!context) return null;
+
+  const key = entryDraftKey(
+    activeSalesStorageKey,
+    normalizedMode,
+    context.requestId
+  );
+  const record = parseJson(context.store, key);
+  if (!record?.form || record.mode !== normalizedMode) return null;
+
+  const savedAt = Date.parse(record.savedAt || "") || 0;
+  if (
+    !savedAt ||
+    Date.now() - savedAt < 0 ||
+    Date.now() - savedAt > SALES_BACKGROUND_RESUME_MAX_AGE_MS
+  ) {
+    try {
+      context.store.removeItem(key);
+    } catch {
+      // Utløpt kladd er kun lokal UX-state.
+    }
+    return null;
+  }
+
+  return record;
+}
+
+export function clearSalesEntryDraft(mode) {
+  const normalizedMode = String(mode || "").trim();
+  const context = entryContext(normalizedMode);
+  if (!context || !RECOVERABLE_ENTRY_MODES.has(normalizedMode)) return;
+  try {
+    context.store.removeItem(
+      entryDraftKey(activeSalesStorageKey, normalizedMode, context.requestId)
+    );
+  } catch {
+    // Lokal entry-kladd er kun UX-støtte.
+  }
+}
+
+function compactRequestForAppListCache(request = {}) {
+  const keys = [
+    "id",
+    "title",
+    "customer",
+    "phone",
+    "email",
+    "address",
+    "postnr",
+    "city",
+    "source",
+    "note",
+    "responsible",
+    "surveyResponsible",
+    "projectResponsible",
+    "surveyDate",
+    "surveyTime",
+    "surveyNote",
+    "surveyConfirmationSentAt",
+    "surveyConfirmationSentTo",
+    "projectId",
+    "projectName",
+    "directOffer",
+    "offerTitle",
+    "offerEmailSentAt",
+    "offerOriginalEmailSentAt",
+    "offerEmailVersionNumber",
+    "sentOfferVersionNumber",
+    "offerAutoFollowUpSentAt",
+    "offerAutoFollowUpVersionId",
+    "offerAutoFollowUpVersionNumber",
+    "offerAutoFollowUpSourceSentAt",
+    "offerAutoFollowUpReminderNumber",
+    "storeOfferMeta",
+    "offerRevisionDraftFromVersion",
+    "status",
+    "statusClass",
+    "nextStep",
+    "iconName",
+    "acceptedAt",
+    "declinedAt",
+    "archivedAt",
+    "__createdByUserId",
+    "__createdByName",
+    "__createdAt",
+    "__searchText",
+  ];
+  const compact = {};
+  keys.forEach((key) => {
+    if (request[key] !== undefined) compact[key] = request[key];
+  });
+  compact.__summaryOnly = true;
+  return compact;
+}
+
+export function saveRequests(requests, storageKey = STORAGE_KEY) {
+  if (storageKey === STORAGE_KEY) {
+    return base.saveRequests(requests, storageKey);
+  }
+
+  const compact = (Array.isArray(requests) ? requests : []).map(
+    compactRequestForAppListCache
+  );
+  return base.saveRequests(compact, storageKey);
 }
 
 export function loadOfferDraft(input = {}) {

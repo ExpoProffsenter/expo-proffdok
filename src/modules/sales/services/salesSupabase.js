@@ -1,11 +1,7 @@
-// Expo ProffDok – FASE 39B.2 / FASE 37A2 / FASE 37A1 / FASE 34B / FASE 32 / FASE 32A / FASE 30C2
-// FASE 39B.2 sender serverstyrt, idempotent varsel til publisher ved avvist Butikktilbud.
-// FASE 37A2 speiler serverens idempotente automatiske oppfølgingslogg inn som
-// runtime-metadata i Sales. Feltene skrives aldri tilbake i sales_requests.payload.
-// Når automatisk påminnelse er nyere enn siste manuelle utsending, brukes den som
-// runtime-kontakttid. Butikktilbud kan i tillegg avvises digitalt via låst RPC.
-// FASE 37A1 speiler eksisterende sales_requests.archived_at inn i runtime-payload.
-// FASE 34B sender serverstyrte, idempotente akseptvarsler til kunden og publisher.
+// Expo ProffDok – FASE 42I / FASE 39B.2 / FASE 37A2 / FASE 37A1 / FASE 34B / FASE 32
+// FASE 42I laster kun en lett saksprojeksjon i Sales-oversikten. Komplett payload,
+// bilder og tilbudshistorikk hentes først for valgt sak. Dette bevarer server-first
+// recovery uten at hundrevis av tilbud lastes ved åpning av sakslisten.
 
 export * from "./salesSupabaseBase.js";
 
@@ -21,6 +17,9 @@ const RUNTIME_PAYLOAD_KEYS = [
   "__createdByUserId",
   "__createdByName",
   "__createdAt",
+  "__searchText",
+  "__summaryOnly",
+  "__detailLoaded",
   "offerOriginalEmailSentAt",
   "offerAutoFollowUpSentAt",
   "offerAutoFollowUpVersionId",
@@ -32,6 +31,37 @@ const ACCEPTANCE_NOTIFY_FUNCTION = "sales-offer-acceptance-notify";
 const DECLINE_NOTIFY_FUNCTION = "sales-offer-decline-notify";
 
 let sharedDefaultSalesSupabaseClient;
+const preloadedDetailRows = new Map();
+const salesRequestLoadListeners = new Set();
+let loadSequence = 0;
+let salesRequestLoadState = {
+  status: "idle",
+  error: "",
+  startedAt: "",
+  completedAt: "",
+};
+
+function setSalesRequestLoadState(nextState = {}) {
+  salesRequestLoadState = { ...salesRequestLoadState, ...nextState };
+  salesRequestLoadListeners.forEach((listener) => {
+    try {
+      listener({ ...salesRequestLoadState });
+    } catch {
+      // Kun presentasjonsstøtte.
+    }
+  });
+}
+
+export function getSalesRequestsLoadState() {
+  return { ...salesRequestLoadState };
+}
+
+export function subscribeSalesRequestsLoadState(listener) {
+  if (typeof listener !== "function") return () => {};
+  salesRequestLoadListeners.add(listener);
+  listener({ ...salesRequestLoadState });
+  return () => salesRequestLoadListeners.delete(listener);
+}
 
 export function createDefaultSalesSupabaseClient() {
   if (sharedDefaultSalesSupabaseClient === undefined) {
@@ -60,7 +90,7 @@ function stripRuntimeTraceability(payload = {}) {
   const clean = { ...payload };
 
   if (Object.prototype.hasOwnProperty.call(clean, "offerOriginalEmailSentAt")) {
-    clean.offerEmailSentAt = clean.offerOriginalEmailSentAt || "";
+    clean.offerEmailSentAt = clean.offerOriginalEmailSentAt || clean.offerEmailSentAt || "";
   }
 
   RUNTIME_PAYLOAD_KEYS.forEach((key) => delete clean[key]);
@@ -83,19 +113,21 @@ function validDateMs(value) {
 }
 
 async function hydrateOfferFollowUpState(client, companyId, rows = []) {
-  if (!client || !companyId || !Array.isArray(rows) || rows.length === 0) {
-    return rows;
-  }
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const requestRefs = [...new Set(safeRows.map((row) => String(row?.request_ref || "").trim()).filter(Boolean))];
+  if (!client || !companyId || requestRefs.length === 0) return safeRows;
 
-  const { data: notificationRows, error } = await client
+  let notificationQuery = client
     .from("sales_offer_follow_up_notifications")
     .select("request_ref,offer_version_id,reminder_number,status,sent_at,source_email_sent_at")
     .eq("company_id", companyId)
     .eq("status", "sent")
     .order("sent_at", { ascending: false });
+  notificationQuery = notificationQuery.in("request_ref", requestRefs);
 
+  const { data: notificationRows, error } = await notificationQuery;
   if (error || !Array.isArray(notificationRows) || notificationRows.length === 0) {
-    return rows;
+    return safeRows;
   }
 
   const versionIds = [
@@ -134,7 +166,7 @@ async function hydrateOfferFollowUpState(client, companyId, rows = []) {
     });
   });
 
-  return rows.map((row) => {
+  return safeRows.map((row) => {
     const state = latestByRequest.get(String(row?.request_ref || "").trim());
     if (!state) return row;
 
@@ -146,7 +178,7 @@ async function hydrateOfferFollowUpState(client, companyId, rows = []) {
       state.versionNumber > 0 &&
       currentVersionNumber > 0 &&
       state.versionNumber === currentVersionNumber;
-    const originalEmailSentAt = payload.offerEmailSentAt || "";
+    const originalEmailSentAt = payload.offerOriginalEmailSentAt || payload.offerEmailSentAt || "";
     const autoSentAtMs = validDateMs(state.sentAt);
     const originalSentAtMs = validDateMs(originalEmailSentAt);
     const autoIsLatestContact =
@@ -174,13 +206,13 @@ function announceCreatorTraceability(rows = []) {
 
   (Array.isArray(rows) ? rows : []).forEach((row) => {
     const payload = row?.payload || {};
-    const creatorName = String(payload.__createdByName || "").trim();
+    const creatorName = String(payload.__createdByName || row?.created_by_name || "").trim();
     if (!creatorName || !row?.request_ref) return;
     const detail = {
       requestRef: String(row.request_ref),
-      createdByUserId: String(payload.__createdByUserId || ""),
+      createdByUserId: String(payload.__createdByUserId || row?.created_by || ""),
       createdByName: creatorName,
-      createdAt: payload.__createdAt || "",
+      createdAt: payload.__createdAt || row?.created_at || "",
     };
     window.__expoProffDokSalesTraceability[detail.requestRef] = detail;
     window.dispatchEvent(new CustomEvent("expo-proffdok-sales-traceability", { detail }));
@@ -188,25 +220,29 @@ function announceCreatorTraceability(rows = []) {
 }
 
 async function hydrateCreatorTraceability(client, companyId, rows = []) {
-  if (!client || !companyId || !Array.isArray(rows) || rows.length === 0) return rows;
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const requestRefs = [...new Set(safeRows.map((row) => String(row?.request_ref || "").trim()).filter(Boolean))];
+  if (!client || !companyId || requestRefs.length === 0) return safeRows;
+
   const { data: traceRows, error } = await client
     .from("sales_requests")
     .select("request_ref,created_by,created_by_name,created_at")
-    .eq("company_id", companyId);
-  if (error || !Array.isArray(traceRows)) return rows;
+    .eq("company_id", companyId)
+    .in("request_ref", requestRefs);
+  if (error || !Array.isArray(traceRows)) return safeRows;
 
   const traceByRef = new Map(traceRows.map((row) => [String(row.request_ref || ""), row]));
-  return rows.map((row) => {
+  return safeRows.map((row) => {
     const trace = traceByRef.get(String(row?.request_ref || ""));
-    const creatorName = String(trace?.created_by_name || "").trim();
+    const creatorName = String(trace?.created_by_name || row?.created_by_name || "").trim();
     if (!creatorName) return row;
     return {
       ...row,
       payload: {
         ...(row?.payload || {}),
-        __createdByUserId: String(trace?.created_by || ""),
+        __createdByUserId: String(trace?.created_by || row?.created_by || ""),
         __createdByName: creatorName,
-        __createdAt: trace?.created_at || "",
+        __createdAt: trace?.created_at || row?.created_at || "",
       },
     };
   });
@@ -226,6 +262,7 @@ async function rememberOfferContentSignatures(client, rows = [], fallbackCompany
 
   const observedAt = new Date().toISOString();
   for (const row of Array.isArray(rows) ? rows : []) {
+    if (row?.payload?.__summaryOnly) continue;
     const companyId = String(row?.company_id || fallbackCompanyId || "").trim();
     const requestRef = String(row?.request_ref || "").trim();
     if (!companyId || !requestRef) continue;
@@ -233,7 +270,12 @@ async function rememberOfferContentSignatures(client, rows = [], fallbackCompany
     const offerDraftSignature = createOfferDraftContentSignature(
       buildOfferFormForSignatureFromRequest(payload)
     );
-    if (!offerDraftSignature) continue;
+    const meaningfulLines = (Array.isArray(payload.offerLines) ? payload.offerLines : []).filter(
+      (line) => String(line?.description || "").trim() || String(line?.amount ?? "").trim() || String(line?.internalProductNumber || "").trim()
+    ).length;
+    const meaningfulOptions = (Array.isArray(payload.offerOptions) ? payload.offerOptions : []).filter(
+      (option) => String(option?.title || "").trim() || String(option?.description || "").trim() || String(option?.amount ?? "").trim()
+    ).length;
     const key = `${OFFER_SERVER_BASELINE_PREFIX}:${userId}:${companyId}:${requestRef}`;
     const previous = parseJson(storage, key) || {};
     try {
@@ -245,12 +287,129 @@ async function rememberOfferContentSignatures(client, rows = [], fallbackCompany
           companyId,
           requestRef,
           offerDraftSignature,
-          observedAt: previous.observedAt || observedAt,
+          offerDraftSavedAt: payload.offerDraftSavedAt || row?.updated_at || observedAt,
+          meaningfulLines,
+          meaningfulOptions,
+          observedAt,
         })
       );
     } catch {
-      // Fingeravtrykket er kun et ekstra sikkerhetsnett.
+      // Fingeravtrykk/baseline er ekstra sikkerhetsnett.
     }
+  }
+}
+
+function preloadedKey(companyId = "", requestRef = "") {
+  return `${String(companyId || "").trim()}:${String(requestRef || "").trim()}`;
+}
+
+export async function fetchSalesRequestDetailRow(client, companyId, requestRef) {
+  const safeCompanyId = String(companyId || "").trim();
+  const safeRequestRef = String(requestRef || "").trim();
+  if (!client || !safeCompanyId || !safeRequestRef) {
+    return { data: null, error: new Error("Salgssaken kunne ikke identifiseres.") };
+  }
+
+  const result = await client
+    .from("sales_requests")
+    .select("company_id,request_ref,payload,status,archived_at,updated_at,created_by,created_by_name,created_at")
+    .eq("company_id", safeCompanyId)
+    .eq("request_ref", safeRequestRef)
+    .maybeSingle();
+
+  if (result?.error || !result?.data) return result;
+
+  let rows = hydrateArchiveState([result.data]);
+  rows = await hydrateOfferFollowUpState(client, safeCompanyId, rows);
+  rows = await hydrateCreatorTraceability(client, safeCompanyId, rows);
+  rows = rows.map((row) => ({
+    ...row,
+    payload: { ...(row.payload || {}), __detailLoaded: true },
+  }));
+  announceCreatorTraceability(rows);
+  await rememberOfferContentSignatures(client, rows, safeCompanyId);
+  return { ...result, data: rows[0] || null };
+}
+
+export async function primeSalesRequestDetailRow(client, companyId, requestRef) {
+  const result = await fetchSalesRequestDetailRow(client, companyId, requestRef);
+  if (!result?.error && result?.data) {
+    preloadedDetailRows.set(preloadedKey(companyId, requestRef), result.data);
+  }
+  return result;
+}
+
+export async function fetchSalesRequests(client, companyId) {
+  const sequence = ++loadSequence;
+  setSalesRequestLoadState({
+    status: "loading",
+    error: "",
+    startedAt: new Date().toISOString(),
+    completedAt: "",
+  });
+
+  try {
+    const supportCompanyId = core.getSalesSupportCompanyId?.() || "";
+    const result = await client.rpc("list_sales_request_summaries", {
+      requested_company_id: supportCompanyId || null,
+    });
+
+    if (result?.error) {
+      if (sequence === loadSequence) {
+        setSalesRequestLoadState({
+          status: "error",
+          error: result.error.message || "Kunne ikke hente salgssaker.",
+          completedAt: new Date().toISOString(),
+        });
+      }
+      return result;
+    }
+
+    let rows = hydrateArchiveState(result?.data || []);
+    rows = rows.map((row) => {
+      const key = preloadedKey(companyId, row?.request_ref);
+      const preloaded = preloadedDetailRows.get(key);
+      if (!preloaded) return row;
+      preloadedDetailRows.delete(key);
+      return {
+        ...preloaded,
+        status: row.status || preloaded.status,
+        archived_at: row.archived_at ?? preloaded.archived_at,
+        updated_at: row.updated_at || preloaded.updated_at,
+        payload: {
+          ...(preloaded.payload || {}),
+          ...(row.payload || {}),
+          archivedAt: row.archived_at || "",
+          __summaryOnly: false,
+          __detailLoaded: true,
+        },
+      };
+    });
+
+    announceCreatorTraceability(rows);
+    result.data = rows;
+
+    // React får først returnert metadata og kan sette requests/tellere. Ready
+    // publiseres i neste task slik at UI ikke får et mellomsteg «0 saker».
+    window.setTimeout(() => {
+      if (sequence !== loadSequence) return;
+      setSalesRequestLoadState({
+        status: "ready",
+        error: "",
+        completedAt: new Date().toISOString(),
+      });
+    }, 0);
+
+    return result;
+  } catch (error) {
+    if (sequence === loadSequence) {
+      setSalesRequestLoadState({
+        status: "error",
+        error: error?.message || "Kunne ikke hente salgssaker.",
+        completedAt: new Date().toISOString(),
+      });
+    }
+    return { data: null, error };
   }
 }
 
@@ -307,7 +466,7 @@ export async function declineSalesOffer(client, { token, declinedName }) {
     try {
       await notifySalesOfferDecline(client, token);
     } catch {
-      // Avvisningen er allerede lagret. Varsling er sekundær og må aldri reversere svaret.
+      // Avvisningen er allerede lagret. Varsling er sekundær.
     }
   }
   return result;
@@ -331,27 +490,19 @@ export async function setSalesRequestArchivedAt(
     .maybeSingle();
 }
 
-export async function fetchSalesRequests(client, companyId) {
-  const result = await core.fetchSalesRequests(client, companyId);
-  if (!result?.error) {
-    const archiveHydratedRows = hydrateArchiveState(result?.data || []);
-    const followUpHydratedRows = await hydrateOfferFollowUpState(client, companyId, archiveHydratedRows);
-    const hydratedRows = await hydrateCreatorTraceability(client, companyId, followUpHydratedRows);
-    result.data = hydratedRows;
-    announceCreatorTraceability(hydratedRows);
-    await rememberOfferContentSignatures(client, hydratedRows, companyId);
-  }
-  return result;
-}
-
 export async function upsertSalesRequests(client, rows) {
-  const safeRows = (Array.isArray(rows) ? rows : []).map((row) => ({
-    ...row,
-    payload: stripRuntimeTraceability(row?.payload || {}),
-  }));
+  const safeRows = (Array.isArray(rows) ? rows : [])
+    .filter((row) => !row?.payload?.__summaryOnly)
+    .map((row) => ({
+      ...row,
+      payload: stripRuntimeTraceability(row?.payload || {}),
+    }));
+
+  if (!safeRows.length) return { data: [], error: null };
+
   const result = await core.upsertSalesRequests(client, safeRows);
   if (!result?.error) {
-    await rememberOfferContentSignatures(client, safeRows || []);
+    await rememberOfferContentSignatures(client, safeRows);
     const companyIds = [
       ...new Set(safeRows.map((row) => String(row?.company_id || "").trim()).filter(Boolean)),
     ];

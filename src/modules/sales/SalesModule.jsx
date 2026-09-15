@@ -1,20 +1,9 @@
-// Expo ProffDok – FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1 / FASE 37D1
+// Expo ProffDok – FASE 42I / FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1
+// FASE 42I gjør server-first-gaten saksspesifikk: saksoversikten kan åpnes på en
+// lett serverprojeksjon, mens reload/dvale/direkte åpning av én sak fortsatt primer
+// akkurat den komplette saken før SalesCore får mounte. Ingen tom summary kan nå editor.
 // FASE 42F deler recovery-markører med bootstrap og lar localStorage-recovery
 // overleve selv om sessionStorage er utilgjengelig. Bevisst utgang fra Sales rydder markørene.
-// FASE 42F primer i tillegg firmascopet servercache før SalesModuleCore mountes,
-// slik at ny nettleser/stale cache aldri kan åpne en eksisterende tilbudssak tom.
-// FASE 42A gjør Sales robust når mobil Safari legger appen i dvale: aktiv sak og
-// befaringsnotat gjenåpnes etter reload/remount uten å omgå eksisterende lokal
-// kladd-/recoveryflyt. Ingen SQL/RLS/Storage-policy-endring.
-// FASE 39B.2C skiller vanlig inngang til Befaring/Tilbud fra faktisk side-reload:
-// vanlig inngang åpner alltid sakslisten, mens reload inne i Sales kan gjenåpne samme sak.
-// FASE 38A1 lar serverstyrt modultilgang avgjøre hvilke direkte tilbudstyper brukeren kan starte.
-// + Ny forespørsel og eksisterende Befaring/Tilbud-flyt er urørt. + Nytt tilbud er én inngang:
-// Våtromstilbud for Sales-brukere, og i tillegg Butikktilbud når store_offers er tildelt.
-// Firma/org.nr. er ikke tilgangskontroll. Samme rettighet projiseres i meny og Hjelp.
-// Tynn sikkerhets-wrapper rundt eksisterende SalesModule.
-// FASE 37D1 legger Butikktilbud oppå samme tilbudsmotor uten å kopiere
-// publisering, kundelenke, PDF, aksept eller e-postlogikk.
 
 import { useEffect, useState } from "react";
 import "./storeOfferTextBlocks.css";
@@ -23,9 +12,7 @@ import SalesContractCustomerView from "./components/SalesContractCustomerView.js
 import {
   beginOfferDraftHydrationCycle,
   buildSalesStorageKey,
-  loadRequests,
   loadSalesNavigation,
-  saveRequests,
   saveSalesNavigation,
 } from "./services/salesLocalStorage.js";
 import {
@@ -35,13 +22,10 @@ import {
 } from "./services/salesResumeRecovery.mjs";
 import {
   createDefaultSalesSupabaseClient,
-  fetchSalesRequests,
+  primeSalesRequestDetailRow,
   resolveSalesCompanyScope,
 } from "./services/salesSupabase.js";
-import {
-  mergeSalesServerRowsIntoCache,
-  shouldGateSalesCoreUntilServerCache,
-} from "./services/salesServerCacheHydration.mjs";
+import { shouldGateSalesCoreUntilServerCache } from "./services/salesServerCacheHydration.mjs";
 import { markStoreOfferLaunch } from "./services/salesStoreOffers.js";
 import {
   MODULE_ACCESS_EVENT,
@@ -85,9 +69,6 @@ function protectInspectionDraftNavigation(props = {}) {
     navigation?.mode === "inspection-note" &&
     navigation?.selectedRequestId
   ) {
-    // Core åpnes først på trygg saksdetalj. Wrapperen gjenåpner deretter
-    // befaringsnotatet via eksisterende openInspectionNote(), som laster lokal
-    // kladd/skisse på samme måte som et vanlig brukerklikk.
     rememberInspectionReopen(navigation.selectedRequestId);
     saveSalesNavigation(
       salesStorageKey,
@@ -118,8 +99,9 @@ function prepareSalesEntryNavigation(props = {}) {
     return;
   }
 
-  // Vanlig klikk på Befaring/Tilbud skal alltid lande på oversikten. Det er kun
-  // reload/dvale fra Sales som får gjenåpne sist valgte sak.
+  // Vanlig klikk på Forespørsler/Befaring/Tilbud lander på oversikten. Bare en
+  // ekte reload/dvale får gjenåpne lagret sak. Direkte startside-signal håndteres
+  // separat og primes før Core mountes.
   saveSalesNavigation(salesStorageKeyForProps(props), "list", null);
 }
 
@@ -253,6 +235,8 @@ export default function SalesModule(props) {
   const [serverCacheReady, setServerCacheReady] = useState(
     () => props.integrationMode !== "app"
   );
+  const [serverCacheError, setServerCacheError] = useState("");
+  const [serverCacheRetryKey, setServerCacheRetryKey] = useState(0);
 
   useEffect(() => {
     const rehydrateSalesModule = () => {
@@ -267,14 +251,9 @@ export default function SalesModule(props) {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        // iOS/Safari sender ikke alltid en klassisk reload før appen blir kastet
-        // fra minnet. Merk aktiv Sales-økt allerede når telefonen går i bakgrunnen.
         markSalesTabForReload(props);
         return;
       }
-
-      // Dersom samme side overlevde dvalen, skal markøren ikke påvirke et senere
-      // bevisst fanebytte inne i appen.
       clearBackgroundResumeMarkers();
     };
 
@@ -325,21 +304,39 @@ export default function SalesModule(props) {
 
   useEffect(() => {
     if (props.integrationMode !== "app") {
+      setServerCacheError("");
       setServerCacheReady(true);
       return undefined;
     }
 
     if (!props.authUser?.id) {
+      setServerCacheError("");
       setServerCacheReady(false);
+      return undefined;
+    }
+
+    const storageKey = salesStorageKeyForProps(props);
+    const navigation = loadSalesNavigation(storageKey);
+    const directRequestId = String(props.openRequestSignal || "").trim();
+    const resumedRequestId =
+      navigation?.mode && navigation.mode !== "list"
+        ? String(navigation?.selectedRequestId || "").trim()
+        : "";
+    const requestIdToPrime = directRequestId || resumedRequestId;
+
+    // Vanlig saksoversikt trenger ingen komplett payload før Core mountes.
+    if (!requestIdToPrime) {
+      setServerCacheError("");
+      setServerCacheReady(true);
       return undefined;
     }
 
     let cancelled = false;
     const activeSupabase = props.supabaseClient || fallbackSalesSupabase;
-    const storageKey = salesStorageKeyForProps(props);
+    setServerCacheError("");
     setServerCacheReady(false);
 
-    async function primeSalesServerCacheBeforeCore() {
+    async function primeSelectedSalesRequestBeforeCore() {
       try {
         if (!activeSupabase) {
           throw new Error("Supabase er ikke tilgjengelig.");
@@ -351,33 +348,33 @@ export default function SalesModule(props) {
           throw companyError || new Error("Firmatilknytningen kunne ikke bekreftes.");
         }
 
-        const { data: rows, error } = await fetchSalesRequests(
+        const { error } = await primeSalesRequestDetailRow(
           activeSupabase,
-          companyId
+          companyId,
+          requestIdToPrime
         );
         if (error) throw error;
         if (cancelled) return;
-
-        const localRequests = loadRequests(storageKey);
-        const primedRequests = mergeSalesServerRowsIntoCache(
-          rows || [],
-          localRequests
-        );
-        saveRequests(primedRequests, storageKey);
+        setServerCacheError("");
+        setServerCacheReady(true);
       } catch (error) {
-        // Ved reell offline/serverfeil beholdes eksisterende lokal-first-flyt.
-        // Gaten skal hindre stale cache-race når serveren svarer, ikke blokkere
-        // brukeren fra lokalt sikret arbeid når nettet faktisk er nede.
+        // Lokal tilbuds-/befaringskladd beholdes urørt ved nettfeil. Core får ikke
+        // mounte på en lett summary, fordi ufullstendig data aldri skal nå editor.
         console.warn(
-          "Kunne ikke prime Sales-cache før mount; bruker eksisterende lokal cache",
+          "Kunne ikke prime valgt Sales-sak før mount; blokkerer ufullstendig summary",
           error
         );
-      } finally {
-        if (!cancelled) setServerCacheReady(true);
+        if (!cancelled) {
+          setServerCacheError(
+            error?.message ||
+              "Den komplette saken kunne ikke hentes fra serveren. Kontroller nettet og prøv igjen."
+          );
+          setServerCacheReady(false);
+        }
       }
     }
 
-    void primeSalesServerCacheBeforeCore();
+    void primeSelectedSalesRequestBeforeCore();
     return () => {
       cancelled = true;
     };
@@ -387,6 +384,8 @@ export default function SalesModule(props) {
     props.authUser?.id,
     props.profile?.company_name,
     props.profile?.companyName,
+    props.openRequestSignal,
+    serverCacheRetryKey,
   ]);
 
   useEffect(() => {
@@ -511,17 +510,46 @@ export default function SalesModule(props) {
     serverCacheReady,
   });
 
+  if (gateSalesCore && serverCacheError) {
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <main className="sales-main">
+            <section className="sales-form-hero" role="alert">
+              <p className="sales-eyebrow">Forespørsler / Befaring / Tilbud</p>
+              <h1 className="sales-title">Komplett sak kunne ikke hentes</h1>
+              <p className="sales-subtitle">
+                {serverCacheError} Lokal kladd er beholdt urørt. Vi åpner ikke
+                saken på ufullstendig listedata.
+              </p>
+              <button
+                type="button"
+                className="sales-primary-button"
+                onClick={() =>
+                  setServerCacheRetryKey((current) => current + 1)
+                }
+                style={{ marginTop: 14 }}
+              >
+                Prøv igjen
+              </button>
+            </section>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   if (gateSalesCore) {
     return (
       <div className="sales-app">
         <div className="sales-shell">
           <main className="sales-main">
             <section className="sales-form-hero" role="status" aria-live="polite">
-              <p className="sales-eyebrow">Befaring / Tilbud</p>
-              <h1 className="sales-title">Henter siste lagrede salgssaker …</h1>
+              <p className="sales-eyebrow">Forespørsler / Befaring / Tilbud</p>
+              <h1 className="sales-title">Henter valgt sak fra server …</h1>
               <p className="sales-subtitle">
-                Vi kontrollerer serverversjonen før arbeidsbildet åpnes, slik at
-                en eldre lokal cache ikke kan erstatte nyere tilbudsdata.
+                Vi henter den komplette serverversjonen før saken åpnes. Dette
+                beskytter tilbud, bilder og recovery uten å laste alle andre saker.
               </p>
             </section>
           </main>

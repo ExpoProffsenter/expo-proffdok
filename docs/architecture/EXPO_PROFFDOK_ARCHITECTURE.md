@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
-**Fase:** 42G – systemadmin firmascoping / support-sikkerhet  
-**Status:** Produksjonsbaseline t.o.m. 42F; 42G hotfix i Preview-QA  
+**Fase:** 42J – skalerbar Sales, robust app-/fanebytte og tydelig prosjektnavigasjon  
+**Status:** Produksjonsbaseline t.o.m. 42G; Fase 42H–42J i Preview-QA  
 **Dato:** 15.09.2026  
-**Produksjonsbaseline før 42G:** `main` etter Fase 42F8 (`04340bc`)  
+**Produksjonsbaseline:** Fase 42G systemadmin firmascoping  
 **Supabase:** `dqffxflaoyarbxyiyhop`
 
 Dette dokumentet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitetskrav som må bevares. Historiske detaljer finnes i Git og fasespesifikke arkitekturfiler.
@@ -30,6 +30,8 @@ Dette dokumentet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibil
 18. Butikktilbud er separat fra ordinær prosjektflyt og skal aldri aktivere ProffDok-prosjekt ved aksept.
 19. Aktiv arbeidsprofil/representert firma er arbeidsscope. Systemadministrator skal ikke få tverrfirma-prosjekter projisert inn i ordinær arbeidsflate bare fordi rollen har brede supportrettigheter.
 20. Ved recovery/hydration vinner en eksplisitt brukerhandling alltid over automatisk gjenoppretting.
+21. Sales-oversikten skal være lett: listevisning henter bare summary/metadata. Komplett tilbud, bilder, Badskisse og historikk hentes først når én konkret sak åpnes.
+22. Aktivt arbeidsbilde skal tåle PC-fanebytte og mobil appbytte. Også en ny forespørsel uten `request_ref` er et gyldig recovery-arbeidsbilde.
 
 ## 2. Plattform
 
@@ -56,11 +58,14 @@ src/main.jsx
 src/bootstrap.jsx
   installer små, avgrensede bootstrap-/UX-lag
 
+src/modules/app/
+  app-shell, desktopmeny og prosjektveiviser/hurtigvalg
+
 src/modules/access/
   modul-/rolletilgang, arbeidsprofiler, systemadmin-representasjon og support-/scope-guards
 
 src/modules/sales/
-  forespørsel, befaring, ordinært tilbud, Butikktilbud, aksept og kontrakt
+  forespørsel, befaring, ordinært tilbud, Butikktilbud, aksept, recovery og kontrakt
 
 src/modules/storeCatalog/
   internt ERP-vareregister, søk/import og Systemadmin-katalogflate
@@ -98,6 +103,12 @@ Avtalegrunnlag kan inneholde akseptert tilbud/akseptbevis, signert Expo-kontrakt
 
 Butikktilbud er ikke en prosjektvei.
 
+### 4.1 Prosjektnavigasjon – Fase 42J
+
+Desktop bruker kollapset prosjektmeny for å frigjøre plass i headingen. Når et prosjekt er aktivt viser `projectWorkspaceHeaderGuide.js` en kort veiviser og noen få hurtigvalg: **Oversikt, Bilder, Sjekklister og Chat**. Hurtigvalgene klikker eksisterende native prosjektfaner og lager ikke en ny navigasjonsmotor. Alt øvrig prosjektinnhold ligger fortsatt i **Meny**.
+
+Mobilskallet endres ikke av denne desktop-veiviseren.
+
 ## 5. Sales – ordinær Befaring/Tilbud
 
 ```text
@@ -115,12 +126,13 @@ Forespørsel
 Kritiske Sales-kontrakter:
 
 - tom/uhydrert tilbudskladd skal aldri overskrive nyere serverdata
-- recovery skal fungere ved reload, dvale og appbytte
+- recovery skal fungere ved reload, dvale, PC-fanebytte og mobil appbytte
 - befaringsbilder beholder IndexedDB/Storage-flyt
 - publiserte/aksepterte tilbudsversjoner er immutable snapshots
 - kundeaksept knyttes til eksakt versjon og valgte opsjoner
 - supportmodus er ikke skrive-bypass
-- `critical-sales-recovery-check.mjs` er obligatorisk del av build
+- summary-rader skal aldri kunne skrives tilbake som komplett Sales-payload
+- komplette saksdetaljer skal være lastet før editor/autosave aktiveres
 
 ### 5.1 Recovery/hydration – Fase 42F
 
@@ -141,6 +153,34 @@ Disse kontraktene er permanent regresjonsbeskyttet og skal vurderes ved alle end
 Badskisse er en mobiltilpasset del av befaringen for enkle romskisser med vegger/mål, dør/vindu og relevante baderomsobjekter. Fase 42E forbedret målsatt visning og redigering. Fase 42F sikret at lagret Badskisse og servermedia overlever recovery/hydration.
 
 Badskisse og bilder er del av befaringsdata og skal følge samme recovery-prinsipp: serverinnhold bevares, nyere lokal brukerhandling bevares, og sammenslåing skal ikke gi stille datatap.
+
+### 5.3 Skalerbar saksoversikt / lazy loading – Fase 42I
+
+Sales-listen bruker en lett serverprojeksjon (`list_payload`) for metadata som kunde, adresse, status, ansvarlig, neste steg, dato og søkeinformasjon. Komplett `payload` med tilbudslinjer, bilder, Badskisse, akseptdata og historikk hentes først når brukeren åpner den konkrete saken.
+
+Dette er en kritisk skaleringsgrense. Historiske Ringside-saker hadde titalls MB full payload selv med få saker; listeprojeksjonen reduserer dette til noen titalls KB for samme oversikt.
+
+Kritiske regler:
+
+- sakslisten må aldri begynne å hente komplette payloads for alle saker igjen
+- firmascopet localStorage-listecache skal bare inneholde lett summary
+- valgt sak skal hydreres komplett server-first før editor åpnes
+- hvis komplett sak ikke kan hentes, skal editor blokkeres og brukeren få kontrollert retry i stedet for tom/ufullstendig redigering
+- tilbudskladd, befaringskladd og media-recovery beholder egne lagringsmekanismer
+
+### 5.4 Ulagret kundeinformasjon ved app-/fanebytte – Fase 42J
+
+`Ny forespørsel` og `Nytt tilbud` har ingen `request_ref` før brukeren lagrer. Recovery må derfor tillate disse modusene uten valgt saks-ID. Kunde-/adressefelter mellomlagres lokalt og gjenopprettes bare når et eksplisitt, ferskt bakgrunns-snapshot viser at brukeren faktisk var i dette arbeidsbildet.
+
+Dette gjelder både PC-fanebytte og mobil appbytte, for eksempel når bruker åpner SMS eller Outlook for å hente resten av kundenavn/adresse.
+
+`Rediger forespørsel` bruker samme prinsipp, men kladden er bundet til konkret `request_ref`.
+
+Viktig:
+
+- normal navigasjon skal ikke gjenopplive gamle entry-kladddata
+- første tomme React-render skal aldri overskrive entry-kladden som skal gjenopprettes
+- bevisst Tilbake/Avbryt/menyvalg rydder recovery-markører slik at brukerhandling alltid vinner
 
 ## 6. Sales – Butikktilbud
 
@@ -387,9 +427,11 @@ Digital Hjelp er gjeldende brukerveiledning og skal følge rolle.
 
 Gjeldende sentrale temaer inkluderer:
 
-- ordinær Befaring/Tilbud og recovery
+- ordinær Befaring/Tilbud, Forespørsler-kø og recovery
+- PC-fanebytte/mobil appbytte mens kundeinformasjon fylles ut
 - Badskisse i befaring
 - Butikktilbud som eget tema ved Befaring/Tilbud
+- prosjektets kollapsede desktopmeny og hurtigvalg
 - tilbudsposter og avsnitt
 - vareregister som valgfritt oppslag
 - montering/opsjoner
@@ -405,7 +447,13 @@ Hjelp skal beskrive gjeldende funksjon, ikke historisk changelog.
 
 ```text
 scripts/critical-build-check.mjs
+scripts/critical-bathroom-sketch-check.mjs
 scripts/critical-sales-recovery-check.mjs
+scripts/critical-sales-tab-resume-check.mjs
+scripts/critical-sales-entry-resume-check.mjs
+scripts/critical-sales-server-hydration-check.mjs
+scripts/critical-sales-lazy-loading-check.mjs
+scripts/critical-project-navigation-check.mjs
 scripts/critical-progress-plan-check.mjs
 scripts/critical-store-catalog-check.mjs
 scripts/critical-work-profile-check.mjs
@@ -414,7 +462,10 @@ scripts/critical-work-profile-check.mjs
 Disse beskytter kjente kontrakter som:
 
 - Sales recovery og regelen «brukerhandling vinner»
+- Ny/Rediger forespørsel ved PC-fanebytte og mobil appbytte
+- Sales lazy loading og komplett detaljhydrering før editor
 - befaringsmedia/Badskisse der dette inngår i recovery-testene
+- prosjektets kollapsede desktopmeny/hurtigvalg
 - fremdriftsplanens tilbudsimport/standardoperasjoner/kalender
 - katalogsikkerhet og Butikktilbud-seksjonspresentasjon
 - arbeidsprofiler, systemadmin-representasjon og 42G prosjekt-scope
@@ -435,14 +486,14 @@ Sales/Butikktilbud er produksjonskoblet mot delt Supabase og må derfor testes m
 
 Etter full ERP-import var målt database rundt 348–356 MB og katalog rundt 283 MB.
 
-Sales har enkelte store historiske JSON-payloads, blant annet inline/base64-bilder. Fremtidig opprydding bør flytte nye tunge bilder til Storage, men eksisterende historikk skal ikke migreres tilfeldig.
+Sales har enkelte store historiske JSON-payloads, blant annet inline/base64-bilder. Fase 42I løser listeytelsen ved lett summary/lazy loading uten å endre historiske payloads. Fremtidig opprydding kan flytte nye tunge bilder til Storage, men eksisterende historikk skal ikke migreres tilfeldig.
 
 ## 20. Frosne/sensitive områder
 
 Endres bare eksplisitt og med egen QA:
 
 - auth/login-presentasjon
-- kompakt desktop header/menu
+- kompakt desktop header/menu og prosjektveiviser
 - arbeidsprofil-/systemadmin-scoping
 - publiserte/aksepterte tilbud
 - aksepterte kontrakter
@@ -450,7 +501,7 @@ Endres bare eksplisitt og med egen QA:
 - RLS utenfor eksplisitt avtalt arbeid
 - Edge Functions
 - Fase 37A2 automatisk Butikktilbud-oppfølging
-- Sales recovery/hydration
+- Sales recovery/hydration/lazy loading
 - Badskisse/bevaringen av befaringsmedia ved recovery
 
 ## 21. Utsatt videreutvikling
@@ -460,6 +511,7 @@ Endres bare eksplisitt og med egen QA:
 - CSV/Excel-varebehov
 - målrettet Storage-opprydding for fremtidige Sales-bilder
 - egen kontrollert demo-/testdataflyt med reset/sletting uten å risikere ekte kundehistorikk
+- kontrollert oppgradering av eldre **redigerbare** tilbudsutkast til ny versjon; publisert/akseptert historikk forblir immutable
 
 Disse skal gjennomføres som egne runder med samme Preview-/mergepolicy.
 
@@ -470,10 +522,13 @@ Minimum:
 1. Alle kritiske checks grønne.
 2. Vite build grønn.
 3. Preview `READY`, ingen fatale runtime-feil.
-4. Ordinær Befaring/Tilbud-liste fortsatt fungerer.
-5. Systemadmin: bytt mellom minst to representerte firma og bekreft at prosjektliste/åpning følger valgt firma.
-6. Direkte prosjektlenke til annet firma skal ikke åpnes i feil representasjonskontekst.
-7. Sales recovery: reload/dvale og eksplisitt brukerhandling kontrollert der endringen berører bootstrap/navigation.
-8. Butikktilbud: redigering, autosave, Tilbake og kundepreview kontrollert ved relevante endringer.
-9. Arkitektur og relevante README/HJELP-filer samsvarer med faktisk implementasjon.
-10. Eksplisitt bruker-`TEST OK` før PR/merge.
+4. Ordinær Befaring/Tilbud-liste åpner raskt og viser korrekte tellere fra summary-data.
+5. Åpne minst én større Sales-sak og bekreft at komplett tilbud/bilder/Badskisse lastes først ved åpning.
+6. Ny forespørsel: skriv delvis kundeinfo → bytt PC-fane eller mobilapp → gå tilbake → samme skjema og tekst skal stå.
+7. Rediger forespørsel: samme app-/fanebytte-test med eksisterende sak.
+8. Prosjekt: kontroller veiviser/hurtigvalg og full Meny på desktop; mobilmeny skal være uendret.
+9. Systemadmin: bytt mellom minst to representerte firma og bekreft at prosjektliste/åpning følger valgt firma.
+10. Direkte prosjektlenke til annet firma skal ikke åpnes i feil representasjonskontekst.
+11. Butikktilbud: redigering, autosave, Tilbake og kundepreview kontrollert ved relevante endringer.
+12. Arkitektur og relevante README/HJELP-filer samsvarer med faktisk implementasjon.
+13. Eksplisitt bruker-`TEST OK` før PR/merge.
