@@ -16,7 +16,11 @@
     import { installDesktopSideMenu } from '/src/modules/app/desktopSideMenu.js';
     installDesktopSideMenu();
   </script>
-  <script type="module" src="/src/bootstrap.jsx"></script>
+  <script type="module">
+    import { installSystemAdminProjectScopeGuard } from '/src/modules/access/systemAdminProjectScopeGuard.js';
+    installSystemAdminProjectScopeGuard();
+    await import('/src/bootstrap.jsx');
+  </script>
   <script type="module">
     import { installStableModuleAccessUx } from '/src/modules/access/moduleAccessUxStable.jsx';
     installStableModuleAccessUx();
