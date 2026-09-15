@@ -1,9 +1,15 @@
 // Expo ProffDok – FASE 42L
-// Isolert demo-navigasjon. Sales-steg sendes inn i den eksisterende Startsiden-
-// callbacken openSalesRequestFromHome, som igjen bruker Sales openRequestSignal og
-// server-first/lazy-loading. Ingen DOM-søk, kortklikking eller filtermanipulering.
+// Isolert demo-navigasjon. Sales-steg primes komplett fra server før de sendes inn i
+// den eksisterende Startsiden-callbacken openSalesRequestFromHome. Ordinær Sales-
+// navigasjon, listefiltre og recovery endres ikke.
 
 import { DEMO_OPEN_SALES_REQUEST_EVENT } from "./demoSalesOpenEvent.js";
+import { isDemoRequestRef } from "./demoCaseSafety.js";
+import {
+  createDefaultSalesSupabaseClient,
+  primeSalesRequestDetailRow,
+  resolveSalesCompanyScope,
+} from "../sales/services/salesSupabase.js";
 
 const DEMO_PROJECT_TABS = new Set([
   "prosjekt",
@@ -14,9 +20,33 @@ const DEMO_PROJECT_TABS = new Set([
   "tilgang",
 ]);
 
-export function openDemoSalesStage(requestRef) {
+export async function openDemoSalesStage(requestRef) {
   const cleanRef = String(requestRef || "").trim();
-  if (!cleanRef || typeof window === "undefined") return false;
+  if (
+    !cleanRef ||
+    !isDemoRequestRef(cleanRef) ||
+    typeof window === "undefined"
+  ) {
+    return false;
+  }
+
+  const client = createDefaultSalesSupabaseClient();
+  if (!client) throw new Error("Supabase er ikke tilgjengelig for Demo/Test.");
+
+  const { data: companyId, error: companyError } =
+    await resolveSalesCompanyScope(client);
+  if (companyError || !companyId) {
+    throw companyError || new Error("Firmatilknytningen kunne ikke bekreftes.");
+  }
+
+  // Demo/Test tåler ikke at en summary-only rad når detaljvisningen. Primer akkurat
+  // den eksakte DEMO42L-saken før eksisterende Sales-open-signal sendes videre.
+  const { error: primeError } = await primeSalesRequestDetailRow(
+    client,
+    companyId,
+    cleanRef
+  );
+  if (primeError) throw primeError;
 
   const detail = {
     requestId: cleanRef,
