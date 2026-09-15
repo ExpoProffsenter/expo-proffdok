@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
-**Fase:** 39B.2 – internt vareregister + Butikktilbud  
-**Status:** Feature branch / Preview-QA – ikke merget  
-**Dato:** 08.09.2026  
-**Produksjonsbaseline før 39B:** `main` etter Fase 39A / 39B.1  
+**Fase:** 42G – systemadmin firmascoping / support-sikkerhet  
+**Status:** Produksjonsbaseline t.o.m. 42F; 42G hotfix i Preview-QA  
+**Dato:** 15.09.2026  
+**Produksjonsbaseline før 42G:** `main` etter Fase 42F8 (`04340bc`)  
 **Supabase:** `dqffxflaoyarbxyiyhop`
 
 Dette dokumentet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitetskrav som må bevares. Historiske detaljer finnes i Git og fasespesifikke arkitekturfiler.
@@ -28,6 +28,8 @@ Dette dokumentet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibil
 16. Kalender- og PDF-eksport skal lese lagret data; eksport blir ikke ny sannhetskilde.
 17. Intern ERP-nettopris er sikkerhetskritisk intern data og skal aldri inngå i kundens tilbudsgrunnlag.
 18. Butikktilbud er separat fra ordinær prosjektflyt og skal aldri aktivere ProffDok-prosjekt ved aksept.
+19. Aktiv arbeidsprofil/representert firma er arbeidsscope. Systemadministrator skal ikke få tverrfirma-prosjekter projisert inn i ordinær arbeidsflate bare fordi rollen har brede supportrettigheter.
+20. Ved recovery/hydration vinner en eksplisitt brukerhandling alltid over automatisk gjenoppretting.
 
 ## 2. Plattform
 
@@ -53,6 +55,9 @@ src/main.jsx
 
 src/bootstrap.jsx
   installer små, avgrensede bootstrap-/UX-lag
+
+src/modules/access/
+  modul-/rolletilgang, arbeidsprofiler, systemadmin-representasjon og support-/scope-guards
 
 src/modules/sales/
   forespørsel, befaring, ordinært tilbud, Butikktilbud, aksept og kontrakt
@@ -116,6 +121,26 @@ Kritiske Sales-kontrakter:
 - kundeaksept knyttes til eksakt versjon og valgte opsjoner
 - supportmodus er ikke skrive-bypass
 - `critical-sales-recovery-check.mjs` er obligatorisk del av build
+
+### 5.1 Recovery/hydration – Fase 42F
+
+Fase 42F strammet inn Sales-gjenoppretting etter mobil dvale, appbytte og reload. Serverdata er autoritativt utgangspunkt, mens lokal recovery brukes kontrollert for ulagret arbeid.
+
+Kritiske regler:
+
+- eksplisitt brukerhandling vinner alltid over automatisk recovery
+- recovery skal ikke hoppe brukeren tilbake til en sak eller fane vedkommende bevisst har forlatt
+- ferske serverbilder og lagret Badskisse skal flettes inn uten å overskrive nyere lokal befaring
+- manglende lokal media skal ikke tolkes som beskjed om å slette servermedia
+- bakgrunns-/reloadmarkører skal ikke bli ny sannhetskilde
+
+Disse kontraktene er permanent regresjonsbeskyttet og skal vurderes ved alle endringer i Sales-navigasjon, hydrering eller media.
+
+### 5.2 Badskisse og befaringsmedia – Fase 42A–42F
+
+Badskisse er en mobiltilpasset del av befaringen for enkle romskisser med vegger/mål, dør/vindu og relevante baderomsobjekter. Fase 42E forbedret målsatt visning og redigering. Fase 42F sikret at lagret Badskisse og servermedia overlever recovery/hydration.
+
+Badskisse og bilder er del av befaringsdata og skal følge samme recovery-prinsipp: serverinnhold bevares, nyere lokal brukerhandling bevares, og sammenslåing skal ikke gi stille datatap.
 
 ## 6. Sales – Butikktilbud
 
@@ -237,6 +262,23 @@ Firmaadministrator kan delegere moduler innenfor eget firma og egne tillatelser.
 
 Katalogimport er strengere enn ordinær Butikktilbud-bruk: systemadministrator-only.
 
+### 8A. Arbeidsprofiler, representasjon og systemadmin-scope – Fase 41B / 42G
+
+Aktiv arbeidsprofil lagres server-side. Vanlige flerfirma-brukere arbeider i valgt firma. Systemadministrator kan velge hvilket firma vedkommende **representerer**, uten at dette oppretter ordinært firmamedlemskap.
+
+Systemadministrator har fortsatt brede serverrettigheter for legitim administrasjon/support, men den vanlige prosjektflaten skal være låst til valgt representert firma. Fra Fase 42G installeres `systemAdminProjectScopeGuard.js` før app-bootstrap. For systemadministrator legges aktiv `company_scope_id` på prosjekt-REST for lesing og eksisterende endringer/sletting. Dersom systemadministrator ikke har aktivt firma, brukes et tomt/umulig scope i stedet for å vise alle prosjekter.
+
+Dette er et ekstra klientsikkerhetsnett, ikke erstatning for RLS. RLS/RPC/server forblir autoritativ sikkerhetsgrense. Produktretningen er at tverrfirmaarbeid skal skje ved eksplisitt valg av firma/supportkontekst, ikke ved at prosjekter fra flere firma blandes i ordinær prosjektliste.
+
+Kritisk regresjonstest:
+
+```text
+Systemadmin primærfirma Ringside
+→ velg «Representerer Expo Proffsenter»
+→ ordinær prosjektflate viser/åpner bare Expo Proffsenter-prosjekter
+→ Ringside-prosjekt krever eksplisitt firmabytte
+```
+
 ## 9. Publisering, kundelenke og aksept
 
 Publiserte Sales-versjoner er snapshots. En senere kladd eller katalogpris kan ikke endre en publisert versjon.
@@ -331,26 +373,29 @@ Historiske utstedte garantier og låste prosjekter skal ikke endres av produktma
 Systemadmin er kontrollsenter for:
 
 - bruker-/firmagodkjenning
-- tverrfirma-support
+- eksplisitt firma-/supportkontekst for tverrfirmaarbeid
 - modul-/rollehåndtering
 - produktmaster
 - appnyheter
 - **internt ERP-vareregister**
 
-For vareregister skal Systemadmin vise import/status/kontrolltall og være eneste sted for prisoppdatering.
+Systemadmin skal ikke bruke brede rolleprivilegier som normal prosjektflate på tvers av firma. Før prosjektarbeid/support velges riktig representert firma. For vareregister skal Systemadmin vise import/status/kontrolltall og være eneste sted for prisoppdatering.
 
 ## 16. HJELP
 
 Digital Hjelp er gjeldende brukerveiledning og skal følge rolle.
 
-39B.2 dokumenterer:
+Gjeldende sentrale temaer inkluderer:
 
+- ordinær Befaring/Tilbud og recovery
+- Badskisse i befaring
 - Butikktilbud som eget tema ved Befaring/Tilbud
 - tilbudsposter og avsnitt
 - vareregister som valgfritt oppslag
 - montering/opsjoner
 - autosave/recovery
 - Systemadmin-ERP-import og sikkerhetsgrense
+- arbeidsprofil/representert firma der rollen har flere firma
 
 Hjelp skal beskrive gjeldende funksjon, ikke historisk changelog.
 
@@ -363,13 +408,16 @@ scripts/critical-build-check.mjs
 scripts/critical-sales-recovery-check.mjs
 scripts/critical-progress-plan-check.mjs
 scripts/critical-store-catalog-check.mjs
+scripts/critical-work-profile-check.mjs
 ```
 
 Disse beskytter kjente kontrakter som:
 
-- Sales recovery
+- Sales recovery og regelen «brukerhandling vinner»
+- befaringsmedia/Badskisse der dette inngår i recovery-testene
 - fremdriftsplanens tilbudsimport/standardoperasjoner/kalender
 - katalogsikkerhet og Butikktilbud-seksjonspresentasjon
+- arbeidsprofiler, systemadmin-representasjon og 42G prosjekt-scope
 
 Build-sperrer erstatter ikke Preview-test, men skal stoppe kjente regresjoner før deploy.
 
@@ -379,7 +427,7 @@ Vercel Preview brukes for eksplisitt test før merge.
 
 Prosjekt-/fremdriftsfunksjoner har egen Preview-sikkerhet som kan blokkere produksjonsmail/testdata der det er nødvendig.
 
-Sales/Butikktilbud i denne fasen er produksjonskoblet mot delt Supabase og må derfor testes med tydelige testsaker. Publisering/e-post i Preview kan være reell dersom funksjonen ikke eksplisitt er blokkert.
+Sales/Butikktilbud er produksjonskoblet mot delt Supabase og må derfor testes med tydelige testsaker. Publisering/e-post i Preview kan være reell dersom funksjonen ikke eksplisitt er blokkert.
 
 `progressTest=safe` er Preview-sikkerhetsparameter og er ikke en del av endelig produksjonskundelenke.
 
@@ -387,7 +435,7 @@ Sales/Butikktilbud i denne fasen er produksjonskoblet mot delt Supabase og må d
 
 Etter full ERP-import var målt database rundt 348–356 MB og katalog rundt 283 MB.
 
-Sales har enkelte store historiske JSON-payloads, blant annet inline/base64-bilder. Fremtidig opprydding bør flytte nye tunge bilder til Storage, men eksisterende historikk skal ikke migreres tilfeldig i 39B.2.
+Sales har enkelte store historiske JSON-payloads, blant annet inline/base64-bilder. Fremtidig opprydding bør flytte nye tunge bilder til Storage, men eksisterende historikk skal ikke migreres tilfeldig.
 
 ## 20. Frosne/sensitive områder
 
@@ -395,21 +443,23 @@ Endres bare eksplisitt og med egen QA:
 
 - auth/login-presentasjon
 - kompakt desktop header/menu
+- arbeidsprofil-/systemadmin-scoping
 - publiserte/aksepterte tilbud
 - aksepterte kontrakter
 - offentlige kundelenker/private dokumentlenker
-- RLS utenfor avtalt katalog-/modularbeid
+- RLS utenfor eksplisitt avtalt arbeid
 - Edge Functions
 - Fase 37A2 automatisk Butikktilbud-oppfølging
 - Sales recovery/hydration
+- Badskisse/bevaringen av befaringsmedia ved recovery
 
-## 21. Utsatt videreutvikling etter 39B.2
+## 21. Utsatt videreutvikling
 
-- komplett Butikktilbud-mal med avsnitt/poster/opsjoner
 - NOBB/Byggtjeneste-berikelse via GTIN
 - ERP-vareliste/PDF etter aksept gruppert på leverandør
 - CSV/Excel-varebehov
 - målrettet Storage-opprydding for fremtidige Sales-bilder
+- egen kontrollert demo-/testdataflyt med reset/sletting uten å risikere ekte kundehistorikk
 
 Disse skal gjennomføres som egne runder med samme Preview-/mergepolicy.
 
@@ -421,9 +471,9 @@ Minimum:
 2. Vite build grønn.
 3. Preview `READY`, ingen fatale runtime-feil.
 4. Ordinær Befaring/Tilbud-liste fortsatt fungerer.
-5. Butikktilbud: redigering, Enter, autosave, Tilbake, avsnitt, montering og opsjoner testet.
-6. Kundepreview/kundelenke viser korrekt struktur/priser.
-7. Katalogsøk og tilgang kontrollert.
-8. Systemadmin-importhjelp og Butikktilbud-hjelp oppdatert.
-9. Arkitektur og Sales README samsvarer med faktisk implementasjon.
+5. Systemadmin: bytt mellom minst to representerte firma og bekreft at prosjektliste/åpning følger valgt firma.
+6. Direkte prosjektlenke til annet firma skal ikke åpnes i feil representasjonskontekst.
+7. Sales recovery: reload/dvale og eksplisitt brukerhandling kontrollert der endringen berører bootstrap/navigation.
+8. Butikktilbud: redigering, autosave, Tilbake og kundepreview kontrollert ved relevante endringer.
+9. Arkitektur og relevante README/HJELP-filer samsvarer med faktisk implementasjon.
 10. Eksplisitt bruker-`TEST OK` før PR/merge.
