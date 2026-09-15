@@ -1,7 +1,7 @@
-// Expo ProffDok – FASE 30C2
-// Tynn wrapper rundt eksisterende localStorage-kjerne.
-// Falsk recovery undertrykkes kun når lokal kladd og bekreftet serverbaseline
-// har identisk innholdsfingeravtrykk. Reelle forskjeller går videre til dialog.
+// Expo ProffDok – FASE 42I / FASE 30C2
+// FASE 42I holder firmascopet sakslist-cache liten. Komplett tilbud/bilder skal aldri
+// serialiseres som hel saksoversikt i localStorage; tilbudskladd og inspeksjonskladd
+// har egne recovery-lagre. Preview beholder eksisterende full lokal lagring.
 
 export * from "./salesLocalStorageBase.js";
 
@@ -91,6 +91,72 @@ function suppressEquivalentServerConflict(requestId = "") {
 
   base.resolvePendingOfferDraftRecovery(requestId, "server");
   return null;
+}
+
+function compactRequestForAppListCache(request = {}) {
+  const keys = [
+    "id",
+    "title",
+    "customer",
+    "phone",
+    "email",
+    "address",
+    "postnr",
+    "city",
+    "source",
+    "note",
+    "responsible",
+    "surveyResponsible",
+    "projectResponsible",
+    "surveyDate",
+    "surveyTime",
+    "surveyNote",
+    "surveyConfirmationSentAt",
+    "surveyConfirmationSentTo",
+    "projectId",
+    "projectName",
+    "directOffer",
+    "offerTitle",
+    "offerEmailSentAt",
+    "offerOriginalEmailSentAt",
+    "offerEmailVersionNumber",
+    "sentOfferVersionNumber",
+    "offerAutoFollowUpSentAt",
+    "offerAutoFollowUpVersionId",
+    "offerAutoFollowUpVersionNumber",
+    "offerAutoFollowUpSourceSentAt",
+    "offerAutoFollowUpReminderNumber",
+    "storeOfferMeta",
+    "offerRevisionDraftFromVersion",
+    "status",
+    "statusClass",
+    "nextStep",
+    "iconName",
+    "acceptedAt",
+    "declinedAt",
+    "archivedAt",
+    "__createdByUserId",
+    "__createdByName",
+    "__createdAt",
+    "__searchText",
+  ];
+  const compact = {};
+  keys.forEach((key) => {
+    if (request[key] !== undefined) compact[key] = request[key];
+  });
+  compact.__summaryOnly = true;
+  return compact;
+}
+
+export function saveRequests(requests, storageKey = STORAGE_KEY) {
+  if (storageKey === STORAGE_KEY) {
+    return base.saveRequests(requests, storageKey);
+  }
+
+  const compact = (Array.isArray(requests) ? requests : []).map(
+    compactRequestForAppListCache
+  );
+  return base.saveRequests(compact, storageKey);
 }
 
 export function loadOfferDraft(input = {}) {
