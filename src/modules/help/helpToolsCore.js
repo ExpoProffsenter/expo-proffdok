@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 42J / FASE 42H / FASE 42D HJELP
+// Expo ProffDok – FASE 42K / FASE 42J / FASE 42H / FASE 42D HJELP
 // Én React-basert hjelpestruktur. Ingen DOM-innsprøyting, timere eller programmatisk åpning/lukking.
 // Brukerrettede funksjonsendringer skal oppdateres her når arbeidsflyt, begreper eller tilgang påvirkes.
 import React, * as ReactNS from "react";
@@ -23,7 +23,7 @@ const BASE_SECTIONS = [
     [
       "Velg Ny forespørsel for å registrere en ny kundesak, eller åpne Befaring/Tilbud for å fortsette en eksisterende sak.",
       "Opprett prosjekt direkte når tilbudsprosessen ikke er nødvendig, eller åpne et eksisterende prosjekt fra prosjektlisten.",
-      "Når et prosjekt er åpnet på PC, bruk hurtigvalgene Oversikt, Bilder, Sjekklister og Chat for de vanligste arbeidsområdene. Velg Meny for alt øvrig prosjektinnhold.",
+      "Når et prosjekt er åpnet på PC, viser topplinjen anbefalt prosjektløp: Oversikt, Avtalegrunnlag, Prosjektering og Fremdrift. Velg Meny for Bilder, Sjekklister, Produkter, Chat og øvrig prosjektinnhold.",
       "Bruk Krever oppfølging for prosjekter med ulest kundemelding, åpne avvik eller status Klar for kunde.",
       "Bruk Tilbud som bør følges opp for sendte tilbud som trenger manuell oppfølging."
     ],
@@ -248,7 +248,7 @@ const BASE_SECTIONS = [
     "Prosjektlisten gir oversikt over aktive og ferdige/låste prosjekter.",
     [
       "Søk på kunde, adresse, prosjekt, telefon, e-post eller garantinummer og bruk relevante filtre.",
-      "Åpne prosjektet for å starte i Prosjektoversikt. På PC viser den kollapsede topplinjen noen få hurtigvalg, mens Meny gir tilgang til alt prosjektinnhold."
+      "Åpne prosjektet for å starte i Prosjektoversikt. På PC viser den kollapsede topplinjen anbefalt prosjektløp, mens Meny gir tilgang til alt prosjektinnhold."
     ],
     ["Låste prosjekter må låses opp før de redigeres."],
     ["Bruk søk fremfor scrolling når listen blir lang."]
@@ -308,11 +308,13 @@ const INTERNAL_COMMERCE_SECTIONS = [
     "Prissøk brukes til å slå opp aktive ERP-varer og gjeldende kundepris uten å opprette et tilbud.",
     [
       "Søk på varenavn, leverandør, varenummer eller GTIN/EAN.",
+      "Legg aktuelle varer i den midlertidige arbeidslisten mens du sammenligner. Ved vanlig appbytte, dvale eller refresh skal Prissøk åpnes igjen med valgte varer bevart og prisene hentet på nytt fra backend.",
       "Vareregisteret bygger på siste aktiverte Cordel-eksport.",
       "Varer merket Utgått i Cordel, varer med 0-pris og gamle ÅVP-leverandører hoppes automatisk over ved import.",
       "Oppdatering og aktivering av selve vareregisteret er en systemadmin-oppgave."
     ],
     [
+      "Bevisst navigasjon bort fra Prissøk vinner over recovery og skal ikke åpne Prissøk igjen senere.",
       "Prissøk, Butikktilbud og vareregisterhjelp vises bare for brukere som har denne interne handelstilgangen.",
       "Interne nettopriser krever egen sensitiv rettighet og skal aldri vises i kundedokumenter."
     ],
@@ -326,7 +328,8 @@ const SYSTEM_ADMIN_SECTIONS = [
     "⚙️ Systemadministrasjon",
     "Systemadministrasjon er kontrollsenteret for brukere, roller, tverrfirma-support, produktmaster, appnyheter og systemdata.",
     [
-      "Godkjenn, avvis eller slett ventende brukere og kontroller firma/rolle før godkjenning.",
+      "Godkjenn, avvis eller slett ventende brukere. Firma må være valgt før en ny bruker kan godkjennes, og rolle/modultilganger skal kontrolleres før aktivering.",
+      "Butikktilbud kan bare tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter. Andre firma kan få Befaring / Våtromstilbud uten Butikktilbud.",
       "Bruk Supportmodus når du skal hjelpe et annet firma og avslutt supportmodus når arbeidet er ferdig.",
       "Vedlikehold produktmaster og synkroniser bare aktive prosjekter når dette er riktig.",
       "Bruk Nyheter i appen til korte meldinger om nye funksjoner eller viktige endringer.",
@@ -335,6 +338,7 @@ const SYSTEM_ADMIN_SECTIONS = [
     ],
     [
       "Systemadmin-funksjoner kan påvirke flere firmaer og må brukes varsomt.",
+      "Expo Proffsenter-logo kan brukes som standardlogo når firmaet ikke har egen logo, men logoen bestemmer aldri brukerens firmatilhørighet eller datascope.",
       "Kontroller alltid hvilket firma supportmodus gjelder før du gjør endringer.",
       "Prisfilen inneholder intern informasjon og skal ikke deles med kunder eller legges i GitHub."
     ],
