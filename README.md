@@ -4,7 +4,7 @@ Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsnin
 
 Produksjon: https://expo-proffdok.app
 
-Gjeldende dokumentert baseline: **Fase 42G i produksjon / Fase 42H–42J i Preview-QA (15.09.2026)**.
+Gjeldende dokumentert produksjonsbaseline: **Fase 42K i produksjon (PR #155, 15.09.2026)**. Fase 42H–42J Sales-scale/recovery/prosjektnavigasjon er dermed del av Production-baseline.
 
 ## Teknologi
 
@@ -25,7 +25,8 @@ src/
 └── modules/                 # app, access, sales, storeCatalog, project, progress, portal, help, report m.fl.
 
 docs/
-└── architecture/            # gjeldende arkitekturkart og fasespesifikke sikkerhetsnotater
+├── architecture/            # gjeldende arkitekturkart og fasespesifikke sikkerhetsnotater
+└── DEMO_SANDBOX_MANUAL.md   # praktisk A–Å-manual for isolert demo
 
 scripts/
 ├── critical-build-check.mjs
@@ -43,6 +44,10 @@ scripts/
 
 Detaljert nå-arkitektur: [docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md](docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md)
 
+Demo Sandbox-arkitektur: [docs/architecture/DEMO_SANDBOX_ARCHITECTURE.md](docs/architecture/DEMO_SANDBOX_ARCHITECTURE.md)
+
+Demo Sandbox A–Å: [docs/DEMO_SANDBOX_MANUAL.md](docs/DEMO_SANDBOX_MANUAL.md)
+
 Sales-domene: [src/modules/sales/README.md](src/modules/sales/README.md)
 
 Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md)
@@ -55,6 +60,25 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 - Bevisst brukerhandling vinner alltid over automatisk recovery.
 - Systemadmins ordinære prosjektarbeidsflate følger valgt **Representerer**-firma; brede supportrettigheter skal ikke blande firma i vanlig prosjektliste.
 - Desktop prosjektarbeidsflate bruker kollapset meny med få native hurtigvalg; full funksjonsliste ligger fortsatt i Meny.
+
+## Demo Sandbox
+
+Expo ProffDok har et separat demo-/opplæringsmiljø for presentasjoner der den ekte appen må kunne brukes uten å skrive til Production.
+
+Kritiske regler:
+
+- Production: `main` + Production-Supabase `dqffxflaoyarbxyiyhop`.
+- Demo Sandbox: permanent branch `feature/demo-showcase-isolated` + egen Supabase `ppvircenkjizeiqdxphj`.
+- Demo-branchen skal **aldri merges til `main`**.
+- Sandbox inneholder bare fiktive/sanitiserte demodata og har egen Auth/Storage.
+- Gult merke `DEMO SANDBOX · IKKE PRODUKSJON` skal alltid være synlig.
+- Vanlige Vercel Previewer bruker fortsatt trygg `progressTest=safe`; det dedikerte sandbox-hostet unntas fordi backend allerede er fysisk isolert.
+- Sandbox-feil i grants/seed/Auth/Storage skal rettes i sandbox – ikke ved å endre Production Sales/recovery/autosave.
+- Reell produktfeil må først reproduseres mot ren `main` og tas i separat feature/hotfix med ordinær QA og `TEST OK`.
+
+Sandboxens Fremdrift kan bruke det aksepterte demo-tilbudet som arbeidsgrunnlag. Prosjektet må ha `salesOrigin.publicToken`, og importen bruker eksisterende `get_sales_offer_by_token` + `buildAcceptedOfferProgressActivities`.
+
+Se [Demo Sandbox Architecture](docs/architecture/DEMO_SANDBOX_ARCHITECTURE.md) og [A–Å-manualen](docs/DEMO_SANDBOX_MANUAL.md).
 
 ## Utviklings- og mergepolicy
 
@@ -75,6 +99,7 @@ Repositoryet skal kunne overtas av en kvalifisert utvikler uten tilgang til tidl
 
 - Endret arbeidsflyt, begreper, knapper, roller eller brukeropplevelse → oppdater HJELP i samme runde.
 - Endret datamodell, modulansvar, Storage, RPC, RLS, sikkerhetsmodell eller større teknisk struktur → oppdater arkitekturkartet.
+- Demo-/sandbox-endringer → oppdater `DEMO_SANDBOX_ARCHITECTURE.md` og A–Å-manualen når drift eller avvik endres.
 - Sales-endringer vurderes mot Sales README.
 - Vareregister-/katalogendringer vurderes mot Fase 39B-arkitekturdokumentet.
 - Arbeidsprofil/systemadmin-endringer vurderes mot `critical-work-profile-check.mjs` og arkitekturkartet.
@@ -103,8 +128,9 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 
 1. Les [arkitekturkartet](docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md).
 2. Les [Sales README](src/modules/sales/README.md) før endringer i befaring/tilbud/aksept/Butikktilbud/recovery/lazy loading.
-3. Les [Fase 39B](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md) før endringer i vareregister, ERP-import eller katalogtilgang.
-4. Les relevante HJELP-moduler før brukerrettede endringer.
-5. Kontroller åpne GitHub issues og siste legitime `main`-SHA.
-6. Kontroller Production og Supabase-status før større arbeid.
-7. Endre minst mulig per runde og beskytt produksjon foran alt.
+3. Les [Demo Sandbox Architecture](docs/architecture/DEMO_SANDBOX_ARCHITECTURE.md) før endringer i demo-miljøet.
+4. Les [Fase 39B](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md) før endringer i vareregister, ERP-import eller katalogtilgang.
+5. Les relevante HJELP-moduler før brukerrettede endringer.
+6. Kontroller åpne GitHub issues og siste legitime `main`-SHA.
+7. Kontroller Production og Supabase-status før større arbeid.
+8. Endre minst mulig per runde og beskytt produksjon foran alt.
