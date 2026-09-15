@@ -241,6 +241,11 @@ export default function SalesModule(props) {
   useEffect(() => {
     const rehydrateSalesModule = () => {
       beginOfferDraftHydrationCycle();
+      // En recovery-remount skal aldri få arve en gammel «ready»-tilstand. Lukk
+      // server-first-gaten i samme render som instanceKey endres; prime-effekten
+      // under kjører deretter på instanceKey og åpner først når full sak er klar.
+      setServerCacheError("");
+      setServerCacheReady(false);
       setInstanceKey((current) => current + 1);
     };
 
@@ -385,6 +390,7 @@ export default function SalesModule(props) {
     props.profile?.company_name,
     props.profile?.companyName,
     props.openRequestSignal,
+    instanceKey,
     serverCacheRetryKey,
   ]);
 
