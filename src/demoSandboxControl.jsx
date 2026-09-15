@@ -5,6 +5,8 @@ import { createClient } from "@supabase/supabase-js";
 const SANDBOX_URL = "https://ppvircenkjizeiqdxphj.supabase.co";
 const SANDBOX_KEY = "sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR";
 const DEMO_EMAIL = "demo@expo-proffdok.no";
+const PRODUCTION_REPO = "ExpoProffsenter/expo-proffdok";
+const SANDBOX_PRODUCTION_BASELINE = "1b98fef90fe57c24996982f39619a5bc0ce8a4f2";
 const supabase = createClient(SANDBOX_URL, SANDBOX_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
@@ -16,6 +18,7 @@ const primaryButton = { ...button, background: "#18c4cf", borderColor: "#18c4cf"
 const dangerButton = { ...button, background: "#fff4f2", borderColor: "#f2b8ae", color: "#9b2c22" };
 
 const LABELS = {
+  production_baseline: "Produksjonskode synkron",
   sales: "Fem demo-stopp",
   offer: "Tilbudsgrunnlag",
   main_project: "HOVED-prosjekt",
@@ -63,6 +66,56 @@ async function callRpc(name) {
   return data || {};
 }
 
+async function checkProductionBaseline() {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${PRODUCTION_REPO}/commits/main`, {
+      headers: { Accept: "application/vnd.github+json" },
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return {
+        ok: false,
+        key: "production_baseline",
+        detail: `Kunne ikke kontrollere main (${response.status}). Kjør ny preflight når nettet er stabilt.`,
+      };
+    }
+    const payload = await response.json();
+    const currentMainSha = String(payload?.sha || "").trim();
+    const matches = Boolean(currentMainSha) && currentMainSha === SANDBOX_PRODUCTION_BASELINE;
+    return {
+      ok: matches,
+      key: "production_baseline",
+      detail: matches
+        ? `Synkron med main ${currentMainSha.slice(0, 8)}`
+        : `Sandbox ${SANDBOX_PRODUCTION_BASELINE.slice(0, 8)} · main ${currentMainSha.slice(0, 8) || "ukjent"}. Synk main → sandbox før demo.`,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      key: "production_baseline",
+      detail: `Produksjonsbaseline kunne ikke kontrolleres: ${error.message}`,
+    };
+  }
+}
+
+async function runFullPreflight() {
+  const [serverResult, baselineCheck] = await Promise.all([
+    callRpc("demo_sandbox_preflight"),
+    checkProductionBaseline(),
+  ]);
+  const serverChecks = Array.isArray(serverResult?.checks) ? serverResult.checks : [];
+  const checks = [baselineCheck, ...serverChecks.filter((item) => item?.key !== "production_baseline")];
+  return {
+    ...serverResult,
+    checks,
+    ok: Boolean(serverResult?.ok) && checks.every((item) => item?.ok),
+    productionBaseline: {
+      sandboxMainSha: SANDBOX_PRODUCTION_BASELINE,
+      repository: PRODUCTION_REPO,
+    },
+  };
+}
+
 function StatusDot({ ok }) {
   return <span style={{ display: "inline-block", width: 12, height: 12, borderRadius: 999, background: ok ? "#0f9f6e" : "#d33b31", marginRight: 9 }} />;
 }
@@ -90,7 +143,7 @@ function App() {
   const runPreflight = async () => {
     setBusy("preflight"); setMessage("");
     try {
-      const result = await callRpc("demo_sandbox_preflight");
+      const result = await runFullPreflight();
       setPreflight(result);
       setMessage(result.ok ? "✅ Demo Sandbox er klar." : "⚠️ Preflight fant røde punkter. Ikke start kundedemo før de er avklart.");
       return result;
@@ -106,9 +159,12 @@ function App() {
     try {
       const restored = await callRpc("demo_sandbox_reset");
       const removed = clearLocalDemoState();
-      const checked = await callRpc("demo_sandbox_preflight");
+      const checked = await runFullPreflight();
       setPreflight(checked);
-      setMessage(`✅ Demo tilbakestilt: ${restored.sales || 0} Sales-saker / ${restored.projects || 0} prosjekter. ${removed.length} lokale demo-/recovery-nøkler ryddet. Innlogging er beholdt.`);
+      setMessage(checked.ok
+        ? `✅ Demo tilbakestilt: ${restored.sales || 0} Sales-saker / ${restored.projects || 0} prosjekter. ${removed.length} lokale demo-/recovery-nøkler ryddet. Innlogging er beholdt.`
+        : `⚠️ Demo-data er tilbakestilt, men preflight er ikke grønn. ${removed.length} lokale demo-/recovery-nøkler ble ryddet. Ikke start kundedemo før røde punkter er avklart.`
+      );
     } catch (error) {
       setMessage(`Reset stoppet uten å fortsette: ${error.message}`);
     } finally { setBusy(""); }
@@ -118,6 +174,12 @@ function App() {
     if (!window.confirm("Er dagens sandbox kontrollert og godkjent? Dette erstatter Golden Demo-snapshotet som brukes ved fremtidig reset.")) return;
     setBusy("capture"); setMessage("");
     try {
+      const baseline = await checkProductionBaseline();
+      if (!baseline.ok) {
+        setPreflight({ ok: false, checks: [baseline] });
+        setMessage("⚠️ Golden Demo ble ikke oppdatert fordi sandboxen ikke er verifisert synkron med gjeldende main.");
+        return;
+      }
       const result = await callRpc("demo_sandbox_capture_golden");
       setMessage(`✅ Ny Golden Demo lagret: ${result.sales || 0} Sales-saker / ${result.projects || 0} prosjekter.`);
       await runPreflight();
@@ -168,6 +230,7 @@ function App() {
 
       <div style={card}>
         <h2 style={{ marginTop: 0 }}>Demo klar?</h2>
+        <p style={{ marginTop: -4, color: "#61747f" }}>Første kontroll er alltid at sandboxen bygger på samme produksjonsbaseline som gjeldende <code>main</code>. Hvis Production har gått videre, blir dette punktet rødt til main er synkronisert inn i sandboxen.</p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
           <button style={primaryButton} disabled={!!busy} onClick={runPreflight}>{busy === "preflight" ? "Kontrollerer…" : "Kjør preflight"}</button>
           <button style={button} disabled={!!busy} onClick={clearLocal}>Rydd lokal demo-state</button>
