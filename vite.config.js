@@ -7,6 +7,7 @@ const PROD_MAIN_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 const PROD_ACCESS_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
 const SANDBOX_SUPABASE_URL = "https://ppvircenkjizeiqdxphj.supabase.co";
 const SANDBOX_PUBLISHABLE_KEY = "sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR";
+const SANDBOX_VERCEL_HOST = "expo-proffdok-git-feature-demo-showcase-isolated-ringside.vercel.app";
 
 function demoSandboxBuildGuard() {
   return {
@@ -18,14 +19,27 @@ function demoSandboxBuildGuard() {
         .replaceAll(PROD_SUPABASE_URL, SANDBOX_SUPABASE_URL)
         .replaceAll(PROD_MAIN_ANON_KEY, SANDBOX_PUBLISHABLE_KEY)
         .replaceAll(PROD_ACCESS_ANON_KEY, SANDBOX_PUBLISHABLE_KEY);
+
+      // Sandboxen er fysisk isolert fra Production og skal derfor bruke ekte sandbox-lagring.
+      // Vanlige Vercel Previewer beholder eksisterende progressTest=safe-beskyttelse.
+      if (id.endsWith("/src/modules/app/previewSafetyBootstrap.js")) {
+        next = next.replace(
+          "const PRODUCTION_VERCEL_HOSTS = new Set([",
+          `const PRODUCTION_VERCEL_HOSTS = new Set([\n  ${JSON.stringify(SANDBOX_VERCEL_HOST)},`
+        );
+      }
+
       if (next === code) return null;
       return { code: next, map: null };
     },
     transformIndexHtml(html) {
-      return html.replace(
-        "<body>",
-        `<body><div style="position:fixed;right:10px;top:8px;z-index:2147483647;background:#fff3cd;color:#6b5200;border:1px solid #e3bf54;border-radius:999px;padding:6px 10px;font:800 12px/1.2 system-ui;box-shadow:0 2px 10px rgba(0,0,0,.12);pointer-events:none">DEMO SANDBOX · IKKE PRODUKSJON</div>`
-      );
+      const sandboxBootstrap = `<script>(function(){if(location.hostname===${JSON.stringify(SANDBOX_VERCEL_HOST)}){var u=new URL(location.href);if(u.searchParams.has('progressTest')){u.searchParams.delete('progressTest');history.replaceState({},document.title,u.pathname+(u.search||'')+(u.hash||''));}}})();</script>`;
+      return html
+        .replace("<head>", `<head>${sandboxBootstrap}`)
+        .replace(
+          "<body>",
+          `<body><div style="position:fixed;right:10px;top:8px;z-index:2147483647;background:#fff3cd;color:#6b5200;border:1px solid #e3bf54;border-radius:999px;padding:6px 10px;font:800 12px/1.2 system-ui;box-shadow:0 2px 10px rgba(0,0,0,.12);pointer-events:none">DEMO SANDBOX · IKKE PRODUKSJON</div>`
+        );
     },
   };
 }
