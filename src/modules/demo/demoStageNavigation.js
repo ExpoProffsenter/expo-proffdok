@@ -15,6 +15,14 @@ function findNativeSalesButton() {
   }) || null;
 }
 
+function findAllWorkTab() {
+  const tablist = document.querySelector('[role="tablist"][aria-label="Arbeidsstatus"]');
+  if (!tablist) return null;
+  return Array.from(tablist.querySelectorAll('button[role="tab"]')).find((button) =>
+    compact(button.textContent).startsWith("Alle")
+  ) || null;
+}
+
 export function clearQueuedDemoOpen() {
   if (typeof window === "undefined") return;
   const timer = window[DEMO_OPEN_TIMER_KEY];
@@ -29,10 +37,11 @@ function queueDemoSalesOpen(requestRef) {
   const startedAt = Date.now();
   const timeoutMs = 8000;
   const tryOpen = () => {
-    const allTab = Array.from(document.querySelectorAll('button[role="tab"]')).find(
-      (button) => compact(button.textContent) === "Alle"
-    );
-    if (allTab && allTab.getAttribute("aria-selected") !== "true") allTab.click();
+    const allTab = findAllWorkTab();
+    if (allTab && allTab.getAttribute("aria-selected") !== "true") {
+      allTab.click();
+      return;
+    }
 
     const card = Array.from(document.querySelectorAll("button.sales-request-card")).find(
       (button) => compact(button.textContent).includes(requestRef)
