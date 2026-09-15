@@ -43,9 +43,11 @@ async function rehydrateActiveDemoSalesStageAfterResume() {
   const resumedRequestRef = String(navigation?.selectedRequestId || "").trim();
   const resumedMode = String(navigation?.mode || "").trim();
 
-  // Demo-recovery får bare gripe inn når vanlig Sales-recovery fortsatt peker på
-  // akkurat den samme DEMO42L-saken. Bevisst Tilbake/list/annen sak skal alltid vinne.
-  if (resumedRequestRef !== cleanRef || !resumedMode || resumedMode === "list") {
+  // Demo-recovery er kun et sikkerhetsnett for intern detaljvisning, der en lett
+  // summary ellers kan bli synlig etter app-/fanebytte. Rediger tilbud,
+  // befaringsnotat og øvrige arbeidsbilder skal bruke den etablerte 42J-recoveryen
+  // urørt; en tvungen remount her kan ellers kaste et korrekt hydrert skjema.
+  if (resumedRequestRef !== cleanRef || resumedMode !== "detail") {
     return false;
   }
 
@@ -66,7 +68,7 @@ async function rehydrateActiveDemoSalesStageAfterResume() {
   if (primeError) throw primeError;
 
   // Full detalj ligger nå i den eksisterende preload-cachen. Remount samme Sales-
-  // arbeidsbilde gjennom den etablerte recovery-eventen; Core/lagring endres ikke.
+  // detaljbilde gjennom den etablerte recovery-eventen; editor/lagring endres ikke.
   window.dispatchEvent(new CustomEvent("expo-proffdok-sales-rehydrate"));
   return true;
 }
