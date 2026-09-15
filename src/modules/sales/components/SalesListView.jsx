@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 41B.1 / FASE 37A2 / FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// Expo ProffDok – FASE 42H / FASE 41B.1 / FASE 37A2 / FASE 37D1 / FASE 37A1 / FASE 30C2 / FASE 28B1 / FASE 29B4 / FASE 29C1
+// FASE 42H gir nye, ubokede forespørsler en egen synlig arbeidskø. Eksisterende status,
+// dataflyt, åpning av sak, befaring, tilbud, arkiv og recovery endres ikke.
 // FASE 41B.1 gjør Sales-søket mer robust: flere søkeord kan kombineres på tvers av
 // kunde, adresse, kontaktdata, saksnr., ansvarlig, status, tilbudstype og tilbudsinnhold.
 // Når et nytt hovedsøk starter, åpnes Alle statuser automatisk. Brukeren kan deretter
@@ -59,6 +61,7 @@ const OFFER_TYPE_TABS = [
   { id: "store", label: "Butikktilbud" },
 ];
 const WORK_TABS = [
+  { id: "requests", label: "Forespørsler" },
   { id: "work", label: "Under arbeid" },
   { id: "follow-up", label: "Må følges opp" },
   { id: "accepted", label: "Akseptert" },
@@ -232,6 +235,7 @@ function requestBucket(request) {
   if (isArchivedRequest(request)) return "archive";
   if (request?.status === "Akseptert") return "accepted";
   if (request?.status === "Avvist") return "declined";
+  if (request?.status === "Forespørsel") return "requests";
 
   const followUp = getOfferFollowUpInfo(request);
   if (followUp?.shouldFollowUp) return "follow-up";
@@ -309,6 +313,7 @@ export default function SalesListView({
       filterRequestForType(request, activeOfferType)
     );
     const counts = {
+      requests: 0,
       work: 0,
       "follow-up": 0,
       accepted: 0,
@@ -327,6 +332,7 @@ export default function SalesListView({
 
   const overviewSummary = useMemo(
     () => [
+      { label: "Forespørsler", value: requestCounts.requests },
       { label: "Under arbeid", value: requestCounts.work },
       { label: "Må følges opp", value: requestCounts["follow-up"] },
       { label: "Akseptert", value: requestCounts.accepted },
@@ -406,19 +412,21 @@ export default function SalesListView({
 
   const emptyListText = searchQuery.trim()
     ? "Ingen saker matcher søket i denne fanen."
-    : activeTab === "follow-up"
-      ? "Ingen tilbud må følges opp manuelt akkurat nå."
-      : activeTab === "accepted"
-        ? "Ingen aksepterte tilbud i denne visningen."
-        : activeTab === "declined"
-          ? "Ingen avviste tilbud i denne visningen."
-          : activeTab === "archive"
-            ? "Arkivet er tomt."
-            : activeTab === "all"
-              ? "Ingen salgssaker er registrert."
-              : supportMode
-                ? "Ingen saker under arbeid i dette firmaet."
-                : "Ingen saker under arbeid. Opprett en ny forespørsel for å starte en befaring eller et tilbud.";
+    : activeTab === "requests"
+      ? "Ingen ubokede forespørsler. Nye forespørsler vises her til befaring er planlagt."
+      : activeTab === "follow-up"
+        ? "Ingen tilbud må følges opp manuelt akkurat nå."
+        : activeTab === "accepted"
+          ? "Ingen aksepterte tilbud i denne visningen."
+          : activeTab === "declined"
+            ? "Ingen avviste tilbud i denne visningen."
+            : activeTab === "archive"
+              ? "Arkivet er tomt."
+              : activeTab === "all"
+                ? "Ingen salgssaker er registrert."
+                : supportMode
+                  ? "Ingen saker under arbeid i dette firmaet."
+                  : "Ingen saker under arbeid. Opprett en ny forespørsel for å starte en befaring eller et tilbud.";
 
   const activeTypeLabel =
     OFFER_TYPE_TABS.find((tab) => tab.id === activeOfferType)?.label || "Alle tilbud";
