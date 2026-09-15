@@ -22,6 +22,7 @@ const panel = read("src/modules/demo/DemoTestPanel.jsx");
 const mount = read("src/modules/storeCatalog/systemAdminStoreCatalogUx.jsx");
 const publishing = read("src/modules/sales/services/salesPublishing.js");
 const acceptancePdf = read("src/modules/sales/services/salesAcceptancePdf.js");
+const help = read("src/modules/help/helpToolsCore.js");
 const packageJson = read("package.json");
 
 assertContains(safety, 'DEMO_SUITE_KEY = "expo-proffdok-demo-42l"', "42L: fast demo-suite key mangler.");
@@ -63,10 +64,14 @@ assertBefore(
 );
 assertContains(acceptancePdf, "isDemoRequest(args?.selectedRequest", "42L: akseptbevis må sperres for demosaker før PDF/Storage.");
 
+assertContains(help, "Demo/Test oppretter fem tydelig merkede steg", "42L: React-Hjelp må beskrive de fem Demo/Test-stegene.");
+assertContains(help, "Tilbakestill demosaker", "42L: React-Hjelp må beskrive reset av demosaker.");
+assertContains(help, "publisering av DEMO-tilbud", "42L: React-Hjelp må forklare irreversible demo-sperrer.");
+
 assertContains(
   packageJson,
   "critical-demo-suite-check.mjs",
   "42L: demo-regresjonscheck må kjøres i package scripts."
 );
 
-console.log("✅ Demo/Test 42L safety / reset / publishing / project cleanup check OK");
+console.log("✅ Demo/Test 42L safety / reset / publishing / project cleanup / Help check OK");
