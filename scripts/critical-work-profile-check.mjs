@@ -145,10 +145,30 @@ requireNeedles("src/modules/access/workProfileProjectListUx.jsx", [
   "openProject(item",
 ]);
 
-requireNeedles("index.html", [
+const projectScopeGuard = requireNeedles("src/modules/access/systemAdminProjectScopeGuard.js", [
+  "PROJECTS_REST_PATH",
+  'new Set(["GET", "HEAD", "PATCH", "DELETE"])',
+  "getMyWorkProfileState",
+  "readCachedWorkProfileState",
+  "state?.is_systemadmin",
+  "active_company_id",
+  "NO_COMPANY_SCOPE",
+  'next.searchParams.set("company_scope_id"',
+  "window.fetch = async",
+]);
+if (/GUARDED_METHODS[^\n]*POST/.test(projectScopeGuard)) {
+  throw new Error("42G-scopeguard skal ikke omskrive prosjekt-INSERT; firmascopet settes server-side.");
+}
+
+const indexHtml = requireNeedles("index.html", [
+  "installSystemAdminProjectScopeGuard",
+  "await import('/src/bootstrap.jsx')",
   "installSystemAdminWorkProfileUx",
   "installWorkProfileUx",
   "installWorkProfileProjectListUx",
 ]);
+if (indexHtml.indexOf("installSystemAdminProjectScopeGuard") > indexHtml.indexOf("await import('/src/bootstrap.jsx')")) {
+  throw new Error("42G-scopeguard må installeres før hovedappen bootstrapper.");
+}
 
-console.log("✅ Expo ProffDok arbeidsprofiler / flerfirma / systemadmin representasjon / firmabranding check OK");
+console.log("✅ Expo ProffDok arbeidsprofiler / flerfirma / systemadmin representasjon / firmabranding / 42G prosjektscope check OK");
