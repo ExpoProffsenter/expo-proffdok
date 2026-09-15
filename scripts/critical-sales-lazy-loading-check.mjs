@@ -155,6 +155,16 @@ if (wrapper) {
     "setServerCacheReady(false)",
     `${wrapperPath}: nettfeil kan fortsatt mounte SalesCore på ufullstendig data.`
   );
+  requireText(
+    wrapper,
+    'setServerCacheReady(false);\n      setInstanceKey((current) => current + 1);',
+    `${wrapperPath}: recovery-remount lukker ikke server-first-gaten før Core remountes.`
+  );
+  requireText(
+    wrapper,
+    'props.openRequestSignal,\n    instanceKey,\n    serverCacheRetryKey,',
+    `${wrapperPath}: recovery-remount re-primer ikke valgt sak før Core får mounte igjen.`
+  );
   forbidText(
     wrapper,
     "fetchSalesRequests(",
@@ -233,5 +243,5 @@ if (failures.length) {
 }
 
 console.log(
-  "✅ Expo ProffDok Sales lazy-loading check OK – oversikten bruker lett projeksjon, valgt sak hydreres komplett før redigering, summary kan ikke lagres tilbake, nettfeil blokkerer ufullstendig editor og 42F recovery/server-first er bevart"
+  "✅ Expo ProffDok Sales lazy-loading check OK – oversikten bruker lett projeksjon, valgt sak hydreres komplett før redigering, recovery-remount re-primer server-first, summary kan ikke lagres tilbake og nettfeil blokkerer ufullstendig editor"
 );
