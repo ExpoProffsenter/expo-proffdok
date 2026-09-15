@@ -1,13 +1,18 @@
-// Expo ProffDok – FASE 28C2
+// Expo ProffDok – FASE 42L / FASE 28C2
 // Henter firmascopede salgssaker til Startsiden og viser kun sendte tilbud
 // som bør følges opp. Bruker eksisterende Sales-RPC/RLS og verifiserer
 // eventuell kundeaksept før et tilbud vises. Ingen SQL-, Storage- eller e-postendring.
+// FASE 42L lytter kun på et isolert systemadmin-demo-event og videresender request-id
+// til den samme onOpenRequest-callbacken som eksisterende Startsiden allerede bruker.
+// Startsiden bruker summary-RPC direkte slik at den aldri kan konsumere en komplett
+// Sales-sak som er primet for server-first recovery i editor/detaljvisning.
 
 import { Mail } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { DEMO_OPEN_SALES_REQUEST_EVENT } from "../../demo/demoSalesOpenEvent.js";
 import {
-  fetchSalesRequests,
   getSalesOfferByToken,
+  getSalesSupportCompanyId,
   resolveSalesCompanyScope,
 } from "../services/salesSupabase.js";
 
@@ -98,6 +103,13 @@ async function customerHasAcceptedOffer(client, request) {
   }
 }
 
+async function fetchHomeFollowUpSummaries(client) {
+  const supportCompanyId = String(getSalesSupportCompanyId?.() || "").trim();
+  return client.rpc("list_sales_request_summaries", {
+    requested_company_id: supportCompanyId || null,
+  });
+}
+
 export function useSalesHomeFollowUpData({
   supabaseClient = null,
   authUser = null,
@@ -143,10 +155,8 @@ export function useSalesHomeFollowUpData({
           );
         }
 
-        const { data: rows, error: requestError } = await fetchSalesRequests(
-          supabaseClient,
-          companyId
-        );
+        const { data: rows, error: requestError } =
+          await fetchHomeFollowUpSummaries(supabaseClient);
 
         if (requestError) {
           throw requestError;
@@ -229,6 +239,33 @@ export default function SalesHomeFollowUp({
   onOpenRequest = null,
   compact = false,
 }) {
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof onOpenRequest !== "function") {
+      return undefined;
+    }
+
+    const handleDemoOpenRequest = (event) => {
+      const detail = event?.detail;
+      const requestId = String(detail?.requestId || "").trim();
+      if (!requestId || detail?.handled) return;
+
+      // Desktop- og mobil-Startsiden kan begge finnes i DOM. Første lytter som
+      // håndterer eventet markerer det synkront, slik at callbacken kun kjøres én gang.
+      detail.handled = true;
+      onOpenRequest(requestId);
+    };
+
+    window.addEventListener(
+      DEMO_OPEN_SALES_REQUEST_EVENT,
+      handleDemoOpenRequest
+    );
+    return () =>
+      window.removeEventListener(
+        DEMO_OPEN_SALES_REQUEST_EVENT,
+        handleDemoOpenRequest
+      );
+  }, [onOpenRequest]);
+
   const visibleItems = useMemo(
     () => (Array.isArray(items) ? items : []).slice(0, compact ? 4 : 6),
     [compact, items]
