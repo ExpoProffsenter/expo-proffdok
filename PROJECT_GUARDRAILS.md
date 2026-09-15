@@ -23,6 +23,25 @@ Meny, navigasjon, Startside, Badskisse, prosjektflyt, tilgangsstyring, SQL/RLS/S
 
 `main.jsx`, bootstrap/navigasjon eller globale menyer skal bare endres når de uttrykkelig er en del av avtalt scope og årsaken er bevist.
 
+### 2.1 Automatisk PR-isolasjon
+
+Repoet bruker GitHub-workflowen `PR Core Safety` som server-side sikkerhetsnett på pull requests mot `main`.
+
+Når en PR inneholder Demo/Test-kode (`src/modules/demo/**`, demo-critical checks eller demo-entry), gjelder en streng allowlist. Demo-PR-en får bare endre demoens egne filer, dokumentasjon og eksplisitt avtalte integrasjonspunkter. Den får ikke samtidig endre blant annet:
+
+- `src/modules/sales/**`
+- `src/main.jsx` eller `src/bootstrap.jsx`
+- arbeidsprofil-/tilgangskjerne
+- prosjekt-, fremdrifts-, rapport- eller portal-kjerne
+- Supabase/RLS/migrations
+- eksisterende ikke-demo `critical-*`-checker
+
+Hvis en demooppgave avdekker en reell feil i kjernen, skal denne ikke «fikses på veien» i demo-PR-en. Stopp, bevis rotårsaken, opprett en separat core-PR fra ren `main`, og kjør eget scope → critical QA → Preview → eksplisitt `TEST OK` før merge.
+
+`PR Core Safety` skal aldri svekkes, omgås eller endres i samme Demo/Test-PR for å få en build grønn.
+
+GitHub `main` skal ha required status check for `PR Core Safety` aktivert når repo-innstillingene tillater det. Inntil branch protection er aktivert er grønn `PR Core Safety` likevel et absolutt krav i merge-rutinen.
+
 ## 3. Kritiske brukerreiser som aldri skal regresere
 
 Følgende er ikke-forhandlebare regresjonskrav:
