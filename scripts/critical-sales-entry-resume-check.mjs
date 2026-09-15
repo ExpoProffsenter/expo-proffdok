@@ -23,6 +23,7 @@ globalThis.window = { localStorage: local, sessionStorage: session };
 const recovery = await import("../src/modules/sales/services/salesResumeRecovery.mjs");
 const storage = await import("../src/modules/sales/services/salesLocalStorageCore.js");
 
+const now = Date.now();
 const storageKey = "expo-proffdok:sales:v1:ringside:test-user";
 const newNavigation = { mode: "new", selectedRequestId: null };
 local.setItem(`${storageKey}:navigation`, JSON.stringify(newNavigation));
@@ -55,7 +56,7 @@ requireCheck(
 
 recovery.markSalesWorkspaceResumeSnapshot(
   { storageKey, navigation: newNavigation },
-  { localStorage: local, now: 2_000_000_000_000 }
+  { localStorage: local, now }
 );
 const recoveredNew = storage.loadSalesEntryDraft("new");
 requireCheck(
@@ -67,7 +68,7 @@ requireCheck(
   recovery.shouldBootstrapRestoreSales({
     sessionStorage: session,
     localStorage: local,
-    now: 2_000_000_000_000,
+    now,
   }),
   "Bootstrap gjenåpner ikke Sales når aktivt arbeidsbilde er Ny forespørsel uten request_ref."
 );
@@ -82,7 +83,7 @@ requireCheck(
 );
 recovery.markSalesWorkspaceResumeSnapshot(
   { storageKey, navigation: editNavigation },
-  { localStorage: local, now: 2_000_000_000_500 }
+  { localStorage: local, now: now + 500 }
 );
 const recoveredEdit = storage.loadSalesEntryDraft("edit-request");
 requireCheck(
