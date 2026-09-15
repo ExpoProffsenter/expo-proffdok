@@ -6,6 +6,17 @@ Denne filen er en del av prosjektets sikkerhetskontrakt. Den skal leses før enh
 
 Før implementering skal endringsscope beskrives eksplisitt: hvilke filer/funksjoner som får røres, og hvilke som ikke får røres.
 
+Før implementering skal miljømålet alltid klassifiseres eksplisitt som ett av følgende:
+- **PRODUKSJON/PREVIEW** – endring i ordinær appkode som skal gjennom feature/Preview og senere Production.
+- **SANDBOX/DEMO** – kun isolert demo-overlay, demodata eller kontrollverktøy som aldri skal til Production.
+- **BEGGE** – ordinær appendring som også må være tilgjengelig i demo-sandboxen.
+
+Hvis en oppgave gjelder funksjonalitet i produksjonsappen, er standard miljømål **BEGGE** med mindre brukeren uttrykkelig avtaler noe annet. Produksjonsendringen skal først følge vanlig løp: feature/hotfix → critical QA → Vercel Preview → brukerens `TEST OK` → merge til `main` → Production-verifisering. Etter vellykket Production-verifisering skal gjeldende `main` synkroniseres inn i demo-sandboxen, uten å kopiere sandbox-overlay tilbake til Production. Sandbox-preflight skal deretter bekrefte at demoen bygger på samme produksjonsbaseline før oppgaven regnes som helt ferdig.
+
+Sandbox-spesifikke demo-data, syntetiske bilder, kontrollflater, demo-RPC-er, demo-konfigurasjon og øvrig overlay skal forbli isolert i sandboxmiljøet. Appkode synkroniseres **fra `main` til sandbox**, aldri motsatt som en del av ordinær synk.
+
+Hvis det er uklart om en foreslått endring er PRODUKSJON/PREVIEW, SANDBOX/DEMO eller BEGGE, skal implementering stoppe til miljømålet er avklart. Works-status før kodeendring skal inneholde én kort linje: `Miljømål: ...`.
+
 Etter implementering skal branch alltid sammenlignes mot `main`. Hvis diffen inneholder urelaterte filer eller funksjoner, stopp og rydd før videre test/merge.
 
 **Ny funksjonalitet eller UX-endring er aldri ferdig bare fordi den nye funksjonen virker. Alle eksisterende brukerreiser som kan påvirkes av endringen skal verifiseres som fortsatt fungerende før `TEST OK` og merge. Grønn build alene er ikke tilstrekkelig.** Der det er praktisk mulig skal en feil som faktisk har nådd demo/produksjon få et permanent regresjonsvern i samme runde.
@@ -16,6 +27,7 @@ Ingen merge uten:
 - verifisering av både ny funksjon og berørte eksisterende brukerreiser
 - brukerens eksplisitte `TEST OK`
 - produksjonsverifisering etter merge
+- ved miljømål **BEGGE**: verifisert synk av gjeldende `main` til demo-sandbox og grønn sandbox-preflight
 
 ## 2. Urelatert funksjonalitet er fredet
 
@@ -58,6 +70,11 @@ Strukturelle kildekodesjekker er nyttige, men kritiske brukerreiser skal så lan
 
 Før demo, kurs eller annen viktig produksjonsbruk prioriteres stabilitet fremfor nye funksjoner. Etter siste godkjente produksjonstest innføres midlertidig freeze: ingen nye funksjonsendringer før demoen er ferdig, med mindre det gjelder en kritisk feil.
 
+Under demo-freeze gjelder i tillegg:
+- nye Production-endringer skal ikke introduseres uten at konsekvensen for demo-sandboxen er vurdert
+- hvis Production må hotfikses før demo, skal sandboxen synkroniseres og preflightes på nytt før den brukes
+- sandbox-preflight skal kjøres rett før viktig demo, ikke bare da Golden Demo ble bygget
+
 ## 7. Handoff til ny chat/fase
 
 Ny chat skal starte med å lese:
@@ -66,5 +83,6 @@ Ny chat skal starte med å lese:
 3. relevante critical checks
 4. faktisk `main`
 5. siste branch/PR-historikk for funksjonen som skal endres
+6. ved demoarbeid: siste sandbox-baseline og resultat fra sandbox-preflight
 
 Gamle muntlige løfter eller chatminne er ikke nok. Repoets guardrails og tester er den varige kontrakten.
