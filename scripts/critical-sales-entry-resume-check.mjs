@@ -83,7 +83,7 @@ requireCheck(
 );
 recovery.markSalesWorkspaceResumeSnapshot(
   { storageKey, navigation: editNavigation },
-  { localStorage: local, now: now + 500 }
+  { localStorage: local, now: Date.now() }
 );
 const recoveredEdit = storage.loadSalesEntryDraft("edit-request");
 requireCheck(
