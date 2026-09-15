@@ -271,6 +271,7 @@ export default function SalesModule(props) {
       window.removeEventListener("beforeunload", blockPreHydrationUnloadSave);
       window.removeEventListener("pagehide", blockPreHydrationUnloadSave);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      // Bevisst navigasjon bort fra Sales skal aldri gjenopplive en gammel sak.
       clearBackgroundResumeMarkers();
     };
   }, []);
