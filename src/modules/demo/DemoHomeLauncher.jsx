@@ -1,11 +1,12 @@
 // Expo ProffDok – FASE 42L
-// Systemadmin-only hurtigvalg på Startsiden. Demosuiten opprettes/resettes i Systemadmin,
-// mens visningen åpnes herfra gjennom den eksisterende native Sales-/prosjektflyten.
+// Kenneth-only hurtigvalg på Startsiden. Demosuiten opprettes/resettes i Systemadmin,
+// mens visningen åpnes herfra gjennom eksisterende Sales-/prosjektflater.
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DEMO_REQUEST_REFS } from "./demoCaseSafety.js";
 import { getDemoSuiteStatus } from "./demoSuiteClient.js";
 import { openDemoProject, openDemoSalesStage } from "./demoStageNavigation.js";
+import DemoCustomerOfferPreview from "./DemoCustomerOfferPreview.jsx";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
 
 const STAGES = [
@@ -16,10 +17,19 @@ const STAGES = [
   { key: "project", label: "Prosjekt", ref: DEMO_REQUEST_REFS.project },
 ];
 
+const PROJECT_SHOWCASE = [
+  { key: "progress", label: "Fremdrift", tab: "fremdrift" },
+  { key: "report", label: "Rapport", tab: "rapport" },
+  { key: "warranty", label: "Garanti", tab: "garanti" },
+  { key: "chat", label: "Chat", tab: "chat" },
+  { key: "access", label: "Kundelink", tab: "tilgang" },
+];
+
 export function DemoHomeLauncher() {
   const [status, setStatus] = useState(null);
   const [hidden, setHidden] = useState(false);
   const [error, setError] = useState("");
+  const [showCustomerOffer, setShowCustomerOffer] = useState(false);
   const refreshInFlightRef = useRef(false);
   const statusRef = useRef(null);
 
@@ -42,13 +52,12 @@ export function DemoHomeLauncher() {
       setStatus(nextStatus);
       setHidden(false);
     } catch (loadError) {
-      // Vanlige brukere skal aldri se Demo/Test på Startsiden. Ved nettfeil skjules
-      // hurtigvalget også fremfor å vise en ustabil eller feil firmatilstand.
       statusRef.current = null;
       setStatus(null);
       setHidden(true);
-      if (String(loadError?.message || "").toLowerCase().includes("systemadmin")) return;
-      setError(loadError?.message || "Demo/Test kunne ikke lastes.");
+      const message = String(loadError?.message || "");
+      if (/demoansvarlig|systemadmin/i.test(message)) return;
+      setError(message || "Demo/Test kunne ikke lastes.");
     } finally {
       refreshInFlightRef.current = false;
     }
@@ -62,6 +71,7 @@ export function DemoHomeLauncher() {
       const nextCompanyId = String(event?.detail?.active_company_id || "").trim();
       const currentCompanyId = String(statusRef.current?.companyId || "").trim();
       if (nextCompanyId && nextCompanyId === currentCompanyId) return;
+      setShowCustomerOffer(false);
       void refresh({ companySwitch: true });
     };
 
@@ -76,11 +86,15 @@ export function DemoHomeLauncher() {
 
   if (hidden || !status?.ready) return null;
 
+  const projectStage = stages.find((stage) => stage.key === "project");
+  const projectId = projectStage?.current?.projectId || "";
+
   const openStage = (stage) => {
     setError("");
     if (stage.key === "project") {
-      const projectId = stage.current?.projectId;
-      if (!openDemoProject(projectId)) setError("Demo-prosjektet kunne ikke åpnes.");
+      if (!openDemoProject(stage.current?.projectId, "prosjekt")) {
+        setError("Demo-prosjektet kunne ikke åpnes.");
+      }
       return;
     }
 
@@ -89,45 +103,86 @@ export function DemoHomeLauncher() {
     }
   };
 
+  const openProjectShowcase = (tab) => {
+    setError("");
+    if (!openDemoProject(projectId, tab)) {
+      setError("Demo-prosjektet kunne ikke åpnes på valgt visning.");
+    }
+  };
+
   return (
-    <div
-      className="item"
-      data-demo-home-launcher
-      style={{
-        marginTop: 12,
-        marginBottom: 12,
-        border: "1px solid #9bdfe4",
-        background: "#f2fcfd",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-        <div>
-          <b style={{ fontSize: 18 }}>Demo/Test</b>
-          <p className="note" style={{ margin: "4px 0 0" }}>
-            {status.companyName}: åpne et ferdig klargjort steg direkte.
-          </p>
+    <>
+      <div
+        className="item"
+        data-demo-home-launcher
+        style={{
+          marginTop: 12,
+          marginBottom: 12,
+          border: "1px solid #9bdfe4",
+          background: "#f2fcfd",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <b style={{ fontSize: 18 }}>Demo/Test</b>
+            <p className="note" style={{ margin: "4px 0 0" }}>
+              {status.companyName}: gjenbrukbar presentasjonsløype med ferdige stoppunkter.
+            </p>
+            {status.sourceTemplateName ? (
+              <small className="note" style={{ display: "block", marginTop: 3 }}>
+                Tilbudsgrunnlag: {status.sourceTemplateName}
+              </small>
+            ) : null}
+          </div>
+          <span style={{ fontWeight: 800, color: "#087f88" }}>Kun Kenneth</span>
         </div>
-        <span style={{ fontWeight: 800, color: "#087f88" }}>Kun systemadmin</span>
+
+        <div style={{ marginTop: 12 }}>
+          <b style={{ display: "block", marginBottom: 7 }}>Kundereise</b>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {stages.map((stage) => (
+              <button
+                key={stage.ref}
+                type="button"
+                className={stage.key === "request" ? "" : "secondary"}
+                onClick={() => openStage(stage)}
+                disabled={!stage.current || (stage.key === "project" && !stage.current?.projectId)}
+              >
+                {stage.label}
+              </button>
+            ))}
+            <button type="button" className="secondary" onClick={() => setShowCustomerOffer(true)}>
+              Kundevisning tilbud
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 12 }}>
+          <b style={{ display: "block", marginBottom: 7 }}>Prosjekt og dokumentasjon</b>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {PROJECT_SHOWCASE.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className="secondary"
+                onClick={() => openProjectShowcase(item.tab)}
+                disabled={!projectId}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {error ? (
+          <p style={{ color: "#991b1b", fontWeight: 800, margin: "10px 0 0" }}>{error}</p>
+        ) : null}
       </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
-        {stages.map((stage) => (
-          <button
-            key={stage.ref}
-            type="button"
-            className={stage.key === "request" ? "" : "secondary"}
-            onClick={() => openStage(stage)}
-            disabled={!stage.current || (stage.key === "project" && !stage.current?.projectId)}
-          >
-            {stage.label}
-          </button>
-        ))}
-      </div>
-
-      {error ? (
-        <p style={{ color: "#991b1b", fontWeight: 800, margin: "10px 0 0" }}>{error}</p>
+      {showCustomerOffer ? (
+        <DemoCustomerOfferPreview onClose={() => setShowCustomerOffer(false)} />
       ) : null}
-    </div>
+    </>
   );
 }
 
