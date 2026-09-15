@@ -338,15 +338,27 @@ requireCondition(
   "Serverhydrering: standalone preview ble feilaktig gjort avhengig av Supabase-gate."
 );
 
+// FASE 42I: Samme 42F-gate beholdes, men komplett serverhydrering er nå
+// saksspesifikk. Oversikten skal aldri laste alle payloadene bare for å vise listen.
 requireText(
   wrapper,
-  "primeSalesServerCacheBeforeCore",
-  `${wrapperPath}: wrapperen primer ikke servercache før SalesModuleCore.`
+  "primeSelectedSalesRequestBeforeCore",
+  `${wrapperPath}: valgt Sales-sak primes ikke før SalesModuleCore.`
 );
 requireText(
   wrapper,
-  "mergeSalesServerRowsIntoCache",
-  `${wrapperPath}: serverdata erstatter ikke stale cache kontrollert.`
+  "primeSalesRequestDetailRow",
+  `${wrapperPath}: wrapperen henter ikke komplett valgt sak fra server.`
+);
+requireText(
+  wrapper,
+  "requestIdToPrime",
+  `${wrapperPath}: server-first-gaten skiller ikke valgt sak fra vanlig listevisning.`
+);
+requireText(
+  wrapper,
+  "if (!requestIdToPrime)",
+  `${wrapperPath}: vanlig Sales-oversikt kan fortsatt bli tvunget til full payload-hydrering.`
 );
 requireText(
   wrapper,
@@ -355,8 +367,8 @@ requireText(
 );
 requireText(
   wrapper,
-  "Henter siste lagrede salgssaker",
-  `${wrapperPath}: bruker får ingen trygg ventestatus mens serverdata hentes.`
+  "Henter valgt sak fra server",
+  `${wrapperPath}: bruker får ingen trygg ventestatus mens valgt komplett sak hentes.`
 );
 requireText(
   inspectionNote,
@@ -371,5 +383,5 @@ if (failures.length) {
 }
 
 console.log(
-  "✅ Expo ProffDok Sales server hydration check OK – ny nettleser/stale cache må laste tilbud, befaringsnotat, bilder og Badskisse fra server uten å miste lokale kladder"
+  "✅ Expo ProffDok Sales server hydration check OK – 42F server-first/recovery beholdes for valgt sak, mens 42I ikke laster alle komplette Sales-payloads i oversikten"
 );
