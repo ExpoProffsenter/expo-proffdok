@@ -4,8 +4,8 @@ import { resolve } from "path";
 
 const PROD_SUPABASE_URL = "https://dqffxflaoyarbxyiyhop.supabase.co";
 const PROD_MAIN_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImRxZmZ4bGFveWFyYnh5aXlob3AiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3NzQ3NzE1MSwiZXhwIjoyMDkzMDUzMTUxfQ.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
-const PROD_ACCESS_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImRxZmZ4bGFveWFyYnh5aXlob3AiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3NzQ3NzE1MSwiZXhwIjoyMDkzMDUzMTUxfQ.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
-const PROD_CURRENT_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
+const PROD_ACCESS_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImRxZmZ4bGFveWFyYnh5aXlob3AiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3NzQ3NzE1MSwiZXhwIjoyMDkzMDUzMTUxfQ.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
+const PROD_CURRENT_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
 const SANDBOX_SUPABASE_URL = "https://ppvircenkjizeiqdxphj.supabase.co";
 const SANDBOX_PUBLISHABLE_KEY = "sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR";
 const SANDBOX_VERCEL_HOST = "expo-proffdok-git-feature-demo-showcase-isolated-ringside.vercel.app";
@@ -33,6 +33,32 @@ function demoSandboxBuildGuard() {
 
       if (next === code) return null;
       return { code: next, map: null };
+    },
+    generateBundle(_options, bundle) {
+      const emittedJs = Object.values(bundle)
+        .filter((entry) => entry?.type === "chunk")
+        .map((entry) => entry.code || "")
+        .join("\n");
+
+      const sandboxUrlPresent = emittedJs.includes(SANDBOX_SUPABASE_URL);
+      const sandboxKeyPresent = emittedJs.includes(SANDBOX_PUBLISHABLE_KEY);
+      const productionUrlPresent = emittedJs.includes(PROD_SUPABASE_URL);
+      const productionKeyPresent = emittedJs.includes(PROD_CURRENT_ANON_KEY);
+
+      if (
+        !sandboxUrlPresent ||
+        !sandboxKeyPresent ||
+        productionUrlPresent ||
+        productionKeyPresent
+      ) {
+        throw new Error(
+          "Demo Sandbox build blocked: emitted JS does not have a clean sandbox-only Supabase binding."
+        );
+      }
+
+      console.log(
+        "✅ Demo Sandbox emitted bundle verified: sandbox Supabase binding present, Production binding absent"
+      );
     },
     transformIndexHtml(html) {
       const sandboxBootstrap = `<script>(function(){if(location.hostname===${JSON.stringify(SANDBOX_VERCEL_HOST)}){var u=new URL(location.href);if(u.searchParams.has('progressTest')){u.searchParams.delete('progressTest');history.replaceState({},document.title,u.pathname+(u.search||'')+(u.hash||''));}}})();</script>`;
