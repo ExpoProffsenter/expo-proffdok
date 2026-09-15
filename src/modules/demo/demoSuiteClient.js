@@ -2,12 +2,15 @@
 // Oppretter og tilbakestiller en liten, deterministisk demosuite i valgt arbeidsprofil.
 // Bruker eksisterende RLS/tabeller. Ingen ekte kundesak kan slettes: prosjektrydding
 // krever både eksakt DEMO42L requestRef i prosjektet og matchende demo-markør på Sales-raden.
+// Tilbudsgrunnlaget kopieres read-only fra firmamalen «Tilbud – Andreas Bad» når den finnes.
 
 import { getMyWorkProfileState } from "../access/workProfileClient.js";
+import { buildAcceptedOfferProgressActivities } from "../progress/progressPlanOfferCore.js";
 import { createDefaultSalesSupabaseClient } from "../sales/services/salesSupabase.js";
 import {
   DEMO_REQUEST_REFS,
   DEMO_SUITE_KEY,
+  assertDemoOperator,
   isDemoProjectData,
   isDemoRequest,
   isDemoRequestRef,
@@ -20,10 +23,16 @@ const DEMO_CITY = "Oslo";
 const DEMO_PHONE = "900 00 000";
 const DEMO_TITLE = "DEMO – Badrenovering";
 const DEMO_NOTE = "Kun demo/test. Ingen ekte kunde eller ordre.";
+const DEMO_TEMPLATE_NAME = "Tilbud – Andreas Bad";
+const DEMO_OPTION_IMAGE = "/auth-bathroom.jpg";
 
 function isoDateOffset(days = 0) {
   const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
   return date.toISOString().slice(0, 10);
+}
+
+function isoTimeOffset(minutes = 0) {
+  return new Date(Date.now() + minutes * 60 * 1000).toISOString();
 }
 
 function displayName(user = {}) {
@@ -35,7 +44,7 @@ function displayName(user = {}) {
   ).trim();
 }
 
-function offerLines() {
+function fallbackOfferLines() {
   return [
     {
       id: "demo-line-tildekking",
@@ -118,8 +127,141 @@ function offerLines() {
   ];
 }
 
-function offerTotal(lines = []) {
-  return lines.reduce((sum, line) => sum + Number(line?.amount || 0), 0);
+function fallbackOfferOptions() {
+  return [
+    {
+      id: "demo-option-nisje",
+      mainPostId: "flislegging",
+      mainPostTitle: "Flislegging",
+      optionType: "addition",
+      replacementLineId: "",
+      title: "Flislagt nisje i dusjsone",
+      description: "Tillegg for én innfelt nisje.",
+      internalProductNumber: "",
+      amount: "8500",
+      productUrl: "",
+      imageDataUrl: DEMO_OPTION_IMAGE,
+      imageName: "Demo – eksempel på opsjon med bilde",
+      attachmentFile: null,
+    },
+  ];
+}
+
+function cloneJson(value, fallback) {
+  try {
+    if (typeof structuredClone === "function") return structuredClone(value);
+    return JSON.parse(JSON.stringify(value));
+  } catch {
+    return fallback;
+  }
+}
+
+function parseMoney(value) {
+  const raw = String(value ?? "")
+    .trim()
+    .replace(/\s/g, "")
+    .replace(/,-$/, "")
+    .replace(/kr/gi, "")
+    .replace(/[^0-9,.-]/g, "");
+  if (!raw) return 0;
+  const normalized = raw.includes(",")
+    ? raw.replace(/\./g, "").replace(",", ".")
+    : raw;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function itemTotal(item = {}) {
+  const quantityRaw = String(item?.quantity ?? "").trim().replace(",", ".");
+  const quantity = Number(quantityRaw);
+  const multiplier = Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
+  return parseMoney(item?.amount) * multiplier;
+}
+
+function offerTotal(items = []) {
+  return (Array.isArray(items) ? items : []).reduce(
+    (sum, item) => sum + itemTotal(item),
+    0
+  );
+}
+
+function decorateDemoOptionImage(options = []) {
+  const next = cloneJson(options, []);
+  if (!next.length) return fallbackOfferOptions();
+  const preferredIndex = next.findIndex((option) =>
+    /nisje|håndkle|handkle|downlight|spot/i.test(
+      `${option?.title || ""} ${option?.description || ""}`
+    )
+  );
+  const index = preferredIndex >= 0 ? preferredIndex : 0;
+  next[index] = {
+    ...next[index],
+    imageDataUrl: next[index]?.imageDataUrl || DEMO_OPTION_IMAGE,
+    imageName: next[index]?.imageName || "Demo – opsjon med bilde",
+  };
+  return next;
+}
+
+function normalizeTemplatePayload(payload = null) {
+  const source = payload && typeof payload === "object" ? cloneJson(payload, {}) : {};
+  const lines = Array.isArray(source.lines) && source.lines.length
+    ? source.lines
+    : fallbackOfferLines();
+  const options = decorateDemoOptionImage(
+    Array.isArray(source.options) ? source.options : fallbackOfferOptions()
+  );
+  return {
+    sourceTemplateName: source.demoSourceTemplateName || DEMO_TEMPLATE_NAME,
+    lines,
+    options,
+    intro:
+      source.intro ||
+      source.offerIntro ||
+      "Dette er et demonstrasjonstilbud som viser hvordan et ordinært våtromstilbud bygges opp i Expo ProffDok.",
+    reservations:
+      source.reservations ||
+      source.offerReservations ||
+      "Forbehold om skjulte forhold som ikke kan avdekkes før riving.",
+    included:
+      source.included ||
+      source.offerIncluded ||
+      "Arbeider og materiell som fremgår av tilbudslinjene.",
+    excluded:
+      source.excluded ||
+      source.offerExcluded ||
+      "Møbler og sanitærutstyr utover det som er særskilt beskrevet.",
+    customerSupplied:
+      source.customerSupplied || source.offerCustomerSupplied || "Ingen kundeleveranser i denne demosaken.",
+    terms:
+      source.terms ||
+      source.offerTerms ||
+      "Arbeid utføres etter gjeldende krav og produsentanvisninger.",
+    paymentTerms: source.paymentTerms || source.offerPaymentTerms || "10 dager netto",
+    validityDays: String(source.validityDays || source.offerValidityDays || "30"),
+  };
+}
+
+function selectDemoAcceptedOptions(options = []) {
+  const preferred = ["nisje", "håndkle", "handkle", "downlight", "spot"];
+  const selected = [];
+  for (const keyword of preferred) {
+    const match = options.find(
+      (option) =>
+        !selected.includes(option) &&
+        option?.optionType !== "alternative" &&
+        `${option?.title || ""} ${option?.description || ""}`.toLowerCase().includes(keyword)
+    );
+    if (match) selected.push(match);
+    if (selected.length >= 3) break;
+  }
+  if (selected.length < 2) {
+    for (const option of options) {
+      if (selected.includes(option) || option?.optionType === "alternative") continue;
+      selected.push(option);
+      if (selected.length >= 3) break;
+    }
+  }
+  return cloneJson(selected, []);
 }
 
 function demoBase({ requestRef, stage, userName, userEmail }) {
@@ -143,46 +285,31 @@ function demoBase({ requestRef, stage, userName, userEmail }) {
   };
 }
 
-function offerPayload(base, lines) {
+function offerPayload(base, offerSource) {
   return {
     ...base,
+    demoSourceTemplateName: offerSource.sourceTemplateName,
     offerTitle: "DEMO – Komplett badrenovering",
-    offerIntro:
-      "Dette er et demonstrasjonstilbud som viser hvordan et ordinært våtromstilbud bygges opp i Expo ProffDok.",
-    offerLines: lines,
-    offerOptions: [
-      {
-        id: "demo-option-nisje",
-        mainPostId: "flislegging",
-        mainPostTitle: "Flislegging",
-        optionType: "addition",
-        replacementLineId: "",
-        title: "Flislagt nisje i dusjsone",
-        description: "Tillegg for én innfelt nisje.",
-        internalProductNumber: "",
-        amount: "8500",
-        productUrl: "",
-        imageDataUrl: "",
-        imageName: "",
-        attachmentFile: null,
-      },
-    ],
-    offerReservations: "Forbehold om skjulte forhold som ikke kan avdekkes før riving.",
-    offerIncluded: "Arbeider og materiell som fremgår av tilbudslinjene.",
-    offerExcluded: "Møbler og sanitærutstyr utover det som er særskilt beskrevet.",
-    offerCustomerSupplied: "Ingen kundeleveranser i denne demosaken.",
-    offerTerms: "Arbeid utføres etter gjeldende krav og produsentanvisninger.",
-    offerPaymentTerms: "10 dager netto",
-    offerValidityDays: "30",
-    offerTotal: offerTotal(lines),
+    offerIntro: offerSource.intro,
+    offerLines: cloneJson(offerSource.lines, []),
+    offerOptions: cloneJson(offerSource.options, []),
+    offerReservations: offerSource.reservations,
+    offerIncluded: offerSource.included,
+    offerExcluded: offerSource.excluded,
+    offerCustomerSupplied: offerSource.customerSupplied,
+    offerTerms: offerSource.terms,
+    offerPaymentTerms: offerSource.paymentTerms,
+    offerValidityDays: offerSource.validityDays,
+    offerTotal: offerTotal(offerSource.lines),
     offerDraftSavedAt: new Date().toISOString(),
   };
 }
 
-function buildDemoPayloads({ userName, userEmail }) {
-  const lines = offerLines();
+function buildDemoPayloads({ userName, userEmail, offerSource }) {
   const tomorrow = isoDateOffset(1);
   const acceptedAt = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+  const acceptedOptions = selectDemoAcceptedOptions(offerSource.options);
+  const acceptedTotal = offerTotal(offerSource.lines) + offerTotal(acceptedOptions);
 
   const request = {
     ...demoBase({
@@ -208,10 +335,10 @@ function buildDemoPayloads({ userName, userEmail }) {
     surveyTime: "10:00",
     surveyResponsible: userName,
     surveyNote: "Demo: Kunde ønsker gjennomgang av planløsning, sluk og materialvalg.",
-    inspectionCustomerWishes: "Nytt, komplett bad med stor dusjsone og vegghengt WC.",
+    inspectionCustomerWishes: "Nytt, komplett bad med stor dusjsone, vegghengt WC og innfelt nisje.",
     inspectionExistingConditions: "Eksisterende bad fra 1990-tallet. Overflater og tekniske føringer skal fornyes.",
     inspectionMeasurements: "Ca. 5,8 m² gulvareal. Takhøyde ca. 2,4 m.",
-    inspectionObservations: "Tilkomst er god. Endelig kontroll av underlag gjøres etter riving.",
+    inspectionObservations: "Tilkomst er god. Badskisse kan tegnes live i demoen. Endelig kontroll av underlag gjøres etter riving.",
     inspectionPhotos: [],
     status: "Befaring",
     statusClass: "sales-status-survey",
@@ -227,15 +354,15 @@ function buildDemoPayloads({ userName, userEmail }) {
         userName,
         userEmail,
       }),
-      lines
+      offerSource
     ),
     surveyDate: tomorrow,
     surveyTime: "10:00",
     surveyResponsible: userName,
-    inspectionCustomerWishes: "Nytt, komplett bad med stor dusjsone og vegghengt WC.",
+    inspectionCustomerWishes: survey.inspectionCustomerWishes,
     inspectionExistingConditions: "Eksisterende bad skal totalrenoveres.",
-    inspectionMeasurements: "Ca. 5,8 m² gulvareal.",
-    inspectionObservations: "Tilbudet er klargjort for demo.",
+    inspectionMeasurements: survey.inspectionMeasurements,
+    inspectionObservations: `Tilbudet er klargjort for demo fra firmamalen «${offerSource.sourceTemplateName}».`,
     inspectionPhotos: [],
     status: "Tilbud",
     statusClass: "sales-status-quote",
@@ -243,7 +370,6 @@ function buildDemoPayloads({ userName, userEmail }) {
     iconName: "send",
   };
 
-  const acceptedLines = offerLines();
   const accepted = {
     ...offerPayload(
       demoBase({
@@ -252,33 +378,42 @@ function buildDemoPayloads({ userName, userEmail }) {
         userName,
         userEmail,
       }),
-      acceptedLines
+      offerSource
     ),
     surveyDate: tomorrow,
     surveyTime: "10:00",
     surveyResponsible: userName,
-    inspectionCustomerWishes: "Nytt, komplett bad med stor dusjsone og vegghengt WC.",
+    inspectionCustomerWishes: survey.inspectionCustomerWishes,
     inspectionExistingConditions: "Eksisterende bad skal totalrenoveres.",
-    inspectionMeasurements: "Ca. 5,8 m² gulvareal.",
+    inspectionMeasurements: survey.inspectionMeasurements,
     inspectionObservations: "Demosaken er klargjort for prosjektaktivering.",
     inspectionPhotos: [],
     acceptedBy: DEMO_CUSTOMER,
     acceptedAt,
     acceptedOfferVersionId: "",
     acceptedOfferVersionNumber: 1,
-    acceptedOfferLines: acceptedLines,
-    acceptedOptionIds: [],
-    acceptedOptions: [],
-    acceptedTotal: offerTotal(acceptedLines),
-    acceptedPayload: { demo: true, selected_options: [] },
+    acceptedOfferLines: cloneJson(offerSource.lines, []),
+    acceptedOptionIds: acceptedOptions.map((option) => option?.id).filter(Boolean),
+    acceptedOptions,
+    acceptedTotal,
+    acceptedPayload: {
+      demo: true,
+      selected_options: cloneJson(acceptedOptions, []),
+      version_snapshot: {
+        demo: true,
+        version_number: 1,
+        lines: cloneJson(offerSource.lines, []),
+        options: cloneJson(offerSource.options, []),
+      },
+    },
     acceptedOfferTitle: "DEMO – Komplett badrenovering",
-    acceptedOfferIntro: "Demonstrasjon av akseptert våtromstilbud.",
-    acceptedOfferReservations: "Kun demo/test.",
-    acceptedOfferIncluded: "Arbeider og materiell som fremgår av tilbudslinjene.",
-    acceptedOfferExcluded: "Kun demo/test.",
-    acceptedOfferCustomerSupplied: "Ingen.",
-    acceptedOfferTerms: "Kun demo/test.",
-    acceptedOfferPaymentTerms: "10 dager netto",
+    acceptedOfferIntro: offerSource.intro,
+    acceptedOfferReservations: offerSource.reservations,
+    acceptedOfferIncluded: offerSource.included,
+    acceptedOfferExcluded: offerSource.excluded,
+    acceptedOfferCustomerSupplied: offerSource.customerSupplied,
+    acceptedOfferTerms: offerSource.terms,
+    acceptedOfferPaymentTerms: offerSource.paymentTerms,
     status: "Akseptert",
     statusClass: "sales-status-accepted",
     nextStep: "Aktiver som prosjekt",
@@ -292,12 +427,60 @@ function buildDemoPayloads({ userName, userEmail }) {
     projectActivatedAt: "",
   };
 
-  return { request, survey, offer, accepted };
+  return { request, survey, offer, accepted, acceptedOptions };
 }
 
-function buildProjectData({ companyProfile, userId, userEmail, userName, projectId }) {
+function buildDemoProgressPlan(offerSource, acceptedOptions) {
+  const baseActivities = buildAcceptedOfferProgressActivities({
+    lines: offerSource.lines,
+    selectedOptions: acceptedOptions,
+    idFactory: (() => {
+      let index = 0;
+      return () => `demo-progress-${String(++index).padStart(2, "0")}`;
+    })(),
+  });
+  const start = new Date();
+  start.setHours(12, 0, 0, 0);
+  const activities = baseActivities.map((activity, index) => {
+    const date = new Date(start);
+    date.setDate(date.getDate() + index * 2);
+    const dateValue = date.toISOString().slice(0, 10);
+    return {
+      ...activity,
+      status: index === 0 ? "Ferdig" : index === 1 ? "Pågår" : "Ikke startet",
+      resource: index === 1 ? "Demo fagansvarlig" : "",
+      sessions:
+        index < 4
+          ? [
+              {
+                id: `demo-session-${index + 1}`,
+                date: dateValue,
+                startTime: "08:00",
+                endTime: "16:00",
+                note:
+                  index === 0
+                    ? "Demo: arbeidsøkt hentet fra tilbudsgrunnlaget."
+                    : "Demo: tidspunkt kan flyttes eller suppleres.",
+              },
+            ]
+          : [],
+    };
+  });
+  return {
+    version: 1,
+    activities,
+    source: {
+      type: "accepted-offer-testcopy",
+      demo: true,
+      templateName: offerSource.sourceTemplateName,
+      importedAt: new Date().toISOString(),
+    },
+  };
+}
+
+function buildProjectData({ companyProfile, userId, userEmail, userName, offerSource, acceptedOptions }) {
   const activatedAt = new Date().toISOString();
-  const lines = offerLines();
+  const acceptedTotal = offerTotal(offerSource.lines) + offerTotal(acceptedOptions);
   return {
     company: {
       companyName: companyProfile?.companyName || "",
@@ -319,21 +502,22 @@ function buildProjectData({ companyProfile, userId, userEmail, userName, project
       customer: DEMO_CUSTOMER,
       customerEmail: userEmail || "",
       customerPhone: DEMO_PHONE,
-      date: isoDateOffset(0),
-      notes: DEMO_NOTE,
+      date: isoDateOffset(-14),
+      notes: `${DEMO_NOTE} Rapport, garanti, fremdrift og chat inneholder kun demonstrasjonsdata.`,
       projectDescription:
-        "Demo-prosjekt opprettet for visning av Avtalegrunnlag, Prosjektering, Fremdrift og videre dokumentasjon.",
+        "Komplett demonstrasjonsprosjekt for rehabilitering av bad. Prosjektet viser avtalegrunnlag, prosjektering, fremdrift, dokumentasjon, rapport, garanti og kundedialog.",
       projectInfoIncludeInReport: true,
-      checklistPhotosNote: false,
+      checklistPhotosNote: true,
       reportHeroPhotoId: "",
       isTemplate: false,
-      fall: "",
-      fallDusj: "",
-      fallUtenfor: "",
-      sluk: "",
-      terskel: "",
-      membran: "",
-      prosjekteringKommentar: "Demo: Prosjekteringen kan vises og redigeres som i et ordinært prosjekt.",
+      fall: "Fall mot sluk iht. prosjektert løsning",
+      fallDusj: "1:50 i dusjsone",
+      fallUtenfor: "1:100 utenfor dusjsone",
+      sluk: "Gulvsluk med dokumentert mansjett/tetting",
+      terskel: "Terskel og høydeforskjell kontrollert mot ferdig gulv",
+      membran: "Sopro AEB 815 – SINTEF TG 20918",
+      prosjekteringKommentar:
+        "Demo: løsning er prosjektert med vegghengt WC, stor dusjsone, innfelt nisje og dokumentert Sopro våtromssystem.",
       prosjekteringPunkter: [],
       customChecklistGroups: [],
       projectDeviations: [],
@@ -345,6 +529,13 @@ function buildProjectData({ companyProfile, userId, userEmail, userName, project
       demoCase: true,
       demoSuiteKey: DEMO_SUITE_KEY,
       demoStage: "project",
+      demoOwnerEmail: userEmail || "",
+      demoSourceTemplateName: offerSource.sourceTemplateName,
+      demoAcceptedOfferSnapshot: {
+        lines: cloneJson(offerSource.lines, []),
+        selectedOptions: cloneJson(acceptedOptions, []),
+        sourceTemplateName: offerSource.sourceTemplateName,
+      },
       salesOrigin: {
         requestRef: DEMO_REQUEST_REFS.project,
         publicToken: "",
@@ -352,14 +543,17 @@ function buildProjectData({ companyProfile, userId, userEmail, userName, project
         acceptedOfferVersionNumber: 1,
         acceptedBy: DEMO_CUSTOMER,
         acceptedAt: activatedAt,
-        acceptedTotal: offerTotal(lines),
+        acceptedTotal,
         activatedAt,
       },
     },
     checked: {},
     productDocs: {},
     manualProducts: {},
-    other: {},
+    other: {
+      demoSummary:
+        "Demonstrasjon av komplett våtromsleveranse fra forespørsel og befaring til tilbud, fremdrift, rapport og garanti.",
+    },
     surf: {},
     bathroomEquipment: {},
     photos: [],
@@ -375,34 +569,65 @@ function buildProjectData({ companyProfile, userId, userEmail, userName, project
       legacyFradrag: "",
       tillegg: "",
       fradrag: "",
-      kommentar: "",
+      kommentar: `Demo: avtalegrunnlaget er kopiert read-only fra firmamalen «${offerSource.sourceTemplateName}».`,
     },
     overtagelse: {
-      enabled: false,
-      dato: isoDateOffset(0),
-      kommentar: "",
-      signUtførende: "",
-      signKunde: "",
+      enabled: true,
+      dato: isoDateOffset(-1),
+      kommentar: "DEMO – overtagelsen er signert kun for å vise garanti- og rapportvisning.",
+      signUtførende: userName,
+      signKunde: DEMO_CUSTOMER,
       signUtførendeImage: "",
       signKundeImage: "",
     },
-    warranty: { enabled: false, issued: false, status: "draft" },
-    projectLog: {
-      enabled: false,
-      draft: "",
-      messages: [],
-      lastReadByAdmin: "",
-      lastReadByCustomer: "",
+    warranty: {
+      enabled: true,
+      system: "sopro-aeb-815",
+      sintefApproval: "SINTEF TG 20918",
+      durationYears: 10,
+      issued: true,
+      issuedAt: isoTimeOffset(-60),
+      status: "issued",
+      guaranteeNumber: "DEMO-GARANTI-2026-001",
+      termsAccepted: true,
+      demoCase: true,
+      demoSuiteKey: DEMO_SUITE_KEY,
     },
-    internalNotes: DEMO_NOTE,
+    projectLog: {
+      enabled: true,
+      draft: "",
+      messages: [
+        {
+          id: "demo-chat-1",
+          by: DEMO_CUSTOMER,
+          role: "kunde",
+          created: isoTimeOffset(-180),
+          text: "Hei! Kan vi beholde den innfelte nisjen i dusjsonen som vist på befaringen?",
+        },
+        {
+          id: "demo-chat-2",
+          by: userName,
+          role: "admin",
+          created: isoTimeOffset(-150),
+          text: "Ja. Nisjen ligger som valgt opsjon i demonstrasjonstilbudet og er tatt med i videre planlegging.",
+        },
+        {
+          id: "demo-chat-3",
+          by: DEMO_CUSTOMER,
+          role: "kunde",
+          created: isoTimeOffset(-120),
+          text: "Flott. Gi gjerne beskjed her når flisleggingen starter.",
+        },
+      ],
+      lastReadByAdmin: isoTimeOffset(-90),
+      lastReadByCustomer: isoTimeOffset(-130),
+    },
+    internalNotes: `${DEMO_NOTE}\nKilde for tilbud/fremdrift: ${offerSource.sourceTemplateName}.`,
   };
 }
 
 async function loadContext() {
   const workProfile = await getMyWorkProfileState();
-  if (!workProfile?.is_systemadmin) {
-    throw new Error("Demo/Test kan bare administreres av systemadministrator.");
-  }
   const companyId = String(workProfile?.active_company_id || "").trim();
   if (!companyId) throw new Error("Velg firma under Representerer før Demo/Test brukes.");
 
@@ -413,6 +638,7 @@ async function loadContext() {
   if (sessionError) throw sessionError;
   const user = sessionData?.session?.user || null;
   if (!user?.id) throw new Error("Innloggingen er ikke klar ennå.");
+  assertDemoOperator(user, workProfile);
 
   return {
     client,
@@ -427,6 +653,29 @@ async function loadContext() {
     userEmail: String(user.email || "").trim(),
     userName: displayName(user),
   };
+}
+
+async function loadDemoOfferSource(context) {
+  const { data, error } = await context.client
+    .from("sales_offer_templates")
+    .select("id,name,payload,updated_at")
+    .eq("company_id", context.companyId)
+    .eq("name", DEMO_TEMPLATE_NAME)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.warn("Demo/Test: kunne ikke lese Andreas-malen, bruker innebygget fallback.", error);
+    return normalizeTemplatePayload({ demoSourceTemplateName: "Demo fallback" });
+  }
+  if (!data?.payload) {
+    return normalizeTemplatePayload({ demoSourceTemplateName: "Demo fallback" });
+  }
+  return normalizeTemplatePayload({
+    ...data.payload,
+    demoSourceTemplateName: data.name || DEMO_TEMPLATE_NAME,
+  });
 }
 
 async function fetchDemoSalesRows(client, companyId) {
@@ -459,9 +708,6 @@ async function removeOwnedDemoProjects(client, companyId, demoRows) {
   const demoProjects = (Array.isArray(projects) ? projects : []).filter((row) => {
     const requestRef = String(row?.data?.project?.salesOrigin?.requestRef || "").trim();
     if (!verifiedRequestRefs.has(requestRef)) return false;
-    // Panelopprettet prosjekt har full markør. Prosjekt som er opprettet fra den
-    // ekte Akseptert-demosaken kan mangle prosjektmarkøren, men slettes bare når
-    // både company scope og den serverlagrede Sales-raden er verifisert som demo.
     return isDemoProjectData(row?.data || {}) || requestRef === DEMO_REQUEST_REFS.accepted;
   });
 
@@ -477,14 +723,31 @@ async function removeOwnedDemoProjects(client, companyId, demoRows) {
   return demoProjects.map((row) => row.id);
 }
 
-async function createProjectStage(context) {
+async function seedDemoProgressPlan(context, projectId, offerSource, acceptedOptions) {
+  const plan = buildDemoProgressPlan(offerSource, acceptedOptions);
+  const { error } = await context.client
+    .from("project_progress_plans")
+    .upsert(
+      {
+        project_id: projectId,
+        customer_visible: true,
+        plan,
+      },
+      { onConflict: "project_id" }
+    );
+  if (error) throw error;
+  return plan;
+}
+
+async function createProjectStage(context, offerSource, acceptedOptions) {
   const projectId = crypto.randomUUID();
   const projectData = buildProjectData({
     companyProfile: context.companyProfile,
     userId: context.userId,
     userEmail: context.userEmail,
     userName: context.userName,
-    projectId,
+    offerSource,
+    acceptedOptions,
   });
 
   const { data, error } = await context.client
@@ -503,12 +766,14 @@ async function createProjectStage(context) {
     .select("id")
     .single();
   if (error) throw error;
-  return data?.id || projectId;
+  const savedProjectId = data?.id || projectId;
+  await seedDemoProgressPlan(context, savedProjectId, offerSource, acceptedOptions);
+  return savedProjectId;
 }
 
-function projectStagePayload({ userName, userEmail, projectId }) {
-  const lines = offerLines();
+function projectStagePayload({ userName, userEmail, projectId, offerSource, acceptedOptions }) {
   const activatedAt = new Date().toISOString();
+  const acceptedTotal = offerTotal(offerSource.lines) + offerTotal(acceptedOptions);
   return {
     ...offerPayload(
       demoBase({
@@ -517,17 +782,26 @@ function projectStagePayload({ userName, userEmail, projectId }) {
         userName,
         userEmail,
       }),
-      lines
+      offerSource
     ),
     acceptedBy: DEMO_CUSTOMER,
     acceptedAt: activatedAt,
     acceptedOfferVersionId: "",
     acceptedOfferVersionNumber: 1,
-    acceptedOfferLines: lines,
-    acceptedOptionIds: [],
-    acceptedOptions: [],
-    acceptedTotal: offerTotal(lines),
-    acceptedPayload: { demo: true, selected_options: [] },
+    acceptedOfferLines: cloneJson(offerSource.lines, []),
+    acceptedOptionIds: acceptedOptions.map((option) => option?.id).filter(Boolean),
+    acceptedOptions: cloneJson(acceptedOptions, []),
+    acceptedTotal,
+    acceptedPayload: {
+      demo: true,
+      selected_options: cloneJson(acceptedOptions, []),
+      version_snapshot: {
+        demo: true,
+        version_number: 1,
+        lines: cloneJson(offerSource.lines, []),
+        options: cloneJson(offerSource.options, []),
+      },
+    },
     projectId,
     projectName: "DEMO – Prosjekt badrenovering",
     projectNumber: "DEMO-001",
@@ -544,11 +818,13 @@ function projectStagePayload({ userName, userEmail, projectId }) {
   };
 }
 
-async function upsertDemoSalesRows(context, payloads, projectId) {
+async function upsertDemoSalesRows(context, payloads, projectId, offerSource) {
   const projectPayload = projectStagePayload({
     userName: context.userName,
     userEmail: context.userEmail,
     projectId,
+    offerSource,
+    acceptedOptions: payloads.acceptedOptions,
   });
   const allPayloads = [
     payloads.request,
@@ -582,8 +858,11 @@ export async function getDemoSuiteStatus() {
   return {
     companyId: context.companyId,
     companyName: context.companyName,
+    operatorEmail: context.userEmail,
     count: validRows.length,
     ready: validRows.length === Object.keys(DEMO_REQUEST_REFS).length,
+    sourceTemplateName:
+      validRows.find((row) => row?.payload?.demoSourceTemplateName)?.payload?.demoSourceTemplateName || "",
     stages: validRows.map((row) => ({
       requestRef: row.request_ref,
       stage: row.payload?.demoStage || "",
@@ -601,14 +880,13 @@ export async function resetDemoSuite() {
     context.companyId,
     currentRows
   );
-
+  const offerSource = await loadDemoOfferSource(context);
   const payloads = buildDemoPayloads({
     userName: context.userName,
     userEmail: context.userEmail,
+    offerSource,
   });
 
-  // Upsert de fire Sales-stegene først. Dermed finnes serververifisert demo-markør
-  // før prosjektsteget opprettes, også første gang suite bygges.
   const preliminaryRows = [
     payloads.request,
     payloads.survey,
@@ -629,8 +907,12 @@ export async function resetDemoSuite() {
     .upsert(preliminaryRows, { onConflict: "company_id,request_ref" });
   if (preliminaryError) throw preliminaryError;
 
-  const projectId = await createProjectStage(context);
-  await upsertDemoSalesRows(context, payloads, projectId);
+  const projectId = await createProjectStage(
+    context,
+    offerSource,
+    payloads.acceptedOptions
+  );
+  await upsertDemoSalesRows(context, payloads, projectId, offerSource);
 
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event("focus"));
@@ -641,6 +923,7 @@ export async function resetDemoSuite() {
     companyName: context.companyName,
     projectId,
     removedProjectIds,
+    sourceTemplateName: offerSource.sourceTemplateName,
     count: Object.keys(DEMO_REQUEST_REFS).length,
   };
 }
