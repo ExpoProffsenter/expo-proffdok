@@ -1,5 +1,5 @@
 // Expo ProffDok – FASE 42L
-// Systemadmin-panel for oppretting/reset av en resetbar demosuite som følger aktiv arbeidsprofil.
+// Kenneth-only panel for oppretting/reset av en resetbar demosuite som følger aktiv arbeidsprofil.
 // Selve demovisningen åpnes fra Demo/Test-hurtigvalget på Startsiden.
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -19,6 +19,7 @@ export function DemoTestPanel() {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const refreshInFlightRef = useRef(false);
@@ -38,9 +39,18 @@ export function DemoTestPanel() {
       const nextStatus = await getDemoSuiteStatus();
       statusRef.current = nextStatus;
       setStatus(nextStatus);
+      setUnauthorized(false);
     } catch (loadError) {
+      const loadMessage = String(loadError?.message || "");
+      if (/demoansvarlig/i.test(loadMessage)) {
+        statusRef.current = null;
+        setStatus(null);
+        setUnauthorized(true);
+        setError("");
+        return;
+      }
       if (!background || !statusRef.current) setStatus(null);
-      setError(loadError?.message || "Kunne ikke lese Demo/Test-status.");
+      setError(loadMessage || "Kunne ikke lese Demo/Test-status.");
     } finally {
       setLoading(false);
       refreshInFlightRef.current = false;
@@ -69,6 +79,8 @@ export function DemoTestPanel() {
     return STAGES.map((stage) => ({ ...stage, current: map.get(stage.ref) || null }));
   }, [status]);
 
+  if (unauthorized) return null;
+
   const reset = async () => {
     if (resetting) return;
     const companyName = status?.companyName || "firmaet du representerer";
@@ -88,9 +100,8 @@ export function DemoTestPanel() {
     try {
       const result = await resetDemoSuite();
       setMessage(
-        creating
-          ? `Demo/Test er opprettet og klar for ${result.companyName}. Åpne Startsiden for å velge demosteg.`
-          : `Demo/Test er tilbakestilt og klar for ${result.companyName}. Åpne Startsiden for å velge demosteg.`
+        `${creating ? "Demo/Test er opprettet" : "Demo/Test er tilbakestilt"} og klar for ${result.companyName}. ` +
+          `Tilbudsgrunnlag: ${result.sourceTemplateName}. Åpne Startsiden for visning.`
       );
       await refresh({ background: true });
     } catch (resetError) {
@@ -107,8 +118,8 @@ export function DemoTestPanel() {
     <div className="item adminAccordionItem" style={{ marginTop: 16 }} data-demo-test-panel>
       <h3 style={{ marginTop: 0 }}>Demo/Test</h3>
       <p className="note" style={{ marginBottom: 10 }}>
-        Opprett eller tilbakestill demosuiten her. Når den er klar, åpner du de fem demostegene
-        direkte fra Demo/Test-hurtigvalget på Startsiden.
+        Opprett eller tilbakestill demosuiten her. Demo/Test er kun tilgjengelig for Kenneth.
+        Når den er klar, åpnes selve visningen fra Startsiden.
       </p>
 
       <div
@@ -123,7 +134,7 @@ export function DemoTestPanel() {
         <b>{loading && !status ? "Leser valgt firma …" : status?.companyName || "Firma ikke valgt"}</b>
         <div style={{ fontSize: 13, color: "#64748b", marginTop: 3 }}>
           {status?.ready
-            ? "Demosuiten er klar. Bruk Startsiden til selve visningen, og kom tilbake hit når den skal tilbakestilles."
+            ? `Demosuiten er klar${status.sourceTemplateName ? ` · ${status.sourceTemplateName}` : ""}. Bruk Startsiden til selve visningen.`
             : "Opprett demosakene én gang før visningen."}
         </div>
       </div>
