@@ -240,6 +240,7 @@ export default function SalesModule(props) {
 
   useEffect(() => {
     const rehydrateSalesModule = () => {
+      protectInspectionDraftNavigation(props);
       beginOfferDraftHydrationCycle();
       // En recovery-remount skal aldri få arve en gammel «ready»-tilstand. Lukk
       // server-first-gaten i samme render som instanceKey endres; prime-effekten
