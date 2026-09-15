@@ -24,7 +24,10 @@ const safety = read("src/modules/demo/demoCaseSafety.js");
 const client = read("src/modules/demo/demoSuiteClient.js");
 const panel = read("src/modules/demo/DemoTestPanel.jsx");
 const launcher = read("src/modules/demo/DemoHomeLauncher.jsx");
+const openEvent = read("src/modules/demo/demoSalesOpenEvent.js");
 const navigation = read("src/modules/demo/demoStageNavigation.js");
+const homeFollowUp = read("src/modules/sales/components/SalesHomeFollowUp.jsx");
+const main = read("src/main.jsx");
 const mount = read("src/modules/storeCatalog/systemAdminStoreCatalogUx.jsx");
 const publishing = read("src/modules/sales/services/salesPublishing.js");
 const acceptancePdf = read("src/modules/sales/services/salesAcceptancePdf.js");
@@ -69,17 +72,26 @@ assertNotContains(panel, "const onWorkProfile = () => refresh();", "42L: direkte
 
 assertContains(launcher, "Kun systemadmin", "42L: Startside-hurtigvalget må være tydelig systemadmin-only.");
 assertContains(launcher, "if (hidden || !status?.ready) return null", "42L: Demo/Test skal ikke vises på Startsiden før en gyldig systemadmin-suite er klar.");
-assertContains(launcher, "openDemoSalesStage", "42L: Startside-hurtigvalget må bruke isolert native Sales-navigasjon.");
+assertContains(launcher, "openDemoSalesStage", "42L: Startside-hurtigvalget må bruke isolert Sales-åpning.");
 assertContains(launcher, "openDemoProject", "42L: Startside-hurtigvalget må kunne åpne demo-prosjektet.");
 assertContains(launcher, "nextCompanyId === currentCompanyId", "42L: Startside-hurtigvalget må følge Representerer uten refresh-loop.");
 
-assertContains(navigation, 'aria-label="Arbeidsstatus"', "42L: demosteg må velge Sales-arbeidsstatus eksplisitt.");
-assertContains(navigation, "findAllWorkTab", "42L: direkte demosteg må bruke eksplisitt Alle-fane i arbeidsstatus.");
-assertContains(navigation, 'startsWith("Alle")', "42L: Alle-fanen må tåle synlig saksteller i knappeteksten.");
-assertContains(navigation, 'button.sales-request-card', "42L: direkte demosteg skal bruke eksisterende Sales-kort, ikke parallell editor.");
-assertContains(navigation, 'button[role=\"tab\"]', "42L: direkte demosteg må bruke eksisterende Sales-faner.");
-assertContains(navigation, "nativeSalesButton.click()", "42L: Demo/Test skal åpne Sales gjennom eksisterende native inngang.");
+assertContains(openEvent, "expo-proffdok-demo-open-sales-request", "42L: isolert demo-Sales eventnavn mangler.");
+assertContains(navigation, "new CustomEvent(DEMO_OPEN_SALES_REQUEST_EVENT", "42L: demo Sales-åpning må bruke isolert event til eksisterende Startsiden-callback.");
+assertContains(navigation, "window.dispatchEvent", "42L: demo Sales-åpning må dispatches uten DOM-klikk.");
+assertContains(navigation, "return detail.handled === true", "42L: demo-knappen må vite om eksisterende Startsiden-callback håndterte åpningen.");
+assertNotContains(navigation, "setInterval", "42L: demo Sales-åpning skal ikke poll'e DOM.");
+assertNotContains(navigation, "sales-request-card", "42L: demo Sales-åpning skal ikke finne/klikke Sales-kort.");
+assertNotContains(navigation, "Arbeidsstatus", "42L: demo Sales-åpning skal ikke endre Sales-filtre.");
+assertNotContains(navigation, "nativeSalesButton", "42L: demo Sales-åpning skal ikke klikke native navigasjonsknapper.");
 assertContains(navigation, "window.location.assign", "42L: demo-prosjekt skal bruke eksisterende admin-prosjektlenke.");
+
+assertContains(homeFollowUp, "DEMO_OPEN_SALES_REQUEST_EVENT", "42L: eksisterende Startsiden Sales-komponent må eie demo-eventbroen.");
+assertContains(homeFollowUp, "window.addEventListener", "42L: Startsiden må lytte på isolert demo-open event.");
+assertContains(homeFollowUp, "detail.handled = true", "42L: bare én desktop/mobil Startsiden-lytter skal håndtere demo-open.");
+assertContains(homeFollowUp, "onOpenRequest(requestId)", "42L: demo-open må videresendes til eksisterende onOpenRequest callback.");
+assertContains(main, "onOpenRequest: openSalesRequestFromHome", "42L: Startsiden må fortsatt koble SalesHomeFollowUp til eksisterende openSalesRequestFromHome.");
+assertContains(main, "openRequestSignal: salesOpenRequestSignal", "42L: eksisterende Sales openRequestSignal-kontrakt må være intakt.");
 
 assertContains(mount, "<DemoTestPanel />", "42L: Demo/Test er ikke montert i Systemadmin.");
 assertContains(mount, "<DemoHomeLauncher />", "42L: Demo/Test-hurtigvalg er ikke montert på Startsiden.");
@@ -109,4 +121,4 @@ assertContains(
   "42L: demo-regresjonscheck må kjøres i package scripts."
 );
 
-console.log("✅ Demo/Test 42L safety / real Startside launcher / exact native stage open / reset / publishing / project cleanup / work-profile stability / Help check OK");
+console.log("✅ Demo/Test 42L safety / real Startside launcher / existing Sales openRequestSignal bridge / reset / publishing / project cleanup / work-profile stability / Help check OK");
