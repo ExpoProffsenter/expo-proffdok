@@ -1,12 +1,15 @@
 // Expo ProffDok – FASE 42L / FASE 39B.2C
-// Monterer isolerte systemadminverktøy i den eksisterende Systemadmin-flaten.
+// Monterer isolerte systemadminverktøy i eksisterende Systemadmin-flate og et
+// systemadmin-only Demo/Test-hurtigvalg på den native Startsiden.
 // Tilgang til vareregister avgjøres fortsatt server-side av canManageInternalStoreCatalog().
 
 import { createRoot } from "react-dom/client";
+import { DemoHomeLauncher } from "../demo/DemoHomeLauncher.jsx";
 import { DemoTestPanel } from "../demo/DemoTestPanel.jsx";
 import { StoreCatalogAdminOnlyPanel } from "./StoreCatalogOfferTools.jsx";
 
-const MOUNT_ID = "expo-systemadmin-store-catalog";
+const ADMIN_MOUNT_ID = "expo-systemadmin-store-catalog";
+const HOME_MOUNT_ID = "expo-systemadmin-demo-home";
 
 function normalizedText(node) {
   return String(node?.textContent || "").replace(/\s+/g, " ").trim();
@@ -20,37 +23,68 @@ function findSystemAdminSection() {
   return heading?.closest("section") || null;
 }
 
+function elementIsVisible(element) {
+  if (!(element instanceof HTMLElement)) return false;
+  const style = window.getComputedStyle(element);
+  return style.display !== "none" && style.visibility !== "hidden";
+}
+
+function findActiveHomeSection() {
+  if (typeof document === "undefined") return null;
+  const candidates = [
+    document.querySelector(".mobileProjectChooser"),
+    document.querySelector(".desktopNoProjectWelcome"),
+  ].filter(Boolean);
+  return candidates.find(elementIsVisible) || null;
+}
+
+function insertHomeMount(section, mount) {
+  const hero = section.querySelector(".mobileHomeHero, .desktopNoProjectHero");
+  if (!hero) {
+    section.prepend(mount);
+    return;
+  }
+  if (hero.nextSibling) section.insertBefore(mount, hero.nextSibling);
+  else section.appendChild(mount);
+}
+
 export function installSystemAdminStoreCatalogUx() {
   if (typeof document === "undefined") return () => {};
 
-  let root = null;
+  let adminRoot = null;
+  let homeRoot = null;
   let observer = null;
 
-  const unmount = () => {
-    root?.unmount?.();
-    root = null;
-    document.getElementById(MOUNT_ID)?.remove();
+  const unmountAdmin = () => {
+    adminRoot?.unmount?.();
+    adminRoot = null;
+    document.getElementById(ADMIN_MOUNT_ID)?.remove();
   };
 
-  const tryMount = () => {
+  const unmountHome = () => {
+    homeRoot?.unmount?.();
+    homeRoot = null;
+    document.getElementById(HOME_MOUNT_ID)?.remove();
+  };
+
+  const syncAdminMount = () => {
     const section = findSystemAdminSection();
-    const existing = document.getElementById(MOUNT_ID);
+    const existing = document.getElementById(ADMIN_MOUNT_ID);
 
     if (!section) {
-      if (existing && !document.body.contains(existing)) unmount();
+      if (existing) unmountAdmin();
       return false;
     }
-
     if (existing && section.contains(existing)) return true;
-    if (existing) unmount();
+    if (existing) unmountAdmin();
 
     const mount = document.createElement("div");
-    mount.id = MOUNT_ID;
+    mount.id = ADMIN_MOUNT_ID;
     mount.style.marginTop = "16px";
     section.appendChild(mount);
 
-    root = createRoot(mount);
-    root.render(
+    adminRoot = createRoot(mount);
+    adminRoot.render(
       <>
         <DemoTestPanel />
         <div className="item adminAccordionItem" style={{ marginTop: 16 }}>
@@ -66,12 +100,40 @@ export function installSystemAdminStoreCatalogUx() {
     return true;
   };
 
-  observer = new MutationObserver(() => tryMount());
+  const syncHomeMount = () => {
+    const section = findActiveHomeSection();
+    const existing = document.getElementById(HOME_MOUNT_ID);
+
+    if (!section) {
+      if (existing) unmountHome();
+      return false;
+    }
+    if (existing && section.contains(existing)) return true;
+    if (existing) unmountHome();
+
+    const mount = document.createElement("div");
+    mount.id = HOME_MOUNT_ID;
+    insertHomeMount(section, mount);
+
+    homeRoot = createRoot(mount);
+    homeRoot.render(<DemoHomeLauncher />);
+    return true;
+  };
+
+  const syncMounts = () => {
+    syncAdminMount();
+    syncHomeMount();
+  };
+
+  observer = new MutationObserver(syncMounts);
   observer.observe(document.documentElement, { childList: true, subtree: true });
-  tryMount();
+  window.addEventListener("resize", syncMounts);
+  syncMounts();
 
   return () => {
     observer?.disconnect();
-    unmount();
+    window.removeEventListener("resize", syncMounts);
+    unmountHome();
+    unmountAdmin();
   };
 }
