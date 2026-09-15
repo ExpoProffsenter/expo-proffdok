@@ -38,6 +38,10 @@
     installSystemAdminUnifiedUserAccessUx();
   </script>
   <script type="module">
+    import { installSystemAdminUserPolicyGuard } from '/src/modules/access/systemAdminUserPolicyGuard.js';
+    installSystemAdminUserPolicyGuard();
+  </script>
+  <script type="module">
     import { installSystemAdminWorkProfileUx } from '/src/modules/access/systemAdminWorkProfileUx.jsx';
     installSystemAdminWorkProfileUx();
   </script>
