@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 42H / FASE 42D HJELP
+// Expo ProffDok – FASE 42J / FASE 42H / FASE 42D HJELP
 // Én React-basert hjelpestruktur. Ingen DOM-innsprøyting, timere eller programmatisk åpning/lukking.
 // Brukerrettede funksjonsendringer skal oppdateres her når arbeidsflyt, begreper eller tilgang påvirkes.
 import React, * as ReactNS from "react";
@@ -23,6 +23,7 @@ const BASE_SECTIONS = [
     [
       "Velg Ny forespørsel for å registrere en ny kundesak, eller åpne Befaring/Tilbud for å fortsette en eksisterende sak.",
       "Opprett prosjekt direkte når tilbudsprosessen ikke er nødvendig, eller åpne et eksisterende prosjekt fra prosjektlisten.",
+      "Når et prosjekt er åpnet på PC, bruk hurtigvalgene Oversikt, Bilder, Sjekklister og Chat for de vanligste arbeidsområdene. Velg Meny for alt øvrig prosjektinnhold.",
       "Bruk Krever oppfølging for prosjekter med ulest kundemelding, åpne avvik eller status Klar for kunde.",
       "Bruk Tilbud som bør følges opp for sendte tilbud som trenger manuell oppfølging."
     ],
@@ -76,6 +77,8 @@ const BASE_SECTIONS = [
     ],
     [
       "Kontroller kundeopplysninger, summer, opsjoner og vedlegg før publisering.",
+      "Når du fyller inn kundeinformasjon kan du bytte til SMS, Outlook eller en annen nettleserfane for å slå opp navn, adresse eller annen informasjon. Ved retur skal Expo ProffDok gjenåpne samme skjema med de ulagrede feltene bevart.",
+      "Bevisst navigasjon i Expo ProffDok skal alltid vinne over automatisk recovery; går du selv Tilbake, Avbryt eller til en annen funksjon, skal appen ikke trekke deg tilbake senere.",
       "Ordinære Våtromstilbud følges opp manuelt; Butikktilbud kan ha egen oppfølgingsplan.",
       "Velg riktig tilbudstype før du bygger tilbudet."
     ],
@@ -243,7 +246,10 @@ const BASE_SECTIONS = [
     "prosjektliste",
     "📑 Prosjektliste",
     "Prosjektlisten gir oversikt over aktive og ferdige/låste prosjekter.",
-    ["Søk på kunde, adresse, prosjekt, telefon, e-post eller garantinummer og bruk relevante filtre."],
+    [
+      "Søk på kunde, adresse, prosjekt, telefon, e-post eller garantinummer og bruk relevante filtre.",
+      "Åpne prosjektet for å starte i Prosjektoversikt. På PC viser den kollapsede topplinjen noen få hurtigvalg, mens Meny gir tilgang til alt prosjektinnhold."
+    ],
     ["Låste prosjekter må låses opp før de redigeres."],
     ["Bruk søk fremfor scrolling når listen blir lang."]
   ),
