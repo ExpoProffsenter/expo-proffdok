@@ -104,6 +104,35 @@ function suppressEquivalentServerConflict(requestId = "") {
   return null;
 }
 
+function hasMeaningfulInspectionDraft(formValue = {}) {
+  return Boolean(
+    String(formValue?.customerWishes || "").trim() ||
+      String(formValue?.existingConditions || "").trim() ||
+      String(formValue?.measurements || "").trim() ||
+      String(formValue?.observations || "").trim() ||
+      (Array.isArray(formValue?.photos) && formValue.photos.length > 0)
+  );
+}
+
+export function loadInspectionDraft(draftKey) {
+  const draft = base.loadInspectionDraft(draftKey);
+  if (draft?.form && !hasMeaningfulInspectionDraft(draft.form)) return null;
+  return draft;
+}
+
+export function saveInspectionDraft(draftKey, formValue = {}) {
+  const existing = base.loadInspectionDraft(draftKey);
+  if (
+    existing?.form &&
+    hasMeaningfulInspectionDraft(existing.form) &&
+    !hasMeaningfulInspectionDraft(formValue)
+  ) {
+    return false;
+  }
+  base.saveInspectionDraft(draftKey, formValue);
+  return true;
+}
+
 export function normalizeSalesNavigationRecord(value = null) {
   if (!value || typeof value !== "object") return null;
   const mode = String(value.mode || "").trim();
