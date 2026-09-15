@@ -10,6 +10,7 @@ import { StoreCatalogAdminOnlyPanel } from "./StoreCatalogOfferTools.jsx";
 
 const ADMIN_MOUNT_ID = "expo-systemadmin-store-catalog";
 const HOME_MOUNT_ID = "expo-systemadmin-demo-home";
+const MOBILE_HOME_QUERY = "(max-width: 900px)";
 
 function normalizedText(node) {
   return String(node?.textContent || "").replace(/\s+/g, " ").trim();
@@ -23,19 +24,33 @@ function findSystemAdminSection() {
   return heading?.closest("section") || null;
 }
 
-function elementIsVisible(element) {
+function elementIsActuallyVisible(element) {
   if (!(element instanceof HTMLElement)) return false;
-  const style = window.getComputedStyle(element);
-  return style.display !== "none" && style.visibility !== "hidden";
+  if (!element.isConnected || element.getClientRects().length === 0) return false;
+
+  let current = element;
+  while (current && current instanceof HTMLElement) {
+    const style = window.getComputedStyle(current);
+    if (style.display === "none" || style.visibility === "hidden") return false;
+    current = current.parentElement;
+  }
+
+  const rect = element.getBoundingClientRect();
+  return rect.width > 0 && rect.height > 0;
 }
 
 function findActiveHomeSection() {
   if (typeof document === "undefined") return null;
-  const candidates = [
-    document.querySelector(".mobileProjectChooser"),
-    document.querySelector(".desktopNoProjectWelcome"),
-  ].filter(Boolean);
-  return candidates.find(elementIsVisible) || null;
+
+  const mobile = typeof window.matchMedia === "function"
+    ? window.matchMedia(MOBILE_HOME_QUERY).matches
+    : window.innerWidth <= 900;
+  const selector = mobile ? ".mobileProjectChooser" : ".desktopNoProjectWelcome";
+  const section = document.querySelector(selector);
+
+  if (!elementIsActuallyVisible(section)) return null;
+  if (section.closest(".sales-app")) return null;
+  return section;
 }
 
 function insertHomeMount(section, mount) {
