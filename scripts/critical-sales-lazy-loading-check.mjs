@@ -25,6 +25,7 @@ const listPath = "src/modules/sales/components/SalesListView.jsx";
 const wrapperPath = "src/modules/sales/SalesModule.jsx";
 const localStoragePath = "src/modules/sales/services/salesLocalStorageCore.js";
 const migrationPath = "supabase/migrations/20260915134500_fase42i_sales_list_projection.sql";
+const indexMigrationPath = "supabase/migrations/20260915135500_fase42i_sales_summary_indexes.sql";
 
 const supabase = read(supabasePath);
 const lazy = read(lazyPath);
@@ -32,6 +33,7 @@ const list = read(listPath);
 const wrapper = read(wrapperPath);
 const localStorage = read(localStoragePath);
 const migration = read(migrationPath);
+const indexMigration = read(indexMigrationPath);
 
 if (supabase) {
   requireText(
@@ -133,6 +135,26 @@ if (wrapper) {
     "primeSalesRequestDetailRow",
     `${wrapperPath}: reload/dvale bruker ikke saksspesifikk server-first-henting.`
   );
+  requireText(
+    wrapper,
+    "serverCacheError",
+    `${wrapperPath}: feil under detaljhenting kan slippe ufullstendig summary videre.`
+  );
+  requireText(
+    wrapper,
+    "Komplett sak kunne ikke hentes",
+    `${wrapperPath}: bruker får ingen kontrollert sperre når komplett sak mangler.`
+  );
+  requireText(
+    wrapper,
+    "Prøv igjen",
+    `${wrapperPath}: nettfeil kan ikke prøves på nytt uten å forlate recoveryflyten.`
+  );
+  requireText(
+    wrapper,
+    "setServerCacheReady(false)",
+    `${wrapperPath}: nettfeil kan fortsatt mounte SalesCore på ufullstendig data.`
+  );
   forbidText(
     wrapper,
     "fetchSalesRequests(",
@@ -191,6 +213,19 @@ if (migration) {
   );
 }
 
+if (indexMigration) {
+  requireText(
+    indexMigration,
+    "sales_offers_company_request_updated_idx",
+    `${indexMigrationPath}: latest-offer-oppslag mangler skaleringsindeks.`
+  );
+  requireText(
+    indexMigration,
+    "sales_offer_follow_up_company_request_status_sent_idx",
+    `${indexMigrationPath}: oppfølgingsoppslag mangler skaleringsindeks.`
+  );
+}
+
 if (failures.length) {
   console.error("❌ Expo ProffDok Sales lazy-loading check feilet:");
   failures.forEach((failure) => console.error(` - ${failure}`));
@@ -198,5 +233,5 @@ if (failures.length) {
 }
 
 console.log(
-  "✅ Expo ProffDok Sales lazy-loading check OK – oversikten bruker lett projeksjon, valgt sak hydreres komplett før redigering, summary kan ikke lagres tilbake og 42F recovery/server-first er bevart"
+  "✅ Expo ProffDok Sales lazy-loading check OK – oversikten bruker lett projeksjon, valgt sak hydreres komplett før redigering, summary kan ikke lagres tilbake, nettfeil blokkerer ufullstendig editor og 42F recovery/server-first er bevart"
 );
