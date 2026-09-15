@@ -8,9 +8,12 @@ Før implementering skal endringsscope beskrives eksplisitt: hvilke filer/funksj
 
 Etter implementering skal branch alltid sammenlignes mot `main`. Hvis diffen inneholder urelaterte filer eller funksjoner, stopp og rydd før videre test/merge.
 
+**Ny funksjonalitet eller UX-endring er aldri ferdig bare fordi den nye funksjonen virker. Alle eksisterende brukerreiser som kan påvirkes av endringen skal verifiseres som fortsatt fungerende før `TEST OK` og merge. Grønn build alene er ikke tilstrekkelig.** Der det er praktisk mulig skal en feil som faktisk har nådd demo/produksjon få et permanent regresjonsvern i samme runde.
+
 Ingen merge uten:
 - grønn critical QA
 - relevant Preview-test
+- verifisering av både ny funksjon og berørte eksisterende brukerreiser
 - brukerens eksplisitte `TEST OK`
 - produksjonsverifisering etter merge
 
@@ -33,6 +36,7 @@ Følgende er ikke-forhandlebare regresjonskrav:
 7. Ingen tom initialform får overskrive eksisterende serverdata under mount/remount/hydrering.
 8. Mobil Safari/Chrome og desktop fanebytte skal følge samme sikkerhetsprinsipp: lokal sikring først, server som varig fasit, recovery bare ved reell konflikt.
 9. **Bevisst brukerhandling vinner alltid over automatisk recovery i hele den interne appen.** Etter fanebytte/dvale skal første ekte brukerinteraksjon avslutte gammel foreground-recovery før `Tilbake`, `Lagre`, `Avbryt`, menyvalg, Startside eller annen navigasjon behandles. Senere recovery-timere må aldri kunne reversere brukerens valg.
+10. `Prissøk` → appbytte/dvale → tilbake: samme Prissøk-arbeidsflate skal gjenåpnes når den faktisk var aktiv, og valgte varer i den midlertidige arbeidslisten skal fortsatt være tilgjengelige. Bevisst navigasjon bort fra Prissøk skal rydde denne recovery-markøren.
 
 ## 4. Server-first + local safety
 
