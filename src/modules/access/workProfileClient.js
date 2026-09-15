@@ -8,14 +8,22 @@ export const WORK_PROFILE_EVENT = "expo-proffdok-work-profile";
 export const WORK_PROFILE_GLOBAL = "__expoProffDokWorkProfile";
 
 const EXPO_PROFFSENTER_COMPANY_NAME = "Expo Proffsenter";
-const EXPO_PROFFSENTER_DEFAULT_LOGO_URL =
-  "https://dqffxflaoyarbxyiyhop.supabase.co/storage/v1/object/public/project-images/sjekklister/1777576456114-pm0wocm9lamolv4joy-Expo_proffsenter.png";
+const EXPO_PROFFSENTER_DEFAULT_LOGO_URL = "/expo-logo.png";
+const EXPO_PROFFSENTER_KNOWN_WRONG_LOGO_FRAGMENT =
+  "Bademilj-_EXPO_En-del-av-Ringside.png";
 
 function normalizeCompanyProfile(profile = null) {
   if (!profile || typeof profile !== "object") return null;
   const companyName = String(profile?.companyName || profile?.company_name || "").trim();
   const explicitLogo = String(profile?.logoUrl || profile?.logo_url || "").trim();
-  if (explicitLogo || companyName !== EXPO_PROFFSENTER_COMPANY_NAME) return profile;
+  if (companyName !== EXPO_PROFFSENTER_COMPANY_NAME) return profile;
+
+  const shouldUseExpoProffsenterDefault =
+    !explicitLogo ||
+    explicitLogo === EXPO_PROFFSENTER_DEFAULT_LOGO_URL ||
+    explicitLogo.includes(EXPO_PROFFSENTER_KNOWN_WRONG_LOGO_FRAGMENT);
+
+  if (!shouldUseExpoProffsenterDefault) return profile;
   return {
     ...profile,
     logoUrl: EXPO_PROFFSENTER_DEFAULT_LOGO_URL,
