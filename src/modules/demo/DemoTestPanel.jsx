@@ -1,7 +1,9 @@
 // Expo ProffDok – FASE 42L
 // Systemadmin-panel for en resetbar demosuite som følger aktiv arbeidsprofil.
+// Panelet lytter på den etablerte arbeidsprofilen, men har en eksplisitt in-flight
+// sperre slik at egen statuslesing aldri kan starte en WORK_PROFILE_EVENT-loop.
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DEMO_REQUEST_REFS } from "./demoCaseSafety.js";
 import { getDemoSuiteStatus, resetDemoSuite } from "./demoSuiteClient.js";
 import { WORK_PROFILE_EVENT } from "../access/workProfileClient.js";
@@ -34,23 +36,51 @@ export function DemoTestPanel() {
   const [resetting, setResetting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const refreshInFlightRef = useRef(false);
+  const statusRef = useRef(null);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
+  const refresh = useCallback(async ({ background = false } = {}) => {
+    if (refreshInFlightRef.current) return;
+    refreshInFlightRef.current = true;
+
+    if (!background || !statusRef.current) setLoading(true);
     setError("");
     try {
-      setStatus(await getDemoSuiteStatus());
+      const nextStatus = await getDemoSuiteStatus();
+      statusRef.current = nextStatus;
+      setStatus(nextStatus);
     } catch (loadError) {
-      setStatus(null);
+      // Ved bakgrunnsrefresh beholder vi siste kjente, gyldige firmastatus i UI.
+      // Et kort nettverksavbrudd eller remount skal ikke flimre til «Firma ikke valgt».
+      if (!background || !statusRef.current) setStatus(null);
       setError(loadError?.message || "Kunne ikke lese Demo/Test-status.");
     } finally {
-      setLoading(false);
+      if (!background || !statusRef.current) setLoading(false);
+      else setLoading(false);
+      refreshInFlightRef.current = false;
     }
   }, []);
 
   useEffect(() => {
-    refresh();
-    const onWorkProfile = () => refresh();
+    void refresh();
+
+    const onWorkProfile = (event) => {
+      // getDemoSuiteStatus() leser den serverstyrte arbeidsprofilen. Den lesingen
+      // publiserer samme WORK_PROFILE_EVENT. In-flight-sperren gjør at panelet
+      // aldri reagerer rekursivt på sitt eget refresh-kall.
+      if (refreshInFlightRef.current) return;
+
+      const nextCompanyId = String(event?.detail?.active_company_id || "").trim();
+      const currentCompanyId = String(statusRef.current?.companyId || "").trim();
+      if (nextCompanyId && nextCompanyId === currentCompanyId) return;
+
+      void refresh({ background: true });
+    };
+
     window.addEventListener(WORK_PROFILE_EVENT, onWorkProfile);
     return () => window.removeEventListener(WORK_PROFILE_EVENT, onWorkProfile);
   }, [refresh]);
@@ -76,7 +106,7 @@ export function DemoTestPanel() {
       setMessage(
         `Demo/Test er klar for ${result.companyName}. Fem demosaker er satt tilbake til starttilstand.`
       );
-      await refresh();
+      await refresh({ background: true });
     } catch (resetError) {
       setError(resetError?.message || "Kunne ikke tilbakestille Demo/Test.");
     } finally {
@@ -121,7 +151,7 @@ export function DemoTestPanel() {
           marginBottom: 12,
         }}
       >
-        <b>{loading ? "Leser valgt firma …" : status?.companyName || "Firma ikke valgt"}</b>
+        <b>{loading && !status ? "Leser valgt firma …" : status?.companyName || "Firma ikke valgt"}</b>
         <div style={{ fontSize: 13, color: "#64748b", marginTop: 3 }}>
           {status?.ready
             ? "Demosuiten er klar. Du kan resettes tilbake til samme starttilstand så ofte du vil."
@@ -165,7 +195,7 @@ export function DemoTestPanel() {
       ) : null}
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        <button type="button" onClick={reset} disabled={loading || resetting}>
+        <button type="button" onClick={reset} disabled={loading || resetting || !status?.companyId}>
           {resetting
             ? "Tilbakestiller Demo/Test …"
             : status?.ready
