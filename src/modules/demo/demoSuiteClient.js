@@ -2,7 +2,7 @@
 // Oppretter og tilbakestiller en liten, deterministisk demosuite i valgt arbeidsprofil.
 // Bruker eksisterende RLS/tabeller. Ingen ekte kundesak kan slettes: prosjektrydding
 // krever både eksakt DEMO42L requestRef i prosjektet og matchende demo-markør på Sales-raden.
-// Tilbudsgrunnlaget kopieres read-only fra firmamalen «Tilbud – Andreas Bad» når den finnes.
+// Tilbudsgrunnlaget kopieres read-only fra den kanoniske Ringside-malen «Tilbud – Andreas Bad».
 
 import { getMyWorkProfileState } from "../access/workProfileClient.js";
 import { buildAcceptedOfferProgressActivities } from "../progress/progressPlanOfferCore.js";
@@ -24,6 +24,7 @@ const DEMO_PHONE = "900 00 000";
 const DEMO_TITLE = "DEMO – Badrenovering";
 const DEMO_NOTE = "Kun demo/test. Ingen ekte kunde eller ordre.";
 const DEMO_TEMPLATE_NAME = "Tilbud – Andreas Bad";
+const DEMO_TEMPLATE_COMPANY_NAME = "Ringside Rørleggerbedrift AS";
 const DEMO_OPTION_IMAGE = "/auth-bathroom.jpg";
 
 function isoDateOffset(days = 0) {
@@ -656,10 +657,26 @@ async function loadContext() {
 }
 
 async function loadDemoOfferSource(context) {
+  const { data: sourceCompany, error: sourceCompanyError } = await context.client
+    .from("sales_company_scopes")
+    .select("id,display_name")
+    .eq("display_name", DEMO_TEMPLATE_COMPANY_NAME)
+    .limit(1)
+    .maybeSingle();
+
+  if (sourceCompanyError || !sourceCompany?.id) {
+    console.warn(
+      "Demo/Test: kunne ikke finne Ringside-scope for Andreas-malen, bruker innebygget fallback.",
+      sourceCompanyError || "scope mangler"
+    );
+    return normalizeTemplatePayload({ demoSourceTemplateName: "Demo fallback" });
+  }
+
+  const templateCompanyId = String(sourceCompany.id || "").trim();
   const { data, error } = await context.client
     .from("sales_offer_templates")
     .select("id,name,payload,updated_at")
-    .eq("company_id", context.companyId)
+    .eq("company_id", templateCompanyId)
     .eq("name", DEMO_TEMPLATE_NAME)
     .order("updated_at", { ascending: false })
     .limit(1)
