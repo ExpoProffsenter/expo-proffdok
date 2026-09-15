@@ -28,7 +28,12 @@ requireText(navigation, "isDemoRequestRef(cleanRef)", "42L: bare eksakte DEMO42L
 requireText(navigation, "primeSalesRequestDetailRow", "42L: full DEMO-sak må primes før åpning.");
 requireText(navigation, "await resolveSalesCompanyScope", "42L: demoåpning må følge aktivt firmascope.");
 requireText(navigation, "await primeSalesRequestDetailRow", "42L: demoåpning kan ikke slippe summary-only rad videre.");
+requireText(navigation, "readSalesWorkspaceResumeSnapshot", "42L: demo-resume må respektere eksisterende Sales-workspace snapshot.");
+requireText(navigation, "resumedRequestRef !== cleanRef", "42L: demo-resume må bare gripe inn for samme DEMO42L-sak.");
+requireText(navigation, 'resumedMode === "list"', "42L: bevisst Tilbake/list må vinne over automatisk demo-recovery.");
+requireText(navigation, 'document.addEventListener("visibilitychange"', "42L: app/fanebytte må kunne re-prime aktiv DEMO42L-sak.");
+requireText(navigation, 'new CustomEvent("expo-proffdok-sales-rehydrate")', "42L: full DEMO-sak må remountes via eksisterende Sales-recovery-event.");
 requireText(launcher, "await openDemoSalesStage", "42L: Startsiden må vente på full server-first demo-hydrering.");
 requireText(launcher, "Åpner …", "42L: demoåpning må blokkere dobbeltklikk mens saken primes.");
 
-console.log("✅ Demo/Test 42L reset/local recovery + full Sales hydration check OK");
+console.log("✅ Demo/Test 42L reset/local recovery + full Sales hydration/app-switch check OK");
