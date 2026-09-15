@@ -10,15 +10,24 @@ const css = fs.readFileSync("src/modules/app/projectWorkspaceHeaderGuide.css", "
 const index = fs.readFileSync("index.html", "utf8");
 
 requireCheck(
-  guide.includes("Velg prosjektinnhold fra Meny"),
-  "Prosjektarbeidsflaten mangler veivisertekst til kollapset meny."
+  guide.includes("Anbefalt prosjektløp"),
+  "Prosjektarbeidsflaten mangler veivisertekst for anbefalt prosjektløp."
 );
 requireCheck(
-  ["Oversikt", "Bilder", "Sjekklister", "Chat"].every((label) => guide.includes(`label: \"${label}\"`)),
-  "Prosjektarbeidsflaten mangler ett eller flere avtalte hurtigvalg."
+  ["Oversikt", "Avtalegrunnlag", "Prosjektering", "Fremdrift"].every((label) => guide.includes(`label: \"${label}\"`)),
+  "Prosjektarbeidsflaten mangler ett eller flere avtalte hurtigvalg i anbefalt rekkefølge."
+);
+requireCheck(
+  guide.indexOf('label: "Oversikt"') < guide.indexOf('label: "Avtalegrunnlag"') &&
+    guide.indexOf('label: "Avtalegrunnlag"') < guide.indexOf('label: "Prosjektering"') &&
+    guide.indexOf('label: "Prosjektering"') < guide.indexOf('label: "Fremdrift"'),
+  "Anbefalt prosjektløp har feil rekkefølge."
 );
 requireCheck(
   guide.includes('source: "Prosjektoversikt"') &&
+    guide.includes('source: "Avtalegrunnlag"') &&
+    guide.includes('source: "Prosjektering"') &&
+    guide.includes('source: "Fremdrift"') &&
     guide.includes("target.click()"),
   "Hurtigvalg bruker ikke eksisterende native prosjektnavigasjon."
 );
@@ -42,4 +51,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("✅ Expo ProffDok project navigation check OK – kollapset meny har veiviser og trygge native hurtigvalg");
+console.log("✅ Expo ProffDok project navigation check OK – anbefalt løp bruker trygge native hurtigvalg");
