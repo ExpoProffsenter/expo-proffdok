@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 37D1 / FASE 32A / FASE 23P / FASE 29B4
+// Expo ProffDok – FASE 42L / FASE 37D1 / FASE 32A / FASE 23P / FASE 29B4
+// FASE 42L sperrer publisering av eksplisitt servermerkede Demo/Test-saker før
+// sales_offers/versjonshistorikk kan opprettes. Ordinære saker er uendret.
 // Butikktilbud bruker valgt Ringside/Bademiljø-merkevare i det låste firmasnapshotet
 // og binder saksbehandlerens bruker/e-post når den kan bekreftes mot ansvarlig på saken.
 // FASE 32A beholder serverstemplet publisher og publiseringstid på saken etter
@@ -10,6 +12,7 @@
 // Intern supportparameter fjernes alltid fra kundelenker.
 
 import { buildPublishPayload } from "../utils/salesOfferLogic.js";
+import { demoActionBlockedMessage, isDemoRequest } from "../../demo/demoCaseSafety.js";
 import {
   getSalesOfferByToken,
   getSalesSession,
@@ -90,6 +93,10 @@ export async function publishSalesOfferAndBuildLink({
 } = {}) {
   if (!client) {
     throw new Error("Supabase-miljøvariabler mangler i Vercel-preview.");
+  }
+
+  if (isDemoRequest(request)) {
+    throw new Error(demoActionBlockedMessage("publisering av tilbud"));
   }
 
   if (!request || !request.offerLines?.length) {
