@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 42K / FASE 42J / FASE 42H / FASE 42D HJELP
+// Expo ProffDok – FASE 42L / FASE 42K / FASE 42J / FASE 42H / FASE 42D HJELP
 // Én React-basert hjelpestruktur. Ingen DOM-innsprøyting, timere eller programmatisk åpning/lukking.
 // Brukerrettede funksjonsendringer skal oppdateres her når arbeidsflyt, begreper eller tilgang påvirkes.
 import React, * as ReactNS from "react";
@@ -326,10 +326,12 @@ const SYSTEM_ADMIN_SECTIONS = [
   section(
     "systemadmin",
     "⚙️ Systemadministrasjon",
-    "Systemadministrasjon er kontrollsenteret for brukere, roller, tverrfirma-support, produktmaster, appnyheter og systemdata.",
+    "Systemadministrasjon er kontrollsenteret for brukere, roller, tverrfirma-support, Demo/Test, produktmaster, appnyheter og systemdata.",
     [
       "Godkjenn, avvis eller slett ventende brukere. Firma må være valgt før en ny bruker kan godkjennes, og rolle/modultilganger skal kontrolleres før aktivering.",
       "Butikktilbud kan bare tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter. Andre firma kan få Befaring / Våtromstilbud uten Butikktilbud.",
+      "Velg riktig firma under Representerer før Demo/Test brukes. Demo/Test oppretter fem tydelig merkede steg: Forespørsel, Befaring, Tilbud, Akseptert og Prosjekt.",
+      "Bruk Tilbakestill demosaker etter en visning. Reset gjenoppretter bare de fem servermerkede DEMO42L-sakene for valgt firma og demo-prosjekter som er knyttet til disse.",
       "Bruk Supportmodus når du skal hjelpe et annet firma og avslutt supportmodus når arbeidet er ferdig.",
       "Vedlikehold produktmaster og synkroniser bare aktive prosjekter når dette er riktig.",
       "Bruk Nyheter i appen til korte meldinger om nye funksjoner eller viktige endringer.",
@@ -338,11 +340,12 @@ const SYSTEM_ADMIN_SECTIONS = [
     ],
     [
       "Systemadmin-funksjoner kan påvirke flere firmaer og må brukes varsomt.",
+      "Demo/Test er laget for visning av den ekte arbeidsflyten, men publisering av DEMO-tilbud og oppretting av låst akseptbevis er sperret slik at demo ikke bygger varig kundehistorikk.",
       "Expo Proffsenter-logo kan brukes som standardlogo når firmaet ikke har egen logo, men logoen bestemmer aldri brukerens firmatilhørighet eller datascope.",
       "Kontroller alltid hvilket firma supportmodus gjelder før du gjør endringer.",
       "Prisfilen inneholder intern informasjon og skal ikke deles med kunder eller legges i GitHub."
     ],
-    ["Hold appnyheter korte og konkrete og publiser bare én aktuell nyhet om gangen."]
+    ["Reset Demo/Test før en visning, og bruk de ferdige stegene til å hoppe i arbeidsflyten uten å fylle løsningen med nye testprosjekter."]
   ),
   section(
     "arbeidsprofil",
