@@ -1,8 +1,10 @@
 # Expo ProffDok
 
-Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsningen støtter blant annet prosjektstyring, dokumentasjon, sjekklister, bilder, avvik, kunde-/UE-portal, garanti, befaring, ordinære tilbud, Butikktilbud, digital aksept og rapport/PDF.
+Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsningen støtter blant annet prosjektstyring, dokumentasjon, sjekklister, bilder, avvik, kunde-/UE-portal, garanti, befaring, Badskisse, ordinære tilbud, Butikktilbud, digital aksept og rapport/PDF.
 
 Produksjon: https://expo-proffdok.app
+
+Gjeldende dokumentert baseline: **Fase 42F i produksjon / Fase 42G systemadmin firmascoping i Preview-QA (15.09.2026)**.
 
 ## Teknologi
 
@@ -20,7 +22,7 @@ Produksjon: https://expo-proffdok.app
 src/
 ├── main.jsx                 # sentral app-orkestrering
 ├── bootstrap.jsx
-└── modules/                 # sales, storeCatalog, project, progress, portal, help, report m.fl.
+└── modules/                 # access, sales, storeCatalog, project, progress, portal, help, report m.fl.
 
 docs/
 └── architecture/            # gjeldende arkitekturkart og fasespesifikke sikkerhetsnotater
@@ -28,9 +30,10 @@ docs/
 scripts/
 ├── critical-build-check.mjs
 ├── critical-sales-recovery-check.mjs
+├── critical-work-profile-check.mjs
 ├── critical-progress-plan-check.mjs
 ├── critical-store-catalog-check.mjs
-└── critical-store-decline-check.mjs
+└── øvrige målrettede guards
 ```
 
 Detaljert nå-arkitektur: [docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md](docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md)
@@ -62,6 +65,7 @@ Repositoryet skal kunne overtas av en kvalifisert utvikler uten tilgang til tidl
 - Endret datamodell, modulansvar, Storage, RPC, RLS, sikkerhetsmodell eller større teknisk struktur → oppdater arkitekturkartet.
 - Sales-endringer vurderes mot Sales README.
 - Vareregister-/katalogendringer vurderes mot Fase 39B-arkitekturdokumentet.
+- Arbeidsprofil/systemadmin-endringer vurderes mot `critical-work-profile-check.mjs` og arkitekturkartet.
 - Viktige utsatte produktvalg registreres som GitHub issue.
 - Root README skal være kort og fungere som inngangsdør, ikke duplisere detaljdokumentasjon.
 
@@ -71,10 +75,11 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 
 - RLS og serverkontroll er sikkerhetsgrensen; frontend alene er ikke nok.
 - Ikke svekk company-scoping eller bruk systemadmin/supportmodus som write-bypass.
+- Aktiv arbeidsprofil/representert firma skal styre normal arbeidsflate; systemadmins brede rettigheter skal ikke blande tverrfirma-prosjekter inn i vanlig prosjektarbeid.
 - Publiserte og aksepterte tilbud er immutable historikk.
 - Ingen historisk backfill uten eksplisitt beslutning.
 - Gamle prosjekter og prosjekter uten tilbud skal fortsatt fungere.
-- Bevar Sales recovery/hydration og IndexedDB-sikring av befaringsbilder.
+- Bevar Sales recovery/hydration, regelen «brukerhandling vinner» og IndexedDB-/serverbevaring av befaringsbilder og Badskisse.
 - Ikke endre Storage-policyer, offentlige/private filer eller historiske URL-er uten egen migreringsplan.
 - Privatkundepriser vises inkl. mva.
 - Intern ERP-nettopris skal aldri lekke til kundelenke, tilbuds-PDF eller publisert Sales-historikk.
@@ -85,7 +90,7 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 ## Start her som ny utvikler
 
 1. Les [arkitekturkartet](docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md).
-2. Les [Sales README](src/modules/sales/README.md) før endringer i befaring/tilbud/aksept/Butikktilbud.
+2. Les [Sales README](src/modules/sales/README.md) før endringer i befaring/tilbud/aksept/Butikktilbud/recovery.
 3. Les [Fase 39B](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md) før endringer i vareregister, ERP-import eller katalogtilgang.
 4. Les relevante HJELP-moduler før brukerrettede endringer.
 5. Kontroller åpne GitHub issues og siste legitime `main`-SHA.
