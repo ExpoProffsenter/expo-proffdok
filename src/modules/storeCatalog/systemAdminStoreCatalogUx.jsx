@@ -1,8 +1,9 @@
-// Expo ProffDok – FASE 39B.2C
-// Monterer vareregisteradministrasjon i den eksisterende Systemadmin-flaten.
-// Tilgang avgjøres fortsatt server-side av canManageInternalStoreCatalog().
+// Expo ProffDok – FASE 42L / FASE 39B.2C
+// Monterer isolerte systemadminverktøy i den eksisterende Systemadmin-flaten.
+// Tilgang til vareregister avgjøres fortsatt server-side av canManageInternalStoreCatalog().
 
 import { createRoot } from "react-dom/client";
+import { DemoTestPanel } from "../demo/DemoTestPanel.jsx";
 import { StoreCatalogAdminOnlyPanel } from "./StoreCatalogOfferTools.jsx";
 
 const MOUNT_ID = "expo-systemadmin-store-catalog";
@@ -50,14 +51,17 @@ export function installSystemAdminStoreCatalogUx() {
 
     root = createRoot(mount);
     root.render(
-      <div className="item adminAccordionItem" style={{ marginTop: 0 }}>
-        <h3 style={{ marginTop: 0 }}>Internt vareregister</h3>
-        <p className="note">
-          Oppdatering av ERP-vareregisteret er en systemadmin-oppgave. Varesøk i
-          tilbud skjer direkte inne på den enkelte tilbudsposten.
-        </p>
-        <StoreCatalogAdminOnlyPanel />
-      </div>
+      <>
+        <DemoTestPanel />
+        <div className="item adminAccordionItem" style={{ marginTop: 16 }}>
+          <h3 style={{ marginTop: 0 }}>Internt vareregister</h3>
+          <p className="note">
+            Oppdatering av ERP-vareregisteret er en systemadmin-oppgave. Varesøk i
+            tilbud skjer direkte inne på den enkelte tilbudsposten.
+          </p>
+          <StoreCatalogAdminOnlyPanel />
+        </div>
+      </>
     );
     return true;
   };
