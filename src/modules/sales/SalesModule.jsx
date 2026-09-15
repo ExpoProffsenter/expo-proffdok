@@ -235,6 +235,8 @@ export default function SalesModule(props) {
   const [serverCacheReady, setServerCacheReady] = useState(
     () => props.integrationMode !== "app"
   );
+  const [serverCacheError, setServerCacheError] = useState("");
+  const [serverCacheRetryKey, setServerCacheRetryKey] = useState(0);
 
   useEffect(() => {
     const rehydrateSalesModule = () => {
@@ -302,11 +304,13 @@ export default function SalesModule(props) {
 
   useEffect(() => {
     if (props.integrationMode !== "app") {
+      setServerCacheError("");
       setServerCacheReady(true);
       return undefined;
     }
 
     if (!props.authUser?.id) {
+      setServerCacheError("");
       setServerCacheReady(false);
       return undefined;
     }
@@ -322,12 +326,14 @@ export default function SalesModule(props) {
 
     // Vanlig saksoversikt trenger ingen komplett payload før Core mountes.
     if (!requestIdToPrime) {
+      setServerCacheError("");
       setServerCacheReady(true);
       return undefined;
     }
 
     let cancelled = false;
     const activeSupabase = props.supabaseClient || fallbackSalesSupabase;
+    setServerCacheError("");
     setServerCacheReady(false);
 
     async function primeSelectedSalesRequestBeforeCore() {
@@ -348,15 +354,23 @@ export default function SalesModule(props) {
           requestIdToPrime
         );
         if (error) throw error;
+        if (cancelled) return;
+        setServerCacheError("");
+        setServerCacheReady(true);
       } catch (error) {
-        // Lokal tilbudskladd/recovery beholdes ved reell offlinefeil. Viktigst er
-        // at summary-data aldri skrives tilbake som komplett serverpayload.
+        // Lokal tilbuds-/befaringskladd beholdes urørt ved nettfeil. Core får ikke
+        // mounte på en lett summary, fordi ufullstendig data aldri skal nå editor.
         console.warn(
-          "Kunne ikke prime valgt Sales-sak før mount; bruker sikret lokal recovery",
+          "Kunne ikke prime valgt Sales-sak før mount; blokkerer ufullstendig summary",
           error
         );
-      } finally {
-        if (!cancelled) setServerCacheReady(true);
+        if (!cancelled) {
+          setServerCacheError(
+            error?.message ||
+              "Den komplette saken kunne ikke hentes fra serveren. Kontroller nettet og prøv igjen."
+          );
+          setServerCacheReady(false);
+        }
       }
     }
 
@@ -371,6 +385,7 @@ export default function SalesModule(props) {
     props.profile?.company_name,
     props.profile?.companyName,
     props.openRequestSignal,
+    serverCacheRetryKey,
   ]);
 
   useEffect(() => {
@@ -494,6 +509,35 @@ export default function SalesModule(props) {
     authUserId: props.authUser?.id,
     serverCacheReady,
   });
+
+  if (gateSalesCore && serverCacheError) {
+    return (
+      <div className="sales-app">
+        <div className="sales-shell">
+          <main className="sales-main">
+            <section className="sales-form-hero" role="alert">
+              <p className="sales-eyebrow">Forespørsler / Befaring / Tilbud</p>
+              <h1 className="sales-title">Komplett sak kunne ikke hentes</h1>
+              <p className="sales-subtitle">
+                {serverCacheError} Lokal kladd er beholdt urørt. Vi åpner ikke
+                saken på ufullstendig listedata.
+              </p>
+              <button
+                type="button"
+                className="sales-primary-button"
+                onClick={() =>
+                  setServerCacheRetryKey((current) => current + 1)
+                }
+                style={{ marginTop: 14 }}
+              >
+                Prøv igjen
+              </button>
+            </section>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   if (gateSalesCore) {
     return (
