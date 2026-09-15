@@ -8,6 +8,10 @@ function assertContains(source, needle, message) {
   if (!source.includes(needle)) throw new Error(message);
 }
 
+function assertNotContains(source, needle, message) {
+  if (source.includes(needle)) throw new Error(message);
+}
+
 function assertBefore(source, first, second, message) {
   const firstIndex = source.indexOf(first);
   const secondIndex = source.indexOf(second);
@@ -53,6 +57,10 @@ if (/\.delete\(\)[\s\S]{0,160}(title|customer|ilike)/.test(client)) {
 
 assertContains(panel, "Fem tydelig merkede demosaker", "42L: Systemadmin-panelet må forklare demoavgrensningen.");
 assertContains(panel, "Tilbakestill demosaker", "42L: reset-handling mangler i Systemadmin-panelet.");
+assertContains(panel, "const refreshInFlightRef = useRef(false)", "42L: Demo/Test må sperre parallelle arbeidsprofil/status-refresh.");
+assertContains(panel, "if (refreshInFlightRef.current) return;", "42L: WORK_PROFILE_EVENT må ignoreres mens Demo/Test selv refresher.");
+assertContains(panel, "nextCompanyId === currentCompanyId", "42L: uendret Representerer-firma må ikke starte ny statusrefresh.");
+assertNotContains(panel, "const onWorkProfile = () => refresh();", "42L: direkte WORK_PROFILE_EVENT→refresh kan skape rekursiv refresh-loop.");
 assertContains(mount, "<DemoTestPanel />", "42L: Demo/Test er ikke montert i Systemadmin.");
 
 assertContains(publishing, "isDemoRequest(request)", "42L: tilbudspublisering må kjenne demosaker.");
@@ -74,4 +82,4 @@ assertContains(
   "42L: demo-regresjonscheck må kjøres i package scripts."
 );
 
-console.log("✅ Demo/Test 42L safety / reset / publishing / project cleanup / Help check OK");
+console.log("✅ Demo/Test 42L safety / reset / publishing / project cleanup / work-profile stability / Help check OK");
