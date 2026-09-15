@@ -1,5 +1,7 @@
-// Expo ProffDok – FASE 38A1 / FASE 37D1 / FASE 23I / FASE 29C1
+// Expo ProffDok – FASE 42J / FASE 38A1 / FASE 37D1 / FASE 23I / FASE 29C1
 // Presentasjonskomponent for ny og redigert forespørsel.
+// FASE 42J bevarer kunde-/adressefelter ved PC-fanebytte og mobil appbytte før
+// saken har rukket å få request_ref. Ingen serverrad opprettes før bruker lagrer.
 // FASE 38A1 tydeliggjør direkte Våtromstilbud og Butikktilbud i samme skjema
 // uten å endre kundedata, lagring eller eksisterende forespørsel/befaringsflyt.
 // FASE 37D1 gjenbruker samme direkte tilbudsflyt for Butikktilbud,
@@ -7,7 +9,7 @@
 // Nye saker opprettes ikke i Systemadmin-supportmodus fordi målbedriftens
 // ansvarlige bruker ikke er valgt i denne flyten.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ClipboardList,
@@ -18,6 +20,10 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { requestSources, workTypes } from "../constants/salesConstants.js";
+import {
+  loadSalesEntryDraft,
+  saveSalesEntryDraft,
+} from "../services/salesLocalStorage.js";
 import { getSalesSupportCompanyId } from "../services/salesSupabase.js";
 import {
   STORE_OFFER_SOURCE,
@@ -25,6 +31,18 @@ import {
   clearStoreOfferLaunch,
   readStoreOfferLaunch,
 } from "../services/salesStoreOffers.js";
+
+const ENTRY_FIELDS = [
+  "customer",
+  "phone",
+  "email",
+  "address",
+  "postnr",
+  "city",
+  "title",
+  "source",
+  "note",
+];
 
 export default function SalesRequestForm({
   form,
@@ -39,6 +57,19 @@ export default function SalesRequestForm({
   const [isStoreOffer] = useState(
     () => Boolean(isDirectOffer && readStoreOfferLaunch())
   );
+  const entryMode = isEditingRequest
+    ? "edit-request"
+    : isDirectOffer
+      ? "new-offer"
+      : "new";
+  const entryDraftStateRef = useRef({ mode: "", record: null });
+
+  if (entryDraftStateRef.current.mode !== entryMode) {
+    entryDraftStateRef.current = {
+      mode: entryMode,
+      record: loadSalesEntryDraft(entryMode),
+    };
+  }
 
   useEffect(() => {
     if (!isStoreOffer) return undefined;
@@ -51,6 +82,40 @@ export default function SalesRequestForm({
     // direkte tilbudssak dersom parent-funksjonene får ny referanse ved rerender.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isStoreOffer]);
+
+  useEffect(() => {
+    if (supportMode) return;
+    const record = entryDraftStateRef.current.record;
+    if (!record?.form || entryDraftStateRef.current.mode !== entryMode) return;
+
+    ENTRY_FIELDS.forEach((field) => {
+      if (record.form[field] === undefined) return;
+      if (String(form?.[field] ?? "") === String(record.form[field] ?? "")) return;
+      onUpdateForm(field, record.form[field]);
+    });
+    // Recovery skal kun bruke eksplisitt bakgrunns-snapshot. Dersom bruker har
+    // navigert hit normalt returnerer loadSalesEntryDraft null.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entryMode, supportMode]);
+
+  useEffect(() => {
+    if (supportMode) return;
+    const state = entryDraftStateRef.current;
+    if (state.mode !== entryMode) return;
+
+    if (state.record?.form) {
+      const recoveryApplied = ENTRY_FIELDS.every(
+        (field) =>
+          String(form?.[field] ?? "") === String(state.record.form?.[field] ?? "")
+      );
+      // Ikke la første tomme React-render overskrive kladden vi nettopp skal
+      // gjenopprette. Når parent-state matcher recovery-data kan normal lagring starte.
+      if (!recoveryApplied) return;
+      state.record = null;
+    }
+
+    saveSalesEntryDraft(entryMode, form);
+  }, [entryMode, form, supportMode]);
 
   if (supportMode && !isEditingRequest) {
     return (
