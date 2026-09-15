@@ -55,8 +55,12 @@ if (/\.delete\(\)[\s\S]{0,160}(title|customer|ilike)/.test(client)) {
   throw new Error("42L: demo-reset må aldri slette prosjekt basert på navn/kunde/fritekst.");
 }
 
-assertContains(panel, "Fem tydelig merkede demosaker", "42L: Systemadmin-panelet må forklare demoavgrensningen.");
+assertContains(panel, "Velg steget du vil vise", "42L: Demo/Test-panelet må være enkelt å bruke fra ett sted.");
 assertContains(panel, "Tilbakestill demosaker", "42L: reset-handling mangler i Systemadmin-panelet.");
+assertContains(panel, "Opprette Demo/Test", "42L: første opprettelse må ha egen, forståelig bekreftelsestekst.");
+assertContains(panel, "queueDemoSalesOpen", "42L: demosteg må kunne åpnes direkte uten manuell leting i Sales-listen.");
+assertContains(panel, 'button.sales-request-card', "42L: direkte demosteg skal bruke eksisterende Sales-kort, ikke parallell editor.");
+assertContains(panel, 'button[role=\"tab\"]', "42L: direkte demosteg må kunne finne saken uavhengig av aktiv Sales-fane.");
 assertContains(panel, "const refreshInFlightRef = useRef(false)", "42L: Demo/Test må sperre parallelle arbeidsprofil/status-refresh.");
 assertContains(panel, "if (refreshInFlightRef.current) return;", "42L: WORK_PROFILE_EVENT må ignoreres mens Demo/Test selv refresher.");
 assertContains(panel, "nextCompanyId === currentCompanyId", "42L: uendret Representerer-firma må ikke starte ny statusrefresh.");
@@ -82,4 +86,4 @@ assertContains(
   "42L: demo-regresjonscheck må kjøres i package scripts."
 );
 
-console.log("✅ Demo/Test 42L safety / reset / publishing / project cleanup / work-profile stability / Help check OK");
+console.log("✅ Demo/Test 42L safety / reset / direct stage open / publishing / project cleanup / work-profile stability / Help check OK");
