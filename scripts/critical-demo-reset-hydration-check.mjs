@@ -28,13 +28,10 @@ requireText(navigation, "isDemoRequestRef(cleanRef)", "42L: bare eksakte DEMO42L
 requireText(navigation, "primeSalesRequestDetailRow", "42L: full DEMO-sak må primes før åpning.");
 requireText(navigation, "await resolveSalesCompanyScope", "42L: demoåpning må følge aktivt firmascope.");
 requireText(navigation, "await primeSalesRequestDetailRow", "42L: demoåpning kan ikke slippe summary-only rad videre.");
-requireText(navigation, "readSalesWorkspaceResumeSnapshot", "42L: demo-resume må respektere eksisterende Sales-workspace snapshot.");
-requireText(navigation, "resumedRequestRef !== cleanRef", "42L: demo-resume må bare gripe inn for samme DEMO42L-sak.");
-requireText(navigation, 'resumedMode !== "detail"', "42L: demo-resume må kun remounte detaljvisning; offer-builder og øvrige arbeidsbilder skal bruke ordinær 42J-recovery.");
-requireText(navigation, 'document.addEventListener("visibilitychange"', "42L: app/fanebytte må kunne re-prime aktiv DEMO42L-detaljvisning.");
-requireText(navigation, 'new CustomEvent("expo-proffdok-sales-rehydrate")', "42L: full DEMO-detalj må remountes via eksisterende Sales-recovery-event.");
-requireText(navigation, "etablerte 42J-recoveryen", "42L: kildekoden må dokumentere at editor-recovery ikke overstyres av demo-laget.");
+forbidText(navigation, "visibilitychange", "42L: Demo/Test skal ikke ha en parallell visibility/recovery-motor.");
+forbidText(navigation, "expo-proffdok-sales-rehydrate", "42L: Demo/Test skal ikke remounte Sales på egen hånd.");
+forbidText(navigation, "readSalesWorkspaceResumeSnapshot", "42L: Demo/Test skal bruke ordinær Sales-recovery, ikke eget workspace-resume.");
 requireText(launcher, "await openDemoSalesStage", "42L: Startsiden må vente på full server-first demo-hydrering.");
 requireText(launcher, "Åpner …", "42L: demoåpning må blokkere dobbeltklikk mens saken primes.");
 
-console.log("✅ Demo/Test 42L reset/local recovery + detail-only Sales hydration/app-switch check OK");
+console.log("✅ Demo/Test 42L reset/local state + initial full Sales hydration check OK");
