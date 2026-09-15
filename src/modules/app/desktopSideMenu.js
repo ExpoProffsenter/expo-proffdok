@@ -22,9 +22,16 @@ function findInternalAppNav() {
       cleanLabel(button.textContent)
     );
 
-    return labels.includes('Befaring/Tilbud') &&
-      labels.some((label) => label === 'Startside' || label === 'Prosjektoversikt') &&
-      labels.includes('Hjelp');
+    const globalNav =
+      labels.includes('Befaring/Tilbud') &&
+      labels.some((label) => label === 'Startside' || label === 'Prosjektoversikt');
+    const projectWorkspaceNav =
+      labels.includes('Prosjektoversikt') &&
+      labels.includes('Prosjektering') &&
+      labels.includes('Sjekklister') &&
+      labels.includes('Avtalegrunnlag');
+
+    return labels.includes('Hjelp') && (globalNav || projectWorkspaceNav);
   }) || null;
 }
 

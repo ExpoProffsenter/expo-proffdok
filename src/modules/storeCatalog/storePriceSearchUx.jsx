@@ -1,8 +1,10 @@
-// Expo ProffDok – FASE 41B.2 / FASE 41B.3 / FASE 41B.3G
+// Expo ProffDok – FASE 41B.2 / FASE 41B.3 / FASE 41B.3G / FASE 42K
 // Kobler read-only Prissøk inn i eksisterende desktop- og mobilnavigasjon.
 // FASE 41B.3 viser Prissøk i samme app-arbeidsflate i stedet for fullskjerm-overlay.
 // FASE 41B.3G viser Prissøk som hurtigtilgang i dagens mobilmeny. Eldre
 // mobil-select støttes fortsatt. Backend-RPC er autoritativ tilgangskontroll.
+// FASE 42K husker at Prissøk faktisk var åpent ved refresh/dvale/appbytte.
+// Bevisst navigasjon bort fra Prissøk rydder markøren, slik at brukerhandling vinner.
 
 import React from "react";
 import { createRoot } from "react-dom/client";
@@ -13,6 +15,7 @@ const NAV_BUTTON_ID = "expo-price-search-nav-button";
 const MOBILE_BUTTON_ID = "expo-price-search-mobile-button";
 const INLINE_ID = "expo-price-search-inline";
 const MOBILE_OPTION_VALUE = "__expo_price_search__";
+const PRICE_SEARCH_RESUME_KEY = "expo-proffdok:price-search:resume:v1";
 const SUPPORT_LABEL = "SYSTEMADMIN SUPPORTMODUS";
 const ALLOWED_COMPANIES = new Set([
   "ringside rorleggerbedrift as",
@@ -37,6 +40,23 @@ function normalizeCompanyName(value = "") {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/æ/g, "ae")
     .replace(/ø/g, "o");
+}
+
+function rememberPriceSearchOpen(open) {
+  try {
+    if (open) window.sessionStorage.setItem(PRICE_SEARCH_RESUME_KEY, "1");
+    else window.sessionStorage.removeItem(PRICE_SEARCH_RESUME_KEY);
+  } catch {
+    // Navigasjonsmarkøren er bare UX-sikring. Prissøk fungerer uten sessionStorage.
+  }
+}
+
+function shouldRestorePriceSearch() {
+  try {
+    return window.sessionStorage.getItem(PRICE_SEARCH_RESUME_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 function supportCompanyName() {
@@ -110,28 +130,31 @@ function syncActiveNavigation() {
   });
 }
 
-function closePriceSearch() {
+function closePriceSearch({ clearResume = true } = {}) {
   priceSearchOpen = false;
   inlineRoot?.unmount?.();
   inlineRoot = null;
   document.getElementById(INLINE_ID)?.remove();
   findAppMain()?.classList.remove("expoPriceSearchActive");
+  if (clearResume) rememberPriceSearchOpen(false);
   syncActiveNavigation();
 }
 
-function openPriceSearch() {
+function openPriceSearch({ restore = false } = {}) {
   if (!uiAllowed()) return;
   const main = findAppMain();
   if (!(main instanceof HTMLElement)) return;
 
   if (priceSearchOpen && document.getElementById(INLINE_ID)) {
+    rememberPriceSearchOpen(true);
     syncActiveNavigation();
-    document.getElementById("expo-price-search-input")?.focus?.();
+    if (!restore) document.getElementById("expo-price-search-input")?.focus?.();
     return;
   }
 
-  closePriceSearch();
+  closePriceSearch({ clearResume: false });
   priceSearchOpen = true;
+  rememberPriceSearchOpen(true);
 
   const mount = document.createElement("div");
   mount.id = INLINE_ID;
@@ -142,7 +165,7 @@ function openPriceSearch() {
   syncActiveNavigation();
   window.requestAnimationFrame(() => {
     main.scrollIntoView({ block: "start" });
-    document.getElementById("expo-price-search-input")?.focus?.();
+    if (!restore) document.getElementById("expo-price-search-input")?.focus?.();
   });
 }
 
@@ -237,13 +260,22 @@ function restoreMobileSelection(select) {
   if (activeOption) select.value = activeOption.value;
 }
 
+function restorePriceSearchWorkspaceIfNeeded() {
+  if (!uiAllowed() || !shouldRestorePriceSearch() || priceSearchOpen) return;
+  if (!(findAppMain() instanceof HTMLElement)) return;
+  openPriceSearch({ restore: true });
+}
+
 function syncUi() {
   syncNavButton();
   syncMobileButton();
   syncMobileOption();
   if (priceSearchOpen && !document.getElementById(INLINE_ID)) {
+    // React/app-shell kan ha remountet etter dvale/appbytte. Behold resume-markøren.
     priceSearchOpen = false;
+    inlineRoot = null;
   }
+  restorePriceSearchWorkspaceIfNeeded();
   syncActiveNavigation();
 }
 
@@ -258,7 +290,7 @@ async function refreshAccess() {
     })
     .catch(() => {
       backendAllowed = false;
-      if (priceSearchOpen) closePriceSearch();
+      if (priceSearchOpen || shouldRestorePriceSearch()) closePriceSearch({ clearResume: true });
       syncUi();
       return false;
     })
@@ -294,7 +326,7 @@ export function installStorePriceSearchUx() {
         return;
       }
       if (priceSearchOpen && select.closest(".mobileNavSelectWrap")) {
-        closePriceSearch();
+        closePriceSearch({ clearResume: true });
         window.requestAnimationFrame(() => restoreMobileSelection(select));
       }
     },
@@ -302,13 +334,22 @@ export function installStorePriceSearchUx() {
   );
 
   document.addEventListener("click", (event) => {
-    if (!priceSearchOpen) return;
+    if (!priceSearchOpen && !shouldRestorePriceSearch()) return;
     const target = event.target instanceof Element ? event.target : null;
     const button = target?.closest("nav > button, .mobileMenuQuickGrid button");
     if (!(button instanceof HTMLButtonElement)) return;
     if (button.id === NAV_BUTTON_ID || button.id === MOBILE_BUTTON_ID) return;
-    closePriceSearch();
+    closePriceSearch({ clearResume: true });
   }, true);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      if (priceSearchOpen) rememberPriceSearchOpen(true);
+      return;
+    }
+    void refreshAccess();
+    scheduleSync();
+  });
 
   window.addEventListener("focus", () => {
     void refreshAccess();

@@ -8,7 +8,7 @@ function requireNeedles(path, needles) {
   const text = read(path);
   for (const needle of needles) {
     if (!text.includes(needle)) {
-      throw new Error(`${path}: mangler kritisk 41B.2/41B.3-guard: ${needle}`);
+      throw new Error(`${path}: mangler kritisk 41B.2/41B.3/42K-guard: ${needle}`);
     }
   }
   return text;
@@ -127,10 +127,23 @@ const ux = requireNeedles("src/modules/storeCatalog/storePriceSearchUx.jsx", [
   "SYSTEMADMIN SUPPORTMODUS",
   "expoPriceSearchActive",
   "StorePriceSearchView",
+  'PRICE_SEARCH_RESUME_KEY = "expo-proffdok:price-search:resume:v1"',
+  "rememberPriceSearchOpen",
+  "shouldRestorePriceSearch",
+  "restorePriceSearchWorkspaceIfNeeded",
+  'document.addEventListener("visibilitychange"',
+  "closePriceSearch({ clearResume: true })",
+  "openPriceSearch({ restore: true })",
 ]);
 
 if (/\b(?:supabase|client)\s*\.\s*from\s*\(/.test(ux) || /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(ux)) {
   throw new Error("storePriceSearchUx skal ikke skrive direkte til database.");
+}
+if (/(?:window\.)?localStorage\s*\.\s*(?:getItem|setItem|removeItem|clear)\s*\(/i.test(ux)) {
+  throw new Error("Prissøk workspace-resume skal være fanespesifikk sessionStorage, ikke varig localStorage.");
+}
+if (!ux.includes('sessionStorage.setItem(PRICE_SEARCH_RESUME_KEY, "1")') || !ux.includes("sessionStorage.removeItem(PRICE_SEARCH_RESUME_KEY)")) {
+  throw new Error("Prissøk må både kunne sette resume-markør og rydde den ved bevisst navigasjon.");
 }
 
 requireNeedles("src/modules/access/sensitiveAccessClient.js", [
@@ -181,4 +194,4 @@ requireNeedles("index.html", [
   "installPriceSearchHelpUx",
 ]);
 
-console.log("✅ Expo ProffDok Prissøk / sensitiv tilgang / mobil-sikker arbeidsliste / utskrift check OK");
+console.log("✅ Expo ProffDok Prissøk / sensitiv tilgang / appbytte-resume / utskrift check OK");
