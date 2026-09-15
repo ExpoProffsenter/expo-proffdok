@@ -73,15 +73,21 @@ assertContains(launcher, "openDemoSalesStage", "42L: Startside-hurtigvalget må 
 assertContains(launcher, "openDemoProject", "42L: Startside-hurtigvalget må kunne åpne demo-prosjektet.");
 assertContains(launcher, "nextCompanyId === currentCompanyId", "42L: Startside-hurtigvalget må følge Representerer uten refresh-loop.");
 
+assertContains(navigation, 'aria-label="Arbeidsstatus"', "42L: demosteg må velge Sales-arbeidsstatus eksplisitt.");
+assertContains(navigation, "findAllWorkTab", "42L: direkte demosteg må bruke eksplisitt Alle-fane i arbeidsstatus.");
+assertContains(navigation, 'startsWith("Alle")', "42L: Alle-fanen må tåle synlig saksteller i knappeteksten.");
 assertContains(navigation, 'button.sales-request-card', "42L: direkte demosteg skal bruke eksisterende Sales-kort, ikke parallell editor.");
-assertContains(navigation, 'button[role=\"tab\"]', "42L: direkte demosteg må kunne finne saken uavhengig av aktiv Sales-fane.");
+assertContains(navigation, 'button[role=\"tab\"]', "42L: direkte demosteg må bruke eksisterende Sales-faner.");
 assertContains(navigation, "nativeSalesButton.click()", "42L: Demo/Test skal åpne Sales gjennom eksisterende native inngang.");
 assertContains(navigation, "window.location.assign", "42L: demo-prosjekt skal bruke eksisterende admin-prosjektlenke.");
 
 assertContains(mount, "<DemoTestPanel />", "42L: Demo/Test er ikke montert i Systemadmin.");
 assertContains(mount, "<DemoHomeLauncher />", "42L: Demo/Test-hurtigvalg er ikke montert på Startsiden.");
-assertContains(mount, ".mobileProjectChooser", "42L: Demo/Test må støtte mobil Startsiden.");
-assertContains(mount, ".desktopNoProjectWelcome", "42L: Demo/Test må støtte desktop Startsiden.");
+assertContains(mount, "MOBILE_HOME_QUERY", "42L: Startside-mount må velge mobil/desktop eksplisitt.");
+assertContains(mount, '.mobileProjectChooser', "42L: Demo/Test må støtte mobil Startsiden.");
+assertContains(mount, '.desktopNoProjectWelcome', "42L: Demo/Test må støtte desktop Startsiden.");
+assertContains(mount, "element.getClientRects().length === 0", "42L: skjult Startside-container må ikke godtas som mount-target.");
+assertContains(mount, 'section.closest(".sales-app")', "42L: Demo/Test-hurtigvalg må aldri monteres inne i Sales-flaten.");
 assertNotContains(mount, "src/main.jsx", "42L: Demo/Test-mount skal ikke introdusere parallell main-navigation.");
 
 assertContains(publishing, "isDemoRequest(request)", "42L: tilbudspublisering må kjenne demosaker.");
@@ -103,4 +109,4 @@ assertContains(
   "42L: demo-regresjonscheck må kjøres i package scripts."
 );
 
-console.log("✅ Demo/Test 42L safety / Startside launcher / native stage open / reset / publishing / project cleanup / work-profile stability / Help check OK");
+console.log("✅ Demo/Test 42L safety / real Startside launcher / exact native stage open / reset / publishing / project cleanup / work-profile stability / Help check OK");
