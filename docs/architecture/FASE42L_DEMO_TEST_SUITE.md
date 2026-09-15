@@ -16,6 +16,21 @@ Systemadmin-panelet oppretter fem deterministiske steg for firmaet som er valgt 
 
 Alle payloads har både `demoCase: true` og `demoSuiteKey: "expo-proffdok-demo-42l"`.
 
+### Systemadmin versus Startside
+
+Systemadmin brukes bare til **opprettelse og tilbakestilling** av demosuiten. Når en gyldig suite finnes, får systemadministrator et isolert **Demo/Test**-hurtigvalg på den ordinære Startsiden med fem knapper: Forespørsel, Befaring, Tilbud, Akseptert og Prosjekt.
+
+Hurtigvalget:
+
+- vises ikke for vanlige brukere;
+- vises ikke før demosuiten er komplett;
+- følger aktivt firma under **Representerer**;
+- åpner Sales-steg ved å bruke den eksisterende native `Befaring/Tilbud`-inngangen og eksisterende `sales-request-card`/lazy loading;
+- åpner prosjekt gjennom eksisterende admin-prosjektlenke;
+- skriver ikke direkte til Sales-navigation, editorstate eller prosjektstate.
+
+Dermed brukes Systemadmin som kontrollflate, mens selve demoen kan gjennomføres naturlig fra Startsiden.
+
 ## Sikkerhetsgrense
 
 Reset er bevisst smal:
@@ -60,7 +75,10 @@ Det innføres ingen ny Production-tabell, RLS-policy, Storage-policy eller Edge 
 - at reset ikke sletter etter navn/fritekst;
 - at publiseringssperren ligger før `publish_sales_offer`;
 - at akseptbevis sperres før PDF/Storage;
-- at Demo/Test-panelet faktisk er montert i Systemadmin.
+- at Systemadmin-panelet bare eier opprett/reset;
+- at Demo/Test-hurtigvalget er montert på eksisterende mobil- og desktop-Startside;
+- at hurtigvalget bruker native Sales-kort og eksisterende prosjektlenke fremfor parallell navigasjon;
+- at arbeidsprofil-refresh ikke kan starte rekursiv `WORK_PROFILE_EVENT`-loop.
 
 Checken kjøres både av `npm run check:critical` og `npm run build`.
 
@@ -68,14 +86,15 @@ Checken kjøres både av `npm run check:critical` og `npm run build`.
 
 Preview skal minst verifisere:
 
-1. Velg `Representerer Expo Proffsenter` og opprett/reset demosuiten.
-2. Kontroller at fem DEMO42L-saker vises i riktig Sales-stadium.
-3. Åpne og rediger Forespørsel, Befaring og Tilbud som vanlige saker.
+1. Velg `Representerer Expo Proffsenter` og opprett/reset demosuiten i Systemadmin.
+2. Gå til Startsiden og kontroller at kun systemadministrator ser Demo/Test-hurtigvalget.
+3. Åpne Forespørsel, Befaring, Tilbud og Akseptert direkte fra Startsiden og kontroller at riktig ordinær Sales-sak åpnes.
 4. Forsøk å publisere DEMO-tilbud og bekreft at handlingen stoppes uten kundelenke/versjon.
-5. Åpne `DEMO42L-04-AKSEPTERT`, aktiver som prosjekt og kontroller ordinær prosjektflate.
-6. Gå tilbake til Systemadmin og reset. Det nyaktiverte demo-prosjektet skal forsvinne og Akseptert-saken være klar på nytt.
-7. Åpne `DEMO42L-05-PROSJEKT` og kontroller anbefalt prosjektløp: Oversikt → Avtalegrunnlag → Prosjektering → Fremdrift.
-8. Bytt Representerer-firma og kontroller at demosuiten er separat per firma.
+5. Åpne `Akseptert` fra Startsiden, aktiver som prosjekt og kontroller ordinær prosjektflate.
+6. Åpne ferdig `Prosjekt` fra Startsiden og kontroller anbefalt prosjektløp: Oversikt → Avtalegrunnlag → Prosjektering → Fremdrift.
+7. Gå tilbake til Systemadmin og reset. Et nyaktivert demo-prosjekt skal ryddes og Akseptert-saken være klar på nytt.
+8. Bytt Representerer-firma og kontroller at hurtigvalget ikke viser gammel firmatilstand mens ny scope lastes.
 9. Kontroller en vanlig eksisterende Sales-sak/prosjekt og bekreft at den ikke endres av reset.
+10. Bytt nettleserfane/app og tilbake på både Startside og Demo/Test uten flimring eller `Failed to fetch`.
 
 Ingen merge før eksplisitt `TEST OK`.
