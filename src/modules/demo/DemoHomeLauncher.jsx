@@ -29,6 +29,7 @@ export function DemoHomeLauncher() {
   const [status, setStatus] = useState(null);
   const [hidden, setHidden] = useState(false);
   const [error, setError] = useState("");
+  const [openingStage, setOpeningStage] = useState("");
   const [showCustomerOffer, setShowCustomerOffer] = useState(false);
   const refreshInFlightRef = useRef(false);
   const statusRef = useRef(null);
@@ -72,6 +73,7 @@ export function DemoHomeLauncher() {
       const currentCompanyId = String(statusRef.current?.companyId || "").trim();
       if (nextCompanyId && nextCompanyId === currentCompanyId) return;
       setShowCustomerOffer(false);
+      setOpeningStage("");
       void refresh({ companySwitch: true });
     };
 
@@ -89,7 +91,8 @@ export function DemoHomeLauncher() {
   const projectStage = stages.find((stage) => stage.key === "project");
   const projectId = projectStage?.current?.projectId || "";
 
-  const openStage = (stage) => {
+  const openStage = async (stage) => {
+    if (openingStage) return;
     setError("");
     if (stage.key === "project") {
       if (!openDemoProject(stage.current?.projectId, "prosjekt")) {
@@ -98,8 +101,16 @@ export function DemoHomeLauncher() {
       return;
     }
 
-    if (!openDemoSalesStage(stage.ref)) {
-      setError("Befaring/Tilbud kunne ikke åpnes fra Startsiden.");
+    setOpeningStage(stage.key);
+    try {
+      const opened = await openDemoSalesStage(stage.ref);
+      if (!opened) {
+        setError("Befaring/Tilbud kunne ikke åpnes fra Startsiden.");
+      }
+    } catch (openError) {
+      setError(openError?.message || "Den komplette demosaken kunne ikke hentes fra serveren.");
+    } finally {
+      setOpeningStage("");
     }
   };
 
@@ -145,10 +156,14 @@ export function DemoHomeLauncher() {
                 key={stage.ref}
                 type="button"
                 className={stage.key === "request" ? "" : "secondary"}
-                onClick={() => openStage(stage)}
-                disabled={!stage.current || (stage.key === "project" && !stage.current?.projectId)}
+                onClick={() => void openStage(stage)}
+                disabled={
+                  Boolean(openingStage) ||
+                  !stage.current ||
+                  (stage.key === "project" && !stage.current?.projectId)
+                }
               >
-                {stage.label}
+                {openingStage === stage.key ? "Åpner …" : stage.label}
               </button>
             ))}
             <button type="button" className="secondary" onClick={() => setShowCustomerOffer(true)}>
