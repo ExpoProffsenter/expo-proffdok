@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 42D HJELP
+// Expo ProffDok – FASE 42H / FASE 42D HJELP
 // Én React-basert hjelpestruktur. Ingen DOM-innsprøyting, timere eller programmatisk åpning/lukking.
 // Brukerrettede funksjonsendringer skal oppdateres her når arbeidsflyt, begreper eller tilgang påvirkes.
 import React, * as ReactNS from "react";
@@ -9,7 +9,7 @@ import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
 const import_react = { default: React, ...ReactNS };
 const import_lucide_react = { FileText };
 const import_jsx_runtime = { jsx, jsxs, Fragment };
-const HELP_UPDATED_LABEL = "Sist oppdatert: 14.09.2026";
+const HELP_UPDATED_LABEL = "Sist oppdatert: 15.09.2026";
 
 function section(key, title, purpose, workflow = [], important = [], best = []) {
   return { key, title, purpose, workflow, important, best };
@@ -66,6 +66,7 @@ const BASE_SECTIONS = [
     "Befaring/Tilbud samler forespørsel, befaring, tilbud, kundeaksept og videreføring til prosjekt eller butikkleveranse.",
     [
       "Bruk søkefeltet for å finne saker på blant annet kunde, adresse, e-post, telefon, saksreferanse, ansvarlig, tilbudstype og innhold. Statusfaner og eget Befaring-filter snevrer inn resultatet.",
+      "Bruk fanen Forespørsler for nye saker som er registrert, men hvor befaring ennå ikke er planlagt. Saken blir liggende der til befaring bookes.",
       "Registrer kunde, kontaktinformasjon, adresse, ansvarlig og neste steg i forespørselen.",
       "Planlegg befaring og samle notater, bilder og nødvendige avklaringer i samme sak.",
       "En registrert befaring kan videreføres i samme sak som ordinært Våtromstilbud eller som Butikktilbud når brukeren har slik tilgang.",
@@ -79,6 +80,7 @@ const BASE_SECTIONS = [
       "Velg riktig tilbudstype før du bygger tilbudet."
     ],
     [
+      "Når flere forespørsler er registrert ute i løpet av dagen, bruk Forespørsler som bookingkø når du er tilbake på kontoret.",
       "Bruk søk og filtre fremfor scrolling når sakslisten blir lang.",
       "Ta bilder og noter avklaringer under befaringen slik at samme informasjon ikke må registreres på nytt."
     ]
