@@ -1,15 +1,26 @@
 /* FASE 42N – firmaopplysninger ved egenregistrering. */
 
-/* Registreringsskjemaet er nå vesentlig lengre enn login. Det får derfor et
-   eksplisitt eget scrollområde uten å endre login-layouten. Ekstra
-   authLandingActive.authLandingSignup-spesifisitet gjør at regelen ikke kan
-   tapes mot eldre auth-presentasjonslag ved ulik CSS-bundle-rekkefølge. */
+/* Registreringsskjemaet er vesentlig lengre enn login. Scrollansvaret ligger
+   derfor på selve hvite signup-kortet. Det omgår eldre auth-lag som bruker
+   overflow:hidden på kortet, uten å endre login-layouten. */
 body.authLandingActive.authLandingSignup #root {
+  overflow: hidden !important;
+}
+
+body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
+  min-height: 0 !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
+}
+
+@media (min-width: 1181px) {
+  body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
+    height: calc(100% - 36px) !important;
+    max-height: calc(100% - 36px) !important;
+  }
 }
 
 .signupCompanyPanel {
@@ -112,9 +123,6 @@ body.authLandingActive.authLandingSignup #root {
 }
 
 @media (max-width: 1180px) {
-  /* Eldre mobil-auth bruker body-scroll. Det fungerte for det korte login-
-     skjemaet, men er sårbart når signup-kortet blir høyere enn viewporten.
-     I signup alene bruker vi derfor én fast viewport-container som ruller. */
   body.authLandingActive.authLandingSignup {
     overflow: hidden !important;
   }
@@ -127,16 +135,16 @@ body.authLandingActive.authLandingSignup #root {
     min-height: 0 !important;
     margin: 0 !important;
     padding: 14px 0 !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
+    overflow: hidden !important;
     box-sizing: border-box !important;
   }
 
   body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
-    height: auto !important;
-    min-height: calc(100dvh - 28px) !important;
-    max-height: none !important;
-    overflow: visible !important;
+    height: calc(100dvh - 28px) !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 28px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
   }
 }
 
@@ -162,7 +170,8 @@ body.authLandingActive.authLandingSignup #root {
   }
 
   body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
-    min-height: calc(100dvh - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
   }
 }
 
@@ -172,6 +181,7 @@ body.authLandingActive.authLandingSignup #root {
   }
 
   body.authLandingActive.authLandingSignup #root > div:not([role='status']) {
-    min-height: calc(100dvh - 12px) !important;
+    height: calc(100dvh - 12px) !important;
+    max-height: calc(100dvh - 12px) !important;
   }
 }
