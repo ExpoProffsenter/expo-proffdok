@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Verify scope guard logic
@@ -38,7 +38,7 @@ jobs:
         run: node scripts/critical-pr-scope-guard.mjs "origin/${{ github.base_ref }}"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Run full critical build
         run: npm run build
