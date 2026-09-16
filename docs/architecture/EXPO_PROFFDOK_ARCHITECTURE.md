@@ -1,12 +1,13 @@
 # Expo ProffDok – arkitekturkart
 
-**Fase:** 42J – skalerbar Sales, robust app-/fanebytte og tydelig prosjektnavigasjon  
-**Status:** Produksjonsbaseline t.o.m. 42G; Fase 42H–42J i Preview-QA  
-**Dato:** 15.09.2026  
-**Produksjonsbaseline:** Fase 42G systemadmin firmascoping  
-**Supabase:** `dqffxflaoyarbxyiyhop`
+**Fase:** 42K – produksjonsbaseline etter Sales-scale/recovery, prosjektnavigasjon og demo-stabilisering  
+**Status:** Fase 42K i Production  
+**Dato:** 16.09.2026  
+**Produksjonsbaseline:** PR #155 / `main` SHA `1b98fef90fe57c24996982f39619a5bc0ce8a4f2`  
+**Production Supabase:** `dqffxflaoyarbxyiyhop`  
+**Permanent Demo Sandbox:** branch `demo`, Supabase `ppvircenkjizeiqdxphj`
 
-Dette dokumentet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibilitetskrav som må bevares. Historiske detaljer finnes i Git og fasespesifikke arkitekturfiler.
+Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakoverkompatibilitetskrav som må bevares. Historiske detaljer finnes i Git og fasespesifikke arkitekturfiler.
 
 ## 1. Styrende prinsipper
 
@@ -15,7 +16,7 @@ Dette dokumentet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibil
 3. RLS/server er sikkerhetsgrensen; frontend alene gir aldri tilgang eller autoritativ validering.
 4. Publiserte tilbud, aksepterte tilbudsversjoner, signerte kontrakter og utstedte garantier er historikk og skal ikke overskrives vilkårlig.
 5. Prosjekt kan opprettes og eksistere uten tilbud og uten kontrakt.
-6. Kontrakt er bare obligatorisk når dokumentert tetthetsgaranti faktisk skal utstedes.
+6. Kontrakt er bare obligatorisk når dokumentert tetthetsgaranti faktisk skal utstedes eller øvrig avtalegrunnlag krever den.
 7. Privatkundeorienterte priser vises inkl. mva.
 8. Ingen historisk backfill uten eksplisitt beslutning.
 9. Supportmodus er ikke skrive-bypass og skal ikke registrere systemadmin som feil oppretter, ansvarlig eller signatar.
@@ -32,6 +33,9 @@ Dette dokumentet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibil
 20. Ved recovery/hydration vinner en eksplisitt brukerhandling alltid over automatisk gjenoppretting.
 21. Sales-oversikten skal være lett: listevisning henter bare summary/metadata. Komplett tilbud, bilder, Badskisse og historikk hentes først når én konkret sak åpnes.
 22. Aktivt arbeidsbilde skal tåle PC-fanebytte og mobil appbytte. Også en ny forespørsel uten `request_ref` er et gyldig recovery-arbeidsbilde.
+23. Før implementering klassifiseres miljømålet som `PRODUKSJON/PREVIEW`, `SANDBOX/DEMO` eller `BEGGE`.
+24. Permanent Demo Sandbox ligger på branch `demo`. Ordinær appkode kan synkroniseres **main → demo** etter godkjent Production-verifisering; demo-overlay og demodata skal aldri flyte **demo → main**.
+25. Demo/Test skal ikke brukes som begrunnelse for å endre beskyttet Production-kjerne i samme PR. Reell produktfeil splittes til egen core-PR fra ren `main`.
 
 ## 2. Plattform
 
@@ -43,11 +47,12 @@ Dette dokumentet beskriver gjeldende arkitektur og sikkerhets-/bakoverkompatibil
 | Serverlogikk | Supabase RPC/trigger/RLS | Firmascoping, validering, låsing, portalfiltrering og katalogtilgang |
 | Filer | Supabase Storage | Bilder og private/offentlige dokumenter |
 | E-post | Supabase Edge Functions + Resend | Befaring, tilbud, aksept, kontrakt, portal, chat og prosjektmeldinger |
-| Hosting | Vercel | Preview og Production |
+| Hosting | Vercel | Preview, Production og permanent Demo Sandbox |
 | PDF | jsPDF + nettleserutskrift + `pdf-lib` | Rapport, tilbud, akseptbevis, garanti, kontrakt og fremdriftsdokumenter |
 | Kalender | standard `.ics` | Enveis eksport av daterte fremdriftsøkter |
 
-Produksjon: `https://expo-proffdok.app`
+Produksjon: `https://expo-proffdok.app`  
+Permanent demo: `https://expo-proffdok-git-demo-ringside.vercel.app`
 
 ## 3. Repository – hovedansvar
 
@@ -83,8 +88,22 @@ docs/architecture/
   gjeldende arkitekturkart + fasespesifikke sikkerhets-/designnotater
 
 scripts/
-  kritiske pre-build-regresjonskontroller
+  kritiske pre-build-regresjonskontroller og PR-scope-guard
 ```
+
+### 3.1 Permanent Demo Sandbox
+
+`demo` er en langlivet, isolert branch som bygger den ekte appen mot separat Sandbox-Supabase. Den brukes til kundedemo, opplæring og funksjonell presentasjon uten risiko for Production-data.
+
+Kritiske regler:
+
+- `demo` skal aldri merges til `main`.
+- Production-funksjonalitet utvikles og godkjennes fra `main`-baserte feature-/hotfix-brancher.
+- Når godkjent Production-kode også skal finnes i demo, synkroniseres gjeldende `main` kontrollert inn i `demo`.
+- Demo-spesifikke kontrollflater, Golden/reset, syntetiske ressurser, sandbox-RPC-er og konfigurasjon bevares kun i demo.
+- Demo-builden skal feile dersom emitted JS fortsatt inneholder Production-Supabase-binding.
+- Sandbox har egen Auth, database og Storage og skal bare inneholde fiktive/sanitiserte data.
+- Fast kontrollside er `/demo-control.html` på det permanente demo-hostet.
 
 ## 4. Prosjekt og Avtalegrunnlag
 
@@ -103,11 +122,11 @@ Avtalegrunnlag kan inneholde akseptert tilbud/akseptbevis, signert Expo-kontrakt
 
 Butikktilbud er ikke en prosjektvei.
 
-### 4.1 Prosjektnavigasjon – Fase 42J
+### 4.1 Prosjektnavigasjon – Fase 42J/42K
 
 Desktop bruker kollapset prosjektmeny for å frigjøre plass i headingen. Når et prosjekt er aktivt viser `projectWorkspaceHeaderGuide.js` en kort veiviser og noen få hurtigvalg: **Oversikt, Bilder, Sjekklister og Chat**. Hurtigvalgene klikker eksisterende native prosjektfaner og lager ikke en ny navigasjonsmotor. Alt øvrig prosjektinnhold ligger fortsatt i **Meny**.
 
-Mobilskallet endres ikke av denne desktop-veiviseren.
+Fase 42K stabiliserte legacy-prosjektmenyer slik at eldre prosjektdata ikke gir feil anbefalt rekkefølge. Mobilskallet endres ikke av desktop-veiviseren.
 
 ## 5. Sales – ordinær Befaring/Tilbud
 
@@ -181,6 +200,16 @@ Viktig:
 - normal navigasjon skal ikke gjenopplive gamle entry-kladddata
 - første tomme React-render skal aldri overskrive entry-kladden som skal gjenopprettes
 - bevisst Tilbake/Avbryt/menyvalg rydder recovery-markører slik at brukerhandling alltid vinner
+
+### 5.5 Fase 42K – produksjonsstabilisering
+
+Fase 42K er gjeldende Production-baseline og inkluderer blant annet:
+
+- korrekt systemadmin-arbeidsscope via valgt `Representerer`-firma
+- videre beskyttelse av Prissøk-resume og bevisst navigasjon
+- krav om Firma ved godkjenning av nye brukere
+- vern av intern Butikktilbud-/nettopristilgang ved firmabytte
+- legacy prosjektmeny og anbefalt prosjektløp konsolidert mot gjeldende navigasjon
 
 ## 6. Sales – Butikktilbud
 
@@ -302,7 +331,7 @@ Firmaadministrator kan delegere moduler innenfor eget firma og egne tillatelser.
 
 Katalogimport er strengere enn ordinær Butikktilbud-bruk: systemadministrator-only.
 
-### 8A. Arbeidsprofiler, representasjon og systemadmin-scope – Fase 41B / 42G
+### 8A. Arbeidsprofiler, representasjon og systemadmin-scope – Fase 41B / 42G / 42K
 
 Aktiv arbeidsprofil lagres server-side. Vanlige flerfirma-brukere arbeider i valgt firma. Systemadministrator kan velge hvilket firma vedkommende **representerer**, uten at dette oppretter ordinært firmamedlemskap.
 
@@ -343,6 +372,8 @@ Denne mekanismen er sensitiv/frozen med mindre endring er eksplisitt bestilt.
 ## 11. Kontrakt og akseptvarsling
 
 Ordinær Sales-aksept kan gå videre til Expo-kontrakt eller ekstern kontrakt. Signert slutt-PDF er privat historikk og kan synkroniseres til prosjektets Avtalegrunnlag.
+
+Kontraktfunksjonen finnes i Production-koden gjennom blant annet `SalesContractWizard`, `SalesContractActions`, `SalesContractCustomerView` og kontraktdokumentkomponentene. Demo 16.09.2026 viste at funksjonen ikke var tilstrekkelig lett å finne i den aktuelle brukerreisen; dette er et UX-/finnbarhetsoppfølgingspunkt, ikke manglende backend-/kontraktarkitektur.
 
 Akseptvarsling er et etterfølgende sideutfall; lagret aksept kan ikke reverseres av e-postfeil.
 
@@ -421,6 +452,8 @@ Systemadmin er kontrollsenter for:
 
 Systemadmin skal ikke bruke brede rolleprivilegier som normal prosjektflate på tvers av firma. Før prosjektarbeid/support velges riktig representert firma. For vareregister skal Systemadmin vise import/status/kontrolltall og være eneste sted for prisoppdatering.
 
+Fase 42K krever Firma ved godkjenning av nye brukere og beskytter interne tilganger ved firmabytte.
+
 ## 16. HJELP
 
 Digital Hjelp er gjeldende brukerveiledning og skal følge rolle.
@@ -446,6 +479,7 @@ Hjelp skal beskrive gjeldende funksjon, ikke historisk changelog.
 `npm run build` kjører før Vite blant annet:
 
 ```text
+scripts/critical-pr-scope-guard.mjs --self-test
 scripts/critical-build-check.mjs
 scripts/critical-bathroom-sketch-check.mjs
 scripts/critical-sales-recovery-check.mjs
@@ -468,9 +502,14 @@ Disse beskytter kjente kontrakter som:
 - prosjektets kollapsede desktopmeny/hurtigvalg
 - fremdriftsplanens tilbudsimport/standardoperasjoner/kalender
 - katalogsikkerhet og Butikktilbud-seksjonspresentasjon
-- arbeidsprofiler, systemadmin-representasjon og 42G prosjekt-scope
+- arbeidsprofiler, systemadmin-representasjon og 42G/42K prosjekt-scope
+- PR-isolasjon slik at Demo/Test ikke samtidig endrer beskyttet appkjerne
 
 Build-sperrer erstatter ikke Preview-test, men skal stoppe kjente regresjoner før deploy.
+
+### 17.1 PR Core Safety
+
+GitHub workflow `PR Core Safety` kjører på PR-er mot `main`. Dersom en PR inneholder Demo/Test-markører, skal den feile dersom samme diff også endrer beskyttet Sales-/app-/backendkjerne. Reell core-endring skal da splittes i egen PR fra ren `main`.
 
 ## 18. Preview-sikkerhet
 
@@ -481,6 +520,20 @@ Prosjekt-/fremdriftsfunksjoner har egen Preview-sikkerhet som kan blokkere produ
 Sales/Butikktilbud er produksjonskoblet mot delt Supabase og må derfor testes med tydelige testsaker. Publisering/e-post i Preview kan være reell dersom funksjonen ikke eksplisitt er blokkert.
 
 `progressTest=safe` er Preview-sikkerhetsparameter og er ikke en del av endelig produksjonskundelenke.
+
+### 18.1 Demo Sandbox er ikke ordinær Preview
+
+Permanent Demo Sandbox bruker separat backend og er fysisk isolert fra Production. Den skal derfor ikke behandles som en tilfeldig Vercel Preview. Demo-builden har egen sandbox-binding, Golden/reset og fast branch-host.
+
+Før viktig demo skal preflight bekrefte:
+
+- branch `demo`
+- riktig permanent host
+- sandbox-Supabase i emitted JS og ingen Production-binding
+- fungerende `/demo-control.html`
+- forventede demosaker/Golden
+- kundetilbud før aksept og akseptert kundevisning
+- rapport/PDF dersom dette skal vises
 
 ## 19. Databasestørrelse og store payloads
 
@@ -503,15 +556,18 @@ Endres bare eksplisitt og med egen QA:
 - Fase 37A2 automatisk Butikktilbud-oppfølging
 - Sales recovery/hydration/lazy loading
 - Badskisse/bevaringen av befaringsmedia ved recovery
+- permanent Demo Sandbox-isolasjon og main → demo-synkretning
 
-## 21. Utsatt videreutvikling
+## 21. Utsatt videreutvikling / observasjoner fra demo 16.09.2026
 
+- forbedre kontraktfunksjonens finnbarhet etter akseptert ordinært tilbud
+- kvalitetsløft av rapport/PDF, særlig forside/hero, bildeinnbygging, sjekklistetelling og dokumentasjonsgrad
 - NOBB/Byggtjeneste-berikelse via GTIN
 - ERP-vareliste/PDF etter aksept gruppert på leverandør
 - CSV/Excel-varebehov
 - målrettet Storage-opprydding for fremtidige Sales-bilder
-- egen kontrollert demo-/testdataflyt med reset/sletting uten å risikere ekte kundehistorikk
 - kontrollert oppgradering av eldre **redigerbare** tilbudsutkast til ny versjon; publisert/akseptert historikk forblir immutable
+- komplett null-til-miljø databasebaseline/migrasjonskjede slik at nye isolerte miljøer kan bygges deterministisk
 
 Disse skal gjennomføres som egne runder med samme Preview-/mergepolicy.
 
@@ -531,4 +587,6 @@ Minimum:
 10. Direkte prosjektlenke til annet firma skal ikke åpnes i feil representasjonskontekst.
 11. Butikktilbud: redigering, autosave, Tilbake og kundepreview kontrollert ved relevante endringer.
 12. Arkitektur og relevante README/HJELP-filer samsvarer med faktisk implementasjon.
-13. Eksplisitt bruker-`TEST OK` før PR/merge.
+13. `PR Core Safety` er grønn når PR-en går mot `main`.
+14. Eksplisitt bruker-`TEST OK` før merge.
+15. Etter merge: Production verifisert. Ved miljømål `BEGGE` synkroniseres deretter gjeldende `main` kontrollert til `demo`, og sandbox-preflight skal være grønn.
