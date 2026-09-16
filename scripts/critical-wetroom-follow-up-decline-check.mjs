@@ -43,6 +43,15 @@ assert(
   "digital avvisning skal være tilgjengelig for ordinære Våtromstilbud."
 );
 
+const hardeningMigration = read("supabase/migrations/20260916135500_fase42m_follow_up_helper_acl.sql");
+for (const needle of [
+  "revoke all on function public.sales_try_timestamptz(text) from public, anon, authenticated",
+  "grant execute on function public.sales_try_timestamptz(text) to service_role",
+  "insert into public.sales_offer_follow_up_runtime",
+  "values (1, false, now())",
+  "on conflict (id) do nothing",
+]) assert(hardeningMigration.includes(needle), `helper/runtime-hardening mangler: ${needle}`);
+
 const worker = read("supabase/functions/sales-offer-auto-follow-up/index.ts");
 for (const needle of [
   '"list_sales_offer_follow_up_candidates"',
