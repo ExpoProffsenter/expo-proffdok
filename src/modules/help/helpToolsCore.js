@@ -1,4 +1,4 @@
-// Expo ProffDok – FASE 42K / FASE 42J / FASE 42H / FASE 42D HJELP
+// Expo ProffDok – FASE 42M / FASE 42K / FASE 42J / FASE 42H / FASE 42D HJELP
 // Én React-basert hjelpestruktur. Ingen DOM-innsprøyting, timere eller programmatisk åpning/lukking.
 // Brukerrettede funksjonsendringer skal oppdateres her når arbeidsflyt, begreper eller tilgang påvirkes.
 import React, * as ReactNS from "react";
@@ -73,6 +73,8 @@ const BASE_SECTIONS = [
       "En registrert befaring kan videreføres i samme sak som ordinært Våtromstilbud eller som Butikktilbud når brukeren har slik tilgang.",
       "Opprett tilbudsutkast, forhåndsvis og publiser riktig versjon til kunden.",
       "Publiserte og aksepterte tilbudsversjoner beholdes som historikk og overskrives ikke.",
+      "Et publisert ordinært Våtromstilbud kan få en egen automatisk oppfølgingsplan. Planen må aktiveres bevisst og gjelder bare den publiserte tilbudsversjonen du ser på.",
+      "Kunden kan akseptere eller avvise et ordinært Våtromstilbud digitalt. Ved avvisning låses den avviste versjonen som historikk, og eventuell automatisk oppfølging stopper.",
       "Når kunden har akseptert et ordinært Våtromstilbud, åpner du den aksepterte saken og finner kortet Kontrakt.",
       "Dersom saken ikke allerede har egen kontrakt lastet opp, kan du velge «Opprett enkel kontrakt». Alternativt kan du bruke «Last opp egen kontrakt». Har saken allerede en Expo-kontrakt, åpnes den igjen fra samme kort.",
       "Fortsett deretter til prosjektaktivering når saken skal opprettes som ProffDok-prosjekt."
@@ -81,7 +83,7 @@ const BASE_SECTIONS = [
       "Kontroller kundeopplysninger, summer, opsjoner og vedlegg før publisering.",
       "Når du fyller inn kundeinformasjon kan du bytte til SMS, Outlook eller en annen nettleserfane for å slå opp navn, adresse eller annen informasjon. Ved retur skal Expo ProffDok gjenåpne samme skjema med de ulagrede feltene bevart.",
       "Bevisst navigasjon i Expo ProffDok skal alltid vinne over automatisk recovery; går du selv Tilbake, Avbryt eller til en annen funksjon, skal appen ikke trekke deg tilbake senere.",
-      "Ordinære Våtromstilbud følges opp manuelt; Butikktilbud kan ha egen oppfølgingsplan.",
+      "Automatisk oppfølging av Våtromstilbud er av som standard. En ny publisert tilbudsversjon arver ikke planen fra en eldre versjon.",
       "Velg riktig tilbudstype før du bygger tilbudet."
     ],
     [

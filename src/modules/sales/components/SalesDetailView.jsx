@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 37D2 / FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX / FASE 39B.2C
+// Expo ProffDok – FASE 42M / FASE 37D2 / FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX / FASE 39B.2C
+// FASE 42M viser versjonslåst oppfølgingsplan for ordinære Våtromstilbud og
+// gjenbruker eksisterende avsluttet Avvist-presentasjon. Aksept/kontrakt/prosjekt er urørt.
 // Butikktilbud avsluttes ved aksept: prosjektsteg, kontrakt og prosjektaktivering
 // fjernes fra butikkflyten, mens ordinære tilbud beholder eksisterende flyt.
 // FASE 39B.2: avvist Butikktilbud får eget avsluttet neste-steg-kort og skal aldri
@@ -20,6 +22,7 @@ import { Children, cloneElement, isValidElement, useEffect, useState } from "rea
 import SalesDetailViewCore from "./SalesDetailViewCore.jsx";
 import SalesContractWizard from "./SalesContractWizard.jsx";
 import SalesContractActions from "./SalesContractActions.jsx";
+import SalesWetroomFollowUpActions from "./SalesWetroomFollowUpActions.jsx";
 import { OFFER_MAIN_POSTS } from "../constants/salesConstants.js";
 import { formatNok, getOfferTotal } from "../utils/salesUtils.js";
 import {
@@ -821,8 +824,8 @@ export default function SalesDetailView(props) {
     tree = rewriteAcceptanceProofContinuationText(tree);
   } else {
     tree = rewriteStoreOfferAcceptedFlow(tree);
-    tree = rewriteStoreOfferDeclinedFlow(tree, coreProps?.selectedRequest);
   }
+  tree = rewriteStoreOfferDeclinedFlow(tree, coreProps?.selectedRequest);
 
   if (hasExistingOfferDraft) {
     // SalesDetailViewCore er bevisst hook-fri. Vi materialiserer derfor treet her
@@ -833,6 +836,9 @@ export default function SalesDetailView(props) {
   return (
     <>
       {tree}
+      {!storeOffer ? (
+        <SalesWetroomFollowUpActions request={coreProps?.selectedRequest || {}} />
+      ) : null}
       <AcceptanceProofPreviewButton
         request={coreProps?.selectedRequest}
         companyProfile={coreProps?.companyProfile || {}}

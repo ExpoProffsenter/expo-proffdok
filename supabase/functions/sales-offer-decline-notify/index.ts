@@ -101,8 +101,10 @@ function buildEmailHtml({
   declinedBy,
   declinedAt,
   internalUrl,
+  isStoreOffer,
 }: any) {
   const safeLogo = String(logoUrl || "").trim();
+  const heading = isStoreOffer ? "Butikktilbud avvist" : "Våtromstilbud avvist";
   return `<!doctype html><html><body style="margin:0;background:#eef3f5;font-family:Arial,Helvetica,sans-serif;color:#172126">
   <div style="max-width:720px;margin:0 auto;padding:24px 12px">
     <div style="background:#fff;border:1px solid #d7e0e3;border-radius:18px;overflow:hidden">
@@ -111,7 +113,7 @@ function buildEmailHtml({
         ${safeLogo ? `<img src="${escapeHtml(safeLogo)}" alt="${escapeHtml(companyName)}" style="max-width:150px;max-height:64px;background:#fff;padding:5px;border-radius:6px">` : ""}
       </div>
       <div style="padding:30px 28px">
-        <h1 style="margin:0 0 10px;font-size:24px">Butikktilbud avvist</h1>
+        <h1 style="margin:0 0 10px;font-size:24px">${escapeHtml(heading)}</h1>
         <p style="margin:0 0 24px;line-height:1.6;color:#435158">Kunden har avvist tilbudet. Avvisningen er registrert i Expo ProffDok og automatisk oppfølging er stoppet.</p>
         <div style="background:#f5f8f9;border:1px solid #dbe4e7;border-radius:14px;padding:18px;line-height:1.65">
           <div><strong>Tilbud:</strong> ${escapeHtml(requestRef)}${offerTitle ? ` – ${escapeHtml(offerTitle)}` : ""}</div>
@@ -223,7 +225,7 @@ serve(async (req) => {
     if (versionError || !version) throw new HttpError(500, "Avvist tilbudsversjon finnes ikke.");
 
     const storeMeta = findStoreMeta(version.lines || []);
-    if (!storeMeta?.__storeOfferMeta) throw new HttpError(403, "Avvisningsvarsel gjelder kun Butikktilbud.");
+    const isStoreOffer = Boolean(storeMeta?.__storeOfferMeta);
 
     let publisherEmail = "";
     let publisherCompanyName = "";
@@ -279,7 +281,9 @@ serve(async (req) => {
       serviceClient,
       reservation,
       to: publisherEmail,
-      subject: `Butikktilbud avvist – ${offer.request_ref} – ${customerName}`,
+      subject: isStoreOffer
+        ? `Butikktilbud avvist – ${offer.request_ref} – ${customerName}`
+        : `Våtromstilbud avvist – ${offer.request_ref} – ${customerName}`,
       html: buildEmailHtml({
         companyName,
         logoUrl: companyLogoUrl,
@@ -290,6 +294,7 @@ serve(async (req) => {
         declinedBy,
         declinedAt,
         internalUrl,
+        isStoreOffer,
       }),
     });
 
@@ -297,6 +302,7 @@ serve(async (req) => {
       ok: true,
       requestRef: offer.request_ref,
       versionId: version.id,
+      offerType: isStoreOffer ? "store" : "wetroom",
       result,
     }), {
       status: 200,
