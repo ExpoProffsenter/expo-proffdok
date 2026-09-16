@@ -55,11 +55,22 @@ const ux = requireNeedles("src/modules/sales/storeOrderBasisUx.jsx", [
   "StoreOfferOrderBasis",
   "loadSalesNavigation",
   "loadRequests",
-  'request.status !== "Akseptert"',
-  "isStoreOfferRequest(request)",
+  "loadSalesRequestDetailForOpen",
+  'summaryRequest.status !== "Akseptert"',
+  "isStoreOfferRequest(summaryRequest)",
+  "detailResult?.error",
+  'detailRequest.status !== "Akseptert"',
+  "isStoreOfferRequest(detailRequest)",
+  "return detailRequest;",
   "supportModeActive()",
   "expo-store-order-basis-host",
 ]);
+
+if (ux.includes("return summaryRequest;")) {
+  throw new Error(
+    "41B.5 bestillingsgrunnlag må aldri rendres direkte fra komprimert Sales summary-cache."
+  );
+}
 
 if (/new\s+MutationObserver\s*\(/.test(ux)) {
   throw new Error("41B.5 bestillingsgrunnlag skal ikke bruke MutationObserver.");
@@ -70,4 +81,6 @@ requireNeedles("index.html", [
   "/src/modules/sales/storeOrderBasisUx.jsx",
 ]);
 
-console.log("✅ Expo ProffDok Butikktilbud bestillingsgrunnlag check OK");
+console.log(
+  "✅ Expo ProffDok Butikktilbud bestillingsgrunnlag check OK – valgt summary brukes kun til oppslag, komplett akseptert sak hydreres før varelinjer bygges"
+);
