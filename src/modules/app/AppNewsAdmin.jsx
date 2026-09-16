@@ -30,6 +30,7 @@ export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
   const [loading, setLoading] = useState(false);
   const [publishBusy, setPublishBusy] = useState(false);
   const [actionBusyId, setActionBusyId] = useState("");
+  const [showPreviousNews, setShowPreviousNews] = useState(false);
   const [error, setError] = useState("");
 
   async function loadNews({ silent = false } = {}) {
@@ -192,65 +193,92 @@ export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
         )}
 
         <div style={{ marginTop: "20px" }}>
-          <h4 style={{ marginBottom: "10px" }}>Tidligere nyheter</h4>
-          {loading && <p className="note">Henter nyheter...</p>}
-          {!loading && items.length === 0 && (
-            <p className="note">Ingen nyheter er publisert ennå.</p>
-          )}
-
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="item"
-              style={{
-                background: item.active ? "#f0fdfa" : "#f8fafc",
-                marginBottom: "10px",
-              }}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+              flexWrap: "wrap",
+            }}
+          >
+            <h4 style={{ margin: 0 }}>
+              Tidligere nyheter{loading ? "" : ` (${items.length})`}
+            </h4>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => setShowPreviousNews((current) => !current)}
+              aria-expanded={showPreviousNews}
+              aria-controls="app-news-history"
+              disabled={loading && items.length === 0}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: "12px",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div style={{ flex: "1 1 280px" }}>
-                  <b>{item.title}</b>
-                  <small style={{ display: "block", color: "#64748b", marginTop: "3px" }}>
-                    {item.active ? "Aktiv" : "Deaktivert"}
-                    {item.published_at
-                      ? ` · Publisert ${formatAdminNewsDate(item.published_at)}`
-                      : ""}
-                  </small>
+              {showPreviousNews ? "Skjul" : "Vis"}
+            </button>
+          </div>
+
+          {showPreviousNews && (
+            <div id="app-news-history" style={{ marginTop: "10px" }}>
+              {loading && <p className="note">Henter nyheter...</p>}
+              {!loading && items.length === 0 && (
+                <p className="note">Ingen nyheter er publisert ennå.</p>
+              )}
+
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="item"
+                  style={{
+                    background: item.active ? "#f0fdfa" : "#f8fafc",
+                    marginBottom: "10px",
+                  }}
+                >
                   <div
                     style={{
-                      whiteSpace: "pre-wrap",
-                      marginTop: "8px",
-                      color: "#475569",
-                      lineHeight: 1.5,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: "12px",
+                      flexWrap: "wrap",
                     }}
                   >
-                    {item.message}
+                    <div style={{ flex: "1 1 280px" }}>
+                      <b>{item.title}</b>
+                      <small style={{ display: "block", color: "#64748b", marginTop: "3px" }}>
+                        {item.active ? "Aktiv" : "Deaktivert"}
+                        {item.published_at
+                          ? ` · Publisert ${formatAdminNewsDate(item.published_at)}`
+                          : ""}
+                      </small>
+                      <div
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          marginTop: "8px",
+                          color: "#475569",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {item.message}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => handleToggleActive(item)}
+                      disabled={actionBusyId === item.id}
+                    >
+                      {actionBusyId === item.id
+                        ? "Lagrer..."
+                        : item.active
+                          ? "Deaktiver"
+                          : "Publiser på nytt"}
+                    </button>
                   </div>
                 </div>
-
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() => handleToggleActive(item)}
-                  disabled={actionBusyId === item.id}
-                >
-                  {actionBusyId === item.id
-                    ? "Lagrer..."
-                    : item.active
-                      ? "Deaktiver"
-                      : "Publiser på nytt"}
-                </button>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </div>
     </>
