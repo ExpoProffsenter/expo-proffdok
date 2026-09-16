@@ -3,6 +3,21 @@
 -- Våtromstilbud. Butikktilbudets metadata, standarder og scheduler beholdes.
 -- Våtrom kommer kun med når en bruker eksplisitt lagrer en plan for eksakt aktiv versjon.
 
+-- Production har denne hjelpefunksjonen fra eksisterende Butikk-oppfølging. Den
+-- opprettes idempotent her også fordi permanent Demo kan ligge etter i backend.
+create or replace function public.sales_try_timestamptz(p_value text)
+returns timestamptz
+language plpgsql
+immutable strict
+set search_path to 'pg_catalog'
+as $$
+begin
+  return p_value::timestamptz;
+exception when others then
+  return null;
+end;
+$$;
+
 create or replace function public.set_wetroom_offer_follow_up_config(
   requested_request_ref text,
   requested_version_id uuid,
