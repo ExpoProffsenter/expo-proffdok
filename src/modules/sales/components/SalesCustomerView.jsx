@@ -1,10 +1,11 @@
-// Expo ProffDok – FASE 37A2 / FASE 37D2 / FASE 37D1 / FASE 34B / FASE 39B.2
+// Expo ProffDok – FASE 42M / FASE 37A2 / FASE 37D2 / FASE 37D1 / FASE 34B / FASE 39B.2
+// Digital avvisning gjenbrukes nå også for ordinære Våtromstilbud. Butikktilbudets
+// presentasjon, utløpssperre og akseptflyt beholdes uendret.
 // Butikktilbud bruker versjonslåst merkevare og saksbehandler og presenteres
 // som et vare-/butikktilbud. FASE 37A2 lar kunden akseptere eller avvise,
 // og stopper begge beslutninger når Butikktilbudets gyldighet er utløpt.
-// FASE 39B.2 viser avvist Butikktilbud som låst historikk med hele publiserte
+// FASE 39B.2 viser avvist tilbud som låst historikk med hele publiserte
 // tilbudet synlig, men uten nye aksept-, avvisnings- eller opsjonsvalg.
-// Ordinære tilbud beholder eksisterende presentasjon og akseptflyt.
 
 import { useEffect, useMemo, useState } from "react";
 import SalesCustomerViewCore from "./SalesCustomerViewCore.jsx";
@@ -313,8 +314,7 @@ function validDate(value) {
   return Number.isFinite(time) ? time : 0;
 }
 
-function storeOfferIsExpired(request, activeVersion, isStoreOffer) {
-  if (!isStoreOffer) return false;
+function offerIsExpired(request, activeVersion) {
   const publishedAt = validDate(
     request?.offerPublishedAt || request?.sentOfferAt || activeVersion?.createdAt || activeVersion?.created_at
   );
@@ -345,10 +345,11 @@ export default function SalesCustomerView(props) {
   const [declineError, setDeclineError] = useState("");
   const [localDecline, setLocalDecline] = useState(null);
   const salesClient = useMemo(() => createDefaultSalesSupabaseClient(), []);
-  const expired = storeOfferIsExpired(brandedRequest, activeVersion, isStoreOffer);
+  const genericExpired = offerIsExpired(brandedRequest, activeVersion);
+  const storeExpired = Boolean(isStoreOffer && genericExpired);
   const declined = Boolean(localDecline || brandedRequest?.status === "Avvist" || brandedRequest?.declinedAt);
   const declinedBy = String(localDecline?.declined_by || brandedRequest?.declinedBy || "").trim();
-  const readOnlyDeclined = Boolean(isStoreOffer && declined && brandedRequest);
+  const readOnlyDeclined = Boolean(declined && brandedRequest);
 
   useEffect(() => {
     const applyPresentation = () => {
@@ -366,7 +367,7 @@ export default function SalesCustomerView(props) {
 
   async function handleDecline(event) {
     event.preventDefault();
-    if (!isStoreOffer || expired || declineBusy) return;
+    if (genericExpired || declineBusy) return;
     if (!declineConfirmed || !declineName.trim()) return;
     if (!salesClient || !brandedRequest?.publicToken) {
       setDeclineError("Tilbudet kunne ikke identifiseres. Last inn siden på nytt.");
@@ -394,7 +395,7 @@ export default function SalesCustomerView(props) {
 
   const acceptHandler = readOnlyDeclined
     ? (event) => event?.preventDefault?.()
-    : expired
+    : storeExpired
       ? (event) => {
           event?.preventDefault?.();
           alert("Butikktilbudet er utløpt. Ta kontakt med saksbehandler for et nytt tilbud.");
@@ -405,7 +406,8 @@ export default function SalesCustomerView(props) {
     <>
       <style>
         {ORDER_STYLES}
-        {isStoreOffer && (expired || readOnlyDeclined) ? ".sales-customer-accept-form{display:none!important}" : ""}
+        {isStoreOffer && (storeExpired || readOnlyDeclined) ? ".sales-customer-accept-form{display:none!important}" : ""}
+        {!isStoreOffer && readOnlyDeclined ? ".sales-customer-accept-form{display:none!important}" : ""}
       </style>
       <SalesCustomerViewCore
         {...props}
@@ -413,7 +415,7 @@ export default function SalesCustomerView(props) {
         handleAcceptOffer={acceptHandler}
         toggleAcceptedOption={readOnlyDeclined ? () => {} : props.toggleAcceptedOption}
       />
-      {isStoreOffer && readOnlyDeclined ? (
+      {readOnlyDeclined ? (
         <div className="store-customer-decision-shell">
           <section className="store-customer-decline-card">
             <h2>Tilbudet er avvist</h2>
@@ -425,17 +427,25 @@ export default function SalesCustomerView(props) {
           </section>
         </div>
       ) : null}
-      {isStoreOffer && props.mode === "customer-offer" && !readOnlyDeclined ? (
+      {props.mode === "customer-offer" && !readOnlyDeclined ? (
         <div className="store-customer-decision-shell">
-          {expired ? (
+          {genericExpired ? (
             <section className="store-customer-expired-card">
               <h2>Tilbudet er utløpt</h2>
-              <p>Gyldighetsperioden er passert. Tilbudet kan derfor ikke lenger aksepteres eller avvises digitalt. Ta kontakt med saksbehandler dersom du ønsker et nytt eller oppdatert tilbud.</p>
+              <p>
+                {isStoreOffer
+                  ? "Gyldighetsperioden er passert. Tilbudet kan derfor ikke lenger aksepteres eller avvises digitalt. Ta kontakt med saksbehandler dersom du ønsker et nytt eller oppdatert tilbud."
+                  : "Gyldighetsperioden er passert. Tilbudet kan derfor ikke lenger avvises digitalt. Ta kontakt med saksbehandler dersom du ønsker et nytt eller oppdatert tilbud."}
+              </p>
             </section>
           ) : (
             <form className="store-customer-decline-card" onSubmit={handleDecline}>
               <h2>Ønsker du ikke tilbudet?</h2>
-              <p>Du kan avvise Butikktilbudet her. Når svaret er registrert, avsluttes denne tilbudsversjonen og automatiske påminnelser stopper.</p>
+              <p>
+                {isStoreOffer
+                  ? "Du kan avvise Butikktilbudet her. Når svaret er registrert, avsluttes denne tilbudsversjonen og automatiske påminnelser stopper."
+                  : "Du kan avvise Våtromstilbudet her. Når svaret er registrert, avsluttes denne tilbudsversjonen og eventuell automatisk oppfølging stopper."}
+              </p>
               <div className="store-customer-decline-fields">
                 <label className="sales-field">
                   <span>Fullt navn</span>
@@ -443,7 +453,7 @@ export default function SalesCustomerView(props) {
                 </label>
                 <label className="store-customer-decline-check">
                   <input type="checkbox" checked={declineConfirmed} onChange={(event) => setDeclineConfirmed(event.target.checked)} required />
-                  <span>Jeg avviser dette Butikktilbudet.</span>
+                  <span>{isStoreOffer ? "Jeg avviser dette Butikktilbudet." : "Jeg avviser dette Våtromstilbudet."}</span>
                 </label>
                 {declineError ? <p className="store-customer-decline-error">{declineError}</p> : null}
                 <button className="store-customer-decline-button" type="submit" disabled={declineBusy || !declineName.trim() || !declineConfirmed}>
