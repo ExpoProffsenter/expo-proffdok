@@ -1,11 +1,13 @@
 // Expo ProffDok – FASE 41B.5
 // Monterer read-only bestillingsgrunnlag på akseptert Butikktilbud uten å endre
-// Sales Core. Lokal Sales-cache brukes kun for å finne allerede hydrert, låst sak.
+// Sales Core. Lokal Sales-cache brukes kun til å finne valgt sak; komplett sak
+// hydreres med eksisterende on-demand detaljlaster før bestillingsgrunnlaget vises.
 
 import React from "react";
 import { createRoot } from "react-dom/client";
 import StoreOfferOrderBasis from "./components/StoreOfferOrderBasis.jsx";
 import { createDefaultSalesSupabaseClient } from "./services/salesSupabase.js";
+import { loadSalesRequestDetailForOpen } from "./services/salesRequestLazyLoading.js";
 import {
   buildSalesStorageKey,
   loadRequests,
@@ -46,14 +48,14 @@ function destroy() {
   document.getElementById(HOST_ID)?.remove();
 }
 
-async function resolveStorageKey() {
+async function resolveSalesContext() {
   const client = createDefaultSalesSupabaseClient();
   const sessionResult = await client.auth.getSession();
   const userId = String(sessionResult?.data?.session?.user?.id || "").trim();
-  if (!userId) return "";
+  if (!userId) return null;
 
   let state = readCachedWorkProfileState();
-  if (!state?.active_company_profile?.companyName) {
+  if (!state?.active_company_profile?.companyName || !state?.active_company_id) {
     state = await getMyWorkProfileState();
   }
   const companyName = String(
@@ -61,30 +63,60 @@ async function resolveStorageKey() {
       state?.active_company_profile?.company_name ||
       ""
   ).trim();
-  if (!companyName) return "";
+  const companyId = String(
+    state?.active_company_id ||
+      state?.active_company_profile?.companyId ||
+      state?.active_company_profile?.company_id ||
+      ""
+  ).trim();
+  if (!companyName || !companyId) return null;
 
-  return buildSalesStorageKey({
-    integrationMode: "app",
-    companyName,
-    userId,
-  });
+  return {
+    client,
+    companyId,
+    storageKey: buildSalesStorageKey({
+      integrationMode: "app",
+      companyName,
+      userId,
+    }),
+  };
 }
 
 async function getSelectedAcceptedStoreOffer() {
   if (supportModeActive() || isPublicSalesView()) return null;
 
-  const storageKey = await resolveStorageKey();
-  if (!storageKey) return null;
-  const navigation = loadSalesNavigation(storageKey);
+  const context = await resolveSalesContext();
+  if (!context?.storageKey) return null;
+  const navigation = loadSalesNavigation(context.storageKey);
   if (navigation?.mode !== "detail" || !navigation?.selectedRequestId) return null;
 
-  const request = loadRequests(storageKey).find(
+  const summaryRequest = loadRequests(context.storageKey).find(
     (item) => String(item?.id || "") === String(navigation.selectedRequestId)
   );
-  if (!request || request.status !== "Akseptert" || !isStoreOfferRequest(request)) {
+  if (
+    !summaryRequest ||
+    summaryRequest.status !== "Akseptert" ||
+    !isStoreOfferRequest(summaryRequest)
+  ) {
     return null;
   }
-  return request;
+
+  const detailResult = await loadSalesRequestDetailForOpen(
+    context.client,
+    context.companyId,
+    summaryRequest.id
+  );
+  const detailRequest = detailResult?.data || null;
+  if (
+    detailResult?.error ||
+    !detailRequest ||
+    detailRequest.status !== "Akseptert" ||
+    !isStoreOfferRequest(detailRequest)
+  ) {
+    return null;
+  }
+
+  return detailRequest;
 }
 
 function findMountTarget() {
