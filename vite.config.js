@@ -8,7 +8,7 @@ const PROD_ACCESS_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIU
 const PROD_CURRENT_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
 const SANDBOX_SUPABASE_URL = "https://ppvircenkjizeiqdxphj.supabase.co";
 const SANDBOX_PUBLISHABLE_KEY = "sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR";
-const SANDBOX_VERCEL_HOST = "expo-proffdok-git-feature-demo-showcase-isolated-ringside.vercel.app";
+const SANDBOX_VERCEL_HOST = "expo-proffdok-git-demo-ringside.vercel.app";
 
 function demoSandboxBuildGuard() {
   return {
@@ -22,7 +22,7 @@ function demoSandboxBuildGuard() {
         .replaceAll(PROD_ACCESS_ANON_KEY, SANDBOX_PUBLISHABLE_KEY)
         .replaceAll(PROD_CURRENT_ANON_KEY, SANDBOX_PUBLISHABLE_KEY);
 
-      // Sandboxen er fysisk isolert fra Production og skal derfor bruke ekte sandbox-lagring.
+      // Den permanente demo-branchen er fysisk isolert fra Production og skal bruke ekte sandbox-lagring.
       // Vanlige Vercel Previewer beholder eksisterende progressTest=safe-beskyttelse.
       if (id.endsWith("/src/modules/app/previewSafetyBootstrap.js")) {
         next = next.replace(
