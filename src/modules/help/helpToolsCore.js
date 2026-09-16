@@ -9,7 +9,7 @@ import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
 const import_react = { default: React, ...ReactNS };
 const import_lucide_react = { FileText };
 const import_jsx_runtime = { jsx, jsxs, Fragment };
-const HELP_UPDATED_LABEL = "Sist oppdatert: 15.09.2026";
+const HELP_UPDATED_LABEL = "Sist oppdatert: 16.09.2026";
 
 function section(key, title, purpose, workflow = [], important = [], best = []) {
   return { key, title, purpose, workflow, important, best };
@@ -63,8 +63,8 @@ const BASE_SECTIONS = [
   ),
   section(
     "sales",
-    "🧾 Befaring/Tilbud",
-    "Befaring/Tilbud samler forespørsel, befaring, tilbud, kundeaksept og videreføring til prosjekt eller butikkleveranse.",
+    "🧾 Befaring / Våtromstilbud",
+    "Befaring / Våtromstilbud samler forespørsel, befaring, ordinære våtromstilbud, kundeaksept og videreføring til kontrakt og ProffDok-prosjekt. Butikktilbud vises bare for brukere med slik tilgang.",
     [
       "Bruk søkefeltet for å finne saker på blant annet kunde, adresse, e-post, telefon, saksreferanse, ansvarlig, tilbudstype og innhold. Statusfaner og eget Befaring-filter snevrer inn resultatet.",
       "Bruk fanen Forespørsler for nye saker som er registrert, men hvor befaring ennå ikke er planlagt. Saken blir liggende der til befaring bookes.",
@@ -73,7 +73,9 @@ const BASE_SECTIONS = [
       "En registrert befaring kan videreføres i samme sak som ordinært Våtromstilbud eller som Butikktilbud når brukeren har slik tilgang.",
       "Opprett tilbudsutkast, forhåndsvis og publiser riktig versjon til kunden.",
       "Publiserte og aksepterte tilbudsversjoner beholdes som historikk og overskrives ikke.",
-      "Ved aksept av ordinært Våtromstilbud kan saken videreføres til kontrakt og ProffDok-prosjekt."
+      "Når kunden har akseptert et ordinært Våtromstilbud, åpner du den aksepterte saken og finner kortet Kontrakt.",
+      "Dersom saken ikke allerede har egen kontrakt lastet opp, kan du velge «Opprett enkel kontrakt». Alternativt kan du bruke «Last opp egen kontrakt». Har saken allerede en Expo-kontrakt, åpnes den igjen fra samme kort.",
+      "Fortsett deretter til prosjektaktivering når saken skal opprettes som ProffDok-prosjekt."
     ],
     [
       "Kontroller kundeopplysninger, summer, opsjoner og vedlegg før publisering.",
