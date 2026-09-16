@@ -20,6 +20,7 @@ const main = requireNeedles('src/main.jsx', [
   'notifySystemAdminsAboutSignup(cleanEmail, cleanName, cleanMobile)',
   'setAuthMode("login")',
   'company_user_invites',
+  '["firmaadmin", "Firma"]',
 ]);
 
 if (main.includes('expo_proffdok_company_name') || main.includes('signup_company_application_available')) {
@@ -29,6 +30,8 @@ if (main.includes('expo_proffdok_company_name') || main.includes('signup_company
 requireNeedles('index.html', [
   'installCompanySignupOnboarding',
   "'/src/modules/auth/companySignupOnboarding.js'",
+  'installCompanyAdminNavigationLabel',
+  "'/src/modules/company/companyAdminNavigationLabel.js'",
 ]);
 
 const ux = requireNeedles('src/modules/auth/companySignupOnboarding.js', [
@@ -63,6 +66,17 @@ if (!ux.includes('nativeFetch(nextRequest)')) {
   throw new Error('42N skal supplere dagens signup-request og ikke erstatte React sin øvrige auth-flyt.');
 }
 
+const companyAdminLabel = requireNeedles('src/modules/company/companyAdminNavigationLabel.js', [
+  "normalizeText(button.textContent) === 'Firma'",
+  "companyAdminButton.textContent = 'Firmaadmin'",
+  "companyAdminButton.dataset.expoCompanyAdminLabel = '1'",
+  "labels.includes('Firmaprofil')",
+  "labels.includes('Hjelp')",
+]);
+if (companyAdminLabel.includes("addEventListener('click'") || companyAdminLabel.includes('.click()')) {
+  throw new Error('Firmaadmin-etiketten skal ikke overta eller endre native navigasjonshandling.');
+}
+
 const migration = requireNeedles('supabase/migrations/20260916152000_fase42n_signup_company_onboarding.sql', [
   'signup_company_application_available',
   'handle_auth_signup_company_application',
@@ -89,4 +103,4 @@ requireNeedles('supabase/migrations/20260915155500_fase42k_company_approval_and_
   'Velg firma før brukeren godkjennes',
 ]);
 
-console.log('✅ Expo ProffDok Fase 42N firmaregistrering/godkjenning check OK');
+console.log('✅ Expo ProffDok Fase 42N firmaregistrering/godkjenning/Firmaadmin-navn check OK');
