@@ -61,22 +61,19 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 - Systemadmins ordinære prosjektarbeidsflate følger valgt **Representerer**-firma; brede supportrettigheter skal ikke blande firma i vanlig prosjektliste.
 - Desktop prosjektarbeidsflate bruker kollapset meny med få native hurtigvalg; full funksjonsliste ligger fortsatt i Meny.
 
-## Demo Sandbox
+## Permanent Demo Sandbox
 
-Expo ProffDok har et separat demo-/opplæringsmiljø for presentasjoner der den ekte appen må kunne brukes uten å skrive til Production.
+Expo ProffDok har et separat, langlivet demo-/opplæringsmiljø for presentasjoner der den ekte appen må kunne brukes uten å skrive til Production.
 
-Kritiske regler:
-
-- Production: `main` + Production-Supabase `dqffxflaoyarbxyiyhop`.
-- Demo Sandbox: permanent branch `feature/demo-showcase-isolated` + egen Supabase `ppvircenkjizeiqdxphj`.
-- Demo-branchen skal **aldri merges til `main`**.
+- Production: `main` + `https://expo-proffdok.app` + Production-Supabase `dqffxflaoyarbxyiyhop`.
+- Demo Sandbox: permanent branch `demo` + `https://expo-proffdok-git-demo-ringside.vercel.app` + Sandbox-Supabase `ppvircenkjizeiqdxphj`.
+- `demo` skal **aldri merges til `main`**.
+- Ordinær produksjonskode kan etter godkjent Production-verifisering synkroniseres **main → demo**.
+- Demo-overlay, demodata, syntetiske ressurser, demo-RPC-er og sandbox-konfigurasjon skal aldri flyte **demo → main**.
+- Demo-builden skal feile dersom Production-Supabase blir bundet inn i emitted JS.
 - Sandbox inneholder bare fiktive/sanitiserte demodata og har egen Auth/Storage.
-- Gult merke `DEMO SANDBOX · IKKE PRODUKSJON` skal alltid være synlig.
-- Vanlige Vercel Previewer bruker fortsatt trygg `progressTest=safe`; det dedikerte sandbox-hostet unntas fordi backend allerede er fysisk isolert.
-- Sandbox-feil i grants/seed/Auth/Storage skal rettes i sandbox – ikke ved å endre Production Sales/recovery/autosave.
+- Gult merke `DEMO SANDBOX · KONTROLL` skal være tilgjengelig, og `/demo-control.html` er fast kontrollside.
 - Reell produktfeil må først reproduseres mot ren `main` og tas i separat feature/hotfix med ordinær QA og `TEST OK`.
-
-Sandboxens Fremdrift kan bruke det aksepterte demo-tilbudet som arbeidsgrunnlag. Prosjektet må ha `salesOrigin.publicToken`, og importen bruker eksisterende `get_sales_offer_by_token` + `buildAcceptedOfferProgressActivities`.
 
 Se [Demo Sandbox Architecture](docs/architecture/DEMO_SANDBOX_ARCHITECTURE.md) og [A–Å-manualen](docs/DEMO_SANDBOX_MANUAL.md).
 
@@ -92,6 +89,7 @@ For brukerrettede endringer:
 4. Kontroller eksisterende funksjon, ny funksjon, reload/persistens og historikk der det er relevant.
 5. Ikke merge før eksplisitt `TEST OK`.
 6. Etter merge: bekreft eksakt `main`-SHA, Vercel Production `READY`, HTTP 200 og runtime uten fatale feil.
+7. Når endringen også skal finnes i demo, synkroniser gjeldende `main` inn i `demo` uten å føre demo-overlay tilbake til Production, og kjør sandbox-preflight.
 
 ## Dokumentasjonsregel
 
