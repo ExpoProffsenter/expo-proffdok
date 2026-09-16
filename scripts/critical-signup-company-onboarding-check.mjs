@@ -66,6 +66,18 @@ if (!ux.includes('nativeFetch(nextRequest)')) {
   throw new Error('42N skal supplere dagens signup-request og ikke erstatte React sin øvrige auth-flyt.');
 }
 
+const signupCss = requireNeedles('src/modules/auth/companySignupOnboarding.css', [
+  'body.authLandingActive.authLandingSignup #root',
+  'overflow-y: auto !important',
+  'height: 100dvh !important',
+  'touch-action: pan-y',
+  "#root > div:not([role='status'])",
+  'max-height: none !important',
+]);
+if (signupCss.includes('body.authLandingActive.authLandingLogin #root')) {
+  throw new Error('42N-scrollrettingen skal ikke endre login-scroll eller login-layout.');
+}
+
 const companyAdminLabel = requireNeedles('src/modules/company/companyAdminNavigationLabel.js', [
   "normalizeText(button.textContent) === 'Firma'",
   "companyAdminButton.textContent = 'Firmaadmin'",
@@ -103,4 +115,4 @@ requireNeedles('supabase/migrations/20260915155500_fase42k_company_approval_and_
   'Velg firma før brukeren godkjennes',
 ]);
 
-console.log('✅ Expo ProffDok Fase 42N firmaregistrering/godkjenning/Firmaadmin-navn check OK');
+console.log('✅ Expo ProffDok Fase 42N firmaregistrering/godkjenning/Firmaadmin-navn/signup-scroll check OK');
