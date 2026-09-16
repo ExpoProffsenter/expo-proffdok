@@ -33,15 +33,16 @@ requireNeedles('index.html', [
 
 const ux = requireNeedles('src/modules/auth/companySignupOnboarding.js', [
   'Send registrering',
-  'Firmaopplysninger',
+  'FIRMAOPPLYSNINGER',
   'Jeg er invitert til et eksisterende firma',
   'Firmanavn',
   'Organisasjonsnummer',
   'Firmaadresse (gate, postnr. og sted)',
   'Firmatelefon',
   'Nettside (valgfritt)',
-  '/auth\\/v1\\/signup',
-  'signup_company_application_available',
+  "endpoint.pathname = '/rest/v1/rpc/signup_company_application_available'",
+  "request.method !== 'POST'",
+  'auth\\/v1\\/signup',
 ]);
 
 for (const needle of [
