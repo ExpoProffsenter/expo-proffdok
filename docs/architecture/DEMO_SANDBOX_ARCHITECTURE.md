@@ -1,8 +1,9 @@
 # Expo ProffDok – Demo Sandbox Architecture
 
-**Status:** aktivt isolert demo-/opplæringsmiljø  
+**Status:** aktivt permanent isolert demo-/opplæringsmiljø  
 **Opprettet:** 15.09.2026  
-**Frontend branch:** `feature/demo-showcase-isolated`  
+**Permanent frontend branch:** `demo`  
+**Fast Vercel-host:** `https://expo-proffdok-git-demo-ringside.vercel.app`  
 **Supabase sandbox project ref:** `ppvircenkjizeiqdxphj`  
 **Production Supabase project ref:** `dqffxflaoyarbxyiyhop`
 
@@ -12,16 +13,26 @@ Demo Sandbox brukes til kundedemo, intern opplæring og funksjonell QA der bruke
 
 Sandboxen er **ikke** en Preview mot Production-backend. Den har egen Supabase-database, egen Auth, egne Storage-buckets og egne demodata.
 
+## Permanent miljømodell
+
+- `main` er Production og eneste branch som skal deployes som ordinær produksjonsapp.
+- `demo` er langlivet, permanent Sandbox/Demo og skal aldri merges tilbake til `main`.
+- Ordinær produksjonskode kan etter godkjent Production-verifisering synkroniseres **main → demo**.
+- Demo-overlay, demodata, syntetiske ressurser, demo-RPC-er, sandbox-konfigurasjon og sandboxspesifikke rettinger skal aldri flyte **demo → main**.
+- Feature-/hotfix-arbeid starter fra gjeldende `main`, ikke fra `demo`.
+- En feil oppdaget i demo som også kan være en reell produktfeil må først reproduseres mot ren `main`.
+
 ## Sikkerhetsgrense
 
 - `main` / `https://expo-proffdok.app` er Production og skal aldri peke mot sandbox.
-- `feature/demo-showcase-isolated` er permanent demo-branch og skal **ikke merges til `main`**.
+- `demo` / `https://expo-proffdok-git-demo-ringside.vercel.app` er permanent demo og skal **ikke merges til `main`**.
 - Demo-builden erstatter Production-Supabase-endepunktet med sandbox-endepunktet under Vite-build.
-- Gult merke `DEMO SANDBOX · IKKE PRODUKSJON` skal alltid være synlig i demo-builden.
+- Builden verifiserer emitted JS og feiler dersom sandbox-binding mangler eller Production-Supabase-binding fortsatt finnes.
+- `demo-control.html` er fast kontrollside for demooperatør.
 - Sandboxen inneholder ingen kopierte kundesaker, prosjektdata eller Production-filer.
 - Firmamaler/demoinnhold skal være sanitert/fiktivt.
 - E-post/cron/automatiske Production-sideeffekter skal ikke aktiveres i sandbox uten en egen beslutning.
-- Vanlige Vercel Previewer beholder `progressTest=safe`. Bare det dedikerte sandbox-hostet unntas fordi backend allerede er fysisk isolert.
+- Vanlige Vercel Previewer beholder `progressTest=safe`. Bare det dedikerte permanente sandbox-hostet unntas fordi backend allerede er fysisk isolert.
 
 ## Datamodell og schema
 
@@ -57,7 +68,7 @@ Sandbox har samme bucket-navn og filgrenser som Production, men ingen kopierte f
 - `project-media-private`
 - `sales-inspection-photos`
 
-Innlogget demo-bruker kan bruke disse bucketene i sandbox. Offentlige demoressurser kan leses fra de offentlige bucketene.
+Innlogget demo-bruker kan bruke disse bucketene i sandbox. Offentlige demoressurser kan leses fra demo-hostet eller de offentlige bucketene.
 
 ## Sales og kundereise
 
@@ -98,22 +109,34 @@ Valgte opsjoner følger arbeidsoperasjonen de tilhører. Tre valgte opsjoner fø
 
 Det dedikerte sandbox-hostet skal ikke bruke `progressTest=safe`, fordi denne eldre Preview-sperren med vilje deaktiverer tilbudsimport og serverlagring.
 
-## Drift og reset
+## Golden snapshot og reset
 
 Sandboxen lagrer endringer permanent i sin egen database. Refresh er derfor ikke en reset.
 
-Før en viktig demo skal demooperatør kontrollere:
+Golden snapshot brukes til å gjenopprette kjent demo-tilstand. Endringer i Golden skal være kirurgiske og skal aldri utføres ved generisk sletting/navnesøk. Før en viktig demo skal operatøren kontrollere:
 
-1. gult sandbox-merke
-2. riktig sandbox-host
+1. riktig permanent demo-host
+2. synlig demo-kontroll
 3. riktig Representerer-firma
-4. fem demosaker, ikke ekte kundesaker
+4. kun tydelig merkede demosaker
 5. tilbudsgrunnlag og kundevisning
-6. tom/ønsket starttilstand i Fremdrift
+6. ønsket starttilstand i Fremdrift
 7. kundelink/portal
 8. bilder/Storage ved behov
+9. rapportgrunnlag hvis rapport skal vises
 
-En framtidig forbedring er en egen Kenneth-only `Reset sandbox`-handling som restaurerer demo-seed atomisk. Inntil den er implementert skal reset utføres kontrollert i sandbox-backend, aldri med generisk sletting i Production.
+## Production → demo synk
+
+Når ny produksjonsfunksjonalitet er godkjent og verifisert i Production, kan gjeldende `main` synkroniseres inn i `demo`.
+
+Synken må bevare sandbox-overlayet og må aldri kopiere demo-spesifikke filer eller data tilbake til Production. Etter synk skal minst følgende verifiseres:
+
+- demo-branchen bygger
+- emitted JS har sandbox-binding og ingen Production-Supabase-binding
+- fast demo-host svarer
+- demo-control svarer
+- demodata/Golden finnes
+- sentrale kundereiser åpner riktig
 
 ## Relasjon til Production
 
@@ -125,5 +148,6 @@ Endringer som oppdages under sandbox-demo skal vurderes som vanlige produktendri
 4. critical QA + Preview
 5. eksplisitt `TEST OK`
 6. merge og Production-verifikasjon
+7. synk deretter Production-kode main → demo dersom endringen også skal finnes i demo
 
-En feil som bare skyldes sandbox-seed, grants, Auth eller Storage skal **ikke** repareres ved å endre ordinær Sales/recovery/autosave i Production-koden.
+En feil som bare skyldes sandbox-seed, grants, Auth, Storage eller Golden skal **ikke** repareres ved å endre ordinær Sales/recovery/autosave i Production-koden.
