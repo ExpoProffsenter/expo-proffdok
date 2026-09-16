@@ -388,7 +388,7 @@ export default function SalesCustomerView(props) {
     }
   }
 
-  if (props.mode === "customer-accepted" && brandedRequest) {
+  if ((props.mode === "customer-accepted" || brandedRequest?.status === "Akseptert") && brandedRequest) {
     return <SalesCustomerAcceptedView selectedRequest={brandedRequest} companyProfile={props.companyProfile} />;
   }
 
