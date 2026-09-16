@@ -68,11 +68,15 @@ if (!ux.includes('nativeFetch(nextRequest)')) {
 
 const signupCss = requireNeedles('src/modules/auth/companySignupOnboarding.css', [
   'body.authLandingActive.authLandingSignup #root',
+  "body.authLandingActive.authLandingSignup #root > div:not([role='status'])",
+  'overflow: hidden !important',
   'overflow-y: auto !important',
-  'height: 100dvh !important',
+  'overscroll-behavior-y: contain',
   'touch-action: pan-y',
-  "#root > div:not([role='status'])",
-  'max-height: none !important',
+  'height: calc(100% - 36px) !important',
+  'max-height: calc(100% - 36px) !important',
+  'height: calc(100dvh - 28px) !important',
+  'max-height: calc(100dvh - 28px) !important',
 ]);
 if (signupCss.includes('body.authLandingActive.authLandingLogin #root')) {
   throw new Error('42N-scrollrettingen skal ikke endre login-scroll eller login-layout.');
