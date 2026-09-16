@@ -1,0 +1,44 @@
+name: PR Core Safety
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-core-safety-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  core-safety:
+    name: Core safety + critical build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Verify scope guard logic
+        run: node scripts/critical-pr-scope-guard.mjs --self-test
+
+      - name: Enforce PR scope isolation
+        run: node scripts/critical-pr-scope-guard.mjs "origin/${{ github.base_ref }}"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full critical build
+        run: npm run build
