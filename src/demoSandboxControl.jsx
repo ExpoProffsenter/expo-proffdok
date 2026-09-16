@@ -6,7 +6,7 @@ const SANDBOX_URL = "https://ppvircenkjizeiqdxphj.supabase.co";
 const SANDBOX_KEY = "sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR";
 const DEMO_EMAIL = "demo@expo-proffdok.no";
 const PRODUCTION_REPO = "ExpoProffsenter/expo-proffdok";
-const SANDBOX_PRODUCTION_BASELINE = "1b98fef90fe57c24996982f39619a5bc0ce8a4f2";
+const SANDBOX_PRODUCTION_BASELINE = "8c441473b506dec1646f038a0f576d6f7f6f4fc6";
 const DEMO_SKETCH_REQUEST_IDS = ["DEMO-01-FORESPORSEL", "DEMO-02-BEFARING"];
 const DEMO_BATHROOM_SKETCH = {
   version: 15,
@@ -106,7 +106,7 @@ function clearLocalDemoState() {
     for (let i = 0; i < storage.length; i += 1) keys.push(storage.key(i));
     keys.filter(Boolean).forEach((key) => {
       const lower = String(key).toLowerCase();
-      if (lower.startsWith("sb-")) return; // behold sandbox-login
+      if (lower.startsWith("sb-")) return;
       if (
         lower.includes("expoproffdok") || lower.includes("expo-proffdok") ||
         lower.includes("sales") || lower.includes("befaring") || lower.includes("offer") ||
@@ -217,7 +217,7 @@ function App() {
   };
 
   const resetDemo = async () => {
-    if (!window.confirm("Tilbakestille alle DEMO-saker og demo-prosjekter til Golden Demo? Kun sandbox påvirkes.")) return;
+    if (!window.confirm("Tilbakestille alle DEMO-saker og demo-prosjekter til Golden Demo? Kun sandbox påvirkes. Varekatalog og innlogging beholdes.")) return;
     setBusy("reset"); setMessage("");
     try {
       const restored = await callRpc("demo_sandbox_reset");
@@ -226,8 +226,8 @@ function App() {
       const checked = await runFullPreflight();
       setPreflight(checked);
       setMessage(checked.ok
-        ? `✅ Demo tilbakestilt: ${restored.sales || 0} Sales-saker / ${restored.projects || 0} prosjekter. ${removed.length} lokale demo-/recovery-nøkler ryddet og ${seeded} redigerbare Badskisser installert. Innlogging er beholdt.`
-        : `⚠️ Demo-data er tilbakestilt, men preflight er ikke grønn. ${removed.length} lokale demo-/recovery-nøkler ble ryddet og ${seeded} Badskisser installert. Ikke start kundedemo før røde punkter er avklart.`
+        ? `✅ Demo tilbakestilt: ${restored.sales || 0} Sales-saker / ${restored.projects || 0} prosjekter. ${removed.length} lokale demo-/recovery-nøkler ryddet og ${seeded} redigerbare Badskisser installert. Innlogging og DEMO-varekatalog er beholdt.`
+        : `⚠️ Demo-data er tilbakestilt, men preflight er ikke grønn. ${removed.length} lokale demo-/recovery-nøkler ble ryddet og ${seeded} Badskisser installert. Innlogging og DEMO-varekatalog er beholdt. Ikke start kundedemo før røde punkter er avklart.`
       );
     } catch (error) {
       setMessage(`Reset stoppet uten å fortsette: ${error.message}`);
@@ -235,7 +235,7 @@ function App() {
   };
 
   const captureGolden = async () => {
-    if (!window.confirm("Er dagens sandbox kontrollert og godkjent? Dette erstatter Golden Demo-snapshotet som brukes ved fremtidig reset.")) return;
+    if (!window.confirm("Dette erstatter Golden Demo-fasiten for DEMO Sales/prosjekter. Bruk bare når dagens sandbox er kontrollert og bevisst skal bli ny starttilstand. Fortsette?")) return;
     setBusy("capture"); setMessage("");
     try {
       const baseline = await checkProductionBaseline();
@@ -278,18 +278,37 @@ function App() {
     <div style={{ ...card, background: "#153f54", color: "white" }}>
       <div style={{ fontWeight: 900, letterSpacing: ".08em", color: "#77e6ec", fontSize: 13 }}>DEMO SANDBOX · IKKE PRODUKSJON</div>
       <h1 style={{ margin: "8px 0 6px", fontSize: 36 }}>Golden Demo – kontroll</h1>
-      <p style={{ margin: 0, color: "#dbeaf0", maxWidth: 860 }}><b>HOVED</b> er den sammenhengende demoen du bruker normalt. DEMO-02–05 og <b>RESERVE – Ferdig våtrom</b> er kun sikkerhetsnett hvis du vil hoppe frem eller vise et ferdig sluttresultat.</p>
+      <p style={{ margin: 0, color: "#dbeaf0", maxWidth: 860 }}><b>HOVED</b> er den sammenhengende demoen du bruker normalt. DEMO-02–05 og <b>RESERVE – Ferdig våtrom</b> er sikkerhetsnett hvis du vil hoppe frem eller vise et ferdig sluttresultat.</p>
     </div>
 
     {!session && <div style={card}><b>Ikke innlogget i sandboxen.</b><p>Åpne hovedappen, logg inn som demo-bruker og gå tilbake hit.</p><a href="/" style={{ ...primaryButton, display: "inline-block", textDecoration: "none" }}>Åpne sandbox-app</a></div>}
     {session && !allowed && <div style={{ ...card, borderColor: "#f2b8ae" }}><b>Kontrollsiden er sperret.</b><p>Kun dedikert demo-bruker kan kjøre preflight/reset. Aktiv bruker: {session.user.email}</p></div>}
 
     {allowed && <>
+      <div style={{ ...card, borderColor: "#98d8c2", background: "#f4fcf8" }}>
+        <h2 style={{ marginTop: 0 }}>Før kurs eller demo</h2>
+        <p style={{ marginTop: -4 }}><b>Enkel regel:</b> Tilbakestill demo → kjør preflight → start opplæringen når alt er grønt.</p>
+        <ol style={{ lineHeight: 1.7, marginBottom: 14 }}>
+          <li>Trykk <b>Tilbakestill demo</b> hvis forrige visning har endret DEMO-saker eller prosjekter.</li>
+          <li>Trykk <b>Kjør preflight</b>. Alle kontroller skal være grønne.</li>
+          <li>Åpne sandbox-appen og start i <b>HOVED</b>.</li>
+        </ol>
+        <div style={{ display: "grid", gap: 9, lineHeight: 1.55 }}>
+          <div><b>Golden Demo</b> = lagret fasit/starttilstand for DEMO Sales-saker og demo-prosjekter.</div>
+          <div><b>Tilbakestill demo</b> = forkast endringer fra visningen og gjenopprett Golden Demo. Innlogging og DEMO-varekatalog beholdes.</div>
+          <div><b>Oppdater Golden Demo</b> = erstatt selve fasiten med dagens DEMO Sales/prosjektdata. Dette er ikke vanlig kursforberedelse og skal bare brukes etter bevisst QA.</div>
+          <div><b>Refresh/appbytte</b> = nullstiller ikke demoen. Endringer blir liggende til du gjør en Golden Reset.</div>
+          <div><b>Varesøk/Butikktilbud</b> = bruker en egen syntetisk Sandbox-katalog. Den overlever Golden Reset og inneholder ikke Production-prislister.</div>
+          <div><b>HOVED</b> = normal sammenhengende demonstrasjon. <b>RESERVE</b> = ferdige checkpoints/sluttresultat når du vil hoppe frem.</div>
+        </div>
+      </div>
+
       <div style={card}>
         <h2 style={{ marginTop: 0 }}>Slik viser du flyten</h2>
         <ol style={{ lineHeight: 1.7 }}>
           <li>Start i <b>DEMO-01 – Forespørsel</b> og følg vanlig flyt så langt du ønsker.</li>
           <li>Vis live-handlinger som planlegg befaring, Badskisse, tilbud, kundevisning og «Hent fra tilbud» når det passer.</li>
+          <li>Vis <b>Prissøk/Varesøk</b> og bruk vareoppslaget inne i <b>Butikktilbud</b> når du trener ansatte.</li>
           <li>Hvis du vil spare tid, åpne et ferdig checkpoint i Sales-listen.</li>
           <li>For sluttfasen kan du åpne <b>DEMO – RESERVE – Ferdig våtrom med garanti</b> i Prosjektlisten.</li>
           <li>Etter møtet: trykk <b>Tilbakestill demo</b> her. Neste demo starter likt.</li>
@@ -302,7 +321,7 @@ function App() {
 
       <div style={card}>
         <h2 style={{ marginTop: 0 }}>Demo klar?</h2>
-        <p style={{ marginTop: -4, color: "#61747f" }}>Første kontroll er alltid at sandboxen bygger på samme produksjonsbaseline som gjeldende <code>main</code>. I tillegg må denne nettleseren ha den redigerbare DEMO-Badskissen. Hvis Production har gått videre eller skissen mangler, blir kontrollen rød.</p>
+        <p style={{ marginTop: -4, color: "#61747f" }}>Første kontroll er at sandboxen bygger på samme godkjente produksjonsbaseline som gjeldende <code>main</code>. I tillegg må denne nettleseren ha den redigerbare DEMO-Badskissen. Hvis Production har gått videre eller skissen mangler, blir kontrollen rød.</p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
           <button style={primaryButton} disabled={!!busy} onClick={runPreflight}>{busy === "preflight" ? "Kontrollerer…" : "Kjør preflight"}</button>
           <button style={button} disabled={!!busy} onClick={installSketch}>Installer demoskisse</button>
@@ -315,7 +334,8 @@ function App() {
 
       <div style={card}>
         <h2 style={{ marginTop: 0 }}>Tilbakestill neste demo</h2>
-        <p>Reseten kjører på serveren og gjenoppretter bare DEMO-saker/prosjekter i den isolerte sandboxen. Den rydder deretter lokal demo-/recovery-state på denne enheten, installerer ren redigerbar Badskisse og beholder innloggingen.</p>
+        <p><b>Tilbakestill demo</b> gjenoppretter bare DEMO Sales-saker/prosjekter fra Golden Demo. Den rydder lokal demo-/recovery-state på denne enheten, installerer ren redigerbar Badskisse og beholder innloggingen. <b>Varesøk/Butikktilbud-katalogen beholdes.</b></p>
+        <p style={{ color: "#61747f" }}><b>Oppdater Golden Demo</b> er noe annet: den gjør dagens DEMO Sales/prosjektdata til ny fasit for fremtidige reset. Bruk den bare når du bevisst har kontrollert og godkjent en ny starttilstand.</p>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button style={dangerButton} disabled={!!busy} onClick={resetDemo}>{busy === "reset" ? "Tilbakestiller…" : "Tilbakestill demo"}</button>
           <button style={button} disabled={!!busy} onClick={captureGolden}>{busy === "capture" ? "Lagrer gullkopi…" : "Oppdater Golden Demo (kun når godkjent)"}</button>

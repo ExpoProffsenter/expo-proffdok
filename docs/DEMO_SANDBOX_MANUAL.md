@@ -4,6 +4,23 @@ Denne manualen er laget for presentasjon, opplæring og intern QA i det permanen
 
 > **Viktig:** Demo Sandbox er ikke Production. Bruk aldri `expo-proffdok.app` til demoendringer/testdata.
 
+## Kortversjon – før kurs eller demo
+
+Bruk denne regelen hver gang:
+
+1. Åpne `/demo-control.html`.
+2. Trykk **Tilbakestill demo** hvis forrige visning kan ha endret DEMO-saker/prosjekter.
+3. Trykk **Kjør preflight**.
+4. Start opplæringen først når kontrollene er grønne.
+
+Husk forskjellen:
+
+- **Golden Demo** er lagret fasit/starttilstand for DEMO Sales-saker og demo-prosjekter.
+- **Tilbakestill demo** gjenoppretter denne fasiten. Innlogging og DEMO-varekatalog beholdes.
+- **Oppdater Golden Demo** erstatter selve fasiten med dagens DEMO Sales/prosjektdata. Dette er ikke en vanlig kursknapp og skal bare brukes etter bevisst QA av ny starttilstand.
+- **Refresh/appbytte nullstiller ikke sandboxen.** Endringer blir liggende til de resettes eller endres igjen.
+- **HOVED** er normal sammenhengende demo. **RESERVE** er ferdige checkpoints/sluttresultat når du vil hoppe frem.
+
 ## 1. Før du starter
 
 Kontroller alltid følgende før en demo:
@@ -14,6 +31,7 @@ Kontroller alltid følgende før en demo:
 4. Logg inn med den dedikerte demo-brukeren. Innloggingspassord lagres ikke i repositoryet.
 5. Kontroller at **Representerer** viser demo-firmaer, ikke ekte Production-firmaer fra kundedata.
 6. Kontroller at Sales-listen kun viser tydelig merkede DEMO-saker.
+7. For kurs i vareflyt: kontroller at **Prissøk/Varesøk** og **Butikktilbud** er synlig under Expo Proffsenter.
 
 Hvis ett av disse punktene ikke stemmer: stopp demoen og bruk den statiske nød-demoen i stedet.
 
@@ -58,6 +76,8 @@ Bruk denne rekkefølgen i presentasjonen:
 13. Garanti
 14. Kundelink / portal
 
+For opplæring av butikk/varesøk kan du i tillegg vise **Prissøk/Varesøk → Butikktilbud → velg vare → pris/opsjon/montering**.
+
 Du trenger ikke åpne alle detaljer. Målet er å vise sammenheng fra kundedialog til ferdig dokumentasjon.
 
 ## 4. Representerer
@@ -75,6 +95,27 @@ Forventet:
 - logo følger valgt firma
 - prosjekt/Sales-scope følger valgt firma
 - Production-data skal aldri dukke opp
+
+### Varesøk, Prissøk og Butikktilbud
+
+Fase 44A har en egen syntetisk opplæringskatalog i Sandbox. Den er laget for kurs og demonstrasjon og inneholder ikke Production-prislister eller ekte kundeopplysninger.
+
+Bruk Expo Proffsenter som aktivt firmascope når du viser dette.
+
+Du kan demonstrere:
+
+- søk på varenavn
+- søk på varenummer
+- søk på GTIN/EAN
+- kundepris inkl. mva.
+- intern netto/rabatt/margin for autorisert demo-systemadmin
+- alternative leverandører på samme GTIN
+- valg av vare direkte inn i Butikktilbud
+- videre redigering med montering og opsjoner i ordinær Butikktilbud-flyt
+
+DEMO-varekatalogen ligger utenfor Golden Sales/prosjekt-snapshotet. **Tilbakestill demo sletter derfor ikke varekatalogen.**
+
+Hvis Varesøk er tomt, Prissøk mangler eller du får `permission denied`, behandles det først som Sandbox schema/grants/seed – ikke som grunnlag for å endre Production-koden.
 
 ## 5. Forespørsel
 
@@ -261,11 +302,38 @@ I motsetning til den statiske nød-demoen lagrer ekte Sandbox Sales-endringer, p
 
 **Refresh nullstiller derfor ikke sandboxen.**
 
+Varesøk/Butikktilbud-katalogen er også persistent Sandbox-data, men er bevisst ikke del av Golden Sales/prosjekt-snapshotet.
+
 ## 18. Golden reset før neste demo
 
-Sandboxen har Golden snapshot for kjent starttilstand. Reset skal utføres via den dedikerte sandbox-kontrollen/autoriserte backend-flyten. Ikke bruk generiske DELETE-spørringer, navnesøk eller Production-data for å rydde demo.
+Sandboxen har Golden snapshot for kjent starttilstand.
 
-Etter reset bør operatøren kontrollere minst Forespørsel, Tilbud, Akseptert, Prosjekt og kundevisning.
+### Hva gjør Tilbakestill demo?
+
+- gjenoppretter DEMO Sales-saker fra Golden Demo
+- gjenoppretter DEMO-prosjektene fra Golden Demo
+- gjenoppretter tilhørende demo-kontrakt/garanti-data som inngår i snapshotet
+- rydder lokal demo-/recovery-state på denne enheten
+- installerer ren redigerbar DEMO-Badskisse
+- beholder innloggingen
+- beholder DEMO-varekatalogen for Varesøk/Butikktilbud
+
+### Hva gjør den ikke?
+
+- den nullstiller ikke Production
+- den kopierer ikke Production-data
+- den sletter ikke DEMO-varekatalogen
+- den gjør ikke automatisk dagens tilstand til ny Golden Demo
+
+### Hva betyr Oppdater Golden Demo?
+
+Denne knappen tar dagens DEMO Sales/prosjekt-tilstand og lagrer den som ny fasit for fremtidige reset. Bruk den bare når du faktisk ønsker å endre standard demo-oppsett og tilstanden er kontrollert/godkjent.
+
+Ved vanlig kursforberedelse skal du normalt bruke **Tilbakestill demo**, ikke **Oppdater Golden Demo**.
+
+Reset skal utføres via den dedikerte sandbox-kontrollen/autoriserte backend-flyten. Ikke bruk generiske DELETE-spørringer, navnesøk eller Production-data for å rydde demo.
+
+Etter reset: kjør preflight. Når alt er grønt kan du starte kurset.
 
 ## 19. Hvis noe oppfører seg annerledes enn Production
 
@@ -283,6 +351,9 @@ Ikke reparer direkte på `demo`. Reproduser først mot ren `main` og ta eventuel
 
 ### E. E-post eller automatiske varsler uteblir
 Dette kan være tilsiktet. Sandbox skal ikke ukritisk sende ekte e-post eller kjøre Production-cron.
+
+### F. Varesøk/Prissøk er tomt eller skjult
+Kontroller aktivt firmascope, modultilgang og Sandbox-katalog/RPC-er. Ikke kopier ekte Production-prislister inn i Sandbox som en snarvei.
 
 ## 20. Nød-demo
 
