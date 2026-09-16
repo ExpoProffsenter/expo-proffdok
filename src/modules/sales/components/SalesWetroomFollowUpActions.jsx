@@ -111,10 +111,11 @@ export default function SalesWetroomFollowUpActions({ request = {} }) {
           Planen gjelder kun publisert tilbudsversjon v{activeVersionNumber || "-"}. Eldre versjoner påvirkes ikke, og en ny publisert versjon må få sin egen plan.
         </p>
 
-        <label style={{ display: "flex", gap: 10, alignItems: "flex-start", marginTop: 16, fontWeight: 800 }}>
+        <label style={{ display: "inline-flex", gap: 10, alignItems: "center", marginTop: 16, fontWeight: 800, cursor: "pointer", maxWidth: "100%" }}>
           <input
             type="checkbox"
             checked={enabled}
+            style={{ width: 18, height: 18, minWidth: 18, flex: "0 0 18px", margin: 0 }}
             onChange={(event) => {
               setEnabled(event.target.checked);
               setFeedback("");
