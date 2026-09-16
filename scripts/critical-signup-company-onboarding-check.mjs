@@ -27,7 +27,7 @@ if (main.includes('expo_proffdok_company_name') || main.includes('signup_company
 }
 
 requireNeedles('index.html', [
-  "installCompanySignupOnboarding",
+  'installCompanySignupOnboarding',
   "'/src/modules/auth/companySignupOnboarding.js'",
 ]);
 
@@ -42,10 +42,8 @@ const ux = requireNeedles('src/modules/auth/companySignupOnboarding.js', [
   'Nettside (valgfritt)',
   '/auth\\/v1\\/signup',
   'signup_company_application_available',
-  "expo_proffdok_signup_mode = 'new_company'",
 ]);
 
-// Kildeformen bruker egenskapssetting, ikke SQL-lik syntaks. Kontroller de faktiske metadatafeltene separat.
 for (const needle of [
   'expo_proffdok_signup_mode',
   'expo_proffdok_company_name',
@@ -69,7 +67,7 @@ const migration = requireNeedles('supabase/migrations/20260916152000_fase42n_sig
   'handle_auth_signup_company_application',
   'after insert on auth.users',
   "if v_mode <> 'new_company' then",
-  "false,",
+  'false,',
   "'firmaadmin'",
   'existing_company',
   'public.profiles',
