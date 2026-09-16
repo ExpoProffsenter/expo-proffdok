@@ -2,7 +2,7 @@
 // Ordinære Våtromstilbud kobles til eksisterende oppfølgingsmotor uten å endre
 // Butikktilbudets metadata. Planen lagres separat og låses til aktiv publisert versjon.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createDefaultSalesSupabaseClient } from "../services/salesSupabase.js";
 
 const DEFAULT_FIRST_DAYS = 7;
@@ -21,18 +21,39 @@ function versionMatches(request = {}) {
   return Boolean(activeVersionId && configuredVersionId === activeVersionId);
 }
 
+function enabledForVersion(request = {}) {
+  return versionMatches(request) && request?.wetroomFollowUpEnabled === true;
+}
+
 export default function SalesWetroomFollowUpActions({ request = {} }) {
   const client = useMemo(() => createDefaultSalesSupabaseClient(), []);
   const activeVersionId = String(request?.sentOfferVersionId || "").trim();
   const activeVersionNumber = Number(request?.sentOfferVersionNumber || 0) || 0;
   const matches = versionMatches(request);
-  const [enabled, setEnabled] = useState(() => matches && request?.wetroomFollowUpEnabled === true);
+  const [enabled, setEnabled] = useState(() => enabledForVersion(request));
   const [firstDays, setFirstDays] = useState(() => matches ? boundedInteger(request?.wetroomFollowUpFirstDays, DEFAULT_FIRST_DAYS, 1, 90) : DEFAULT_FIRST_DAYS);
   const [repeatDays, setRepeatDays] = useState(() => matches ? boundedInteger(request?.wetroomFollowUpRepeatDays, DEFAULT_REPEAT_DAYS, 1, 90) : DEFAULT_REPEAT_DAYS);
   const [maxReminders, setMaxReminders] = useState(() => matches ? boundedInteger(request?.wetroomFollowUpMaxReminders, DEFAULT_MAX_REMINDERS, 1, 10) : DEFAULT_MAX_REMINDERS);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const configured = versionMatches(request);
+    setEnabled(enabledForVersion(request));
+    setFirstDays(configured ? boundedInteger(request?.wetroomFollowUpFirstDays, DEFAULT_FIRST_DAYS, 1, 90) : DEFAULT_FIRST_DAYS);
+    setRepeatDays(configured ? boundedInteger(request?.wetroomFollowUpRepeatDays, DEFAULT_REPEAT_DAYS, 1, 90) : DEFAULT_REPEAT_DAYS);
+    setMaxReminders(configured ? boundedInteger(request?.wetroomFollowUpMaxReminders, DEFAULT_MAX_REMINDERS, 1, 10) : DEFAULT_MAX_REMINDERS);
+    setFeedback("");
+    setError("");
+  }, [
+    activeVersionId,
+    request?.wetroomFollowUpVersionId,
+    request?.wetroomFollowUpEnabled,
+    request?.wetroomFollowUpFirstDays,
+    request?.wetroomFollowUpRepeatDays,
+    request?.wetroomFollowUpMaxReminders,
+  ]);
 
   const visible = Boolean(
     request?.status === "Tilbud" &&
