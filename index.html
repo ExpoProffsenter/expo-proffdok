@@ -9,11 +9,15 @@
 <body>
   <div id="root"></div>
   <script type="module">
+    import { installCompanySignupOnboarding } from '/src/modules/auth/companySignupOnboarding.js';
     import { installAuthReferenceDesktop } from '/src/modules/auth/authReferenceDesktop.js';
+    installCompanySignupOnboarding();
     installAuthReferenceDesktop();
   </script>
   <script type="module">
+    import { installCompanyAdminNavigationLabel } from '/src/modules/company/companyAdminNavigationLabel.js';
     import { installDesktopSideMenu } from '/src/modules/app/desktopSideMenu.js';
+    installCompanyAdminNavigationLabel();
     installDesktopSideMenu();
   </script>
   <script type="module">
