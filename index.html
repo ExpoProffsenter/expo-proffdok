@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Expo ProffDok</title>
+  <script>
+    // Sandbox demo: named project windows have historically used `_new`.
+    // The legacy report generator may otherwise read window.name as company name.
+    if (window.name === "_new") window.name = "";
+  </script>
   <link rel="stylesheet" href="/src/modules/app/mobileResponsive41A.css" />
 </head>
 <body>
