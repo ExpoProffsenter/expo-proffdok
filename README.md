@@ -1,10 +1,10 @@
 # Expo ProffDok
 
-Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsningen støtter blant annet prosjektstyring, dokumentasjon, sjekklister, bilder, avvik, kunde-/UE-portal, garanti, befaring, Badskisse, ordinære tilbud, Butikktilbud, digital aksept og rapport/PDF.
+Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsningen støtter prosjektstyring, dokumentasjon, sjekklister, bilder, avvik, kunde-/UE-portal, garanti, befaring, Badskisse, ordinære tilbud, Butikktilbud, digital aksept, kontrakt og rapport/PDF.
 
 Produksjon: https://expo-proffdok.app
 
-Gjeldende dokumentert baseline: **Fase 42G i produksjon / Fase 42H–42J i Preview-QA (15.09.2026)**.
+**Gjeldende produksjonsbaseline:** Fase 42K, PR #155, merge 15.09.2026. Fase 42H–42J Sales-scale/recovery/prosjektnavigasjon er dermed del av Production-baseline.
 
 ## Teknologi
 
@@ -28,6 +28,7 @@ docs/
 └── architecture/            # gjeldende arkitekturkart og fasespesifikke sikkerhetsnotater
 
 scripts/
+├── critical-pr-scope-guard.mjs
 ├── critical-build-check.mjs
 ├── critical-sales-recovery-check.mjs
 ├── critical-sales-tab-resume-check.mjs
@@ -36,8 +37,6 @@ scripts/
 ├── critical-sales-lazy-loading-check.mjs
 ├── critical-work-profile-check.mjs
 ├── critical-project-navigation-check.mjs
-├── critical-progress-plan-check.mjs
-├── critical-store-catalog-check.mjs
 └── øvrige målrettede guards
 ```
 
@@ -47,7 +46,7 @@ Sales-domene: [src/modules/sales/README.md](src/modules/sales/README.md)
 
 Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md)
 
-## Nåværende kritiske arkitektur
+## Kritisk produksjonsarkitektur
 
 - Sales-oversikten bruker lett summary/lazy loading; komplett sak hentes først når brukeren åpner den.
 - Komplett valgt Sales-sak skal være server-hydrert før editor/autosave aktiveres.
@@ -55,19 +54,44 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 - Bevisst brukerhandling vinner alltid over automatisk recovery.
 - Systemadmins ordinære prosjektarbeidsflate følger valgt **Representerer**-firma; brede supportrettigheter skal ikke blande firma i vanlig prosjektliste.
 - Desktop prosjektarbeidsflate bruker kollapset meny med få native hurtigvalg; full funksjonsliste ligger fortsatt i Meny.
+- Ordinært akseptert tilbud kan gå videre til prosjekt uten kontrakt, egen opplastet kontrakt eller Expo-kontrakt. Kontraktfunksjonen ligger i Sales-domenet og er valgfri med mindre garanti-/avtalegrunnlaget krever den.
+
+## Permanent Demo Sandbox
+
+Expo ProffDok har et separat, langlivet demomiljø for presentasjon og opplæring:
+
+- branch: `demo`
+- fast host: `https://expo-proffdok-git-demo-ringside.vercel.app`
+- separat Sandbox-Supabase: `ppvircenkjizeiqdxphj`
+- egen Auth, database, Storage, Golden/reset og fiktive/sanitiserte demodata
+- `demo` skal **aldri merges til `main`**
+- ordinær appkode synkroniseres kontrollert **main → demo** etter godkjent Production-verifisering når endringen også skal finnes i demo
+- demo-overlay, demodata, syntetiske ressurser og sandbox-konfigurasjon skal aldri flyte **demo → main**
+- demo-builden skal feile dersom Production-Supabase blir bundet inn i emitted JS
+
+Detaljert demo-dokumentasjon ligger på `demo`-branchen.
 
 ## Utviklings- og mergepolicy
 
 `main` er produksjonsbranch og kilde til sannhet.
 
-For brukerrettede endringer:
+Før kodeendring skal miljømål oppgis som:
 
-1. Opprett feature-branch fra gjeldende `main`.
-2. Kjør `npm run build` og relevante kritiske kontroller.
+- `Miljømål: PRODUKSJON/PREVIEW`
+- `Miljømål: SANDBOX/DEMO`
+- `Miljømål: BEGGE`
+
+For brukerrettede produksjonsendringer:
+
+1. Opprett feature-/hotfix-branch fra gjeldende `main`.
+2. Kjør `npm run build` og relevante critical checks.
 3. Test Vercel Preview på desktop og mobil der relevant.
-4. Kontroller eksisterende funksjon, ny funksjon, reload/persistens og historikk der det er relevant.
+4. Kontroller både ny funksjon og berørte eksisterende brukerreiser.
 5. Ikke merge før eksplisitt `TEST OK`.
-6. Etter merge: bekreft eksakt `main`-SHA, Vercel Production `READY`, HTTP 200 og runtime uten fatale feil.
+6. Etter merge: bekreft eksakt `main`-SHA, Vercel Production `READY`, HTTP/runtime og relevant Supabase-status.
+7. Ved miljømål `BEGGE`: synkroniser deretter gjeldende `main` kontrollert inn i `demo` og kjør sandbox-preflight.
+
+`PR Core Safety` kjører på pull requests mot `main` og skal stoppe Demo/Test-PR-er som samtidig forsøker å endre beskyttet kjerne.
 
 ## Dokumentasjonsregel
 
@@ -101,10 +125,11 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 
 ## Start her som ny utvikler
 
-1. Les [arkitekturkartet](docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md).
-2. Les [Sales README](src/modules/sales/README.md) før endringer i befaring/tilbud/aksept/Butikktilbud/recovery/lazy loading.
-3. Les [Fase 39B](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md) før endringer i vareregister, ERP-import eller katalogtilgang.
-4. Les relevante HJELP-moduler før brukerrettede endringer.
-5. Kontroller åpne GitHub issues og siste legitime `main`-SHA.
-6. Kontroller Production og Supabase-status før større arbeid.
-7. Endre minst mulig per runde og beskytt produksjon foran alt.
+1. Les `AGENTS.md` og `PROJECT_GUARDRAILS.md`.
+2. Les [arkitekturkartet](docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md).
+3. Les [Sales README](src/modules/sales/README.md) før endringer i befaring/tilbud/aksept/kontrakt/Butikktilbud/recovery/lazy loading.
+4. Les [Fase 39B](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md) før endringer i vareregister, ERP-import eller katalogtilgang.
+5. Les relevante HJELP-moduler før brukerrettede endringer.
+6. Kontroller åpne GitHub issues, åpne PR-er og siste legitime `main`-SHA.
+7. Kontroller Production og Supabase-status før større arbeid.
+8. Endre minst mulig per runde og beskytt produksjon foran alt.
