@@ -1,6 +1,6 @@
 # Expo ProffDok – Demo Sandbox A–Å
 
-Denne manualen er laget for presentasjon, opplæring og intern QA i det isolerte demo-miljøet.
+Denne manualen er laget for presentasjon, opplæring og intern QA i det permanente isolerte demo-miljøet.
 
 > **Viktig:** Demo Sandbox er ikke Production. Bruk aldri `expo-proffdok.app` til demoendringer/testdata.
 
@@ -8,8 +8,8 @@ Denne manualen er laget for presentasjon, opplæring og intern QA i det isolerte
 
 Kontroller alltid følgende før en demo:
 
-1. Åpne det faste sandbox-hostet for `feature/demo-showcase-isolated`.
-2. Kontroller at gult merke **DEMO SANDBOX · IKKE PRODUKSJON** vises.
+1. Åpne det faste sandbox-hostet `https://expo-proffdok-git-demo-ringside.vercel.app`.
+2. Kontroller at demo-kontrollen er tilgjengelig øverst og at `/demo-control.html` åpner.
 3. URL-en skal ikke inneholde `progressTest=safe` eller `progressTest=andreas`.
 4. Logg inn med den dedikerte demo-brukeren. Innloggingspassord lagres ikke i repositoryet.
 5. Kontroller at **Representerer** viser demo-firmaer, ikke ekte Production-firmaer fra kundedata.
@@ -26,15 +26,18 @@ Hvis ett av disse punktene ikke stemmer: stopp demoen og bruk den statiske nød-
 - Supabase ref: `dqffxflaoyarbxyiyhop`
 - Ekte data
 
-### Demo Sandbox
+### Permanent Demo Sandbox
 
-- Branch: `feature/demo-showcase-isolated`
+- URL: `https://expo-proffdok-git-demo-ringside.vercel.app`
+- Branch: `demo`
 - Supabase ref: `ppvircenkjizeiqdxphj`
 - Egen Auth
 - Egen database
 - Egne Storage-buckets
 - Kun fiktive/sanitiserte demodata
 - Skal aldri merges til `main`
+
+Produksjonskode kan etter godkjent Production-verifisering synkroniseres **main → demo**. Demo-overlay, demodata og sandbox-konfigurasjon skal aldri flyte **demo → main**.
 
 ## 3. Demoens anbefalte historie
 
@@ -123,7 +126,7 @@ Vis:
 
 ### App-/fanebytte
 
-Sandboxen kjører samme ordinære Sales-recovery som `main`. Bytt gjerne fane/app og gå tilbake for å demonstrere at arbeidet beholdes.
+Sandboxen kjører samme ordinære Sales-recovery som produksjonsbaselinen den bygger på. Bytt gjerne fane/app og gå tilbake for å demonstrere at arbeidet beholdes.
 
 Hvis editoren blir tom eller viser konfliktvarsel:
 
@@ -183,8 +186,6 @@ Sandbox-prosjektet er fiktivt og kan endres uten risiko for Production.
 
 ## 11. Fremdriftsplan – hent poster fra tilbud
 
-Dette er et viktig demopunkt.
-
 Sandbox-prosjektet er koblet til det aksepterte tilbudet via `salesOrigin.publicToken` og starter med tom gyldig fremdriftsplan.
 
 Gå til **Fremdrift** og bruk handlingen for å hente poster fra akseptert tilbud.
@@ -212,9 +213,7 @@ Deretter kan du:
 - velge om kunde skal se fremdriften
 - eksportere kalender/PDF der funksjonen er tilgjengelig
 
-### Viktig forskjell mot gammel Preview-test
-
-Vanlige Vercel Previewer tvinges til `progressTest=safe`, som med vilje blokkerer tilbudsimport/serverlagring. Demo Sandbox er fysisk isolert og skal **ikke** bruke denne parameteren.
+Vanlige Vercel Previewer kan bruke `progressTest=safe`. Den permanente Demo Sandboxen er fysisk isolert og skal ikke bruke denne parameteren.
 
 ## 12. Bilder og Badskisse
 
@@ -232,20 +231,13 @@ Hvis du laster opp et bilde under demo, ligger det kun i sandboxen.
 
 ## 13. Chat
 
-Vis gjerne:
-
-- intern/prosjektrelatert dialog
-- tidslinje
-- bilde i chat hvis ønskelig
-- sammenheng med kundelink/prosjektportal
-
-E-postvarsling/eksterne sideeffekter er ikke et nødvendig demopunkt i sandboxen.
+Vis gjerne intern/prosjektrelatert dialog, tidslinje og bilde i chat hvis ønskelig. E-postvarsling/eksterne sideeffekter er ikke et nødvendig demopunkt i sandboxen.
 
 ## 14. Rapport
 
 Bruk demo-prosjektet til å vise rapportlayout og hvordan dokumentasjonen samles.
 
-Sandbox kan inneholde ferdig rapportgrunnlag. Rapporten er demonstrasjon, ikke juridisk prosjektarkiv.
+Sandbox kan inneholde ferdig rapportgrunnlag. Rapporten er demonstrasjon, ikke juridisk prosjektarkiv. Før neste viktig demo skal rapporten verifiseres eksplisitt hvis den skal vises; rapportkvalitet er et eget produktoppfølgingspunkt etter demoen 16.09.2026.
 
 ## 15. Garanti
 
@@ -261,89 +253,55 @@ Demo-garantien er kun visuell/funksjonell demonstrasjon.
 
 ## 16. Kundelink / portal
 
-Demo-prosjektet har egen sandbox-portaltilgang.
-
-Vis:
-
-- prosjektinformasjon
-- eventuell fremdrift når kundesynlighet er aktiv
-- dokumentasjon
-- chat der tilgjengelig
-
-Bruk kun sandboxens demo-kode. Production-kundekoder skal aldri brukes eller kopieres inn.
+Demo-prosjektet har egen sandbox-portaltilgang. Vis prosjektinformasjon, eventuell fremdrift, dokumentasjon og chat der tilgjengelig. Bruk kun sandboxens demo-kode.
 
 ## 17. Hva lagres i sandboxen?
 
-I motsetning til den statiske nød-demoen lagrer ekte Sandbox:
-
-- Sales-endringer
-- prosjektendringer
-- fremdriftsplan
-- bilder/filer
-- chat og annen demoaktivitet som støttes
-
-Dette er ønsket fordi vi vil teste app-/fanebytte og realistisk persistens.
+I motsetning til den statiske nød-demoen lagrer ekte Sandbox Sales-endringer, prosjektendringer, fremdriftsplan, bilder/filer, chat og annen støttet demoaktivitet.
 
 **Refresh nullstiller derfor ikke sandboxen.**
 
-## 18. Reset før neste demo
+## 18. Golden reset før neste demo
 
-Per 15.09.2026 er reset en kontrollert backend-operasjon, ikke en knapp i appen.
+Sandboxen har Golden snapshot for kjent starttilstand. Reset skal utføres via den dedikerte sandbox-kontrollen/autoriserte backend-flyten. Ikke bruk generiske DELETE-spørringer, navnesøk eller Production-data for å rydde demo.
 
-Før neste viktige demo bør starttilstanden verifiseres. En framtidig forbedring er en Kenneth-only atomisk `Reset sandbox`-handling.
-
-Ikke bruk generiske DELETE-spørringer eller navnesøk i Production for å rydde demo.
+Etter reset bør operatøren kontrollere minst Forespørsel, Tilbud, Akseptert, Prosjekt og kundevisning.
 
 ## 19. Hvis noe oppfører seg annerledes enn Production
 
-Bruk denne beslutningen:
-
 ### A. Permission denied / tom tabell / manglende RPC
-
 Mest sannsynlig sandbox-schema/grants/seed. Rett sandboxen, ikke Production-koden.
 
 ### B. Manglende bilder/opplasting
-
-Sjekk sandbox Storage-bucket/policy først.
+Sjekk sandbox Storage og permanente demo-URL-er først.
 
 ### C. Fremdrift henter ikke tilbud
-
-Sjekk:
-
-1. URL har ikke `progressTest=safe`
-2. prosjektet har `salesOrigin.publicToken`
-3. token peker til akseptert sandbox-tilbud
-4. `get_sales_offer_by_token` returnerer tilbud + versjon
+Sjekk at URL ikke har `progressTest=safe`, at prosjektet har `salesOrigin.publicToken`, og at token peker til akseptert sandbox-tilbud.
 
 ### D. Sales/recovery-feil som også kan gjelde ekte app
-
-Ikke reparer direkte på sandbox-branchen. Reproduser først mot ren `main` og ta eventuell produktretting i egen branch med ordinær critical QA og `TEST OK`.
+Ikke reparer direkte på `demo`. Reproduser først mot ren `main` og ta eventuell produktretting i egen branch med ordinær critical QA og `TEST OK`.
 
 ### E. E-post eller automatiske varsler uteblir
-
 Dette kan være tilsiktet. Sandbox skal ikke ukritisk sende ekte e-post eller kjøre Production-cron.
 
 ## 20. Nød-demo
 
-Det finnes også en statisk demo-side på sandbox-branchen. Den har:
+Det finnes også en statisk demo-side på `demo`-branchen. Den har ingen Supabase, Auth, lagring eller e-post og kan ikke påvirke Production. Bruk denne hvis ekte sandbox får en uforutsett feil rett før en presentasjon.
 
-- ingen Supabase
-- ingen Auth
-- ingen lagring
-- ingen e-post
-- ingen mulighet til å påvirke Production
+## 21. Production → demo etter produktendringer
 
-Bruk denne hvis ekte sandbox får en uforutsett feil rett før en presentasjon.
+Når en produksjonsendring er godkjent, merged og verifisert i Production, vurder om den også skal være tilgjengelig i demo. I så fall synkroniseres gjeldende `main` **inn i `demo`**. Demo-overlayet beholdes.
 
-## 21. Etter demo
+Etter synk må sandbox-preflight bekrefte at builden bruker Sandbox-Supabase og ikke Production-Supabase, og at fast demo-host, kontrollside og demodata fortsatt fungerer.
+
+## 22. Etter demo
 
 1. Noter eventuelle avvik.
-2. Ikke endre `main` direkte.
-3. Skill sandbox-feil fra produktfeil.
-4. Reset sandbox ved behov.
-5. Produktfeil tas gjennom ordinær Works-flyt.
-6. Production verifiseres separat ved alle Production-endringer.
+2. Skill sandbox-feil fra produktfeil.
+3. Reset sandbox ved behov.
+4. Produktfeil tas gjennom ordinær Works-flyt fra `main`.
+5. Production verifiseres separat ved alle Production-endringer.
 
-## 22. Kjøreregel
+## 23. Kjøreregel
 
 Demo-funksjonalitet skal aldri være begrunnelse for å svekke eller endre eksisterende Production-recovery, autosave, firmascoping, navigasjon eller historikk uten at samme feil først er bevist i ren `main` og behandlet som en separat produktendring.
