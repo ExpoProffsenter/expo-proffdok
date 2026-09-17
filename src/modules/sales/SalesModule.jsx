@@ -1,4 +1,6 @@
-// Expo ProffDok – FASE 42I / FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1
+// Expo ProffDok – FASE 44C / FASE 42I / FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1
+// FASE 44C tvinger tilbuds-recovery gjennom server-first-gaten før SalesCore remountes.
+// Lokal kladd beholdes, men komplett serverrad primes på nytt før editor/autosave får starte.
 // FASE 42I gjør server-first-gaten saksspesifikk: saksoversikten kan åpnes på en
 // lett serverprojeksjon, mens reload/dvale/direkte åpning av én sak fortsatt primer
 // akkurat den komplette saken før SalesCore får mounte. Ingen tom summary kan nå editor.
@@ -241,6 +243,12 @@ export default function SalesModule(props) {
   useEffect(() => {
     const rehydrateSalesModule = () => {
       beginOfferDraftHydrationCycle();
+      // Recovery remounter SalesCore. Steng server-first-gaten i samme event før
+      // instanceKey endres, slik at ny Core aldri rekker å mounte på summary-cache.
+      if (props.integrationMode === "app") {
+        setServerCacheError("");
+        setServerCacheReady(false);
+      }
       setInstanceKey((current) => current + 1);
     };
 
@@ -385,6 +393,7 @@ export default function SalesModule(props) {
     props.profile?.company_name,
     props.profile?.companyName,
     props.openRequestSignal,
+    instanceKey,
     serverCacheRetryKey,
   ]);
 
