@@ -60,7 +60,7 @@ function applySupportCompanyBranding() {
   if (targetLogo && image.getAttribute("src") !== targetLogo) {
     image.setAttribute("src", targetLogo);
   }
-  if (context.companyName) {
+  if (context.companyName && image.getAttribute("alt") !== context.companyName) {
     image.setAttribute("alt", context.companyName);
   }
 }
@@ -419,6 +419,8 @@ function installSupportDisplayObserver() {
   });
   observer.observe(document.documentElement, {
     childList: true,
+    attributes: true,
+    attributeFilter: ["src", "alt"],
     subtree: true,
   });
 
