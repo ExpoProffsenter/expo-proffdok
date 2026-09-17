@@ -18,6 +18,11 @@ const GLOBAL_BANNER_ID = "expo-sales-support-global-banner";
 const SUPPORT_HIDDEN_ATTR = "data-sales-support-hidden";
 const ORIGINAL_LOGO_SRC_ATTR = "data-sales-support-original-logo-src";
 const ORIGINAL_LOGO_ALT_ATTR = "data-sales-support-original-logo-alt";
+const ORIGINAL_LOGO_VISIBILITY_ATTR = "data-sales-support-original-logo-visibility";
+const ORIGINAL_BRAND_BG_IMAGE_ATTR = "data-sales-support-original-brand-bg-image";
+const ORIGINAL_BRAND_BG_REPEAT_ATTR = "data-sales-support-original-brand-bg-repeat";
+const ORIGINAL_BRAND_BG_POSITION_ATTR = "data-sales-support-original-brand-bg-position";
+const ORIGINAL_BRAND_BG_SIZE_ATTR = "data-sales-support-original-brand-bg-size";
 
 let observerInstalled = false;
 let refreshTimer = null;
@@ -43,7 +48,25 @@ function findNavigationButton(label) {
 
 function getMainHeaderLogo() {
   if (typeof document === "undefined") return null;
-  const image = document.querySelector("header .head img");
+
+  const heads = Array.from(document.querySelectorAll("header .head"));
+  const visibleHead =
+    heads.find((head) => {
+      if (!(head instanceof HTMLElement)) return false;
+      const rect = head.getBoundingClientRect();
+      const style = window.getComputedStyle(head);
+      return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        style.display !== "none" &&
+        style.visibility !== "hidden"
+      );
+    }) || heads[0];
+
+  if (!(visibleHead instanceof HTMLElement)) return null;
+  const image =
+    visibleHead.querySelector(":scope > div:first-child img") ||
+    visibleHead.querySelector("img");
   return image instanceof HTMLImageElement ? image : null;
 }
 
@@ -54,12 +77,43 @@ function applySupportCompanyBranding() {
   if (!image.hasAttribute(ORIGINAL_LOGO_SRC_ATTR)) {
     image.setAttribute(ORIGINAL_LOGO_SRC_ATTR, image.getAttribute("src") || "");
     image.setAttribute(ORIGINAL_LOGO_ALT_ATTR, image.getAttribute("alt") || "");
+    image.setAttribute(ORIGINAL_LOGO_VISIBILITY_ATTR, image.style.visibility || "");
   }
 
   const targetLogo = String(context.companyLogoUrl || "").trim();
-  if (targetLogo && image.getAttribute("src") !== targetLogo) {
-    image.setAttribute("src", targetLogo);
+  const brandContainer = image.parentElement;
+
+  if (targetLogo && brandContainer instanceof HTMLElement) {
+    if (!brandContainer.hasAttribute(ORIGINAL_BRAND_BG_IMAGE_ATTR)) {
+      brandContainer.setAttribute(
+        ORIGINAL_BRAND_BG_IMAGE_ATTR,
+        brandContainer.style.backgroundImage || ""
+      );
+      brandContainer.setAttribute(
+        ORIGINAL_BRAND_BG_REPEAT_ATTR,
+        brandContainer.style.backgroundRepeat || ""
+      );
+      brandContainer.setAttribute(
+        ORIGINAL_BRAND_BG_POSITION_ATTR,
+        brandContainer.style.backgroundPosition || ""
+      );
+      brandContainer.setAttribute(
+        ORIGINAL_BRAND_BG_SIZE_ATTR,
+        brandContainer.style.backgroundSize || ""
+      );
+    }
+
+    const escapedLogo = targetLogo.replace(/"/g, "\\\"");
+    const backgroundImage = `url("${escapedLogo}")`;
+    if (brandContainer.style.backgroundImage !== backgroundImage) {
+      brandContainer.style.backgroundImage = backgroundImage;
+    }
+    brandContainer.style.backgroundRepeat = "no-repeat";
+    brandContainer.style.backgroundPosition = "left center";
+    brandContainer.style.backgroundSize = "contain";
+    image.style.visibility = "hidden";
   }
+
   if (context.companyName && image.getAttribute("alt") !== context.companyName) {
     image.setAttribute("alt", context.companyName);
   }
@@ -71,6 +125,9 @@ function restoreMainHeaderBranding() {
 
   const originalSrc = image.getAttribute(ORIGINAL_LOGO_SRC_ATTR) || "";
   const originalAlt = image.getAttribute(ORIGINAL_LOGO_ALT_ATTR) || "";
+  const originalVisibility =
+    image.getAttribute(ORIGINAL_LOGO_VISIBILITY_ATTR) || "";
+  const brandContainer = image.parentElement;
 
   if (originalSrc) image.setAttribute("src", originalSrc);
   else image.removeAttribute("src");
@@ -78,8 +135,30 @@ function restoreMainHeaderBranding() {
   if (originalAlt) image.setAttribute("alt", originalAlt);
   else image.removeAttribute("alt");
 
+  image.style.visibility = originalVisibility;
+
+  if (
+    brandContainer instanceof HTMLElement &&
+    brandContainer.hasAttribute(ORIGINAL_BRAND_BG_IMAGE_ATTR)
+  ) {
+    brandContainer.style.backgroundImage =
+      brandContainer.getAttribute(ORIGINAL_BRAND_BG_IMAGE_ATTR) || "";
+    brandContainer.style.backgroundRepeat =
+      brandContainer.getAttribute(ORIGINAL_BRAND_BG_REPEAT_ATTR) || "";
+    brandContainer.style.backgroundPosition =
+      brandContainer.getAttribute(ORIGINAL_BRAND_BG_POSITION_ATTR) || "";
+    brandContainer.style.backgroundSize =
+      brandContainer.getAttribute(ORIGINAL_BRAND_BG_SIZE_ATTR) || "";
+
+    brandContainer.removeAttribute(ORIGINAL_BRAND_BG_IMAGE_ATTR);
+    brandContainer.removeAttribute(ORIGINAL_BRAND_BG_REPEAT_ATTR);
+    brandContainer.removeAttribute(ORIGINAL_BRAND_BG_POSITION_ATTR);
+    brandContainer.removeAttribute(ORIGINAL_BRAND_BG_SIZE_ATTR);
+  }
+
   image.removeAttribute(ORIGINAL_LOGO_SRC_ATTR);
   image.removeAttribute(ORIGINAL_LOGO_ALT_ATTR);
+  image.removeAttribute(ORIGINAL_LOGO_VISIBILITY_ATTR);
 }
 
 function currentRequestRef() {
@@ -420,7 +499,7 @@ function installSupportDisplayObserver() {
   observer.observe(document.documentElement, {
     childList: true,
     attributes: true,
-    attributeFilter: ["src", "alt"],
+    attributeFilter: ["src", "alt", "style"],
     subtree: true,
   });
 
