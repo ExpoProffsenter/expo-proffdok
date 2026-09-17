@@ -453,7 +453,16 @@ export default function SalesSupportNotice() {
       const { data, error } = await getSalesSupportCompanyProfile(client, companyId);
       if (!active || error) return;
       const row = Array.isArray(data) ? data[0] : data;
-      setCompanyName(String(row?.company_name || "").trim());
+      const nextCompanyName = String(row?.company_name || "").trim();
+      const nextCompanyLogoUrl = String(row?.logo_url || row?.logoUrl || "").trim();
+      context = {
+        ...context,
+        companyName: nextCompanyName,
+        companyLogoUrl: nextCompanyLogoUrl,
+      };
+      setCompanyName(nextCompanyName);
+      applySupportCompanyBranding();
+      updateGlobalBanner();
       scheduleSupportRefresh();
     }
 
