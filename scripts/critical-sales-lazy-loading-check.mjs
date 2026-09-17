@@ -19,6 +19,14 @@ function forbidText(source, needle, message) {
   if (source.includes(needle)) failures.push(message);
 }
 
+function requireOrderedText(source, first, second, message) {
+  const firstIndex = source.indexOf(first);
+  const secondIndex = source.indexOf(second);
+  if (firstIndex < 0 || secondIndex < 0 || firstIndex >= secondIndex) {
+    failures.push(message);
+  }
+}
+
 const supabasePath = "src/modules/sales/services/salesSupabase.js";
 const lazyPath = "src/modules/sales/services/salesRequestLazyLoading.js";
 const listPath = "src/modules/sales/components/SalesListView.jsx";
@@ -160,6 +168,43 @@ if (wrapper) {
     "fetchSalesRequests(",
     `${wrapperPath}: wrapperen laster igjen hele Sales-listen før Core mountes.`
   );
+
+  const rehydrateStart = wrapper.indexOf("const rehydrateSalesModule = () => {");
+  const rehydrateEnd = wrapper.indexOf(
+    "const blockPreHydrationUnloadSave",
+    rehydrateStart
+  );
+  const rehydrateBlock =
+    rehydrateStart >= 0 && rehydrateEnd > rehydrateStart
+      ? wrapper.slice(rehydrateStart, rehydrateEnd)
+      : "";
+
+  requireText(
+    rehydrateBlock,
+    "protectInspectionDraftNavigation(props);",
+    `${wrapperPath}: Demo-recovery bevarer ikke lenger inspeksjonsnavigasjonen før remount.`
+  );
+  requireText(
+    rehydrateBlock,
+    'setServerCacheError("")',
+    `${wrapperPath}: recovery-remount rydder ikke gammel serverfeil før ny prime.`
+  );
+  requireText(
+    rehydrateBlock,
+    "setServerCacheReady(false)",
+    `${wrapperPath}: recovery-remount kan igjen mounte Core før komplett serverrad er primet.`
+  );
+  requireOrderedText(
+    rehydrateBlock,
+    "setServerCacheReady(false)",
+    "setInstanceKey((current) => current + 1)",
+    `${wrapperPath}: recovery-remount endrer instanceKey før server-first-gaten er stengt.`
+  );
+  requireText(
+    wrapper,
+    "props.openRequestSignal,\n    instanceKey,\n    serverCacheRetryKey,",
+    `${wrapperPath}: recovery-remount trigger ikke ny saksspesifikk server-prime.`
+  );
 }
 
 if (localStorage) {
@@ -233,5 +278,5 @@ if (failures.length) {
 }
 
 console.log(
-  "✅ Expo ProffDok Sales lazy-loading check OK – oversikten bruker lett projeksjon, valgt sak hydreres komplett før redigering, summary kan ikke lagres tilbake, nettfeil blokkerer ufullstendig editor og 42F recovery/server-first er bevart"
+  "✅ Expo ProffDok Sales lazy-loading check OK – oversikten bruker lett projeksjon, valgt sak hydreres komplett før redigering, Demo-recovery bevarer inspeksjonsnavigasjon, server-gaten stenges før Core remountes, summary kan ikke lagres tilbake, nettfeil blokkerer ufullstendig editor og 42F recovery/server-first er bevart"
 );
