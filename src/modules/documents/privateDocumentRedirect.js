@@ -1,4 +1,7 @@
-// FASE 29B1/29B2/29B3/29B5: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
+// FASE 44E / 29B1/29B2/29B3/29B5: Sikker dokumentrute for private prosjekt-/salgsdokumenter.
+// FASE 44E venter på Supabase-auth i ny dokumentfane og prøver kontrollert refresh
+// før en innlogget intern bruker eventuelt avvises. Intern bruker faller aldri feilaktig
+// videre til kunde-/UE-kode dersom en autentisert dokumentkontroll feiler.
 // Ruten brukes som varig URL i prosjektdata og PDF. Selve Storage-lenken lages først
 // ved åpning og er kortlivet. Kundekode legges aldri i URL-en. Kundesynlige tilbudsvedlegg
 // kan åpnes med tilbudets eksisterende publicOffer-token etter server-side kontroll.
@@ -204,6 +207,72 @@ const resolveAuthenticatedSalesCompanyScope = async (
   return String(companyScopeId).trim();
 };
 
+const readAuthenticatedSession = async (client) => {
+  try {
+    const { data, error } = await client.auth.getSession();
+    if (error) return null;
+    return data?.session?.user ? data.session : null;
+  } catch {
+    return null;
+  }
+};
+
+const waitForAuthenticatedSession = async (client, timeoutMs = 2500) => {
+  const immediate = await readAuthenticatedSession(client);
+  if (immediate?.user) return immediate;
+
+  return new Promise((resolve) => {
+    let settled = false;
+    let timer = null;
+    let subscription = null;
+
+    const finish = (session = null) => {
+      if (settled) return;
+      settled = true;
+      if (timer) window.clearTimeout(timer);
+      subscription?.unsubscribe?.();
+      resolve(session?.user ? session : null);
+    };
+
+    try {
+      const authState = client.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) finish(session);
+      });
+      subscription = authState?.data?.subscription || null;
+    } catch {
+      subscription = null;
+    }
+
+    timer = window.setTimeout(async () => {
+      finish(await readAuthenticatedSession(client));
+    }, timeoutMs);
+  });
+};
+
+const createAuthenticatedPrivateDocumentUrl = async (
+  client,
+  { physicalPath = '', download = false } = {}
+) => {
+  const sign = () => client.storage
+    .from(PRIVATE_DOCUMENT_BUCKET)
+    .createSignedUrl(physicalPath, 10 * 60, download ? { download: true } : undefined);
+
+  let result = await sign();
+  if (!result?.error && result?.data?.signedUrl) return result.data.signedUrl;
+
+  try {
+    const { data: refreshed } = await client.auth.refreshSession();
+    if (refreshed?.session?.user) {
+      result = await sign();
+      if (!result?.error && result?.data?.signedUrl) return result.data.signedUrl;
+    }
+  } catch {
+    // Den innloggede brukerens tilgang vurderes nedenfor uten å svekke portalvernet.
+  }
+
+  throw result?.error || new Error('Dokumenttilgangen kunne ikke bekreftes.');
+};
+
 export async function runPrivateDocumentRedirect() {
   showLoading();
 
@@ -227,10 +296,10 @@ export async function runPrivateDocumentRedirect() {
   }
 
   const client = createClient(supabaseUrl, anonKey);
+  const authenticatedSession = await waitForAuthenticatedSession(client);
 
-  try {
-    const { data: sessionData } = await client.auth.getSession();
-    if (sessionData?.session?.user) {
+  if (authenticatedSession?.user) {
+    try {
       let physicalPath = path;
       if (
         isPrivateSalesLogicalPath(path) ||
@@ -245,16 +314,20 @@ export async function runPrivateDocumentRedirect() {
           logicalPath: path,
         });
       }
-      const { data, error } = await client.storage
-        .from(PRIVATE_DOCUMENT_BUCKET)
-        .createSignedUrl(physicalPath, 10 * 60, download ? { download: true } : undefined);
-      if (!error && data?.signedUrl) {
-        redirectToSignedUrl(data.signedUrl, download);
-        return;
-      }
+
+      const signedUrl = await createAuthenticatedPrivateDocumentUrl(client, {
+        physicalPath,
+        download,
+      });
+      redirectToSignedUrl(signedUrl, download);
+      return;
+    } catch (error) {
+      console.warn('Innlogget dokumenttilgang ble avvist', error);
+      showError(
+        'Du er innlogget i Expo ProffDok, men den interne dokumenttilgangen kunne ikke bekreftes. Gå tilbake til saken og prøv igjen. Hvis feilen fortsetter, logg ut og inn på nytt.'
+      );
+      return;
     }
-  } catch {
-    // Fall gjennom til token- eller kodebasert tilgang.
   }
 
   if (offerToken && isPrivateOfferAttachmentLogicalPath(path)) {
