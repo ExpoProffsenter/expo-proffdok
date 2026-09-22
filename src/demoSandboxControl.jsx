@@ -6,7 +6,7 @@ const SANDBOX_URL = "https://ppvircenkjizeiqdxphj.supabase.co";
 const SANDBOX_KEY = "sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR";
 const DEMO_EMAIL = "demo@expo-proffdok.no";
 const PRODUCTION_REPO = "ExpoProffsenter/expo-proffdok";
-const SANDBOX_PRODUCTION_BASELINE = "137ed9e588da876c0154903c7aadece45f690754";
+const SANDBOX_PRODUCTION_BASELINE = "f0e63b6363dbdc16aba3902f1c275fe295f19164";
 const DEMO_SKETCH_REQUEST_IDS = ["DEMO-01-FORESPORSEL", "DEMO-02-BEFARING"];
 const DEMO_BATHROOM_SKETCH = {
   version: 15,
