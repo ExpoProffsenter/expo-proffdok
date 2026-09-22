@@ -255,11 +255,7 @@ const createAuthenticatedPrivateDocumentUrl = async (
 ) => {
   const sign = () => client.storage
     .from(PRIVATE_DOCUMENT_BUCKET)
-    .createSignedUrl(
-      physicalPath,
-      10 * 60,
-      download ? { download: true } : undefined
-    );
+    .createSignedUrl(physicalPath, 10 * 60, download ? { download: true } : undefined);
 
   let result = await sign();
   if (!result?.error && result?.data?.signedUrl) return result.data.signedUrl;
