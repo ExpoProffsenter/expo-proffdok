@@ -14,11 +14,16 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 - [x] Eksisterende Systemadmin bruker-/rolleadministrasjon er ikke erstattet.
 - [x] Firma må fortsatt være godkjent og profil aktiv for modultilgang.
 - [x] Eksisterende modulregel er bevart; ekstern proffsti er kun et tillegg for `store_offers`.
-- [x] Ekstern proff krever eksisterende `sales`-tilgang + eksplisitt aktiv leverandørtilgang for aktivt firma.
+- [x] Ekstern proff krever eksplisitt `store_offers` + `sales` og minst én aktiv leverandør for aktivt firma.
+- [x] Backend-regresjon: ekstern ansatt med `sales`, men uten `store_offers`, får ikke proffkatalog.
+- [x] Backend-regresjon: ekstern ansatt med `sales` + `store_offers` + aktiv leverandør får proffkatalog.
+- [x] Backend-regresjon: samme bruker mister proffkatalog når alle firmaets leverandører deaktiveres.
+- [x] Backend-regresjon: deaktivert profil får ingen modultilgang.
+- [x] Backend-regresjon: Firmaadmin kan ikke endre prisinnsyn for annet aktivt firma.
 - [x] Systemadmin-support er fortsatt separat fra brukerens arbeidsprofil og er read-only der produksjonsflyten krever det.
 - [ ] Manuell regresjon: ny bruker → firma → systemadmin-godkjenning → rolle/moduler.
 - [ ] Manuell regresjon: eksisterende vanlig bruker uten profftilgang ser ingen proffkatalog.
-- [ ] Manuell regresjon: firmaadmin kan ikke endre annet firmas prisinnsyn.
+- [ ] Manuell regresjon: firmaadmin kan ikke endre annet firmas prisinnsyn i UI.
 
 ## 3. Proff vareregister og priser
 - [x] Bare eksplisitt aktive leverandører returneres i proffsøket.
@@ -26,6 +31,8 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 - [x] `Din nto pris` = Kundepris eks. mva. minus firmarabatt.
 - [x] Kundepris eks. mva. er foreslått salgspris til sluttkunde og kan redigeres i tilbudet.
 - [x] Prisinnsyn er firmascopet og brukerspesifikt.
+- [x] Backend-regresjon: bruker uten eksplisitt `Din nto pris` får `my_net_price_ex_vat = null` fra proffsøket.
+- [x] Backend-regresjon: bruker med eksplisitt `Din nto pris` får beregnet nettopris i proffsøket.
 - [x] Gammel tvetydig 2-args prisinnsyns-RPC er sperret for `authenticated`.
 - [x] Standardforslag: FlisLab AS 40 %, FlisLabFLISER 40 %, Askøy 40 %, Baden Haus 30 %.
 - [x] Standardforslag overskriver ikke allerede aktive rabatter.
@@ -71,9 +78,11 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 
 ## 8. Final gate før Production
 - [ ] Alle `check:critical`/build guards grønne på endelig commit.
-- [x] Ny miljøbinding-guard er verifisert med grønn Vercel Sandbox-preview på commit `4d15afe`.
+- [x] Ny miljøbinding-guard er verifisert med grønn Vercel Sandbox-preview.
 - [ ] Ingen åpne kritiske Vercel/runtime-feil i feature-preview.
 - [ ] Kontroll av migrationsrekkefølge og function grants mot faktisk Production.
+- [x] Sandbox: 45B-tabellene har RLS aktivert og direkte `anon`/`authenticated` tabelltilgang er revokert.
+- [x] Sandbox: 45B-RPC-er er ikke eksponert til `anon`; relevante klient-RPC-er er eksplisitt gitt til `authenticated`.
 - [ ] Ingen Sandbox/testdata følger som Production-datamigrasjon.
 - [ ] Ingen Production secrets/URLs er lagt i nye klientfiler utover eksplisitte build-guard-konstanter i `vite.config.js`.
 - [ ] Manuell smoke: Systemadmin, Firmaadmin, vanlig intern bruker, ekstern proffbruker, sluttkunde.
