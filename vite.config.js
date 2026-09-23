@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 
-// FASE 45B preview-isolasjon: clean feature-preview skal aldri peke mot Production Supabase.
 const PROD_SUPABASE_URL = "https://dqffxflaoyarbxyiyhop.supabase.co";
 const PROD_PUBLISHABLE_KEY = "sb_publishable_w0_XsTuYKIrpOjDQeyAKVg_026niotL";
 const PROD_LEGACY_ANON_KEYS = [
@@ -11,25 +10,26 @@ const PROD_LEGACY_ANON_KEYS = [
 ];
 const SANDBOX_SUPABASE_URL = "https://ppvircenkjizeiqdxphj.supabase.co";
 const SANDBOX_PUBLISHABLE_KEY = "sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR";
-const FEATURE_SANDBOX_HOST = "expo-proffdok-git-demo-fase45b-proff-enkel-ordre-clean-ringside.vercel.app";
 
-function featureSandboxBuildGuard() {
+const VERCEL_ENV = String(process.env.VERCEL_ENV || "").trim().toLowerCase();
+const VERCEL_GIT_COMMIT_REF = String(process.env.VERCEL_GIT_COMMIT_REF || "").trim();
+const isProductionBuild = VERCEL_ENV === "production";
+const isSandboxPreview =
+  VERCEL_ENV === "preview" &&
+  (VERCEL_GIT_COMMIT_REF === "demo" || VERCEL_GIT_COMMIT_REF.startsWith("demo-fase45b-"));
+
+function environmentBindingGuard() {
   return {
-    name: "expo-fase45b-clean-sandbox-build-guard",
+    name: "expo-environment-binding-guard",
     enforce: "pre",
     transform(code, id) {
-      if (!/\.(?:[cm]?[jt]sx?)$/.test(id)) return null;
+      if (!isSandboxPreview || !/\.(?:[cm]?[jt]sx?)$/.test(id)) return null;
+
       let next = code
         .replaceAll(PROD_SUPABASE_URL, SANDBOX_SUPABASE_URL)
         .replaceAll(PROD_PUBLISHABLE_KEY, SANDBOX_PUBLISHABLE_KEY);
       for (const legacyKey of PROD_LEGACY_ANON_KEYS) next = next.replaceAll(legacyKey, SANDBOX_PUBLISHABLE_KEY);
 
-      if (id.endsWith("/src/modules/app/previewSafetyBootstrap.js")) {
-        next = next.replace(
-          "const PRODUCTION_VERCEL_HOSTS = new Set([",
-          `const PRODUCTION_VERCEL_HOSTS = new Set([\n  ${JSON.stringify(FEATURE_SANDBOX_HOST)},`
-        );
-      }
       if (next === code) return null;
       return { code: next, map: null };
     },
@@ -38,25 +38,48 @@ function featureSandboxBuildGuard() {
         .filter((entry) => entry?.type === "chunk")
         .map((entry) => entry.code || "")
         .join("\n");
+
       const sandboxUrlPresent = emittedJs.includes(SANDBOX_SUPABASE_URL);
       const sandboxKeyPresent = emittedJs.includes(SANDBOX_PUBLISHABLE_KEY);
       const productionUrlPresent = emittedJs.includes(PROD_SUPABASE_URL);
       const productionPublishablePresent = emittedJs.includes(PROD_PUBLISHABLE_KEY);
       const productionLegacyPresent = PROD_LEGACY_ANON_KEYS.some((key) => emittedJs.includes(key));
-      if (!sandboxUrlPresent || !sandboxKeyPresent || productionUrlPresent || productionPublishablePresent || productionLegacyPresent) {
-        throw new Error("FASE 45B clean Sandbox build blocked: emitted JS is not cleanly bound to Sandbox Supabase.");
+
+      if (isProductionBuild) {
+        if (sandboxUrlPresent || sandboxKeyPresent || !productionUrlPresent || (!productionPublishablePresent && !productionLegacyPresent)) {
+          throw new Error(
+            "PRODUCTION BUILD BLOCKED: bundle is not exclusively bound to Production Supabase (dqffxflaoyarbxyiyhop)."
+          );
+        }
+        console.log("✅ Production bundle verified: Production Supabase present; Sandbox Supabase absent");
+        return;
       }
-      console.log("✅ FASE 45B clean bundle verified: Sandbox Supabase present; Production Supabase absent");
+
+      if (isSandboxPreview) {
+        if (!sandboxUrlPresent || !sandboxKeyPresent || productionUrlPresent || productionPublishablePresent || productionLegacyPresent) {
+          throw new Error(
+            "SANDBOX PREVIEW BUILD BLOCKED: bundle is not exclusively bound to Sandbox Supabase (ppvircenkjizeiqdxphj)."
+          );
+        }
+        console.log("✅ Sandbox preview verified: Sandbox Supabase present; Production Supabase absent");
+        return;
+      }
+
+      if (sandboxUrlPresent && (productionUrlPresent || productionPublishablePresent || productionLegacyPresent)) {
+        throw new Error("BUILD BLOCKED: emitted bundle contains both Production and Sandbox Supabase bindings.");
+      }
     },
   };
 }
 
 export default defineConfig({
-  plugins: [featureSandboxBuildGuard(), react()],
-  define: {
-    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(SANDBOX_SUPABASE_URL),
-    "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(SANDBOX_PUBLISHABLE_KEY),
-  },
+  plugins: [environmentBindingGuard(), react()],
+  define: isSandboxPreview
+    ? {
+        "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(SANDBOX_SUPABASE_URL),
+        "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(SANDBOX_PUBLISHABLE_KEY),
+      }
+    : undefined,
   build: {
     rollupOptions: {
       input: {
