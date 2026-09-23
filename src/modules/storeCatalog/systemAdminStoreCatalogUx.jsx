@@ -5,6 +5,7 @@
 import { createRoot } from "react-dom/client";
 import { StoreCatalogAdminOnlyPanel } from "./StoreCatalogOfferTools.jsx";
 import ProStoreCatalogAdminPanel from "./ProStoreCatalogAdminPanel.jsx";
+import { installPriceSearchPortalGuard } from "./priceSearchPortalGuard.js";
 
 const SYSTEMADMIN_MOUNT_ID = "expo-systemadmin-store-catalog";
 const FIRMAADMIN_MOUNT_ID = "expo-firmaadmin-pro-store-catalog";
@@ -48,6 +49,7 @@ function mountIntoSection({ section, mountId, rootRef, render }) {
 
 export function installSystemAdminStoreCatalogUx() {
   if (typeof document === "undefined") return () => {};
+  installPriceSearchPortalGuard();
 
   const systemRoot = { current: null };
   const firmaRoot = { current: null };
