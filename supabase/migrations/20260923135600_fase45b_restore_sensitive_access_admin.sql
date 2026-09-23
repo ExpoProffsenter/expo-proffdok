@@ -1,5 +1,6 @@
 -- FASE 45B – Sandbox manglet eksisterende Production-RPC for sensitiv internpris.
--- Definisjonen følger Production-semantikk: kun Systemadmin og kun Ringside/Expo-selskap.
+-- Definisjonen følger gjeldende Production-semantikk nøyaktig: kun Systemadmin,
+-- kun Ringside/Expo-selskap, og null system_role behandles som vanlig bruker.
 
 create or replace function public.set_managed_sensitive_access(
   target_user_id uuid,
@@ -14,6 +15,7 @@ declare
   v_uid uuid := auth.uid();
   v_target public.profiles%rowtype;
   v_company text := '';
+  v_target_is_systemadmin boolean := false;
 begin
   if v_uid is null or not public.current_profile_is_systemadmin() then
     raise exception 'Kun systemadministrator kan endre tilgang til interne nettopriser.' using errcode='42501';
@@ -24,9 +26,11 @@ begin
     raise exception 'Brukeren finnes ikke.' using errcode='P0002';
   end if;
 
+  v_target_is_systemadmin := coalesce(v_target.system_role,'') = 'systemadmin';
   v_company := public.sales_normalize_company_name(v_target.company_name);
+
   if coalesce(p_view_internal_net_prices,false)
-     and v_target.system_role <> 'systemadmin'
+     and not v_target_is_systemadmin
      and v_company not in (
        public.sales_normalize_company_name('Ringside Rørleggerbedrift AS'),
        public.sales_normalize_company_name('Bademiljø Expo'),
@@ -35,7 +39,7 @@ begin
     raise exception 'Nto-pristilgang kan bare gis til brukere i Ringside, Bademiljø Expo eller Expo Proffsenter.' using errcode='42501';
   end if;
 
-  if coalesce(p_view_internal_net_prices,false) and v_target.system_role <> 'systemadmin' then
+  if coalesce(p_view_internal_net_prices,false) and not v_target_is_systemadmin then
     insert into public.user_feature_access(user_id,feature_key,granted_by,updated_at)
     values(target_user_id,'view_internal_net_prices',v_uid,now())
     on conflict(user_id,feature_key)
@@ -48,7 +52,7 @@ begin
   return jsonb_build_object(
     'user_id',target_user_id,
     'feature_keys',to_jsonb(case
-      when v_target.system_role='systemadmin' then array['view_internal_net_prices']::text[]
+      when v_target_is_systemadmin then array['view_internal_net_prices']::text[]
       when coalesce(p_view_internal_net_prices,false) then array['view_internal_net_prices']::text[]
       else array[]::text[]
     end)
