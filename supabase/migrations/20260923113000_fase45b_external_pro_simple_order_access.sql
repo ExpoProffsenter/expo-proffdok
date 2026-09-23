@@ -9,8 +9,8 @@ language sql stable security definer set search_path=public,pg_temp as $$
     where a.company_id=p_company_id and a.is_active=true
   );
 $$;
-revoke all on function public.company_has_pro_store_catalog_access(uuid) from public,anon;
-grant execute on function public.company_has_pro_store_catalog_access(uuid) to authenticated;
+-- Intern hjelpefunksjon: kallbar fra eierdefinerte RPC-er, ikke direkte fra klienten.
+revoke all on function public.company_has_pro_store_catalog_access(uuid) from public,anon,authenticated;
 
 create or replace function public.current_user_has_module_access(p_module_key text)
 returns boolean
