@@ -1,8 +1,9 @@
-// Expo ProffDok – FASE 35A
+// Expo ProffDok – FASE 35A / 45B
 // Egen datatjeneste for prosjektets operative fremdriftsplan.
 // Planen lagres separat fra projects.data slik at vanlig prosjektlagring ikke kan
 // overskrive arbeidsøkter. Kunde/UE leser kun via eksisterende portal-RPC.
 // Preview kan kjøres i eksplisitt trygg testmodus der fremdriftsplanen kun lagres lokalt.
+// 45B eksponerer workflowType til fremdrifts-UI slik at Enkel ordre aldri tilbyr kundedeling.
 
 import { createDefaultSalesSupabaseClient } from '../sales/services/salesSupabase.js';
 import {
@@ -21,7 +22,7 @@ export const EMPTY_PROGRESS_PLAN = Object.freeze({
 });
 
 const SAFE_PREVIEW_PARAM = 'progressTest';
-const SAFE_PREVIEW_VALUES = new Set(['safe', 'andreas']); // «andreas» beholdes kun for eksisterende Preview-lenker i 35A-QA.
+const SAFE_PREVIEW_VALUES = new Set(['safe', 'andreas']);
 const SAFE_PREVIEW_STORAGE_PREFIX = 'expoProffDokProgressSafePreview:';
 const SAFE_PREVIEW_BADGE_ID = 'expo-progress-safe-preview-badge';
 
@@ -182,14 +183,19 @@ export async function saveInternalProgressPlan(client, projectId, plan, customer
 function projectMeta(row = {}) {
   const project = row?.data?.project || {};
   const salesOrigin = project?.salesOrigin || {};
+  const workflowType = clean(project?.workflowType || salesOrigin?.activationMode || '').toLowerCase();
+  const simpleOrder = workflowType === 'simple_order' || project?.simpleOrder === true;
   return {
     id: String(row?.id || ''),
-    title: clean(project?.projectName || row?.title || project?.address || 'Prosjekt'),
+    title: clean(project?.projectName || row?.title || project?.address || (simpleOrder ? 'Enkel ordre' : 'Prosjekt')),
     address: clean(project?.address || ''),
     customer: clean(project?.customer || project?.customerName || ''),
     requestRef: clean(salesOrigin?.requestRef || ''),
     publicToken: clean(salesOrigin?.publicToken || ''),
     projectDate: clean(project?.date || ''),
+    workflowType: simpleOrder ? 'simple_order' : workflowType,
+    simpleOrder,
+    shareEnabled: !!row?.share_enabled,
     locked: !!row?.locked,
   };
 }
@@ -199,7 +205,7 @@ export async function loadInternalProgressProjectMeta(client, projectId) {
   if (!client || !id) return null;
   const { data, error } = await client
     .from('projects')
-    .select('id,title,data,locked,updated_at')
+    .select('id,title,data,locked,share_enabled,updated_at')
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;
@@ -210,7 +216,7 @@ export async function listAccessibleProgressProjects(client) {
   if (!client) return [];
   const { data, error } = await client
     .from('projects')
-    .select('id,title,data,locked,updated_at')
+    .select('id,title,data,locked,share_enabled,updated_at')
     .order('updated_at', { ascending: false });
   if (error) throw error;
   return (Array.isArray(data) ? data : []).map((row) => ({ row, ...projectMeta(row) }));
@@ -254,8 +260,6 @@ export async function loadPortalProgressPlan(client, projectId, role) {
   const code = readStoredPortalAccessCode(projectId, normalizedRole);
   if (!projectId || !code) return unavailable;
 
-  // Også i trygg Preview-test beholder vi eksisterende portalverifisering.
-  // RPC-en leser prosjekt/tilgang, mens selve fremdriftsplanen hentes lokalt i testmodusen.
   const result = await verifyProjectPortalAccess(client, {
     projectId,
     role: normalizedRole,
@@ -286,8 +290,6 @@ export async function loadPortalProgressPlan(client, projectId, role) {
 }
 
 export async function loadAcceptedOfferActivities(client, projectMetaValue = {}) {
-  // Trygg Preview skal aldri lese et ekte tilbudsgrunnlag eller skrive fremdriftsdata server-side.
-  // Tilbudsimporten verifiseres separat med syntetisk grunnlag i critical-progress-plan-check.mjs.
   if (isProgressSafePreviewMode()) return [];
 
   const token = clean(projectMetaValue?.publicToken);
