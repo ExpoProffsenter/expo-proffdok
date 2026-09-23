@@ -7,10 +7,13 @@ const hardening=fs.readFileSync(path.join(root,"supabase/migrations/202609231320
 const unifiedAccess=fs.readFileSync(path.join(root,"supabase/migrations/20260923135500_fase45b_unified_user_access_admin.sql"),"utf8");
 const moduleGate=fs.readFileSync(path.join(root,"supabase/migrations/20260923151500_fase45b_pro_catalog_module_gate.sql"),"utf8");
 const activationMigration=fs.readFileSync(path.join(root,"supabase/migrations/20260923122500_fase45b_simple_order_activation_mode.sql"),"utf8");
+const releaseHardening=fs.readFileSync(path.join(root,"supabase/migrations/20260923182500_fase45b_release_parity_hardening.sql"),"utf8");
 const client=fs.readFileSync(path.join(root,"src/modules/storeCatalog/proStoreCatalogClient.js"),"utf8");
 const adminPanel=fs.readFileSync(path.join(root,"src/modules/storeCatalog/ProStoreCatalogAdminPanel.jsx"),"utf8");
 const normalizedAdmin=adminPanel.replace(/\s+/g,"");
 const unifiedUserUx=fs.readFileSync(path.join(root,"src/modules/access/systemAdminUnifiedUserAccessUx.jsx"),"utf8");
+const firmaAdminUx=fs.readFileSync(path.join(root,"src/modules/access/firmaAdminProNetPriceUx.js"),"utf8");
+const indexHtml=fs.readFileSync(path.join(root,"index.html"),"utf8");
 const offerWrapper=fs.readFileSync(path.join(root,"src/modules/sales/components/SalesStoreOfferBuilderProCatalog.jsx"),"utf8");
 const detail=fs.readFileSync(path.join(root,"src/modules/sales/components/SalesDetailView.jsx"),"utf8");
 const legacyDetail=fs.readFileSync(path.join(root,"src/modules/sales/components/SalesDetailViewLegacy.jsx"),"utf8");
@@ -46,12 +49,26 @@ for(const needle of [
 assert(unifiedAccess.includes("v_wants_store:='store_offers'=any(v_requested)") || unifiedAccess.includes("v_wants_store := 'store_offers' = any(v_requested)"),"Enkel ordre må tildeles eksplisitt per bruker.");
 for(const needle of ["current_user_has_module_access('sales')","current_user_has_module_access('store_offers')","company_has_pro_store_catalog_access(public.current_active_company_scope_id())"]) assert(moduleGate.includes(needle),`Proffkatalog må kreve eksplisitt modul- og firmatilgang: ${needle}`);
 
+for(const needle of [
+  "drop function if exists public.current_user_can_view_pro_catalog_net_price(uuid)",
+  "Brukeren må være godkjent og aktiv før «Din nto pris» kan aktiveres",
+  "Gi brukeren Befaring/Tilbud og Enkel ordre før «Din nto pris» aktiveres",
+  "current_user_has_module_access('sales')",
+  "current_user_has_module_access('store_offers')",
+  "revoke all on function public.current_sales_company_id() from public, anon, authenticated",
+  "revoke all on function public.company_has_pro_store_catalog_access(uuid) from public, anon, authenticated",
+  "revoke all on public.store_catalog_company_supplier_access from anon,authenticated",
+  "revoke all on public.store_catalog_user_price_access from anon,authenticated",
+]) assert(releaseHardening.includes(needle),`Release-hardening mangler: ${needle}`);
+
 for(const needle of ["searchProStoreCatalog","canViewMyNetPrice","setCompanySupplierAccess","setUserNetPriceAccess",'"search_pro_store_catalog"',"p_company_id:companyId"]) assert(client.includes(needle),`Proffkatalog-klient mangler: ${needle}`);
 for(const forbidden of ["purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent"]) assert(!client.includes(forbidden),`Proffklienten skal ikke kjenne internt felt: ${forbidden}`);
 
 for(const needle of ["flislabas","flislabfliser","askøy","badenhaus","discountPercent:40","discountPercent:30","Leggtilstandardforslag","Eksisterenderabatterbleikkeoverskrevet"]) assert(normalizedAdmin.toLowerCase().includes(needle.toLowerCase()),`Standardforslag mangler eller er utrygt: ${needle}`);
 assert(adminPanel.includes("Brukertilgang") && adminPanel.includes("Brukere og tilganger"),"Systemadmin skal styre brukertilgang på eksisterende brukerkort, ikke i leverandørlisten.");
 for(const needle of ["Enkel ordre / Proff vareregister","Se «Din nto pris»","setManagedProCatalogNetPriceAccess","setManagedModuleAccess"]) assert(unifiedUserUx.includes(needle),`Samlet Systemadmin-brukerkort mangler: ${needle}`);
+for(const needle of ["set_store_catalog_user_net_price_access","Se «Din nto pris»","Tilgangen styres av Systemadministrator.","Din egen pristilgang styres av Systemadministrator.","company_has_pro_catalog","store_offers","sales"]) assert(firmaAdminUx.includes(needle),`Firmaadmin pristilgang på samme brukerkort mangler: ${needle}`);
+assert(indexHtml.includes("installFirmaAdminProNetPriceUx"),"Firmaadmin pristilgang må være installert i appen.");
 
 for(const needle of ["suggested_sale_price_ex_vat","suggested_sale_price_incl_vat","SalesStoreOfferBuilderCatalogTemplates","ProStoreCatalogInlineLookup"]) assert(offerWrapper.includes(needle),`Enkel ordre-wrapper mangler sikker salgsflate: ${needle}`);
 for(const forbidden of ["my_net_price_ex_vat","purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent","markup_percent"]) assert(!offerWrapper.includes(forbidden),`Tilbudsdata skal aldri kjenne intern/nto-pris: ${forbidden}`);
