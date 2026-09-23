@@ -16,7 +16,11 @@ const VERCEL_GIT_COMMIT_REF = String(process.env.VERCEL_GIT_COMMIT_REF || "").tr
 const isProductionBuild = VERCEL_ENV === "production";
 const isSandboxPreview =
   VERCEL_ENV === "preview" &&
-  (VERCEL_GIT_COMMIT_REF === "demo" || VERCEL_GIT_COMMIT_REF.startsWith("demo-fase45b-"));
+  (
+    VERCEL_GIT_COMMIT_REF === "demo" ||
+    VERCEL_GIT_COMMIT_REF.startsWith("demo-fase45b-") ||
+    VERCEL_GIT_COMMIT_REF.startsWith("fase45b-")
+  );
 
 function environmentBindingGuard() {
   return {
