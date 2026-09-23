@@ -87,7 +87,7 @@ Status: SANDBOX/release-kandidat. Skal ikke merges til `main` før komplett QA o
 - [ ] Endelig kommersiell/juridisk ordlyd godkjennes før Production.
 
 ## 8. Final gate før Production
-- [x] Release-kandidat `check:critical` / PR Core Safety er grønn på commit `0377f981`.
+- [x] Release-kandidat `check:critical` / PR Core Safety er grønn på commit `c67dcd32`.
 - [x] Release-kandidat Vercel-preview er READY og svarer HTTP 200.
 - [x] Ny miljøbinding-guard er verifisert i release-kandidatens Sandbox-preview.
 - [ ] Ingen åpne kritiske Vercel/runtime-feil i release-preview etter full manuell smoke.
@@ -96,8 +96,8 @@ Status: SANDBOX/release-kandidat. Skal ikke merges til `main` før komplett QA o
 - [x] Sandbox: 45B-tabellene har RLS aktivert og direkte `anon`/`authenticated` tabelltilgang er revokert.
 - [x] Sandbox: 45B-RPC-er er ikke eksponert til `anon`; relevante klient-RPC-er er eksplisitt gitt til `authenticated`.
 - [x] Release-parity fjerner foreldreløs Sandbox-only pris-RPC og låser interne helper-/triggerfunksjoner for klientroller.
-- [ ] Ingen Sandbox/testdata følger som Production-datamigrasjon.
-- [ ] Ingen Production secrets/URLs er lagt i nye klientfiler utover eksplisitte build-guard-konstanter i `vite.config.js`.
+- [x] PR-diff er kontrollert for Sandbox testdata: ingen `DEMO-45B`, testkunde-UUID, `.invalid`-adresse eller `sales_requests`-seed ligger i Production-migrasjonene. Demologo ligger kun som statisk Sandbox-testasset.
+- [x] Production/Sandbox refs og publishable keys forekommer kun i eksplisitt miljø-build-guard i `vite.config.js`; ingen nye klientmoduler har hardkodet backend-binding.
 - [ ] Manuell smoke: Systemadmin, Firmaadmin, vanlig intern bruker, ekstern proffbruker, sluttkunde.
 - [ ] Eksplisitt **PRODUCTION GODKJENT** før merge. `TEST OK` gjelder bare aktuell test/runde.
 - [ ] Etter merge: trippel QA Production og kontrollert `main → demo`.
