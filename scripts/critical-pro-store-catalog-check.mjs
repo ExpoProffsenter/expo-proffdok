@@ -14,6 +14,9 @@ const activation=fs.readFileSync(path.join(root,"src/modules/sales/components/Sa
 const simpleOrder=fs.readFileSync(path.join(root,"src/modules/sales/services/salesSimpleOrder.js"),"utf8");
 const storeOffers=fs.readFileSync(path.join(root,"src/modules/sales/services/salesStoreOffers.js"),"utf8");
 const orderBasis=fs.readFileSync(path.join(root,"src/modules/sales/components/StoreOfferOrderBasis.jsx"),"utf8");
+const help=fs.readFileSync(path.join(root,"src/modules/help/help45b.js"),"utf8");
+const helpBridge=fs.readFileSync(path.join(root,"src/modules/help/helpTools.js"),"utf8");
+const terms=fs.readFileSync(path.join(root,"src/modules/app/appStaticTools.js"),"utf8");
 for(const needle of ["store_catalog_company_supplier_access","store_catalog_user_price_access","search_pro_store_catalog","current_user_has_pro_store_catalog_access","current_user_can_view_store_catalog_net_price","set_store_catalog_company_supplier_access","set_store_catalog_user_net_price_access","discount_percent >= 0 and discount_percent <= 100","a.supplier_key=i.supplier_key","i.customer_price_ex_vat*(1-a.discount_percent/100)"]) assert(migration.includes(needle),`45B katalogkontrakt mangler: ${needle}`);
 const proSearch=migration.slice(migration.indexOf("create or replace function public.search_pro_store_catalog"));
 const returnContract=proSearch.slice(0,proSearch.indexOf("language plpgsql"));
@@ -28,12 +31,16 @@ for(const forbidden of ["purchase_net_ex_vat","purchase_discount_percent","gross
 for(const needle of ["flislab as","flislabfliser","askøy","baden haus","discountPercent:40","discountPercent:30","Legg til standardforslag","Eksisterende rabatter ble ikke overskrevet"]) assert(adminPanel.includes(needle),`Standardforslag mangler eller er utrygt: ${needle}`);
 for(const needle of ["suggested_sale_price_ex_vat","suggested_sale_price_incl_vat","SalesStoreOfferBuilderCatalogTemplates","ProStoreCatalogInlineLookup"]) assert(offerWrapper.includes(needle),`Enkel ordre-wrapper mangler sikker salgsflate: ${needle}`);
 for(const forbidden of ["my_net_price_ex_vat","purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent","markup_percent"]) assert(!offerWrapper.includes(forbidden),`Tilbudsdata skal aldri kjenne intern/nto-pris: ${forbidden}`);
-for(const needle of ["isSimpleOrderRequest","Lag enkel ordre","Aktiver som prosjekt","persistSimpleOrderActivationMode","getSalesSupportCompanyId"]) assert(detail.includes(needle),`Akseptert Enkel ordre mangler kontrollert videreføring: ${needle}`);
+for(const needle of ["isSimpleOrderRequest","Lag enkel ordre","Aktiver som prosjekt","persistSimpleOrderActivationMode","getSalesSupportCompanyId","StoreOfferOrderBasis","data-simple-order-support-order-basis"]) assert(detail.includes(needle),`Akseptert Enkel ordre mangler kontrollert videreføring/support-QA: ${needle}`);
+assert(detail.includes("supportMode && simpleOrderAccepted"),"Bestillingsgrunnlag i support skal kun vises read-only for akseptert Enkel ordre.");
 assert(detail.includes("SalesDetailViewLegacy"),"Ordinær Sales-detail skal delegeres til verifisert legacy-visning.");
 for(const needle of ["SalesDetailViewCore","rewriteStoreOfferAcceptedFlow","rewriteStoreOfferDeclinedFlow"]) assert(legacyDetail.includes(needle),`Legacy Sales-detail-kontrakt mangler: ${needle}`);
 for(const needle of ["storeOffer && !simpleOrder","getSimpleOrderActivationMode","Lag enkel ordre","Aktiver som prosjekt","if (supportMode)"]) assert(activation.includes(needle),`Aktiveringsskjerm mangler Enkel ordre-/sikkerhetsregel: ${needle}`);
 for(const needle of ["set_simple_order_activation_mode","simple_order","project"]) assert(simpleOrder.includes(needle),`Simple-order-klient mangler: ${needle}`);
 for(const needle of ["export function isStoreOfferRequest","export function isSimpleOrderRequest","findStoreOfferMeta"]) assert(storeOffers.includes(needle),`Butikktilbud/Enkel ordre-identitet mangler: ${needle}`);
 for(const needle of ["supplierProductNumber","nobbNumber","storeCatalogGtin","acceptedOfferLines","acceptedOptions","selected_options","Kopier liste","Skriv ut"]) assert(orderBasis.includes(needle),`Akseptert varegrunnlag mangler: ${needle}`);
+for(const needle of ["Proff vareregister / Enkel ordre","Forhåndsvis som kunde","Din nto pris","Bestillingsgrunnlag","FlisLab AS 40 %","Askøy 40 %","SoPro-forutsetningen"]) assert(help.includes(needle),`HJELP mangler 45B-veiledning: ${needle}`);
+assert(helpBridge.includes("createHelp45BSection"),"45B-hjelpen må være koblet til React-hjelpesenteret.");
+for(const needle of ['EXPO_PROFFDOK_TERMS_VERSION = "1.1"',"Tilgang og SoPro-forutsetning","kan Expo begrense, suspendere eller avslutte tilgangen","inkludert SoPro-forutsetningen"]) assert(terms.includes(needle),`Brukervilkår 1.1 mangler: ${needle}`);
 for(const needle of ["set_simple_order_activation_mode","simpleOrderActivationMode","fase45b_mark_simple_order_project","workflowType","simple_order","new.share_enabled:=false"]) assert(activationMigration.includes(needle),`Simple-order backend mangler: ${needle}`);
 console.log("critical-pro-store-catalog-check: OK");
