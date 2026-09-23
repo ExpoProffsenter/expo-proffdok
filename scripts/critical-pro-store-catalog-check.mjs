@@ -5,9 +5,11 @@ const root=process.cwd();
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20260922170000_fase45b_pro_catalog_access.sql"),"utf8");
 const hardening=fs.readFileSync(path.join(root,"supabase/migrations/20260923132000_fase45b_access_hardening.sql"),"utf8");
 const unifiedAccess=fs.readFileSync(path.join(root,"supabase/migrations/20260923135500_fase45b_unified_user_access_admin.sql"),"utf8");
+const sensitiveRestore=fs.readFileSync(path.join(root,"supabase/migrations/20260923135600_fase45b_restore_sensitive_access_admin.sql"),"utf8");
 const moduleGate=fs.readFileSync(path.join(root,"supabase/migrations/20260923151500_fase45b_pro_catalog_module_gate.sql"),"utf8");
 const activationMigration=fs.readFileSync(path.join(root,"supabase/migrations/20260923122500_fase45b_simple_order_activation_mode.sql"),"utf8");
 const releaseHardening=fs.readFileSync(path.join(root,"supabase/migrations/20260923182500_fase45b_release_parity_hardening.sql"),"utf8");
+const sensitivePreserve=fs.readFileSync(path.join(root,"supabase/migrations/20260923183500_fase45b_preserve_sensitive_access_null_role.sql"),"utf8");
 const client=fs.readFileSync(path.join(root,"src/modules/storeCatalog/proStoreCatalogClient.js"),"utf8");
 const adminPanel=fs.readFileSync(path.join(root,"src/modules/storeCatalog/ProStoreCatalogAdminPanel.jsx"),"utf8");
 const normalizedAdmin=adminPanel.replace(/\s+/g,"");
@@ -60,6 +62,16 @@ for(const needle of [
   "revoke all on public.store_catalog_company_supplier_access from anon,authenticated",
   "revoke all on public.store_catalog_user_price_access from anon,authenticated",
 ]) assert(releaseHardening.includes(needle),`Release-hardening mangler: ${needle}`);
+
+for(const source of [sensitiveRestore,sensitivePreserve]) {
+  for(const needle of [
+    "v_target_is_systemadmin boolean := false",
+    "v_target_is_systemadmin := coalesce(v_target.system_role,'') = 'systemadmin'",
+    "and not v_target_is_systemadmin",
+    "when v_target_is_systemadmin then array['view_internal_net_prices']",
+  ]) assert(source.includes(needle),`Null-safe internpristilgang må bevares: ${needle}`);
+  assert(!source.includes("v_target.system_role <> 'systemadmin'"),"Fase 45B må ikke gjeninnføre NULL-feilen i intern pristilgang.");
+}
 
 for(const needle of ["searchProStoreCatalog","canViewMyNetPrice","setCompanySupplierAccess","setUserNetPriceAccess",'"search_pro_store_catalog"',"p_company_id:companyId"]) assert(client.includes(needle),`Proffkatalog-klient mangler: ${needle}`);
 for(const forbidden of ["purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent"]) assert(!client.includes(forbidden),`Proffklienten skal ikke kjenne internt felt: ${forbidden}`);
