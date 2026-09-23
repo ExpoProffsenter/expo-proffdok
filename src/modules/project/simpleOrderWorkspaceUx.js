@@ -1,8 +1,7 @@
 // Expo ProffDok – FASE 45B
 // Presentasjonslag for Enkel ordre. Den eksisterende prosjektmotoren beholdes teknisk,
 // men en ordre skal ikke presenteres som et ordinært Prosjekt i brukerflaten.
-// Modulen endrer kun intern admin-UX. Kundelenke/portal er fortsatt blokkert server-side
-// ved share_enabled=false for workflowType=simple_order.
+// Modulen endrer kun intern admin-UX. Kundelenke/portal er i tillegg blokkert server-side.
 
 import { createDefaultSalesSupabaseClient } from '../sales/services/salesSupabase.js';
 
@@ -116,7 +115,10 @@ function restoreElement(element) {
   }
   if (element.getAttribute(HIDDEN_ATTR) === '1') {
     if (element instanceof HTMLElement) element.style.removeProperty('display');
-    if (element instanceof HTMLOptionElement) element.disabled = false;
+    if (element instanceof HTMLOptionElement) {
+      element.disabled = false;
+      element.hidden = false;
+    }
     element.removeAttribute(HIDDEN_ATTR);
   }
 }
@@ -155,7 +157,6 @@ function adaptNavigation(simpleOrder) {
   allNavEntries().forEach((element) => {
     if (!simpleOrder) {
       restoreElement(element);
-      if (element instanceof HTMLOptionElement) element.hidden = false;
       return;
     }
 
@@ -203,27 +204,46 @@ function adaptTerminology(simpleOrder) {
     if (text === '🔓 Lås opp prosjekt') setOwnText(element, 'Lås opp prosjekt', 'Lås opp ordre');
   });
 
+  document.querySelectorAll('.progress-hero, .progress-resolver, .progress-empty').forEach((element) => {
+    setOwnText(element, 'Prosjektgjennomføring', 'Ordregjennomføring');
+    setOwnText(element, 'prosjektet', 'ordren');
+    setOwnText(element, 'Prosjektnavnet', 'Ordrenavnet');
+    setOwnText(element, 'Velg riktig prosjekt', 'Velg riktig ordre');
+  });
+
   document.querySelectorAll('div').forEach((element) => {
     const text = clean(element.textContent);
     if (text === '🟡 Ulagrede endringer i prosjektet') setOwnText(element, 'prosjektet', 'ordren');
   });
 }
 
-function hideCustomerAccess(simpleOrder) {
+function restoreCustomerHidden() {
   document.querySelectorAll(`[${CUSTOMER_HIDDEN_ATTR}="1"]`).forEach((element) => {
     if (!(element instanceof HTMLElement)) return;
-    if (simpleOrder) return;
     element.style.removeProperty('display');
     element.removeAttribute(CUSTOMER_HIDDEN_ATTR);
   });
-  if (!simpleOrder) return;
+}
+
+function hideCustomerAccess(simpleOrder) {
+  if (!simpleOrder) {
+    restoreCustomerHidden();
+    return;
+  }
+
+  // Enkel ordre har ingen kundelink. Fremdrift kan fortsatt brukes internt og av UE,
+  // men "Vis fremdriftsplan til kunde" skal aldri kunne slås på.
+  document.querySelectorAll('.progress-share-card').forEach((card) => {
+    if (!(card instanceof HTMLElement)) return;
+    card.style.display = 'none';
+    card.setAttribute(CUSTOMER_HIDDEN_ATTR, '1');
+  });
 
   Array.from(document.querySelectorAll('button')).forEach((button) => {
     const text = clean(button.textContent);
     if (!CUSTOMER_ACTION_PATTERN.test(text)) return;
     const container = button.closest('.item') || button.closest('section') || button;
     if (!(container instanceof HTMLElement)) return;
-    // Skjul kundedeling, men aldri en container som også inneholder eksplisitt UE-handling.
     const containerText = clean(container.textContent);
     if (/underentreprenør|underleverandør|UE-tilgang/i.test(containerText)) {
       button.style.display = 'none';
