@@ -3,10 +3,10 @@
 Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplisitt Production-godkjenning.
 
 ## 1. Baseline og isolasjon
-- [x] Feature bygger fra gjeldende `main` uten å ligge bak.
+- [x] Feature bygger fra gjeldende `main` uten å ligge bak funksjonelt. Rollback-merge på `main` endret ikke baseline-filer.
 - [x] Sandbox-preview er eksplisitt bundet til Sandbox Supabase.
 - [x] Production Supabase brukes kun read-only under utvikling/QA.
-- [ ] Sandbox-only Vite-rewrite/guard fjernes eller erstattes før Production-PR.
+- [x] Sandbox-only Vite-rewrite er erstattet med miljøbevisst build-guard: Production build hard-feiler ved Sandbox-binding, Sandbox-preview hard-feiler ved Production-binding eller blandet binding.
 - [ ] Endelig diff mot `main` gjennomgås fil for fil.
 
 ## 2. Eksisterende bruker/firma/godkjenning
@@ -38,6 +38,7 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 - [x] Preview publiserer ikke tilbud, oppretter ikke token og sender ikke e-post.
 - [x] Kundevisning viser priser inkl. mva. og opsjoner påvirker totalsum.
 - [x] Demo firmalogo følger kundepresentasjon.
+- [x] Varenummer vises internt på varelinjer og katalogbaserte opsjoner/alternativer, men ikke i kundetilbud.
 - [ ] Manuell QA: publiser tilbud og send til kontrollert testadresse.
 - [ ] Manuell QA: mottatt e-post → lenke → kundevisning → aksept med opsjon.
 - [ ] Manuell QA: PDF/akseptbevis bruker riktig firmalogo og summer.
@@ -70,11 +71,12 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 
 ## 8. Final gate før Production
 - [ ] Alle `check:critical`/build guards grønne på endelig commit.
+- [x] Ny miljøbinding-guard er verifisert med grønn Vercel Sandbox-preview på commit `4d15afe`.
 - [ ] Ingen åpne kritiske Vercel/runtime-feil i feature-preview.
 - [ ] Kontroll av migrationsrekkefølge og function grants mot faktisk Production.
 - [ ] Ingen Sandbox/testdata følger som Production-datamigrasjon.
-- [ ] Ingen Production secrets/URLs er lagt i nye klientfiler.
+- [ ] Ingen Production secrets/URLs er lagt i nye klientfiler utover eksplisitte build-guard-konstanter i `vite.config.js`.
 - [ ] Manuell smoke: Systemadmin, Firmaadmin, vanlig intern bruker, ekstern proffbruker, sluttkunde.
-- [ ] Eksplisitt Production-godkjenning før merge.
+- [ ] Eksplisitt **PRODUCTION GODKJENT** før merge. `TEST OK` gjelder bare aktuell test/runde.
 - [ ] Etter merge: trippel QA Production og kontrollert `main → demo`.
 - [ ] Slett utdaterte feature/tmp-brancher etter opprydding. Behold permanent `demo`.
