@@ -29,6 +29,10 @@ import { isSimpleOrderRequest } from "../services/salesStoreOffers.js";
 import { createDefaultSalesSupabaseClient, getSalesSupportCompanyId } from "../services/salesSupabase.js";
 import { persistSimpleOrderActivationMode, setSimpleOrderActivationMode } from "../services/salesSimpleOrder.js";
 
+function compactText(value = "") {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
 function presentationRequest(request = {}) {
   if (!isSimpleOrderRequest(request) || request?.status !== "Akseptert") return request;
   return {
@@ -63,6 +67,64 @@ function openDraftCustomerPreview(requestId = "") {
   window.open(url.toString(), "_blank", "noopener,noreferrer");
 }
 
+function productNumber(item = {}) {
+  return compactText(item?.supplierProductNumber || item?.internalProductNumber || "");
+}
+
+function buildInternalSkuEntries(request = {}) {
+  const entries = [];
+  (Array.isArray(request?.offerLines) ? request.offerLines : []).forEach((line) => {
+    if (line?.__companyMeta || line?.__offerTermsMeta || line?.__storeOfferMeta || line?.lineType === "store_text") return;
+    const sku = productNumber(line);
+    const title = compactText(line?.description);
+    if (sku && title) entries.push({ title, sku });
+  });
+  (Array.isArray(request?.offerOptions) ? request.offerOptions : []).forEach((option) => {
+    const sku = productNumber(option);
+    const title = compactText(option?.title || option?.description);
+    if (sku && title) entries.push({ title, sku });
+  });
+  return entries;
+}
+
+function directText(node) {
+  if (!(node instanceof Element)) return "";
+  return compactText(
+    Array.from(node.childNodes)
+      .filter((child) => child.nodeType === Node.TEXT_NODE)
+      .map((child) => child.textContent || "")
+      .join(" ")
+  );
+}
+
+function showInternalProductNumbers(root, request = {}) {
+  if (!(root instanceof Element)) return;
+  const entries = buildInternalSkuEntries(request);
+  if (!entries.length) return;
+  const candidates = Array.from(root.querySelectorAll("span,strong"));
+  entries.forEach(({ title, sku }) => {
+    candidates
+      .filter((node) => directText(node) === title)
+      .forEach((node) => {
+        let marker = node.querySelector(":scope > [data-internal-product-number='true']");
+        if (!marker) {
+          marker = document.createElement("small");
+          marker.dataset.internalProductNumber = "true";
+          Object.assign(marker.style, {
+            display: "block",
+            marginTop: "2px",
+            color: "#64748b",
+            fontSize: "11px",
+            fontWeight: "700",
+            lineHeight: "1.3",
+          });
+          node.appendChild(marker);
+        }
+        marker.textContent = `Varenr. ${sku}`;
+      });
+  });
+}
+
 export default function SalesDetailView(props) {
   const rootRef = useRef(null);
   const request = props?.selectedRequest || {};
@@ -72,28 +134,36 @@ export default function SalesDetailView(props) {
   const floatingActionBottom = supportMode ? 178 : 20;
 
   useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return undefined;
+    const frame = window.requestAnimationFrame(() => showInternalProductNumbers(root, request));
+    return () => window.cancelAnimationFrame(frame);
+  }, [request?.id, request?.status, request?.offerLines, request?.offerOptions]);
+
+  useEffect(() => {
     if (!simpleOrderAccepted) return undefined;
     const root = rootRef.current;
     if (!root) return undefined;
     const frame = window.requestAnimationFrame(() => {
       root.querySelectorAll("button").forEach((button) => {
-        if (String(button.textContent || "").replace(/\s+/g, " ").trim() === "Aktiver som prosjekt") {
+        if (compactText(button.textContent) === "Aktiver som prosjekt") {
           button.style.display = "none";
           button.setAttribute("aria-hidden", "true");
         }
       });
       root.querySelectorAll(".sales-next-card h2").forEach((heading) => {
-        if (String(heading.textContent || "").trim() === "Klar for prosjektaktivering") heading.textContent = "Tilbud akseptert – velg videreføring";
+        if (compactText(heading.textContent) === "Klar for prosjektaktivering") heading.textContent = "Tilbud akseptert – velg videreføring";
       });
       root.querySelectorAll(".sales-next-card p").forEach((paragraph) => {
-        const text = String(paragraph.textContent || "").trim();
+        const text = compactText(paragraph.textContent);
         if (text.includes("Akseptert innhold låses i denne flyten før senere prosjektaktivering")) {
           paragraph.textContent = "Velg Enkel ordre for mindre oppdrag, eller ordinært prosjekt dersom jobben trenger full prosjektflyt. Akseptert tilbud og dokumentasjon beholdes i begge tilfeller.";
         }
       });
+      showInternalProductNumbers(root, request);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [simpleOrderAccepted, request?.id]);
+  }, [simpleOrderAccepted, request?.id, request?.offerLines, request?.offerOptions]);
 
   async function chooseActivationMode(mode) {
     if (supportMode) return;
