@@ -22,7 +22,7 @@
 // rewriteStoreOfferDeclinedFlow(tree, coreProps?.selectedRequest)
 
 import { useEffect, useRef } from "react";
-import { Home, ShoppingBag } from "lucide-react";
+import { Eye, Home, ShoppingBag } from "lucide-react";
 import SalesDetailViewLegacy from "./SalesDetailViewLegacy.jsx";
 import { isSimpleOrderRequest } from "../services/salesStoreOffers.js";
 import { createDefaultSalesSupabaseClient, getSalesSupportCompanyId } from "../services/salesSupabase.js";
@@ -38,11 +38,41 @@ function presentationRequest(request = {}) {
   };
 }
 
+function hasCustomerPreviewContent(request = {}) {
+  return Boolean(
+    request?.status === "Tilbud" &&
+      (Array.isArray(request.offerLines) ? request.offerLines : []).some(
+        (line) =>
+          !line?.__companyMeta &&
+          !line?.__offerTermsMeta &&
+          (String(line?.description || "").trim() || String(line?.amount ?? "").trim())
+      )
+  );
+}
+
+function openDraftCustomerPreview(requestId = "") {
+  if (typeof window === "undefined" || !requestId) return;
+  const url = new URL("/sales-preview.html", window.location.origin);
+  url.searchParams.set("offerPreview", String(requestId));
+
+  const supportCompanyId = getSalesSupportCompanyId();
+  if (supportCompanyId) url.searchParams.set("salesSupportCompany", supportCompanyId);
+
+  // Beskyttede Vercel-preview kan bruke en kortlivet share-parameter. Behold kun
+  // den dersom den faktisk finnes; øvrige interne app-parametre skal ikke følge med.
+  const currentParams = new URLSearchParams(window.location.search);
+  const vercelShare = currentParams.get("_vercel_share");
+  if (vercelShare) url.searchParams.set("_vercel_share", vercelShare);
+
+  window.open(url.toString(), "_blank", "noopener,noreferrer");
+}
+
 export default function SalesDetailView(props) {
   const rootRef = useRef(null);
   const request = props?.selectedRequest || {};
   const simpleOrderAccepted = Boolean(request?.status === "Akseptert" && isSimpleOrderRequest(request));
   const supportMode = Boolean(getSalesSupportCompanyId());
+  const canPreviewDraft = hasCustomerPreviewContent(request);
 
   useEffect(() => {
     if (!simpleOrderAccepted) return undefined;
@@ -88,6 +118,40 @@ export default function SalesDetailView(props) {
   return (
     <div ref={rootRef} className={simpleOrderAccepted ? "simple-order-accepted-shell" : undefined}>
       <SalesDetailViewLegacy {...delegatedProps} />
+
+      {canPreviewDraft ? (
+        <aside
+          data-draft-customer-preview-action="true"
+          style={{
+            position: "fixed",
+            right: 20,
+            bottom: 20,
+            zIndex: 23000,
+            width: "min(390px, calc(100vw - 32px))",
+            padding: 15,
+            border: "1px solid #b9dde2",
+            borderRadius: 16,
+            background: "#ffffff",
+            boxShadow: "0 18px 44px rgba(15,72,82,.20)",
+          }}
+        >
+          <strong style={{ display: "block", fontSize: 16, color: "#10212b" }}>
+            Kontroller kundens visning før utsending
+          </strong>
+          <p style={{ margin: "6px 0 12px", color: "#52616b", lineHeight: 1.45 }}>
+            Åpner den lagrede tilbudskladden i kundens layout. Ingen versjon publiseres og ingen e-post sendes.
+          </p>
+          <button
+            className="sales-secondary-button"
+            type="button"
+            onClick={() => openDraftCustomerPreview(request.id)}
+          >
+            <Eye size={18} />
+            Forhåndsvis som kunde
+          </button>
+        </aside>
+      ) : null}
+
       {simpleOrderAccepted ? (
         <aside data-simple-order-accepted-actions="true" data-support-read-only={supportMode ? "true" : "false"} style={{ position:"fixed", right:20, bottom:20, zIndex:23000, width:"min(430px, calc(100vw - 32px))", padding:16, border:"1px solid #b9dde2", borderRadius:16, background:"#ffffff", boxShadow:"0 18px 44px rgba(15,72,82,.20)" }}>
           <strong style={{ display:"block", fontSize:17, color:"#10212b" }}>Hva skal oppdraget bli?</strong>
