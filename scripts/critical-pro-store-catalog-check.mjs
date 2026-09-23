@@ -4,9 +4,12 @@ import assert from "node:assert/strict";
 const root=process.cwd();
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20260922170000_fase45b_pro_catalog_access.sql"),"utf8");
 const hardening=fs.readFileSync(path.join(root,"supabase/migrations/20260923132000_fase45b_access_hardening.sql"),"utf8");
+const unifiedAccess=fs.readFileSync(path.join(root,"supabase/migrations/20260923135500_fase45b_unified_user_access_admin.sql"),"utf8");
 const activationMigration=fs.readFileSync(path.join(root,"supabase/migrations/20260923122500_fase45b_simple_order_activation_mode.sql"),"utf8");
 const client=fs.readFileSync(path.join(root,"src/modules/storeCatalog/proStoreCatalogClient.js"),"utf8");
 const adminPanel=fs.readFileSync(path.join(root,"src/modules/storeCatalog/ProStoreCatalogAdminPanel.jsx"),"utf8");
+const normalizedAdmin=adminPanel.replace(/\s+/g,"");
+const unifiedUserUx=fs.readFileSync(path.join(root,"src/modules/access/systemAdminUnifiedUserAccessUx.jsx"),"utf8");
 const offerWrapper=fs.readFileSync(path.join(root,"src/modules/sales/components/SalesStoreOfferBuilderProCatalog.jsx"),"utf8");
 const detail=fs.readFileSync(path.join(root,"src/modules/sales/components/SalesDetailView.jsx"),"utf8");
 const legacyDetail=fs.readFileSync(path.join(root,"src/modules/sales/components/SalesDetailViewLegacy.jsx"),"utf8");
@@ -17,6 +20,7 @@ const orderBasis=fs.readFileSync(path.join(root,"src/modules/sales/components/St
 const help=fs.readFileSync(path.join(root,"src/modules/help/help45b.js"),"utf8");
 const helpBridge=fs.readFileSync(path.join(root,"src/modules/help/helpTools.js"),"utf8");
 const terms=fs.readFileSync(path.join(root,"src/modules/app/appStaticTools.js"),"utf8");
+
 for(const needle of ["store_catalog_company_supplier_access","store_catalog_user_price_access","search_pro_store_catalog","current_user_has_pro_store_catalog_access","current_user_can_view_store_catalog_net_price","set_store_catalog_company_supplier_access","set_store_catalog_user_net_price_access","discount_percent >= 0 and discount_percent <= 100","a.supplier_key=i.supplier_key","i.customer_price_ex_vat*(1-a.discount_percent/100)"]) assert(migration.includes(needle),`45B katalogkontrakt mangler: ${needle}`);
 const proSearch=migration.slice(migration.indexOf("create or replace function public.search_pro_store_catalog"));
 const returnContract=proSearch.slice(0,proSearch.indexOf("language plpgsql"));
@@ -24,11 +28,29 @@ for(const forbidden of ["purchase_net_ex_vat","purchase_discount_percent","gross
 assert(returnContract.includes("my_net_price_ex_vat"),"Proff-RPC skal kunne returnere Din nto pris.");
 assert(returnContract.includes("suggested_sale_price_ex_vat"),"Kundepris eks. mva. skal være foreslått salgspris.");
 assert(proSearch.includes("case when v_show_net"),"Din nto pris skal være serverstyrt av brukerrettighet.");
-for(const needle of ["current_active_company_scope_id()","coalesce(p.approved,false) = true","coalesce(p.deactivated,false) = false","p.system_role = 'systemadmin'","uma.module_key = trim(p_module_key)","trim(p_module_key) <> 'store_offers'","is_internal_work_profile_company","sales_access.module_key = 'sales'","company_has_pro_store_catalog_access","p_company_id uuid","p_user_id uuid","Brukeren tilhører ikke valgt firma","revoke all on function public.set_store_catalog_user_net_price_access(uuid,boolean)"]) assert(hardening.includes(needle),`45B tilgangshardening mangler: ${needle}`);
+
+for(const needle of ["current_active_company_scope_id()","coalesce(p.approved,false) = true","coalesce(p.deactivated,false) = false","p_company_id uuid","p_user_id uuid","Brukeren tilhører ikke valgt firma","revoke all on function public.set_store_catalog_user_net_price_access(uuid,boolean)"]) assert(hardening.includes(needle),`45B tilgangshardening mangler: ${needle}`);
 assert(!hardening.includes("order by m.company_id limit 1"),"Profftilgang skal aldri velge vilkårlig første firmamedlemskap.");
+
+for(const needle of [
+  "current_user_has_module_access",
+  "uma.module_key = trim(p_module_key)",
+  "company_has_pro_store_catalog_access",
+  "set_managed_module_access",
+  "set_managed_pro_catalog_net_price_access",
+  "company_has_pro_catalog",
+  "pro_net_price_can_view",
+  "Aktiver minst én leverandør for firmaet under Proff vareregister før Enkel ordre gis til brukeren",
+]) assert(unifiedAccess.includes(needle),`Samlet tilgangsmodell mangler: ${needle}`);
+assert(unifiedAccess.includes("v_wants_store:='store_offers'=any(v_requested)") || unifiedAccess.includes("v_wants_store := 'store_offers' = any(v_requested)"),"Enkel ordre må tildeles eksplisitt per bruker.");
+
 for(const needle of ["searchProStoreCatalog","canViewMyNetPrice","setCompanySupplierAccess","setUserNetPriceAccess",'"search_pro_store_catalog"',"p_company_id:companyId"]) assert(client.includes(needle),`Proffkatalog-klient mangler: ${needle}`);
 for(const forbidden of ["purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent"]) assert(!client.includes(forbidden),`Proffklienten skal ikke kjenne internt felt: ${forbidden}`);
-for(const needle of ["flislab as","flislabfliser","askøy","baden haus","discountPercent:40","discountPercent:30","Legg til standardforslag","Eksisterende rabatter ble ikke overskrevet"]) assert(adminPanel.includes(needle),`Standardforslag mangler eller er utrygt: ${needle}`);
+
+for(const needle of ["flislabas","flislabfliser","askøy","badenhaus","discountPercent:40","discountPercent:30","Leggtilstandardforslag","Eksisterenderabatterbleikkeoverskrevet"]) assert(normalizedAdmin.toLowerCase().includes(needle.toLowerCase()),`Standardforslag mangler eller er utrygt: ${needle}`);
+assert(adminPanel.includes("Brukertilgang") && adminPanel.includes("Brukere og tilganger"),"Systemadmin skal styre brukertilgang på eksisterende brukerkort, ikke i leverandørlisten.");
+for(const needle of ["Enkel ordre / Proff vareregister","Se «Din nto pris»","setManagedProCatalogNetPriceAccess","setManagedModuleAccess"]) assert(unifiedUserUx.includes(needle),`Samlet Systemadmin-brukerkort mangler: ${needle}`);
+
 for(const needle of ["suggested_sale_price_ex_vat","suggested_sale_price_incl_vat","SalesStoreOfferBuilderCatalogTemplates","ProStoreCatalogInlineLookup"]) assert(offerWrapper.includes(needle),`Enkel ordre-wrapper mangler sikker salgsflate: ${needle}`);
 for(const forbidden of ["my_net_price_ex_vat","purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent","markup_percent"]) assert(!offerWrapper.includes(forbidden),`Tilbudsdata skal aldri kjenne intern/nto-pris: ${forbidden}`);
 for(const needle of ["isSimpleOrderRequest","Lag enkel ordre","Aktiver som prosjekt","persistSimpleOrderActivationMode","getSalesSupportCompanyId","StoreOfferOrderBasis","data-simple-order-support-order-basis"]) assert(detail.includes(needle),`Akseptert Enkel ordre mangler kontrollert videreføring/support-QA: ${needle}`);
