@@ -1,12 +1,13 @@
 # Fase 45B – Pre-production QA
 
-Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplisitt Production-godkjenning.
+Status: SANDBOX/release-kandidat. Skal ikke merges til `main` før komplett QA og eksplisitt **PRODUCTION GODKJENT**.
 
 ## 1. Baseline og isolasjon
-- [x] Feature bygger fra gjeldende `main` uten å ligge bak funksjonelt. Rollback-merge på `main` endret ikke baseline-filer.
+- [x] Release-kandidat `fase45b-release-candidate` er bygget direkte på gjeldende rollback-verifiserte `main`.
+- [x] Tidligere feature-PR med feil rollback-merge-base er lukket uten merge; release-kandidaten har komplett Fase 45B-diff.
 - [x] Sandbox-preview er eksplisitt bundet til Sandbox Supabase.
 - [x] Production Supabase brukes kun read-only under utvikling/QA.
-- [x] Sandbox-only Vite-rewrite er erstattet med miljøbevisst build-guard: Production build hard-feiler ved Sandbox-binding, Sandbox-preview hard-feiler ved Production-binding eller blandet binding.
+- [x] Miljøbevisst build-guard: Production hard-feiler ved Sandbox-binding; Fase45B/demo-preview hard-feiler ved Production-binding eller blandet binding.
 - [ ] Endelig diff mot `main` gjennomgås fil for fil.
 
 ## 2. Eksisterende bruker/firma/godkjenning
@@ -19,11 +20,13 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 - [x] Backend-regresjon: ekstern ansatt med `sales` + `store_offers` + aktiv leverandør får proffkatalog.
 - [x] Backend-regresjon: samme bruker mister proffkatalog når alle firmaets leverandører deaktiveres.
 - [x] Backend-regresjon: deaktivert profil får ingen modultilgang.
-- [x] Backend-regresjon: Firmaadmin kan ikke endre prisinnsyn for annet aktivt firma.
+- [x] Backend-regresjon: Firmaadmin kan ikke endre prisinnsyn for annet aktivt firma eller gi seg selv prisinnsyn.
+- [x] Backend-regresjon: deaktivert bruker kan ikke få «Din nto pris» aktivert.
+- [x] Firmaadmin får «Din nto pris» på samme Brukere og tilganger-kort; Systemadmin styrer fortsatt selve Enkel ordre/proffmodulen.
 - [x] Systemadmin-support er fortsatt separat fra brukerens arbeidsprofil og er read-only der produksjonsflyten krever det.
 - [ ] Manuell regresjon: ny bruker → firma → systemadmin-godkjenning → rolle/moduler.
 - [ ] Manuell regresjon: eksisterende vanlig bruker uten profftilgang ser ingen proffkatalog.
-- [ ] Manuell regresjon: firmaadmin kan ikke endre annet firmas prisinnsyn i UI.
+- [ ] Manuell regresjon: Firmaadmin med to reelle brukere slår «Din nto pris» av/på og kan ikke endre annet firma.
 
 ## 3. Proff vareregister og priser
 - [x] Bare eksplisitt aktive leverandører returneres i proffsøket.
@@ -34,6 +37,7 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 - [x] Backend-regresjon: bruker uten eksplisitt `Din nto pris` får `my_net_price_ex_vat = null` fra proffsøket.
 - [x] Backend-regresjon: bruker med eksplisitt `Din nto pris` får beregnet nettopris i proffsøket.
 - [x] Gammel tvetydig 2-args prisinnsyns-RPC er sperret for `authenticated`.
+- [x] Release-hardening krever aktiv/godkjent bruker + `sales` + `store_offers` + aktiv leverandør når pristilgang slås på.
 - [x] Standardforslag: FlisLab AS 40 %, FlisLabFLISER 40 %, Askøy 40 %, Baden Haus 30 %.
 - [x] Standardforslag overskriver ikke allerede aktive rabatter.
 - [ ] Manuell QA: Systemadmin legger til/fjerner leverandør og endrer rabatt.
@@ -46,6 +50,8 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 - [x] Kundevisning viser priser inkl. mva. og opsjoner påvirker totalsum.
 - [x] Demo firmalogo følger kundepresentasjon.
 - [x] Varenummer vises internt på varelinjer og katalogbaserte opsjoner/alternativer, men ikke i kundetilbud.
+- [x] Backend-transaksjon: offentlig kundelenke kan hentes som `anon`.
+- [x] Backend-transaksjon: kundens aksept med valgt FLY-alternativ lagrer valgt opsjon med varenr. `02803` og setter saken til Akseptert; testen rulles tilbake.
 - [ ] Manuell QA: publiser tilbud og send til kontrollert testadresse.
 - [ ] Manuell QA: mottatt e-post → lenke → kundevisning → aksept med opsjon.
 - [ ] Manuell QA: PDF/akseptbevis bruker riktig firmalogo og summer.
@@ -53,6 +59,7 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 ## 5. Aksept og bestillingsgrunnlag
 - [x] Akseptert Enkel ordre kan velges videre som Enkel ordre eller ordinært prosjekt.
 - [x] Systemadmin support ser valgene read-only og kan ikke aktivere på vegne av firmaet.
+- [x] Backend-regresjon: aktivering av Enkel ordre blokkeres uten `store_offers`, og tillates med både `sales` + `store_offers`.
 - [x] Eksisterende Bestillingsgrunnlag inneholder leverandørvarenummer, NOBB/GTIN der tilgjengelig og antall/enhet.
 - [x] Bestillingsgrunnlag bruker låst akseptert versjon og valgte opsjoner/alternativer.
 - [x] Pris/nto-pris inngår ikke i bestillingslisten.
@@ -60,14 +67,17 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 - [ ] Manuell QA: kopier/skriv ut bestillingsgrunnlag med valgt alternativ.
 
 ## 6. Enkel ordre arbeidsflate
-- [ ] Oversikt og tydelig `Enkel ordre`-terminologi, ikke `Prosjekt` i brukerflate.
-- [ ] Valgfri fremdriftsplan basert på aksepterte tilbudsposter.
-- [ ] Produkter/FDV følger akseptert tilbud der data finnes.
-- [ ] Bilder.
-- [ ] Valgfrie relevante sjekklister.
-- [ ] UE-link.
-- [ ] Sluttdokumentasjon.
-- [ ] Ingen kundelink/kundeportal for Enkel ordre.
+- [x] Teknisk workspace-guard omskriver prosjektmotoren til `Enkel ordre`/`Ordre`-terminologi.
+- [x] Aksepterte produkter og valgte alternativer seedes til produkter/FDV-grunnlag uten priser, med låst tilbudssnapshot.
+- [x] Backend portal-guard blokkerer kundelenke/kundeportal for Enkel ordre og tillater UE/underleverandør.
+- [ ] Manuell QA: Oversikt og tydelig `Enkel ordre`-terminologi, ikke `Prosjekt` i brukerflate.
+- [ ] Manuell QA: valgfri fremdriftsplan basert på aksepterte tilbudsposter.
+- [ ] Manuell QA: Produkter/FDV følger akseptert tilbud der data finnes.
+- [ ] Manuell QA: Bilder.
+- [ ] Manuell QA: valgfrie relevante sjekklister.
+- [ ] Manuell QA: UE-link.
+- [ ] Manuell QA: Sluttdokumentasjon.
+- [ ] Manuell QA: ingen kundelink/kundeportal for Enkel ordre.
 
 ## 7. Hjelp og vilkår
 - [x] In-app HJELP beskriver proffkatalog, `Din nto pris`, kundepreview, Enkel ordre og Bestillingsgrunnlag.
@@ -77,12 +87,15 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 - [ ] Endelig kommersiell/juridisk ordlyd godkjennes før Production.
 
 ## 8. Final gate før Production
-- [ ] Alle `check:critical`/build guards grønne på endelig commit.
-- [x] Ny miljøbinding-guard er verifisert med grønn Vercel Sandbox-preview.
-- [ ] Ingen åpne kritiske Vercel/runtime-feil i feature-preview.
-- [ ] Kontroll av migrationsrekkefølge og function grants mot faktisk Production.
+- [x] Release-kandidat `check:critical` / PR Core Safety er grønn på commit `0377f981`.
+- [x] Release-kandidat Vercel-preview er READY og svarer HTTP 200.
+- [x] Ny miljøbinding-guard er verifisert i release-kandidatens Sandbox-preview.
+- [ ] Ingen åpne kritiske Vercel/runtime-feil i release-preview etter full manuell smoke.
+- [x] Sandbox release-parity-migrasjon er anvendt og backend-hardening verifisert transaksjonelt.
+- [ ] Kontroll av komplett migrationsrekkefølge og function grants mot faktisk Production før migrering.
 - [x] Sandbox: 45B-tabellene har RLS aktivert og direkte `anon`/`authenticated` tabelltilgang er revokert.
 - [x] Sandbox: 45B-RPC-er er ikke eksponert til `anon`; relevante klient-RPC-er er eksplisitt gitt til `authenticated`.
+- [x] Release-parity fjerner foreldreløs Sandbox-only pris-RPC og låser interne helper-/triggerfunksjoner for klientroller.
 - [ ] Ingen Sandbox/testdata følger som Production-datamigrasjon.
 - [ ] Ingen Production secrets/URLs er lagt i nye klientfiler utover eksplisitte build-guard-konstanter i `vite.config.js`.
 - [ ] Manuell smoke: Systemadmin, Firmaadmin, vanlig intern bruker, ekstern proffbruker, sluttkunde.
