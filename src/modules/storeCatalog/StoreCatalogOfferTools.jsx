@@ -1,7 +1,9 @@
-// Expo ProffDok – FASE 39B.2C / 41B.2A
+// Expo ProffDok – FASE 39B.2C / 41B.2A / 45B
 // Katalogverktøyet gjør kun søk/leverandørvalg.
 // Vare -> montering/opsjon håndteres nativt av grouped Butikktilbud-bygger.
 // Intern nto vises bare når backend returnerer feltet for autorisert bruker.
+// Eksterne proffbrukere faller tilbake til firmascopet proffkatalog i samme felt,
+// slik at også opsjoner/alternativer får varenummer og katalogreferanse med seg.
 
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
@@ -12,6 +14,8 @@ import {
   getStoreCatalogAlternatives,
   searchStoreCatalog,
 } from "./storeCatalogClient.js";
+import ProStoreCatalogInlineLookup from "./ProStoreCatalogInlineLookup.jsx";
+import { canAccessProStoreCatalog } from "./proStoreCatalogClient.js";
 import StoreCatalogPanel from "./StoreCatalogPanel.jsx";
 
 const money = new Intl.NumberFormat("nb-NO", {
@@ -24,6 +28,33 @@ function formatMoney(value) {
   if (value === null || value === undefined || value === "") return "–";
   const number = Number(value);
   return Number.isFinite(number) ? money.format(number) : "–";
+}
+
+function toFiniteNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function mapProCatalogItemForStoreBuilder(item = {}) {
+  const saleExVat = toFiniteNumber(item.suggested_sale_price_ex_vat);
+  const saleInclVat =
+    toFiniteNumber(item.suggested_sale_price_incl_vat) || saleExVat * 1.25;
+
+  return {
+    id: item.id,
+    supplier_name: item.supplier_name,
+    supplier_product_number: item.supplier_product_number,
+    description: item.description,
+    gtin: item.gtin,
+    nobb_number: item.nobb_number,
+    product_url: item.product_url,
+    product_group: item.product_group,
+    price_date: item.price_date,
+    customer_price_ex_vat: saleExVat,
+    customer_price_incl_vat: saleInclVat,
+    // Proffkatalogens «Din nto pris» er visningsdata og skal aldri kopieres inn i tilbudet.
+    purchase_net_ex_vat: null,
+  };
 }
 
 function InlineCatalogResult({ item, onUse, onAlternatives }) {
@@ -67,6 +98,7 @@ function InlineCatalogResult({ item, onUse, onAlternatives }) {
 export function StoreCatalogInlineLookup({ onUse, placeholder = "Søk vareregister: varenavn, varenummer eller GTIN/EAN" }) {
   const [client] = useState(() => createDefaultSalesSupabaseClient());
   const [access, setAccess] = useState(false);
+  const [proAccess, setProAccess] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -76,9 +108,14 @@ export function StoreCatalogInlineLookup({ onUse, placeholder = "Søk vareregist
 
   useEffect(() => {
     let active = true;
-    canAccessInternalStoreCatalog(client)
-      .then((allowed) => active && setAccess(Boolean(allowed)))
-      .catch(() => active && setAccess(false));
+    Promise.all([
+      canAccessInternalStoreCatalog(client).catch(() => false),
+      canAccessProStoreCatalog(client).catch(() => false),
+    ]).then(([internalAllowed, proAllowed]) => {
+      if (!active) return;
+      setAccess(Boolean(internalAllowed));
+      setProAccess(Boolean(proAllowed));
+    });
     return () => { active = false; };
   }, [client]);
 
@@ -135,7 +172,16 @@ export function StoreCatalogInlineLookup({ onUse, placeholder = "Søk vareregist
     setMessage("");
   }
 
-  if (!access) return null;
+  if (!access) {
+    if (!proAccess) return null;
+    return (
+      <ProStoreCatalogInlineLookup
+        placeholder={placeholder}
+        onUse={(item) => onUse?.(mapProCatalogItemForStoreBuilder(item))}
+      />
+    );
+  }
+
   const visible = alternativeSource ? alternatives : results;
 
   return (
