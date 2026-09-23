@@ -10,6 +10,7 @@ const progress = read('src/modules/progress/progressPlanSupabase.js');
 const activation = read('supabase/migrations/20260923122500_fase45b_simple_order_activation_mode.sql');
 const portalGuard = read('supabase/migrations/20260923154500_fase45b_simple_order_portal_guard.sql');
 const productSeed = read('supabase/migrations/20260923160500_fase45b_simple_order_seed_snapshot_fix.sql');
+const alternativeSeed = read('supabase/migrations/20260923184500_fase45b_simple_order_alternative_product_seed.sql');
 
 for (const needle of [
   "data?.data?.project?.workflowType",
@@ -59,6 +60,12 @@ for (const needle of [
 ]) assert(productSeed.includes(needle), `Akseptert produkt-/tilbudssnapshot mangler: ${needle}`);
 for (const forbidden of ['purchase_net_ex_vat','purchase_discount_percent','gross_margin_percent','markup_percent','my_net_price_ex_vat']) {
   assert(!productSeed.includes(forbidden), `Enkel ordre produktseed skal ikke kjenne intern pris: ${forbidden}`);
+  assert(!alternativeSeed.includes(forbidden), `Alternativ-seed skal ikke kjenne intern pris: ${forbidden}`);
 }
+
+for (const needle of [
+  "optionType","alternative","replacementLineId","and not exists",
+  "case when is_option","elem->>'title'","supplierProductNumber","acceptedOfferSnapshot",
+]) assert(alternativeSeed.includes(needle), `Valgt alternativ må erstatte grunnprodukt i Enkel ordre: ${needle}`);
 
 console.log('critical-simple-order-workspace-check: OK');
