@@ -6,7 +6,9 @@ const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const ux = read('src/modules/project/simpleOrderWorkspaceUx.js');
 const overview = read('src/modules/project/projectOverviewTools.js');
+const progress = read('src/modules/progress/progressPlanSupabase.js');
 const activation = read('supabase/migrations/20260923122500_fase45b_simple_order_activation_mode.sql');
+const portalGuard = read('supabase/migrations/20260923154500_fase45b_simple_order_portal_guard.sql');
 
 for (const needle of [
   "data?.data?.project?.workflowType",
@@ -18,6 +20,8 @@ for (const needle of [
   "Sluttdokumentasjon",
   "Kundelenke",
   "CUSTOMER_ACTION_PATTERN",
+  ".progress-share-card",
+  "Vis fremdriftsplan til kunde",
 ]) {
   assert(ux.includes(needle), `Enkel ordre UX mangler: ${needle}`);
 }
@@ -33,7 +37,6 @@ for (const hidden of [
   assert(ux.includes(`'${hidden}'`), `Enkel ordre skal skjule prosjekt-tung fane: ${hidden}`);
 }
 
-// UX-laget skal være read-only mot prosjektdata. Selve markeringen gjøres server-side ved aktivering.
 for (const forbidden of [
   ".insert(",
   ".update(",
@@ -61,6 +64,15 @@ for (const needle of [
 }
 
 for (const needle of [
+  "workflowType",
+  "simpleOrder",
+  "shareEnabled",
+  "share_enabled",
+]) {
+  assert(progress.includes(needle), `Fremdrift må kjenne Enkel ordre-metadata: ${needle}`);
+}
+
+for (const needle of [
   "'{project,workflowType}'",
   "'{project,simpleOrder}'",
   "'{project,salesOrigin,activationMode}'",
@@ -68,5 +80,18 @@ for (const needle of [
 ]) {
   assert(activation.includes(needle), `Server-side Enkel ordre-markering mangler: ${needle}`);
 }
+
+for (const needle of [
+  "new.role = 'kunde'",
+  "workflowType",
+  "simple_order",
+  "Enkel ordre har ikke kundelenke/kundeportal",
+  "trg_fase45b_block_simple_order_customer_portal",
+  "trg_fase45b_revoke_customer_portal_on_simple_order",
+  "role='kunde'",
+]) {
+  assert(portalGuard.includes(needle), `Server-side kundeportal-sperre mangler: ${needle}`);
+}
+assert(!portalGuard.includes("new.role = 'underleverandor'"), 'UE-portalen skal ikke blokkeres for Enkel ordre.');
 
 console.log('critical-simple-order-workspace-check: OK');
