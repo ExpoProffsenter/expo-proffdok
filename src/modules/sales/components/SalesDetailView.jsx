@@ -24,6 +24,7 @@
 import { useEffect, useRef } from "react";
 import { Eye, Home, ShoppingBag } from "lucide-react";
 import SalesDetailViewLegacy from "./SalesDetailViewLegacy.jsx";
+import StoreOfferOrderBasis from "./StoreOfferOrderBasis.jsx";
 import { isSimpleOrderRequest } from "../services/salesStoreOffers.js";
 import { createDefaultSalesSupabaseClient, getSalesSupportCompanyId } from "../services/salesSupabase.js";
 import { persistSimpleOrderActivationMode, setSimpleOrderActivationMode } from "../services/salesSimpleOrder.js";
@@ -54,16 +55,11 @@ function openDraftCustomerPreview(requestId = "") {
   if (typeof window === "undefined" || !requestId) return;
   const url = new URL("/sales-preview.html", window.location.origin);
   url.searchParams.set("offerPreview", String(requestId));
-
   const supportCompanyId = getSalesSupportCompanyId();
   if (supportCompanyId) url.searchParams.set("salesSupportCompany", supportCompanyId);
-
-  // Beskyttede Vercel-preview kan bruke en kortlivet share-parameter. Behold kun
-  // den dersom den faktisk finnes; øvrige interne app-parametre skal ikke følge med.
   const currentParams = new URLSearchParams(window.location.search);
   const vercelShare = currentParams.get("_vercel_share");
   if (vercelShare) url.searchParams.set("_vercel_share", vercelShare);
-
   window.open(url.toString(), "_blank", "noopener,noreferrer");
 }
 
@@ -73,8 +69,6 @@ export default function SalesDetailView(props) {
   const simpleOrderAccepted = Boolean(request?.status === "Akseptert" && isSimpleOrderRequest(request));
   const supportMode = Boolean(getSalesSupportCompanyId());
   const canPreviewDraft = hasCustomerPreviewContent(request);
-  // Systemadmin-support har eget fast panel nederst til høyre. Legg handlingene
-  // over dette panelet slik at begge alltid er synlige og klikkbare.
   const floatingActionBottom = supportMode ? 178 : 20;
 
   useEffect(() => {
@@ -122,45 +116,24 @@ export default function SalesDetailView(props) {
     <div ref={rootRef} className={simpleOrderAccepted ? "simple-order-accepted-shell" : undefined}>
       <SalesDetailViewLegacy {...delegatedProps} />
 
+      {supportMode && simpleOrderAccepted ? (
+        <div data-simple-order-support-order-basis="true" style={{ marginTop: 16 }}>
+          <StoreOfferOrderBasis request={request} />
+        </div>
+      ) : null}
+
       {canPreviewDraft ? (
-        <aside
-          data-draft-customer-preview-action="true"
-          style={{
-            position: "fixed",
-            right: 20,
-            bottom: floatingActionBottom,
-            zIndex: 23000,
-            width: "min(390px, calc(100vw - 32px))",
-            padding: 15,
-            border: "1px solid #b9dde2",
-            borderRadius: 16,
-            background: "#ffffff",
-            boxShadow: "0 18px 44px rgba(15,72,82,.20)",
-          }}
-        >
-          <strong style={{ display: "block", fontSize: 16, color: "#10212b" }}>
-            Kontroller kundens visning før utsending
-          </strong>
-          <p style={{ margin: "6px 0 12px", color: "#52616b", lineHeight: 1.45 }}>
-            Åpner den lagrede tilbudskladden i kundens layout. Ingen versjon publiseres og ingen e-post sendes.
-          </p>
-          <button
-            className="sales-secondary-button"
-            type="button"
-            onClick={() => openDraftCustomerPreview(request.id)}
-          >
-            <Eye size={18} />
-            Forhåndsvis som kunde
-          </button>
+        <aside data-draft-customer-preview-action="true" style={{ position:"fixed", right:20, bottom:floatingActionBottom, zIndex:23000, width:"min(390px, calc(100vw - 32px))", padding:15, border:"1px solid #b9dde2", borderRadius:16, background:"#ffffff", boxShadow:"0 18px 44px rgba(15,72,82,.20)" }}>
+          <strong style={{ display:"block", fontSize:16, color:"#10212b" }}>Kontroller kundens visning før utsending</strong>
+          <p style={{ margin:"6px 0 12px", color:"#52616b", lineHeight:1.45 }}>Åpner den lagrede tilbudskladden i kundens layout. Ingen versjon publiseres og ingen e-post sendes.</p>
+          <button className="sales-secondary-button" type="button" onClick={() => openDraftCustomerPreview(request.id)}><Eye size={18}/>Forhåndsvis som kunde</button>
         </aside>
       ) : null}
 
       {simpleOrderAccepted ? (
         <aside data-simple-order-accepted-actions="true" data-support-read-only={supportMode ? "true" : "false"} style={{ position:"fixed", right:20, bottom:floatingActionBottom, zIndex:23000, width:"min(430px, calc(100vw - 32px))", padding:16, border:"1px solid #b9dde2", borderRadius:16, background:"#ffffff", boxShadow:"0 18px 44px rgba(15,72,82,.20)" }}>
           <strong style={{ display:"block", fontSize:17, color:"#10212b" }}>Hva skal oppdraget bli?</strong>
-          <p style={{ margin:"6px 0 14px", color:"#52616b", lineHeight:1.45 }}>
-            Enkel ordre er for raske/mindre oppdrag. Velg prosjekt hvis jobben har blitt større og trenger ordinær prosjektflyt.
-          </p>
+          <p style={{ margin:"6px 0 14px", color:"#52616b", lineHeight:1.45 }}>Enkel ordre er for raske/mindre oppdrag. Velg prosjekt hvis jobben har blitt større og trenger ordinær prosjektflyt.</p>
           {supportMode ? <p className="note" style={{ margin:"0 0 12px" }}>Systemadmin-visning: Du ser valgene kunden/firmaet får, men kan ikke aktivere på vegne av firmaet.</p> : null}
           <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
             <button className="sales-primary-button" type="button" disabled={supportMode} onClick={() => void chooseActivationMode("simple_order")}><ShoppingBag size={18}/>Lag enkel ordre</button>
