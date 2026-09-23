@@ -46,7 +46,9 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 - [x] Kundevisning viser priser inkl. mva. og opsjoner påvirker totalsum.
 - [x] Demo firmalogo følger kundepresentasjon.
 - [x] Varenummer vises internt på varelinjer og katalogbaserte opsjoner/alternativer, men ikke i kundetilbud.
-- [ ] Manuell QA: publiser tilbud og send til kontrollert testadresse.
+- [x] Backend Sandbox: `DEMO-45B-002` er publisert gjennom samme `publish_sales_offer`-RPC; offentlig token returnerer låst versjon med hovedlinjer og begge opsjoner.
+- [x] Backend Sandbox: kundens aksept med både tillegg og FLY-alternativ er lagret på låst versjon; FLY 80 beholder varenr. `02803` i intern akseptdata.
+- [ ] Manuell QA: publiser tilbud og send til kontrollert testadresse via faktisk UI/e-postflyt.
 - [ ] Manuell QA: mottatt e-post → lenke → kundevisning → aksept med opsjon.
 - [ ] Manuell QA: PDF/akseptbevis bruker riktig firmalogo og summer.
 
@@ -80,7 +82,8 @@ Status: SANDBOX/feature. Skal ikke merges til `main` før komplett QA og eksplis
 - [ ] Alle `check:critical`/build guards grønne på endelig commit.
 - [x] Ny miljøbinding-guard er verifisert med grønn Vercel Sandbox-preview.
 - [ ] Ingen åpne kritiske Vercel/runtime-feil i feature-preview.
-- [ ] Kontroll av migrationsrekkefølge og function grants mot faktisk Production.
+- [x] Production read-only: 45B-tabellene/RPC-ene finnes ikke etter rollback. Rollout må derfor kjøre godkjent 45B-migrasjonsrekkefølge før frontend aktiveres.
+- [ ] Full kontroll av 45B-migrasjonsrekkefølge og function grants mot Production-baseline.
 - [x] Sandbox: 45B-tabellene har RLS aktivert og direkte `anon`/`authenticated` tabelltilgang er revokert.
 - [x] Sandbox: 45B-RPC-er er ikke eksponert til `anon`; relevante klient-RPC-er er eksplisitt gitt til `authenticated`.
 - [ ] Ingen Sandbox/testdata følger som Production-datamigrasjon.
