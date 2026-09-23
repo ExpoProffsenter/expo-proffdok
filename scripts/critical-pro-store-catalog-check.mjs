@@ -1,0 +1,16 @@
+import fs from "node:fs";
+import path from "node:path";
+import assert from "node:assert/strict";
+const root=process.cwd();
+const migration=fs.readFileSync(path.join(root,"supabase/migrations/20260922170000_fase45b_pro_catalog_access.sql"),"utf8");
+const client=fs.readFileSync(path.join(root,"src/modules/storeCatalog/proStoreCatalogClient.js"),"utf8");
+for(const needle of ["store_catalog_company_supplier_access","store_catalog_user_price_access","search_pro_store_catalog","current_user_has_pro_store_catalog_access","current_user_can_view_store_catalog_net_price","set_store_catalog_company_supplier_access","set_store_catalog_user_net_price_access","discount_percent >= 0 and discount_percent <= 100","a.supplier_key=i.supplier_key","i.customer_price_ex_vat*(1-a.discount_percent/100)"]) assert(migration.includes(needle),`45B katalogkontrakt mangler: ${needle}`);
+const proSearch=migration.slice(migration.indexOf("create or replace function public.search_pro_store_catalog"));
+const returnContract=proSearch.slice(0,proSearch.indexOf("language plpgsql"));
+for(const forbidden of ["purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent","markup_percent"]) assert(!returnContract.includes(forbidden),`Proff-RPC må aldri returnere internt felt: ${forbidden}`);
+assert(returnContract.includes("my_net_price_ex_vat"),"Proff-RPC skal kunne returnere Din nto pris.");
+assert(returnContract.includes("suggested_sale_price_ex_vat"),"Kundepris eks. mva. skal være foreslått salgspris.");
+assert(proSearch.includes("case when v_show_net"),"Din nto pris skal være serverstyrt av brukerrettighet.");
+for(const needle of ["searchProStoreCatalog","canViewMyNetPrice","setCompanySupplierAccess","setUserNetPriceAccess",'"search_pro_store_catalog"']) assert(client.includes(needle),`Proffkatalog-klient mangler: ${needle}`);
+for(const forbidden of ["purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent"]) assert(!client.includes(forbidden),`Proffklienten skal ikke kjenne internt felt: ${forbidden}`);
+console.log("critical-pro-store-catalog-check: OK");

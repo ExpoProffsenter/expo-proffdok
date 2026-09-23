@@ -1,11 +1,8 @@
-// Expo ProffDok – FASE 40B / FASE 39B.2 / FASE 37D1
-// Router mellom ordinær tilbudsbygger og egen produktbygger for Butikktilbud.
-// FASE 40B legger komplette Butikktilbud-maler som en tynn ytterwrapper rundt
-// eksisterende katalog-/autosavebygger. Ordinær Sales-/våtromsflyt er urørt.
-// 39B.2 legger internt vareregister som en tynn wrapper rundt eksisterende Butikktilbud.
-// Ordinær Sales recovery/validering er flyttet uendret til SalesOfferBuilderStandard.jsx.
-// Følgende recovery-markører beholdes her slik critical-sales-recovery-check fortsatt
-// dokumenterer kontrakten som denne routeren delegerer til standardbyggeren:
+// Expo ProffDok – FASE 45B / FASE 40B / FASE 39B.2 / FASE 37D1
+// Router mellom ordinær tilbudsbygger og egen produktbygger for Butikktilbud / Enkel ordre.
+// Proffkatalog legges additivt rundt eksisterende SalesStoreOfferBuilderCatalog-flyt.
+// SalesStoreOfferBuilderCatalogTemplates beholdes som innerste eksisterende wrapper i ProCatalog-komponenten.
+// Ordinær Sales-/våtromsflyt og recovery-kontrakt er urørt.
 // installRecoveryTransitionGuard
 // rememberRecoveredLocalChoiceAgainstServer
 // new CustomEvent("expo-proffdok-sales-rehydrate"
@@ -15,13 +12,13 @@
 // text: "⚠ Lagret lokalt – serveren er ikke tilgjengelig. Endringene beholdes på denne enheten."
 
 import SalesOfferBuilderStandard from "./SalesOfferBuilderStandard.jsx";
-import SalesStoreOfferBuilderCatalogTemplates from "./SalesStoreOfferBuilderCatalogTemplates.jsx";
+import SalesStoreOfferBuilderProCatalog from "./SalesStoreOfferBuilderProCatalog.jsx";
 import { isStoreOfferRequest } from "../services/salesStoreOffers.js";
 
 export default function SalesOfferBuilder(props) {
   if (isStoreOfferRequest(props?.selectedRequest)) {
     return (
-      <SalesStoreOfferBuilderCatalogTemplates
+      <SalesStoreOfferBuilderProCatalog
         {...props}
         onBack={() =>
           props.handleSaveOffer?.({
