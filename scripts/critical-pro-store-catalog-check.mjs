@@ -5,6 +5,7 @@ const root=process.cwd();
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20260922170000_fase45b_pro_catalog_access.sql"),"utf8");
 const hardening=fs.readFileSync(path.join(root,"supabase/migrations/20260923132000_fase45b_access_hardening.sql"),"utf8");
 const unifiedAccess=fs.readFileSync(path.join(root,"supabase/migrations/20260923135500_fase45b_unified_user_access_admin.sql"),"utf8");
+const moduleGate=fs.readFileSync(path.join(root,"supabase/migrations/20260923151500_fase45b_pro_catalog_module_gate.sql"),"utf8");
 const activationMigration=fs.readFileSync(path.join(root,"supabase/migrations/20260923122500_fase45b_simple_order_activation_mode.sql"),"utf8");
 const client=fs.readFileSync(path.join(root,"src/modules/storeCatalog/proStoreCatalogClient.js"),"utf8");
 const adminPanel=fs.readFileSync(path.join(root,"src/modules/storeCatalog/ProStoreCatalogAdminPanel.jsx"),"utf8");
@@ -43,6 +44,7 @@ for(const needle of [
   "Aktiver minst én leverandør for firmaet under Proff vareregister før Enkel ordre gis til brukeren",
 ]) assert(unifiedAccess.includes(needle),`Samlet tilgangsmodell mangler: ${needle}`);
 assert(unifiedAccess.includes("v_wants_store:='store_offers'=any(v_requested)") || unifiedAccess.includes("v_wants_store := 'store_offers' = any(v_requested)"),"Enkel ordre må tildeles eksplisitt per bruker.");
+for(const needle of ["current_user_has_module_access('sales')","current_user_has_module_access('store_offers')","company_has_pro_store_catalog_access(public.current_active_company_scope_id())"]) assert(moduleGate.includes(needle),`Proffkatalog må kreve eksplisitt modul- og firmatilgang: ${needle}`);
 
 for(const needle of ["searchProStoreCatalog","canViewMyNetPrice","setCompanySupplierAccess","setUserNetPriceAccess",'"search_pro_store_catalog"',"p_company_id:companyId"]) assert(client.includes(needle),`Proffkatalog-klient mangler: ${needle}`);
 for(const forbidden of ["purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent"]) assert(!client.includes(forbidden),`Proffklienten skal ikke kjenne internt felt: ${forbidden}`);
