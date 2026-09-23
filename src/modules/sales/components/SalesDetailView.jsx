@@ -73,6 +73,9 @@ export default function SalesDetailView(props) {
   const simpleOrderAccepted = Boolean(request?.status === "Akseptert" && isSimpleOrderRequest(request));
   const supportMode = Boolean(getSalesSupportCompanyId());
   const canPreviewDraft = hasCustomerPreviewContent(request);
+  // Systemadmin-support har eget fast panel nederst til høyre. Legg handlingene
+  // over dette panelet slik at begge alltid er synlige og klikkbare.
+  const floatingActionBottom = supportMode ? 178 : 20;
 
   useEffect(() => {
     if (!simpleOrderAccepted) return undefined;
@@ -125,7 +128,7 @@ export default function SalesDetailView(props) {
           style={{
             position: "fixed",
             right: 20,
-            bottom: 20,
+            bottom: floatingActionBottom,
             zIndex: 23000,
             width: "min(390px, calc(100vw - 32px))",
             padding: 15,
@@ -153,7 +156,7 @@ export default function SalesDetailView(props) {
       ) : null}
 
       {simpleOrderAccepted ? (
-        <aside data-simple-order-accepted-actions="true" data-support-read-only={supportMode ? "true" : "false"} style={{ position:"fixed", right:20, bottom:20, zIndex:23000, width:"min(430px, calc(100vw - 32px))", padding:16, border:"1px solid #b9dde2", borderRadius:16, background:"#ffffff", boxShadow:"0 18px 44px rgba(15,72,82,.20)" }}>
+        <aside data-simple-order-accepted-actions="true" data-support-read-only={supportMode ? "true" : "false"} style={{ position:"fixed", right:20, bottom:floatingActionBottom, zIndex:23000, width:"min(430px, calc(100vw - 32px))", padding:16, border:"1px solid #b9dde2", borderRadius:16, background:"#ffffff", boxShadow:"0 18px 44px rgba(15,72,82,.20)" }}>
           <strong style={{ display:"block", fontSize:17, color:"#10212b" }}>Hva skal oppdraget bli?</strong>
           <p style={{ margin:"6px 0 14px", color:"#52616b", lineHeight:1.45 }}>
             Enkel ordre er for raske/mindre oppdrag. Velg prosjekt hvis jobben har blitt større og trenger ordinær prosjektflyt.
