@@ -34,8 +34,14 @@ jobs:
       - name: Verify scope guard logic
         run: node scripts/critical-pr-scope-guard.mjs --self-test
 
+      - name: Verify release documentation guard logic
+        run: node scripts/critical-release-docs-check.mjs --self-test
+
       - name: Enforce PR scope isolation
         run: node scripts/critical-pr-scope-guard.mjs "origin/${{ github.base_ref }}"
+
+      - name: Enforce production release documentation
+        run: node scripts/critical-release-docs-check.mjs "origin/${{ github.base_ref }}"
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
