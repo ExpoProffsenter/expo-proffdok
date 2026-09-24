@@ -3,7 +3,8 @@
 Status: SANDBOX/release-kandidat. Skal ikke merges til `main` før komplett QA og eksplisitt **PRODUCTION GODKJENT**.
 
 ## 1. Baseline og isolasjon
-- [x] Release-kandidat `fase45b-release-candidate` er bygget direkte på gjeldende rollback-verifiserte `main`.
+- [x] Release-kandidat `fase45b-release-candidate` er synket med gjeldende Production-`main` `6d73ccb1e0c1fd654bb0faf69f3eb05ca78347cf` (PR #186 Sales auth/session-hotfix) og er 0 commits bak `main`.
+- [x] Production-versjonen av `salesSupabase.js` og `critical-sales-auth-client-check.mjs` er båret inn identisk i release-kandidaten, og auth-vernet kjøres i både `check:critical` og `build`.
 - [x] Tidligere feature-PR med feil rollback-merge-base er lukket uten merge; release-kandidaten har komplett Fase 45B-diff.
 - [x] Sandbox-preview er eksplisitt bundet til Sandbox Supabase.
 - [x] Production Supabase brukes kun read-only under utvikling/QA.
@@ -86,18 +87,27 @@ Status: SANDBOX/release-kandidat. Skal ikke merges til `main` før komplett QA o
 - [ ] Manuell QA: vilkår v1.1 vises og kan godkjennes; admin ser akseptstatus.
 - [ ] Endelig kommersiell/juridisk ordlyd godkjennes før Production.
 
-## 8. Final gate før Production
-- [x] Release-kandidat `check:critical` / PR Core Safety er grønn på commit `c67dcd32`.
-- [x] Release-kandidat Vercel-preview er READY og svarer HTTP 200.
-- [x] Ny miljøbinding-guard er verifisert i release-kandidatens Sandbox-preview.
-- [ ] Ingen åpne kritiske Vercel/runtime-feil i release-preview etter full manuell smoke.
+## 8. Backend/migrasjoner før Production
+- [x] Production Supabase er kontrollert read-only og har ingen 45B-migrasjoner, 45B-tabeller eller 45B-RPC-er installert.
+- [x] Production har nødvendige prerequisites for 45B: firmascope/-medlemskap, profiler, modul-/featuretilgang, intern varekatalog, Sales/aksept, prosjekt/portal og nødvendige helper-funksjoner/kolonner.
+- [x] Repoets 45B-migrasjoner ligger i deterministisk rekkefølge fra `20260922170000` til `20260923184500` og avsluttes med release-parity/sensitive-access/alternative-product hardening.
+- [x] Statisk/read-only kontroll av migrasjonsavhengigheter mot faktisk Production-schema er gjennomført uten manglende prerequisites.
 - [x] Sandbox release-parity-migrasjon er anvendt og backend-hardening verifisert transaksjonelt.
-- [ ] Kontroll av komplett migrationsrekkefølge og function grants mot faktisk Production før migrering.
 - [x] Sandbox: 45B-tabellene har RLS aktivert og direkte `anon`/`authenticated` tabelltilgang er revokert.
 - [x] Sandbox: 45B-RPC-er er ikke eksponert til `anon`; relevante klient-RPC-er er eksplisitt gitt til `authenticated`.
 - [x] Release-parity fjerner foreldreløs Sandbox-only pris-RPC og låser interne helper-/triggerfunksjoner for klientroller.
+- [ ] Rehearsal: kjør hele repoets 45B-migrasjonsrekke på en ren Production-lik database uten historiske Sandbox-hotfixer, og sammenlign slutt-schema/grants med Sandbox-fasiten.
+- [ ] Før faktisk Production-migrering: ny read-only preflight av Production-schema og gjeldende `main`-SHA.
+
+## 9. Final gate før Production
+- [x] Release-kandidat er 0 commits bak Production `main` og inkluderer PR #186 auth/session-hotfixen.
+- [x] Release-kandidat `check:critical`/build inkluderer permanent Sales-auth-regresjonsvern.
+- [x] Release-kandidat Vercel-preview på commit `a30cb5cd` er READY og svarer HTTP 200.
+- [x] Ny miljøbinding-guard er verifisert i release-kandidatens Sandbox-preview.
+- [ ] Ingen åpne kritiske Vercel/runtime-feil i release-preview etter full manuell smoke.
 - [x] PR-diff er kontrollert for Sandbox testdata: ingen `DEMO-45B`, testkunde-UUID, `.invalid`-adresse eller `sales_requests`-seed ligger i Production-migrasjonene. Demologo ligger kun som statisk Sandbox-testasset.
 - [x] Production/Sandbox refs og publishable keys forekommer kun i eksplisitt miljø-build-guard i `vite.config.js`; ingen nye klientmoduler har hardkodet backend-binding.
+- [ ] Endelig diff mot `main` gjennomgås fil for fil etter siste QA-endring.
 - [ ] Manuell smoke: Systemadmin, Firmaadmin, vanlig intern bruker, ekstern proffbruker, sluttkunde.
 - [ ] Eksplisitt **PRODUCTION GODKJENT** før merge. `TEST OK` gjelder bare aktuell test/runde.
 - [ ] Etter merge: trippel QA Production og kontrollert `main → demo`.
