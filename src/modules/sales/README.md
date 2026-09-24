@@ -1,30 +1,17 @@
-# Expo ProffDok – Sales / Befaring / Tilbud / Butikktilbud / Aksept / Kontrakt
+# Expo ProffDok – Sales
 
-**Status:** Produksjonskoblet Sales-modul  
-**Oppdatert:** Fase 42J – 15.09.2026
+**Oppdatert:** Fase 45B – 24.09.2026
 
-Sales håndterer både ordinær Befaring/Tilbud-flyt og den separate Butikktilbud-flyten.
+Sales håndterer fire tydelig adskilte brukerreiser som deler deler av samme tilbudsmotor, men har forskjellige avslutninger og sikkerhetsregler:
 
-Ordinære tilbud kan etter aksept gå videre til Expo-kontrakt, egen opplastet kontrakt eller direkte prosjekt. Butikktilbud avsluttes i Sales ved aksept eller avvisning og oppretter ikke ProffDok-prosjekt.
+1. ordinær Befaring/Tilbud
+2. Butikktilbud
+3. Profftilbud / Enkel ordre
+4. kontrakt etter ordinær prosjektorientert aksept
 
-**Kontrakt er ikke et generelt prosjektkrav.** Signert kontrakt kreves først når dokumentert tetthetsgaranti faktisk skal utstedes.
+RLS/RPC/server er sikkerhetsgrensen. Frontendfiltrering er bare UX.
 
-## 1. Gyldige prosjektveier
-
-```text
-A) Direkte prosjekt uten tilbud
-B) Akseptert ordinært tilbud → prosjekt uten kontrakt
-C) Akseptert ordinært tilbud → egen opplastet kontrakt → prosjekt
-D) Akseptert ordinært tilbud → Expo-kontrakt → prosjekt
-```
-
-Butikktilbud følger en annen avslutning:
-
-```text
-Butikktilbud → publisert versjon → kundelenke/e-post → aksept/avvisning → avsluttet Sales-sak
-```
-
-## 2. Ordinær Sales-hovedflyt
+## 1. Ordinær Sales-hovedflyt
 
 ```text
 Forespørsel
@@ -39,56 +26,57 @@ Forespørsel
 → eventuell prosjektaktivering
 ```
 
-Tilbud kan også opprettes uten befaring.
+Tilbud kan opprettes uten befaring.
 
-### 2.1 Forespørselskø – Fase 42H
-
-Nye saker med status `Forespørsel` vises i egen fane **Forespørsler**. Dette er bookingkøen for saker som er registrert, men hvor befaring ennå ikke er planlagt.
+Gyldige ordinære prosjektveier:
 
 ```text
-Ny forespørsel
-→ Forespørsler
-→ åpne saken
-→ Planlegg befaring
-→ ordinær Under arbeid-flyt
+A) Direkte prosjekt uten tilbud
+B) Akseptert ordinært tilbud → prosjekt uten kontrakt
+C) Akseptert ordinært tilbud → egen opplastet kontrakt → prosjekt
+D) Akseptert ordinært tilbud → Expo-kontrakt → prosjekt
 ```
 
-Køen endrer ikke statusmodell eller lagring; den er en tydelig visning av eksisterende `Forespørsel`-status.
+Kontrakt er ikke et generelt prosjektkrav. Den kreves når garanti-/avtalegrunnlaget faktisk krever den.
 
-### 2.2 Skalerbar saksoversikt – Fase 42I
+## 2. Forespørsler, summary og lazy loading
 
-Sales-listen skal **ikke** hente komplette tilbudspayloads for alle saker. Den bruker en lett serverprojeksjon (`list_payload`) med nødvendig metadata til oversikt, søk og tellere.
+Nye saker med status `Forespørsel` vises i egen forespørselskø fram til befaring er planlagt eller saken går videre.
+
+Sales-listen skal ikke hente full payload for alle saker. Den bruker lett `list_payload`/summary til oversikt, søk og tellere.
 
 ```text
 Åpne Befaring/Tilbud
-→ hent lett summary for sakslisten
-→ vis tellere/kort raskt
-→ bruker åpner én konkret sak
+→ hent lett summary
+→ bruker åpner én sak
 → hent komplett payload for akkurat denne saken
-→ server-first hydration/recovery
-→ editor kan åpnes
+→ server-first hydration
+→ editor/autosave kan åpnes
 ```
 
-Komplett tilbud, bilder, Badskisse, akseptdata og historikk hentes først når saken faktisk åpnes. En summary-rad må aldri kunne lagres tilbake som komplett Sales-payload.
+Kritisk:
 
-Dersom komplett sak ikke kan hentes, skal editor blokkeres med kontrollert retry fremfor å åpne tom eller ufullstendig data.
+- summary-rad må aldri lagres tilbake som komplett payload
+- hvis komplett sak ikke kan hentes, skal editor blokkeres/retryes – ikke åpnes tom
+- full payload med linjer, media, Badskisse, historikk og akseptdata hentes først ved behov
 
-### 2.3 PC-fanebytte og mobil appbytte – Fase 42J
+## 3. Recovery – PC-fanebytte og mobil appbytte
 
-Bruker må kunne hente kundedata fra SMS, Outlook eller andre faner/apper mens en forespørsel fylles ut.
-
-`Ny forespørsel` og `Nytt tilbud` har ingen `request_ref` før første lagring. De er likevel gyldige recovery-arbeidsbilder. Kunde-, adresse- og notatfelter mellomlagres lokalt og gjenopprettes bare når et ferskt bakgrunns-snapshot viser at brukeren faktisk var i dette skjemaet.
-
-`Rediger forespørsel` bruker samme prinsipp, men lokal recovery er bundet til konkret `request_ref`.
+`Ny forespørsel` og `Nytt tilbud` kan være gyldige arbeidsbilder før de har `request_ref`.
 
 Kritiske regler:
 
-- PC-fanebytte og mobil appbytte skal returnere til samme skjema med ulagrede felt bevart
-- normal navigasjon skal ikke gjenopplive gamle entry-kladddata
-- første tomme React-render skal ikke overskrive recovery-kladden
-- bevisst Tilbake/Avbryt/menyvalg vinner alltid over automatisk recovery
+- ulagret kunde/adresse/notat kan gjenopprettes etter reelt fanebytte/appbytte
+- første tomme render må aldri overskrive recovery-data
+- eksisterende sak bruker serverdata som autoritativt utgangspunkt
+- befaringsbilder og Badskisse skal ikke tapes ved hydrering
+- manglende lokal media er ikke beskjed om å slette servermedia
+- bevisst Tilbake/Avbryt/menyvalg rydder recovery-markører
+- eksplisitt brukerhandling vinner alltid over automatisk recovery
 
-## 3. Butikktilbud-hovedflyt
+## 4. Butikktilbud
+
+Butikktilbud er egen Sales-flyt for butikk, vare, service og mindre leveranser der prosjektaktivering ikke er ønsket.
 
 ```text
 Nytt tilbud
@@ -101,136 +89,188 @@ Nytt tilbud
 → kundepreview
 → publisert låst versjon
 → kundelenke/e-post
-→ aksept eller avvisning
+→ aksept/avvisning
 → avsluttet Sales-sak
 ```
 
-Butikktilbud er egnet for butikk, service, vareleveranser og andre leveranser der prosjektaktivering ikke er ønsket.
+Butikktilbud skal aldri aktivere ProffDok-prosjekt.
 
-## 4. Styrende kontrakter
+Avsnitt lagres som `store_text` med gruppe-/seksjonsmarkør og skal vises som overskrift, ikke som prislinje. Montering og opsjoner beholder eksisterende Butikktilbud-kontrakt.
 
-- Publiserte tilbudsversjoner og kundeaksept overskrives aldri.
-- Kundeaksept knyttes til eksakt tilbudsversjon og valgte opsjoner.
-- Privatkundeorienterte priser vises inkl. mva.
-- Prosjekt uten tilbud og/eller kontrakt er gyldig.
-- RLS/server er sikkerhetsgrensen; frontend er ikke tilgangskontroll.
-- Supportmodus er ikke skrive-bypass.
-- Sales recovery/hydration og IndexedDB-sikring av befaringsbilder skal ikke svekkes.
-- Tom initialform får aldri overskrive serverdata.
-- Komplett valgt sak skal være hydrert før editor/autosave aktiveres.
-- Saksoversikten skal bruke summary/lazy loading og ikke hente alle komplette payloads.
-- Bevisst brukerhandling skal alltid vinne over automatisk recovery.
-- Butikktilbud skal aldri aktivere prosjekt.
-- Intern ERP-nettopris skal aldri inn i kundedata, publisert tilbud, PDF eller akseptbevis.
-- E-postvarsling etter aksept/avvisning er sekundært sideutfall og kan aldri reversere lagret kundebeslutning.
+## 5. Profftilbud / Enkel ordre – Fase 45B
 
-## 5. Butikktilbud – tilbudsposter og avsnitt
+Proffløsningen gjenbruker eksisterende Sales-motor, men har egen tilgangs- og prisgrense.
 
-Den synlige modellen er **Tilbudsposter og avsnitt**. Avsnitt lagres som `store_text` med `storeSectionMode = "group"` og skal ikke valideres eller presenteres som prislinjer.
+### 5.1 Tilgang
 
-Robust avsnittsdeteksjon ligger i `src/modules/sales/utils/storeSectionLine.js` og brukes i internvisning, kundelenke, tilbuds-PDF og akseptbevis.
+En proffbruker skal bare kunne søke i leverandører firmaet eksplisitt er godkjent for.
 
-## 6. Post, montering og opsjoner
+Systemadmin styrer:
 
-En Butikktilbud-post kan være manuelt arbeid eller katalogvare. Katalogkobling låser ikke kundebeskrivelsen.
+- leverandørtilgang per firma
+- rabatt per firma/leverandør
 
-Montering kan knyttes til post eller opprettes som `Kun montering`. Opsjoner kan være tillegg/oppgradering eller alternativ/erstatter.
+Firmaadmin/Systemadmin kan styre hvilken godkjent bruker i firmaet som får se `Din nto pris`, innenfor servervaliderte regler.
 
-## 7. Internt vareregister
+Relevant bruker må være godkjent/aktiv og ha nødvendige moduler, blant annet Sales og Enkel ordre/`store_offers` der flyten krever det.
 
-Butikktilbud kan bruke internt ERP-vareregister fra `src/modules/storeCatalog/`.
+### 5.2 Prisgrensen
 
-Tilgang krever aktiv/godkjent bruker, `store_offers`-modultilgang og autorisert firmamedlemskap. Expo Proffsenter har ikke katalogtilgang. Intern netto innkjøpspris beholdes i katalogen og skal aldri lekke til kundegrunnlaget.
+Tre prisnivåer må behandles separat:
 
-Detaljer: `docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md`.
+- **Ringsides interne ERP-netto innkjøpspris**: aldri synlig for proffkunde eller sluttkunde.
+- **Din nto pris**: beregnet proffkundepris; sensitiv per-bruker-rettighet.
+- **Kunde-/salgspris**: foreslått pris ut til sluttkunde; kan justeres før publisering.
 
-## 8. Autosave, recovery og navigasjon
+Følgende interne felt skal aldri inngå i proffkunde-/kundekontrakt dersom de representerer Ringsides interne kalkyle:
 
-Sales recovery er kritisk fordi saker kan inneholde store payloads og låst historikk.
+- intern purchase/net price
+- intern innkjøpsrabatt
+- DG/margin
+- internt påslag
 
-Kritiske recovery-regler:
-
-- serverdata er autoritativt utgangspunkt for eksisterende sak
-- tom/stale lokal kladd får ikke overstyre reelt serverinnhold
-- tilbudskladd og befaringskladd har egne recovery-lagre
-- firmascopet sakslist-cache inneholder kun lett summary
-- full reload/dvale i eksisterende sak kan gjenåpne aktuell sak
-- Ny forespørsel/Nytt tilbud kan gjenopprettes selv før de har `request_ref`
-- Rediger forespørsel gjenopprettes saksspesifikt
-- eksplisitt brukerhandling stopper gammel recovery
-
-Butikktilbud har i tillegg saksspesifikk serverautosave gjennom `salesStoreOfferAutosave.js`.
-
-## 9. Kundevisning, PDF og aksept
-
-Kundelenken bruker eksisterende høyt entropisk `publicOffer`-token. Kundevisning og PDF skal presentere samme publiserte versjon og priser inkl. mva. Forhåndsvisning er read-only.
-
-Publiserte/aksepterte versjoner er immutable historikk.
-
-## 10. Automatisk oppfølging – Butikktilbud
-
-FASE 37A2 gjelder fortsatt uendret og er frozen med mindre funksjonen eksplisitt skal endres. Planen er versjonslåst og stopper ved aksept, avvisning, utløp, arkiv eller ny gjeldende publisert versjon.
-
-## 11. Fremdriftsplan
-
-Akseptert ordinært tilbud kan brukes som **forslag** til arbeidsoperasjoner i fremdriftsplan. Fremdriftsplan skriver aldri tilbake til tilbud, aksept, kontrakt eller akseptbevis. Butikktilbud brukes ikke som prosjektkilde.
-
-## 12. Aksept- og avvisningsvarsling
-
-Lagret kundeaksept/avvisning er autoritativ. E-post sendes etterpå og kan ikke reversere beslutningen.
-
-Aktuelle serverkomponenter inkluderer `sales-offer-acceptance-notify` og `sales-offer-decline-notify`, med idempotens i egne varslingslogger.
-
-## 13. Kontrakt og Avtalegrunnlag
-
-Etter ordinær aksept kan saken fortsette med Expo-kontrakt, egen kontrakt eller ingen kontrakt. Synlig prosjektfane heter **Avtalegrunnlag**; intern nøkkel `tilbud` beholdes.
-
-Dokumentert tetthetsgaranti krever signert kontrakt sammen med øvrige garanti-/Sopro-/overtagelseskrav.
-
-## 14. Viktige filer i Sales 42J
+### 5.3 Profftilbud
 
 ```text
-src/modules/sales/SalesModule.jsx
-src/modules/sales/SalesModuleCore.jsx
-src/modules/sales/components/SalesListView.jsx
-src/modules/sales/components/SalesRequestForm.jsx
-src/modules/sales/components/SalesInspectionNote.jsx
-src/modules/sales/components/SalesOfferBuilder.jsx
-src/modules/sales/components/SalesStoreOfferBuilderGrouped.jsx
-src/modules/sales/components/SalesCustomerViewCore.jsx
-src/modules/sales/services/salesSupabase.js
-src/modules/sales/services/salesResumeRecovery.mjs
-src/modules/sales/services/salesLocalStorage.js
-src/modules/sales/services/salesLocalStorageCore.js
-src/modules/sales/services/salesStoreOfferAutosave.js
-scripts/critical-sales-recovery-check.mjs
-scripts/critical-sales-tab-resume-check.mjs
-scripts/critical-sales-entry-resume-check.mjs
-scripts/critical-sales-server-hydration-check.mjs
-scripts/critical-sales-lazy-loading-check.mjs
-scripts/critical-sales-overview-check.mjs
+Nytt tilbud
+→ Proff / Enkel ordre
+→ kunde
+→ produkt-/varesøk innen godkjente leverandører
+→ tilbudsposter/opsjoner
+→ foreslått salgspris, eventuelt justert
+→ Forhåndsvis som kunde
+→ publisert versjon
+→ kundelenke/e-post
+→ kundevalg av opsjoner
+→ digital aksept
+→ valg Enkel ordre eller ordinært prosjekt
 ```
 
-## 15. QA før merge
+`Forhåndsvis som kunde` er read-only. Den må ikke publisere, sende e-post eller akseptere tilbud. Kundevisningen skal ikke eksponere interne varenummer/prisfelt som ikke er del av kundens grunnlag.
 
-Ved Sales-endringer skal minst følgende verifiseres:
+### 5.4 Enkel ordre vs ordinært prosjekt
+
+Etter aksept kan brukeren velge:
+
+```text
+A) Lag Enkel ordre
+B) Aktiver som prosjekt
+```
+
+Valget lagres server-side. En tilfeldig innlogget bruker i samme firma skal ikke kunne mutere valget uten nødvendig modul-/firmatilgang.
+
+**Enkel ordre** har bevisst smal arbeidsflate. Den kan bruke:
+
+- oversikt
+- bilder
+- relevante sjekklister
+- UE-bidrag
+- fremdriftsplan – valgfritt
+- FDV – valgfritt
+- sluttdokumentasjon etter behov
+
+Kundeportal blokkeres for ren Enkel ordre der 45B-kontrakten krever det. UE-flyt kan fortsatt brukes der det er relevant.
+
+### 5.5 Bestillingsgrunnlag
+
+Akseptert Proff/Enkel ordre får et read-only bestillingsgrunnlag.
+
+Det skal:
+
+- hydreres fra komplett akseptert Sales-detalj, ikke summary-cache
+- bygge på eksakt låst akseptert versjon og valgte opsjoner/alternativer
+- inneholde varenummer/antall/relevante produktidentifikatorer
+- ikke inneholde kundepris, `Din nto pris` eller intern ERP-netto innkjøpspris
+
+Aksepterte produkter kan seedes til Enkel ordre/prosjekt for FDV/produktgrunnlag. Sensitive prisfelt strippes. Valgt alternativ skal erstatte grunnproduktet der tilbudslogikken sier at alternativet er en erstatter.
+
+## 6. Internt vareregister og Proff-katalog
+
+Internt ERP-vareregister ligger i `src/modules/storeCatalog/` og beskrives i `docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md`.
+
+Intern katalog og Proff-katalog er ikke samme autorisasjonsflate:
+
+- intern Ringside/Expo-katalog kan inneholde intern netto innkjøpspris
+- Proff-katalog returnerer bare tillatte leverandører og kundeegnede prisfelt
+- tilgang og rabatt styres server-side
+- historisk publisert/akseptert tilbud endres aldri av ny prisfil eller rabattendring
+
+## 7. Publisering, kundelenke og aksept
+
+Publisert tilbud er immutable snapshot. Kundeaksept knyttes til eksakt versjon og valgte opsjoner.
+
+Kundelenke/PDF skal bruke samme publiserte grunnlag og privatkundeorienterte priser inkl. mva.
+
+Aksept/avvisning lagres før varsling. E-postfeil kan aldri reversere en allerede lagret kundebeslutning.
+
+## 8. Kontrakt og Avtalegrunnlag
+
+Etter ordinær prosjektorientert aksept kan saken fortsette med Expo-kontrakt, egen kontrakt eller ingen kontrakt.
+
+Synlig prosjektfane heter **Avtalegrunnlag**. Intern nøkkel `tilbud` beholdes av bakoverkompatibilitetshensyn.
+
+Dokumentert tetthetsgaranti krever signert kontrakt sammen med øvrige garanti-/Sopro-/overtagelseskrav når garantien skal utstedes.
+
+## 9. Fremdriftsplan
+
+Akseptert ordinært tilbud kan brukes som forslag til arbeidsoperasjoner i fremdriftsplan. Planen skriver aldri tilbake til tilbud/aksept.
+
+Enkel ordre kan bruke fremdriftsplan valgfritt.
+
+Butikktilbud brukes fortsatt ikke som prosjektkilde.
+
+## 10. Viktige sikkerhetskontrakter
+
+- RLS/server er sikkerhetsgrensen; frontend er ikke tilgangskontroll.
+- Supportmodus er ikke skrive-bypass.
+- Aktivt firma/representert firma skal respekteres.
+- Publisert/akseptert historikk er immutable.
+- Intern ERP-netto innkjøpspris skal aldri inn i kundedata, Proff-kundegrunnlag, publisert tilbud, PDF eller akseptbevis.
+- `Din nto pris` er separat sensitiv proffkundeverdi og må ha eksplisitt brukerrettighet.
+- Butikktilbud skal aldri aktivere prosjekt.
+- Enkel ordre-kundeportal skal ikke kunne åpnes via gammel/alternativ klientvei.
+- Komplett valgt Sales-sak hydreres før editor/autosave.
+- Bevisst brukerhandling vinner over recovery.
+
+## 11. Viktige Fase 45B-filer
+
+```text
+src/modules/access/firmaAdminProNetPriceUx.js
+src/modules/access/proUserAccessClient.js
+src/modules/access/systemAdminUnifiedUserAccessUx.jsx
+src/modules/help/help45b.js
+src/modules/project/simpleOrderWorkspaceUx.js
+src/modules/sales/components/SalesDraftCustomerPreview.jsx
+src/modules/sales/components/SalesProjectActivation.jsx
+src/modules/sales/components/SalesStoreOfferBuilderProCatalog.jsx
+src/modules/sales/services/salesSimpleOrder.js
+src/modules/storeCatalog/ProStoreCatalogAdminPanel.jsx
+src/modules/storeCatalog/ProStoreCatalogInlineLookup.jsx
+src/modules/storeCatalog/proStoreCatalogClient.js
+scripts/critical-pro-store-catalog-check.mjs
+scripts/critical-simple-order-workspace-check.mjs
+scripts/critical-customer-draft-preview-check.mjs
+scripts/critical-store-order-basis-check.mjs
+```
+
+## 12. QA før merge
+
+Ved Sales-/45B-endringer verifiseres minst:
 
 - alle critical checks og Vite build grønne
-- Befaring/Tilbud-listen åpner raskt med korrekte tellere
-- Forespørsler viser ubokede `Forespørsel`-saker og planlagt befaring flytter saken videre
-- stor eksisterende sak henter komplett innhold først ved åpning
-- tilbudslinjer, priser, opsjoner, bilder og Badskisse er intakte etter detaljhydrering
-- Ny forespørsel: delvis kundeinfo → PC-fanebytte/mobil appbytte → samme skjema og tekst ved retur
-- Rediger forespørsel: samme test, bundet til riktig sak
-- eksplisitt Avbryt/Tilbake skal ikke senere reverseres av recovery
-- Butikktilbud redigering/autosave/Tilbake og kundepreview ved relevant endring
-- immutable tilbud/aksept/avvisning endres ikke
-- HJELP og arkitektur oppdateres samme runde når arbeidsflyt/arkitektur endres
+- riktig Preview SHA og miljøbinding
+- ny bruker → godkjenning → firma/moduler
+- firmaadmin/systemadmin rettighetsgrenser
+- leverandørsøk viser bare godkjente leverandører
+- bruker uten nettoprisrett ser ikke `Din nto pris`
+- bruker med rettighet ser korrekt beregnet `Din nto pris`, aldri intern ERP-netto
+- tilbud → kundepreview → publisering → faktisk kundelenke/e-post → opsjon → aksept
+- immutable tilbud/aksept endres ikke
+- Enkel ordre og ordinært prosjekt gir riktig separat arbeidsflyt
+- Enkel ordre kundeportal er blokkert, UE etter gjeldende kontrakt
+- bestillingsgrunnlag er read-only og prisfritt
+- aksepterte produkter/alternativer seedes korrekt uten sensitive prisfelt
+- gammel Befaring/Tilbud, Butikktilbud, recovery og lazy loading regresjonstestes
+- HJELP, root README og hovedarkitektur er oppdatert i samme PR
 
-## 16. Utsatt videreutvikling
-
-- NOBB/Byggtjeneste-berikelse via GTIN
-- ERP-vareliste/PDF etter aksept gruppert på leverandør
-- CSV/Excel-eksport av varebehov
-- kontrollert demo-/testdataflyt med reset/sletting
-- trygg oppgradering av eldre **redigerbare** tilbudsutkast; publisert/akseptert historikk forblir immutable
+GitHub CI håndhever dokumentasjonskravet gjennom `scripts/critical-release-docs-check.mjs`.

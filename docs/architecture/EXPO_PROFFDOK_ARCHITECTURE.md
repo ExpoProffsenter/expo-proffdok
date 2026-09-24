@@ -1,115 +1,141 @@
 # Expo ProffDok – arkitekturkart
 
-**Fase:** 42K – produksjonsbaseline etter Sales-scale/recovery, prosjektnavigasjon og demo-stabilisering  
-**Status:** Fase 42K i Production  
-**Dato:** 16.09.2026  
-**Produksjonsbaseline:** PR #155 / `main` SHA `1b98fef90fe57c24996982f39619a5bc0ce8a4f2`  
+**Oppdatert:** 24.09.2026  
 **Production Supabase:** `dqffxflaoyarbxyiyhop`  
 **Permanent Demo Sandbox:** branch `demo`, Supabase `ppvircenkjizeiqdxphj`
 
-Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakoverkompatibilitetskrav som må bevares. Historiske detaljer finnes i Git og fasespesifikke arkitekturfiler.
+Dette er det autoritative høynivåkartet for Expo ProffDok-koden i branchen dokumentet ligger i. `main` er alltid kilde til sannhet for faktisk Production-kode. En fase eller release-kandidat er først Production når den er merget til `main`, Vercel Production er verifisert og nødvendige Production-migrasjoner er kontrollert.
+
+Repositoryet skal kunne overtas av en kvalifisert utvikler uten tilgang til tidligere ChatGPT-samtaler.
 
 ## 1. Styrende prinsipper
 
-1. `main` er kilde til sannhet for produksjonskode.
-2. Produksjon beskyttes foran alt: feature-branch → Vercel Preview → eksplisitt `TEST OK` → merge → bekreft Production-SHA, `READY`, HTTP/runtime og relevant Supabase-status.
-3. RLS/server er sikkerhetsgrensen; frontend alene gir aldri tilgang eller autoritativ validering.
+1. `main` er kilde til sannhet for Production-kode.
+2. Produksjon beskyttes foran alt: ren `main` → feature/release-branch → Vercel Preview → eksplisitt `TEST OK` → merge → trippel Production-QA.
+3. RLS/RPC/server er sikkerhetsgrensen. Frontend alene gir aldri autoritativ tilgang.
 4. Publiserte tilbud, aksepterte tilbudsversjoner, signerte kontrakter og utstedte garantier er historikk og skal ikke overskrives vilkårlig.
-5. Prosjekt kan opprettes og eksistere uten tilbud og uten kontrakt.
-6. Kontrakt er bare obligatorisk når dokumentert tetthetsgaranti faktisk skal utstedes eller øvrig avtalegrunnlag krever den.
+5. Prosjekt kan opprettes uten tilbud og uten kontrakt.
+6. Kontrakt er bare obligatorisk når garanti-/avtalegrunnlaget faktisk krever den.
 7. Privatkundeorienterte priser vises inkl. mva.
 8. Ingen historisk backfill uten eksplisitt beslutning.
-9. Supportmodus er ikke skrive-bypass og skal ikke registrere systemadmin som feil oppretter, ansvarlig eller signatar.
-10. Sales recovery/hydration og IndexedDB-sikring av befaringsbilder er kritiske kontrakter.
-11. Historiske Storage-paths/URL-er flyttes ikke spontant.
-12. Modulisering gjøres bare ved naturlige ansvargrenser som gir reell oversikt eller mindre risiko.
-13. Brukerrettede endringer oppdaterer HJELP samme runde.
-14. Fremdriftsplan er operativ prosjektdata og skal aldri endre låst tilbuds-/aksepthistorikk.
-15. Vercel Preview skal være trygg testmodus for prosjektfunksjoner som ellers kan sende e-post eller skrive produksjonsdata.
-16. Kalender- og PDF-eksport skal lese lagret data; eksport blir ikke ny sannhetskilde.
-17. Intern ERP-nettopris er sikkerhetskritisk intern data og skal aldri inngå i kundens tilbudsgrunnlag.
-18. Butikktilbud er separat fra ordinær prosjektflyt og skal aldri aktivere ProffDok-prosjekt ved aksept.
-19. Aktiv arbeidsprofil/representert firma er arbeidsscope. Systemadministrator skal ikke få tverrfirma-prosjekter projisert inn i ordinær arbeidsflate bare fordi rollen har brede supportrettigheter.
-20. Ved recovery/hydration vinner en eksplisitt brukerhandling alltid over automatisk gjenoppretting.
-21. Sales-oversikten skal være lett: listevisning henter bare summary/metadata. Komplett tilbud, bilder, Badskisse og historikk hentes først når én konkret sak åpnes.
-22. Aktivt arbeidsbilde skal tåle PC-fanebytte og mobil appbytte. Også en ny forespørsel uten `request_ref` er et gyldig recovery-arbeidsbilde.
-23. Før implementering klassifiseres miljømålet som `PRODUKSJON/PREVIEW`, `SANDBOX/DEMO` eller `BEGGE`.
-24. Permanent Demo Sandbox ligger på branch `demo`. Ordinær appkode kan synkroniseres **main → demo** etter godkjent Production-verifisering; demo-overlay og demodata skal aldri flyte **demo → main**.
-25. Demo/Test skal ikke brukes som begrunnelse for å endre beskyttet Production-kjerne i samme PR. Reell produktfeil splittes til egen core-PR fra ren `main`.
+9. Supportmodus/systemadmin er ikke skrive-bypass.
+10. Sales recovery/hydration, lazy loading og IndexedDB-/serverbevaring av media er kritiske kontrakter.
+11. Bevisst brukerhandling vinner alltid over automatisk recovery.
+12. Historiske Storage-paths/URL-er flyttes ikke spontant.
+13. Modulisering gjøres ved naturlige ansvargrenser; unngå over-fragmentering.
+14. Fremdriftsplan er operativ prosjektdata og endrer aldri låst tilbuds-/aksepthistorikk.
+15. Intern ERP-netto innkjøpspris, innkjøpsrabatt, DG og internt påslag er sikkerhetskritiske data og skal aldri lekke til proffkunde/sluttkunde.
+16. Butikktilbud er separat fra prosjektflyt og skal aldri aktivere ProffDok-prosjekt.
+17. Aktiv arbeidsprofil/representert firma er normalt arbeidsscope.
+18. Før implementering klassifiseres miljømålet som `PRODUKSJON/PREVIEW`, `SANDBOX/DEMO` eller `BEGGE`.
+19. `demo` er permanent Sandbox-branch. Godkjent kode kan flyte **main → demo**; demo-overlay/data/config skal aldri flyte **demo → main**.
+20. Produksjonspåvirkende PR-er skal oppdatere HJELP, dette arkitekturkartet og root README i samme PR. GitHub CI håndhever dette før merge.
 
-## 2. Plattform
+## 2. Plattform og miljøer
 
 | Lag | Teknologi | Hovedansvar |
 |---|---|---|
 | Klient | React + Vite | UI, state, navigasjon og arbeidsflyt |
 | Auth | Supabase Auth | Innlogging og identitet |
 | Data | Supabase Postgres | Prosjekter, Sales, kontrakt, garanti, fremdrift, katalog og systemdata |
-| Serverlogikk | Supabase RPC/trigger/RLS | Firmascoping, validering, låsing, portalfiltrering og katalogtilgang |
+| Serverlogikk | Supabase RPC / trigger / RLS | Firmascoping, validering, låsing, portalfiltrering og katalogtilgang |
 | Filer | Supabase Storage | Bilder og private/offentlige dokumenter |
 | E-post | Supabase Edge Functions + Resend | Befaring, tilbud, aksept, kontrakt, portal, chat og prosjektmeldinger |
 | Hosting | Vercel | Preview, Production og permanent Demo Sandbox |
-| PDF | jsPDF + nettleserutskrift + `pdf-lib` | Rapport, tilbud, akseptbevis, garanti, kontrakt og fremdriftsdokumenter |
-| Kalender | standard `.ics` | Enveis eksport av daterte fremdriftsøkter |
+| PDF | jsPDF / pdf-lib / nettleserutskrift | Rapport, tilbud, akseptbevis, garanti, kontrakt og fremdriftsdokumenter |
+| Kalender | `.ics` | Enveis eksport av daterte fremdriftsøkter |
 
-Produksjon: `https://expo-proffdok.app`  
-Permanent demo: `https://expo-proffdok-git-demo-ringside.vercel.app`
+**Production**
+
+- host: `https://expo-proffdok.app`
+- branch: `main`
+- Supabase: `dqffxflaoyarbxyiyhop`
+
+**Permanent Demo Sandbox**
+
+- branch: `demo`
+- host: `https://expo-proffdok-git-demo-ringside.vercel.app`
+- Supabase: `ppvircenkjizeiqdxphj`
+- egen Auth/database/Storage/demodata
+
+Sandbox er ikke automatisk sikkerhetsfasit. RLS, policies, grants og relevante RPC-ACL-er må være kontrollert mot Production-baselinen før Sandbox kan brukes som full sikkerhets-QA for en release.
 
 ## 3. Repository – hovedansvar
 
 ```text
 src/main.jsx
-  sentral app-/prosjektorkestrering og eldre funksjoner
+  sentral app-/prosjektorkestrering og legacy-integrasjon
 
 src/bootstrap.jsx
-  installer små, avgrensede bootstrap-/UX-lag
+  små avgrensede bootstrap-/UX-lag
 
 src/modules/app/
-  app-shell, desktopmeny og prosjektveiviser/hurtigvalg
+  app-shell, menyer og navigasjon
 
 src/modules/access/
-  modul-/rolletilgang, arbeidsprofiler, systemadmin-representasjon og support-/scope-guards
+  modul-/rolletilgang, arbeidsprofiler, firma-/supportscope og admin-guards
 
 src/modules/sales/
-  forespørsel, befaring, ordinært tilbud, Butikktilbud, aksept, recovery og kontrakt
+  forespørsel, befaring, tilbud, Butikktilbud, Proff/Enkel ordre, aksept, recovery og kontrakt
 
 src/modules/storeCatalog/
-  internt ERP-vareregister, søk/import og Systemadmin-katalogflate
-
-src/modules/progress/
-  fremdriftsplan, eksport, kalender og kunde-/UE-presentasjon
-
-src/modules/help/
-  rollebasert brukerveiledning
+  ERP-vareregister, proffkatalog og adminflater
 
 src/modules/project/
-  prosjektfunksjoner og prosjektinvolverte
+  prosjektarbeidsflate og Enkel ordre-arbeidsflate
+
+src/modules/progress/
+  fremdriftsplan, eksport og kalender
+
+src/modules/help/
+  rollebasert digital HJELP
 
 docs/architecture/
-  gjeldende arkitekturkart + fasespesifikke sikkerhets-/designnotater
+  gjeldende arkitekturkart og fasespesifikke sikkerhets-/designnotater
+
+docs/qa/
+  release-/pre-production QA
 
 scripts/
-  kritiske pre-build-regresjonskontroller og PR-scope-guard
+  kritiske regresjonskontroller og merge-sperrer
+
+supabase/
+  migrasjoner og Edge Functions
 ```
 
-### 3.1 Permanent Demo Sandbox
+## 4. Tilgang, firma og sikkerhetsmodell
 
-`demo` er en langlivet, isolert branch som bygger den ekte appen mot separat Sandbox-Supabase. Den brukes til kundedemo, opplæring og funksjonell presentasjon uten risiko for Production-data.
+Tilgang skal valideres server-side og bindes til riktig bruker/firma/rolle/modul.
 
-Kritiske regler:
+Kjernebegreper:
 
-- `demo` skal aldri merges til `main`.
-- Production-funksjonalitet utvikles og godkjennes fra `main`-baserte feature-/hotfix-brancher.
-- Når godkjent Production-kode også skal finnes i demo, synkroniseres gjeldende `main` kontrollert inn i `demo`.
-- Demo-spesifikke kontrollflater, Golden/reset, syntetiske ressurser, sandbox-RPC-er og konfigurasjon bevares kun i demo.
-- Demo-builden skal feile dersom emitted JS fortsatt inneholder Production-Supabase-binding.
-- Sandbox har egen Auth, database og Storage og skal bare inneholde fiktive/sanitiserte data.
-- Fast kontrollside er `/demo-control.html` på det permanente demo-hostet.
+- godkjent/aktiv bruker
+- firma-/Sales-scope
+- modulrettigheter, blant annet `projects`, `sales` og `store_offers`
+- systemadministrator
+- firmaadministrator
+- vanlig bruker
+- UE / kunde via egne portalgrunnlag
 
-## 4. Prosjekt og Avtalegrunnlag
+Systemadministrator kan ha brede supportrettigheter, men ordinær arbeidsflate følger valgt **Representerer**-firma. Tverrfirma-support skal være eksplisitt og skal ikke gjøre systemadmin til feil oppretter, ansvarlig eller signatar.
 
-Prosjektet lagres hovedsakelig som samlet JSON i `projects.data`. Den synlige fanen heter **Avtalegrunnlag**, mens intern nøkkel fortsatt er `tilbud` / `data.tilbud` for bakoverkompatibilitet.
+### 4.1 RLS/RPC
 
-Gyldige prosjektveier:
+RLS er obligatorisk sikkerhetsgrense for Production-tabeller. SECURITY DEFINER-RPC-er skal ha eksplisitt `search_path` og minst mulig `EXECUTE`-flate.
+
+Interne helper-/triggerfunksjoner skal ikke være klientkallbare bare fordi de finnes i `public` schema. Nye sensitive tabeller kan være RPC-only med RLS aktivert og direkte klientgrants revoked.
+
+Ved release må det skilles mellom:
+
+- **Production-baseline** – faktisk sikkerhetsfasit
+- **Sandbox-paritet** – testmiljøet må matche relevant Production-RLS/ACL før sikkerhetsresultater kan sammenlignes
+- **45B-tillegg** – nye RPC-er/tabeller/guards som skal migreres kontrollert til Production først etter `TEST OK`
+
+## 5. Prosjekt og Avtalegrunnlag
+
+Prosjekt lagres hovedsakelig i `projects.data`. Synlig fane heter **Avtalegrunnlag**; intern nøkkel `tilbud` / `data.tilbud` beholdes for bakoverkompatibilitet.
+
+Gyldige ordinære prosjektveier:
 
 ```text
 A) Direkte prosjekt uten tilbud
@@ -118,17 +144,11 @@ C) Akseptert ordinært tilbud → egen opplastet kontrakt → prosjekt
 D) Akseptert ordinært tilbud → Expo-kontrakt → prosjekt
 ```
 
-Avtalegrunnlag kan inneholde akseptert tilbud/akseptbevis, signert Expo-kontrakt, bedriftens egen kontrakt, andre avtaledokumenter og senere tillegg/fradrag.
-
 Butikktilbud er ikke en prosjektvei.
 
-### 4.1 Prosjektnavigasjon – Fase 42J/42K
+Desktop bruker kollapset prosjektmeny med få hurtigvalg. Full funksjonsliste ligger fortsatt i Meny. Legacy-prosjektdata skal ikke gi gammel anbefalt rekkefølge eller gamle menyer.
 
-Desktop bruker kollapset prosjektmeny for å frigjøre plass i headingen. Når et prosjekt er aktivt viser `projectWorkspaceHeaderGuide.js` en kort veiviser og noen få hurtigvalg: **Oversikt, Bilder, Sjekklister og Chat**. Hurtigvalgene klikker eksisterende native prosjektfaner og lager ikke en ny navigasjonsmotor. Alt øvrig prosjektinnhold ligger fortsatt i **Meny**.
-
-Fase 42K stabiliserte legacy-prosjektmenyer slik at eldre prosjektdata ikke gir feil anbefalt rekkefølge. Mobilskallet endres ikke av desktop-veiviseren.
-
-## 5. Sales – ordinær Befaring/Tilbud
+## 6. Sales – ordinær Befaring/Tilbud
 
 ```text
 Forespørsel
@@ -142,76 +162,24 @@ Forespørsel
 → valgfritt kontrakt/prosjekt
 ```
 
+Tilbud kan opprettes uten befaring.
+
 Kritiske Sales-kontrakter:
 
-- tom/uhydrert tilbudskladd skal aldri overskrive nyere serverdata
-- recovery skal fungere ved reload, dvale, PC-fanebytte og mobil appbytte
-- befaringsbilder beholder IndexedDB/Storage-flyt
-- publiserte/aksepterte tilbudsversjoner er immutable snapshots
-- kundeaksept knyttes til eksakt versjon og valgte opsjoner
-- supportmodus er ikke skrive-bypass
-- summary-rader skal aldri kunne skrives tilbake som komplett Sales-payload
-- komplette saksdetaljer skal være lastet før editor/autosave aktiveres
+- tom/uhydrert kladd skal aldri overskrive nyere serverdata
+- valgt eksisterende sak skal være komplett server-hydrert før editor/autosave aktiveres
+- Sales-listen henter bare lett summary/metadata; full payload hentes først ved åpning av konkret sak
+- summary-data skal aldri skrives tilbake som komplett payload
+- publiserte/aksepterte versjoner er immutable snapshots
+- kundeaksept knyttes til eksakt tilbudsversjon og valgte opsjoner
+- recovery fungerer ved reload, PC-fanebytte og mobil appbytte
+- også `Ny forespørsel` / `Nytt tilbud` uten `request_ref` er gyldige recovery-arbeidsbilder
+- bevisst Avbryt/Tilbake/menyvalg vinner over automatisk recovery
+- befaringsbilder og Badskisse skal ikke tapes ved hydrering/recovery
 
-### 5.1 Recovery/hydration – Fase 42F
+Detaljert Sales-kontrakt: `src/modules/sales/README.md`.
 
-Fase 42F strammet inn Sales-gjenoppretting etter mobil dvale, appbytte og reload. Serverdata er autoritativt utgangspunkt, mens lokal recovery brukes kontrollert for ulagret arbeid.
-
-Kritiske regler:
-
-- eksplisitt brukerhandling vinner alltid over automatisk recovery
-- recovery skal ikke hoppe brukeren tilbake til en sak eller fane vedkommende bevisst har forlatt
-- ferske serverbilder og lagret Badskisse skal flettes inn uten å overskrive nyere lokal befaring
-- manglende lokal media skal ikke tolkes som beskjed om å slette servermedia
-- bakgrunns-/reloadmarkører skal ikke bli ny sannhetskilde
-
-Disse kontraktene er permanent regresjonsbeskyttet og skal vurderes ved alle endringer i Sales-navigasjon, hydrering eller media.
-
-### 5.2 Badskisse og befaringsmedia – Fase 42A–42F
-
-Badskisse er en mobiltilpasset del av befaringen for enkle romskisser med vegger/mål, dør/vindu og relevante baderomsobjekter. Fase 42E forbedret målsatt visning og redigering. Fase 42F sikret at lagret Badskisse og servermedia overlever recovery/hydration.
-
-Badskisse og bilder er del av befaringsdata og skal følge samme recovery-prinsipp: serverinnhold bevares, nyere lokal brukerhandling bevares, og sammenslåing skal ikke gi stille datatap.
-
-### 5.3 Skalerbar saksoversikt / lazy loading – Fase 42I
-
-Sales-listen bruker en lett serverprojeksjon (`list_payload`) for metadata som kunde, adresse, status, ansvarlig, neste steg, dato og søkeinformasjon. Komplett `payload` med tilbudslinjer, bilder, Badskisse, akseptdata og historikk hentes først når brukeren åpner den konkrete saken.
-
-Dette er en kritisk skaleringsgrense. Historiske Ringside-saker hadde titalls MB full payload selv med få saker; listeprojeksjonen reduserer dette til noen titalls KB for samme oversikt.
-
-Kritiske regler:
-
-- sakslisten må aldri begynne å hente komplette payloads for alle saker igjen
-- firmascopet localStorage-listecache skal bare inneholde lett summary
-- valgt sak skal hydreres komplett server-first før editor åpnes
-- hvis komplett sak ikke kan hentes, skal editor blokkeres og brukeren få kontrollert retry i stedet for tom/ufullstendig redigering
-- tilbudskladd, befaringskladd og media-recovery beholder egne lagringsmekanismer
-
-### 5.4 Ulagret kundeinformasjon ved app-/fanebytte – Fase 42J
-
-`Ny forespørsel` og `Nytt tilbud` har ingen `request_ref` før brukeren lagrer. Recovery må derfor tillate disse modusene uten valgt saks-ID. Kunde-/adressefelter mellomlagres lokalt og gjenopprettes bare når et eksplisitt, ferskt bakgrunns-snapshot viser at brukeren faktisk var i dette arbeidsbildet.
-
-Dette gjelder både PC-fanebytte og mobil appbytte, for eksempel når bruker åpner SMS eller Outlook for å hente resten av kundenavn/adresse.
-
-`Rediger forespørsel` bruker samme prinsipp, men kladden er bundet til konkret `request_ref`.
-
-Viktig:
-
-- normal navigasjon skal ikke gjenopplive gamle entry-kladddata
-- første tomme React-render skal aldri overskrive entry-kladden som skal gjenopprettes
-- bevisst Tilbake/Avbryt/menyvalg rydder recovery-markører slik at brukerhandling alltid vinner
-
-### 5.5 Fase 42K – produksjonsstabilisering
-
-Fase 42K er gjeldende Production-baseline og inkluderer blant annet:
-
-- korrekt systemadmin-arbeidsscope via valgt `Representerer`-firma
-- videre beskyttelse av Prissøk-resume og bevisst navigasjon
-- krav om Firma ved godkjenning av nye brukere
-- vern av intern Butikktilbud-/nettopristilgang ved firmabytte
-- legacy prosjektmeny og anbefalt prosjektløp konsolidert mot gjeldende navigasjon
-
-## 6. Sales – Butikktilbud
+## 7. Sales – Butikktilbud
 
 Butikktilbud er egen Sales-flyt for butikk, vare, service og mindre leveranser.
 
@@ -220,12 +188,12 @@ Nytt Butikktilbud
 → kunde/ansvarlig/merkevare
 → tilbudsposter og avsnitt
 → valgfritt katalogsøk
-→ knyttet montering og opsjoner
+→ montering/opsjoner
 → autosavet kladd
 → kundepreview
 → publisert versjon
 → kundelenke/e-post
-→ aksept eller avvisning
+→ aksept/avvisning
 → avsluttet Sales-sak
 ```
 
@@ -234,198 +202,148 @@ Aksept av Butikktilbud:
 - oppretter ikke ProffDok-prosjekt
 - oppretter ikke kontrakt
 - beholder publisert versjon som låst historikk
-- beholder eventuell automatisk oppfølgingshistorikk
+- e-postvarsel er sekundært sideutfall og kan ikke reversere lagret kundebeslutning
 
-### 6.1 Tilbudsposter og avsnitt
+Avsnitt lagres som `store_text` / gruppe og skal presenteres som overskrifter, ikke prislinjer. Montering og opsjoner beholder eksisterende Butikktilbud-kontrakt.
 
-Avsnitt lagres som `store_text` med `storeSectionMode = "group"` og representerer visuelle grupper som `Varmepumpe`, `Elektriker`, `Bad 1` osv.
+## 8. Fase 45B – Proff vareregister / Enkel ordre
 
-Avsnitt:
+Fase 45B introduserer en separat proffkundeløsning som gjenbruker eksisterende Sales-motor og kataloggrunnlag, uten å endre Butikktilbud til prosjektflyt.
 
-- har ingen pris
-- skal ikke valideres som ordinær prislinje
-- skal ikke bruke prislinjenummer
-- skal vises som overskrift i internvisning, kundelenke, tilbuds-PDF og akseptbevis
+### 8.1 Proffkatalog
 
-Felles robust deteksjon ligger i `src/modules/sales/utils/storeSectionLine.js` og støtter også eldre seksjonsmarkører.
+En proffbruker kan bare søke varer fra leverandører firmaet eksplisitt er godkjent for.
 
-### 6.2 Montering og opsjoner
+Systemadmin styrer:
 
-Montering kan knyttes direkte til post og beregnes med antall/timer × enhetspris. `Kun montering` støtter frittstående arbeid.
+- firmaets leverandørtilgang
+- firmarabatt per leverandør
 
-Opsjoner støtter tillegg/oppgradering og alternativ/erstatter. Alternativ vare kan beholde samme montering, bruke ny montering eller ha ingen montering.
+Server/RPC er autoritativ for tilgang. Frontendfiltrering alene er ikke nok.
 
-### 6.3 Autosave og recovery
+### 8.2 Prisgrenser
 
-Butikktilbud har saksspesifikk serverautosave. Kritiske regler:
+Tre prisbegreper må aldri blandes:
 
-- tom/stale lokal kladd får ikke overstyre servertilbud med innhold
-- tom Enter-opprettet post prunes ved lagring
-- avsnitt bevares gjennom normalisering som avsnitt
-- Tilbake lagrer kladd uten gammel generisk valideringsdialog
-- vanlig inngang til Befaring/Tilbud åpner sakslisten
-- faktisk reload inne i sak kan gjenåpne samme sak
+1. **Intern ERP-netto innkjøpspris** – Ringsides interne data; aldri synlig for proffkunde/sluttkunde.
+2. **Din nto pris** – beregnet proffkundepris basert på tillatt salgsgrunnlag/rabatt; sensitiv per-bruker-rettighet.
+3. **Kunde-/salgspris** – foreslått salgspris i proffkundens tilbud til sluttkunde og kan justeres før publisering.
 
-Firmascopet lokal Sales-cache kan gi rask førstevisning, men Supabase er alltid autoritativ og oppdaterer listen etter serverlasting.
+Proff-RPC-er skal ikke returnere felter som intern innkjøpspris, intern rabatt, DG eller internt påslag.
 
-## 7. Internt ERP-vareregister – Fase 39B.2
+Firmaadmin/Systemadmin kan styre `Din nto pris` for en godkjent aktiv bruker i riktig firma. Serveren validerer firma- og modulmedlemskap. Firmaadmin skal ikke kunne omgå firmascoping eller gi seg selv utvidet tilgang gjennom klienten.
 
-Detaljert sikkerhet og importmodell: `docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md`.
+### 8.3 Profftilbud og kundepreview
 
-Katalogen inneholder 468 425 validerte aktive varer etter ERP-import 08.09.2026.
+Profftilbud bruker eksisterende Sales-historikk/prinsipper:
 
-Tilgang krever:
+- tilbudsposter og opsjoner
+- publisert låst versjon
+- kundelenke/e-post
+- digital aksept
 
-1. godkjent/aktiv bruker
-2. `store_offers`-modultilgang
-3. faktisk firmamedlemskap i Ringside Rørleggerbedrift AS eller Bademiljø Expo
+`Forhåndsvis som kunde` er read-only. Den skal vise relevant kundedata/priser, men ikke publisere, akseptere eller eksponere interne identifikatorer/prisfelt som sluttkunden ikke skal se.
 
-Expo Proffsenter er eksplisitt uten katalogtilgang. Org.nr. brukes ikke som sikkerhetsgrense.
+### 8.4 Aksept → Enkel ordre eller prosjekt
 
-Kun systemadministrator kan administrere/importere katalogen.
+Et akseptert profftilbud kan fortsette som:
 
-### 7.1 Katalogdata
+```text
+A) Enkel ordre
+B) Ordinært prosjekt
+```
 
-Katalogen kan inneholde intern netto innkjøpspris og kalkulasjonsdata. Ved valg i tilbud kopieres bare kundeegnet snapshot og salgspris.
+Valget lagres server-side gjennom kontrollert mutasjon av Sales-saken.
 
-Intern nettopris skal aldri finnes i:
+**Enkel ordre** er bevisst minimal og skal ikke automatisk arve hele ordinær prosjektflate. Arbeidsflaten kan bruke:
+
+- oversikt
+- bilder
+- relevante sjekklister
+- UE-bidrag
+- valgfri fremdriftsplan
+- valgfri FDV
+- sluttdokumentasjon etter behov
+
+Kundeportal skal være blokkert der Enkel ordre-kontrakten krever det. UE-tilgang kan fortsatt være tillatt der den er relevant.
+
+### 8.5 Bestillingsgrunnlag og aksepterte produkter
+
+Bestillingsgrunnlag skal bygges fra komplett, låst akseptert tilbudsgrunnlag – ikke fra lett Sales-summary/cache.
+
+Det skal være:
+
+- read-only
+- prisfritt
+- basert på akseptert versjon og faktisk valgte alternativer
+- uten intern netto innkjøpspris / `Din nto pris`
+
+Aksepterte produkter kan seedes til Enkel ordre/prosjekt for FDV/produktgrunnlag, men sensitive prisfelt skal strippes. Dersom kunden har valgt et alternativ som erstatter grunnproduktet, skal seedingen gjenspeile faktisk akseptert produktvalg.
+
+### 8.6 45B serverflate
+
+45B bruker blant annet serverkontroller for:
+
+- leverandørtilgang per firma
+- nettoprisinnsyn per bruker
+- proffkatalogsøk
+- systemadmin-supportsøk
+- valg Enkel ordre / ordinært prosjekt
+- blokkering av Enkel ordre-kundeportal
+- seeding av aksepterte produkter
+
+Nye tilgangstabeller er RPC-only: RLS aktivert og direkte klienttilgang revoked.
+
+## 9. Internt ERP-vareregister
+
+Detaljert dokument: `docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md`.
+
+Primær vareidentitet er leverandør + leverandørens varenummer. Leverandøralternativer kan kobles via normalisert GTIN/EAN.
+
+Katalogen kan inneholde sensitive interne kalkulasjonsdata. Ved valg til kundetilbud skal bare tillatt kunde-/salgsgrunnlag kopieres videre.
+
+Intern netto innkjøpspris skal aldri ligge i:
 
 - kundens Sales-payload
 - publisert tilbudsversjon
 - offentlig kundelenke
 - tilbuds-PDF
 - akseptbevis
+- Proff/Enkel ordre bestillingsgrunnlag
 
-### 7.2 Single-copy import
+## 10. Publisering, kundelenke og varsling
 
-Gjeldende importmodell er single-copy for å unngå dobbel full katalog og unødvendig disk/WAL-belastning.
+Publiserte Sales-versjoner er snapshots. Senere kladd eller katalogpris kan ikke endre dem.
 
-```text
-Systemadmin starter import
-→ søk låses
-→ TXT parses lokalt
-→ gyldige batcher skrives kontrollert
-→ liten aktivering
-→ søk åpnes
-```
+Offentlig tilbudslenke bruker høyt entropisk token og serveroppslag. Kundevisning/PDF skal bruke samme publiserte versjon og kunderelevante priser.
 
-Historiske publiserte/aksepterte tilbud endres ikke av ny ERP-prisfil.
+Aksept/avvisning lagres først. E-post er etterfølgende sideutfall og kan aldri reversere lagret beslutning.
 
-### 7.3 Vareidentitet
+## 11. Kontrakt
 
-Primær vareidentitet er leverandør + leverandørens varenummer.
+Etter ordinær aksept kan saken fortsette med Expo-kontrakt, ekstern/opplastet kontrakt eller uten kontrakt.
 
-Leverandøralternativer kobles via samme normaliserte GTIN/EAN. Varenummer alene brukes ikke på tvers av leverandører.
+Signert kontrakt/PDF er privat historikk og kan synkroniseres til prosjektets Avtalegrunnlag.
 
-## 8. Modul-/rolle-tilgang
+Kontrakt er ikke et generelt krav for prosjektopprettelse. Den er påkrevd når garanti-/avtalegrunnlaget faktisk krever det.
 
-Modultilganger skiller blant annet:
+## 12. Fremdriftsplan
 
-- `projects`
-- `sales`
-- `store_offers`
+Fremdriftsplan lagres separat i `public.project_progress_plans` og er operativ prosjektdata.
 
-Systemadministrator har tverrfirma-support, men dette er ikke en generell skrive-bypass.
-
-Firmaadministrator kan delegere moduler innenfor eget firma og egne tillatelser. Butikktilbud/katalog følger egne serverkontroller.
-
-Katalogimport er strengere enn ordinær Butikktilbud-bruk: systemadministrator-only.
-
-### 8A. Arbeidsprofiler, representasjon og systemadmin-scope – Fase 41B / 42G / 42K
-
-Aktiv arbeidsprofil lagres server-side. Vanlige flerfirma-brukere arbeider i valgt firma. Systemadministrator kan velge hvilket firma vedkommende **representerer**, uten at dette oppretter ordinært firmamedlemskap.
-
-Systemadministrator har fortsatt brede serverrettigheter for legitim administrasjon/support, men den vanlige prosjektflaten skal være låst til valgt representert firma. Fra Fase 42G installeres `systemAdminProjectScopeGuard.js` før app-bootstrap. For systemadministrator legges aktiv `company_scope_id` på prosjekt-REST for lesing og eksisterende endringer/sletting. Dersom systemadministrator ikke har aktivt firma, brukes et tomt/umulig scope i stedet for å vise alle prosjekter.
-
-Dette er et ekstra klientsikkerhetsnett, ikke erstatning for RLS. RLS/RPC/server forblir autoritativ sikkerhetsgrense. Produktretningen er at tverrfirmaarbeid skal skje ved eksplisitt valg av firma/supportkontekst, ikke ved at prosjekter fra flere firma blandes i ordinær prosjektliste.
-
-Kritisk regresjonstest:
-
-```text
-Systemadmin primærfirma Ringside
-→ velg «Representerer Expo Proffsenter»
-→ ordinær prosjektflate viser/åpner bare Expo Proffsenter-prosjekter
-→ Ringside-prosjekt krever eksplisitt firmabytte
-```
-
-## 9. Publisering, kundelenke og aksept
-
-Publiserte Sales-versjoner er snapshots. En senere kladd eller katalogpris kan ikke endre en publisert versjon.
-
-Offentlig tilbudslenke bruker høyt entropisk `publicOffer`-token og serveroppslag.
-
-Kundevisning for Butikktilbud viser avsnitt/poster, montering, opsjoner og priser inkl. mva. Forhåndsvisning bruker samme struktur, men er read-only og tillater ikke faktisk aksept/avvisning.
-
-Tilbuds-PDF og akseptbevis bruker samme seksjonsdeteksjon for å unngå `0 kr`-avsnitt og feil nummerering.
-
-## 10. Automatisk oppfølging – Butikktilbud
-
-FASE 37A2 er fortsatt egen, versjonslåst oppfølgingsmekanisme for Butikktilbud.
-
-- ordinære tilbud følges manuelt
-- Butikktilbud kan ha automatisk plan
-- planen låses til publisert versjon
-- aksept/avvisning/utløp/arkiv eller ny gjeldende versjon stopper gammel plan
-
-Denne mekanismen er sensitiv/frozen med mindre endring er eksplisitt bestilt.
-
-## 11. Kontrakt og akseptvarsling
-
-Ordinær Sales-aksept kan gå videre til Expo-kontrakt eller ekstern kontrakt. Signert slutt-PDF er privat historikk og kan synkroniseres til prosjektets Avtalegrunnlag.
-
-Kontraktfunksjonen finnes i Production-koden gjennom blant annet `SalesContractWizard`, `SalesContractActions`, `SalesContractCustomerView` og kontraktdokumentkomponentene. Demo 16.09.2026 viste at funksjonen ikke var tilstrekkelig lett å finne i den aktuelle brukerreisen; dette er et UX-/finnbarhetsoppfølgingspunkt, ikke manglende backend-/kontraktarkitektur.
-
-Akseptvarsling er et etterfølgende sideutfall; lagret aksept kan ikke reverseres av e-postfeil.
-
-Viktige serverkomponenter inkluderer:
-
-```text
-accept_sales_offer(...)
-sales-offer-acceptance-notify
-sales_offer_acceptance_notifications
-create_sales_contract(...)
-sign_sales_contract_company(...)
-sign_sales_contract_customer(...)
-```
-
-## 12. Fremdriftsplan – Fase 35A–35C
-
-Fremdriftsplan lagres separat i `public.project_progress_plans` og ligger ikke inne i `projects.data`.
-
-```text
-projects.id
-  1 ── 1 project_progress_plans.project_id
-```
-
-Planen er operativ prosjektdata og skriver aldri tilbake til tilbud, aksept eller kontrakt.
-
-Et akseptert ordinært tilbud kan brukes som **forslag** til arbeidsoperasjoner. Kun valgte opsjoner tas med. Direkte prosjekter uten Sales-opphav bygger planen manuelt.
-
-### 12.1 Arbeidsøkter
-
-Aktiviteter kan ha flere arbeidsøkter med dato, klokkeslett og merknad. Standard ny aktivitet får første økt i valgt/synlig uke, normalt `08:00–16:00`.
-
-### 12.2 Gantt / PDF / kalender
-
-Eksport leser lagret plan:
-
-- Gantt/PDF er utskrift/read-only
+- plan skriver aldri tilbake til tilbud/aksept/kontrakt
+- akseptert ordinært tilbud kan brukes som forslag til aktiviteter
+- Enkel ordre kan bruke fremdriftsplan valgfritt
+- Gantt/PDF er read-only eksport
 - `.ics` er enveis kalender-eksport
-- kalenderdata skriver ikke tilbake til Expo ProffDok
-
-### 12.3 Prosjektinvolverte og prosjektmail
-
-Prosjektinvolverte lagres separat i `project_participants`. `project_participant_notices` brukes til varsling/sporbarhet.
-
-Edge Function `project-participants-mailer` validerer prosjekt- og mottakertilgang server-side.
 
 ## 13. Kunde-/UE-portal
 
-Kunde og UE får tilgang gjennom serververifisert portalgrunnlag/koder og ikke ved direkte tabelltilgang.
+Kunde og UE får tilgang gjennom serververifisert portalgrunnlag/koder, ikke gjennom fri direkte tabelltilgang.
 
-Kunde kan bare se fremdriftsplan når `customer_visible = true`. UE er read-only der relevant.
+Kunde kan bare se data som eksplisitt er gjort tilgjengelig. Private dokumenter og Storage-paths beholder eksisterende token-/tilgangsmodell.
 
-Private dokumenter og kundelenker må fortsatt respektere eksisterende sikker Storage-/tokenflyt.
+Enkel ordre har egen portalguard: kundeportal skal ikke kunne oppstå ved en ren klientfeil eller gammel UI-vei.
 
 ## 14. Garanti
 
@@ -435,158 +353,91 @@ Dokumentert tetthetsgaranti krever blant annet:
 - fullførte relevante sjekklister/bilder
 - ingen åpne avvik
 - overtagelse/signaturer
-- signert kontrakt i Avtalegrunnlag når garanti skal utstedes
+- signert kontrakt i Avtalegrunnlag når garanti faktisk skal utstedes
 
-Historiske utstedte garantier og låste prosjekter skal ikke endres av produktmaster eller senere systemendringer.
+Historiske garantier og låste prosjektgrunnlag skal ikke endres av senere masterdata/systemendringer.
 
-## 15. Systemadministrasjon
+## 15. Digital HJELP
 
-Systemadmin er kontrollsenter for:
+`src/modules/help/` er gjeldende rollebasert brukerveiledning i appen.
 
-- bruker-/firmagodkjenning
-- eksplisitt firma-/supportkontekst for tverrfirmaarbeid
-- modul-/rollehåndtering
-- produktmaster
-- appnyheter
-- **internt ERP-vareregister**
+HJELP skal beskrive dagens funksjon og roller, ikke være historisk changelog. Den skal blant annet dekke relevante deler av:
 
-Systemadmin skal ikke bruke brede rolleprivilegier som normal prosjektflate på tvers av firma. Før prosjektarbeid/support velges riktig representert firma. For vareregister skal Systemadmin vise import/status/kontrolltall og være eneste sted for prisoppdatering.
+- Befaring/Tilbud og recovery
+- Badskisse/media
+- Butikktilbud
+- Proff vareregister / Enkel ordre
+- prosjektmeny/arbeidsflate
+- vareregister/prisgrenser
+- systemadmin/firmaadmin-oppgaver
+- arbeidsprofil/representert firma
 
-Fase 42K krever Firma ved godkjenning av nye brukere og beskytter interne tilganger ved firmabytte.
+Brukerrettet produksjonsendring skal oppdatere relevant HJELP i samme PR.
 
-## 16. HJELP
+## 16. Dokumentasjon som merge-kontrakt
 
-Digital Hjelp er gjeldende brukerveiledning og skal følge rolle.
+GitHub `PR Core Safety` kjører `scripts/critical-release-docs-check.mjs` på PR-er mot `main`.
 
-Gjeldende sentrale temaer inkluderer:
+Produksjonspåvirkende kode/backend/config kan ikke merges dersom samme PR mangler:
 
-- ordinær Befaring/Tilbud, Forespørsler-kø og recovery
-- PC-fanebytte/mobil appbytte mens kundeinformasjon fylles ut
-- Badskisse i befaring
-- Butikktilbud som eget tema ved Befaring/Tilbud
-- prosjektets kollapsede desktopmeny og hurtigvalg
-- tilbudsposter og avsnitt
-- vareregister som valgfritt oppslag
-- montering/opsjoner
-- autosave/recovery
-- Systemadmin-ERP-import og sikkerhetsgrense
-- arbeidsprofil/representert firma der rollen har flere firma
+- `README.md`
+- `docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md`
+- relevant fil under `src/modules/help/`
 
-Hjelp skal beskrive gjeldende funksjon, ikke historisk changelog.
+Sales-/katalogendringer krever i tillegg:
 
-## 17. Kritiske build-sperrer
+- `src/modules/sales/README.md`
 
-`npm run build` kjører før Vite blant annet:
+Hensikten er at repositoryet alene skal forklare gjeldende løsning, sikkerhetsgrenser og brukerflyt selv om chat-historikk forsvinner.
 
-```text
-scripts/critical-pr-scope-guard.mjs --self-test
-scripts/critical-build-check.mjs
-scripts/critical-bathroom-sketch-check.mjs
-scripts/critical-sales-recovery-check.mjs
-scripts/critical-sales-tab-resume-check.mjs
-scripts/critical-sales-entry-resume-check.mjs
-scripts/critical-sales-server-hydration-check.mjs
-scripts/critical-sales-lazy-loading-check.mjs
-scripts/critical-project-navigation-check.mjs
-scripts/critical-progress-plan-check.mjs
-scripts/critical-store-catalog-check.mjs
-scripts/critical-work-profile-check.mjs
-```
+## 17. Kritiske build-/CI-sperrer
 
-Disse beskytter kjente kontrakter som:
+`npm run build` kjører målrettede critical checks før Vite. Blant kontraktene som er beskyttet:
 
 - Sales recovery og regelen «brukerhandling vinner»
-- Ny/Rediger forespørsel ved PC-fanebytte og mobil appbytte
-- Sales lazy loading og komplett detaljhydrering før editor
-- befaringsmedia/Badskisse der dette inngår i recovery-testene
-- prosjektets kollapsede desktopmeny/hurtigvalg
-- fremdriftsplanens tilbudsimport/standardoperasjoner/kalender
-- katalogsikkerhet og Butikktilbud-seksjonspresentasjon
-- arbeidsprofiler, systemadmin-representasjon og 42G/42K prosjekt-scope
-- PR-isolasjon slik at Demo/Test ikke samtidig endrer beskyttet appkjerne
+- entry-resume ved PC-fanebytte/mobil appbytte
+- server-first hydrering og Sales lazy loading
+- Badskisse/media-recovery
+- prosjekt-/mobilnavigasjon
+- fremdriftsplan
+- internt vareregister og Proff-katalogsikkerhet
+- Enkel ordre-arbeidsflate
+- read-only kundepreview
+- prisfritt bestillingsgrunnlag
+- arbeidsprofil/systemadmin-scope
+- Demo/Test-isolasjon
+- obligatorisk release-dokumentasjon
 
-Build-sperrer erstatter ikke Preview-test, men skal stoppe kjente regresjoner før deploy.
+GitHub workflow `PR Core Safety` kjører både scope-isolasjon og dokumentasjonssperre mot `main` før full critical build.
 
-### 17.1 PR Core Safety
+Build-sperrer erstatter ikke menneskelig Preview/E2E-test.
 
-GitHub workflow `PR Core Safety` kjører på PR-er mot `main`. Dersom en PR inneholder Demo/Test-markører, skal den feile dersom samme diff også endrer beskyttet Sales-/app-/backendkjerne. Reell core-endring skal da splittes i egen PR fra ren `main`.
+## 18. Release-QA
 
-## 18. Preview-sikkerhet
+Før merge til `main`:
 
-Vercel Preview brukes for eksplisitt test før merge.
+1. branch skal være basert på gjeldende `main`
+2. alle critical checks grønne
+3. Vercel Preview riktig branch/SHA og `READY`
+4. Production/Sandbox-binding eksplisitt kontrollert
+5. relevante Supabase-migrasjoner og ACL/RLS vurdert mot Production-baseline
+6. berørte gamle brukerreiser regresjonstestet
+7. ny brukerreise testet ende-til-ende
+8. README + arkitektur + HJELP oppdatert; Sales README ved Sales/katalogendring
+9. eksplisitt `TEST OK`
 
-Prosjekt-/fremdriftsfunksjoner har egen Preview-sikkerhet som kan blokkere produksjonsmail/testdata der det er nødvendig.
+Etter merge gjennomføres trippel Production-QA:
 
-Sales/Butikktilbud er produksjonskoblet mot delt Supabase og må derfor testes med tydelige testsaker. Publisering/e-post i Preview kan være reell dersom funksjonen ikke eksplisitt er blokkert.
+1. GitHub: eksakt `main`-SHA / forventet merge
+2. Vercel: Production deployment `READY`, HTTP/runtime og riktig miljøbinding
+3. Supabase + brukerreise: migrasjonsstatus/sikkerhet og representative kritiske funksjoner
 
-`progressTest=safe` er Preview-sikkerhetsparameter og er ikke en del av endelig produksjonskundelenke.
+Ferdige feature/chore/tmp-brancher slettes etter trygg merge/opprydding. Permanent `demo` beholdes.
 
-### 18.1 Demo Sandbox er ikke ordinær Preview
+## 19. Kjente miljøregler for Demo/Sandbox
 
-Permanent Demo Sandbox bruker separat backend og er fysisk isolert fra Production. Den skal derfor ikke behandles som en tilfeldig Vercel Preview. Demo-builden har egen sandbox-binding, Golden/reset og fast branch-host.
-
-Før viktig demo skal preflight bekrefte:
-
-- branch `demo`
-- riktig permanent host
-- sandbox-Supabase i emitted JS og ingen Production-binding
-- fungerende `/demo-control.html`
-- forventede demosaker/Golden
-- kundetilbud før aksept og akseptert kundevisning
-- rapport/PDF dersom dette skal vises
-
-## 19. Databasestørrelse og store payloads
-
-Etter full ERP-import var målt database rundt 348–356 MB og katalog rundt 283 MB.
-
-Sales har enkelte store historiske JSON-payloads, blant annet inline/base64-bilder. Fase 42I løser listeytelsen ved lett summary/lazy loading uten å endre historiske payloads. Fremtidig opprydding kan flytte nye tunge bilder til Storage, men eksisterende historikk skal ikke migreres tilfeldig.
-
-## 20. Frosne/sensitive områder
-
-Endres bare eksplisitt og med egen QA:
-
-- auth/login-presentasjon
-- kompakt desktop header/menu og prosjektveiviser
-- arbeidsprofil-/systemadmin-scoping
-- publiserte/aksepterte tilbud
-- aksepterte kontrakter
-- offentlige kundelenker/private dokumentlenker
-- RLS utenfor eksplisitt avtalt arbeid
-- Edge Functions
-- Fase 37A2 automatisk Butikktilbud-oppfølging
-- Sales recovery/hydration/lazy loading
-- Badskisse/bevaringen av befaringsmedia ved recovery
-- permanent Demo Sandbox-isolasjon og main → demo-synkretning
-
-## 21. Utsatt videreutvikling / observasjoner fra demo 16.09.2026
-
-- forbedre kontraktfunksjonens finnbarhet etter akseptert ordinært tilbud
-- kvalitetsløft av rapport/PDF, særlig forside/hero, bildeinnbygging, sjekklistetelling og dokumentasjonsgrad
-- NOBB/Byggtjeneste-berikelse via GTIN
-- ERP-vareliste/PDF etter aksept gruppert på leverandør
-- CSV/Excel-varebehov
-- målrettet Storage-opprydding for fremtidige Sales-bilder
-- kontrollert oppgradering av eldre **redigerbare** tilbudsutkast til ny versjon; publisert/akseptert historikk forblir immutable
-- komplett null-til-miljø databasebaseline/migrasjonskjede slik at nye isolerte miljøer kan bygges deterministisk
-
-Disse skal gjennomføres som egne runder med samme Preview-/mergepolicy.
-
-## 22. Før merge
-
-Minimum:
-
-1. Alle kritiske checks grønne.
-2. Vite build grønn.
-3. Preview `READY`, ingen fatale runtime-feil.
-4. Ordinær Befaring/Tilbud-liste åpner raskt og viser korrekte tellere fra summary-data.
-5. Åpne minst én større Sales-sak og bekreft at komplett tilbud/bilder/Badskisse lastes først ved åpning.
-6. Ny forespørsel: skriv delvis kundeinfo → bytt PC-fane eller mobilapp → gå tilbake → samme skjema og tekst skal stå.
-7. Rediger forespørsel: samme app-/fanebytte-test med eksisterende sak.
-8. Prosjekt: kontroller veiviser/hurtigvalg og full Meny på desktop; mobilmeny skal være uendret.
-9. Systemadmin: bytt mellom minst to representerte firma og bekreft at prosjektliste/åpning følger valgt firma.
-10. Direkte prosjektlenke til annet firma skal ikke åpnes i feil representasjonskontekst.
-11. Butikktilbud: redigering, autosave, Tilbake og kundepreview kontrollert ved relevante endringer.
-12. Arkitektur og relevante README/HJELP-filer samsvarer med faktisk implementasjon.
-13. `PR Core Safety` er grønn når PR-en går mot `main`.
-14. Eksplisitt bruker-`TEST OK` før merge.
-15. Etter merge: Production verifisert. Ved miljømål `BEGGE` synkroniseres deretter gjeldende `main` kontrollert til `demo`, og sandbox-preflight skal være grønn.
+- `demo` skal aldri merges til `main`.
+- Demo-syntetiske data/overlays/reset-funksjoner skal ikke inn i Production.
+- Production credentials/binding skal aldri bygges inn i permanent Demo.
+- Preview-/release-kandidat skal ikke være avhengig av skjult tekstlig URL/key-rewrite som eneste miljøidentitet; miljøbinding skal være eksplisitt og fail-closed.
+- Dersom Sandbox har svakere RLS/policies/grants enn Production, er det et QA-paritetsavvik som skal rettes i Sandbox eller eksplisitt kompenseres før sikkerhets-QA godkjennes.
