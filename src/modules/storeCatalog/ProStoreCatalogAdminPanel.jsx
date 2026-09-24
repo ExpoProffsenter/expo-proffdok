@@ -5,8 +5,6 @@ import {
   listCatalogSuppliers,
   listCompanySupplierAccess,
   setCompanySupplierAccess,
-  listUserNetPriceAccess,
-  setUserNetPriceAccess,
 } from "./proStoreCatalogClient.js";
 
 const DEFAULT_SUPPLIER_SUGGESTIONS = [
@@ -41,51 +39,26 @@ function SupplierAccessRow({ supplier, row, onSaveDiscount, onRemove }) {
   );
 }
 
-export default function ProStoreCatalogAdminPanel({ companyId = "", mode = "systemadmin" }) {
+export default function ProStoreCatalogAdminPanel({ companyId = "" }) {
   const [client] = useState(() => createDefaultSalesSupabaseClient());
-  const [authorized, setAuthorized] = useState(mode !== "firmaadmin");
   const [companies, setCompanies] = useState([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState(companyId);
   const [suppliers, setSuppliers] = useState([]);
   const [access, setAccess] = useState([]);
-  const [users, setUsers] = useState([]);
   const [message, setMessage] = useState("");
   const [supplierSearch, setSupplierSearch] = useState("");
   const [defaultsBusy, setDefaultsBusy] = useState(false);
   const effectiveCompanyId = companyId || selectedCompanyId;
 
-  useEffect(() => {
-    if (mode !== "firmaadmin") {
-      setAuthorized(true);
-      return;
-    }
-    let active = true;
-    Promise.all([
-      client?.rpc?.("current_profile_is_firmaadmin"),
-      client?.rpc?.("current_profile_is_systemadmin"),
-    ])
-      .then(([firma, system]) => active && setAuthorized(firma?.data === true && system?.data !== true))
-      .catch(() => active && setAuthorized(false));
-    return () => { active = false; };
-  }, [client, mode]);
-
   async function refreshBase() {
-    if (!authorized) return;
     setMessage("");
     try {
-      if (mode === "firmaadmin") {
-        const userRows = await listUserNetPriceAccess(client);
-        setUsers(Array.isArray(userRows) ? userRows : []);
-        return;
-      }
-
       const [companyRows, supplierRows] = await Promise.all([
         listCatalogCompanies(client),
         listCatalogSuppliers(client),
       ]);
       setCompanies(companyRows);
       setSuppliers(supplierRows);
-      setUsers([]);
       if (!companyId && !selectedCompanyId && companyRows.length) {
         const demo = companyRows.find(
           (row) => String(row.display_name || "").toLowerCase() === "proffkunde demo as"
@@ -98,7 +71,7 @@ export default function ProStoreCatalogAdminPanel({ companyId = "", mode = "syst
   }
 
   async function refreshAccess(targetCompanyId = effectiveCompanyId) {
-    if (!authorized || mode !== "systemadmin" || !targetCompanyId) {
+    if (!targetCompanyId) {
       setAccess([]);
       return;
     }
@@ -110,11 +83,11 @@ export default function ProStoreCatalogAdminPanel({ companyId = "", mode = "syst
     }
   }
 
-  useEffect(() => { void refreshBase(); }, [mode, companyId, authorized]);
+  useEffect(() => { void refreshBase(); }, [companyId]);
   useEffect(() => {
     void refreshAccess(effectiveCompanyId);
     setSupplierSearch("");
-  }, [effectiveCompanyId, mode, authorized]);
+  }, [effectiveCompanyId]);
 
   const accessByKey = useMemo(() => new Map(access.map((row) => [row.supplier_key, row])), [access]);
   const supplierByKey = useMemo(() => new Map(suppliers.map((row) => [row.supplier_key, row])), [suppliers]);
@@ -142,15 +115,6 @@ export default function ProStoreCatalogAdminPanel({ companyId = "", mode = "syst
       await refreshAccess(effectiveCompanyId);
     } catch (error) {
       setMessage(error?.message || "Kunne ikke lagre leverandørtilgang.");
-    }
-  }
-
-  async function saveFirmaadminUser(user, canView) {
-    try {
-      await setUserNetPriceAccess(client, String(user?.company_id || ""), user.user_id, canView);
-      await refreshBase();
-    } catch (error) {
-      setMessage(error?.message || "Kunne ikke lagre prisinnsyn.");
     }
   }
 
@@ -185,18 +149,16 @@ export default function ProStoreCatalogAdminPanel({ companyId = "", mode = "syst
     }
   }
 
-  if (!authorized) return null;
-
   return (
     <section className="pro-catalog-admin">
       <div>
         <h3>Proff vareregister</h3>
         <p>
-          Systemadmin velger leverandører og rabatt per firma. Brukerens modul- og prisinnsyn styres på samme brukerkort under «Brukere og tilganger».
+          Systemadmin velger leverandører og rabatt per firma. Brukerens modul- og prisinnsyn styres kun på samme brukerkort under «Brukere og tilganger».
         </p>
       </div>
 
-      {mode === "systemadmin" && !companyId ? (
+      {!companyId ? (
         <label className="pro-catalog-company">
           Firma
           <select value={selectedCompanyId} onChange={(event) => setSelectedCompanyId(event.target.value)}>
@@ -208,7 +170,7 @@ export default function ProStoreCatalogAdminPanel({ companyId = "", mode = "syst
         </label>
       ) : null}
 
-      {mode === "systemadmin" && effectiveCompanyId ? (
+      {effectiveCompanyId ? (
         <>
           <div className="pro-catalog-defaults">
             <div>
@@ -268,26 +230,9 @@ export default function ProStoreCatalogAdminPanel({ companyId = "", mode = "syst
         </>
       ) : null}
 
-      {mode === "firmaadmin" ? (
-        <div className="pro-catalog-admin-list">
-          <strong>Hvem kan se «Din nto pris»</strong>
-          <small>Firmaadmin kan delegere firmaets rabattberegnede pris til egne brukere.</small>
-          {users.length ? users.map((user) => (
-            <label className="pro-catalog-admin-user" key={`${user.company_id || "company"}-${user.user_id}`}>
-              <input
-                type="checkbox"
-                checked={user.can_view_net_price === true}
-                onChange={(event) => void saveFirmaadminUser(user, event.target.checked)}
-              />
-              <span>{user.email || user.user_id}</span>
-            </label>
-          )) : <small>Ingen brukere funnet for firmaet.</small>}
-        </div>
-      ) : null}
-
       {message ? <small className={message.startsWith("Kunne") ? "is-error" : ""}>{message}</small> : null}
 
-      <style>{`.pro-catalog-admin{display:grid;gap:16px}.pro-catalog-admin h3,.pro-catalog-admin p{margin:0}.pro-catalog-company{display:grid;gap:6px;font-weight:700}.pro-catalog-company select,.pro-catalog-add-body input{min-height:42px;border:1px solid #ccdadd;border-radius:9px;padding:0 10px;background:#fff;font:inherit}.pro-catalog-defaults{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px;border:1px solid #b9dfe3;border-radius:10px;background:#f3fbfc}.pro-catalog-defaults div{display:grid;gap:3px}.pro-catalog-defaults small{color:#52616b}.pro-catalog-defaults button{width:auto}.pro-catalog-admin-list{display:grid;gap:8px}.pro-catalog-list-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.pro-catalog-list-head small{color:#64748b}.pro-catalog-active-row{display:grid;grid-template-columns:minmax(0,1fr) 150px auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid #d7e2e5;border-radius:10px;background:#fff}.pro-catalog-active-row label{display:flex;gap:8px;align-items:center;justify-content:flex-end}.pro-catalog-active-row input[type=number]{width:78px;min-height:36px}.pro-catalog-active-row button{width:auto;min-height:36px}.pro-catalog-add-supplier{border:1px solid #d7e2e5;border-radius:10px;background:#fbfefe}.pro-catalog-add-supplier summary{cursor:pointer;padding:11px 12px;font-weight:800}.pro-catalog-add-body{display:grid;gap:8px;padding:0 12px 12px}.pro-catalog-add-results{display:grid;gap:6px}.pro-catalog-add-results button{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 11px;border:1px solid #d7e2e5;border-radius:9px;background:#fff;color:#10212b}.pro-catalog-admin-user{display:flex;gap:8px;align-items:center;padding:8px 0}.pro-catalog-user-note{display:grid;gap:4px;padding:11px 12px;border:1px solid #d7e2e5;border-radius:10px;background:#f8fafc}.pro-catalog-user-note span{color:#60737b;font-size:13px}.pro-catalog-admin .is-error{color:#a33232}@media(max-width:700px){.pro-catalog-active-row{grid-template-columns:1fr}.pro-catalog-active-row label{justify-content:flex-start}.pro-catalog-defaults{align-items:flex-start;flex-direction:column}}`}</style>
+      <style>{`.pro-catalog-admin{display:grid;gap:16px}.pro-catalog-admin h3,.pro-catalog-admin p{margin:0}.pro-catalog-company{display:grid;gap:6px;font-weight:700}.pro-catalog-company select,.pro-catalog-add-body input{min-height:42px;border:1px solid #ccdadd;border-radius:9px;padding:0 10px;background:#fff;font:inherit}.pro-catalog-defaults{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px;border:1px solid #b9dfe3;border-radius:10px;background:#f3fbfc}.pro-catalog-defaults div{display:grid;gap:3px}.pro-catalog-defaults small{color:#52616b}.pro-catalog-defaults button{width:auto}.pro-catalog-admin-list{display:grid;gap:8px}.pro-catalog-list-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.pro-catalog-list-head small{color:#64748b}.pro-catalog-active-row{display:grid;grid-template-columns:minmax(0,1fr) 150px auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid #d7e2e5;border-radius:10px;background:#fff}.pro-catalog-active-row label{display:flex;gap:8px;align-items:center;justify-content:flex-end}.pro-catalog-active-row input[type=number]{width:78px;min-height:36px}.pro-catalog-active-row button{width:auto;min-height:36px}.pro-catalog-add-supplier{border:1px solid #d7e2e5;border-radius:10px;background:#fbfefe}.pro-catalog-add-supplier summary{cursor:pointer;padding:11px 12px;font-weight:800}.pro-catalog-add-body{display:grid;gap:8px;padding:0 12px 12px}.pro-catalog-add-results{display:grid;gap:6px}.pro-catalog-add-results button{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 11px;border:1px solid #d7e2e5;border-radius:9px;background:#fff;color:#10212b}.pro-catalog-user-note{display:grid;gap:4px;padding:11px 12px;border:1px solid #d7e2e5;border-radius:10px;background:#f8fafc}.pro-catalog-user-note span{color:#60737b;font-size:13px}.pro-catalog-admin .is-error{color:#a33232}@media(max-width:700px){.pro-catalog-active-row{grid-template-columns:1fr}.pro-catalog-active-row label{justify-content:flex-start}.pro-catalog-defaults{align-items:flex-start;flex-direction:column}}`}</style>
     </section>
   );
 }
