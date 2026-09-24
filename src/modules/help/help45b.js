@@ -1,6 +1,6 @@
 import React from "react";
 
-const UPDATED = "Sist oppdatert: 23.09.2026";
+const UPDATED = "Sist oppdatert: 24.09.2026";
 
 function List({ items = [] }) {
   return React.createElement(
@@ -19,10 +19,12 @@ export function createHelp45BSection({ Section }) {
       "Bruk «Forhåndsvis som kunde» før utsending for å kontrollere logo, priser inkl. mva., opsjoner, vilkår og totalsum uten å publisere tilbudet eller sende e-post.",
       "Når kunden aksepterer kan mindre oppdrag videreføres som Enkel ordre, mens større oppdrag kan aktiveres som ordinært prosjekt.",
       "Aksepterte varetilbud har Bestillingsgrunnlag med varenummer, antall og relevante produktidentifikatorer. Pris og intern nto-pris skal ikke være med i bestillingslisten.",
-      "I Enkel ordre kan fremdriftsplan, FDV, bilder, relevante sjekklister, UE-bidrag og sluttdokumentasjon brukes etter behov."
+      "I Enkel ordre kan fremdriftsplan, FDV, bilder, relevante sjekklister, UE-bidrag og sluttdokumentasjon brukes etter behov.",
+      "Enkel ordre har en forenklet arbeidsflate og oppretter ikke kundeportal. Velg ordinært prosjekt dersom oppdraget trenger full prosjekt-/kundeportalflyt."
     ];
     const important = [
       "Ringsides ERP-nettopris, innkjøpsrabatt, DG og påslag er intern informasjon og skal aldri vises til proffkunde eller sluttkunde.",
+      "«Din nto pris» er proffkundens beregnede pris og må ikke forveksles med Ringsides interne ERP-nettopris.",
       "Firmaadmin bestemmer hvilke brukere i firmaet som kan se «Din nto pris». Denne rettigheten skal ikke gis bredere enn nødvendig.",
       "Transport, frakt, timer og øvrige leveranser kan brukes som ordinære tilbudsposter.",
       "Tilgang til Expo ProffDok forutsetter at virksomheten oppfyller gjeldende brukervilkår, inkludert SoPro-forutsetningen."
