@@ -1,4 +1,4 @@
-# Fase 45B – release blockers og paritetsfunn
+# Fase 45B – gjeldende release-status
 
 **Kontrolldato:** 24.09.2026  
 **Release branch:** `fase45b-release-candidate`  
@@ -6,156 +6,150 @@
 **Production Supabase:** `dqffxflaoyarbxyiyhop`  
 **Demo Sandbox Supabase:** `ppvircenkjizeiqdxphj`
 
-Dette dokumentet er en varig QA-handoff. Det skal leses sammen med `FASE45B_PREPROD_QA.md`, root `README.md`, hoved-arkitekturkartet og `src/modules/sales/README.md`.
+Dette dokumentet er den korte, varige statusen for Fase 45B. Repositoryet skal være tilstrekkelig handoff uten tidligere ChatGPT-samtaler.
 
-## Statuskoder
+## Kort status
 
-- **BLOCKER** – skal være løst/verifisert før `TEST OK` og merge.
-- **ÅPEN** – må avklares eller testes, men er ikke dokumentert som Production-feil ennå.
-- **RETTET** – kode/migrasjon/guard finnes; må fortsatt inngå i samlet regresjons-QA.
-- **PRODUCTION REN** – Production er kontrollert og har ikke 45B-endringen ennå.
+Fase 45B er **ikke klar for merge til Production ennå**.
 
-## 1. Production er fortsatt uten Fase 45B backend – PRODUCTION REN
+Det viktigste som nå er på plass:
 
-Kontroll mot Production viste at Fase 45B-migrasjonene/tabellene/RPC-ene ikke er deployet dit. Production skal forbli urørt frem til eksplisitt `TEST OK` og kontrollert release.
+- Production er fortsatt urørt av Fase 45B.
+- Release-kandidaten er synket med gjeldende `main`.
+- Proff vareregister / Enkel ordre er implementert med egne critical checks.
+- HJELP, root README, architecture og Sales README er oppdatert.
+- PR mot `main` har teknisk dokumentasjonssperre.
+- Sandbox sin manglende Production-RLS/policy-baseline er reparert.
 
-Dette er ønsket status før merge.
+Gjenstående hovedarbeid før merge:
 
-## 2. Sandbox-baseline har svakere RLS enn Production – BLOCKER
+1. avklare/rydde Supabase branchstatus `MIGRATIONS_FAILED`
+2. ferdigstille eksplisitt Production/Sandbox miljøbinding uten skjult tekstlig rewrite som eneste sannhetskilde
+3. aktivere reell GitHub-beskyttelse på `main` slik at direkte push ikke kan omgå PR-sperrene
+4. full manuell E2E/regresjons-QA
+5. eksplisitt **PRODUCTION GODKJENT** før merge
 
-Read-only databasekontroll 24.09.2026 viste:
+---
 
-- Production: **0** public-tabeller med RLS avslått.
-- Sandbox: **31** public-tabeller med RLS avslått.
+## 1. Production er fortsatt ren – OK
 
-Eksempler på sentrale tabeller som har RLS aktiv i Production, men avslått i Sandbox:
+Production har fortsatt ingen Fase 45B backend-migrasjoner/tabeller/RPC-er installert.
 
-- `projects`
-- `profiles`
-- `sales_requests`
-- `sales_offers`
-- `sales_offer_versions`
-- `internal_store_catalog_items`
-- `user_module_access`
-- `project_progress_plans`
-- flere øvrige baseline-tabeller
+Production skal ikke endres før eksplisitt godkjent release.
 
-Sandbox har samtidig brede direkte grants til `authenticated` på mange av disse tabellene. Enkelte tabeller har også `anon` SELECT. Når RLS er avslått er dette vesentlig svakere enn Production.
+---
 
-**Konsekvens:** En funksjonell test som lykkes i Sandbox kan skjule en firmascoping-/tilgangsfeil som Production-RLS ville stoppet. Sandbox kan derfor ikke brukes som full sikkerhetsfasit før relevant baseline-paritet er reparert/verifisert.
+## 2. Sandbox RLS/policy-paritet – RETTET 24.09.2026
 
-**Viktig:** Dette skal ikke løses ved å svekke Production. Production-baselinen er sikkerhetsfasit.
+Tidligere hadde Sandbox en ufullstendig sikkerhetsbaseline: store deler av Production-tabellene manglet aktiv RLS og Production-policyene.
 
-## 3. Sandbox branchstatus er `MIGRATIONS_FAILED` – BLOCKER / miljøhelse
+Dette er nå reparert **kun i Sandbox**.
 
-Supabase branch metadata viser:
+Følgende Sandbox-migrasjoner ble anvendt:
 
-- branch: `demo-sandbox`
-- project ref: `ppvircenkjizeiqdxphj`
-- preview project status: `ACTIVE_HEALTHY`
-- branch migration status: `MIGRATIONS_FAILED`
+- `demo_sandbox_restore_production_security_helpers`
+- `demo_sandbox_restore_production_rls_policies`
 
-Direkte SQL fungerer, og Fase 45B-migrasjoner er registrert/applisert i Sandbox. Likevel må årsaken til branchens `MIGRATIONS_FAILED`-status avklares før Sandbox erklæres som ren release-testflate.
+Kontroll etter reparasjon:
 
-## 4. Nye 45B tilgangstabeller er låst ned – RETTET
+- Production public RLS-policyer: **55**
+- Sandbox public RLS-policyer: **55**
+- Production policy-hash: `7a6064b54f723e32c74935657d62360e`
+- Sandbox policy-hash: `7a6064b54f723e32c74935657d62360e`
 
-Fase 45B release-hardening aktiverer RLS og revoker direkte `anon`/`authenticated`-tilgang på:
+Det betyr at de 55 Production-policyene nå er identiske med Sandbox-policyene.
+
+Alle Production-baseline-tabeller i Sandbox har nå RLS aktivert. Sandbox har én ekstra demo-only tabell uten RLS:
+
+- `demo_sandbox_snapshots`
+
+Denne tabellen har ikke direkte `anon` eller `authenticated` tabelltilgang og beholdes som Sandbox-intern demo-infrastruktur.
+
+Manglende Production-hjelpefunksjoner som RLS-policyene er avhengige av ble også gjenopprettet med identisk funksjonsdefinisjon mot Production, blant annet:
+
+- `expo_is_systemadmin()`
+- `current_profile_company_name()`
+- `current_active_company_role()`
+- `current_user_has_multiple_work_profiles()`
+- prosjekt-scope helpers
+- fremdriftsplan access/write helpers
+- Sales store-offer payload/template helpers
+
+De nye Fase 45B-tabellene er fortsatt låst:
 
 - `store_catalog_company_supplier_access`
 - `store_catalog_user_price_access`
 
-Disse er ment å være RPC-only. Dette er riktig retning og skal bevares.
+Begge har RLS aktiv og ingen direkte `anon`/`authenticated` SELECT.
 
-## 5. Baseline RPC-ACL-paritet – RETTET, men regresjonstest kreves
+Kritiske 45B-RPC-er er fortsatt utilgjengelige for `anon`, mens eksplisitte klient-RPC-er er tilgjengelige for `authenticated` der de skal være det.
 
-`20260924123500_fase45b_baseline_acl_parity.sql` reetablerer Production-lignende ACL/search_path for sentrale eksisterende RPC-er, blant annet:
+Permanent Demo-host svarer HTTP 200 etter sikkerhetsreparasjonen.
 
-- `current_profile_is_firmaadmin()`
-- `current_profile_is_systemadmin()`
-- `current_sales_company_scope_id()`
-- `get_my_module_access()`
-- `get_sales_support_company_profile(uuid)`
-- `list_sales_request_summaries(uuid)`
-- `list_sales_support_companies()`
-- `resolve_sales_company_scope()`
-- support-scope-funksjoner
+**Status:** tidligere Sandbox RLS-blocker er lukket.
 
-Trigger/helper `fase38a_transition_seed_modules_on_approval()` er revoket fra klientroller.
+---
 
-## 6. Service-role / funksjons-ACL-avvik mellom Sandbox og Production – ÅPEN
+## 3. Sandbox branchstatus `MIGRATIONS_FAILED` – FORTSATT BLOCKER
 
-Read-only funksjonskontroll viste at flere Sandbox-funksjoner har annen `service_role` EXECUTE-status enn Production-baseline. For flere rene bruker-RPC-er kan dette være tilsiktet, men det må verifiseres at ingen Edge Function/serverflyt er avhengig av direkte service-role-kall til disse funksjonene.
+Selve Sandbox-prosjektet er tilgjengelig og SQL fungerer, men Supabase branch metadata har tidligere rapportert `MIGRATIONS_FAILED`.
 
-Dette skal vurderes ut fra faktisk kallesti – ikke normaliseres blindt.
+Dette må fortsatt forstås/ryddes før Sandbox erklæres som helt ren release-testflate.
 
-## 7. `search_internal_store_catalog_prices` ACL-avvik – ÅPEN
+Viktig: dette er nå et miljø-/migrasjonshistorikkproblem, ikke lenger et RLS/policy-paritetsproblem.
 
-Kontrollen viste forskjell mellom Production- og Sandbox-ACL for `search_internal_store_catalog_prices(...)`.
+---
 
-Før release må faktisk brukerreise/kallesti fastslå om dette er:
+## 4. Proff vareregister / priser – KODE OG BACKEND RETTET
 
-- tilsiktet hardening i 45B, eller
-- utilsiktet Sandbox-paritetsavvik.
+Fase 45B beskytter at Proff-katalogen ikke returnerer Ringsides interne:
 
-Intern ERP-netto innkjøpspris skal uansett aldri bli tilgjengelig for Proff/sluttkunde.
+- innkjøpsnetto
+- innkjøpsrabatt
+- DG
+- påslag
 
-## 8. 45B Proff-katalog prislekkasje – RETTET i kode/critical guard
+`Din nto pris` er en separat proffkundeverdi med eksplisitt brukerrettighet.
 
-Critical-checks beskytter at Proff-katalogkontrakten ikke returnerer Ringsides interne felter som:
+Må fortsatt testes manuelt med bruker både med og uten prisrettighet.
 
-- intern purchase/net price
-- intern purchase discount
-- gross margin / DG
-- intern markup
+---
 
-`Din nto pris` er en separat beregnet proffkundeverdi med eksplisitt brukerrettighet.
+## 5. Enkel ordre – KODE OG BACKEND RETTET
 
-Må fortsatt E2E-testes med bruker **med** og **uten** prisrettighet.
+Løsningen støtter:
 
-## 9. Enkel ordre portalguard – RETTET i kode/backend
+- akseptert tilbud → Enkel ordre eller ordinært prosjekt
+- smal Enkel ordre-arbeidsflate
+- valgfri fremdriftsplan
+- valgfri FDV
+- aksepterte produkter fra låst tilbudssnapshot
+- prisfritt/read-only Bestillingsgrunnlag
+- kundepreview før publisering
+- blokkert kundeportal for ren Enkel ordre
+- UE der relevant
 
-45B har server-/arbeidsflateguard som skal hindre kundeportal for ren Enkel ordre. UE-flyt kan beholdes der den er relevant.
+Må fortsatt E2E-testes gjennom reell brukerflyt.
 
-Dette skal testes både gjennom normal UI og mot eldre/alternative klientveier.
+---
 
-## 10. Enkel ordre aksepterte produkter / alternativer – RETTET i kode/backend
+## 6. Miljøbinding Production / Sandbox – FORTSATT BLOCKER
 
-Aksepterte produkter seedes fra låst akseptert tilbudsgrunnlag. Sensitive prisfelt strippes. Valgt alternativ skal erstatte grunnprodukt der tilbudet definerer alternativet som erstatter.
+RC har build-guards som kontrollerer emitted bundle, men dagens `vite.config.js` bruker fortsatt tekstlig omskriving av Production-binding til Sandbox i 45B/demo-preview.
 
-Må E2E-verifiseres på faktisk aksept med minst ett alternativ.
+Før release skal vi ha en eksplisitt og fail-closed miljøidentitet.
 
-## 11. Bestillingsgrunnlag – RETTET i kode/critical guard
+Krav:
 
-Bestillingsgrunnlag for akseptert varetilbud skal være:
+1. Production-build skal feile ved Sandbox-binding.
+2. Sandbox/Preview-build skal feile ved Production- eller blandet binding.
+3. Miljøvalget skal ikke avhenge av skjult `.replaceAll()`-rewrite som eneste mekanisme.
 
-- read-only
-- prisfritt
-- hydrert fra komplett akseptert Sales-detalj, ikke summary-cache
-- basert på faktisk valgte produkter/opsjoner
+---
 
-## 12. Kundepreview – RETTET i kode/critical guard
+## 7. Dokumentasjonssperre – RETTET
 
-`Forhåndsvis som kunde` skal være read-only og ikke publisere eller akseptere tilbud. Kundevisningen skal ikke lekke interne pris-/produktidentifikatorer som ikke hører til kundens grunnlag.
-
-## 13. Miljøbinding Production / Sandbox – BLOCKER
-
-RC har build-guards, men miljøisolasjonen må fortsatt bevises med negative tester.
-
-Krav før release:
-
-1. Production-build skal feile dersom Sandbox-binding er til stede.
-2. Fase 45B Preview/Sandbox-build skal feile ved Production-binding eller blandet binding.
-3. Miljøidentitet skal være eksplisitt/fail-closed og ikke være avhengig av skjult generisk tekstlig URL/key-rewrite som eneste sannhetskilde.
-
-Production må aldri deployes med Sandbox-Supabase – eller motsatt.
-
-## 14. Dokumentasjon / handoff var tidligere for svak – RETTET i RC
-
-24.09.2026 er det lagt inn en teknisk merge-sperre:
-
-`scripts/critical-release-docs-check.mjs`
-
-PR mot `main` med produksjonspåvirkende kode/backend/config krever samtidig endring av:
+PR mot `main` med produksjonspåvirkende kode/backend/config krever samtidig oppdatering av:
 
 - root `README.md`
 - `docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md`
@@ -165,45 +159,78 @@ Sales-/katalogendring krever også:
 
 - `src/modules/sales/README.md`
 
-GitHub `PR Core Safety` kjører sperren mot PR-baseline. Målet er at repositoryet alene skal være tilstrekkelig handoff dersom chat-historikk forsvinner.
+Dette håndheves av:
 
-## 15. Menneskelig E2E før `TEST OK` – BLOCKER
+- `scripts/critical-release-docs-check.mjs`
+- GitHub `PR Core Safety`
 
-Minst følgende brukerreiser skal gjennomføres på korrekt isolert Preview/Sandbox:
+Det kjøres også audit på push til `main`.
+
+---
+
+## 8. GitHub `main` er ikke fysisk beskyttet – BLOCKER FOR «ALLTID»-KRAVET
+
+Repositoryet har per 24.09.2026 ingen branch protection/ruleset på `main`.
+
+Dermed kan en bruker med tilstrekkelig GitHub-rettighet i prinsippet pushe direkte til `main` og omgå PR-flyten.
+
+GitHub Action kan oppdage dette etter push, men kan ikke gjøre en allerede utført push ugjort.
+
+For absolutt sperre må GitHub-konfigurasjonen kreve:
+
+- Pull Request til `main`
+- grønn `Core safety + critical build`
+- ingen direkte push
+- ingen force push
+
+---
+
+## 9. Manuell E2E/regresjons-QA – FORTSATT BLOCKER
+
+Før **PRODUCTION GODKJENT** skal minst følgende gjennomføres:
 
 1. ny bruker → godkjenning → riktig firma → riktige moduler
-2. systemadmin: gi leverandørtilgang/rabatt til proffirma
-3. firmaadmin: flere brukere → nettoprisinnsyn bare til valgt bruker
-4. proffbruker uten prisrett → varesøk uten `Din nto pris`
-5. proffbruker med prisrett → korrekt `Din nto pris`, aldri Ringside ERP-netto
-6. tilbud → kundepreview → publisering → faktisk e-post/kundelenke
+2. systemadmin gir leverandørtilgang/rabatt
+3. firmaadmin gir `Din nto pris` bare til valgt bruker
+4. proffbruker uten prisrettighet
+5. proffbruker med prisrettighet
+6. tilbud → kundepreview → publisering → kontrollert e-post/kundelenke
 7. sluttkunde velger opsjon/alternativ → aksept
-8. velg Enkel ordre → korrekt smal arbeidsflate, ingen kundeportal
-9. kontroller UE der relevant
-10. bestillingsgrunnlag prisfritt/read-only
-11. aksepterte produkter/FDV-grunnlag korrekt etter alternativ
-12. samme aksept aktivert som ordinært prosjekt → full prosjektflyt
-13. regresjon: ordinær Befaring/Tilbud
-14. regresjon: Butikktilbud skal fortsatt avsluttes i Sales og aldri opprette prosjekt
-15. regresjon: Sales recovery/lazy loading/fanebytte/mobil appbytte
+8. Enkel ordre → riktig smal arbeidsflate
+9. ingen kundeportal for Enkel ordre
+10. UE der relevant
+11. Bestillingsgrunnlag prisfritt/read-only
+12. aksepterte produkter/FDV korrekt etter alternativ
+13. samme aksept som ordinært prosjekt
+14. regresjon ordinær Befaring/Tilbud
+15. regresjon Butikktilbud
+16. regresjon Sales recovery/lazy loading/fanebytte/mobil appbytte
 
-## 16. Branch-opprydding – ETTER godkjent release
+---
 
-Etter verifisert merge/opprydding skal utdaterte feature/chore/tmp-brancher slettes. Permanent `demo` skal beholdes.
+## 10. Branch-opprydding – ETTER release/opprydding
 
-Kjent branch som må vurderes slettet når den ikke lenger trengs:
+Utdaterte feature/chore/tmp-brancher skal slettes når de ikke lenger trengs.
+
+Permanent `demo` skal beholdes.
+
+Kjent branch som må vurderes slettet:
 
 - `demo-fase45b-proff-enkel-ordre-clean`
 
-## Releasebeslutning per 24.09.2026
+---
+
+# Releasebeslutning 24.09.2026
 
 **IKKE MERGE PR #185 ennå.**
 
+Sandbox RLS/policy-paritet er nå reparert og er ikke lenger blocker.
+
 Gjenstående hovedblockere:
 
-1. Sandbox RLS/baseline-paritet.
-2. Sandbox `MIGRATIONS_FAILED`-status må forstås/ryddes.
-3. Production/Sandbox miljøbinding må bestå negative fail-closed tester.
+1. Sandbox `MIGRATIONS_FAILED` må forstås/ryddes.
+2. Miljøbinding Production/Sandbox må ferdigstilles og negativtestes.
+3. `main` må få reell GitHub branch protection/ruleset for å gjøre dokumentasjonssperren absolutt.
 4. Full menneskelig Fase 45B E2E/regresjons-QA.
 
-Ingen Production-migrasjon eller merge før eksplisitt `TEST OK`.
+Ingen Production-migrasjon eller merge før eksplisitt **PRODUCTION GODKJENT**.
