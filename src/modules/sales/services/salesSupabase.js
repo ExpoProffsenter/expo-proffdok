@@ -1,4 +1,7 @@
 // Expo ProffDok – FASE 42I / FASE 39B.2 / FASE 37A2 / FASE 37A1 / FASE 34B / FASE 32
+// FASE 46A HOTFIX: Standard Sales-klient er nå lazy slik at produksjonsappen ikke
+// oppretter flere GoTrue/Supabase-klienter mot samme auth-storage ved modulimport.
+// Firmascope-RPC nekter i tillegg å kjøre uten bekreftet autentisert session.
 // FASE 42I laster kun en lett saksprojeksjon i Sales-oversikten. Komplett payload,
 // bilder og tilbudshistorikk hentes først for valgt sak. Dette bevarer server-first
 // recovery uten at hundrevis av tilbud lastes ved åpning av sakslisten.
@@ -63,11 +66,58 @@ export function subscribeSalesRequestsLoadState(listener) {
   return () => salesRequestLoadListeners.delete(listener);
 }
 
+function createLazyDefaultSalesSupabaseClient() {
+  let resolvedClient;
+
+  const getClient = () => {
+    if (resolvedClient === undefined) {
+      resolvedClient = core.createDefaultSalesSupabaseClient();
+    }
+    return resolvedClient;
+  };
+
+  return new Proxy(
+    {},
+    {
+      get(_target, property) {
+        const client = getClient();
+        const value = client?.[property];
+        return typeof value === "function" ? value.bind(client) : value;
+      },
+    }
+  );
+}
+
 export function createDefaultSalesSupabaseClient() {
   if (sharedDefaultSalesSupabaseClient === undefined) {
-    sharedDefaultSalesSupabaseClient = core.createDefaultSalesSupabaseClient();
+    sharedDefaultSalesSupabaseClient = createLazyDefaultSalesSupabaseClient();
   }
   return sharedDefaultSalesSupabaseClient;
+}
+
+export async function resolveSalesCompanyScope(client) {
+  if (!client?.auth?.getSession || !client?.rpc) {
+    return { data: null, error: new Error("Supabase-klient mangler eller er ikke klar.") };
+  }
+
+  let sessionResult;
+  try {
+    sessionResult = await client.auth.getSession();
+  } catch (error) {
+    return { data: null, error };
+  }
+
+  const sessionError = sessionResult?.error || null;
+  const session = sessionResult?.data?.session || null;
+  if (sessionError) return { data: null, error: sessionError };
+  if (!session?.user?.id || !session?.access_token) {
+    return {
+      data: null,
+      error: new Error("Innloggingen er ikke klar ennå. Prøv igjen."),
+    };
+  }
+
+  return core.resolveSalesCompanyScope(client);
 }
 
 function browserStorage() {
