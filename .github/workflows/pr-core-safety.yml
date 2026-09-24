@@ -5,12 +5,15 @@ on:
     branches:
       - main
     types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
 
 concurrency:
-  group: pr-core-safety-${{ github.event.pull_request.number }}
+  group: core-safety-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -38,10 +41,16 @@ jobs:
         run: node scripts/critical-release-docs-check.mjs --self-test
 
       - name: Enforce PR scope isolation
+        if: github.event_name == 'pull_request'
         run: node scripts/critical-pr-scope-guard.mjs "origin/${{ github.base_ref }}"
 
-      - name: Enforce production release documentation
+      - name: Enforce production release documentation on PR
+        if: github.event_name == 'pull_request'
         run: node scripts/critical-release-docs-check.mjs "origin/${{ github.base_ref }}"
+
+      - name: Audit production release documentation on main push
+        if: github.event_name == 'push'
+        run: node scripts/critical-release-docs-check.mjs "${{ github.event.before }}"
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
