@@ -13,6 +13,8 @@ const sensitivePreserve=fs.readFileSync(path.join(root,"supabase/migrations/2026
 const client=fs.readFileSync(path.join(root,"src/modules/storeCatalog/proStoreCatalogClient.js"),"utf8");
 const adminPanel=fs.readFileSync(path.join(root,"src/modules/storeCatalog/ProStoreCatalogAdminPanel.jsx"),"utf8");
 const normalizedAdmin=adminPanel.replace(/\s+/g,"");
+const inlineLookup=fs.readFileSync(path.join(root,"src/modules/storeCatalog/ProStoreCatalogInlineLookup.jsx"),"utf8");
+const offerTools=fs.readFileSync(path.join(root,"src/modules/storeCatalog/StoreCatalogOfferTools.jsx"),"utf8");
 const unifiedUserUx=fs.readFileSync(path.join(root,"src/modules/access/systemAdminUnifiedUserAccessUx.jsx"),"utf8");
 const firmaAdminUx=fs.readFileSync(path.join(root,"src/modules/access/firmaAdminProNetPriceUx.js"),"utf8");
 const indexHtml=fs.readFileSync(path.join(root,"index.html"),"utf8");
@@ -81,6 +83,9 @@ assert(adminPanel.includes("Brukertilgang") && adminPanel.includes("Brukere og t
 for(const needle of ["Enkel ordre / Proff vareregister","Se «Din nto pris»","setManagedProCatalogNetPriceAccess","setManagedModuleAccess"]) assert(unifiedUserUx.includes(needle),`Samlet Systemadmin-brukerkort mangler: ${needle}`);
 for(const needle of ["set_store_catalog_user_net_price_access","Se «Din nto pris»","Tilgangen styres av Systemadministrator.","Din egen pristilgang styres av Systemadministrator.","company_has_pro_catalog","store_offers","sales"]) assert(firmaAdminUx.includes(needle),`Firmaadmin pristilgang på samme brukerkort mangler: ${needle}`);
 assert(indexHtml.includes("installFirmaAdminProNetPriceUx"),"Firmaadmin pristilgang må være installert i appen.");
+
+for(const needle of ["placeholder = \"Søk varenavn, varenummer eller GTIN/EAN\"","placeholder={placeholder}"]) assert(inlineLookup.includes(needle),`Proffkatalog-oppslaget må bevare kontekstuell søketekst: ${needle}`);
+assert(offerTools.includes("placeholder={placeholder}"),"Intern/proff fallback skal sende kontekstuell placeholder videre til proffoppslaget.");
 
 for(const needle of ["suggested_sale_price_ex_vat","suggested_sale_price_incl_vat","SalesStoreOfferBuilderCatalogTemplates","ProStoreCatalogInlineLookup"]) assert(offerWrapper.includes(needle),`Enkel ordre-wrapper mangler sikker salgsflate: ${needle}`);
 for(const forbidden of ["my_net_price_ex_vat","purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent","markup_percent"]) assert(!offerWrapper.includes(forbidden),`Tilbudsdata skal aldri kjenne intern/nto-pris: ${forbidden}`);
