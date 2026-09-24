@@ -10,24 +10,25 @@ Dette dokumentet er den korte, varige statusen for Fase 45B. Repositoryet skal v
 
 ## Kort status
 
-Fase 45B er **ikke klar for merge til Production ennå**.
+Fase 45B er teknisk langt ryddigere, men skal **ikke merges til Production før manuell slutt-QA og eksplisitt PRODUCTION GODKJENT**.
 
-Det viktigste som nå er på plass:
+På plass nå:
 
 - Production er fortsatt urørt av Fase 45B.
-- Release-kandidaten er synket med gjeldende `main`.
+- Release-kandidaten er 0 commits bak gjeldende `main`.
 - Proff vareregister / Enkel ordre er implementert med egne critical checks.
+- Sandbox har samme 55 Production-RLS-policyer som Production.
+- Production/Sandbox velges nå eksplisitt i builden; generisk `.replaceAll()` styrer ikke lenger miljøidentiteten.
+- GitHub Core Safety + full critical build er grønn på RC.
+- Vercel Fase 45B Preview er READY og svarer HTTP 200.
 - HJELP, root README, architecture og Sales README er oppdatert.
 - PR mot `main` har teknisk dokumentasjonssperre.
-- Sandbox sin manglende Production-RLS/policy-baseline er reparert.
 
-Gjenstående hovedarbeid før merge:
+Det som faktisk gjenstår før merge:
 
-1. avklare/rydde Supabase branchstatus `MIGRATIONS_FAILED`
-2. ferdigstille eksplisitt Production/Sandbox miljøbinding uten skjult tekstlig rewrite som eneste sannhetskilde
-3. aktivere reell GitHub-beskyttelse på `main` slik at direkte push ikke kan omgå PR-sperrene
-4. full manuell E2E/regresjons-QA
-5. eksplisitt **PRODUCTION GODKJENT** før merge
+1. reell GitHub-beskyttelse av `main` slik at direkte push ikke kan omgå PR-sperrene
+2. full manuell E2E/regresjons-QA av Fase 45B og eksisterende kritiske brukerreiser
+3. siste Production-preflight og eksplisitt **PRODUCTION GODKJENT**
 
 ---
 
@@ -39,64 +40,45 @@ Production skal ikke endres før eksplisitt godkjent release.
 
 ---
 
-## 2. Sandbox RLS/policy-paritet – RETTET 24.09.2026
+## 2. Sandbox RLS/policy-paritet – RETTET OG VERIFISERT
 
-Tidligere hadde Sandbox en ufullstendig sikkerhetsbaseline: store deler av Production-tabellene manglet aktiv RLS og Production-policyene.
+Tidligere hadde Sandbox en ufullstendig sikkerhetsbaseline. Dette er reparert **kun i Sandbox**.
 
-Dette er nå reparert **kun i Sandbox**.
-
-Følgende Sandbox-migrasjoner ble anvendt:
+Sandbox-migrasjoner brukt til reparasjonen:
 
 - `demo_sandbox_restore_production_security_helpers`
 - `demo_sandbox_restore_production_rls_policies`
 
-Kontroll etter reparasjon:
+Etterkontroll:
 
 - Production public RLS-policyer: **55**
 - Sandbox public RLS-policyer: **55**
 - Production policy-hash: `7a6064b54f723e32c74935657d62360e`
 - Sandbox policy-hash: `7a6064b54f723e32c74935657d62360e`
 
-Det betyr at de 55 Production-policyene nå er identiske med Sandbox-policyene.
+De 55 Production-policyene er dermed identiske med Sandbox-policyene.
 
-Alle Production-baseline-tabeller i Sandbox har nå RLS aktivert. Sandbox har én ekstra demo-only tabell uten RLS:
+Alle Production-baseline-tabeller i Sandbox har RLS aktivert. Sandbox har én ekstra demo-only tabell uten RLS, `demo_sandbox_snapshots`; den har ikke direkte `anon` eller `authenticated` tabelltilgang og beholdes som Sandbox-intern demo-infrastruktur.
 
-- `demo_sandbox_snapshots`
+De nye Fase 45B-tabellene `store_catalog_company_supplier_access` og `store_catalog_user_price_access` har fortsatt RLS aktiv og ingen direkte `anon`/`authenticated` SELECT.
 
-Denne tabellen har ikke direkte `anon` eller `authenticated` tabelltilgang og beholdes som Sandbox-intern demo-infrastruktur.
+Permanent Demo-host svarer HTTP 200 etter reparasjonen.
 
-Manglende Production-hjelpefunksjoner som RLS-policyene er avhengige av ble også gjenopprettet med identisk funksjonsdefinisjon mot Production, blant annet:
-
-- `expo_is_systemadmin()`
-- `current_profile_company_name()`
-- `current_active_company_role()`
-- `current_user_has_multiple_work_profiles()`
-- prosjekt-scope helpers
-- fremdriftsplan access/write helpers
-- Sales store-offer payload/template helpers
-
-De nye Fase 45B-tabellene er fortsatt låst:
-
-- `store_catalog_company_supplier_access`
-- `store_catalog_user_price_access`
-
-Begge har RLS aktiv og ingen direkte `anon`/`authenticated` SELECT.
-
-Kritiske 45B-RPC-er er fortsatt utilgjengelige for `anon`, mens eksplisitte klient-RPC-er er tilgjengelige for `authenticated` der de skal være det.
-
-Permanent Demo-host svarer HTTP 200 etter sikkerhetsreparasjonen.
-
-**Status:** tidligere Sandbox RLS-blocker er lukket.
+**Status:** lukket.
 
 ---
 
-## 3. Sandbox branchstatus `MIGRATIONS_FAILED` – FORTSATT BLOCKER
+## 3. Supabase branchstatus `MIGRATIONS_FAILED` – KJENT HISTORISK METADATA, IKKE LENGER RELEASE-BLOCKER
 
-Selve Sandbox-prosjektet er tilgjengelig og SQL fungerer, men Supabase branch metadata har tidligere rapportert `MIGRATIONS_FAILED`.
+Supabase viser fortsatt `MIGRATIONS_FAILED` på den permanente `demo-sandbox`-branchen, selv om preview-prosjektet er `ACTIVE_HEALTHY`, SQL fungerer og faktisk schema/sikkerhet er verifisert.
 
-Dette må fortsatt forstås/ryddes før Sandbox erklæres som helt ren release-testflate.
+Årsaken er historisk migrasjonsdrift: den permanente demoen ble opprettet med egen snapshot-/demo-baseline og har senere fått kontrollerte demo- og 45B-migrasjoner. Statusflagget stammer fra denne branchhistorikken.
 
-Viktig: dette er nå et miljø-/migrasjonshistorikkproblem, ikke lenger et RLS/policy-paritetsproblem.
+Å nullstille/rebase hele den permanente demoen bare for å få bort etiketten vil kunne slette eller endre demooppsettet og skal derfor ikke gjøres som del av 45B-release.
+
+**Styrende regel:** faktisk schema, RLS/policy-paritet, RPC/grants, app-helse og kontrollert demo-preflight er fasit – ikke den gamle branch-etiketten alene.
+
+**Status:** kjent metadata; overvåkes, men blokkerer ikke release alene.
 
 ---
 
@@ -133,17 +115,32 @@ Må fortsatt E2E-testes gjennom reell brukerflyt.
 
 ---
 
-## 6. Miljøbinding Production / Sandbox – FORTSATT BLOCKER
+## 6. Miljøbinding Production / Sandbox – RETTET OG AUTOMATISK VERIFISERT
 
-RC har build-guards som kontrollerer emitted bundle, men dagens `vite.config.js` bruker fortsatt tekstlig omskriving av Production-binding til Sandbox i 45B/demo-preview.
+Tidligere valgte Preview Sandbox gjennom generisk tekstlig `.replaceAll()` av Production URL/key. Dette er fjernet som miljøvalg.
 
-Før release skal vi ha en eksplisitt og fail-closed miljøidentitet.
+Ny løsning:
 
-Krav:
+- `scripts/environmentBindingCore.mjs` bestemmer eksplisitt backend-target: `production` eller `sandbox`.
+- `vite.config.js` bruker dette ene targetet til å injisere korrekt Supabase-binding.
+- Fase 45B/demo Preview klassifiseres som Sandbox.
+- Vercel Production klassifiseres som Production.
+- feil eksplisitt kombinasjon hard-feiler.
+- emitted bundle kontrolleres slik at Production og Sandbox aldri kan være blandet.
+- `scripts/critical-environment-binding-check.mjs` kjører i både critical-check og build.
 
-1. Production-build skal feile ved Sandbox-binding.
-2. Sandbox/Preview-build skal feile ved Production- eller blandet binding.
-3. Miljøvalget skal ikke avhenge av skjult `.replaceAll()`-rewrite som eneste mekanisme.
+Legacy `src/main.jsx` inneholder fortsatt de gamle Production-literalene. Vite har derfor en smal, fail-closed kompatibilitetsadapter som kun erstatter akkurat den kjente `createClient`-bootstrapen med eksplisitte env-tokens. Adapteren velger ikke miljø; den feiler dersom bootstrapen endres uventet. Den generiske `.replaceAll()`-mekanismen er borte.
+
+Verifisert 24.09.2026:
+
+- GitHub `Core safety + critical build`: **SUCCESS**
+- Vercel Fase 45B Preview på gjeldende RC: **READY**
+- Preview svarer HTTP **200**
+- negative self-tests blokkerer Production+Sandbox og Sandbox+Production feilbinding
+
+**Status:** tidligere miljøblocker er lukket.
+
+Fremtidig opprydding kan flytte `src/main.jsx` helt over til direkte `import.meta.env` og fjerne den smale legacy-adapteren, men dette er ikke nødvendig for 45B-sikkerheten.
 
 ---
 
@@ -155,37 +152,32 @@ PR mot `main` med produksjonspåvirkende kode/backend/config krever samtidig opp
 - `docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md`
 - relevant `src/modules/help/*`
 
-Sales-/katalogendring krever også:
+Sales-/katalogendring krever også `src/modules/sales/README.md`.
 
-- `src/modules/sales/README.md`
-
-Dette håndheves av:
-
-- `scripts/critical-release-docs-check.mjs`
-- GitHub `PR Core Safety`
+Dette håndheves av `scripts/critical-release-docs-check.mjs` og GitHub `PR Core Safety`.
 
 Det kjøres også audit på push til `main`.
 
 ---
 
-## 8. GitHub `main` er ikke fysisk beskyttet – BLOCKER FOR «ALLTID»-KRAVET
+## 8. GitHub `main` er ikke fysisk beskyttet – GJENSTÅR
 
 Repositoryet har per 24.09.2026 ingen branch protection/ruleset på `main`.
 
-Dermed kan en bruker med tilstrekkelig GitHub-rettighet i prinsippet pushe direkte til `main` og omgå PR-flyten.
+Dermed kan en bruker med tilstrekkelig GitHub-rettighet i prinsippet pushe direkte til `main` og omgå PR-flyten. GitHub Action kan oppdage det etter push, men ikke fysisk stoppe pushen.
 
-GitHub Action kan oppdage dette etter push, men kan ikke gjøre en allerede utført push ugjort.
-
-For absolutt sperre må GitHub-konfigurasjonen kreve:
+For absolutt «alltid»-sperre må GitHub-konfigurasjonen kreve:
 
 - Pull Request til `main`
 - grønn `Core safety + critical build`
 - ingen direkte push
 - ingen force push
 
+**Status:** gjenstår som repository-innstilling. Kan ikke settes med den tilgjengelige GitHub-tilkoblingen.
+
 ---
 
-## 9. Manuell E2E/regresjons-QA – FORTSATT BLOCKER
+## 9. Manuell E2E/regresjons-QA – HOVEDBLOCKER FØR PRODUCTION
 
 Før **PRODUCTION GODKJENT** skal minst følgende gjennomføres:
 
@@ -224,13 +216,16 @@ Kjent branch som må vurderes slettet:
 
 **IKKE MERGE PR #185 ennå.**
 
-Sandbox RLS/policy-paritet er nå reparert og er ikke lenger blocker.
+De to store tekniske blockerene som ble funnet i denne rydderunden er nå lukket:
 
-Gjenstående hovedblockere:
+1. Sandbox-sikkerheten er brakt i paritet med Production.
+2. Production/Sandbox-miljøbindingen er gjort eksplisitt og automatisk fail-closed.
 
-1. Sandbox `MIGRATIONS_FAILED` må forstås/ryddes.
-2. Miljøbinding Production/Sandbox må ferdigstilles og negativtestes.
-3. `main` må få reell GitHub branch protection/ruleset for å gjøre dokumentasjonssperren absolutt.
-4. Full menneskelig Fase 45B E2E/regresjons-QA.
+Det som nå hovedsakelig gjenstår er:
 
-Ingen Production-migrasjon eller merge før eksplisitt **PRODUCTION GODKJENT**.
+1. fysisk GitHub-beskyttelse av `main`
+2. full menneskelig Fase 45B E2E/regresjons-QA
+3. siste Production-preflight
+4. eksplisitt **PRODUCTION GODKJENT**
+
+Ingen Production-migrasjon eller merge før dette er godkjent.
