@@ -6,7 +6,10 @@ import { canAccessProStoreCatalog, searchProStoreCatalog } from "./proStoreCatal
 const money = new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", maximumFractionDigits: 2 });
 function price(value) { const n = Number(value); return Number.isFinite(n) ? money.format(n) : "–"; }
 
-export default function ProStoreCatalogInlineLookup({ onUse }) {
+export default function ProStoreCatalogInlineLookup({
+  onUse,
+  placeholder = "Søk varenavn, varenummer eller GTIN/EAN",
+}) {
   const [client] = useState(() => createDefaultSalesSupabaseClient());
   const [allowed, setAllowed] = useState(false);
   const [query, setQuery] = useState("");
@@ -39,7 +42,7 @@ export default function ProStoreCatalogInlineLookup({ onUse }) {
   return (
     <div className="pro-store-catalog-lookup">
       <div className="pro-store-catalog-head"><strong>Proff vareregister</strong><span>Kun leverandører firmaet har avtale med.</span></div>
-      <label className="pro-store-catalog-search"><Search size={17}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Søk varenavn, varenummer eller GTIN/EAN" autoComplete="off"/></label>
+      <label className="pro-store-catalog-search"><Search size={17}/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={placeholder} autoComplete="off"/></label>
       {busy ? <small>Søker …</small> : null}
       {results.length ? <div className="pro-store-catalog-results">{results.map((item) => <button key={item.id} type="button" className="pro-store-catalog-result" onClick={() => { onUse?.(item); setQuery(""); setResults([]); }}><span><strong>{item.description || "Vare uten beskrivelse"}</strong><small>{item.supplier_name} · varenr. {item.supplier_product_number}</small></span><span className="pro-store-catalog-prices"><strong>{price(item.suggested_sale_price_ex_vat)} eks. mva.</strong>{item.my_net_price_ex_vat !== null && item.my_net_price_ex_vat !== undefined ? <small>Din nto pris {price(item.my_net_price_ex_vat)} eks. mva.</small> : null}</span></button>)}</div> : null}
       {!busy && query.trim().length >= 2 && !results.length && !message ? <small>Ingen treff.</small> : null}
