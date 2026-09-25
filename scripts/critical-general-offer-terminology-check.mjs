@@ -37,11 +37,14 @@ for (const needle of [
   'const STORE_OFFER_SOURCE = "Butikktilbud / varesalg"',
   'const GENERAL_OFFER_DEFAULT_TITLE = "Generelt tilbud"',
   "isGeneralOfferRequest",
+  "isGeneratedTitleForRequest",
   "isGeneratedDirectOfferTitle",
-  'offerTitle === `Tilbud – ${requestTitle}`',
+  'candidate === `Tilbud – ${requestTitle}`',
+  "normalizeGeneralOfferTitle",
   "generatedDirectTitle",
   "String(request?.title || GENERAL_OFFER_DEFAULT_TITLE)",
   "title: generalOfferTitle",
+  "const form = normalizeGeneralOfferTitle(rawForm, request)",
 ]) {
   assert(offerLogic.includes(needle), `Tilbudsnavn følger ikke korrekt inn i tilbudsbyggeren: ${needle}`);
 }
