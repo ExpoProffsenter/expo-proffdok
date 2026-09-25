@@ -1,6 +1,8 @@
 // Expo ProffDok – FASE 45B
 // Tynn wrapper rundt verifisert SalesDetailViewLegacy. Ordinær/våtroms-/legacy
 // Butikktilbud-logikk er uendret og delegert til legacy-komponenten.
+// FASE 45B robusthetsfallback: eldre/seedede Aktivert-saker uten projectActivatedAt
+// beholder kontraktstilgang, og stale befaringsplan-tekst skjules etter aktivering.
 // Critical-guard-delegasjon fra SalesDetailViewLegacy:
 // import SalesDetailViewCore from "./SalesDetailViewCore.jsx";
 // hasMeaningfulOfferDraft
@@ -21,13 +23,24 @@
 // <SalesWetroomFollowUpActions
 // rewriteStoreOfferDeclinedFlow(tree, coreProps?.selectedRequest)
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Eye, Home, ShoppingBag } from "lucide-react";
+import SalesContractActions from "./SalesContractActions.jsx";
+import SalesContractWizard from "./SalesContractWizard.jsx";
 import SalesDetailViewLegacy from "./SalesDetailViewLegacy.jsx";
 import StoreOfferOrderBasis from "./StoreOfferOrderBasis.jsx";
-import { isSimpleOrderRequest } from "../services/salesStoreOffers.js";
+import {
+  isSimpleOrderRequest,
+  isStoreOfferRequest,
+} from "../services/salesStoreOffers.js";
 import { createDefaultSalesSupabaseClient, getSalesSupportCompanyId } from "../services/salesSupabase.js";
 import { persistSimpleOrderActivationMode, setSimpleOrderActivationMode } from "../services/salesSimpleOrder.js";
+import {
+  LEGACY_SURVEY_PLANNING_PROMPT,
+  asAcceptedContractRequest,
+  needsActivatedContractFallback,
+  shouldHideLegacySurveyPlanningPrompt,
+} from "../utils/salesActivatedLegacyFallback.js";
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -125,20 +138,40 @@ function showInternalProductNumbers(root, request = {}) {
   });
 }
 
+function hideStaleSurveyPlanningPrompt(root, request = {}) {
+  if (!(root instanceof Element) || !shouldHideLegacySurveyPlanningPrompt(request)) return;
+  root.querySelectorAll(".sales-next-card p").forEach((paragraph) => {
+    if (compactText(paragraph.textContent) !== LEGACY_SURVEY_PLANNING_PROMPT) return;
+    paragraph.style.display = "none";
+    paragraph.setAttribute("aria-hidden", "true");
+    paragraph.dataset.hiddenLegacySurveyPrompt = "true";
+  });
+}
+
 export default function SalesDetailView(props) {
   const rootRef = useRef(null);
   const request = props?.selectedRequest || {};
+  const [activatedContractWizardOpen, setActivatedContractWizardOpen] = useState(false);
+  const storeOffer = isStoreOfferRequest(request);
   const simpleOrderAccepted = Boolean(request?.status === "Akseptert" && isSimpleOrderRequest(request));
   const supportMode = Boolean(getSalesSupportCompanyId());
   const canPreviewDraft = hasCustomerPreviewContent(request);
   const floatingActionBottom = supportMode ? 178 : 20;
+  const activatedContractFallback = needsActivatedContractFallback(request, { storeOffer });
+
+  useEffect(() => {
+    setActivatedContractWizardOpen(false);
+  }, [request?.id]);
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return undefined;
-    const frame = window.requestAnimationFrame(() => showInternalProductNumbers(root, request));
+    const frame = window.requestAnimationFrame(() => {
+      showInternalProductNumbers(root, request);
+      hideStaleSurveyPlanningPrompt(root, request);
+    });
     return () => window.cancelAnimationFrame(frame);
-  }, [request?.id, request?.status, request?.offerLines, request?.offerOptions]);
+  }, [request?.id, request?.status, request?.surveyDate, request?.offerLines, request?.offerOptions]);
 
   useEffect(() => {
     if (!simpleOrderAccepted) return undefined;
@@ -178,6 +211,15 @@ export default function SalesDetailView(props) {
     }
   }
 
+  if (activatedContractWizardOpen) {
+    return (
+      <SalesContractWizard
+        request={request}
+        onClose={() => setActivatedContractWizardOpen(false)}
+      />
+    );
+  }
+
   const delegatedProps = simpleOrderAccepted
     ? { ...props, selectedRequest: presentationRequest(request), openProjectActivation: () => void chooseActivationMode("project") }
     : props;
@@ -185,6 +227,40 @@ export default function SalesDetailView(props) {
   return (
     <div ref={rootRef} className={simpleOrderAccepted ? "simple-order-accepted-shell" : undefined}>
       <SalesDetailViewLegacy {...delegatedProps} />
+
+      {activatedContractFallback ? (
+        <div
+          data-activated-contract-legacy-fallback="true"
+          style={{
+            width: "min(960px, calc(100% - 32px))",
+            margin: "16px auto 32px",
+            padding: 18,
+            border: "1px solid #d7e4ea",
+            borderRadius: 16,
+            background: "#f8fbfc",
+            display: "grid",
+            gap: 12,
+          }}
+        >
+          <div>
+            <strong style={{ display: "block", fontSize: 18, color: "#10212b" }}>Kontrakt</strong>
+            <p style={{ margin: "6px 0 0", color: "#52616b", lineHeight: 1.5 }}>
+              Prosjektet er allerede aktivert, men kontrakten kan fortsatt opprettes fra det aksepterte tilbudet. Signert kontrakt synkroniseres tilbake til prosjektets Tilbud / kontrakt.
+            </p>
+          </div>
+          <SalesContractActions
+            request={asAcceptedContractRequest(request)}
+            onOpenWizard={() => {
+              if (!supportMode) setActivatedContractWizardOpen(true);
+            }}
+          />
+          {supportMode ? (
+            <p className="note" style={{ margin: 0 }}>
+              Systemadmin-support er skrivebeskyttet. Firmaet oppretter eller endrer kontrakten.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       {supportMode && simpleOrderAccepted ? (
         <div data-simple-order-support-order-basis="true" style={{ marginTop: 16 }}>
