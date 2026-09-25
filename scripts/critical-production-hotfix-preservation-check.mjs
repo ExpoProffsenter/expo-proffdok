@@ -1,5 +1,10 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
+import {
+  asAcceptedContractRequest,
+  needsActivatedContractFallback,
+  shouldHideLegacySurveyPlanningPrompt,
+} from "../src/modules/sales/utils/salesActivatedLegacyFallback.js";
 
 const communication = fs.readFileSync(
   "src/modules/sales/services/salesCommunication.js",
@@ -7,6 +12,10 @@ const communication = fs.readFileSync(
 );
 const legacyDetail = fs.readFileSync(
   "src/modules/sales/components/SalesDetailViewLegacy.jsx",
+  "utf8"
+);
+const detailWrapper = fs.readFileSync(
+  "src/modules/sales/components/SalesDetailView.jsx",
   "utf8"
 );
 
@@ -41,6 +50,69 @@ for (const needle of [
   );
 }
 
+const legacyActivatedRequest = {
+  id: "legacy-activated-without-timestamp",
+  status: "Aktivert",
+  projectId: "project-1",
+  projectActivatedAt: "",
+  surveyDate: "",
+};
+
+assert.equal(
+  needsActivatedContractFallback(legacyActivatedRequest, { storeOffer: false }),
+  true,
+  "Aktivert legacy-sak uten projectActivatedAt skal få kontraktfallback."
+);
+assert.equal(
+  needsActivatedContractFallback(
+    { ...legacyActivatedRequest, projectActivatedAt: "2026-09-25T12:00:00Z" },
+    { storeOffer: false }
+  ),
+  false,
+  "Nyere Aktivert-sak med projectActivatedAt skal fortsette gjennom Production-hotfixen."
+);
+assert.equal(
+  needsActivatedContractFallback(legacyActivatedRequest, { storeOffer: true }),
+  false,
+  "Generelt tilbud/store-offer skal ikke få våtromskontraktfallback."
+);
+assert.equal(
+  asAcceptedContractRequest(legacyActivatedRequest).status,
+  "Akseptert",
+  "Kontrakthandlinger må få kompatibel Akseptert-presentasjon uten å endre lagret status."
+);
+assert.equal(
+  shouldHideLegacySurveyPlanningPrompt(legacyActivatedRequest),
+  true,
+  "Aktivert sak skal aldri vise gammel befaring-planleggingstekst."
+);
+assert.equal(
+  shouldHideLegacySurveyPlanningPrompt({ status: "Forespørsel" }),
+  false,
+  "Forespørsel skal fortsatt kunne vise planleggingsteksten."
+);
+assert.equal(
+  shouldHideLegacySurveyPlanningPrompt({ status: "Befaring" }),
+  false,
+  "Befaring skal fortsatt kunne vise relevant planleggingstekst."
+);
+
+for (const needle of [
+  "data-activated-contract-legacy-fallback",
+  "needsActivatedContractFallback",
+  "shouldHideLegacySurveyPlanningPrompt",
+  "hideStaleSurveyPlanningPrompt",
+  "asAcceptedContractRequest(request)",
+  "<SalesContractActions",
+  "<SalesContractWizard",
+  "Prosjektet er allerede aktivert, men kontrakten kan fortsatt opprettes",
+]) {
+  assert(
+    detailWrapper.includes(needle),
+    `45B legacy Aktivert-sikkerhet mangler i wrapper: ${needle}`
+  );
+}
+
 console.log(
-  "critical-production-hotfix-preservation-check: OK – Production-hotfixer fra 25.09.2026 er bevart"
+  "critical-production-hotfix-preservation-check: OK – Production-hotfixer og legacy Aktivert-scenario er bevart"
 );
