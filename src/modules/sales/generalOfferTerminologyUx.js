@@ -6,9 +6,9 @@ const INSTALL_FLAG = "__expoGeneralOfferTerminologyInstalled";
 const FILTER_ROOT_SELECTOR = '[aria-label="Søk og filtrering"]';
 const OFFER_PICKER_SELECTOR = '[aria-labelledby="sales-offer-type-title"]';
 
-const OVERVIEW_ALL = "Her håndterer du forespørsler, Våtromstilbud og Generelle tilbud. Våtromstilbud kan gå videre til ProffDok-prosjekt etter aksept, mens Generelle tilbud avsluttes ved aksept.";
+const OVERVIEW_ALL = "Her håndterer du forespørsler, Våtromstilbud og Generelle tilbud. Våtromstilbud følger våtromsflyten, mens Generelle tilbud kan brukes til varer, arbeid, underentreprenører og andre leveranser.";
 const OVERVIEW_WETROOM = "Opprett og følg forespørsler og Våtromstilbud gjennom befaring, tilbud og kundeaksept. Akseptert Våtromstilbud kan aktiveres som ProffDok-prosjekt.";
-const OVERVIEW_GENERAL = "Opprett og følg Generelle tilbud for varer, arbeid, underentreprenører og andre leveranser frem til kundeaksept. Generelle tilbud avsluttes ved aksept og opprettes ikke som ProffDok-prosjekt.";
+const OVERVIEW_GENERAL = "Opprett og følg Generelle tilbud for varer, arbeid, underentreprenører og andre leveranser. Etter kundeaksept vises de neste stegene som er tilgjengelige for firmaet.";
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -80,10 +80,16 @@ function patchOfferPicker() {
   });
 
   picker.querySelectorAll("small").forEach((node) => {
-    if (compactText(node.textContent) === "Varebasert tilbud med eventuell montering. Avsluttes ved kundeaksept.") {
+    const text = compactText(node.textContent);
+    if (text === "Opprett ordinært tilbud direkte uten å registrere befaring først.") {
+      setTextIfChanged(node, "Opprett våtromstilbud direkte uten å registrere befaring først.");
+      return;
+    }
+    if (text === "Varebasert tilbud med eventuell montering. Avsluttes ved kundeaksept." ||
+        text === "For varer, arbeid, underentreprenører og andre leveranser. Tilbudet bygges opp fritt og avsluttes ved kundeaksept.") {
       setTextIfChanged(
         node,
-        "For varer, arbeid, underentreprenører og andre leveranser. Tilbudet bygges opp fritt og avsluttes ved kundeaksept."
+        "For varer, arbeid, underentreprenører og andre leveranser. Tilbudet bygges opp fritt."
       );
     }
   });
