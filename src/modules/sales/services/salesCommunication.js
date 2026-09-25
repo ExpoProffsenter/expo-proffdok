@@ -4,7 +4,7 @@
 // når den finnes, ellers Expo Proffsenter-logoen. I systemadmin-supportmodus
 // hentes firmaprofilen fra valgt Sales-firma, ikke fra systemadministratorens firma.
 // FASE 41B.3 bruker serverstyrt aktiv arbeidsprofil når brukeren har flerfirmatilgang.
-// HOTFIX 25.09.2026: Kundedokumenter for Ringside bruker autoritativt firmanavn/e-post.
+// HOTFIX 25.09.2026: Kundedokumenter for Ringside bruker autoritativt firmanavn/e-post/telefon.
 
 import {
   formatInspectionDateTime,
@@ -27,6 +27,7 @@ const DEFAULT_COMPANY_LOGO_URL = "/expo-logo.png";
 const RINGSIDE_SOURCE_COMPANY_NAME = "Ringside Rørleggerbedrift AS";
 const RINGSIDE_DOCUMENT_COMPANY_NAME = "Ringside AS";
 const RINGSIDE_DOCUMENT_EMAIL = "firmapost@ringside.no";
+const RINGSIDE_DOCUMENT_PHONE = "22068900";
 
 function withCompanyIdentityOverride(profile) {
   if (!profile) return null;
@@ -38,6 +39,7 @@ function withCompanyIdentityOverride(profile) {
       ...profile,
       companyName: RINGSIDE_DOCUMENT_COMPANY_NAME,
       email: RINGSIDE_DOCUMENT_EMAIL,
+      phone: RINGSIDE_DOCUMENT_PHONE,
     };
   }
   return profile;
