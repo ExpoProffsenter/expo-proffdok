@@ -1,8 +1,9 @@
-// Expo ProffDok – FASE 33B.6
+// Expo ProffDok – FASE 33B.6 / HOTFIX 2026-09-25
 // Tynt dokumentklassifiseringslag rundt eksisterende Avtalegrunnlag Core.
 // Vanlige prosjekter endres ikke. Laget gjør det mulig å markere hvilken allerede
 // opplastet fil som er bedriftens signerte kontrakt når garantiprosjektet ikke
 // bruker Expo-kontrakt.
+// Hotfix: Sales-aktiverte prosjekter viser også kundens låste, valgte opsjoner.
 import React, { useEffect, useMemo, useState } from "react";
 import { createContractViewTools as createContractViewToolsCore } from "./contractViewToolsCore.js";
 
@@ -29,6 +30,114 @@ function isContractDocument(file = {}) {
     contractSource === "expo" ||
     contractSource === "external" ||
     /kontrakt|contract/.test(name)
+  );
+}
+
+function parseExVatAmount(value) {
+  const normalized = clean(value)
+    .replace(/\s/g, "")
+    .replace(",", ".")
+    .replace(/[^\d.-]/g, "");
+  const number = Number(normalized);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function formatNok(value) {
+  return new Intl.NumberFormat("no-NO", {
+    style: "currency",
+    currency: "NOK",
+    maximumFractionDigits: 2,
+  }).format(Number(value || 0));
+}
+
+function AcceptedOptionsSummary({ project }) {
+  const salesOrigin = project?.salesOrigin || {};
+  const options = Array.isArray(salesOrigin.acceptedOptions)
+    ? salesOrigin.acceptedOptions
+    : [];
+
+  if (!salesOrigin.requestRef || options.length === 0) return null;
+
+  return React.createElement(
+    "div",
+    {
+      className: "item",
+      style: {
+        marginTop: "14px",
+        borderColor: "#bfdbfe",
+        background: "#eff6ff",
+      },
+    },
+    React.createElement(
+      "h3",
+      { style: { marginTop: 0 } },
+      `✅ Kundens valgte opsjoner (${options.length})`
+    ),
+    React.createElement(
+      "p",
+      { className: "note" },
+      `Dette er opsjonene kunden valgte ved digital aksept av ${salesOrigin.requestRef}. Grunnlaget er låst og skal ikke redigeres her.`
+    ),
+    React.createElement(
+      "div",
+      { style: { display: "grid", gap: "8px" } },
+      ...options.map((option, index) => {
+        const exVat = parseExVatAmount(option?.amount);
+        const inclVat = exVat * 1.25;
+        const title = clean(option?.title || option?.description) || `Opsjon ${index + 1}`;
+        const description = clean(option?.description);
+        const typeLabel = option?.optionType === "alternative" ? "Valgt alternativ" : exVat < 0 ? "Valgt fradrag" : "Valgt tillegg";
+
+        return React.createElement(
+          "div",
+          {
+            key: clean(option?.id) || `accepted-option-${index}`,
+            style: {
+              padding: "10px 12px",
+              border: "1px solid #dbeafe",
+              borderRadius: "10px",
+              background: "#fff",
+            },
+          },
+          React.createElement(
+            "div",
+            {
+              style: {
+                display: "flex",
+                justifyContent: "space-between",
+                gap: "12px",
+                alignItems: "flex-start",
+                flexWrap: "wrap",
+              },
+            },
+            React.createElement(
+              "div",
+              { style: { minWidth: 0, flex: "1 1 360px" } },
+              React.createElement("b", null, title),
+              description && description !== title
+                ? React.createElement(
+                    "div",
+                    { className: "note", style: { marginTop: "3px" } },
+                    description
+                  )
+                : null,
+              React.createElement(
+                "small",
+                { style: { display: "block", marginTop: "4px", fontWeight: 800, color: "#1d4ed8" } },
+                typeLabel
+              )
+            ),
+            exVat !== 0
+              ? React.createElement(
+                  "b",
+                  { style: { whiteSpace: "nowrap" } },
+                  `${formatNok(inclVat)} inkl. mva.`
+                )
+              : null
+          )
+        );
+      })
+    )
   );
 }
 
@@ -157,6 +266,10 @@ export function createContractViewTools(dependencies) {
     if (!panel || !panel.props) return panel;
 
     const files = Array.isArray(args?.tilbud?.files) ? args.tilbud.files : [];
+    const acceptedOptions = React.createElement(AcceptedOptionsSummary, {
+      key: "accepted-options-summary",
+      project: args?.project,
+    });
     const marker = React.createElement(SignedContractMarker, {
       key: "signed-contract-marker",
       files,
@@ -166,7 +279,7 @@ export function createContractViewTools(dependencies) {
     });
 
     const children = React.Children.toArray(panel.props.children);
-    return React.cloneElement(panel, panel.props, [...children, marker]);
+    return React.cloneElement(panel, panel.props, [...children, acceptedOptions, marker]);
   }
 
   return {
