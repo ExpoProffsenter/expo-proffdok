@@ -1,9 +1,11 @@
-// Expo ProffDok – FASE 41B.5B / 41B.5C
-// Lar en eksisterende Befaring fortsette som Våtromstilbud eller Butikktilbud.
+// Expo ProffDok – FASE 41B.5B / 41B.5C / FASE 45B
+// Lar en eksisterende Befaring fortsette som Våtromstilbud eller Generelt tilbud.
 // Samme salgssak beholdes; kunde, befaring, bilder og historikk flyttes ikke til ny sak.
 // Ingen prosjektopprettelse skjer i denne overgangen.
-// 41B.5C begrenser Butikktilbud til de tre interne Ringside/Expo-firmaene og
-// krever eksplisitt store_offers-modultilgang fra systemadministrator.
+// 41B.5C begrenser den tekniske store_offers-overgangen til de tre interne
+// Ringside/Expo-firmaene og krever eksplisitt modultilgang fra systemadministrator.
+// FASE 45B: click-intercept bruker eksisterende tekniske Befaring-markører og
+// skal aldri identifisere en handling kun ut fra synlig knappetekst.
 
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -54,8 +56,20 @@ function destroyPicker() {
 }
 
 function isOfferStartButton(button) {
-  const text = compactText(button?.textContent);
-  return text === "Opprett tilbud" || text === "Opprett tilbud uten befaringsnotat";
+  if (!(button instanceof HTMLButtonElement)) return false;
+
+  const directOfferFromSurvey =
+    button.dataset.salesRegressionDirectOffer === "true";
+  if (directOfferFromSurvey) return true;
+
+  const primarySurveyAction =
+    button.dataset.salesRegressionInspectionNote === "true";
+  if (!primarySurveyAction) return false;
+
+  // Primærknappen har samme tekniske markør både når den åpner befaringsnotat
+  // og når den faktisk starter tilbud. Teksten brukes derfor kun som sekundær
+  // tilstandssjekk ETTER at knappen er bevist å tilhøre Befaring-kortet.
+  return compactText(button.textContent) === "Opprett tilbud";
 }
 
 function canChooseStoreOffer() {
@@ -82,7 +96,7 @@ async function resolveContext() {
       ""
   ).trim();
   if (!ALLOWED_STORE_COMPANIES.has(companyName)) {
-    throw new Error("Butikktilbud kan bare opprettes for Ringside Rørleggerbedrift AS, Bademiljø Expo eller Expo Proffsenter.");
+    throw new Error("Generelt tilbud fra befaring er ikke tilgjengelig for dette firmaet.");
   }
 
   let companyId = String(workProfile?.active_company_id || "").trim();
@@ -111,7 +125,7 @@ async function resolveContext() {
     throw new Error("Saken står ikke lenger i Befaring.");
   }
   if (isStoreOfferRequest(request)) {
-    throw new Error("Saken er allerede et Butikktilbud.");
+    throw new Error("Saken er allerede et Generelt tilbud.");
   }
 
   return { client, companyId, storageKey, requests, request };
@@ -170,7 +184,7 @@ function OfferTypePicker({ onWetroom, onClose }) {
       await convertSurveyToStoreOffer();
       destroyPicker();
     } catch (conversionError) {
-      setError(conversionError?.message || "Kunne ikke starte Butikktilbud fra befaringen.");
+      setError(conversionError?.message || "Kunne ikke starte Generelt tilbud fra befaringen.");
       setBusy(false);
     }
   }
@@ -231,9 +245,11 @@ function OfferTypePicker({ onWetroom, onClose }) {
             disabled={busy}
             style={{ textAlign: "left", padding: "14px 16px" }}
           >
-            <strong style={{ display: "block" }}>{busy ? "Starter Butikktilbud …" : "Butikktilbud"}</strong>
+            <strong style={{ display: "block" }}>
+              {busy ? "Starter Generelt tilbud …" : "Generelt tilbud"}
+            </strong>
             <small style={{ display: "block", marginTop: 4, fontWeight: 600 }}>
-              Bruk vare-/produktbyggeren på den samme befaringssaken.
+              Fortsett som Generelt tilbud på den samme befaringssaken.
             </small>
           </button>
         </div>
