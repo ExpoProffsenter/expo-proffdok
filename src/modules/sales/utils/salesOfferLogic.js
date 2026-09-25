@@ -5,7 +5,7 @@
 // Teknisk Butikktilbud-metadata beholdes skjult og versjonslåst i kundevisning.
 // FASE 45B lar brukerens tilbudsnavn følge Generelt tilbud inn i tilbudsbyggeren
 // uten ny databasekolonne. Automatisk legacy-prefiks «Tilbud –» regnes ikke som
-// et eget brukerredigert navn og fjernes ved første åpning i tilbudsbyggeren.
+// et eget brukerredigert navn og fjernes både fra servergrunnlag og lokal kladd.
 // Recovery-kontrakt: prepareOfferFormForSaveCore(pruneEmptyOfferDraftRows(formValue))
 // er fortsatt prinsippet; 39B.2C skiller bare ut store_text-avsnitt før core-validering.
 
@@ -92,14 +92,29 @@ function isGeneralOfferRequest(request = {}) {
   );
 }
 
-function isGeneratedDirectOfferTitle(request = {}) {
+function isGeneratedTitleForRequest(value, request = {}) {
   const requestTitle = String(request?.title || "").trim();
-  const offerTitle = String(request?.offerTitle || "").trim();
-  if (!requestTitle || !offerTitle) return false;
+  const candidate = String(value || "").trim();
+  if (!requestTitle || !candidate) return false;
   return (
-    offerTitle === `Tilbud – ${requestTitle}` ||
-    offerTitle === `Tilbud - ${requestTitle}`
+    candidate === `Tilbud – ${requestTitle}` ||
+    candidate === `Tilbud - ${requestTitle}`
   );
+}
+
+function isGeneratedDirectOfferTitle(request = {}) {
+  return isGeneratedTitleForRequest(request?.offerTitle, request);
+}
+
+function normalizeGeneralOfferTitle(form = {}, request = {}) {
+  if (!isGeneralOfferRequest(request)) return form;
+  if (!isGeneratedTitleForRequest(form?.title, request)) return form;
+  return {
+    ...form,
+    title:
+      String(request?.title || GENERAL_OFFER_DEFAULT_TITLE).trim() ||
+      GENERAL_OFFER_DEFAULT_TITLE,
+  };
 }
 
 function normalizeStoreSectionLine(line = {}) {
@@ -219,9 +234,10 @@ export function normalizeStoredOfferDraft(storedDraft, request) {
     storedDraft && serverRows > 0 && localRows === 0 && !localHasText
   );
 
-  const form = preferServerDraft
+  const rawForm = preferServerDraft
     ? requestForm
     : core.normalizeStoredOfferDraft(storedDraft, request);
+  const form = normalizeGeneralOfferTitle(rawForm, request);
 
   const sourceLines = preferServerDraft
     ? requestForm.lines || []
