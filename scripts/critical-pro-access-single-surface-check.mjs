@@ -26,10 +26,22 @@ for (const needle of [
   "activeCompanyKey",
   "companyAdminUserCard",
   "INTERNAL_COMMERCE_COMPANIES",
+  "STATUS_FILTERS",
+  "Nye",
+  "Godkjente",
+  "Deaktiverte",
+  "Systemadmin",
+  "Oppdater",
+  "hideLegacyToolbar",
+  "ensureLegacyUsersLoaded",
+  "companyAdminLegacyToolbar",
+  "USER_STAGE_ID",
 ]) {
   assert(companyAdmin.includes(needle), `Samlet firmaflate mangler: ${needle}`);
 }
 assert(companyAdmin.includes("LEGACY_MARKER_ID"), "Legacy-brukerkort må fortsatt kunne få tilgangskontroller etter firmanavigasjon.");
+assert(companyAdmin.includes('text === "Godkjenn bruker"'), "Eksisterende Godkjenn bruker-flyt skal fortsatt trigge reload av samlet firmaflate.");
+assert(companyAdmin.includes('text === "Deaktiver bruker"'), "Eksisterende Deaktiver bruker-flyt skal fortsatt trigge reload av samlet firmaflate.");
 assert(indexHtml.includes("installSystemAdminCompanyAccessUx"), "Samlet firmaflate må installeres fra app-entry.");
 
 assert(!adminPanel.includes("Hvem kan se «Din nto pris»"), "Leverandør/rabatt-panelet skal ikke duplisere brukerens Din nto pris-kontroll.");
