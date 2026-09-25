@@ -1,10 +1,10 @@
-// Expo ProffDok – FASE 39B.2C / FASE 37A2 / FASE 37D1 / FASE 31A2
+// Expo ProffDok – FASE 39B.2C / FASE 37A2 / FASE 37D1 / FASE 31A2 / FASE 45B
 // Tom lokal nettleserkladd får aldri overstyre et eksisterende, meningsfullt
 // servertilbud ved hydrering. Butikktilbud-avsnitt holdes utenfor ordinær
 // pris/antall-validering og bevarer egen linjetype gjennom lagring/recovery.
-// Butikktilbud beholder skjult, versjonslåst metadata i kundevisning.
-// FASE 37A2 mapper i tillegg publiseringstid og digital avvisning slik at kunde-
-// og internpresentasjon kan avslutte Butikktilbud uten prosjektaktivering.
+// Teknisk Butikktilbud-metadata beholdes skjult og versjonslåst i kundevisning.
+// FASE 45B lar brukerens tilbudsnavn følge Generelt tilbud inn i tilbudsbyggeren
+// uten ny databasekolonne; eksisterende offerTitle kan fortsatt overstyre senere.
 // Recovery-kontrakt: prepareOfferFormForSaveCore(pruneEmptyOfferDraftRows(formValue))
 // er fortsatt prinsippet; 39B.2C skiller bare ut store_text-avsnitt før core-validering.
 
@@ -22,6 +22,8 @@ import * as core from "./salesOfferLogicCore.js";
 
 const STORE_SECTION_LINE_TYPE = "store_text";
 const STORE_SECTION_MARKER = "#expo-store-text-block";
+const STORE_OFFER_SOURCE = "Butikktilbud / varesalg";
+const GENERAL_OFFER_DEFAULT_TITLE = "Generelt tilbud";
 
 function normalizeOfferAmountForValidation(value) {
   return String(value ?? "")
@@ -79,6 +81,13 @@ function isStoreSectionLine(line = {}) {
       line?.storeSectionMode === "group" ||
       String(line?.productUrl || "").trim() === STORE_SECTION_MARKER ||
       String(line?.id || "").startsWith("store-section-")
+  );
+}
+
+function isGeneralOfferRequest(request = {}) {
+  return Boolean(
+    String(request?.source || "").trim() === STORE_OFFER_SOURCE ||
+      getStoreOfferMeta(request?.offerLines || [])
   );
 }
 
@@ -170,8 +179,14 @@ function normalizeOptionsWithQuantity(options = []) {
 
 export function buildOfferFormFromRequest(request) {
   const form = core.buildOfferFormFromRequest(request);
+  const generalOfferTitle =
+    isGeneralOfferRequest(request) && !String(request?.offerTitle || "").trim()
+      ? String(request?.title || GENERAL_OFFER_DEFAULT_TITLE).trim() ||
+        GENERAL_OFFER_DEFAULT_TITLE
+      : form.title;
   return {
     ...form,
+    title: generalOfferTitle,
     lines: recalculateAdministrationLines(request?.offerLines || form.lines || []),
     options: normalizeOptionsWithQuantity(form.options || []),
   };
