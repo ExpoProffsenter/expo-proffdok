@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 const terminology = fs.readFileSync("src/modules/sales/generalOfferTerminologyUx.js", "utf8");
 const requestForm = fs.readFileSync("src/modules/sales/components/SalesRequestForm.jsx", "utf8");
 const offerLogic = fs.readFileSync("src/modules/sales/utils/salesOfferLogic.js", "utf8");
+const proBuilder = fs.readFileSync("src/modules/sales/components/SalesStoreOfferBuilderProCatalog.jsx", "utf8");
 const storeOffers = fs.readFileSync("src/modules/sales/services/salesStoreOffers.js", "utf8");
 const salesContracts = fs.readFileSync("src/modules/sales/services/salesContracts.js", "utf8");
 const contractCustomer = fs.readFileSync("src/modules/sales/components/SalesContractCustomerView.jsx", "utf8");
@@ -18,6 +19,9 @@ for (const needle of [
   "Dette navnet følger tilbudet videre til kunde, aksept og dokumentasjon.",
   'value={form.title || ""}',
   'placeholder={STORE_OFFER_TITLE}',
+  "freshStoreOfferLaunch",
+  "if (freshStoreOfferLaunch && !recoveredStoreOffer)",
+  'onUpdateForm("title", STORE_OFFER_TITLE)',
   "Nytt generelt tilbud",
   "Registrer kunde og opprett tilbud",
   "Opprett et tilbud for varer, arbeid, underentreprenører og andre leveranser.",
@@ -33,12 +37,34 @@ for (const needle of [
   'const STORE_OFFER_SOURCE = "Butikktilbud / varesalg"',
   'const GENERAL_OFFER_DEFAULT_TITLE = "Generelt tilbud"',
   "isGeneralOfferRequest",
-  "!String(request?.offerTitle || \"\").trim()",
+  "isGeneratedDirectOfferTitle",
+  'offerTitle === `Tilbud – ${requestTitle}`',
+  "generatedDirectTitle",
   "String(request?.title || GENERAL_OFFER_DEFAULT_TITLE)",
   "title: generalOfferTitle",
 ]) {
   assert(offerLogic.includes(needle), `Tilbudsnavn følger ikke korrekt inn i tilbudsbyggeren: ${needle}`);
 }
+
+for (const needle of [
+  "INTERNAL_SENDER_COMPANIES",
+  '"ringside rørleggerbedrift as"',
+  '"bademiljø expo"',
+  '"expo proffsenter"',
+  'const COMPANY_BRAND_KEY = "company-profile"',
+  'brandMode: "company"',
+  "getMyWorkProfileState",
+  "readCachedWorkProfileState",
+  "withCompanySenderMeta",
+  "Ingen firmalogo er registrert. Tilbudet vises med firmanavn uten Expo/Ringside-logo.",
+  'data-store-sender-mode={externalSender ? "company" : "internal-brand-choice"}',
+]) {
+  assert(proBuilder.includes(needle), `Proff-avsenderpolicy mangler: ${needle}`);
+}
+assert(
+  proBuilder.includes("profile.logoUrl || EMPTY_COMPANY_LOGO_DATA_URL"),
+  "Ekstern proffkunde uten logo kan fortsatt falle tilbake til en intern Expo/Ringside-logo."
+);
 
 for (const needle of [
   "Generelle tilbud",
