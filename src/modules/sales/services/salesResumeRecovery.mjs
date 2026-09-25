@@ -181,11 +181,41 @@ export function restoreSalesWorkspaceNavigation(
   return true;
 }
 
+export function isInternalSalesRecoverySearch(search = "") {
+  try {
+    const params = new URLSearchParams(String(search || ""));
+    if (params.get("publicOffer") || params.get("publicContract")) return false;
+    if (params.get("privateDocument") === "1") return false;
+    const access = String(params.get("access") || params.get("role") || "")
+      .trim()
+      .toLowerCase();
+    if (
+      access === "customer" ||
+      access === "kunde" ||
+      access === "ue" ||
+      access === "underleverandor" ||
+      access === "underleverandør" ||
+      access === "underentreprenør"
+    ) {
+      return false;
+    }
+    return true;
+  } catch {
+    return true;
+  }
+}
+
 export function shouldBootstrapRestoreSales({
   sessionStorage,
   localStorage,
   now = Date.now(),
+  search =
+    typeof window !== "undefined" ? window.location.search : "",
 } = {}) {
+  // Bootstrap må aldri dra en offentlig kunde-/kontrakts-/portalrute tilbake
+  // til intern Befaring/Tilbud, selv om nettleseren har ferske recovery-markører.
+  if (!isInternalSalesRecoverySearch(search)) return false;
+
   const session = resolveStorage(sessionStorage, "sessionStorage");
   const local = resolveStorage(localStorage, "localStorage");
 
@@ -309,27 +339,7 @@ export function shouldCancelSalesRecoveryForTrustedInteraction({
 
 function isInternalSalesRoute() {
   if (typeof window === "undefined") return false;
-  try {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("publicOffer") || params.get("publicContract")) return false;
-    if (params.get("privateDocument") === "1") return false;
-    const access = String(params.get("access") || params.get("role") || "")
-      .trim()
-      .toLowerCase();
-    if (
-      access === "customer" ||
-      access === "kunde" ||
-      access === "ue" ||
-      access === "underleverandor" ||
-      access === "underleverandør" ||
-      access === "underentreprenør"
-    ) {
-      return false;
-    }
-    return true;
-  } catch {
-    return true;
-  }
+  return isInternalSalesRecoverySearch(window.location.search);
 }
 
 function salesSurfaceIsMounted() {
