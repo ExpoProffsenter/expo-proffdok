@@ -5,6 +5,7 @@ const storeCatalogUx = fs.readFileSync("src/modules/storeCatalog/systemAdminStor
 const adminPanel = fs.readFileSync("src/modules/storeCatalog/ProStoreCatalogAdminPanel.jsx", "utf8");
 const unifiedSystemAdmin = fs.readFileSync("src/modules/access/systemAdminUnifiedUserAccessUx.jsx", "utf8");
 const companyAdmin = fs.readFileSync("src/modules/access/systemAdminCompanyAccessUx.jsx", "utf8");
+const companyModal = fs.readFileSync("src/modules/access/systemAdminCompanyModalUx.js", "utf8");
 const firmaAdminAccess = fs.readFileSync("src/modules/access/firmaAdminProNetPriceUx.js", "utf8");
 const indexHtml = fs.readFileSync("index.html", "utf8");
 const aclParity = fs.readFileSync("supabase/migrations/20260924123500_fase45b_baseline_acl_parity.sql", "utf8");
@@ -43,6 +44,21 @@ assert(companyAdmin.includes("LEGACY_MARKER_ID"), "Legacy-brukerkort må fortsat
 assert(companyAdmin.includes('text === "Godkjenn bruker"'), "Eksisterende Godkjenn bruker-flyt skal fortsatt trigge reload av samlet firmaflate.");
 assert(companyAdmin.includes('text === "Deaktiver bruker"'), "Eksisterende Deaktiver bruker-flyt skal fortsatt trigge reload av samlet firmaflate.");
 assert(indexHtml.includes("installSystemAdminCompanyAccessUx"), "Samlet firmaflate må installeres fra app-entry.");
+
+for (const needle of [
+  "installSystemAdminCompanyModalUx",
+  "data-company-admin-modal-open",
+  "Lagre og lukk",
+  "dirtyAccessButtons",
+  "waitForAccessSaves",
+  "Status, firma og rolle lagres med en gang etter bekreftelse",
+  "aria-modal",
+  "Escape",
+]) {
+  assert(companyModal.includes(needle), `Firmamodal mangler sikker UX-kontrakt: ${needle}`);
+}
+assert(indexHtml.includes("installSystemAdminCompanyModalUx"), "Firmamodal må installeres etter samlet firmaflate.");
+assert(indexHtml.indexOf("installSystemAdminCompanyAccessUx") < indexHtml.indexOf("installSystemAdminCompanyModalUx"), "Firmamodal skal installeres etter firmanavigasjonen.");
 
 assert(!adminPanel.includes("Hvem kan se «Din nto pris»"), "Leverandør/rabatt-panelet skal ikke duplisere brukerens Din nto pris-kontroll.");
 assert(!adminPanel.includes("listUserNetPriceAccess"), "Leverandør/rabatt-panelet skal ikke hente brukernes pristilganger.");
