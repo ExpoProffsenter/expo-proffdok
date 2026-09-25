@@ -46,6 +46,21 @@ if (migration.includes("'publicToken'") || migration.includes("'salesOfferId'"))
   throw new Error("Ny revisjon skal ikke arve gammel kundelenke eller sales_offer-id.");
 }
 
+const acceptedHistoryHotfix = requireNeedles(
+  "supabase/migrations/20260925133500_hotfix_sales_offer_accepted_immutable.sql",
+  [
+    "create or replace function public.publish_sales_offer",
+    "v_existing_status text",
+    "select so.company_id, so.public_token, so.status",
+    "lower(trim(coalesce(v_existing_status,''))) = 'accepted'",
+    "Akseptert tilbud er låst historikk og kan ikke republiseres.",
+    "for update",
+  ]
+);
+if (/v_existing_status[^\n]*declined/i.test(acceptedHistoryHotfix)) {
+  throw new Error("Hotfixen skal ikke endre avvist-flyten; kun akseptert historikk låses her.");
+}
+
 const ux = requireNeedles("src/modules/sales/storeDeclinedRevisionUx.js", [
   "Se avvist tilbud",
   "Lag revidert tilbud",
@@ -64,4 +79,4 @@ requireNeedles("index.html", [
   "/src/modules/sales/storeDeclinedRevisionUx.js",
 ]);
 
-console.log("✅ Expo ProffDok revidert Butikktilbud etter avvisning check OK");
+console.log("✅ Expo ProffDok revidert Butikktilbud / immutable aksept-historikk check OK");
