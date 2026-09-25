@@ -73,6 +73,43 @@ requireCheck(
   "Bootstrap gjenåpner ikke Sales når aktivt arbeidsbilde er Ny forespørsel uten request_ref."
 );
 
+// FASE 45B: Nytt Generelt tilbud har heller ingen request_ref før lagring. Både
+// tilbudsnavn og teknisk source må overleve remount slik at tilbudet ikke blir
+// feiltolket som Våtromstilbud eller sendt tilbake til oversikten.
+const generalOfferNavigation = { mode: "new-offer", selectedRequestId: null };
+local.setItem(`${storageKey}:navigation`, JSON.stringify(generalOfferNavigation));
+storage.loadSalesNavigation(storageKey);
+const generalOfferForm = {
+  customer: "Demo Testkunde",
+  phone: "90000000",
+  email: "demo@testkunde.no",
+  address: "Demoveien 1",
+  postnr: "0001",
+  city: "Oslo",
+  title: "Levering og montering av varmepumpe",
+  source: "Butikktilbud / varesalg",
+  note: "",
+};
+requireCheck(
+  storage.saveSalesEntryDraft("new-offer", generalOfferForm),
+  "Ulagret Generelt tilbud kan ikke mellomlagres lokalt."
+);
+recovery.markSalesWorkspaceResumeSnapshot(
+  { storageKey, navigation: generalOfferNavigation },
+  { localStorage: local, now: Date.now() }
+);
+const recoveredGeneralOffer = storage.loadSalesEntryDraft("new-offer");
+requireCheck(
+  recoveredGeneralOffer?.form?.title === generalOfferForm.title &&
+    recoveredGeneralOffer?.form?.source === "Butikktilbud / varesalg" &&
+    recoveredGeneralOffer?.form?.customer === generalOfferForm.customer,
+  "Generelt tilbud mister tilbudsnavn/type eller kundedata ved fanebytte/remount."
+);
+requireCheck(
+  storage.loadSalesNavigation(storageKey).mode === "new-offer",
+  "Generelt tilbud uten request_ref blir redusert til saksoversikten ved recovery."
+);
+
 const editNavigation = { mode: "edit-request", selectedRequestId: "F-2026-0066" };
 local.setItem(`${storageKey}:navigation`, JSON.stringify(editNavigation));
 storage.loadSalesNavigation(storageKey);
@@ -117,6 +154,12 @@ requireCheck(
   "Kundeskjemaet mangler recovery eller beskyttelse mot tom første-render."
 );
 requireCheck(
+  requestFormSource.includes("recoveredStoreOffer") &&
+    requestFormSource.includes("readStoreOfferLaunch() || recoveredStoreOffer") &&
+    requestFormSource.includes("STORE_OFFER_SOURCE"),
+  "Generelt tilbud gjenkjennes ikke fra mellomlagret source dersom launch-markøren er borte."
+);
+requireCheck(
   storageSource.includes('new Set(["new", "new-offer", "edit-request"])') &&
     storageSource.includes("readSalesWorkspaceResumeSnapshot"),
   "Entry-kladd er ikke bundet til eksplisitt Sales recovery-snapshot."
@@ -129,4 +172,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("✅ Expo ProffDok Sales entry resume check OK – Ny/Rediger forespørsel tåler PC-fanebytte og mobil appbytte uten datatap");
+console.log("✅ Expo ProffDok Sales entry resume check OK – Ny/Rediger forespørsel og Generelt tilbud tåler PC-fanebytte/remount uten datatap eller typebytte");
