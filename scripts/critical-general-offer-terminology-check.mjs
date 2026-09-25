@@ -24,8 +24,16 @@ for (const needle of [
   assert(terminology.includes(needle), `Terminologi-UX mangler: ${needle}`);
 }
 assert(!terminology.includes("characterData: true"), "Terminologi-observer skal ikke lytte på egne tekstnodeendringer.");
-assert(!terminology.includes("Generelle tilbud avsluttes ved aksept"), "Generelle tilbud skal ikke beskrives som avsluttet ved kundeaksept.");
-assert(!terminology.includes("avsluttes ved kundeaksept."), "Opprett-dialogen skal ikke love feil sluttpunkt for Generelt tilbud.");
+
+const overviewCopies = [...terminology.matchAll(/const OVERVIEW_[A-Z]+ = "([^"]*)";/g)].map((match) => match[1]);
+assert(overviewCopies.length >= 3, "Terminologi-UX må ha eksplisitte oversiktstekster.");
+overviewCopies.forEach((copy) => {
+  assert(!copy.includes("avsluttes ved aksept"), "Generelle tilbud skal ikke beskrives som avsluttet ved kundeaksept.");
+});
+assert(
+  terminology.includes('"For varer, arbeid, underentreprenører og andre leveranser. Tilbudet bygges opp fritt."'),
+  "Opprett-dialogen skal bruke nøytral slutttekst for Generelt tilbud."
+);
 assert(indexHtml.includes("installGeneralOfferTerminologyUx"), "Generelle tilbud-terminologi må installeres fra app-entry.");
 
 for (const needle of [
