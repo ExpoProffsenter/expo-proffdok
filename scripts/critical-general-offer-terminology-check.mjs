@@ -2,6 +2,7 @@ import fs from "node:fs";
 import assert from "node:assert/strict";
 
 const terminology = fs.readFileSync("src/modules/sales/generalOfferTerminologyUx.js", "utf8");
+const requestForm = fs.readFileSync("src/modules/sales/components/SalesRequestForm.jsx", "utf8");
 const storeOffers = fs.readFileSync("src/modules/sales/services/salesStoreOffers.js", "utf8");
 const salesContracts = fs.readFileSync("src/modules/sales/services/salesContracts.js", "utf8");
 const contractCustomer = fs.readFileSync("src/modules/sales/components/SalesContractCustomerView.jsx", "utf8");
@@ -12,6 +13,22 @@ assert(storeOffers.includes('STORE_OFFER_SOURCE = "Butikktilbud / varesalg"'), "
 assert(storeOffers.includes('STORE_OFFER_TITLE = "Generelt tilbud"'), "Nye generelle tilbud må få nytt brukerrettet standardnavn.");
 
 for (const needle of [
+  "Tilbudsnavn *",
+  "Dette navnet følger tilbudet videre til kunde, aksept og dokumentasjon.",
+  'value={form.title || ""}',
+  'placeholder={STORE_OFFER_TITLE}',
+  "Nytt generelt tilbud",
+  "Registrer kunde og opprett tilbud",
+  "Opprett et tilbud for varer, arbeid, underentreprenører og andre leveranser.",
+  "Opprett tilbud",
+]) {
+  assert(requestForm.includes(needle), `Generelt tilbud-skjema mangler: ${needle}`);
+}
+assert(!requestForm.includes('"Nytt butikktilbud"'), "Nytt tilbud-skjema skal ikke vise Butikktilbud som brukerbegrep.");
+assert(!requestForm.includes('"Registrer kunde og opprett butikktilbud"'), "Opprett-skjema skal bruke generell tilbudsterminologi.");
+assert(!requestForm.includes('"Opprett butikktilbud"'), "Opprett-knapp skal bruke generell tilbudsterminologi.");
+
+for (const needle of [
   "Generelle tilbud",
   "Generelt tilbud",
   "For varer, arbeid, underentreprenører og andre leveranser",
@@ -19,6 +36,12 @@ for (const needle of [
   "Tilbudet bygges opp fritt.",
   "Opprett våtromstilbud direkte uten å registrere befaring først.",
   "replaceExactTextNodes",
+  "replacePairs",
+  "patchGeneralOfferSurfaceCopy",
+  "simple-order-accepted-shell",
+  "Generelt tilbud akseptert",
+  "Velg videreføring når du er klar.",
+  "Generelt tilbud",
   "setTextIfChanged",
   "MutationObserver",
 ]) {
