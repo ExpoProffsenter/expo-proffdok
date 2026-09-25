@@ -116,6 +116,34 @@ function patchNavigationLabels() {
   });
 }
 
+function patchGeneratedGeneralOfferTitle(root) {
+  if (!(root instanceof HTMLElement)) return;
+  const originShowsGeneralOffer = Array.from(
+    root.querySelectorAll(".sales-detail-card .sales-detail-lines span")
+  ).some((node) => {
+    const text = compactText(node.textContent);
+    return text === "Kom via Generelt tilbud" ||
+      text === "Kom via Butikktilbud / varesalg" ||
+      text === "Kom via Butikktilbud / Varesalg";
+  });
+  if (!originShowsGeneralOffer) return;
+
+  const title = compactText(
+    root.querySelector(".sales-detail-hero .sales-title")?.textContent
+  );
+  if (!title) return;
+
+  const generatedTitles = new Set([
+    `Tilbud – ${title}`,
+    `Tilbud - ${title}`,
+  ]);
+  root.querySelectorAll(".sales-next-card strong").forEach((node) => {
+    if (generatedTitles.has(compactText(node.textContent))) {
+      setTextIfChanged(node, title);
+    }
+  });
+}
+
 function patchGeneralOfferSurfaceCopy() {
   const root = document.querySelector(".sales-app");
   if (!(root instanceof HTMLElement)) return;
@@ -168,6 +196,8 @@ function patchGeneralOfferSurfaceCopy() {
       "Det generelle tilbudet er akseptert og avsluttet i Sales. Det opprettes ikke ProffDok-prosjekt.",
     ],
   ]);
+
+  patchGeneratedGeneralOfferTitle(root);
 }
 
 function patchKnownOverviewCopy() {
