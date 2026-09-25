@@ -1,11 +1,10 @@
 // Expo ProffDok – FASE 45B / FASE 39B.2C
-// Monterer vareregisteradministrasjon i eksisterende Systemadmin-flate.
-// Leverandør/rabatt er firmaegenskaper her. Brukertilgang og «Din nto pris»
-// administreres kun på eksisterende «Brukere og tilganger»-kort.
+// Internt ERP-vareregister beholdes som egen systemoppgave.
+// Proffleverandør/rabatt ligger nå under samlet «Firmaer, brukere og tilganger»
+// sammen med firmaets brukere, moduler og prisinnsyn.
 
 import { createRoot } from "react-dom/client";
 import { StoreCatalogAdminOnlyPanel } from "./StoreCatalogOfferTools.jsx";
-import ProStoreCatalogAdminPanel from "./ProStoreCatalogAdminPanel.jsx";
 import { installPriceSearchPortalGuard } from "./priceSearchPortalGuard.js";
 
 const SYSTEMADMIN_MOUNT_ID = "expo-systemadmin-store-catalog";
@@ -53,19 +52,14 @@ export function installSystemAdminStoreCatalogUx() {
 
     root = createRoot(mount);
     root.render(
-      <>
-        <div className="item adminAccordionItem" style={{ marginTop: 0 }}>
-          <h3 style={{ marginTop: 0 }}>Internt vareregister</h3>
-          <p className="note">
-            Oppdatering av ERP-vareregisteret er en systemadmin-oppgave. Varesøk i
-            tilbud skjer direkte inne på den enkelte tilbudsposten.
-          </p>
-          <StoreCatalogAdminOnlyPanel />
-        </div>
-        <div className="item adminAccordionItem" style={{ marginTop: 16 }}>
-          <ProStoreCatalogAdminPanel />
-        </div>
-      </>
+      <div className="item adminAccordionItem" style={{ marginTop: 0 }}>
+        <h3 style={{ marginTop: 0 }}>Internt vareregister</h3>
+        <p className="note">
+          Oppdatering av ERP-vareregisteret er en systemadmin-oppgave. Varesøk i
+          tilbud skjer direkte inne på den enkelte tilbudsposten.
+        </p>
+        <StoreCatalogAdminOnlyPanel />
+      </div>
     );
     return true;
   };

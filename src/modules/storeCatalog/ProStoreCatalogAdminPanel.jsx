@@ -154,7 +154,7 @@ export default function ProStoreCatalogAdminPanel({ companyId = "" }) {
       <div>
         <h3>Proff vareregister</h3>
         <p>
-          Systemadmin velger leverandører og rabatt per firma. Brukerens modul- og prisinnsyn styres kun på samme brukerkort under «Brukere og tilganger».
+          Systemadmin velger leverandører og rabatt for dette firmaet. Brukernes modul- og prisinnsyn styres på brukerkortene nedenfor i samme seksjon.
         </p>
       </div>
 
@@ -225,7 +225,7 @@ export default function ProStoreCatalogAdminPanel({ companyId = "" }) {
 
           <div className="pro-catalog-user-note">
             <strong>Brukertilgang</strong>
-            <span>Gi «Enkel ordre / Proff vareregister» og eventuelt «Se Din nto pris» på brukerens kort under «Brukere og tilganger» ovenfor.</span>
+            <span>Gi «Enkel ordre / Proff vareregister» og eventuelt «Se Din nto pris» på brukerkortet nedenfor.</span>
           </div>
         </>
       ) : null}

@@ -1,6 +1,6 @@
 import React from "react";
 
-const UPDATED = "Sist oppdatert: 24.09.2026";
+const UPDATED = "Sist oppdatert: 25.09.2026";
 
 function List({ items = [] }) {
   return React.createElement(
@@ -31,9 +31,10 @@ export function createHelp45BSection({ Section }) {
     ];
     const admin = isSystemAdmin
       ? [
-          "Systemadmin administrerer proffkundens leverandørtilgang og rabatt i Systemadmin → Proff vareregister.",
+          "Systemadmin administrerer firma, brukere, roller, modultilganger, prisinnsyn og proffleverandører fra Systemadmin → Firmaer, brukere og tilganger.",
+          "Firmaene vises kollapset. Åpne ett firma om gangen; leverandør/rabatt vises øverst og firmaets brukerkort vises nedenfor.",
           "Standardforslaget er FlisLab AS 40 %, FlisLabFLISER 40 %, Askøy 40 % og Baden Haus 30 %. Forslaget må aktiveres bevisst og overskriver ikke eksisterende aktive rabatter.",
-          "Godkjenning av bruker/firma og ordinære modulroller skal fortsatt gjøres i den eksisterende Systemadmin-flyten. Proff vareregister er et tillegg og skal ikke brukes som omvei rundt godkjenning."
+          "Godkjenning, deaktivering, firma, rolle, moduler og «Din nto pris» beholdes på brukerens eksisterende brukerkort. Leverandør/rabatt er en firmaegenskap i samme samlede seksjon."
         ]
       : isCompanyAdmin
         ? ["Firmaadmin kan styre hvem i eget firma som får se «Din nto pris». Leverandørtilgang og firmarabatt styres av Systemadmin."]
