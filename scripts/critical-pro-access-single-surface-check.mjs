@@ -35,7 +35,7 @@ assert(indexHtml.includes("installSystemAdminCompanyAccessUx"), "Samlet firmafla
 assert(!adminPanel.includes("Hvem kan se «Din nto pris»"), "Leverandør/rabatt-panelet skal ikke duplisere brukerens Din nto pris-kontroll.");
 assert(!adminPanel.includes("listUserNetPriceAccess"), "Leverandør/rabatt-panelet skal ikke hente brukernes pristilganger.");
 assert(!adminPanel.includes("setUserNetPriceAccess"), "Leverandør/rabatt-panelet skal ikke endre brukernes pristilganger.");
-assert(adminPanel.includes("Brukere og tilganger"), "Leverandør/rabatt-panelet skal fortsatt peke til brukerkortene i samme samlede seksjon.");
+assert(adminPanel.includes("brukerkortet nedenfor"), "Leverandør/rabatt-panelet skal peke til brukerkortene i samme samlede seksjon.");
 
 for (const needle of ["Brukere og tilganger", "Enkel ordre / Proff vareregister", "Se «Din nto pris»"]) {
   assert(unifiedSystemAdmin.includes(needle), `Systemadmin samlet brukerkort mangler: ${needle}`);
