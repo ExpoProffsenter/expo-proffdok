@@ -4,6 +4,8 @@
 // saken har rukket å få request_ref. Ingen serverrad opprettes før bruker lagrer.
 // FASE 45B bruker eksisterende title-felt som tilbudsnavn for Generelt tilbud.
 // Teknisk type/opprinnelse beholdes uendret for bakoverkompatibilitet.
+// Recovery gjenkjenner Generelt tilbud både fra launch-markør og mellomlagret source,
+// slik at auth-/React-remount ikke kan gjøre tilbudstypen om til Våtromstilbud.
 // Nye saker opprettes ikke i Systemadmin-supportmodus fordi målbedriftens
 // ansvarlige bruker ikke er valgt i denne flyten.
 
@@ -52,9 +54,6 @@ export default function SalesRequestForm({
   onUpdateForm,
 }) {
   const supportMode = Boolean(getSalesSupportCompanyId());
-  const [isStoreOffer] = useState(
-    () => Boolean(isDirectOffer && readStoreOfferLaunch())
-  );
   const entryMode = isEditingRequest
     ? "edit-request"
     : isDirectOffer
@@ -69,15 +68,34 @@ export default function SalesRequestForm({
     };
   }
 
+  const recoveredEntryForm = entryDraftStateRef.current.record?.form || null;
+  const recoveredStoreOffer = Boolean(
+    isDirectOffer &&
+      String(recoveredEntryForm?.source || "").trim() === STORE_OFFER_SOURCE
+  );
+  const [isStoreOffer] = useState(
+    () => Boolean(isDirectOffer && (readStoreOfferLaunch() || recoveredStoreOffer))
+  );
+
   useEffect(() => {
     if (!isStoreOffer) return undefined;
 
-    onUpdateForm("title", STORE_OFFER_TITLE);
-    onUpdateForm("source", STORE_OFFER_SOURCE);
+    const recoveredTitle = String(recoveredEntryForm?.title || "").trim();
+    const recoveredSource = String(recoveredEntryForm?.source || "").trim();
+
+    if (!String(form?.title || "").trim() && !recoveredTitle) {
+      onUpdateForm("title", STORE_OFFER_TITLE);
+    }
+    if (
+      String(form?.source || "").trim() !== STORE_OFFER_SOURCE &&
+      recoveredSource !== STORE_OFFER_SOURCE
+    ) {
+      onUpdateForm("source", STORE_OFFER_SOURCE);
+    }
 
     return () => clearStoreOfferLaunch();
-    // Markøren leses kun ved mount. Vi vil ikke reklassifisere en vanlig
-    // direkte tilbudssak dersom parent-funksjonene får ny referanse ved rerender.
+    // Launch-markøren er kun start-signal. Ved recovery er entry-kladdens source
+    // fasit for tilbudstypen, så remount tåler at markøren allerede er ryddet.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isStoreOffer]);
 
@@ -403,7 +421,11 @@ export default function SalesRequestForm({
                 Avbryt
               </button>
 
-              <button className="sales-primary-button" type="submit">
+              <button
+                className="sales-primary-button"
+                type="submit"
+                data-general-offer-submit={isStoreOffer ? "true" : undefined}
+              >
                 <Save size={18} />
                 {isEditingRequest
                   ? "Lagre endringer"
