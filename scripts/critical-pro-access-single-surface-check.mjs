@@ -54,6 +54,9 @@ for (const needle of [
   "Status, firma og rolle lagres med en gang etter bekreftelse",
   "aria-modal",
   "Escape",
+  "transform:translate(-50%,-50%)",
+  ".company-access-user-heading{display:none!important}",
+  "height:auto!important",
 ]) {
   assert(companyModal.includes(needle), `Firmamodal mangler sikker UX-kontrakt: ${needle}`);
 }
