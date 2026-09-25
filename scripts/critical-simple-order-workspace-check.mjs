@@ -50,8 +50,10 @@ for (const needle of ["'{project,workflowType}'","'{project,simpleOrder}'","'{pr
 for (const needle of [
   "new.role = 'kunde'","workflowType","simple_order","Enkel ordre har ikke kundelenke/kundeportal",
   "trg_fase45b_block_simple_order_customer_portal","trg_fase45b_revoke_customer_portal_on_simple_order","role='kunde'",
+  "tg_op = 'UPDATE'","old.role = 'kunde'","old.project_id = new.project_id","new.revoked_at is not null",
 ]) assert(portalGuard.includes(needle), `Server-side kundeportal-sperre mangler: ${needle}`);
 assert(!portalGuard.includes("new.role = 'underleverandor'"), 'UE-portalen skal ikke blokkeres for Enkel ordre.');
+assert(portalGuard.includes("where project_id=new.id and role='kunde' and revoked_at is null"), 'Eksisterende aktiv kundetilgang skal revokeres ved konvertering til Enkel ordre.');
 
 for (const needle of [
   "fase45b_seed_simple_order_accepted_products","version_snapshot","selected_options",
