@@ -57,9 +57,13 @@ for (const needle of [
   "transform:translate(-50%,-50%)",
   ".company-access-user-heading{display:none!important}",
   "height:auto!important",
+  "setTextIfChanged",
+  "setAttributeIfChanged",
 ]) {
   assert(companyModal.includes(needle), `Firmamodal mangler sikker UX-kontrakt: ${needle}`);
 }
+assert(!companyModal.includes("if (title) title.textContent = activeCompanyName(row)"), "Firmamodal må ikke skrive samme tittel for hver MutationObserver-render.");
+assert(!companyModal.includes('if (summary) summary.textContent = activeCompanySummary(row) || "Firmaadministrasjon"'), "Firmamodal må ikke skrive samme summary for hver MutationObserver-render.");
 assert(indexHtml.includes("installSystemAdminCompanyModalUx"), "Firmamodal må installeres etter samlet firmaflate.");
 assert(indexHtml.indexOf("installSystemAdminCompanyAccessUx") < indexHtml.indexOf("installSystemAdminCompanyModalUx"), "Firmamodal skal installeres etter firmanavigasjonen.");
 
