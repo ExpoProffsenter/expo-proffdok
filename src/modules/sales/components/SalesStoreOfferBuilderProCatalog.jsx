@@ -1,8 +1,8 @@
 // Expo ProffDok – FASE 45B
 // Additiv wrapper rundt eksisterende Butikktilbud-/Enkel ordre-bygger.
 // Proffkatalogen kan kun legge inn ufarlige salgsfelt. Din nto pris lagres aldri i tilbudet.
-// Eksterne proffkunder bruker alltid aktiv firmaprofil som avsender. De interne
-// Ringside/Expo-firmaene beholder det eksisterende valget mellom de to merkevarene.
+// Bare Ringside Rørleggerbedrift og Bademiljø Expo kan velge mellom de to interne
+// merkevarene. Expo Proffsenter og eksterne proffkunder bruker aktiv firmaprofil.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import SalesStoreOfferBuilderCatalogTemplates from "./SalesStoreOfferBuilderCatalogTemplates.jsx";
@@ -21,11 +21,11 @@ const INTERNAL_SENDER_COMPANIES = new Set([
   "ringside rørleggerbedrift as",
   "ringside as",
   "bademiljø expo",
-  "expo proffsenter",
+  "bademiljø expo as",
 ]);
 const COMPANY_BRAND_KEY = "company-profile";
 // Bevisst tom logo. Gjør at offentlig kundevisning ikke faller tilbake til Expo-logo
-// når en ekstern proffkunde ikke har lastet opp egen firmalogo.
+// når et firma uten intern merkevarerett ikke har lastet opp egen firmalogo.
 const EMPTY_COMPANY_LOGO_DATA_URL =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1' viewBox='0 0 1 1'%3E%3C/svg%3E";
 
@@ -54,7 +54,7 @@ function normalizeActiveCompanyProfile(state = {}) {
     phone: clean(profile?.phone),
     email: clean(profile?.email),
     website: clean(profile?.website),
-    // Viktig: bruk rå arbeidsprofil. Ingen Expo-fallback for ekstern proffkunde.
+    // Viktig: bruk rå arbeidsprofil. Ingen Expo-fallback for firma uten intern merkevarerett.
     logoUrl: clean(profile?.logoUrl || profile?.logo_url),
   };
 }
