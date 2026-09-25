@@ -52,8 +52,9 @@ for (const needle of [
 for (const needle of [
   "INTERNAL_SENDER_COMPANIES",
   '"ringside rørleggerbedrift as"',
+  '"ringside as"',
   '"bademiljø expo"',
-  '"expo proffsenter"',
+  '"bademiljø expo as"',
   'const COMPANY_BRAND_KEY = "company-profile"',
   'brandMode: "company"',
   "getMyWorkProfileState",
@@ -65,8 +66,16 @@ for (const needle of [
   assert(proBuilder.includes(needle), `Proff-avsenderpolicy mangler: ${needle}`);
 }
 assert(
+  !proBuilder.includes('"expo proffsenter",'),
+  "Expo Proffsenter skal ikke ha intern Ringside/Bademiljø-merkevarevelger."
+);
+assert(
+  !proBuilder.includes('"expo proffsenter as",'),
+  "Expo Proffsenter AS skal ikke ha intern Ringside/Bademiljø-merkevarevelger."
+);
+assert(
   proBuilder.includes("profile.logoUrl || EMPTY_COMPANY_LOGO_DATA_URL"),
-  "Ekstern proffkunde uten logo kan fortsatt falle tilbake til en intern Expo/Ringside-logo."
+  "Firma uten intern merkevarerett og uten logo kan fortsatt falle tilbake til en intern Expo/Ringside-logo."
 );
 
 for (const needle of [
@@ -79,6 +88,10 @@ for (const needle of [
   "replaceExactTextNodes",
   "replacePairs",
   "patchGeneralOfferSurfaceCopy",
+  "patchGeneratedGeneralOfferTitle",
+  'root.querySelector(".sales-detail-hero .sales-title")',
+  '`Tilbud – ${title}`',
+  'root.querySelectorAll(".sales-next-card strong")',
   "simple-order-accepted-shell",
   "Generelt tilbud akseptert",
   "Velg videreføring når du er klar.",
