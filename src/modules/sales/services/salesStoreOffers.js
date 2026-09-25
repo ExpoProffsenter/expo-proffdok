@@ -7,7 +7,7 @@
 
 export const RINGSIDE_STORE_OFFER_ORG_NUMBER = "915407692";
 export const STORE_OFFER_SOURCE = "Butikktilbud / varesalg";
-export const STORE_OFFER_TITLE = "Butikktilbud";
+export const STORE_OFFER_TITLE = "Generelt tilbud";
 export const STORE_OFFER_SESSION_KEY = "expo-proffdok:sales:store-offer-launch";
 export const STORE_OFFER_META_ID = "__expo_store_offer_meta__";
 export const STORE_TEXT_TEMPLATE_KIND = "store-offer-text-v1";
