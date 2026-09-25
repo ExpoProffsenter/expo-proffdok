@@ -2,6 +2,8 @@
 -- UE-portalen beholdes. Server-guard ligger på portaltilgangstabellen slik at også
 -- fremtidige klienter eller direkte RPC-kall stoppes dersom de prøver å opprette
 -- eller reaktivere kundetilgang for en enkel ordre.
+-- En ren revokering av en allerede eksisterende kundetilgang må derimot tillates,
+-- ellers ville forsvar-i-dybden-triggeren selv blitt blokkert ved konvertering.
 
 create or replace function public.fase45b_block_simple_order_customer_portal()
 returns trigger
@@ -19,6 +21,15 @@ begin
         or coalesce((p.data->'project'->>'simpleOrder')::boolean,false) = true
       )
   ) then
+    -- Tillat bare at en eksisterende kundetilgang på samme prosjekt forblir
+    -- revokert eller revokeres nå. Opprettelse, reaktivering og flytting blokkeres.
+    if tg_op = 'UPDATE'
+       and old.role = 'kunde'
+       and old.project_id = new.project_id
+       and new.revoked_at is not null then
+      return new;
+    end if;
+
     raise exception 'Enkel ordre har ikke kundelenke/kundeportal.' using errcode='42501';
   end if;
   return new;
