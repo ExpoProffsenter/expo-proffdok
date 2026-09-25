@@ -28,6 +28,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Require PR head to contain current main
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          git fetch origin "${{ github.base_ref }}" --no-tags
+          if ! git merge-base --is-ancestor "origin/${{ github.base_ref }}" "${{ github.event.pull_request.head.sha }}"; then
+            echo "::error::Release-branch mangler commits som allerede ligger i ${{ github.base_ref }}. Synkroniser/rebaser fra fersk main før Production-merge."
+            echo "Commits som finnes i main, men ikke i PR-head:"
+            git log --oneline "${{ github.event.pull_request.head.sha }}..origin/${{ github.base_ref }}" || true
+            exit 1
+          fi
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
