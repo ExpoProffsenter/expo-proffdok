@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 const terminology = fs.readFileSync("src/modules/sales/generalOfferTerminologyUx.js", "utf8");
 const requestForm = fs.readFileSync("src/modules/sales/components/SalesRequestForm.jsx", "utf8");
+const offerLogic = fs.readFileSync("src/modules/sales/utils/salesOfferLogic.js", "utf8");
 const storeOffers = fs.readFileSync("src/modules/sales/services/salesStoreOffers.js", "utf8");
 const salesContracts = fs.readFileSync("src/modules/sales/services/salesContracts.js", "utf8");
 const contractCustomer = fs.readFileSync("src/modules/sales/components/SalesContractCustomerView.jsx", "utf8");
@@ -29,6 +30,17 @@ assert(!requestForm.includes('"Registrer kunde og opprett butikktilbud"'), "Oppr
 assert(!requestForm.includes('"Opprett butikktilbud"'), "Opprett-knapp skal bruke generell tilbudsterminologi.");
 
 for (const needle of [
+  'const STORE_OFFER_SOURCE = "Butikktilbud / varesalg"',
+  'const GENERAL_OFFER_DEFAULT_TITLE = "Generelt tilbud"',
+  "isGeneralOfferRequest",
+  "!String(request?.offerTitle || \"\").trim()",
+  "String(request?.title || GENERAL_OFFER_DEFAULT_TITLE)",
+  "title: generalOfferTitle",
+]) {
+  assert(offerLogic.includes(needle), `Tilbudsnavn følger ikke korrekt inn i tilbudsbyggeren: ${needle}`);
+}
+
+for (const needle of [
   "Generelle tilbud",
   "Generelt tilbud",
   "For varer, arbeid, underentreprenører og andre leveranser",
@@ -41,7 +53,6 @@ for (const needle of [
   "simple-order-accepted-shell",
   "Generelt tilbud akseptert",
   "Velg videreføring når du er klar.",
-  "Generelt tilbud",
   "setTextIfChanged",
   "MutationObserver",
 ]) {
