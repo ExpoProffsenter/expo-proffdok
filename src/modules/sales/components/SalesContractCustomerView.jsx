@@ -221,7 +221,7 @@ export default function SalesContractCustomerView({ supabaseClient, contractToke
         <main className="sales-main">
           <section className="sales-form-hero">
             <p className="sales-eyebrow">
-              {signed ? "Ferdig signert kontrakt" : "Kontrakt til signering"}
+              {signed ? "Signert kontrakt" : "Kontrakt til signering"}
             </p>
             <h1 className="sales-title">{presentation.request.title}</h1>
             <p className="sales-subtitle">
@@ -243,14 +243,14 @@ export default function SalesContractCustomerView({ supabaseClient, contractToke
                 }}
               >
                 <div style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900, fontSize: 18 }}>
-                  <CheckCircle2 size={22} /> Kontrakten er allerede signert
+                  <CheckCircle2 size={22} /> Kontrakten er signert
                 </div>
                 <span>
-                  Denne kontrakten ble signert av <strong>{contract.customer_signed_by_name || presentation.request.customer}</strong>
+                  Kontrakten ble signert av <strong>{contract.customer_signed_by_name || presentation.request.customer}</strong>
                   {contract.customer_signed_at ? ` · ${formatDateTime(contract.customer_signed_at)}` : ""}.
                 </span>
                 <span style={{ fontWeight: 800 }}>
-                  Ingen ytterligere handling er nødvendig.
+                  Kontrakten er lagret og låst. Utførende firma følger opp videre fremdrift og eventuell oppstart etter avtale.
                 </span>
               </div>
             ) : (
@@ -266,7 +266,7 @@ export default function SalesContractCustomerView({ supabaseClient, contractToke
                 }}
               >
                 <div style={{ display: "flex", gap: 8, alignItems: "center", fontWeight: 900, color: "#0b737b" }}>
-                  <ShieldCheck size={18} /> Kontrakten er bekreftet av utførende firma
+                  <ShieldCheck size={18} /> Kontrakten er signert av utførende firma
                 </div>
                 <div>
                   <strong>{contract.company_signed_by_name || presentation.companyProfile.companyName}</strong>
