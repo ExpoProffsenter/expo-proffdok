@@ -73,8 +73,11 @@ export default function SalesRequestForm({
     isDirectOffer &&
       String(recoveredEntryForm?.source || "").trim() === STORE_OFFER_SOURCE
   );
+  const [freshStoreOfferLaunch] = useState(
+    () => Boolean(isDirectOffer && readStoreOfferLaunch())
+  );
   const [isStoreOffer] = useState(
-    () => Boolean(isDirectOffer && (readStoreOfferLaunch() || recoveredStoreOffer))
+    () => Boolean(isDirectOffer && (freshStoreOfferLaunch || recoveredStoreOffer))
   );
 
   useEffect(() => {
@@ -82,10 +85,19 @@ export default function SalesRequestForm({
 
     const recoveredTitle = String(recoveredEntryForm?.title || "").trim();
     const recoveredSource = String(recoveredEntryForm?.source || "").trim();
+    const currentTitle = String(form?.title || "").trim();
 
-    if (!String(form?.title || "").trim() && !recoveredTitle) {
+    // Nytt Generelt tilbud må aldri arve standardverdien «Modernisering av bad»
+    // fra våtroms-/forespørselsskjemaet. Ved recovery bevares derimot brukerens
+    // faktiske tilbudsnavn fra entry-kladden.
+    if (freshStoreOfferLaunch && !recoveredStoreOffer) {
+      if (currentTitle !== STORE_OFFER_TITLE) {
+        onUpdateForm("title", STORE_OFFER_TITLE);
+      }
+    } else if (!currentTitle && !recoveredTitle) {
       onUpdateForm("title", STORE_OFFER_TITLE);
     }
+
     if (
       String(form?.source || "").trim() !== STORE_OFFER_SOURCE &&
       recoveredSource !== STORE_OFFER_SOURCE
