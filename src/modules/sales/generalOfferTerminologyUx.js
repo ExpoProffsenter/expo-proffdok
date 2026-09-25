@@ -40,6 +40,10 @@ function replaceExactTextNodes(root, from, to) {
   return changed;
 }
 
+function replacePairs(root, pairs = []) {
+  pairs.forEach(([from, to]) => replaceExactTextNodes(root, from, to));
+}
+
 function findOverviewNote() {
   const marked = document.querySelector('[data-sales-overview-intro="1"]');
   if (marked instanceof HTMLParagraphElement) return marked;
@@ -112,6 +116,60 @@ function patchNavigationLabels() {
   });
 }
 
+function patchGeneralOfferSurfaceCopy() {
+  const root = document.querySelector(".sales-app");
+  if (!(root instanceof HTMLElement)) return;
+
+  const simpleOrderRoot = root.querySelector(".simple-order-accepted-shell");
+  if (simpleOrderRoot instanceof HTMLElement) {
+    replacePairs(simpleOrderRoot, [
+      ["Butikktilbud akseptert", "Generelt tilbud akseptert"],
+      [
+        "Kunden har akseptert butikktilbudet. Aksepten og den publiserte tilbudsversjonen er låst, og saken avsluttes i Sales.",
+        "Kunden har akseptert tilbudet. Aksepten og den publiserte tilbudsversjonen er låst. Velg videreføring når du er klar.",
+      ],
+      [
+        "Akseptbeviset er opprettet og lagret. Butikktilbudet er ferdig behandlet.",
+        "Akseptbeviset er opprettet og lagret. Velg videreføring når du er klar.",
+      ],
+      [
+        "Butikktilbudet er akseptert og avsluttet i Sales. Det opprettes ikke ProffDok-prosjekt.",
+        "Tilbudet er akseptert. Velg Enkel ordre eller ordinært prosjekt ut fra omfanget på oppdraget.",
+      ],
+    ]);
+  }
+
+  replacePairs(root, [
+    ["Butikktilbud", "Generelt tilbud"],
+    ["Butikktilbud / Varesalg", "Generelt tilbud"],
+    ["Butikktilbud / varesalg", "Generelt tilbud"],
+    ["Nytt butikktilbud", "Nytt generelt tilbud"],
+    ["Registrer kunde og opprett butikktilbud", "Registrer kunde og opprett tilbud"],
+    ["Opprett butikktilbud", "Opprett tilbud"],
+    ["Butikktilbud akseptert", "Generelt tilbud akseptert"],
+    [
+      "Opprett et varebasert tilbud med produkter, eventuell montering og alternativer. Tilbudet avsluttes ved kundeaksept.",
+      "Opprett et tilbud for varer, arbeid, underentreprenører og andre leveranser.",
+    ],
+    [
+      "Kunden har akseptert butikktilbudet. Aksepten og den publiserte tilbudsversjonen er låst, og saken avsluttes i Sales.",
+      "Kunden har akseptert tilbudet. Aksepten og den publiserte tilbudsversjonen er låst, og saken avsluttes i Sales.",
+    ],
+    [
+      "Akseptbeviset er opprettet og lagret. Butikktilbudet er ferdig behandlet.",
+      "Akseptbeviset er opprettet og lagret. Tilbudet er ferdig behandlet.",
+    ],
+    [
+      "Låst dokumentasjon av det aksepterte butikktilbudet.",
+      "Låst dokumentasjon av det aksepterte tilbudet.",
+    ],
+    [
+      "Butikktilbudet er akseptert og avsluttet i Sales. Det opprettes ikke ProffDok-prosjekt.",
+      "Det generelle tilbudet er akseptert og avsluttet i Sales. Det opprettes ikke ProffDok-prosjekt.",
+    ],
+  ]);
+}
+
 function patchKnownOverviewCopy() {
   const note = findOverviewNote();
   if (!(note instanceof HTMLParagraphElement)) return;
@@ -126,6 +184,7 @@ function renderTerminology() {
   patchOfferPicker();
   patchAccessLabels();
   patchNavigationLabels();
+  patchGeneralOfferSurfaceCopy();
   patchKnownOverviewCopy();
 }
 
