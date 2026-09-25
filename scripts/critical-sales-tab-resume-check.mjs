@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import {
+  SALES_BACKGROUND_RESUME_KEY,
   SALES_BACKGROUND_RESUME_MAX_AGE_MS,
   SALES_RELOAD_NAVIGATION_KEY,
   SALES_RELOAD_TAB_KEY,
@@ -116,6 +117,7 @@ requireResume(
     sessionStorage: sessionB,
     localStorage: localB,
     now,
+    search: "",
   }),
   "Bootstrap gjenåpner ikke Sales fra arbeidsbilde-snapshot etter browserforkasting/mobil dvale."
 );
@@ -123,6 +125,59 @@ requireResume(
   sessionB.getItem(SALES_RELOAD_NAVIGATION_KEY) === "1" &&
     localB.getItem(`${storageKey}:navigation`) === JSON.stringify(navigation),
   "Bootstrap gjenoppretter ikke offer-builder før Sales åpnes."
+);
+
+// 4B) Offentlige kunde-/kontrakts-/portalruter må aldri bli dratt tilbake til
+// intern Befaring/Tilbud av gamle/ferske Sales-recovery-markører.
+const publicRouteCases = [
+  "?publicContract=contract-token&publicOffer=offer-token",
+  "?publicOffer=offer-token",
+  "?privateDocument=1&path=sales-contracts/test.pdf",
+  "?project=demo&role=kunde",
+  "?project=demo&access=customer",
+  "?project=demo&access=ue",
+  "?project=demo&role=underleverandor",
+  "?project=demo&role=underleverandør",
+  "?project=demo&role=underentreprenør",
+];
+
+for (const search of publicRouteCases) {
+  const sessionPublic = memoryStorage({
+    [SALES_RELOAD_TAB_KEY]: "1",
+    [SALES_RELOAD_NAVIGATION_KEY]: "1",
+  });
+  const localPublic = memoryStorage({
+    [SALES_BACKGROUND_RESUME_KEY]: JSON.stringify({
+      at: now,
+      storageKey,
+    }),
+    [SALES_WORKSPACE_RESUME_KEY]: JSON.stringify({
+      at: now,
+      storageKey,
+      navigation,
+    }),
+  });
+
+  requireResume(
+    !shouldBootstrapRestoreSales({
+      sessionStorage: sessionPublic,
+      localStorage: localPublic,
+      now,
+      search,
+    }),
+    `Offentlig rute ${search} kan fortsatt trigge intern Sales-recovery i bootstrap.`
+  );
+}
+
+const internalSession = memoryStorage({ [SALES_RELOAD_TAB_KEY]: "1" });
+requireResume(
+  shouldBootstrapRestoreSales({
+    sessionStorage: internalSession,
+    localStorage: memoryStorage(),
+    now,
+    search: "?salesSupportCompany=test",
+  }),
+  "Intern app-rute blir feilaktig blokkert av bootstrap-rutesperren."
 );
 
 // 5) En gammel markør skal aldri dra brukeren tilbake senere.
@@ -225,5 +280,5 @@ if (failures.length) {
 }
 
 console.log(
-  "✅ Expo ProffDok Sales browser-tab resume check OK – fanebytte/dvale gjenopprettes, mens bevisst brukerhandling alltid vinner"
+  "✅ Expo ProffDok Sales browser-tab resume check OK – fanebytte/dvale gjenopprettes, offentlig rute skjermes, og bevisst brukerhandling vinner"
 );
