@@ -4,7 +4,8 @@
 // pris/antall-validering og bevarer egen linjetype gjennom lagring/recovery.
 // Teknisk Butikktilbud-metadata beholdes skjult og versjonslåst i kundevisning.
 // FASE 45B lar brukerens tilbudsnavn følge Generelt tilbud inn i tilbudsbyggeren
-// uten ny databasekolonne; eksisterende offerTitle kan fortsatt overstyre senere.
+// uten ny databasekolonne. Automatisk legacy-prefiks «Tilbud –» regnes ikke som
+// et eget brukerredigert navn og fjernes ved første åpning i tilbudsbyggeren.
 // Recovery-kontrakt: prepareOfferFormForSaveCore(pruneEmptyOfferDraftRows(formValue))
 // er fortsatt prinsippet; 39B.2C skiller bare ut store_text-avsnitt før core-validering.
 
@@ -88,6 +89,16 @@ function isGeneralOfferRequest(request = {}) {
   return Boolean(
     String(request?.source || "").trim() === STORE_OFFER_SOURCE ||
       getStoreOfferMeta(request?.offerLines || [])
+  );
+}
+
+function isGeneratedDirectOfferTitle(request = {}) {
+  const requestTitle = String(request?.title || "").trim();
+  const offerTitle = String(request?.offerTitle || "").trim();
+  if (!requestTitle || !offerTitle) return false;
+  return (
+    offerTitle === `Tilbud – ${requestTitle}` ||
+    offerTitle === `Tilbud - ${requestTitle}`
   );
 }
 
@@ -179,8 +190,11 @@ function normalizeOptionsWithQuantity(options = []) {
 
 export function buildOfferFormFromRequest(request) {
   const form = core.buildOfferFormFromRequest(request);
+  const generalOffer = isGeneralOfferRequest(request);
+  const generatedDirectTitle = isGeneratedDirectOfferTitle(request);
   const generalOfferTitle =
-    isGeneralOfferRequest(request) && !String(request?.offerTitle || "").trim()
+    generalOffer &&
+    (!String(request?.offerTitle || "").trim() || generatedDirectTitle)
       ? String(request?.title || GENERAL_OFFER_DEFAULT_TITLE).trim() ||
         GENERAL_OFFER_DEFAULT_TITLE
       : form.title;
