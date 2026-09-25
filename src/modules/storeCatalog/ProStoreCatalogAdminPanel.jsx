@@ -1,3 +1,4 @@
+// Brukere og tilganger beholdes på eksisterende brukerkort; dette panelet styrer kun firmaets leverandør/rabatt.
 import { useEffect, useMemo, useState } from "react";
 import { createDefaultSalesSupabaseClient } from "../sales/services/salesSupabase.js";
 import {
