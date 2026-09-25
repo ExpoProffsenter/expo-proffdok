@@ -42,9 +42,15 @@ function visibleElement(element) {
   return element.getClientRects().length > 0;
 }
 
+function buttonBelongsToVisibleUserCard(button) {
+  const card = button?.closest?.("[data-company-admin-user-card]");
+  if (!(card instanceof HTMLElement)) return false;
+  return card.style.display !== "none" && !card.hidden;
+}
+
 function dirtyAccessButtons(panel) {
   return Array.from(panel?.querySelectorAll("button") || []).filter((button) =>
-    visibleElement(button) &&
+    buttonBelongsToVisibleUserCard(button) &&
     !button.disabled &&
     compactText(button.textContent) === "Lagre tilganger"
   );
@@ -52,7 +58,8 @@ function dirtyAccessButtons(panel) {
 
 function accessSaveBusy(panel) {
   return Array.from(panel?.querySelectorAll("button") || []).some((button) =>
-    visibleElement(button) && compactText(button.textContent) === "Lagrer tilganger..."
+    buttonBelongsToVisibleUserCard(button) &&
+    compactText(button.textContent) === "Lagrer tilganger..."
   );
 }
 
@@ -71,7 +78,6 @@ function ensureStyles() {
   style.textContent = `
     #${MODAL_BACKDROP_ID}{position:fixed;inset:0;z-index:100000;background:rgba(8,25,31,.58);backdrop-filter:blur(2px)}
     [data-company-admin-modal-open="1"]{position:fixed!important;z-index:100001!important;inset:24px!important;max-width:1180px!important;width:auto!important;height:auto!important;max-height:calc(100vh - 48px)!important;margin:auto!important;padding:0 22px 22px!important;overflow:auto!important;box-sizing:border-box!important;background:#fff!important;border:1px solid #b8d9dd!important;border-radius:18px!important;box-shadow:0 30px 90px rgba(5,25,32,.32)!important}
-    [data-company-admin-modal-open="1"]>${MODAL_HEADER_ID},[data-company-admin-modal-open="1"]>${MODAL_FOOTER_ID}{display:block}
     [data-company-admin-modal-open="1"]>h3,[data-company-admin-modal-open="1"]>p.note{display:none!important}
     [data-company-admin-modal-open="1"] .company-access-navigator{border:0!important;margin:0!important;padding:0!important;background:transparent!important}
     [data-company-admin-modal-open="1"] .company-access-intro,[data-company-admin-modal-open="1"] .company-access-filters,[data-company-admin-modal-open="1"] .company-access-search,[data-company-admin-modal-open="1"] .company-access-meta{display:none!important}
