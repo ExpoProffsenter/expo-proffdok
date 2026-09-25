@@ -17,6 +17,18 @@ function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
+function setTextIfChanged(element, nextValue = "") {
+  if (!(element instanceof HTMLElement)) return;
+  const next = String(nextValue ?? "");
+  if (element.textContent !== next) element.textContent = next;
+}
+
+function setAttributeIfChanged(element, name, nextValue = "") {
+  if (!(element instanceof HTMLElement)) return;
+  const next = String(nextValue ?? "");
+  if (element.getAttribute(name) !== next) element.setAttribute(name, next);
+}
+
 function findCompanyPanel() {
   const heading = Array.from(document.querySelectorAll("h3")).find((node) =>
     compactText(node.textContent) === PANEL_TITLE
@@ -166,8 +178,8 @@ function updateChrome(panel, row) {
   ensureFooter(panel);
   const title = header.querySelector("[data-company-modal-title]");
   const summary = header.querySelector("[data-company-modal-summary]");
-  if (title) title.textContent = activeCompanyName(row);
-  if (summary) summary.textContent = activeCompanySummary(row) || "Firmaadministrasjon";
+  setTextIfChanged(title, activeCompanyName(row));
+  setTextIfChanged(summary, activeCompanySummary(row) || "Firmaadministrasjon");
 }
 
 function openModal(panel, row) {
@@ -177,11 +189,11 @@ function openModal(panel, row) {
   if (panel.dataset.companyAdminModalOpen !== "1") {
     previousBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    panel.dataset.companyAdminModalOpen = "1";
   }
-  panel.dataset.companyAdminModalOpen = "1";
-  panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-modal", "true");
-  panel.setAttribute("aria-label", `Administrer ${activeCompanyName(row)}`);
+  setAttributeIfChanged(panel, "role", "dialog");
+  setAttributeIfChanged(panel, "aria-modal", "true");
+  setAttributeIfChanged(panel, "aria-label", `Administrer ${activeCompanyName(row)}`);
 }
 
 function cleanupModal(panel) {
@@ -237,7 +249,7 @@ async function saveAndClose(panel) {
   const saveButton = panel.querySelector("[data-company-modal-save]");
   if (saveButton instanceof HTMLButtonElement) {
     saveButton.disabled = true;
-    saveButton.textContent = "Lagrer...";
+    setTextIfChanged(saveButton, "Lagrer...");
   }
 
   if (document.activeElement instanceof HTMLElement && panel.contains(document.activeElement)) {
@@ -249,7 +261,7 @@ async function saveAndClose(panel) {
   if (!result.ok) {
     if (saveButton instanceof HTMLButtonElement) {
       saveButton.disabled = false;
-      saveButton.textContent = "Lagre og lukk";
+      setTextIfChanged(saveButton, "Lagre og lukk");
     }
     saveInProgress = false;
     window.alert(result.reason === "error"
