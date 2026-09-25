@@ -1,7 +1,9 @@
-// Expo ProffDok – FASE 33B.5 / FASE 33B.4
+// Expo ProffDok – FASE 45B / FASE 33B.5 / FASE 33B.4
 // Tynn klient rundt kontraktgrunnlaget fra FASE 33B.2–33B.5.
 // Signert kontrakt kan ferdigstilles som privat PDF og synkroniseres idempotent
 // til riktig ProffDok-prosjekt uten å endre tilbud, aksept eller historikk.
+// FASE 45B normaliserer eldre kontrakts-snapshots i offentlig visning slik at
+// manglende nye feltnavn aldri presenteres som falsk 0-pris eller tomme parter.
 
 import {
   PRIVATE_DOCUMENT_BUCKET,
@@ -21,6 +23,61 @@ const CONTRACT_CHANGED_EVENT = "expo-proffdok-sales-contract-changed";
 function notifyContractChanged(detail = {}) {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent(CONTRACT_CHANGED_EVENT, { detail }));
+}
+
+function normalizePublicContractPayload(contract = {}) {
+  if (!contract || typeof contract !== "object") return contract;
+  const snapshot =
+    contract.snapshot && typeof contract.snapshot === "object"
+      ? contract.snapshot
+      : {};
+  const legacyDraft =
+    snapshot.contract && typeof snapshot.contract === "object"
+      ? snapshot.contract
+      : {};
+  const existingCompany =
+    snapshot.company && typeof snapshot.company === "object"
+      ? snapshot.company
+      : snapshot.company_snapshot && typeof snapshot.company_snapshot === "object"
+        ? snapshot.company_snapshot
+        : {};
+  const existingCustomer =
+    snapshot.customer && typeof snapshot.customer === "object"
+      ? snapshot.customer
+      : {};
+
+  const normalizedDraft = {
+    ...legacyDraft,
+    price_incl_vat:
+      legacyDraft.price_incl_vat ?? legacyDraft.priceInclVat ?? null,
+    price_ex_vat:
+      legacyDraft.price_ex_vat ??
+      (Number.isFinite(Number(legacyDraft.priceInclVat))
+        ? Number(legacyDraft.priceInclVat) / 1.25
+        : null),
+    project_address:
+      legacyDraft.project_address || legacyDraft.projectAddress || "",
+    start_date: legacyDraft.start_date || legacyDraft.startDate || "",
+    expected_finish_date:
+      legacyDraft.expected_finish_date || legacyDraft.completionDate || "",
+  };
+
+  const normalizedCustomer = {
+    ...existingCustomer,
+    name: existingCustomer.name || legacyDraft.customerName || "",
+    address:
+      existingCustomer.address || normalizedDraft.project_address || "",
+  };
+
+  return {
+    ...contract,
+    snapshot: {
+      ...snapshot,
+      company: existingCompany,
+      customer: normalizedCustomer,
+      contract: normalizedDraft,
+    },
+  };
 }
 
 export async function fetchActiveSalesContract(
@@ -113,7 +170,7 @@ export async function fetchPublicSalesContract(client, token) {
     token,
   });
   if (error) throw error;
-  return data || null;
+  return normalizePublicContractPayload(data || null);
 }
 
 export async function signPublicSalesContractCustomer(
