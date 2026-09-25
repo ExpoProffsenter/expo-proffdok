@@ -155,9 +155,14 @@ requireCheck(
 );
 requireCheck(
   requestFormSource.includes("recoveredStoreOffer") &&
-    requestFormSource.includes("readStoreOfferLaunch() || recoveredStoreOffer") &&
+    requestFormSource.includes("freshStoreOfferLaunch || recoveredStoreOffer") &&
     requestFormSource.includes("STORE_OFFER_SOURCE"),
   "Generelt tilbud gjenkjennes ikke fra mellomlagret source dersom launch-markøren er borte."
+);
+requireCheck(
+  requestFormSource.includes("if (freshStoreOfferLaunch && !recoveredStoreOffer)") &&
+    requestFormSource.includes('onUpdateForm("title", STORE_OFFER_TITLE)'),
+  "Et helt nytt Generelt tilbud kan fortsatt arve standardnavnet fra våtromsskjemaet."
 );
 requireCheck(
   storageSource.includes('new Set(["new", "new-offer", "edit-request"])') &&
