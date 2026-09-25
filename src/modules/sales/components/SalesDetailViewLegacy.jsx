@@ -1,4 +1,5 @@
 // Expo ProffDok – FASE 42M / FASE 37D2 / FASE 33B.5 / FASE 33B.4 / FASE 33B.3 / FASE 32A / FASE 31C / FASE 31A2B / FASE 31B / FASE 30C2 UX / FASE 39B.2C
+// HOTFIX 25.09.2026: Beholder eksisterende kontraktflyt også etter at en akseptert sak er aktivert som prosjekt.
 // FASE 42M viser versjonslåst oppfølgingsplan for ordinære Våtromstilbud og
 // gjenbruker eksisterende avsluttet Avvist-presentasjon. Aksept/kontrakt/prosjekt er urørt.
 // Butikktilbud avsluttes ved aksept: prosjektsteg, kontrakt og prosjektaktivering
@@ -394,8 +395,45 @@ function rewriteContractChoice(node, request, onOpenWizard) {
   const directChildren = Children.toArray(node.props.children);
   const headingText = reactNodeText(directChildren[0]);
   const introText = reactNodeText(directChildren[1]);
+  const nodeText = reactNodeText(node).replace(/\s+/g, " ").trim();
+  const contractEligible = ["Akseptert", "Aktivert"].includes(request?.status);
+  const contractRequest =
+    request?.status === "Aktivert" ? { ...request, status: "Akseptert" } : request;
+
+  if (
+    request?.status === "Aktivert" &&
+    String(node.props?.className || "").includes("sales-detail-lines") &&
+    nodeText.includes("Prosjektet er opprettet i den ordinære ProffDok-prosjektlisten.")
+  ) {
+    const activatedContractChoice = (
+      <div
+        key="activated-sales-contract-actions"
+        style={{
+          marginTop: 16,
+          padding: 16,
+          border: "1px solid #d7e4ea",
+          borderRadius: 14,
+          background: "#f8fbfc",
+          display: "grid",
+          gap: 10,
+        }}
+      >
+        <p style={{ margin: 0 }}><strong>Kontrakt</strong></p>
+        <p style={{ margin: 0, color: "#52616b" }}>
+          Prosjektet er allerede aktivert, men kontrakten kan fortsatt opprettes fra det aksepterte tilbudet. Signert kontrakt synkroniseres tilbake til prosjektets Tilbud / kontrakt.
+        </p>
+        <SalesContractActions request={contractRequest} onOpenWizard={onOpenWizard} />
+      </div>
+    );
+
+    return cloneElement(node, undefined, [
+      ...directChildren,
+      activatedContractChoice,
+    ]);
+  }
+
   const isContractCard =
-    request?.status === "Akseptert" &&
+    contractEligible &&
     headingText === "Kontrakt" &&
     introText.includes("Håndverksbedriften kan laste opp sin egen ferdigstilte kontrakt.");
 
@@ -415,7 +453,7 @@ function rewriteContractChoice(node, request, onOpenWizard) {
         key="fase33b5-expo-contract-actions"
         style={{ margin: "0 0 14px" }}
       >
-        <SalesContractActions request={request} onOpenWizard={onOpenWizard} />
+        <SalesContractActions request={contractRequest} onOpenWizard={onOpenWizard} />
       </div>
     );
 
@@ -801,7 +839,7 @@ export default function SalesDetailView(props) {
   if (
     !storeOffer &&
     contractWizardOpen &&
-    coreProps?.selectedRequest?.status === "Akseptert"
+    ["Akseptert", "Aktivert"].includes(coreProps?.selectedRequest?.status)
   ) {
     return (
       <SalesContractWizard
