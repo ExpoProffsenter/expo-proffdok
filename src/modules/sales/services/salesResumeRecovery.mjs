@@ -210,7 +210,7 @@ export function shouldBootstrapRestoreSales({
   localStorage,
   now = Date.now(),
   search =
-    typeof window !== "undefined" ? window.location.search : "",
+    typeof window !== "undefined" ? window?.location?.search || "" : "",
 } = {}) {
   // Bootstrap må aldri dra en offentlig kunde-/kontrakts-/portalrute tilbake
   // til intern Befaring/Tilbud, selv om nettleseren har ferske recovery-markører.
