@@ -1,10 +1,12 @@
 import fs from "node:fs";
 import assert from "node:assert/strict";
+import { decorateRequestForOptionalityPresentation } from "../src/modules/sales/utils/salesOfferOptionalityPresentation.js";
 
 const terminology = fs.readFileSync("src/modules/sales/generalOfferTerminologyUx.js", "utf8");
 const requestForm = fs.readFileSync("src/modules/sales/components/SalesRequestForm.jsx", "utf8");
 const offerLogic = fs.readFileSync("src/modules/sales/utils/salesOfferLogic.js", "utf8");
 const proBuilder = fs.readFileSync("src/modules/sales/components/SalesStoreOfferBuilderProCatalog.jsx", "utf8");
+const optionalityPresentation = fs.readFileSync("src/modules/sales/utils/salesOfferOptionalityPresentation.js", "utf8");
 const storeOffers = fs.readFileSync("src/modules/sales/services/salesStoreOffers.js", "utf8");
 const salesContracts = fs.readFileSync("src/modules/sales/services/salesContracts.js", "utf8");
 const contractCustomer = fs.readFileSync("src/modules/sales/components/SalesContractCustomerView.jsx", "utf8");
@@ -76,6 +78,72 @@ assert(
 assert(
   proBuilder.includes("profile.logoUrl || EMPTY_COMPANY_LOGO_DATA_URL"),
   "Firma uten intern merkevarerett og uten logo kan fortsatt falle tilbake til en intern Expo/Ringside-logo."
+);
+
+for (const needle of [
+  "getVersionLockedStoreOfferMeta",
+  "getActiveOfferVersion",
+  "getStoreOfferMeta(activeVersion?.lines || [])",
+  "versionStoreOfferMeta",
+  "storeOfferMeta: versionStoreOfferMeta",
+]) {
+  assert(optionalityPresentation.includes(needle), `Versjonslåst avsenderprioritet mangler: ${needle}`);
+}
+
+const versionWins = decorateRequestForOptionalityPresentation({
+  id: "QA-VERSION-SENDER",
+  storeOfferMeta: {
+    __storeOfferMeta: true,
+    brandLabel: "Bademiljø Expo",
+    brandLogoUrl: "/legacy-bademiljo.svg",
+  },
+  sentOfferVersionId: "v2",
+  sentOfferVersionNumber: 2,
+  offerVersions: [
+    {
+      id: "v2",
+      versionNumber: 2,
+      lines: [
+        {
+          __storeOfferMeta: true,
+          brandMode: "company",
+          brandKey: "company-profile",
+          brandLabel: "Expo Proffsenter",
+          brandLogoUrl: "/expo-proffsenter.svg",
+          signatureName: "Kenneth Demo",
+        },
+      ],
+      options: [],
+    },
+  ],
+  offerOptions: [],
+});
+assert.equal(
+  versionWins.storeOfferMeta?.brandLabel,
+  "Expo Proffsenter",
+  "Aktiv tilbudsversjon må vinne over eldre Bademiljø-metadata på saken."
+);
+assert.equal(
+  versionWins.storeOfferMeta?.brandLogoUrl,
+  "/expo-proffsenter.svg",
+  "Logo må komme fra aktiv tilbudsversjon."
+);
+
+const legacyFallback = decorateRequestForOptionalityPresentation({
+  id: "QA-LEGACY-SENDER",
+  storeOfferMeta: {
+    __storeOfferMeta: true,
+    brandLabel: "Bademiljø Expo",
+    brandLogoUrl: "/legacy-bademiljo.svg",
+  },
+  sentOfferVersionId: "legacy-v1",
+  offerVersions: [{ id: "legacy-v1", versionNumber: 1, lines: [], options: [] }],
+  offerOptions: [],
+});
+assert.equal(
+  legacyFallback.storeOfferMeta?.brandLabel,
+  "Bademiljø Expo",
+  "Gamle versjoner uten versjonsmetadata skal beholde saksmetadata som fallback."
 );
 
 for (const needle of [
