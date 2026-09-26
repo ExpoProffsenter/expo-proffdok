@@ -9,6 +9,8 @@ const OFFER_PICKER_SELECTOR = '[aria-labelledby="sales-offer-type-title"]';
 const OVERVIEW_ALL = "Her håndterer du forespørsler, Våtromstilbud og Generelle tilbud. Våtromstilbud følger våtromsflyten, mens Generelle tilbud kan brukes til varer, arbeid, underentreprenører og andre leveranser.";
 const OVERVIEW_WETROOM = "Opprett og følg forespørsler og Våtromstilbud gjennom befaring, tilbud og kundeaksept. Akseptert Våtromstilbud kan aktiveres som ProffDok-prosjekt.";
 const OVERVIEW_GENERAL = "Opprett og følg Generelle tilbud for varer, arbeid, underentreprenører og andre leveranser. Etter kundeaksept vises de neste stegene som er tilgjengelige for firmaet.";
+const LEGACY_ENGINE_OVERVIEW = "Våtromstilbud og Butikktilbud ligger i samme sikre tilbudsmotor, men kan filtreres separat under.";
+const GENERAL_ENGINE_OVERVIEW = "Våtromstilbud og Generelle tilbud ligger i samme sikre tilbudsmotor, men kan filtreres separat under.";
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -63,6 +65,14 @@ function setOverview(type = "all") {
   if (type === "general") setTextIfChanged(note, OVERVIEW_GENERAL);
   else if (type === "wetroom") setTextIfChanged(note, OVERVIEW_WETROOM);
   else setTextIfChanged(note, OVERVIEW_ALL);
+}
+
+function patchLegacyEngineOverviewCopy() {
+  document.querySelectorAll("p").forEach((node) => {
+    if (compactText(node.textContent) === LEGACY_ENGINE_OVERVIEW) {
+      setTextIfChanged(node, GENERAL_ENGINE_OVERVIEW);
+    }
+  });
 }
 
 function patchOfferFilter() {
@@ -216,6 +226,7 @@ function renderTerminology() {
   patchNavigationLabels();
   patchGeneralOfferSurfaceCopy();
   patchKnownOverviewCopy();
+  patchLegacyEngineOverviewCopy();
 }
 
 export function installGeneralOfferTerminologyUx() {
