@@ -247,18 +247,30 @@ function handleDocumentClickCapture(event) {
   const control = event.target instanceof Element
     ? event.target.closest("button,a,[role='button']")
     : null;
-  if (!(control instanceof Element) || !control.closest(".sales-app")) return;
+  if (!(control instanceof Element)) return;
 
   const navigation = currentNavigation();
   if (!navigation?.selectedRequestId) return;
 
   const label = labelForControl(control);
+  const insideSalesApp = Boolean(control.closest(".sales-app"));
+  const insideLocalCustomerPreview = Boolean(
+    control.closest(".store-draft-preview-shell")
+  );
 
-  if (EXTERNAL_PREVIEW_LABELS.has(label)) {
+  // Disse navngitte kontrollene kan ligge i et søskenpanel til .sales-app.
+  // De er derfor eksplisitte unntak, ikke en generell global klikkvakt.
+  if (
+    EXTERNAL_PREVIEW_LABELS.has(label) &&
+    (insideSalesApp || document.querySelector(".sales-app"))
+  ) {
     armExternalPreviewReturn(navigation);
   }
 
-  if (isBackLikeLabel(label)) {
+  if (
+    isBackLikeLabel(label) &&
+    (insideSalesApp || insideLocalCustomerPreview)
+  ) {
     const expectedNavigation = getSalesBackReturnTarget({
       navigation,
       label,
