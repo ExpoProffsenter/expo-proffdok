@@ -1,8 +1,9 @@
 // Expo ProffDok – FASE 45B
-// Sentral sikkerhetskontrakt for Sales-navigasjon.
-// Eksisterende React-navigasjon er fortsatt primær. Denne modulen reparerer kun
-// dokumenterte feiltilfeller: underflate -> liste/null ved Tilbake/Lukk, eller
-// retur fra ekstern fane til en annen intern Sales-flate enn den som ble forlatt.
+// Sentral, additiv sikkerhetskontrakt for Sales-navigasjon.
+// React-flyten er fortsatt fasit. Modulen gjør kun to smale reparasjoner:
+// 1) Tilbake/Lukk fra en Sales-underflate skal aldri miste valgt sak og falle til listen.
+// 2) Retur fra eksplisitt kunde-/tilbudspreview i ny fane skal ikke miste flaten som åpnet den.
+// Offentlige kundesider, normal detail -> liste og firmaswitch røres ikke.
 
 import {
   buildSalesStorageKey,
@@ -19,8 +20,9 @@ import {
 } from "../access/workProfileClient.js";
 
 const INSTALL_FLAG = "__expoSalesNavigationContractInstalled";
-const EXTERNAL_ORIGIN_KEY = "expo-proffdok:sales:navigation-contract:external-origin:v1";
-const EXTERNAL_ORIGIN_MAX_AGE_MS = 30 * 60 * 1000;
+const EXTERNAL_RETURN_KEY = "expo-proffdok:sales:navigation-contract:external-return:v1";
+const EXTERNAL_RETURN_MAX_AGE_MS = 30 * 60 * 1000;
+
 const CHILD_MODES = new Set([
   "edit-request",
   "survey-plan",
@@ -28,22 +30,24 @@ const CHILD_MODES = new Set([
   "offer-builder",
   "project-activation",
 ]);
-const BACK_LABELS = new Set([
-  "tilbake",
-  "lukk",
-  "avbryt",
+
+const SAME_SURFACE_RETURN_LABELS = new Set([
   "tilbake til redigering",
   "tilbake til intern visning",
+]);
+
+const EXTERNAL_PREVIEW_LABELS = new Set([
+  "se kundens tilbud",
+  "forhåndsvis som kunde",
+  "forhåndsvis kundetilbud",
+  "se avvist tilbud",
 ]);
 
 let authUserId = "";
 let activeCompanyName = "";
 let activeStorageKey = "";
-let lastNavigation = null;
-let pendingBackExpectation = null;
-let scheduledFrame = 0;
-let originalWindowOpen = null;
 let identityClient = null;
+let externalReturnExpectation = null;
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -58,17 +62,6 @@ function normalizeNavigation(value = null) {
     mode,
     selectedRequestId: selectedRequestId || null,
   };
-}
-
-function sameNavigation(left, right) {
-  const a = normalizeNavigation(left);
-  const b = normalizeNavigation(right);
-  return Boolean(
-    a &&
-      b &&
-      a.mode === b.mode &&
-      String(a.selectedRequestId || "") === String(b.selectedRequestId || "")
-  );
 }
 
 function isPublicSalesSurface() {
@@ -88,8 +81,11 @@ function companyNameFromState(state = null) {
 
 function refreshStorageKey(state = null) {
   if (!authUserId) return "";
-  const companyName = companyNameFromState(state || readCachedWorkProfileState());
+  const companyName = companyNameFromState(
+    state || readCachedWorkProfileState()
+  );
   if (!companyName) return "";
+
   activeCompanyName = companyName;
   activeStorageKey = buildSalesStorageKey({
     integrationMode: "app",
@@ -106,7 +102,7 @@ async function refreshIdentity(state = null) {
     authUserId = compactText(data?.session?.user?.id);
     refreshStorageKey(state);
   } catch {
-    // Kontrakten er UX-sikkerhet. Ordinær React-navigasjon fortsetter uendret.
+    // Dette er kun UX-sikkerhet. Ordinær Sales-navigasjon fortsetter uendret.
   }
 }
 
@@ -117,61 +113,18 @@ function currentNavigation() {
   return normalizeNavigation(loadSalesNavigation(activeStorageKey));
 }
 
-function currentContext() {
-  const navigation = currentNavigation();
-  if (!navigation) return null;
-  return {
-    storageKey: activeStorageKey,
-    companyName: activeCompanyName,
-    navigation,
-  };
-}
-
-function saveExternalOrigin() {
-  const context = currentContext();
-  if (!context?.navigation?.selectedRequestId) return;
-  try {
-    window.sessionStorage.setItem(
-      EXTERNAL_ORIGIN_KEY,
-      JSON.stringify({
-        ...context,
-        savedAt: Date.now(),
-      })
-    );
-  } catch {
-    // Ingen endring av hovedflyt dersom sessionStorage er utilgjengelig.
-  }
-}
-
-function readExternalOrigin() {
-  try {
-    const raw = window.sessionStorage.getItem(EXTERNAL_ORIGIN_KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    if (!parsed?.storageKey || !parsed?.navigation) return null;
-    const savedAt = Number(parsed.savedAt || 0);
-    if (!savedAt || Date.now() - savedAt > EXTERNAL_ORIGIN_MAX_AGE_MS) {
-      window.sessionStorage.removeItem(EXTERNAL_ORIGIN_KEY);
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function clearExternalOrigin() {
-  try {
-    window.sessionStorage.removeItem(EXTERNAL_ORIGIN_KEY);
-  } catch {
-    // UX-markør בלבד.
-  }
+function navigationWasLost(navigation) {
+  const normalized = normalizeNavigation(navigation);
+  return Boolean(!normalized || normalized.mode === "list" || !normalized.selectedRequestId);
 }
 
 function restoreNavigation(expected, reason = "") {
   const navigation = normalizeNavigation(expected?.navigation || expected);
   const storageKey = compactText(expected?.storageKey || activeStorageKey);
   if (!storageKey || !navigation?.selectedRequestId) return false;
-  if (storageKey !== activeStorageKey) return false;
+
+  // En sikkerhetsmekanisme skal aldri krysse firmascopet.
+  if (!activeStorageKey || storageKey !== activeStorageKey) return false;
 
   saveSalesNavigation(
     storageKey,
@@ -189,99 +142,54 @@ function restoreNavigation(expected, reason = "") {
         },
       })
     );
+    return true;
   } catch {
     return false;
   }
-  return true;
 }
 
-function restoreExternalOriginOnFocus() {
-  if (isPublicSalesSurface()) return;
-  const origin = readExternalOrigin();
-  if (!origin) return;
-
-  // Firma kan aldri krysses av denne sikkerhetsmekanismen.
-  if (!activeStorageKey || origin.storageKey !== activeStorageKey) {
-    clearExternalOrigin();
-    return;
-  }
-
-  const now = currentNavigation();
-  if (!sameNavigation(now, origin.navigation)) {
-    restoreNavigation(origin, "external-preview-return");
-  }
-  clearExternalOrigin();
+function labelForControl(control) {
+  return compactText(control?.textContent).toLocaleLowerCase("nb-NO");
 }
 
-function navigationDepth(mode = "") {
-  if (mode === "list") return 0;
-  if (mode === "detail") return 1;
-  if (CHILD_MODES.has(mode)) return 2;
-  return 1;
+function isBackLikeLabel(label = "") {
+  return Boolean(
+    label === "tilbake" ||
+      label === "lukk" ||
+      label === "avbryt" ||
+      label.startsWith("tilbake til ")
+  );
 }
 
-function observeNavigationTransition() {
-  if (isPublicSalesSurface()) return;
-  const next = currentNavigation();
-  if (!next) return;
+function expectedParentForBack(navigation, label = "") {
+  const current = normalizeNavigation(navigation);
+  if (!current?.selectedRequestId || !CHILD_MODES.has(current.mode)) return null;
 
-  const previous = lastNavigation;
-  if (
-    previous &&
-    previous.selectedRequestId &&
-    next.selectedRequestId &&
-    previous.selectedRequestId === next.selectedRequestId &&
-    navigationDepth(next.mode) > navigationDepth(previous.mode)
-  ) {
-    pendingBackExpectation = {
-      childMode: next.mode,
-      parent: {
-        storageKey: activeStorageKey,
-        navigation: previous,
-      },
-    };
-  }
+  // Lokal tilbuds-preview ligger inne i offer-builder og skal tilbake til akkurat
+  // samme editor. Andre Sales-underflater har detail som nærmeste forelder.
+  const expectedMode = SAME_SURFACE_RETURN_LABELS.has(label)
+    ? current.mode
+    : "detail";
 
-  // Når normal React-navigasjon allerede har returnert korrekt til forelderen,
-  // er fallbacken brukt opp og skal ikke påvirke neste handling.
-  if (
-    pendingBackExpectation?.parent?.navigation &&
-    sameNavigation(next, pendingBackExpectation.parent.navigation)
-  ) {
-    pendingBackExpectation = null;
-  }
-
-  lastNavigation = next;
-}
-
-function scheduleObserve() {
-  if (scheduledFrame || typeof window === "undefined") return;
-  scheduledFrame = window.requestAnimationFrame(() => {
-    scheduledFrame = 0;
-    observeNavigationTransition();
-  });
-}
-
-function isBackLikeControl(control) {
-  const text = compactText(control?.textContent).toLocaleLowerCase("nb-NO");
-  if (!text) return false;
-  if (BACK_LABELS.has(text)) return true;
-  return text.startsWith("tilbake til ");
+  return {
+    storageKey: activeStorageKey,
+    navigation: {
+      mode: expectedMode,
+      selectedRequestId: current.selectedRequestId,
+    },
+  };
 }
 
 function verifyBackResult(expected) {
-  const check = () => {
-    if (!expected?.parent?.navigation) return;
-    const now = currentNavigation();
-    if (!now) return;
+  if (!expected?.navigation?.selectedRequestId) return;
 
-    // Native React-retur til detail/forelder er riktig. Vi reparerer kun det
-    // dokumenterte feiltilfellet: hele saken mistes eller brukeren havner i list.
-    if (
-      now.mode === "list" ||
-      !now.selectedRequestId
-    ) {
-      restoreNavigation(expected.parent, "child-back-fell-to-list");
+  const check = () => {
+    const now = currentNavigation();
+
+    // Viktig: korrekt React-retur til detail/editor får stå urørt. Vi reparerer
+    // bare dokumentert feiltilstand: list/null etter Tilbake/Lukk fra underflate.
+    if (navigationWasLost(now)) {
+      restoreNavigation(expected, "child-back-fell-to-list");
     }
   };
 
@@ -290,51 +198,122 @@ function verifyBackResult(expected) {
   window.setTimeout(check, 320);
 }
 
+function storeExternalReturnExpectation(expectation) {
+  externalReturnExpectation = expectation;
+  try {
+    window.sessionStorage.setItem(
+      EXTERNAL_RETURN_KEY,
+      JSON.stringify({
+        ...expectation,
+        savedAt: Date.now(),
+      })
+    );
+  } catch {
+    // Minnet i modulen er tilstrekkelig dersom sessionStorage ikke er tilgjengelig.
+  }
+}
+
+function readExternalReturnExpectation() {
+  if (externalReturnExpectation) return externalReturnExpectation;
+  try {
+    const raw = window.sessionStorage.getItem(EXTERNAL_RETURN_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (!parsed?.storageKey || !parsed?.navigation) return null;
+
+    const savedAt = Number(parsed.savedAt || 0);
+    if (!savedAt || Date.now() - savedAt > EXTERNAL_RETURN_MAX_AGE_MS) {
+      window.sessionStorage.removeItem(EXTERNAL_RETURN_KEY);
+      return null;
+    }
+    externalReturnExpectation = parsed;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function clearExternalReturnExpectation() {
+  externalReturnExpectation = null;
+  try {
+    window.sessionStorage.removeItem(EXTERNAL_RETURN_KEY);
+  } catch {
+    // UX-markøren er ikke kritisk for normal drift.
+  }
+}
+
+function armExternalPreviewReturn(navigation) {
+  const current = normalizeNavigation(navigation);
+  if (!current?.selectedRequestId || !activeStorageKey) return;
+  storeExternalReturnExpectation({
+    storageKey: activeStorageKey,
+    companyName: activeCompanyName,
+    navigation: current,
+  });
+}
+
+function restoreExternalPreviewReturnOnFocus() {
+  if (isPublicSalesSurface()) return;
+  const expected = readExternalReturnExpectation();
+  if (!expected) return;
+
+  // Firmanavn er kun ekstra vern; storageKey inkluderer også bruker og firma.
+  if (
+    !activeStorageKey ||
+    expected.storageKey !== activeStorageKey ||
+    (expected.companyName && expected.companyName !== activeCompanyName)
+  ) {
+    clearExternalReturnExpectation();
+    return;
+  }
+
+  const now = currentNavigation();
+
+  // Brukeren kan ha navigert videre med vilje mens den andre fanen var åpen.
+  // Da skal vi aldri dra dem tilbake. Gjenopprett kun hvis saken faktisk er mistet.
+  if (navigationWasLost(now)) {
+    restoreNavigation(expected, "external-preview-return-lost-navigation");
+  }
+
+  clearExternalReturnExpectation();
+}
+
 function handleDocumentClickCapture(event) {
   if (isPublicSalesSurface()) return;
+
   const control = event.target instanceof Element
     ? event.target.closest("button,a,[role='button']")
     : null;
-  if (!(control instanceof Element)) return;
-  if (!control.closest(".sales-app")) return;
+  if (!(control instanceof Element) || !control.closest(".sales-app")) return;
 
-  if (isBackLikeControl(control) && pendingBackExpectation) {
-    verifyBackResult(pendingBackExpectation);
+  const navigation = currentNavigation();
+  if (!navigation?.selectedRequestId) return;
+
+  const label = labelForControl(control);
+
+  if (EXTERNAL_PREVIEW_LABELS.has(label)) {
+    armExternalPreviewReturn(navigation);
   }
 
-  scheduleObserve();
-}
-
-function installWindowOpenOriginGuard() {
-  if (originalWindowOpen || typeof window === "undefined") return;
-  originalWindowOpen = window.open.bind(window);
-
-  window.open = (...args) => {
-    if (!isPublicSalesSurface() && document.querySelector(".sales-app")) {
-      saveExternalOrigin();
-    }
-    return originalWindowOpen(...args);
-  };
+  if (isBackLikeLabel(label)) {
+    const expected = expectedParentForBack(navigation, label);
+    if (expected) verifyBackResult(expected);
+  }
 }
 
 export function installSalesNavigationContractUx() {
   if (typeof window === "undefined" || window[INSTALL_FLAG]) return;
   window[INSTALL_FLAG] = true;
 
-  void refreshIdentity(readCachedWorkProfileState()).then(scheduleObserve);
-  installWindowOpenOriginGuard();
+  void refreshIdentity(readCachedWorkProfileState());
 
   document.addEventListener("click", handleDocumentClickCapture, true);
-  window.addEventListener("focus", restoreExternalOriginOnFocus);
-  window.addEventListener("pageshow", restoreExternalOriginOnFocus);
+  window.addEventListener("focus", restoreExternalPreviewReturnOnFocus);
+  window.addEventListener("pageshow", restoreExternalPreviewReturnOnFocus);
   window.addEventListener(WORK_PROFILE_EVENT, (event) => {
-    pendingBackExpectation = null;
-    lastNavigation = null;
-    clearExternalOrigin();
-    void refreshIdentity(event?.detail || readCachedWorkProfileState()).then(scheduleObserve);
+    // Firmabytte er en eksplisitt brukerhandling og vinner alltid over gammel returstate.
+    clearExternalReturnExpectation();
+    activeStorageKey = "";
+    activeCompanyName = "";
+    void refreshIdentity(event?.detail || readCachedWorkProfileState());
   });
-
-  const observer = new MutationObserver(scheduleObserve);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-  scheduleObserve();
 }
