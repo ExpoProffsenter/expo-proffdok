@@ -18,23 +18,16 @@ import {
   WORK_PROFILE_EVENT,
   readCachedWorkProfileState,
 } from "../access/workProfileClient.js";
+import {
+  getSalesBackReturnTarget,
+  normalizeSalesNavigation,
+  salesNavigationWasLost,
+  shouldRestoreSalesExternalReturn,
+} from "./utils/salesNavigationContract.mjs";
 
 const INSTALL_FLAG = "__expoSalesNavigationContractInstalled";
 const EXTERNAL_RETURN_KEY = "expo-proffdok:sales:navigation-contract:external-return:v1";
 const EXTERNAL_RETURN_MAX_AGE_MS = 30 * 60 * 1000;
-
-const CHILD_MODES = new Set([
-  "edit-request",
-  "survey-plan",
-  "inspection-note",
-  "offer-builder",
-  "project-activation",
-]);
-
-const SAME_SURFACE_RETURN_LABELS = new Set([
-  "tilbake til redigering",
-  "tilbake til intern visning",
-]);
 
 const EXTERNAL_PREVIEW_LABELS = new Set([
   "se kundens tilbud",
@@ -51,17 +44,6 @@ let externalReturnExpectation = null;
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
-}
-
-function normalizeNavigation(value = null) {
-  if (!value || typeof value !== "object") return null;
-  const mode = compactText(value.mode);
-  const selectedRequestId = compactText(value.selectedRequestId);
-  if (!mode) return null;
-  return {
-    mode,
-    selectedRequestId: selectedRequestId || null,
-  };
 }
 
 function isPublicSalesSurface() {
@@ -110,16 +92,11 @@ function currentNavigation() {
   if (isPublicSalesSurface()) return null;
   if (!activeStorageKey) refreshStorageKey();
   if (!activeStorageKey) return null;
-  return normalizeNavigation(loadSalesNavigation(activeStorageKey));
-}
-
-function navigationWasLost(navigation) {
-  const normalized = normalizeNavigation(navigation);
-  return Boolean(!normalized || normalized.mode === "list" || !normalized.selectedRequestId);
+  return normalizeSalesNavigation(loadSalesNavigation(activeStorageKey));
 }
 
 function restoreNavigation(expected, reason = "") {
-  const navigation = normalizeNavigation(expected?.navigation || expected);
+  const navigation = normalizeSalesNavigation(expected?.navigation || expected);
   const storageKey = compactText(expected?.storageKey || activeStorageKey);
   if (!storageKey || !navigation?.selectedRequestId) return false;
 
@@ -161,34 +138,20 @@ function isBackLikeLabel(label = "") {
   );
 }
 
-function expectedParentForBack(navigation, label = "") {
-  const current = normalizeNavigation(navigation);
-  if (!current?.selectedRequestId || !CHILD_MODES.has(current.mode)) return null;
+function verifyBackResult(expectedNavigation) {
+  if (!expectedNavigation?.selectedRequestId) return;
 
-  // Lokal tilbuds-preview ligger inne i offer-builder og skal tilbake til akkurat
-  // samme editor. Andre Sales-underflater har detail som nærmeste forelder.
-  const expectedMode = SAME_SURFACE_RETURN_LABELS.has(label)
-    ? current.mode
-    : "detail";
-
-  return {
+  const expected = {
     storageKey: activeStorageKey,
-    navigation: {
-      mode: expectedMode,
-      selectedRequestId: current.selectedRequestId,
-    },
+    navigation: expectedNavigation,
   };
-}
-
-function verifyBackResult(expected) {
-  if (!expected?.navigation?.selectedRequestId) return;
 
   const check = () => {
     const now = currentNavigation();
 
     // Viktig: korrekt React-retur til detail/editor får stå urørt. Vi reparerer
     // bare dokumentert feiltilstand: list/null etter Tilbake/Lukk fra underflate.
-    if (navigationWasLost(now)) {
+    if (salesNavigationWasLost(now)) {
       restoreNavigation(expected, "child-back-fell-to-list");
     }
   };
@@ -242,7 +205,7 @@ function clearExternalReturnExpectation() {
 }
 
 function armExternalPreviewReturn(navigation) {
-  const current = normalizeNavigation(navigation);
+  const current = normalizeSalesNavigation(navigation);
   if (!current?.selectedRequestId || !activeStorageKey) return;
   storeExternalReturnExpectation({
     storageKey: activeStorageKey,
@@ -256,21 +219,22 @@ function restoreExternalPreviewReturnOnFocus() {
   const expected = readExternalReturnExpectation();
   if (!expected) return;
 
-  // Firmanavn er kun ekstra vern; storageKey inkluderer også bruker og firma.
-  if (
-    !activeStorageKey ||
-    expected.storageKey !== activeStorageKey ||
-    (expected.companyName && expected.companyName !== activeCompanyName)
-  ) {
-    clearExternalReturnExpectation();
-    return;
-  }
-
+  const sameScope = Boolean(
+    activeStorageKey &&
+      expected.storageKey === activeStorageKey &&
+      (!expected.companyName || expected.companyName === activeCompanyName)
+  );
   const now = currentNavigation();
 
   // Brukeren kan ha navigert videre med vilje mens den andre fanen var åpen.
   // Da skal vi aldri dra dem tilbake. Gjenopprett kun hvis saken faktisk er mistet.
-  if (navigationWasLost(now)) {
+  if (
+    shouldRestoreSalesExternalReturn({
+      currentNavigation: now,
+      expectedNavigation: expected.navigation,
+      sameScope,
+    })
+  ) {
     restoreNavigation(expected, "external-preview-return-lost-navigation");
   }
 
@@ -295,8 +259,11 @@ function handleDocumentClickCapture(event) {
   }
 
   if (isBackLikeLabel(label)) {
-    const expected = expectedParentForBack(navigation, label);
-    if (expected) verifyBackResult(expected);
+    const expectedNavigation = getSalesBackReturnTarget({
+      navigation,
+      label,
+    });
+    if (expectedNavigation) verifyBackResult(expectedNavigation);
   }
 }
 
