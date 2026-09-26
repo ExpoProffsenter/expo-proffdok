@@ -10,11 +10,15 @@ import ProStoreCatalogInlineLookup from "../../storeCatalog/ProStoreCatalogInlin
 import { createDefaultSalesSupabaseClient } from "../services/salesSupabase.js";
 import { canAccessProStoreCatalog } from "../../storeCatalog/proStoreCatalogClient.js";
 import {
+  WORK_PROFILE_EVENT,
   getMyWorkProfileState,
   readCachedWorkProfileState,
 } from "../../access/workProfileClient.js";
 import {
+  DEFAULT_STORE_OFFER_BRAND,
+  STORE_OFFER_BRANDS,
   createStoreOfferMetaLine,
+  getStoreOfferBrand,
 } from "../services/salesStoreOffers.js";
 
 const INTERNAL_SENDER_COMPANIES = new Set([
@@ -65,6 +69,10 @@ function isInternalSenderCompany(profile = null) {
   );
 }
 
+function isInternalBrandKey(value = "") {
+  return STORE_OFFER_BRANDS.some((brand) => brand.key === clean(value));
+}
+
 function companySenderMeta(profile, selectedRequest, existingMeta = null) {
   const base =
     existingMeta ||
@@ -72,14 +80,45 @@ function companySenderMeta(profile, selectedRequest, existingMeta = null) {
       signatureName:
         selectedRequest?.responsible || selectedRequest?.projectResponsible || "",
     });
+  const previousInternalBrandKey = isInternalBrandKey(base?.brandKey)
+    ? base.brandKey
+    : isInternalBrandKey(base?.internalBrandKeyBeforeCompanyMode)
+      ? base.internalBrandKeyBeforeCompanyMode
+      : DEFAULT_STORE_OFFER_BRAND.key;
   return {
     ...base,
+    internalBrandKeyBeforeCompanyMode: previousInternalBrandKey,
     brandMode: "company",
     brandKey: COMPANY_BRAND_KEY,
     brandLabel: profile.companyName,
     brandLogoUrl: profile.logoUrl || EMPTY_COMPANY_LOGO_DATA_URL,
     companyBrandHasLogo: Boolean(profile.logoUrl),
   };
+}
+
+function internalSenderMeta(selectedRequest, existingMeta = null) {
+  const base =
+    existingMeta ||
+    createStoreOfferMetaLine({
+      signatureName:
+        selectedRequest?.responsible || selectedRequest?.projectResponsible || "",
+    });
+  const brandKey = isInternalBrandKey(base?.internalBrandKeyBeforeCompanyMode)
+    ? base.internalBrandKeyBeforeCompanyMode
+    : isInternalBrandKey(base?.brandKey)
+      ? base.brandKey
+      : DEFAULT_STORE_OFFER_BRAND.key;
+  const brand = getStoreOfferBrand(brandKey);
+  const nextMeta = {
+    ...base,
+    brandKey: brand.key,
+    brandLabel: brand.label,
+    brandLogoUrl: brand.logoUrl,
+  };
+  delete nextMeta.brandMode;
+  delete nextMeta.companyBrandHasLogo;
+  delete nextMeta.internalBrandKeyBeforeCompanyMode;
+  return nextMeta;
 }
 
 function withCompanySenderMeta(form = {}, profile = null, selectedRequest = null) {
@@ -95,7 +134,9 @@ function withCompanySenderMeta(form = {}, profile = null, selectedRequest = null
       existingMeta.brandKey === nextMeta.brandKey &&
       existingMeta.brandLabel === nextMeta.brandLabel &&
       existingMeta.brandLogoUrl === nextMeta.brandLogoUrl &&
-      existingMeta.companyBrandHasLogo === nextMeta.companyBrandHasLogo
+      existingMeta.companyBrandHasLogo === nextMeta.companyBrandHasLogo &&
+      existingMeta.internalBrandKeyBeforeCompanyMode ===
+        nextMeta.internalBrandKeyBeforeCompanyMode
   );
   if (unchanged) return form;
 
@@ -105,7 +146,24 @@ function withCompanySenderMeta(form = {}, profile = null, selectedRequest = null
   return { ...(form || {}), lines: nextLines };
 }
 
-function patchExternalSenderPresentation(root, profile) {
+function withInternalSenderMeta(form = {}, selectedRequest = null) {
+  const lines = Array.isArray(form?.lines) ? form.lines : [];
+  const index = lines.findIndex((line) => line?.__storeOfferMeta);
+  if (index < 0) return form;
+  const existingMeta = lines[index];
+  if (
+    existingMeta?.brandMode !== "company" &&
+    existingMeta?.brandKey !== COMPANY_BRAND_KEY
+  ) {
+    return form;
+  }
+
+  const nextLines = [...lines];
+  nextLines[index] = internalSenderMeta(selectedRequest, existingMeta);
+  return { ...(form || {}), lines: nextLines };
+}
+
+function patchSenderPresentation(root, profile, externalSender) {
   if (!(root instanceof HTMLElement) || !profile) return;
   const senderHeading = Array.from(root.querySelectorAll("h2")).find(
     (node) => clean(node.textContent) === "Avsender"
@@ -114,14 +172,26 @@ function patchExternalSenderPresentation(root, profile) {
   if (!(section instanceof HTMLElement)) return;
 
   const help = section.querySelector(".store-section-head p");
+  const brandGrid = section.querySelector(".store-brand-grid");
+  const existingCard = section.querySelector("[data-company-sender-card='1']");
+
+  if (!externalSender) {
+    if (help) {
+      help.textContent =
+        "Bademiljø Expo er standard. Valgt logo og saksbehandler låses med tilbudsversjonen.";
+    }
+    if (brandGrid instanceof HTMLElement) brandGrid.style.display = "";
+    if (existingCard instanceof HTMLElement) existingCard.remove();
+    return;
+  }
+
   if (help) {
     help.textContent = `Tilbudet sendes fra ${profile.companyName}. Firmaprofil og saksbehandler låses med tilbudsversjonen.`;
   }
 
-  const brandGrid = section.querySelector(".store-brand-grid");
   if (brandGrid instanceof HTMLElement) brandGrid.style.display = "none";
 
-  let card = section.querySelector("[data-company-sender-card='1']");
+  let card = existingCard;
   if (!(card instanceof HTMLElement)) {
     card = document.createElement("div");
     card.dataset.companySenderCard = "1";
@@ -185,6 +255,7 @@ function buildOfferLine(item = {}) {
 export default function SalesStoreOfferBuilderProCatalog(props) {
   const [client] = useState(() => createDefaultSalesSupabaseClient());
   const [proAccess, setProAccess] = useState(false);
+  const [workProfileRevision, setWorkProfileRevision] = useState(0);
   const initialWorkProfile = readCachedWorkProfileState();
   const [senderState, setSenderState] = useState(() => ({
     loading: !normalizeActiveCompanyProfile(initialWorkProfile),
@@ -199,49 +270,61 @@ export default function SalesStoreOfferBuilderProCatalog(props) {
       .then((allowed) => active && setProAccess(allowed === true))
       .catch(() => active && setProAccess(false));
     return () => { active = false; };
-  }, [client, props?.selectedRequest?.id]);
+  }, [client, props?.selectedRequest?.id, workProfileRevision]);
 
   useEffect(() => {
     let active = true;
-    getMyWorkProfileState()
-      .then((state) => {
-        if (!active) return;
-        const profile = normalizeActiveCompanyProfile(state);
-        setSenderState({
-          loading: false,
-          profile,
-          error: profile ? "" : "Fant ikke aktiv firmaprofil for tilbudet.",
-        });
-      })
-      .catch((error) => {
-        if (!active) return;
-        const cached = normalizeActiveCompanyProfile(readCachedWorkProfileState());
-        setSenderState({
-          loading: false,
-          profile: cached,
-          error: cached ? "" : error?.message || "Kunne ikke hente aktiv firmaprofil.",
-        });
+
+    const applyWorkProfileState = (state, error = "") => {
+      if (!active) return;
+      const profile = normalizeActiveCompanyProfile(state);
+      setSenderState({
+        loading: false,
+        profile,
+        error: profile ? "" : error || "Fant ikke aktiv firmaprofil for tilbudet.",
       });
-    return () => { active = false; };
+    };
+
+    const syncWorkProfile = (event) => {
+      applyWorkProfileState(event?.detail || readCachedWorkProfileState());
+      setWorkProfileRevision((current) => current + 1);
+    };
+
+    window.addEventListener(WORK_PROFILE_EVENT, syncWorkProfile);
+    getMyWorkProfileState()
+      .then((state) => applyWorkProfileState(state))
+      .catch((error) => {
+        const cached = readCachedWorkProfileState();
+        applyWorkProfileState(
+          cached,
+          error?.message || "Kunne ikke hente aktiv firmaprofil."
+        );
+      });
+
+    return () => {
+      active = false;
+      window.removeEventListener(WORK_PROFILE_EVENT, syncWorkProfile);
+    };
   }, [props?.selectedRequest?.id]);
 
   const externalSender = Boolean(
     senderState.profile && !isInternalSenderCompany(senderState.profile)
   );
-  const adjustedOfferForm = useMemo(
-    () =>
-      externalSender
-        ? withCompanySenderMeta(
-            props?.offerForm || {},
-            senderState.profile,
-            props?.selectedRequest
-          )
-        : props?.offerForm,
-    [externalSender, senderState.profile, props?.offerForm, props?.selectedRequest]
-  );
+  const adjustedOfferForm = useMemo(() => {
+    if (!senderState.profile) return props?.offerForm;
+    return externalSender
+      ? withCompanySenderMeta(
+          props?.offerForm || {},
+          senderState.profile,
+          props?.selectedRequest
+        )
+      : withInternalSenderMeta(
+          props?.offerForm || {},
+          props?.selectedRequest
+        );
+  }, [externalSender, senderState.profile, props?.offerForm, props?.selectedRequest]);
 
   useEffect(() => {
-    if (!externalSender) return;
     const currentLines = Array.isArray(props?.offerForm?.lines)
       ? props.offerForm.lines
       : [];
@@ -250,12 +333,16 @@ export default function SalesStoreOfferBuilderProCatalog(props) {
       : [];
     if (currentLines === nextLines) return;
     props?.updateOfferForm?.("lines", nextLines);
-  }, [externalSender, adjustedOfferForm?.lines, props?.offerForm?.lines, props?.updateOfferForm]);
+  }, [adjustedOfferForm?.lines, props?.offerForm?.lines, props?.updateOfferForm]);
 
   useEffect(() => {
-    if (!externalSender || !senderState.profile) return undefined;
+    if (!senderState.profile) return undefined;
     const frame = window.requestAnimationFrame(() => {
-      patchExternalSenderPresentation(builderRootRef.current, senderState.profile);
+      patchSenderPresentation(
+        builderRootRef.current,
+        senderState.profile,
+        externalSender
+      );
     });
     return () => window.cancelAnimationFrame(frame);
   });
