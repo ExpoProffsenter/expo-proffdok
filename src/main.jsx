@@ -40,6 +40,7 @@ import AppUpdateNotice from './modules/app/AppUpdateNotice.jsx';
 import AppNewsNotice from './modules/app/AppNewsNotice.jsx';
 import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';
 import { shouldRebootstrapAuthState } from './modules/auth/authStateRefreshPolicy.mjs';
+import { markSystemAdminProjectSupportQuery } from './modules/access/systemAdminProjectScopeGuard.js';
 import { ProgressPlanProjectTab } from './modules/progress/progressPlanUx.jsx';
 import { APP_RUNTIME_STYLES, UNDERENTREPRENOR_RUNTIME_STYLES } from './modules/app/appRuntimeStyles.js';
 import {
@@ -1840,7 +1841,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     }, [projects, adminUsers]);
     const ordinaryProjectListRows = (0, import_react.useMemo)(() => {
       if (!isSystemAdminUser) return projectListRows;
-      const activeSupportProjectRow = supportModeExplicit && projectId && currentProjectOwnerId && currentProjectOwnerId !== authUser?.id
+      const activeSupportProjectRow = supportModeExplicit && projectId
         ? (projectListRows || []).find((item) => item?.row?.id === projectId) || null
         : null;
       const activeSupportCompanyScopeId = String(activeSupportProjectRow?.row?.company_scope_id || "").trim();
@@ -1927,7 +1928,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }).slice(0, 120);
     }, [projectListRows, supportProjectSearch, supportSelectedCompany]);
     const currentSupportProjectRow = (0, import_react.useMemo)(() => {
-      if (!supportModeExplicit || !isSystemAdminUser || !projectId || !currentProjectOwnerId || currentProjectOwnerId === authUser?.id) return null;
+      if (!supportModeExplicit || !isSystemAdminUser || !projectId) return null;
       return (projectListRows || []).find((item) => item?.row?.id === projectId) || null;
     }, [supportModeExplicit, isSystemAdminUser, projectId, currentProjectOwnerId, authUser?.id, projectListRows]);
     const isSupportModeActive = !!currentSupportProjectRow;
@@ -2507,7 +2508,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         }
       }
     }, [authUser?.id, profile?.approved, isReadOnly, localDraftRestoreChecked, isSystemAdminUser, projects]);
-    const loadProjects = async (currentUser = authUser, notify = false, profileOverride = null) => {
+    const loadProjects = async (currentUser = authUser, notify = false, profileOverride = null, options = {}) => {
       if (!currentUser) {
         setProjects([]);
         if (notify) alert("Du må være logget inn for å hente prosjektliste.");
@@ -2525,6 +2526,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const normalizeCompanyForLoad = (value = "") => String(value || "").trim().toLowerCase();
 
       let query = supabase.from("projects").select("*").order("updated_at", { ascending: false });
+      if (effectiveSystemAdmin && options.supportMode) {
+        query = markSystemAdminProjectSupportQuery(query);
+      }
       if (!effectiveSystemAdmin && !effectiveCompanyAdmin) {
         query = query.eq("user_id", currentUser.id);
       }
@@ -2568,13 +2572,16 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
     };
 
-    const syncInternalProjectUrl = (activeProjectId, activeTab = "prosjekt") => {
+    const syncInternalProjectUrl = (activeProjectId, activeTab = "prosjekt", options = {}) => {
       if (!activeProjectId || typeof window === "undefined") return;
       const params = new URLSearchParams(window.location.search);
       params.set("project", String(activeProjectId));
       params.set("role", "admin");
       params.delete("access");
       params.set("tab", String(activeTab || "prosjekt"));
+      const keepSupportMode = options.supportMode ?? supportModeExplicit;
+      if (keepSupportMode) params.set("support", "1");
+      else params.delete("support");
       const query = params.toString();
       const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash || ""}`;
       window.history.replaceState({}, document.title, nextUrl);
@@ -2585,7 +2592,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         const canLeave = await confirmLeaveWithUnsavedChanges("åpner et annet prosjekt");
         if (!canLeave) return;
       }
-      const { data, error } = await supabase.from("projects").select("*").eq("id", id).single();
+      let projectQuery = supabase.from("projects").select("*").eq("id", id);
+      if (options.supportMode) projectQuery = markSystemAdminProjectSupportQuery(projectQuery);
+      const { data, error } = await projectQuery.single();
       if (error || !data) {
         console.error(error);
         return alert("Kunne ikke \xE5pne prosjekt: " + (error?.message || "Fant ikke prosjekt"));
@@ -2594,11 +2603,16 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setProjectId(data.id);
       setCurrentProjectOwnerId(data.user_id || "");
       setSupportModeExplicit(!!options.supportMode);
+      if (options.supportMode) {
+        setProjects((current) => (current || []).some((row) => row?.id === data.id)
+          ? current
+          : [data, ...(current || [])]);
+      }
       setLocalDraftRestoreChecked(false);
       setMobileCreatingProject(false);
       setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
       setTab(targetTab);
-      syncInternalProjectUrl(data.id, targetTab);
+      syncInternalProjectUrl(data.id, targetTab, { supportMode: !!options.supportMode });
       setTimeout(() => scrollToMobileTabTarget(targetTab), 180);
       setTimeout(() => scrollToMobileTabTarget(targetTab), 420);
       if (options.showOpenDeviationsOnly) {
@@ -2637,7 +2651,11 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           error = portalError;
         }
       } else {
-        const response = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        let projectQuery = supabase.from("projects").select("*").eq("id", projectId);
+        if (supportModeExplicit && isSystemAdminUser) {
+          projectQuery = markSystemAdminProjectSupportQuery(projectQuery);
+        }
+        const response = await projectQuery.maybeSingle();
         data = response.data;
         error = response.error;
       }
@@ -3006,6 +3024,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const id = String(params.get("project") || "").trim();
       const linkAccessMode = params.get("access") || params.get("role");
       const requestedTab = String(params.get("tab") || params.get("open") || "prosjekt").trim().toLowerCase() || "prosjekt";
+      const requestedSupportMode = params.get("support") === "1";
       if (!id || linkAccessMode !== "admin") return;
       if (!authUser?.id || !profile?.approved || profile?.deactivated || authLoading || profileLoading) return;
       if (directProjectOpenAttemptRef.current === id) return;
@@ -3014,7 +3033,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const openAuthenticatedProject = async () => {
         await loadProjects(authUser, false, profile);
         if (cancelled) return;
-        await openProjectById(id, requestedTab);
+        await openProjectById(id, requestedTab, {
+          supportMode: requestedSupportMode && isSystemAdminUser,
+        });
       };
       openAuthenticatedProject().catch((error) => {
         console.error("Kunne ikke åpne aktivert prosjekt etter innlogging:", error);
@@ -6622,7 +6643,7 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Supportmodus" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Brukes av systemadministrator for å finne firmaer og åpne prosjekter ved support. Firmaadmin hos kunde får ikke tilgang til dette området." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", margin: "12px 0" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { loadAdminUsers(); loadProjects(authUser, true); }, children: "Oppdater supportdata" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { loadAdminUsers(); loadProjects(authUser, true, null, { supportMode: true }); }, children: "Oppdater supportdata" }),
               supportSelectedCompany && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => { setSupportSelectedCompany(""); setOpenSupportCompany(""); }, children: "Vis alle firma" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [

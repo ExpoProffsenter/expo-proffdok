@@ -154,11 +154,26 @@ const projectScopeGuard = requireNeedles("src/modules/access/systemAdminProjectS
   "active_company_id",
   "NO_COMPANY_SCOPE",
   'next.searchParams.set("company_scope_id"',
+  "SYSTEMADMIN_PROJECT_SUPPORT_PARAM",
+  "markSystemAdminProjectSupportQuery",
+  "stripSystemAdminProjectSupportMarker",
+  "SUPPORT_READ_METHODS.has(method)",
   "window.fetch = async",
 ]);
 if (/GUARDED_METHODS[^\n]*POST/.test(projectScopeGuard)) {
   throw new Error("42G-scopeguard skal ikke omskrive prosjekt-INSERT; firmascopet settes server-side.");
 }
+if (/SUPPORT_READ_METHODS[^\n]*(PATCH|DELETE|POST)/.test(projectScopeGuard)) {
+  throw new Error("Systemadmin Supportmodus skal aldri gi skrive-bypass.");
+}
+
+requireNeedles("src/main.jsx", [
+  "markSystemAdminProjectSupportQuery",
+  "options.supportMode",
+  'params.set("support", "1")',
+  'params.get("support") === "1"',
+  "loadProjects(authUser, true, null, { supportMode: true })",
+]);
 
 const indexHtml = requireNeedles("index.html", [
   "installSystemAdminProjectScopeGuard",
