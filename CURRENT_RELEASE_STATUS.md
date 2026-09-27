@@ -22,7 +22,7 @@ Dato: 2026-09-27. Statusen beskriver dagens fasit, ikke historikken bak feilrett
 - Kundepreview åpnes i ny fane uten å flytte originalfanen. Previewen rendrer ingen kontroller eller klient for publisering, e-post, aksept eller avvisning.
 - Supportbanneret henter navn fra innlogget brukers metadata/e-post og spør ikke lenger etter den ikke-eksisterende kolonnen `profiles.full_name`.
 - En akseptert kundelenke åpnes etter reload som låst akseptbekreftelse med riktig versjon, valgte opsjoner og akseptert totalsum. Aksept-/avvisningskontroller vises ikke på nytt.
-- Komplett rapport-PDF støtter både `cat` og `category` på bilder. De seks bildebanene som brukes av permanent Sandbox-demo finnes nå i release-bygget.
+- Komplett rapport-PDF støtter både `cat` og `category` på bilder. Lokale demoressurser lastes fra release-bygget; historiske eksterne `git-demo`-JPG-adresser håndteres som tydelige plassholdere.
 - Nye eller oppdaterte tilbudsmaler beholder gjenbrukbare app-/Storage-bilder på poster og opsjoner. Midlertidige `data:`/`blob:`-bilder og kundespesifikke PDF-vedlegg lagres ikke i malen.
 - Kontrakt-PDF grupperer sammenhengende avsnitt i samme kort, bryter bare ved reelt sideskift og holder opsjonsbeskrivelse og pris samlet.
 - Systemadministrator kan åpne et prosjekt fra et annet firma i eksplisitt Support-modus uten at prosjektet avvises som «Kan ikke åpne prosjekt». Kryssfirma-prosjekter er skrivebeskyttet, og automatisk lagring forsøkes ikke.
