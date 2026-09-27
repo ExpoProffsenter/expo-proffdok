@@ -3,7 +3,7 @@
 // men en ordre skal ikke presenteres som et ordinært Prosjekt i brukerflaten.
 // Modulen endrer kun intern admin-UX. Kundelenke/portal er i tillegg blokkert server-side.
 
-import { createDefaultSalesSupabaseClient } from '../sales/services/salesSupabase.js';
+import { getAppSupabaseClient } from '../access/appSupabaseClientRegistry.js';
 
 const ROOT_ATTR = 'data-expo-simple-order';
 const ORIGINAL_LABEL_ATTR = 'data-expo-simple-order-original-label';
@@ -39,13 +39,6 @@ let currentProjectId = '';
 let currentSimpleOrder = false;
 let loadingProjectId = '';
 let scheduled = false;
-let client = null;
-
-function getClient() {
-  if (!client) client = createDefaultSalesSupabaseClient();
-  return client;
-}
-
 function internalProjectId() {
   if (typeof window === 'undefined') return '';
   const params = new URLSearchParams(window.location.search);
@@ -74,9 +67,11 @@ async function refreshProjectKind() {
   }
 
   if (projectId === currentProjectId || projectId === loadingProjectId) return;
+  const activeClient = getAppSupabaseClient();
+  if (!activeClient) return;
   loadingProjectId = projectId;
   try {
-    const { data, error } = await getClient()
+    const { data, error } = await activeClient
       .from('projects')
       .select('id,share_enabled,data')
       .eq('id', projectId)

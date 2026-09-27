@@ -17,6 +17,8 @@ const alternativeSeed = read('supabase/migrations/20260923184500_fase45b_simple_
 
 for (const needle of [
   "data?.data?.project?.workflowType",
+  "getAppSupabaseClient",
+  "const activeClient = getAppSupabaseClient();",
   "simple_order",
   "Ordreoversikt",
   "Ordrebeskrivelse",
@@ -28,6 +30,11 @@ for (const needle of [
   ".progress-share-card",
   "Vis fremdriftsplan til kunde",
 ]) assert(ux.includes(needle), `Enkel ordre UX mangler: ${needle}`);
+
+assert(
+  !ux.includes("createDefaultSalesSupabaseClient"),
+  "Enkel ordre UX skal gjenbruke hovedappens Supabase-klient og ikke opprette en ekstra GoTrue-klient."
+);
 
 for (const hidden of ['Garanti','Prosjektering','Overflater og innredning','Tilbud/kontrakt','Chat','Overtagelse']) {
   assert(ux.includes(`'${hidden}'`), `Enkel ordre skal skjule prosjekt-tung fane: ${hidden}`);
