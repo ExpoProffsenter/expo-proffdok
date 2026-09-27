@@ -34,6 +34,15 @@ requireText(
   "sharedDefaultSalesSupabaseClient = createLazyDefaultSalesSupabaseClient();",
   "Sales auth: createDefaultSalesSupabaseClient bruker ikke den lazy singleton-klienten."
 );
+requireText(
+  salesSupabase,
+  "const appClient = getAppSupabaseClient();",
+  "Sales auth: fallback-fabrikken gjenbruker ikke hovedappens registrerte Supabase-klient."
+);
+requireCondition(
+  (salesSupabase.match(/if \(appClient\) return appClient;/g) || []).length >= 2,
+  "Sales auth: både eksisterende lazy proxy og nye fallback-kall må prioritere hovedappens klient."
+);
 requireCondition(
   !salesSupabase.includes(
     "sharedDefaultSalesSupabaseClient = core.createDefaultSalesSupabaseClient();"
