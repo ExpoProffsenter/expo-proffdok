@@ -179,7 +179,10 @@ export default function SalesDetailView(props) {
     if (!root) return undefined;
     const frame = window.requestAnimationFrame(() => {
       root.querySelectorAll("button").forEach((button) => {
-        if (compactText(button.textContent) === "Aktiver som prosjekt") {
+        if (
+          compactText(button.textContent) === "Aktiver som prosjekt" &&
+          !button.closest("[data-simple-order-accepted-actions='true']")
+        ) {
           button.style.display = "none";
           button.setAttribute("aria-hidden", "true");
         }

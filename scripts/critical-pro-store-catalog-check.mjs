@@ -95,6 +95,9 @@ for(const needle of ["suggested_sale_price_ex_vat","suggested_sale_price_incl_va
 for(const forbidden of ["my_net_price_ex_vat","purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent","markup_percent"]) assert(!offerWrapper.includes(forbidden),`Tilbudsdata skal aldri kjenne intern/nto-pris: ${forbidden}`);
 for(const needle of ["isSimpleOrderRequest","Lag enkel ordre","Aktiver som prosjekt","persistSimpleOrderActivationMode","getSalesSupportCompanyId","StoreOfferOrderBasis","data-simple-order-support-order-basis"]) assert(detail.includes(needle),`Akseptert Enkel ordre mangler kontrollert videreføring/support-QA: ${needle}`);
 assert(detail.includes("supportMode && simpleOrderAccepted"),"Bestillingsgrunnlag i support skal kun vises read-only for akseptert Enkel ordre.");
+assert(detail.includes("!button.closest(\"[data-simple-order-accepted-actions='true']\")"),"Legacy-skjuling må aldri fjerne valget «Aktiver som prosjekt» fra Enkel ordre-panelet.");
+assert(detail.includes('disabled={supportMode} onClick={() => void chooseActivationMode("simple_order")}'),"Systemadmin-support skal se, men ikke kunne velge Enkel ordre.");
+assert(detail.includes('disabled={supportMode} onClick={() => void chooseActivationMode("project")}'),"Systemadmin-support skal se, men ikke kunne velge ordinært prosjekt.");
 assert(detail.includes("SalesDetailViewLegacy"),"Ordinær Sales-detail skal delegeres til verifisert legacy-visning.");
 for(const needle of ["SalesDetailViewCore","rewriteStoreOfferAcceptedFlow","rewriteStoreOfferDeclinedFlow"]) assert(legacyDetail.includes(needle),`Legacy Sales-detail-kontrakt mangler: ${needle}`);
 for(const needle of ["storeOffer && !simpleOrder","getSimpleOrderActivationMode","Lag enkel ordre","Aktiver som prosjekt","if (supportMode)"]) assert(activation.includes(needle),`Aktiveringsskjerm mangler Enkel ordre-/sikkerhetsregel: ${needle}`);
