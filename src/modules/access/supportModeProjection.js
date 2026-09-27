@@ -236,10 +236,13 @@ async function buildProjection(context) {
     if (error) throw error;
     const targetCompany = normalizeCompanyName(target?.company_name || context.companyName);
     const bannerCompany = normalizeCompanyName(context.companyName);
-    const company = (Array.isArray(data) ? data : []).find((entry) => {
-      const name = normalizeCompanyName(entry?.display_name || entry?.company_name);
-      return name === targetCompany || name === bannerCompany;
-    });
+    const companies = Array.isArray(data) ? data : [];
+    const normalizedEntryName = (entry = {}) =>
+      normalizeCompanyName(entry?.display_name || entry?.company_name);
+    // Prosjektets eksplisitte firma er fasit. Prosjekteieren kan være en
+    // Systemadministrator med et annet primærfirma og skal bare være fallback.
+    const company = companies.find((entry) => normalizedEntryName(entry) === bannerCompany)
+      || companies.find((entry) => normalizedEntryName(entry) === targetCompany);
     salesCompanyId = String(company?.company_id || "").trim();
     if (!salesCompanyId) {
       throw new Error(`Fant ikke Sales-firmascope for ${context.companyName}.`);

@@ -101,6 +101,16 @@ requireText(
   "entry?.display_name || entry?.company_name",
   "Sales auth: prosjekt-support tåler ikke det eksisterende company_name-feltet fra support-RPC-en."
 );
+requireText(
+  supportProjection,
+  "normalizedEntryName(entry) === bannerCompany",
+  "Sales auth: prosjektets eksplisitte firma prioriteres ikke ved support-scope."
+);
+requireText(
+  supportProjection,
+  "normalizedEntryName(entry) === targetCompany",
+  "Sales auth: prosjekt-support mangler kontrollert fallback til prosjekteierens firma."
+);
 requireCondition(
   !supportProjection.includes("createDefaultSalesSupabaseClient"),
   "Sales auth: prosjekt-support kan fortsatt opprette en ekstra GoTrue-klient."
