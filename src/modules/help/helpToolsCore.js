@@ -336,6 +336,7 @@ const SYSTEM_ADMIN_SECTIONS = [
       "Godkjenn, avvis eller slett ventende brukere. Firma må være valgt før en ny bruker kan godkjennes, og rolle/modultilganger skal kontrolleres før aktivering.",
       "Generelle tilbud kan tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter. Andre firma kan få Befaring / Våtromstilbud uten denne interne tilbudsmodulen.",
       "Bruk Supportmodus når du skal hjelpe et annet firma og avslutt supportmodus når arbeidet er ferdig.",
+      "Prosjekter som åpnes på tvers av firma i Supportmodus er skrivebeskyttet. Du kan kontrollere innhold og laste ned PDF, men ikke lagre, kopiere, avslutte/låse, laste opp eller endre prosjektdata.",
       "Vedlikehold produktmaster og synkroniser bare aktive prosjekter når dette er riktig.",
       "Bruk Nyheter i appen til korte meldinger om nye funksjoner eller viktige endringer.",
       "Internt vareregister oppdateres fra Ringsides faste Cordel TXT-eksport. Kontroller importtall før aktivering.",
@@ -344,7 +345,7 @@ const SYSTEM_ADMIN_SECTIONS = [
     [
       "Systemadmin-funksjoner kan påvirke flere firmaer og må brukes varsomt.",
       "Expo Proffsenter-logo kan brukes som standardlogo når firmaet ikke har egen logo, men logoen bestemmer aldri brukerens firmatilhørighet eller datascope.",
-      "Kontroller alltid hvilket firma supportmodus gjelder før du gjør endringer.",
+      "Avslutt Supportmodus før du oppretter eller endrer prosjektdata i egen arbeidsprofil.",
       "Prisfilen inneholder intern informasjon og skal ikke deles med kunder eller legges i GitHub."
     ],
     ["Hold appnyheter korte og konkrete og publiser bare én aktuell nyhet om gangen."]

@@ -29,7 +29,7 @@ Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakove
 16. Kalender- og PDF-eksport skal lese lagret data; eksport blir ikke ny sannhetskilde.
 17. Intern ERP-nettopris er sikkerhetskritisk intern data og skal aldri inngå i kundens tilbudsgrunnlag.
 18. Historiske Butikktilbud beholder tidligere avslutning og skal ikke omskrives. Nye Generelle tilbud kan etter aksept aktiveres som Enkel ordre eller ordinært prosjekt.
-19. Aktiv arbeidsprofil/representert firma er arbeidsscope. Systemadministrator skal ikke få tverrfirma-prosjekter projisert inn i ordinær arbeidsflate bare fordi rollen har brede supportrettigheter.
+19. Aktiv arbeidsprofil/representert firma er arbeidsscope. Systemadministrator skal ikke få tverrfirma-prosjekter projisert inn i ordinær arbeidsflate bare fordi rollen har brede supportrettigheter. Et prosjekt som åpnes via eksplisitt tverrfirma-support er skrivebeskyttet i hele prosjektflaten: lesing, fanenavigasjon og PDF er tillatt, mens lagring, kopiering, låsing, opplasting, autolagring og øvrige mutasjoner blokkeres.
 20. Ved recovery/hydration vinner en eksplisitt brukerhandling alltid over automatisk gjenoppretting.
 21. Sales-oversikten skal være lett: listevisning henter bare summary/metadata. Komplett tilbud, bilder, Badskisse og historikk hentes først når én konkret sak åpnes.
 22. Aktivt arbeidsbilde skal tåle PC-fanebytte og mobil appbytte. Også en ny forespørsel uten `request_ref` er et gyldig recovery-arbeidsbilde.

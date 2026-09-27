@@ -916,7 +916,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }, delay);
     };
     const markProjectDirty = () => {
-      if (dirtyTrackingPausedRef.current || isReadOnly || isProjectLocked) return;
+      if (dirtyTrackingPausedRef.current || isReadOnly || isProjectLocked || (supportModeExplicit && !!projectId)) return;
       if (!projectId && !mobileCreatingProject) return;
       const currentFingerprint = projectDirtyFingerprint(latestStateRef.current || {});
       if (!dirtyBaselineRef.current) {
@@ -1277,6 +1277,8 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const portalAccessRoleParam = isUnderleverandorView ? "underleverandor" : isReadOnly ? "kunde" : "";
     const portalAccessStorageKey = projectId && portalAccessRoleParam ? `expoProffDokPortalAccess:${projectId}:${portalAccessRoleParam}` : "";
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
+    const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;
+    const supportProjectReadOnlyMessage = "Supportprosjekter er skrivebeskyttet. Avslutt supportmodus før du oppretter eller endrer prosjektdata.";
     const isCompanyAdminUser = !!authUser && !!profile?.approved && !profile?.deactivated && (profile?.company_role === "firmaadmin" || isSystemAdminUser);
     const currentCompanyName = String(profile?.company_name || company?.companyName || "").trim();
     const normalizeCompanyName = (value = "") => String(value || "").trim().toLowerCase();
@@ -1302,7 +1304,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return normalizeCompanyName(projectCompanyNameFromRow(row)) === normalizeCompanyName(ownCompanyName);
     };
     const isAdminUser = isSystemAdminUser;
-    const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly;
+    const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly && !isProjectSupportReadOnly;
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
     const applyLockState = (baseProject, sourceProject = {}) => ({
       ...baseProject,
@@ -1317,7 +1319,14 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       alert(lockedProjectMessage);
       return false;
     };
-    const canEditProject = () => !isProjectLocked || notifyLockedProject();
+    const notifySupportProjectReadOnly = () => {
+      alert(supportProjectReadOnlyMessage);
+      return false;
+    };
+    const canEditProject = () => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
+      return !isProjectLocked || notifyLockedProject();
+    };
     const hasOvertagelseSignature = (name = "", image = "") => hasValue(name) || hasValue(image);
     const overtagelseIsSignedByBoth = (o = overtagelse) => hasOvertagelseSignature(o?.signUtf\u00F8rende, o?.signUtf\u00F8rendeImage) && hasOvertagelseSignature(o?.signKunde, o?.signKundeImage);
     const overtagelseHasDraftContent = (o = overtagelse) => !!o?.enabled || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
@@ -1941,7 +1950,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     ).trim();
     const supportProjectOwner = (adminUsers || []).find((entry) => entry?.id === currentProjectOwnerId);
     const exitSupportMode = () => {
-      if (!isSupportModeActive) return;
+      if (!isProjectSupportReadOnly) return;
       setProject({ ...emptyProject(), responsible: user?.name || authUser?.email || "" });
       setChecked({});
       setProductDocs({});
@@ -2370,7 +2379,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return true;
     };
     const autoSaveProjectToCloud = async (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
-      if (!authUser || !projectId || isReadOnly || isProjectLocked) return;
+      if (!authUser || !projectId || isReadOnly || isProjectSupportReadOnly || isProjectLocked) return;
       setProjectAutoSaveStatus("Autolagrer …");
       try {
         const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
@@ -3111,6 +3120,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     }, [authUser?.id, profile?.approved, profile?.company_name, profile?.company_role, profile?.system_role]);
 
     const createNewProject = async () => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       const canLeave = await confirmLeaveWithUnsavedChanges("starter nytt prosjekt");
       if (!canLeave) return;
       const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || (Array.isArray(project.projectDeviations) ? project.projectDeviations : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.changes || []).length || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
@@ -3686,6 +3696,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
     };
     const saveProject = async () => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       const snapshot = {
         ...latestStateRef.current || {},
         company,
@@ -3921,6 +3932,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
     };
     const setProjectLockedState = async (locked) => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 endre prosjektstatus.");
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r det kan l\xE5ses eller l\xE5ses opp.");
       const message = locked ? "Vil du avslutte og l\xE5se prosjektet? Ingen kan lagre endringer f\xF8r prosjektet l\xE5ses opp igjen." : "Vil du l\xE5se opp prosjektet slik at endringer kan lagres igjen?";
       if (!window.confirm(message)) return;
@@ -3944,6 +3956,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
     };
     const saveAsNewProject = async () => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       const projectTitle = project.projectName || project.address || project.customer || "Uten navn";
       const hasProjectContent = projectId || project.projectName || project.address || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || Object.keys(checked || {}).length || (photos || []).length || Object.keys(checklist || {}).length || (inst || []).length || (files || []).length || (projectLog?.messages || []).length;
       if (!hasProjectContent) return alert("Det finnes ikke nok prosjektinnhold til \xE5 lagre en kopi enn\xE5.");
@@ -3998,6 +4011,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       alert(`\u2714 Kopi lagret. Du jobber n\xE5 i den nye kopien av "${projectTitle}".`);
     };
     const deleteProject = async (id) => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       if (!window.confirm("Er du sikker p\xE5 at du vil slette prosjektet?")) return;
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 slette prosjekt.");
       const { data, error } = await supabase.from("projects").delete().eq("id", id).select("id");
@@ -4020,6 +4034,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       alert("Prosjekt slettet.");
     };
     const saveProjectForLink = async () => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       if (projectId) return projectId;
       if (!authUser) {
         alert("Du m\xE5 v\xE6re logget inn for \xE5 lage delingslink.");
@@ -5268,6 +5283,10 @@ ${appLink}`;
     });
 
     const uploadImages = async (fileList, folder = "photos") => {
+      if (isProjectSupportReadOnly) {
+        notifySupportProjectReadOnly();
+        return [];
+      }
       if (isProjectLocked) {
         notifyLockedProject();
         return [];
@@ -5297,7 +5316,7 @@ ${appLink}`;
       return uploaded;
     };
     const autoSavePhotosToCloud = async (nextPhotos) => {
-      if (!authUser || !projectId || isReadOnly) return;
+      if (!authUser || !projectId || isReadOnly || isProjectSupportReadOnly) return;
       setPhotoSaveStatus("Lagrer bilder …");
       try {
         const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
@@ -5379,7 +5398,7 @@ ${appLink}`;
       if (droppedFiles && droppedFiles.length) addPhoto(cat, droppedFiles);
     };
     const autoSaveChecklistToCloud = async (nextChecklist) => {
-      if (!authUser || !projectId || isReadOnly) return;
+      if (!authUser || !projectId || isReadOnly || isProjectSupportReadOnly) return;
       setChecklistSaveStatus("Lagrer sjekkliste …");
       try {
         const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
@@ -5938,29 +5957,30 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: projectId ? `${currentStatus.icon} ${currentStatus.label}` : authUser?.email || name })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
+          !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
           !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
           projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: "← Til startside" }),
-          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectDirty ? "● Lagre endringer" : projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
-          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
+          hasActiveProjectWorkspace && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectDirty ? "● Lagre endringer" : projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
+          hasActiveProjectWorkspace && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
           hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
             " Last ned PDF"
           ] }),
-          projectId && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
+          projectId && !isProjectSupportReadOnly && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
-        projectDirty && hasActiveProjectWorkspace && !isReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "10px 14px", background: "#fffbeb", border: "1px solid #facc15", borderRadius: "14px", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }, children: [
+        projectDirty && hasActiveProjectWorkspace && !isReadOnly && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "10px 14px", background: "#fffbeb", border: "1px solid #facc15", borderRadius: "14px", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "🟡 Ulagrede endringer i prosjektet" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: saveProject, children: "Lagre nå" })
         ] }),
-        isSupportModeActive && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "12px 16px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "16px", display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }, children: [
+        isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "12px 16px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "16px", display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gap: "3px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { style: { color: "#9a3412" }, children: "SYSTEMADMIN SUPPORTMODUS" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { color: "#7c2d12", fontWeight: 800 }, children: [
               "Firma: ", supportProjectCompanyName || "Ukjent firma",
               " · Prosjekt: ", project.projectName || project.address || "Uten navn",
-              " · Prosjekteier: ", supportProjectOwner?.email || currentProjectOwnerId || "ukjent"
+              " · Prosjekteier: ", supportProjectOwner?.email || currentProjectOwnerId || "ukjent",
+              " · Skrivebeskyttet – ingen endringer kan lagres"
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: exitSupportMode, children: "Avslutt supportmodus" })
@@ -6054,6 +6074,9 @@ ${appLink}`;
         ] })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
+        inert: isProjectSupportReadOnly ? "" : void 0,
+        "aria-readonly": isProjectSupportReadOnly ? "true" : void 0,
+        "data-support-read-only": isProjectSupportReadOnly ? "true" : void 0,
         onInputCapture: () => {
           if (!projectId && mobileCreatingProject) newProjectTouchedRef.current = true;
         },
