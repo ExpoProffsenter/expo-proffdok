@@ -14,11 +14,15 @@ const salesSupabasePath = "src/modules/sales/services/salesSupabase.js";
 const salesWrapperPath = "src/modules/sales/SalesModule.jsx";
 const salesCorePath = "src/modules/sales/SalesModuleCore.jsx";
 const mainPath = "src/main.jsx";
+const supportProjectionPath = "src/modules/access/supportModeProjection.js";
+const appClientRegistryPath = "src/modules/access/appSupabaseClientRegistry.js";
 
 const salesSupabase = readFileSync(salesSupabasePath, "utf8");
 const salesWrapper = readFileSync(salesWrapperPath, "utf8");
 const salesCore = readFileSync(salesCorePath, "utf8");
 const main = readFileSync(mainPath, "utf8");
+const supportProjection = readFileSync(supportProjectionPath, "utf8");
+const appClientRegistry = readFileSync(appClientRegistryPath, "utf8");
 
 requireText(
   salesSupabase,
@@ -75,6 +79,26 @@ requireText(
   salesCore,
   "const activeSupabase = supabaseClient || supabase;",
   "Sales auth: SalesCore prioriterer ikke appens injiserte Supabase-klient."
+);
+
+requireText(
+  main,
+  "registerAppSupabaseClient(supabase);",
+  "Sales auth: hovedappens ene Supabase-klient registreres ikke for integrasjonslagene."
+);
+requireText(
+  appClientRegistry,
+  "export function getAppSupabaseClient()",
+  "Sales auth: registeret for hovedappens Supabase-klient mangler."
+);
+requireText(
+  supportProjection,
+  "const salesClient = getAppSupabaseClient();",
+  "Sales auth: prosjekt-support bruker ikke hovedappens Supabase-klient."
+);
+requireCondition(
+  !supportProjection.includes("createDefaultSalesSupabaseClient"),
+  "Sales auth: prosjekt-support kan fortsatt opprette en ekstra GoTrue-klient."
 );
 
 const appSalesStart = main.indexOf('tab === "sales"');

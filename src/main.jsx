@@ -42,6 +42,7 @@ import AppNewsNotice from './modules/app/AppNewsNotice.jsx';
 import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';
 import { shouldRebootstrapAuthState } from './modules/auth/authStateRefreshPolicy.mjs';
 import { markSystemAdminProjectSupportQuery } from './modules/access/systemAdminProjectScopeGuard.js';
+import { registerAppSupabaseClient } from './modules/access/appSupabaseClientRegistry.js';
 import { ProgressPlanProjectTab } from './modules/progress/progressPlanUx.jsx';
 import { APP_RUNTIME_STYLES, UNDERENTREPRENOR_RUNTIME_STYLES } from './modules/app/appRuntimeStyles.js';
 import {
@@ -64,6 +65,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     "https://dqffxflaoyarbxyiyhop.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
   );
+  registerAppSupabaseClient(supabase);
   var uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
   var WARRANTY_YEAR_OPTIONS = [10, 12, 15];
   var WARRANTY_YEARS = 15;

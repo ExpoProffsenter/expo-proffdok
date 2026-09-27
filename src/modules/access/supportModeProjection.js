@@ -11,9 +11,9 @@ import {
   refreshMyModuleAccess,
 } from "./moduleAccessClient.js";
 import {
-  createDefaultSalesSupabaseClient,
   listSalesSupportCompanies,
 } from "../sales/services/salesSupabase.js";
+import { getAppSupabaseClient } from "./appSupabaseClientRegistry.js";
 
 const SUPPORT_LABEL = "SYSTEMADMIN SUPPORTMODUS";
 const EXIT_SUPPORT_LABEL = "Avslutt supportmodus";
@@ -25,7 +25,6 @@ const STORE_ALLOWED_COMPANIES = new Set([
   "expo proffsenter",
 ]);
 
-const salesClient = createDefaultSalesSupabaseClient();
 let activeProjection = null;
 let syncPromise = null;
 let republishTimer = null;
@@ -231,6 +230,7 @@ async function buildProjection(context) {
   let salesCompanyId = "";
 
   if (access.moduleKeys.includes("sales")) {
+    const salesClient = getAppSupabaseClient();
     if (!salesClient) throw new Error("Sales-klienten er ikke tilgjengelig.");
     const { data, error } = await listSalesSupportCompanies(salesClient);
     if (error) throw error;
