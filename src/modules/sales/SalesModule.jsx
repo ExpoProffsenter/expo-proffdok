@@ -81,8 +81,8 @@ function rememberInspectionReopen(requestId = "") {
   }
 }
 
-function protectInspectionDraftNavigation(props = {}, companyName = "") {
-  const salesStorageKey = salesStorageKeyForProps(props, companyName);
+function protectInspectionDraftNavigation(props = {}) {
+  const salesStorageKey = salesStorageKeyForProps(props);
   const navigation = loadSalesNavigation(salesStorageKey);
 
   if (
@@ -102,43 +102,32 @@ function clearBackgroundResumeMarkers() {
   clearSalesResumeMarkers();
 }
 
-function consumeSalesReloadNavigationMarker(props = {}, companyName = "") {
+function consumeSalesReloadNavigationMarker(props = {}) {
   if (props.integrationMode !== "app") return false;
-  return consumeSalesResumeNavigation(
-    salesStorageKeyForProps(props, companyName)
-  );
+  return consumeSalesResumeNavigation(salesStorageKeyForProps(props));
 }
 
-function prepareSalesEntryNavigation(props = {}, companyName = "") {
+function prepareSalesEntryNavigation(props = {}) {
   if (props.integrationMode !== "app") {
-    protectInspectionDraftNavigation(props, companyName);
+    protectInspectionDraftNavigation(props);
     return;
   }
 
-  const shouldRestoreNavigation = consumeSalesReloadNavigationMarker(
-    props,
-    companyName
-  );
+  const shouldRestoreNavigation = consumeSalesReloadNavigationMarker(props);
   if (shouldRestoreNavigation) {
-    protectInspectionDraftNavigation(props, companyName);
+    protectInspectionDraftNavigation(props);
     return;
   }
 
   // Vanlig klikk på Forespørsler/Befaring/Tilbud lander på oversikten. Bare en
   // ekte reload/dvale får gjenåpne lagret sak. Direkte startside-signal håndteres
   // separat og primes før Core mountes.
-  saveSalesNavigation(
-    salesStorageKeyForProps(props, companyName),
-    "list",
-    null
-  );
+  saveSalesNavigation(salesStorageKeyForProps(props), "list", null);
 }
 
-function markSalesTabForReload(props = {}, companyName = "") {
+function markSalesTabForReload(props = {}) {
   if (props.integrationMode !== "app") return;
-  markSalesResumeForBackground(
-    salesStorageKeyForProps(props, companyName)
-  );
+  markSalesResumeForBackground(salesStorageKeyForProps(props));
 }
 
 function getPublicContractToken() {
@@ -259,7 +248,7 @@ export default function SalesModule(props) {
   );
   const [instanceKey, setInstanceKey] = useState(() => {
     beginOfferDraftHydrationCycle();
-    prepareSalesEntryNavigation(props, salesStorageCompanyName);
+    prepareSalesEntryNavigation(props);
     return 0;
   });
   const [storeOfferSignal, setStoreOfferSignal] = useState(0);
@@ -322,13 +311,13 @@ export default function SalesModule(props) {
     };
 
     const blockPreHydrationUnloadSave = () => {
-      markSalesTabForReload(props, salesStorageCompanyName);
+      markSalesTabForReload(props);
       beginOfferDraftHydrationCycle();
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        markSalesTabForReload(props, salesStorageCompanyName);
+        markSalesTabForReload(props);
         return;
       }
       clearBackgroundResumeMarkers();
