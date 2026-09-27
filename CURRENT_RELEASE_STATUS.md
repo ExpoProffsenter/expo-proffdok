@@ -9,7 +9,7 @@ Dato: 2026-09-27. Statusen beskriver dagens fasit, ikke historikken bak feilrett
 - PR #190 er fortsatt `open`, `draft=true`, `merged=false`, med base `main` og head `fase45b-production-release-clean`.
 - Sandbox: Supabase-branch `demo-sandbox`, ref `ppvircenkjizeiqdxphj`, er `ACTIVE_HEALTHY`. Kontrollplanets `MIGRATIONS_FAILED` stammer fra branch-opprettelsen 15.09 og beskriver ikke dagens runtime. Sandbox har bevisst egen demo-migrasjonslinje og skal aldri branch-merges til Production.
 - Supabase har nå bare default/Production og `demo-sandbox`, som også er ønsket sluttilstand.
-- Permanent Demo: Git-branch `demo` er urørt. Release-kandidaten har lokale demoressurser, mens enkelte eldre permanente demo-rader fortsatt peker til historiske `git-demo`-JPG-adresser.
+- Permanent Demo: Git-branch `demo` er urørt. Produksjonskandidaten inneholder ingen syntetiske demo-bilder eller demo-logoer. Enkelte eldre Sandbox-rader peker fortsatt til historiske `git-demo`-JPG-adresser.
 
 ## Ferdig i releasekandidaten
 
@@ -22,7 +22,7 @@ Dato: 2026-09-27. Statusen beskriver dagens fasit, ikke historikken bak feilrett
 - Kundepreview åpnes i ny fane uten å flytte originalfanen. Previewen rendrer ingen kontroller eller klient for publisering, e-post, aksept eller avvisning.
 - Supportbanneret henter navn fra innlogget brukers metadata/e-post og spør ikke lenger etter den ikke-eksisterende kolonnen `profiles.full_name`.
 - En akseptert kundelenke åpnes etter reload som låst akseptbekreftelse med riktig versjon, valgte opsjoner og akseptert totalsum. Aksept-/avvisningskontroller vises ikke på nytt.
-- Komplett rapport-PDF støtter både `cat` og `category` på bilder. Lokale demoressurser lastes fra release-bygget; historiske eksterne `git-demo`-JPG-adresser håndteres som tydelige plassholdere.
+- Komplett rapport-PDF støtter både `cat` og `category` på bilder. Utilgjengelige eksterne bildereferanser håndteres som tydelige plassholdere uten at syntetiske demoressurser pakkes inn i Production.
 - Nye eller oppdaterte tilbudsmaler beholder gjenbrukbare app-/Storage-bilder på poster og opsjoner. Midlertidige `data:`/`blob:`-bilder og kundespesifikke PDF-vedlegg lagres ikke i malen.
 - Kontrakt-PDF grupperer sammenhengende avsnitt i samme kort, bryter bare ved reelt sideskift og holder opsjonsbeskrivelse og pris samlet.
 - Systemadministrator kan åpne et prosjekt fra et annet firma i eksplisitt Support-modus uten at prosjektet avvises som «Kan ikke åpne prosjekt». Kryssfirma-prosjekter er skrivebeskyttet, og automatisk lagring forsøkes ikke.
@@ -35,10 +35,10 @@ Dato: 2026-09-27. Statusen beskriver dagens fasit, ikke historikken bak feilrett
 ## Åpne feil og release-blokkere
 
 1. Ingen kjent kode-, kritisk test-, bygg-, deploy- eller Sandbox-runtimefeil er funnet i de gjennomførte testene.
-2. Eldre permanente demodata peker for fem rapportbilder til historiske `git-demo`-JPG-adresser. Disse rendres som tydelige bildeplassholdere i PDF-en. To lokale SVG-demobilder er innebygd korrekt. Kenneth har uttrykkelig godtatt dette som en demoavgrensning; det er ikke en releaseblokker og skal ikke utløse mer arbeid i Fase 45B.
+2. Eldre permanente demodata peker til sju demo-bilder som ikke skal følge demo → main. Produksjonskandidaten ekskluderer derfor disse åtte syntetiske filene (sju bilder og én demo-logo), og manglende demobilder rendres som tydelige bildeplassholdere i Sandbox-PDF-en. Kenneth har uttrykkelig godtatt bildeplassholdere som en demoavgrensning; det er ikke en releaseblokker og skal ikke utløse mer bildearbeid i Fase 45B.
 3. Manuell QA på en fysisk mobil er ikke utført i denne skyøkten. De kritiske mobiltestene for shell, arbeidsprofil, tilgang, portalopprydding og app-/fanebytte er grønne, men dette er ikke det samme som en test på faktisk iOS-/Android-enhet. Fysisk mobil er derfor et gjenstående akseptpunkt før Production.
 4. En eksakt migrasjonsøvelse på en fersk kopi av dagens Production-database er ikke fullført. Supabase-branchverktøyet som var tilgjengelig ga en tom `with_data=false`-branch, og repoets historikk kan derfor ikke alene dokumentere en identisk full Production-klon. Alle 16 versjonerte 45B-migrasjoner er kjørt samlet mot Sandbox i transaksjon med rollback, men det må ikke omtales som en fullverdig Production-klonrehearsal. Production skal ikke brukes som testmiljø.
-5. Ingen merge før Kenneth uttrykkelig gir `PRODUCTION GODKJENT` etter slutt-QA og vurdering av punktene over.
+5. Kenneth ga uttrykkelig `PRODUCTION GODKJENT` 28.09.2026 etter slutt-QA og vurdering av punktene over, og ba samtidig om komplett Production-QA etter merge.
 6. Etter godkjenning skal de versjonerte 45B-migrasjonene kjøres kontrollert fra repoet mot Production. `demo-sandbox` skal ikke brukes som mergekilde.
 
 Ikke-blokkerende Sandbox-advarsel: `demo_sandbox_snapshots` har RLS deaktivert, men har ingen grants til `public`, `anon` eller `authenticated`. Tabellen er derfor ikke klienttilgjengelig. Eventuell defense-in-depth-endring må vurderes mot demo-reset før den gjøres.
@@ -61,15 +61,14 @@ Ikke-blokkerende Sandbox-advarsel: `demo_sandbox_snapshots` har RLS deaktivert, 
 - Kryssfirma-prosjekt i Support-modus åpnet live på sluttkandidaten; «Kan ikke åpne prosjekt» er borte, Proffkunde Demo AS er korrekt firmascope, prosjektet er skrivebeskyttet og ingen autolagrings- eller authklientfeil oppstår.
 - Enkel ordre `DEMO-45B-001` åpnet live. «Åpne tilbudsgrunnlag» viste det lokale, låste aksepterte tilbudet med v1, tre varelinjer, 12 166 kr eks. mva. og 15 208 kr inkl. mva. Den globale salgsoversikten åpnes ikke, og ingen interne innkjøpspriser vises.
 - Ferdigstilt reserveprosjekt: låst, overtagelse registrert 15.09.2026, begge navn/signaturbekreftelser, garantivilkår bekreftet, 14/14 garantipunkter, garanti gyldig til 2036 og garantinummer `DEMO-GARANTI-2026-002`.
-- Komplett garantirapport ble regenerert fra gjeldende Preview og kontrollert visuelt side for side: 19 A4-sider, 100 % dokumentasjonsgrad, 38/38 kontroller, sju registrerte bilder, null åpne avvik, overtagelse, 10-årig garantisertifikat, garantivilkår, bekreftelse og sluttdokumentasjon. Layouten har ingen synlig klipping eller overlapp. To lokale SVG-demobilder er korrekt innebygd; fem historiske eksterne demo-JPG-er vises som plassholdere og er eksplisitt akseptert som ikke-blokkerende demodata.
+- Komplett garantirapport ble regenerert fra den funksjonelt godkjente Previewen og kontrollert visuelt side for side: 19 A4-sider, 100 % dokumentasjonsgrad, 38/38 kontroller, sju registrerte bilder, null åpne avvik, overtagelse, 10-årig garantisertifikat, garantivilkår, bekreftelse og sluttdokumentasjon. Layouten hadde ingen synlig klipping eller overlapp. Den siste produksjonsisoleringen fjerner de syntetiske demobildefilene fra releasekandidaten; ny Preview-kontroll skal derfor bekrefte samme dokument med tydelige plassholdere for alle utilgjengelige demo-bilder.
 - `DEMO-45B-002` sin aktive Sandbox-rad og permanente `golden-v1`-snapshot inneholder nå samme korrekte `publicToken` og `salesOfferId`.
 - Production-main, Production-deployment og Production Supabase er uendret.
 
-## Det Kenneth må teste / ta stilling til
+## Aksept og gjenstående fysisk kontroll
 
 - Kort fysisk mobiltest på minst én faktisk iOS- eller Android-enhet: innlogging, Representerer, Befaring/Tilbud, åpning av sak, retur etter app-/fanebytte og visning av prosjekt/garanti.
-- Ta stilling til restusikkerheten rundt manglende identisk Production-klonrehearsal, eller stille et egnet Production-klonmiljø til disposisjon for denne øvelsen.
-- Production forblir urørt inntil Kenneth skriver nøyaktig `PRODUCTION GODKJENT`. Denne statusen hevder derfor ikke 100 % Production-sikkerhet.
+- Restusikkerheten rundt manglende identisk Production-klonrehearsal er eksplisitt synlig i denne statusen. `PRODUCTION GODKJENT` er mottatt; godkjenningen fjerner ikke den tekniske begrensningen, men autoriserer kontrollert release med etterfølgende komplett Production-QA.
 
 ## Produktvalg som ikke er del av denne releasen
 
@@ -77,6 +76,6 @@ Ikke-blokkerende Sandbox-advarsel: `demo_sandbox_snapshots` har RLS deaktivert, 
 
 ## Neste handling
 
-Avvent fysisk mobilaksept og Kenneths beslutning om migrasjonsrehearsal/restusikkerhet. Deretter avventes eksplisitt `PRODUCTION GODKJENT`. Først da kan release-branchen merges kontrollert, de versjonerte 45B-migrasjonene kjøres mot Production og trippel Production-QA utføres. Ingen Production-endring er utført i denne QA-runden.
+Fjern demoressurser som ble fanget av `PR Core Safety`, kjør full critical QA og ny Sandbox-Preview, og krev grønn GitHub-CI. Deretter merges release-branchen kontrollert, de versjonerte 45B-migrasjonene kjøres mot Production og trippel Production-QA utføres. Ingen Production-endring er utført på tidspunktet for denne preflight-oppdateringen.
 
 Etter godkjent merge og trippel Production-QA skal midlertidige GitHub-brancher slettes slik at bare `main` og permanent `demo` står igjen. Supabase skal da fortsatt bare ha Production/default og `demo-sandbox`. Ingen slik GitHub-opprydding utføres før release og Production-QA er godkjent.
