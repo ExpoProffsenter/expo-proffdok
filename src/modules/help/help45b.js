@@ -1,6 +1,6 @@
 import React from "react";
 
-const UPDATED = "Sist oppdatert: 25.09.2026";
+const UPDATED = "Sist oppdatert: 27.09.2026";
 
 function List({ items = [] }) {
   return React.createElement(
@@ -25,9 +25,9 @@ export function createHelp45BSection({ Section }) {
     const important = [
       "Ringsides ERP-nettopris, innkjøpsrabatt, DG og påslag er intern informasjon og skal aldri vises til proffkunde eller sluttkunde.",
       "«Din nto pris» er proffkundens beregnede pris og må ikke forveksles med Ringsides interne ERP-nettopris.",
-      "Firmaadmin bestemmer hvilke brukere i firmaet som kan se «Din nto pris». Denne rettigheten skal ikke gis bredere enn nødvendig.",
+      "Firmaadmin bestemmer hvilke andre brukere i firmaet som kan se «Din nto pris», men kan ikke gi seg selv tilgang. Denne rettigheten skal ikke gis bredere enn nødvendig.",
       "Transport, frakt, timer og øvrige leveranser kan brukes som ordinære tilbudsposter.",
-      "Tilgang til Expo ProffDok forutsetter at virksomheten oppfyller gjeldende brukervilkår, inkludert SoPro-forutsetningen."
+      "Kun Systemadministrator kan aktivere Proff / Enkel ordre for et eksternt firma."
     ];
     const admin = isSystemAdmin
       ? [
@@ -37,7 +37,7 @@ export function createHelp45BSection({ Section }) {
           "Godkjenning, deaktivering, firma, rolle, moduler og «Din nto pris» beholdes på brukerens eksisterende brukerkort. Leverandør/rabatt er en firmaegenskap i samme samlede seksjon."
         ]
       : isCompanyAdmin
-        ? ["Firmaadmin kan styre hvem i eget firma som får se «Din nto pris». Leverandørtilgang og firmarabatt styres av Systemadmin."]
+        ? ["Firmaadmin kan styre hvilke andre brukere i eget firma som får se «Din nto pris», men kan ikke gi seg selv tilgang. Leverandørtilgang og firmarabatt styres av Systemadmin."]
         : [];
 
     return React.createElement(

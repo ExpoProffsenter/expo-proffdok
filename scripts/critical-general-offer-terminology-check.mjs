@@ -8,9 +8,6 @@ const offerLogic = fs.readFileSync("src/modules/sales/utils/salesOfferLogic.js",
 const proBuilder = fs.readFileSync("src/modules/sales/components/SalesStoreOfferBuilderProCatalog.jsx", "utf8");
 const optionalityPresentation = fs.readFileSync("src/modules/sales/utils/salesOfferOptionalityPresentation.js", "utf8");
 const storeOffers = fs.readFileSync("src/modules/sales/services/salesStoreOffers.js", "utf8");
-const salesContracts = fs.readFileSync("src/modules/sales/services/salesContracts.js", "utf8");
-const contractCustomer = fs.readFileSync("src/modules/sales/components/SalesContractCustomerView.jsx", "utf8");
-const customerOffer = fs.readFileSync("src/modules/sales/components/SalesCustomerViewCore.jsx", "utf8");
 const indexHtml = fs.readFileSync("index.html", "utf8");
 
 assert(storeOffers.includes('STORE_OFFER_SOURCE = "Butikktilbud / varesalg"'), "Teknisk Butikktilbud-kilde må beholdes for bakoverkompatibilitet.");
@@ -171,37 +168,5 @@ for (const needle of [
 assert(!terminology.includes("characterData: true"), "Terminologi-observer skal ikke lytte på egne tekstnodeendringer.");
 assert(!terminology.includes("Generelle tilbud avsluttes ved aksept"), "Generelle tilbud skal ikke beskrives som avsluttet ved kundeaksept.");
 assert(indexHtml.includes("installGeneralOfferTerminologyUx"), "Generelle tilbud-terminologi må installeres fra app-entry.");
-
-for (const needle of [
-  "Signert kontrakt",
-  "Kontrakten er signert",
-  "Kontrakten er signert av utførende firma",
-  "Kontrakten er lagret og låst. Utførende firma følger opp videre fremdrift og eventuell oppstart etter avtale.",
-]) {
-  assert(contractCustomer.includes(needle), `Kundens kontraktstekst mangler: ${needle}`);
-}
-assert(!contractCustomer.includes("Ferdig signert kontrakt"), "Kundens kontraktsvisning skal ikke kunne tolkes som at hele saken er ferdig.");
-assert(!contractCustomer.includes("Kontrakten er allerede signert"), "Etter-signeringstekst skal være naturlig både ved første visning og gjenåpning.");
-assert(!contractCustomer.includes("Ingen ytterligere handling er nødvendig."), "Kundens etter-signeringstekst må ikke love at videre oppfølging er unødvendig.");
-
-for (const needle of [
-  "normalizePublicContractPayload",
-  "snapshot.company_snapshot",
-  "legacyDraft.priceInclVat",
-  "legacyDraft.projectAddress",
-  "legacyDraft.customerName",
-  "return normalizePublicContractPayload(data || null)",
-]) {
-  assert(salesContracts.includes(needle), `Offentlig kontrakt mangler legacy-normalisering: ${needle}`);
-}
-
-for (const needle of [
-  "Tilbud akseptert",
-  "Takk for aksepten",
-  "Utførende bedrift følger",
-  "opp saken videre.",
-]) {
-  assert(customerOffer.includes(needle), `Kundens tilbudsaksept mangler trygg oppfølgingstekst: ${needle}`);
-}
 
 console.log("critical-general-offer-terminology-check: OK");

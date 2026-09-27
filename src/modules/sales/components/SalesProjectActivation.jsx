@@ -1,6 +1,7 @@
-// Expo ProffDok – FASE 37D2 / FASE 23N / FASE 29C1
-// Presentasjonskomponent for aktivering av en akseptert salgssak som ProffDok-prosjekt.
-// Butikktilbud og Systemadmin-supportmodus er eksplisitt sperret fra prosjektaktivering.
+// Expo ProffDok – FASE 45B / FASE 37D2 / FASE 23N / FASE 29C1
+// Presentasjonskomponent for aktivering av en akseptert salgssak.
+// Legacy Butikktilbud og Systemadmin-supportmodus er fortsatt sperret fra prosjektaktivering.
+// Enkel ordre kan videreføres enten som Enkel ordre eller som ordinært prosjekt.
 
 import {
   ArrowLeft,
@@ -12,7 +13,11 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { getSalesSupportCompanyId } from "../services/salesSupabase.js";
-import { isStoreOfferRequest } from "../services/salesStoreOffers.js";
+import {
+  isSimpleOrderRequest,
+  isStoreOfferRequest,
+} from "../services/salesStoreOffers.js";
+import { getSimpleOrderActivationMode } from "../services/salesSimpleOrder.js";
 
 function BlockedActivation({ selectedRequest, onBack, storeOffer = false }) {
   return (
@@ -83,6 +88,11 @@ export default function SalesProjectActivation({
 }) {
   const supportMode = Boolean(getSalesSupportCompanyId());
   const storeOffer = isStoreOfferRequest(selectedRequest);
+  const simpleOrder = isSimpleOrderRequest(selectedRequest);
+  const activationMode = simpleOrder
+    ? getSimpleOrderActivationMode(selectedRequest?.id)
+    : "project";
+  const createSimpleOrder = simpleOrder && activationMode === "simple_order";
 
   // Behold denne eksplisitte sperren separat. Critical build check verifiserer
   // at supportmodus aldri kan nå ordinær prosjektaktivering.
@@ -96,7 +106,9 @@ export default function SalesProjectActivation({
     );
   }
 
-  if (storeOffer) {
+  // Legacy Butikktilbud avsluttes fortsatt i Sales. Kun versjonslåst Enkel ordre
+  // kan bruke den eksisterende motoren videre.
+  if (storeOffer && !simpleOrder) {
     return (
       <BlockedActivation
         selectedRequest={selectedRequest}
@@ -105,6 +117,11 @@ export default function SalesProjectActivation({
       />
     );
   }
+
+  const heading = createSimpleOrder ? "Lag enkel ordre" : "Aktiver som prosjekt";
+  const eyebrow = createSimpleOrder
+    ? "Opprett Enkel ordre"
+    : "Aktiver som ProffDok-prosjekt";
 
   return (
     <div className="sales-app">
@@ -125,14 +142,14 @@ export default function SalesProjectActivation({
             </div>
             <div className="sales-brand-copy">
               <strong>Expo ProffDok</strong>
-              <span>Aktiver som prosjekt</span>
+              <span>{heading}</span>
             </div>
           </div>
         </header>
 
         <main className="sales-main">
           <section className="sales-form-hero">
-            <p className="sales-eyebrow">Aktiver som ProffDok-prosjekt</p>
+            <p className="sales-eyebrow">{eyebrow}</p>
             <h1 className="sales-title">{selectedRequest.title}</h1>
             <p className="sales-subtitle">
               {selectedRequest.customer} · {selectedRequest.address} · {selectedRequest.id}
@@ -140,9 +157,20 @@ export default function SalesProjectActivation({
           </section>
 
           <form className="sales-form-panel" onSubmit={onSubmit}>
+            {simpleOrder ? (
+              <div className="sales-form-preview" style={{ marginTop: 0 }}>
+                <h2>{createSimpleOrder ? "Enkel ordre" : "Ordinært prosjekt"}</h2>
+                <p className="sales-subtitle">
+                  {createSimpleOrder
+                    ? "Bruk Enkel ordre for mindre oppdrag. Vi gjenbruker ProffDok-motoren under panseret, men ordren skal presenteres som Enkel ordre og uten kundelink."
+                    : "Bruk prosjekt når oppdraget har blitt større og trenger ordinær prosjektflyt. Akseptert tilbud og dokumentasjon følger med videre."}
+                </p>
+              </div>
+            ) : null}
+
             <div className="sales-form-grid">
               <label className="sales-field">
-                <span>Prosjektnavn</span>
+                <span>{createSimpleOrder ? "Ordrenavn" : "Prosjektnavn"}</span>
                 <input
                   value={projectForm.projectName}
                   onChange={(event) =>
@@ -153,13 +181,13 @@ export default function SalesProjectActivation({
               </label>
 
               <label className="sales-field">
-                <span>Prosjektnummer</span>
+                <span>{createSimpleOrder ? "Ordrenummer" : "Prosjektnummer"}</span>
                 <input
                   value={projectForm.projectNumber}
                   onChange={(event) =>
                     onUpdateProjectForm("projectNumber", event.target.value)
                   }
-                  placeholder="Valgfritt prosjektnummer"
+                  placeholder={createSimpleOrder ? "Valgfritt ordrenummer" : "Valgfritt prosjektnummer"}
                 />
               </label>
 
@@ -205,11 +233,15 @@ export default function SalesProjectActivation({
                   <FileText size={16} />
                   {selectedRequest.contractFile
                     ? `Kontrakt: ${selectedRequest.contractFile.name}`
-                    : "Ingen kontrakt lastet opp – kan legges til senere i prosjektet"}
+                    : createSimpleOrder
+                      ? "Kontrakt er valgfritt for Enkel ordre"
+                      : "Ingen kontrakt lastet opp – kan legges til senere i prosjektet"}
                 </span>
                 <span>
                   <Home size={16} />
-                  Vanlig ProffDok-prosjekt opprettes og åpnes direkte
+                  {createSimpleOrder
+                    ? "Eksisterende ProffDok-motor gjenbrukes, men visningen skal være Enkel ordre"
+                    : "Vanlig ProffDok-prosjekt opprettes og åpnes direkte"}
                 </span>
               </div>
             </div>
@@ -229,7 +261,9 @@ export default function SalesProjectActivation({
                 disabled={projectActivationBusy}
               >
                 <Home size={18} />
-                {projectActivationBusy ? "Oppretter prosjekt …" : "Aktiver som prosjekt"}
+                {projectActivationBusy
+                  ? createSimpleOrder ? "Oppretter ordre …" : "Oppretter prosjekt …"
+                  : createSimpleOrder ? "Lag enkel ordre" : "Aktiver som prosjekt"}
               </button>
             </div>
           </form>

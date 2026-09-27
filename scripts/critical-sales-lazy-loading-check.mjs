@@ -202,8 +202,8 @@ if (wrapper) {
   );
   requireText(
     wrapper,
-    "props.openRequestSignal,\n    instanceKey,\n    serverCacheRetryKey,",
-    `${wrapperPath}: recovery-remount trigger ikke ny saksspesifikk server-prime.`
+    "props.openRequestSignal,\n    salesStorageCompanyName,\n    instanceKey,\n    serverCacheRetryKey,",
+    `${wrapperPath}: recovery-remount/work-profile-bytte trigger ikke ny saksspesifikk server-prime.`
   );
 }
 

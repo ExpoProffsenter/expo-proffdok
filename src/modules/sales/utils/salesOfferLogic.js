@@ -1,10 +1,11 @@
-// Expo ProffDok – FASE 39B.2C / FASE 37A2 / FASE 37D1 / FASE 31A2
+// Expo ProffDok – FASE 39B.2C / FASE 37A2 / FASE 37D1 / FASE 31A2 / FASE 45B
 // Tom lokal nettleserkladd får aldri overstyre et eksisterende, meningsfullt
 // servertilbud ved hydrering. Butikktilbud-avsnitt holdes utenfor ordinær
 // pris/antall-validering og bevarer egen linjetype gjennom lagring/recovery.
-// Butikktilbud beholder skjult, versjonslåst metadata i kundevisning.
-// FASE 37A2 mapper i tillegg publiseringstid og digital avvisning slik at kunde-
-// og internpresentasjon kan avslutte Butikktilbud uten prosjektaktivering.
+// Teknisk Butikktilbud-metadata beholdes skjult og versjonslåst i kundevisning.
+// FASE 45B lar brukerens tilbudsnavn følge Generelt tilbud inn i tilbudsbyggeren
+// uten ny databasekolonne. Automatisk legacy-prefiks «Tilbud –» regnes ikke som
+// et eget brukerredigert navn og fjernes både fra servergrunnlag og lokal kladd.
 // Recovery-kontrakt: prepareOfferFormForSaveCore(pruneEmptyOfferDraftRows(formValue))
 // er fortsatt prinsippet; 39B.2C skiller bare ut store_text-avsnitt før core-validering.
 
@@ -22,6 +23,8 @@ import * as core from "./salesOfferLogicCore.js";
 
 const STORE_SECTION_LINE_TYPE = "store_text";
 const STORE_SECTION_MARKER = "#expo-store-text-block";
+const STORE_OFFER_SOURCE = "Butikktilbud / varesalg";
+const GENERAL_OFFER_DEFAULT_TITLE = "Generelt tilbud";
 
 function normalizeOfferAmountForValidation(value) {
   return String(value ?? "")
@@ -80,6 +83,38 @@ function isStoreSectionLine(line = {}) {
       String(line?.productUrl || "").trim() === STORE_SECTION_MARKER ||
       String(line?.id || "").startsWith("store-section-")
   );
+}
+
+function isGeneralOfferRequest(request = {}) {
+  return Boolean(
+    String(request?.source || "").trim() === STORE_OFFER_SOURCE ||
+      getStoreOfferMeta(request?.offerLines || [])
+  );
+}
+
+function isGeneratedTitleForRequest(value, request = {}) {
+  const requestTitle = String(request?.title || "").trim();
+  const candidate = String(value || "").trim();
+  if (!requestTitle || !candidate) return false;
+  return (
+    candidate === `Tilbud – ${requestTitle}` ||
+    candidate === `Tilbud - ${requestTitle}`
+  );
+}
+
+function isGeneratedDirectOfferTitle(request = {}) {
+  return isGeneratedTitleForRequest(request?.offerTitle, request);
+}
+
+function normalizeGeneralOfferTitle(form = {}, request = {}) {
+  if (!isGeneralOfferRequest(request)) return form;
+  if (!isGeneratedTitleForRequest(form?.title, request)) return form;
+  return {
+    ...form,
+    title:
+      String(request?.title || GENERAL_OFFER_DEFAULT_TITLE).trim() ||
+      GENERAL_OFFER_DEFAULT_TITLE,
+  };
 }
 
 function normalizeStoreSectionLine(line = {}) {
@@ -170,8 +205,17 @@ function normalizeOptionsWithQuantity(options = []) {
 
 export function buildOfferFormFromRequest(request) {
   const form = core.buildOfferFormFromRequest(request);
+  const generalOffer = isGeneralOfferRequest(request);
+  const generatedDirectTitle = isGeneratedDirectOfferTitle(request);
+  const generalOfferTitle =
+    generalOffer &&
+    (!String(request?.offerTitle || "").trim() || generatedDirectTitle)
+      ? String(request?.title || GENERAL_OFFER_DEFAULT_TITLE).trim() ||
+        GENERAL_OFFER_DEFAULT_TITLE
+      : form.title;
   return {
     ...form,
+    title: generalOfferTitle,
     lines: recalculateAdministrationLines(request?.offerLines || form.lines || []),
     options: normalizeOptionsWithQuantity(form.options || []),
   };
@@ -190,9 +234,10 @@ export function normalizeStoredOfferDraft(storedDraft, request) {
     storedDraft && serverRows > 0 && localRows === 0 && !localHasText
   );
 
-  const form = preferServerDraft
+  const rawForm = preferServerDraft
     ? requestForm
     : core.normalizeStoredOfferDraft(storedDraft, request);
+  const form = normalizeGeneralOfferTitle(rawForm, request);
 
   const sourceLines = preferServerDraft
     ? requestForm.lines || []
