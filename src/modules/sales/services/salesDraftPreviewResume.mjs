@@ -3,7 +3,7 @@
 // som allerede peker på saken brukeren ser, i stedet for å anta at representert
 // firmanavn og React-profil alltid bruker samme lokale storage-scope.
 
-import { STORAGE_KEY } from "../constants/salesConstants.js";
+const SALES_STORAGE_PREFIX = "expo-proffdok-sales-preview-requests-v1:";
 
 function compactText(value = "") {
   return String(value || "").trim();
@@ -53,7 +53,7 @@ export function resolveSalesDraftPreviewResumeStorageKey({
       if (!key?.endsWith(":navigation")) continue;
 
       const storageKey = key.slice(0, -":navigation".length);
-      if (!storageKey.startsWith(`${STORAGE_KEY}:`)) continue;
+      if (!storageKey.startsWith(SALES_STORAGE_PREFIX)) continue;
       if (normalizedUserId && !storageKey.includes(`:${normalizedUserId}`)) continue;
 
       if (
