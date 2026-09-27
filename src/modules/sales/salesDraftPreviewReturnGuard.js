@@ -3,12 +3,14 @@
 // En ekte pointerdown rydder med vilje gammel Sales-recovery. Denne click-capture-
 // vakten armerer derfor et NYTT snapshot av akkurat den synlige Sales-saken før
 // React åpner preview i ny fane. Ingen generell Back/Lukk/window.open-logikk.
+//
+// VIKTIG: systemadmin kan representere et annet firma enn profile.company_name.
+// Vi finner derfor den faktiske lokale Sales-navigasjonen for request_ref-en som
+// står på skjermen, i stedet for å anta at arbeidsprofilnavn == storage-scope.
 
-import {
-  buildSalesStorageKey,
-  loadSalesNavigation,
-} from "./services/salesLocalStorage.js";
+import { buildSalesStorageKey } from "./services/salesLocalStorage.js";
 import { markSalesResumeForBackground } from "./services/salesResumeRecovery.mjs";
+import { resolveSalesDraftPreviewResumeStorageKey } from "./services/salesDraftPreviewResume.mjs";
 import { readCachedWorkProfileState } from "../access/workProfileClient.js";
 
 const INSTALL_FLAG = "__expoSalesDraftPreviewReturnGuardInstalled";
@@ -46,28 +48,29 @@ function activeCompanyName() {
   return compactText(profile?.companyName || profile?.company_name);
 }
 
-export function armSalesDraftPreviewReturn() {
+export function armSalesDraftPreviewReturn(requestId = "") {
   if (typeof window === "undefined" || !window.localStorage) return false;
 
+  const normalizedRequestId = compactText(requestId);
   const companyName = activeCompanyName();
   const userId = currentUserId(window.localStorage);
-  if (!companyName || !userId) return false;
+  if (!normalizedRequestId || !userId) return false;
 
-  const storageKey = buildSalesStorageKey({
-    integrationMode: "app",
-    companyName,
+  const preferredStorageKey = companyName
+    ? buildSalesStorageKey({
+        integrationMode: "app",
+        companyName,
+        userId,
+      })
+    : "";
+
+  const storageKey = resolveSalesDraftPreviewResumeStorageKey({
+    storage: window.localStorage,
     userId,
+    requestId: normalizedRequestId,
+    preferredStorageKey,
   });
-  const navigation = loadSalesNavigation(storageKey);
-
-  // Denne vakten gjelder kun detaljvisningens eksterne kundepreview.
-  // Andre Sales-flater bruker sine eksisterende, verifiserte returregler.
-  if (
-    navigation?.mode !== "detail" ||
-    !compactText(navigation?.selectedRequestId)
-  ) {
-    return false;
-  }
+  if (!storageKey) return false;
 
   markSalesResumeForBackground(storageKey);
   return true;
@@ -77,12 +80,17 @@ function handlePreviewClickCapture(event) {
   if (typeof Element === "undefined" || !(event.target instanceof Element)) return;
   const button = event.target.closest("button");
   if (!(button instanceof HTMLButtonElement)) return;
-  if (!button.closest(PREVIEW_ACTION_SELECTOR)) return;
+
+  const action = button.closest(PREVIEW_ACTION_SELECTOR);
+  if (!(action instanceof HTMLElement)) return;
   if (compactText(button.textContent).toLowerCase() !== "forhåndsvis som kunde") return;
 
+  const requestId = compactText(action.dataset.draftCustomerPreviewRequestId);
+  if (!requestId) return;
+
   // click skjer etter pointerdown. Dermed er eventuell gammel recovery allerede
-  // ryddet, og dette blir et ferskt snapshot av akkurat flaten brukeren forlater.
-  armSalesDraftPreviewReturn();
+  // ryddet, og dette blir et ferskt snapshot av akkurat saken previewen åpnes fra.
+  armSalesDraftPreviewReturn(requestId);
 }
 
 export function installSalesDraftPreviewReturnGuard() {
