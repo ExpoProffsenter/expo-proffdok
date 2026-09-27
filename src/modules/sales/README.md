@@ -138,6 +138,8 @@ En tilbudspost kan være manuelt arbeid, UE/annen leveranse eller katalogvare. K
 
 Montering kan knyttes til post eller opprettes som `Kun montering`. Opsjoner kan være tillegg/oppgradering eller alternativ/erstatter.
 
+Komplette firmamaler beholder varige app-/Storage-bilder på poster og opsjoner. Bare `https:`- og trygge rot-relative bildepekere lagres; midlertidige `data:`/`blob:`-bilder fjernes, og PDF-vedlegg følger aldri en mal. Eldre maler som ble lagret uten bildepeker må lagres på nytt fra et tilbud som fortsatt har bildet.
+
 ## 7. Internt og eksternt proff-vareregister
 
 Generelt tilbud kan bruke vareregister fra `src/modules/storeCatalog/`.
@@ -169,9 +171,11 @@ Generelt tilbud har i tillegg saksspesifikk serverautosave gjennom `salesStoreOf
 
 Kundelenken bruker eksisterende høyt entropisk `publicOffer`-token. Kundevisning og PDF skal presentere samme publiserte versjon og priser inkl. mva. Forhåndsvisning åpnes separat, er read-only og kan ikke publisere, sende e-post, akseptere eller avvise. Originalfanen skal bli stående på samme tilbud.
 
+Kontrakt-PDF grupperer sammenhengende avsnitt i samme kort, bruker ledig sideplass før sideskift og holder opsjonsbeskrivelse/pris samlet. PDF-layouten skal aldri endre det låste kontraktsgrunnlaget.
+
 Publiserte/aksepterte versjoner er immutable historikk.
 
-## 10. Automatisk oppfølging – Butikktilbud
+## 10. Automatisk oppfølging – Generelt tilbud
 
 FASE 37A2 gjelder fortsatt uendret og er frozen med mindre funksjonen eksplisitt skal endres. Planen er versjonslåst og stopper ved aksept, avvisning, utløp, arkiv eller ny gjeldende publisert versjon.
 

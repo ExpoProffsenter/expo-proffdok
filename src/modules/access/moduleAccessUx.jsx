@@ -336,7 +336,13 @@ function buttonModuleRequirement(button) {
   const text = compactText(button?.textContent);
   if (!text) return "";
   if (text === "Befaring/Tilbud" || text === "Ny forespørsel" || text === "+ Ny forespørsel") return "sales";
-  if (text === "+ Nytt butikktilbud" || text === "Butikktilbud") return "store_offers";
+  if (
+    text === "+ Nytt generelt tilbud" ||
+    text === "Generelle tilbud" ||
+    text === "Generelt tilbud" ||
+    text === "+ Nytt butikktilbud" ||
+    text === "Butikktilbud"
+  ) return "store_offers";
   if (
     text === "+ Nytt prosjekt" ||
     text === "Nytt prosjekt" ||
@@ -430,9 +436,9 @@ function ensureAdminAccessHelp(access) {
   const items = access.isSystemAdmin
     ? [
         "Ved ny bruker: kontroller firma og rolle, velg relevante moduler under Brukere og tilganger, lagre tilgangen og godkjenn deretter brukeren.",
-        "Systemadministrator har alltid Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Butikktilbud.",
+        "Systemadministrator har alltid Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Generelle tilbud.",
         "Firmaadministrator kan senere delegere videre til egne ansatte, men bare moduler firmaadministratoren selv har.",
-        "Butikktilbud krever samtidig Befaring / Våtromstilbud.",
+        "Generelle tilbud krever samtidig Befaring / Våtromstilbud.",
         "Rolle, firmatilhørighet og modultilgang er separate kontrollnivåer. Modultilgang gir aldri automatisk tilgang til andre firmaers data.",
         "Meny og Hjelp følger tildelte moduler. Backend/RLS er den autoritative sikkerhetsgrensen.",
       ]
@@ -440,7 +446,7 @@ function ensureAdminAccessHelp(access) {
         "Du kan bare administrere brukere i eget firma.",
         "Du kan bare gi videre moduler du selv har fått av systemadministrator.",
         "Din egen modultilgang kan ikke endres av deg selv; den styres av systemadministrator.",
-        "Butikktilbud krever samtidig Befaring / Våtromstilbud.",
+        "Generelle tilbud krever samtidig Befaring / Våtromstilbud.",
         "Meny og Hjelp for den ansatte følger modulene du tildeler, mens backend/RLS håndhever den faktiske datatilgangen.",
       ];
 
@@ -461,7 +467,7 @@ function applyHelpAccess(access) {
       setAccessVisibility(item, hasModuleAccess(access, "sales"), "sales-help");
       return;
     }
-    if (raw === "🛍️ Butikktilbud") {
+    if (raw === "🧾 Generelle tilbud" || raw === "🛍️ Butikktilbud") {
       setAccessVisibility(item, hasModuleAccess(access, "store_offers"), "store-help");
       return;
     }
@@ -473,7 +479,7 @@ function applyHelpAccess(access) {
   document.querySelectorAll("li").forEach((item) => {
     const text = compactText(item.textContent);
     if (text === "Tilgang til Butikktilbud skal senere følge brukerens tildelte modulrettigheter når den generelle tilgangsmodellen er innført.") {
-      item.textContent = "Tilgang til Butikktilbud følger brukerens tildelte modultilgang. Firmaadministrator kan bare delegere Butikktilbud når firmaadministratoren selv har denne tilgangen.";
+      item.textContent = "Tilgang til Generelle tilbud følger brukerens tildelte modultilgang. Firmaadministrator kan bare delegere Generelle tilbud når firmaadministratoren selv har denne tilgangen.";
     }
   });
 

@@ -143,7 +143,9 @@ function findSalesOverviewIntro() {
     const text = compactText(note.textContent);
     return text.startsWith("Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept") ||
       text.startsWith("Her håndterer du forespørsler, våtromstilbud og butikktilbud") ||
+      text.startsWith("Her håndterer du forespørsler, Våtromstilbud og Generelle tilbud") ||
       text.startsWith("Opprett og følg varebaserte Butikktilbud") ||
+      text.startsWith("Opprett og følg Generelle tilbud") ||
       text.startsWith("Opprett og følg forespørsler og våtromstilbud");
   }) || null;
 }
@@ -154,7 +156,7 @@ function setSalesOverviewIntro(type = "all") {
 
   note.dataset[SALES_OVERVIEW_INTRO_MARKER] = "1";
   if (type === "store") {
-    note.textContent = "Opprett og følg varebaserte Butikktilbud med eventuell montering frem til kundeaksept. Butikktilbud avsluttes ved aksept og opprettes ikke som ProffDok-prosjekt.";
+    note.textContent = "Opprett og følg Generelle tilbud for varer, arbeid, underentreprenører og andre leveranser. Etter kundeaksept vises de neste stegene som er tilgjengelige for firmaet.";
     return true;
   }
   if (type === "wetroom") {
@@ -162,7 +164,7 @@ function setSalesOverviewIntro(type = "all") {
     return true;
   }
 
-  note.textContent = "Her håndterer du forespørsler, Våtromstilbud og Butikktilbud. Våtromstilbud kan gå videre til ProffDok-prosjekt etter aksept, mens Butikktilbud avsluttes ved aksept.";
+  note.textContent = "Her håndterer du forespørsler, Våtromstilbud og Generelle tilbud. Våtromstilbud følger våtromsflyten, mens Generelle tilbud kan brukes til varer, arbeid, underentreprenører og andre leveranser.";
   return true;
 }
 
@@ -221,9 +223,9 @@ function OfferTypePicker({ canUseStoreOffers, onWetroom, onStore, onClose }) {
               onClick={onStore}
               style={{ textAlign: "left", padding: "14px 16px" }}
             >
-              <strong style={{ display: "block" }}>Butikktilbud</strong>
+              <strong style={{ display: "block" }}>Generelt tilbud</strong>
               <small style={{ display: "block", marginTop: 4, fontWeight: 600 }}>
-                Varebasert tilbud med eventuell montering. Avsluttes ved kundeaksept.
+                For varer, arbeid, underentreprenører og andre leveranser. Tilbudet bygges opp fritt.
               </small>
             </button>
           ) : null}
@@ -527,7 +529,11 @@ export default function SalesModule(props) {
 
       const text = compactText(button.textContent);
       let type = "";
-      if (text.startsWith("Butikktilbud")) type = "store";
+      if (
+        text.startsWith("Generelle tilbud") ||
+        text.startsWith("Generelt tilbud") ||
+        text.startsWith("Butikktilbud")
+      ) type = "store";
       else if (text.startsWith("Våtromstilbud")) type = "wetroom";
       else if (text.startsWith("Alle tilbud")) type = "all";
       if (!type) return;

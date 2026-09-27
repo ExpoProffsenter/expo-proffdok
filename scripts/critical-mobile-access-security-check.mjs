@@ -83,7 +83,7 @@ if (unifiedUserAccess.includes("supabase.from(") || unifiedUserAccess.includes("
 
 const help = requireNeedles("src/modules/help/helpToolsCore.js", [
   "Firma må være valgt før en ny bruker kan godkjennes",
-  "Butikktilbud kan bare tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter",
+  "Generelle tilbud kan tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter",
   "Expo Proffsenter-logo kan brukes som standardlogo",
 ]);
 if (help.includes("DOM-innsprøyting") && !help.includes("Ingen DOM-innsprøyting")) {

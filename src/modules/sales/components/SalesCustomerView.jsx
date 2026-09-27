@@ -176,7 +176,7 @@ function applyStoreOfferCopy({ isStoreOffer, signatureName = "", brandLabel = ""
     if (eyebrow) eyebrow.textContent = "Forhåndsvisning av tilbud";
     if (lead) lead.textContent = "Dette er kundens visning av tilbudet. Valg du prøver her er kun lokal forhåndsvisning og lagres ikke.";
   } else if (readOnlyDeclined) {
-    if (eyebrow) eyebrow.textContent = "Butikktilbud avvist · historisk visning";
+    if (eyebrow) eyebrow.textContent = "Generelt tilbud avvist · historisk visning";
     if (lead) lead.textContent = "Dette er den publiserte tilbudsversjonen som ble avvist. Innhold, priser og vilkår beholdes som låst historikk og kan ikke endres eller aksepteres her.";
   } else if (lead) {
     lead.textContent = "Her finner du varene, prisene, eventuell montering og vilkårene samlet. Du kan velge eventuelle alternativer eller tillegg før du aksepterer eller avviser tilbudet nederst på siden.";
@@ -405,7 +405,7 @@ export default function SalesCustomerView(props) {
     : storeExpired
       ? (event) => {
           event?.preventDefault?.();
-          alert("Butikktilbudet er utløpt. Ta kontakt med saksbehandler for et nytt tilbud.");
+          alert("Tilbudet er utløpt. Ta kontakt med saksbehandler for et nytt tilbud.");
         }
       : props.handleAcceptOffer;
 
@@ -451,7 +451,7 @@ export default function SalesCustomerView(props) {
               <h2>Ønsker du ikke tilbudet?</h2>
               <p>
                 {isStoreOffer
-                  ? "Du kan avvise Butikktilbudet her. Når svaret er registrert, avsluttes denne tilbudsversjonen og automatiske påminnelser stopper."
+                  ? "Du kan avvise det generelle tilbudet her. Når svaret er registrert, avsluttes denne tilbudsversjonen og automatiske påminnelser stopper."
                   : "Du kan avvise Våtromstilbudet her. Når svaret er registrert, avsluttes denne tilbudsversjonen og eventuell automatisk oppfølging stopper."}
               </p>
               <div className="store-customer-decline-fields">
@@ -461,7 +461,7 @@ export default function SalesCustomerView(props) {
                 </label>
                 <label className="store-customer-decline-check">
                   <input type="checkbox" checked={declineConfirmed} onChange={(event) => setDeclineConfirmed(event.target.checked)} required />
-                  <span>{isStoreOffer ? "Jeg avviser dette Butikktilbudet." : "Jeg avviser dette Våtromstilbudet."}</span>
+                  <span>{isStoreOffer ? "Jeg avviser dette generelle tilbudet." : "Jeg avviser dette Våtromstilbudet."}</span>
                 </label>
                 {declineError ? <p className="store-customer-decline-error">{declineError}</p> : null}
                 <button className="store-customer-decline-button" type="submit" disabled={declineBusy || !declineName.trim() || !declineConfirmed}>

@@ -164,7 +164,11 @@ function applySupportSpecificVisibility() {
   const canSystemAdmin = Boolean(activeProjection.access.isSystemAdmin);
 
   document.querySelectorAll('[role="tablist"][aria-label="Tilbudstype"] button').forEach((button) => {
-    const storeTab = compactText(button.textContent).startsWith("Butikktilbud");
+    const text = compactText(button.textContent);
+    const storeTab =
+      text.startsWith("Generelle tilbud") ||
+      text.startsWith("Generelt tilbud") ||
+      text.startsWith("Butikktilbud");
     if (!storeTab) return;
     setSupportHidden(button, !canStore, "supportStoreHidden");
   });

@@ -9,6 +9,13 @@ const proBuilder = fs.readFileSync("src/modules/sales/components/SalesStoreOffer
 const optionalityPresentation = fs.readFileSync("src/modules/sales/utils/salesOfferOptionalityPresentation.js", "utf8");
 const storeOffers = fs.readFileSync("src/modules/sales/services/salesStoreOffers.js", "utf8");
 const indexHtml = fs.readFileSync("index.html", "utf8");
+const salesModule = fs.readFileSync("src/modules/sales/SalesModule.jsx", "utf8");
+const salesList = fs.readFileSync("src/modules/sales/components/SalesListView.jsx", "utf8");
+const salesDetail = fs.readFileSync("src/modules/sales/components/SalesDetailView.jsx", "utf8");
+const storeBuilder = fs.readFileSync("src/modules/sales/components/SalesStoreOfferBuilderGrouped.jsx", "utf8");
+const templatePanel = fs.readFileSync("src/modules/sales/components/StoreOfferCompleteTemplatePanel.jsx", "utf8");
+const moduleAccess = fs.readFileSync("src/modules/access/moduleAccessClient.js", "utf8");
+const helpCore = fs.readFileSync("src/modules/help/helpToolsCore.js", "utf8");
 
 assert(storeOffers.includes('STORE_OFFER_SOURCE = "Butikktilbud / varesalg"'), "Teknisk Butikktilbud-kilde må beholdes for bakoverkompatibilitet.");
 assert(storeOffers.includes('STORE_OFFER_TITLE = "Generelt tilbud"'), "Nye generelle tilbud må få nytt brukerrettet standardnavn.");
@@ -31,6 +38,65 @@ for (const needle of [
 assert(!requestForm.includes('"Nytt butikktilbud"'), "Nytt tilbud-skjema skal ikke vise Butikktilbud som brukerbegrep.");
 assert(!requestForm.includes('"Registrer kunde og opprett butikktilbud"'), "Opprett-skjema skal bruke generell tilbudsterminologi.");
 assert(!requestForm.includes('"Opprett butikktilbud"'), "Opprett-knapp skal bruke generell tilbudsterminologi.");
+
+for (const needle of [
+  '{ id: "store", label: "Generelle tilbud" }',
+  "Våtromstilbud og Generelle tilbud ligger i samme sikre tilbudsmotor",
+  '{storeOffer ? "Generelt tilbud" : "Våtromstilbud"}',
+]) {
+  assert(salesList.includes(needle), `Tilbudsoversikten mangler direkte Generelt tilbud-tekst: ${needle}`);
+}
+assert(!salesList.includes('{ id: "store", label: "Butikktilbud" }'), "Tilbudsfilteret skal ikke avhenge av ettermontert DOM-omskriving.");
+assert(!salesList.includes("Våtromstilbud og Butikktilbud ligger i samme sikre tilbudsmotor"), "Tilbudsoversikten har gammel synlig oversiktstekst.");
+
+for (const needle of [
+  "Opprett og følg Generelle tilbud for varer, arbeid, underentreprenører og andre leveranser.",
+  "Her håndterer du forespørsler, Våtromstilbud og Generelle tilbud.",
+  '>Generelt tilbud</strong>',
+  "For varer, arbeid, underentreprenører og andre leveranser. Tilbudet bygges opp fritt.",
+]) {
+  assert(salesModule.includes(needle), `Tilbudsvalg/intro mangler direkte Generelt tilbud-tekst: ${needle}`);
+}
+
+for (const needle of [
+  "Generelt tilbud akseptert – velg videreføring",
+  "Det generelle tilbudet er ferdig behandlet.",
+  "Velg Enkel ordre eller ordinært prosjekt ut fra omfanget på oppdraget.",
+]) {
+  assert(salesDetail.includes(needle), `Akseptert Generelt tilbud mangler stabil videreføringstekst: ${needle}`);
+}
+
+for (const needle of [
+  '<span>Generelt tilbud</span>',
+  '<p className="sales-eyebrow">Generelt tilbud</p>',
+  "Lagre tilbud",
+]) {
+  assert(storeBuilder.includes(needle), `Tilbudsbyggeren mangler direkte Generelt tilbud-tekst: ${needle}`);
+}
+assert(!storeBuilder.includes('<p className="sales-eyebrow">Butikktilbud</p>'), "Tilbudsbyggeren skal ikke vise gammelt navn.");
+
+for (const needle of [
+  "Komplette maler for Generelt tilbud",
+  "lagrede maler for Generelt tilbud",
+]) {
+  assert(templatePanel.includes(needle), `Malpanelet mangler Generelt tilbud-tekst: ${needle}`);
+}
+
+for (const needle of [
+  'label: "Generelle tilbud"',
+  'shortLabel: "Generelle tilbud"',
+  "Tilbud for varer, arbeid, underentreprenører og andre leveranser.",
+]) {
+  assert(moduleAccess.includes(needle), `Modultilgangen mangler Generelle tilbud-tekst: ${needle}`);
+}
+
+for (const needle of [
+  '"🧾 Generelle tilbud"',
+  "Generelle tilbud brukes til varer, arbeid, underentreprenører og andre leveranser.",
+  "Etter aksept velger firmaet Enkel ordre eller ordinært prosjekt",
+]) {
+  assert(helpCore.includes(needle), `Hjelp mangler oppdatert Generelt tilbud-regel: ${needle}`);
+}
 
 for (const needle of [
   'const STORE_OFFER_SOURCE = "Butikktilbud / varesalg"',

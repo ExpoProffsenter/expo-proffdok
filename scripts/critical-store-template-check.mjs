@@ -79,7 +79,7 @@ const panel = read(
   "src/modules/sales/components/StoreOfferCompleteTemplatePanel.jsx"
 );
 for (const needle of [
-  "Komplette Butikktilbud-maler",
+  "Komplette maler for Generelt tilbud",
   "saveCompleteStoreOfferTemplate",
   "materializeStoreOfferTemplate",
   "recalculateStoreOption",

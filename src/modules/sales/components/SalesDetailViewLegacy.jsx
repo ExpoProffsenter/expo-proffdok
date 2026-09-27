@@ -265,26 +265,26 @@ function reactNodeText(node) {
 function rewriteStoreOfferAcceptedFlow(node) {
   if (typeof node === "string") {
     const replacements = new Map([
-      ["Klar for prosjektaktivering", "Butikktilbud akseptert"],
+      ["Klar for prosjektaktivering", "Generelt tilbud akseptert"],
       [
         "Kunden har akseptert tilbudet. Akseptert innhold låses i denne flyten før senere prosjektaktivering.",
-        "Kunden har akseptert butikktilbudet. Aksepten og den publiserte tilbudsversjonen er låst, og saken avsluttes i Sales.",
+        "Kunden har akseptert det generelle tilbudet. Aksepten og den publiserte tilbudsversjonen er låst, og saken avsluttes i Sales.",
       ],
       [
         "Akseptbeviset er opprettet og lagret. Fortsett direkte til prosjektaktivering når du er klar.",
-        "Akseptbeviset er opprettet og lagret. Butikktilbudet er ferdig behandlet.",
+        "Akseptbeviset er opprettet og lagret. Det generelle tilbudet er ferdig behandlet.",
       ],
       [
         "Akseptbeviset er opprettet og lagret. Du kan nå opprette kontrakt eller fortsette til prosjektaktivering.",
-        "Akseptbeviset er opprettet og lagret. Butikktilbudet er ferdig behandlet.",
+        "Akseptbeviset er opprettet og lagret. Det generelle tilbudet er ferdig behandlet.",
       ],
       [
         "Låst dokument - følger automatisk med til prosjektet.",
-        "Låst dokumentasjon av det aksepterte butikktilbudet.",
+        "Låst dokumentasjon av det aksepterte generelle tilbudet.",
       ],
       [
         "Neste steg er å aktivere saken som et vanlig ProffDok-prosjekt.",
-        "Butikktilbudet er akseptert og avsluttet i Sales. Det opprettes ikke ProffDok-prosjekt.",
+        "Det generelle tilbudet er akseptert og avsluttet i Sales. Det opprettes ikke ProffDok-prosjekt.",
       ],
     ]);
     return replacements.get(node) || node;

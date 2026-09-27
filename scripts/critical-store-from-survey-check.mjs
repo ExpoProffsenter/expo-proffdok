@@ -14,7 +14,7 @@ const required = [
   'saveSalesNavigation(context.storageKey, "offer-builder"',
   'expo-proffdok-sales-rehydrate',
   'Våtromstilbud',
-  'Butikktilbud',
+  'Generelt tilbud',
   'Ringside Rørleggerbedrift AS',
   'Bademiljø Expo',
 ];
@@ -33,4 +33,4 @@ if (!index.includes("installStoreOfferFromSurveyUx")) {
   throw new Error("FASE 41B.5B UX er ikke installert fra index.html.");
 }
 
-console.log("✅ Expo ProffDok Befaring → Butikktilbud check OK – samme sak beholdes og ingen prosjektopprettelse utføres");
+console.log("✅ Expo ProffDok Befaring → Generelt tilbud check OK – samme sak beholdes og ingen prosjektopprettelse utføres");

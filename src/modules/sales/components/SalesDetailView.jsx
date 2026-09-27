@@ -185,12 +185,31 @@ export default function SalesDetailView(props) {
         }
       });
       root.querySelectorAll(".sales-next-card h2").forEach((heading) => {
-        if (compactText(heading.textContent) === "Klar for prosjektaktivering") heading.textContent = "Tilbud akseptert – velg videreføring";
+        const text = compactText(heading.textContent);
+        if (
+          text === "Klar for prosjektaktivering" ||
+          text === "Generelt tilbud akseptert"
+        ) heading.textContent = "Generelt tilbud akseptert – velg videreføring";
       });
       root.querySelectorAll(".sales-next-card p").forEach((paragraph) => {
         const text = compactText(paragraph.textContent);
-        if (text.includes("Akseptert innhold låses i denne flyten før senere prosjektaktivering")) {
+        if (
+          text.includes("Akseptert innhold låses i denne flyten før senere prosjektaktivering") ||
+          text.includes("saken avsluttes i Sales")
+        ) {
           paragraph.textContent = "Velg Enkel ordre for mindre oppdrag, eller ordinært prosjekt dersom jobben trenger full prosjektflyt. Akseptert tilbud og dokumentasjon beholdes i begge tilfeller.";
+          return;
+        }
+        if (
+          text === "Akseptbeviset er opprettet og lagret. Det generelle tilbudet er ferdig behandlet."
+        ) {
+          paragraph.textContent = "Akseptbeviset er opprettet og lagret. Velg videreføring når du er klar.";
+          return;
+        }
+        if (
+          text === "Det generelle tilbudet er akseptert og avsluttet i Sales. Det opprettes ikke ProffDok-prosjekt."
+        ) {
+          paragraph.textContent = "Tilbudet er akseptert. Velg Enkel ordre eller ordinært prosjekt ut fra omfanget på oppdraget.";
         }
       });
       showInternalProductNumbers(root, request);

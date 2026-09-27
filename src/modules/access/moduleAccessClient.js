@@ -20,9 +20,9 @@ export const MODULE_CATALOG = [
   },
   {
     key: "store_offers",
-    label: "Butikktilbud",
-    shortLabel: "Butikktilbud",
-    description: "Varebaserte butikktilbud. Krever samtidig Befaring / Våtromstilbud.",
+    label: "Generelle tilbud",
+    shortLabel: "Generelle tilbud",
+    description: "Tilbud for varer, arbeid, underentreprenører og andre leveranser. Krever samtidig Befaring / Våtromstilbud.",
     requires: ["sales"],
   },
 ];

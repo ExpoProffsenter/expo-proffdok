@@ -38,7 +38,7 @@ function BlockedActivation({ selectedRequest, onBack, storeOffer = false }) {
               <ShieldCheck size={22} />
             </div>
             <div className="sales-brand-copy">
-              <strong>{storeOffer ? "Butikktilbud" : "Systemadmin-support"}</strong>
+              <strong>{storeOffer ? "Generelt tilbud" : "Systemadmin-support"}</strong>
               <span>Prosjektaktivering er sperret</span>
             </div>
           </div>
@@ -57,12 +57,12 @@ function BlockedActivation({ selectedRequest, onBack, storeOffer = false }) {
             <div className="sales-form-preview" style={{ marginTop: 0 }}>
               <h2>
                 {storeOffer
-                  ? "Butikktilbud avsluttes i Sales"
+                  ? "Generelt tilbud avsluttes i Sales"
                   : "Aktivering utføres av firmaet"}
               </h2>
               <p className="sales-subtitle">
                 {storeOffer
-                  ? "Et akseptert butikktilbud oppretter ikke ProffDok-prosjekt. Aksept og dokumentasjon blir liggende på salgssaken."
+                  ? "Et akseptert generelt tilbud oppretter ikke ProffDok-prosjekt. Aksept og dokumentasjon blir liggende på salgssaken."
                   : "Systemadministrator kan kontrollere aksept, dokumenter og prosjektgrunnlag, men oppretter ikke prosjektet på vegne av målbedriften. Dette beskytter eierskap og ansvarlig bruker."}
               </p>
             </div>

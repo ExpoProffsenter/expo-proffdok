@@ -162,8 +162,13 @@ function patchGeneralOfferSurfaceCopy() {
   if (simpleOrderRoot instanceof HTMLElement) {
     replacePairs(simpleOrderRoot, [
       ["Butikktilbud akseptert", "Generelt tilbud akseptert"],
+      ["Generelt tilbud akseptert", "Generelt tilbud akseptert – velg videreføring"],
       [
         "Kunden har akseptert butikktilbudet. Aksepten og den publiserte tilbudsversjonen er låst, og saken avsluttes i Sales.",
+        "Kunden har akseptert tilbudet. Aksepten og den publiserte tilbudsversjonen er låst. Velg videreføring når du er klar.",
+      ],
+      [
+        "Kunden har akseptert det generelle tilbudet. Aksepten og den publiserte tilbudsversjonen er låst, og saken avsluttes i Sales.",
         "Kunden har akseptert tilbudet. Aksepten og den publiserte tilbudsversjonen er låst. Velg videreføring når du er klar.",
       ],
       [
@@ -171,7 +176,15 @@ function patchGeneralOfferSurfaceCopy() {
         "Akseptbeviset er opprettet og lagret. Velg videreføring når du er klar.",
       ],
       [
+        "Akseptbeviset er opprettet og lagret. Det generelle tilbudet er ferdig behandlet.",
+        "Akseptbeviset er opprettet og lagret. Velg videreføring når du er klar.",
+      ],
+      [
         "Butikktilbudet er akseptert og avsluttet i Sales. Det opprettes ikke ProffDok-prosjekt.",
+        "Tilbudet er akseptert. Velg Enkel ordre eller ordinært prosjekt ut fra omfanget på oppdraget.",
+      ],
+      [
+        "Det generelle tilbudet er akseptert og avsluttet i Sales. Det opprettes ikke ProffDok-prosjekt.",
         "Tilbudet er akseptert. Velg Enkel ordre eller ordinært prosjekt ut fra omfanget på oppdraget.",
       ],
     ]);

@@ -263,6 +263,8 @@ Montering kan knyttes direkte til post og beregnes med antall/timer × enhetspri
 
 Opsjoner støtter tillegg/oppgradering og alternativ/erstatter. Alternativ vare kan beholde samme montering, bruke ny montering eller ha ingen montering.
 
+Komplette tilbudsmaler kan lagre varige bildepekere (`https:` eller appens rot-relative Storage-/asset-URL-er) på poster og opsjoner. Midlertidige `data:`/`blob:`-bilder fjernes fordi de ikke er en stabil lagringskontrakt, og PDF-vedlegg er alltid saksspesifikke og følger ikke malen. Eksisterende maler uten lagret bildepeker kan ikke rekonstruere bildet automatisk; de må lagres på nytt fra et tilbud som fortsatt har bildet.
+
 ### 6.3 Autosave og recovery
 
 Generelt tilbud har saksspesifikk serverautosave. Kritiske regler:
@@ -277,6 +279,8 @@ Generelt tilbud har saksspesifikk serverautosave. Kritiske regler:
 Firmascopet lokal Sales-cache kan gi rask førstevisning, men Supabase er alltid autoritativ og oppdaterer listen etter serverlasting.
 
 Kundepreview bruker samme presentasjon som kunden, men er isolert og read-only. Den åpnes i ny fane uten å flytte originalfanen bort fra tilbudet, og kan ikke publisere, sende e-post, akseptere eller avvise.
+
+Kontrakt-PDF grupperer sammenhengende tekst i ett kort, bruker ledig sideplass og oppretter fortsettelseskort bare ved reelt sideskift. Lange overskrifter brytes, og opsjonsbeskrivelse og pris holdes samlet. PDF-generering endrer ikke det låste kontraktsgrunnlaget.
 
 ## 7. Internt ERP-vareregister – Fase 39B.2
 

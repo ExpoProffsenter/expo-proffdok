@@ -270,7 +270,7 @@ export default function SalesCustomerAcceptedView({
                 <h2>Aksepten er ferdig registrert</h2>
                 <p>
                   {isStoreOffer
-                    ? "Ingen ytterligere handling er nødvendig i denne lenken. Butikktilbudet er ferdig registrert og saksbehandler følger opp ved behov."
+                    ? "Ingen ytterligere handling er nødvendig i denne lenken. Det generelle tilbudet er ferdig registrert og saksbehandler følger opp ved behov."
                     : "Ingen ytterligere handling er nødvendig i denne lenken. Utførende bedrift følger opp saken videre."}
                 </p>
               </div>

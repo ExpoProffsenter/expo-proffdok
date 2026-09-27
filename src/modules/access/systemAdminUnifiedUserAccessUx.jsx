@@ -52,7 +52,7 @@ function toggleModule(keys, key, checked) {
 function modulePresentation(module, { internalCompany, proCompany }) {
   if (module.key !== "store_offers") return { label: module.label, note: "" };
   if (internalCompany) {
-    return { label: "Butikktilbud", note: "Krever Befaring / Våtromstilbud" };
+    return { label: "Generelle tilbud", note: "Krever Befaring / Våtromstilbud" };
   }
   if (proCompany) {
     return { label: "Enkel ordre / Proff vareregister", note: "Krever Befaring / Våtromstilbud" };

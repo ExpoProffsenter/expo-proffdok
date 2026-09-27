@@ -302,7 +302,7 @@ export async function materializeStoreOfferTemplate(template = {}) {
   }
 
   if (payload.templateKind !== STORE_COMPLETE_TEMPLATE_KIND) {
-    throw new Error("Malen er ikke en gyldig Butikktilbud-mal.");
+    throw new Error("Malen er ikke en gyldig mal for Generelt tilbud.");
   }
 
   const sourceLines = visibleTemplateLines(payload.lines);

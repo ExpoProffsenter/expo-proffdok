@@ -34,7 +34,7 @@ function findStoreModuleLabel(mount) {
   return Array.from(mount.querySelectorAll("label")).find((label) =>
     Array.from(label.querySelectorAll("b")).some((node) => {
       const text = compactText(node.textContent);
-      return text === "Butikktilbud" || text === "Enkel ordre / Proff vareregister";
+      return text === "Generelle tilbud" || text === "Butikktilbud" || text === "Enkel ordre / Proff vareregister";
     })
   ) || null;
 }

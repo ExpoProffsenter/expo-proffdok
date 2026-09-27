@@ -27,7 +27,11 @@ function lockStoreModuleForFirmaadmin(card, proCompany) {
   Array.from(card.querySelectorAll("label")).forEach((label) => {
     const title = label.querySelector("b");
     const text = compactText(title?.textContent);
-    if (text !== "Butikktilbud" && text !== "Enkel ordre / Proff vareregister") return;
+    if (
+      text !== "Generelle tilbud" &&
+      text !== "Butikktilbud" &&
+      text !== "Enkel ordre / Proff vareregister"
+    ) return;
 
     if (proCompany && title && text !== "Enkel ordre / Proff vareregister") {
       title.textContent = "Enkel ordre / Proff vareregister";
