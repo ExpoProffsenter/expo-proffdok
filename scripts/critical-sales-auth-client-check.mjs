@@ -70,6 +70,11 @@ requireText(
   "const appClient = getAppSupabaseClient();",
   "Sales auth: fallback-fabrikken gjenbruker ikke hovedappens registrerte Supabase-klient."
 );
+requireText(
+  salesSupabase,
+  "if (resolvedClient) registerAppSupabaseClient(resolvedClient);",
+  "Sales auth: en tidlig fallback-klient registreres ikke for gjenbruk av hovedappen."
+);
 requireCondition(
   (salesSupabase.match(/if \(appClient\) return appClient;/g) || []).length >= 2,
   "Sales auth: både eksisterende lazy proxy og nye fallback-kall må prioritere hovedappens klient."
@@ -125,6 +130,11 @@ requireText(
   main,
   "registerAppSupabaseClient(supabase);",
   "Sales auth: hovedappens ene Supabase-klient registreres ikke for integrasjonslagene."
+);
+requireText(
+  main,
+  "getAppSupabaseClient() || (0, import_supabase_js.createClient)(",
+  "Sales auth: hovedappen gjenbruker ikke en klient som et tidlig integrasjonslag allerede har registrert."
 );
 requireText(
   appClientRegistry,

@@ -10,7 +10,10 @@ export * from "./salesSupabaseBase.js";
 
 import * as core from "./salesSupabaseBase.js";
 import { STORAGE_KEY } from "../constants/salesConstants.js";
-import { getAppSupabaseClient } from "../../access/appSupabaseClientRegistry.js";
+import {
+  getAppSupabaseClient,
+  registerAppSupabaseClient,
+} from "../../access/appSupabaseClientRegistry.js";
 import {
   buildOfferFormForSignatureFromRequest,
   createOfferDraftContentSignature,
@@ -75,6 +78,7 @@ function createLazyDefaultSalesSupabaseClient() {
     if (appClient) return appClient;
     if (resolvedClient === undefined) {
       resolvedClient = core.createDefaultSalesSupabaseClient();
+      if (resolvedClient) registerAppSupabaseClient(resolvedClient);
     }
     return resolvedClient;
   };
