@@ -82,6 +82,8 @@ Expo ProffDok har et separat, langlivet demomiljø for presentasjon og opplærin
 
 Clean Fase 45B-Preview bygges fra release-branchen mot samme isolerte Sandbox-Supabase, men er ikke permanent Demo og skal ikke hente produktregler eller kode tilbake fra `demo`.
 
+Sandboxen har egen demo-/kursmigrasjonslinje og skal aldri branch-merges til Production. Production-endringer skal komme fra versjonerte migrasjoner i en `main`-basert og godkjent release.
+
 Detaljert demo-dokumentasjon ligger på `demo`-branchen.
 
 ## Utviklings- og mergepolicy

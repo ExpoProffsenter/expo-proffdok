@@ -543,6 +543,8 @@ Clean Fase 45B-Preview skal bindes eksplisitt til Sandbox Supabase `demo-sandbox
 
 Permanent Demo Sandbox bruker separat backend og er fysisk isolert fra Production. Den skal derfor ikke behandles som en tilfeldig Vercel Preview. Demo-builden har egen sandbox-binding, Golden/reset og fast branch-host.
 
+Sandboxens migrasjonshistorikk inneholder en egen demo-/kursbaseline og er ikke samme lineære historikk som Production. `demo-sandbox` skal derfor aldri merges til Production gjennom Supabase branch-merge. Godkjente Production-migrasjoner kjøres fra den versjonerte, `main`-baserte releasekoden og verifiseres separat.
+
 Før viktig demo skal preflight bekrefte:
 
 - branch `demo`
