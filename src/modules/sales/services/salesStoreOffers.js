@@ -1,12 +1,13 @@
-// Expo ProffDok – FASE 37A2 / FASE 37D2 / FASE 37D1
+// Expo ProffDok – FASE 45B / FASE 37A2 / FASE 37D2 / FASE 37D1
 // Avgrenser Butikktilbud og holder lanserings-, merkevare-, oppfølgings- og
 // metadataregler samlet. Publisering, kundelenke, PDF, aksept og e-post gjenbrukes.
 // Butikktilbud gjenkjennes fra versjonslåst metadata etter publisering, slik at
 // kundevisning, avslutning og oppfølging ikke avhenger av mutable saksfelt.
+// Enkel ordre skilles kun via additiv metadata; eksisterende Butikktilbud-regler beholdes.
 
 export const RINGSIDE_STORE_OFFER_ORG_NUMBER = "915407692";
 export const STORE_OFFER_SOURCE = "Butikktilbud / varesalg";
-export const STORE_OFFER_TITLE = "Butikktilbud";
+export const STORE_OFFER_TITLE = "Generelt tilbud";
 export const STORE_OFFER_SESSION_KEY = "expo-proffdok:sales:store-offer-launch";
 export const STORE_OFFER_META_ID = "__expo_store_offer_meta__";
 export const STORE_TEXT_TEMPLATE_KIND = "store-offer-text-v1";
@@ -91,18 +92,26 @@ export function clearStoreOfferLaunch() {
   }
 }
 
-export function isStoreOfferRequest(request = {}) {
+function findStoreOfferMeta(request = {}) {
   const lockedMeta = request?.storeOfferMeta;
   const lineMeta = Array.isArray(request?.offerLines)
     ? request.offerLines.find((line) => line?.__storeOfferMeta)
     : null;
+  return lockedMeta?.__storeOfferMeta ? lockedMeta : lineMeta || null;
+}
 
-  if (lockedMeta?.__storeOfferMeta || lineMeta?.__storeOfferMeta) return true;
+export function isStoreOfferRequest(request = {}) {
+  if (findStoreOfferMeta(request)) return true;
 
   return Boolean(
     request?.directOffer &&
       String(request?.source || "").trim() === STORE_OFFER_SOURCE
   );
+}
+
+export function isSimpleOrderRequest(request = {}) {
+  const meta = findStoreOfferMeta(request);
+  return Boolean(meta?.simpleOrder === true || meta?.offerKind === "simple-order-v1");
 }
 
 export function getStoreOfferBrand(brandKey = "") {
