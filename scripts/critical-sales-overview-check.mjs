@@ -45,6 +45,15 @@ requireNeedles("src/modules/app/SystemAdminSalesSupport.jsx", [
   "company.active_sales_cases",
 ]);
 
+const salesSupportNotice = requireNeedles("src/modules/sales/components/SalesSupportNotice.jsx", [
+  "user?.user_metadata?.full_name",
+  "user?.user_metadata?.name",
+  "user?.email",
+]);
+if (salesSupportNotice.includes('.select("full_name,email")')) {
+  throw new Error("Supportbanner skal ikke spørre etter en profiles.full_name-kolonne som ikke finnes.");
+}
+
 const salesList = requireNeedles("src/modules/sales/components/SalesListView.jsx", [
   "queryTokens.every",
   "requestSearchValues",
