@@ -237,7 +237,7 @@ async function buildProjection(context) {
     const targetCompany = normalizeCompanyName(target?.company_name || context.companyName);
     const bannerCompany = normalizeCompanyName(context.companyName);
     const company = (Array.isArray(data) ? data : []).find((entry) => {
-      const name = normalizeCompanyName(entry?.display_name);
+      const name = normalizeCompanyName(entry?.display_name || entry?.company_name);
       return name === targetCompany || name === bannerCompany;
     });
     salesCompanyId = String(company?.company_id || "").trim();

@@ -96,6 +96,11 @@ requireText(
   "const salesClient = getAppSupabaseClient();",
   "Sales auth: prosjekt-support bruker ikke hovedappens Supabase-klient."
 );
+requireText(
+  supportProjection,
+  "entry?.display_name || entry?.company_name",
+  "Sales auth: prosjekt-support tåler ikke det eksisterende company_name-feltet fra support-RPC-en."
+);
 requireCondition(
   !supportProjection.includes("createDefaultSalesSupabaseClient"),
   "Sales auth: prosjekt-support kan fortsatt opprette en ekstra GoTrue-klient."
