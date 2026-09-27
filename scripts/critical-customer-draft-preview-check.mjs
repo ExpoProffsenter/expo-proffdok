@@ -10,6 +10,7 @@ const preview = fs.readFileSync("src/modules/sales/components/SalesDraftCustomer
 const entry = fs.readFileSync("src/modules/sales/SalesPreview.jsx", "utf8");
 const detail = fs.readFileSync("src/modules/sales/components/SalesDetailView.jsx", "utf8");
 const salesModule = fs.readFileSync("src/modules/sales/SalesModule.jsx", "utf8");
+const customerView = fs.readFileSync("src/modules/sales/components/SalesCustomerView.jsx", "utf8");
 const customerCore = fs.readFileSync("src/modules/sales/components/SalesCustomerViewCore.jsx", "utf8");
 const indexHtml = fs.readFileSync("index.html", "utf8");
 const packageJson = fs.readFileSync("package.json", "utf8");
@@ -38,6 +39,14 @@ for (const forbidden of [
 ]) {
   assert(!preview.includes(forbidden), `Kundepreview må være skrivebeskyttet og inneholder: ${forbidden}`);
 }
+
+assert(preview.includes("hideDecisionControls"), "Kundepreview må slå av alle beslutningskontroller eksplisitt.");
+assert(
+  customerCore.includes("!hideDecisionControls ? <form") &&
+    customerView.includes('props.mode === "customer-offer" && !readOnlyDeclined && !hideDecisionControls') &&
+    customerView.includes("hideDecisionControls ? null : createDefaultSalesSupabaseClient()"),
+  "Kundepreview må utelate både aksept, avvisning og beslutningsklient fra DOM/runtime.",
+);
 
 assert(entry.includes("offerPreview"), "sales-preview må route offerPreview til kundepreview.");
 assert(entry.includes("SalesDraftCustomerPreview"), "sales-preview mangler kundepreview-komponent.");

@@ -168,11 +168,14 @@ function absoluteAssetUrl(value = "") {
   try { return new URL(clean, window.location.origin).href; } catch { return clean; }
 }
 
-function applyStoreOfferCopy({ isStoreOffer, signatureName = "", brandLabel = "", brandLogoUrl = "", legalCompanyName = "", readOnlyDeclined = false } = {}) {
+function applyStoreOfferCopy({ isStoreOffer, signatureName = "", brandLabel = "", brandLogoUrl = "", legalCompanyName = "", readOnlyDeclined = false, hideDecisionControls = false } = {}) {
   if (!isStoreOffer || typeof document === "undefined") return;
   const eyebrow = document.querySelector(".sales-customer-hero .sales-eyebrow");
   const lead = document.querySelector(".sales-customer-lead");
-  if (readOnlyDeclined) {
+  if (hideDecisionControls) {
+    if (eyebrow) eyebrow.textContent = "Forhåndsvisning av tilbud";
+    if (lead) lead.textContent = "Dette er kundens visning av tilbudet. Valg du prøver her er kun lokal forhåndsvisning og lagres ikke.";
+  } else if (readOnlyDeclined) {
     if (eyebrow) eyebrow.textContent = "Butikktilbud avvist · historisk visning";
     if (lead) lead.textContent = "Dette er den publiserte tilbudsversjonen som ble avvist. Innhold, priser og vilkår beholdes som låst historikk og kan ikke endres eller aksepteres her.";
   } else if (lead) {
@@ -344,7 +347,11 @@ export default function SalesCustomerView(props) {
   const [declineBusy, setDeclineBusy] = useState(false);
   const [declineError, setDeclineError] = useState("");
   const [localDecline, setLocalDecline] = useState(null);
-  const salesClient = useMemo(() => createDefaultSalesSupabaseClient(), []);
+  const hideDecisionControls = Boolean(props.hideDecisionControls);
+  const salesClient = useMemo(
+    () => hideDecisionControls ? null : createDefaultSalesSupabaseClient(),
+    [hideDecisionControls]
+  );
   const genericExpired = offerIsExpired(brandedRequest, activeVersion);
   const storeExpired = Boolean(isStoreOffer && genericExpired);
   const declined = Boolean(localDecline || brandedRequest?.status === "Avvist" || brandedRequest?.declinedAt);
@@ -355,7 +362,7 @@ export default function SalesCustomerView(props) {
     const applyPresentation = () => {
       applyCustomerSectionOrder(signatureName);
       applyCustomerOptionsOnlyPresentation(brandedRequest, selectedOptionIds);
-      applyStoreOfferCopy({ isStoreOffer, signatureName, brandLabel, brandLogoUrl, legalCompanyName, readOnlyDeclined });
+      applyStoreOfferCopy({ isStoreOffer, signatureName, brandLabel, brandLogoUrl, legalCompanyName, readOnlyDeclined, hideDecisionControls });
       if (isStoreOffer) applyStoreAlternativePresentation(brandedRequest, selectedOptionIds);
       const root = document.querySelector(".sales-customer-offer-app");
       if (root) root.classList.toggle("store-customer-history-readonly", readOnlyDeclined);
@@ -363,7 +370,7 @@ export default function SalesCustomerView(props) {
     const frame = window.requestAnimationFrame(applyPresentation);
     const timer = window.setTimeout(applyPresentation, 120);
     return () => { window.cancelAnimationFrame(frame); window.clearTimeout(timer); };
-  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId, props.selectedRequest?.offerLines, props.selectedRequest?.offerOptions, props.selectedRequest?.storeOfferMeta, signatureName, brandLabel, brandLogoUrl, legalCompanyName, isStoreOffer, readOnlyDeclined, selectedOptionIds.join("|")]);
+  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId, props.selectedRequest?.offerLines, props.selectedRequest?.offerOptions, props.selectedRequest?.storeOfferMeta, signatureName, brandLabel, brandLogoUrl, legalCompanyName, isStoreOffer, readOnlyDeclined, hideDecisionControls, selectedOptionIds.join("|")]);
 
   async function handleDecline(event) {
     event.preventDefault();
@@ -412,6 +419,7 @@ export default function SalesCustomerView(props) {
       <SalesCustomerViewCore
         {...props}
         selectedRequest={brandedRequest}
+        hideDecisionControls={hideDecisionControls}
         handleAcceptOffer={acceptHandler}
         toggleAcceptedOption={readOnlyDeclined ? () => {} : props.toggleAcceptedOption}
       />
@@ -427,7 +435,7 @@ export default function SalesCustomerView(props) {
           </section>
         </div>
       ) : null}
-      {props.mode === "customer-offer" && !readOnlyDeclined ? (
+      {props.mode === "customer-offer" && !readOnlyDeclined && !hideDecisionControls ? (
         <div className="store-customer-decision-shell">
           {genericExpired ? (
             <section className="store-customer-expired-card">

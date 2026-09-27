@@ -187,6 +187,7 @@ export default function SalesDraftCustomerPreview() {
       `}</style>
       <SalesCustomerView
         mode="customer-offer"
+        hideDecisionControls
         selectedRequest={request}
         companyProfile={companyProfile || {}}
         acceptanceForm={acceptanceForm}
