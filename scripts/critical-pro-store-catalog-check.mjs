@@ -1,6 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
+import {
+  isSimpleOrderRequest,
+  isStoreOfferRequest,
+} from "../src/modules/sales/services/salesStoreOffers.js";
 const root=process.cwd();
 const migration=fs.readFileSync(path.join(root,"supabase/migrations/20260922170000_fase45b_pro_catalog_access.sql"),"utf8");
 const hardening=fs.readFileSync(path.join(root,"supabase/migrations/20260923132000_fase45b_access_hardening.sql"),"utf8");
@@ -95,7 +99,11 @@ assert(detail.includes("SalesDetailViewLegacy"),"Ordinær Sales-detail skal dele
 for(const needle of ["SalesDetailViewCore","rewriteStoreOfferAcceptedFlow","rewriteStoreOfferDeclinedFlow"]) assert(legacyDetail.includes(needle),`Legacy Sales-detail-kontrakt mangler: ${needle}`);
 for(const needle of ["storeOffer && !simpleOrder","getSimpleOrderActivationMode","Lag enkel ordre","Aktiver som prosjekt","if (supportMode)"]) assert(activation.includes(needle),`Aktiveringsskjerm mangler Enkel ordre-/sikkerhetsregel: ${needle}`);
 for(const needle of ["set_simple_order_activation_mode","simple_order","project"]) assert(simpleOrder.includes(needle),`Simple-order-klient mangler: ${needle}`);
-for(const needle of ["export function isStoreOfferRequest","export function isSimpleOrderRequest","findStoreOfferMeta"]) assert(storeOffers.includes(needle),`Butikktilbud/Enkel ordre-identitet mangler: ${needle}`);
+for(const needle of ["export function isStoreOfferRequest","export function isSimpleOrderRequest","export function isStoreOfferSource","findStoreOfferMeta","Enkel ordre / proffkunde"]) assert(storeOffers.includes(needle),`Butikktilbud/Enkel ordre-identitet mangler: ${needle}`);
+const legacySimpleOrderSummary={directOffer:true,source:"Enkel ordre / proffkunde"};
+assert.equal(isStoreOfferRequest(legacySimpleOrderSummary),true,"Enkel ordre-summary uten tilbudslinjer skal ligge under Generelle tilbud.");
+assert.equal(isSimpleOrderRequest(legacySimpleOrderSummary),true,"Enkel ordre-summary uten tilbudslinjer skal beholde Enkel ordre-identitet.");
+assert.equal(isStoreOfferRequest({...legacySimpleOrderSummary,directOffer:false}),false,"Legacy-kilde alene skal ikke gjøre en ordinær forespørsel til Generelt tilbud.");
 for(const needle of ["supplierProductNumber","nobbNumber","storeCatalogGtin","acceptedOfferLines","acceptedOptions","selected_options","Kopier liste","Skriv ut"]) assert(orderBasis.includes(needle),`Akseptert varegrunnlag mangler: ${needle}`);
 for(const needle of ["Proff vareregister / Enkel ordre","Forhåndsvis som kunde","Din nto pris","Bestillingsgrunnlag","FlisLab AS 40 %","Askøy 40 %","Kun Systemadministrator kan aktivere Proff / Enkel ordre","SoPro-forutsetningen"]) assert(help.includes(needle),`HJELP mangler 45B-veiledning: ${needle}`);
 assert(helpBridge.includes("createHelp45BSection"),"45B-hjelpen må være koblet til React-hjelpesenteret.");

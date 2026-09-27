@@ -19,11 +19,11 @@ import { getOfferTotal, getStoreOfferMeta } from "./salesUtils.js";
 import {
   prepareOfferFormForSave as prepareOfferFormForSaveCore,
 } from "./salesOfferLogicCore.js";
+import { isStoreOfferSource } from "../services/salesStoreOffers.js";
 import * as core from "./salesOfferLogicCore.js";
 
 const STORE_SECTION_LINE_TYPE = "store_text";
 const STORE_SECTION_MARKER = "#expo-store-text-block";
-const STORE_OFFER_SOURCE = "Butikktilbud / varesalg";
 const GENERAL_OFFER_DEFAULT_TITLE = "Generelt tilbud";
 
 function normalizeOfferAmountForValidation(value) {
@@ -87,8 +87,7 @@ function isStoreSectionLine(line = {}) {
 
 function isGeneralOfferRequest(request = {}) {
   return Boolean(
-    String(request?.source || "").trim() === STORE_OFFER_SOURCE ||
-      getStoreOfferMeta(request?.offerLines || [])
+    isStoreOfferSource(request?.source) || getStoreOfferMeta(request?.offerLines || [])
   );
 }
 

@@ -99,9 +99,10 @@ for (const needle of [
 }
 
 for (const needle of [
-  'const STORE_OFFER_SOURCE = "Butikktilbud / varesalg"',
+  'import { isStoreOfferSource } from "../services/salesStoreOffers.js"',
   'const GENERAL_OFFER_DEFAULT_TITLE = "Generelt tilbud"',
   "isGeneralOfferRequest",
+  "isStoreOfferSource(request?.source)",
   "isGeneratedTitleForRequest",
   "isGeneratedDirectOfferTitle",
   'candidate === `Tilbud – ${requestTitle}`',

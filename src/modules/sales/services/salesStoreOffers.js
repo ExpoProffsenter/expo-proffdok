@@ -7,6 +7,7 @@
 
 export const RINGSIDE_STORE_OFFER_ORG_NUMBER = "915407692";
 export const STORE_OFFER_SOURCE = "Butikktilbud / varesalg";
+export const LEGACY_SIMPLE_ORDER_SOURCE = "Enkel ordre / proffkunde";
 export const STORE_OFFER_TITLE = "Generelt tilbud";
 export const STORE_OFFER_SESSION_KEY = "expo-proffdok:sales:store-offer-launch";
 export const STORE_OFFER_META_ID = "__expo_store_offer_meta__";
@@ -100,18 +101,25 @@ function findStoreOfferMeta(request = {}) {
   return lockedMeta?.__storeOfferMeta ? lockedMeta : lineMeta || null;
 }
 
+export function isStoreOfferSource(value = "") {
+  const source = String(value || "").trim();
+  return source === STORE_OFFER_SOURCE || source === LEGACY_SIMPLE_ORDER_SOURCE;
+}
+
 export function isStoreOfferRequest(request = {}) {
   if (findStoreOfferMeta(request)) return true;
 
-  return Boolean(
-    request?.directOffer &&
-      String(request?.source || "").trim() === STORE_OFFER_SOURCE
-  );
+  return Boolean(request?.directOffer && isStoreOfferSource(request?.source));
 }
 
 export function isSimpleOrderRequest(request = {}) {
   const meta = findStoreOfferMeta(request);
-  return Boolean(meta?.simpleOrder === true || meta?.offerKind === "simple-order-v1");
+  return Boolean(
+    meta?.simpleOrder === true ||
+      meta?.offerKind === "simple-order-v1" ||
+      (request?.directOffer &&
+        String(request?.source || "").trim() === LEGACY_SIMPLE_ORDER_SOURCE)
+  );
 }
 
 export function getStoreOfferBrand(brandKey = "") {
