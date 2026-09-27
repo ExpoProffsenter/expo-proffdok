@@ -39,6 +39,12 @@ if (/salesClient\s*\.\s*from\s*\(/.test(support)) {
   throw new Error("supportModeProjection.js skal ikke skrive direkte til database.");
 }
 
+requireNeedles("src/modules/app/SystemAdminSalesSupport.jsx", [
+  "company.display_name || company.company_name",
+  '|| "Ukjent firma"',
+  "company.active_sales_cases",
+]);
+
 const salesList = requireNeedles("src/modules/sales/components/SalesListView.jsx", [
   "queryTokens.every",
   "requestSearchValues",
