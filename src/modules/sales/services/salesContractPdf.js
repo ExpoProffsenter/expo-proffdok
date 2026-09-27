@@ -82,6 +82,17 @@ function optionTypeLabel(option = {}) {
   return getOfferTotal([option]) < 0 ? "Fradrag / prisreduksjon" : "Tillegg / oppgradering";
 }
 
+function looksLikeSubheading(text = "") {
+  const value = clean(text);
+  if (!value) return false;
+  return (
+    value.endsWith(":") ||
+    (value.length < 56 &&
+      !/[.!?]$/.test(value) &&
+      /arbeider$|arbeid$|kvalitet$|gjennomføring$|tidslinje$|fordeler$/i.test(value))
+  );
+}
+
 function groupOfferLines(lines = []) {
   const groups = [];
   const map = new Map();
@@ -194,35 +205,117 @@ export async function createFinalSalesContractPdf(contract = {}) {
     y += height + 4;
   };
 
-  const textCard = (label, text) => {
-    const paragraphs = String(text ?? "")
+  const textRows = (text) => {
+    const rows = [];
+    String(text ?? "")
       .replace(/\r/g, "")
       .split(/\n+/)
       .map(clean)
-      .filter(Boolean);
-    if (!paragraphs.length) return;
+      .filter(Boolean)
+      .forEach((paragraph, paragraphIndex) => {
+        const value = paragraph.replace(/^·\s*/, "- ");
+        const heading = looksLikeSubheading(value);
+        font(
+          heading ? 8.7 : 8.6,
+          heading ? "bold" : "normal",
+          heading ? COLORS.ink : COLORS.text
+        );
+        pdf.splitTextToSize(value, WIDTH - 14).forEach((row, rowIndex) => {
+          rows.push({
+            text: row,
+            heading,
+            gap: paragraphIndex > 0 && rowIndex === 0 ? (heading ? 2.5 : 1.8) : 0,
+            height: heading ? 4.4 : 4.5,
+          });
+        });
+      });
+    return rows;
+  };
 
-    let first = true;
-    for (const paragraph of paragraphs) {
-      font(8.5, "normal", COLORS.text);
-      const rows = pdf.splitTextToSize(paragraph, WIDTH - 14);
-      let index = 0;
-      while (index < rows.length) {
-        if (PAGE.bottom - y < 25) newPage();
-        const availableRows = Math.max(1, Math.floor((PAGE.bottom - y - 14) / 4.4));
-        const chunk = rows.slice(index, index + availableRows);
-        const height = 12 + chunk.length * 4.4;
-        pdf.setFillColor(...COLORS.panel);
-        pdf.setDrawColor(...COLORS.line);
-        pdf.roundedRect(PAGE.left, y, WIDTH, height, 2.5, 2.5, "FD");
-        font(9.5, "bold", COLORS.ink);
-        pdf.text(first ? clean(label) : `${clean(label)} (forts.)`, PAGE.left + 5, y + 6.5);
-        font(8.5, "normal", COLORS.text);
-        pdf.text(chunk, PAGE.left + 5, y + 12);
-        y += height + 3;
-        index += chunk.length;
-        first = false;
+  const rowsHeight = (rows) =>
+    rows.reduce((sum, row) => sum + row.gap + row.height, 0);
+
+  const cardLabel = (label, continued = false) => {
+    const value = continued ? `${clean(label)} (forts.)` : clean(label);
+    const size = continued ? 8.8 : 10.1;
+    const lineHeight = continued ? 3.9 : 4.25;
+    font(size, "bold", continued ? COLORS.muted : COLORS.ink);
+    const rows = pdf.splitTextToSize(value, WIDTH - 10);
+    return {
+      rows,
+      size,
+      lineHeight,
+      height: 7 + Math.max(1, rows.length) * lineHeight,
+    };
+  };
+
+  const textCardChunk = (label, rows, continued = false) => {
+    const labelLayout = cardLabel(label, continued);
+    const height = labelLayout.height + rowsHeight(rows) + 5;
+    pdf.setFillColor(...COLORS.panel);
+    pdf.setDrawColor(...COLORS.line);
+    pdf.roundedRect(PAGE.left, y, WIDTH, height, 2.5, 2.5, "FD");
+    font(
+      labelLayout.size,
+      "bold",
+      continued ? COLORS.muted : COLORS.ink
+    );
+    let labelY = y + 6.5;
+    labelLayout.rows.forEach((row) => {
+      pdf.text(row, PAGE.left + 5, labelY);
+      labelY += labelLayout.lineHeight;
+    });
+    let textY = y + labelLayout.height + 0.5;
+    rows.forEach((row) => {
+      textY += row.gap;
+      font(
+        row.heading ? 8.7 : 8.6,
+        row.heading ? "bold" : "normal",
+        row.heading ? COLORS.ink : COLORS.text
+      );
+      pdf.text(row.text, PAGE.left + 5, textY);
+      textY += row.height;
+    });
+    y += height + 3;
+  };
+
+  const textCard = (label, text) => {
+    if (!clean(text)) return;
+    const rows = textRows(text);
+    if (!rows.length) return;
+
+    const firstLabel = cardLabel(label, false);
+    const fullHeight = firstLabel.height + rowsHeight(rows) + 5;
+    if (fullHeight <= PAGE.bottom - 20 && y + fullHeight > PAGE.bottom) {
+      newPage();
+    }
+
+    let index = 0;
+    let continued = false;
+    while (index < rows.length) {
+      if (PAGE.bottom - y < 32) newPage();
+      const labelLayout = cardLabel(label, continued);
+      const available = PAGE.bottom - y - labelLayout.height - 5;
+      let used = 0;
+      let end = index;
+      while (end < rows.length) {
+        const next = rows[end].gap + rows[end].height;
+        if (used + next > available) break;
+        used += next;
+        end += 1;
       }
+      if (end === index) {
+        newPage();
+        continue;
+      }
+      const remaining = rows.length - end;
+      if (remaining > 0 && remaining < 3 && end - index > 3) {
+        end -= remaining;
+      }
+      textCardChunk(label, rows.slice(index, end), continued);
+      index = end;
+      continued = true;
+      if (index < rows.length) newPage();
     }
   };
 

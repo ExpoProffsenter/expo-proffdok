@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
@@ -21,8 +21,7 @@ for (const needle of [
   "structureVersion: STORE_COMPLETE_TEMPLATE_VERSION",
   "lines: visibleTemplateLines(offerForm.lines)",
   "options: visibleTemplateOptions(offerForm.options)",
-  'safe.imageDataUrl = ""',
-  "safe.attachmentFile = null",
+  "withReusableTemplateMedia(item)",
   'safe.storeUnitPriceInclVat = ""',
   'safe.amount = ""',
   'from("internal_store_catalog_items")',
@@ -33,6 +32,43 @@ for (const needle of [
   '"replacementLineId"',
   '"storeInstallationReplacementLineId"',
 ]) assert(service.includes(needle), `malmotor mangler kontrakt: ${needle}`);
+
+const mediaModule = await import(
+  pathToFileURL(
+    path.join(root, "src/modules/sales/utils/salesOfferTemplateMedia.mjs")
+  ).href
+);
+for (const imageDataUrl of [
+  "https://example.invalid/template-image.jpg",
+  "/auth-bathroom.jpg",
+]) {
+  const item = mediaModule.withReusableTemplateMedia({
+    id: "option-1",
+    imageDataUrl,
+    imageName: "Opsjonsbilde.jpg",
+    attachmentFile: { url: "https://example.invalid/attachment.pdf" },
+  });
+  assert(item.imageDataUrl === imageDataUrl, "varig tilbudsbilde må følge malen");
+  assert(item.imageName === "Opsjonsbilde.jpg", "bildenavn må følge malen");
+  assert(item.attachmentFile === null, "PDF-vedlegg må ikke følge malen");
+}
+for (const imageDataUrl of ["data:image/jpeg;base64,abc", "blob:https://example.invalid/abc"]) {
+  const item = mediaModule.withReusableTemplateMedia({
+    imageDataUrl,
+    imageName: "Midlertidig.jpg",
+  });
+  assert(item.imageDataUrl === "", "midlertidig/tung bilde-URL må ikke lagres i mal-JSON");
+  assert(item.imageName === "", "bildenavn må fjernes når bildet ikke kan gjenbrukes");
+}
+
+const standardBuilder = read("src/modules/sales/SalesModuleCore.jsx");
+for (const needle of [
+  'from "./utils/salesOfferTemplateMedia.mjs"',
+  "lines: cleanLines.map(withReusableTemplateMedia)",
+  "options: cleanOptions.map(withReusableTemplateMedia)",
+  "...withReusableTemplateMedia(line)",
+  "...withReusableTemplateMedia(option)",
+]) assert(standardBuilder.includes(needle), `Våtromsmal mangler bildegjenbruk: ${needle}`);
 
 for (const forbidden of [
   'select("id,purchase_net_ex_vat',
@@ -50,7 +86,7 @@ for (const needle of [
   "currentMetaLines(offerForm)",
   "erstatter eksisterende avsnitt, poster, montering og opsjoner",
   "katalogpris",
-  "Manuelle poster beholder prisen",
+  "beholder prisen som ble lagret",
   "Bruk firmamal",
   "Lagre som mal",
   "createPortal",
@@ -64,6 +100,8 @@ for (const needle of [
   'materialized.missingCatalogItems ? "warning" : "success"',
   'aria-live="polite"',
   "document.body",
+  "Bilder som er lagret i appens",
+  "PDF-vedlegg følger ikke",
 ]) assert(panel.includes(needle), `malpanelet mangler: ${needle}`);
 
 for (const forbidden of [

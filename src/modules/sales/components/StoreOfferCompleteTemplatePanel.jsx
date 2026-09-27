@@ -355,7 +355,9 @@ export default function StoreOfferCompleteTemplatePanel({
       ) : null}
 
       <p className="sales-subtitle" style={{ margin: "12px 0 0" }}>
-        Katalogvarer henter gjeldende katalogpris når malen brukes. Manuelle poster beholder prisen som ble lagret i malen. Bilder og vedlegg lagres ikke i malen.
+        Katalogvarer henter gjeldende katalogpris når malen brukes. Manuelle poster
+        beholder prisen som ble lagret i malen. Bilder som er lagret i appens
+        bildelager følger malen; PDF-vedlegg følger ikke.
       </p>
     </div>
   );
