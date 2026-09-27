@@ -141,6 +141,10 @@ const storageSource = fs.readFileSync(
   "src/modules/sales/services/salesLocalStorageCore.js",
   "utf8"
 );
+const salesModuleCoreSource = fs.readFileSync(
+  "src/modules/sales/SalesModuleCore.jsx",
+  "utf8"
+);
 
 requireCheck(
   resumeSource.includes('REQUEST_ID_OPTIONAL_MODES = new Set(["new", "new-offer"])') &&
@@ -168,6 +172,15 @@ requireCheck(
   storageSource.includes('new Set(["new", "new-offer", "edit-request"])') &&
     storageSource.includes("readSalesWorkspaceResumeSnapshot"),
   "Entry-kladd er ikke bundet til eksplisitt Sales recovery-snapshot."
+);
+requireCheck(
+  salesModuleCoreSource.includes(
+    'integrationMode === "app" &&\n      (!activeSupabase || !salesCompanyId)'
+  ) &&
+    /\[\s*activeSupabase,\s*integrationMode,\s*mode,\s*offerForm,\s*offerFormReady,\s*salesCompanyId,/m.test(
+      salesModuleCoreSource
+    ),
+  "Gjenopprettet tilbudskladd viser falsk serverfeil eller synkroniseres ikke når firmascopet blir klart."
 );
 
 if (failures.length) {

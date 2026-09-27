@@ -498,6 +498,18 @@ export default function SalesModule({
     setRequests(nextRequests);
     saveRequests(nextRequests, salesStorageKey);
 
+    // Ved en full sidelasting kan tilbudskladden være gjenopprettet før
+    // firmascopet er ferdig avklart. Behold da kladden lokalt uten å vise en
+    // falsk serverfeil. Effekten kjøres på nytt når Supabase/firmascopet er
+    // klart, og først da starter den varige mellomlagringen.
+    if (
+      integrationMode === "app" &&
+      (!activeSupabase || !salesCompanyId)
+    ) {
+      setOfferDraftSaveStatus("idle");
+      return;
+    }
+
     if (offerDraftSaveTimerRef.current) {
       window.clearTimeout(offerDraftSaveTimerRef.current);
     }
@@ -524,7 +536,16 @@ export default function SalesModule({
         offerDraftSaveTimerRef.current = null;
       }
     };
-  }, [mode, offerForm, offerFormReady, salesStorageKey, selectedRequestId]);
+  }, [
+    activeSupabase,
+    integrationMode,
+    mode,
+    offerForm,
+    offerFormReady,
+    salesCompanyId,
+    salesStorageKey,
+    selectedRequestId,
+  ]);
 
   useEffect(() => {
     return () => {
