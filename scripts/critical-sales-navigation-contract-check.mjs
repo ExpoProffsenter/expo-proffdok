@@ -98,6 +98,8 @@ for (const needle of [
   '"se kundens tilbud"',
   '"forhåndsvis som kunde"',
   '"forhåndsvis kundetilbud"',
+  'control.closest(".store-draft-preview-shell")',
+  'document.querySelector(".sales-app")',
   'salesNavigationWasLost(now)',
   'expected.storageKey === activeStorageKey',
   'window.addEventListener("focus", restoreExternalPreviewReturnOnFocus)',
@@ -125,9 +127,6 @@ assert(
     salesCore.includes('setSelectedRequestId(null);'),
   "Eksplisitt detail -> oversikt skal fortsatt eie nullstilling av valgt sak."
 );
-
-// Aktiveringsasserten blir sann først når index er koblet til kontrakten. Guard-en
-// ligger i critical/build og vil dermed stoppe enhver delvis senere endring.
 assert(
   indexHtml.includes("installSalesNavigationContractUx"),
   "Sales navigasjonskontrakten må installeres fra app-entry."
