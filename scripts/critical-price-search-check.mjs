@@ -8,7 +8,7 @@ function requireNeedles(path, needles) {
   const text = read(path);
   for (const needle of needles) {
     if (!text.includes(needle)) {
-      throw new Error(`${path}: mangler kritisk 41B.2/41B.3/42K-guard: ${needle}`);
+      throw new Error(`${path}: mangler kritisk Prissøk-/tilgangs-guard: ${needle}`);
     }
   }
   return text;
@@ -28,7 +28,6 @@ const migration = requireNeedles(
     "grant execute",
   ]
 );
-
 if (migration.includes("create or replace function public.current_user_has_internal_store_catalog_access")) {
   throw new Error("41B.2 skal ikke endre eksisterende Butikktilbud-katalogtilgang.");
 }
@@ -52,18 +51,13 @@ const sensitiveMigration = requireNeedles(
     "create or replace function public.search_internal_store_catalog_prices(",
   ]
 );
-
 if (sensitiveMigration.includes("create or replace function public.current_user_has_internal_store_catalog_access")) {
   throw new Error("41B.2A skal ikke utvide eksisterende Butikktilbud-firmatilgang.");
 }
-
-requireNeedles(
-  "supabase/migrations/20260910134500_fase41b2a_sensitive_access_null_role_fix.sql",
-  [
-    "v_target_is_systemadmin := coalesce(v_target.system_role,'') = 'systemadmin'",
-    "not v_target_is_systemadmin",
-  ]
-);
+requireNeedles("supabase/migrations/20260910134500_fase41b2a_sensitive_access_null_role_fix.sql", [
+  "v_target_is_systemadmin := coalesce(v_target.system_role,'') = 'systemadmin'",
+  "not v_target_is_systemadmin",
+]);
 
 const view = requireNeedles("src/modules/storeCatalog/StorePriceSearchView.jsx", [
   "Prissøk",
@@ -91,7 +85,6 @@ const view = requireNeedles("src/modules/storeCatalog/StorePriceSearchView.jsx",
   "createPortal",
   "priceSearchPrintPortal",
 ]);
-
 if (/\b(?:supabase|client)\s*\.\s*from\s*\(/.test(view) || /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(view)) {
   throw new Error("StorePriceSearchView skal ikke skrive direkte til database.");
 }
@@ -135,7 +128,6 @@ const ux = requireNeedles("src/modules/storeCatalog/storePriceSearchUx.jsx", [
   "closePriceSearch({ clearResume: true })",
   "openPriceSearch({ restore: true })",
 ]);
-
 if (/\b(?:supabase|client)\s*\.\s*from\s*\(/.test(ux) || /\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(ux)) {
   throw new Error("storePriceSearchUx skal ikke skrive direkte til database.");
 }
@@ -153,15 +145,29 @@ requireNeedles("src/modules/access/sensitiveAccessClient.js", [
 
 const unifiedAdmin = requireNeedles("src/modules/access/systemAdminUnifiedUserAccessUx.jsx", [
   "Brukere og tilganger",
+  "Hovedmoduler og prisinnsyn styres her på samme brukerkort",
   "Se interne nettopriser",
+  "Ringside/Expo: gjelder Prissøk og internt vareoppslag",
+  "Enkel ordre / Proff vareregister",
+  "Se «Din nto pris»",
   "setManagedModuleAccess",
   "setManagedInternalNetPriceAccess",
+  "setManagedProCatalogNetPriceAccess",
   "expo-module-access-manager",
   'mount.style.display = "none"',
-  "Kun systemadministrator kan gi denne tilgangen",
 ]);
 if (!unifiedAdmin.includes("targetIsSystemAdmin") || !unifiedAdmin.includes("disabled={targetIsSystemAdmin")) {
   throw new Error("Systemadministrator-rader skal være låst og alltid ha alle tilganger.");
+}
+
+const portalGuard = requireNeedles("src/modules/storeCatalog/priceSearchPortalGuard.js", [
+  "priceSearchPrintPortal",
+  "expo-price-search-inline",
+  "MutationObserver",
+  'activePortal.style.display = "none"',
+]);
+if (!portalGuard.includes("portals.forEach((portal) => portal.remove())")) {
+  throw new Error("Foreldreløse Prissøk-utskriftsflater skal ryddes ved navigasjon/remount.");
 }
 
 const help = requireNeedles("src/modules/help/priceSearchHelpUx.js", [
@@ -187,11 +193,9 @@ requireNeedles("docs/architecture/FASE41B2_PRICE_SEARCH_AND_SENSITIVE_ACCESS.md"
   "server-side",
   "FASE 41B.3",
 ]);
-
 requireNeedles("index.html", [
   "installStorePriceSearchUx",
   "installSystemAdminUnifiedUserAccessUx",
   "installPriceSearchHelpUx",
 ]);
-
-console.log("✅ Expo ProffDok Prissøk / sensitiv tilgang / appbytte-resume / utskrift check OK");
+console.log("✅ Expo ProffDok Prissøk / sensitiv tilgang / samlet brukerkort / portal-opprydding check OK");

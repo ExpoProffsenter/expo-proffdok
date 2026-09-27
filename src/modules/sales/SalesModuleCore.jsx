@@ -1,6 +1,6 @@
 // FASE 28C2 STARTSIDE-TILBUD: Tillater direkte åpning av en konkret salgssak fra Startsiden via signal. Ingen SQL/RLS/Storage/e-postendring.
 // FASE 28A3 TILBUDSMALER: Henter, bruker og sletter firmadelte tilbudsmaler. Malbruk kopierer kun tilbudsinnhold til redigerbar kladd; kunde/befaring/publisert historikk berøres ikke.
-// FASE 28A2 TILBUDSMALER: Eksisterende tilbud kan lagres som firmadelt mal via sales_offer_templates. Kundedata, bilder, PDF-vedlegg, publisering og historikk kopieres ikke til malen.
+// FASE 28A2 TILBUDSMALER: Eksisterende tilbud kan lagres som firmadelt mal via sales_offer_templates. Kundedata, PDF-vedlegg, publisering og historikk kopieres ikke til malen. Varige tilbudsbilder kan gjenbrukes i malen.
 // FASE 26B.1 TILBUDSVEDLEGG: Underposter og opsjoner kan ha bilde og PDF-vedlegg. PDF lagres i eksisterende project-images Storage og følger tilbudsdata uten SQL/RLS-endring.\n// FASE 26B: Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri administrasjon/prosjektstyring. Flat lagringsmodell beholdes for bakoverkompatibilitet. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 26B.5 OPSJONSTYPE: Tillegg/oppgradering og alternativ som erstatter konkret underpost. Alternativpris lagres som prisendring mot grunnposten; kundens valg er gjensidig eksklusivt per erstattet underpost. Ingen SQL/RLS/Storage/Edge-endring.\n// FASE 25B STRUKTURERTE ENDRINGER: Nye aktiverte prosjekter opprettes med tom changes-liste for tillegg/fradrag. Akseptert tilbud forblir låst i salesOrigin/akseptbevis. Ingen SQL/RLS/Storage/Edge/e-postendring.
 // FASE 24S.1 KORREKT PROSJEKTAKTIVERING/TILBUD: Ved aktivering ligger forespørsel og befaring i prosjektbeskrivelse, mens opprinnelig akseptert tilbud dokumenteres via salesOrigin og akseptbevis/kontrakt. Tillegg/fradrag/avtaleendring starter tomt og brukes kun for senere endringer. Ingen SQL/RLS/Storage/Edge Function/e-postendring.
@@ -102,6 +102,7 @@ import {
   prepareOfferFormForSave,
   recalculateAdministrationLines,
 } from "./utils/salesOfferLogic.js";
+import { withReusableTemplateMedia } from "./utils/salesOfferTemplateMedia.mjs";
 import {
   INSPECTION_BUCKET,
   emptyForm,
@@ -401,6 +402,15 @@ export default function SalesModule({
       return;
     }
 
+    // Appens lokale saksoversikt inneholder med vilje bare en lett summary.
+    // Ved reload/recovery kan denne bli synlig et øyeblikk før den komplette
+    // serverraden er lagt inn. Editor og autolagring må aldri initialiseres fra
+    // summary-data, ellers kan en tom tilbudsflate låses for resten av mounten.
+    if (integrationMode === "app" && selectedRequest.__summaryOnly) {
+      setOfferFormReady(false);
+      return;
+    }
+
     if (offerFormHydratedRequestIdRef.current === selectedRequestId) {
       return;
     }
@@ -420,7 +430,7 @@ export default function SalesModule({
     setOfferFormReady(true);
     // Gjenoppretting må skje før autolagring får starte.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, selectedRequest, selectedRequestId]);
+  }, [integrationMode, mode, selectedRequest, selectedRequestId]);
 
   async function refreshOfferTemplates({ silent = false } = {}) {
     if (!activeSupabase || !salesCompanyId || integrationMode !== "app") {
@@ -497,6 +507,18 @@ export default function SalesModule({
     setRequests(nextRequests);
     saveRequests(nextRequests, salesStorageKey);
 
+    // Ved en full sidelasting kan tilbudskladden være gjenopprettet før
+    // firmascopet er ferdig avklart. Behold da kladden lokalt uten å vise en
+    // falsk serverfeil. Effekten kjøres på nytt når Supabase/firmascopet er
+    // klart, og først da starter den varige mellomlagringen.
+    if (
+      integrationMode === "app" &&
+      (!activeSupabase || !salesCompanyId)
+    ) {
+      setOfferDraftSaveStatus("idle");
+      return;
+    }
+
     if (offerDraftSaveTimerRef.current) {
       window.clearTimeout(offerDraftSaveTimerRef.current);
     }
@@ -523,7 +545,16 @@ export default function SalesModule({
         offerDraftSaveTimerRef.current = null;
       }
     };
-  }, [mode, offerForm, offerFormReady, salesStorageKey, selectedRequestId]);
+  }, [
+    activeSupabase,
+    integrationMode,
+    mode,
+    offerForm,
+    offerFormReady,
+    salesCompanyId,
+    salesStorageKey,
+    selectedRequestId,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -2419,18 +2450,8 @@ export default function SalesModule({
     const templatePayload = {
       title: String(offerForm.title || "").trim(),
       intro: String(offerForm.intro || "").trim(),
-      lines: cleanLines.map((line) => ({
-        ...line,
-        imageDataUrl: "",
-        imageName: "",
-        attachmentFile: null,
-      })),
-      options: cleanOptions.map((option) => ({
-        ...option,
-        imageDataUrl: "",
-        imageName: "",
-        attachmentFile: null,
-      })),
+      lines: cleanLines.map(withReusableTemplateMedia),
+      options: cleanOptions.map(withReusableTemplateMedia),
       reservations: String(offerForm.reservations || "").trim(),
       included: String(offerForm.included || "").trim(),
       excluded: String(offerForm.excluded || "").trim(),
@@ -2511,24 +2532,18 @@ export default function SalesModule({
       if (oldId) lineIdMap.set(oldId, newId);
 
       return {
-        ...line,
+        ...withReusableTemplateMedia(line),
         id: newId,
-        imageDataUrl: "",
-        imageName: "",
-        attachmentFile: null,
       };
     });
 
     const nextOptions = sourceOptions.map((option) => ({
-      ...option,
+      ...withReusableTemplateMedia(option),
       id: `option-${crypto.randomUUID()}`,
       replacementLineId:
         option?.optionType === "alternative" && option?.replacementLineId
           ? lineIdMap.get(String(option.replacementLineId)) || ""
           : String(option?.replacementLineId || ""),
-      imageDataUrl: "",
-      imageName: "",
-      attachmentFile: null,
     }));
 
     const nextOfferForm = {
@@ -3202,7 +3217,11 @@ export default function SalesModule({
           )
         : [mappedRequest, ...current];
     });
-    setMode("customer-offer");
+    setMode(
+      mappedRequest.status === "Akseptert"
+        ? "customer-accepted"
+        : "customer-offer"
+    );
   }
 
   async function handleCreateDirectOffer(event) {

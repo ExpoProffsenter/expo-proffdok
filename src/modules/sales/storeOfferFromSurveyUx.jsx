@@ -82,7 +82,7 @@ async function resolveContext() {
       ""
   ).trim();
   if (!ALLOWED_STORE_COMPANIES.has(companyName)) {
-    throw new Error("Butikktilbud kan bare opprettes for Ringside Rørleggerbedrift AS, Bademiljø Expo eller Expo Proffsenter.");
+    throw new Error("Generelt tilbud kan bare opprettes for Ringside Rørleggerbedrift AS, Bademiljø Expo eller Expo Proffsenter.");
   }
 
   let companyId = String(workProfile?.active_company_id || "").trim();
@@ -111,7 +111,7 @@ async function resolveContext() {
     throw new Error("Saken står ikke lenger i Befaring.");
   }
   if (isStoreOfferRequest(request)) {
-    throw new Error("Saken er allerede et Butikktilbud.");
+    throw new Error("Saken er allerede et Generelt tilbud.");
   }
 
   return { client, companyId, storageKey, requests, request };
@@ -170,7 +170,7 @@ function OfferTypePicker({ onWetroom, onClose }) {
       await convertSurveyToStoreOffer();
       destroyPicker();
     } catch (conversionError) {
-      setError(conversionError?.message || "Kunne ikke starte Butikktilbud fra befaringen.");
+      setError(conversionError?.message || "Kunne ikke starte Generelt tilbud fra befaringen.");
       setBusy(false);
     }
   }
@@ -231,7 +231,7 @@ function OfferTypePicker({ onWetroom, onClose }) {
             disabled={busy}
             style={{ textAlign: "left", padding: "14px 16px" }}
           >
-            <strong style={{ display: "block" }}>{busy ? "Starter Butikktilbud …" : "Butikktilbud"}</strong>
+            <strong style={{ display: "block" }}>{busy ? "Starter Generelt tilbud …" : "Generelt tilbud"}</strong>
             <small style={{ display: "block", marginTop: 4, fontWeight: 600 }}>
               Bruk vare-/produktbyggeren på den samme befaringssaken.
             </small>

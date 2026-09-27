@@ -16,6 +16,8 @@ import {
 const PROJECTS_REST_PATH = "/rest/v1/projects";
 const NO_COMPANY_SCOPE = "00000000-0000-0000-0000-000000000000";
 const GUARDED_METHODS = new Set(["GET", "HEAD", "PATCH", "DELETE"]);
+const SUPPORT_READ_METHODS = new Set(["GET", "HEAD"]);
+export const SYSTEMADMIN_PROJECT_SUPPORT_PARAM = "__expo_systemadmin_project_support";
 
 let statePromise = null;
 let resolvedState = null;
@@ -35,6 +37,23 @@ function requestUrl(input) {
 
 function isSupabaseProjectsRequest(url) {
   return Boolean(url && url.pathname.endsWith(PROJECTS_REST_PATH));
+}
+
+export function markSystemAdminProjectSupportQuery(query) {
+  if (!query || typeof query.eq !== "function") return query;
+  return query.eq(SYSTEMADMIN_PROJECT_SUPPORT_PARAM, "1");
+}
+
+function stripSystemAdminProjectSupportMarker(url) {
+  const next = new URL(url.toString());
+  const marker = String(next.searchParams.get(SYSTEMADMIN_PROJECT_SUPPORT_PARAM) || "");
+  const hadMarker = next.searchParams.has(SYSTEMADMIN_PROJECT_SUPPORT_PARAM);
+  next.searchParams.delete(SYSTEMADMIN_PROJECT_SUPPORT_PARAM);
+  return {
+    url: next,
+    hadMarker,
+    supportReadRequested: marker === "eq.1" || marker === "1",
+  };
 }
 
 function readPublishedState() {
@@ -98,12 +117,23 @@ export function installSystemAdminProjectScopeGuard() {
       return nativeFetch(input, init);
     }
 
+    const supportRequest = stripSystemAdminProjectSupportMarker(url);
     const state = await resolveWorkProfileState();
     if (!state?.is_systemadmin) {
-      return nativeFetch(input, init);
+      const safeInput = supportRequest.hadMarker
+        ? withUrl(input, supportRequest.url)
+        : input;
+      return nativeFetch(safeInput, init);
     }
 
-    const scopedUrl = scopeProjectsUrl(url, state);
+    // Systemadmin kan lese på tvers av firma kun når appens eksplisitte
+    // Supportmodus har merket akkurat denne GET/HEAD-spørringen. Markøren
+    // fjernes før PostgREST-kallet og gir aldri skrive-bypass.
+    if (supportRequest.supportReadRequested && SUPPORT_READ_METHODS.has(method)) {
+      return nativeFetch(withUrl(input, supportRequest.url), init);
+    }
+
+    const scopedUrl = scopeProjectsUrl(supportRequest.url, state);
     return nativeFetch(withUrl(input, scopedUrl), init);
   };
 }

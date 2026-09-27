@@ -29,7 +29,7 @@ for (const needle of [
   'from("profiles")',
   "version.published_by",
   'from("sales_offer_decline_notifications")',
-  "Butikktilbud avvist",
+  "Generelt tilbud avvist",
 ]) assert(edge.includes(needle), `servervarsel mangler: ${needle}`);
 assert(!edge.includes("body?.recipientEmail"), "klienten skal ikke kunne velge mottaker for avvisningsvarsel.");
 
@@ -65,7 +65,7 @@ const customerView = read("src/modules/sales/components/SalesCustomerView.jsx");
 for (const needle of [
   "readOnlyDeclined",
   "store-customer-history-readonly",
-  "Butikktilbud avvist · historisk visning",
+  "Generelt tilbud avvist · historisk visning",
   "den publiserte tilbudsversjonen som ble avvist",
   ".sales-customer-accept-form { display: none !important; }",
   ".sales-customer-option-topline { display: none !important; }",

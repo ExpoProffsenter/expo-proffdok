@@ -154,11 +154,57 @@ const projectScopeGuard = requireNeedles("src/modules/access/systemAdminProjectS
   "active_company_id",
   "NO_COMPANY_SCOPE",
   'next.searchParams.set("company_scope_id"',
+  "SYSTEMADMIN_PROJECT_SUPPORT_PARAM",
+  "markSystemAdminProjectSupportQuery",
+  "stripSystemAdminProjectSupportMarker",
+  "SUPPORT_READ_METHODS.has(method)",
   "window.fetch = async",
 ]);
 if (/GUARDED_METHODS[^\n]*POST/.test(projectScopeGuard)) {
   throw new Error("42G-scopeguard skal ikke omskrive prosjekt-INSERT; firmascopet settes server-side.");
 }
+if (/SUPPORT_READ_METHODS[^\n]*(PATCH|DELETE|POST)/.test(projectScopeGuard)) {
+  throw new Error("Systemadmin Supportmodus skal aldri gi skrive-bypass.");
+}
+
+const mainSource = requireNeedles("src/main.jsx", [
+  "markSystemAdminProjectSupportQuery",
+  "options.supportMode",
+  'params.set("support", "1")',
+  'params.get("support") === "1"',
+  "loadProjects(authUser, true, null, { supportMode: true })",
+  "const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;",
+  "if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();",
+  "inert: isProjectSupportReadOnly ? true : void 0",
+  '"data-support-read-only": isProjectSupportReadOnly ? "true" : void 0',
+  "hasActiveProjectWorkspace && !isProjectSupportReadOnly",
+  "projectId && !isProjectSupportReadOnly",
+  "Skrivebeskyttet – ingen endringer kan lagres",
+]);
+const supportMutationGuardCount = (
+  mainSource.match(/if \(isProjectSupportReadOnly\) return notifySupportProjectReadOnly\(\);/g) || []
+).length;
+if (supportMutationGuardCount < 5) {
+  throw new Error("Prosjekt-supportmodus mangler defense-in-depth på kritiske skrivehandlinger.");
+}
+for (const guard of [
+  "isReadOnly || isProjectSupportReadOnly || isProjectLocked",
+  "isReadOnly || isProjectSupportReadOnly) return;",
+]) {
+  if (!mainSource.includes(guard)) {
+    throw new Error(`Prosjekt-supportmodus mangler autolagringsvern: ${guard}`);
+  }
+}
+
+requireNeedles("README.md", [
+  "Prosjekter åpnet på tvers av firma i eksplisitt Systemadmin-supportmodus er skrivebeskyttet",
+]);
+requireNeedles("docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md", [
+  "Et prosjekt som åpnes via eksplisitt tverrfirma-support er skrivebeskyttet i hele prosjektflaten",
+]);
+requireNeedles("src/modules/help/helpToolsCore.js", [
+  "Prosjekter som åpnes på tvers av firma i Supportmodus er skrivebeskyttet",
+]);
 
 const indexHtml = requireNeedles("index.html", [
   "installSystemAdminProjectScopeGuard",

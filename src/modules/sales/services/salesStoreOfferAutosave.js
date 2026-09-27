@@ -92,7 +92,7 @@ export function buildStoreOfferDraftRequest(selectedRequest = {}, offerForm = {}
 
 export async function persistStoreOfferDraft(selectedRequest = {}, offerForm = {}, client = defaultClient) {
   const requestRef = String(selectedRequest?.id || "").trim();
-  if (!requestRef) throw new Error("Butikktilbudet mangler saksreferanse.");
+  if (!requestRef) throw new Error("Det generelle tilbudet mangler saksreferanse.");
   if (!client) throw new Error("Supabase er ikke tilgjengelig.");
 
   const { data: sessionData } = await getSalesSession(client);

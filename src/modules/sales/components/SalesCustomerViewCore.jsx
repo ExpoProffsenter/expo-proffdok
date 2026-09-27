@@ -173,6 +173,7 @@ export default function SalesCustomerView({
   setAcceptanceForm,
   toggleAcceptedOption,
   handleAcceptOffer,
+  hideDecisionControls = false,
   onBack,
 }) {
   if (publicOfferLoading) {
@@ -776,7 +777,7 @@ export default function SalesCustomerView({
                 </article>
               ) : null}
 
-              <form onSubmit={handleAcceptOffer} className="sales-customer-accept-form">
+              {!hideDecisionControls ? <form onSubmit={handleAcceptOffer} className="sales-customer-accept-form">
                 <article className="sales-customer-accept-card">
                   <div className="sales-customer-accept-copy">
                     <span className="sales-next-label">Digital aksept</span>
@@ -871,7 +872,7 @@ export default function SalesCustomerView({
                     Aksepter tilbud
                   </button>
                 </article>
-              </form>
+              </form> : null}
             </section>
           </main>
         </div>

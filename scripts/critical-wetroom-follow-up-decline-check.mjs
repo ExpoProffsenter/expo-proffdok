@@ -60,7 +60,7 @@ for (const needle of [
   "wetroomFollowUpVersionId",
   "wetroomFollowUpEnabled",
   'offerType: item.store_offer === true ? "store" : "wetroom"',
-  "Påminnelse om butikktilbud",
+  "Påminnelse om generelt tilbud",
   "Påminnelse om våtromstilbud",
 ]) assert(worker.includes(needle), `felles oppfølgingsworker mangler: ${needle}`);
 assert(
@@ -75,7 +75,7 @@ assert(
 const declineNotify = read("supabase/functions/sales-offer-decline-notify/index.ts");
 for (const needle of [
   "isStoreOffer",
-  "Butikktilbud avvist",
+  "Generelt tilbud avvist",
   "Våtromstilbud avvist",
   'recipient_type: "publisher"',
   'from("sales_offer_decline_notifications")',
@@ -104,7 +104,7 @@ for (const needle of [
 const customer = read("src/modules/sales/components/SalesCustomerView.jsx");
 for (const needle of [
   "Jeg avviser dette Våtromstilbudet.",
-  "Jeg avviser dette Butikktilbudet.",
+  "Jeg avviser dette generelle tilbudet.",
   "readOnlyDeclined",
   "toggleAcceptedOption={readOnlyDeclined ? () => {} : props.toggleAcceptedOption}",
   "storeExpired",

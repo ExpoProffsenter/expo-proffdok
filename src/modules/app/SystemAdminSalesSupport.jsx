@@ -160,14 +160,22 @@ export default function SystemAdminSalesSupport({ supabaseClient, authUser } = {
             style={{ minHeight: 42 }}
           >
             <option value="">Eget firma / avslutt Sales-support</option>
-            {companies.map((company) => (
-              <option key={company.company_id} value={company.company_id}>
-                {company.display_name}
-                {Number(company.active_sales_cases || 0) > 0
-                  ? ` (${company.active_sales_cases} aktive saker)`
-                  : ""}
-              </option>
-            ))}
+            {companies.map((company) => {
+              // RPC-en har historisk returnert company_name. display_name
+              // støttes også slik at UI-et tåler en senere backend-utvidelse.
+              const companyName = String(
+                company.display_name || company.company_name || ""
+              ).trim() || "Ukjent firma";
+
+              return (
+                <option key={company.company_id} value={company.company_id}>
+                  {companyName}
+                  {Number(company.active_sales_cases || 0) > 0
+                    ? ` (${company.active_sales_cases} aktive saker)`
+                    : ""}
+                </option>
+              );
+            })}
           </select>
         </label>
 

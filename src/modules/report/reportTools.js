@@ -2025,11 +2025,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         }
 
         setPdfProgress("Samler bilder…", "Laster inn og konverterer bilder til PDF-format.");
-        const photoCats = [...new Set((photos || []).map((photo) => photo.cat).filter(Boolean))];
+        const photoCategory = (photo = {}) =>
+          String(photo.cat || photo.category || "Bilder").trim() || "Bilder";
+        const photoCats = [...new Set((photos || []).map(photoCategory))];
         if (photoCats.length) {
           addSectionPageBreak("Bildedokumentasjon");
           for (const cat of photoCats) {
-            await addImageGalleryCategory(cat, (photos || []).filter((item) => item.cat === cat));
+            await addImageGalleryCategory(
+              cat,
+              (photos || []).filter((item) => photoCategory(item) === cat)
+            );
           }
         }
 

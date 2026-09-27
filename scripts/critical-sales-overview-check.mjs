@@ -39,6 +39,37 @@ if (/salesClient\s*\.\s*from\s*\(/.test(support)) {
   throw new Error("supportModeProjection.js skal ikke skrive direkte til database.");
 }
 
+requireNeedles("src/modules/app/SystemAdminSalesSupport.jsx", [
+  "company.display_name || company.company_name",
+  '|| "Ukjent firma"',
+  "company.active_sales_cases",
+]);
+
+const salesSupportNotice = requireNeedles("src/modules/sales/components/SalesSupportNotice.jsx", [
+  "user?.user_metadata?.full_name",
+  "user?.user_metadata?.name",
+  "user?.email",
+]);
+if (salesSupportNotice.includes('.select("full_name,email")')) {
+  throw new Error("Supportbanner skal ikke spørre etter en profiles.full_name-kolonne som ikke finnes.");
+}
+
+requireNeedles("src/modules/sales/SalesModuleCore.jsx", [
+  'mappedRequest.status === "Akseptert"',
+  '? "customer-accepted"',
+  ': "customer-offer"',
+]);
+
+requireNeedles("src/modules/sales/utils/salesOfferLogicCore.js", [
+  'const isAccepted = offer.status === "accepted";',
+  "acceptedPayload.selected_options",
+  "acceptedOfferVersionId: isAccepted ? version.id : null",
+  "acceptedOfferVersionNumber: isAccepted ? version.version_number : null",
+  "acceptedOfferLines: isAccepted ? visibleOfferLines : []",
+  "acceptedOptions: isAccepted ? acceptedOptions : []",
+  "acceptedTotal: isAccepted",
+]);
+
 const salesList = requireNeedles("src/modules/sales/components/SalesListView.jsx", [
   "queryTokens.every",
   "requestSearchValues",

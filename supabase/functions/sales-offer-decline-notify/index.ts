@@ -104,7 +104,7 @@ function buildEmailHtml({
   isStoreOffer,
 }: any) {
   const safeLogo = String(logoUrl || "").trim();
-  const heading = isStoreOffer ? "Butikktilbud avvist" : "Våtromstilbud avvist";
+  const heading = isStoreOffer ? "Generelt tilbud avvist" : "Våtromstilbud avvist";
   return `<!doctype html><html><body style="margin:0;background:#eef3f5;font-family:Arial,Helvetica,sans-serif;color:#172126">
   <div style="max-width:720px;margin:0 auto;padding:24px 12px">
     <div style="background:#fff;border:1px solid #d7e0e3;border-radius:18px;overflow:hidden">
@@ -282,7 +282,7 @@ serve(async (req) => {
       reservation,
       to: publisherEmail,
       subject: isStoreOffer
-        ? `Butikktilbud avvist – ${offer.request_ref} – ${customerName}`
+        ? `Generelt tilbud avvist – ${offer.request_ref} – ${customerName}`
         : `Våtromstilbud avvist – ${offer.request_ref} – ${customerName}`,
       html: buildEmailHtml({
         companyName,

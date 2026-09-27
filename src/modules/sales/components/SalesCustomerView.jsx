@@ -168,12 +168,15 @@ function absoluteAssetUrl(value = "") {
   try { return new URL(clean, window.location.origin).href; } catch { return clean; }
 }
 
-function applyStoreOfferCopy({ isStoreOffer, signatureName = "", brandLabel = "", brandLogoUrl = "", legalCompanyName = "", readOnlyDeclined = false } = {}) {
+function applyStoreOfferCopy({ isStoreOffer, signatureName = "", brandLabel = "", brandLogoUrl = "", legalCompanyName = "", readOnlyDeclined = false, hideDecisionControls = false } = {}) {
   if (!isStoreOffer || typeof document === "undefined") return;
   const eyebrow = document.querySelector(".sales-customer-hero .sales-eyebrow");
   const lead = document.querySelector(".sales-customer-lead");
-  if (readOnlyDeclined) {
-    if (eyebrow) eyebrow.textContent = "Butikktilbud avvist · historisk visning";
+  if (hideDecisionControls) {
+    if (eyebrow) eyebrow.textContent = "Forhåndsvisning av tilbud";
+    if (lead) lead.textContent = "Dette er kundens visning av tilbudet. Valg du prøver her er kun lokal forhåndsvisning og lagres ikke.";
+  } else if (readOnlyDeclined) {
+    if (eyebrow) eyebrow.textContent = "Generelt tilbud avvist · historisk visning";
     if (lead) lead.textContent = "Dette er den publiserte tilbudsversjonen som ble avvist. Innhold, priser og vilkår beholdes som låst historikk og kan ikke endres eller aksepteres her.";
   } else if (lead) {
     lead.textContent = "Her finner du varene, prisene, eventuell montering og vilkårene samlet. Du kan velge eventuelle alternativer eller tillegg før du aksepterer eller avviser tilbudet nederst på siden.";
@@ -344,7 +347,11 @@ export default function SalesCustomerView(props) {
   const [declineBusy, setDeclineBusy] = useState(false);
   const [declineError, setDeclineError] = useState("");
   const [localDecline, setLocalDecline] = useState(null);
-  const salesClient = useMemo(() => createDefaultSalesSupabaseClient(), []);
+  const hideDecisionControls = Boolean(props.hideDecisionControls);
+  const salesClient = useMemo(
+    () => hideDecisionControls ? null : createDefaultSalesSupabaseClient(),
+    [hideDecisionControls]
+  );
   const genericExpired = offerIsExpired(brandedRequest, activeVersion);
   const storeExpired = Boolean(isStoreOffer && genericExpired);
   const declined = Boolean(localDecline || brandedRequest?.status === "Avvist" || brandedRequest?.declinedAt);
@@ -355,7 +362,7 @@ export default function SalesCustomerView(props) {
     const applyPresentation = () => {
       applyCustomerSectionOrder(signatureName);
       applyCustomerOptionsOnlyPresentation(brandedRequest, selectedOptionIds);
-      applyStoreOfferCopy({ isStoreOffer, signatureName, brandLabel, brandLogoUrl, legalCompanyName, readOnlyDeclined });
+      applyStoreOfferCopy({ isStoreOffer, signatureName, brandLabel, brandLogoUrl, legalCompanyName, readOnlyDeclined, hideDecisionControls });
       if (isStoreOffer) applyStoreAlternativePresentation(brandedRequest, selectedOptionIds);
       const root = document.querySelector(".sales-customer-offer-app");
       if (root) root.classList.toggle("store-customer-history-readonly", readOnlyDeclined);
@@ -363,7 +370,7 @@ export default function SalesCustomerView(props) {
     const frame = window.requestAnimationFrame(applyPresentation);
     const timer = window.setTimeout(applyPresentation, 120);
     return () => { window.cancelAnimationFrame(frame); window.clearTimeout(timer); };
-  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId, props.selectedRequest?.offerLines, props.selectedRequest?.offerOptions, props.selectedRequest?.storeOfferMeta, signatureName, brandLabel, brandLogoUrl, legalCompanyName, isStoreOffer, readOnlyDeclined, selectedOptionIds.join("|")]);
+  }, [props.mode, props.selectedRequest?.id, props.selectedRequest?.sentOfferVersionId, props.selectedRequest?.offerLines, props.selectedRequest?.offerOptions, props.selectedRequest?.storeOfferMeta, signatureName, brandLabel, brandLogoUrl, legalCompanyName, isStoreOffer, readOnlyDeclined, hideDecisionControls, selectedOptionIds.join("|")]);
 
   async function handleDecline(event) {
     event.preventDefault();
@@ -398,7 +405,7 @@ export default function SalesCustomerView(props) {
     : storeExpired
       ? (event) => {
           event?.preventDefault?.();
-          alert("Butikktilbudet er utløpt. Ta kontakt med saksbehandler for et nytt tilbud.");
+          alert("Tilbudet er utløpt. Ta kontakt med saksbehandler for et nytt tilbud.");
         }
       : props.handleAcceptOffer;
 
@@ -412,6 +419,7 @@ export default function SalesCustomerView(props) {
       <SalesCustomerViewCore
         {...props}
         selectedRequest={brandedRequest}
+        hideDecisionControls={hideDecisionControls}
         handleAcceptOffer={acceptHandler}
         toggleAcceptedOption={readOnlyDeclined ? () => {} : props.toggleAcceptedOption}
       />
@@ -427,7 +435,7 @@ export default function SalesCustomerView(props) {
           </section>
         </div>
       ) : null}
-      {props.mode === "customer-offer" && !readOnlyDeclined ? (
+      {props.mode === "customer-offer" && !readOnlyDeclined && !hideDecisionControls ? (
         <div className="store-customer-decision-shell">
           {genericExpired ? (
             <section className="store-customer-expired-card">
@@ -443,7 +451,7 @@ export default function SalesCustomerView(props) {
               <h2>Ønsker du ikke tilbudet?</h2>
               <p>
                 {isStoreOffer
-                  ? "Du kan avvise Butikktilbudet her. Når svaret er registrert, avsluttes denne tilbudsversjonen og automatiske påminnelser stopper."
+                  ? "Du kan avvise det generelle tilbudet her. Når svaret er registrert, avsluttes denne tilbudsversjonen og automatiske påminnelser stopper."
                   : "Du kan avvise Våtromstilbudet her. Når svaret er registrert, avsluttes denne tilbudsversjonen og eventuell automatisk oppfølging stopper."}
               </p>
               <div className="store-customer-decline-fields">
@@ -453,7 +461,7 @@ export default function SalesCustomerView(props) {
                 </label>
                 <label className="store-customer-decline-check">
                   <input type="checkbox" checked={declineConfirmed} onChange={(event) => setDeclineConfirmed(event.target.checked)} required />
-                  <span>{isStoreOffer ? "Jeg avviser dette Butikktilbudet." : "Jeg avviser dette Våtromstilbudet."}</span>
+                  <span>{isStoreOffer ? "Jeg avviser dette generelle tilbudet." : "Jeg avviser dette Våtromstilbudet."}</span>
                 </label>
                 {declineError ? <p className="store-customer-decline-error">{declineError}</p> : null}
                 <button className="store-customer-decline-button" type="submit" disabled={declineBusy || !declineName.trim() || !declineConfirmed}>

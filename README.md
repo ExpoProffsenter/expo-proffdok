@@ -1,10 +1,10 @@
 # Expo ProffDok
 
-Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsningen støtter prosjektstyring, dokumentasjon, sjekklister, bilder, avvik, kunde-/UE-portal, garanti, befaring, Badskisse, ordinære tilbud, Butikktilbud, digital aksept, kontrakt og rapport/PDF.
+Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsningen støtter prosjektstyring, dokumentasjon, sjekklister, bilder, avvik, kunde-/UE-portal, garanti, befaring, Badskisse, ordinære tilbud, Generelt tilbud, digital aksept, kontrakt og rapport/PDF.
 
 Produksjon: https://expo-proffdok.app
 
-**Gjeldende produksjonsbaseline:** Fase 42K, PR #155, merge 15.09.2026. Fase 42H–42J Sales-scale/recovery/prosjektnavigasjon er dermed del av Production-baseline.
+**Gjeldende Production-baseline:** `main`. Pågående Fase 45B ligger på en separat, `main`-basert release-branch og er ikke Production før eksplisitt godkjenning og merge.
 
 ## Teknologi
 
@@ -56,6 +56,19 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 - Desktop prosjektarbeidsflate bruker kollapset meny med få native hurtigvalg; full funksjonsliste ligger fortsatt i Meny.
 - Ordinært akseptert tilbud kan gå videre til prosjekt uten kontrakt, egen opplastet kontrakt eller Expo-kontrakt. Kontraktfunksjonen ligger i Sales-domenet og er valgfri med mindre garanti-/avtalegrunnlaget krever den.
 
+## Fase 45B – Proff, Generelt tilbud og Enkel ordre
+
+- Tilgang til Expo ProffDok forutsetter at virksomheten kjøper og benytter SoPro-produkter i relevant omfang, slik gjeldende brukervilkår beskriver.
+- Kun Systemadministrator kan aktivere Proff / Enkel ordre for et eksternt firma og styre firmaets leverandører og leverandørrabatter.
+- Ekstern proffkunde søker bare i godkjente leverandører. Ringsides interne innkjøps-/nto-pris, innkjøpsrabatt, DG og påslag skal aldri eksponeres.
+- «Din nto pris» er en egen bruker- og firmascopet rettighet. Firmaadmin kan administrere egne brukere, men kan ikke gi rettigheten til seg selv. Intern Ringside-nto krever fortsatt eksplisitt `view_internal_net_prices`.
+- Den synlige betegnelsen er **Generelt tilbud**. Teknisk legacy-identitet beholdes der det er nødvendig, og historiske Butikktilbud skal fortsatt åpnes og fungere.
+- Etter aksept av et Generelt tilbud kan firmaet velge **Enkel ordre** eller ordinært prosjekt. Akseptert versjon og valgte alternativer er låst bestillingsgrunnlag.
+- Enkel ordre bruker en lett prosjektmotor med produkter, bilder, relevante sjekklister, UE og sluttdokumentasjon. Fremdriftsplan og FDV er valgfrie. Kundeportal er blokkert.
+- Kundepreview åpnes separat og er read-only. Den skal ikke publisere, sende e-post eller kunne akseptere tilbudet.
+- Tilbudsmaler kan gjenbruke varige app-/Storage-bilder på poster og opsjoner. Midlertidige nettleserbilder og kundespesifikke PDF-vedlegg følger ikke malen.
+- Kontrakt-PDF holder sammenhengende avsnitt samlet og bryter opsjonskort kontrollert uten å skille beskrivelse fra pris.
+
 ## Permanent Demo Sandbox
 
 Expo ProffDok har et separat, langlivet demomiljø for presentasjon og opplæring:
@@ -68,6 +81,10 @@ Expo ProffDok har et separat, langlivet demomiljø for presentasjon og opplærin
 - ordinær appkode synkroniseres kontrollert **main → demo** etter godkjent Production-verifisering når endringen også skal finnes i demo
 - demo-overlay, demodata, syntetiske ressurser og sandbox-konfigurasjon skal aldri flyte **demo → main**
 - demo-builden skal feile dersom Production-Supabase blir bundet inn i emitted JS
+
+Clean Fase 45B-Preview bygges fra release-branchen mot samme isolerte Sandbox-Supabase, men er ikke permanent Demo og skal ikke hente produktregler eller kode tilbake fra `demo`.
+
+Sandboxen har egen demo-/kursmigrasjonslinje og skal aldri branch-merges til Production. Production-endringer skal komme fra versjonerte migrasjoner i en `main`-basert og godkjent release.
 
 Detaljert demo-dokumentasjon ligger på `demo`-branchen.
 
@@ -91,6 +108,8 @@ For brukerrettede produksjonsendringer:
 6. Etter merge: bekreft eksakt `main`-SHA, Vercel Production `READY`, HTTP/runtime og relevant Supabase-status.
 7. Ved miljømål `BEGGE`: synkroniser deretter gjeldende `main` kontrollert inn i `demo` og kjør sandbox-preflight.
 
+Når Fase 45B er merget og Production er trippelverifisert, ryddes midlertidige release-/feature-/backup-brancher. Sluttbildet skal være kun `main` og permanent `demo` i GitHub, og kun Production/default samt `demo-sandbox` i Supabase. Opprydding skal aldri skje før godkjent Production-QA.
+
 `PR Core Safety` kjører på pull requests mot `main` og skal stoppe Demo/Test-PR-er som samtidig forsøker å endre beskyttet kjerne.
 
 ## Dokumentasjonsregel
@@ -111,6 +130,7 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 
 - RLS og serverkontroll er sikkerhetsgrensen; frontend alene er ikke nok.
 - Ikke svekk company-scoping eller bruk systemadmin/supportmodus som write-bypass.
+- Prosjekter åpnet på tvers av firma i eksplisitt Systemadmin-supportmodus er skrivebeskyttet; kontroll og PDF er tillatt, mens lagring, kopiering, låsing og øvrige endringer er blokkert.
 - Aktiv arbeidsprofil/representert firma skal styre normal arbeidsflate.
 - Publiserte og aksepterte tilbud er immutable historikk.
 - Ingen historisk backfill uten eksplisitt beslutning.
@@ -119,7 +139,7 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 - Ikke endre Storage-policyer, offentlige/private filer eller historiske URL-er uten egen migreringsplan.
 - Privatkundepriser vises inkl. mva.
 - Intern ERP-nettopris skal aldri lekke til kundelenke, tilbuds-PDF eller publisert Sales-historikk.
-- Butikktilbud skal ikke aktivere ProffDok-prosjekt.
+- Historiske Butikktilbud beholder tidligere avslutning og skal ikke endres. Nye Generelle tilbud kan etter aksept aktiveres som Enkel ordre eller ordinært prosjekt.
 - Aksept-/avvisningsvarsler skal være sekundære sideutfall: en e-postfeil skal aldri reversere kundens allerede lagrede beslutning.
 - `main.jsx` og store Core-filer skal bare splittes når det gir reell vedlikeholdsgevinst.
 
@@ -127,7 +147,7 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 
 1. Les `AGENTS.md` og `PROJECT_GUARDRAILS.md`.
 2. Les [arkitekturkartet](docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md).
-3. Les [Sales README](src/modules/sales/README.md) før endringer i befaring/tilbud/aksept/kontrakt/Butikktilbud/recovery/lazy loading.
+3. Les [Sales README](src/modules/sales/README.md) før endringer i befaring/tilbud/aksept/kontrakt/Generelt tilbud/recovery/lazy loading.
 4. Les [Fase 39B](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md) før endringer i vareregister, ERP-import eller katalogtilgang.
 5. Les relevante HJELP-moduler før brukerrettede endringer.
 6. Kontroller åpne GitHub issues, åpne PR-er og siste legitime `main`-SHA.

@@ -343,7 +343,7 @@ export default function SalesStoreOfferBuilderCatalog(props) {
       void persistStoreOfferDraft(props.selectedRequest, repairedOfferForm)
         .then(() => setStoreDraftSaveStatus("saved"))
         .catch((error) => {
-          console.error("Kunne ikke mellomlagre Butikktilbud varig", error);
+          console.error("Kunne ikke mellomlagre Generelt tilbud varig", error);
           setStoreDraftSaveStatus("error");
         });
     }, 850);

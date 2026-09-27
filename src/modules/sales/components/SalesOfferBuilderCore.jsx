@@ -7,7 +7,7 @@
 // Malbruk erstatter kun redigerbar tilbudskladd; kunde/befaring/publisert historikk berøres ikke.
 // Expo ProffDok – FASE 28A2
 // Legger til «Lagre som mal» uten å endre FASE 26B.5-strukturen i tilbudsbyggeren.
-// Maldata lagres via SalesModule/service; bilder og PDF-vedlegg tas ikke med i malen.
+// Maldata lagres via SalesModule/service; varige bilder følger malen, PDF-vedlegg gjør ikke.
 // Expo ProffDok – FASE 26B.5
 // Opsjoner velges som tillegg/oppgradering eller alternativ som erstatter konkret underpost.\n// Strukturert tilbudsbygger med hovedposter, underposter, koblede opsjoner og valgfri
 // administrasjon/prosjektstyring. Bilde og link beholdes på underposter og opsjoner.
@@ -302,7 +302,8 @@ export default function SalesOfferBuilder({
               <h2 style={{ margin: "0 0 6px" }}>Bruk firmamal</h2>
               <p className="sales-subtitle" style={{ margin: 0 }}>
                 Malen kopieres inn i denne redigerbare tilbudskladden. Kunde,
-                adresse og befaringsdata beholdes på saken.
+                adresse og befaringsdata beholdes på saken. Bilder som er lagret
+                i appens bildelager følger malen; PDF-vedlegg følger ikke.
               </p>
 
               {offerTemplatesLoading ? (

@@ -1685,7 +1685,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
     const paymentTerms = cleanText(offerForm.paymentTerms);
     if (!paymentTerms || paymentTerms === CUSTOM_CHOICE) {
       event.preventDefault();
-      alert("Velg eller skriv betalingsbetingelser før Butikktilbudet lagres.");
+      alert("Velg eller skriv betalingsbetingelser før tilbudet lagres.");
       return;
     }
 
@@ -1699,7 +1699,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
       validityDays > 365
     ) {
       event.preventDefault();
-      alert("Velg gyldighet for Butikktilbudet (1–365 dager).");
+      alert("Velg gyldighet for tilbudet (1–365 dager).");
       return;
     }
 
@@ -1989,14 +1989,14 @@ export default function SalesStoreOfferBuilderGrouped(props) {
             </div>
             <div className="sales-brand-copy">
               <strong>Expo ProffDok</strong>
-              <span>Butikktilbud / Varesalg</span>
+              <span>Generelt tilbud</span>
             </div>
           </div>
         </header>
 
         <main className="sales-main">
           <section className="sales-form-hero">
-            <p className="sales-eyebrow">Butikktilbud</p>
+            <p className="sales-eyebrow">Generelt tilbud</p>
             <h1 className="sales-title">Varer, montering og opsjoner</h1>
             <p className="sales-subtitle">
               {selectedRequest?.customer} · {customerAddress} · {selectedRequest?.id}
@@ -2035,7 +2035,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
                   <h2>Tilbudstekst og vilkår</h2>
                   <p>
                     Betalingsbetingelser og gyldighet er obligatoriske i
-                    Butikktilbud.
+                    Generelt tilbud.
                   </p>
                 </div>
               </div>
@@ -2046,7 +2046,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
                   <input
                     value={templateName}
                     onChange={(event) => setTemplateName(event.target.value)}
-                    placeholder="F.eks. Standard butikktilbud"
+                    placeholder="F.eks. Standard generelt tilbud"
                   />
                 </label>
                 <button
@@ -2546,7 +2546,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
                   className="sales-primary-button"
                   data-sales-save-offer-button="true"
                 >
-                  <Save size={18} /> Lagre butikktilbud
+                  <Save size={18} /> Lagre tilbud
                 </button>
               </div>
             </div>

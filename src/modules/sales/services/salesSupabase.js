@@ -11,6 +11,10 @@ export * from "./salesSupabaseBase.js";
 import * as core from "./salesSupabaseBase.js";
 import { STORAGE_KEY } from "../constants/salesConstants.js";
 import {
+  getAppSupabaseClient,
+  registerAppSupabaseClient,
+} from "../../access/appSupabaseClientRegistry.js";
+import {
   buildOfferFormForSignatureFromRequest,
   createOfferDraftContentSignature,
 } from "../utils/salesOfferDraftSignature.js";
@@ -70,8 +74,11 @@ function createLazyDefaultSalesSupabaseClient() {
   let resolvedClient;
 
   const getClient = () => {
+    const appClient = getAppSupabaseClient();
+    if (appClient) return appClient;
     if (resolvedClient === undefined) {
       resolvedClient = core.createDefaultSalesSupabaseClient();
+      if (resolvedClient) registerAppSupabaseClient(resolvedClient);
     }
     return resolvedClient;
   };
@@ -89,6 +96,8 @@ function createLazyDefaultSalesSupabaseClient() {
 }
 
 export function createDefaultSalesSupabaseClient() {
+  const appClient = getAppSupabaseClient();
+  if (appClient) return appClient;
   if (sharedDefaultSalesSupabaseClient === undefined) {
     sharedDefaultSalesSupabaseClient = createLazyDefaultSalesSupabaseClient();
   }

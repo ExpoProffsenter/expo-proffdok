@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
-**Fase:** 42K – produksjonsbaseline etter Sales-scale/recovery, prosjektnavigasjon og demo-stabilisering  
-**Status:** Fase 42K i Production  
-**Dato:** 16.09.2026  
-**Produksjonsbaseline:** PR #155 / `main` SHA `1b98fef90fe57c24996982f39619a5bc0ce8a4f2`  
+**Fase:** 45B – Proff / Generelt tilbud / Enkel ordre
+**Status:** Release candidate i Sandbox-Preview; Production er uendret frem til eksplisitt godkjenning
+**Dato:** 27.09.2026
+**Produksjonsbaseline:** gjeldende `main`; se `CURRENT_RELEASE_STATUS.md` for verifisert SHA
 **Production Supabase:** `dqffxflaoyarbxyiyhop`  
 **Permanent Demo Sandbox:** branch `demo`, Supabase `ppvircenkjizeiqdxphj`
 
@@ -28,14 +28,18 @@ Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakove
 15. Vercel Preview skal være trygg testmodus for prosjektfunksjoner som ellers kan sende e-post eller skrive produksjonsdata.
 16. Kalender- og PDF-eksport skal lese lagret data; eksport blir ikke ny sannhetskilde.
 17. Intern ERP-nettopris er sikkerhetskritisk intern data og skal aldri inngå i kundens tilbudsgrunnlag.
-18. Butikktilbud er separat fra ordinær prosjektflyt og skal aldri aktivere ProffDok-prosjekt ved aksept.
-19. Aktiv arbeidsprofil/representert firma er arbeidsscope. Systemadministrator skal ikke få tverrfirma-prosjekter projisert inn i ordinær arbeidsflate bare fordi rollen har brede supportrettigheter.
+18. Historiske Butikktilbud beholder tidligere avslutning og skal ikke omskrives. Nye Generelle tilbud kan etter aksept aktiveres som Enkel ordre eller ordinært prosjekt.
+19. Aktiv arbeidsprofil/representert firma er arbeidsscope. Systemadministrator skal ikke få tverrfirma-prosjekter projisert inn i ordinær arbeidsflate bare fordi rollen har brede supportrettigheter. Et prosjekt som åpnes via eksplisitt tverrfirma-support er skrivebeskyttet i hele prosjektflaten: lesing, fanenavigasjon og PDF er tillatt, mens lagring, kopiering, låsing, opplasting, autolagring og øvrige mutasjoner blokkeres. Integrasjonslag som starter før hovedappen skal vente på hovedappens registrerte Supabase-klient og skal ikke opprette parallelle GoTrue-klienter mot samme auth-storage.
 20. Ved recovery/hydration vinner en eksplisitt brukerhandling alltid over automatisk gjenoppretting.
 21. Sales-oversikten skal være lett: listevisning henter bare summary/metadata. Komplett tilbud, bilder, Badskisse og historikk hentes først når én konkret sak åpnes.
 22. Aktivt arbeidsbilde skal tåle PC-fanebytte og mobil appbytte. Også en ny forespørsel uten `request_ref` er et gyldig recovery-arbeidsbilde.
 23. Før implementering klassifiseres miljømålet som `PRODUKSJON/PREVIEW`, `SANDBOX/DEMO` eller `BEGGE`.
 24. Permanent Demo Sandbox ligger på branch `demo`. Ordinær appkode kan synkroniseres **main → demo** etter godkjent Production-verifisering; demo-overlay og demodata skal aldri flyte **demo → main**.
 25. Demo/Test skal ikke brukes som begrunnelse for å endre beskyttet Production-kjerne i samme PR. Reell produktfeil splittes til egen core-PR fra ren `main`.
+26. Kun Systemadministrator kan aktivere Proff / Enkel ordre for eksterne firma og styre firmaets leverandører og leverandørrabatter.
+27. Intern Ringside-nto og ekstern «Din nto pris» er to separate rettigheter. Begge krever eksplisitt serververifisert tilgang.
+28. Enkel ordre bruker prosjektmotoren, men kundeportal er blokkert. Fremdriftsplan og FDV er valgfrie.
+29. App-tilgang forutsetter at virksomheten oppfyller gjeldende SoPro-vilkår. Eventuell særskilt betaling for Generelt tilbud er et senere produktvalg og er ikke en teknisk tilgangsregel i Fase 45B.
 
 ## 2. Plattform
 
@@ -70,7 +74,7 @@ src/modules/access/
   modul-/rolletilgang, arbeidsprofiler, systemadmin-representasjon og support-/scope-guards
 
 src/modules/sales/
-  forespørsel, befaring, ordinært tilbud, Butikktilbud, aksept, recovery og kontrakt
+  forespørsel, befaring, ordinært/Generelt tilbud, aksept, recovery og kontrakt
 
 src/modules/storeCatalog/
   internt ERP-vareregister, søk/import og Systemadmin-katalogflate
@@ -116,11 +120,12 @@ A) Direkte prosjekt uten tilbud
 B) Akseptert ordinært tilbud → prosjekt uten kontrakt
 C) Akseptert ordinært tilbud → egen opplastet kontrakt → prosjekt
 D) Akseptert ordinært tilbud → Expo-kontrakt → prosjekt
+E) Akseptert Generelt tilbud → Enkel ordre eller ordinært prosjekt
 ```
 
 Avtalegrunnlag kan inneholde akseptert tilbud/akseptbevis, signert Expo-kontrakt, bedriftens egen kontrakt, andre avtaledokumenter og senere tillegg/fradrag.
 
-Butikktilbud er ikke en prosjektvei.
+Historiske Butikktilbud beholder gammel avslutning uten prosjektaktivering. Fase 45B endrer den synlige funksjonen til Generelt tilbud; teknisk legacy-identitet kan fortsatt være `store offer` av hensyn til kompatibilitet.
 
 ### 4.1 Prosjektnavigasjon – Fase 42J/42K
 
@@ -211,12 +216,12 @@ Fase 42K er gjeldende Production-baseline og inkluderer blant annet:
 - vern av intern Butikktilbud-/nettopristilgang ved firmabytte
 - legacy prosjektmeny og anbefalt prosjektløp konsolidert mot gjeldende navigasjon
 
-## 6. Sales – Butikktilbud
+## 6. Sales – Generelt tilbud
 
-Butikktilbud er egen Sales-flyt for butikk, vare, service og mindre leveranser.
+Generelt tilbud er Sales-flyten for varer, arbeid, underentreprenører og andre leveranser. Eksisterende historiske Butikktilbud skal fortsatt kunne åpnes og vises korrekt. Interne tekniske navn kan derfor fortsatt bruke `store offer`/`Butikktilbud`.
 
 ```text
-Nytt Butikktilbud
+Nytt Generelt tilbud
 → kunde/ansvarlig/merkevare
 → tilbudsposter og avsnitt
 → valgfritt katalogsøk
@@ -226,15 +231,18 @@ Nytt Butikktilbud
 → publisert versjon
 → kundelenke/e-post
 → aksept eller avvisning
-→ avsluttet Sales-sak
+→ låst akseptert tilbudsversjon
+→ Enkel ordre eller ordinært prosjekt
 ```
 
-Aksept av Butikktilbud:
+Aksept av Generelt tilbud:
 
-- oppretter ikke ProffDok-prosjekt
-- oppretter ikke kontrakt
+- gir firmaet et eksplisitt valg mellom Enkel ordre og ordinært prosjekt
+- bruker akseptert versjon og valgte alternativer som låst bestillingsgrunnlag
 - beholder publisert versjon som låst historikk
 - beholder eventuell automatisk oppfølgingshistorikk
+
+Historiske Butikktilbud følger sin opprinnelige avslutning og skal ikke automatisk konverteres eller aktiveres som prosjekt.
 
 ### 6.1 Tilbudsposter og avsnitt
 
@@ -255,9 +263,11 @@ Montering kan knyttes direkte til post og beregnes med antall/timer × enhetspri
 
 Opsjoner støtter tillegg/oppgradering og alternativ/erstatter. Alternativ vare kan beholde samme montering, bruke ny montering eller ha ingen montering.
 
+Komplette tilbudsmaler kan lagre varige bildepekere (`https:` eller appens rot-relative Storage-/asset-URL-er) på poster og opsjoner. Midlertidige `data:`/`blob:`-bilder fjernes fordi de ikke er en stabil lagringskontrakt, og PDF-vedlegg er alltid saksspesifikke og følger ikke malen. Eksisterende maler uten lagret bildepeker kan ikke rekonstruere bildet automatisk; de må lagres på nytt fra et tilbud som fortsatt har bildet.
+
 ### 6.3 Autosave og recovery
 
-Butikktilbud har saksspesifikk serverautosave. Kritiske regler:
+Generelt tilbud har saksspesifikk serverautosave. Kritiske regler:
 
 - tom/stale lokal kladd får ikke overstyre servertilbud med innhold
 - tom Enter-opprettet post prunes ved lagring
@@ -268,23 +278,32 @@ Butikktilbud har saksspesifikk serverautosave. Kritiske regler:
 
 Firmascopet lokal Sales-cache kan gi rask førstevisning, men Supabase er alltid autoritativ og oppdaterer listen etter serverlasting.
 
+Kundepreview bruker samme presentasjon som kunden, men er isolert og read-only. Den åpnes i ny fane uten å flytte originalfanen bort fra tilbudet, og kan ikke publisere, sende e-post, akseptere eller avvise.
+
+Kontrakt-PDF grupperer sammenhengende tekst i ett kort, bruker ledig sideplass og oppretter fortsettelseskort bare ved reelt sideskift. Lange overskrifter brytes, og opsjonsbeskrivelse og pris holdes samlet. PDF-generering endrer ikke det låste kontraktsgrunnlaget.
+
 ## 7. Internt ERP-vareregister – Fase 39B.2
 
 Detaljert sikkerhet og importmodell: `docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md`.
 
-Katalogen inneholder 468 425 validerte aktive varer etter ERP-import 08.09.2026.
-
-Tilgang krever:
-
-1. godkjent/aktiv bruker
-2. `store_offers`-modultilgang
-3. faktisk firmamedlemskap i Ringside Rørleggerbedrift AS eller Bademiljø Expo
-
-Expo Proffsenter er eksplisitt uten katalogtilgang. Org.nr. brukes ikke som sikkerhetsgrense.
+Tilgang krever godkjent/aktiv bruker og eksplisitt serverautorisering. Interne brukere i Ringside/Bademiljø Expo/Expo Proffsenter kan gis tilgang til hele internkatalogen, mens eksterne proffbrukere bare kan søke hos leverandører firmaet er aktivert for. Org.nr. brukes ikke som eneste sikkerhetsgrense.
 
 Kun systemadministrator kan administrere/importere katalogen.
 
-### 7.1 Katalogdata
+### 7.1 Ekstern Proff-katalog – Fase 45B
+
+Ekstern profftilgang er firma- og leverandørscopet:
+
+1. Systemadministrator aktiverer Proff / Enkel ordre for firmaet.
+2. Systemadministrator velger aktive leverandører og firmaets rabatt per leverandør.
+3. Brukeren må ha både `sales` og `store_offers` samt aktiv leverandørtilgang.
+4. Søk returnerer ikke Ringsides interne purchase-netto, innkjøpsrabatt, DG eller påslag.
+
+Veiledende/kundepris brukes som foreslått salgspris, men tilbudsgiver kan endre salgspris/rabatt i eget tilbud. «Din nto pris» kan bare returneres når brukeren har eksplisitt bruker- og firmascopet rettighet. Firmaadmin kan administrere rettigheten for andre brukere i eget firma, men ikke gi den til seg selv. Systemadministrator kan gi og fjerne rettigheten.
+
+Interne Ringside/Bademiljø Expo/Expo Proffsenter-brukere kan ha bred katalogtilgang uten automatisk tilgang til intern nto-pris. `view_internal_net_prices` beholdes som eksplisitt sikkerhetskrav.
+
+### 7.2 Katalogdata
 
 Katalogen kan inneholde intern netto innkjøpspris og kalkulasjonsdata. Ved valg i tilbud kopieres bare kundeegnet snapshot og salgspris.
 
@@ -296,7 +315,7 @@ Intern nettopris skal aldri finnes i:
 - tilbuds-PDF
 - akseptbevis
 
-### 7.2 Single-copy import
+### 7.3 Single-copy import
 
 Gjeldende importmodell er single-copy for å unngå dobbel full katalog og unødvendig disk/WAL-belastning.
 
@@ -311,7 +330,7 @@ Systemadmin starter import
 
 Historiske publiserte/aksepterte tilbud endres ikke av ny ERP-prisfil.
 
-### 7.3 Vareidentitet
+### 7.4 Vareidentitet
 
 Primær vareidentitet er leverandør + leverandørens varenummer.
 
@@ -327,7 +346,7 @@ Modultilganger skiller blant annet:
 
 Systemadministrator har tverrfirma-support, men dette er ikke en generell skrive-bypass.
 
-Firmaadministrator kan delegere moduler innenfor eget firma og egne tillatelser. Butikktilbud/katalog følger egne serverkontroller.
+Firmaadministrator kan delegere moduler innenfor eget firma og egne tillatelser. Generelt tilbud/katalog følger egne serverkontroller. Firmaadministrator kan ikke aktivere Proff for firmaet, endre leverandørrabatter eller selvtildele «Din nto pris».
 
 Katalogimport er strengere enn ordinær Butikktilbud-bruk: systemadministrator-only.
 
@@ -354,7 +373,7 @@ Publiserte Sales-versjoner er snapshots. En senere kladd eller katalogpris kan i
 
 Offentlig tilbudslenke bruker høyt entropisk `publicOffer`-token og serveroppslag.
 
-Kundevisning for Butikktilbud viser avsnitt/poster, montering, opsjoner og priser inkl. mva. Forhåndsvisning bruker samme struktur, men er read-only og tillater ikke faktisk aksept/avvisning.
+Kundevisning for Generelt tilbud viser avsnitt/poster, montering, opsjoner og priser inkl. mva. Forhåndsvisning bruker samme struktur, men er read-only og tillater ikke publisering, e-post eller faktisk aksept/avvisning.
 
 Tilbuds-PDF og akseptbevis bruker samme seksjonsdeteksjon for å unngå `0 kr`-avsnitt og feil nummerering.
 
@@ -427,6 +446,8 @@ Kunde kan bare se fremdriftsplan når `customer_visible = true`. UE er read-only
 
 Private dokumenter og kundelenker må fortsatt respektere eksisterende sikker Storage-/tokenflyt.
 
+Enkel ordre skal ikke ha kundeportal. Servertrigger/RPC-regler blokkerer og tilbakekaller kundeportal dersom et prosjekt er markert som Enkel ordre. UE kan fortsatt brukes der det er relevant.
+
 ## 14. Garanti
 
 Dokumentert tetthetsgaranti krever blant annet:
@@ -464,6 +485,7 @@ Gjeldende sentrale temaer inkluderer:
 - PC-fanebytte/mobil appbytte mens kundeinformasjon fylles ut
 - Badskisse i befaring
 - Butikktilbud som eget tema ved Befaring/Tilbud
+- Proff vareregister, «Din nto pris», Generelt tilbud og Enkel ordre
 - prosjektets kollapsede desktopmeny og hurtigvalg
 - tilbudsposter og avsnitt
 - vareregister som valgfritt oppslag
@@ -517,13 +539,15 @@ Vercel Preview brukes for eksplisitt test før merge.
 
 Prosjekt-/fremdriftsfunksjoner har egen Preview-sikkerhet som kan blokkere produksjonsmail/testdata der det er nødvendig.
 
-Sales/Butikktilbud er produksjonskoblet mot delt Supabase og må derfor testes med tydelige testsaker. Publisering/e-post i Preview kan være reell dersom funksjonen ikke eksplisitt er blokkert.
+Clean Fase 45B-Preview skal bindes eksplisitt til Sandbox Supabase `demo-sandbox`, aldri Production. Builden skal feile lukket ved feil branch-/miljøbinding. Preview-test bruker faste Sandbox-saker og skal ikke publisere eller sende e-post når kundepreview verifiseres.
 
 `progressTest=safe` er Preview-sikkerhetsparameter og er ikke en del av endelig produksjonskundelenke.
 
 ### 18.1 Demo Sandbox er ikke ordinær Preview
 
 Permanent Demo Sandbox bruker separat backend og er fysisk isolert fra Production. Den skal derfor ikke behandles som en tilfeldig Vercel Preview. Demo-builden har egen sandbox-binding, Golden/reset og fast branch-host.
+
+Sandboxens migrasjonshistorikk inneholder en egen demo-/kursbaseline og er ikke samme lineære historikk som Production. `demo-sandbox` skal derfor aldri merges til Production gjennom Supabase branch-merge. Godkjente Production-migrasjoner kjøres fra den versjonerte, `main`-baserte releasekoden og verifiseres separat.
 
 Før viktig demo skal preflight bekrefte:
 
@@ -590,3 +614,7 @@ Minimum:
 13. `PR Core Safety` er grønn når PR-en går mot `main`.
 14. Eksplisitt bruker-`TEST OK` før merge.
 15. Etter merge: Production verifisert. Ved miljømål `BEGGE` synkroniseres deretter gjeldende `main` kontrollert til `demo`, og sandbox-preflight skal være grønn.
+16. Fase 45B: ekstern bruker ser bare godkjente leverandører; sensitive interne prisfelt lekker ikke; «Din nto pris» følger eksplisitt bruker-/firmascope.
+17. Fase 45B: kundepreview åpnes i ny fane, originalfanen står på samme tilbud, og preview kan ikke publisere, sende e-post eller akseptere.
+18. Fase 45B: akseptert Generelt tilbud kan velges som Enkel ordre eller ordinært prosjekt; Enkel ordre blokkerer kundeportal og bruker låst akseptert snapshot.
+19. Etter godkjent merge og trippel Production-QA ryddes midlertidige brancher. GitHub skal ende med `main` + `demo`; Supabase med Production/default + `demo-sandbox`.

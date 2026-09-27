@@ -34,12 +34,24 @@
     installStableModuleAccessUx();
   </script>
   <script type="module">
+    import { installFirmaAdminProNetPriceUx } from '/src/modules/access/firmaAdminProNetPriceUx.js';
+    installFirmaAdminProNetPriceUx();
+  </script>
+  <script type="module">
     import { installSupportModeProjection } from '/src/modules/access/supportModeProjection.js';
     installSupportModeProjection();
   </script>
   <script type="module">
     import { installSystemAdminUnifiedUserAccessUx } from '/src/modules/access/systemAdminUnifiedUserAccessUx.jsx';
     installSystemAdminUnifiedUserAccessUx();
+  </script>
+  <script type="module">
+    import { installSystemAdminCompanyAccessUx } from '/src/modules/access/systemAdminCompanyAccessUx.jsx';
+    installSystemAdminCompanyAccessUx();
+  </script>
+  <script type="module">
+    import { installSystemAdminCompanyModalUx } from '/src/modules/access/systemAdminCompanyModalUx.js';
+    installSystemAdminCompanyModalUx();
   </script>
   <script type="module">
     import { installSystemAdminUserPolicyGuard } from '/src/modules/access/systemAdminUserPolicyGuard.js';
@@ -80,6 +92,10 @@
   <script type="module">
     import { installSalesSurveyFilterUx } from '/src/modules/sales/salesSurveyFilterUx.js';
     installSalesSurveyFilterUx();
+  </script>
+  <script type="module">
+    import { installGeneralOfferTerminologyUx } from '/src/modules/sales/generalOfferTerminologyUx.js';
+    installGeneralOfferTerminologyUx();
   </script>
 </body>
 </html>
