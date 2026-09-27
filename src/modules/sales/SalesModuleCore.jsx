@@ -3217,7 +3217,11 @@ export default function SalesModule({
           )
         : [mappedRequest, ...current];
     });
-    setMode("customer-offer");
+    setMode(
+      mappedRequest.status === "Akseptert"
+        ? "customer-accepted"
+        : "customer-offer"
+    );
   }
 
   async function handleCreateDirectOffer(event) {

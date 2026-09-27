@@ -54,6 +54,22 @@ if (salesSupportNotice.includes('.select("full_name,email")')) {
   throw new Error("Supportbanner skal ikke spørre etter en profiles.full_name-kolonne som ikke finnes.");
 }
 
+requireNeedles("src/modules/sales/SalesModuleCore.jsx", [
+  'mappedRequest.status === "Akseptert"',
+  '? "customer-accepted"',
+  ': "customer-offer"',
+]);
+
+requireNeedles("src/modules/sales/utils/salesOfferLogicCore.js", [
+  'const isAccepted = offer.status === "accepted";',
+  "acceptedPayload.selected_options",
+  "acceptedOfferVersionId: isAccepted ? version.id : null",
+  "acceptedOfferVersionNumber: isAccepted ? version.version_number : null",
+  "acceptedOfferLines: isAccepted ? visibleOfferLines : []",
+  "acceptedOptions: isAccepted ? acceptedOptions : []",
+  "acceptedTotal: isAccepted",
+]);
+
 const salesList = requireNeedles("src/modules/sales/components/SalesListView.jsx", [
   "queryTokens.every",
   "requestSearchValues",

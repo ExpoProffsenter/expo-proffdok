@@ -553,6 +553,13 @@ export function mapPublicOfferToRequest(result) {
 
   if (!offer || !version) return null;
 
+  const isAccepted = offer.status === "accepted";
+  const acceptedPayload = offer.accepted_payload || {};
+  const acceptedOptions = Array.isArray(acceptedPayload.selected_options)
+    ? acceptedPayload.selected_options
+    : Array.isArray(acceptedPayload.selectedOptions)
+      ? acceptedPayload.selectedOptions
+      : [];
   const publishedLines = Array.isArray(version.lines) ? version.lines : [];
   const companySnapshot =
     publishedLines.find((line) => line?.__companyMeta) || {};
@@ -586,22 +593,37 @@ export function mapPublicOfferToRequest(result) {
     email: offer.customer_email,
     phone: offer.customer_phone,
     address: offer.customer_address,
-    status: offer.status === "accepted" ? "Akseptert" : "Tilbud",
+    status: isAccepted ? "Akseptert" : "Tilbud",
     statusClass:
-      offer.status === "accepted"
+      isAccepted
         ? "sales-status-accepted"
         : "sales-status-quote",
     nextStep:
-      offer.status === "accepted"
+      isAccepted
         ? "Tilbudet er akseptert"
         : "Digital aksept",
-    iconName: offer.status === "accepted" ? "home" : "send",
+    iconName: isAccepted ? "home" : "send",
     sentOfferVersionId: version.id,
     sentOfferVersionNumber: version.version_number,
     publicToken: offer.public_token,
     isPublicOffer: true,
     acceptedBy: offer.accepted_by,
     acceptedAt: offer.accepted_at,
-    acceptedPayload: offer.accepted_payload,
+    acceptedPayload,
+    acceptedOfferVersionId: isAccepted ? version.id : null,
+    acceptedOfferVersionNumber: isAccepted ? version.version_number : null,
+    acceptedOfferLines: isAccepted ? visibleOfferLines : [],
+    acceptedOptionIds: isAccepted
+      ? acceptedOptions.map((option) => option?.id).filter(Boolean)
+      : [],
+    acceptedOptions: isAccepted ? acceptedOptions : [],
+    acceptedTotal: isAccepted
+      ? Number(
+          acceptedPayload.accepted_total ??
+            acceptedPayload.acceptedTotal ??
+            acceptedPayload.total_ex_vat ??
+            acceptedPayload.totalExVat
+        ) || Number(version.total_ex_vat || 0) + getOfferTotal(acceptedOptions)
+      : null,
   };
 }
