@@ -175,7 +175,7 @@ const mainSource = requireNeedles("src/main.jsx", [
   "loadProjects(authUser, true, null, { supportMode: true })",
   "const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;",
   "if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();",
-  'inert: isProjectSupportReadOnly ? "" : void 0',
+  "inert: isProjectSupportReadOnly ? true : void 0",
   '"data-support-read-only": isProjectSupportReadOnly ? "true" : void 0',
   "hasActiveProjectWorkspace && !isProjectSupportReadOnly",
   "projectId && !isProjectSupportReadOnly",

@@ -6074,7 +6074,7 @@ ${appLink}`;
         ] })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
-        inert: isProjectSupportReadOnly ? "" : void 0,
+        inert: isProjectSupportReadOnly ? true : void 0,
         "aria-readonly": isProjectSupportReadOnly ? "true" : void 0,
         "data-support-read-only": isProjectSupportReadOnly ? "true" : void 0,
         onInputCapture: () => {
