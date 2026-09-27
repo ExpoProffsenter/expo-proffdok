@@ -402,6 +402,15 @@ export default function SalesModule({
       return;
     }
 
+    // Appens lokale saksoversikt inneholder med vilje bare en lett summary.
+    // Ved reload/recovery kan denne bli synlig et øyeblikk før den komplette
+    // serverraden er lagt inn. Editor og autolagring må aldri initialiseres fra
+    // summary-data, ellers kan en tom tilbudsflate låses for resten av mounten.
+    if (integrationMode === "app" && selectedRequest.__summaryOnly) {
+      setOfferFormReady(false);
+      return;
+    }
+
     if (offerFormHydratedRequestIdRef.current === selectedRequestId) {
       return;
     }
@@ -421,7 +430,7 @@ export default function SalesModule({
     setOfferFormReady(true);
     // Gjenoppretting må skje før autolagring får starte.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, selectedRequest, selectedRequestId]);
+  }, [integrationMode, mode, selectedRequest, selectedRequestId]);
 
   async function refreshOfferTemplates({ silent = false } = {}) {
     if (!activeSupabase || !salesCompanyId || integrationMode !== "app") {
