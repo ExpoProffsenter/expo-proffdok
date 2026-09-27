@@ -8,7 +8,7 @@ function requireNeedles(path, needles) {
   const text = read(path);
   for (const needle of needles) {
     if (!text.includes(needle)) {
-      throw new Error(`${path}: mangler 41B.3G/42K-guard: ${needle}`);
+      throw new Error(`${path}: mangler tilgangs-/mobilguard: ${needle}`);
     }
   }
   return text;
@@ -52,18 +52,33 @@ if (/update\s+public\.profiles/i.test(companyPolicy)) {
 
 const companyPolicyUx = requireNeedles("src/modules/access/systemAdminUserPolicyGuard.js", [
   "Velg Firma for brukeren før du godkjenner",
-  "Butikktilbud kan bare gis til Ringside Rørleggerbedrift AS, Bademiljø Expo eller Expo Proffsenter",
-  "Kun Ringside, Bademiljø Expo og Expo Proffsenter",
+  "Enkel ordre / Proff vareregister",
+  "company_has_pro_catalog",
+  "Aktiver minst én leverandør for firmaet under Proff vareregister først",
+  "INTERNAL_STORE_COMPANIES",
   "listManagedModuleAccess",
   "guardApprovalWithoutCompany",
-  "Hjelp-innhold rendres fortsatt kun gjennom React-kjernen",
 ]);
 
 if (companyPolicyUx.includes("supabase.from(") || companyPolicyUx.includes(".update(")) {
-  throw new Error("42K Systemadmin UX-guard skal ikke skrive direkte til database.");
+  throw new Error("Systemadmin UX-guard skal ikke skrive direkte til database.");
 }
 if (companyPolicyUx.includes("appendHelpLine") || companyPolicyUx.includes("applySystemAdminHelpPolicy")) {
-  throw new Error("42K tilgangs-UX skal ikke manipulere Hjelp utenfor React-kjernen.");
+  throw new Error("Tilgangs-UX skal ikke manipulere Hjelp utenfor React-kjernen.");
+}
+
+const unifiedUserAccess = requireNeedles("src/modules/access/systemAdminUnifiedUserAccessUx.jsx", [
+  "Brukere og tilganger",
+  "Hovedmoduler og prisinnsyn styres her på samme brukerkort",
+  "Enkel ordre / Proff vareregister",
+  "Se «Din nto pris»",
+  "Se interne nettopriser",
+  "setManagedModuleAccess",
+  "setManagedInternalNetPriceAccess",
+  "setManagedProCatalogNetPriceAccess",
+]);
+if (unifiedUserAccess.includes("supabase.from(") || unifiedUserAccess.includes(".update(")) {
+  throw new Error("Samlet brukerflate skal kun bruke autoriserte RPC-klienter.");
 }
 
 const help = requireNeedles("src/modules/help/helpToolsCore.js", [
@@ -95,6 +110,16 @@ if (priceSearch.includes('document.querySelector(".mobileAllFunctionsGrid")')) {
   throw new Error("Prissøk skal ikke lenger plasseres nederst i Alle funksjoner.");
 }
 
+const portalGuard = requireNeedles("src/modules/storeCatalog/priceSearchPortalGuard.js", [
+  "priceSearchPrintPortal",
+  "expo-price-search-inline",
+  "portals.forEach((portal) => portal.remove())",
+  'activePortal.style.display = "none"',
+]);
+if (!portalGuard.includes("MutationObserver")) {
+  throw new Error("Prissøk må rydde foreldreløse printportaler også etter remount/dvale.");
+}
+
 requireNeedles("src/modules/app/mobileResponsive41A.css", [
   "[data-systemadmin-unified-access] input[type=\"checkbox\"]",
   "[data-systemadmin-work-profiles] input[type=\"checkbox\"]",
@@ -103,8 +128,6 @@ requireNeedles("src/modules/app/mobileResponsive41A.css", [
   "grid-template-columns: minmax(0, 1fr) !important",
 ]);
 
-requireNeedles("index.html", [
-  "installSystemAdminUserPolicyGuard",
-]);
+requireNeedles("index.html", ["installSystemAdminUserPolicyGuard"]);
 
-console.log("✅ Expo ProffDok mobil Prissøk / Systemadmin-layout / React-Hjelp / firma- og godkjenningsgrense check OK");
+console.log("✅ Expo ProffDok samlet brukeradgang / mobil Prissøk / portal-opprydding check OK");

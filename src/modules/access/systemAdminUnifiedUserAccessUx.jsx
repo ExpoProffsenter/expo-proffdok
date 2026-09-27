@@ -1,6 +1,6 @@
-// Expo ProffDok – FASE 41B.2A
-// Systemadmin behandler bruker, rolle/firma og tilganger på samme eksisterende brukerkort.
-// Den etablerte godkjennings-/deaktiveringsflyten i main beholdes urørt.
+// Expo ProffDok – FASE 41B.2A / 45B
+// Systemadmin behandler bruker, rolle/firma og ALLE brukertilganger på samme eksisterende brukerkort.
+// Etablerte Godkjenn/Deaktiver/Firma/Rolle-handlinger eies fortsatt av legacy-panelet og røres ikke her.
 
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -14,9 +14,10 @@ import {
   hasInternalNetPriceAccess,
   setManagedInternalNetPriceAccess,
 } from "./sensitiveAccessClient.js";
+import { setManagedProCatalogNetPriceAccess } from "./proUserAccessClient.js";
 
 const MOUNT_ATTR = "data-systemadmin-unified-access";
-const ALLOWED_NET_COMPANIES = new Set([
+const INTERNAL_COMMERCE_COMPANIES = new Set([
   "ringside rorleggerbedrift as",
   "bademiljo expo",
   "expo proffsenter",
@@ -48,30 +49,63 @@ function toggleModule(keys, key, checked) {
   return normalizeModuleKeys([...next]);
 }
 
+function modulePresentation(module, { internalCompany, proCompany }) {
+  if (module.key !== "store_offers") return { label: module.label, note: "" };
+  if (internalCompany) {
+    return { label: "Butikktilbud", note: "Krever Befaring / Våtromstilbud" };
+  }
+  if (proCompany) {
+    return { label: "Enkel ordre / Proff vareregister", note: "Krever Befaring / Våtromstilbud" };
+  }
+  return {
+    label: "Enkel ordre / Proff vareregister",
+    note: "Aktiver leverandører for firmaet under Proff vareregister først",
+  };
+}
+
 function UnifiedAccessControls({ user, onReload }) {
   const targetIsSystemAdmin = user.system_role === "systemadmin";
+  const internalCompany = INTERNAL_COMMERCE_COMPANIES.has(normalizeCompany(user.company_name));
+  const proCompany = user.company_has_pro_catalog === true;
+  const canUseStoreModule = targetIsSystemAdmin || internalCompany || proCompany;
+  const canUseInternalNet = targetIsSystemAdmin || internalCompany;
+  const canUseProNet = !targetIsSystemAdmin && !internalCompany && proCompany;
+
   const initialModules = targetIsSystemAdmin
     ? MODULE_CATALOG.map((module) => module.key)
     : normalizeModuleKeys(user.module_keys || []);
-  const initialNet = hasInternalNetPriceAccess(user);
-  const canUseNetFeature = targetIsSystemAdmin || ALLOWED_NET_COMPANIES.has(normalizeCompany(user.company_name));
+  const initialInternalNet = hasInternalNetPriceAccess(user);
+  const initialProNet = user.pro_net_price_can_view === true;
 
   const [draftModules, setDraftModules] = useState(initialModules);
-  const [draftNet, setDraftNet] = useState(initialNet);
+  const [draftInternalNet, setDraftInternalNet] = useState(initialInternalNet);
+  const [draftProNet, setDraftProNet] = useState(initialProNet);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     setDraftModules(initialModules);
-    setDraftNet(initialNet);
+    setDraftInternalNet(initialInternalNet);
+    setDraftProNet(initialProNet);
     setMessage("");
     setError("");
-  }, [user.user_id, user.system_role, user.company_name, JSON.stringify(user.module_keys || []), JSON.stringify(user.feature_keys || [])]);
+  }, [
+    user.user_id,
+    user.system_role,
+    user.company_name,
+    user.company_has_pro_catalog,
+    user.pro_net_price_can_view,
+    JSON.stringify(user.module_keys || []),
+    JSON.stringify(user.feature_keys || []),
+  ]);
 
+  const storeSelected = draftModules.includes("store_offers");
   const modulesDirty = !moduleKeysEqual(draftModules, initialModules);
-  const netDirty = Boolean(draftNet) !== Boolean(initialNet);
-  const dirty = modulesDirty || netDirty;
+  const internalNetDirty = canUseInternalNet && Boolean(draftInternalNet) !== Boolean(initialInternalNet);
+  const effectiveProNet = canUseProNet && storeSelected ? Boolean(draftProNet) : false;
+  const proNetDirty = canUseProNet && effectiveProNet !== Boolean(initialProNet);
+  const dirty = modulesDirty || internalNetDirty || proNetDirty;
 
   async function save() {
     if (!dirty || saving || targetIsSystemAdmin) return;
@@ -82,10 +116,16 @@ function UnifiedAccessControls({ user, onReload }) {
       if (modulesDirty) {
         await setManagedModuleAccess(user.user_id, draftModules);
       }
-      if (netDirty) {
-        await setManagedInternalNetPriceAccess(user.user_id, canUseNetFeature ? draftNet : false);
+      if (internalNetDirty) {
+        await setManagedInternalNetPriceAccess(
+          user.user_id,
+          canUseInternalNet ? draftInternalNet : false
+        );
       }
-      setMessage("Tilgang lagret");
+      if (proNetDirty) {
+        await setManagedProCatalogNetPriceAccess(user.user_id, effectiveProNet);
+      }
+      setMessage("Tilganger lagret");
       await onReload?.();
     } catch (saveError) {
       setError(saveError?.message || "Kunne ikke lagre tilgangene.");
@@ -94,90 +134,97 @@ function UnifiedAccessControls({ user, onReload }) {
     }
   }
 
+  function changeModule(moduleKey, checked) {
+    setDraftModules((keys) => {
+      const next = toggleModule(keys, moduleKey, checked);
+      if (moduleKey === "store_offers" && !checked) setDraftProNet(false);
+      if (moduleKey === "sales" && !checked) setDraftProNet(false);
+      return next;
+    });
+  }
+
   return (
-    <div
-      style={{
-        marginTop: 14,
-        paddingTop: 14,
-        borderTop: "1px solid #dbe5ea",
-      }}
-    >
+    <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #dbe5ea" }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
         <div>
           <b style={{ display: "block" }}>Tilganger</b>
           <small style={{ color: "#64748b" }}>
-            Hovedmoduler og eventuell tilgang til sensitive interne nettopriser.
+            Hovedmoduler og prisinnsyn styres her på samme brukerkort.
           </small>
         </div>
         {targetIsSystemAdmin ? (
-          <small style={{ color: "#087f88", fontWeight: 800 }}>Systemadministrator har alltid alle tilganger</small>
+          <small style={{ color: "#087f88", fontWeight: 800 }}>
+            Systemadministrator har alltid alle tilganger
+          </small>
         ) : null}
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))",
-          gap: 8,
-          marginTop: 10,
-        }}
-      >
-        {MODULE_CATALOG.map((module) => (
-          <label
-            key={module.key}
-            style={{
-              display: "flex",
-              gap: 8,
-              alignItems: "flex-start",
-              padding: "9px 10px",
-              border: "1px solid #e2e8f0",
-              borderRadius: 10,
-              background: targetIsSystemAdmin ? "#f8fafc" : "#fff",
-              cursor: targetIsSystemAdmin ? "default" : "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={draftModules.includes(module.key)}
-              disabled={targetIsSystemAdmin || saving}
-              onChange={(event) =>
-                setDraftModules((keys) => toggleModule(keys, module.key, event.target.checked))
-              }
-              style={{ marginTop: 2 }}
-            />
-            <span>
-              <b style={{ display: "block", fontSize: 13 }}>{module.label}</b>
-              {module.key === "store_offers" ? (
-                <small style={{ color: "#64748b" }}>Krever Befaring / Våtromstilbud</small>
-              ) : null}
-            </span>
-          </label>
-        ))}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 8, marginTop: 10 }}>
+        {MODULE_CATALOG.map((module) => {
+          const presentation = modulePresentation(module, { internalCompany, proCompany });
+          const storeModule = module.key === "store_offers";
+          const disabled = targetIsSystemAdmin || saving || (storeModule && !canUseStoreModule);
+          return (
+            <label
+              key={module.key}
+              style={{
+                display: "flex",
+                gap: 8,
+                alignItems: "flex-start",
+                padding: "9px 10px",
+                border: "1px solid #e2e8f0",
+                borderRadius: 10,
+                background: disabled ? "#f8fafc" : "#fff",
+                opacity: storeModule && !canUseStoreModule ? 0.62 : 1,
+                cursor: disabled ? "default" : "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={draftModules.includes(module.key)}
+                disabled={disabled}
+                onChange={(event) => changeModule(module.key, event.target.checked)}
+                style={{ marginTop: 2 }}
+              />
+              <span>
+                <b style={{ display: "block", fontSize: 13 }}>{presentation.label}</b>
+                {presentation.note ? <small style={{ color: "#64748b" }}>{presentation.note}</small> : null}
+              </span>
+            </label>
+          );
+        })}
 
-        {canUseNetFeature ? (
-          <label
-            style={{
-              display: "flex",
-              gap: 8,
-              alignItems: "flex-start",
-              padding: "9px 10px",
-              border: "1px solid #f1c27d",
-              borderRadius: 10,
-              background: targetIsSystemAdmin ? "#fffaf2" : "#fffdf8",
-              cursor: targetIsSystemAdmin ? "default" : "pointer",
-            }}
-          >
+        {canUseInternalNet ? (
+          <label style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "9px 10px", border: "1px solid #f1c27d", borderRadius: 10, background: targetIsSystemAdmin ? "#fffaf2" : "#fffdf8", cursor: targetIsSystemAdmin ? "default" : "pointer" }}>
             <input
               type="checkbox"
-              checked={draftNet}
+              checked={draftInternalNet}
               disabled={targetIsSystemAdmin || saving}
-              onChange={(event) => setDraftNet(event.target.checked)}
+              onChange={(event) => setDraftInternalNet(event.target.checked)}
               style={{ marginTop: 2 }}
             />
             <span>
               <b style={{ display: "block", fontSize: 13 }}>Se interne nettopriser</b>
               <small style={{ color: "#8a5a12" }}>
-                Gjelder Prissøk og varesøk i Butikktilbud. Kun systemadministrator kan gi denne tilgangen.
+                Ringside/Expo: gjelder Prissøk og internt vareoppslag. Kun Systemadmin kan gi tilgangen.
+              </small>
+            </span>
+          </label>
+        ) : null}
+
+        {canUseProNet ? (
+          <label style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "9px 10px", border: "1px solid #b9dfe3", borderRadius: 10, background: "#f5fcfd", opacity: storeSelected ? 1 : 0.62, cursor: storeSelected && !saving ? "pointer" : "default" }}>
+            <input
+              type="checkbox"
+              checked={effectiveProNet}
+              disabled={!storeSelected || saving}
+              onChange={(event) => setDraftProNet(event.target.checked)}
+              style={{ marginTop: 2 }}
+            />
+            <span>
+              <b style={{ display: "block", fontSize: 13 }}>Se «Din nto pris»</b>
+              <small style={{ color: "#477078" }}>
+                Proffkunde: viser firmaets rabattberegnede pris. Ringsides innkjøpspris eksponeres aldri.
               </small>
             </span>
           </label>
@@ -189,7 +236,7 @@ function UnifiedAccessControls({ user, onReload }) {
 
       {!targetIsSystemAdmin ? (
         <button type="button" onClick={save} disabled={!dirty || saving} style={{ marginTop: 10 }}>
-          {saving ? "Lagrer tilgang..." : dirty ? "Lagre tilgang" : "Tilgang lagret"}
+          {saving ? "Lagrer tilganger..." : dirty ? "Lagre tilganger" : "Tilganger lagret"}
         </button>
       ) : null}
     </div>
@@ -225,7 +272,7 @@ function renameLegacyPanel(panel) {
   }
   const intro = heading?.nextElementSibling;
   if (intro instanceof HTMLElement && intro.matches("p.note")) {
-    intro.textContent = "Behandle brukerstatus, firma, rolle, hovedmoduler og sensitiv nto-pristilgang på samme brukerkort. Kun systemadministrator kan gi tilgang til interne nettopriser.";
+    intro.textContent = "Behandle brukerstatus, firma, rolle og alle brukertilganger på samme brukerkort. Leverandør/rabatt settes separat per firma under Proff vareregister.";
   }
 
   const accordionButton = Array.from(document.querySelectorAll("button.secondary")).find((button) =>
@@ -267,7 +314,6 @@ function renderIntoLegacyCards() {
   cleanupDetachedRoots();
   hideDuplicateManager();
   if (!snapshot?.is_systemadmin) return;
-
   const panel = findLegacyUserPanel();
   if (!panel) return;
   renameLegacyPanel(panel);
@@ -275,7 +321,6 @@ function renderIntoLegacyCards() {
   (snapshot.users || []).forEach((user) => {
     const card = findUserCard(panel, user.email);
     if (!card) return;
-
     let entry = roots.get(user.user_id);
     if (!entry || entry.mount?.parentElement !== card) {
       entry?.root?.unmount?.();
@@ -286,7 +331,6 @@ function renderIntoLegacyCards() {
       entry = { mount, root: createRoot(mount) };
       roots.set(user.user_id, entry);
     }
-
     entry.root.render(<UnifiedAccessControls user={user} onReload={loadSnapshot} />);
   });
 }
@@ -304,9 +348,7 @@ async function loadSnapshot() {
       hideDuplicateManager();
       return null;
     })
-    .finally(() => {
-      loadPromise = null;
-    });
+    .finally(() => { loadPromise = null; });
   return loadPromise;
 }
 
@@ -322,7 +364,6 @@ export function installSystemAdminUnifiedUserAccessUx() {
       renderIntoLegacyCards();
     });
   };
-
   const observer = new MutationObserver(scheduleRender);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 
@@ -335,19 +376,12 @@ export function installSystemAdminUnifiedUserAccessUx() {
     if (!button) return;
     const text = compactText(button.textContent);
     if (
-      text.includes("Brukere og roller") ||
-      text.includes("Brukere og tilganger") ||
-      text === "Oppdater brukerliste" ||
-      text === "Godkjenn bruker" ||
-      text === "Deaktiver bruker" ||
-      text === "Reaktiver bruker" ||
-      text === "Gjør til systemadmin" ||
-      text === "Fjern systemadmin"
-    ) {
-      scheduleReload();
-    }
+      text.includes("Brukere og roller") || text.includes("Brukere og tilganger") ||
+      text === "Oppdater brukerliste" || text === "Godkjenn bruker" ||
+      text === "Deaktiver bruker" || text === "Reaktiver bruker" ||
+      text === "Gjør til systemadmin" || text === "Fjern systemadmin"
+    ) scheduleReload();
   }, true);
   window.addEventListener("focus", loadSnapshot);
-
   loadSnapshot();
 }
