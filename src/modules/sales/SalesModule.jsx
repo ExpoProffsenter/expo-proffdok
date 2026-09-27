@@ -1,4 +1,5 @@
-// Expo ProffDok – FASE 44C / FASE 42I / FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1
+// Expo ProffDok – FASE 45B / FASE 44C / FASE 42I / FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1
+// FASE 45B lar lokal Sales-cache/recovery følge aktivt Representerer uten å endre database/RLS.
 // FASE 44C tvinger tilbuds-recovery gjennom server-first-gaten før SalesCore remountes.
 // Lokal kladd beholdes, men komplett serverrad primes på nytt før editor/autosave får starte.
 // FASE 42I gjør server-first-gaten saksspesifikk: saksoversikten kan åpnes på en
@@ -30,11 +31,19 @@ import {
 import { shouldGateSalesCoreUntilServerCache } from "./services/salesServerCacheHydration.mjs";
 import { markStoreOfferLaunch } from "./services/salesStoreOffers.js";
 import {
+  buildSalesStorageScopedProfile,
+  resolveSalesStorageCompanyName,
+} from "./services/salesWorkProfileStorageScope.mjs";
+import {
   MODULE_ACCESS_EVENT,
   hasModuleAccess,
   readCachedModuleAccess,
   refreshMyModuleAccess,
 } from "../access/moduleAccessClient.js";
+import {
+  WORK_PROFILE_EVENT,
+  readCachedWorkProfileState,
+} from "../access/workProfileClient.js";
 
 const SALES_REOPEN_INSPECTION_KEY = "expo-proffdok:sales:reopen-inspection-after-reload";
 const SALES_OVERVIEW_INTRO_MARKER = "salesOverviewIntro";
@@ -44,11 +53,20 @@ function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
-function salesStorageKeyForProps(props = {}) {
+function salesCompanyNameForProps(props = {}, workProfileState = null) {
+  return resolveSalesStorageCompanyName({
+    integrationMode: props.integrationMode || "preview",
+    profile: props.profile,
+    workProfileState:
+      workProfileState ||
+      (props.integrationMode === "app" ? readCachedWorkProfileState() : null),
+  });
+}
+
+function salesStorageKeyForProps(props = {}, companyName = "") {
   return buildSalesStorageKey({
     integrationMode: props.integrationMode || "preview",
-    companyName:
-      props.profile?.company_name || props.profile?.companyName || "",
+    companyName: compactText(companyName) || salesCompanyNameForProps(props),
     userId: props.authUser?.id || "anonymous",
   });
 }
@@ -63,8 +81,8 @@ function rememberInspectionReopen(requestId = "") {
   }
 }
 
-function protectInspectionDraftNavigation(props = {}) {
-  const salesStorageKey = salesStorageKeyForProps(props);
+function protectInspectionDraftNavigation(props = {}, companyName = "") {
+  const salesStorageKey = salesStorageKeyForProps(props, companyName);
   const navigation = loadSalesNavigation(salesStorageKey);
 
   if (
@@ -84,32 +102,43 @@ function clearBackgroundResumeMarkers() {
   clearSalesResumeMarkers();
 }
 
-function consumeSalesReloadNavigationMarker(props = {}) {
+function consumeSalesReloadNavigationMarker(props = {}, companyName = "") {
   if (props.integrationMode !== "app") return false;
-  return consumeSalesResumeNavigation(salesStorageKeyForProps(props));
+  return consumeSalesResumeNavigation(
+    salesStorageKeyForProps(props, companyName)
+  );
 }
 
-function prepareSalesEntryNavigation(props = {}) {
+function prepareSalesEntryNavigation(props = {}, companyName = "") {
   if (props.integrationMode !== "app") {
-    protectInspectionDraftNavigation(props);
+    protectInspectionDraftNavigation(props, companyName);
     return;
   }
 
-  const shouldRestoreNavigation = consumeSalesReloadNavigationMarker(props);
+  const shouldRestoreNavigation = consumeSalesReloadNavigationMarker(
+    props,
+    companyName
+  );
   if (shouldRestoreNavigation) {
-    protectInspectionDraftNavigation(props);
+    protectInspectionDraftNavigation(props, companyName);
     return;
   }
 
   // Vanlig klikk på Forespørsler/Befaring/Tilbud lander på oversikten. Bare en
   // ekte reload/dvale får gjenåpne lagret sak. Direkte startside-signal håndteres
   // separat og primes før Core mountes.
-  saveSalesNavigation(salesStorageKeyForProps(props), "list", null);
+  saveSalesNavigation(
+    salesStorageKeyForProps(props, companyName),
+    "list",
+    null
+  );
 }
 
-function markSalesTabForReload(props = {}) {
+function markSalesTabForReload(props = {}, companyName = "") {
   if (props.integrationMode !== "app") return;
-  markSalesResumeForBackground(salesStorageKeyForProps(props));
+  markSalesResumeForBackground(
+    salesStorageKeyForProps(props, companyName)
+  );
 }
 
 function getPublicContractToken() {
@@ -225,9 +254,12 @@ function OfferTypePicker({ canUseStoreOffers, onWetroom, onStore, onClose }) {
 }
 
 export default function SalesModule(props) {
+  const [salesStorageCompanyName, setSalesStorageCompanyName] = useState(() =>
+    salesCompanyNameForProps(props)
+  );
   const [instanceKey, setInstanceKey] = useState(() => {
     beginOfferDraftHydrationCycle();
-    prepareSalesEntryNavigation(props);
+    prepareSalesEntryNavigation(props, salesStorageCompanyName);
     return 0;
   });
   const [storeOfferSignal, setStoreOfferSignal] = useState(0);
@@ -239,6 +271,43 @@ export default function SalesModule(props) {
   );
   const [serverCacheError, setServerCacheError] = useState("");
   const [serverCacheRetryKey, setServerCacheRetryKey] = useState(0);
+
+  useEffect(() => {
+    if (props.integrationMode !== "app") return undefined;
+
+    const syncWorkProfileScope = (event) => {
+      const nextCompanyName = salesCompanyNameForProps(
+        props,
+        event?.detail || readCachedWorkProfileState()
+      );
+      if (!nextCompanyName || nextCompanyName === salesStorageCompanyName) return;
+
+      // Representerer-bytte skal aldri arve navigasjon/recovery fra et annet firma.
+      clearSalesResumeMarkers({ preserveWorkspace: false });
+      saveSalesNavigation(
+        salesStorageKeyForProps(props, nextCompanyName),
+        "list",
+        null
+      );
+      beginOfferDraftHydrationCycle();
+      setSalesStorageCompanyName(nextCompanyName);
+      setServerCacheError("");
+      setServerCacheReady(false);
+      setInstanceKey((current) => current + 1);
+    };
+
+    window.addEventListener(WORK_PROFILE_EVENT, syncWorkProfileScope);
+    syncWorkProfileScope({ detail: readCachedWorkProfileState() });
+    return () => {
+      window.removeEventListener(WORK_PROFILE_EVENT, syncWorkProfileScope);
+    };
+  }, [
+    props.integrationMode,
+    props.authUser?.id,
+    props.profile?.company_name,
+    props.profile?.companyName,
+    salesStorageCompanyName,
+  ]);
 
   useEffect(() => {
     const rehydrateSalesModule = () => {
@@ -253,13 +322,13 @@ export default function SalesModule(props) {
     };
 
     const blockPreHydrationUnloadSave = () => {
-      markSalesTabForReload(props);
+      markSalesTabForReload(props, salesStorageCompanyName);
       beginOfferDraftHydrationCycle();
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        markSalesTabForReload(props);
+        markSalesTabForReload(props, salesStorageCompanyName);
         return;
       }
       clearBackgroundResumeMarkers();
@@ -284,7 +353,7 @@ export default function SalesModule(props) {
       // Bevisst navigasjon bort fra Sales skal aldri gjenopplive en gammel sak.
       clearBackgroundResumeMarkers();
     };
-  }, []);
+  }, [props.integrationMode, props.authUser?.id, salesStorageCompanyName]);
 
   useEffect(() => {
     if (props.integrationMode !== "app") return undefined;
@@ -323,7 +392,7 @@ export default function SalesModule(props) {
       return undefined;
     }
 
-    const storageKey = salesStorageKeyForProps(props);
+    const storageKey = salesStorageKeyForProps(props, salesStorageCompanyName);
     const navigation = loadSalesNavigation(storageKey);
     const directRequestId = String(props.openRequestSignal || "").trim();
     const resumedRequestId =
@@ -393,6 +462,7 @@ export default function SalesModule(props) {
     props.profile?.company_name,
     props.profile?.companyName,
     props.openRequestSignal,
+    salesStorageCompanyName,
     instanceKey,
     serverCacheRetryKey,
   ]);
@@ -416,7 +486,9 @@ export default function SalesModule(props) {
       if (cancelled) return;
       attempts += 1;
 
-      const navigation = loadSalesNavigation(salesStorageKeyForProps(props));
+      const navigation = loadSalesNavigation(
+        salesStorageKeyForProps(props, salesStorageCompanyName)
+      );
       const correctRequest = String(navigation?.selectedRequestId || "") === requestId;
       const buttons = Array.from(document.querySelectorAll("button"));
       const inspectionButton = correctRequest
@@ -446,7 +518,14 @@ export default function SalesModule(props) {
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [instanceKey, props.integrationMode, props.authUser?.id, props.profile?.company_name, props.profile?.companyName]);
+  }, [
+    instanceKey,
+    props.integrationMode,
+    props.authUser?.id,
+    props.profile?.company_name,
+    props.profile?.companyName,
+    salesStorageCompanyName,
+  ]);
 
   useEffect(() => {
     if (props.integrationMode !== "app") return undefined;
@@ -610,6 +689,14 @@ export default function SalesModule(props) {
     props.onStartNewOfferHandled?.();
   };
 
+  const coreProfile =
+    props.integrationMode === "app"
+      ? buildSalesStorageScopedProfile(
+          props.profile,
+          salesStorageCompanyName
+        )
+      : props.profile;
+
   return (
     <>
       {canUseSales ? (
@@ -645,6 +732,7 @@ export default function SalesModule(props) {
       <SalesModuleCore
         key={instanceKey}
         {...props}
+        profile={coreProfile}
         startNewOfferSignal={forwardedStartNewOfferSignal}
         onStartNewOfferHandled={handleStartNewOfferHandled}
       />
