@@ -286,7 +286,8 @@ export async function createFinalSalesContractPdf(contract = {}) {
 
     const firstLabel = cardLabel(label, false);
     const fullHeight = firstLabel.height + rowsHeight(rows) + 5;
-    if (fullHeight <= PAGE.bottom - 20 && y + fullHeight > PAGE.bottom) {
+    const keepTogetherLimit = 90;
+    if (fullHeight <= keepTogetherLimit && y + fullHeight > PAGE.bottom) {
       newPage();
     }
 
