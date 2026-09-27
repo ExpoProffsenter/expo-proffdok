@@ -1,6 +1,7 @@
 import { ClipboardCheck } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { installSimpleOrderWorkspaceUx } from './simpleOrderWorkspaceUx.js';
+import { isSimpleOrderProject } from './SimpleOrderOfferBasis.jsx';
 
 const import_lucide_react = { ClipboardCheck };
 const import_jsx_runtime = { jsx, jsxs, Fragment };
@@ -8,9 +9,6 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
 // Ligger her fordi projectOverviewTools lastes sammen med den interne prosjektmotoren.
 // Adapteren er passiv for ordinære prosjekter og aktiveres kun ved workflowType=simple_order.
 installSimpleOrderWorkspaceUx();
-
-const isSimpleOrderProject = (project = {}) =>
-  String(project?.workflowType || '').trim().toLowerCase() === 'simple_order' || project?.simpleOrder === true;
 
 const formatAcceptedTotal = (value) => {
   const number = Number(value);

@@ -25,6 +25,7 @@ import { createHelpCenter } from './modules/help/helpTools.js';
 import { createChecklistEditor } from './modules/checklist/checklistTools.js';
 import { createImageDocumentationTools } from './modules/images/imageDocumentationTools.js';
 import { createProjectOverviewTools } from './modules/project/projectOverviewTools.js';
+import SimpleOrderOfferBasis, { isSimpleOrderProject } from './modules/project/SimpleOrderOfferBasis.jsx';
 import { createProjectListTools, normalizeSearchText, makeSearchableText, projectMatchesSearch } from './modules/project/projectListTools.js';
 import { createProductViewTools } from './modules/product/productViewTools.js';
 import { createSurfaceViewTools, emptyBathroomEquipment, buildBathroomEquipmentReportGroups } from './modules/surfaces/surfaceViewTools.js';
@@ -2263,7 +2264,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const localDraftStorageKey = (id = projectId) => authUser?.id ? `expoProffDokDraft:${authUser.id}:${id || "new"}` : "";
     const isSupportProjectDraft = (id = projectId, ownerId = currentProjectOwnerId) => {
       if (!isSystemAdminUser || !authUser?.id || !id) return false;
-      return !!ownerId && ownerId !== authUser.id;
+      return supportModeExplicit || (!!ownerId && ownerId !== authUser.id);
     };
     const shouldSkipLocalDraftForSupport = (id = projectId, ownerId = currentProjectOwnerId) => isSupportProjectDraft(id, ownerId);
     const saveLocalDraftNow = (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
@@ -2440,7 +2441,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         if (localDraftTimerRef.current) window.clearTimeout(localDraftTimerRef.current);
         if (cloudAutoSaveTimerRef.current) window.clearTimeout(cloudAutoSaveTimerRef.current);
       };
-    }, [company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes, projectId, currentProjectOwnerId, mobileCreatingProject, authUser?.id, profile?.approved, isReadOnly, isProjectLocked]);
+    }, [company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes, projectId, currentProjectOwnerId, supportModeExplicit, mobileCreatingProject, authUser?.id, profile?.approved, isReadOnly, isProjectLocked]);
     (0, import_react.useEffect)(() => {
       const handleBeforeUnload = () => saveLocalDraftNow(latestStateRef.current || buildProjectSnapshot());
       const handleVisibilityChange = () => {
@@ -2452,7 +2453,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         window.removeEventListener("beforeunload", handleBeforeUnload);
         document.removeEventListener("visibilitychange", handleVisibilityChange);
       };
-    }, [authUser?.id, projectId, currentProjectOwnerId, mobileCreatingProject, isReadOnly, profile?.approved]);
+    }, [authUser?.id, projectId, currentProjectOwnerId, supportModeExplicit, mobileCreatingProject, isReadOnly, profile?.approved]);
 
     (0, import_react.useEffect)(() => {
       const warnBeforeUnload = (event) => {
@@ -6357,7 +6358,7 @@ ${appLink}`;
             ] })
           ] })
         ] }) }) }) })),
-        tab === "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+        tab === "sales" && projectId && isSimpleOrderProject(project) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SimpleOrderOfferBasis, { project, tilbud: displayTilbud }) : tab === "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
           ] }),

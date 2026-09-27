@@ -171,7 +171,7 @@ function getQuantityText(item = {}) {
   )} pr. enhet`;
 }
 
-function AcceptedOfferGroups({ request }) {
+export function AcceptedOfferGroups({ request }) {
   const snapshot = getAcceptedSnapshot(request);
   const groups = buildAcceptedGroups(snapshot.lines, snapshot.options);
   const versionNumberMap = getAcceptedVersionNumberMap(request, snapshot);
@@ -499,7 +499,7 @@ function AcceptedOfferGroups({ request }) {
   );
 }
 
-function AcceptedTotalSummary({ request }) {
+export function AcceptedTotalSummary({ request }) {
   const { total } = getAcceptedSnapshot(request);
 
   return (

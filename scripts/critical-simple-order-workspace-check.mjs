@@ -6,6 +6,9 @@ const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const ux = read('src/modules/project/simpleOrderWorkspaceUx.js');
 const overview = read('src/modules/project/projectOverviewTools.js');
+const offerBasis = read('src/modules/project/SimpleOrderOfferBasis.jsx');
+const acceptedPresentation = read('src/modules/sales/components/SalesAcceptedPresentation.jsx');
+const main = read('src/main.jsx');
 const progress = read('src/modules/progress/progressPlanSupabase.js');
 const activation = read('supabase/migrations/20260923122500_fase45b_simple_order_activation_mode.sql');
 const portalGuard = read('supabase/migrations/20260923154500_fase45b_simple_order_portal_guard.sql');
@@ -38,6 +41,23 @@ for (const needle of [
   "installSimpleOrderWorkspaceUx","data-expo-workflow-type","Ordreoversikt","Arbeidsverktøy for denne ordren",
   "Fremdrift","Produkter / FDV","Bilder","Sjekklister","UE-tilgang","Sluttdokumentasjon",
 ]) assert(overview.includes(needle), `Ordreoversikten mangler: ${needle}`);
+
+for (const needle of [
+  "data-simple-order-accepted-offer-basis","Låst kopi av tilbudsversjonen kunden aksepterte",
+  "buildSimpleOrderAcceptedRequest","acceptedOfferSnapshot","sourceVersionNumber",
+  "AcceptedOfferGroups","AcceptedTotalSummary","Låst aksept",
+]) assert(offerBasis.includes(needle), `Tilbudsgrunnlaget for Enkel ordre mangler: ${needle}`);
+for (const forbidden of [
+  "createDefaultSalesSupabaseClient","supabase.from(",".insert(",".update(",".upsert(",".delete(",
+  "purchase_net_ex_vat","purchase_discount_percent","gross_margin_percent","markup_percent","my_net_price_ex_vat",
+]) assert(!offerBasis.includes(forbidden), `Tilbudsgrunnlaget skal være lokalt, skrivebeskyttet og uten internpris: ${forbidden}`);
+for (const needle of [
+  "export function AcceptedOfferGroups","export function AcceptedTotalSummary",
+]) assert(acceptedPresentation.includes(needle), `Delt låst akseptpresentasjon mangler eksport: ${needle}`);
+for (const needle of [
+  "SimpleOrderOfferBasis, { isSimpleOrderProject }","tab === \"sales\" && projectId && isSimpleOrderProject(project)",
+  "supportModeExplicit || (!!ownerId && ownerId !== authUser.id)",
+]) assert(main.includes(needle), `Hovedappen mangler sikring av Enkel ordre/supportmodus: ${needle}`);
 
 for (const needle of ["workflowType","simpleOrder","shareEnabled","share_enabled"]) {
   assert(progress.includes(needle), `Fremdrift må kjenne Enkel ordre-metadata: ${needle}`);
