@@ -130,7 +130,7 @@ for (const required of [
   "resolveSalesStorageCompanyName",
   "buildSalesStorageScopedProfile",
   "salesStorageCompanyName",
-  "markSalesTabForReload(props, salesStorageCompanyName)",
+  "markSalesTabForReload(props)",
   "salesStorageKeyForProps(props, salesStorageCompanyName)",
   "clearSalesResumeMarkers({ preserveWorkspace: false })",
   "profile={coreProfile}",
@@ -138,6 +138,11 @@ for (const required of [
   assert(salesModule.includes(required), `Sales work-profile storage-kontrakt mangler: ${required}`);
 }
 
+assert(
+  salesModule.includes("markSalesResumeForBackground(salesStorageKeyForProps(props))") &&
+    salesModule.includes("consumeSalesResumeNavigation(salesStorageKeyForProps(props))"),
+  "Eksisterende og gjennomtestet Sales recovery-kallkontrakt skal beholdes mens scope-resolveren endres."
+);
 assert(
   !fs.existsSync("src/modules/sales/salesDraftPreviewReturnGuard.js") &&
     !fs.existsSync("src/modules/sales/services/salesDraftPreviewResume.mjs"),
