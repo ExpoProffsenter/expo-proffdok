@@ -4,6 +4,7 @@ import {
   buildSalesStorageScopedProfile,
   resolveSalesStorageCompanyName,
 } from "../src/modules/sales/services/salesWorkProfileStorageScope.mjs";
+import { shouldRebootstrapAuthState } from "../src/modules/auth/authStateRefreshPolicy.mjs";
 
 const preview = fs.readFileSync("src/modules/sales/components/SalesDraftCustomerPreview.jsx", "utf8");
 const entry = fs.readFileSync("src/modules/sales/SalesPreview.jsx", "utf8");
@@ -12,6 +13,7 @@ const salesModule = fs.readFileSync("src/modules/sales/SalesModule.jsx", "utf8")
 const customerCore = fs.readFileSync("src/modules/sales/components/SalesCustomerViewCore.jsx", "utf8");
 const indexHtml = fs.readFileSync("index.html", "utf8");
 const packageJson = fs.readFileSync("package.json", "utf8");
+const main = fs.readFileSync("src/main.jsx", "utf8");
 
 for (const required of [
   "buildOfferSnapshot",
@@ -61,6 +63,56 @@ assert(detail.includes("data-internal-product-number"), "Intern tilbudsvisning s
 assert(!customerCore.includes("supplierProductNumber"), "Kundens tilbud skal ikke vise eller bruke leverandørvarenummer i presentasjonen.");
 assert(!customerCore.includes("internalProductNumber"), "Kundens tilbud skal ikke vise internt varenummer i presentasjonen.");
 assert(!customerCore.includes("Varenr."), "Kundens tilbud skal aldri ha varenummer-label.");
+
+// En isolert preview-fane oppretter sin egen Supabase-klient. Auth-biblioteket
+// kringkaster da SIGNED_IN for den eksisterende sesjonen. Originalfanen skal
+// oppdatere authUser, men ikke sette profileLoading og unmount'e Sales.
+for (const event of ["INITIAL_SESSION", "SIGNED_IN", "TOKEN_REFRESHED"]) {
+  assert.equal(
+    shouldRebootstrapAuthState({
+      event,
+      previousUserId: "same-user",
+      nextUserId: "same-user",
+    }),
+    false,
+    `${event} for samme bruker må ikke starte appen på nytt.`,
+  );
+}
+assert.equal(
+  shouldRebootstrapAuthState({
+    event: "SIGNED_IN",
+    previousUserId: null,
+    nextUserId: "new-user",
+  }),
+  true,
+  "Reell innlogging skal fortsatt initialisere profil og appdata.",
+);
+assert.equal(
+  shouldRebootstrapAuthState({
+    event: "SIGNED_OUT",
+    previousUserId: "old-user",
+    nextUserId: null,
+  }),
+  true,
+  "Reell utlogging skal fortsatt rydde appdata.",
+);
+assert.equal(
+  shouldRebootstrapAuthState({
+    event: "USER_UPDATED",
+    previousUserId: "same-user",
+    nextUserId: "same-user",
+  }),
+  true,
+  "Eksplisitt brukeroppdatering skal fortsatt kunne laste profiltilstand på nytt.",
+);
+for (const required of [
+  "shouldRebootstrapAuthState",
+  'handleAuthUser(data.session?.user || null, "INITIAL_SESSION")',
+  "handleAuthUser(session?.user || null, _event)",
+  "if (!shouldRebootstrap) return",
+]) {
+  assert(main.includes(required), `Auth-hendelsesvakten mangler i hovedappen: ${required}`);
+}
 
 // Rotkontrakt: lokal Sales-cache/recovery skal følge aktivt Representerer i app,
 // men vanlige brukere og preview/public skal beholde eksisterende profilfallback.
@@ -162,4 +214,4 @@ assert(
   "Kundepreview/work-profile-regresjonen må være del av critical/build."
 );
 
-console.log("critical-customer-draft-preview-check: OK – preview isolert og Sales-storage følger aktivt Representerer");
+console.log("critical-customer-draft-preview-check: OK – preview isolert, samme-bruker auth remounter ikke appen, og Sales-storage følger aktivt Representerer");

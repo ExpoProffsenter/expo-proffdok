@@ -39,6 +39,7 @@ Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakove
 26. Kun Systemadministrator kan aktivere Proff / Enkel ordre for eksterne firma og styre firmaets leverandører og leverandørrabatter.
 27. Intern Ringside-nto og ekstern «Din nto pris» er to separate rettigheter. Begge krever eksplisitt serververifisert tilgang.
 28. Enkel ordre bruker prosjektmotoren, men kundeportal er blokkert. Fremdriftsplan og FDV er valgfrie.
+29. App-tilgang forutsetter at virksomheten oppfyller gjeldende SoPro-vilkår. Eventuell særskilt betaling for Generelt tilbud er et senere produktvalg og er ikke en teknisk tilgangsregel i Fase 45B.
 
 ## 2. Plattform
 

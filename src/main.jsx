@@ -39,6 +39,7 @@ import AppErrorBoundary from './modules/app/AppErrorBoundary.jsx';
 import AppUpdateNotice from './modules/app/AppUpdateNotice.jsx';
 import AppNewsNotice from './modules/app/AppNewsNotice.jsx';
 import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';
+import { shouldRebootstrapAuthState } from './modules/auth/authStateRefreshPolicy.mjs';
 import { ProgressPlanProjectTab } from './modules/progress/progressPlanUx.jsx';
 import { APP_RUNTIME_STYLES, UNDERENTREPRENOR_RUNTIME_STYLES } from './modules/app/appRuntimeStyles.js';
 import {
@@ -2910,12 +2911,18 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
     };
 
-    const handleAuthUser = async (sessionUser) => {
+    const handleAuthUser = async (sessionUser, authEvent = "") => {
       const nextUserId = sessionUser?.id || null;
       const previousUserId = previousAuthUserIdRef.current;
       const isNewLoginOrLogout = previousUserId !== nextUserId;
+      const shouldRebootstrap = shouldRebootstrapAuthState({
+        event: authEvent,
+        previousUserId,
+        nextUserId
+      });
       previousAuthUserIdRef.current = nextUserId;
       setAuthUser(sessionUser);
+      if (!shouldRebootstrap) return;
       if (isNewLoginOrLogout) {
         resetToCleanStartPage();
         setTermsAccepted(false);
@@ -2984,13 +2991,13 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         }
       }
       supabase.auth.getSession().then(({ data }) => {
-        handleAuthUser(data.session?.user || null).finally(() => setAuthLoading(false));
+        handleAuthUser(data.session?.user || null, "INITIAL_SESSION").finally(() => setAuthLoading(false));
       });
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
         if (_event === "PASSWORD_RECOVERY") {
           setPasswordRecovery(true);
         }
-        handleAuthUser(session?.user || null);
+        handleAuthUser(session?.user || null, _event);
       });
       return () => listener.subscription.unsubscribe();
     }, []);

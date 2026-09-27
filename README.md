@@ -58,6 +58,7 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 
 ## Fase 45B – Proff, Generelt tilbud og Enkel ordre
 
+- Tilgang til Expo ProffDok forutsetter at virksomheten kjøper og benytter SoPro-produkter i relevant omfang, slik gjeldende brukervilkår beskriver.
 - Kun Systemadministrator kan aktivere Proff / Enkel ordre for et eksternt firma og styre firmaets leverandører og leverandørrabatter.
 - Ekstern proffkunde søker bare i godkjente leverandører. Ringsides interne innkjøps-/nto-pris, innkjøpsrabatt, DG og påslag skal aldri eksponeres.
 - «Din nto pris» er en egen bruker- og firmascopet rettighet. Firmaadmin kan administrere egne brukere, men kan ikke gi rettigheten til seg selv. Intern Ringside-nto krever fortsatt eksplisitt `view_internal_net_prices`.

@@ -27,6 +27,7 @@ const storeOffers=fs.readFileSync(path.join(root,"src/modules/sales/services/sal
 const orderBasis=fs.readFileSync(path.join(root,"src/modules/sales/components/StoreOfferOrderBasis.jsx"),"utf8");
 const help=fs.readFileSync(path.join(root,"src/modules/help/help45b.js"),"utf8");
 const helpBridge=fs.readFileSync(path.join(root,"src/modules/help/helpTools.js"),"utf8");
+const terms=fs.readFileSync(path.join(root,"src/modules/app/appStaticTools.js"),"utf8");
 
 for(const needle of ["store_catalog_company_supplier_access","store_catalog_user_price_access","search_pro_store_catalog","current_user_has_pro_store_catalog_access","current_user_can_view_store_catalog_net_price","set_store_catalog_company_supplier_access","set_store_catalog_user_net_price_access","discount_percent >= 0 and discount_percent <= 100","a.supplier_key=i.supplier_key","i.customer_price_ex_vat*(1-a.discount_percent/100)"]) assert(migration.includes(needle),`45B katalogkontrakt mangler: ${needle}`);
 const proSearch=migration.slice(migration.indexOf("create or replace function public.search_pro_store_catalog"));
@@ -96,7 +97,8 @@ for(const needle of ["storeOffer && !simpleOrder","getSimpleOrderActivationMode"
 for(const needle of ["set_simple_order_activation_mode","simple_order","project"]) assert(simpleOrder.includes(needle),`Simple-order-klient mangler: ${needle}`);
 for(const needle of ["export function isStoreOfferRequest","export function isSimpleOrderRequest","findStoreOfferMeta"]) assert(storeOffers.includes(needle),`Butikktilbud/Enkel ordre-identitet mangler: ${needle}`);
 for(const needle of ["supplierProductNumber","nobbNumber","storeCatalogGtin","acceptedOfferLines","acceptedOptions","selected_options","Kopier liste","Skriv ut"]) assert(orderBasis.includes(needle),`Akseptert varegrunnlag mangler: ${needle}`);
-for(const needle of ["Proff vareregister / Enkel ordre","Forhåndsvis som kunde","Din nto pris","Bestillingsgrunnlag","FlisLab AS 40 %","Askøy 40 %","Kun Systemadministrator kan aktivere Proff / Enkel ordre"]) assert(help.includes(needle),`HJELP mangler 45B-veiledning: ${needle}`);
+for(const needle of ["Proff vareregister / Enkel ordre","Forhåndsvis som kunde","Din nto pris","Bestillingsgrunnlag","FlisLab AS 40 %","Askøy 40 %","Kun Systemadministrator kan aktivere Proff / Enkel ordre","SoPro-forutsetningen"]) assert(help.includes(needle),`HJELP mangler 45B-veiledning: ${needle}`);
 assert(helpBridge.includes("createHelp45BSection"),"45B-hjelpen må være koblet til React-hjelpesenteret.");
+for(const needle of ['EXPO_PROFFDOK_TERMS_VERSION = "1.1"',"Tilgang og SoPro-forutsetning","kjøper og benytter SoPro-produkter i relevant omfang","kan Expo begrense, suspendere eller avslutte tilgangen","inkludert SoPro-forutsetningen"]) assert(terms.includes(needle),`Brukervilkår 1.1 mangler: ${needle}`);
 for(const needle of ["set_simple_order_activation_mode","simpleOrderActivationMode","fase45b_mark_simple_order_project","workflowType","simple_order","new.share_enabled:=false"]) assert(activationMigration.includes(needle),`Simple-order backend mangler: ${needle}`);
 console.log("critical-pro-store-catalog-check: OK");

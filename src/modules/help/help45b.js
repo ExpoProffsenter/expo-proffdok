@@ -27,7 +27,8 @@ export function createHelp45BSection({ Section }) {
       "«Din nto pris» er proffkundens beregnede pris og må ikke forveksles med Ringsides interne ERP-nettopris.",
       "Firmaadmin bestemmer hvilke andre brukere i firmaet som kan se «Din nto pris», men kan ikke gi seg selv tilgang. Denne rettigheten skal ikke gis bredere enn nødvendig.",
       "Transport, frakt, timer og øvrige leveranser kan brukes som ordinære tilbudsposter.",
-      "Kun Systemadministrator kan aktivere Proff / Enkel ordre for et eksternt firma."
+      "Kun Systemadministrator kan aktivere Proff / Enkel ordre for et eksternt firma.",
+      "Tilgang til Expo ProffDok forutsetter at virksomheten oppfyller gjeldende brukervilkår, inkludert SoPro-forutsetningen."
     ];
     const admin = isSystemAdmin
       ? [
