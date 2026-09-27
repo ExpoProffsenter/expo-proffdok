@@ -16,6 +16,7 @@ const salesCorePath = "src/modules/sales/SalesModuleCore.jsx";
 const mainPath = "src/main.jsx";
 const supportProjectionPath = "src/modules/access/supportModeProjection.js";
 const appClientRegistryPath = "src/modules/access/appSupabaseClientRegistry.js";
+const projectParticipantsPath = "src/modules/project/projectParticipantsUxV3.jsx";
 
 const salesSupabase = readFileSync(salesSupabasePath, "utf8");
 const salesWrapper = readFileSync(salesWrapperPath, "utf8");
@@ -23,6 +24,36 @@ const salesCore = readFileSync(salesCorePath, "utf8");
 const main = readFileSync(mainPath, "utf8");
 const supportProjection = readFileSync(supportProjectionPath, "utf8");
 const appClientRegistry = readFileSync(appClientRegistryPath, "utf8");
+const projectParticipants = readFileSync(projectParticipantsPath, "utf8");
+
+const registryRuntime = await import(
+  `../src/modules/access/appSupabaseClientRegistry.js?critical=${Date.now()}`
+);
+const firstClient = { name: "critical-first-client" };
+const secondClient = { name: "critical-second-client" };
+let deferredClient = null;
+let deferredCalls = 0;
+const stopWaiting = registryRuntime.whenAppSupabaseClientRegistered((client) => {
+  deferredClient = client;
+  deferredCalls += 1;
+});
+registryRuntime.registerAppSupabaseClient(firstClient);
+registryRuntime.registerAppSupabaseClient(secondClient);
+stopWaiting();
+
+requireCondition(
+  deferredClient === firstClient && deferredCalls === 1,
+  "Sales auth: ventende integrasjonslag får ikke nøyaktig den første registrerte appklienten."
+);
+
+let immediateClient = null;
+registryRuntime.whenAppSupabaseClientRegistered((client) => {
+  immediateClient = client;
+});
+requireCondition(
+  immediateClient === secondClient,
+  "Sales auth: integrasjonslag som starter sent får ikke aktiv appklient umiddelbart."
+);
 
 requireText(
   salesSupabase,
@@ -99,6 +130,33 @@ requireText(
   appClientRegistry,
   "export function getAppSupabaseClient()",
   "Sales auth: registeret for hovedappens Supabase-klient mangler."
+);
+requireText(
+  appClientRegistry,
+  "export function whenAppSupabaseClientRegistered(listener)",
+  "Sales auth: integrasjonslag kan ikke vente på hovedappens registrerte klient."
+);
+requireText(
+  projectParticipants,
+  "whenAppSupabaseClientRegistered((client) => {",
+  "Sales auth: prosjektinvolverte starter auth før hovedappens klient er registrert."
+);
+const participantInstallStart = projectParticipants.indexOf(
+  "export function installProjectParticipantsUx()"
+);
+const participantInstallBlock =
+  participantInstallStart >= 0
+    ? projectParticipants.slice(participantInstallStart)
+    : "";
+requireCondition(
+  participantInstallStart >= 0,
+  "Sales auth: fant ikke installasjon av prosjektinvolverte."
+);
+requireCondition(
+  !participantInstallBlock.includes(
+    "const client = createDefaultSalesSupabaseClient();"
+  ),
+  "Sales auth: prosjektinvolverte kan fortsatt løse ut fallback-klienten før main.jsx."
 );
 requireText(
   supportProjection,
