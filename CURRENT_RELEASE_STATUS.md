@@ -1,5 +1,13 @@
 # Gjeldende release-status – Fase 45B
 
+## Pågående rettelse – profilnavn og misvisende rollefelt (28.09.2026)
+
+- Branch `fix-profile-identity-copy` er opprettet fra gjeldende Production-`main` (`32bbdd4`). Production og permanent demo er urørt.
+- Production-databasen er kontrollert read-only: Kenneth er fortsatt `systemadmin`/`firmaadmin`, og databasesperren avviser at vanlige brukere endrer egen konto-, firma- eller systemrolle.
+- Feltet som het `Rolle` under Innlogging er prosjekt-/rapportmetadata, ikke en tilgangsrolle. Det er derfor presisert til `Rolle i prosjekt/rapport` med synlig forklaring.
+- Navnet var tomt fordi klienten forsøkte å lese en ikke-eksisterende `profiles.full_name`-kolonne. Innloggingsmetadata inneholder allerede `Kenneth Skogsrud`; klienten bruker nå dette som navnekilde.
+- Endringen krever ingen Supabase-, RLS-, e-post- eller tilgangsendring. Målrettet test, full critical-suite, `git diff --check` og Production-bundet build er grønne; Preview og brukerens `TEST OK` gjenstår før eventuell merge.
+
 ## Nyeste status – Systemadmin-utsending på e-post (28.09.2026)
 
 - Funksjonsbranch: `fase45b-systemadmin-broadcast-email`; verifisert funksjons-head før denne statusoppdateringen er `726037121b4999c240346a8948f2b4d27163f4d6`.

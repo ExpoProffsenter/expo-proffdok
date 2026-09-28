@@ -2734,12 +2734,17 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setProjectId(data.id);
       if (!silent) alert("Prosjektdata oppdatert.");
     };
-    const applyProfile = (row) => {
+    const applyProfile = (row, identityUser = authUser) => {
       if (!row) return;
+      const authenticatedName = String(
+        identityUser?.user_metadata?.full_name ||
+        identityUser?.user_metadata?.name ||
+        ""
+      ).trim();
       setProfile(row);
       setUser((current) => ({
         ...current,
-        name: row.full_name || current.name || "",
+        name: authenticatedName || current.name || "",
         email: row.email || current.email || ""
       }));
       setCompany((c) => ({
@@ -2794,7 +2799,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       } catch (inviteError) {
         console.warn("Kunne ikke kontrollere firmainvitasjon:", inviteError);
       }
-      applyProfile(data);
+      applyProfile(data, sessionUser);
       setProfileLoading(false);
       return data;
     };
@@ -6459,8 +6464,9 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn", value: user.name, onChange: (v) => setUser({ ...user, name: v }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post i rapport", value: user.email, onChange: (v) => setUser({ ...user, email: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle", value: user.role, options: roles, onChange: (v) => setUser({ ...user, role: v }) })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle i prosjekt/rapport", value: user.role, options: roles, onChange: (v) => setUser({ ...user, role: v }) })
           ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Navn og rolle brukes i prosjektdata og dokumenter. Dette endrer ikke konto-, firma- eller systemtilgang; slike tilganger styres bare av administrator under Brukere og tilganger." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarketingEmailPreference, { supabaseClient: supabase, authUser }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
         ] }),
