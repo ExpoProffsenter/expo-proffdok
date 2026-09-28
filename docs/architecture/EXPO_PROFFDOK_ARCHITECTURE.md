@@ -359,9 +359,13 @@ Katalogimport er strengere enn ordinær Butikktilbud-bruk: systemadministrator-o
 
 Aktiv arbeidsprofil lagres server-side. Vanlige flerfirma-brukere arbeider i valgt firma. Systemadministrator kan velge hvilket firma vedkommende **representerer**, uten at dette oppretter ordinært firmamedlemskap.
 
+Ved ny prosjektinnsetting setter `projects_sync_company_scope_id` aktivt `company_scope_id` og autoritativt firmasnapshot i en `BEFORE INSERT`-trigger. Dette skjer før `projects_insert_scoped_authenticated` kontrollerer samme scope i RLS. Klienten sender fortsatt eierens `user_id`, men kan ikke velge et vilkårlig firmascope. Triggeren er versjonert og idempotent slik at Production og permanent demo-sandbox beholder samme grunnkontrakt.
+
 Systemadministrator har fortsatt brede serverrettigheter for legitim administrasjon/support, men den vanlige prosjektflaten skal være låst til valgt representert firma. Fra Fase 42G installeres `systemAdminProjectScopeGuard.js` før app-bootstrap. For systemadministrator legges aktiv `company_scope_id` på prosjekt-REST for lesing og eksisterende endringer/sletting. Dersom systemadministrator ikke har aktivt firma, brukes et tomt/umulig scope i stedet for å vise alle prosjekter.
 
 Dette er et ekstra klientsikkerhetsnett, ikke erstatning for RLS. RLS/RPC/server forblir autoritativ sikkerhetsgrense. Produktretningen er at tverrfirmaarbeid skal skje ved eksplisitt valg av firma/supportkontekst, ikke ved at prosjekter fra flere firma blandes i ordinær prosjektliste.
+
+Sales-recovery aktiveres bare når den markerte hovedarbeidsflaten for Befaring/Tilbud faktisk er montert. Kontraktveiviseren gjenbruker Sales-visuelle komponenter inne i Prosjekt, men skal ikke kunne armere en Sales-retur som overstyrer `tab=tilbud`/Avtalegrunnlag etter kundesignering eller oppfriskning.
 
 Kritisk regresjonstest:
 

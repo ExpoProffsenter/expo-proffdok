@@ -37,6 +37,25 @@ requireNeedles("supabase/migrations/20260910142500_fase41b3b_active_work_profile
   "current_user_has_multiple_work_profiles",
 ]);
 
+const projectScopeTrigger = requireNeedles(
+  "supabase/migrations/20260928103600_restore_project_company_scope_trigger.sql",
+  [
+    "create or replace function public.sync_project_company_scope_id()",
+    "new.company_scope_id:=v_scope_id",
+    "new.user_id:=old.user_id",
+    "public.current_active_company_scope_id()",
+    "public.work_profile_company_profile(v_scope_id)",
+    "drop trigger if exists projects_sync_company_scope_id on public.projects",
+    "before insert or update of data, company_scope_id on public.projects",
+    "execute function public.sync_project_company_scope_id()",
+    "revoke all on function public.sync_project_company_scope_id() from public",
+    "grant execute on function public.sync_project_company_scope_id() to service_role",
+  ]
+);
+if (/\b(delete|truncate)\s+from\s+public\.projects\b/i.test(projectScopeTrigger)) {
+  throw new Error("Prosjektscope-reparasjonen skal aldri endre eller slette eksisterende prosjekter.");
+}
+
 const sharedProjects = requireNeedles("supabase/migrations/20260910151200_fase41b3_shared_project_list.sql", [
   "list_active_work_profile_projects",
   "current_user_has_module_access('projects')",

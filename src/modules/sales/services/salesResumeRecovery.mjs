@@ -334,7 +334,14 @@ function isInternalSalesRoute() {
 
 function salesSurfaceIsMounted() {
   if (typeof document === "undefined") return false;
-  return Boolean(document.querySelector(".sales-app"));
+  // Flere gjenbrukte Sales-komponenter (bl.a. prosjektets kontraktveiviser)
+  // bruker .sales-app for styling. Bare den faktiske Befaring/Tilbud-flaten
+  // skal kunne armere eller gjenopplive Sales-recovery.
+  return Boolean(
+    document.querySelector(
+      '[data-sales-resume-workspace="true"] .sales-app'
+    )
+  );
 }
 
 function findSalesTabButton() {
