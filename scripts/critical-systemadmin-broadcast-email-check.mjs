@@ -132,6 +132,7 @@ requireNeedles("src/modules/app/SystemAdminBroadcastEmail.jsx", [
   "Markedsføring sendes bare til brukere som aktivt har samtykket",
   "Testmottaker",
   "testEmail: testEmail.trim()",
+  "invokeError.context",
 ]);
 requireNeedles("src/modules/app/MarketingEmailPreference.jsx", [
   "get_my_marketing_email_preference",

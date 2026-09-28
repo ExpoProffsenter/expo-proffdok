@@ -366,6 +366,10 @@ serve(async (req) => {
     });
   } catch (error) {
     const status = error instanceof HttpError ? error.status : 500;
+    console.error(
+      "systemadmin-broadcast-email:",
+      error instanceof Error ? error.message : String(error),
+    );
     return json({
       ok: false,
       error: error instanceof Error ? error.message : String(error),

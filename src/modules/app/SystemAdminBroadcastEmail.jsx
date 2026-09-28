@@ -62,7 +62,19 @@ export default function SystemAdminBroadcastEmail({ supabaseClient, authUser } =
         },
       }
     );
-    if (invokeError) throw new Error(invokeError.message || "E-postfunksjonen svarte med feil.");
+    if (invokeError) {
+      let serverMessage = "";
+      try {
+        const response = invokeError.context;
+        if (response && typeof response.clone === "function") {
+          const payload = await response.clone().json();
+          serverMessage = String(payload?.error || "").trim();
+        }
+      } catch {
+        // Behold standardfeilen dersom serverresponsen ikke inneholder JSON.
+      }
+      throw new Error(serverMessage || invokeError.message || "E-postfunksjonen svarte med feil.");
+    }
     if (!data?.ok) throw new Error(data?.error || "E-postfunksjonen svarte med feil.");
     return data;
   }
