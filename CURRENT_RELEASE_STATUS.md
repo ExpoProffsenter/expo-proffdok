@@ -10,7 +10,7 @@
 - Faktisk innlogget Preview viser `Kenneth Skogsrud`, `Rolle i prosjekt/rapport` og forklaringen om at feltet ikke endrer konto-, firma- eller systemtilgang. Ingen verdier ble endret under kontrollen.
 - Production-skjermbilde av et M Flis-prosjekt avdekket at supportmodus blandet prosjektets lagrede rapportopplysninger med den innloggede systemadministratorens personlige e-postvalg i samme panel. Avkrysningen gjaldt Kenneths konto og var lagret eksplisitt fra appinnstillingene 28.09.2026 kl. 19.09 norsk tid; den gjaldt ikke Tommy/M Flis og kunne ikke endres i den skrivebeskyttede supportvisningen.
 - Supportmodus skiller nå tydelig prosjektets skrivebeskyttede rapportopplysninger fra systemadministratorens personlige profil. Personlig e-postvalg skjules til supportmodus avsluttes, og tomt prosjektnavn forklares eksplisitt.
-- Endringen krever ingen Supabase-, RLS-, e-post- eller tilgangsendring. Ny målrettet QA og oppdatert funksjons-Preview gjenstår før brukerens `TEST OK` og eventuell merge.
+- Endringen krever ingen Supabase-, RLS-, e-post- eller tilgangsendring. Målrettet test, full critical-suite, Production-bundet build og oppdatert innlogget Sandbox-Preview er grønne: supportvisningen viser innlogget systemadministrator separat, prosjektfeltene er skrivebeskyttet, personlig e-postvalg er skjult, og egen profil/e-postvalg kommer tilbake etter avsluttet supportmodus. Brukerens `TEST OK` gjenstår før eventuell merge.
 
 ## Nyeste status – Systemadmin-utsending på e-post (28.09.2026)
 
