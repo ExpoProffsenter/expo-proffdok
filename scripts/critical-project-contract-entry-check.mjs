@@ -205,6 +205,30 @@ for (const needle of [
   assert(contractActions.includes(needle), `kontrakthandlinger mangler sikkerhetsvern: ${needle}`);
 }
 
+const warrantyRegistryMigration = read(
+  "supabase/migrations/20260928113600_restore_warranty_registry_scope_triggers.sql"
+);
+for (const needle of [
+  "create or replace function public.project_data_has_signed_contract(project_data jsonb)",
+  "create or replace function public.sync_warranty_registry_company_scope()",
+  "public.project_row_access_allowed(v_company_scope_id, v_user_id)",
+  "new.company_scope_id := v_company_scope_id",
+  "create or replace function public.enforce_warranty_signed_contract_before_issue()",
+  "if not public.project_data_has_signed_contract(v_project_data)",
+  "create trigger trg_sync_warranty_registry_company_scope",
+  "create trigger trg_warranty_registry_require_signed_contract",
+]) {
+  assert(
+    warrantyRegistryMigration.toLowerCase().includes(needle.toLowerCase()),
+    `garantiregister-migrasjonen mangler: ${needle}`
+  );
+}
+assert(
+  warrantyRegistryMigration.indexOf("create trigger trg_sync_warranty_registry_company_scope") <
+    warrantyRegistryMigration.indexOf("create trigger trg_warranty_registry_require_signed_contract"),
+  "firmascope-triggeren må opprettes før kontraktvernet"
+);
+
 const main = read("src/main.jsx");
 for (const needle of [
   "readOnly: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly || isProjectLocked",

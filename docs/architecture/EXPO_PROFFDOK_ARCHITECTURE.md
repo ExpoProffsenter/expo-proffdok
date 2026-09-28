@@ -369,6 +369,10 @@ Sales-recovery aktiveres bare når den markerte hovedarbeidsflaten for Befaring/
 
 Prosjektets sky-autolagring henter autoritativ rad før skriving og stopper før `PATCH` når normalisert `data` og tittel er uendret. Dermed skal ren visning, kontraktstatusinnlasting og oppfriskning ikke flytte `projects.updated_at`; en skriveoperasjon utføres bare når faktisk prosjektinnhold eller tittel er endret. Etter en bekreftet skriving tømmes lokal kladd og dirty-status bare dersom det lagrede snapshotet fortsatt matcher siste klienttilstand. En eldre nettverksrespons kan derfor verken skjule nyere endringer eller utløse falsk «ulagret»-popup etter vellykket autolagring.
 
+`warranty_registry` bruker to server-side `BEFORE`-triggere. Den første slår opp prosjektets autoritative `company_scope_id`, kontrollerer prosjekttilgang og setter scope før `NOT NULL`/RLS. Den andre krever at prosjektets Avtalegrunnlag inneholder et kontraktdokument før garanti kan registreres. Den idempotente parity-migrasjonen gjenoppretter disse eksisterende Production-vernene i eldre Sandbox-baselines; klienten får ikke sette firmascope selv.
+
+Prosjektets arkivlås utføres av SECURITY DEFINER-RPC-en `set_project_lock`. RPC-en krever innlogget bruker, gjenbruker `project_row_access_allowed`, og oppdaterer `locked`, `locked_at`, `locked_by` samt de tilsvarende verdiene i `projects.data.project` i én transaksjon. Sandbox-parity-migrasjonen gjenoppretter Production-RPC-en uten å endre eksisterende prosjektrader.
+
 Kritisk regresjonstest:
 
 ```text

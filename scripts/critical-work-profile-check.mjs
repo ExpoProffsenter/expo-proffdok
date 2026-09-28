@@ -56,6 +56,21 @@ if (/\b(delete|truncate)\s+from\s+public\.projects\b/i.test(projectScopeTrigger)
   throw new Error("Prosjektscope-reparasjonen skal aldri endre eller slette eksisterende prosjekter.");
 }
 
+const projectLockRpc = requireNeedles(
+  "supabase/migrations/20260928114200_restore_set_project_lock_rpc.sql",
+  [
+    "create or replace function public.set_project_lock(",
+    "security definer",
+    "public.project_row_access_allowed(v_row.company_scope_id,v_row.user_id)",
+    "v_data := jsonb_set(v_data,'{project,locked}',to_jsonb(p_locked),true)",
+    "locked_at=case when p_locked then now() else null end",
+    "grant execute on function public.set_project_lock(uuid, boolean, text) to authenticated, service_role",
+  ]
+);
+if (/\b(delete|truncate)\s+from\s+public\.projects\b/i.test(projectLockRpc)) {
+  throw new Error("Prosjektlås-RPC skal aldri slette eksisterende prosjekter.");
+}
+
 const sharedProjects = requireNeedles("supabase/migrations/20260910151200_fase41b3_shared_project_list.sql", [
   "list_active_work_profile_projects",
   "current_user_has_module_access('projects')",
