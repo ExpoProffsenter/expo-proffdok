@@ -2010,6 +2010,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       ["prosjektinfo", "Prosjektbeskrivelse"],
       ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
       ["firma", "Firmaprofil"],
+      ["innlogging", "Min profil / e-postvalg"],
       ...isCompanyAdminUser ? [["firmaadmin", "Firma"]] : [],
       ["prosjektering", "Prosjektering"],
       ["fremdrift", "Fremdrift"],

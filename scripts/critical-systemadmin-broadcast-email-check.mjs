@@ -142,6 +142,7 @@ requireNeedles("src/modules/app/MarketingEmailPreference.jsx", [
 requireNeedles("src/main.jsx", [
   "MarketingEmailPreference",
   "supabaseClient: supabase, authUser",
+  '["innlogging", "Min profil / e-postvalg"]',
 ]);
 
 console.log("✅ Systemadmin e-post, samtykke og avmelding check OK");
