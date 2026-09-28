@@ -114,6 +114,8 @@ const broadcast = requireNeedles("supabase/functions/systemadmin-broadcast-email
   "List-Unsubscribe-Post",
   "confirmation !== `SEND ${selection.eligibleCount}`",
   "systemadmin_email_campaigns",
+  "body.testEmail || user.email || profile?.email",
+  "Oppgi en gyldig testadresse",
 ]);
 assert(!/\bbcc\s*:/i.test(broadcast), "utsendingen skal ikke samle mottakere i BCC");
 
@@ -125,9 +127,11 @@ requireNeedles("supabase/functions/marketing-email-unsubscribe/index.ts", [
 ]);
 requireNeedles("src/modules/app/SystemAdminBroadcastEmail.jsx", [
   "1. Kontroller mottakere",
-  "2. Send test til meg",
+  "2. Send test",
   "3. Send til mottakergruppen",
   "Markedsføring sendes bare til brukere som aktivt har samtykket",
+  "Testmottaker",
+  "testEmail: testEmail.trim()",
 ]);
 requireNeedles("src/modules/app/MarketingEmailPreference.jsx", [
   "get_my_marketing_email_preference",

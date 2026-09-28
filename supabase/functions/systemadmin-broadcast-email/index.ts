@@ -206,8 +206,10 @@ serve(async (req) => {
     if (action === "test") {
       const requestId = clean(body.clientRequestId);
       if (!UUID_PATTERN.test(requestId)) throw new HttpError(400, "Ugyldig test-ID.");
-      const testEmail = normalizeEmail(user.email || profile?.email);
-      if (!testEmail) throw new HttpError(400, "Systemadministratoren mangler e-postadresse.");
+      const testEmail = normalizeEmail(body.testEmail || user.email || profile?.email);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail)) {
+        throw new HttpError(400, "Oppgi en gyldig testadresse.");
+      }
       await sendTestEmail({
         resendKey,
         from,

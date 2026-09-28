@@ -25,6 +25,7 @@ export default function SystemAdminBroadcastEmail({ supabaseClient, authUser } =
   const [recipientGroup, setRecipientGroup] = useState("active");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [testEmail, setTestEmail] = useState(authUser?.email || "");
   const [preview, setPreview] = useState(null);
   const [testSent, setTestSent] = useState(false);
   const [sendRequestId, setSendRequestId] = useState("");
@@ -39,6 +40,10 @@ export default function SystemAdminBroadcastEmail({ supabaseClient, authUser } =
     setNotice("");
     setError("");
   }, [messageType, recipientGroup, subject, message]);
+
+  useEffect(() => {
+    setTestSent(false);
+  }, [testEmail]);
 
   const validMessage = subject.trim() && message.trim();
 
@@ -81,14 +86,17 @@ export default function SystemAdminBroadcastEmail({ supabaseClient, authUser } =
   }
 
   async function sendTest() {
-    if (!preview || busyAction) return;
+    if (!preview || !testEmail.trim() || busyAction) return;
     setBusyAction("test");
     setNotice("");
     setError("");
     try {
-      await invoke("test", { clientRequestId: requestId() });
+      await invoke("test", {
+        clientRequestId: requestId(),
+        testEmail: testEmail.trim(),
+      });
       setTestSent(true);
-      setNotice(`Test er sendt kun til ${authUser?.email || "din innloggede e-post"}.`);
+      setNotice(`Test er sendt kun til ${testEmail.trim()}.`);
     } catch (testError) {
       setError(testError?.message || "Testutsendingen feilet.");
     } finally {
@@ -199,6 +207,21 @@ export default function SystemAdminBroadcastEmail({ supabaseClient, authUser } =
         {subject.length}/160 tegn i emnet · {message.length}/5000 tegn i meldingen
       </small>
 
+      <label style={{ display: "block", fontWeight: 800, marginTop: "14px" }}>
+        Testmottaker
+        <input
+          type="email"
+          value={testEmail}
+          disabled={Boolean(busyAction)}
+          onChange={(event) => setTestEmail(event.target.value)}
+          placeholder="navn@firma.no"
+          style={{ width: "100%", marginTop: "6px" }}
+        />
+        <small className="note" style={{ display: "block", marginTop: "5px" }}>
+          Testen sendes bare til denne adressen. Mottakergruppen får ingenting før steg 3 bekreftes.
+        </small>
+      </label>
+
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }}>
         <button
           type="button"
@@ -211,10 +234,10 @@ export default function SystemAdminBroadcastEmail({ supabaseClient, authUser } =
         <button
           type="button"
           className="secondary"
-          disabled={!preview || Boolean(busyAction)}
+          disabled={!preview || !testEmail.trim() || Boolean(busyAction)}
           onClick={sendTest}
         >
-          {busyAction === "test" ? "Sender test..." : "2. Send test til meg"}
+          {busyAction === "test" ? "Sender test..." : "2. Send test"}
         </button>
         <button
           type="button"
