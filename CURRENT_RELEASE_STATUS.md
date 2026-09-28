@@ -17,10 +17,10 @@ Dato: 28.09.2026. Kode, backend og live system er fasit. Dokumentet skiller mell
 - Release-branchen `fase45b-production-release-clean` finnes ikke lenger på GitHub. Resultatet er bevart i merge-commit på `main` og PR #190.
 - Hotfix-branch: `fase45b-production-qa-hotfix`.
 - PR #191: `open`, fortsatt draft og ikke merget, base `main`.
-- Siste kodebærende GitHub-head: `2ad6290aa8939480192d654a9810a3f0fd03e349` (`refactor: remove timed managed-access reloads`). Den bygger på `4d79caff8a6f429d5fb0426de2e17b93c426913c` (`fix: refresh managed access after completed writes`).
-- GitHub `PR Core Safety` run `36427714589`, run 132: `completed/success`.
+- Siste funksjonsbærende GitHub-head: `2ad6290aa8939480192d654a9810a3f0fd03e349` (`refactor: remove timed managed-access reloads`). Den bygger på `4d79caff8a6f429d5fb0426de2e17b93c426913c` (`fix: refresh managed access after completed writes`). Etterfølgende commits oppdaterer bare hjelp og release-status.
+- GitHub `PR Core Safety` for denne funksjonskoden: run `36427714589`, run 132, `completed/success`.
 - Vercel commit-status: `success`.
-- Vercel Preview: `dpl_9EAb14f6YoG4U8FbhVgeb9LM7XuY`, `READY`, `target=null`, commit `2ad6290…`, alias `expo-proffdok-git-fase45b-production-qa-hotfix-ringside.vercel.app`.
+- Verifisert funksjons-Preview: `dpl_9EAb14f6YoG4U8FbhVgeb9LM7XuY`, `READY`, `target=null`, commit `2ad6290…`, alias `expo-proffdok-git-fase45b-production-qa-hotfix-ringside.vercel.app`. Senere dokumentasjonsdeploy har identisk funksjonskode.
 
 ## Supabase og miljøisolasjon
 
