@@ -7,8 +7,8 @@ Dato: 28.09.2026. Kode, backend og live system er fasit. Dette dokumentet skille
 - Production: `main` står på merge-commit `517086b30a3bbfe14025bf9cda4faa2490d9c9a1` fra PR #190.
 - Vercel Production: `dpl_DVnRrEqpNbv1sTpjSZQQF1sceoNd` er `READY`, `target=production` og peker på samme commit.
 - PR #190 er `closed`, `merged=true`, `draft=false`. Den ble merget 27.09.2026 kl. 22:38:51 UTC etter Kenneths uttrykkelige `PRODUCTION GODKJENT`.
-- Production-QA-hotfix: branch `fase45b-production-qa-hotfix`, PR #191. PR-en er fortsatt `open`, `draft=true`, `merged=false`, base `main`. Opprinnelig sluttføringshotfix er `5cbf2ed83b8a9e6207c55fe60de70ffb720c0760`; kontraktinngang direkte fra Prosjekt er funksjonell commit `3d2d0f3fbeccc7bf62bebc8aed7beef92fd23af1`.
-- Vercel Preview `dpl_Gd8qQQGPJEUumHP1LY3tmUyo2mgd` er `READY`, `target=null` og peker på funksjonell commit `3d2d0f3`. HTTP-kontroll gir 200. Levert hovedbundle inneholder Sandbox-ref `ppvircenkjizeiqdxphj` og ingen Production-ref; den dynamiske prosjektkontrakt-chunken inneholder prosjektinngang, versjonssamsvarssperre og ingen navigasjon tilbake til Sales.
+- Production-QA-hotfix: branch `fase45b-production-qa-hotfix`, PR #191. PR-en er fortsatt `open`, `draft=true`, `merged=false`, base `main`. Opprinnelig sluttføringshotfix er `5cbf2ed83b8a9e6207c55fe60de70ffb720c0760`; kontraktinngang direkte fra Prosjekt er `3d2d0f3fbeccc7bf62bebc8aed7beef92fd23af1`, med visnings-/no-op-vernet i `921a0daa3ed799a94d46c630fb179e304d0f1e1c`.
+- Vercel Preview `dpl_DeqjU31LsXqcfVhWBu9tfUF9dH8B` er `READY`, `target=null` og peker på `921a0da`. HTTP-kontroll gir 200. Levert hovedbundle inneholder Sandbox-ref `ppvircenkjizeiqdxphj` og ingen Production-ref; leverte kontraktchunks inneholder prosjektinngang, versjonssamsvarssperre, matching på `contractId`/path/URL og no-op-vernet før synk.
 - Supabase har kun Production/default `dqffxflaoyarbxyiyhop` og `demo-sandbox` `ppvircenkjizeiqdxphj`. Begge rapporteres `ACTIVE_HEALTHY`; kontrollplanstatusen `MIGRATIONS_FAILED` på demo-sandbox stammer fra opprettelsen og beskriver ikke dagens runtime.
 - Permanent Demo (`demo`) og demo-sandbox er ikke endret av Production-QA-hotfixen.
 
@@ -70,9 +70,10 @@ Ingen reell kunde-e-post var brukt. Under den manuelle popuphåndteringen ble fe
 - Production-mode dry build: PASS og eksplisitt `Production Supabase only`.
 - Sandbox-mode build: PASS og eksplisitt `Sandbox Supabase only`.
 - `git diff --check`: PASS.
-- GitHub `PR Core Safety` run `36396273560` på `3d2d0f3`: PASS. Vercel commit-status: `success`.
-- Vercel Preview `dpl_Gd8qQQGPJEUumHP1LY3tmUyo2mgd`: `READY`, `target=null`, HTTP 200 og kun Sandbox-binding. Den faktiske leverte bundlen inneholder både tidligere sluttføringsvern og den nye prosjektkontraktinngangen.
+- GitHub `PR Core Safety` run `36397887995` på `921a0da`: PASS. Vercel commit-status: `success`.
+- Vercel Preview `dpl_DeqjU31LsXqcfVhWBu9tfUF9dH8B`: `READY`, `target=null`, HTTP 200 og kun Sandbox-binding. Den faktiske leverte bundlen inneholder tidligere sluttføringsvern, prosjektkontraktinngangen og no-op-vernet for allerede synkronisert sluttfil.
 - Ny ren Cloud Browser-økt logget sikkert inn i Sandbox og åpnet permanent demo-prosjekt i én fane. Avtalegrunnlag viste «Kontrakt fra prosjektet», de tre gyldige valgene og eksisterende signert kontrakt. «Åpne kontrakt» viste låst aksept, pris og valgte opsjoner i samme fane; «Tilbake til saken» returnerte til samme Avtalegrunnlag. Ingen popup eller ekstratab ble opprettet. Et prosjekt uten kontrakt ble ikke opprettet fordi permanent demo ikke skal endres; selve opprettelsesgrenen dekkes av kritisk test og bundlekontroll.
+- Siste no-op-vern er verifisert i kilde, kritisk test, begge miljøbygg og faktisk levert Preview-bundle. En ny autentisert UI-retest på branch-aliaset ble ikke tvunget gjennom da den sikre innloggingen ikke ble fullført; det er bevisst ikke kopiert token/cookie mellom Preview-origins. Demo-raden står fortsatt eksakt lik `golden-v1` etter gjenopprettingen.
 - Production er ikke deployet eller endret av hotfixarbeidet.
 
 ## Neste handling
