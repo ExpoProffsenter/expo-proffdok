@@ -154,7 +154,9 @@ const BASE_SECTIONS = [
     [
       "Kryss av og lagre dersom du ønsker nyheter og markedsføring på e-post.",
       "Trekk samtykket tilbake samme sted eller bruk avmeldingslenken i en markedsførings-e-post.",
-      "Nødvendige driftsmeldinger om Expo ProffDok styres separat og påvirkes ikke av markedsføringsvalget."
+      "Som registrert bruker vil du kunne motta nødvendige driftsmeldinger på kontoens e-postadresse, for eksempel om innlogging, sikkerhet, vilkår, driftsavvik og tilgang.",
+      "Dette inkluderer varsel dersom SoPro-forutsetningen ikke er oppfylt eller ikke kan dokumenteres og tilgangen kan bli begrenset, suspendert eller avsluttet.",
+      "Driftsmeldinger er en del av tjenesten, styres separat og påvirkes ikke av markedsføringsvalget."
     ],
     ["Samtykket er frivillig og skal aldri være forhåndsvalgt."],
     ["Hold e-postvalget oppdatert dersom du ikke lenger ønsker produktnyheter eller tilbud."]
@@ -360,7 +362,7 @@ const SYSTEM_ADMIN_SECTIONS = [
       "Vedlikehold produktmaster og synkroniser bare aktive prosjekter når dette er riktig.",
       "Bruk Nyheter i appen til korte meldinger om nye funksjoner eller viktige endringer.",
       "Ved e-postutsending velger du mottakergruppe og om innholdet er en driftsmelding eller markedsføring. Kontroller mottakertallet og send alltid test til deg selv først.",
-      "Markedsføring sendes automatisk bare til brukere med aktivt samtykke. Driftsmelding må aldri brukes til tilbud, kampanjer eller salgsinnhold.",
+      "Markedsføring sendes automatisk bare til brukere med aktivt samtykke. Driftsmelding kan brukes til nødvendig informasjon om innlogging, sikkerhet, vilkår, driftsavvik og tilgang, inkludert varsel om SoPro-forutsetningen og mulig begrensning, suspensjon eller avslutning. Den må aldri brukes til tilbud, kampanjer eller salgsinnhold.",
       "Internt vareregister oppdateres fra Ringsides faste Cordel TXT-eksport. Kontroller importtall før aktivering.",
       "Cordel-varer merket Utgått og leverandører som starter med ÅVP filtreres bort automatisk sammen med 0-pris og ugyldige varelinjer."
     ],

@@ -133,11 +133,20 @@ requireNeedles("src/modules/app/SystemAdminBroadcastEmail.jsx", [
   "Testmottaker",
   "testEmail: testEmail.trim()",
   "invokeError.context",
+  "inkludert varsel om SoPro-forutsetningen",
 ]);
 requireNeedles("src/modules/app/MarketingEmailPreference.jsx", [
   "get_my_marketing_email_preference",
   "set_my_marketing_email_preference",
   "Ja, jeg ønsker nyheter og markedsføring på e-post",
+  "Som registrert bruker vil du kunne motta nødvendige driftsmeldinger",
+  "kan tilgangen begrenses",
+  "Driftsmeldinger er en del av tjenesten",
+]);
+requireNeedles("src/modules/help/helpToolsCore.js", [
+  "Som registrert bruker vil du kunne motta nødvendige driftsmeldinger",
+  "tilgangen kan bli begrenset, suspendert eller avsluttet",
+  "Driftsmeldinger er en del av tjenesten",
 ]);
 requireNeedles("src/main.jsx", [
   "MarketingEmailPreference",

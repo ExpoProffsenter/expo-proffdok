@@ -184,7 +184,10 @@ export default function SystemAdminBroadcastEmail({ supabaseClient, authUser } =
 
       {messageType === "operational" ? (
         <div style={{ margin: "12px 0", padding: "10px 12px", borderRadius: "10px", background: "#eff6ff", color: "#1e3a8a", fontWeight: 700 }}>
-          Driftsmelding skal bare brukes til nødvendig informasjon om tjenesten – aldri tilbud, kampanjer eller salgsinnhold.
+          Driftsmelding skal bare brukes til nødvendig informasjon om tjenesten,
+          for eksempel innlogging, sikkerhet, vilkår, driftsavvik eller tilgang,
+          inkludert varsel om SoPro-forutsetningen og mulig begrensning,
+          suspensjon eller avslutning – aldri tilbud, kampanjer eller salgsinnhold.
         </div>
       ) : (
         <div style={{ margin: "12px 0", padding: "10px 12px", borderRadius: "10px", background: "#fff7ed", color: "#9a3412", fontWeight: 700 }}>

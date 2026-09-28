@@ -59,9 +59,18 @@ export default function MarketingEmailPreference({ supabaseClient, authUser } = 
     <div className="item" style={{ marginTop: "16px" }}>
       <h3 style={{ marginTop: 0 }}>E-postvalg</h3>
       <p className="note">
-        Velg selv om du vil motta produktnyheter, tips og tilbud fra Expo
-        Proffsenter. Valget gjelder ikke nødvendige driftsmeldinger om Expo
-        ProffDok.
+        Som registrert bruker vil du kunne motta nødvendige driftsmeldinger på
+        kontoens e-postadresse, for eksempel om innlogging, sikkerhet, vilkår,
+        driftsavvik og tilgang til Expo ProffDok. Tilgang forutsetter kjøp og
+        bruk av SoPro-produkter i relevant omfang. Hvis denne forutsetningen
+        ikke er oppfylt eller ikke kan dokumenteres, kan tilgangen begrenses,
+        suspenderes eller avsluttes, og varsel om dette kan sendes på e-post.
+        Driftsmeldinger er en del av tjenesten og styres ikke av
+        markedsføringsvalget nedenfor.
+      </p>
+      <p className="note">
+        Velg selv om du i tillegg vil motta produktnyheter, tips og tilbud fra
+        Expo Proffsenter.
       </p>
       {loading ? (
         <p className="note">Henter e-postvalg...</p>
