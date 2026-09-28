@@ -5,7 +5,7 @@ Dato: 28.09.2026. Kode, backend og live system er fasit. Dokumentet skiller mell
 ## Kort status
 
 - Gjeldende Production-release fra PR #190 er fortsatt uendret og operativ.
-- Hotfixen i PR #191 er ferdig testet i faktisk Preview/Sandbox fra forespørsel til låst prosjekt med garantidokument.
+- Hotfixen i PR #191 er ferdig testet i faktisk Preview/Sandbox fra forespørsel til låst prosjekt med garantidokument. I tillegg er Systemadmin-tilgangsflaten kontrollert og rettet slik at gammel UI ikke kan beholde et foreldet tilgangsbilde etter en fullført skriving.
 - PR #191 skal fortsatt være draft og skal ikke merges eller deployes til Production uten Kenneths nye uttrykkelige godkjenning. Godkjenningen som ble gitt for PR #190 kan ikke gjenbrukes.
 - Permanent `demo`-branch er beholdt. Sandbox-databasen har fått tre avgrensede parity-migrasjoner og syntetiske QA-data; ingen Production-data eller Production-databaseobjekter er skrevet i denne runden.
 
@@ -17,10 +17,10 @@ Dato: 28.09.2026. Kode, backend og live system er fasit. Dokumentet skiller mell
 - Release-branchen `fase45b-production-release-clean` finnes ikke lenger på GitHub. Resultatet er bevart i merge-commit på `main` og PR #190.
 - Hotfix-branch: `fase45b-production-qa-hotfix`.
 - PR #191: `open`, fortsatt draft og ikke merget, base `main`.
-- Siste kodebærende GitHub-head: `405f39986a37d1dffdbe44dfcd4500786832fca9` (`fix: restore sandbox warranty release guards`). Lokal commit `abc975094f9f3199f1b2115fc36a3399fbc88d12` har samme Git-tree som GitHub-head.
-- GitHub `PR Core Safety` run `36417679706`, run 129: `completed/success`.
+- Siste kodebærende GitHub-head: `2ad6290aa8939480192d654a9810a3f0fd03e349` (`refactor: remove timed managed-access reloads`). Den bygger på `4d79caff8a6f429d5fb0426de2e17b93c426913c` (`fix: refresh managed access after completed writes`).
+- GitHub `PR Core Safety` run `36427714589`, run 132: `completed/success`.
 - Vercel commit-status: `success`.
-- Vercel Preview: `dpl_C5beGrXzhCySak9vM6rxu1ZnRYRX`, `READY`, `target=null`, commit `405f399…`, alias `expo-proffdok-git-fase45b-production-qa-hotfix-ringside.vercel.app`.
+- Vercel Preview: `dpl_9EAb14f6YoG4U8FbhVgeb9LM7XuY`, `READY`, `target=null`, commit `2ad6290…`, alias `expo-proffdok-git-fase45b-production-qa-hotfix-ringside.vercel.app`.
 
 ## Supabase og miljøisolasjon
 
@@ -91,6 +91,16 @@ Gjennomført i faktisk, innlogget Preview/Sandbox-app:
 - Etter vellykket autolagring nullstilles dirty-status og lokal kladd bare dersom snapshotet fortsatt er gjeldende. Nyere endringer som kom mens lagringen pågikk, forblir markert som ulagret.
 - Faktisk Preview-reload ga `Ingen endringer å lagre`, uendret database-`updated_at` og ingen unødvendig popup.
 - Den generelle knappen `Opprett tilbud` fanges ikke lenger av Befaring → tilbud-dialogen; de tre reelle befaringsknappene beholder sin eksplisitte markør.
+- Systemadmin viser modultilgangen som `Generelle tilbud / Proff vareregister`. `Enkel ordre` er fortsatt riktig navn på videreføringen som velges først etter aksept, men er ikke lenger feilaktig brukt som navn på selve modultilgangen.
+- Leverandør-, modul-, prisinnsyn-, firma-, rolle- og brukerstatusendringer sender ett felles oppdateringssignal først etter bekreftet serverskriving og ny serverlesing. Alle tilgangsprojeksjonene køer en ny lesing dersom en eldre lesing fortsatt pågår, slik at et gammelt svar ikke kan vinne.
+- Fire gamle 450–500 ms klikk-/change-reloads og én 250 ms refresh ble fjernet fra den samme tilgangsklyngen. De kunne gjette for tidlig og ga ekstra RPC-kall.
+
+## Audit av gammel UI mot nye funksjoner
+
+- 33 kildefiler bruker `MutationObserver`; 26 av dem inneholder også skjuling, deaktivering eller fjerning av elementer. Dette er et søkesignal, ikke 26 feil: de fleste er avgrensede presentasjonsadaptere med eksplisitte markører eller eksisterende kritiske tester.
+- Én reell risikoklynge ble funnet: flere Systemadmin-/Firmaadmin-projeksjoner leste `list_managed_module_access` uavhengig og forsøkte å oppdatere seg via fokus eller faste tidsforsinkelser. Denne klyngen er nå samlet rundt det serverbekreftede ferdigsignalet.
+- To tidligere kollisjoner mellom gammel og ny UI i Sales er allerede rettet og beholdes i kritiske tester: generell `Opprett tilbud` skal ikke åpne Befaring-dialogen, og gammel DOM-skjuling skal ikke fjerne `Aktiver som prosjekt` fra et akseptert Generelt tilbud.
+- Konklusjon: Det finnes mange legacy-adaptere, men auditen fant ikke mange uavhengige tilfeller der gammel UI fortsatt blokkerer ny funksjon. Den vesentlige gjenværende klyngen var tilgangsrefreshen, og den er rettet.
 
 ## Dokumentasjon og malbilder
 
@@ -109,6 +119,8 @@ Gjennomført i faktisk, innlogget Preview/Sandbox-app:
 - `critical-project-contract-entry-check.mjs`: PASS, inkludert kontraktinngang og garantiparity.
 - `critical-work-profile-check.mjs`: PASS, inkludert prosjekt-scope-trigger og låse-RPC.
 - Autentisert Browser-kontroll etter låsing viser `Ferdigstilt`, garanti `EPD-26-TU4MTC`, `Gyldig`, 14/14 garantipunkter og `Komplett PDF generert`.
+- Autentisert Browser-kontroll av Preview `2ad6290…` lastet bundle `main-DV3aRxAm.js`. Systemadmin viser én `Generelle tilbud`-kontroll og ingen gammel `Enkel ordre / Proff vareregister`-kontroll. `Proffkunde Demo AS` viser fire aktive leverandører og riktig hjelpetekst.
+- Den deployede Preview-bundelen inneholder Sandbox-ref `ppvircenkjizeiqdxphj` og ikke Production-ref `dqffxflaoyarbxyiyhop` i Supabase-klientchunkene.
 - Production-deployment og `main` står fortsatt på PR #190-release; hotfixen er bare Preview/Sandbox.
 
 ## Åpne restpunkter
@@ -117,13 +129,14 @@ Gjennomført i faktisk, innlogget Preview/Sandbox-app:
 - `warranty_registry.pdf_generated` står fortsatt `false`, mens prosjektets autoritative `warranty.reportGeneratedAt` og appen viser at komplett PDF er generert. Feltet leses ikke av dagens app og påvirker ikke garantidokumentet, men metadataen bør enten synkroniseres gjennom en avgrenset, tilgangskontrollert backend-flyt eller tydelig avvikles i en egen oppgave.
 - `public.demo_sandbox_snapshots` har RLS deaktivert, men verken `anon` eller `authenticated` har SELECT/INSERT. Det er ikke en offentlig lesbar tabell, men RLS bør aktiveres som defense-in-depth i en separat Sandbox-hardening.
 - Supabase Advisor viser flere eldre, tverrgående sikkerhets-/ytelsesvarsler som ikke ble introdusert av denne hotfixen. De må behandles som egne, planlagte sikkerhetsoppgaver; de skal ikke masseendres inne i PR #191.
+- Sandbox har ingen egen brukerprofil under `Proffkunde Demo AS`. Derfor ble ikke en faktisk brukerrettighet slått av/på bare for testen. Leverandørstatus, nytt navn, serverrekkefølge og event-kø er kontrollert i live UI og kritiske tester; en senere live overgangstest bør bruke en eksplisitt seedet ekstern demo-bruker.
 - Én gammel automatiseringsfane i skynettleseren svarte ikke på lukking. Den aktive QA-fanen fungerer og ingen ekstra kundetilbudsfane står åpen. Dette er et verktøy-/øktproblem, ikke en observert appfeil.
 - Syntetisk QA-prosjekt, forespørsel og tilhørende tilbud beholdes inntil Kenneth bekrefter sletting på selve handlingstidspunktet.
 
 ## Neste handling
 
-1. Oppdater PR #191-beskrivelsen slik at den ikke lenger hevder at hotfixen mangler databaseendringer; de tre parity-migrasjonene skal beskrives eksplisitt.
-2. Hold PR #191 som draft og umerget. Ingen Production-deploy uten Kenneths nye uttrykkelige godkjenning for akkurat denne hotfixen.
-3. Gjennomfør kort fysisk mobiltest før en eventuell merge.
+1. Hold PR #191 som draft og umerget. Ingen Production-deploy uten Kenneths nye uttrykkelige godkjenning for akkurat denne hotfixen.
+2. Gjennomfør kort fysisk mobiltest før en eventuell merge.
+3. Opprett eventuelt en eksplisitt ekstern Sandbox-demo-bruker dersom leverandør → brukercheckbox-overgangen skal repeteres manuelt uten å endre eksisterende systemadmin.
 4. Etter godkjent hotfix, merge og ny Production-QA: be om bekreftelse før syntetiske QA-data slettes.
 5. Når hele releasen og Production-QA er avsluttet: minn om opprydding av gamle GitHub-brancher. Sluttbildet skal være `main` + permanent `demo`, og Supabase skal fortsatt bare ha Production/default + `demo-sandbox`.
