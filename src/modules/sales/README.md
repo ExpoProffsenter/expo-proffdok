@@ -1,7 +1,7 @@
 # Expo ProffDok – Sales / Befaring / Tilbud / Generelt tilbud / Aksept / Kontrakt
 
-**Status:** Fase 45B release candidate; Production er uendret frem til godkjent merge
-**Oppdatert:** Fase 45B – 27.09.2026
+**Status:** Fase 45B er i Production; etterfølgende Production-QA-hotfix ligger i separat draft-PR og er ikke merget
+**Oppdatert:** Fase 45B Production-QA – 28.09.2026
 
 Sales håndterer både ordinær Befaring/Tilbud-flyt og Generelt tilbud for varer, arbeid, underentreprenører og andre leveranser. Den tekniske legacy-identiteten `Butikktilbud`/`store offer` beholdes der det trengs for kompatibilitet.
 
@@ -146,7 +146,7 @@ Generelt tilbud kan bruke vareregister fra `src/modules/storeCatalog/`.
 
 Tilgang krever aktiv/godkjent bruker, relevant modultilgang og autorisert firmascope. Interne brukere i Ringside/Bademiljø Expo/Expo Proffsenter kan gis tilgang til hele internkatalogen, men intern netto innkjøpspris følger aldri automatisk med og skal aldri lekke til kundegrunnlaget.
 
-For ekstern Proff kreves `sales`, `store_offers` og aktiv leverandørtilgang for firmaet. Kun Systemadministrator kan aktivere Proff / Enkel ordre og styre leverandører/rabatter. Ekstern bruker ser aldri Ringsides interne purchase-netto, innkjøpsrabatt, DG eller påslag. «Din nto pris» krever separat bruker- og firmascopet rettighet; Firmaadmin kan administrere andre brukere i eget firma, men ikke gi rettigheten til seg selv. Intern nto krever fortsatt eksplisitt `view_internal_net_prices`, også for interne brukere.
+For ekstern Proff kreves `sales`, `store_offers` og aktiv leverandørtilgang for firmaet. Kun Systemadministrator kan aktivere Proff-vareregisteret, styre leverandører/rabatter og tildele Generelle tilbud; Enkel ordre velges først etter kundeaksept. Ekstern bruker ser aldri Ringsides interne purchase-netto, innkjøpsrabatt, DG eller påslag. «Din nto pris» krever separat bruker- og firmascopet rettighet; Firmaadmin kan administrere andre brukere i eget firma, men ikke gi rettigheten til seg selv. Intern nto krever fortsatt eksplisitt `view_internal_net_prices`, også for interne brukere.
 
 Detaljer: `docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md`.
 
@@ -195,7 +195,11 @@ Aktuelle serverkomponenter inkluderer `sales-offer-acceptance-notify` og `sales-
 
 Etter ordinær aksept kan saken fortsette med Expo-kontrakt, egen kontrakt eller ingen kontrakt. Synlig prosjektfane heter **Avtalegrunnlag**; intern nøkkel `tilbud` beholdes.
 
+Hvis Expo-kontrakt ikke ble opprettet før prosjektaktivering, viser Avtalegrunnlag en tydelig kontraktinngang og gjenbruker samme `SalesContractActions`/`SalesContractWizard` mot den låste aksepterte tilbudsversjonen. Brukeren blir i Prosjekt. Kunde-/UE-portal skjuler inngangen, og låst prosjekt eller supportmodus kan lese status/dokumenter, men kan ikke opprette, redigere, signere, sende eller sluttarkivere kontrakt. Nye prosjekter bevarer `salesOfferId`; eldre prosjekter kan hente den via eksisterende `get_sales_offer_by_token`. Hvis prosjektet allerede har slutt-PDF som matcher kontraktens ID/path/URL, skal ren visning ikke kalle ny prosjektsynk eller endre `projects.updated_at`. Endringen krever ingen ny database-, RLS-, Storage- eller Edge Function-kontrakt.
+
 Dokumentert tetthetsgaranti krever signert kontrakt sammen med øvrige garanti-/Sopro-/overtagelseskrav.
+
+Når en Expo-kontrakt signeres og arkiveres automatisk i prosjektets Avtalegrunnlag, skal dokumentreferansen bevare bedriftssignatarens autentiserte navn i feltet `by`. Auditaktøren skal ikke ende som «Ikke angitt» når `company_signed_by_name` finnes på kontrakten.
 
 ## 14. Viktige filer i Sales 45B
 
@@ -213,12 +217,14 @@ src/modules/sales/services/salesResumeRecovery.mjs
 src/modules/sales/services/salesLocalStorage.js
 src/modules/sales/services/salesLocalStorageCore.js
 src/modules/sales/services/salesStoreOfferAutosave.js
+src/modules/sales/services/salesContracts.js
 scripts/critical-sales-recovery-check.mjs
 scripts/critical-sales-tab-resume-check.mjs
 scripts/critical-sales-entry-resume-check.mjs
 scripts/critical-sales-server-hydration-check.mjs
 scripts/critical-sales-lazy-loading-check.mjs
 scripts/critical-sales-overview-check.mjs
+scripts/critical-production-closeout-check.mjs
 ```
 
 ## 15. QA før merge

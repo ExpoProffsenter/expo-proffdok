@@ -77,7 +77,7 @@ const BASE_SECTIONS = [
       "Kunden kan akseptere eller avvise et ordinært Våtromstilbud digitalt. Ved avvisning låses den avviste versjonen som historikk, og eventuell automatisk oppfølging stopper.",
       "Når kunden har akseptert et ordinært Våtromstilbud, åpner du den aksepterte saken og finner kortet Kontrakt.",
       "Dersom saken ikke allerede har egen kontrakt lastet opp, kan du velge «Opprett enkel kontrakt». Alternativt kan du bruke «Last opp egen kontrakt». Har saken allerede en Expo-kontrakt, åpnes den igjen fra samme kort.",
-      "Fortsett deretter til prosjektaktivering når saken skal opprettes som ProffDok-prosjekt."
+      "Fortsett deretter til prosjektaktivering når saken skal opprettes som ProffDok-prosjekt. Hvis Expo-kontrakten ikke ble laget først, kan den opprettes senere direkte i prosjektets Avtalegrunnlag."
     ],
     [
       "Kontroller kundeopplysninger, summer, opsjoner og vedlegg før publisering.",
@@ -133,7 +133,8 @@ const BASE_SECTIONS = [
     [
       "Aktiver garanti og velg garantiperiode og riktig Sopro-system.",
       "Fullfør relevante garanti- og fagkontroller.",
-      "Kontroller overtagelse og åpne avvik før garanti utstedes."
+      "Kontroller overtagelse og åpne avvik før garanti utstedes.",
+      "Etter signert overtagelse: utsted garantien, last ned komplett PDF og kontroller arkivtidspunktet før prosjektet låses."
     ],
     ["Garantisertifikat kan ikke utstedes når obligatoriske krav ikke er oppfylt."],
     ["Aktiver garanti tidlig slik at riktige kontrollpunkter følger arbeidsflyten."]
@@ -216,6 +217,8 @@ const BASE_SECTIONS = [
     "Avtalegrunnlag samler opprinnelig avtale, eventuell kontrakt og senere tillegg/fradrag etter at prosjektet er opprettet.",
     [
       "Akseptert tilbud følger prosjektet når saken er aktivert fra Befaring/Tilbud.",
+      "Hvis Expo-kontrakt mangler, kan du opprette den direkte her fra det låste aksepterte tilbudet. Du trenger ikke gå tilbake til Tilbud.",
+      "Du kan også laste opp bedriftens egen kontrakt eller fortsette uten kontrakt når prosjektet ikke krever kontrakt.",
       "Prosjekt uten tilbud kan stå uten avtaledokumenter eller få eksterne dokumenter lastet opp.",
       "Registrer senere endringer som egne tillegg eller fradrag."
     ],
@@ -242,9 +245,12 @@ const BASE_SECTIONS = [
     "overtagelse",
     "✍️ Overtagelse",
     "Overtagelse dokumenterer at prosjektet er gjennomgått og akseptert av kunde og utførende.",
-    ["Kontroller dokumentasjon og avvik, registrer dato/merknader og signer med kunde og utførende."],
+    [
+      "Kontroller dokumentasjon og avvik, registrer dato/merknader og signer med kunde og utførende.",
+      "Fullføringsknappen låser prosjektet direkte etter eventuelt valg om kundeutsendelse; den spør ikke en gang til om den samme låsehandlingen."
+    ],
     ["På garantiprosjekter må overtagelse være signert og lagret før garanti kan utstedes."],
-    ["Generer rapport før overtagelse og gå gjennom den med kunden."]
+    ["Kontroller gjerne en statusrapport før overtagelse. På garantiprosjekter lages den endelige komplette PDF-en etter signering og garantiutstedelse."]
   ),
   section(
     "prosjektliste",
@@ -261,7 +267,10 @@ const BASE_SECTIONS = [
     "rapport",
     "📄 Rapport",
     "Rapporten samler prosjektets dokumentasjon til PDF.",
-    ["Kontroller prosjektdata, produkter, bilder, sjekklister og avvik før rapport genereres."],
+    [
+      "Kontroller prosjektdata, produkter, bilder, sjekklister og avvik før rapport genereres.",
+      "På garantiprosjekter skal garantien utstedes før den endelige komplette PDF-en lastes ned. Kontroller at rapporten viser bekreftede garantivilkår og et faktisk genereringstidspunkt."
+    ],
     ["Rapporten er bare så god som dokumentasjonen som er registrert."],
     ["Last alltid ned ferdig rapport og arkiver den lokalt."]
   ),
@@ -302,8 +311,7 @@ const INTERNAL_COMMERCE_SECTIONS = [
     ],
     [
       "Historiske tilbud av denne typen beholder sin opprinnelige avslutning og historikk.",
-      "Publiserte, aksepterte og avviste versjoner skal ikke overskrives.",
-      "Katalogens interne nettopris skal aldri vises til kunden."
+      "Publiserte, aksepterte og avviste versjoner skal ikke overskrives."
     ],
     ["Bruk firmamaler for standardoppsett, men kontroller alltid gjeldende varepris og kundedata før publisering."]
   ),
@@ -334,7 +342,7 @@ const SYSTEM_ADMIN_SECTIONS = [
     "Systemadministrasjon er kontrollsenteret for brukere, roller, tverrfirma-support, produktmaster, appnyheter og systemdata.",
     [
       "Godkjenn, avvis eller slett ventende brukere. Firma må være valgt før en ny bruker kan godkjennes, og rolle/modultilganger skal kontrolleres før aktivering.",
-      "Generelle tilbud kan tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter. Andre firma kan få Befaring / Våtromstilbud uten denne interne tilbudsmodulen.",
+      "Generelle tilbud kan tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter, samt eksterne Proff-firma der Systemadmin har aktivert minst én leverandør. For eksterne firma vises tilgangen som Generelle tilbud / Proff vareregister.",
       "Bruk Supportmodus når du skal hjelpe et annet firma og avslutt supportmodus når arbeidet er ferdig.",
       "Prosjekter som åpnes på tvers av firma i Supportmodus er skrivebeskyttet. Du kan kontrollere innhold og laste ned PDF, men ikke lagre, kopiere, avslutte/låse, laste opp eller endre prosjektdata.",
       "Vedlikehold produktmaster og synkroniser bare aktive prosjekter når dette er riktig.",

@@ -41,8 +41,9 @@ for (const needle of [
   assert(companyAdmin.includes(needle), `Samlet firmaflate mangler: ${needle}`);
 }
 assert(companyAdmin.includes("LEGACY_MARKER_ID"), "Legacy-brukerkort må fortsatt kunne få tilgangskontroller etter firmanavigasjon.");
-assert(companyAdmin.includes('text === "Godkjenn bruker"'), "Eksisterende Godkjenn bruker-flyt skal fortsatt trigge reload av samlet firmaflate.");
-assert(companyAdmin.includes('text === "Deaktiver bruker"'), "Eksisterende Deaktiver bruker-flyt skal fortsatt trigge reload av samlet firmaflate.");
+assert(companyAdmin.includes("addEventListener(MANAGED_ACCESS_EVENT"), "Samlet firmaflate skal refreshe etter bekreftet serverendring.");
+assert(!companyAdmin.includes('text === "Godkjenn bruker"'), "Godkjenn bruker skal ikke bruke en tidsbasert klikk-reload.");
+assert(!companyAdmin.includes('text === "Deaktiver bruker"'), "Deaktiver bruker skal ikke bruke en tidsbasert klikk-reload.");
 assert(indexHtml.includes("installSystemAdminCompanyAccessUx"), "Samlet firmaflate må installeres fra app-entry.");
 
 for (const needle of [
@@ -72,7 +73,7 @@ assert(!adminPanel.includes("listUserNetPriceAccess"), "Leverandør/rabatt-panel
 assert(!adminPanel.includes("setUserNetPriceAccess"), "Leverandør/rabatt-panelet skal ikke endre brukernes pristilganger.");
 assert(adminPanel.includes("brukerkortet nedenfor"), "Leverandør/rabatt-panelet skal peke til brukerkortene i samme samlede seksjon.");
 
-for (const needle of ["Brukere og tilganger", "Enkel ordre / Proff vareregister", "Se «Din nto pris»"]) {
+for (const needle of ["Brukere og tilganger", "Generelle tilbud / Proff vareregister", "Se «Din nto pris»"]) {
   assert(unifiedSystemAdmin.includes(needle), `Systemadmin samlet brukerkort mangler: ${needle}`);
 }
 for (const needle of ["Se «Din nto pris»", "set_store_catalog_user_net_price_access"]) {

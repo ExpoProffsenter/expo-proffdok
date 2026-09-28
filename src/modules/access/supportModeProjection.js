@@ -4,6 +4,7 @@
 // projiserer målbrukerens faktiske moduler. Ingen data eller rettigheter endres.
 
 import {
+  MANAGED_ACCESS_EVENT,
   MODULE_ACCESS_EVENT,
   listManagedModuleAccess,
   normalizeModuleKeys,
@@ -393,6 +394,16 @@ export function installSupportModeProjection() {
       republishTimer = null;
       publishProjectedAccess();
     }, 30);
+  });
+
+  window.addEventListener(MANAGED_ACCESS_EVENT, () => {
+    if (!activeProjection) return;
+    const pending = syncPromise;
+    const refresh = () => syncVisibleSupportProjection({ force: true }).catch((error) => {
+      console.error("Kunne ikke oppdatere supportmodus etter tilgangsendring", error);
+    });
+    if (pending) void pending.catch(() => null).then(refresh);
+    else void refresh();
   });
 
   window.addEventListener("focus", () => scheduleSync([0, 180]));

@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
 **Fase:** 45B – Proff / Generelt tilbud / Enkel ordre
-**Status:** Release candidate i Sandbox-Preview; Production er uendret frem til eksplisitt godkjenning
-**Dato:** 27.09.2026
-**Produksjonsbaseline:** gjeldende `main`; se `CURRENT_RELEASE_STATUS.md` for verifisert SHA
+**Status:** Fase 45B er i Production; Production-QA-hotfix ligger separat som draft og er ikke merget
+**Dato:** 28.09.2026
+**Produksjonsbaseline:** `main` på `517086b`; se `CURRENT_RELEASE_STATUS.md` for verifisert drift og QA-status
 **Production Supabase:** `dqffxflaoyarbxyiyhop`  
 **Permanent Demo Sandbox:** branch `demo`, Supabase `ppvircenkjizeiqdxphj`
 
@@ -36,10 +36,13 @@ Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakove
 23. Før implementering klassifiseres miljømålet som `PRODUKSJON/PREVIEW`, `SANDBOX/DEMO` eller `BEGGE`.
 24. Permanent Demo Sandbox ligger på branch `demo`. Ordinær appkode kan synkroniseres **main → demo** etter godkjent Production-verifisering; demo-overlay og demodata skal aldri flyte **demo → main**.
 25. Demo/Test skal ikke brukes som begrunnelse for å endre beskyttet Production-kjerne i samme PR. Reell produktfeil splittes til egen core-PR fra ren `main`.
-26. Kun Systemadministrator kan aktivere Proff / Enkel ordre for eksterne firma og styre firmaets leverandører og leverandørrabatter.
+26. Kun Systemadministrator kan aktivere Proff-vareregisteret for eksterne firma, styre leverandører/rabatter og tildele Generelle tilbud. Enkel ordre er en videreføring som velges først etter kundeaksept.
 27. Intern Ringside-nto og ekstern «Din nto pris» er to separate rettigheter. Begge krever eksplisitt serververifisert tilgang.
 28. Enkel ordre bruker prosjektmotoren, men kundeportal er blokkert. Fremdriftsplan og FDV er valgfrie.
 29. App-tilgang forutsetter at virksomheten oppfyller gjeldende SoPro-vilkår. Eventuell særskilt betaling for Generelt tilbud er et senere produktvalg og er ikke en teknisk tilgangsregel i Fase 45B.
+30. En generert sluttrapport er et konsistent øyeblikksbilde av samme effektive status som brukerflaten. Signert overtagelse kan derfor bekrefte garantivilkår i rapporten selv om siste eksplisitte persist-hook først kjøres ved låsing, og rapporten viser tidspunktet for den aktuelle genereringen – aldri en pågående-status i en ferdig fil.
+31. Auditfelt på nye Fag/utstyr-poster og automatisk arkivert Expo-kontrakt skal komme fra autentisert aktør/signatar, ikke bare fra eventuelt tomt prosjektsnapshot.
+32. En eksplisitt «Fullfør overtagelse og lås prosjekt»-handling kan hoppe over den generelle, dupliserte låsebekreftelsen. Direkte låsing/opplåsing fra topplinjen beholder egen bekreftelse.
 
 ## 2. Plattform
 
@@ -124,6 +127,8 @@ E) Akseptert Generelt tilbud → Enkel ordre eller ordinært prosjekt
 ```
 
 Avtalegrunnlag kan inneholde akseptert tilbud/akseptbevis, signert Expo-kontrakt, bedriftens egen kontrakt, andre avtaledokumenter og senere tillegg/fradrag.
+
+For ordinære prosjekter aktivert fra et akseptert Sales-tilbud viser Avtalegrunnlag også kontrakthandlingen. Dersom kontrakten ikke ble laget før aktivering, henter prosjektet den samme låste, aksepterte tilbudsversjonen via eksisterende offentlig tilbudstoken og åpner eksisterende `SalesContractActions`/`SalesContractWizard` i prosjektfanen. Nye aktiveringer bevarer også `salesOfferId` i `project.salesOrigin`; eldre prosjekter kan utlede ID-en fra serverresponsen. Det opprettes ingen ny kontraktmodell, RPC, tabell eller RLS-bypass. Kunde-/UE-portal skjuler handlingen, og låst prosjekt/supportmodus tillater ikke kontraktskriving. Når prosjektet allerede inneholder slutt-PDF med samme `contractId`, Storage-path eller URL som kontraktraden, hoppes automatisk sluttarkivering/prosjektsynk over; ren visning skal ikke flytte `projects.updated_at`.
 
 Historiske Butikktilbud beholder gammel avslutning uten prosjektaktivering. Fase 45B endrer den synlige funksjonen til Generelt tilbud; teknisk legacy-identitet kan fortsatt være `store offer` av hensyn til kompatibilitet.
 
@@ -294,10 +299,12 @@ Kun systemadministrator kan administrere/importere katalogen.
 
 Ekstern profftilgang er firma- og leverandørscopet:
 
-1. Systemadministrator aktiverer Proff / Enkel ordre for firmaet.
-2. Systemadministrator velger aktive leverandører og firmaets rabatt per leverandør.
-3. Brukeren må ha både `sales` og `store_offers` samt aktiv leverandørtilgang.
+1. Systemadministrator velger aktive leverandører og firmaets rabatt per leverandør i Proff-vareregisteret.
+2. Systemadministrator gir aktuelle brukere `sales` og `store_offers`, synlig som **Generelle tilbud / Proff vareregister**.
+3. Brukeren må være godkjent og aktiv, ha begge modulene og tilhøre et firma med minst én aktiv leverandør.
 4. Søk returnerer ikke Ringsides interne purchase-netto, innkjøpsrabatt, DG eller påslag.
+
+Brukervilkårstatus er en separat compliance-/onboardingstatus og er ikke samme kontroll som firmaets leverandørtilgang eller brukerens modultilgang. **Enkel ordre** blir først et valg når et Generelt tilbud er akseptert.
 
 Veiledende/kundepris brukes som foreslått salgspris, men tilbudsgiver kan endre salgspris/rabatt i eget tilbud. «Din nto pris» kan bare returneres når brukeren har eksplisitt bruker- og firmascopet rettighet. Firmaadmin kan administrere rettigheten for andre brukere i eget firma, men ikke gi den til seg selv. Systemadministrator kan gi og fjerne rettigheten.
 
@@ -354,9 +361,19 @@ Katalogimport er strengere enn ordinær Butikktilbud-bruk: systemadministrator-o
 
 Aktiv arbeidsprofil lagres server-side. Vanlige flerfirma-brukere arbeider i valgt firma. Systemadministrator kan velge hvilket firma vedkommende **representerer**, uten at dette oppretter ordinært firmamedlemskap.
 
+Ved ny prosjektinnsetting setter `projects_sync_company_scope_id` aktivt `company_scope_id` og autoritativt firmasnapshot i en `BEFORE INSERT`-trigger. Dette skjer før `projects_insert_scoped_authenticated` kontrollerer samme scope i RLS. Klienten sender fortsatt eierens `user_id`, men kan ikke velge et vilkårlig firmascope. Triggeren er versjonert og idempotent slik at Production og permanent demo-sandbox beholder samme grunnkontrakt.
+
 Systemadministrator har fortsatt brede serverrettigheter for legitim administrasjon/support, men den vanlige prosjektflaten skal være låst til valgt representert firma. Fra Fase 42G installeres `systemAdminProjectScopeGuard.js` før app-bootstrap. For systemadministrator legges aktiv `company_scope_id` på prosjekt-REST for lesing og eksisterende endringer/sletting. Dersom systemadministrator ikke har aktivt firma, brukes et tomt/umulig scope i stedet for å vise alle prosjekter.
 
 Dette er et ekstra klientsikkerhetsnett, ikke erstatning for RLS. RLS/RPC/server forblir autoritativ sikkerhetsgrense. Produktretningen er at tverrfirmaarbeid skal skje ved eksplisitt valg av firma/supportkontekst, ikke ved at prosjekter fra flere firma blandes i ordinær prosjektliste.
+
+Sales-recovery aktiveres bare når den markerte hovedarbeidsflaten for Befaring/Tilbud faktisk er montert. Kontraktveiviseren gjenbruker Sales-visuelle komponenter inne i Prosjekt, men skal ikke kunne armere en Sales-retur som overstyrer `tab=tilbud`/Avtalegrunnlag etter kundesignering eller oppfriskning.
+
+Prosjektets sky-autolagring henter autoritativ rad før skriving og stopper før `PATCH` når normalisert `data` og tittel er uendret. Dermed skal ren visning, kontraktstatusinnlasting og oppfriskning ikke flytte `projects.updated_at`; en skriveoperasjon utføres bare når faktisk prosjektinnhold eller tittel er endret. Etter en bekreftet skriving tømmes lokal kladd og dirty-status bare dersom det lagrede snapshotet fortsatt matcher siste klienttilstand. En eldre nettverksrespons kan derfor verken skjule nyere endringer eller utløse falsk «ulagret»-popup etter vellykket autolagring.
+
+`warranty_registry` bruker to server-side `BEFORE`-triggere. Den første slår opp prosjektets autoritative `company_scope_id`, kontrollerer prosjekttilgang og setter scope før `NOT NULL`/RLS. Den andre krever at prosjektets Avtalegrunnlag inneholder et kontraktdokument før garanti kan registreres. Den idempotente parity-migrasjonen gjenoppretter disse eksisterende Production-vernene i eldre Sandbox-baselines; klienten får ikke sette firmascope selv.
+
+Prosjektets arkivlås utføres av SECURITY DEFINER-RPC-en `set_project_lock`. RPC-en krever innlogget bruker, gjenbruker `project_row_access_allowed`, og oppdaterer `locked`, `locked_at`, `locked_by` samt de tilsvarende verdiene i `projects.data.project` i én transaksjon. Sandbox-parity-migrasjonen gjenoppretter Production-RPC-en uten å endre eksisterende prosjektrader.
 
 Kritisk regresjonstest:
 
@@ -390,9 +407,9 @@ Denne mekanismen er sensitiv/frozen med mindre endring er eksplisitt bestilt.
 
 ## 11. Kontrakt og akseptvarsling
 
-Ordinær Sales-aksept kan gå videre til Expo-kontrakt eller ekstern kontrakt. Signert slutt-PDF er privat historikk og kan synkroniseres til prosjektets Avtalegrunnlag.
+Ordinær Sales-aksept kan gå videre til Expo-kontrakt eller ekstern kontrakt. Etter prosjektaktivering kan en manglende Expo-kontrakt opprettes direkte fra Avtalegrunnlag med samme låste aksept og samme kontraktmotor. Signert slutt-PDF er privat historikk og synkroniseres tilbake til prosjektets Avtalegrunnlag.
 
-Kontraktfunksjonen finnes i Production-koden gjennom blant annet `SalesContractWizard`, `SalesContractActions`, `SalesContractCustomerView` og kontraktdokumentkomponentene. Demo 16.09.2026 viste at funksjonen ikke var tilstrekkelig lett å finne i den aktuelle brukerreisen; dette er et UX-/finnbarhetsoppfølgingspunkt, ikke manglende backend-/kontraktarkitektur.
+Kontraktfunksjonen finnes gjennom blant annet `SalesContractWizard`, `SalesContractActions`, `SalesContractCustomerView` og kontraktdokumentkomponentene. Prosjektinngangen er et tynt adapterlag og skal ikke forgrene eller kopiere kontraktmotoren.
 
 Akseptvarsling er et etterfølgende sideutfall; lagret aksept kan ikke reverseres av e-postfeil.
 
@@ -460,6 +477,8 @@ Dokumentert tetthetsgaranti krever blant annet:
 
 Historiske utstedte garantier og låste prosjekter skal ikke endres av produktmaster eller senere systemendringer.
 
+Endelig garantiflyt er: registrert og signert overtagelse, utstedt garanti, komplett PDF kontrollert/arkivert og deretter prosjektlås. Rapportgeneratoren bruker `warrantyReadiness.termsAccepted` som effektiv fallback når signert overtagelse allerede gjør vilkårene bekreftet i brukerflaten, og stempler alle rapportsider med samme starttidspunkt for den aktuelle PDF-kjøringen.
+
 ## 15. Systemadministrasjon
 
 Systemadmin er kontrollsenter for:
@@ -474,6 +493,8 @@ Systemadmin er kontrollsenter for:
 Systemadmin skal ikke bruke brede rolleprivilegier som normal prosjektflate på tvers av firma. Før prosjektarbeid/support velges riktig representert firma. For vareregister skal Systemadmin vise import/status/kontrolltall og være eneste sted for prisoppdatering.
 
 Fase 42K krever Firma ved godkjenning av nye brukere og beskytter interne tilganger ved firmabytte.
+
+Den samlede Systemadmin-flaten bygger fortsatt på enkelte legacy-brukerkort med nyere React-kontroller. Etter endring i firma, bruker, modul, arbeidsprofil, prisinnsyn eller Proff-leverandør skal alle projeksjonslag hente autoritativt snapshot på et felles ferdigsignal som sendes etter bekreftet serveroperasjon. Klikk-timere eller nettleserfokus skal ikke brukes som sannhetskilde for om en lagring er ferdig.
 
 ## 16. HJELP
 

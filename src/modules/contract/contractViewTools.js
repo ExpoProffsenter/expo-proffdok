@@ -6,6 +6,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createContractViewTools as createContractViewToolsCore } from "./contractViewToolsCore.js";
 
+const ProjectSalesContractActions = React.lazy(() =>
+  import("./ProjectSalesContractActions.jsx")
+);
+
 const clean = (value) => String(value ?? "").trim();
 const lower = (value) => clean(value).toLowerCase();
 
@@ -32,7 +36,7 @@ function isContractDocument(file = {}) {
   );
 }
 
-function SignedContractMarker({ files, tilbud, setTilbud, emptyTilbud }) {
+function SignedContractMarker({ files, tilbud, setTilbud, emptyTilbud, readOnly = false }) {
   const normalizedFiles = Array.isArray(files) ? files : [];
   const contractFile = normalizedFiles.find(isContractDocument) || null;
   const candidates = useMemo(
@@ -56,7 +60,7 @@ function SignedContractMarker({ files, tilbud, setTilbud, emptyTilbud }) {
   if (normalizedFiles.length === 0) return null;
 
   const markSelectedAsContract = () => {
-    if (!selectedKey || typeof setTilbud !== "function") return;
+    if (readOnly || !selectedKey || typeof setTilbud !== "function") return;
     const confirmedAt = new Date().toISOString();
     const nextFiles = normalizedFiles.map((file, index) => {
       if (fileKey(file, index) !== selectedKey) return file;
@@ -100,7 +104,13 @@ function SignedContractMarker({ files, tilbud, setTilbud, emptyTilbud }) {
             { className: "note" },
             "Kontrakt er fortsatt valgfritt for vanlige prosjekter. Skal prosjektet ha dokumentert tetthetsgaranti, må bedriftens endelige signerte kontrakt være registrert før garantien kan utstedes. Signert Expo-kontrakt registreres automatisk."
           ),
-          candidates.length > 0
+          readOnly
+            ? React.createElement(
+                "p",
+                { className: "note", style: { marginBottom: 0 } },
+                "Prosjektet er skrivebeskyttet. Åpne eller lås opp prosjektet i ordinær arbeidsmodus for å registrere en signert kontrakt."
+              )
+            : candidates.length > 0
             ? React.createElement(
                 React.Fragment,
                 null,
@@ -163,10 +173,35 @@ export function createContractViewTools(dependencies) {
       tilbud: args?.tilbud,
       setTilbud: args?.setTilbud,
       emptyTilbud: dependencies.emptyTilbud,
+      readOnly: Boolean(args?.readOnly),
     });
 
+    const projectContractActions = args?.showSalesContractTools === false
+      ? null
+      : React.createElement(
+          React.Suspense,
+          {
+            key: "project-sales-contract-actions",
+            fallback: React.createElement(
+              "div",
+              { className: "item", style: { marginBottom: "14px" } },
+              "Henter kontraktsmuligheter …"
+            ),
+          },
+          React.createElement(ProjectSalesContractActions, {
+            project: args?.project,
+            tilbud: args?.tilbud,
+            readOnly: Boolean(args?.readOnly),
+            onProjectSynced: args?.onProjectSynced,
+          })
+        );
+
     const children = React.Children.toArray(panel.props.children);
-    return React.cloneElement(panel, panel.props, [...children, marker]);
+    const withContractActions = [...children];
+    if (projectContractActions) {
+      withContractActions.splice(Math.min(2, withContractActions.length), 0, projectContractActions);
+    }
+    return React.cloneElement(panel, panel.props, [...withContractActions, marker]);
   }
 
   return {

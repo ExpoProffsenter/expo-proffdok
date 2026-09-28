@@ -5,6 +5,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  MANAGED_ACCESS_EVENT,
   MODULE_ACCESS_EVENT,
   MODULE_CATALOG,
   getStoredSupabaseSession,
@@ -615,6 +616,9 @@ export function installModuleAccessUx() {
     await refreshManagedSnapshotForApprovalGuard(access);
   };
   window.addEventListener(MODULE_ACCESS_EVENT, onAccessChanged);
+  window.addEventListener(MANAGED_ACCESS_EVENT, () => {
+    void refreshManagedSnapshotForApprovalGuard(access);
+  });
 
   const approvalGuard = (event) => guardPendingApproval(event, access);
   document.addEventListener("click", approvalGuard, true);

@@ -2,7 +2,10 @@
 // UX-sikkerhetsnett for Systemadmin. Backend/RLS er autoritativ.
 // Samme brukerkort brukes for godkjenning, firma, rolle og modultilganger.
 
-import { listManagedModuleAccess } from "./moduleAccessClient.js";
+import {
+  MANAGED_ACCESS_EVENT,
+  listManagedModuleAccess,
+} from "./moduleAccessClient.js";
 
 const USER_MOUNT_ATTR = "data-systemadmin-unified-access";
 const INTERNAL_STORE_COMPANIES = new Set([
@@ -34,7 +37,7 @@ function findStoreModuleLabel(mount) {
   return Array.from(mount.querySelectorAll("label")).find((label) =>
     Array.from(label.querySelectorAll("b")).some((node) => {
       const text = compactText(node.textContent);
-      return text === "Generelle tilbud" || text === "Butikktilbud" || text === "Enkel ordre / Proff vareregister";
+      return text === "Generelle tilbud" || text === "Butikktilbud" || text === "Generelle tilbud / Proff vareregister";
     })
   ) || null;
 }
@@ -99,6 +102,15 @@ async function loadSnapshot() {
   return loadPromise;
 }
 
+function reloadAfterManagedAccessChange() {
+  const pending = loadPromise;
+  if (pending) {
+    void pending.finally(() => loadSnapshot());
+    return;
+  }
+  void loadSnapshot();
+}
+
 function pendingUserForApprovalButton(button) {
   const card = button?.closest?.(".item");
   const cardText = compactText(card?.textContent).toLocaleLowerCase("nb-NO");
@@ -123,13 +135,8 @@ export function installSystemAdminUserPolicyGuard() {
   if (typeof window === "undefined" || window.__expoSystemAdminUserPolicyGuardInstalled) return;
   window.__expoSystemAdminUserPolicyGuardInstalled = true;
   document.addEventListener("click", guardApprovalWithoutCompany, true);
-  document.addEventListener("change", (event) => {
-    if (!(event.target instanceof Element)) return;
-    if (event.target.closest(".adminAccordionItem") || event.target.closest(".item")) {
-      window.setTimeout(() => void loadSnapshot(), 450);
-    }
-  }, true);
   window.addEventListener("focus", () => void loadSnapshot());
+  window.addEventListener(MANAGED_ACCESS_EVENT, reloadAfterManagedAccessChange);
   const observer = new MutationObserver(scheduleApply);
   observer.observe(document.documentElement, { childList: true, subtree: true });
   void loadSnapshot();

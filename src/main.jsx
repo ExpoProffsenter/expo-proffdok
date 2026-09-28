@@ -25,6 +25,7 @@ import { createHelpCenter } from './modules/help/helpTools.js';
 import { createChecklistEditor } from './modules/checklist/checklistTools.js';
 import { createImageDocumentationTools } from './modules/images/imageDocumentationTools.js';
 import { createProjectOverviewTools } from './modules/project/projectOverviewTools.js';
+import { createProjectPersistenceFingerprint } from './modules/project/projectPersistenceFingerprint.mjs';
 import SimpleOrderOfferBasis, { isSimpleOrderProject } from './modules/project/SimpleOrderOfferBasis.jsx';
 import { createProjectListTools, normalizeSearchText, makeSearchableText, projectMatchesSearch } from './modules/project/projectListTools.js';
 import { createProductViewTools } from './modules/product/productViewTools.js';
@@ -42,6 +43,7 @@ import AppNewsNotice from './modules/app/AppNewsNotice.jsx';
 import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';
 import { shouldRebootstrapAuthState } from './modules/auth/authStateRefreshPolicy.mjs';
 import { markSystemAdminProjectSupportQuery } from './modules/access/systemAdminProjectScopeGuard.js';
+import { publishManagedAccessChange } from './modules/access/moduleAccessClient.js';
 import {
   getAppSupabaseClient,
   registerAppSupabaseClient,
@@ -2421,9 +2423,28 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           projectLog: { ...normalizeProjectLog(snapshot.projectLog), draft: snapshot.projectLog?.draft || "" },
           internalNotes: snapshot.internalNotes
         }));
+        const nextProjectTitle = projectForSave.projectName || projectForSave.address || existing.title || "Uten navn";
+        const nextPersistenceFingerprint = createProjectPersistenceFingerprint(cleanData);
+        const existingPersistenceFingerprint = createProjectPersistenceFingerprint(existingData);
+        const projectDataUnchanged =
+          nextPersistenceFingerprint !== null &&
+          nextPersistenceFingerprint === existingPersistenceFingerprint;
+        const projectTitleUnchanged =
+          String(nextProjectTitle || "") === String(existing.title || "");
+        const snapshotIsStillCurrent =
+          projectDirtyFingerprint(latestStateRef.current || {}) ===
+          projectDirtyFingerprint(snapshot);
+        if (projectDataUnchanged && projectTitleUnchanged) {
+          if (snapshotIsStillCurrent) {
+            clearLocalDraft(projectId);
+            resetProjectDirty(snapshot);
+          }
+          setProjectAutoSaveStatus("Ingen endringer å lagre");
+          return;
+        }
         const { error: updateError } = await supabase.from("projects").update({
           data: cleanData,
-          title: projectForSave.projectName || projectForSave.address || existing.title || "Uten navn",
+          title: nextProjectTitle,
           updated_at: (/* @__PURE__ */ new Date()).toISOString()
         }).eq("id", projectId);
         if (updateError) {
@@ -2431,8 +2452,13 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           setProjectAutoSaveStatus("Kunne ikke autolagre");
           return;
         }
-        clearLocalDraft(projectId);
-        setProjectAutoSaveStatus(`Autolagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+        if (snapshotIsStillCurrent) {
+          clearLocalDraft(projectId);
+          resetProjectDirty(snapshot);
+          setProjectAutoSaveStatus(`Autolagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+        } else {
+          setProjectAutoSaveStatus("Nyere endringer venter på autolagring");
+        }
       } catch (error) {
         console.warn("Autolagring prosjekt feilet:", error);
         setProjectAutoSaveStatus("Kunne ikke autolagre");
@@ -3935,12 +3961,12 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
         alert("Kunne ikke lagre fra delingslink. Kontakt prosjektansvarlig hvis feilen vedvarer. Feil: " + (error?.message || "Ukjent feil"));
       }
     };
-    const setProjectLockedState = async (locked) => {
+    const setProjectLockedState = async (locked, { skipConfirm = false } = {}) => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 endre prosjektstatus.");
       if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r det kan l\xE5ses eller l\xE5ses opp.");
       const message = locked ? "Vil du avslutte og l\xE5se prosjektet? Ingen kan lagre endringer f\xF8r prosjektet l\xE5ses opp igjen." : "Vil du l\xE5se opp prosjektet slik at endringer kan lagres igjen?";
-      if (!window.confirm(message)) return;
+      if (!skipConfirm && !window.confirm(message)) return;
       const { data, error } = await supabase.rpc("set_project_lock", {
         p_project_id: projectId,
         p_locked: !!locked,
@@ -4399,6 +4425,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       }
       setAdminUsers(data || []);
       setAdminTermsAcceptances(termsFetchError ? [] : termsData || []);
+      publishManagedAccessChange({ source: "admin-users-loaded" });
     };
     const approveAdminUser = async (id) => {
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
@@ -5697,7 +5724,7 @@ ${appLink}`;
           inst,
           setInst,
           uploadImages,
-          authorName: user.name || "Ukjent"
+          authorName: authenticatedFullName || user.name || authUser?.email || profile?.email || "Ukjent"
         }),
         tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),
@@ -6390,7 +6417,7 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, {
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { "data-sales-resume-workspace": "true", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, {
             supabaseClient: supabase,
             authUser,
             profile,
@@ -6406,7 +6433,7 @@ ${appLink}`;
             onStartNewRequestHandled: () => setSalesStartNewRequestSignal(0),
             onStartNewOfferHandled: () => setSalesStartNewOfferSignal(0),
             onOpenRequestHandled: () => setSalesOpenRequestSignal("")
-          })
+          }) })
         ] }),
         tab === "prosjektinfo" && renderProjectDescriptionPanel({
           project,
@@ -6533,7 +6560,7 @@ ${appLink}`;
           inst,
           setInst,
           uploadImages,
-          authorName: user.name || "Ukjent"
+          authorName: authenticatedFullName || user.name || authUser?.email || profile?.email || "Ukjent"
         }),
         tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),
@@ -6587,7 +6614,10 @@ ${appLink}`;
           project,
           tilbud: displayTilbud,
           setTilbud,
-          uploadTilbudFiles
+          uploadTilbudFiles,
+          readOnly: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly || isProjectLocked,
+          showSalesContractTools: !isReadOnly && !isUnderleverandorView,
+          onProjectSynced: () => refreshProjectFromCloud(true, true)
         }),
         tab === "overtagelse" && renderOvertagelsePanel({
           Section, Grid, Input, Textarea, SignaturePad,

@@ -2,6 +2,7 @@ import { ClipboardCheck } from 'lucide-react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { installSimpleOrderWorkspaceUx } from './simpleOrderWorkspaceUx.js';
 import { isSimpleOrderProject } from './SimpleOrderOfferBasis.jsx';
+import { acceptedOfferTotalInclVat } from './projectSalesOriginTotals.mjs';
 
 const import_lucide_react = { ClipboardCheck };
 const import_jsx_runtime = { jsx, jsxs, Fragment };
@@ -53,7 +54,9 @@ export function createProjectOverviewTools({
     const simpleOrder = isSimpleOrderProject(project);
     const salesOriginRef = String(project?.salesOrigin?.requestRef || "").trim();
     const salesPublicToken = String(project?.salesOrigin?.publicToken || "").trim();
-    const acceptedTotal = formatAcceptedTotal(project?.salesOrigin?.acceptedTotal);
+    const acceptedTotal = formatAcceptedTotal(
+      acceptedOfferTotalInclVat(project?.salesOrigin?.acceptedTotal)
+    );
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: simpleOrder ? "Ordreoversikt" : "Prosjektoversikt", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
       simpleOrder ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "data-expo-workflow-type": "simple_order", style: { display: "none" }, "aria-hidden": "true" }) : null,
       salesOriginRef ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { "data-expo-sales-origin-ref": salesOriginRef, "data-expo-sales-public-token": salesPublicToken, style: { display: "none" }, "aria-hidden": "true" }) : null,

@@ -10,6 +10,14 @@ const desktopMenu = fs.readFileSync("src/modules/app/desktopSideMenu.js", "utf8"
 const help = fs.readFileSync("src/modules/help/helpToolsCore.js", "utf8");
 const css = fs.readFileSync("src/modules/app/projectWorkspaceHeaderGuide.css", "utf8");
 const index = fs.readFileSync("index.html", "utf8");
+const workflowUx = fs.readFileSync("src/modules/project/projectWorkflowUx.js", "utf8");
+const overviewTools = fs.readFileSync("src/modules/project/projectOverviewTools.js", "utf8");
+const { resolveProjectFlowNeighbors } = await import(
+  "../src/modules/project/projectWorkflowNeighbors.mjs"
+);
+const { acceptedOfferTotalInclVat } = await import(
+  "../src/modules/project/projectSalesOriginTotals.mjs"
+);
 
 requireCheck(
   guide.includes("Anbefalt prosjektløp"),
@@ -58,6 +66,52 @@ requireCheck(
 requireCheck(
   index.includes("installProjectWorkspaceHeaderGuide"),
   "Prosjektveiviseren installeres ikke fra app-shell."
+);
+requireCheck(
+  workflowUx.includes("resolveProjectFlowNeighbors(activeLabel, navLabels)") &&
+    workflowUx.includes("updateDesktopFlowButton(desktopPrev, 'previous', previousLabel)") &&
+    workflowUx.includes("updateDesktopFlowButton(desktopNext, 'next', nextLabel)"),
+  "Forrige/Neste-adapteren gjenoppretter ikke korrekte etiketter og mål etter fanebytte."
+);
+
+const projectNavLabels = [
+  "Prosjektoversikt",
+  "Salgsgrunnlag",
+  "Prosjektbeskrivelse",
+  "Garanti",
+  "Firmaprofil",
+  "Prosjektering",
+  "Fremdrift",
+];
+requireCheck(
+  JSON.stringify(resolveProjectFlowNeighbors("Prosjektoversikt", projectNavLabels)) ===
+    JSON.stringify({ previousLabel: "", nextLabel: "Prosjektbeskrivelse" }),
+  "Prosjektoversikt hopper ikke trygt over skrivebeskyttet Salgsgrunnlag."
+);
+requireCheck(
+  JSON.stringify(resolveProjectFlowNeighbors("Salgsgrunnlag", projectNavLabels)) ===
+    JSON.stringify({ previousLabel: "Prosjektoversikt", nextLabel: "Prosjektbeskrivelse" }),
+  "Salgsgrunnlag peker ikke til korrekt forrige/neste prosjektsteg."
+);
+requireCheck(
+  JSON.stringify(resolveProjectFlowNeighbors("Prosjektbeskrivelse", projectNavLabels)) ===
+    JSON.stringify({ previousLabel: "Prosjektoversikt", nextLabel: "Garanti" }),
+  "Prosjektbeskrivelse gjenoppretter ikke korrekt neste steg etter spesialhoppet."
+);
+requireCheck(
+  JSON.stringify(resolveProjectFlowNeighbors("Prosjektering", projectNavLabels)) ===
+    JSON.stringify({ previousLabel: "Firmaprofil", nextLabel: "Fremdrift" }),
+  "Ordinære prosjektfaner arver fortsatt gamle Forrige/Neste-etiketter."
+);
+requireCheck(
+  overviewTools.includes("acceptedOfferTotalInclVat(project?.salesOrigin?.acceptedTotal)"),
+  "Prosjektoversikten viser fortsatt lagret tilbudssum eks. mva. under etiketten inkl. mva."
+);
+requireCheck(
+  acceptedOfferTotalInclVat(370930.1) === 463662.625 &&
+    acceptedOfferTotalInclVat(0) === 0 &&
+    acceptedOfferTotalInclVat("ugyldig") === 0,
+  "Akseptert tilbudssum konverteres ikke sikkert fra eks. til inkl. mva."
 );
 
 if (failures.length) {

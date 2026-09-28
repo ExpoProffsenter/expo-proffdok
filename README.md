@@ -4,7 +4,7 @@ Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsnin
 
 Produksjon: https://expo-proffdok.app
 
-**Gjeldende Production-baseline:** `main`. Pågående Fase 45B ligger på en separat, `main`-basert release-branch og er ikke Production før eksplisitt godkjenning og merge.
+**Gjeldende Production-baseline:** `main` med Fase 45B (`517086b`). Etterfølgende Production-QA-rettelser utvikles og verifiseres på separat draft-hotfix; de er ikke Production før egen godkjenning og merge.
 
 ## Teknologi
 
@@ -51,23 +51,30 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 - Sales-oversikten bruker lett summary/lazy loading; komplett sak hentes først når brukeren åpner den.
 - Komplett valgt Sales-sak skal være server-hydrert før editor/autosave aktiveres.
 - Ny forespørsel og nytt tilbud skal tåle PC-fanebytte og mobil appbytte også før saken har fått `request_ref`.
-- Bevisst brukerhandling vinner alltid over automatisk recovery.
+- Bevisst brukerhandling vinner alltid over automatisk recovery. Bare den faktiske Befaring/Tilbud-arbeidsflaten kan armere Sales-recovery; gjenbrukte kontraktkomponenter i Prosjekt skal ikke trekke brukeren tilbake til Sales etter fanebytte eller oppfriskning.
 - Systemadmins ordinære prosjektarbeidsflate følger valgt **Representerer**-firma; brede supportrettigheter skal ikke blande firma i vanlig prosjektliste.
+- Nye prosjektrader får `company_scope_id` fra aktiv arbeidsprofil i en server-side `BEFORE`-trigger før RLS validerer innsettingen.
+- Nye rader i garantiregisteret arver prosjektets `company_scope_id` i en server-side `BEFORE`-trigger, og en separat trigger avviser garanti når signert kontrakt ikke finnes i Avtalegrunnlag. Migrasjonen er idempotent og gjenoppretter samme vern i Sandbox-baselines som mangler triggerne.
+- Låsing og opplåsing av prosjekt går gjennom `set_project_lock`, som kontrollerer prosjekt-/firmatilgang og oppdaterer både radens låsekolonner og speilet i `projects.data` atomisk. En idempotent parity-migrasjon gjenoppretter samme Production-RPC i eldre Sandbox-baselines.
+- Prosjektets sky-autolagring sammenligner normalisert data og tittel med serverraden før `PATCH`; ren gjenåpning eller oppfriskning skal ikke flytte `updated_at`. Etter en reell, bekreftet sky-lagring nullstilles «ulagret»-flagget bare når samme snapshot fortsatt er gjeldende, slik at unødige navigasjonspopuper fjernes uten å kunne skjule nyere endringer.
 - Desktop prosjektarbeidsflate bruker kollapset meny med få native hurtigvalg; full funksjonsliste ligger fortsatt i Meny.
-- Ordinært akseptert tilbud kan gå videre til prosjekt uten kontrakt, egen opplastet kontrakt eller Expo-kontrakt. Kontraktfunksjonen ligger i Sales-domenet og er valgfri med mindre garanti-/avtalegrunnlaget krever den.
+- Ordinært akseptert tilbud kan gå videre til prosjekt uten kontrakt, egen opplastet kontrakt eller Expo-kontrakt. Hvis Expo-kontrakt ikke ble opprettet før prosjektaktivering, kan samme låste aksept og kontraktmotor åpnes direkte fra prosjektets **Avtalegrunnlag** uten retur til Sales. Åpning av en allerede synkronisert sluttkontrakt er ren lesing og skal ikke berøre prosjektets endringstidspunkt. Kontrakt er valgfri med mindre garanti-/avtalegrunnlaget krever den.
 
 ## Fase 45B – Proff, Generelt tilbud og Enkel ordre
 
 - Tilgang til Expo ProffDok forutsetter at virksomheten kjøper og benytter SoPro-produkter i relevant omfang, slik gjeldende brukervilkår beskriver.
-- Kun Systemadministrator kan aktivere Proff / Enkel ordre for et eksternt firma og styre firmaets leverandører og leverandørrabatter.
+- Kun Systemadministrator kan aktivere Proff-vareregisteret for et eksternt firma, styre leverandører/rabatter og gi brukeren **Generelle tilbud**. **Enkel ordre** velges først etter at kunden har akseptert tilbudet.
 - Ekstern proffkunde søker bare i godkjente leverandører. Ringsides interne innkjøps-/nto-pris, innkjøpsrabatt, DG og påslag skal aldri eksponeres.
 - «Din nto pris» er en egen bruker- og firmascopet rettighet. Firmaadmin kan administrere egne brukere, men kan ikke gi rettigheten til seg selv. Intern Ringside-nto krever fortsatt eksplisitt `view_internal_net_prices`.
 - Den synlige betegnelsen er **Generelt tilbud**. Teknisk legacy-identitet beholdes der det er nødvendig, og historiske Butikktilbud skal fortsatt åpnes og fungere.
+- Brukervilkårstatus, firmaets Proff-status og brukerens modultilgang er separate forhold. Manglende aksept av ny vilkårsversjon skal vises separat og skal ikke feilaktig presenteres som årsak til at Systemadmin ikke kan tildele modulen.
 - Etter aksept av et Generelt tilbud kan firmaet velge **Enkel ordre** eller ordinært prosjekt. Akseptert versjon og valgte alternativer er låst bestillingsgrunnlag.
 - Enkel ordre bruker en lett prosjektmotor med produkter, bilder, relevante sjekklister, UE og sluttdokumentasjon. Fremdriftsplan og FDV er valgfrie. Kundeportal er blokkert.
 - Kundepreview åpnes separat og er read-only. Den skal ikke publisere, sende e-post eller kunne akseptere tilbudet.
 - Tilbudsmaler kan gjenbruke varige app-/Storage-bilder på poster og opsjoner. Midlertidige nettleserbilder og kundespesifikke PDF-vedlegg følger ikke malen.
 - Kontrakt-PDF holder sammenhengende avsnitt samlet og bryter opsjonskort kontrollert uten å skille beskrivelse fra pris.
+- Sluttflyten er overtagelse/signering → garantiutstedelse → komplett PDF → låsing. PDF-en skal bruke samme effektive garantivilkårstatus som appen, vise faktisk genereringstidspunkt og bevare autentisert aktør på automatisk arkivert kontrakt og nye Fag/utstyr-poster.
+- «Fullfør overtagelse og lås prosjekt» er i seg selv en eksplisitt låsehandling. Etter eventuelt valg om kundeutsendelse skal appen ikke vise en ekstra identisk låsebekreftelse.
 
 ## Permanent Demo Sandbox
 
@@ -82,7 +89,7 @@ Expo ProffDok har et separat, langlivet demomiljø for presentasjon og opplærin
 - demo-overlay, demodata, syntetiske ressurser og sandbox-konfigurasjon skal aldri flyte **demo → main**
 - demo-builden skal feile dersom Production-Supabase blir bundet inn i emitted JS
 
-Clean Fase 45B-Preview bygges fra release-branchen mot samme isolerte Sandbox-Supabase, men er ikke permanent Demo og skal ikke hente produktregler eller kode tilbake fra `demo`.
+Fase 45B-hotfix-Preview bygges fra en ren `main`-basert branch mot isolert Sandbox-Supabase, men er ikke permanent Demo og skal ikke hente produktregler eller kode tilbake fra `demo`.
 
 Sandboxen har egen demo-/kursmigrasjonslinje og skal aldri branch-merges til Production. Production-endringer skal komme fra versjonerte migrasjoner i en `main`-basert og godkjent release.
 

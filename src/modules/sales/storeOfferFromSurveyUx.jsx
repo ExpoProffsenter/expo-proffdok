@@ -54,6 +54,7 @@ function destroyPicker() {
 }
 
 function isOfferStartButton(button) {
+  if (button?.dataset?.salesOfferFromSurvey !== "true") return false;
   const text = compactText(button?.textContent);
   return text === "Opprett tilbud" || text === "Opprett tilbud uten befaringsnotat";
 }

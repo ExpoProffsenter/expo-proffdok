@@ -5,9 +5,11 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  MANAGED_ACCESS_EVENT,
   MODULE_CATALOG,
   listManagedModuleAccess,
   normalizeModuleKeys,
+  publishManagedAccessChange,
   setManagedModuleAccess,
 } from "./moduleAccessClient.js";
 import {
@@ -55,10 +57,10 @@ function modulePresentation(module, { internalCompany, proCompany }) {
     return { label: "Generelle tilbud", note: "Krever Befaring / Våtromstilbud" };
   }
   if (proCompany) {
-    return { label: "Enkel ordre / Proff vareregister", note: "Krever Befaring / Våtromstilbud" };
+    return { label: "Generelle tilbud / Proff vareregister", note: "Krever Befaring / Våtromstilbud" };
   }
   return {
-    label: "Enkel ordre / Proff vareregister",
+    label: "Generelle tilbud / Proff vareregister",
     note: "Aktiver leverandører for firmaet under Proff vareregister først",
   };
 }
@@ -114,7 +116,7 @@ function UnifiedAccessControls({ user, onReload }) {
     setError("");
     try {
       if (modulesDirty) {
-        await setManagedModuleAccess(user.user_id, draftModules);
+        await setManagedModuleAccess(user.user_id, draftModules, { notify: false });
       }
       if (internalNetDirty) {
         await setManagedInternalNetPriceAccess(
@@ -125,6 +127,10 @@ function UnifiedAccessControls({ user, onReload }) {
       if (proNetDirty) {
         await setManagedProCatalogNetPriceAccess(user.user_id, effectiveProNet);
       }
+      publishManagedAccessChange({
+        source: "systemadmin-unified-access",
+        userId: user.user_id,
+      });
       setMessage("Tilganger lagret");
       await onReload?.();
     } catch (saveError) {
@@ -352,6 +358,15 @@ async function loadSnapshot() {
   return loadPromise;
 }
 
+function reloadAfterManagedAccessChange() {
+  const pending = loadPromise;
+  if (pending) {
+    void pending.finally(() => loadSnapshot());
+    return;
+  }
+  void loadSnapshot();
+}
+
 export function installSystemAdminUnifiedUserAccessUx() {
   if (typeof window === "undefined" || window.__expoSystemAdminUnifiedUserAccessInstalled) return;
   window.__expoSystemAdminUnifiedUserAccessInstalled = true;
@@ -367,21 +382,7 @@ export function installSystemAdminUnifiedUserAccessUx() {
   const observer = new MutationObserver(scheduleRender);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 
-  const scheduleReload = () => window.setTimeout(() => loadSnapshot(), 450);
-  document.addEventListener("change", (event) => {
-    if (event.target instanceof Element && event.target.closest(".adminAccordionItem")) scheduleReload();
-  }, true);
-  document.addEventListener("click", (event) => {
-    const button = event.target instanceof Element ? event.target.closest("button") : null;
-    if (!button) return;
-    const text = compactText(button.textContent);
-    if (
-      text.includes("Brukere og roller") || text.includes("Brukere og tilganger") ||
-      text === "Oppdater brukerliste" || text === "Godkjenn bruker" ||
-      text === "Deaktiver bruker" || text === "Reaktiver bruker" ||
-      text === "Gjør til systemadmin" || text === "Fjern systemadmin"
-    ) scheduleReload();
-  }, true);
   window.addEventListener("focus", loadSnapshot);
+  window.addEventListener(MANAGED_ACCESS_EVENT, reloadAfterManagedAccessChange);
   loadSnapshot();
 }

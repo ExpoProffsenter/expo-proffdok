@@ -4,6 +4,7 @@
 
 export const MODULE_ACCESS_EVENT = "expo-proffdok-module-access";
 export const MODULE_ACCESS_GLOBAL = "__expoProffDokModuleAccess";
+export const MANAGED_ACCESS_EVENT = "expo-proffdok-managed-access-changed";
 
 export const MODULE_CATALOG = [
   {
@@ -86,6 +87,17 @@ export function publishModuleAccess(access = {}) {
     window.dispatchEvent(new CustomEvent(MODULE_ACCESS_EVENT, { detail: next }));
   }
   return next;
+}
+
+export function publishManagedAccessChange(detail = {}) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(MANAGED_ACCESS_EVENT, {
+    detail: {
+      source: String(detail?.source || "managed-access"),
+      userId: String(detail?.userId || ""),
+      companyId: String(detail?.companyId || ""),
+    },
+  }));
 }
 
 function parseStoredSession(raw = "") {
@@ -221,7 +233,7 @@ export async function listManagedModuleAccess() {
   };
 }
 
-export async function setManagedModuleAccess(userId, moduleKeys) {
+export async function setManagedModuleAccess(userId, moduleKeys, { notify = true } = {}) {
   const payload = await rpcWithStoredSession("set_managed_module_access", {
     target_user_id: userId,
     requested_module_keys: normalizeModuleKeys(moduleKeys),
@@ -231,10 +243,8 @@ export async function setManagedModuleAccess(userId, moduleKeys) {
     module_keys: normalizeModuleKeys(payload?.module_keys || []),
   };
 
-  // Systemadmin-godkjenning bruker et separat eksisterende panel. Gi UX-laget
-  // beskjed om å hente ferske rettigheter før Godkjenn bruker kan trykkes.
-  if (typeof window !== "undefined") {
-    window.setTimeout(() => window.dispatchEvent(new Event("focus")), 0);
+  if (notify) {
+    publishManagedAccessChange({ source: "module-access", userId });
   }
   return result;
 }
