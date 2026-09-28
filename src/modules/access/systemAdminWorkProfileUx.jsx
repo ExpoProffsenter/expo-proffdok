@@ -4,6 +4,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { MANAGED_ACCESS_EVENT } from "./moduleAccessClient.js";
 import {
   listManagedWorkProfiles,
   setManagedWorkProfiles,
@@ -200,6 +201,15 @@ async function loadSnapshot() {
   return loadPromise;
 }
 
+function reloadAfterManagedAccessChange() {
+  const pending = loadPromise;
+  if (pending) {
+    void pending.finally(() => loadSnapshot());
+    return;
+  }
+  void loadSnapshot();
+}
+
 export function installSystemAdminWorkProfileUx() {
   if (typeof window === "undefined" || window.__expoSystemAdminWorkProfileUxInstalled) return;
   window.__expoSystemAdminWorkProfileUxInstalled = true;
@@ -235,6 +245,7 @@ export function installSystemAdminWorkProfileUx() {
     refreshSoon();
   }, true);
   window.addEventListener("focus", loadSnapshot);
+  window.addEventListener(MANAGED_ACCESS_EVENT, reloadAfterManagedAccessChange);
 
   loadSnapshot();
 }

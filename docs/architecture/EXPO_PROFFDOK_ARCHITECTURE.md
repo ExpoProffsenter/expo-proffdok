@@ -36,7 +36,7 @@ Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakove
 23. Før implementering klassifiseres miljømålet som `PRODUKSJON/PREVIEW`, `SANDBOX/DEMO` eller `BEGGE`.
 24. Permanent Demo Sandbox ligger på branch `demo`. Ordinær appkode kan synkroniseres **main → demo** etter godkjent Production-verifisering; demo-overlay og demodata skal aldri flyte **demo → main**.
 25. Demo/Test skal ikke brukes som begrunnelse for å endre beskyttet Production-kjerne i samme PR. Reell produktfeil splittes til egen core-PR fra ren `main`.
-26. Kun Systemadministrator kan aktivere Proff / Enkel ordre for eksterne firma og styre firmaets leverandører og leverandørrabatter.
+26. Kun Systemadministrator kan aktivere Proff-vareregisteret for eksterne firma, styre leverandører/rabatter og tildele Generelle tilbud. Enkel ordre er en videreføring som velges først etter kundeaksept.
 27. Intern Ringside-nto og ekstern «Din nto pris» er to separate rettigheter. Begge krever eksplisitt serververifisert tilgang.
 28. Enkel ordre bruker prosjektmotoren, men kundeportal er blokkert. Fremdriftsplan og FDV er valgfrie.
 29. App-tilgang forutsetter at virksomheten oppfyller gjeldende SoPro-vilkår. Eventuell særskilt betaling for Generelt tilbud er et senere produktvalg og er ikke en teknisk tilgangsregel i Fase 45B.
@@ -299,10 +299,12 @@ Kun systemadministrator kan administrere/importere katalogen.
 
 Ekstern profftilgang er firma- og leverandørscopet:
 
-1. Systemadministrator aktiverer Proff / Enkel ordre for firmaet.
-2. Systemadministrator velger aktive leverandører og firmaets rabatt per leverandør.
-3. Brukeren må ha både `sales` og `store_offers` samt aktiv leverandørtilgang.
+1. Systemadministrator velger aktive leverandører og firmaets rabatt per leverandør i Proff-vareregisteret.
+2. Systemadministrator gir aktuelle brukere `sales` og `store_offers`, synlig som **Generelle tilbud / Proff vareregister**.
+3. Brukeren må være godkjent og aktiv, ha begge modulene og tilhøre et firma med minst én aktiv leverandør.
 4. Søk returnerer ikke Ringsides interne purchase-netto, innkjøpsrabatt, DG eller påslag.
+
+Brukervilkårstatus er en separat compliance-/onboardingstatus og er ikke samme kontroll som firmaets leverandørtilgang eller brukerens modultilgang. **Enkel ordre** blir først et valg når et Generelt tilbud er akseptert.
 
 Veiledende/kundepris brukes som foreslått salgspris, men tilbudsgiver kan endre salgspris/rabatt i eget tilbud. «Din nto pris» kan bare returneres når brukeren har eksplisitt bruker- og firmascopet rettighet. Firmaadmin kan administrere rettigheten for andre brukere i eget firma, men ikke gi den til seg selv. Systemadministrator kan gi og fjerne rettigheten.
 
@@ -491,6 +493,8 @@ Systemadmin er kontrollsenter for:
 Systemadmin skal ikke bruke brede rolleprivilegier som normal prosjektflate på tvers av firma. Før prosjektarbeid/support velges riktig representert firma. For vareregister skal Systemadmin vise import/status/kontrolltall og være eneste sted for prisoppdatering.
 
 Fase 42K krever Firma ved godkjenning av nye brukere og beskytter interne tilganger ved firmabytte.
+
+Den samlede Systemadmin-flaten bygger fortsatt på enkelte legacy-brukerkort med nyere React-kontroller. Etter endring i firma, bruker, modul, arbeidsprofil, prisinnsyn eller Proff-leverandør skal alle projeksjonslag hente autoritativt snapshot på et felles ferdigsignal som sendes etter bekreftet serveroperasjon. Klikk-timere eller nettleserfokus skal ikke brukes som sannhetskilde for om en lagring er ferdig.
 
 ## 16. HJELP
 

@@ -1,5 +1,6 @@
 // Brukere og tilganger beholdes på eksisterende brukerkort; dette panelet styrer kun firmaets leverandør/rabatt.
 import { useEffect, useMemo, useState } from "react";
+import { publishManagedAccessChange } from "../access/moduleAccessClient.js";
 import { createDefaultSalesSupabaseClient } from "../sales/services/salesSupabase.js";
 import {
   listCatalogCompanies,
@@ -114,6 +115,10 @@ export default function ProStoreCatalogAdminPanel({ companyId = "" }) {
         isActive: patch.isActive ?? current?.is_active ?? true,
       });
       await refreshAccess(effectiveCompanyId);
+      publishManagedAccessChange({
+        source: "pro-store-supplier-access",
+        companyId: effectiveCompanyId,
+      });
     } catch (error) {
       setMessage(error?.message || "Kunne ikke lagre leverandørtilgang.");
     }
@@ -124,20 +129,26 @@ export default function ProStoreCatalogAdminPanel({ companyId = "" }) {
     setDefaultsBusy(true);
     setMessage("");
     try {
-      let added = 0;
-      for (const suggestion of DEFAULT_SUPPLIER_SUGGESTIONS) {
-        if (accessByKey.get(suggestion.supplierKey)?.is_active === true) continue;
-        const supplier = supplierByKey.get(suggestion.supplierKey);
-        if (!supplier) continue;
-        await setCompanySupplierAccess(client, {
+      const additions = DEFAULT_SUPPLIER_SUGGESTIONS.filter((suggestion) =>
+        accessByKey.get(suggestion.supplierKey)?.is_active !== true &&
+        supplierByKey.has(suggestion.supplierKey)
+      );
+      const results = await Promise.allSettled(additions.map((suggestion) =>
+        setCompanySupplierAccess(client, {
           companyId: effectiveCompanyId,
           supplierKey: suggestion.supplierKey,
           discountPercent: suggestion.discountPercent,
           isActive: true,
-        });
-        added += 1;
-      }
+        })
+      ));
+      const added = results.filter((result) => result.status === "fulfilled").length;
       await refreshAccess(effectiveCompanyId);
+      publishManagedAccessChange({
+        source: "pro-store-default-suppliers",
+        companyId: effectiveCompanyId,
+      });
+      const failed = results.find((result) => result.status === "rejected");
+      if (failed) throw failed.reason;
       setMessage(
         added
           ? `${added} standardleverandør(er) ble lagt til. Eksisterende rabatter ble ikke overskrevet.`
@@ -226,7 +237,7 @@ export default function ProStoreCatalogAdminPanel({ companyId = "" }) {
 
           <div className="pro-catalog-user-note">
             <strong>Brukertilgang</strong>
-            <span>Gi «Enkel ordre / Proff vareregister» og eventuelt «Se Din nto pris» på brukerkortet nedenfor.</span>
+            <span>Gi «Generelle tilbud / Proff vareregister» og eventuelt «Se Din nto pris» på brukerkortet nedenfor.</span>
           </div>
         </>
       ) : null}

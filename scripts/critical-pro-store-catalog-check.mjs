@@ -84,7 +84,7 @@ for(const forbidden of ["purchase_net_ex_vat","purchase_discount_percent","gross
 
 for(const needle of ["flislabas","flislabfliser","askøy","badenhaus","discountPercent:40","discountPercent:30","Leggtilstandardforslag","Eksisterenderabatterbleikkeoverskrevet"]) assert(normalizedAdmin.toLowerCase().includes(needle.toLowerCase()),`Standardforslag mangler eller er utrygt: ${needle}`);
 assert(adminPanel.includes("Brukertilgang") && adminPanel.includes("Brukere og tilganger"),"Systemadmin skal styre brukertilgang på eksisterende brukerkort, ikke i leverandørlisten.");
-for(const needle of ["Enkel ordre / Proff vareregister","Se «Din nto pris»","setManagedProCatalogNetPriceAccess","setManagedModuleAccess"]) assert(unifiedUserUx.includes(needle),`Samlet Systemadmin-brukerkort mangler: ${needle}`);
+for(const needle of ["Generelle tilbud / Proff vareregister","Se «Din nto pris»","setManagedProCatalogNetPriceAccess","setManagedModuleAccess"]) assert(unifiedUserUx.includes(needle),`Samlet Systemadmin-brukerkort mangler: ${needle}`);
 for(const needle of ["set_store_catalog_user_net_price_access","Se «Din nto pris»","Tilgangen styres av Systemadministrator.","Din egen pristilgang styres av Systemadministrator.","company_has_pro_catalog","store_offers","sales"]) assert(firmaAdminUx.includes(needle),`Firmaadmin pristilgang på samme brukerkort mangler: ${needle}`);
 assert(indexHtml.includes("installFirmaAdminProNetPriceUx"),"Firmaadmin pristilgang må være installert i appen.");
 
@@ -108,7 +108,7 @@ assert.equal(isStoreOfferRequest(legacySimpleOrderSummary),true,"Enkel ordre-sum
 assert.equal(isSimpleOrderRequest(legacySimpleOrderSummary),true,"Enkel ordre-summary uten tilbudslinjer skal beholde Enkel ordre-identitet.");
 assert.equal(isStoreOfferRequest({...legacySimpleOrderSummary,directOffer:false}),false,"Legacy-kilde alene skal ikke gjøre en ordinær forespørsel til Generelt tilbud.");
 for(const needle of ["supplierProductNumber","nobbNumber","storeCatalogGtin","acceptedOfferLines","acceptedOptions","selected_options","Kopier liste","Skriv ut"]) assert(orderBasis.includes(needle),`Akseptert varegrunnlag mangler: ${needle}`);
-for(const needle of ["Proff vareregister / Enkel ordre","Forhåndsvis som kunde","Din nto pris","Bestillingsgrunnlag","FlisLab AS 40 %","Askøy 40 %","Kun Systemadministrator kan aktivere Proff / Enkel ordre","SoPro-forutsetningen"]) assert(help.includes(needle),`HJELP mangler 45B-veiledning: ${needle}`);
+for(const needle of ["Proff vareregister, Generelt tilbud og Enkel ordre","Forhåndsvis som kunde","Din nto pris","Bestillingsgrunnlag","FlisLab AS 40 %","Askøy 40 %","Kun Systemadministrator kan aktivere Proff-vareregisteret","Enkel ordre velges først etter kundeaksept","SoPro-forutsetningen"]) assert(help.includes(needle),`HJELP mangler 45B-veiledning: ${needle}`);
 assert(helpBridge.includes("createHelp45BSection"),"45B-hjelpen må være koblet til React-hjelpesenteret.");
 for(const needle of ['EXPO_PROFFDOK_TERMS_VERSION = "1.1"',"Tilgang og SoPro-forutsetning","kjøper og benytter SoPro-produkter i relevant omfang","kan Expo begrense, suspendere eller avslutte tilgangen","inkludert SoPro-forutsetningen"]) assert(terms.includes(needle),`Brukervilkår 1.1 mangler: ${needle}`);
 for(const needle of ["set_simple_order_activation_mode","simpleOrderActivationMode","fase45b_mark_simple_order_project","workflowType","simple_order","new.share_enabled:=false"]) assert(activationMigration.includes(needle),`Simple-order backend mangler: ${needle}`);

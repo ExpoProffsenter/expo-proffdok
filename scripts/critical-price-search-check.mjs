@@ -148,7 +148,7 @@ const unifiedAdmin = requireNeedles("src/modules/access/systemAdminUnifiedUserAc
   "Hovedmoduler og prisinnsyn styres her på samme brukerkort",
   "Se interne nettopriser",
   "Ringside/Expo: gjelder Prissøk og internt vareoppslag",
-  "Enkel ordre / Proff vareregister",
+  "Generelle tilbud / Proff vareregister",
   "Se «Din nto pris»",
   "setManagedModuleAccess",
   "setManagedInternalNetPriceAccess",

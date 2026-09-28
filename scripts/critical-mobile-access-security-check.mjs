@@ -52,7 +52,7 @@ if (/update\s+public\.profiles/i.test(companyPolicy)) {
 
 const companyPolicyUx = requireNeedles("src/modules/access/systemAdminUserPolicyGuard.js", [
   "Velg Firma for brukeren før du godkjenner",
-  "Enkel ordre / Proff vareregister",
+  "Generelle tilbud / Proff vareregister",
   "company_has_pro_catalog",
   "Aktiver minst én leverandør for firmaet under Proff vareregister først",
   "INTERNAL_STORE_COMPANIES",
@@ -70,7 +70,7 @@ if (companyPolicyUx.includes("appendHelpLine") || companyPolicyUx.includes("appl
 const unifiedUserAccess = requireNeedles("src/modules/access/systemAdminUnifiedUserAccessUx.jsx", [
   "Brukere og tilganger",
   "Hovedmoduler og prisinnsyn styres her på samme brukerkort",
-  "Enkel ordre / Proff vareregister",
+  "Generelle tilbud / Proff vareregister",
   "Se «Din nto pris»",
   "Se interne nettopriser",
   "setManagedModuleAccess",
@@ -83,7 +83,8 @@ if (unifiedUserAccess.includes("supabase.from(") || unifiedUserAccess.includes("
 
 const help = requireNeedles("src/modules/help/helpToolsCore.js", [
   "Firma må være valgt før en ny bruker kan godkjennes",
-  "Generelle tilbud kan tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter",
+  "Generelle tilbud kan tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter, samt eksterne Proff-firma",
+  "Generelle tilbud / Proff vareregister",
   "Expo Proffsenter-logo kan brukes som standardlogo",
 ]);
 if (help.includes("DOM-innsprøyting") && !help.includes("Ingen DOM-innsprøyting")) {

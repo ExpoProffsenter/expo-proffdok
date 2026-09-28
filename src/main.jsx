@@ -43,6 +43,7 @@ import AppNewsNotice from './modules/app/AppNewsNotice.jsx';
 import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';
 import { shouldRebootstrapAuthState } from './modules/auth/authStateRefreshPolicy.mjs';
 import { markSystemAdminProjectSupportQuery } from './modules/access/systemAdminProjectScopeGuard.js';
+import { publishManagedAccessChange } from './modules/access/moduleAccessClient.js';
 import {
   getAppSupabaseClient,
   registerAppSupabaseClient,
@@ -4424,6 +4425,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       }
       setAdminUsers(data || []);
       setAdminTermsAcceptances(termsFetchError ? [] : termsData || []);
+      publishManagedAccessChange({ source: "admin-users-loaded" });
     };
     const approveAdminUser = async (id) => {
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");

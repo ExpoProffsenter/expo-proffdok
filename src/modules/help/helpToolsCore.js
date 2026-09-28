@@ -342,7 +342,7 @@ const SYSTEM_ADMIN_SECTIONS = [
     "Systemadministrasjon er kontrollsenteret for brukere, roller, tverrfirma-support, produktmaster, appnyheter og systemdata.",
     [
       "Godkjenn, avvis eller slett ventende brukere. Firma må være valgt før en ny bruker kan godkjennes, og rolle/modultilganger skal kontrolleres før aktivering.",
-      "Generelle tilbud kan tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter. Andre firma kan få Befaring / Våtromstilbud uten denne interne tilbudsmodulen.",
+      "Generelle tilbud kan tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter, samt eksterne Proff-firma der Systemadmin har aktivert minst én leverandør. For eksterne firma vises tilgangen som Generelle tilbud / Proff vareregister.",
       "Bruk Supportmodus når du skal hjelpe et annet firma og avslutt supportmodus når arbeidet er ferdig.",
       "Prosjekter som åpnes på tvers av firma i Supportmodus er skrivebeskyttet. Du kan kontrollere innhold og laste ned PDF, men ikke lagre, kopiere, avslutte/låse, laste opp eller endre prosjektdata.",
       "Vedlikehold produktmaster og synkroniser bare aktive prosjekter når dette er riktig.",

@@ -3,7 +3,9 @@
 // Server-RPC er autoritativ: egen tilgang, annet firma og manglende proffmodul blokkeres backend.
 
 import {
+  MANAGED_ACCESS_EVENT,
   getStoredSupabaseSession,
+  publishManagedAccessChange,
   rpcWithStoredSession,
 } from "./moduleAccessClient.js";
 
@@ -30,11 +32,11 @@ function lockStoreModuleForFirmaadmin(card, proCompany) {
     if (
       text !== "Generelle tilbud" &&
       text !== "Butikktilbud" &&
-      text !== "Enkel ordre / Proff vareregister"
+      text !== "Generelle tilbud / Proff vareregister"
     ) return;
 
-    if (proCompany && title && text !== "Enkel ordre / Proff vareregister") {
-      title.textContent = "Enkel ordre / Proff vareregister";
+    if (proCompany && title && text !== "Generelle tilbud / Proff vareregister") {
+      title.textContent = "Generelle tilbud / Proff vareregister";
     }
     const checkbox = label.querySelector('input[type="checkbox"]');
     if (checkbox instanceof HTMLInputElement) checkbox.disabled = true;
@@ -49,11 +51,17 @@ function lockStoreModuleForFirmaadmin(card, proCompany) {
 
 async function setCompanyUserNetPrice(user, canView) {
   if (!user?.company_scope_id || !user?.user_id) throw new Error("Bruker eller firma mangler.");
-  return rpcWithStoredSession("set_store_catalog_user_net_price_access", {
+  const result = await rpcWithStoredSession("set_store_catalog_user_net_price_access", {
     p_company_id: user.company_scope_id,
     p_user_id: user.user_id,
     p_can_view: canView === true,
   });
+  publishManagedAccessChange({
+    source: "firmaadmin-pro-net-price",
+    userId: user.user_id,
+    companyId: user.company_scope_id,
+  });
+  return result;
 }
 
 function renderNetPriceControl(card, user, currentUserId, reload) {
@@ -108,7 +116,7 @@ function renderNetPriceControl(card, user, currentUserId, reload) {
     ? "Din egen pristilgang styres av Systemadministrator."
     : eligible
       ? "Firmaets rabattberegnede proffpris. Ringsides innkjøpspris vises aldri."
-      : "Krever aktiv bruker med Befaring/Tilbud og Enkel ordre / Proff vareregister.";
+      : "Krever aktiv bruker med Befaring/Tilbud og Generelle tilbud / Proff vareregister.";
   copy.append(heading, note);
   label.append(input, copy);
   block.appendChild(label);
@@ -156,6 +164,15 @@ export function installFirmaAdminProNetPriceUx() {
     return result;
   }
 
+  function reloadAfterManagedAccessChange() {
+    const pending = loading;
+    if (pending) {
+      void pending.finally(() => load());
+      return;
+    }
+    void load();
+  }
+
   function render() {
     if (snapshot?.is_systemadmin || !snapshot?.is_firmaadmin) return;
     const manager = document.getElementById("expo-module-access-manager");
@@ -181,6 +198,6 @@ export function installFirmaAdminProNetPriceUx() {
   const observer = new MutationObserver(schedule);
   observer.observe(document.documentElement, { childList: true, subtree: true });
   window.addEventListener("focus", load);
-  window.addEventListener("expo:module-access-changed", load);
+  window.addEventListener(MANAGED_ACCESS_EVENT, reloadAfterManagedAccessChange);
   load();
 }

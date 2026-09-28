@@ -27,12 +27,14 @@ export function createHelp45BSection({ Section }) {
       "«Din nto pris» er proffkundens beregnede pris og må ikke forveksles med Ringsides interne ERP-nettopris.",
       "Firmaadmin bestemmer hvilke andre brukere i firmaet som kan se «Din nto pris», men kan ikke gi seg selv tilgang. Denne rettigheten skal ikke gis bredere enn nødvendig.",
       "Transport, frakt, timer og øvrige leveranser kan brukes som ordinære tilbudsposter.",
-      "Kun Systemadministrator kan aktivere Proff / Enkel ordre for et eksternt firma.",
+      "Kun Systemadministrator kan aktivere Proff-vareregisteret for et eksternt firma og gi brukeren Generelle tilbud. Enkel ordre velges først etter kundeaksept.",
       "Tilgang til Expo ProffDok forutsetter at virksomheten oppfyller gjeldende brukervilkår, inkludert SoPro-forutsetningen."
     ];
     const admin = isSystemAdmin
       ? [
           "Systemadmin administrerer firma, brukere, roller, modultilganger, prisinnsyn og proffleverandører fra Systemadmin → Firmaer, brukere og tilganger.",
+          "På brukerkortet heter tilgangen «Generelle tilbud / Proff vareregister». Enkel ordre er ikke en egen modultilgang, men et valg etter kundeaksept.",
+          "Brukervilkårstatus vises separat fra firmaets leverandørtilgang og brukerens modultilgang. Brukeren må fortsatt godkjenne gjeldende vilkår i den ordinære innloggingsflyten.",
           "Firmaene vises kollapset. Åpne ett firma om gangen; leverandør/rabatt vises øverst og firmaets brukerkort vises nedenfor.",
           "Standardforslaget er FlisLab AS 40 %, FlisLabFLISER 40 %, Askøy 40 % og Baden Haus 30 %. Forslaget må aktiveres bevisst og overskriver ikke eksisterende aktive rabatter.",
           "Godkjenning, deaktivering, firma, rolle, moduler og «Din nto pris» beholdes på brukerens eksisterende brukerkort. Leverandør/rabatt er en firmaegenskap i samme samlede seksjon."
@@ -43,7 +45,7 @@ export function createHelp45BSection({ Section }) {
 
     return React.createElement(
       Section,
-      { title: "🛒 Proff vareregister / Enkel ordre" },
+      { title: "🛒 Proff vareregister, Generelt tilbud og Enkel ordre" },
       React.createElement(
         "div",
         { className: "item", style: { borderColor: "#b9dde2", background: "#f8feff" } },

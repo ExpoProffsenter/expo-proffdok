@@ -6,7 +6,10 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { listManagedModuleAccess } from "./moduleAccessClient.js";
+import {
+  MANAGED_ACCESS_EVENT,
+  listManagedModuleAccess,
+} from "./moduleAccessClient.js";
 import ProStoreCatalogAdminPanel from "../storeCatalog/ProStoreCatalogAdminPanel.jsx";
 import { listCatalogCompanies } from "../storeCatalog/proStoreCatalogClient.js";
 import { createDefaultSalesSupabaseClient } from "../sales/services/salesSupabase.js";
@@ -597,6 +600,15 @@ async function loadSnapshot() {
   return loadPromise;
 }
 
+function reloadAfterManagedAccessChange() {
+  const pending = loadPromise;
+  if (pending) {
+    void pending.finally(() => loadSnapshot());
+    return;
+  }
+  void loadSnapshot();
+}
+
 export function installSystemAdminCompanyAccessUx() {
   if (typeof window === "undefined" || window.__expoSystemAdminCompanyAccessInstalled) return;
   window.__expoSystemAdminCompanyAccessInstalled = true;
@@ -616,9 +628,10 @@ export function installSystemAdminCompanyAccessUx() {
       text.includes("Brukere og roller") || text.includes("Brukere og tilganger") || text.includes(PANEL_TITLE) ||
       text === "Oppdater brukerliste" || text === "Godkjenn bruker" || text === "Avvis og slett bruker" ||
       text === "Deaktiver bruker" || text === "Reaktiver bruker" || text === "Gjør til systemadmin" ||
-      text === "Fjern systemadmin" || text === "Legg til" || text === "Fjern" || text.includes("standardforslag")
+      text === "Fjern systemadmin"
     ) scheduleReload();
   }, true);
   window.addEventListener("focus", loadSnapshot);
+  window.addEventListener(MANAGED_ACCESS_EVENT, reloadAfterManagedAccessChange);
   loadSnapshot();
 }
