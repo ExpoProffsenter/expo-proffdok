@@ -394,6 +394,9 @@ export default function SalesDetailView({
                 ) : null}
 
                 <button
+                  data-sales-offer-from-survey={
+                    selectedRequest.status === "Befaring" ? "true" : undefined
+                  }
                   className="sales-primary-button"
                   type="button"
                   onClick={
@@ -548,6 +551,7 @@ export default function SalesDetailView({
                   {selectedRequest.status === "Befaring" ? (
                     <>
                       <button
+                        data-sales-offer-from-survey="true"
                         data-sales-regression-inspection-note="true"
                         className="sales-primary-button"
                         type="button"
@@ -569,6 +573,7 @@ export default function SalesDetailView({
                         </button>
                       ) : (
                         <button
+                          data-sales-offer-from-survey="true"
                           data-sales-regression-direct-offer="true"
                           className="sales-secondary-button"
                           type="button"
