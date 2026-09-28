@@ -195,7 +195,7 @@ Aktuelle serverkomponenter inkluderer `sales-offer-acceptance-notify` og `sales-
 
 Etter ordinær aksept kan saken fortsette med Expo-kontrakt, egen kontrakt eller ingen kontrakt. Synlig prosjektfane heter **Avtalegrunnlag**; intern nøkkel `tilbud` beholdes.
 
-Hvis Expo-kontrakt ikke ble opprettet før prosjektaktivering, viser Avtalegrunnlag en tydelig kontraktinngang og gjenbruker samme `SalesContractActions`/`SalesContractWizard` mot den låste aksepterte tilbudsversjonen. Brukeren blir i Prosjekt. Kunde-/UE-portal skjuler inngangen, og låst prosjekt eller supportmodus kan lese status/dokumenter, men kan ikke opprette, redigere, signere, sende eller sluttarkivere kontrakt. Nye prosjekter bevarer `salesOfferId`; eldre prosjekter kan hente den via eksisterende `get_sales_offer_by_token`. Endringen krever ingen ny database-, RLS-, Storage- eller Edge Function-kontrakt.
+Hvis Expo-kontrakt ikke ble opprettet før prosjektaktivering, viser Avtalegrunnlag en tydelig kontraktinngang og gjenbruker samme `SalesContractActions`/`SalesContractWizard` mot den låste aksepterte tilbudsversjonen. Brukeren blir i Prosjekt. Kunde-/UE-portal skjuler inngangen, og låst prosjekt eller supportmodus kan lese status/dokumenter, men kan ikke opprette, redigere, signere, sende eller sluttarkivere kontrakt. Nye prosjekter bevarer `salesOfferId`; eldre prosjekter kan hente den via eksisterende `get_sales_offer_by_token`. Hvis prosjektet allerede har slutt-PDF som matcher kontraktens ID/path/URL, skal ren visning ikke kalle ny prosjektsynk eller endre `projects.updated_at`. Endringen krever ingen ny database-, RLS-, Storage- eller Edge Function-kontrakt.
 
 Dokumentert tetthetsgaranti krever signert kontrakt sammen med øvrige garanti-/Sopro-/overtagelseskrav.
 

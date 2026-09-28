@@ -153,6 +153,7 @@ export default function ProjectSalesContractActions({
         readOnly={readOnly}
         creationDisabledReason={creationDisabledReason}
         onProjectSynced={onProjectSynced}
+        projectContractFile={request?.contractFile}
         onOpenWizard={() => {
           if (canOpenWizard) setShowWizard(true);
         }}

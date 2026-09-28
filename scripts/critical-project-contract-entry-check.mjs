@@ -138,6 +138,7 @@ for (const needle of [
   "Du trenger ikke gå tilbake til Tilbud.",
   "creationDisabledReason={creationDisabledReason}",
   "readOnly={readOnly}",
+  "projectContractFile={request?.contractFile}",
 ]) {
   assert(projectEntry.includes(needle), `prosjektflaten mangler: ${needle}`);
 }
@@ -166,7 +167,10 @@ for (const needle of [
   "const writeBlocked = supportMode || readOnly",
   "writeBlocked || creationDisabledReason",
   "await Promise.resolve(onProjectSynced?.())",
-  "if (!writeBlocked && contract?.status === \"signed\")",
+  "contract?.status === \"signed\"",
+  "(!force && projectHasSyncedFinalDocument)",
+  "!projectHasSyncedFinalDocument &&",
+  "sameFinalContractDocument",
 ]) {
   assert(contractActions.includes(needle), `kontrakthandlinger mangler sikkerhetsvern: ${needle}`);
 }

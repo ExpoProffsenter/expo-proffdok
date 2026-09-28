@@ -36,12 +36,30 @@ function statusText(contract = {}) {
   return "Kontrakt opprettet";
 }
 
+function sameFinalContractDocument(projectFile = null, contract = null) {
+  const finalDocument = contract?.final_document || {};
+  if (!projectFile || !contract?.id || (!finalDocument?.path && !finalDocument?.url)) {
+    return false;
+  }
+  const sameContractId =
+    String(projectFile?.contractId || "").trim() === String(contract.id || "").trim();
+  const samePath =
+    finalDocument?.path &&
+    String(projectFile?.path || projectFile?.storagePath || "").trim() ===
+      String(finalDocument.path).trim();
+  const sameUrl =
+    finalDocument?.url &&
+    String(projectFile?.url || "").trim() === String(finalDocument.url).trim();
+  return Boolean(sameContractId || samePath || sameUrl);
+}
+
 export default function SalesContractActions({
   request,
   onOpenWizard,
   readOnly = false,
   creationDisabledReason = "",
   onProjectSynced,
+  projectContractFile = null,
 }) {
   const client = useMemo(() => createDefaultSalesSupabaseClient(), []);
   const supportMode = isSalesSupportMode();
@@ -55,6 +73,10 @@ export default function SalesContractActions({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const finalizedKeyRef = useRef("");
+  const projectHasSyncedFinalDocument = sameFinalContractDocument(
+    projectContractFile,
+    contract
+  );
 
   async function loadContract() {
     if (!client || !offerId) {
@@ -94,6 +116,7 @@ export default function SalesContractActions({
   async function finalizeContract({ force = false } = {}) {
     if (
       writeBlocked ||
+      (!force && projectHasSyncedFinalDocument) ||
       !contract?.id ||
       contract.status !== "signed" ||
       finalizing
@@ -141,8 +164,20 @@ export default function SalesContractActions({
   }
 
   useEffect(() => {
-    if (!writeBlocked && contract?.status === "signed") finalizeContract();
-  }, [writeBlocked, contract?.id, contract?.status, contract?.final_document?.path]);
+    if (
+      !writeBlocked &&
+      !projectHasSyncedFinalDocument &&
+      contract?.status === "signed"
+    ) {
+      finalizeContract();
+    }
+  }, [
+    writeBlocked,
+    projectHasSyncedFinalDocument,
+    contract?.id,
+    contract?.status,
+    contract?.final_document?.path,
+  ]);
 
   const customerLink = useMemo(() => {
     if (!contract?.customer_token || typeof window === "undefined") return "";

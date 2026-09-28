@@ -47,6 +47,7 @@ Ingen reell kunde-e-post var brukt. Under den manuelle popuphåndteringen ble fe
 - README, arkitekturkart og brukerhjelp beskriver nå korrekt rekkefølge: signert overtagelse → garanti → komplett PDF → låsing.
 - Ordinære prosjekter som er aktivert fra et akseptert tilbud, får nå en tydelig kontraktinngang direkte i **Avtalegrunnlag**. Den gjenbruker samme låste aksept og kontraktmotor som Sales, uten at brukeren må gå tilbake til Tilbud. Expo-kontrakt, egen opplastet kontrakt og ingen kontrakt forblir tre gyldige valg.
 - Nye prosjektaktiveringer bevarer `salesOfferId`; eldre prosjekter kan hente ID og låst tilbudsversjon via eksisterende `get_sales_offer_by_token`. Kunde-/UE-portal skjuler inngangen, og låst prosjekt/supportmodus kan ikke utføre kontraktskriving. Ingen database-, RLS-, Storage- eller Edge Function-endring er gjort.
+- Målrettet Preview-test avdekket at eksisterende auto-sluttarkivering kjørte en unødvendig, idempotent prosjektsynk ved ren visning av en allerede synkronisert kontrakt. Prosjektdata var byte-likt golden snapshot, men `updated_at` ble flyttet. QA-raden ble straks gjenopprettet nøyaktig fra `golden-v1` og verifisert med `exact_golden_match=true`. Koden hopper nå over synken når sluttfilen allerede matcher på `contractId`, Storage-path eller URL.
 
 ### Bekreftet eksisterende malfunksjon
 
@@ -71,7 +72,7 @@ Ingen reell kunde-e-post var brukt. Under den manuelle popuphåndteringen ble fe
 - `git diff --check`: PASS.
 - GitHub `PR Core Safety` run `36396273560` på `3d2d0f3`: PASS. Vercel commit-status: `success`.
 - Vercel Preview `dpl_Gd8qQQGPJEUumHP1LY3tmUyo2mgd`: `READY`, `target=null`, HTTP 200 og kun Sandbox-binding. Den faktiske leverte bundlen inneholder både tidligere sluttføringsvern og den nye prosjektkontraktinngangen.
-- Ny ren Cloud Browser-økt når Previewens innloggingsflate uten synlig lastfeil. Før innlogging logger den eksisterende lazy-loaderen `Innlogging er ikke klar ennå`, i tillegg til støy fra nettleserutvidelsen; dette er ikke et nytt kontraktfunn, men er registrert ærlig. Målrettet kontroll inne i autentisert Sandbox-prosjekt avventer sikker brukerinnlogging; det er ikke forsøkt noen credential-omvei.
+- Ny ren Cloud Browser-økt logget sikkert inn i Sandbox og åpnet permanent demo-prosjekt i én fane. Avtalegrunnlag viste «Kontrakt fra prosjektet», de tre gyldige valgene og eksisterende signert kontrakt. «Åpne kontrakt» viste låst aksept, pris og valgte opsjoner i samme fane; «Tilbake til saken» returnerte til samme Avtalegrunnlag. Ingen popup eller ekstratab ble opprettet. Et prosjekt uten kontrakt ble ikke opprettet fordi permanent demo ikke skal endres; selve opprettelsesgrenen dekkes av kritisk test og bundlekontroll.
 - Production er ikke deployet eller endret av hotfixarbeidet.
 
 ## Neste handling
