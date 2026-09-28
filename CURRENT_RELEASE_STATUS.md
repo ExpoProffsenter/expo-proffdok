@@ -1,5 +1,33 @@
 # Gjeldende release-status – Fase 45B
 
+## Pågående rettelse – profilnavn og misvisende rollefelt (28.09.2026)
+
+- Branch `fix-profile-identity-copy` er opprettet fra gjeldende Production-`main` (`32bbdd4`). Production og permanent demo er urørt.
+- PR #195 er `open`, draft og ikke merget. Vercel Preview `dpl_3EFufd7qooWaL5ruLt93k97QSmap` er `READY` på funksjonscommit `69d4a3e`; `PR Core Safety` run 149 er `completed/success`.
+- Production-databasen er kontrollert read-only: Kenneth er fortsatt `systemadmin`/`firmaadmin`, og databasesperren avviser at vanlige brukere endrer egen konto-, firma- eller systemrolle.
+- Feltet som het `Rolle` under Innlogging er prosjekt-/rapportmetadata, ikke en tilgangsrolle. Det er derfor presisert til `Rolle i prosjekt/rapport` med synlig forklaring.
+- Navnet var tomt fordi klienten forsøkte å lese en ikke-eksisterende `profiles.full_name`-kolonne. Innloggingsmetadata inneholder allerede `Kenneth Skogsrud`; klienten bruker nå dette som navnekilde.
+- Faktisk innlogget Preview viser `Kenneth Skogsrud`, `Rolle i prosjekt/rapport` og forklaringen om at feltet ikke endrer konto-, firma- eller systemtilgang. Ingen verdier ble endret under kontrollen.
+- Production-skjermbilde av et M Flis-prosjekt avdekket at supportmodus blandet prosjektets lagrede rapportopplysninger med den innloggede systemadministratorens personlige e-postvalg i samme panel. Avkrysningen gjaldt Kenneths konto og var lagret eksplisitt fra appinnstillingene 28.09.2026 kl. 19.09 norsk tid; den gjaldt ikke Tommy/M Flis og kunne ikke endres i den skrivebeskyttede supportvisningen.
+- Supportmodus skiller nå tydelig prosjektets skrivebeskyttede rapportopplysninger fra systemadministratorens personlige profil. Personlig e-postvalg skjules til supportmodus avsluttes, og tomt prosjektnavn forklares eksplisitt.
+- Endringen krever ingen Supabase-, RLS-, e-post- eller tilgangsendring. Målrettet test, full critical-suite, Production-bundet build og oppdatert innlogget Sandbox-Preview er grønne: supportvisningen viser innlogget systemadministrator separat, prosjektfeltene er skrivebeskyttet, personlig e-postvalg er skjult, og egen profil/e-postvalg kommer tilbake etter avsluttet supportmodus. Brukerens `TEST OK` gjenstår før eventuell merge.
+
+## Nyeste status – Systemadmin-utsending på e-post (28.09.2026)
+
+- Funksjonsbranch: `fase45b-systemadmin-broadcast-email`; verifisert funksjons-head før denne statusoppdateringen er `726037121b4999c240346a8948f2b4d27163f4d6`.
+- Kenneth har uttrykkelig godkjent merge av PR #194 og avgrenset Production-test. Ved tidspunktet for denne statusoppdateringen er PR-en fortsatt `open`, `draft`, mergebar og ikke merget; overgang til ready og merge er neste kontrollerte releasesteg.
+- Endringen er avgrenset til Systemadmin-utsending, brukerens e-postvalg, tilhørende Hjelp/dokumentasjon og kritisk test. Ingen eksisterende prosjekt-, tilbuds-, mobil- eller Production-flyt er endret.
+- Markedsføring krever fortsatt et separat, frivillig samtykke. Registrerte brukere informeres tydelig om at nødvendige driftsmeldinger kan sendes på kontoens e-post, inkludert varsler om vilkår og tilgang dersom SoPro-forutsetningen ikke er oppfylt eller dokumentert.
+- Production-Supabase `dqffxflaoyarbxyiyhop` er klargjort med de additive migrasjonene `systemadmin_broadcast_email` og `systemadmin_broadcast_email_acl_hardening`.
+- Production Edge Functions `systemadmin-broadcast-email` og `marketing-email-unsubscribe` er `ACTIVE`, versjon 1. Førstnevnte krever JWT og aktiv systemadmin; avmeldingsfunksjonen bruker et personlig, ikke-gjettbart token.
+- RLS, eksplisitte klient-nekt-policyer og minimale `service_role`-tilganger er verifisert. De tre nye Production-tabellene har 0 rader: ingen samtykker er endret, ingen kampanje er opprettet og ingen e-post er sendt.
+- Vercel Preview for head `7260371…` har grønn commit-status. Faktisk innlogget Sandbox-visning viser den nye informasjonen under `Min profil / e-postvalg`.
+- Målrettet kritisk test, full critical-suite, `git diff --check` og Sandbox-bundet build er grønne.
+- Etter merge skal Vercel Production og faktisk Production-app verifiseres. Én test kan klargjøres til `kenneth@ringside.no`, men sendeklikket krever egen bekreftelse på handlingstidspunktet. Gruppeutsending skal ikke utføres i QA.
+
+Resten av dokumentet under er historisk Fase 45B-status og beholdes som revisjonsspor.
+
+
 Dato: 28.09.2026. Kode, backend og live system er fasit. Dokumentet skiller mellom godkjent Production-release og den fortsatt umergede QA-hotfixen i PR #191.
 
 ## Kort status

@@ -4,7 +4,7 @@ Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsnin
 
 Produksjon: https://expo-proffdok.app
 
-**Gjeldende Production-baseline:** `main` med Fase 45B (`517086b`). Etterfølgende Production-QA-rettelser utvikles og verifiseres på separat draft-hotfix; de er ikke Production før egen godkjenning og merge.
+**Gjeldende Production-baseline:** `main` med Fase 45B og godkjente Production-QA-rettelser (`4f016ce`). Ny funksjonalitet utvikles og verifiseres på separat branch/Preview og er ikke Production før egen godkjenning og merge.
 
 ## Teknologi
 
@@ -30,6 +30,7 @@ docs/
 scripts/
 ├── critical-pr-scope-guard.mjs
 ├── critical-build-check.mjs
+├── critical-systemadmin-broadcast-email-check.mjs
 ├── critical-sales-recovery-check.mjs
 ├── critical-sales-tab-resume-check.mjs
 ├── critical-sales-entry-resume-check.mjs
@@ -75,6 +76,14 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 - Kontrakt-PDF holder sammenhengende avsnitt samlet og bryter opsjonskort kontrollert uten å skille beskrivelse fra pris.
 - Sluttflyten er overtagelse/signering → garantiutstedelse → komplett PDF → låsing. PDF-en skal bruke samme effektive garantivilkårstatus som appen, vise faktisk genereringstidspunkt og bevare autentisert aktør på automatisk arkivert kontrakt og nye Fag/utstyr-poster.
 - «Fullfør overtagelse og lås prosjekt» er i seg selv en eksplisitt låsehandling. Etter eventuelt valg om kundeutsendelse skal appen ikke vise en ekstra identisk låsebekreftelse.
+
+## Systemadmin – felles e-post
+
+- Systemadministrator velger mottakergruppe og klassifiserer hver utsending som **Driftsmelding** eller **Nyheter og markedsføring**.
+- Mottakerlisten løses i Edge Function og eksponeres ikke samlet i nettleseren. Hver mottaker får en separat e-post.
+- Markedsføring går bare til brukere med aktivt, frivillig samtykke. Samtykket kan endres under Innlogging og brukerprofil, og hver markedsførings-e-post har personlig avmelding.
+- Før reell sending må mottakertallet kontrolleres og en test sendes til innlogget systemadministrator.
+- Avsendernavnet er Expo Proffsenter og Expo Proffsenter-logoen ligger i e-postmalen. Visning som profil-/avatarlogo i mottakerens innboks styres av e-postleverandøren og kan ikke garanteres av appen.
 
 ## Permanent Demo Sandbox
 
