@@ -8,7 +8,9 @@
 - Feltet som het `Rolle` under Innlogging er prosjekt-/rapportmetadata, ikke en tilgangsrolle. Det er derfor presisert til `Rolle i prosjekt/rapport` med synlig forklaring.
 - Navnet var tomt fordi klienten forsøkte å lese en ikke-eksisterende `profiles.full_name`-kolonne. Innloggingsmetadata inneholder allerede `Kenneth Skogsrud`; klienten bruker nå dette som navnekilde.
 - Faktisk innlogget Preview viser `Kenneth Skogsrud`, `Rolle i prosjekt/rapport` og forklaringen om at feltet ikke endrer konto-, firma- eller systemtilgang. Ingen verdier ble endret under kontrollen.
-- Endringen krever ingen Supabase-, RLS-, e-post- eller tilgangsendring. Målrettet test, full critical-suite, `git diff --check`, Production-bundet build og kort funksjons-Preview er grønne; brukerens `TEST OK` gjenstår før eventuell merge.
+- Production-skjermbilde av et M Flis-prosjekt avdekket at supportmodus blandet prosjektets lagrede rapportopplysninger med den innloggede systemadministratorens personlige e-postvalg i samme panel. Avkrysningen gjaldt Kenneths konto og var lagret eksplisitt fra appinnstillingene 28.09.2026 kl. 19.09 norsk tid; den gjaldt ikke Tommy/M Flis og kunne ikke endres i den skrivebeskyttede supportvisningen.
+- Supportmodus skiller nå tydelig prosjektets skrivebeskyttede rapportopplysninger fra systemadministratorens personlige profil. Personlig e-postvalg skjules til supportmodus avsluttes, og tomt prosjektnavn forklares eksplisitt.
+- Endringen krever ingen Supabase-, RLS-, e-post- eller tilgangsendring. Ny målrettet QA og oppdatert funksjons-Preview gjenstår før brukerens `TEST OK` og eventuell merge.
 
 ## Nyeste status – Systemadmin-utsending på e-post (28.09.2026)
 
