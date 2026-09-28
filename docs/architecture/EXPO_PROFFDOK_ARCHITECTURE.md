@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
 **Fase:** 45B – Proff / Generelt tilbud / Enkel ordre
-**Status:** Fase 45B er i Production; Production-QA-hotfix ligger separat som draft og er ikke merget
+**Status:** Fase 45B og godkjente Production-QA-rettelser er i Production; ny funksjonalitet følger separat Preview-/godkjenningsløp
 **Dato:** 28.09.2026
-**Produksjonsbaseline:** `main` på `517086b`; se `CURRENT_RELEASE_STATUS.md` for verifisert drift og QA-status
+**Produksjonsbaseline:** `main` på `4f016ce`; kode, backend og live system er autoritativt dersom statusdokumentet henger etter
 **Production Supabase:** `dqffxflaoyarbxyiyhop`  
 **Permanent Demo Sandbox:** branch `demo`, Supabase `ppvircenkjizeiqdxphj`
 
@@ -43,6 +43,7 @@ Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakove
 30. En generert sluttrapport er et konsistent øyeblikksbilde av samme effektive status som brukerflaten. Signert overtagelse kan derfor bekrefte garantivilkår i rapporten selv om siste eksplisitte persist-hook først kjøres ved låsing, og rapporten viser tidspunktet for den aktuelle genereringen – aldri en pågående-status i en ferdig fil.
 31. Auditfelt på nye Fag/utstyr-poster og automatisk arkivert Expo-kontrakt skal komme fra autentisert aktør/signatar, ikke bare fra eventuelt tomt prosjektsnapshot.
 32. En eksplisitt «Fullfør overtagelse og lås prosjekt»-handling kan hoppe over den generelle, dupliserte låsebekreftelsen. Direkte låsing/opplåsing fra topplinjen beholder egen bekreftelse.
+33. Felles e-postutsending er en separat systemadminhandling. Mottakere løses server-side, adresser sendes individuelt, driftsmelding og markedsføring er eksplisitte typer, og markedsføring krever aktivt samtykke samt personlig avmelding.
 
 ## 2. Plattform
 
@@ -488,6 +489,7 @@ Systemadmin er kontrollsenter for:
 - modul-/rollehåndtering
 - produktmaster
 - appnyheter
+- felles e-post til en eksplisitt valgt brukergruppe
 - **internt ERP-vareregister**
 
 Systemadmin skal ikke bruke brede rolleprivilegier som normal prosjektflate på tvers av firma. Før prosjektarbeid/support velges riktig representert firma. For vareregister skal Systemadmin vise import/status/kontrolltall og være eneste sted for prisoppdatering.
@@ -495,6 +497,18 @@ Systemadmin skal ikke bruke brede rolleprivilegier som normal prosjektflate på 
 Fase 42K krever Firma ved godkjenning av nye brukere og beskytter interne tilganger ved firmabytte.
 
 Den samlede Systemadmin-flaten bygger fortsatt på enkelte legacy-brukerkort med nyere React-kontroller. Etter endring i firma, bruker, modul, arbeidsprofil, prisinnsyn eller Proff-leverandør skal alle projeksjonslag hente autoritativt snapshot på et felles ferdigsignal som sendes etter bekreftet serveroperasjon. Klikk-timere eller nettleserfokus skal ikke brukes som sannhetskilde for om en lagring er ferdig.
+
+Felles e-post bruker `systemadmin-broadcast-email` og Resends batch-endepunkt med ett separat brev per mottaker. Nettleseren får bare mottakertall, aldri den samlede adresselisten eller Resend-nøkkelen. Serveren kontrollerer aktiv `systemadmin`-rolle, krever ny mottakerkontroll og testutsending før klienten tilbyr endelig sending, og bruker både kampanje-ID og Resend-idempotens for å hindre dobbeltutsending.
+
+Datagrensen består av:
+
+- `marketing_email_preferences`: gjeldende frivillig samtykke og serverbeskyttet avmeldingstoken
+- `marketing_email_preference_events`: sporbar samtykke-/avmeldingshistorikk
+- `systemadmin_email_campaigns`: auditstatus og tellere, uten direkte klienttilgang
+- `get_my_marketing_email_preference` / `set_my_marketing_email_preference`: eneste autentiserte klientflate for eget e-postvalg
+- `marketing-email-unsubscribe`: offentlig tokenbasert bekreftelse; GET viser valg og POST utfører avmelding
+
+Driftsmelding er kun nødvendig tjenesteinformasjon. Nyheter, tips, tilbud og kampanjer er markedsføring og filtreres alltid mot aktivt samtykke, uansett hvilken brukergruppe Systemadmin velger.
 
 ## 16. HJELP
 
@@ -514,6 +528,7 @@ Gjeldende sentrale temaer inkluderer:
 - autosave/recovery
 - Systemadmin-ERP-import og sikkerhetsgrense
 - arbeidsprofil/representert firma der rollen har flere firma
+- brukerens frivillige e-postvalg og Systemadmins sikre skille mellom driftsmelding og markedsføring
 
 Hjelp skal beskrive gjeldende funksjon, ikke historisk changelog.
 
@@ -524,6 +539,7 @@ Hjelp skal beskrive gjeldende funksjon, ikke historisk changelog.
 ```text
 scripts/critical-pr-scope-guard.mjs --self-test
 scripts/critical-build-check.mjs
+scripts/critical-systemadmin-broadcast-email-check.mjs
 scripts/critical-bathroom-sketch-check.mjs
 scripts/critical-sales-recovery-check.mjs
 scripts/critical-sales-tab-resume-check.mjs

@@ -1,5 +1,21 @@
 # Gjeldende release-status – Fase 45B
 
+## Nyeste status – Systemadmin-utsending på e-post (28.09.2026)
+
+- Funksjonsbranch: `fase45b-systemadmin-broadcast-email`; verifisert funksjons-head før denne statusoppdateringen er `726037121b4999c240346a8948f2b4d27163f4d6`.
+- Kenneth har uttrykkelig godkjent merge av PR #194 og avgrenset Production-test. Ved tidspunktet for denne statusoppdateringen er PR-en fortsatt `open`, `draft`, mergebar og ikke merget; overgang til ready og merge er neste kontrollerte releasesteg.
+- Endringen er avgrenset til Systemadmin-utsending, brukerens e-postvalg, tilhørende Hjelp/dokumentasjon og kritisk test. Ingen eksisterende prosjekt-, tilbuds-, mobil- eller Production-flyt er endret.
+- Markedsføring krever fortsatt et separat, frivillig samtykke. Registrerte brukere informeres tydelig om at nødvendige driftsmeldinger kan sendes på kontoens e-post, inkludert varsler om vilkår og tilgang dersom SoPro-forutsetningen ikke er oppfylt eller dokumentert.
+- Production-Supabase `dqffxflaoyarbxyiyhop` er klargjort med de additive migrasjonene `systemadmin_broadcast_email` og `systemadmin_broadcast_email_acl_hardening`.
+- Production Edge Functions `systemadmin-broadcast-email` og `marketing-email-unsubscribe` er `ACTIVE`, versjon 1. Førstnevnte krever JWT og aktiv systemadmin; avmeldingsfunksjonen bruker et personlig, ikke-gjettbart token.
+- RLS, eksplisitte klient-nekt-policyer og minimale `service_role`-tilganger er verifisert. De tre nye Production-tabellene har 0 rader: ingen samtykker er endret, ingen kampanje er opprettet og ingen e-post er sendt.
+- Vercel Preview for head `7260371…` har grønn commit-status. Faktisk innlogget Sandbox-visning viser den nye informasjonen under `Min profil / e-postvalg`.
+- Målrettet kritisk test, full critical-suite, `git diff --check` og Sandbox-bundet build er grønne.
+- Etter merge skal Vercel Production og faktisk Production-app verifiseres. Én test kan klargjøres til `kenneth@ringside.no`, men sendeklikket krever egen bekreftelse på handlingstidspunktet. Gruppeutsending skal ikke utføres i QA.
+
+Resten av dokumentet under er historisk Fase 45B-status og beholdes som revisjonsspor.
+
+
 Dato: 28.09.2026. Kode, backend og live system er fasit. Dokumentet skiller mellom godkjent Production-release og den fortsatt umergede QA-hotfixen i PR #191.
 
 ## Kort status

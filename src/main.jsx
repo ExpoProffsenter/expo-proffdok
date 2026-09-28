@@ -41,6 +41,7 @@ import AppErrorBoundary from './modules/app/AppErrorBoundary.jsx';
 import AppUpdateNotice from './modules/app/AppUpdateNotice.jsx';
 import AppNewsNotice from './modules/app/AppNewsNotice.jsx';
 import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';
+import MarketingEmailPreference from './modules/app/MarketingEmailPreference.jsx';
 import { shouldRebootstrapAuthState } from './modules/auth/authStateRefreshPolicy.mjs';
 import { markSystemAdminProjectSupportQuery } from './modules/access/systemAdminProjectScopeGuard.js';
 import { publishManagedAccessChange } from './modules/access/moduleAccessClient.js';
@@ -2009,6 +2010,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       ["prosjektinfo", "Prosjektbeskrivelse"],
       ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
       ["firma", "Firmaprofil"],
+      ["innlogging", "Min profil / e-postvalg"],
       ...isCompanyAdminUser ? [["firmaadmin", "Firma"]] : [],
       ["prosjektering", "Prosjektering"],
       ["fremdrift", "Fremdrift"],
@@ -6459,6 +6461,7 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post i rapport", value: user.email, onChange: (v) => setUser({ ...user, email: v }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle", value: user.role, options: roles, onChange: (v) => setUser({ ...user, role: v }) })
           ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarketingEmailPreference, { supabaseClient: supabase, authUser }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
         ] }),
         tab === "prosjektering" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektering", children: [
