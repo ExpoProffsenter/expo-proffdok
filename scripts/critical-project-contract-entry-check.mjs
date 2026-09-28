@@ -180,8 +180,18 @@ for (const needle of [
   "readOnly: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly || isProjectLocked",
   "showSalesContractTools: !isReadOnly && !isUnderleverandorView",
   "onProjectSynced: () => refreshProjectFromCloud(true, true)",
+  "const projectDataUnchanged =",
+  "projectDirtyFingerprint(cleanData) === projectDirtyFingerprint(existingData)",
+  "const projectTitleUnchanged =",
+  "if (projectDataUnchanged && projectTitleUnchanged)",
+  'setProjectAutoSaveStatus("Ingen endringer å lagre")',
 ]) {
   assert(main.includes(needle), `hovedintegrasjonen mangler: ${needle}`);
 }
+assert(
+  main.indexOf("if (projectDataUnchanged && projectTitleUnchanged)") <
+    main.indexOf('supabase.from("projects").update({', main.indexOf("const projectDataUnchanged =")),
+  "byte-lik prosjektdata må stoppes før PATCH/updated_at"
+);
 
 console.log("✅ Expo ProffDok prosjekt → kontrakt check OK");

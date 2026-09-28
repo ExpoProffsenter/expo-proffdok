@@ -2421,9 +2421,25 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           projectLog: { ...normalizeProjectLog(snapshot.projectLog), draft: snapshot.projectLog?.draft || "" },
           internalNotes: snapshot.internalNotes
         }));
+        const nextProjectTitle = projectForSave.projectName || projectForSave.address || existing.title || "Uten navn";
+        const projectDataUnchanged =
+          projectDirtyFingerprint(cleanData) === projectDirtyFingerprint(existingData);
+        const projectTitleUnchanged =
+          String(nextProjectTitle || "") === String(existing.title || "");
+        if (projectDataUnchanged && projectTitleUnchanged) {
+          const snapshotIsStillCurrent =
+            projectDirtyFingerprint(latestStateRef.current || {}) ===
+            projectDirtyFingerprint(snapshot);
+          if (snapshotIsStillCurrent) {
+            clearLocalDraft(projectId);
+            resetProjectDirty(snapshot);
+          }
+          setProjectAutoSaveStatus("Ingen endringer å lagre");
+          return;
+        }
         const { error: updateError } = await supabase.from("projects").update({
           data: cleanData,
-          title: projectForSave.projectName || projectForSave.address || existing.title || "Uten navn",
+          title: nextProjectTitle,
           updated_at: (/* @__PURE__ */ new Date()).toISOString()
         }).eq("id", projectId);
         if (updateError) {
