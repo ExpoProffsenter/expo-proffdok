@@ -3935,12 +3935,12 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
         alert("Kunne ikke lagre fra delingslink. Kontakt prosjektansvarlig hvis feilen vedvarer. Feil: " + (error?.message || "Ukjent feil"));
       }
     };
-    const setProjectLockedState = async (locked) => {
+    const setProjectLockedState = async (locked, { skipConfirm = false } = {}) => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 endre prosjektstatus.");
       if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r det kan l\xE5ses eller l\xE5ses opp.");
       const message = locked ? "Vil du avslutte og l\xE5se prosjektet? Ingen kan lagre endringer f\xF8r prosjektet l\xE5ses opp igjen." : "Vil du l\xE5se opp prosjektet slik at endringer kan lagres igjen?";
-      if (!window.confirm(message)) return;
+      if (!skipConfirm && !window.confirm(message)) return;
       const { data, error } = await supabase.rpc("set_project_lock", {
         p_project_id: projectId,
         p_locked: !!locked,
@@ -5697,7 +5697,7 @@ ${appLink}`;
           inst,
           setInst,
           uploadImages,
-          authorName: user.name || "Ukjent"
+          authorName: authenticatedFullName || user.name || authUser?.email || profile?.email || "Ukjent"
         }),
         tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),
@@ -6533,7 +6533,7 @@ ${appLink}`;
           inst,
           setInst,
           uploadImages,
-          authorName: user.name || "Ukjent"
+          authorName: authenticatedFullName || user.name || authUser?.email || profile?.email || "Ukjent"
         }),
         tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),

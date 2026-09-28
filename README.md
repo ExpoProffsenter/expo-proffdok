@@ -4,7 +4,7 @@ Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsnin
 
 Produksjon: https://expo-proffdok.app
 
-**Gjeldende Production-baseline:** `main`. Pågående Fase 45B ligger på en separat, `main`-basert release-branch og er ikke Production før eksplisitt godkjenning og merge.
+**Gjeldende Production-baseline:** `main` med Fase 45B (`517086b`). Etterfølgende Production-QA-rettelser utvikles og verifiseres på separat draft-hotfix; de er ikke Production før egen godkjenning og merge.
 
 ## Teknologi
 
@@ -68,6 +68,8 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 - Kundepreview åpnes separat og er read-only. Den skal ikke publisere, sende e-post eller kunne akseptere tilbudet.
 - Tilbudsmaler kan gjenbruke varige app-/Storage-bilder på poster og opsjoner. Midlertidige nettleserbilder og kundespesifikke PDF-vedlegg følger ikke malen.
 - Kontrakt-PDF holder sammenhengende avsnitt samlet og bryter opsjonskort kontrollert uten å skille beskrivelse fra pris.
+- Sluttflyten er overtagelse/signering → garantiutstedelse → komplett PDF → låsing. PDF-en skal bruke samme effektive garantivilkårstatus som appen, vise faktisk genereringstidspunkt og bevare autentisert aktør på automatisk arkivert kontrakt og nye Fag/utstyr-poster.
+- «Fullfør overtagelse og lås prosjekt» er i seg selv en eksplisitt låsehandling. Etter eventuelt valg om kundeutsendelse skal appen ikke vise en ekstra identisk låsebekreftelse.
 
 ## Permanent Demo Sandbox
 
@@ -82,7 +84,7 @@ Expo ProffDok har et separat, langlivet demomiljø for presentasjon og opplærin
 - demo-overlay, demodata, syntetiske ressurser og sandbox-konfigurasjon skal aldri flyte **demo → main**
 - demo-builden skal feile dersom Production-Supabase blir bundet inn i emitted JS
 
-Clean Fase 45B-Preview bygges fra release-branchen mot samme isolerte Sandbox-Supabase, men er ikke permanent Demo og skal ikke hente produktregler eller kode tilbake fra `demo`.
+Fase 45B-hotfix-Preview bygges fra en ren `main`-basert branch mot isolert Sandbox-Supabase, men er ikke permanent Demo og skal ikke hente produktregler eller kode tilbake fra `demo`.
 
 Sandboxen har egen demo-/kursmigrasjonslinje og skal aldri branch-merges til Production. Production-endringer skal komme fra versjonerte migrasjoner i en `main`-basert og godkjent release.
 

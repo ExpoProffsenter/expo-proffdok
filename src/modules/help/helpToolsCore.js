@@ -133,7 +133,8 @@ const BASE_SECTIONS = [
     [
       "Aktiver garanti og velg garantiperiode og riktig Sopro-system.",
       "Fullfør relevante garanti- og fagkontroller.",
-      "Kontroller overtagelse og åpne avvik før garanti utstedes."
+      "Kontroller overtagelse og åpne avvik før garanti utstedes.",
+      "Etter signert overtagelse: utsted garantien, last ned komplett PDF og kontroller arkivtidspunktet før prosjektet låses."
     ],
     ["Garantisertifikat kan ikke utstedes når obligatoriske krav ikke er oppfylt."],
     ["Aktiver garanti tidlig slik at riktige kontrollpunkter følger arbeidsflyten."]
@@ -242,9 +243,12 @@ const BASE_SECTIONS = [
     "overtagelse",
     "✍️ Overtagelse",
     "Overtagelse dokumenterer at prosjektet er gjennomgått og akseptert av kunde og utførende.",
-    ["Kontroller dokumentasjon og avvik, registrer dato/merknader og signer med kunde og utførende."],
+    [
+      "Kontroller dokumentasjon og avvik, registrer dato/merknader og signer med kunde og utførende.",
+      "Fullføringsknappen låser prosjektet direkte etter eventuelt valg om kundeutsendelse; den spør ikke en gang til om den samme låsehandlingen."
+    ],
     ["På garantiprosjekter må overtagelse være signert og lagret før garanti kan utstedes."],
-    ["Generer rapport før overtagelse og gå gjennom den med kunden."]
+    ["Kontroller gjerne en statusrapport før overtagelse. På garantiprosjekter lages den endelige komplette PDF-en etter signering og garantiutstedelse."]
   ),
   section(
     "prosjektliste",
@@ -261,7 +265,10 @@ const BASE_SECTIONS = [
     "rapport",
     "📄 Rapport",
     "Rapporten samler prosjektets dokumentasjon til PDF.",
-    ["Kontroller prosjektdata, produkter, bilder, sjekklister og avvik før rapport genereres."],
+    [
+      "Kontroller prosjektdata, produkter, bilder, sjekklister og avvik før rapport genereres.",
+      "På garantiprosjekter skal garantien utstedes før den endelige komplette PDF-en lastes ned. Kontroller at rapporten viser bekreftede garantivilkår og et faktisk genereringstidspunkt."
+    ],
     ["Rapporten er bare så god som dokumentasjonen som er registrert."],
     ["Last alltid ned ferdig rapport og arkiver den lokalt."]
   ),

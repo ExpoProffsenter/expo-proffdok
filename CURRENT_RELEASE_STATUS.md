@@ -1,81 +1,72 @@
 # Gjeldende release-status – Fase 45B
 
-Dato: 2026-09-27. Statusen beskriver dagens fasit, ikke historikken bak feilrettingene.
+Dato: 28.09.2026. Kode, backend og live system er fasit. Dette dokumentet skiller eksplisitt mellom Production og den umergede QA-hotfixen.
 
-## Miljøer
+## Miljøer og GitHub
 
-- Production: `main` står fortsatt på `5e2a1ee6c00e3a67158d5a52b196675125d91fb1`. Vercel Production `dpl_RUA6pD8FrFkJRaibzJTV3Gft41fN` er `READY`, peker på samme commit og er bundet til Production Supabase `dqffxflaoyarbxyiyhop`. Fase 45B er ikke lagt i Production.
-- Aktiv release: `fase45b-production-release-clean`. Siste funksjonelt verifiserte kodehode før denne status-only oppdateringen er `8493ef42f542c16c24870064d3b663553df17afc`. Vercel Preview `dpl_7zGsnoXQyDLTy2ueMieyD4xP1xfR` er `READY` på branch-aliaset, har `target=null` og er bundet kun til Sandbox.
-- PR #190 er fortsatt `open`, `draft=true`, `merged=false`, med base `main` og head `fase45b-production-release-clean`.
-- Sandbox: Supabase-branch `demo-sandbox`, ref `ppvircenkjizeiqdxphj`, er `ACTIVE_HEALTHY`. Kontrollplanets `MIGRATIONS_FAILED` stammer fra branch-opprettelsen 15.09 og beskriver ikke dagens runtime. Sandbox har bevisst egen demo-migrasjonslinje og skal aldri branch-merges til Production.
-- Supabase har nå bare default/Production og `demo-sandbox`, som også er ønsket sluttilstand.
-- Permanent Demo: Git-branch `demo` er urørt. Produksjonskandidaten inneholder ingen syntetiske demo-bilder eller demo-logoer. Enkelte eldre Sandbox-rader peker fortsatt til historiske `git-demo`-JPG-adresser.
+- Production: `main` står på merge-commit `517086b30a3bbfe14025bf9cda4faa2490d9c9a1` fra PR #190.
+- Vercel Production: `dpl_DVnRrEqpNbv1sTpjSZQQF1sceoNd` er `READY`, `target=production` og peker på samme commit.
+- PR #190 er `closed`, `merged=true`, `draft=false`. Den ble merget 27.09.2026 kl. 22:38:51 UTC etter Kenneths uttrykkelige `PRODUCTION GODKJENT`.
+- Production-QA-hotfix: branch `fase45b-production-qa-hotfix`, PR #191. PR-en er fortsatt `open`, `draft=true`, `merged=false`, base `main` og hadde før denne oppdateringen remote head `0fb72c394fc347c31b2bb6688411d35c430af105`.
+- Vercel Preview for tidligere PR #191-head: `dpl_5BUdf1qgqPiFQH7cT6MLUz3oFwVi` er `READY`, `target=null` og er Sandbox-bundet.
+- Supabase har kun Production/default `dqffxflaoyarbxyiyhop` og `demo-sandbox` `ppvircenkjizeiqdxphj`. Begge rapporteres `ACTIVE_HEALTHY`; kontrollplanstatusen `MIGRATIONS_FAILED` på demo-sandbox stammer fra opprettelsen og beskriver ikke dagens runtime.
+- Permanent Demo (`demo`) og demo-sandbox er ikke endret av Production-QA-hotfixen.
 
-## Ferdig i releasekandidaten
+## Gjennomført Production-E2E
 
-- Profftilgang er firma-, bruker- og leverandørscopet. Kun Systemadministrator kan aktivere Proff / Enkel ordre og styre leverandører/rabatter.
-- Brukervilkår v1.1 gjør kjøp og bruk av SoPro-produkter i relevant omfang til en forutsetning for tilgang til Expo ProffDok.
-- Eksternt proffsøk skjuler Ringsides interne nto, innkjøpsrabatt, DG og påslag. «Din nto pris» og intern `view_internal_net_prices` er separate, eksplisitte rettigheter.
-- Synlig navn er Generelt tilbud, mens nødvendig legacy-identitet og historiske Butikktilbud er bevart.
-- Akseptert Generelt tilbud kan aktiveres som Enkel ordre eller ordinært prosjekt med låst akseptert snapshot og valgte alternativer.
-- Enkel ordre bruker lett prosjektmotor og blokkerer kundeportal; fremdriftsplan og FDV er valgfrie.
-- Kundepreview åpnes i ny fane uten å flytte originalfanen. Previewen rendrer ingen kontroller eller klient for publisering, e-post, aksept eller avvisning.
-- Supportbanneret henter navn fra innlogget brukers metadata/e-post og spør ikke lenger etter den ikke-eksisterende kolonnen `profiles.full_name`.
-- En akseptert kundelenke åpnes etter reload som låst akseptbekreftelse med riktig versjon, valgte opsjoner og akseptert totalsum. Aksept-/avvisningskontroller vises ikke på nytt.
-- Komplett rapport-PDF støtter både `cat` og `category` på bilder. Utilgjengelige eksterne bildereferanser håndteres som tydelige plassholdere uten at syntetiske demoressurser pakkes inn i Production.
-- Nye eller oppdaterte tilbudsmaler beholder gjenbrukbare app-/Storage-bilder på poster og opsjoner. Midlertidige `data:`/`blob:`-bilder og kundespesifikke PDF-vedlegg lagres ikke i malen.
-- Kontrakt-PDF grupperer sammenhengende avsnitt i samme kort, bryter bare ved reelt sideskift og holder opsjonsbeskrivelse og pris samlet.
-- Systemadministrator kan åpne et prosjekt fra et annet firma i eksplisitt Support-modus uten at prosjektet avvises som «Kan ikke åpne prosjekt». Kryssfirma-prosjekter er skrivebeskyttet, og automatisk lagring forsøkes ikke.
-- Den skrivebeskyttede prosjektflaten rendres med native `inert`, `aria-readonly=true` og `data-support-read-only=true`. Oppdatering, kopiering, låsing og avslutning er fjernet, mens PDF er tilgjengelig.
-- Enkel ordre åpner sitt eget låste, lokale tilbudsgrunnlag med akseptert versjon, varelinjer, valgte alternativer og kundesummer. Den sender ikke Support-brukeren til en annen bedrifts globale salgsoversikt og viser ikke interne innkjøpspriser.
-- Hovedapp, Sales, Enkel ordre og tidlige integrasjonslag gjenbruker samme registrerte Supabase-authklient. Live Preview har ingen appgenerert GoTrue-advarsel eller annen appfeil i konsollen.
-- Sales recovery/lazy loading, Production-hotfixer og arbeidsprofilbasert firmascope er bevart.
-- Architecture, README, Sales README og Hjelp beskriver Fase 45B-reglene.
+QA-prosjektet `PRODUCTION QA FASE45B – bad og garanti` (`QA-45B-20260928`) ble ført gjennom reell Production-flyt med bare syntetiske QA-identiteter og uten reell kunde:
 
-## Åpne feil og release-blokkere
+1. Forespørsel og befaring ble opprettet og fullført.
+2. Badskisse ble laget.
+3. Våtromstilbud med 12 seksjoner, 17 linjer og 30 opsjoner ble publisert og akseptert.
+4. Valgte alternativer og totalsum 463 663 kr inkl. mva. ble kontrollert.
+5. Akseptbevis, ordinært prosjekt og signert Expo-forbrukerkontrakt ble opprettet.
+6. Prosjektering, 11 fremdriftsoperasjoner, åtte Sopro-produkter, overflater/innredning og Fag/utstyr ble registrert.
+7. 64/64 ordinære kontroller og 14/14 Sopro-garantipunkter ble fullført; null åpne avvik.
+8. Overtagelse ble signert av syntetisk utførende og syntetisk kunde.
+9. 10 års dokumentert tetthetsgaranti ble utstedt som `EPD-26-HCVY6U`, gyldig til 2036-09-28, for Sopro AEB 815 / SINTEF TG 20918.
+10. Komplett PDF på 22 A4-sider ble lastet ned og kontrollert visuelt side for side. Den inneholder prosjekt, produkter, kontroller, avtalegrunnlag, signert overtagelse, garantisertifikat, garantivilkår, bekreftelse og sluttdokumentasjon.
+11. Prosjektet ble låst 28.09.2026 kl. 00:40:18 UTC. Read-only databasekontroll viser `locked=true`, prosjektstatus `locked`, garantivilkår `true` og registrert rapportfil/tidspunkt.
 
-1. Ingen kjent kode-, kritisk test-, bygg-, deploy- eller Sandbox-runtimefeil er funnet i de gjennomførte testene.
-2. Eldre permanente demodata peker til sju demo-bilder som ikke skal følge demo → main. Produksjonskandidaten ekskluderer derfor disse åtte syntetiske filene (sju bilder og én demo-logo), og manglende demobilder rendres som tydelige bildeplassholdere i Sandbox-PDF-en. Kenneth har uttrykkelig godtatt bildeplassholdere som en demoavgrensning; det er ikke en releaseblokker og skal ikke utløse mer bildearbeid i Fase 45B.
-3. Manuell QA på en fysisk mobil er ikke utført i denne skyøkten. De kritiske mobiltestene for shell, arbeidsprofil, tilgang, portalopprydding og app-/fanebytte er grønne, men dette er ikke det samme som en test på faktisk iOS-/Android-enhet. Fysisk mobil er derfor et gjenstående akseptpunkt før Production.
-4. En eksakt migrasjonsøvelse på en fersk kopi av dagens Production-database er ikke fullført. Supabase-branchverktøyet som var tilgjengelig ga en tom `with_data=false`-branch, og repoets historikk kan derfor ikke alene dokumentere en identisk full Production-klon. Alle 16 versjonerte 45B-migrasjoner er kjørt samlet mot Sandbox i transaksjon med rollback, men det må ikke omtales som en fullverdig Production-klonrehearsal. Production skal ikke brukes som testmiljø.
-5. Kenneth ga uttrykkelig `PRODUCTION GODKJENT` 28.09.2026 etter slutt-QA og vurdering av punktene over, og ba samtidig om komplett Production-QA etter merge.
-6. Etter godkjenning skal de versjonerte 45B-migrasjonene kjøres kontrollert fra repoet mot Production. `demo-sandbox` skal ikke brukes som mergekilde.
+Ingen reell kunde-e-post var brukt. Under den manuelle popuphåndteringen ble ferdigmeldingskallet likevel godkjent mot den syntetiske `example.invalid`-adressen; Edge Function svarte HTTP 200, men det finnes ingen reell mottaker.
 
-Ikke-blokkerende Sandbox-advarsel: `demo_sandbox_snapshots` har RLS deaktivert, men har ingen grants til `public`, `anon` eller `authenticated`. Tabellen er derfor ikke klienttilgjengelig. Eventuell defense-in-depth-endring må vurderes mot demo-reset før den gjøres.
+## Funn fra Production-QA
 
-## Siste QA-resultat
+### Allerede på draft PR #191
 
-- Ren `npm ci`: PASS.
-- Full `npm run check:critical`, inkludert nye vern for supportprofil, skrivebeskyttet prosjektflate, én authklient, akseptert kundelenke og PDF-bildekategorier: PASS.
-- Preview-build: PASS og eksplisitt `Sandbox Supabase only`.
+- Prosjektoversikten viste lagret eks. mva.-beløp med etiketten inkl. mva. Hotfixen konverterer eksplisitt til 463 663 kr inkl. mva.
+- Forrige/Neste-etiketter kunne bli hengende igjen fra Salgsgrunnlag. Hotfixen gjenoppretter riktig mål og etikett for hvert prosjektsteg.
+
+### Rettet lokalt etter full E2E, fortsatt ikke i Production
+
+- Første komplette PDF viste garantivilkår både som mottatt og «Ikke bekreftet». Rapporten bruker nå samme effektive vilkårstatus som Garanti-visningen når signert overtagelse foreligger.
+- Ferdig PDF viste «Sist genererte rapport: Genereres nå». Hele PDF-kjøringen bruker nå ett faktisk starttidspunkt, og samme tidspunkt lagres etter nedlasting.
+- Automatisk arkivert Expo-kontrakt manglet aktør. Nye kontraktdokumenter får nå `by` fra autentisert bedriftssignatar.
+- Nye Fag/utstyr-poster kunne vise «Ukjent» når prosjektsnapshotets `user.name` var tomt. Aktør hentes nå først fra autentisert profil/metadata, deretter e-post.
+- Sluttføring viste en duplisert generell låsebekreftelse etter den eksplisitte knappen «Fullfør overtagelse og lås prosjekt». Denne ekstra popupen hoppes nå over i sluttflyten; direkte låsing/opplåsing beholder bekreftelsen.
+- README, arkitekturkart og brukerhjelp beskriver nå korrekt rekkefølge: signert overtagelse → garanti → komplett PDF → låsing.
+
+### Observerte restpunkter
+
+- PDF-en er komplett og uten avkuttede sider, men standardfonten fra jsPDF gir noe ujevn bokstavavstand. Dette er lesbart og ikke datatap, men er et eget visuelt kvalitetsløft.
+- Native `window.confirm`/`alert` er blokkende og krevende for både mobil og automatisert QA. Denne hotfixen fjerner én duplikat-popup, men en senere avgrenset UX-endring bør erstatte native dialoger med én kontrollert app-dialog.
+- Fysisk mobiltest på minst én iOS- eller Android-enhet gjenstår. Kritiske automatiske mobiltester for shell, Representerer, tilgang, app-/fanebytte og portalopprydding er grønne, men de erstatter ikke en fysisk enhet.
+- Supabase-loggene i QA-vinduet viser gjentatte PostgREST/Warp «Thread killed by timeout manager»-linjer uten path/status. De observerte prosjektkallene rundt låsingen svarte 200/204, og Vercel rapporterer ingen runtimefeil i samme tidsrom. Loggmønsteret bør overvåkes separat før det eventuelt klassifiseres som appfeil.
+
+## Verifisering av hotfixen
+
+- `npm ci`: PASS.
+- `npm run check:critical`: PASS, inkludert `critical-production-closeout-check.mjs`.
 - Production-mode dry build: PASS og eksplisitt `Production Supabase only`.
-- Preview-commit `8493ef42`: Vercel `dpl_7zGsnoXQyDLTy2ueMieyD4xP1xfR` er `READY`, `target=null` og bundet kun til Sandbox.
-- Sandbox backend: relevante tabeller/RPC-er/RLS/ACL/triggere og faste QA-saker svarer. Alle 16 versjonerte 45B-migrasjoner er tidligere kjørt samlet i transaksjon med rollback: PASS.
-- Ny, ren og innlogget Sandbox-økt: korrekt Proffkunde-scope, supportbanner og firmabranding ble verifisert. Direkte prosjektåpning ga ingen JavaScript-dialog.
-- Kryssfirma-prosjektet hadde `inert`, `aria-readonly=true` og `data-support-read-only=true`; 0 Oppdater/Kopier/Avslutt/Lås-kontroller og 1 PDF-kontroll. Appkonsollen var ren. Den eneste logglinjen kom fra sky-nettleserens Chrome-utvidelse og er ikke appkode.
-- `DEMO-45B-002`: popupen «Hva skal oppdraget bli?» viste både «Lag enkel ordre» og «Aktiver som prosjekt». Begge var korrekt deaktivert i Systemadmin-supportmodus. Popupen som spør om Andreas sin mal er en separat dialog og er ikke denne aktiveringskontrollen.
-- `DEMO-45B-002`: tilbudshistorikken viste v1, 17 494 kr eks. mva., 21 868 kr inkl. mva., tre varelinjer og to valgte opsjoner. Den tidligere «Ukjent versjon · 0 kr»-feilen er borte.
-- Faktisk appflyt verifisert read-only: `DEMO-01-FORESPORSEL`, `DEMO-02-BEFARING`, `DEMO-03-TILBUD`, kundepreview uten beslutningskontroller, `DEMO-04-AKSEPTERT`, låst tilbud v1 med tre valgte opsjoner, signert forbrukerkontrakt og `DEMO-05-PROSJEKT`.
-- Akseptert offentlig kundelenke viste først feilaktig nytt akseptskjema. Rettelsen ble deployet og deretter verifisert live: «Din aksept er registrert», v1, tre valgte opsjoner, 214 625 kr inkl. mva., ingen aksept- eller avvisningsknapper.
-- Ordinært prosjekt åpnet med skrivebeskyttet salgsgrunnlag, tilbudssum og prosjektstatus. Previewens fremdriftsflate var korrekt merket som trygg lokal testmodus.
-- Kryssfirma-prosjekt i Support-modus åpnet live på sluttkandidaten; «Kan ikke åpne prosjekt» er borte, Proffkunde Demo AS er korrekt firmascope, prosjektet er skrivebeskyttet og ingen autolagrings- eller authklientfeil oppstår.
-- Enkel ordre `DEMO-45B-001` åpnet live. «Åpne tilbudsgrunnlag» viste det lokale, låste aksepterte tilbudet med v1, tre varelinjer, 12 166 kr eks. mva. og 15 208 kr inkl. mva. Den globale salgsoversikten åpnes ikke, og ingen interne innkjøpspriser vises.
-- Ferdigstilt reserveprosjekt: låst, overtagelse registrert 15.09.2026, begge navn/signaturbekreftelser, garantivilkår bekreftet, 14/14 garantipunkter, garanti gyldig til 2036 og garantinummer `DEMO-GARANTI-2026-002`.
-- Komplett garantirapport ble regenerert fra den funksjonelt godkjente Previewen og kontrollert visuelt side for side: 19 A4-sider, 100 % dokumentasjonsgrad, 38/38 kontroller, sju registrerte bilder, null åpne avvik, overtagelse, 10-årig garantisertifikat, garantivilkår, bekreftelse og sluttdokumentasjon. Layouten hadde ingen synlig klipping eller overlapp. Den siste produksjonsisoleringen fjerner de syntetiske demobildefilene fra releasekandidaten; ny Preview-kontroll skal derfor bekrefte samme dokument med tydelige plassholdere for alle utilgjengelige demo-bilder.
-- `DEMO-45B-002` sin aktive Sandbox-rad og permanente `golden-v1`-snapshot inneholder nå samme korrekte `publicToken` og `salesOfferId`.
-- Production-main, Production-deployment og Production Supabase er uendret.
-
-## Aksept og gjenstående fysisk kontroll
-
-- Kort fysisk mobiltest på minst én faktisk iOS- eller Android-enhet: innlogging, Representerer, Befaring/Tilbud, åpning av sak, retur etter app-/fanebytte og visning av prosjekt/garanti.
-- Restusikkerheten rundt manglende identisk Production-klonrehearsal er eksplisitt synlig i denne statusen. `PRODUCTION GODKJENT` er mottatt; godkjenningen fjerner ikke den tekniske begrensningen, men autoriserer kontrollert release med etterfølgende komplett Production-QA.
-
-## Produktvalg som ikke er del av denne releasen
-
-- Generelt tilbud vurderes som en framtidig betalt løsning. Ingen betalings-, abonnements- eller ny tilgangslogikk innføres før egen produktbeslutning.
+- Sandbox-mode build: PASS og eksplisitt `Sandbox Supabase only`.
+- `git diff --check`: PASS.
+- Production er ikke deployet eller endret av hotfixarbeidet.
 
 ## Neste handling
 
-Fjern demoressurser som ble fanget av `PR Core Safety`, kjør full critical QA og ny Sandbox-Preview, og krev grønn GitHub-CI. Deretter merges release-branchen kontrollert, de versjonerte 45B-migrasjonene kjøres mot Production og trippel Production-QA utføres. Ingen Production-endring er utført på tidspunktet for denne preflight-oppdateringen.
-
-Etter godkjent merge og trippel Production-QA skal midlertidige GitHub-brancher slettes slik at bare `main` og permanent `demo` står igjen. Supabase skal da fortsatt bare ha Production/default og `demo-sandbox`. Ingen slik GitHub-opprydding utføres før release og Production-QA er godkjent.
+1. Commit og push de nye QA-rettelsene til `fase45b-production-qa-hotfix`.
+2. Kontroller grønn GitHub-CI og ny Vercel Preview med Sandbox-binding.
+3. Retest målrettet: prosjektbeløp, prosjektsteg, garantivilkår/tidspunkt i PDF, auditnavn og redusert popuprekkefølge. Gjenta ikke hele Production-flyten før hotfixen eventuelt er godkjent og merget.
+4. Ikke merge PR #191 og ikke deploy til Production uten Kenneths nye uttrykkelige godkjenning.
+5. QA-prosjekt, tilbud og forespørsel beholdes inntil resultatet er endelig grønt og Kenneth bekrefter sletting på handlingstidspunktet.
+6. Etter godkjent hotfix, Production-QA og eventuell datasletting: minn om opprydding av gamle GitHub-brancher. Sluttbildet skal være `main` + permanent `demo`, og Supabase skal fortsatt bare ha Production/default + `demo-sandbox`.

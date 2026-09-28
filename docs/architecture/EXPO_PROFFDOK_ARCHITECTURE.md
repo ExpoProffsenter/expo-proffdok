@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
 **Fase:** 45B – Proff / Generelt tilbud / Enkel ordre
-**Status:** Release candidate i Sandbox-Preview; Production er uendret frem til eksplisitt godkjenning
-**Dato:** 27.09.2026
-**Produksjonsbaseline:** gjeldende `main`; se `CURRENT_RELEASE_STATUS.md` for verifisert SHA
+**Status:** Fase 45B er i Production; Production-QA-hotfix ligger separat som draft og er ikke merget
+**Dato:** 28.09.2026
+**Produksjonsbaseline:** `main` på `517086b`; se `CURRENT_RELEASE_STATUS.md` for verifisert drift og QA-status
 **Production Supabase:** `dqffxflaoyarbxyiyhop`  
 **Permanent Demo Sandbox:** branch `demo`, Supabase `ppvircenkjizeiqdxphj`
 
@@ -40,6 +40,9 @@ Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakove
 27. Intern Ringside-nto og ekstern «Din nto pris» er to separate rettigheter. Begge krever eksplisitt serververifisert tilgang.
 28. Enkel ordre bruker prosjektmotoren, men kundeportal er blokkert. Fremdriftsplan og FDV er valgfrie.
 29. App-tilgang forutsetter at virksomheten oppfyller gjeldende SoPro-vilkår. Eventuell særskilt betaling for Generelt tilbud er et senere produktvalg og er ikke en teknisk tilgangsregel i Fase 45B.
+30. En generert sluttrapport er et konsistent øyeblikksbilde av samme effektive status som brukerflaten. Signert overtagelse kan derfor bekrefte garantivilkår i rapporten selv om siste eksplisitte persist-hook først kjøres ved låsing, og rapporten viser tidspunktet for den aktuelle genereringen – aldri en pågående-status i en ferdig fil.
+31. Auditfelt på nye Fag/utstyr-poster og automatisk arkivert Expo-kontrakt skal komme fra autentisert aktør/signatar, ikke bare fra eventuelt tomt prosjektsnapshot.
+32. En eksplisitt «Fullfør overtagelse og lås prosjekt»-handling kan hoppe over den generelle, dupliserte låsebekreftelsen. Direkte låsing/opplåsing fra topplinjen beholder egen bekreftelse.
 
 ## 2. Plattform
 
@@ -459,6 +462,8 @@ Dokumentert tetthetsgaranti krever blant annet:
 - signert kontrakt i Avtalegrunnlag når garanti skal utstedes
 
 Historiske utstedte garantier og låste prosjekter skal ikke endres av produktmaster eller senere systemendringer.
+
+Endelig garantiflyt er: registrert og signert overtagelse, utstedt garanti, komplett PDF kontrollert/arkivert og deretter prosjektlås. Rapportgeneratoren bruker `warrantyReadiness.termsAccepted` som effektiv fallback når signert overtagelse allerede gjør vilkårene bekreftet i brukerflaten, og stempler alle rapportsider med samme starttidspunkt for den aktuelle PDF-kjøringen.
 
 ## 15. Systemadministrasjon
 
