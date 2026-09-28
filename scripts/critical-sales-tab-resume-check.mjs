@@ -51,6 +51,7 @@ const recoverySource = readFileSync(
   "src/modules/sales/services/salesResumeRecovery.mjs",
   "utf8"
 );
+const mainSource = readFileSync("src/main.jsx", "utf8");
 
 // 1) Dette er den faktiske integrasjonsveien SalesModule bruker når fanen går
 // i bakgrunnen. Den må lagre både gammel reload-markør OG nøyaktig arbeidsbilde.
@@ -167,6 +168,17 @@ requireResume(
 requireResume(
   recoverySource.includes("20000") && recoverySource.includes("30000"),
   "Fanereturen mangler sen recovery-kontroll dersom auth/React resetter Startsiden forsinket."
+);
+requireResume(
+  recoverySource.includes(
+    `'[data-sales-resume-workspace="true"] .sales-app'`
+  ) &&
+    !recoverySource.includes('document.querySelector(".sales-app")'),
+  "Prosjektets gjenbrukte kontraktveiviser kan fortsatt feilaktig armere Sales-recovery."
+);
+requireResume(
+  mainSource.includes('"data-sales-resume-workspace": "true"'),
+  "Den faktiske Befaring/Tilbud-flaten mangler entydig recovery-markør."
 );
 
 // 8) APP-REGEL: automatisk recovery skal aldri overstyre en bevisst brukerhandling.

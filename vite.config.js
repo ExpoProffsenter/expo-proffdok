@@ -1,37 +1,72 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
+import {
+  BACKEND_TARGET_PRODUCTION,
+  BACKEND_TARGET_SANDBOX,
+  resolveBackendTarget,
+} from "./scripts/environmentBindingCore.mjs";
 
 const PROD_SUPABASE_URL = "https://dqffxflaoyarbxyiyhop.supabase.co";
-const PROD_MAIN_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImRxZmZ4bGFveWFyYnh5aXlob3AiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3NzQ3NzE1MSwiZXhwIjoyMDkzMDUzMTUxfQ.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
-const PROD_ACCESS_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImRxZmZ4bGFveWFyYnh5aXlob3AiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3NzQ3NzE1MSwiZXhwIjoyMDkzMDUzMTUxfQ.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
-const PROD_CURRENT_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE";
+const PROD_PUBLISHABLE_KEY = "sb_publishable_w0_XsTuYKIrpOjDQeyAKVg_026niotL";
+const PROD_LEGACY_ANON_KEYS = [
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImRxZmZ4bGFveWFyYnh5aXlob3AiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3NzQ3NzE1MSwiZXhwIjoyMDkzMDUzMTUxfQ.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE",
+];
+const PROD_RUNTIME_KEY = PROD_LEGACY_ANON_KEYS[1];
 const SANDBOX_SUPABASE_URL = "https://ppvircenkjizeiqdxphj.supabase.co";
 const SANDBOX_PUBLISHABLE_KEY = "sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR";
-const SANDBOX_VERCEL_HOST = "expo-proffdok-git-demo-ringside.vercel.app";
 
-function demoSandboxBuildGuard() {
+const backendTarget = resolveBackendTarget({
+  // Denne filen lever kun på permanent demo-branch. Manglende lokale/Vercel-
+  // signaler skal derfor falle trygt tilbake til Sandbox, aldri Production.
+  vercelEnv: process.env.VERCEL_ENV || "preview",
+  gitRef: process.env.VERCEL_GIT_COMMIT_REF || "demo",
+  explicitTarget: process.env.EXPO_BACKEND_TARGET || "sandbox",
+});
+
+const runtimeBinding = backendTarget === BACKEND_TARGET_SANDBOX
+  ? {
+      url: SANDBOX_SUPABASE_URL,
+      key: SANDBOX_PUBLISHABLE_KEY,
+    }
+  : {
+      url: PROD_SUPABASE_URL,
+      key: PROD_RUNTIME_KEY,
+    };
+
+function environmentBindingGuard() {
   return {
-    name: "expo-demo-sandbox-build-guard",
+    name: "expo-environment-binding-guard",
     enforce: "pre",
     transform(code, id) {
-      if (!/\.(?:[cm]?[jt]sx?)$/.test(id)) return null;
-      let next = code
-        .replaceAll(PROD_SUPABASE_URL, SANDBOX_SUPABASE_URL)
-        .replaceAll(PROD_MAIN_ANON_KEY, SANDBOX_PUBLISHABLE_KEY)
-        .replaceAll(PROD_ACCESS_ANON_KEY, SANDBOX_PUBLISHABLE_KEY)
-        .replaceAll(PROD_CURRENT_ANON_KEY, SANDBOX_PUBLISHABLE_KEY);
+      if (!/[\\/]src[\\/]main\.jsx$/.test(id)) return null;
 
-      // Den permanente demo-branchen er fysisk isolert fra Production og skal bruke ekte sandbox-lagring.
-      // Vanlige Vercel Previewer beholder eksisterende progressTest=safe-beskyttelse.
-      if (id.endsWith("/src/modules/app/previewSafetyBootstrap.js")) {
-        next = next.replace(
-          "const PRODUCTION_VERCEL_HOSTS = new Set([",
-          `const PRODUCTION_VERCEL_HOSTS = new Set([\n  ${JSON.stringify(SANDBOX_VERCEL_HOST)},`
+      // Legacy main.jsx still contains the original Production literals. Convert
+      // exactly that one createClient binding to explicit build-time env tokens.
+      // Environment selection itself happens above through resolveBackendTarget().
+      const prodUrlLiteral = JSON.stringify(PROD_SUPABASE_URL);
+      const matchingLegacyKeys = PROD_LEGACY_ANON_KEYS.filter((key) =>
+        code.includes(JSON.stringify(key))
+      );
+
+      if (!code.includes(prodUrlLiteral) || matchingLegacyKeys.length !== 1) {
+        throw new Error(
+          "BUILD BLOCKED: src/main.jsx Supabase bootstrap no longer matches the guarded legacy binding. Review environment binding explicitly."
         );
       }
 
-      if (next === code) return null;
+      const next = code
+        .replace(prodUrlLiteral, "import.meta.env.VITE_SUPABASE_URL")
+        .replace(JSON.stringify(matchingLegacyKeys[0]), "import.meta.env.VITE_SUPABASE_ANON_KEY");
+
+      if (
+        next.includes(prodUrlLiteral) ||
+        PROD_LEGACY_ANON_KEYS.some((key) => next.includes(JSON.stringify(key)))
+      ) {
+        throw new Error("BUILD BLOCKED: legacy Supabase literals remain in src/main.jsx after guarded bootstrap migration.");
+      }
+
       return { code: next, map: null };
     },
     generateBundle(_options, bundle) {
@@ -43,22 +78,55 @@ function demoSandboxBuildGuard() {
       const sandboxUrlPresent = emittedJs.includes(SANDBOX_SUPABASE_URL);
       const sandboxKeyPresent = emittedJs.includes(SANDBOX_PUBLISHABLE_KEY);
       const productionUrlPresent = emittedJs.includes(PROD_SUPABASE_URL);
-      const productionKeyPresent = emittedJs.includes(PROD_CURRENT_ANON_KEY);
+      const productionKeyPresent = [PROD_PUBLISHABLE_KEY, ...PROD_LEGACY_ANON_KEYS]
+        .some((key) => emittedJs.includes(key));
 
-      if (
-        !sandboxUrlPresent ||
-        !sandboxKeyPresent ||
-        productionUrlPresent ||
-        productionKeyPresent
-      ) {
-        throw new Error(
-          "Demo Sandbox build blocked: emitted JS does not have a clean sandbox-only Supabase binding."
-        );
+      if (backendTarget === BACKEND_TARGET_PRODUCTION) {
+        if (sandboxUrlPresent || sandboxKeyPresent || !productionUrlPresent || !productionKeyPresent) {
+          throw new Error(
+            "PRODUCTION BUILD BLOCKED: bundle is not exclusively bound to Production Supabase (dqffxflaoyarbxyiyhop)."
+          );
+        }
+        console.log("✅ Explicit backend target: Production Supabase only");
+        return;
       }
 
-      console.log(
-        "✅ Demo Sandbox emitted bundle verified: sandbox Supabase binding present, Production binding absent"
+      if (backendTarget === BACKEND_TARGET_SANDBOX) {
+        if (!sandboxUrlPresent || !sandboxKeyPresent || productionUrlPresent || productionKeyPresent) {
+          throw new Error(
+            "SANDBOX PREVIEW BUILD BLOCKED: bundle is not exclusively bound to Sandbox Supabase (ppvircenkjizeiqdxphj)."
+          );
+        }
+        console.log("✅ Explicit backend target: Sandbox Supabase only");
+        return;
+      }
+
+      throw new Error(`BUILD BLOCKED: unsupported backend target '${backendTarget}'.`);
+    },
+  };
+}
+
+const SANDBOX_VERCEL_HOST = "expo-proffdok-git-demo-ringside.vercel.app";
+
+function demoSandboxOverlay() {
+  return {
+    name: "expo-demo-sandbox-overlay",
+    enforce: "pre",
+    transform(code, id) {
+      // Den permanente demo-branchen er fysisk isolert fra Production og skal bruke ekte sandbox-lagring.
+      // Vanlige Vercel Previewer beholder eksisterende progressTest=safe-beskyttelse.
+      if (!id.includes("/src/modules/app/previewSafetyBootstrap.js")) return null;
+
+      const marker = "const PRODUCTION_VERCEL_HOSTS = new Set([";
+      if (!code.includes(marker)) {
+        throw new Error("Demo Sandbox build blocked: preview safety bootstrap marker is missing.");
+      }
+
+      const next = code.replace(
+        marker,
+        `${marker}\n  ${JSON.stringify(SANDBOX_VERCEL_HOST)},`
       );
+      return { code: next, map: null };
     },
     transformIndexHtml(html) {
       const sandboxBootstrap = `<script>(function(){if(location.hostname===${JSON.stringify(SANDBOX_VERCEL_HOST)}){var u=new URL(location.href);if(u.searchParams.has('progressTest')){u.searchParams.delete('progressTest');history.replaceState({},document.title,u.pathname+(u.search||'')+(u.hash||''));}}})();</script>`;
@@ -73,10 +141,11 @@ function demoSandboxBuildGuard() {
 }
 
 export default defineConfig({
-  plugins: [demoSandboxBuildGuard(), react()],
+  plugins: [environmentBindingGuard(), demoSandboxOverlay(), react()],
   define: {
-    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(SANDBOX_SUPABASE_URL),
-    "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(SANDBOX_PUBLISHABLE_KEY),
+    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(runtimeBinding.url),
+    "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(runtimeBinding.key),
+    "import.meta.env.VITE_EXPO_BACKEND_TARGET": JSON.stringify(backendTarget),
   },
   build: {
     rollupOptions: {

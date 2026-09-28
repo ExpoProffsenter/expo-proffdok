@@ -184,6 +184,7 @@ function finalDocumentReference(contract, { fileName, path, blob, pageCount }) {
     size: Number(blob?.size || 0),
     created: now.toLocaleString("no-NO"),
     createdAt: now.toISOString(),
+    by: String(contract.company_signed_by_name || "").trim(),
     documentType: "contract",
     contractSource: "expo",
     contractId: contract.id,

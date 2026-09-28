@@ -32,6 +32,7 @@ function sectionBetween(source, startNeedle, endNeedle, label) {
 }
 
 const reportPath = "src/modules/report/reportViewTools.js";
+const reportToolsPath = "src/modules/report/reportTools.js";
 const mainPath = "src/main.jsx";
 const boundaryPath = "src/modules/app/AppErrorBoundary.jsx";
 const salesListPath = "src/modules/sales/components/SalesListView.jsx";
@@ -47,6 +48,7 @@ const bootstrapPath = "src/bootstrap.jsx";
 const privateDocumentRedirectPath = "src/modules/documents/privateDocumentRedirect.js";
 
 const reportSource = readRequiredFile(reportPath);
+const reportToolsSource = readRequiredFile(reportToolsPath);
 const mainSource = readRequiredFile(mainPath);
 const boundarySource = readRequiredFile(boundaryPath);
 const salesListSource = readRequiredFile(salesListPath);
@@ -101,6 +103,21 @@ if (reportSource) {
       `${reportPath}: CustomerReport mangler initialisering av agreementTotals. Dette kan gi blank kunderapport.`
     );
   }
+}
+
+// Komplett PDF skal beholde både ordinære bildeobjekter (`cat`) og permanente
+// demobilder/eldre prosjektdata (`category`) i selve bildedokumentasjonen.
+if (reportToolsSource) {
+  requireText(
+    reportToolsSource,
+    'photo.cat || photo.category || "Bilder"',
+    `${reportToolsPath}: PDF-bildekategorier støtter ikke både cat og category.`
+  );
+  requireText(
+    reportToolsSource,
+    "photoCategory(item) === cat",
+    `${reportToolsPath}: PDF-bilder filtreres ikke med normalisert bildekategori.`
+  );
 }
 
 // App-shell: en renderfeil skal fanges i stedet for å gi permanent blank skjerm.

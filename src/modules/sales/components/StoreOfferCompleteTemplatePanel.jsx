@@ -159,7 +159,7 @@ export default function StoreOfferCompleteTemplatePanel({
   async function saveTemplate() {
     if (busy || typeof window === "undefined") return;
 
-    const suggestedName = cleanText(offerForm.title) || "Butikktilbud-mal";
+    const suggestedName = cleanText(offerForm.title) || "Generelt tilbud-mal";
     const enteredName = window.prompt(
       "Gi tilbudsmalen et navn:",
       suggestedName
@@ -300,7 +300,7 @@ export default function StoreOfferCompleteTemplatePanel({
       </p>
       <h2 style={{ margin: "0 0 6px" }}>Bruk firmamal</h2>
       <p className="sales-subtitle" style={{ margin: 0 }}>
-        Komplette Butikktilbud-maler kopierer kundetekster, avsnitt, poster,
+        Komplette maler for Generelt tilbud kopierer kundetekster, avsnitt, poster,
         montering og opsjoner inn i denne redigerbare kladden. Kunde og adresse
         beholdes på saken.
       </p>
@@ -343,7 +343,7 @@ export default function StoreOfferCompleteTemplatePanel({
         </div>
       ) : (
         <p className="sales-subtitle" style={{ marginTop: 14 }}>
-          Firmaet har ingen lagrede Butikktilbud-maler ennå. Bygg tilbudet og
+          Firmaet har ingen lagrede maler for Generelt tilbud ennå. Bygg tilbudet og
           bruk «Lagre som mal» nederst på siden.
         </p>
       )}
@@ -355,7 +355,9 @@ export default function StoreOfferCompleteTemplatePanel({
       ) : null}
 
       <p className="sales-subtitle" style={{ margin: "12px 0 0" }}>
-        Katalogvarer henter gjeldende katalogpris når malen brukes. Manuelle poster beholder prisen som ble lagret i malen. Bilder og vedlegg lagres ikke i malen.
+        Katalogvarer henter gjeldende katalogpris når malen brukes. Manuelle poster
+        beholder prisen som ble lagret i malen. Bilder som er lagret i appens
+        bildelager følger malen; PDF-vedlegg følger ikke.
       </p>
     </div>
   );

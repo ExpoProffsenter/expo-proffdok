@@ -160,7 +160,9 @@ export function createOvertagelseCompletionTools({
         return alert("⚠️ Begge overtagelsessignaturene kunne ikke bekreftes på server. Prosjektet er ikke låst. Prøv Lagre overtagelse på nytt, og kontakt support hvis meldingen gjentas.");
       }
       setOvertagelse(completedOvertagelse);
-      await setProjectLockedState(true);
+      // Knappen «Fullfør overtagelse og lås prosjekt» er allerede en eksplisitt
+      // låsehandling. Unngå en ekstra, identisk nettleser-popup etter e-postvalget.
+      await setProjectLockedState(true, { skipConfirm: true });
     };
 
   return { completeOvertagelseAndLock };

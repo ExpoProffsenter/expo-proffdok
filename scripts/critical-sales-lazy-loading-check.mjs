@@ -31,6 +31,7 @@ const supabasePath = "src/modules/sales/services/salesSupabase.js";
 const lazyPath = "src/modules/sales/services/salesRequestLazyLoading.js";
 const listPath = "src/modules/sales/components/SalesListView.jsx";
 const wrapperPath = "src/modules/sales/SalesModule.jsx";
+const corePath = "src/modules/sales/SalesModuleCore.jsx";
 const localStoragePath = "src/modules/sales/services/salesLocalStorageCore.js";
 const migrationPath = "supabase/migrations/20260915134500_fase42i_sales_list_projection.sql";
 const indexMigrationPath = "supabase/migrations/20260915135500_fase42i_sales_summary_indexes.sql";
@@ -39,6 +40,7 @@ const supabase = read(supabasePath);
 const lazy = read(lazyPath);
 const list = read(listPath);
 const wrapper = read(wrapperPath);
+const salesCore = read(corePath);
 const localStorage = read(localStoragePath);
 const migration = read(migrationPath);
 const indexMigration = read(indexMigrationPath);
@@ -202,8 +204,34 @@ if (wrapper) {
   );
   requireText(
     wrapper,
-    "props.openRequestSignal,\n    instanceKey,\n    serverCacheRetryKey,",
-    `${wrapperPath}: recovery-remount trigger ikke ny saksspesifikk server-prime.`
+    "props.openRequestSignal,\n    salesStorageCompanyName,\n    instanceKey,\n    serverCacheRetryKey,",
+    `${wrapperPath}: recovery-remount/work-profile-bytte trigger ikke ny saksspesifikk server-prime.`
+  );
+}
+
+if (salesCore) {
+  const hydrationStart = salesCore.indexOf(
+    'if (mode !== "offer-builder" || !selectedRequestId || !selectedRequest)'
+  );
+  const hydrationEnd = salesCore.indexOf(
+    "async function refreshOfferTemplates",
+    hydrationStart
+  );
+  const hydrationBlock =
+    hydrationStart >= 0 && hydrationEnd > hydrationStart
+      ? salesCore.slice(hydrationStart, hydrationEnd)
+      : "";
+
+  requireText(
+    hydrationBlock,
+    'integrationMode === "app" && selectedRequest.__summaryOnly',
+    `${corePath}: tilbudsbyggeren kan initialiseres fra en ufullstendig summary under server-first recovery.`
+  );
+  requireOrderedText(
+    hydrationBlock,
+    'selectedRequest.__summaryOnly',
+    'offerFormHydratedRequestIdRef.current === selectedRequestId',
+    `${corePath}: summary-sperren kjøres for sent og kan etterlate editoren låst til en tom kladd.`
   );
 }
 

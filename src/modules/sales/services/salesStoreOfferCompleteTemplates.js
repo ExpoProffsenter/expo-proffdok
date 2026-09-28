@@ -1,6 +1,7 @@
 // Expo ProffDok – FASE 40B
 // Komplette firmamaler for Butikktilbud.
-// Nye maler lagrer struktur og kundetekst, men aldri intern nettopris eller tunge vedlegg/bilder.
+// Nye maler lagrer struktur, kundetekst og varige tilbudsbilder, men aldri
+// intern nettopris, nettleserbundne data-/blob-bilder eller PDF-vedlegg.
 // Katalogvarer prises på nytt mot aktivt internt vareregister når malen brukes.
 
 import {
@@ -18,6 +19,7 @@ import {
   storeDiscount,
   storeNumber,
 } from "../utils/salesStoreOfferPricing.js";
+import { withReusableTemplateMedia } from "../utils/salesOfferTemplateMedia.mjs";
 
 export const STORE_COMPLETE_TEMPLATE_KIND = "store-offer-complete-v2";
 export const STORE_COMPLETE_TEMPLATE_VERSION = 2;
@@ -83,12 +85,7 @@ function copyTextFields(source = {}) {
 }
 
 function stripSensitiveAndHeavyFields(item = {}) {
-  const safe = { ...item };
-
-  // Media hører til den konkrete tilbudssaken, ikke firmamalen.
-  safe.imageDataUrl = "";
-  safe.imageName = "";
-  safe.attachmentFile = null;
+  const safe = withReusableTemplateMedia(item);
 
   // Forsvar i dybden: disse feltene skal aldri finnes i kunde-/mal-JSON.
   [
@@ -305,7 +302,7 @@ export async function materializeStoreOfferTemplate(template = {}) {
   }
 
   if (payload.templateKind !== STORE_COMPLETE_TEMPLATE_KIND) {
-    throw new Error("Malen er ikke en gyldig Butikktilbud-mal.");
+    throw new Error("Malen er ikke en gyldig mal for Generelt tilbud.");
   }
 
   const sourceLines = visibleTemplateLines(payload.lines);

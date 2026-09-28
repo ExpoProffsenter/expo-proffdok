@@ -3,6 +3,8 @@
 // Denne modulen endrer kun navigasjon/presentasjon. Ingen prosjektdata, salgsdata,
 // Supabase, Storage, rapport eller kundevisning endres.
 
+import { resolveProjectFlowNeighbors } from './projectWorkflowNeighbors.mjs';
+
 const HELP_ID = 'expo-project-flow-help';
 const STATUS_TOGGLE_ID = 'expo-project-status-toggle';
 const SALES_QUICK_ID = 'expo-sales-origin-quick-actions';
@@ -130,6 +132,30 @@ function setFlowTarget(button, targetLabel, visibleLabel = '') {
   if (visibleLabel && cleanText(button.textContent) !== visibleLabel) button.textContent = visibleLabel;
 }
 
+function updateDesktopFlowButton(button, direction, targetLabel) {
+  if (!(button instanceof HTMLButtonElement)) return;
+  if (!targetLabel) {
+    button.removeAttribute(TARGET_ATTR);
+    const edgeLabel = direction === 'previous' ? '← Forrige' : 'Neste →';
+    if (cleanText(button.textContent) !== edgeLabel) button.textContent = edgeLabel;
+    return;
+  }
+
+  const visibleLabel = direction === 'previous'
+    ? `← Forrige: ${targetLabel}`
+    : `Neste: ${targetLabel} →`;
+  setFlowTarget(button, targetLabel, visibleLabel);
+}
+
+function updateMobileFlowButton(button, targetLabel) {
+  if (!(button instanceof HTMLButtonElement)) return;
+  if (!targetLabel) {
+    button.removeAttribute(TARGET_ATTR);
+    return;
+  }
+  setFlowTarget(button, targetLabel);
+}
+
 function adaptPreviousNext(activeProject, nav) {
   document.querySelectorAll(`button[${TARGET_ATTR}]`).forEach((button) => {
     if (button.closest(`#${SALES_QUICK_ID}`)) return;
@@ -138,33 +164,19 @@ function adaptPreviousNext(activeProject, nav) {
   if (!activeProject || !nav) return;
 
   const activeLabel = getActiveNavLabel(nav);
-  const desktopButtons = Array.from(document.querySelectorAll('button')).filter((button) => {
-    const text = cleanText(button.textContent);
-    return text.startsWith('Neste:') || text.startsWith('← Forrige:');
-  });
+  const navLabels = Array.from(nav.querySelectorAll(':scope > button'))
+    .map((button) => cleanText(button.textContent));
+  const { previousLabel, nextLabel } = resolveProjectFlowNeighbors(activeLabel, navLabels);
+  const desktopButtons = Array.from(document.querySelectorAll('.bottomPrevNext button'));
+  const desktopPrev = desktopButtons.find((button) => cleanText(button.textContent).startsWith('← Forrige'));
+  const desktopNext = desktopButtons.find((button) => cleanText(button.textContent).startsWith('Neste'));
   const mobilePrev = document.querySelector('.mobileNavQuick button:first-child');
   const mobileNext = document.querySelector('.mobileNavQuick button:last-child');
 
-  if (activeLabel === 'Prosjektoversikt') {
-    desktopButtons.filter((button) => cleanText(button.textContent).startsWith('Neste:'))
-      .forEach((button) => setFlowTarget(button, 'Prosjektbeskrivelse', 'Neste: Prosjektbeskrivelse →'));
-    setFlowTarget(mobileNext, 'Prosjektbeskrivelse');
-  }
-
-  if (activeLabel === 'Prosjektbeskrivelse') {
-    desktopButtons.filter((button) => cleanText(button.textContent).startsWith('← Forrige:'))
-      .forEach((button) => setFlowTarget(button, 'Prosjektoversikt', '← Forrige: Prosjektoversikt'));
-    setFlowTarget(mobilePrev, 'Prosjektoversikt');
-  }
-
-  if (activeLabel === 'Salgsgrunnlag' || activeLabel === 'Befaring/Tilbud') {
-    desktopButtons.filter((button) => cleanText(button.textContent).startsWith('← Forrige:'))
-      .forEach((button) => setFlowTarget(button, 'Prosjektoversikt', '← Forrige: Prosjektoversikt'));
-    desktopButtons.filter((button) => cleanText(button.textContent).startsWith('Neste:'))
-      .forEach((button) => setFlowTarget(button, 'Prosjektbeskrivelse', 'Neste: Prosjektbeskrivelse →'));
-    setFlowTarget(mobilePrev, 'Prosjektoversikt');
-    setFlowTarget(mobileNext, 'Prosjektbeskrivelse');
-  }
+  updateDesktopFlowButton(desktopPrev, 'previous', previousLabel);
+  updateDesktopFlowButton(desktopNext, 'next', nextLabel);
+  updateMobileFlowButton(mobilePrev, previousLabel);
+  updateMobileFlowButton(mobileNext, nextLabel);
 }
 
 function workflowStatusPresentation(status = 'Pågår') {

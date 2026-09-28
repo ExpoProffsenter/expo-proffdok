@@ -46,7 +46,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const OFFER_TYPE_TABS = [
   { id: "all", label: "Alle tilbud" },
   { id: "wetroom", label: "Våtromstilbud" },
-  { id: "store", label: "Butikktilbud" },
+  { id: "store", label: "Generelle tilbud" },
 ];
 const WORK_TABS = [
   { id: "requests", label: "Forespørsler" },
@@ -160,7 +160,9 @@ function compactSearchText(value) {
 function requestSearchValues(request = {}) {
   const storeOffer = isStoreOfferRequest(request);
   const bucket = requestBucket(request);
-  const typeLabel = storeOffer ? "Butikktilbud butikk tilbud" : "Våtromstilbud våtrom tilbud";
+  const typeLabel = storeOffer
+    ? "Generelt tilbud generelle tilbud Butikktilbud butikk tilbud"
+    : "Våtromstilbud våtrom tilbud";
   const bucketLabel = WORK_TABS.find((tab) => tab.id === bucket)?.label || "";
   const offerItems = [
     ...(Array.isArray(request?.offerLines) ? request.offerLines : []),
@@ -485,7 +487,7 @@ export default function SalesListView({
             <div>
               <h1 className="sales-title">Forespørsler og tilbud</h1>
               <p className="sales-subtitle">
-                Våtromstilbud og Butikktilbud ligger i samme sikre tilbudsmotor,
+                Våtromstilbud og Generelle tilbud ligger i samme sikre tilbudsmotor,
                 men kan filtreres separat under.
               </p>
             </div>
@@ -773,7 +775,7 @@ export default function SalesListView({
                               color: storeOffer ? "#0b737b" : "#475569",
                             }}
                           >
-                            {storeOffer ? "Butikktilbud" : "Våtromstilbud"}
+                            {storeOffer ? "Generelt tilbud" : "Våtromstilbud"}
                           </span>
                         </div>
                         <p className="sales-request-customer">

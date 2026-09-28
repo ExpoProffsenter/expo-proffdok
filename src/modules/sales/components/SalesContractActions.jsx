@@ -36,9 +36,34 @@ function statusText(contract = {}) {
   return "Kontrakt opprettet";
 }
 
-export default function SalesContractActions({ request, onOpenWizard }) {
+function sameFinalContractDocument(projectFile = null, contract = null) {
+  const finalDocument = contract?.final_document || {};
+  if (!projectFile || !contract?.id || (!finalDocument?.path && !finalDocument?.url)) {
+    return false;
+  }
+  const sameContractId =
+    String(projectFile?.contractId || "").trim() === String(contract.id || "").trim();
+  const samePath =
+    finalDocument?.path &&
+    String(projectFile?.path || projectFile?.storagePath || "").trim() ===
+      String(finalDocument.path).trim();
+  const sameUrl =
+    finalDocument?.url &&
+    String(projectFile?.url || "").trim() === String(finalDocument.url).trim();
+  return Boolean(sameContractId || samePath || sameUrl);
+}
+
+export default function SalesContractActions({
+  request,
+  onOpenWizard,
+  readOnly = false,
+  creationDisabledReason = "",
+  onProjectSynced,
+  projectContractFile = null,
+}) {
   const client = useMemo(() => createDefaultSalesSupabaseClient(), []);
   const supportMode = isSalesSupportMode();
+  const writeBlocked = supportMode || readOnly;
   const offerId = getAcceptedSalesOfferId(request);
   const offerVersionId = getAcceptedSalesOfferVersionId(request);
   const [contract, setContract] = useState(null);
@@ -48,6 +73,10 @@ export default function SalesContractActions({ request, onOpenWizard }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const finalizedKeyRef = useRef("");
+  const projectHasSyncedFinalDocument = sameFinalContractDocument(
+    projectContractFile,
+    contract
+  );
 
   async function loadContract() {
     if (!client || !offerId) {
@@ -86,7 +115,8 @@ export default function SalesContractActions({ request, onOpenWizard }) {
 
   async function finalizeContract({ force = false } = {}) {
     if (
-      supportMode ||
+      writeBlocked ||
+      (!force && projectHasSyncedFinalDocument) ||
       !contract?.id ||
       contract.status !== "signed" ||
       finalizing
@@ -113,6 +143,11 @@ export default function SalesContractActions({ request, onOpenWizard }) {
         );
       } else if (updatedProjects > 0) {
         setMessage("Signert PDF er også lagt i prosjektets Tilbud / kontrakt.");
+        try {
+          await Promise.resolve(onProjectSynced?.());
+        } catch (refreshError) {
+          console.warn("Kontrakten ble synkronisert, men prosjektvisningen kunne ikke oppdateres.", refreshError);
+        }
       } else if (result?.created) {
         setMessage("Signert PDF er arkivert og følger med ved prosjektaktivering.");
       }
@@ -129,8 +164,20 @@ export default function SalesContractActions({ request, onOpenWizard }) {
   }
 
   useEffect(() => {
-    if (!supportMode && contract?.status === "signed") finalizeContract();
-  }, [supportMode, contract?.id, contract?.status, contract?.final_document?.path]);
+    if (
+      !writeBlocked &&
+      !projectHasSyncedFinalDocument &&
+      contract?.status === "signed"
+    ) {
+      finalizeContract();
+    }
+  }, [
+    writeBlocked,
+    projectHasSyncedFinalDocument,
+    contract?.id,
+    contract?.status,
+    contract?.final_document?.path,
+  ]);
 
   const customerLink = useMemo(() => {
     if (!contract?.customer_token || typeof window === "undefined") return "";
@@ -179,6 +226,17 @@ export default function SalesContractActions({ request, onOpenWizard }) {
 
   if (!contract) {
     if (request?.contractFile) return null;
+    if (writeBlocked || creationDisabledReason) {
+      return (
+        <div
+          role={creationDisabledReason ? "alert" : undefined}
+          style={{ color: creationDisabledReason ? "#9b1c1c" : "#52616b", fontWeight: 700 }}
+        >
+          {creationDisabledReason ||
+            "Ingen Expo-kontrakt er opprettet. Prosjektet må være åpent i ordinær arbeidsmodus for å opprette kontrakt."}
+        </div>
+      );
+    }
     return (
       <div
         style={{
@@ -232,9 +290,11 @@ export default function SalesContractActions({ request, onOpenWizard }) {
       </div>
 
       <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-        <button className="sales-primary-button" type="button" onClick={onOpenWizard}>
-          <FileSignature size={17} /> Åpne kontrakt
-        </button>
+        {!writeBlocked ? (
+          <button className="sales-primary-button" type="button" onClick={onOpenWizard}>
+            <FileSignature size={17} /> Åpne kontrakt
+          </button>
+        ) : null}
 
         {customerLink ? (
           <>
@@ -268,9 +328,9 @@ export default function SalesContractActions({ request, onOpenWizard }) {
           Oppretter og arkiverer endelig signert kontrakt-PDF …
         </span>
       ) : null}
-      {supportMode && signed && !contract.final_document ? (
+      {writeBlocked && signed && !contract.final_document ? (
         <span style={{ color: "#52616b" }}>
-          Sluttarkivering av PDF gjøres av firmaet utenfor supportmodus.
+          Sluttarkivering av PDF gjøres i et åpent prosjekt i ordinær arbeidsmodus.
         </span>
       ) : null}
       {message ? <span style={{ color: "#176b42", fontWeight: 750 }}>{message}</span> : null}
@@ -279,7 +339,7 @@ export default function SalesContractActions({ request, onOpenWizard }) {
           <span role="alert" style={{ color: "#9b1c1c", fontWeight: 700 }}>
             {error}
           </span>
-          {signed && !supportMode ? (
+          {signed && !writeBlocked ? (
             <button
               className="sales-secondary-button"
               type="button"

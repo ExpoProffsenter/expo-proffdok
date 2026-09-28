@@ -37,6 +37,40 @@ requireNeedles("supabase/migrations/20260910142500_fase41b3b_active_work_profile
   "current_user_has_multiple_work_profiles",
 ]);
 
+const projectScopeTrigger = requireNeedles(
+  "supabase/migrations/20260928103600_restore_project_company_scope_trigger.sql",
+  [
+    "create or replace function public.sync_project_company_scope_id()",
+    "new.company_scope_id:=v_scope_id",
+    "new.user_id:=old.user_id",
+    "public.current_active_company_scope_id()",
+    "public.work_profile_company_profile(v_scope_id)",
+    "drop trigger if exists projects_sync_company_scope_id on public.projects",
+    "before insert or update of data, company_scope_id on public.projects",
+    "execute function public.sync_project_company_scope_id()",
+    "revoke all on function public.sync_project_company_scope_id() from public",
+    "grant execute on function public.sync_project_company_scope_id() to service_role",
+  ]
+);
+if (/\b(delete|truncate)\s+from\s+public\.projects\b/i.test(projectScopeTrigger)) {
+  throw new Error("Prosjektscope-reparasjonen skal aldri endre eller slette eksisterende prosjekter.");
+}
+
+const projectLockRpc = requireNeedles(
+  "supabase/migrations/20260928114200_restore_set_project_lock_rpc.sql",
+  [
+    "create or replace function public.set_project_lock(",
+    "security definer",
+    "public.project_row_access_allowed(v_row.company_scope_id,v_row.user_id)",
+    "v_data := jsonb_set(v_data,'{project,locked}',to_jsonb(p_locked),true)",
+    "locked_at=case when p_locked then now() else null end",
+    "grant execute on function public.set_project_lock(uuid, boolean, text) to authenticated, service_role",
+  ]
+);
+if (/\b(delete|truncate)\s+from\s+public\.projects\b/i.test(projectLockRpc)) {
+  throw new Error("Prosjektlås-RPC skal aldri slette eksisterende prosjekter.");
+}
+
 const sharedProjects = requireNeedles("supabase/migrations/20260910151200_fase41b3_shared_project_list.sql", [
   "list_active_work_profile_projects",
   "current_user_has_module_access('projects')",
@@ -123,7 +157,8 @@ requireNeedles("src/modules/access/systemAdminWorkProfileUx.jsx", [
   "setManagedWorkProfiles",
   "disabled={isPrimary || saving}",
   "!user.approved || user.deactivated || user.system_role === \"systemadmin\"",
-  "target?.closest(`[${MOUNT_ATTR}]`)",
+  "addEventListener(MANAGED_ACCESS_EVENT",
+  "reloadAfterManagedAccessChange",
 ]);
 
 requireNeedles("src/modules/company/companyViewTools.js", [
@@ -154,11 +189,57 @@ const projectScopeGuard = requireNeedles("src/modules/access/systemAdminProjectS
   "active_company_id",
   "NO_COMPANY_SCOPE",
   'next.searchParams.set("company_scope_id"',
+  "SYSTEMADMIN_PROJECT_SUPPORT_PARAM",
+  "markSystemAdminProjectSupportQuery",
+  "stripSystemAdminProjectSupportMarker",
+  "SUPPORT_READ_METHODS.has(method)",
   "window.fetch = async",
 ]);
 if (/GUARDED_METHODS[^\n]*POST/.test(projectScopeGuard)) {
   throw new Error("42G-scopeguard skal ikke omskrive prosjekt-INSERT; firmascopet settes server-side.");
 }
+if (/SUPPORT_READ_METHODS[^\n]*(PATCH|DELETE|POST)/.test(projectScopeGuard)) {
+  throw new Error("Systemadmin Supportmodus skal aldri gi skrive-bypass.");
+}
+
+const mainSource = requireNeedles("src/main.jsx", [
+  "markSystemAdminProjectSupportQuery",
+  "options.supportMode",
+  'params.set("support", "1")',
+  'params.get("support") === "1"',
+  "loadProjects(authUser, true, null, { supportMode: true })",
+  "const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;",
+  "if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();",
+  "inert: isProjectSupportReadOnly ? true : void 0",
+  '"data-support-read-only": isProjectSupportReadOnly ? "true" : void 0',
+  "hasActiveProjectWorkspace && !isProjectSupportReadOnly",
+  "projectId && !isProjectSupportReadOnly",
+  "Skrivebeskyttet – ingen endringer kan lagres",
+]);
+const supportMutationGuardCount = (
+  mainSource.match(/if \(isProjectSupportReadOnly\) return notifySupportProjectReadOnly\(\);/g) || []
+).length;
+if (supportMutationGuardCount < 5) {
+  throw new Error("Prosjekt-supportmodus mangler defense-in-depth på kritiske skrivehandlinger.");
+}
+for (const guard of [
+  "isReadOnly || isProjectSupportReadOnly || isProjectLocked",
+  "isReadOnly || isProjectSupportReadOnly) return;",
+]) {
+  if (!mainSource.includes(guard)) {
+    throw new Error(`Prosjekt-supportmodus mangler autolagringsvern: ${guard}`);
+  }
+}
+
+requireNeedles("README.md", [
+  "Prosjekter åpnet på tvers av firma i eksplisitt Systemadmin-supportmodus er skrivebeskyttet",
+]);
+requireNeedles("docs/architecture/EXPO_PROFFDOK_ARCHITECTURE.md", [
+  "Et prosjekt som åpnes via eksplisitt tverrfirma-support er skrivebeskyttet i hele prosjektflaten",
+]);
+requireNeedles("src/modules/help/helpToolsCore.js", [
+  "Prosjekter som åpnes på tvers av firma i Supportmodus er skrivebeskyttet",
+]);
 
 const indexHtml = requireNeedles("index.html", [
   "installSystemAdminProjectScopeGuard",

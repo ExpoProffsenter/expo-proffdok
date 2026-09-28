@@ -1,13 +1,14 @@
-// Expo ProffDok – FASE 42K
-// Smalt UX-sikkerhetsnett for nye brukere i Systemadministrasjon.
-// Backend/RLS er autoritativ. Denne filen speiler serverreglene i eksisterende
-// brukerkort uten å endre main.jsx eller den etablerte godkjenningsflyten.
-// Hjelp-innhold rendres fortsatt kun gjennom React-kjernen i helpToolsCore.js.
+// Expo ProffDok – FASE 42K / 45B
+// UX-sikkerhetsnett for Systemadmin. Backend/RLS er autoritativ.
+// Samme brukerkort brukes for godkjenning, firma, rolle og modultilganger.
 
-import { listManagedModuleAccess } from "./moduleAccessClient.js";
+import {
+  MANAGED_ACCESS_EVENT,
+  listManagedModuleAccess,
+} from "./moduleAccessClient.js";
 
 const USER_MOUNT_ATTR = "data-systemadmin-unified-access";
-const ALLOWED_STORE_COMPANIES = new Set([
+const INTERNAL_STORE_COMPANIES = new Set([
   "ringside rorleggerbedrift as",
   "bademiljo expo",
   "expo proffsenter",
@@ -20,7 +21,6 @@ let frame = 0;
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
-
 function normalizeCompany(value = "") {
   return compactText(value)
     .toLocaleLowerCase("nb-NO")
@@ -29,42 +29,42 @@ function normalizeCompany(value = "") {
     .replace(/æ/g, "ae")
     .replace(/ø/g, "o");
 }
-
 function userById(userId = "") {
   return (snapshot?.users || []).find((user) => String(user?.user_id || "") === String(userId || "")) || null;
 }
-
-function findModuleLabel(mount, moduleName) {
+function findStoreModuleLabel(mount) {
   if (!(mount instanceof HTMLElement)) return null;
   return Array.from(mount.querySelectorAll("label")).find((label) =>
-    Array.from(label.querySelectorAll("b")).some((node) => compactText(node.textContent) === moduleName)
+    Array.from(label.querySelectorAll("b")).some((node) => {
+      const text = compactText(node.textContent);
+      return text === "Generelle tilbud" || text === "Butikktilbud" || text === "Generelle tilbud / Proff vareregister";
+    })
   ) || null;
 }
 
 function applyStoreOfferCompanyPolicy() {
   if (!snapshot?.is_systemadmin) return;
-
   document.querySelectorAll(`[${USER_MOUNT_ATTR}]`).forEach((mount) => {
     if (!(mount instanceof HTMLElement)) return;
     const user = userById(mount.getAttribute(USER_MOUNT_ATTR));
     if (!user) return;
-
-    const label = findModuleLabel(mount, "Butikktilbud");
+    const label = findStoreModuleLabel(mount);
     const checkbox = label?.querySelector('input[type="checkbox"]');
     const note = label?.querySelector("small");
     if (!(label instanceof HTMLElement) || !(checkbox instanceof HTMLInputElement)) return;
 
     const targetIsSystemAdmin = user.system_role === "systemadmin";
-    const allowedCompany = ALLOWED_STORE_COMPANIES.has(normalizeCompany(user.company_name));
-    const allowed = targetIsSystemAdmin || allowedCompany;
+    const internalCompany = INTERNAL_STORE_COMPANIES.has(normalizeCompany(user.company_name));
+    const proCompany = user.company_has_pro_catalog === true;
+    const allowed = targetIsSystemAdmin || internalCompany || proCompany;
 
     if (!allowed) {
       checkbox.disabled = true;
       label.dataset.companyPolicyLocked = "1";
       label.style.opacity = "0.62";
       label.style.cursor = "not-allowed";
-      label.title = "Butikktilbud kan bare gis til Ringside Rørleggerbedrift AS, Bademiljø Expo eller Expo Proffsenter.";
-      if (note) note.textContent = "Kun Ringside, Bademiljø Expo og Expo Proffsenter";
+      label.title = "Aktiver minst én leverandør for firmaet under Proff vareregister først.";
+      if (note) note.textContent = "Aktiver leverandører for firmaet under Proff vareregister først";
       return;
     }
 
@@ -74,8 +74,8 @@ function applyStoreOfferCompanyPolicy() {
       label.style.removeProperty("cursor");
       label.removeAttribute("title");
       checkbox.disabled = targetIsSystemAdmin;
-      if (note) note.textContent = "Krever Befaring / Våtromstilbud";
     }
+    if (note) note.textContent = "Krever Befaring / Våtromstilbud";
   });
 }
 
@@ -86,7 +86,6 @@ function scheduleApply() {
     applyStoreOfferCompanyPolicy();
   });
 }
-
 async function loadSnapshot() {
   if (loadPromise) return loadPromise;
   loadPromise = listManagedModuleAccess()
@@ -99,10 +98,17 @@ async function loadSnapshot() {
       snapshot = null;
       return null;
     })
-    .finally(() => {
-      loadPromise = null;
-    });
+    .finally(() => { loadPromise = null; });
   return loadPromise;
+}
+
+function reloadAfterManagedAccessChange() {
+  const pending = loadPromise;
+  if (pending) {
+    void pending.finally(() => loadSnapshot());
+    return;
+  }
+  void loadSnapshot();
 }
 
 function pendingUserForApprovalButton(button) {
@@ -114,15 +120,12 @@ function pendingUserForApprovalButton(button) {
     return email && cardText.includes(email);
   }) || null;
 }
-
 function guardApprovalWithoutCompany(event) {
   if (!snapshot?.is_systemadmin) return;
   const button = event.target instanceof Element ? event.target.closest("button") : null;
   if (!(button instanceof HTMLButtonElement) || compactText(button.textContent) !== "Godkjenn bruker") return;
-
   const user = pendingUserForApprovalButton(button);
   if (!user || compactText(user.company_name)) return;
-
   event.preventDefault();
   event.stopImmediatePropagation();
   alert("Velg Firma for brukeren før du godkjenner. Firma styrer datascope og må være satt før brukeren får tilgang til Expo ProffDok.");
@@ -131,18 +134,10 @@ function guardApprovalWithoutCompany(event) {
 export function installSystemAdminUserPolicyGuard() {
   if (typeof window === "undefined" || window.__expoSystemAdminUserPolicyGuardInstalled) return;
   window.__expoSystemAdminUserPolicyGuardInstalled = true;
-
   document.addEventListener("click", guardApprovalWithoutCompany, true);
-  document.addEventListener("change", (event) => {
-    if (!(event.target instanceof Element)) return;
-    if (event.target.closest(".adminAccordionItem") || event.target.closest(".item")) {
-      window.setTimeout(() => void loadSnapshot(), 450);
-    }
-  }, true);
   window.addEventListener("focus", () => void loadSnapshot());
-
+  window.addEventListener(MANAGED_ACCESS_EVENT, reloadAfterManagedAccessChange);
   const observer = new MutationObserver(scheduleApply);
   observer.observe(document.documentElement, { childList: true, subtree: true });
-
   void loadSnapshot();
 }

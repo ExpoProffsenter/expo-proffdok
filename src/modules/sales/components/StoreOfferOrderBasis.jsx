@@ -336,7 +336,7 @@ export default function StoreOfferOrderBasis({ request }) {
           <section className="storeOrderDialog" role="dialog" aria-modal="true" aria-label="Bestillingsgrunnlag">
             <header className="storeOrderHeader">
               <div>
-                <span>Butikktilbud · {text(request?.id) || "Sak"}</span>
+                <span>Generelt tilbud · {text(request?.id) || "Sak"}</span>
                 <h1>Bestillingsgrunnlag</h1>
                 <p>
                   {text(request?.customer) || "Kunde"}

@@ -60,7 +60,7 @@ function adaptStartHelp(access) {
   const moduleNames = [];
   if (canProjects) moduleNames.push("Prosjekter og dokumentasjon");
   if (canSales) moduleNames.push("Befaring / Våtromstilbud");
-  if (canStore) moduleNames.push("Butikktilbud");
+  if (canStore) moduleNames.push("Generelle tilbud");
 
   const purpose = card.querySelector("p.note");
   if (purpose) {
@@ -148,7 +148,7 @@ function adaptSystemAdminHelp(access) {
   const best = lists[2];
 
   appendUniqueListItem(workflow, "Ved ny bruker: kontroller firma og rolle, velg minst én modultilgang under Brukere og tilganger, og godkjenn først deretter.");
-  appendUniqueListItem(workflow, "Bruk Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Butikktilbud som hovedmoduler. Butikktilbud krever samtidig Befaring / Våtromstilbud.");
+  appendUniqueListItem(workflow, "Bruk Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Generelle tilbud som hovedmoduler. Generelle tilbud krever samtidig Befaring / Våtromstilbud.");
   appendUniqueListItem(workflow, "Etter godkjenning kan firmaadministrator administrere egne ansatte, men bare delegere moduler firmaadministratoren selv har.");
   appendUniqueListItem(workflow, "Systemadministratorer har alltid alle hovedmoduler og kan administrere modultilganger på tvers av firma.");
 
@@ -177,7 +177,7 @@ function adaptModuleAccessHelp(access) {
   const lines = access?.isSystemAdmin
     ? [
         "Ved ny bruker: kontroller firma og rolle, velg minst én relevant modultilgang, lagre tilgangen og godkjenn brukeren først etterpå.",
-        "Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Butikktilbud er egne hovedtilganger. Butikktilbud krever Befaring / Våtromstilbud.",
+        "Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Generelle tilbud er egne hovedtilganger. Generelle tilbud krever Befaring / Våtromstilbud.",
         "Systemadministrator har alltid alle hovedmoduler og kan administrere brukere på tvers av firma.",
         "Firmaadministrator kan etter godkjenning administrere egne ansatte, men kan aldri delegere moduler firmaadministratoren selv mangler.",
         "Firmaadministrator kan ikke endre egen modultilgang eller en systemadministrator. Egen tilgang styres av systemadministrator.",
@@ -186,7 +186,7 @@ function adaptModuleAccessHelp(access) {
       ]
     : [
         "Firmaadministrator kan administrere brukere i eget firma og bare delegere moduler firmaadministratoren selv har.",
-        "Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Butikktilbud er egne hovedtilganger. Butikktilbud krever Befaring / Våtromstilbud.",
+        "Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Generelle tilbud er egne hovedtilganger. Generelle tilbud krever Befaring / Våtromstilbud.",
         "Firmaadministrator kan ikke endre egen modultilgang. Egen tilgang styres av systemadministrator.",
         "Systemadministrator styrer rammen for firmaet og kan gi eller fjerne moduler på tvers av firma.",
         "Meny, arbeidsflater og Hjelp følger tildelte moduler. Server/RLS håndhever den faktiske data- og skrivetilgangen.",

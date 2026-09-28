@@ -1,3 +1,8 @@
+import {
+  createReportGenerationStamp,
+  resolveReportWarrantyReceipt,
+} from "./reportFinalizationState.mjs";
+
 // FASE 24A RAPPORTFRAGMENTERING
 // Eksisterende rapport-/PDF-kode flyttet mekanisk ut av src/main.jsx.
 // Ingen rapportlogikk er endret. Avhengigheter injiseres fra App.
@@ -253,6 +258,7 @@ export function createReportTools(deps = {}) {
         const margin = 14;
         const contentWidth = pageWidth - margin * 2;
         let y = 16;
+        const reportGeneration = createReportGenerationStamp();
 
         const cleanReportText = (value) => {
           let text = value === void 0 || value === null ? "" : String(value);
@@ -289,7 +295,11 @@ export function createReportTools(deps = {}) {
         };
         const companyPhoneForReport = cleanCompanyPhoneForReport(company.phone);
         const reportAddressLine = () => [project.address, project.postnr, project.city].filter(Boolean).join(", ");
-        const reportGeneratedAtLabel = () => new Date().toLocaleString("no-NO");
+        const reportGeneratedAtLabel = () => reportGeneration.label;
+        const reportWarrantyReceipt = () => resolveReportWarrantyReceipt({ warranty, warrantyReadiness, overtagelse, project });
+        const reportWarrantyTermsAccepted = () => reportWarrantyReceipt().accepted;
+        const reportWarrantyTermsAcceptedBy = () => reportWarrantyReceipt().acceptedBy;
+        const reportWarrantyTermsAcceptedAt = () => reportWarrantyReceipt().acceptedAtLabel;
         const countReportAttachments = () => {
           let total = Array.isArray(files) ? files.filter((file) => hasValue(file?.name) || hasValue(file?.url) || hasValue(file?.path)).length : 0;
           Object.values(checklist || {}).forEach((items) => {
@@ -1580,7 +1590,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           const overtagelseDate = overtagelse?.dato || project?.date || "";
           const issuedDate = warranty?.issuedAt ? new Date(warranty.issuedAt) : /* @__PURE__ */ new Date();
           const issuedDateText = warranty?.issuedAt ? issuedDate.toLocaleDateString("no-NO") : "Utstedt";
-          const reportText = warranty?.reportGeneratedAt ? new Date(warranty.reportGeneratedAt).toLocaleString("no-NO") : "Genereres nå";
+          const reportText = reportGeneratedAtLabel();
           const warrantyValidTo = (() => {
             const sourceDate = overtagelseDate || (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
             const d = new Date(sourceDate);
@@ -1805,7 +1815,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawCheckCard("Sjekklister fullført", "Ordinære sjekklister og systemspesifikke garantipunkter er kontrollert.");
           drawCheckCard("Bildedokumentasjon registrert", "Bilder av relevante arbeidsoperasjoner er registrert i prosjektet.");
           drawCheckCard("Godkjent Sopro-system valgt", `${selectedSystem.product} er dokumentert med ${selectedSystem.sintefApproval}.`);
-          drawCheckCard("Garantivilkår mottatt", warranty?.termsAccepted ? `Kunde/representant har bekreftet mottak og aksept av garantivilkår. Bekreftet av ${warranty?.termsAcceptedBy || "ikke oppgitt"}.` : "Garantivilkår er vedlagt, men kvittering er ikke registrert.");
+          drawCheckCard("Garantivilkår mottatt", reportWarrantyTermsAccepted() ? `Kunde/representant har bekreftet mottak og aksept av garantivilkår. Bekreftet av ${reportWarrantyTermsAcceptedBy()}.` : "Garantivilkår er vedlagt, men kvittering er ikke registrert.");
           drawCheckCard("Komplett PDF-rapport generert", "Sluttrapport med sjekklister, bilder, produktdokumentasjon og garantibevis er generert.");
           drawNoteBox("Garantien gjelder kun for det dokumenterte arbeidet i dette prosjektet og forutsetter normal bruk og vedlikehold i henhold til FDV-dokumentasjonen.");
           addSubTitle("Arkivering av dokumentasjon");
@@ -2025,11 +2035,16 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
         }
 
         setPdfProgress("Samler bilder…", "Laster inn og konverterer bilder til PDF-format.");
-        const photoCats = [...new Set((photos || []).map((photo) => photo.cat).filter(Boolean))];
+        const photoCategory = (photo = {}) =>
+          String(photo.cat || photo.category || "Bilder").trim() || "Bilder";
+        const photoCats = [...new Set((photos || []).map(photoCategory))];
         if (photoCats.length) {
           addSectionPageBreak("Bildedokumentasjon");
           for (const cat of photoCats) {
-            await addImageGalleryCategory(cat, (photos || []).filter((item) => item.cat === cat));
+            await addImageGalleryCategory(
+              cat,
+              (photos || []).filter((item) => photoCategory(item) === cat)
+            );
           }
         }
 
@@ -2147,7 +2162,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           drawInfoCardPdf(margin + signW + signGap, y, signW, 22, "Kunde", overtagelse.signKunde || project.customer || "Ikke oppgitt");
           y += 27;
           if (warranty?.enabled) {
-            drawInfoCardPdf(margin, y, contentWidth, 22, `Garantivilkår ${getWarrantyYears(warranty)} år`, warranty?.termsAccepted ? `Mottatt og akseptert av ${warranty?.termsAcceptedBy || warranty?.termsReceiptName || "kunde"}${warranty?.termsAcceptedAt ? " " + new Date(warranty.termsAcceptedAt).toLocaleString("no-NO") : ""}` : "Ikke bekreftet");
+            drawInfoCardPdf(margin, y, contentWidth, 22, `Garantivilkår ${getWarrantyYears(warranty)} år`, reportWarrantyTermsAccepted() ? `Mottatt og akseptert av ${reportWarrantyTermsAcceptedBy()}${reportWarrantyTermsAcceptedAt()}` : "Ikke bekreftet");
             y += 30;
           } else {
             y += 3;
@@ -2389,7 +2404,7 @@ const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
           if (isProjectLocked) {
             alert("PDF er generert fra låst/arkivert prosjekt. Prosjektets lagrede dokumentasjon og garantistatus er ikke endret.");
           } else if (warrantyIssuedForReport() && hasValue(warranty?.guaranteeNumber) && isFinalReport(reportDocumentationStatus())) {
-            const reportGeneratedAt = (/* @__PURE__ */ new Date()).toISOString();
+            const reportGeneratedAt = reportGeneration.iso;
             setWarranty((prev) => ({
               ...emptyWarranty(),
               ...prev,

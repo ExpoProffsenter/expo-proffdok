@@ -78,10 +78,10 @@ function emailHtml({
 }: any) {
   const safeLogo = resolveAssetUrl(logoUrl);
   const title = isStoreOffer
-    ? "En liten påminnelse om butikktilbudet"
+    ? "En liten påminnelse om det generelle tilbudet"
     : "En liten påminnelse om tilbudet";
   const intro = isStoreOffer
-    ? "Vi minner om butikktilbudet du har mottatt. Tilbudet er fortsatt tilgjengelig via knappen nedenfor. Du kan akseptere eller avvise tilbudet digitalt. Har du spørsmål, er du velkommen til å ta kontakt."
+    ? "Vi minner om det generelle tilbudet du har mottatt. Tilbudet er fortsatt tilgjengelig via knappen nedenfor. Du kan akseptere eller avvise tilbudet digitalt. Har du spørsmål, er du velkommen til å ta kontakt."
     : "Vi minner om våtromstilbudet du har mottatt. Tilbudet er fortsatt tilgjengelig via knappen nedenfor. Du kan akseptere eller avvise tilbudet digitalt. Har du spørsmål, er du velkommen til å ta kontakt.";
   const reminderText = `Automatisk påminnelse ${reminderNumber} av ${maxReminders} via Expo ProffDok.`;
 
@@ -359,7 +359,7 @@ serve(async (req) => {
       const reminderNumber = boundedInteger(candidate?.reminder_number, 1, 1, 10);
       const maxReminders = boundedInteger(candidate?.max_reminders, reminderNumber, reminderNumber, 10);
       const subject = isStoreOffer
-        ? `Påminnelse om butikktilbud – ${candidate.request_ref}`
+        ? `Påminnelse om generelt tilbud – ${candidate.request_ref}`
         : `Påminnelse om våtromstilbud – ${candidate.request_ref}`;
       const html = emailHtml({
         companyName,

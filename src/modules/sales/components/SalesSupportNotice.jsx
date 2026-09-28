@@ -381,18 +381,12 @@ async function loadCompanyContext(companyId, sequence) {
 
   const { data: sessionData } = await client.auth.getSession();
   const user = sessionData?.session?.user || null;
-  let supportUserName = String(user?.email || "Systemadministrator").trim();
-
-  if (user?.id) {
-    const { data: profileData } = await client
-      .from("profiles")
-      .select("full_name,email")
-      .eq("id", user.id)
-      .maybeSingle();
-    supportUserName = String(
-      profileData?.full_name || profileData?.email || user.email || "Systemadministrator"
-    ).trim();
-  }
+  const supportUserName = String(
+    user?.user_metadata?.full_name ||
+      user?.user_metadata?.name ||
+      user?.email ||
+      "Systemadministrator"
+  ).trim();
 
   if (sequence !== loadSequence || getSalesSupportCompanyId() !== companyId) {
     return false;

@@ -25,6 +25,8 @@ import { createHelpCenter } from './modules/help/helpTools.js';
 import { createChecklistEditor } from './modules/checklist/checklistTools.js';
 import { createImageDocumentationTools } from './modules/images/imageDocumentationTools.js';
 import { createProjectOverviewTools } from './modules/project/projectOverviewTools.js';
+import { createProjectPersistenceFingerprint } from './modules/project/projectPersistenceFingerprint.mjs';
+import SimpleOrderOfferBasis, { isSimpleOrderProject } from './modules/project/SimpleOrderOfferBasis.jsx';
 import { createProjectListTools, normalizeSearchText, makeSearchableText, projectMatchesSearch } from './modules/project/projectListTools.js';
 import { createProductViewTools } from './modules/product/productViewTools.js';
 import { createSurfaceViewTools, emptyBathroomEquipment, buildBathroomEquipmentReportGroups } from './modules/surfaces/surfaceViewTools.js';
@@ -39,6 +41,13 @@ import AppErrorBoundary from './modules/app/AppErrorBoundary.jsx';
 import AppUpdateNotice from './modules/app/AppUpdateNotice.jsx';
 import AppNewsNotice from './modules/app/AppNewsNotice.jsx';
 import AppNewsAdmin from './modules/app/AppNewsAdmin.jsx';
+import { shouldRebootstrapAuthState } from './modules/auth/authStateRefreshPolicy.mjs';
+import { markSystemAdminProjectSupportQuery } from './modules/access/systemAdminProjectScopeGuard.js';
+import { publishManagedAccessChange } from './modules/access/moduleAccessClient.js';
+import {
+  getAppSupabaseClient,
+  registerAppSupabaseClient,
+} from './modules/access/appSupabaseClientRegistry.js';
 import { ProgressPlanProjectTab } from './modules/progress/progressPlanUx.jsx';
 import { APP_RUNTIME_STYLES, UNDERENTREPRENOR_RUNTIME_STYLES } from './modules/app/appRuntimeStyles.js';
 import {
@@ -57,10 +66,11 @@ const import_client = { createRoot };
 const import_supabase_js = { createClient };
 const import_lucide_react = { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck };
 const import_jsx_runtime = { jsx, jsxs, Fragment };
-  var supabase = (0, import_supabase_js.createClient)(
+  var supabase = getAppSupabaseClient() || (0, import_supabase_js.createClient)(
     "https://dqffxflaoyarbxyiyhop.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
   );
+  registerAppSupabaseClient(supabase);
   var uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
   var WARRANTY_YEAR_OPTIONS = [10, 12, 15];
   var WARRANTY_YEARS = 15;
@@ -913,7 +923,7 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
       }, delay);
     };
     const markProjectDirty = () => {
-      if (dirtyTrackingPausedRef.current || isReadOnly || isProjectLocked) return;
+      if (dirtyTrackingPausedRef.current || isReadOnly || isProjectLocked || (supportModeExplicit && !!projectId)) return;
       if (!projectId && !mobileCreatingProject) return;
       const currentFingerprint = projectDirtyFingerprint(latestStateRef.current || {});
       if (!dirtyBaselineRef.current) {
@@ -1274,6 +1284,8 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const portalAccessRoleParam = isUnderleverandorView ? "underleverandor" : isReadOnly ? "kunde" : "";
     const portalAccessStorageKey = projectId && portalAccessRoleParam ? `expoProffDokPortalAccess:${projectId}:${portalAccessRoleParam}` : "";
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
+    const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;
+    const supportProjectReadOnlyMessage = "Supportprosjekter er skrivebeskyttet. Avslutt supportmodus før du oppretter eller endrer prosjektdata.";
     const isCompanyAdminUser = !!authUser && !!profile?.approved && !profile?.deactivated && (profile?.company_role === "firmaadmin" || isSystemAdminUser);
     const currentCompanyName = String(profile?.company_name || company?.companyName || "").trim();
     const normalizeCompanyName = (value = "") => String(value || "").trim().toLowerCase();
@@ -1299,7 +1311,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return normalizeCompanyName(projectCompanyNameFromRow(row)) === normalizeCompanyName(ownCompanyName);
     };
     const isAdminUser = isSystemAdminUser;
-    const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly;
+    const canUseAdminProjectSync = !!authUser && !!profile?.approved && isSystemAdminUser && !isReadOnly && !isProjectSupportReadOnly;
     const projectIsLocked = (p = project) => p?.locked === true || p?.locked === "true" || p?.status === "locked" || p?.status === "Avsluttet";
     const applyLockState = (baseProject, sourceProject = {}) => ({
       ...baseProject,
@@ -1314,7 +1326,14 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       alert(lockedProjectMessage);
       return false;
     };
-    const canEditProject = () => !isProjectLocked || notifyLockedProject();
+    const notifySupportProjectReadOnly = () => {
+      alert(supportProjectReadOnlyMessage);
+      return false;
+    };
+    const canEditProject = () => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
+      return !isProjectLocked || notifyLockedProject();
+    };
     const hasOvertagelseSignature = (name = "", image = "") => hasValue(name) || hasValue(image);
     const overtagelseIsSignedByBoth = (o = overtagelse) => hasOvertagelseSignature(o?.signUtf\u00F8rende, o?.signUtf\u00F8rendeImage) && hasOvertagelseSignature(o?.signKunde, o?.signKundeImage);
     const overtagelseHasDraftContent = (o = overtagelse) => !!o?.enabled || hasValue(o?.kommentar) || hasValue(o?.signUtf\u00F8rende) || hasValue(o?.signKunde) || hasValue(o?.signUtf\u00F8rendeImage) || hasValue(o?.signKundeImage);
@@ -1839,7 +1858,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     }, [projects, adminUsers]);
     const ordinaryProjectListRows = (0, import_react.useMemo)(() => {
       if (!isSystemAdminUser) return projectListRows;
-      const activeSupportProjectRow = supportModeExplicit && projectId && currentProjectOwnerId && currentProjectOwnerId !== authUser?.id
+      const activeSupportProjectRow = supportModeExplicit && projectId
         ? (projectListRows || []).find((item) => item?.row?.id === projectId) || null
         : null;
       const activeSupportCompanyScopeId = String(activeSupportProjectRow?.row?.company_scope_id || "").trim();
@@ -1926,7 +1945,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }).slice(0, 120);
     }, [projectListRows, supportProjectSearch, supportSelectedCompany]);
     const currentSupportProjectRow = (0, import_react.useMemo)(() => {
-      if (!supportModeExplicit || !isSystemAdminUser || !projectId || !currentProjectOwnerId || currentProjectOwnerId === authUser?.id) return null;
+      if (!supportModeExplicit || !isSystemAdminUser || !projectId) return null;
       return (projectListRows || []).find((item) => item?.row?.id === projectId) || null;
     }, [supportModeExplicit, isSystemAdminUser, projectId, currentProjectOwnerId, authUser?.id, projectListRows]);
     const isSupportModeActive = !!currentSupportProjectRow;
@@ -1938,7 +1957,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     ).trim();
     const supportProjectOwner = (adminUsers || []).find((entry) => entry?.id === currentProjectOwnerId);
     const exitSupportMode = () => {
-      if (!isSupportModeActive) return;
+      if (!isProjectSupportReadOnly) return;
       setProject({ ...emptyProject(), responsible: user?.name || authUser?.email || "" });
       setChecked({});
       setProductDocs({});
@@ -2261,7 +2280,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const localDraftStorageKey = (id = projectId) => authUser?.id ? `expoProffDokDraft:${authUser.id}:${id || "new"}` : "";
     const isSupportProjectDraft = (id = projectId, ownerId = currentProjectOwnerId) => {
       if (!isSystemAdminUser || !authUser?.id || !id) return false;
-      return !!ownerId && ownerId !== authUser.id;
+      return supportModeExplicit || (!!ownerId && ownerId !== authUser.id);
     };
     const shouldSkipLocalDraftForSupport = (id = projectId, ownerId = currentProjectOwnerId) => isSupportProjectDraft(id, ownerId);
     const saveLocalDraftNow = (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
@@ -2367,7 +2386,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       return true;
     };
     const autoSaveProjectToCloud = async (snapshot = latestStateRef.current || buildProjectSnapshot()) => {
-      if (!authUser || !projectId || isReadOnly || isProjectLocked) return;
+      if (!authUser || !projectId || isReadOnly || isProjectSupportReadOnly || isProjectLocked) return;
       setProjectAutoSaveStatus("Autolagrer …");
       try {
         const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
@@ -2404,9 +2423,28 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           projectLog: { ...normalizeProjectLog(snapshot.projectLog), draft: snapshot.projectLog?.draft || "" },
           internalNotes: snapshot.internalNotes
         }));
+        const nextProjectTitle = projectForSave.projectName || projectForSave.address || existing.title || "Uten navn";
+        const nextPersistenceFingerprint = createProjectPersistenceFingerprint(cleanData);
+        const existingPersistenceFingerprint = createProjectPersistenceFingerprint(existingData);
+        const projectDataUnchanged =
+          nextPersistenceFingerprint !== null &&
+          nextPersistenceFingerprint === existingPersistenceFingerprint;
+        const projectTitleUnchanged =
+          String(nextProjectTitle || "") === String(existing.title || "");
+        const snapshotIsStillCurrent =
+          projectDirtyFingerprint(latestStateRef.current || {}) ===
+          projectDirtyFingerprint(snapshot);
+        if (projectDataUnchanged && projectTitleUnchanged) {
+          if (snapshotIsStillCurrent) {
+            clearLocalDraft(projectId);
+            resetProjectDirty(snapshot);
+          }
+          setProjectAutoSaveStatus("Ingen endringer å lagre");
+          return;
+        }
         const { error: updateError } = await supabase.from("projects").update({
           data: cleanData,
-          title: projectForSave.projectName || projectForSave.address || existing.title || "Uten navn",
+          title: nextProjectTitle,
           updated_at: (/* @__PURE__ */ new Date()).toISOString()
         }).eq("id", projectId);
         if (updateError) {
@@ -2414,8 +2452,13 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           setProjectAutoSaveStatus("Kunne ikke autolagre");
           return;
         }
-        clearLocalDraft(projectId);
-        setProjectAutoSaveStatus(`Autolagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+        if (snapshotIsStillCurrent) {
+          clearLocalDraft(projectId);
+          resetProjectDirty(snapshot);
+          setProjectAutoSaveStatus(`Autolagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+        } else {
+          setProjectAutoSaveStatus("Nyere endringer venter på autolagring");
+        }
       } catch (error) {
         console.warn("Autolagring prosjekt feilet:", error);
         setProjectAutoSaveStatus("Kunne ikke autolagre");
@@ -2438,7 +2481,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         if (localDraftTimerRef.current) window.clearTimeout(localDraftTimerRef.current);
         if (cloudAutoSaveTimerRef.current) window.clearTimeout(cloudAutoSaveTimerRef.current);
       };
-    }, [company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes, projectId, currentProjectOwnerId, mobileCreatingProject, authUser?.id, profile?.approved, isReadOnly, isProjectLocked]);
+    }, [company, user, project, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud, overtagelse, warranty, projectLog, internalNotes, projectId, currentProjectOwnerId, supportModeExplicit, mobileCreatingProject, authUser?.id, profile?.approved, isReadOnly, isProjectLocked]);
     (0, import_react.useEffect)(() => {
       const handleBeforeUnload = () => saveLocalDraftNow(latestStateRef.current || buildProjectSnapshot());
       const handleVisibilityChange = () => {
@@ -2450,7 +2493,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         window.removeEventListener("beforeunload", handleBeforeUnload);
         document.removeEventListener("visibilitychange", handleVisibilityChange);
       };
-    }, [authUser?.id, projectId, currentProjectOwnerId, mobileCreatingProject, isReadOnly, profile?.approved]);
+    }, [authUser?.id, projectId, currentProjectOwnerId, supportModeExplicit, mobileCreatingProject, isReadOnly, profile?.approved]);
 
     (0, import_react.useEffect)(() => {
       const warnBeforeUnload = (event) => {
@@ -2506,7 +2549,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         }
       }
     }, [authUser?.id, profile?.approved, isReadOnly, localDraftRestoreChecked, isSystemAdminUser, projects]);
-    const loadProjects = async (currentUser = authUser, notify = false, profileOverride = null) => {
+    const loadProjects = async (currentUser = authUser, notify = false, profileOverride = null, options = {}) => {
       if (!currentUser) {
         setProjects([]);
         if (notify) alert("Du må være logget inn for å hente prosjektliste.");
@@ -2524,6 +2567,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const normalizeCompanyForLoad = (value = "") => String(value || "").trim().toLowerCase();
 
       let query = supabase.from("projects").select("*").order("updated_at", { ascending: false });
+      if (effectiveSystemAdmin && options.supportMode) {
+        query = markSystemAdminProjectSupportQuery(query);
+      }
       if (!effectiveSystemAdmin && !effectiveCompanyAdmin) {
         query = query.eq("user_id", currentUser.id);
       }
@@ -2567,13 +2613,16 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
     };
 
-    const syncInternalProjectUrl = (activeProjectId, activeTab = "prosjekt") => {
+    const syncInternalProjectUrl = (activeProjectId, activeTab = "prosjekt", options = {}) => {
       if (!activeProjectId || typeof window === "undefined") return;
       const params = new URLSearchParams(window.location.search);
       params.set("project", String(activeProjectId));
       params.set("role", "admin");
       params.delete("access");
       params.set("tab", String(activeTab || "prosjekt"));
+      const keepSupportMode = options.supportMode ?? supportModeExplicit;
+      if (keepSupportMode) params.set("support", "1");
+      else params.delete("support");
       const query = params.toString();
       const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash || ""}`;
       window.history.replaceState({}, document.title, nextUrl);
@@ -2584,7 +2633,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         const canLeave = await confirmLeaveWithUnsavedChanges("åpner et annet prosjekt");
         if (!canLeave) return;
       }
-      const { data, error } = await supabase.from("projects").select("*").eq("id", id).single();
+      let projectQuery = supabase.from("projects").select("*").eq("id", id);
+      if (options.supportMode) projectQuery = markSystemAdminProjectSupportQuery(projectQuery);
+      const { data, error } = await projectQuery.single();
       if (error || !data) {
         console.error(error);
         return alert("Kunne ikke \xE5pne prosjekt: " + (error?.message || "Fant ikke prosjekt"));
@@ -2593,11 +2644,16 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setProjectId(data.id);
       setCurrentProjectOwnerId(data.user_id || "");
       setSupportModeExplicit(!!options.supportMode);
+      if (options.supportMode) {
+        setProjects((current) => (current || []).some((row) => row?.id === data.id)
+          ? current
+          : [data, ...(current || [])]);
+      }
       setLocalDraftRestoreChecked(false);
       setMobileCreatingProject(false);
       setShowOpenDeviationsOnly(!!options.showOpenDeviationsOnly);
       setTab(targetTab);
-      syncInternalProjectUrl(data.id, targetTab);
+      syncInternalProjectUrl(data.id, targetTab, { supportMode: !!options.supportMode });
       setTimeout(() => scrollToMobileTabTarget(targetTab), 180);
       setTimeout(() => scrollToMobileTabTarget(targetTab), 420);
       if (options.showOpenDeviationsOnly) {
@@ -2636,7 +2692,11 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           error = portalError;
         }
       } else {
-        const response = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        let projectQuery = supabase.from("projects").select("*").eq("id", projectId);
+        if (supportModeExplicit && isSystemAdminUser) {
+          projectQuery = markSystemAdminProjectSupportQuery(projectQuery);
+        }
+        const response = await projectQuery.maybeSingle();
         data = response.data;
         error = response.error;
       }
@@ -2910,12 +2970,18 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
     };
 
-    const handleAuthUser = async (sessionUser) => {
+    const handleAuthUser = async (sessionUser, authEvent = "") => {
       const nextUserId = sessionUser?.id || null;
       const previousUserId = previousAuthUserIdRef.current;
       const isNewLoginOrLogout = previousUserId !== nextUserId;
+      const shouldRebootstrap = shouldRebootstrapAuthState({
+        event: authEvent,
+        previousUserId,
+        nextUserId
+      });
       previousAuthUserIdRef.current = nextUserId;
       setAuthUser(sessionUser);
+      if (!shouldRebootstrap) return;
       if (isNewLoginOrLogout) {
         resetToCleanStartPage();
         setTermsAccepted(false);
@@ -2984,13 +3050,13 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         }
       }
       supabase.auth.getSession().then(({ data }) => {
-        handleAuthUser(data.session?.user || null).finally(() => setAuthLoading(false));
+        handleAuthUser(data.session?.user || null, "INITIAL_SESSION").finally(() => setAuthLoading(false));
       });
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
         if (_event === "PASSWORD_RECOVERY") {
           setPasswordRecovery(true);
         }
-        handleAuthUser(session?.user || null);
+        handleAuthUser(session?.user || null, _event);
       });
       return () => listener.subscription.unsubscribe();
     }, []);
@@ -2999,6 +3065,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const id = String(params.get("project") || "").trim();
       const linkAccessMode = params.get("access") || params.get("role");
       const requestedTab = String(params.get("tab") || params.get("open") || "prosjekt").trim().toLowerCase() || "prosjekt";
+      const requestedSupportMode = params.get("support") === "1";
       if (!id || linkAccessMode !== "admin") return;
       if (!authUser?.id || !profile?.approved || profile?.deactivated || authLoading || profileLoading) return;
       if (directProjectOpenAttemptRef.current === id) return;
@@ -3007,7 +3074,9 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const openAuthenticatedProject = async () => {
         await loadProjects(authUser, false, profile);
         if (cancelled) return;
-        await openProjectById(id, requestedTab);
+        await openProjectById(id, requestedTab, {
+          supportMode: requestedSupportMode && isSystemAdminUser,
+        });
       };
       openAuthenticatedProject().catch((error) => {
         console.error("Kunne ikke åpne aktivert prosjekt etter innlogging:", error);
@@ -3082,6 +3151,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     }, [authUser?.id, profile?.approved, profile?.company_name, profile?.company_role, profile?.system_role]);
 
     const createNewProject = async () => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       const canLeave = await confirmLeaveWithUnsavedChanges("starter nytt prosjekt");
       if (!canLeave) return;
       const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || (Array.isArray(project.projectDeviations) ? project.projectDeviations : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.changes || []).length || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
@@ -3657,6 +3727,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
     };
     const saveProject = async () => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       const snapshot = {
         ...latestStateRef.current || {},
         company,
@@ -3890,11 +3961,12 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
         alert("Kunne ikke lagre fra delingslink. Kontakt prosjektansvarlig hvis feilen vedvarer. Feil: " + (error?.message || "Ukjent feil"));
       }
     };
-    const setProjectLockedState = async (locked) => {
+    const setProjectLockedState = async (locked, { skipConfirm = false } = {}) => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 endre prosjektstatus.");
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r det kan l\xE5ses eller l\xE5ses opp.");
       const message = locked ? "Vil du avslutte og l\xE5se prosjektet? Ingen kan lagre endringer f\xF8r prosjektet l\xE5ses opp igjen." : "Vil du l\xE5se opp prosjektet slik at endringer kan lagres igjen?";
-      if (!window.confirm(message)) return;
+      if (!skipConfirm && !window.confirm(message)) return;
       const { data, error } = await supabase.rpc("set_project_lock", {
         p_project_id: projectId,
         p_locked: !!locked,
@@ -3915,6 +3987,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
     };
     const saveAsNewProject = async () => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       const projectTitle = project.projectName || project.address || project.customer || "Uten navn";
       const hasProjectContent = projectId || project.projectName || project.address || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || Object.keys(checked || {}).length || (photos || []).length || Object.keys(checklist || {}).length || (inst || []).length || (files || []).length || (projectLog?.messages || []).length;
       if (!hasProjectContent) return alert("Det finnes ikke nok prosjektinnhold til \xE5 lagre en kopi enn\xE5.");
@@ -3969,6 +4042,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       alert(`\u2714 Kopi lagret. Du jobber n\xE5 i den nye kopien av "${projectTitle}".`);
     };
     const deleteProject = async (id) => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       if (!window.confirm("Er du sikker p\xE5 at du vil slette prosjektet?")) return;
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 slette prosjekt.");
       const { data, error } = await supabase.from("projects").delete().eq("id", id).select("id");
@@ -3991,6 +4065,7 @@ Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser bl
       alert("Prosjekt slettet.");
     };
     const saveProjectForLink = async () => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
       if (projectId) return projectId;
       if (!authUser) {
         alert("Du m\xE5 v\xE6re logget inn for \xE5 lage delingslink.");
@@ -4350,6 +4425,7 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       }
       setAdminUsers(data || []);
       setAdminTermsAcceptances(termsFetchError ? [] : termsData || []);
+      publishManagedAccessChange({ source: "admin-users-loaded" });
     };
     const approveAdminUser = async (id) => {
       if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
@@ -5239,6 +5315,10 @@ ${appLink}`;
     });
 
     const uploadImages = async (fileList, folder = "photos") => {
+      if (isProjectSupportReadOnly) {
+        notifySupportProjectReadOnly();
+        return [];
+      }
       if (isProjectLocked) {
         notifyLockedProject();
         return [];
@@ -5268,7 +5348,7 @@ ${appLink}`;
       return uploaded;
     };
     const autoSavePhotosToCloud = async (nextPhotos) => {
-      if (!authUser || !projectId || isReadOnly) return;
+      if (!authUser || !projectId || isReadOnly || isProjectSupportReadOnly) return;
       setPhotoSaveStatus("Lagrer bilder …");
       try {
         const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
@@ -5350,7 +5430,7 @@ ${appLink}`;
       if (droppedFiles && droppedFiles.length) addPhoto(cat, droppedFiles);
     };
     const autoSaveChecklistToCloud = async (nextChecklist) => {
-      if (!authUser || !projectId || isReadOnly) return;
+      if (!authUser || !projectId || isReadOnly || isProjectSupportReadOnly) return;
       setChecklistSaveStatus("Lagrer sjekkliste …");
       try {
         const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
@@ -5644,7 +5724,7 @@ ${appLink}`;
           inst,
           setInst,
           uploadImages,
-          authorName: user.name || "Ukjent"
+          authorName: authenticatedFullName || user.name || authUser?.email || profile?.email || "Ukjent"
         }),
         tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),
@@ -5909,29 +5989,30 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: projectId ? `${currentStatus.icon} ${currentStatus.label}` : authUser?.email || name })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
+          !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
           !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
           projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: "← Til startside" }),
-          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectDirty ? "● Lagre endringer" : projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
-          hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
+          hasActiveProjectWorkspace && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectDirty ? "● Lagre endringer" : projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
+          hasActiveProjectWorkspace && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
           hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
             " Last ned PDF"
           ] }),
-          projectId && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
+          projectId && !isProjectSupportReadOnly && (isProjectLocked ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(false), children: "\u{1F513} L\xE5s opp prosjekt" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => setProjectLockedState(true), children: "\u{1F512} Avslutt prosjekt" }))
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { children: tabs.map(([id, l]) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: tab === id ? "on" : "", onClick: () => goToTab(id), children: l }, id)) }),
-        projectDirty && hasActiveProjectWorkspace && !isReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "10px 14px", background: "#fffbeb", border: "1px solid #facc15", borderRadius: "14px", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }, children: [
+        projectDirty && hasActiveProjectWorkspace && !isReadOnly && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "10px 14px", background: "#fffbeb", border: "1px solid #facc15", borderRadius: "14px", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "🟡 Ulagrede endringer i prosjektet" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: saveProject, children: "Lagre nå" })
         ] }),
-        isSupportModeActive && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "12px 16px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "16px", display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }, children: [
+        isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: "1180px", margin: "0 auto 10px", padding: "12px 16px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "16px", display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", flexWrap: "wrap" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gap: "3px" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { style: { color: "#9a3412" }, children: "SYSTEMADMIN SUPPORTMODUS" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("small", { style: { color: "#7c2d12", fontWeight: 800 }, children: [
               "Firma: ", supportProjectCompanyName || "Ukjent firma",
               " · Prosjekt: ", project.projectName || project.address || "Uten navn",
-              " · Prosjekteier: ", supportProjectOwner?.email || currentProjectOwnerId || "ukjent"
+              " · Prosjekteier: ", supportProjectOwner?.email || currentProjectOwnerId || "ukjent",
+              " · Skrivebeskyttet – ingen endringer kan lagres"
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: exitSupportMode, children: "Avslutt supportmodus" })
@@ -6025,6 +6106,9 @@ ${appLink}`;
         ] })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
+        inert: isProjectSupportReadOnly ? true : void 0,
+        "aria-readonly": isProjectSupportReadOnly ? "true" : void 0,
+        "data-support-read-only": isProjectSupportReadOnly ? "true" : void 0,
         onInputCapture: () => {
           if (!projectId && mobileCreatingProject) newProjectTouchedRef.current = true;
         },
@@ -6329,11 +6413,11 @@ ${appLink}`;
             ] })
           ] })
         ] }) }) }) })),
-        tab === "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+        tab === "sales" && projectId && isSimpleOrderProject(project) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SimpleOrderOfferBasis, { project, tilbud: displayTilbud }) : tab === "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, {
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { "data-sales-resume-workspace": "true", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, {
             supabaseClient: supabase,
             authUser,
             profile,
@@ -6349,7 +6433,7 @@ ${appLink}`;
             onStartNewRequestHandled: () => setSalesStartNewRequestSignal(0),
             onStartNewOfferHandled: () => setSalesStartNewOfferSignal(0),
             onOpenRequestHandled: () => setSalesOpenRequestSignal("")
-          })
+          }) })
         ] }),
         tab === "prosjektinfo" && renderProjectDescriptionPanel({
           project,
@@ -6476,7 +6560,7 @@ ${appLink}`;
           inst,
           setInst,
           uploadImages,
-          authorName: user.name || "Ukjent"
+          authorName: authenticatedFullName || user.name || authUser?.email || profile?.email || "Ukjent"
         }),
         tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),
@@ -6530,7 +6614,10 @@ ${appLink}`;
           project,
           tilbud: displayTilbud,
           setTilbud,
-          uploadTilbudFiles
+          uploadTilbudFiles,
+          readOnly: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly || isProjectLocked,
+          showSalesContractTools: !isReadOnly && !isUnderleverandorView,
+          onProjectSynced: () => refreshProjectFromCloud(true, true)
         }),
         tab === "overtagelse" && renderOvertagelsePanel({
           Section, Grid, Input, Textarea, SignaturePad,
@@ -6615,7 +6702,7 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Supportmodus" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Brukes av systemadministrator for å finne firmaer og åpne prosjekter ved support. Firmaadmin hos kunde får ikke tilgang til dette området." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", flexWrap: "wrap", margin: "12px 0" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { loadAdminUsers(); loadProjects(authUser, true); }, children: "Oppdater supportdata" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => { loadAdminUsers(); loadProjects(authUser, true, null, { supportMode: true }); }, children: "Oppdater supportdata" }),
               supportSelectedCompany && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => { setSupportSelectedCompany(""); setOpenSupportCompany(""); }, children: "Vis alle firma" })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [

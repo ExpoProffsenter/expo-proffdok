@@ -4,6 +4,7 @@
 // projiserer målbrukerens faktiske moduler. Ingen data eller rettigheter endres.
 
 import {
+  MANAGED_ACCESS_EVENT,
   MODULE_ACCESS_EVENT,
   listManagedModuleAccess,
   normalizeModuleKeys,
@@ -11,9 +12,9 @@ import {
   refreshMyModuleAccess,
 } from "./moduleAccessClient.js";
 import {
-  createDefaultSalesSupabaseClient,
   listSalesSupportCompanies,
 } from "../sales/services/salesSupabase.js";
+import { getAppSupabaseClient } from "./appSupabaseClientRegistry.js";
 
 const SUPPORT_LABEL = "SYSTEMADMIN SUPPORTMODUS";
 const EXIT_SUPPORT_LABEL = "Avslutt supportmodus";
@@ -25,7 +26,6 @@ const STORE_ALLOWED_COMPANIES = new Set([
   "expo proffsenter",
 ]);
 
-const salesClient = createDefaultSalesSupabaseClient();
 let activeProjection = null;
 let syncPromise = null;
 let republishTimer = null;
@@ -164,7 +164,11 @@ function applySupportSpecificVisibility() {
   const canSystemAdmin = Boolean(activeProjection.access.isSystemAdmin);
 
   document.querySelectorAll('[role="tablist"][aria-label="Tilbudstype"] button').forEach((button) => {
-    const storeTab = compactText(button.textContent).startsWith("Butikktilbud");
+    const text = compactText(button.textContent);
+    const storeTab =
+      text.startsWith("Generelle tilbud") ||
+      text.startsWith("Generelt tilbud") ||
+      text.startsWith("Butikktilbud");
     if (!storeTab) return;
     setSupportHidden(button, !canStore, "supportStoreHidden");
   });
@@ -227,15 +231,19 @@ async function buildProjection(context) {
   let salesCompanyId = "";
 
   if (access.moduleKeys.includes("sales")) {
+    const salesClient = getAppSupabaseClient();
     if (!salesClient) throw new Error("Sales-klienten er ikke tilgjengelig.");
     const { data, error } = await listSalesSupportCompanies(salesClient);
     if (error) throw error;
     const targetCompany = normalizeCompanyName(target?.company_name || context.companyName);
     const bannerCompany = normalizeCompanyName(context.companyName);
-    const company = (Array.isArray(data) ? data : []).find((entry) => {
-      const name = normalizeCompanyName(entry?.display_name);
-      return name === targetCompany || name === bannerCompany;
-    });
+    const companies = Array.isArray(data) ? data : [];
+    const normalizedEntryName = (entry = {}) =>
+      normalizeCompanyName(entry?.display_name || entry?.company_name);
+    // Prosjektets eksplisitte firma er fasit. Prosjekteieren kan være en
+    // Systemadministrator med et annet primærfirma og skal bare være fallback.
+    const company = companies.find((entry) => normalizedEntryName(entry) === bannerCompany)
+      || companies.find((entry) => normalizedEntryName(entry) === targetCompany);
     salesCompanyId = String(company?.company_id || "").trim();
     if (!salesCompanyId) {
       throw new Error(`Fant ikke Sales-firmascope for ${context.companyName}.`);
@@ -386,6 +394,16 @@ export function installSupportModeProjection() {
       republishTimer = null;
       publishProjectedAccess();
     }, 30);
+  });
+
+  window.addEventListener(MANAGED_ACCESS_EVENT, () => {
+    if (!activeProjection) return;
+    const pending = syncPromise;
+    const refresh = () => syncVisibleSupportProjection({ force: true }).catch((error) => {
+      console.error("Kunne ikke oppdatere supportmodus etter tilgangsendring", error);
+    });
+    if (pending) void pending.catch(() => null).then(refresh);
+    else void refresh();
   });
 
   window.addEventListener("focus", () => scheduleSync([0, 180]));

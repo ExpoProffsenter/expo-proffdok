@@ -1,4 +1,7 @@
-// Expo ProffDok – FASE 42I / FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1
+// Expo ProffDok – FASE 45B / FASE 44C / FASE 42I / FASE 42F / FASE 42A / FASE 39B.2C / FASE 38A1
+// FASE 45B lar lokal Sales-cache/recovery følge aktivt Representerer uten å endre database/RLS.
+// FASE 44C tvinger tilbuds-recovery gjennom server-first-gaten før SalesCore remountes.
+// Lokal kladd beholdes, men komplett serverrad primes på nytt før editor/autosave får starte.
 // FASE 42I gjør server-first-gaten saksspesifikk: saksoversikten kan åpnes på en
 // lett serverprojeksjon, mens reload/dvale/direkte åpning av én sak fortsatt primer
 // akkurat den komplette saken før SalesCore får mounte. Ingen tom summary kan nå editor.
@@ -28,11 +31,19 @@ import {
 import { shouldGateSalesCoreUntilServerCache } from "./services/salesServerCacheHydration.mjs";
 import { markStoreOfferLaunch } from "./services/salesStoreOffers.js";
 import {
+  buildSalesStorageScopedProfile,
+  resolveSalesStorageCompanyName,
+} from "./services/salesWorkProfileStorageScope.mjs";
+import {
   MODULE_ACCESS_EVENT,
   hasModuleAccess,
   readCachedModuleAccess,
   refreshMyModuleAccess,
 } from "../access/moduleAccessClient.js";
+import {
+  WORK_PROFILE_EVENT,
+  readCachedWorkProfileState,
+} from "../access/workProfileClient.js";
 
 const SALES_REOPEN_INSPECTION_KEY = "expo-proffdok:sales:reopen-inspection-after-reload";
 const SALES_OVERVIEW_INTRO_MARKER = "salesOverviewIntro";
@@ -42,11 +53,20 @@ function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
-function salesStorageKeyForProps(props = {}) {
+function salesCompanyNameForProps(props = {}, workProfileState = null) {
+  return resolveSalesStorageCompanyName({
+    integrationMode: props.integrationMode || "preview",
+    profile: props.profile,
+    workProfileState:
+      workProfileState ||
+      (props.integrationMode === "app" ? readCachedWorkProfileState() : null),
+  });
+}
+
+function salesStorageKeyForProps(props = {}, companyName = "") {
   return buildSalesStorageKey({
     integrationMode: props.integrationMode || "preview",
-    companyName:
-      props.profile?.company_name || props.profile?.companyName || "",
+    companyName: compactText(companyName) || salesCompanyNameForProps(props),
     userId: props.authUser?.id || "anonymous",
   });
 }
@@ -123,7 +143,9 @@ function findSalesOverviewIntro() {
     const text = compactText(note.textContent);
     return text.startsWith("Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept") ||
       text.startsWith("Her håndterer du forespørsler, våtromstilbud og butikktilbud") ||
+      text.startsWith("Her håndterer du forespørsler, Våtromstilbud og Generelle tilbud") ||
       text.startsWith("Opprett og følg varebaserte Butikktilbud") ||
+      text.startsWith("Opprett og følg Generelle tilbud") ||
       text.startsWith("Opprett og følg forespørsler og våtromstilbud");
   }) || null;
 }
@@ -134,7 +156,7 @@ function setSalesOverviewIntro(type = "all") {
 
   note.dataset[SALES_OVERVIEW_INTRO_MARKER] = "1";
   if (type === "store") {
-    note.textContent = "Opprett og følg varebaserte Butikktilbud med eventuell montering frem til kundeaksept. Butikktilbud avsluttes ved aksept og opprettes ikke som ProffDok-prosjekt.";
+    note.textContent = "Opprett og følg Generelle tilbud for varer, arbeid, underentreprenører og andre leveranser. Etter kundeaksept vises de neste stegene som er tilgjengelige for firmaet.";
     return true;
   }
   if (type === "wetroom") {
@@ -142,7 +164,7 @@ function setSalesOverviewIntro(type = "all") {
     return true;
   }
 
-  note.textContent = "Her håndterer du forespørsler, Våtromstilbud og Butikktilbud. Våtromstilbud kan gå videre til ProffDok-prosjekt etter aksept, mens Butikktilbud avsluttes ved aksept.";
+  note.textContent = "Her håndterer du forespørsler, Våtromstilbud og Generelle tilbud. Våtromstilbud følger våtromsflyten, mens Generelle tilbud kan brukes til varer, arbeid, underentreprenører og andre leveranser.";
   return true;
 }
 
@@ -201,9 +223,9 @@ function OfferTypePicker({ canUseStoreOffers, onWetroom, onStore, onClose }) {
               onClick={onStore}
               style={{ textAlign: "left", padding: "14px 16px" }}
             >
-              <strong style={{ display: "block" }}>Butikktilbud</strong>
+              <strong style={{ display: "block" }}>Generelt tilbud</strong>
               <small style={{ display: "block", marginTop: 4, fontWeight: 600 }}>
-                Varebasert tilbud med eventuell montering. Avsluttes ved kundeaksept.
+                For varer, arbeid, underentreprenører og andre leveranser. Tilbudet bygges opp fritt.
               </small>
             </button>
           ) : null}
@@ -223,6 +245,9 @@ function OfferTypePicker({ canUseStoreOffers, onWetroom, onStore, onClose }) {
 }
 
 export default function SalesModule(props) {
+  const [salesStorageCompanyName, setSalesStorageCompanyName] = useState(() =>
+    salesCompanyNameForProps(props)
+  );
   const [instanceKey, setInstanceKey] = useState(() => {
     beginOfferDraftHydrationCycle();
     prepareSalesEntryNavigation(props);
@@ -237,6 +262,43 @@ export default function SalesModule(props) {
   );
   const [serverCacheError, setServerCacheError] = useState("");
   const [serverCacheRetryKey, setServerCacheRetryKey] = useState(0);
+
+  useEffect(() => {
+    if (props.integrationMode !== "app") return undefined;
+
+    const syncWorkProfileScope = (event) => {
+      const nextCompanyName = salesCompanyNameForProps(
+        props,
+        event?.detail || readCachedWorkProfileState()
+      );
+      if (!nextCompanyName || nextCompanyName === salesStorageCompanyName) return;
+
+      // Representerer-bytte skal aldri arve navigasjon/recovery fra et annet firma.
+      clearSalesResumeMarkers({ preserveWorkspace: false });
+      saveSalesNavigation(
+        salesStorageKeyForProps(props, nextCompanyName),
+        "list",
+        null
+      );
+      beginOfferDraftHydrationCycle();
+      setSalesStorageCompanyName(nextCompanyName);
+      setServerCacheError("");
+      setServerCacheReady(false);
+      setInstanceKey((current) => current + 1);
+    };
+
+    window.addEventListener(WORK_PROFILE_EVENT, syncWorkProfileScope);
+    syncWorkProfileScope({ detail: readCachedWorkProfileState() });
+    return () => {
+      window.removeEventListener(WORK_PROFILE_EVENT, syncWorkProfileScope);
+    };
+  }, [
+    props.integrationMode,
+    props.authUser?.id,
+    props.profile?.company_name,
+    props.profile?.companyName,
+    salesStorageCompanyName,
+  ]);
 
   useEffect(() => {
     const rehydrateSalesModule = () => {
@@ -282,7 +344,7 @@ export default function SalesModule(props) {
       // Bevisst navigasjon bort fra Sales skal aldri gjenopplive en gammel sak.
       clearBackgroundResumeMarkers();
     };
-  }, []);
+  }, [props.integrationMode, props.authUser?.id, salesStorageCompanyName]);
 
   useEffect(() => {
     if (props.integrationMode !== "app") return undefined;
@@ -321,7 +383,7 @@ export default function SalesModule(props) {
       return undefined;
     }
 
-    const storageKey = salesStorageKeyForProps(props);
+    const storageKey = salesStorageKeyForProps(props, salesStorageCompanyName);
     const navigation = loadSalesNavigation(storageKey);
     const directRequestId = String(props.openRequestSignal || "").trim();
     const resumedRequestId =
@@ -391,6 +453,7 @@ export default function SalesModule(props) {
     props.profile?.company_name,
     props.profile?.companyName,
     props.openRequestSignal,
+    salesStorageCompanyName,
     instanceKey,
     serverCacheRetryKey,
   ]);
@@ -414,7 +477,9 @@ export default function SalesModule(props) {
       if (cancelled) return;
       attempts += 1;
 
-      const navigation = loadSalesNavigation(salesStorageKeyForProps(props));
+      const navigation = loadSalesNavigation(
+        salesStorageKeyForProps(props, salesStorageCompanyName)
+      );
       const correctRequest = String(navigation?.selectedRequestId || "") === requestId;
       const buttons = Array.from(document.querySelectorAll("button"));
       const inspectionButton = correctRequest
@@ -444,7 +509,14 @@ export default function SalesModule(props) {
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [instanceKey, props.integrationMode, props.authUser?.id, props.profile?.company_name, props.profile?.companyName]);
+  }, [
+    instanceKey,
+    props.integrationMode,
+    props.authUser?.id,
+    props.profile?.company_name,
+    props.profile?.companyName,
+    salesStorageCompanyName,
+  ]);
 
   useEffect(() => {
     if (props.integrationMode !== "app") return undefined;
@@ -457,7 +529,11 @@ export default function SalesModule(props) {
 
       const text = compactText(button.textContent);
       let type = "";
-      if (text.startsWith("Butikktilbud")) type = "store";
+      if (
+        text.startsWith("Generelle tilbud") ||
+        text.startsWith("Generelt tilbud") ||
+        text.startsWith("Butikktilbud")
+      ) type = "store";
       else if (text.startsWith("Våtromstilbud")) type = "wetroom";
       else if (text.startsWith("Alle tilbud")) type = "all";
       if (!type) return;
@@ -608,6 +684,14 @@ export default function SalesModule(props) {
     props.onStartNewOfferHandled?.();
   };
 
+  const coreProfile =
+    props.integrationMode === "app"
+      ? buildSalesStorageScopedProfile(
+          props.profile,
+          salesStorageCompanyName
+        )
+      : props.profile;
+
   return (
     <>
       {canUseSales ? (
@@ -643,6 +727,7 @@ export default function SalesModule(props) {
       <SalesModuleCore
         key={instanceKey}
         {...props}
+        profile={coreProfile}
         startNewOfferSignal={forwardedStartNewOfferSignal}
         onStartNewOfferHandled={handleStartNewOfferHandled}
       />

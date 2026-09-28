@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createDefaultSalesSupabaseClient } from '../sales/services/salesSupabase.js';
+import { whenAppSupabaseClientRegistered } from '../access/appSupabaseClientRegistry.js';
 import { isProgressSafePreviewMode } from '../progress/progressPlanSupabase.js';
 import './projectParticipants.css';
 
@@ -567,7 +568,6 @@ async function refreshNotice(client) {
 export function installProjectParticipantsUx() {
   if (installed || typeof window === 'undefined' || typeof document === 'undefined') return;
   installed = true;
-  const client = createDefaultSalesSupabaseClient();
 
   let scheduled = false;
   const schedulePanel = () => {
@@ -583,9 +583,14 @@ export function installProjectParticipantsUx() {
   const observer = new MutationObserver(schedulePanel);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 
-  client.auth.getUser().then(() => refreshNotice(client)).catch(() => {});
-  client.auth.onAuthStateChange((_event, session) => {
-    if (session?.user) refreshNotice(client).catch(() => {});
-    else document.getElementById(NOTICE_ID)?.remove();
+  // progressPlanUx lastes av bootstrap før main.jsx har opprettet appklienten.
+  // Vent derfor på den registrerte klienten før auth leses eller abonnement startes;
+  // ellers oppretter den lazy Sales-proxyen en ekstra GoTrueClient mot samme storage.
+  whenAppSupabaseClientRegistered((client) => {
+    client.auth.getUser().then(() => refreshNotice(client)).catch(() => {});
+    client.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) refreshNotice(client).catch(() => {});
+      else document.getElementById(NOTICE_ID)?.remove();
+    });
   });
 }

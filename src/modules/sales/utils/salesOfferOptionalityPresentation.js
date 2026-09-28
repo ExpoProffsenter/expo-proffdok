@@ -1,8 +1,10 @@
 // Expo ProffDok – FASE 31A2B
 // Tydeliggjør at opsjoner er valgfrie i kundevisning og PDF.
 // Endrer kun presentasjonskopier – aldri lagrede tilbudsdata eller prislogikk.
+// FASE 45B: Aktiv tilbudsversjon er fasit for versjonslåst avsender/merkevare.
 
-import { getOfferTotal } from "./salesUtils.js";
+import { getOfferTotal, getStoreOfferMeta } from "./salesUtils.js";
+import { getActiveOfferVersion } from "./salesOfferLogic.js";
 
 function isAlternativeOption(option = {}) {
   return option?.optionType === "alternative";
@@ -44,11 +46,23 @@ function decorateOptions(options = []) {
   return (Array.isArray(options) ? options : []).map(decorateOption);
 }
 
+function getVersionLockedStoreOfferMeta(request = {}) {
+  const activeVersion = getActiveOfferVersion(request || {});
+  const versionMeta = getStoreOfferMeta(activeVersion?.lines || []);
+  return versionMeta?.__storeOfferMeta ? versionMeta : null;
+}
+
 export function decorateRequestForOptionalityPresentation(request = {}) {
   if (!request) return request;
 
+  const versionStoreOfferMeta = getVersionLockedStoreOfferMeta(request);
+
   return {
     ...request,
+    // Versjonslåst metadata skal alltid vinne over eldre metadata på selve saken.
+    // Dette gjør preview, publisert tilbud og historikk konsistente med den
+    // tilbudsversjonen kunden faktisk ser.
+    ...(versionStoreOfferMeta ? { storeOfferMeta: versionStoreOfferMeta } : {}),
     offerOptions: decorateOptions(request.offerOptions),
     offerVersions: Array.isArray(request.offerVersions)
       ? request.offerVersions.map((version) => ({
