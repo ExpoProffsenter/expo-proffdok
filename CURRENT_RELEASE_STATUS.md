@@ -2,18 +2,16 @@
 
 ## Nyeste status – Systemadmin-utsending på e-post (28.09.2026)
 
-- Funksjonsbranch: `fase45b-systemadmin-broadcast-email`, head før denne dokumentasjonsoppdateringen `8fc656defdb762bd9171135b791b035789baafc4`.
-- PR #194 er `open`, `draft`, mergebar og ikke merget. Base er Production-`main` `4f016ce35b2d22c9edcd30cddc1aaa3b38d715a3`.
-- Production-kode, Production-deployment og Production-Supabase er urørt av denne funksjonen.
-- Verifisert Vercel Preview/Sandbox: `dpl_qXYzVo7AZKD2nusPGda4P2ivHmVj`, `READY`, med alias `expo-proffdok-git-fase45b-systemadmin-broadcast-email-ringside.vercel.app`.
-- Supabase-migrasjonene og Edge Functions `systemadmin-broadcast-email` og `marketing-email-unsubscribe` er lagt kun i permanent `demo-sandbox` (`ppvircenkjizeiqdxphj`).
-- Systemadmin velger mottakergruppe ved hver utsending og må velge eksplisitt mellom driftsmelding og samtykkebasert markedsføring. Mottakerkontroll og test til innlogget administrator kreves før gruppeutsending.
-- Faktisk innlogget Sandbox-kontroll fant 1 kvalifisert mottaker for driftsmelding til aktive, godkjente brukere. Markedsføringskontrollen fant 0 kvalifiserte og utelukket 1 bruker uten samtykke.
-- Sandbox har 0 markedsføringssamtykker og 0 kampanjelogger. Ingen e-post er sendt, og ingen brukers samtykke er endret.
-- Målrettet kritisk test, full critical-suite, `git diff --check` og Sandbox-bundet build er grønne. Sendernavn, HTML-escaping, mottakerisolasjon, idempotens, avmelding, RLS og ACL er kontrollert.
-- Kenneth godkjente én faktisk test til `kenneth@ringside.no`. Mottakerkontrollen var grønn, men Sandbox Edge Function stoppet før levering fordi `RESEND_API_KEY` ikke er konfigurert i Sandbox. Ingen e-post ble sendt.
-- Systemadmin kan nå angi én separat testmottaker. Menypunktet `Min profil / e-postvalg` er lagt til og live-verifisert, slik at alle brukere faktisk finner det frivillige markedsføringsvalget.
-- Gjenstående konfigurasjonssteg er å legge Resend-nøkkel og godkjent avsender inn som egne Sandbox-hemmeligheter og deretter gjenta én test. Production-hemmeligheter skal ikke kopieres eller gjenbrukes uten uttrykkelig godkjenning. PR #194 skal forbli draft og umerget; ingen Production-deploy uten ny uttrykkelig godkjenning.
+- Funksjonsbranch: `fase45b-systemadmin-broadcast-email`; verifisert funksjons-head før denne statusoppdateringen er `726037121b4999c240346a8948f2b4d27163f4d6`.
+- Kenneth har uttrykkelig godkjent merge av PR #194 og avgrenset Production-test. Ved tidspunktet for denne statusoppdateringen er PR-en fortsatt `open`, `draft`, mergebar og ikke merget; overgang til ready og merge er neste kontrollerte releasesteg.
+- Endringen er avgrenset til Systemadmin-utsending, brukerens e-postvalg, tilhørende Hjelp/dokumentasjon og kritisk test. Ingen eksisterende prosjekt-, tilbuds-, mobil- eller Production-flyt er endret.
+- Markedsføring krever fortsatt et separat, frivillig samtykke. Registrerte brukere informeres tydelig om at nødvendige driftsmeldinger kan sendes på kontoens e-post, inkludert varsler om vilkår og tilgang dersom SoPro-forutsetningen ikke er oppfylt eller dokumentert.
+- Production-Supabase `dqffxflaoyarbxyiyhop` er klargjort med de additive migrasjonene `systemadmin_broadcast_email` og `systemadmin_broadcast_email_acl_hardening`.
+- Production Edge Functions `systemadmin-broadcast-email` og `marketing-email-unsubscribe` er `ACTIVE`, versjon 1. Førstnevnte krever JWT og aktiv systemadmin; avmeldingsfunksjonen bruker et personlig, ikke-gjettbart token.
+- RLS, eksplisitte klient-nekt-policyer og minimale `service_role`-tilganger er verifisert. De tre nye Production-tabellene har 0 rader: ingen samtykker er endret, ingen kampanje er opprettet og ingen e-post er sendt.
+- Vercel Preview for head `7260371…` har grønn commit-status. Faktisk innlogget Sandbox-visning viser den nye informasjonen under `Min profil / e-postvalg`.
+- Målrettet kritisk test, full critical-suite, `git diff --check` og Sandbox-bundet build er grønne.
+- Etter merge skal Vercel Production og faktisk Production-app verifiseres. Én test kan klargjøres til `kenneth@ringside.no`, men sendeklikket krever egen bekreftelse på handlingstidspunktet. Gruppeutsending skal ikke utføres i QA.
 
 Resten av dokumentet under er historisk Fase 45B-status og beholdes som revisjonsspor.
 
