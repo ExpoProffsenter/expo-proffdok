@@ -25,6 +25,7 @@ import { createHelpCenter } from './modules/help/helpTools.js';
 import { createChecklistEditor } from './modules/checklist/checklistTools.js';
 import { createImageDocumentationTools } from './modules/images/imageDocumentationTools.js';
 import { createProjectOverviewTools } from './modules/project/projectOverviewTools.js';
+import { createProjectPersistenceFingerprint } from './modules/project/projectPersistenceFingerprint.mjs';
 import SimpleOrderOfferBasis, { isSimpleOrderProject } from './modules/project/SimpleOrderOfferBasis.jsx';
 import { createProjectListTools, normalizeSearchText, makeSearchableText, projectMatchesSearch } from './modules/project/projectListTools.js';
 import { createProductViewTools } from './modules/product/productViewTools.js';
@@ -2422,8 +2423,11 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           internalNotes: snapshot.internalNotes
         }));
         const nextProjectTitle = projectForSave.projectName || projectForSave.address || existing.title || "Uten navn";
+        const nextPersistenceFingerprint = createProjectPersistenceFingerprint(cleanData);
+        const existingPersistenceFingerprint = createProjectPersistenceFingerprint(existingData);
         const projectDataUnchanged =
-          projectDirtyFingerprint(cleanData) === projectDirtyFingerprint(existingData);
+          nextPersistenceFingerprint !== null &&
+          nextPersistenceFingerprint === existingPersistenceFingerprint;
         const projectTitleUnchanged =
           String(nextProjectTitle || "") === String(existing.title || "");
         if (projectDataUnchanged && projectTitleUnchanged) {

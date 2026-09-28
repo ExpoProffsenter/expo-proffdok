@@ -18,6 +18,36 @@ const requestModule = await import(
     path.join(root, "src/modules/contract/projectSalesContractRequest.mjs")
   ).href
 );
+const persistenceFingerprintModule = await import(
+  pathToFileURL(
+    path.join(root, "src/modules/project/projectPersistenceFingerprint.mjs")
+  ).href
+);
+
+const sameProjectDataInDifferentKeyOrder = {
+  project: { customer: "Kunden", address: "Prosjektveien 1" },
+  files: [{ name: "Kontrakt.pdf", id: "file-1" }],
+};
+assert(
+  persistenceFingerprintModule.createProjectPersistenceFingerprint(
+    sameProjectDataInDifferentKeyOrder
+  ) ===
+    persistenceFingerprintModule.createProjectPersistenceFingerprint({
+      files: [{ id: "file-1", name: "Kontrakt.pdf" }],
+      project: { address: "Prosjektveien 1", customer: "Kunden" },
+    }),
+  "samme JSON-innhold med annen objektrekkefølge må gi samme fingeravtrykk"
+);
+assert(
+  persistenceFingerprintModule.createProjectPersistenceFingerprint(
+    sameProjectDataInDifferentKeyOrder
+  ) !==
+    persistenceFingerprintModule.createProjectPersistenceFingerprint({
+      ...sameProjectDataInDifferentKeyOrder,
+      files: [{ id: "file-1", name: "Endret kontrakt.pdf" }],
+    }),
+  "reell innholdsendring må gi nytt fingeravtrykk"
+);
 
 const project = {
   projectName: "Bad hos Testkunde",
@@ -180,8 +210,11 @@ for (const needle of [
   "readOnly: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly || isProjectLocked",
   "showSalesContractTools: !isReadOnly && !isUnderleverandorView",
   "onProjectSynced: () => refreshProjectFromCloud(true, true)",
+  "createProjectPersistenceFingerprint(cleanData)",
+  "createProjectPersistenceFingerprint(existingData)",
   "const projectDataUnchanged =",
-  "projectDirtyFingerprint(cleanData) === projectDirtyFingerprint(existingData)",
+  "nextPersistenceFingerprint !== null",
+  "nextPersistenceFingerprint === existingPersistenceFingerprint",
   "const projectTitleUnchanged =",
   "if (projectDataUnchanged && projectTitleUnchanged)",
   'setProjectAutoSaveStatus("Ingen endringer å lagre")',
