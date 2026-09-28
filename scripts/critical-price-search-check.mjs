@@ -59,9 +59,37 @@ requireNeedles("supabase/migrations/20260910134500_fase41b2a_sensitive_access_nu
   "not v_target_is_systemadmin",
 ]);
 
+const paginationMigration = requireNeedles(
+  "supabase/migrations/20260928144035_price_search_pagination.sql",
+  [
+    "search_internal_store_catalog_prices_page",
+    "current_user_has_internal_store_price_search_access",
+    "current_user_has_feature_access('view_internal_net_prices')",
+    "case when v_can_net then i.purchase_net_ex_vat else null end",
+    "case when v_can_net then i.purchase_discount_percent else null end",
+    "case when v_can_net then i.gross_margin_percent else null end",
+    "count(*) over()::bigint as total_count",
+    "limit v_limit",
+    "offset v_offset",
+    "security definer",
+    "from public, anon",
+    "to authenticated",
+  ]
+);
+if (/\b(insert|update|delete|truncate)\b/i.test(paginationMigration.replace(/--.*$/gm, ""))) {
+  throw new Error("Paginert Prissøk skal være read-only og ikke skrive katalogdata.");
+}
+
 const view = requireNeedles("src/modules/storeCatalog/StorePriceSearchView.jsx", [
   "Prissøk",
   "search_internal_store_catalog_prices",
+  "search_internal_store_catalog_prices_page",
+  "PRICE_SEARCH_PAGE_SIZE",
+  "p_offset",
+  "total_count",
+  "loadMoreResults",
+  "Viser ${results.length} av ${totalResults} treff",
+  "priceSearchLoadMore",
   "Kundepris inkl. mva.",
   "Kundepris eks. mva.",
   "Intern netto eks. mva.",
