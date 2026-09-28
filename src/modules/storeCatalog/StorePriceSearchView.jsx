@@ -12,6 +12,7 @@ import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
 
 const WORKLIST_SESSION_KEY = "expo-proffdok:price-search:worklist:v1";
 const MAX_STORED_WORKLIST_ITEMS = 30;
+const PRICE_SEARCH_PAGE_SIZE = 30;
 
 const moneyIncl = new Intl.NumberFormat("nb-NO", {
   style: "currency",
@@ -56,6 +57,22 @@ async function searchPrices(query, limit = 30) {
     p_limit: limit,
   });
   return Array.isArray(payload) ? payload : [];
+}
+
+async function searchPricePage(query, offset = 0, limit = PRICE_SEARCH_PAGE_SIZE) {
+  const payload = await rpcWithStoredSession("search_internal_store_catalog_prices_page", {
+    p_query: query,
+    p_limit: limit,
+    p_offset: offset,
+  });
+  const rows = Array.isArray(payload) ? payload : [];
+  const totalCount = rows.length ? Number(rows[0]?.total_count || rows.length) : 0;
+  const items = rows.map((row) => {
+    const item = { ...row };
+    delete item.total_count;
+    return item;
+  });
+  return { items, totalCount };
 }
 
 function toStoredReference(item) {
@@ -291,9 +308,12 @@ export default function StorePriceSearchView() {
   const [includeInternalPrint, setIncludeInternalPrint] = useState(false);
   const [restoringSelected, setRestoringSelected] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [totalResults, setTotalResults] = useState(0);
   const [message, setMessage] = useState("");
   const searchInputRef = useRef(null);
   const restoredSelectionRef = useRef(false);
+  const activeQueryRef = useRef("");
 
   const cleanQuery = query.trim();
   const selectedIds = useMemo(
@@ -307,8 +327,9 @@ export default function StorePriceSearchView() {
   const resultLabel = useMemo(() => {
     if (searching) return "Søker …";
     if (cleanQuery.length < 2) return "Skriv minst 2 tegn for å søke.";
-    return `${results.length} treff`;
-  }, [cleanQuery.length, results.length, searching]);
+    if (results.length < totalResults) return `Viser ${results.length} av ${totalResults} treff`;
+    return `${totalResults} treff`;
+  }, [cleanQuery.length, results.length, searching, totalResults]);
 
   useEffect(() => {
     let cancelled = false;
@@ -344,24 +365,33 @@ export default function StorePriceSearchView() {
   }, [canPrintInternal, includeInternalPrint]);
 
   useEffect(() => {
+    activeQueryRef.current = cleanQuery;
     if (cleanQuery.length < 2) {
       setResults([]);
+      setTotalResults(0);
       setMessage("");
       setSearching(false);
+      setLoadingMore(false);
       return undefined;
     }
 
     let active = true;
+    setSearching(true);
+    setLoadingMore(false);
+    setResults([]);
+    setTotalResults(0);
+    setMessage("");
     const timer = window.setTimeout(() => {
-      setSearching(true);
-      setMessage("");
-      searchPrices(cleanQuery, 30)
-        .then((items) => {
-          if (active) setResults(items);
+      searchPricePage(cleanQuery)
+        .then(({ items, totalCount }) => {
+          if (!active) return;
+          setResults(items);
+          setTotalResults(totalCount);
         })
         .catch((error) => {
           if (!active) return;
           setResults([]);
+          setTotalResults(0);
           setMessage(error?.message || "Kunne ikke søke i vareregisteret.");
         })
         .finally(() => {
@@ -375,11 +405,36 @@ export default function StorePriceSearchView() {
     };
   }, [cleanQuery]);
 
+  const loadMoreResults = () => {
+    if (loadingMore || searching || results.length >= totalResults) return;
+    const requestedQuery = cleanQuery;
+    const offset = results.length;
+    setLoadingMore(true);
+    setMessage("");
+    void searchPricePage(requestedQuery, offset)
+      .then(({ items, totalCount }) => {
+        if (activeQueryRef.current !== requestedQuery) return;
+        setResults((current) => {
+          const knownIds = new Set(current.map((item) => String(item.id)));
+          return [...current, ...items.filter((item) => !knownIds.has(String(item.id)))];
+        });
+        setTotalResults(totalCount);
+      })
+      .catch((error) => {
+        if (activeQueryRef.current !== requestedQuery) return;
+        setMessage(error?.message || "Kunne ikke hente flere varer.");
+      })
+      .finally(() => {
+        if (activeQueryRef.current === requestedQuery) setLoadingMore(false);
+      });
+  };
+
   const addSelectedProduct = (item) => {
     if (!item?.id || selectedIds.has(String(item.id))) return;
     setSelectedProducts((current) => [...current, item]);
     setQuery("");
     setResults([]);
+    setTotalResults(0);
     setMessage("");
     window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
@@ -489,16 +544,27 @@ export default function StorePriceSearchView() {
       ) : null}
 
       {results.length ? (
-        <section className="priceSearchResults" aria-label="Søkeresultater">
-          {results.map((item) => (
-            <PriceResult
-              key={item.id}
-              item={item}
-              selected={selectedIds.has(String(item.id))}
-              onSelect={addSelectedProduct}
-            />
-          ))}
-        </section>
+        <>
+          <section className="priceSearchResults" aria-label="Søkeresultater">
+            {results.map((item) => (
+              <PriceResult
+                key={item.id}
+                item={item}
+                selected={selectedIds.has(String(item.id))}
+                onSelect={addSelectedProduct}
+              />
+            ))}
+          </section>
+          {results.length < totalResults ? (
+            <div className="priceSearchLoadMore">
+              <button type="button" className="secondary" onClick={loadMoreResults} disabled={loadingMore}>
+                {loadingMore
+                  ? "Henter flere …"
+                  : `Vis ${Math.min(PRICE_SEARCH_PAGE_SIZE, totalResults - results.length)} flere`}
+              </button>
+            </div>
+          ) : null}
+        </>
       ) : null}
 
       {printPortal}
@@ -563,6 +629,8 @@ export default function StorePriceSearchView() {
         .priceSearchProductLink{display:inline-flex;align-items:center;gap:5px;color:#087b82;font-weight:800;text-decoration:none;white-space:nowrap;width:max-content}
         .priceSearchMessage{margin-top:16px;padding:15px 18px;border:1px solid #d6e4e8;border-radius:13px;background:#fff;color:#60737b;font-weight:700}
         .priceSearchMessage.isError{border-color:#fecaca;background:#fff7f7;color:#a33232}
+        .priceSearchLoadMore{display:flex;justify-content:center;margin-top:16px}
+        .priceSearchLoadMore button{min-width:180px}
         @media(max-width:900px){
           .priceSearchIntro h2{font-size:28px}
           .priceSearchResult{grid-template-columns:1fr}
@@ -585,6 +653,7 @@ export default function StorePriceSearchView() {
           .priceSearchPrices>div{white-space:normal}
           .priceSearchResultActions{align-items:stretch;flex-direction:column}
           .priceSearchResultActions button,.priceSearchProductLink{width:100%;box-sizing:border-box;justify-content:center}
+          .priceSearchLoadMore button{width:100%}
         }
         @media print{
           @page{size:A4;margin:12mm}
