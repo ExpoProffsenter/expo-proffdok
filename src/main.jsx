@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 118734)
-Total output lines: 7489
-
 // Expo ProffDok – main application entry. Historical phase/deploy notes are preserved in Git history.
 // FASE 28C1: Startside viser konkrete prosjekter som krever oppfølging via projectListTools.
 // FASE 28D1: Appen varsler kontrollert når en nyere Vite/Vercel-versjon er tilgjengelig.
@@ -3078,7 +3075,1612 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const openAuthenticatedProject = async () => {
         await loadProjects(authUser, false, profile);
         if (cancelled) return;
-        await openProjectById(id, requestedTab, {…18734 tokens truncated…yAdminData(false);
+        await openProjectById(id, requestedTab, {
+          supportMode: requestedSupportMode && isSystemAdminUser,
+        });
+      };
+      openAuthenticatedProject().catch((error) => {
+        console.error("Kunne ikke åpne aktivert prosjekt etter innlogging:", error);
+        directProjectOpenAttemptRef.current = "";
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [authUser?.id, profile?.id, profile?.approved, profile?.deactivated, authLoading, profileLoading]);
+    (0, import_react.useEffect)(() => {
+      setPortalAccessInput("");
+      setPortalAccessGranted(false);
+      setPortalAccessError("");
+      setPortalAccessRecords({});
+    }, [projectId, portalAccessRoleParam]);
+
+    (0, import_react.useEffect)(() => {
+      if (!projectId) return;
+      const chatVisible = isReadOnly || tab === "chat" || customerTab === "chat";
+      if (!chatVisible) return;
+
+      // Offentlig portal skal aldri bruke rå Realtime-payload fra projects.
+      // Den poller gjennom den kodeverifiserte RPC-en i stedet.
+      if (portalAccessRoleParam) {
+        refreshProjectFromCloud(true);
+        const secureTimer = window.setInterval(() => {
+          refreshProjectFromCloud(true);
+        }, 5e3);
+        return () => window.clearInterval(secureTimer);
+      }
+
+      let cancelled = false;
+      const applyChatData = (row) => {
+        if (!row || cancelled) return;
+        const cloudData = dataFromRow(row);
+        const incomingLog = normalizeProjectLog(cloudData.projectLog);
+        const incomingCount = (incomingLog.messages || []).length;
+        setProjectLog((prev) => ({
+          ...incomingLog,
+          draft: prev?.draft || ""
+        }));
+        lastChatMessageCountRef.current = incomingCount;
+        lastChatRefreshAtRef.current = Date.now();
+        setProjectId(row.id);
+      };
+      const channel = supabase.channel(`project-chat-${projectId}`).on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "projects", filter: `id=eq.${projectId}` },
+        (payload) => applyChatData(payload.new)
+      ).subscribe();
+      refreshProjectFromCloud(true);
+      const timer = window.setInterval(() => {
+        refreshProjectFromCloud(true);
+      }, 5e3);
+      return () => {
+        cancelled = true;
+        window.clearInterval(timer);
+        supabase.removeChannel(channel);
+      };
+    }, [projectId, isReadOnly, tab, customerTab, portalAccessRoleParam]);
+    (0, import_react.useEffect)(() => {
+      if (!isReadOnly) {
+        loadFdvRegister(false);
+        loadProductMaster(false);
+        loadProductMasterCheckpoints(false);
+      }
+    }, [isReadOnly]);
+    (0, import_react.useEffect)(() => {
+      if (authUser && profile?.approved) {
+        loadProjects(authUser);
+      }
+    }, [authUser?.id, profile?.approved, profile?.company_name, profile?.company_role, profile?.system_role]);
+
+    const createNewProject = async () => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
+      const canLeave = await confirmLeaveWithUnsavedChanges("starter nytt prosjekt");
+      if (!canLeave) return;
+      const hasContent = projectId || project.projectName || project.address || project.postnr || project.city || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || project.projectInfoIncludeInReport || project.checklistPhotosNote || project.isTemplate || project.fall || project.fallDusj || project.fallUtenfor || project.sluk || project.terskel || project.membran || project.prosjekteringKommentar || (Array.isArray(project.prosjekteringPunkter) ? project.prosjekteringPunkter : []).length || (Array.isArray(project.customChecklistGroups) ? project.customChecklistGroups : []).length || (Array.isArray(project.projectDeviations) ? project.projectDeviations : []).length || Object.keys(checked || {}).length || Object.keys(productDocs || {}).length || (Array.isArray(manualProducts) ? manualProducts.length : Object.values(manualProducts || {}).some((list) => (list || []).length)) || Object.keys(other || {}).length || Object.keys(surf || {}).length || Object.values(bathroomEquipment || {}).some(hasValue) || (photos || []).length || (access || []).length || (inst || []).length || (files || []).length || Object.keys(checklist || {}).length || tilbud.enabled || tilbud.tillegg || tilbud.fradrag || tilbud.kommentar || (tilbud.changes || []).length || (tilbud.files || []).length || overtagelse.enabled || overtagelse.kommentar || overtagelse.signUtf\u00F8rende || overtagelse.signKunde || overtagelse.signUtf\u00F8rendeImage || overtagelse.signKundeImage || warranty.enabled || warranty.issued || warranty.system || projectLog.enabled || projectLog.draft || (projectLog.messages || []).length || internalNotes;
+      if (hasContent && !window.confirm("Starte nytt prosjekt? Ulagrede endringer vil g\xE5 tapt.")) return;
+      newProjectTouchedRef.current = false;
+      pauseDirtyTrackingBriefly(1200);
+      setProject(emptyProject());
+      setChecked({});
+      setProductDocs({});
+      setManualProducts({});
+      setOther({});
+      setSurf({});
+      setBathroomEquipment(emptyBathroomEquipment());
+      setPhotos([]);
+      setAccess([]);
+      setInst([]);
+      setFiles([]);
+      setChecklist({});
+      setTilbud(emptyTilbud());
+      setOvertagelse(emptyOvertagelse());
+      setWarranty(emptyWarranty());
+      setProjectLog(emptyProjectLog());
+      setInternalNotes("");
+      setProjectId(null);
+      setCurrentProjectOwnerId(authUser?.id || "");
+      setSupportModeExplicit(false);
+      setMobileCreatingProject(true);
+      resetProjectDirty();
+      setLocalDraftRestoreChecked(false);
+      setTab("prosjekt");
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+    };
+    const startProjectFromTemplate = async (templateItem) => {
+      if (!templateItem?.row) return;
+      const canLeave = await confirmLeaveWithUnsavedChanges("starter prosjekt fra mal");
+      if (!canLeave) return;
+      const sourceData = dataFromRow(templateItem.row, templateItem.row.data || {});
+      const sourceProject = sourceData.project || {};
+      const sourceWarranty = { ...emptyWarranty(), ...sourceData.warranty || {} };
+      if (!sourceProject?.isTemplate || !sourceWarranty?.enabled || !sourceWarranty?.system) {
+        return alert("Denne malen kan ikke brukes her. Malprosjekter er kun tilgjengelige for garantiprosjekter med valgt Sopro-system.");
+      }
+      const templateTitle = templateItem.row.title || sourceProject.projectName || sourceProject.address || "mal";
+      if (!window.confirm(`Starte nytt garantiprosjekt fra malen "${templateTitle}"?
+
+Kunde, adresse, bilder, chat, signaturer, avvik og utfylte sjekklistestatuser blir ikke kopiert.`)) return;
+      pauseDirtyTrackingBriefly(1200);
+      const nextProject = {
+        ...emptyProject(),
+        responsible: sourceProject.responsible || user?.name || "",
+        projectName: "",
+        address: "",
+        postnr: "",
+        city: "",
+        customer: "",
+        customerEmail: "",
+        customerPhone: "",
+        date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+        notes: "",
+        projectDescription: sourceProject.projectDescription || "",
+        projectInfoIncludeInReport: !!sourceProject.projectInfoIncludeInReport,
+        checklistPhotosNote: !!sourceProject.checklistPhotosNote,
+        isTemplate: false,
+        fall: sourceProject.fall || "",
+        fallDusj: sourceProject.fallDusj || "",
+        fallUtenfor: sourceProject.fallUtenfor || "",
+        sluk: sourceProject.sluk || "",
+        terskel: sourceProject.terskel || "",
+        membran: sourceProject.membran || "",
+        prosjekteringKommentar: sourceProject.prosjekteringKommentar || "",
+        prosjekteringPunkter: Array.isArray(sourceProject.prosjekteringPunkter) ? JSON.parse(JSON.stringify(sourceProject.prosjekteringPunkter)) : [],
+        customChecklistGroups: Array.isArray(sourceProject.customChecklistGroups) ? JSON.parse(JSON.stringify(sourceProject.customChecklistGroups)) : [],
+        locked: false,
+        status: "active",
+        workflowStatus: "Pågår",
+        lockedAt: "",
+        lockedBy: ""
+      };
+      const nextWarranty = {
+        ...emptyWarranty(),
+        enabled: true,
+        system: sourceWarranty.system,
+        sintefApproval: sourceWarranty.sintefApproval || "",
+        durationYears: getWarrantyYears(sourceWarranty),
+        status: "draft",
+        issued: false,
+        issuedAt: null,
+        guaranteeNumber: "",
+        reportGeneratedAt: null,
+        reportGeneratedFileName: "",
+        termsAccepted: false,
+        termsAcceptedAt: "",
+        termsAcceptedBy: "",
+        termsReceiptName: "",
+        termsReceiptRole: "Kunde"
+      };
+      setProject(nextProject);
+      setChecked(JSON.parse(JSON.stringify(sourceData.checked || {})));
+      setProductDocs(JSON.parse(JSON.stringify(sourceData.productDocs || {})));
+      setManualProducts(JSON.parse(JSON.stringify(sourceData.manualProducts || {})));
+      setOther(JSON.parse(JSON.stringify(sourceData.other || {})));
+      setSurf(JSON.parse(JSON.stringify(sourceData.surf || {})));
+      setBathroomEquipment(JSON.parse(JSON.stringify(sourceData.bathroomEquipment || emptyBathroomEquipment())));
+      setPhotos([]);
+      setAccess([]);
+      setInst([]);
+      setFiles([]);
+      setChecklist({});
+      setTilbud(emptyTilbud());
+      setOvertagelse(emptyOvertagelse());
+      setWarranty(nextWarranty);
+      setProjectLog(emptyProjectLog());
+      setInternalNotes("");
+      setProjectId(null);
+      setCurrentProjectOwnerId(authUser?.id || "");
+      setSupportModeExplicit(false);
+      setMobileCreatingProject(true);
+      setShowOpenDeviationsOnly(false);
+      resetProjectDirty({
+        company,
+        user,
+        project: nextProject,
+        checked: sourceData.checked || {},
+        productDocs: sourceData.productDocs || {},
+        manualProducts: sourceData.manualProducts || {},
+        other: sourceData.other || {},
+        surf: sourceData.surf || {},
+        bathroomEquipment: sourceData.bathroomEquipment || emptyBathroomEquipment(),
+        photos: [],
+        access: [],
+        inst: [],
+        files: [],
+        checklist: {},
+        tilbud: emptyTilbud(),
+        overtagelse: emptyOvertagelse(),
+        warranty: nextWarranty,
+        projectLog: emptyProjectLog(),
+        internalNotes: ""
+      });
+      setTab("prosjekt");
+      setTimeout(() => scrollToMobileTabTarget("prosjekt"), 120);
+      alert("✔ Garantiprosjekt startet fra mal. Fyll inn kunde og prosjektinformasjon før du lagrer.");
+    };
+    const addProsjekteringPunkt = () => {
+      setProject((p) => ({
+        ...p,
+        prosjekteringPunkter: [
+          ...Array.isArray(p.prosjekteringPunkter) ? p.prosjekteringPunkter : [],
+          { id: uid(), category: "Annet", title: "", value: "" }
+        ]
+      }));
+    };
+    const updateProsjekteringPunkt = (id, patch) => {
+      setProject((p) => ({
+        ...p,
+        prosjekteringPunkter: (Array.isArray(p.prosjekteringPunkter) ? p.prosjekteringPunkter : []).map(
+          (point) => point.id === id ? { ...point, ...patch } : point
+        )
+      }));
+    };
+    const removeProsjekteringPunkt = (id) => {
+      setProject((p) => ({
+        ...p,
+        prosjekteringPunkter: (Array.isArray(p.prosjekteringPunkter) ? p.prosjekteringPunkter : []).filter((point) => point.id !== id)
+      }));
+    };
+    const updateProductDoc = (productName, patch) => {
+      if (!canEditProject()) return;
+      setProductDocs((prev) => ({
+        ...prev,
+        [productName]: {
+          ...prev[productName] || {},
+          ...patch
+        }
+      }));
+    };
+    const toggleProductChecked = (productName, isChecked) => {
+      if (!canEditProject()) return;
+      setChecked((prev) => ({ ...prev, [productName]: isChecked }));
+      if (!isChecked) return;
+      const masterRow = productMasterByProduct[productName];
+      const registerRow = fdvRegisterByProduct[productName];
+      const autoDocs = {
+        fdvUrl: masterRow?.fdv_url || registerRow?.fdv_url || masterRow?.datablad_url || "",
+        databladUrl: masterRow?.datablad_url || "",
+        dopUrl: masterRow?.dop_url || "",
+        epdUrl: masterRow?.epd_url || "",
+        sikkerhetsdatabladUrl: masterRow?.sikkerhetsdatablad_url || "",
+        documentFileUrl: masterRow?.document_file_url || "",
+        fdvSource: masterRow ? "product-master" : registerRow ? "admin-register" : ""
+      };
+      if (!Object.values(autoDocs).some(hasValue)) return;
+      setProductDocs((prev) => {
+        const current = prev[productName] || {};
+        return {
+          ...prev,
+          [productName]: {
+            ...current,
+            fdvUrl: hasValue(current.fdvUrl) ? current.fdvUrl : autoDocs.fdvUrl,
+            databladUrl: hasValue(current.databladUrl) ? current.databladUrl : autoDocs.databladUrl,
+            dopUrl: hasValue(current.dopUrl) ? current.dopUrl : autoDocs.dopUrl,
+            epdUrl: hasValue(current.epdUrl) ? current.epdUrl : autoDocs.epdUrl,
+            sikkerhetsdatabladUrl: hasValue(current.sikkerhetsdatabladUrl) ? current.sikkerhetsdatabladUrl : autoDocs.sikkerhetsdatabladUrl,
+            documentFileUrl: hasValue(current.documentFileUrl) ? current.documentFileUrl : autoDocs.documentFileUrl,
+            fdvSource: current.fdvSource || autoDocs.fdvSource
+          }
+        };
+      });
+    };
+    const addManualProduct = (section) => {
+      if (!canEditProject()) return;
+      setManualProducts((prev) => {
+        const normalized = normalizeManualProductsBySection(prev);
+        return {
+          ...normalized,
+          [section]: [
+            ...normalized[section] || [],
+            { id: uid(), name: "", fdvUrl: "", comment: "" }
+          ]
+        };
+      });
+    };
+    const updateManualProduct = (section, id, patch) => {
+      if (!canEditProject()) return;
+      setManualProducts((prev) => {
+        const normalized = normalizeManualProductsBySection(prev);
+        return {
+          ...normalized,
+          [section]: (normalized[section] || []).map((p) => p.id === id ? { ...p, ...patch } : p)
+        };
+      });
+    };
+    const removeManualProduct = (section, id) => {
+      if (!canEditProject()) return;
+      setManualProducts((prev) => {
+        const normalized = normalizeManualProductsBySection(prev);
+        return {
+          ...normalized,
+          [section]: (normalized[section] || []).filter((p) => p.id !== id)
+        };
+      });
+    };
+    const markChatAsRead = async (reader = "admin") => {
+      if (!projectId) return;
+      const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+      const key = reader === "customer" ? "lastReadByCustomer" : "lastReadByAdmin";
+      let nextLogForSave = null;
+      setProjectLog((prev) => {
+        const normalized = normalizeProjectLog(prev);
+        nextLogForSave = { ...normalized, [key]: timestamp };
+        return nextLogForSave;
+      });
+
+      if (reader === "customer" && portalAccessRoleParam === "kunde") {
+        const code = readStoredPortalAccessCode(projectId, "kunde");
+        if (!code) {
+          setPortalAccessGranted(false);
+          return;
+        }
+        try {
+          const result = await markCustomerProjectChatRead(supabase, { projectId, code });
+          if (!result?.ok || !result?.project) {
+            clearStoredPortalAccessCode(projectId, "kunde");
+            setPortalAccessGranted(false);
+            return;
+          }
+          const incomingLog = normalizeProjectLog(dataFromRow(result.project).projectLog);
+          setProjectLog((prev) => ({ ...incomingLog, draft: prev?.draft || "" }));
+        } catch (error) {
+          console.warn("Kunne ikke markere kundechat som lest:", error?.message || error);
+        }
+        return;
+      }
+
+      try {
+        const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        if (fetchError || !existing) {
+          if (fetchError) console.warn("Kunne ikke markere chat som lest:", fetchError.message);
+          return;
+        }
+        const existingData = dataFromRow(existing);
+        const existingLog = normalizeProjectLog(existingData.projectLog);
+        const cleanData = JSON.parse(JSON.stringify({
+          ...existingData,
+          projectLog: {
+            ...existingLog,
+            [key]: timestamp,
+            draft: ""
+          }
+        }));
+        const { error } = await supabase.from("projects").update({
+          data: cleanData,
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        }).eq("id", projectId);
+        if (error) console.warn("Kunne ikke markere chat som lest:", error.message);
+      } catch (error) {
+        console.warn("Kunne ikke markere chat som lest:", error);
+      }
+    };
+    const notifyChatMessage = async ({ toEmail, direction, message }) => {
+      if (!toEmail || !message?.text) return false;
+
+      const sendsToCustomer = direction !== "to_owner";
+      let customerAccessRecord = null;
+
+      if (sendsToCustomer) {
+        customerAccessRecord = projectId
+          ? await ensurePortalAccessForProject({
+              id: projectId,
+              roleParam: "kunde"
+            })
+          : null;
+
+        if (!customerAccessRecord?.code) {
+          console.warn(
+            "E-postvarsling til kunde ble ikke sendt fordi tilgangskode mangler."
+          );
+          return false;
+        }
+      }
+
+      try {
+        const { error } = await supabase.functions.invoke("smart-worker", {
+          body: {
+            toEmail,
+            direction,
+            projectId,
+            projectName: project.projectName || project.address || "Prosjekt",
+            customerName: project.customer || "Kunde",
+            customerEmail: project.customerEmail || "",
+            ...emailBrandPayload(),
+            fromName: message.by || "Ukjent",
+            message: message.text,
+            projectLink: projectId
+              ? makeProjectLink(
+                  projectId,
+                  sendsToCustomer ? "kunde" : "admin",
+                  sendsToCustomer ? "chat" : ""
+                )
+              : "",
+            accessCode: sendsToCustomer
+              ? customerAccessRecord.code
+              : "",
+            accessCodeExpiresAt: sendsToCustomer
+              ? customerAccessRecord.expiresAt || ""
+              : "",
+            accessPolicy: sendsToCustomer
+              ? "active_project_plus_locked_30_days"
+              : ""
+          }
+        });
+
+        if (error) {
+          console.warn(
+            "E-postvarsling kunne ikke sendes:",
+            error.message
+          );
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.warn("E-postvarsling kunne ikke sendes:", error);
+        return false;
+      }
+    };
+    const emailBrandPayload = () => {
+      const companyNameForEmail = company.companyName || name || "Expo ProffDok";
+      const logoUrl = String(company.logoUrl || "").trim();
+      return {
+        companyName: companyNameForEmail,
+        brandName: companyNameForEmail,
+        companyLogoUrl: logoUrl,
+        logoUrl,
+        emailLogoUrl: logoUrl,
+        platformName: "Expo ProffDok",
+        sentViaText: `Sendt via Expo ProffDok på vegne av ${companyNameForEmail}`,
+        footerCompanyText: `${companyNameForEmail} · Dokumentasjon levert gjennom Expo ProffDok`
+      };
+    };
+    const ownerNotificationEmail = () => user.email || authUser?.email || company.email || profile?.email || "";
+    const prepareDeviationChatDraft = (deviation = {}) => {
+      const type = deviation.type || (deviation.source === "checklist" ? "Sjekkpunktavvik" : "Prosjektavvik");
+      const title = deviation.title || deviation.item || "Avvik";
+      const details = [
+        `Avvik til oppfølging: ${title}`,
+        deviation.category ? `Kategori: ${deviation.category}` : "",
+        `Type: ${type}`,
+        deviation.severity ? `Alvorlighet: ${deviation.severity}` : "",
+        deviation.responsible ? `Ansvarlig: ${deviation.responsible}` : "",
+        deviation.dueDate ? `Frist: ${deviation.dueDate}` : "",
+        deviation.description ? `Beskrivelse: ${deviation.description}` : "",
+        deviation.comment ? `Kommentar: ${deviation.comment}` : "",
+        deviation.action ? `Tiltak: ${deviation.action}` : "",
+        deviation.affectsWarranty ? "Påvirker garanti/sluttdokumentasjon: Ja" : ""
+      ].filter(Boolean).join("\n");
+      setProjectLog((prev) => ({
+        ...normalizeProjectLog(prev),
+        draft: details
+      }));
+      setTab("chat");
+      setTimeout(() => scrollToMobileTabTarget("chat"), 120);
+    };
+    const addProjectLogMessage = async () => {
+      if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r chatmelding med bilde kan lagres p\xE5 prosjektet.");
+      const text = (projectLog.draft || "").trim();
+      if (!text && !chatUploadFile) return alert("Skriv en melding eller velg et bilde f\xF8rst.");
+      let uploadedImage = null;
+      if (chatUploadFile) {
+        uploadedImage = await uploadChatImage(chatUploadFile, projectId, "admin");
+        if (!uploadedImage) return;
+      }
+      const message = {
+        id: uid(),
+        text,
+        by: user.name || authUser?.email || "Utf\xF8rende",
+        role: "utf\xF8rende",
+        created: (/* @__PURE__ */ new Date()).toISOString(),
+        imageUrl: uploadedImage?.imageUrl || "",
+        imageName: uploadedImage?.imageName || "",
+        imagePath: uploadedImage?.imagePath || ""
+      };
+      const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+      if (fetchError || !existing) {
+        console.error(fetchError);
+        return alert("Kunne ikke hente prosjekt f\xF8r melding ble lagret: " + (fetchError?.message || "Fant ikke prosjekt"));
+      }
+      if (rowIsLocked(existing)) {
+        return alert("Prosjektet er l\xE5st og chatmeldingen kan ikke lagres. L\xE5s opp prosjektet f\xF8rst.");
+      }
+      const existingData = dataFromRow(existing);
+      const existingLog = normalizeProjectLog(existingData.projectLog);
+      const updatedLog = {
+        ...existingLog,
+        draft: "",
+        lastReadByAdmin: (/* @__PURE__ */ new Date()).toISOString(),
+        messages: [...existingLog.messages || [], message]
+      };
+      const cleanData = JSON.parse(JSON.stringify({
+        ...existingData,
+        project: { ...emptyProject(), ...existingData.project || {}, ...project },
+        projectLog: updatedLog,
+        internalNotes
+      }));
+      const { data: updatedRow, error } = await supabase.from("projects").update({
+        data: cleanData,
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      }).eq("id", projectId).select("*").maybeSingle();
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke lagre chatmelding p\xE5 prosjektet: " + error.message);
+      }
+      setChatUploadFile(null);
+      const fileInput = document.getElementById("admin-chat-image-input");
+      if (fileInput) fileInput.value = "";
+      if (updatedRow) {
+        unpackData(dataFromRow(updatedRow));
+        setProjectId(updatedRow.id);
+      } else {
+        setProjectLog(updatedLog);
+      }
+      await notifyChatMessage({
+        toEmail: project.customerEmail,
+        direction: "to_customer",
+        message
+      });
+      alert(project.customerEmail ? "\u2714 Melding sendt og lagret p\xE5 prosjektet. E-postvarsling fors\xF8kt sendt til kunde." : "\u2714 Melding lagret p\xE5 prosjektet. Legg inn kunde e-post for e-postvarsling.");
+    };
+    const removeProjectLogMessage = async (id) => {
+      if (!id) return;
+      if (!window.confirm("Vil du fjerne denne chatmeldingen fra prosjektet?")) return;
+      if (!projectId) {
+        setProjectLog((prev) => ({
+          ...prev,
+          messages: (prev.messages || []).filter((m) => m.id !== id)
+        }));
+        return;
+      }
+      const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+      if (fetchError || !existing) {
+        console.error(fetchError);
+        return alert("Kunne ikke hente prosjekt før meldingen ble fjernet: " + (fetchError?.message || "Fant ikke prosjekt"));
+      }
+      if (rowIsLocked(existing)) {
+        return alert("Prosjektet er låst. Lås opp prosjektet før chatmeldinger kan fjernes.");
+      }
+      const existingData = dataFromRow(existing);
+      const existingLog = normalizeProjectLog(existingData.projectLog);
+      const updatedLog = {
+        ...existingLog,
+        draft: projectLog?.draft || existingLog.draft || "",
+        messages: (existingLog.messages || []).filter((m) => m.id !== id)
+      };
+      if ((existingLog.messages || []).length === updatedLog.messages.length) {
+        return alert("Fant ikke meldingen i lagret prosjektdata. Oppdater chat og prøv igjen.");
+      }
+      const cleanData = JSON.parse(JSON.stringify({
+        ...existingData,
+        projectLog: updatedLog
+      }));
+      const { data: updatedRow, error } = await supabase.from("projects").update({
+        data: cleanData,
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      }).eq("id", projectId).select("*").maybeSingle();
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke fjerne chatmelding fra prosjektet: " + error.message);
+      }
+      if (updatedRow) {
+        unpackData(dataFromRow(updatedRow), true);
+        setProjectId(updatedRow.id);
+      } else {
+        setProjectLog(updatedLog);
+      }
+      await loadProjects(authUser);
+      alert("Chatmelding fjernet fra prosjektet.");
+    };
+    const saveCustomerChatMessage = async () => {
+      if (!projectId) return alert("Prosjektet mangler ID.");
+      const text = (projectLog.draft || "").trim();
+      if (!text && !customerChatUploadFile) return alert("Skriv en melding eller velg et bilde først.");
+      const code = readStoredPortalAccessCode(projectId, "kunde");
+      if (!code) {
+        setPortalAccessGranted(false);
+        return alert("Tilgangskoden må bekreftes på nytt før meldingen kan sendes.");
+      }
+      let uploadedImage = null;
+      if (customerChatUploadFile) {
+        uploadedImage = await uploadChatImage(customerChatUploadFile, projectId, "kunde");
+        if (!uploadedImage) return;
+      }
+      const message = {
+        text,
+        by: project.customer || "Kunde",
+        role: "kunde",
+        created: (/* @__PURE__ */ new Date()).toISOString(),
+        imageUrl: uploadedImage?.imageUrl || "",
+        imageName: uploadedImage?.imageName || "",
+        imagePath: uploadedImage?.imagePath || ""
+      };
+      try {
+        const result = await appendCustomerProjectMessage(supabase, {
+          projectId,
+          code,
+          text,
+          imageUrl: message.imageUrl,
+          imageName: message.imageName,
+          imagePath: message.imagePath
+        });
+        if (!result?.ok || !result?.project) {
+          if (result?.error === "locked") {
+            return alert("Prosjektet er låst og chatmeldingen kan ikke lagres. Kontakt prosjektansvarlig hvis noe må korrigeres.");
+          }
+          clearStoredPortalAccessCode(projectId, "kunde");
+          setPortalAccessGranted(false);
+          return alert("Tilgangen er utløpt eller ugyldig. Be prosjektansvarlig sende ny tilgang.");
+        }
+        setCustomerChatUploadFile(null);
+        const fileInput = document.getElementById("customer-chat-image-input");
+        if (fileInput) fileInput.value = "";
+        applyVerifiedPortalResult(result);
+        await notifyChatMessage({
+          toEmail: ownerNotificationEmail(),
+          direction: "to_owner",
+          message
+        });
+        alert(ownerNotificationEmail() ? "✔ Melding sendt og lagret på prosjektet. E-postvarsling forsøkt sendt til utførende." : "✔ Melding sendt og lagret på prosjektet.");
+      } catch (error) {
+        console.error(error);
+        alert("Kunne ikke lagre melding: " + (error?.message || "Ukjent feil"));
+      }
+    };
+    const saveProject = async () => {
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
+      const snapshot = {
+        ...latestStateRef.current || {},
+        company,
+        user,
+        project,
+        checked,
+        productDocs,
+        manualProducts,
+        other,
+        surf,
+        bathroomEquipment,
+        photos,
+        access,
+        inst,
+        files,
+        checklist,
+        tilbud,
+        overtagelse,
+        warranty,
+        projectLog,
+        internalNotes
+      };
+      const makeCleanData = (projectOverride = snapshot.project, projectLogOverride = snapshot.projectLog) => JSON.parse(JSON.stringify({
+        company: snapshot.company,
+        user: snapshot.user,
+        project: { ...emptyProject(), ...projectOverride },
+        checked: snapshot.checked,
+        productDocs: snapshot.productDocs,
+        manualProducts: snapshot.manualProducts,
+        other: snapshot.other,
+        surf: snapshot.surf,
+        bathroomEquipment: snapshot.bathroomEquipment || bathroomEquipment,
+        photos: snapshot.photos,
+        access: snapshot.access,
+        inst: snapshot.inst,
+        files: snapshot.files,
+        checklist: snapshot.checklist,
+        tilbud: snapshot.tilbud,
+        overtagelse: snapshot.overtagelse,
+        warranty: snapshot.warranty || emptyWarranty(),
+        projectLog: projectLogOverride,
+        internalNotes: snapshot.internalNotes
+      }));
+      if (projectId) {
+        const { data: existing, error: fetchError } = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+        if (fetchError) {
+          console.error(fetchError);
+          return alert("Kunne ikke kontrollere prosjektstatus: " + fetchError.message);
+        }
+        if (!existing) {
+          return alert("Fant ikke prosjektet. \xC5pne prosjektet p\xE5 nytt fra prosjektlisten.");
+        }
+        const existingProject = projectFromRow(existing, existing?.data?.project || {});
+        if (rowIsLocked(existing) || isProjectLocked) {
+          const lockedProject = existingProject;
+          setProject(lockedProject);
+          return alert("Prosjektet er l\xE5st. L\xE5s opp prosjektet f\xF8r du lagrer endringer.");
+        }
+        const saveProjectData = {
+          ...emptyProject(),
+          ...snapshot.project || {},
+          locked: false,
+          status: "active",
+          lockedAt: "",
+          lockedBy: ""
+        };
+        const saveProjectLog = {
+          ...normalizeProjectLog(snapshot.projectLog),
+          draft: ""
+        };
+        const cleanData = makeCleanData(saveProjectData, saveProjectLog);
+        const payload = {
+          title: saveProjectData.projectName || saveProjectData.address || "Uten navn",
+          data: cleanData,
+          user_id: existing.user_id || authUser.id,
+          share_enabled: true,
+          locked: false,
+          locked_at: null,
+          locked_by: "",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        let updatedRow = null;
+        const updateResult = await supabase.from("projects").update(payload).eq("id", projectId).select("*").maybeSingle();
+        if (updateResult.error) {
+          console.error(updateResult.error);
+          return alert("Kunne ikke oppdatere prosjekt i sky: " + updateResult.error.message);
+        }
+        updatedRow = updateResult.data || null;
+        if (!updatedRow) {
+          const verifyResult = await supabase.from("projects").select("*").eq("id", projectId).maybeSingle();
+          if (verifyResult.error) {
+            console.error(verifyResult.error);
+          } else {
+            updatedRow = verifyResult.data || null;
+          }
+        }
+        const matchesSavedProject = (row) => {
+          const saved = row?.data?.project || {};
+          return (saved.projectName || "") === (saveProjectData.projectName || "") && (saved.address || "") === (saveProjectData.address || "") && (saved.postnr || "") === (saveProjectData.postnr || "") && (saved.city || "") === (saveProjectData.city || "") && (saved.customer || "") === (saveProjectData.customer || "") && (saved.customerEmail || "") === (saveProjectData.customerEmail || "") && (saved.customerPhone || "") === (saveProjectData.customerPhone || "") && (saved.notes || "") === (saveProjectData.notes || "");
+        };
+        if (updatedRow && matchesSavedProject(updatedRow)) {
+          const expectedOvertagelse = snapshot.overtagelse || {};
+          const expectedUtførendeSigned = hasValue(expectedOvertagelse.signUtførende) || hasValue(expectedOvertagelse.signUtførendeImage);
+          const expectedKundeSigned = hasValue(expectedOvertagelse.signKunde) || hasValue(expectedOvertagelse.signKundeImage);
+          const shouldVerifyBothSignatures = expectedUtførendeSigned && expectedKundeSigned;
+          if (shouldVerifyBothSignatures) {
+            const persistedOvertagelse = updatedRow?.data?.overtagelse || {};
+            const persistedUtførendeSigned = hasValue(persistedOvertagelse.signUtførende) || hasValue(persistedOvertagelse.signUtførendeImage);
+            const persistedKundeSigned = hasValue(persistedOvertagelse.signKunde) || hasValue(persistedOvertagelse.signKundeImage);
+            if (!persistedUtførendeSigned || !persistedKundeSigned) {
+              console.error("Overtagelsessignaturer kunne ikke bekreftes i lagret prosjektdata", { projectId: updatedRow.id });
+              return alert("⚠️ Prosjektet ble oppdatert, men begge overtagelsessignaturene kunne ikke bekreftes på server. Ikke forlat overtagelsen. Prøv Lagre overtagelse på nytt, og kontakt support hvis meldingen gjentas.");
+            }
+          }
+          unpackData(dataFromRow(updatedRow), false);
+          setProjectId(updatedRow.id);
+          await loadProjects(authUser);
+          resetProjectDirty();
+          return alert(shouldVerifyBothSignatures ? "✅ Begge overtagelsessignaturer er bekreftet lagret på server." : "\u2714 Prosjekt oppdatert og bekreftet lagret");
+        }
+        const shouldCopy = window.confirm(
+          "Prosjektet ble ikke oppdatert automatisk. Dette kan skyldes tilgang til et eldre prosjekt.\n\nVil du lagre dette som en ny oppdatert kopi n\xE5, slik at endringene ikke g\xE5r tapt?"
+        );
+        if (!shouldCopy) {
+          setProject(saveProjectData);
+          setProjectLog(saveProjectLog);
+          latestStateRef.current = { ...snapshot, project: saveProjectData, projectLog: saveProjectLog };
+          return alert("Endringene st\xE5r fortsatt p\xE5 skjermen, men er ikke bekreftet lagret.");
+        }
+        const copyPayload = {
+          title: saveProjectData.projectName || saveProjectData.address || "Uten navn",
+          data: cleanData,
+          user_id: authUser.id,
+          share_enabled: true,
+          locked: false,
+          locked_at: null,
+          locked_by: "",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        const { data: copyRow, error: copyError } = await supabase.from("projects").insert(copyPayload).select().single();
+        if (copyError) {
+          console.error(copyError);
+          return alert("Kunne ikke lagre kopi heller: " + copyError.message);
+        }
+        setProjectId(copyRow.id);
+        setCurrentProjectOwnerId(copyRow.user_id || authUser.id);
+        setSupportModeExplicit(false);
+        unpackData(dataFromRow(copyRow), false);
+        await loadProjects(authUser);
+        resetProjectDirty();
+        return alert("\u2714 Gammel rad kunne ikke oppdateres, men prosjektet er lagret som ny oppdatert kopi.");
+      } else {
+        const newProjectData = {
+          ...emptyProject(),
+          ...snapshot.project || {},
+          locked: false,
+          status: "active",
+          lockedAt: "",
+          lockedBy: ""
+        };
+        const newProjectLog = {
+          ...normalizeProjectLog(snapshot.projectLog),
+          draft: ""
+        };
+        const payload = {
+          title: newProjectData.projectName || newProjectData.address || "Uten navn",
+          data: makeCleanData(newProjectData, newProjectLog),
+          user_id: authUser.id,
+          share_enabled: true,
+          locked: false,
+          locked_at: null,
+          locked_by: "",
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        const { data, error } = await supabase.from("projects").insert(payload).select().single();
+        if (error) {
+          console.error(error);
+          return alert("Kunne ikke lagre i sky: " + error.message);
+        }
+        setProjectId(data.id);
+        setCurrentProjectOwnerId(data.user_id || authUser.id);
+        setSupportModeExplicit(false);
+        setMobileCreatingProject(false);
+        unpackData(dataFromRow(data), false);
+        resetProjectDirty();
+        alert("\u2714 Prosjekt lagret");
+      }
+      loadProjects(authUser);
+    };
+    const saveSharedProject = async () => {
+      if (!projectId) return alert("Prosjektet mangler ID og kan ikke lagres fra delingslink.");
+      const code = readStoredPortalAccessCode(projectId, "underleverandor");
+      if (!code) {
+        setPortalAccessGranted(false);
+        return alert("Tilgangskoden må bekreftes på nytt før bidrag kan lagres.");
+      }
+      const updates = JSON.parse(JSON.stringify({
+        checked,
+        productDocs,
+        manualProducts,
+        surf,
+        bathroomEquipment,
+        photos,
+        inst,
+        files,
+        checklist,
+        project: {
+          customChecklistGroups: Array.isArray(project?.customChecklistGroups) ? project.customChecklistGroups : [],
+          reportHeroPhotoId: project?.reportHeroPhotoId || ""
+        }
+      }));
+      try {
+        const result = await saveUnderleverandorProjectContribution(supabase, {
+          projectId,
+          code,
+          updates
+        });
+        if (!result?.ok || !result?.project) {
+          if (result?.error === "locked") {
+            return alert("Prosjektet er låst og kan ikke endres. Kontakt prosjektansvarlig hvis noe må korrigeres.");
+          }
+          clearStoredPortalAccessCode(projectId, "underleverandor");
+          setPortalAccessGranted(false);
+          return alert("Tilgangen er utløpt eller ugyldig. Be prosjektansvarlig sende ny tilgang.");
+        }
+        applyVerifiedPortalResult(result, { preserveDraft: true });
+        resetProjectDirty();
+        alert("✔ Bidrag lagret på prosjektet " + (/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO"));
+      } catch (error) {
+        console.error(error);
+        alert("Kunne ikke lagre fra delingslink. Kontakt prosjektansvarlig hvis feilen vedvarer. Feil: " + (error?.message || "Ukjent feil"));
+      }
+    };
+    const setProjectLockedState = async (locked, { skipConfirm = false } = {}) => {
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 endre prosjektstatus.");
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
+      if (!projectId) return alert("Prosjektet m\xE5 lagres f\xF8r det kan l\xE5ses eller l\xE5ses opp.");
+      const message = locked ? "Vil du avslutte og l\xE5se prosjektet? Ingen kan lagre endringer f\xF8r prosjektet l\xE5ses opp igjen." : "Vil du l\xE5se opp prosjektet slik at endringer kan lagres igjen?";
+      if (!skipConfirm && !window.confirm(message)) return;
+      const { data, error } = await supabase.rpc("set_project_lock", {
+        p_project_id: projectId,
+        p_locked: !!locked,
+        p_locked_by: authUser.email || user.email || user.name || "Ukjent"
+      });
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke oppdatere prosjektstatus: " + error.message);
+      }
+      const updatedRow = Array.isArray(data) ? data[0] : data;
+      if (!updatedRow) {
+        return alert("Prosjektstatus ble ikke oppdatert. \xC5pne prosjektet p\xE5 nytt og pr\xF8v igjen.");
+      }
+      const updatedData = dataFromRow(updatedRow, updatedRow.data || packData());
+      unpackData(updatedData);
+      alert(locked ? "\u{1F512} Prosjektet er avsluttet og l\xE5st." : "\u{1F513} Prosjektet er l\xE5st opp igjen.");
+      loadProjects(authUser);
+    };
+    const saveAsNewProject = async () => {
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 lagre prosjekt.");
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
+      const projectTitle = project.projectName || project.address || project.customer || "Uten navn";
+      const hasProjectContent = projectId || project.projectName || project.address || project.customer || project.customerEmail || project.customerPhone || project.notes || project.projectDescription || Object.keys(checked || {}).length || (photos || []).length || Object.keys(checklist || {}).length || (inst || []).length || (files || []).length || (projectLog?.messages || []).length;
+      if (!hasProjectContent) return alert("Det finnes ikke nok prosjektinnhold til \xE5 lagre en kopi enn\xE5.");
+      const confirmText = projectId
+        ? `Lagre en NY kopi av prosjektet "${projectTitle}"?\n\nDette lager en separat prosjektrad. Bruk heller "Oppdater prosjekt" hvis du bare skal lagre vanlige endringer p\xE5 dagens prosjekt.`
+        : `Dette prosjektet er ikke lagret fra f\xF8r. Vanlig valg er "Lagre / oppdater prosjekt".\n\nVil du likevel lagre dette som en egen kopi?`;
+      if (!window.confirm(confirmText)) return;
+      if (isProjectLocked && !window.confirm("Prosjektet du kopierer er l\xE5st. Kopien blir opprettet som \xE5pen/ul\xE5st slik at den kan redigeres. Fortsette?")) return;
+      const unlockedProject = { ...emptyProject(), ...project, locked: false, status: "active", lockedAt: "", lockedBy: "" };
+      const cleanProjectLog = { ...normalizeProjectLog(projectLog), draft: "" };
+      const cleanData = JSON.parse(JSON.stringify({
+        company,
+        user,
+        project: unlockedProject,
+        checked,
+        productDocs,
+        manualProducts,
+        other,
+        surf,
+        bathroomEquipment,
+        photos,
+        access,
+        inst,
+        files,
+        checklist,
+        tilbud,
+        overtagelse,
+        warranty,
+        projectLog: cleanProjectLog,
+        internalNotes
+      }));
+      const payload = {
+        title: projectTitle,
+        data: cleanData,
+        user_id: authUser.id,
+        share_enabled: true,
+        locked: false,
+        locked_at: null,
+        locked_by: "",
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      };
+      const { data, error } = await supabase.from("projects").insert(payload).select().single();
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke lagre som ny kopi: " + error.message);
+      }
+      setProjectId(data.id);
+      setMobileCreatingProject(false);
+      unpackData(dataFromRow(data), false);
+      resetProjectDirty();
+      await loadProjects(authUser);
+      alert(`\u2714 Kopi lagret. Du jobber n\xE5 i den nye kopien av "${projectTitle}".`);
+    };
+    const deleteProject = async (id) => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
+      if (!window.confirm("Er du sikker p\xE5 at du vil slette prosjektet?")) return;
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn for \xE5 slette prosjekt.");
+      const { data, error } = await supabase.from("projects").delete().eq("id", id).select("id");
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke slette prosjekt: " + error.message);
+      }
+      if (!data || data.length === 0) {
+        return alert("Prosjektet ble ikke slettet. Dette skyldes sannsynligvis tilgang til en eldre prosjektrad.");
+      }
+      setProjects((prev) => (prev || []).filter((p) => p.id !== id));
+      if (id === projectId) {
+        setProjectId(null);
+        setCurrentProjectOwnerId("");
+        setSupportModeExplicit(false);
+        setMobileCreatingProject(false);
+        setTab("prosjekt");
+      }
+      await loadProjects(authUser);
+      alert("Prosjekt slettet.");
+    };
+    const saveProjectForLink = async () => {
+      if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();
+      if (projectId) return projectId;
+      if (!authUser) {
+        alert("Du m\xE5 v\xE6re logget inn for \xE5 lage delingslink.");
+        return null;
+      }
+      const newProjectData = {
+        ...emptyProject(),
+        ...project,
+        locked: false,
+        status: "active",
+        lockedAt: "",
+        lockedBy: ""
+      };
+      const cleanData = JSON.parse(JSON.stringify({
+        company,
+        user,
+        project: newProjectData,
+        checked,
+        productDocs,
+        manualProducts,
+        other,
+        surf,
+        bathroomEquipment,
+        photos,
+        access,
+        inst,
+        files,
+        checklist,
+        tilbud,
+        overtagelse,
+        warranty,
+        projectLog,
+        internalNotes
+      }));
+      const payload = {
+        title: newProjectData.projectName || newProjectData.address || "Uten navn",
+        data: cleanData,
+        user_id: authUser.id,
+        share_enabled: true,
+        locked: false,
+        locked_at: null,
+        locked_by: "",
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      };
+      const { data, error } = await supabase.from("projects").insert(payload).select().single();
+      if (error) {
+        console.error(error);
+        alert("Kunne ikke lagre prosjekt f\xF8r deling: " + error.message);
+        return null;
+      }
+      setProjectId(data.id);
+      setMobileCreatingProject(false);
+      setProject(newProjectData);
+      loadProjects(authUser);
+      return data.id;
+    };
+    const {
+      portalAccessPolicyText,
+      getPortalAccessRecord,
+      portalAccessRecordIsValid,
+      portalAccessLine,
+      portalAccessClipboardText,
+      ensurePortalAccessForProject,
+      portalAccessOk,
+      renderPortalAccessGate
+    } = createPortalAccessTools({
+      project, projectId, projectIsLocked, portalAccessRoleParam, isAdminProjectLink,
+      portalAccessGranted, portalAccessStorageKey, portalAccessInput, portalAccessError,
+      setPortalAccessGranted, setPortalAccessInput, setPortalAccessError,
+      supabase, authUser, profile, user, company, name,
+      portalAccessRecords, setPortalAccessRecords,
+      onPortalVerified: (result) => applyVerifiedPortalResult(result),
+      Brand, Section, Input
+    });
+
+    (0, import_react.useEffect)(() => {
+      if (!projectId || !portalAccessRoleParam || isAdminProjectLink) return;
+      const storedCode = readStoredPortalAccessCode(projectId, portalAccessRoleParam);
+      if (!storedCode) return;
+      let cancelled = false;
+      verifyProjectPortalAccess(supabase, {
+        projectId,
+        role: portalAccessRoleParam,
+        code: storedCode
+      }).then((result) => {
+        if (cancelled) return;
+        if (!result?.ok || !result?.project) {
+          clearStoredPortalAccessCode(projectId, portalAccessRoleParam);
+          setPortalAccessGranted(false);
+          return;
+        }
+        applyVerifiedPortalResult(result);
+      }).catch((error) => {
+        if (!cancelled) console.warn("Kunne ikke gjenbruke portaltilgang:", error?.message || error);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [projectId, portalAccessRoleParam, isAdminProjectLink]);
+
+    (0, import_react.useEffect)(() => {
+      if (!authUser?.id || !projectId || portalAccessRoleParam || tab !== "tilgang") return;
+      let cancelled = false;
+      getProjectPortalAccessStatus(supabase, { projectId }).then((status) => {
+        if (cancelled || !status?.ok) return;
+        const toRecord = (role, value = {}) => ({
+          role,
+          active: !!value?.active,
+          code: value?.active ? "stored" : "",
+          createdAt: value?.created_at || "",
+          validUntil: value?.valid_until || status?.valid_until || "",
+          accessPolicy: status?.access_policy || "active_project_plus_locked_30_days",
+          lockedGraceDays: Number(status?.locked_grace_days || 30)
+        });
+        setPortalAccessRecords({
+          kunde: toRecord("kunde", status?.kunde || {}),
+          underleverandor: toRecord("underleverandor", status?.underleverandor || {})
+        });
+      }).catch((error) => {
+        if (!cancelled) console.warn("Kunne ikke hente portalstatus:", error?.message || error);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [authUser?.id, projectId, portalAccessRoleParam, tab]);
+
+    const makeProjectLink = (id, role = "kunde", targetTab = "") => {
+      const tabSuffix = hasValue(targetTab) ? `&tab=${encodeURIComponent(String(targetTab || ""))}` : "";
+      if (role === "admin") {
+        return `${window.location.origin}${window.location.pathname}?project=${id}&role=admin${tabSuffix}`;
+      }
+      const roleParam = role === "Underleverandør" ? "underleverandor" : "kunde";
+      return roleParam === "underleverandor" ? `${window.location.origin}${window.location.pathname}?project=${id}&access=underleverandor${tabSuffix}` : `${window.location.origin}${window.location.pathname}?project=${id}&role=kunde${tabSuffix}`;
+    };
+    const copyLinkToClipboard = async (link, successMessage) => {
+      try {
+        await navigator.clipboard.writeText(link);
+        alert(successMessage);
+      } catch {
+        prompt("Kopier denne linken:", link);
+      }
+    };
+    const shareProject = async () => {
+      const id = await saveProjectForLink();
+      if (!id) return;
+      const accessRecord = await ensurePortalAccessForProject({ id, roleParam: "kunde" });
+      const link = makeProjectLink(id, "kunde");
+      await copyLinkToClipboard(
+        portalAccessClipboardText({ link, record: accessRecord, roleParam: "kunde" }),
+        accessRecord?.code ? "Kundelenke og tilgangskode kopiert." : "Kundelenke kopiert."
+      );
+    };
+    const copyAccessLink = async (role = "kunde") => {
+      const id = await saveProjectForLink();
+      if (!id) return;
+      const roleParam = role === "Underleverand\xF8r" ? "underleverandor" : "kunde";
+      const accessRecord = await ensurePortalAccessForProject({ id, roleParam });
+      const link = makeProjectLink(id, role);
+      await copyLinkToClipboard(
+        portalAccessClipboardText({ link, record: accessRecord, roleParam }),
+        roleParam === "underleverandor" ? "Underentreprenørlenke og tilgangskode kopiert." : "Kundelenke og tilgangskode kopiert."
+      );
+    };
+    const sendAccessEmail = async ({ role = "kunde", toEmail = "", recipientName = "" } = {}) => {
+      const cleanEmail = String(toEmail || "").trim();
+      if (!cleanEmail) return alert("Legg inn e-postadresse før du sender tilgang.");
+      const id = await saveProjectForLink();
+      if (!id) return;
+      const roleParam = role === "Underleverand\xF8r" ? "underleverandor" : "kunde";
+      const link = makeProjectLink(id, role);
+      const accessRecord = await ensurePortalAccessForProject({ id, roleParam });
+      const accessText = accessRecord?.code ? `${portalAccessLine(accessRecord, project)}\n\nKoden er personlig for denne delingslenken og skal ikke legges i URL-en.` : "";
+      try {
+        const { error } = await supabase.functions.invoke("smart-worker", {
+          body: {
+            toEmail: cleanEmail,
+            direction: roleParam === "underleverandor" ? "access_underleverandor" : "access_kunde",
+            accessRole: roleParam === "underleverandor" ? "underentreprenør" : "kunde",
+            projectId: id,
+            projectName: project.projectName || project.address || "Prosjekt",
+            recipientName: recipientName || "",
+            customerName: project.customer || recipientName || "Kunde",
+            customerEmail: project.customerEmail || "",
+            customerPhone: project.customerPhone || "",
+            projectAddress: project.address || "",
+            projectPostnr: project.postnr || "",
+            projectCity: project.city || "",
+            projectResponsible: project.responsible || user.name || authUser?.email || "",
+            ...emailBrandPayload(),
+            fromName: user.name || authUser?.email || "Prosjektleder",
+            message: `${accessEmailMessage || "Du har fått tilgang til prosjektet."}${accessText}`,
+            projectLink: link,
+            accessCode: accessRecord?.code || "",
+            accessCodeExpiresAt: accessRecord?.expiresAt || "",
+            accessPolicy: "active_project_plus_locked_30_days",
+            subject: `Tilgang til prosjekt: ${project.projectName || project.address || "Prosjekt"}`
+          }
+        });
+        if (error) {
+          console.warn("Tilgangs-e-post kunne ikke sendes:", error.message);
+          await copyLinkToClipboard(
+            portalAccessClipboardText({ link, record: accessRecord, roleParam }),
+            "E-post kunne ikke sendes, men lenke og tilgangskode er kopiert."
+          );
+          return;
+        }
+        alert("✔ E-post med tilgangslink og tilgangskode er sendt.");
+      } catch (error) {
+        console.warn("Tilgangs-e-post kunne ikke sendes:", error);
+        await copyLinkToClipboard(
+            portalAccessClipboardText({ link, record: accessRecord, roleParam }),
+            "E-post kunne ikke sendes, men lenke og tilgangskode er kopiert."
+          );
+      }
+    };
+
+    const sendProjectCompletionEmailToCustomer = async ({ askFirst = true, silent = false } = {}) => {
+      const cleanEmail = String(project.customerEmail || "").trim();
+      if (!cleanEmail) {
+        if (!silent) alert("Kunde e-post mangler. Legg inn kunde e-post før dokumentasjonen kan sendes automatisk.");
+        return false;
+      }
+      if (!projectId) {
+        if (!silent) alert("Prosjektet må lagres før dokumentasjon kan sendes til kunde.");
+        return false;
+      }
+      const customerAccessRecord = await ensurePortalAccessForProject({ id: projectId, roleParam: "kunde" });
+      const customerLink = makeProjectLink(projectId, "kunde");
+      const customerAccessText = customerAccessRecord?.code ? `${portalAccessLine(customerAccessRecord, project)}\n` : "";
+      const projectTitle = project.projectName || project.address || "prosjektet";
+      const warrantyLine = warranty?.issued
+        ? `\n• Garantibevis${warranty?.guaranteeNumber ? ` (${warranty.guaranteeNumber})` : ""}\n• Garantivilkår ${getWarrantyYears(warranty)} år`
+        : warranty?.enabled
+          ? "\n• Garantiinformasjon oppdateres når garantien er utstedt"
+          : "";
+      const emailBody = `Hei ${project.customer || "kunde"}
+
+Prosjektet er nå ferdigstilt, og dokumentasjonen er tilgjengelig i kundeportalen.
+
+Du finner blant annet:
+
+• Sluttrapport
+• Bildedokumentasjon
+• Produktoversikt
+• FDV- og produktdokumentasjon${warrantyLine}
+
+Åpne kundeportalen:
+${customerLink}${customerAccessText}
+
+Med vennlig hilsen
+
+${company.companyName || name || "Expo ProffDok"}
+${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post: " + company.email : ""}`;
+
+      if (askFirst) {
+        const shouldSend = window.confirm(
+          `Prosjektet er klart til å låses.\n\nVil du sende ferdigmelding og kundeportal-link automatisk til:\n${cleanEmail}\n\nTrykk OK for å sende, eller Avbryt for å låse uten å sende e-post.`
+        );
+        if (!shouldSend) return false;
+      }
+
+      try {
+        const { error } = await supabase.functions.invoke("smart-worker", {
+          body: {
+            toEmail: cleanEmail,
+            direction: "project_completed_customer",
+            projectId,
+            projectName: project.projectName || project.address || "Prosjekt",
+            customerName: project.customer || "Kunde",
+            customerEmail: cleanEmail,
+            customerPhone: project.customerPhone || "",
+            projectAddress: project.address || "",
+            projectPostnr: project.postnr || "",
+            projectCity: project.city || "",
+            projectResponsible: project.responsible || user.name || authUser?.email || "",
+            ...emailBrandPayload(),
+            fromName: user.name || authUser?.email || "Prosjektleder",
+            message: emailBody,
+            projectLink: customerLink,
+            accessCode: customerAccessRecord?.code || "",
+            accessCodeExpiresAt: customerAccessRecord?.expiresAt || "",
+            accessPolicy: "active_project_plus_locked_30_days",
+            subject: `Prosjektdokumentasjon er klar – ${projectTitle}`
+          }
+        });
+        if (error) {
+          console.warn("Ferdigmelding kunne ikke sendes:", error.message);
+          if (!silent) alert("Prosjektet kan låses, men e-post kunne ikke sendes automatisk. Feil: " + error.message);
+          return false;
+        }
+        if (!silent) alert("✔ Ferdigmelding med kundeportal-link er sendt til kunde.");
+        return true;
+      } catch (error) {
+        console.warn("Ferdigmelding kunne ikke sendes:", error);
+        if (!silent) alert("Prosjektet kan låses, men e-post kunne ikke sendes automatisk. Feil: " + (error?.message || String(error)));
+        return false;
+      }
+    };
+
+    const { completeOvertagelseAndLock } = createOvertagelseCompletionTools({
+      projectId, authUser, overtagelse, hasValue, activeChecklistTemplate, checklist, warranty, project,
+      getOpenDeviationCount, emptyOvertagelse, getLocalTodayIsoDate, emptyWarranty, setWarranty, setOvertagelse,
+      company, user, emptyProject, checked, productDocs, manualProducts, other, surf, bathroomEquipment, photos,
+      access, inst, files, tilbud, projectLog, internalNotes, supabase, goToTab,
+      sendProjectCompletionEmailToCustomer, setProjectLockedState
+    });
+    const uploadLogo = async (file) => {
+      if (!authUser || !file) return;
+      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `logos/${authUser.id}/${Date.now()}-${cleanName}`;
+      const { error } = await supabase.storage.from("project-images").upload(path, file, { cacheControl: "3600", upsert: true });
+      if (error) return alert("Kunne ikke laste opp logo: " + error.message);
+      const { data } = supabase.storage.from("project-images").getPublicUrl(path);
+      setCompany((c) => ({ ...c, logoUrl: data.publicUrl }));
+      alert("Logo lastet opp. Husk \xE5 trykke Lagre firmaprofil.");
+    };
+    const saveProfile = async () => {
+      if (!authUser) return alert("Du m\xE5 v\xE6re logget inn.");
+      const existingCompanyRole = profile?.company_role || "";
+      const shouldSetFirstUserAsCompanyAdmin = !existingCompanyRole && hasValue(company.companyName);
+      const payload = {
+        id: authUser.id,
+        email: company.email || authUser.email,
+        company_name: company.companyName || "",
+        org_number: company.orgNumber || "",
+        address: company.address || "",
+        phone: company.phone || "",
+        website: company.website || "",
+        logo_url: company.logoUrl || "",
+        ...shouldSetFirstUserAsCompanyAdmin ? { company_role: "firmaadmin" } : {}
+      };
+      const { error } = await supabase.from("profiles").update(payload).eq("id", authUser.id);
+      if (error) return alert("Kunne ikke lagre firmaprofil: " + error.message);
+      const row = { ...profile || {}, ...payload };
+      applyProfile(row);
+      if (shouldSetFirstUserAsCompanyAdmin) {
+        await loadProjects(authUser, false, row);
+        alert("Firmaprofil lagret. Du er satt som firmaadmin for dette firmaet.");
+        return;
+      }
+      alert("Firmaprofil lagret");
+    };
+    const loadAdminUsers = async () => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      setAdminLoading(true);
+      const [{ data, error }, { data: termsData, error: termsFetchError }] = await Promise.all([
+        supabase.from("profiles").select("id,email,approved,deactivated,company_name,company_role,system_role,role,is_admin,org_number,address,phone,website,logo_url,created_at").order("created_at", { ascending: false }),
+        supabase.from("user_terms_acceptance").select("id,user_id,email,version,accepted_at").eq("version", EXPO_PROFFDOK_TERMS_VERSION).order("accepted_at", { ascending: false })
+      ]);
+      setAdminLoading(false);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke hente brukere. Kontakt systemansvarlig hvis feilen vedvarer.");
+      }
+      if (termsFetchError) {
+        console.warn("Kunne ikke hente brukervilkårstatus:", termsFetchError.message);
+      }
+      setAdminUsers(data || []);
+      setAdminTermsAcceptances(termsFetchError ? [] : termsData || []);
+      publishManagedAccessChange({ source: "admin-users-loaded" });
+    };
+    const approveAdminUser = async (id) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      const approvedUser = (adminUsers || []).find((userRow) => userRow?.id === id);
+      const { error } = await supabase.from("profiles").update({ approved: true, deactivated: false }).eq("id", id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke godkjenne bruker: " + error.message);
+      }
+      const approvedEmail = String(approvedUser?.email || "").trim();
+      if (!approvedEmail) {
+        alert("Bruker er godkjent, men e-postadressen mangler. Godkjenningsmelding kunne derfor ikke sendes.");
+        loadAdminUsers();
+        return;
+      }
+      const appLink = "https://expo-proffdok.app";
+      const approvedName = String(approvedUser?.full_name || approvedUser?.name || "").trim();
+      const approvalMessage = `Hei${approvedName ? ` ${approvedName}` : ""}
+
+Kontoen din i Expo ProffDok er nå godkjent, og du har fått tilgang.
+
+Du kan logge inn med e-postadressen ${approvedEmail} og passordet du opprettet ved registrering.
+
+Logg inn i Expo ProffDok:
+${appLink}
+
+Med vennlig hilsen
+Expo ProffDok`;
+      try {
+        const { error: approvalMailError } = await supabase.functions.invoke("smart-worker", {
+          body: {
+            toEmail: approvedEmail,
+            direction: "user_access_approved",
+            recipientName: approvedName,
+            customerName: approvedName || approvedEmail,
+            message: approvalMessage,
+            projectLink: appLink,
+            projectName: "Brukergodkjenning",
+            companyName: "Expo ProffDok",
+            brandName: "Expo ProffDok",
+            fromName: "Expo ProffDok",
+            subject: "Du har fått tilgang til Expo ProffDok"
+          }
+        });
+        if (approvalMailError) {
+          console.warn("Brukeren ble godkjent, men godkjennings-e-posten kunne ikke sendes:", approvalMailError.message);
+          alert("Bruker er godkjent, men e-posten om godkjenningen kunne ikke sendes. Gi brukeren beskjed manuelt.");
+        } else {
+          alert("Bruker er godkjent, og e-post om tilgangen er sendt.");
+        }
+      } catch (approvalMailError) {
+        console.warn("Brukeren ble godkjent, men godkjennings-e-posten kunne ikke sendes:", approvalMailError);
+        alert("Bruker er godkjent, men e-posten om godkjenningen kunne ikke sendes. Gi brukeren beskjed manuelt.");
+      }
+      loadAdminUsers();
+    };
+    const deactivateAdminUser = async (id) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      if (!window.confirm("Vil du deaktivere denne brukeren? Brukeren vises ikke som ny bruker for godkjenning, men beholdes i historikken.")) return;
+      const { error } = await supabase.from("profiles").update({ approved: false, deactivated: true }).eq("id", id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke deaktivere bruker: " + error.message);
+      }
+      alert("Bruker er deaktivert.");
+      loadAdminUsers();
+    };
+    const rejectAndDeletePendingUser = async (userRow) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til systemadmin.");
+      if (!userRow?.id) return alert("Mangler bruker-ID.");
+      if (userRow.id === authUser?.id) return alert("Du kan ikke slette din egen bruker.");
+      if (userRow.system_role === "systemadmin") return alert("Systemadministrator kan ikke slettes her.");
+      if (userRow.approved || userRow.deactivated) return alert("Denne knappen kan kun brukes på nye brukere som venter på godkjenning.");
+      const userEmail = userRow.email || "brukeren";
+      const confirmed = window.confirm(`Vil du avvise og slette ${userEmail} permanent?
+
+Dette fjerner brukeren fra innlogging/auth, profil, brukervilkår og ventende firmainvitasjoner. Handlingen kan ikke angres.`);
+      if (!confirmed) return;
+      const { data, error } = await supabase.functions.invoke("delete-pending-user", {
+        body: { userId: userRow.id, email: userRow.email || "" }
+      });
+      if (error || data?.error) {
+        console.error(error || data?.error);
+        return alert("Kunne ikke avvise og slette bruker: " + (data?.error || error?.message || "Ukjent feil"));
+      }
+      await loadAdminUsers();
+      alert(`✔ ${userEmail} er avvist og slettet.`);
+    };
+    const reactivateAdminUser = async (id) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til admin.");
+      if (!window.confirm("Vil du reaktivere denne brukeren og legge den tilbake som venter på godkjenning?")) return;
+      const { error } = await supabase.from("profiles").update({ approved: false, deactivated: false }).eq("id", id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke reaktivere bruker: " + error.message);
+      }
+      alert("Bruker er reaktivert og ligger nå som venter på godkjenning.");
+      loadAdminUsers();
+    };
+    const updateAdminUserCompanyRole = async (userRow, role) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til systemadmin.");
+      if (!userRow?.id) return;
+      const cleanRole = role === "firmaadmin" ? "firmaadmin" : "ansatt";
+      const currentRole = userRow.company_role === "firmaadmin" ? "firmaadmin" : "ansatt";
+      if (cleanRole === currentRole) return;
+      const roleLabel = cleanRole === "firmaadmin" ? "Firmaadmin" : "Ansatt";
+      const userEmail = userRow.email || "brukeren";
+      if (!window.confirm(`Vil du endre firmarollen for ${userEmail} til ${roleLabel}?
+
+Endringen lagres umiddelbart.`)) return;
+      const { error } = await supabase.from("profiles").update({ company_role: cleanRole }).eq("id", userRow.id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke endre firmarolle: " + error.message);
+      }
+      await loadAdminUsers();
+      alert(`✔ Firmarolle oppdatert. ${userEmail} er nå ${roleLabel}.`);
+    };
+    const updateAdminUserCompanyName = async (userRow, nextCompanyValue = "") => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til systemadmin.");
+      if (!userRow?.id) return;
+      const userEmail = userRow.email || "brukeren";
+      const current = String(userRow.company_name || "").trim();
+      const cleanCompany = String(nextCompanyValue || "").trim();
+      if (cleanCompany === current) return;
+      if (cleanCompany && !registeredCompanyOptions.includes(cleanCompany)) {
+        return alert("Firma må velges fra registrerte firmaer. Oppdater brukerliste/supportdata hvis firmaet mangler.");
+      }
+      if (!window.confirm(`Vil du flytte ${userEmail} til firma:
+${cleanCompany || "(ikke valgt)"}?
+
+Endringen lagres umiddelbart.`)) return;
+      const { error } = await supabase.from("profiles").update({ company_name: cleanCompany }).eq("id", userRow.id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke endre firma: " + error.message);
+      }
+      await loadAdminUsers();
+      alert("✔ Firma oppdatert.");
+    };
+    const setAdminUserSystemAdmin = async (userRow, makeSystemAdmin) => {
+      if (!isAdminUser) return alert("Du har ikke tilgang til systemadmin.");
+      if (!userRow?.id) return;
+      const userEmail = userRow.email || "brukeren";
+      if (userRow.id === authUser?.id && !makeSystemAdmin) return alert("Du kan ikke fjerne systemadmin-rollen fra deg selv.");
+      const message = makeSystemAdmin
+        ? `Vil du gjøre ${userEmail} til SYSTEMADMIN?
+
+Systemadmin kan godkjenne brukere, endre Produktmaster og supportere alle firmaer.`
+        : `Vil du fjerne systemadmin-rollen fra ${userEmail}?
+
+Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenning.`;
+      if (!window.confirm(message)) return;
+      const payload = makeSystemAdmin
+        ? { system_role: "systemadmin", is_admin: true, role: "admin", approved: true, deactivated: false, company_role: userRow.company_role || "firmaadmin" }
+        : { system_role: null, is_admin: false, role: "user", company_role: userRow.company_role || "firmaadmin" };
+      const { error } = await supabase.from("profiles").update(payload).eq("id", userRow.id);
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke oppdatere systemadmin-rolle: " + error.message);
+      }
+      await loadAdminUsers();
+      alert(makeSystemAdmin ? "✔ Brukeren er nå systemadmin." : "✔ Systemadmin-rollen er fjernet.");
+    };
+    const loadCompanyAdminData = async (notify = false) => {
+      if (!isCompanyAdminUser) return alert("Du har ikke tilgang til firmaadministrasjon.");
+      const companyNameForQuery = currentCompanyName;
+      if (!companyNameForQuery) return alert("Firmaprofil mangler firmanavn. Legg inn firmanavn i Firmaprofil først.");
+      setCompanyAdminLoading(true);
+      const [{ data: usersData, error: usersError }, { data: invitesData, error: invitesError }] = await Promise.all([
+        supabase.from("profiles").select("id,email,approved,deactivated,company_name,company_role,system_role,created_at").eq("company_name", companyNameForQuery).order("created_at", { ascending: false }),
+        supabase.from("company_user_invites").select("*").eq("company_name", companyNameForQuery).order("created_at", { ascending: false })
+      ]);
+      setCompanyAdminLoading(false);
+      if (usersError) {
+        console.error(usersError);
+        return alert("Kunne ikke hente brukere i firmaet: " + usersError.message);
+      }
+      if (invitesError) {
+        console.warn("Kunne ikke hente invitasjoner:", invitesError.message);
+      }
+      const safeUsers = (usersData || []).filter((u) => isSystemAdminUser || u.system_role !== "systemadmin");
+      setCompanyUsers(safeUsers);
+      setCompanyInvites(invitesData || []);
+      if (notify) alert(`Firmaoversikt oppdatert. Fant ${safeUsers.length} bruker${safeUsers.length === 1 ? "" : "e"}.`);
+    };
+    const inviteCompanyEmployee = async () => {
+      if (!isCompanyAdminUser) return alert("Du har ikke tilgang til firmaadministrasjon.");
+      const companyNameForInvite = currentCompanyName;
+      if (!companyNameForInvite) return alert("Firmaprofil mangler firmanavn. Legg inn firmanavn i Firmaprofil først.");
+      const cleanEmail = String(newEmployeeEmail || "").trim().toLowerCase();
+      if (!cleanEmail || !cleanEmail.includes("@")) return alert("Skriv inn en gyldig e-postadresse.");
+      const cleanRole = newEmployeeRole === "firmaadmin" ? "firmaadmin" : "ansatt";
+      const { data: existingProfile, error: existingError } = await supabase.from("profiles").select("id,email,company_name,company_role,system_role").eq("email", cleanEmail).maybeSingle();
+      if (existingError) {
+        console.warn("Kunne ikke sjekke eksisterende bruker:", existingError.message);
+      }
+      if (existingProfile?.system_role === "systemadmin" && !isSystemAdminUser) {
+        return alert("Denne brukeren er systemadministrator og kan ikke administreres fra firma.");
+      }
+      if (existingProfile?.id) {
+        const { error: updateError } = await supabase.from("profiles").update({
+          company_name: companyNameForInvite,
+          company_role: cleanRole,
+          approved: true,
+          deactivated: false
+        }).eq("id", existingProfile.id);
+        if (updateError) {
+          console.error(updateError);
+          return alert("Kunne ikke legge eksisterende bruker til firmaet: " + updateError.message);
+        }
+      }
+      const { error } = await supabase.from("company_user_invites").upsert({
+        email: cleanEmail,
+        company_name: companyNameForInvite,
+        company_role: cleanRole,
+        status: existingProfile?.id ? "accepted" : "pending",
+        invited_by: authUser?.email || profile?.email || ""
+      }, { onConflict: "email,company_name" });
+      if (error) {
+        console.error(error);
+        return alert("Kunne ikke lagre invitasjon: " + error.message);
+      }
+      let invitationEmailSent = false;
+      if (!existingProfile?.id) {
+        try {
+          const invitationLink = `${window.location.origin}${window.location.pathname}?signup=1&email=${encodeURIComponent(cleanEmail)}`;
+          const { error: inviteMailError } = await supabase.functions.invoke("smart-worker", {
+            body: {
+              toEmail: cleanEmail,
+              direction: "company_user_invite",
+              companyName: companyNameForInvite,
+              brandName: companyNameForInvite,
+              companyLogoUrl: String(company.logoUrl || "").trim(),
+              logoUrl: String(company.logoUrl || "").trim(),
+              emailLogoUrl: String(company.logoUrl || "").trim(),
+              platformName: "Expo ProffDok",
+              sentViaText: `Sendt via Expo ProffDok på vegne av ${companyNameForInvite}`,
+              footerCompanyText: `${companyNameForInvite} · Dokumentasjon levert gjennom Expo ProffDok`,
+              fromName: profile?.email || authUser?.email || "Firmaadministrator",
+              message: `Du er invitert til ${companyNameForInvite} i Expo ProffDok. Åpne lenken, fyll inn fullt navn, mobilnummer og lag ditt eget passord. Bruk e-postadressen ${cleanEmail} når du oppretter brukeren.`,
+              projectLink: invitationLink,
+              subject: `Invitasjon til Expo ProffDok – ${companyNameForInvite}`
+            }
+          });
+          invitationEmailSent = !inviteMailError;
+          if (inviteMailError) console.warn("Invitasjons-e-post kunne ikke sendes:", inviteMailError.message);
+        } catch (emailError) {
+          console.warn("Invitasjons-e-post kunne ikke sendes:", emailError);
+        }
+      }
+      setNewEmployeeEmail("");
+      setNewEmployeeRole("ansatt");
+      await loadCompanyAdminData(false);
       alert(existingProfile?.id ? "✔ Brukeren er lagt til i firmaet." : invitationEmailSent ? "✔ Invitasjon er registrert og e-post er forsøkt sendt til brukeren." : "✔ Invitasjon er registrert. E-post kunne ikke bekreftes sendt, så be brukeren opprette konto med samme e-postadresse.");
     };
     const updateCompanyUserRole = async (userRow, role) => {
