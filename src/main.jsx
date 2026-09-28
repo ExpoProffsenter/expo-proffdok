@@ -2734,12 +2734,17 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setProjectId(data.id);
       if (!silent) alert("Prosjektdata oppdatert.");
     };
-    const applyProfile = (row) => {
+    const applyProfile = (row, identityUser = authUser) => {
       if (!row) return;
+      const authenticatedName = String(
+        identityUser?.user_metadata?.full_name ||
+        identityUser?.user_metadata?.name ||
+        ""
+      ).trim();
       setProfile(row);
       setUser((current) => ({
         ...current,
-        name: row.full_name || current.name || "",
+        name: authenticatedName || current.name || "",
         email: row.email || current.email || ""
       }));
       setCompany((c) => ({
@@ -2794,7 +2799,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       } catch (inviteError) {
         console.warn("Kunne ikke kontrollere firmainvitasjon:", inviteError);
       }
-      applyProfile(data);
+      applyProfile(data, sessionUser);
       setProfileLoading(false);
       return data;
     };
@@ -6450,18 +6455,23 @@ ${appLink}`;
           uploadLogo,
           saveProfile
         }),
-        tab === "innlogging" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
+        tab === "innlogging" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: isProjectSupportReadOnly ? "Prosjektets rapportopplysninger" : "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
+          isProjectSupportReadOnly ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px", background: "#fff7ed", borderColor: "#fed7aa" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { marginTop: 0 }, children: "Supportmodus – prosjektets rapportopplysninger" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginBottom: 0 }, children: `Du er logget inn som ${authenticatedFullName || authUser?.email || "systemadministrator"}${authenticatedFullName && authUser?.email ? ` (${authUser.email})` : ""}. Opplysningene nedenfor er lagret i prosjektet${supportProjectCompanyName ? ` hos ${supportProjectCompanyName}` : ""} og tilhører ikke din personlige profil.` })
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "Du er logget inn som ",
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: authUser?.email }),
             ". Prosjektlisten viser kun dine prosjekter. Delingslenker kan fortsatt \xE5pnes av kunde uten innlogging."
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Navn", value: user.name, onChange: (v) => setUser({ ...user, name: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "E-post i rapport", value: user.email, onChange: (v) => setUser({ ...user, email: v }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle", value: user.role, options: roles, onChange: (v) => setUser({ ...user, role: v }) })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: isProjectSupportReadOnly ? "Navn i prosjektets rapport" : "Navn", value: user.name, disabled: isProjectSupportReadOnly, onChange: (v) => setUser({ ...user, name: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: isProjectSupportReadOnly ? "E-post i prosjektets rapport" : "E-post i rapport", value: user.email, disabled: isProjectSupportReadOnly, onChange: (v) => setUser({ ...user, email: v }) }),
+            isProjectSupportReadOnly ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Rolle i prosjektets rapport", value: user.role || "", disabled: true, onChange: () => {
+            } }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Rolle i prosjekt/rapport", value: user.role, options: roles, onChange: (v) => setUser({ ...user, role: v }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarketingEmailPreference, { supabaseClient: supabase, authUser }),
+          isProjectSupportReadOnly ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Tomt navn betyr at prosjektet ikke har et lagret rapportnavn. Ditt personlige e-postvalg vises ikke i supportmodus. Avslutt supportmodus for å se eller endre det." }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Navn og rolle brukes i prosjektdata og dokumenter. Dette endrer ikke konto-, firma- eller systemtilgang; slike tilganger styres bare av administrator under Brukere og tilganger." }),
+          !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MarketingEmailPreference, { supabaseClient: supabase, authUser }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
         ] }),
         tab === "prosjektering" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektering", children: [

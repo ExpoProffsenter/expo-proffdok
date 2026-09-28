@@ -1,5 +1,17 @@
 # Gjeldende release-status – Fase 45B
 
+## Pågående rettelse – profilnavn og misvisende rollefelt (28.09.2026)
+
+- Branch `fix-profile-identity-copy` er opprettet fra gjeldende Production-`main` (`32bbdd4`). Production og permanent demo er urørt.
+- PR #195 er `open`, draft og ikke merget. Vercel Preview `dpl_3EFufd7qooWaL5ruLt93k97QSmap` er `READY` på funksjonscommit `69d4a3e`; `PR Core Safety` run 149 er `completed/success`.
+- Production-databasen er kontrollert read-only: Kenneth er fortsatt `systemadmin`/`firmaadmin`, og databasesperren avviser at vanlige brukere endrer egen konto-, firma- eller systemrolle.
+- Feltet som het `Rolle` under Innlogging er prosjekt-/rapportmetadata, ikke en tilgangsrolle. Det er derfor presisert til `Rolle i prosjekt/rapport` med synlig forklaring.
+- Navnet var tomt fordi klienten forsøkte å lese en ikke-eksisterende `profiles.full_name`-kolonne. Innloggingsmetadata inneholder allerede `Kenneth Skogsrud`; klienten bruker nå dette som navnekilde.
+- Faktisk innlogget Preview viser `Kenneth Skogsrud`, `Rolle i prosjekt/rapport` og forklaringen om at feltet ikke endrer konto-, firma- eller systemtilgang. Ingen verdier ble endret under kontrollen.
+- Production-skjermbilde av et M Flis-prosjekt avdekket at supportmodus blandet prosjektets lagrede rapportopplysninger med den innloggede systemadministratorens personlige e-postvalg i samme panel. Avkrysningen gjaldt Kenneths konto og var lagret eksplisitt fra appinnstillingene 28.09.2026 kl. 19.09 norsk tid; den gjaldt ikke Tommy/M Flis og kunne ikke endres i den skrivebeskyttede supportvisningen.
+- Supportmodus skiller nå tydelig prosjektets skrivebeskyttede rapportopplysninger fra systemadministratorens personlige profil. Personlig e-postvalg skjules til supportmodus avsluttes, og tomt prosjektnavn forklares eksplisitt.
+- Endringen krever ingen Supabase-, RLS-, e-post- eller tilgangsendring. Målrettet test, full critical-suite, Production-bundet build og oppdatert innlogget Sandbox-Preview er grønne: supportvisningen viser innlogget systemadministrator separat, prosjektfeltene er skrivebeskyttet, personlig e-postvalg er skjult, og egen profil/e-postvalg kommer tilbake etter avsluttet supportmodus. Brukerens `TEST OK` gjenstår før eventuell merge.
+
 ## Nyeste status – Systemadmin-utsending på e-post (28.09.2026)
 
 - Funksjonsbranch: `fase45b-systemadmin-broadcast-email`; verifisert funksjons-head før denne statusoppdateringen er `726037121b4999c240346a8948f2b4d27163f4d6`.
