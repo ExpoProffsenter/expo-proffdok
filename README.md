@@ -54,7 +54,7 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 - Bevisst brukerhandling vinner alltid over automatisk recovery.
 - Systemadmins ordinære prosjektarbeidsflate følger valgt **Representerer**-firma; brede supportrettigheter skal ikke blande firma i vanlig prosjektliste.
 - Desktop prosjektarbeidsflate bruker kollapset meny med få native hurtigvalg; full funksjonsliste ligger fortsatt i Meny.
-- Ordinært akseptert tilbud kan gå videre til prosjekt uten kontrakt, egen opplastet kontrakt eller Expo-kontrakt. Kontraktfunksjonen ligger i Sales-domenet og er valgfri med mindre garanti-/avtalegrunnlaget krever den.
+- Ordinært akseptert tilbud kan gå videre til prosjekt uten kontrakt, egen opplastet kontrakt eller Expo-kontrakt. Hvis Expo-kontrakt ikke ble opprettet før prosjektaktivering, kan samme låste aksept og kontraktmotor åpnes direkte fra prosjektets **Avtalegrunnlag** uten retur til Sales. Kontrakt er valgfri med mindre garanti-/avtalegrunnlaget krever den.
 
 ## Fase 45B – Proff, Generelt tilbud og Enkel ordre
 

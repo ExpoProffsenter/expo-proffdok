@@ -45,6 +45,14 @@ Ingen reell kunde-e-post var brukt. Under den manuelle popuphåndteringen ble fe
 - Nye Fag/utstyr-poster kunne vise «Ukjent» når prosjektsnapshotets `user.name` var tomt. Aktør hentes nå først fra autentisert profil/metadata, deretter e-post.
 - Sluttføring viste en duplisert generell låsebekreftelse etter den eksplisitte knappen «Fullfør overtagelse og lås prosjekt». Denne ekstra popupen hoppes nå over i sluttflyten; direkte låsing/opplåsing beholder bekreftelsen.
 - README, arkitekturkart og brukerhjelp beskriver nå korrekt rekkefølge: signert overtagelse → garanti → komplett PDF → låsing.
+- Ordinære prosjekter som er aktivert fra et akseptert tilbud, får nå en tydelig kontraktinngang direkte i **Avtalegrunnlag**. Den gjenbruker samme låste aksept og kontraktmotor som Sales, uten at brukeren må gå tilbake til Tilbud. Expo-kontrakt, egen opplastet kontrakt og ingen kontrakt forblir tre gyldige valg.
+- Nye prosjektaktiveringer bevarer `salesOfferId`; eldre prosjekter kan hente ID og låst tilbudsversjon via eksisterende `get_sales_offer_by_token`. Kunde-/UE-portal skjuler inngangen, og låst prosjekt/supportmodus kan ikke utføre kontraktskriving. Ingen database-, RLS-, Storage- eller Edge Function-endring er gjort.
+
+### Bekreftet eksisterende malfunksjon
+
+- Bilder på tilbudsposter og opsjoner følger en firmamal når bildet allerede har en varig `https:`- eller trygg rot-relativ app-/Storage-URL. Tilhørende bildenavn bevares.
+- Midlertidige `data:`/`blob:`-bilder og kundespesifikke PDF-vedlegg fjernes bevisst fra maldata. Eldre maler uten lagret bildepeker må lagres på nytt fra et tilbud som fortsatt har bildet.
+- Atferden er dekket av `critical-store-template-check.mjs` for både ordinær tilbudsmal og komplett Generelt tilbud-mal.
 
 ### Observerte restpunkter
 
@@ -57,6 +65,7 @@ Ingen reell kunde-e-post var brukt. Under den manuelle popuphåndteringen ble fe
 
 - `npm ci`: PASS.
 - `npm run check:critical`: PASS, inkludert `critical-production-closeout-check.mjs`.
+- Ny `critical-project-contract-entry-check.mjs`: PASS. Den kontrollerer adapteren for eldre/nye prosjekter, låst tilbud/opsjoner, eksisterende kontrakt, portal-/lesemodus, ingen retur til Sales og prosjektsynk etter sluttarkivering.
 - Production-mode dry build: PASS og eksplisitt `Production Supabase only`.
 - Sandbox-mode build: PASS og eksplisitt `Sandbox Supabase only`.
 - `git diff --check`: PASS.
@@ -66,7 +75,7 @@ Ingen reell kunde-e-post var brukt. Under den manuelle popuphåndteringen ble fe
 
 ## Neste handling
 
-1. Retest målrettet i én Preview-fane: prosjektbeløp, prosjektsteg, garantivilkår/tidspunkt i PDF, auditnavn og redusert popuprekkefølge. Gjenta ikke hele Production-flyten før hotfixen eventuelt er godkjent og merget.
+1. Retest målrettet i én Preview-fane: kontraktinngang direkte fra Avtalegrunnlag, prosjektbeløp, prosjektsteg, garantivilkår/tidspunkt i PDF, auditnavn og redusert popuprekkefølge. Gjenta ikke hele Production-flyten før hotfixen eventuelt er godkjent og merget.
 2. Utfør kort fysisk mobiltest på minst én iOS- eller Android-enhet.
 3. Ikke merge PR #191 og ikke deploy til Production uten Kenneths nye uttrykkelige godkjenning.
 4. QA-prosjekt, tilbud og forespørsel beholdes inntil resultatet er endelig grønt og Kenneth bekrefter sletting på handlingstidspunktet.

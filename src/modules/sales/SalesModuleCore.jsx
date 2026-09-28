@@ -1419,6 +1419,7 @@ export default function SalesModule({
             locked: false, status: "active", workflowStatus: "Pågår", lockedAt: "", lockedBy: "",
             salesOrigin: {
               requestRef,
+              salesOfferId: selectedRequest.salesOfferId || "",
               publicToken: selectedRequest.publicToken || "",
               acceptedOfferVersionId: selectedRequest.acceptedOfferVersionId || "",
               acceptedOfferVersionNumber: selectedRequest.acceptedOfferVersionNumber || "",

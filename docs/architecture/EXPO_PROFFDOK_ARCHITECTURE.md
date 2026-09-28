@@ -128,6 +128,8 @@ E) Akseptert Generelt tilbud → Enkel ordre eller ordinært prosjekt
 
 Avtalegrunnlag kan inneholde akseptert tilbud/akseptbevis, signert Expo-kontrakt, bedriftens egen kontrakt, andre avtaledokumenter og senere tillegg/fradrag.
 
+For ordinære prosjekter aktivert fra et akseptert Sales-tilbud viser Avtalegrunnlag også kontrakthandlingen. Dersom kontrakten ikke ble laget før aktivering, henter prosjektet den samme låste, aksepterte tilbudsversjonen via eksisterende offentlig tilbudstoken og åpner eksisterende `SalesContractActions`/`SalesContractWizard` i prosjektfanen. Nye aktiveringer bevarer også `salesOfferId` i `project.salesOrigin`; eldre prosjekter kan utlede ID-en fra serverresponsen. Det opprettes ingen ny kontraktmodell, RPC, tabell eller RLS-bypass. Kunde-/UE-portal skjuler handlingen, og låst prosjekt/supportmodus tillater ikke kontraktskriving.
+
 Historiske Butikktilbud beholder gammel avslutning uten prosjektaktivering. Fase 45B endrer den synlige funksjonen til Generelt tilbud; teknisk legacy-identitet kan fortsatt være `store offer` av hensyn til kompatibilitet.
 
 ### 4.1 Prosjektnavigasjon – Fase 42J/42K
@@ -393,9 +395,9 @@ Denne mekanismen er sensitiv/frozen med mindre endring er eksplisitt bestilt.
 
 ## 11. Kontrakt og akseptvarsling
 
-Ordinær Sales-aksept kan gå videre til Expo-kontrakt eller ekstern kontrakt. Signert slutt-PDF er privat historikk og kan synkroniseres til prosjektets Avtalegrunnlag.
+Ordinær Sales-aksept kan gå videre til Expo-kontrakt eller ekstern kontrakt. Etter prosjektaktivering kan en manglende Expo-kontrakt opprettes direkte fra Avtalegrunnlag med samme låste aksept og samme kontraktmotor. Signert slutt-PDF er privat historikk og synkroniseres tilbake til prosjektets Avtalegrunnlag.
 
-Kontraktfunksjonen finnes i Production-koden gjennom blant annet `SalesContractWizard`, `SalesContractActions`, `SalesContractCustomerView` og kontraktdokumentkomponentene. Demo 16.09.2026 viste at funksjonen ikke var tilstrekkelig lett å finne i den aktuelle brukerreisen; dette er et UX-/finnbarhetsoppfølgingspunkt, ikke manglende backend-/kontraktarkitektur.
+Kontraktfunksjonen finnes gjennom blant annet `SalesContractWizard`, `SalesContractActions`, `SalesContractCustomerView` og kontraktdokumentkomponentene. Prosjektinngangen er et tynt adapterlag og skal ikke forgrene eller kopiere kontraktmotoren.
 
 Akseptvarsling er et etterfølgende sideutfall; lagret aksept kan ikke reverseres av e-postfeil.
 

@@ -6587,7 +6587,10 @@ ${appLink}`;
           project,
           tilbud: displayTilbud,
           setTilbud,
-          uploadTilbudFiles
+          uploadTilbudFiles,
+          readOnly: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly || isProjectLocked,
+          showSalesContractTools: !isReadOnly && !isUnderleverandorView,
+          onProjectSynced: () => refreshProjectFromCloud(true, true)
         }),
         tab === "overtagelse" && renderOvertagelsePanel({
           Section, Grid, Input, Textarea, SignaturePad,

@@ -77,7 +77,7 @@ const BASE_SECTIONS = [
       "Kunden kan akseptere eller avvise et ordinært Våtromstilbud digitalt. Ved avvisning låses den avviste versjonen som historikk, og eventuell automatisk oppfølging stopper.",
       "Når kunden har akseptert et ordinært Våtromstilbud, åpner du den aksepterte saken og finner kortet Kontrakt.",
       "Dersom saken ikke allerede har egen kontrakt lastet opp, kan du velge «Opprett enkel kontrakt». Alternativt kan du bruke «Last opp egen kontrakt». Har saken allerede en Expo-kontrakt, åpnes den igjen fra samme kort.",
-      "Fortsett deretter til prosjektaktivering når saken skal opprettes som ProffDok-prosjekt."
+      "Fortsett deretter til prosjektaktivering når saken skal opprettes som ProffDok-prosjekt. Hvis Expo-kontrakten ikke ble laget først, kan den opprettes senere direkte i prosjektets Avtalegrunnlag."
     ],
     [
       "Kontroller kundeopplysninger, summer, opsjoner og vedlegg før publisering.",
@@ -217,6 +217,8 @@ const BASE_SECTIONS = [
     "Avtalegrunnlag samler opprinnelig avtale, eventuell kontrakt og senere tillegg/fradrag etter at prosjektet er opprettet.",
     [
       "Akseptert tilbud følger prosjektet når saken er aktivert fra Befaring/Tilbud.",
+      "Hvis Expo-kontrakt mangler, kan du opprette den direkte her fra det låste aksepterte tilbudet. Du trenger ikke gå tilbake til Tilbud.",
+      "Du kan også laste opp bedriftens egen kontrakt eller fortsette uten kontrakt når prosjektet ikke krever kontrakt.",
       "Prosjekt uten tilbud kan stå uten avtaledokumenter eller få eksterne dokumenter lastet opp.",
       "Registrer senere endringer som egne tillegg eller fradrag."
     ],
