@@ -311,8 +311,7 @@ const INTERNAL_COMMERCE_SECTIONS = [
     ],
     [
       "Historiske tilbud av denne typen beholder sin opprinnelige avslutning og historikk.",
-      "Publiserte, aksepterte og avviste versjoner skal ikke overskrives.",
-      "Katalogens interne nettopris skal aldri vises til kunden."
+      "Publiserte, aksepterte og avviste versjoner skal ikke overskrives."
     ],
     ["Bruk firmamaler for standardoppsett, men kontroller alltid gjeldende varepris og kundedata før publisering."]
   ),

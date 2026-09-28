@@ -48,6 +48,7 @@ Ingen reell kunde-e-post var brukt. Under den manuelle popuphåndteringen ble fe
 - Ordinære prosjekter som er aktivert fra et akseptert tilbud, får nå en tydelig kontraktinngang direkte i **Avtalegrunnlag**. Den gjenbruker samme låste aksept og kontraktmotor som Sales, uten at brukeren må gå tilbake til Tilbud. Expo-kontrakt, egen opplastet kontrakt og ingen kontrakt forblir tre gyldige valg.
 - Nye prosjektaktiveringer bevarer `salesOfferId`; eldre prosjekter kan hente ID og låst tilbudsversjon via eksisterende `get_sales_offer_by_token`. Kunde-/UE-portal skjuler inngangen, og låst prosjekt/supportmodus kan ikke utføre kontraktskriving. Ingen database-, RLS-, Storage- eller Edge Function-endring er gjort.
 - Målrettet Preview-test avdekket at eksisterende auto-sluttarkivering kjørte en unødvendig, idempotent prosjektsynk ved ren visning av en allerede synkronisert kontrakt. Prosjektdata var byte-likt golden snapshot, men `updated_at` ble flyttet. QA-raden ble straks gjenopprettet nøyaktig fra `golden-v1` og verifisert med `exact_golden_match=true`. Koden hopper nå over synken når sluttfilen allerede matcher på `contractId`, Storage-path eller URL.
+- Brukerrettet Hjelp for **Generelle tilbud** viste en intern sikkerhetsregel om nettopris. Teksten er fjernet fra Hjelp, mens den tekniske prisbeskyttelsen og tilhørende kritiske tester beholdes uendret. En negativ regresjonstest hindrer at den interne formuleringen legges tilbake i brukerhjelpen.
 
 ### Bekreftet eksisterende malfunksjon
 

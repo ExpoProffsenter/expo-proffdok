@@ -97,6 +97,10 @@ for (const needle of [
 ]) {
   assert(helpCore.includes(needle), `Hjelp mangler oppdatert Generelt tilbud-regel: ${needle}`);
 }
+assert(
+  !helpCore.includes("Katalogens interne nettopris skal aldri vises til kunden."),
+  "Intern sikkerhetsregel om nettopris skal ikke eksponeres i brukerrettet Hjelp."
+);
 
 for (const needle of [
   'import { isStoreOfferSource } from "../services/salesStoreOffers.js"',
