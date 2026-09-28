@@ -41,8 +41,9 @@ for (const needle of [
   assert(companyAdmin.includes(needle), `Samlet firmaflate mangler: ${needle}`);
 }
 assert(companyAdmin.includes("LEGACY_MARKER_ID"), "Legacy-brukerkort må fortsatt kunne få tilgangskontroller etter firmanavigasjon.");
-assert(companyAdmin.includes('text === "Godkjenn bruker"'), "Eksisterende Godkjenn bruker-flyt skal fortsatt trigge reload av samlet firmaflate.");
-assert(companyAdmin.includes('text === "Deaktiver bruker"'), "Eksisterende Deaktiver bruker-flyt skal fortsatt trigge reload av samlet firmaflate.");
+assert(companyAdmin.includes("addEventListener(MANAGED_ACCESS_EVENT"), "Samlet firmaflate skal refreshe etter bekreftet serverendring.");
+assert(!companyAdmin.includes('text === "Godkjenn bruker"'), "Godkjenn bruker skal ikke bruke en tidsbasert klikk-reload.");
+assert(!companyAdmin.includes('text === "Deaktiver bruker"'), "Deaktiver bruker skal ikke bruke en tidsbasert klikk-reload.");
 assert(indexHtml.includes("installSystemAdminCompanyAccessUx"), "Samlet firmaflate må installeres fra app-entry.");
 
 for (const needle of [

@@ -135,12 +135,6 @@ export function installSystemAdminUserPolicyGuard() {
   if (typeof window === "undefined" || window.__expoSystemAdminUserPolicyGuardInstalled) return;
   window.__expoSystemAdminUserPolicyGuardInstalled = true;
   document.addEventListener("click", guardApprovalWithoutCompany, true);
-  document.addEventListener("change", (event) => {
-    if (!(event.target instanceof Element)) return;
-    if (event.target.closest(".adminAccordionItem") || event.target.closest(".item")) {
-      window.setTimeout(() => void loadSnapshot(), 450);
-    }
-  }, true);
   window.addEventListener("focus", () => void loadSnapshot());
   window.addEventListener(MANAGED_ACCESS_EVENT, reloadAfterManagedAccessChange);
   const observer = new MutationObserver(scheduleApply);

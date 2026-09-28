@@ -54,6 +54,18 @@ for (const [name, source] of [
   assert(source.includes("reloadAfterManagedAccessChange"), `${name} kan miste refresh mens en eldre lesing pågår.`);
   assert(source.includes("const pending = "), `${name} mangler kø for pågående lesing.`);
 }
+
+for (const [name, source] of [
+  ["samlet firmaflate", companyAdmin],
+  ["samlet brukerflate", unifiedAdmin],
+  ["firmapolicy-guard", policyGuard],
+  ["arbeidsprofiler", workProfiles],
+]) {
+  assert(
+    !/setTimeout\([^\n]*loadSnapshot/.test(source),
+    `${name} skal ikke gjette at en serverskriving er ferdig med en fast timeout.`
+  );
+}
 assert(
   supportProjection.includes("const pending = syncPromise") &&
     supportProjection.includes("pending.catch(() => null).then(refresh)"),

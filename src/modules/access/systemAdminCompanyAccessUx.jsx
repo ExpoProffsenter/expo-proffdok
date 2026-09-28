@@ -508,7 +508,6 @@ function applyCompanyVisibility(panel = findLegacyPanel()) {
 function triggerLegacyRefresh(panel = findLegacyPanel()) {
   const button = findLegacyRefreshButton(panel);
   button?.click?.();
-  window.setTimeout(() => loadSnapshot(), 250);
 }
 
 function mountNavigator(panel) {
@@ -616,21 +615,6 @@ export function installSystemAdminCompanyAccessUx() {
   const observer = new MutationObserver(scheduleRender);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 
-  const scheduleReload = () => window.setTimeout(() => loadSnapshot(), 500);
-  document.addEventListener("change", (event) => {
-    if (event.target instanceof Element && event.target.closest(".adminAccordionItem")) scheduleReload();
-  }, true);
-  document.addEventListener("click", (event) => {
-    const button = event.target instanceof Element ? event.target.closest("button") : null;
-    if (!button) return;
-    const text = compactText(button.textContent);
-    if (
-      text.includes("Brukere og roller") || text.includes("Brukere og tilganger") || text.includes(PANEL_TITLE) ||
-      text === "Oppdater brukerliste" || text === "Godkjenn bruker" || text === "Avvis og slett bruker" ||
-      text === "Deaktiver bruker" || text === "Reaktiver bruker" || text === "Gjør til systemadmin" ||
-      text === "Fjern systemadmin"
-    ) scheduleReload();
-  }, true);
   window.addEventListener("focus", loadSnapshot);
   window.addEventListener(MANAGED_ACCESS_EVENT, reloadAfterManagedAccessChange);
   loadSnapshot();

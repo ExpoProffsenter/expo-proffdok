@@ -157,7 +157,8 @@ requireNeedles("src/modules/access/systemAdminWorkProfileUx.jsx", [
   "setManagedWorkProfiles",
   "disabled={isPrimary || saving}",
   "!user.approved || user.deactivated || user.system_role === \"systemadmin\"",
-  "target?.closest(`[${MOUNT_ATTR}]`)",
+  "addEventListener(MANAGED_ACCESS_EVENT",
+  "reloadAfterManagedAccessChange",
 ]);
 
 requireNeedles("src/modules/company/companyViewTools.js", [
