@@ -148,6 +148,18 @@ const BASE_SECTIONS = [
     ["Bruk offisielt firmanavn og oppdatert logo."]
   ),
   section(
+    "epostvalg",
+    "✉️ E-postvalg",
+    "Under Innlogging og brukerprofil velger du selv om Expo Proffsenter kan sende produktnyheter, tips og tilbud på e-post.",
+    [
+      "Kryss av og lagre dersom du ønsker nyheter og markedsføring på e-post.",
+      "Trekk samtykket tilbake samme sted eller bruk avmeldingslenken i en markedsførings-e-post.",
+      "Nødvendige driftsmeldinger om Expo ProffDok styres separat og påvirkes ikke av markedsføringsvalget."
+    ],
+    ["Samtykket er frivillig og skal aldri være forhåndsvalgt."],
+    ["Hold e-postvalget oppdatert dersom du ikke lenger ønsker produktnyheter eller tilbud."]
+  ),
+  section(
     "prosjektering",
     "📐 Prosjektering",
     "Prosjektering brukes til tekniske forutsetninger og vurderinger som ligger til grunn for utførelsen.",
@@ -347,6 +359,8 @@ const SYSTEM_ADMIN_SECTIONS = [
       "Prosjekter som åpnes på tvers av firma i Supportmodus er skrivebeskyttet. Du kan kontrollere innhold og laste ned PDF, men ikke lagre, kopiere, avslutte/låse, laste opp eller endre prosjektdata.",
       "Vedlikehold produktmaster og synkroniser bare aktive prosjekter når dette er riktig.",
       "Bruk Nyheter i appen til korte meldinger om nye funksjoner eller viktige endringer.",
+      "Ved e-postutsending velger du mottakergruppe og om innholdet er en driftsmelding eller markedsføring. Kontroller mottakertallet og send alltid test til deg selv først.",
+      "Markedsføring sendes automatisk bare til brukere med aktivt samtykke. Driftsmelding må aldri brukes til tilbud, kampanjer eller salgsinnhold.",
       "Internt vareregister oppdateres fra Ringsides faste Cordel TXT-eksport. Kontroller importtall før aktivering.",
       "Cordel-varer merket Utgått og leverandører som starter med ÅVP filtreres bort automatisk sammen med 0-pris og ugyldige varelinjer."
     ],
@@ -356,7 +370,7 @@ const SYSTEM_ADMIN_SECTIONS = [
       "Avslutt Supportmodus før du oppretter eller endrer prosjektdata i egen arbeidsprofil.",
       "Prisfilen inneholder intern informasjon og skal ikke deles med kunder eller legges i GitHub."
     ],
-    ["Hold appnyheter korte og konkrete og publiser bare én aktuell nyhet om gangen."]
+    ["Hold appnyheter og e-poster korte og konkrete, og kontroller testutsendingen før mottakergruppen får meldingen."]
   ),
   section(
     "arbeidsprofil",
@@ -372,7 +386,7 @@ const SYSTEM_ADMIN_SECTIONS = [
 ];
 
 const BASE_ORDER = [
-  "start", "mobil", "quality", "sales", "badskisse", "info", "garanti", "firmaProfil", "prosjektering",
+  "start", "mobil", "quality", "sales", "badskisse", "info", "garanti", "firmaProfil", "epostvalg", "prosjektering",
   "produkter", "overflater", "bilder", "tilgang", "fagUtstyr", "sjekklister", "avvik", "tilbud", "chat",
   "interne", "overtagelse", "prosjektliste", "rapport", "hjelp"
 ];

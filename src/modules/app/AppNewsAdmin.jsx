@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import SystemAdminSalesSupport from "./SystemAdminSalesSupport.jsx";
+import SystemAdminBroadcastEmail from "./SystemAdminBroadcastEmail.jsx";
 import {
   fetchAllAppNews,
   publishAppNews,
@@ -122,6 +123,11 @@ export default function AppNewsAdmin({ supabaseClient, authUser } = {}) {
   return (
     <>
       <SystemAdminSalesSupport
+        supabaseClient={supabaseClient}
+        authUser={authUser}
+      />
+
+      <SystemAdminBroadcastEmail
         supabaseClient={supabaseClient}
         authUser={authUser}
       />
