@@ -59,7 +59,8 @@ Ingen reell kunde-e-post var brukt. Under den manuelle popuphåndteringen ble fe
 ### Observerte restpunkter
 
 - PDF-en er komplett og uten avkuttede sider, men standardfonten fra jsPDF gir noe ujevn bokstavavstand. Dette er lesbart og ikke datatap, men er et eget visuelt kvalitetsløft.
-- Native `window.confirm`/`alert` er blokkende og krevende for både mobil og automatisert QA. Denne hotfixen fjerner én duplikat-popup, men en senere avgrenset UX-endring bør erstatte native dialoger med én kontrollert app-dialog.
+- Kenneth har 28.09.2026 avklart at nødvendige bekreftelses-popupvinduer fungerer godt i faktisk bruk og skal beholdes. Kun duplikate eller feilutløste popupvinduer er avvik; hotfixen fjerner den dupliserte låsebekreftelsen uten å endre de øvrige bekreftelsene.
+- Kundens tilbuds-/dokumentvisning skal fortsatt åpnes i en ny fane. Dette er ønsket UX. Bare utilsiktet åpning av flere identiske faner skal behandles som feil.
 - Fysisk mobiltest på minst én iOS- eller Android-enhet gjenstår. Kritiske automatiske mobiltester for shell, Representerer, tilgang, app-/fanebytte og portalopprydding er grønne, men de erstatter ikke en fysisk enhet.
 - Supabase-loggene i QA-vinduet viser gjentatte PostgREST/Warp «Thread killed by timeout manager»-linjer uten path/status. De observerte prosjektkallene rundt låsingen svarte 200/204, og Vercel rapporterer ingen runtimefeil i samme tidsrom. Loggmønsteret bør overvåkes separat før det eventuelt klassifiseres som appfeil.
 
