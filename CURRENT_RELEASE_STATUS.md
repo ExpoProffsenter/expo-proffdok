@@ -1,5 +1,21 @@
 # Gjeldende release-status – Fase 45B
 
+## Nyeste status – Systemadmin-utsending på e-post (28.09.2026)
+
+- Funksjonsbranch: `fase45b-systemadmin-broadcast-email`, head før denne dokumentasjonsoppdateringen `8fc656defdb762bd9171135b791b035789baafc4`.
+- PR #194 er `open`, `draft`, mergebar og ikke merget. Base er Production-`main` `4f016ce35b2d22c9edcd30cddc1aaa3b38d715a3`.
+- Production-kode, Production-deployment og Production-Supabase er urørt av denne funksjonen.
+- Verifisert Vercel Preview/Sandbox: `dpl_qXYzVo7AZKD2nusPGda4P2ivHmVj`, `READY`, med alias `expo-proffdok-git-fase45b-systemadmin-broadcast-email-ringside.vercel.app`.
+- Supabase-migrasjonene og Edge Functions `systemadmin-broadcast-email` og `marketing-email-unsubscribe` er lagt kun i permanent `demo-sandbox` (`ppvircenkjizeiqdxphj`).
+- Systemadmin velger mottakergruppe ved hver utsending og må velge eksplisitt mellom driftsmelding og samtykkebasert markedsføring. Mottakerkontroll og test til innlogget administrator kreves før gruppeutsending.
+- Faktisk innlogget Sandbox-kontroll fant 1 kvalifisert mottaker for driftsmelding til aktive, godkjente brukere. Markedsføringskontrollen fant 0 kvalifiserte og utelukket 1 bruker uten samtykke.
+- Sandbox har 0 markedsføringssamtykker og 0 kampanjelogger. Ingen e-post er sendt, og ingen brukers samtykke er endret.
+- Målrettet kritisk test, full critical-suite, `git diff --check` og Sandbox-bundet build er grønne. Sendernavn, HTML-escaping, mottakerisolasjon, idempotens, avmelding, RLS og ACL er kontrollert.
+- Gjenstående live-steg er én faktisk test-e-post til innlogget Sandbox-systemadmin. Det krever eksplisitt bekreftelse på handlingstidspunktet. PR #194 skal forbli draft og umerget; ingen Production-deploy uten ny uttrykkelig godkjenning.
+
+Resten av dokumentet under er historisk Fase 45B-status og beholdes som revisjonsspor.
+
+
 Dato: 28.09.2026. Kode, backend og live system er fasit. Dokumentet skiller mellom godkjent Production-release og den fortsatt umergede QA-hotfixen i PR #191.
 
 ## Kort status
