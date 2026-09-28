@@ -11,7 +11,9 @@
 - Faktisk innlogget Sandbox-kontroll fant 1 kvalifisert mottaker for driftsmelding til aktive, godkjente brukere. Markedsføringskontrollen fant 0 kvalifiserte og utelukket 1 bruker uten samtykke.
 - Sandbox har 0 markedsføringssamtykker og 0 kampanjelogger. Ingen e-post er sendt, og ingen brukers samtykke er endret.
 - Målrettet kritisk test, full critical-suite, `git diff --check` og Sandbox-bundet build er grønne. Sendernavn, HTML-escaping, mottakerisolasjon, idempotens, avmelding, RLS og ACL er kontrollert.
-- Gjenstående live-steg er én faktisk test-e-post til innlogget Sandbox-systemadmin. Det krever eksplisitt bekreftelse på handlingstidspunktet. PR #194 skal forbli draft og umerget; ingen Production-deploy uten ny uttrykkelig godkjenning.
+- Kenneth godkjente én faktisk test til `kenneth@ringside.no`. Mottakerkontrollen var grønn, men Sandbox Edge Function stoppet før levering fordi `RESEND_API_KEY` ikke er konfigurert i Sandbox. Ingen e-post ble sendt.
+- Systemadmin kan nå angi én separat testmottaker. Menypunktet `Min profil / e-postvalg` er lagt til og live-verifisert, slik at alle brukere faktisk finner det frivillige markedsføringsvalget.
+- Gjenstående konfigurasjonssteg er å legge Resend-nøkkel og godkjent avsender inn som egne Sandbox-hemmeligheter og deretter gjenta én test. Production-hemmeligheter skal ikke kopieres eller gjenbrukes uten uttrykkelig godkjenning. PR #194 skal forbli draft og umerget; ingen Production-deploy uten ny uttrykkelig godkjenning.
 
 Resten av dokumentet under er historisk Fase 45B-status og beholdes som revisjonsspor.
 
