@@ -367,7 +367,7 @@ Dette er et ekstra klientsikkerhetsnett, ikke erstatning for RLS. RLS/RPC/server
 
 Sales-recovery aktiveres bare når den markerte hovedarbeidsflaten for Befaring/Tilbud faktisk er montert. Kontraktveiviseren gjenbruker Sales-visuelle komponenter inne i Prosjekt, men skal ikke kunne armere en Sales-retur som overstyrer `tab=tilbud`/Avtalegrunnlag etter kundesignering eller oppfriskning.
 
-Prosjektets sky-autolagring henter autoritativ rad før skriving og stopper før `PATCH` når normalisert `data` og tittel er uendret. Dermed skal ren visning, kontraktstatusinnlasting og oppfriskning ikke flytte `projects.updated_at`; en skriveoperasjon utføres bare når faktisk prosjektinnhold eller tittel er endret.
+Prosjektets sky-autolagring henter autoritativ rad før skriving og stopper før `PATCH` når normalisert `data` og tittel er uendret. Dermed skal ren visning, kontraktstatusinnlasting og oppfriskning ikke flytte `projects.updated_at`; en skriveoperasjon utføres bare når faktisk prosjektinnhold eller tittel er endret. Etter en bekreftet skriving tømmes lokal kladd og dirty-status bare dersom det lagrede snapshotet fortsatt matcher siste klienttilstand. En eldre nettverksrespons kan derfor verken skjule nyere endringer eller utløse falsk «ulagret»-popup etter vellykket autolagring.
 
 Kritisk regresjonstest:
 

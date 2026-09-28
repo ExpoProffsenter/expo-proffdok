@@ -216,8 +216,11 @@ for (const needle of [
   "nextPersistenceFingerprint !== null",
   "nextPersistenceFingerprint === existingPersistenceFingerprint",
   "const projectTitleUnchanged =",
+  "const snapshotIsStillCurrent =",
   "if (projectDataUnchanged && projectTitleUnchanged)",
   'setProjectAutoSaveStatus("Ingen endringer å lagre")',
+  "resetProjectDirty(snapshot)",
+  'setProjectAutoSaveStatus("Nyere endringer venter på autolagring")',
 ]) {
   assert(main.includes(needle), `hovedintegrasjonen mangler: ${needle}`);
 }
@@ -225,6 +228,16 @@ assert(
   main.indexOf("if (projectDataUnchanged && projectTitleUnchanged)") <
     main.indexOf('supabase.from("projects").update({', main.indexOf("const projectDataUnchanged =")),
   "byte-lik prosjektdata må stoppes før PATCH/updated_at"
+);
+const cloudUpdateStart = main.indexOf('supabase.from("projects").update({', main.indexOf("const projectDataUnchanged ="));
+const cloudUpdateDirtyReset = main.indexOf("resetProjectDirty(snapshot)", cloudUpdateStart);
+assert(
+  cloudUpdateStart >= 0 && cloudUpdateDirtyReset > cloudUpdateStart,
+  "vellykket sky-autolagring må nullstille ulagret-flagget for samme snapshot"
+);
+assert(
+  main.lastIndexOf("if (snapshotIsStillCurrent)", cloudUpdateDirtyReset) > cloudUpdateStart,
+  "en eldre autolagring må ikke nullstille eller fjerne en nyere lokal kladd"
 );
 
 console.log("✅ Expo ProffDok prosjekt → kontrakt check OK");

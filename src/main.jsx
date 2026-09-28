@@ -2430,10 +2430,10 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           nextPersistenceFingerprint === existingPersistenceFingerprint;
         const projectTitleUnchanged =
           String(nextProjectTitle || "") === String(existing.title || "");
+        const snapshotIsStillCurrent =
+          projectDirtyFingerprint(latestStateRef.current || {}) ===
+          projectDirtyFingerprint(snapshot);
         if (projectDataUnchanged && projectTitleUnchanged) {
-          const snapshotIsStillCurrent =
-            projectDirtyFingerprint(latestStateRef.current || {}) ===
-            projectDirtyFingerprint(snapshot);
           if (snapshotIsStillCurrent) {
             clearLocalDraft(projectId);
             resetProjectDirty(snapshot);
@@ -2451,8 +2451,13 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
           setProjectAutoSaveStatus("Kunne ikke autolagre");
           return;
         }
-        clearLocalDraft(projectId);
-        setProjectAutoSaveStatus(`Autolagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+        if (snapshotIsStillCurrent) {
+          clearLocalDraft(projectId);
+          resetProjectDirty(snapshot);
+          setProjectAutoSaveStatus(`Autolagret ${(/* @__PURE__ */ new Date()).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}`);
+        } else {
+          setProjectAutoSaveStatus("Nyere endringer venter på autolagring");
+        }
       } catch (error) {
         console.warn("Autolagring prosjekt feilet:", error);
         setProjectAutoSaveStatus("Kunne ikke autolagre");
