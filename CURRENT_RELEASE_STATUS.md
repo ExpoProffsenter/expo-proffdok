@@ -7,8 +7,8 @@ Dato: 28.09.2026. Kode, backend og live system er fasit. Dette dokumentet skille
 - Production: `main` står på merge-commit `517086b30a3bbfe14025bf9cda4faa2490d9c9a1` fra PR #190.
 - Vercel Production: `dpl_DVnRrEqpNbv1sTpjSZQQF1sceoNd` er `READY`, `target=production` og peker på samme commit.
 - PR #190 er `closed`, `merged=true`, `draft=false`. Den ble merget 27.09.2026 kl. 22:38:51 UTC etter Kenneths uttrykkelige `PRODUCTION GODKJENT`.
-- Production-QA-hotfix: branch `fase45b-production-qa-hotfix`, PR #191. PR-en er fortsatt `open`, `draft=true`, `merged=false`, base `main` og hadde før denne oppdateringen remote head `0fb72c394fc347c31b2bb6688411d35c430af105`.
-- Vercel Preview for tidligere PR #191-head: `dpl_5BUdf1qgqPiFQH7cT6MLUz3oFwVi` er `READY`, `target=null` og er Sandbox-bundet.
+- Production-QA-hotfix: branch `fase45b-production-qa-hotfix`, PR #191. PR-en er fortsatt `open`, `draft=true`, `merged=false`, base `main`. Funksjonell hotfix-commit er `5cbf2ed83b8a9e6207c55fe60de70ffb720c0760`; denne statusoppdateringen endrer ikke appfunksjon.
+- Vercel Preview `dpl_3wRxsG1ZjdQxLt26XaoGmW2PUqc4` er `READY`, `target=null` og peker på funksjonell commit `5cbf2ed`. Den leverte bundlen inneholder Sandbox-ref `ppvircenkjizeiqdxphj` og ingen Production-ref.
 - Supabase har kun Production/default `dqffxflaoyarbxyiyhop` og `demo-sandbox` `ppvircenkjizeiqdxphj`. Begge rapporteres `ACTIVE_HEALTHY`; kontrollplanstatusen `MIGRATIONS_FAILED` på demo-sandbox stammer fra opprettelsen og beskriver ikke dagens runtime.
 - Permanent Demo (`demo`) og demo-sandbox er ikke endret av Production-QA-hotfixen.
 
@@ -60,13 +60,14 @@ Ingen reell kunde-e-post var brukt. Under den manuelle popuphåndteringen ble fe
 - Production-mode dry build: PASS og eksplisitt `Production Supabase only`.
 - Sandbox-mode build: PASS og eksplisitt `Sandbox Supabase only`.
 - `git diff --check`: PASS.
+- GitHub `PR Core Safety` run `36364669680` på `5cbf2ed`: PASS.
+- Vercel Preview `dpl_3wRxsG1ZjdQxLt26XaoGmW2PUqc4`: `READY`, `target=null`, HTTP 200 og kun Sandbox-binding. Den faktiske leverte bundlen inneholder også de nye vernene for rapporttidspunkt/vilkårsstatus, auditaktør, Hjelp og redusert popuprekkefølge.
 - Production er ikke deployet eller endret av hotfixarbeidet.
 
 ## Neste handling
 
-1. Commit og push de nye QA-rettelsene til `fase45b-production-qa-hotfix`.
-2. Kontroller grønn GitHub-CI og ny Vercel Preview med Sandbox-binding.
-3. Retest målrettet: prosjektbeløp, prosjektsteg, garantivilkår/tidspunkt i PDF, auditnavn og redusert popuprekkefølge. Gjenta ikke hele Production-flyten før hotfixen eventuelt er godkjent og merget.
-4. Ikke merge PR #191 og ikke deploy til Production uten Kenneths nye uttrykkelige godkjenning.
-5. QA-prosjekt, tilbud og forespørsel beholdes inntil resultatet er endelig grønt og Kenneth bekrefter sletting på handlingstidspunktet.
-6. Etter godkjent hotfix, Production-QA og eventuell datasletting: minn om opprydding av gamle GitHub-brancher. Sluttbildet skal være `main` + permanent `demo`, og Supabase skal fortsatt bare ha Production/default + `demo-sandbox`.
+1. Retest målrettet i én Preview-fane: prosjektbeløp, prosjektsteg, garantivilkår/tidspunkt i PDF, auditnavn og redusert popuprekkefølge. Gjenta ikke hele Production-flyten før hotfixen eventuelt er godkjent og merget.
+2. Utfør kort fysisk mobiltest på minst én iOS- eller Android-enhet.
+3. Ikke merge PR #191 og ikke deploy til Production uten Kenneths nye uttrykkelige godkjenning.
+4. QA-prosjekt, tilbud og forespørsel beholdes inntil resultatet er endelig grønt og Kenneth bekrefter sletting på handlingstidspunktet.
+5. Etter godkjent hotfix, Production-QA og eventuell datasletting: minn om opprydding av gamle GitHub-brancher. Sluttbildet skal være `main` + permanent `demo`, og Supabase skal fortsatt bare ha Production/default + `demo-sandbox`.
