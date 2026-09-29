@@ -146,7 +146,7 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 
 - RLS og serverkontroll er sikkerhetsgrensen; frontend alene er ikke nok.
 - Ikke svekk company-scoping eller bruk systemadmin/supportmodus som write-bypass.
-- Prosjekter åpnet på tvers av firma i eksplisitt Systemadmin-supportmodus er skrivebeskyttet; kontroll og PDF er tillatt, mens lagring, kopiering, låsing og øvrige endringer er blokkert.
+- Prosjekter åpnet på tvers av firma i eksplisitt Systemadmin-supportmodus er skrivebeskyttet. Salgsgrunnlag og Avtalegrunnlag tillater kontroll og åpning av eksisterende tilbud, akseptbevis, kontrakter og øvrige dokumenter, mens lagring, opplasting, fjerning, kopiering, låsing og andre endringer er blokkert. Supportoversikt går tilbake til samme firmas supportvisning uten å avslutte supportmodus.
 - Aktiv arbeidsprofil/representert firma skal styre normal arbeidsflate.
 - Publiserte og aksepterte tilbud er immutable historikk.
 - Ingen historisk backfill uten eksplisitt beslutning.

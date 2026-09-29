@@ -39,7 +39,8 @@ export function createContractViewTools({
     project,
     tilbud,
     setTilbud,
-    uploadTilbudFiles
+    uploadTilbudFiles,
+    readOnly = false
   }) {
     const normalized = {
       ...emptyTilbud(),
@@ -118,6 +119,7 @@ export function createContractViewTools({
     };
 
     const saveChanges = (nextChanges) => {
+      if (readOnly) return;
       const capturedLegacyTillegg =
         normalized.legacyTillegg ||
         (changes.length === 0 ? String(normalized.tillegg || "").trim() : "");
@@ -408,7 +410,7 @@ export function createContractViewTools({
                                   ]
                                 }
                               ),
-                              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              !readOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                                 "button",
                                 {
                                   type: "button",
@@ -441,6 +443,7 @@ export function createContractViewTools({
                                   label: "Type",
                                   value: change.type || "Tillegg",
                                   options: changeTypeOptions,
+                                  disabled: readOnly,
                                   onChange: (value) =>
                                     updateChange(change.id, { type: value })
                                 }
@@ -450,6 +453,7 @@ export function createContractViewTools({
                                 {
                                   label: "Beløp inkl. mva.",
                                   value: change.amountInclVat ?? "",
+                                  disabled: readOnly,
                                   onChange: (value) =>
                                     updateChange(change.id, {
                                       amountInclVat: value
@@ -461,6 +465,7 @@ export function createContractViewTools({
                                 {
                                   label: "Beskrivelse",
                                   value: change.description || "",
+                                  disabled: readOnly,
                                   onChange: (value) =>
                                     updateChange(change.id, {
                                       description: value
@@ -472,6 +477,7 @@ export function createContractViewTools({
                                 {
                                   label: "Kommentar / avtalegrunnlag – valgfritt",
                                   value: change.comment || "",
+                                  disabled: readOnly,
                                   onChange: (value) =>
                                     updateChange(change.id, {
                                       comment: value
@@ -487,7 +493,7 @@ export function createContractViewTools({
                   )
                 ),
 
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                !readOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
                   "button",
                   {
                     type: "button",
@@ -669,11 +675,12 @@ export function createContractViewTools({
                   "p",
                   {
                     className: "note",
-                    children:
-                      "Last opp tilbud, akseptbevis, kontrakt eller andre avtaledokumenter. Dokumentene lagres på prosjektet og vises i kundelinken."
+                    children: readOnly
+                      ? "Eksisterende tilbud, akseptbevis, kontrakter og øvrige avtaledokumenter kan åpnes nedenfor."
+                      : "Last opp tilbud, akseptbevis, kontrakt eller andre avtaledokumenter. Dokumentene lagres på prosjektet og vises i kundelinken."
                   }
                 ),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                !readOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
                   "label",
                   {
                     className: "upload",
@@ -698,6 +705,15 @@ export function createContractViewTools({
                     ]
                   }
                 ),
+                readOnly &&
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "p",
+                    {
+                      className: "note",
+                      children:
+                        "Supportmodus er skrivebeskyttet. Eksisterende avtaledokumenter kan åpnes, men ikke lastes opp, fjernes eller endres."
+                    }
+                  ),
                 files.length === 0 &&
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                     "p",
@@ -738,7 +754,7 @@ export function createContractViewTools({
                             children: "Åpne"
                           }
                         ),
-                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        !readOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                           "button",
                           {
                             className: "secondary",
@@ -786,12 +802,15 @@ export function createContractViewTools({
                           flex: "0 0 auto"
                         },
                         checked: !!normalized.enabled,
-                        onChange: (e) =>
+                        disabled: readOnly,
+                        onChange: (e) => {
+                          if (readOnly) return;
                           setTilbud({
                             ...emptyTilbud(),
                             ...normalized,
                             enabled: e.target.checked
-                          })
+                          });
+                        }
                       }
                     ),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(

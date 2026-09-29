@@ -46,14 +46,21 @@ function findSourceNavButton(labels = []) {
   ) || null;
 }
 
-function findNativeHeaderButton(label) {
-  const normalizedLabel = cleanLabel(label).toLowerCase();
+function findNativeHeaderButton(labels = []) {
+  const accepted = new Set(
+    (Array.isArray(labels) ? labels : [labels])
+      .map((label) => cleanLabel(label).toLowerCase())
+      .filter(Boolean)
+  );
   return Array.from(document.querySelectorAll('button')).find((button) => {
     if (!(button instanceof HTMLButtonElement)) return false;
     if (button.id === HOME_ID || button.id === HELP_ID) return false;
-    return cleanLabel(button.textContent).toLowerCase() === normalizedLabel;
+    return accepted.has(cleanLabel(button.textContent).toLowerCase());
   }) || null;
 }
+
+const findNativeWorkspaceExitButton = () =>
+  findNativeHeaderButton(['← Supportoversikt', '← Til startside']);
 
 function restoreNativeHomeSourceButtons() {
   document.querySelectorAll(`[${NATIVE_HOME_MARKER}="1"]`).forEach((button) => {
@@ -65,7 +72,7 @@ function restoreNativeHomeSourceButtons() {
 
 function hideNativeWorkspaceHomeButton() {
   restoreNativeHomeSourceButtons();
-  const nativeLeaveWorkspace = findNativeHeaderButton('← Til startside');
+  const nativeLeaveWorkspace = findNativeWorkspaceExitButton();
   if (!(nativeLeaveWorkspace instanceof HTMLButtonElement)) return;
 
   nativeLeaveWorkspace.setAttribute(NATIVE_HOME_MARKER, '1');
@@ -98,7 +105,7 @@ function goToStartside() {
   clearRememberedSalesNavigation();
 
   // Prosjektarbeidsflate/new-project eier selv ulagret-varsel og må få førsteprioritet.
-  const nativeLeaveWorkspace = findNativeHeaderButton('← Til startside');
+  const nativeLeaveWorkspace = findNativeWorkspaceExitButton();
   if (nativeLeaveWorkspace instanceof HTMLButtonElement) {
     nativeLeaveWorkspace.click();
     return;
@@ -135,7 +142,8 @@ function goToHelp() {
 
 function styleBarHomeButton(homeButton) {
   if (!(homeButton instanceof HTMLButtonElement)) return;
-  homeButton.textContent = '← Startside';
+  const supportProjectOpen = Boolean(findNativeHeaderButton('← Supportoversikt'));
+  homeButton.textContent = supportProjectOpen ? '← Supportoversikt' : '← Startside';
   homeButton.hidden = false;
   homeButton.style.position = 'static';
   homeButton.style.zIndex = 'auto';
