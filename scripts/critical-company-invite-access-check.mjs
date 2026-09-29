@@ -59,6 +59,7 @@ assert(main.includes("?signup=1&invited=1&email="), "Invitasjonslenken må åpne
 assert(main.includes("invitationAcceptedImmediately"), "Eksisterende konto uten ferdig firmatilknytning må beholde en ventende invitasjon.");
 assert(main.includes("Det kreves ingen ny Systemadmin-godkjenning"), "Firmaadmin må få korrekt beskjed om godkjenningsflyten.");
 assert(!main.includes("(ikke i registrerte firmaer)"), "Gyldig firma skal ikke vises som en falsk uregistrert duplikatverdi.");
+assert(read("src/modules/auth/authLanding.css").includes("inviterte brukere kobles automatisk til firmaet"), "Registreringsoverskriften må skille inviterte brukere fra nye firma.");
 
 for (const needle of [
   "readInviteContext",
