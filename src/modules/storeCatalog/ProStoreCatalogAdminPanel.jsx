@@ -166,7 +166,7 @@ export default function ProStoreCatalogAdminPanel({ companyId = "" }) {
       <div>
         <h3>Proff vareregister</h3>
         <p>
-          Systemadmin velger leverandører og rabatt for dette firmaet. Brukernes modul- og prisinnsyn styres på brukerkortene nedenfor i samme seksjon.
+          Systemadmin velger leverandører og rabatt for dette firmaet. Generelle tilbud / Proff vareregister aktiveres samlet for firmaet over.
         </p>
       </div>
 
@@ -237,7 +237,7 @@ export default function ProStoreCatalogAdminPanel({ companyId = "" }) {
 
           <div className="pro-catalog-user-note">
             <strong>Brukertilgang</strong>
-            <span>Gi «Generelle tilbud / Proff vareregister» og eventuelt «Se Din nto pris» på brukerkortet nedenfor.</span>
+            <span>Når Generelle tilbud er aktivert, får alle brukere i firmaet modulen. Firmaadmin bestemmer hvilke andre brukere som kan se «Din nto pris».</span>
           </div>
         </>
       ) : null}

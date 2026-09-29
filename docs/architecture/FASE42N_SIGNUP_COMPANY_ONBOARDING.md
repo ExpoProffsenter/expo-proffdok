@@ -23,12 +23,14 @@ Ny egenregistrering skal gi Systemadmin nok firmainformasjon til å godkjenne br
 
 ### Invitert bruker
 
-Velger brukeren **Jeg er invitert til et eksisterende firma**, opprettes ikke firma gjennom Fase 42N. Eksisterende `company_user_invites`-flyt i `main.jsx` kobler brukeren til riktig firma etter innlogging, som før.
+En invitasjonslenke åpner registreringen eksplisitt i invitert modus med firma og e-post forklart i skjermbildet. Etter bekreftet registrering eller innlogging validerer `accept_company_user_invite()` invitasjonen mot e-post, firma og en aktiv Systemadmin/Firmaadmin. En gyldig invitasjon kobler brukeren til firmaet og godkjenner kontoen uten en ny Systemadmin-handling. Deaktiverte kontoer kan ikke reaktiveres via invitasjon.
+
+Har firmaet Generelle tilbud, arver den inviterte brukeren automatisk denne modulen. «Din nto pris» arves aldri og må styres individuelt av Firmaadmin.
 
 ## Sikkerhetsmodell
 
 - Fase 42K-kravet om valgt firma før godkjenning beholdes uendret.
-- Nyregistrering kan aldri sette `approved=true`.
+- Nyregistrering kan ikke selv sette `approved=true`; bare den validerte invitasjons-RPC-en kan godkjenne den inviterte brukeren.
 - Nyregistrering kan aldri bli systemadministrator.
 - Firmanavn og organisasjonsnummer kontrolleres mot `profiles`, `companies` og `sales_company_scopes`.
 - Et eksisterende firma kan ikke registreres som et nytt firma. Brukeren må inviteres av eksisterende firma/systemadmin.
@@ -47,9 +49,9 @@ Velger brukeren **Jeg er invitert til et eksisterende firma**, opprettes ikke fi
   - `handle_auth_signup_company_application()`
   - trigger på `auth.users`
 - `scripts/critical-signup-company-onboarding-check.mjs`
-  - verner at `main.jsx`/eksisterende Auth-kjerne forblir urørt
-  - verner at auto-godkjenning ikke introduseres
-  - verner invitasjonsveien og backend-duplikatkontrollen
+  - verner eksisterende Auth-kjerne og den eksplisitte invitasjonsinngangen
+  - verner at bare en gyldig invitasjon kan gi automatisk godkjenning
+  - verner invitasjonsveien, firmatilgangen og backend-duplikatkontrollen
 
 ## Miljø
 

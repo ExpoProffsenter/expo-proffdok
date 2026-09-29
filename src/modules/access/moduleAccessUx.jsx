@@ -430,24 +430,24 @@ function ensureAdminAccessHelp(access) {
   const intro = document.createElement("p");
   intro.className = "note";
   intro.textContent = access.isSystemAdmin
-    ? "Systemadministrator setter rammen for hvilke hovedmoduler hver bruker får bruke."
-    : "Firmaadministrator kan administrere modultilgang for egne ansatte innenfor sin egen tildelte ramme.";
+    ? "Systemadministrator setter rammen for hovedmoduler og firmatilgang."
+    : "Firmaadministrator kan administrere egne ansatte og deres tilgang til «Din nto pris».";
   block.appendChild(intro);
 
   const items = access.isSystemAdmin
     ? [
-        "Ved ny bruker: kontroller firma og rolle, velg relevante moduler under Brukere og tilganger, lagre tilgangen og godkjenn deretter brukeren.",
+        "En gyldig invitasjon fra Firmaadmin eller Systemadministrator knytter brukeren til riktig firma og godkjenner kontoen når registreringen er bekreftet.",
         "Systemadministrator har alltid Prosjekter og dokumentasjon, Befaring / Våtromstilbud og Generelle tilbud.",
-        "Firmaadministrator kan senere delegere videre til egne ansatte, men bare moduler firmaadministratoren selv har.",
-        "Generelle tilbud krever samtidig Befaring / Våtromstilbud.",
+        "Generelle tilbud aktiveres én gang på firmaet og gjelder automatisk alle nåværende og nye brukere. Befaring / Våtromstilbud følger med som nødvendig grunnlag.",
+        "Firmaadministrator bestemmer hvilke andre brukere i firmaet som kan se «Din nto pris», men kan ikke gi pristilgang til seg selv.",
         "Rolle, firmatilhørighet og modultilgang er separate kontrollnivåer. Modultilgang gir aldri automatisk tilgang til andre firmaers data.",
         "Meny og Hjelp følger tildelte moduler. Backend/RLS er den autoritative sikkerhetsgrensen.",
       ]
     : [
         "Du kan bare administrere brukere i eget firma.",
-        "Du kan bare gi videre moduler du selv har fått av systemadministrator.",
+        "Generelle tilbud aktiveres samlet for firmaet av Systemadministrator og gjelder automatisk alle firmaets brukere.",
+        "Du bestemmer hvilke andre brukere i firmaet som kan se «Din nto pris».",
         "Din egen modultilgang kan ikke endres av deg selv; den styres av systemadministrator.",
-        "Generelle tilbud krever samtidig Befaring / Våtromstilbud.",
         "Meny og Hjelp for den ansatte følger modulene du tildeler, mens backend/RLS håndhever den faktiske datatilgangen.",
       ];
 
@@ -480,13 +480,13 @@ function applyHelpAccess(access) {
   document.querySelectorAll("li").forEach((item) => {
     const text = compactText(item.textContent);
     if (text === "Tilgang til Butikktilbud skal senere følge brukerens tildelte modulrettigheter når den generelle tilgangsmodellen er innført.") {
-      item.textContent = "Tilgang til Generelle tilbud følger brukerens tildelte modultilgang. Firmaadministrator kan bare delegere Generelle tilbud når firmaadministratoren selv har denne tilgangen.";
+      item.textContent = "Generelle tilbud aktiveres av Systemadministrator på firmaet og gjelder automatisk alle nåværende og nye brukere i firmaet.";
     }
   });
 
   document.querySelectorAll("span").forEach((item) => {
     if (compactText(item.textContent).startsWith("Sist oppdatert:")) {
-      item.textContent = "Sist oppdatert: 08.09.2026";
+      item.textContent = "Sist oppdatert: 29.09.2026";
     }
   });
 

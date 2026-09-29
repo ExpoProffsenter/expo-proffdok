@@ -146,7 +146,7 @@ Generelt tilbud kan bruke vareregister fra `src/modules/storeCatalog/`.
 
 Tilgang krever aktiv/godkjent bruker, relevant modultilgang og autorisert firmascope. Interne brukere i Ringside/Bademiljø Expo/Expo Proffsenter kan gis tilgang til hele internkatalogen, men intern netto innkjøpspris følger aldri automatisk med og skal aldri lekke til kundegrunnlaget.
 
-For ekstern Proff kreves `sales`, `store_offers` og aktiv leverandørtilgang for firmaet. Kun Systemadministrator kan aktivere Proff-vareregisteret, styre leverandører/rabatter og tildele Generelle tilbud; Enkel ordre velges først etter kundeaksept. Ekstern bruker ser aldri Ringsides interne purchase-netto, innkjøpsrabatt, DG eller påslag. «Din nto pris» krever separat bruker- og firmascopet rettighet; Firmaadmin kan administrere andre brukere i eget firma, men ikke gi rettigheten til seg selv. Intern nto krever fortsatt eksplisitt `view_internal_net_prices`, også for interne brukere.
+For ekstern Proff kreves `sales`, firmatilgang til `store_offers` og aktiv leverandørtilgang for firmaet. Kun Systemadministrator kan aktivere Proff-vareregisteret, styre leverandører/rabatter og slå på Generelle tilbud for firmaet. Når firmatilgangen er aktiv, får alle nåværende og nye brukere i firmaet Generelle tilbud; Enkel ordre velges først etter kundeaksept. Ekstern bruker ser aldri Ringsides interne purchase-netto, innkjøpsrabatt, DG eller påslag. «Din nto pris» krever separat bruker- og firmascopet rettighet; Firmaadmin kan administrere andre brukere i eget firma, men ikke gi rettigheten til seg selv. Intern nto krever fortsatt eksplisitt `view_internal_net_prices`, også for interne brukere.
 
 Detaljer: `docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md`.
 
