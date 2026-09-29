@@ -695,8 +695,11 @@ export default function StorePriceSearchView({ onClose }) {
           .priceSearchHome{display:inline-flex;align-items:center;min-height:44px;margin-bottom:12px}
           .priceSearchScanButton{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;margin-top:12px}
           .priceSearchScanner{margin-top:12px;padding:12px;border:1px solid #cfe1e6;border-radius:14px;background:#f7fafb}
-          .priceSearchScanner video{display:block;width:100%;max-height:300px;aspect-ratio:4/3;object-fit:cover;border-radius:10px;background:#10212b}
+          .priceSearchScanner video{display:block;width:100%;max-height:360px;aspect-ratio:4/3;object-fit:contain;border-radius:10px;background:#10212b}
           .priceSearchScanner p{margin:10px 0;color:#334b56}
+          .priceSearchCameraChoice,.priceSearchZoomChoice{display:grid;gap:6px;margin:10px 0;color:#10212b;font-weight:700}
+          .priceSearchCameraChoice select{width:100%;min-height:44px;padding:8px;border:1px solid #aac8d2;border-radius:9px;background:#fff;color:#10212b}
+          .priceSearchZoomChoice input{width:100%;min-height:40px;accent-color:#087c86}
           .priceSearchScanner button{width:100%;min-height:44px}
         }
         @media(max-width:620px){

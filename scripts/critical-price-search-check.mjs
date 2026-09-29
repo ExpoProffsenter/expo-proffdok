@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { applyCameraZoom, clampZoom, isSearchableBarcode, usableZoomRange } from "../src/modules/storeCatalog/barcodeCameraSettings.mjs";
 
 function read(path) {
   return fs.readFileSync(path, "utf8");
@@ -153,6 +154,13 @@ const scanner = requireNeedles("src/modules/storeCatalog/PriceSearchBarcodeScann
   'facingMode: { ideal: "environment" }',
   "navigator.mediaDevices.getUserMedia(",
   "reader.decodeFromStream(",
+  "DecodeHintType.TRY_HARDER",
+  "width: { ideal: 1920 }",
+  "height: { ideal: 1080 }",
+  "getVideoTracks()[0]",
+  "applyCameraZoom(track, initialZoom)",
+  "setSelectedDeviceId(event.target.value)",
+  "isSearchableBarcode(code)",
   "if (finished) {",
   "cameraStream.getTracks().forEach((track) => track.stop())",
   "cameraStream?.getTracks?.().forEach((track) => track.stop())",
@@ -167,6 +175,24 @@ const scanner = requireNeedles("src/modules/storeCatalog/PriceSearchBarcodeScann
   "stop();",
   "Avbryt skanning",
 ]);
+const zoomRange = usableZoomRange({ getCapabilities: () => ({ zoom: { min: 1, max: 5, step: 0.5 } }) });
+if (!zoomRange || clampZoom(2.3, zoomRange) !== 2.5 || clampZoom(99, zoomRange) !== 5 || clampZoom(0, zoomRange) !== 1) {
+  throw new Error("Små strekkoder skal kunne forstørres innenfor kameraets støttede zoom-område.");
+}
+if (usableZoomRange({ getCapabilities: () => ({}) }) !== null || usableZoomRange({ getCapabilities: () => { throw new Error("unsupported"); } }) !== null) {
+  throw new Error("Kamera uten zoom-støtte skal beholde manuell skanning uten feil.");
+}
+let zoomConstraints;
+await applyCameraZoom({
+  getConstraints: () => ({ width: { ideal: 1920 }, height: { ideal: 1080 }, deviceId: { exact: "rear" } }),
+  applyConstraints: async (constraints) => { zoomConstraints = constraints; },
+}, 2);
+if (zoomConstraints?.width?.ideal !== 1920 || zoomConstraints?.height?.ideal !== 1080 || zoomConstraints?.deviceId?.exact !== "rear" || zoomConstraints?.advanced?.[0]?.zoom !== 2) {
+  throw new Error("Kamerazoom må bevare oppløsning og valgt bakre linse.");
+}
+if (!isSearchableBarcode("7350004677047") || !isSearchableBarcode("4517552") || isSearchableBarcode("123456") || isSearchableBarcode("http://example.com")) {
+  throw new Error("EAN og numerisk sju-sifret varenummer skal kunne søkes, men vilkårlig innhold avvises.");
+}
 if (/\b(?:localStorage|sessionStorage|indexedDB|fetch|XMLHttpRequest|rpcWithStoredSession)\b|\.\s*(?:insert|update|upsert|upload)\s*\(/i.test(scanner)) {
   throw new Error("Strekkodeskanneren skal ikke lagre, laste opp eller søke utenom eksisterende Prissøk.");
 }
