@@ -335,8 +335,9 @@ const INTERNAL_COMMERCE_SECTIONS = [
     "Prissøk brukes til å slå opp aktive ERP-varer og gjeldende kundepris uten å opprette et tilbud.",
     [
       "Søk på varenavn, leverandør, varenummer eller GTIN/EAN.",
-      "På mobil kan du trykke Skann strekkode, rette kameraet mot varens EAN/GTIN og se prisen i samme søk. Hvis kameraet ikke er tilgjengelig, kan du skrive koden i søkefeltet.",
-      "Trykk ← Startside øverst i Prissøk for å gå tilbake til Startsiden.",
+      "På mobil: trykk Skann strekkode, gi kameratilgang og hold varens EAN/GTIN i kamerabildet. Koden settes i søkefeltet, og varen/prisen hentes i Prissøk.",
+      "Trykk Avbryt skanning for å lukke kameraet. Ved avvist eller manglende kameratilgang kan du alltid skrive EAN/GTIN manuelt i søkefeltet.",
+      "Trykk ← Startside øverst i Prissøk for å gå tilbake til Startsiden. Da avsluttes aktivt Prissøk uten automatisk gjenåpning; den midlertidige arbeidslisten beholdes i samme nettleserfane.",
       "Legg aktuelle varer i den midlertidige arbeidslisten mens du sammenligner. Ved vanlig appbytte, dvale eller refresh skal Prissøk åpnes igjen med valgte varer bevart og prisene hentet på nytt fra backend.",
       "Vareregisteret bygger på siste aktiverte Cordel-eksport.",
       "Varer merket Utgått i Cordel, varer med 0-pris og gamle ÅVP-leverandører hoppes automatisk over ved import.",

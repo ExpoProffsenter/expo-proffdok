@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
 **Fase:** 45B – Proff / Generelt tilbud / Enkel ordre
-**Status:** Fase 45B og godkjente Production-QA-rettelser er i Production; ny funksjonalitet følger separat Preview-/godkjenningsløp
-**Dato:** 28.09.2026
-**Produksjonsbaseline:** `main` på `4f016ce`; kode, backend og live system er autoritativt dersom statusdokumentet henger etter
+**Status:** Fase 45B, godkjente Production-QA-rettelser og mobil Prissøk fra PR #201 er i Production; godkjent kode er synkronisert til permanent Demo via PR #202
+**Dato:** 29.09.2026
+**Produksjonsbaseline:** `main` etter PR #201 (`0f61d197`); kode, backend og live system er autoritativt dersom statusdokumentet henger etter
 **Production Supabase:** `dqffxflaoyarbxyiyhop`  
 **Permanent Demo Sandbox:** branch `demo`, Supabase `ppvircenkjizeiqdxphj`
 
@@ -214,12 +214,12 @@ Viktig:
 - første tomme React-render skal aldri overskrive entry-kladden som skal gjenopprettes
 - bevisst Tilbake/Avbryt/menyvalg rydder recovery-markører slik at brukerhandling alltid vinner
 
-### 5.5 Fase 42K – produksjonsstabilisering
+### 5.5 Produksjonsstabilisering
 
-Fase 42K er gjeldende Production-baseline og inkluderer blant annet:
+Gjeldende Production-baseline inkluderer Fase 42K og senere godkjente rettelser, blant annet:
 
 - korrekt systemadmin-arbeidsscope via valgt `Representerer`-firma
-- videre beskyttelse av Prissøk-resume og bevisst navigasjon. Mobil-Preview har egen `← Startside` i Prissøk, som bruker eksisterende close-flyt og rydder recovery-markøren; skanneren lastes ved behov, slipper kamerasporet ved treff/avbrudd/navigasjon og sender bare koden gjennom eksisterende read-only prissøk. Ingen bilde-/kameralagring eller nye prisrettigheter. Dette er ikke Production før separat godkjenning.
+- videre beskyttelse av Prissøk-resume og bevisst navigasjon. Mobil-Prissøk er i Production fra PR #201; detaljene står i avsnitt 7.5.
 - krav om Firma ved godkjenning av nye brukere
 - vern av intern Butikktilbud-/nettopristilgang ved firmabytte
 - legacy prosjektmeny og anbefalt prosjektløp konsolidert mot gjeldende navigasjon
@@ -345,6 +345,12 @@ Historiske publiserte/aksepterte tilbud endres ikke av ny ERP-prisfil.
 Primær vareidentitet er leverandør + leverandørens varenummer.
 
 Leverandøralternativer kobles via samme normaliserte GTIN/EAN. Varenummer alene brukes ikke på tvers av leverandører.
+
+### 7.5 Mobil Prissøk og strekkodeskanning
+
+`← Startside` vises i mobil Prissøk og bruker eksisterende `closePriceSearch({ clearResume: true })` før appens ordinære Startside-navigasjon. Bevisst avslutning rydder recovery-markøren. Ved reelt appbytte/dvale kan aktivt Prissøk gjenopprettes; den midlertidige arbeidslisten beholder kun vare-ID/oppslagsnøkler i samme fanes `sessionStorage`, og priser hentes på nytt fra backend.
+
+`Skann strekkode` vises bare på mobil. Skannerkomponenten og ZXing lastes ved behov, foretrekker bakre kamera og setter avlest EAN/GTIN i eksisterende søkefelt. Søket går gjennom de eksisterende read-only RPC-ene; ingen kamerabilder eller videodata lagres eller lastes opp. Videosporet stoppes ved treff, avbrudd, navigasjon, bakgrunning, unmount og sent innvilget kameratillatelse etter at skanneren er lukket. Manuell EAN-inntasting er fallback ved manglende kameratilgang. Desktop-visningen og serverens maskering av interne nettoprisfelter er uendret.
 
 ## 8. Modul-/rolle-tilgang
 
