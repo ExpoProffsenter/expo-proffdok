@@ -35,6 +35,7 @@ import { createInstallationViewTools } from './modules/installations/installatio
 import { createContractViewTools } from './modules/contract/contractViewTools.js';
 import { createWarrantyViewTools } from './modules/warranty/warrantyViewTools.js';
 import { createCompanyViewTools } from './modules/company/companyViewTools.js';
+import { getMyCompanyProfile, setMyCompanyProfile } from './modules/company/companyProfileClient.js';
 import { createCommunicationViewTools } from './modules/chat/chatViewTools.js';
 import { ensureExpoProffDokAppBranding, warrantyArchiveNotice, userGuidePdfPath, adminGuidePdfPath, EXPO_PROFFDOK_TERMS_VERSION, EXPO_PROFFDOK_TERMS_TITLE, expoProffDokTermsSections } from './modules/app/appStaticTools.js';
 import AppErrorBoundary from './modules/app/AppErrorBoundary.jsx';
@@ -745,7 +746,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [mobileMenuOpen, setMobileMenuOpen] = (0, import_react.useState)(false);
     const [mobileStatusOpen, setMobileStatusOpen] = (0, import_react.useState)(false);
     const [projectDirty, setProjectDirty] = (0, import_react.useState)(false);
-    const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
+    const defaultCompanyProfile = { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" };
+    const [company, setCompany] = (0, import_react.useState)({ ...defaultCompanyProfile });
+    const [companyProfileDraft, setCompanyProfileDraft] = (0, import_react.useState)({ ...defaultCompanyProfile });
     const [user, setUser] = (0, import_react.useState)({ name: "", email: "", role: "Eier / administrator" });
     const [project, setProject] = (0, import_react.useState)(emptyProject());
     const [checked, setChecked] = (0, import_react.useState)({});
@@ -2734,6 +2737,24 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setProjectId(data.id);
       if (!silent) alert("Prosjektdata oppdatert.");
     };
+    const companyStateFromPayload = (payload = {}, fallback = {}) => ({
+      companyName: String(payload?.companyName || fallback?.companyName || "Expo Proffsenter").trim() || "Expo Proffsenter",
+      orgNumber: String(payload?.orgNumber ?? fallback?.orgNumber ?? "").trim(),
+      address: String(payload?.address ?? fallback?.address ?? "").trim(),
+      phone: String(payload?.phone ?? fallback?.phone ?? "").trim(),
+      email: String(payload?.email ?? fallback?.email ?? "").trim(),
+      website: String(payload?.website ?? fallback?.website ?? "").trim(),
+      logoUrl: String(payload?.logoUrl ?? fallback?.logoUrl ?? "").trim()
+    });
+    const profileCompanyFallback = (row = {}) => companyStateFromPayload({
+      companyName: row?.company_name || "Expo Proffsenter",
+      orgNumber: row?.org_number || "",
+      address: row?.address || "",
+      phone: row?.phone || "",
+      email: row?.email || "",
+      website: row?.website || "",
+      logoUrl: row?.logo_url || ""
+    });
     const applyProfile = (row, identityUser = authUser) => {
       if (!row) return;
       const authenticatedName = String(
@@ -2741,22 +2762,30 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         identityUser?.user_metadata?.name ||
         ""
       ).trim();
+      const fallbackCompany = profileCompanyFallback(row);
       setProfile(row);
       setUser((current) => ({
         ...current,
         name: authenticatedName || current.name || "",
         email: row.email || current.email || ""
       }));
-      setCompany((c) => ({
-        ...c,
-        companyName: row.company_name || c.companyName || "Expo Proffsenter",
-        orgNumber: row.org_number || "",
-        address: row.address || "",
-        phone: row.phone || "",
-        email: row.email || "",
-        website: row.website || "",
-        logoUrl: row.logo_url || c.logoUrl || ""
-      }));
+      setCompany((current) => ({ ...current, ...fallbackCompany }));
+      setCompanyProfileDraft(fallbackCompany);
+    };
+    const loadMyCompanyProfile = async (fallbackProfile = {}) => {
+      const fallbackCompany = profileCompanyFallback(fallbackProfile);
+      try {
+        const payload = await getMyCompanyProfile();
+        const sharedCompany = companyStateFromPayload(payload || {}, fallbackCompany);
+        setCompanyProfileDraft(sharedCompany);
+        setCompany(sharedCompany);
+        return sharedCompany;
+      } catch (companyProfileError) {
+        console.warn("Kunne ikke hente felles firmaprofil:", companyProfileError);
+        setCompanyProfileDraft(fallbackCompany);
+        setCompany(fallbackCompany);
+        return fallbackCompany;
+      }
     };
     const ensureProfile = async (sessionUser) => {
       if (!sessionUser) return null;
@@ -2790,6 +2819,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         console.warn("Kunne ikke fullføre firmainvitasjon:", inviteError);
       }
       applyProfile(data, sessionUser);
+      await loadMyCompanyProfile(data);
       setProfileLoading(false);
       return data;
     };
@@ -4377,15 +4407,43 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       if (error) return alert("Kunne ikke laste opp logo: " + error.message);
       const { data } = supabase.storage.from("project-images").getPublicUrl(path);
       setCompany((c) => ({ ...c, logoUrl: data.publicUrl }));
+      setCompanyProfileDraft((c) => ({ ...c, logoUrl: data.publicUrl }));
       alert("Logo lastet opp. Husk \xE5 trykke Lagre firmaprofil.");
     };
     const saveProfile = async () => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn.");
+
+      if (profile?.approved && profile?.company_name) {
+        const orgDigits = String(companyProfileDraft.orgNumber || "").replace(/[^0-9]/g, "");
+        const phoneDigits = String(companyProfileDraft.phone || "").replace(/[^0-9]/g, "");
+        const companyEmail = String(companyProfileDraft.email || "").trim();
+        if (orgDigits.length !== 9) return alert("Foretaksnummer m\xE5 inneholde 9 sifre.");
+        if (String(companyProfileDraft.address || "").trim().length < 5) return alert("Firmaadresse m\xE5 fylles ut.");
+        if (phoneDigits.length < 8) return alert("Firmatelefon m\xE5 inneholde minst 8 sifre.");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyEmail)) return alert("Skriv inn en gyldig firma-e-post.");
+        try {
+          const savedProfile = await setMyCompanyProfile({
+            orgNumber: companyProfileDraft.orgNumber,
+            address: companyProfileDraft.address,
+            phone: companyProfileDraft.phone,
+            email: companyEmail,
+            website: companyProfileDraft.website,
+            logoUrl: companyProfileDraft.logoUrl
+          });
+          const sharedCompany = companyStateFromPayload(savedProfile || {}, companyProfileDraft);
+          setCompanyProfileDraft(sharedCompany);
+          if (!projectId) setCompany(sharedCompany);
+          alert("Firmaprofil lagret. Firmaets e-post endrer ikke innloggingen din.");
+        } catch (companyProfileError) {
+          alert("Kunne ikke lagre firmaprofil: " + (companyProfileError?.message || String(companyProfileError)));
+        }
+        return;
+      }
+
       const existingCompanyRole = profile?.company_role || "";
       const shouldSetFirstUserAsCompanyAdmin = !existingCompanyRole && hasValue(company.companyName);
       const payload = {
         id: authUser.id,
-        email: company.email || authUser.email,
         company_name: company.companyName || "",
         org_number: company.orgNumber || "",
         address: company.address || "",
@@ -6476,11 +6534,13 @@ ${appLink}`;
           appendProjectDescriptionTemplate
         }),
         tab === "firma" && renderCompanyProfilePanel({
-          company,
-          setCompany,
-          name,
+          company: companyProfileDraft,
+          setCompany: setCompanyProfileDraft,
+          name: companyProfileDraft.companyName || name,
           uploadLogo,
-          saveProfile
+          saveProfile,
+          canEdit: isCompanyAdminUser,
+          loginEmail: authUser?.email || ""
         }),
         tab === "innlogging" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: isProjectSupportReadOnly ? "Prosjektets rapportopplysninger" : "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           isProjectSupportReadOnly ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px", background: "#fff7ed", borderColor: "#fed7aa" }, children: [

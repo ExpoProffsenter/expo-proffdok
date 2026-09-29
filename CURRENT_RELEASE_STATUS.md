@@ -13,7 +13,9 @@
 - Sandbox-Supabase har de additive migrasjonene `company_invite_and_general_offer_access`, `fix_company_store_offers_module_alias`, `limit_company_invite_guard_marker` og `harden_company_module_access`. Produksjonsdatabasen har ingen av dem ennå.
 - To autoritative Sandbox-tester med full tilbakerulling er grønne: invitasjon/autogodkjenning og firmaarv/nto-separasjon. ACL-kontrollen viser ingen klienttilgang til den private firmatabellen eller interne hjelperen.
 - Full critical-suite og Sandbox-bundet Vite-build var grønn før branch-commit. GitHub CI og faktisk Preview-build er grønne. Live Preview viser tydelig invitert modus for WBL AS og forklarer at inviterte brukere kobles automatisk.
-- Brukerens korte Preview-test og eksplisitte `TEST OK` gjenstår. PR-en skal ikke merges og ingenting skal deployes til Production før dette.
+- Brukeren ga eksplisitt `TEST OK` for invitasjonsflyten 29.09.2026. Sandbox viser at testbrukeren ble godkjent og koblet til `Proffkunde Demo AS` uten Systemadmin-handling.
+- Samme test avdekket at Firmaprofil fortsatt leste kontaktdata fra hver enkelt brukerprofil. Oppfølgingen flytter visningen og lagringen til en felles firmaprofil, skiller firma-e-post fra innloggings-e-post og krever foretaksnummer, adresse, telefon og firma-e-post. Ny Preview-verifisering gjenstår før merge.
+- PR-en skal fortsatt ikke merges og ingenting skal deployes til Production før oppfølgingen har grønn QA og nytt eksplisitt `TEST OK`.
 
 
 ## Pågående rettelse – profilnavn og misvisende rollefelt (28.09.2026)
