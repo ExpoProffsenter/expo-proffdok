@@ -12,7 +12,7 @@
 - Mobil Prissøk får `← Startside` gjennom eksisterende close-flyt, og strekkodeskanning fyller bare EAN/GTIN i eksisterende read-only RPC-søk. Desktop, prisrettigheter, database og lagring er ikke endret.
 - ZXing lastes ved behov på mobil. Bakre kamera foretrekkes; kamerasporet frigjøres ved treff, avbrudd, navigasjon og når appen går i bakgrunnen. Manuell inntasting er fallback. Ingen bilder eller videodata lagres eller lastes opp.
 - Målrettet critical check, full critical-suite, Sandbox-bundet build, release-dokumentasjonsguard og diff-kontroll er grønne. GitHub `PR Core Safety` er `completed/success` for siste commit.
-- Siste Vercel Preview `dpl_oFPHcjztAU79ujqRtRicx41bHvek` er `READY`, `target=null`, på PR #201s siste commit. Deployet JS inneholder Sandbox-ref og ingen Production-ref.
+- PR #201s Vercel Preview er `READY`, `target=null`, og bygges fra siste branch-commit. Deployet JS inneholder Sandbox-ref og ingen Production-ref.
 - I faktisk innlogget Preview ga EAN `9900000000004` ett treff på «DEMO – Svedbergs servantskap 80 cm». Desktop Startside gikk tilbake til den opprinnelige Startsiden, og den midlertidige arbeidslisten var fortsatt tilgjengelig. Fysisk mobilkamera er ikke verifisert av agenten.
 
 ## Åpent og neste handling
