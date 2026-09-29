@@ -115,6 +115,8 @@ Sandboxen lagrer endringer permanent i sin egen database. Refresh er derfor ikke
 
 Golden snapshot brukes til å gjenopprette kjent demo-tilstand. Endringer i Golden skal være kirurgiske og skal aldri utføres ved generisk sletting/navnesøk. Før en viktig demo skal operatøren kontrollere:
 
+`DEMO-002` er et ferdig reserveprosjekt med utstedt demo-garanti. Både den aktive raden og Golden snapshotet må ha sitt eget fiktive kontraktdokument i `data.tilbud.files`; SQL-triggeren for garantiregisteret krever dette når reset setter inn garantien på nytt. Sandbox-preflight har derfor en egen `warranty_contract`-kontroll for aktivt prosjekt og Golden payload. Tidligere Golden payload er bevart under `backup-golden-v1-before-reserve-contract-20260929` for målrettet rollback. Demo-dokumentet er en statisk PDF kun på `demo`-branchen og må aldri inn i Production.
+
 1. riktig permanent demo-host
 2. synlig demo-kontroll
 3. riktig Representerer-firma

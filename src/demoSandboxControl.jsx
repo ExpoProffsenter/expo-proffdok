@@ -63,6 +63,7 @@ const LABELS = {
   finished_deviations: "RESERVE avvik",
   handover: "Overtagelse",
   warranty: "Garantidokument",
+  warranty_contract: "Garanti har prosjektkontrakt",
   storage: "Storage",
   snapshot: "Golden snapshot",
 };

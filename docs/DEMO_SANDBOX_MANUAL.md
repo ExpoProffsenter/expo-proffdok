@@ -308,6 +308,10 @@ Varesøk/Butikktilbud-katalogen er også persistent Sandbox-data, men er bevisst
 
 Sandboxen har Golden snapshot for kjent starttilstand.
 
+**RESERVE (DEMO-002)** har en fiktiv, simulert signert kontrakt i Avtalegrunnlag som hører til det utstedte demo-garantibeviset. PDF-eksempelet ligger under `/demo-documents/DEMO-002-signert-kontrakt.pdf` og er tydelig merket som demo. Preflight-punktet **Garanti har prosjektkontrakt** kontrollerer denne sammenhengen både i det aktive demo-prosjektet og i Golden snapshotet. Hvis punktet er rødt, skal du ikke bruke **Oppdater Golden Demo** for å skjule feilen.
+
+På en ny Preview-adresse lagres DEMO-Badskisser lokalt per nettleseradresse. Hvis bare **Redigerbar Badskisse på denne enheten** viser `0/2`, trykk **Installer demoskisse**. Dette retter ikke feil i serverens Golden snapshot.
+
 ### Hva gjør Tilbakestill demo?
 
 - gjenoppretter DEMO Sales-saker fra Golden Demo
