@@ -1,7 +1,7 @@
 # Expo ProffDok – Sales / Befaring / Tilbud / Generelt tilbud / Aksept / Kontrakt
 
-**Status:** Fase 45B er i Production; etterfølgende Production-QA-hotfix ligger i separat draft-PR og er ikke merget
-**Oppdatert:** Fase 45B Production-QA – 28.09.2026
+**Status:** Fase 45B og PR #200 er i Production. Mobil Prissøk ligger i separat Sandbox-Preview.
+**Oppdatert:** 29.09.2026
 
 Sales håndterer både ordinær Befaring/Tilbud-flyt og Generelt tilbud for varer, arbeid, underentreprenører og andre leveranser. Den tekniske legacy-identiteten `Butikktilbud`/`store offer` beholdes der det trengs for kompatibilitet.
 
@@ -141,6 +141,8 @@ Montering kan knyttes til post eller opprettes som `Kun montering`. Opsjoner kan
 Komplette firmamaler beholder varige app-/Storage-bilder på poster og opsjoner. Bare `https:`- og trygge rot-relative bildepekere lagres; midlertidige `data:`/`blob:`-bilder fjernes, og PDF-vedlegg følger aldri en mal. Eldre maler som ble lagret uten bildepeker må lagres på nytt fra et tilbud som fortsatt har bildet.
 
 ## 7. Internt og eksternt proff-vareregister
+
+Selvstendig Prissøk i `src/modules/storeCatalog/` bruker eksisterende read-only RPC og er ikke del av Sales-editoren. På mobil avslutter `← Startside` Prissøk via eksisterende close-flyt og rydder resume-markøren. Skanneren fyller bare GTIN/EAN i samme søkefelt; kamera og bilde lagres ikke. Desktop-søket og serverens maskering av intern nto-pris er uendret. Denne mobilendringen er i Sandbox-Preview inntil egen produksjonsgodkjenning.
 
 Generelt tilbud kan bruke vareregister fra `src/modules/storeCatalog/`.
 

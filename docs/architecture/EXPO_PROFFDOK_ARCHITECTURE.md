@@ -219,7 +219,7 @@ Viktig:
 Fase 42K er gjeldende Production-baseline og inkluderer blant annet:
 
 - korrekt systemadmin-arbeidsscope via valgt `Representerer`-firma
-- videre beskyttelse av Prissøk-resume og bevisst navigasjon
+- videre beskyttelse av Prissøk-resume og bevisst navigasjon. Mobil-Preview har egen `← Startside` i Prissøk, som bruker eksisterende close-flyt og rydder recovery-markøren; skanneren lastes ved behov, slipper kamerasporet ved treff/avbrudd/navigasjon og sender bare koden gjennom eksisterende read-only prissøk. Ingen bilde-/kameralagring eller nye prisrettigheter. Dette er ikke Production før separat godkjenning.
 - krav om Firma ved godkjenning av nye brukere
 - vern av intern Butikktilbud-/nettopristilgang ved firmabytte
 - legacy prosjektmeny og anbefalt prosjektløp konsolidert mot gjeldende navigasjon

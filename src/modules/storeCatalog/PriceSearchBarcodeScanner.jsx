@@ -40,12 +40,15 @@ export default function PriceSearchBarcodeScanner({ onScan, onCancel, onError })
     const video = videoRef.current;
     let finished = false;
     let scannerControls = null;
+    let cameraStream = null;
 
     const stop = (callbackControls = null) => {
       finished = true;
       stopControls(callbackControls);
       if (scannerControls !== callbackControls) stopControls(scannerControls);
       scannerControls = null;
+      cameraStream?.getTracks?.().forEach((track) => track.stop());
+      cameraStream = null;
       const stream = video?.srcObject;
       stream?.getTracks?.().forEach((track) => track.stop());
       if (video) {
@@ -72,8 +75,18 @@ export default function PriceSearchBarcodeScanner({ onScan, onCancel, onError })
         }
         const hints = new Map([[DecodeHintType.POSSIBLE_FORMATS, BARCODE_FORMATS]]);
         const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 250 });
-        const controls = await reader.decodeFromConstraints(
-          { video: { facingMode: { ideal: "environment" } }, audio: false },
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false,
+        });
+        // Tillatelsen kan bli gitt etter at brukeren allerede har lukket skanneren.
+        if (finished) {
+          cameraStream.getTracks().forEach((track) => track.stop());
+          cameraStream = null;
+          return;
+        }
+        const controls = await reader.decodeFromStream(
+          cameraStream,
           video,
           (result, _error, callbackControls) => {
             if (finished || !result) return;
