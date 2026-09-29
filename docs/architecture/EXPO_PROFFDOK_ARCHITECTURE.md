@@ -36,7 +36,7 @@ Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakove
 23. Før implementering klassifiseres miljømålet som `PRODUKSJON/PREVIEW`, `SANDBOX/DEMO` eller `BEGGE`.
 24. Permanent Demo Sandbox ligger på branch `demo`. Ordinær appkode kan synkroniseres **main → demo** etter godkjent Production-verifisering; demo-overlay og demodata skal aldri flyte **demo → main**.
 25. Demo/Test skal ikke brukes som begrunnelse for å endre beskyttet Production-kjerne i samme PR. Reell produktfeil splittes til egen core-PR fra ren `main`.
-26. Kun Systemadministrator kan aktivere Proff-vareregisteret for eksterne firma, styre leverandører/rabatter og tildele Generelle tilbud. Enkel ordre er en videreføring som velges først etter kundeaksept.
+26. Kun Systemadministrator kan aktivere Proff-vareregisteret for eksterne firma, styre leverandører/rabatter og aktivere Generelle tilbud for firmaet. Firmatilgangen gjelder alle nåværende og nye brukere. Enkel ordre er en videreføring som velges først etter kundeaksept.
 27. Intern Ringside-nto og ekstern «Din nto pris» er to separate rettigheter. Begge krever eksplisitt serververifisert tilgang.
 28. Enkel ordre bruker prosjektmotoren, men kundeportal er blokkert. Fremdriftsplan og FDV er valgfrie.
 29. App-tilgang forutsetter at virksomheten oppfyller gjeldende SoPro-vilkår. Eventuell særskilt betaling for Generelt tilbud er et senere produktvalg og er ikke en teknisk tilgangsregel i Fase 45B.
@@ -301,7 +301,7 @@ Kun systemadministrator kan administrere/importere katalogen.
 Ekstern profftilgang er firma- og leverandørscopet:
 
 1. Systemadministrator velger aktive leverandører og firmaets rabatt per leverandør i Proff-vareregisteret.
-2. Systemadministrator gir aktuelle brukere `sales` og `store_offers`, synlig som **Generelle tilbud / Proff vareregister**.
+2. Systemadministrator aktiverer `store_offers` én gang for firmaet, synlig som **Generelle tilbud / Proff vareregister**. Backend sørger for at alle firmaets brukere får nødvendig `sales`-grunnlag og samme tilgang.
 3. Brukeren må være godkjent og aktiv, ha begge modulene og tilhøre et firma med minst én aktiv leverandør.
 4. Søk returnerer ikke Ringsides interne purchase-netto, innkjøpsrabatt, DG eller påslag.
 
@@ -354,7 +354,7 @@ Modultilganger skiller blant annet:
 
 Systemadministrator har tverrfirma-support, men dette er ikke en generell skrive-bypass.
 
-Firmaadministrator kan delegere moduler innenfor eget firma og egne tillatelser. Generelt tilbud/katalog følger egne serverkontroller. Firmaadministrator kan ikke aktivere Proff for firmaet, endre leverandørrabatter eller selvtildele «Din nto pris».
+Firmaadministrator kan delegere øvrige moduler innenfor eget firma og egne tillatelser. Generelle tilbud/katalog aktiveres samlet på firmaet av Systemadministrator og følger egne serverkontroller. Firmaadministrator kan ikke aktivere Proff for firmaet, endre leverandørrabatter eller selvtildele «Din nto pris», men kan styre prisinnsyn for andre brukere i firmaet.
 
 Katalogimport er strengere enn ordinær Butikktilbud-bruk: systemadministrator-only.
 

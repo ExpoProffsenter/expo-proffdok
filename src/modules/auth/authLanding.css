@@ -145,7 +145,7 @@ body.authLandingLogin main > section::before {
 }
 
 body.authLandingSignup main > section::before {
-  content: 'Fyll inn opplysningene under. Kontoen aktiveres etter godkjenning.';
+  content: 'Fyll inn opplysningene. Nye firma må godkjennes; inviterte brukere kobles automatisk til firmaet.';
   max-width: 430px;
 }
 

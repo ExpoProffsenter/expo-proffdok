@@ -17,6 +17,19 @@ const emptyDraft = () => ({
   website: ''
 });
 
+const readInviteContext = () => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('signup') !== '1' || params.get('invited') !== '1') return null;
+    return {
+      companyName: normalizeText(params.get('company') || ''),
+      email: normalizeText(params.get('email') || '')
+    };
+  } catch {
+    return null;
+  }
+};
+
 const readDraft = () => {
   try {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
@@ -89,16 +102,30 @@ const createField = ({ label, key, type = 'text', placeholder = '', inputMode = 
 
 const syncPanelMode = (panel) => {
   const draft = readDraft() || emptyDraft();
+  const inviteContext = readInviteContext();
   const invite = panel.querySelector('[data-signup-company-invite]');
+  const inviteLabel = panel.querySelector('[data-signup-company-invite-label]');
   const fields = panel.querySelector('[data-signup-company-fields]');
   const note = panel.querySelector('[data-signup-company-note]');
   const isInvite = draft.mode === 'invite';
-  if (invite instanceof HTMLInputElement) invite.checked = isInvite;
+  if (invite instanceof HTMLInputElement) {
+    invite.checked = isInvite;
+    invite.disabled = Boolean(inviteContext);
+  }
+  if (inviteLabel instanceof HTMLElement) {
+    inviteLabel.textContent = inviteContext?.companyName
+      ? `Invitert til ${inviteContext.companyName}`
+      : 'Jeg er invitert til et eksisterende firma';
+  }
   if (fields instanceof HTMLElement) fields.hidden = isInvite;
   if (note instanceof HTMLElement) {
-    note.textContent = isInvite
-      ? 'Du registrerer bare brukeren. Når du logger inn kobles kontoen til firmaet via den eksisterende invitasjonen.'
-      : 'Firmaopplysningene følger registreringen til Systemadmin. Første godkjente bruker for et nytt firma blir firmaadministrator.';
+    if (isInvite && inviteContext?.companyName) {
+      note.textContent = `Opprett brukeren med ${inviteContext.email || 'e-postadressen i invitasjonen'}. Når registreringen er bekreftet, kobles kontoen automatisk til ${inviteContext.companyName} og er klar til bruk.`;
+    } else {
+      note.textContent = isInvite
+        ? 'Du registrerer bare brukeren. Når registreringen er bekreftet, valideres invitasjonen og kontoen kobles automatisk til firmaet.'
+        : 'Firmaopplysningene følger registreringen til Systemadmin. Første godkjente bruker for et nytt firma blir firmaadministrator.';
+    }
   }
 };
 
@@ -116,7 +143,7 @@ const buildPanel = () => {
     <p class="signupCompanyIntro" data-signup-company-note></p>
     <label class="signupCompanyInviteToggle">
       <input type="checkbox" data-signup-company-invite>
-      <span>Jeg er invitert til et eksisterende firma</span>
+      <span data-signup-company-invite-label>Jeg er invitert til et eksisterende firma</span>
     </label>
     <div class="signupCompanyFields" data-signup-company-fields></div>
   `;
@@ -148,7 +175,17 @@ const ensurePanel = () => {
     return false;
   }
 
-  if (!readDraft()) writeDraft(emptyDraft());
+  const inviteContext = readInviteContext();
+  const existingDraft = readDraft();
+  if (inviteContext) {
+    writeDraft({
+      ...(existingDraft || emptyDraft()),
+      mode: 'invite',
+      companyName: inviteContext.companyName
+    });
+  } else if (!existingDraft) {
+    writeDraft(emptyDraft());
+  }
 
   let panel = document.getElementById(PANEL_ID);
   if (!panel) {

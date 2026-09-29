@@ -446,8 +446,10 @@ export async function createFinalSalesContractPdf(contract = {}) {
   summaryGrid([
     { label: "Utførende firma", value: company.name },
     { label: "Organisasjonsnummer", value: company.org },
+    { label: "Firmaadresse", value: company.address },
     { label: "E-post firma", value: company.email },
     { label: "Telefon firma", value: company.phone },
+    { label: "Nettside firma", value: company.website },
     { label: "Kunde", value: customer.name },
     { label: "E-post kunde", value: customer.email },
     { label: "Telefon kunde", value: customer.phone },
