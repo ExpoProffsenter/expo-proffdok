@@ -335,7 +335,7 @@ const INTERNAL_COMMERCE_SECTIONS = [
     "Prissøk brukes til å slå opp aktive ERP-varer og gjeldende kundepris uten å opprette et tilbud.",
     [
       "Søk på varenavn, leverandør, varenummer eller GTIN/EAN.",
-      "På mobil: trykk Skann strekkode, gi kameratilgang og hold varens EAN/GTIN i kamerabildet. Koden settes i søkefeltet, og varen/prisen hentes i Prissøk.",
+      "På mobil: trykk Skann strekkode, gi kameratilgang og hold varens strekkode skarp i kamerabildet. For små etiketter holder du telefonen litt unna og bruker zoom eller velger et annet kamera hvis valgene vises. Koden settes i søkefeltet og søkes i Prissøk.",
       "Trykk Avbryt skanning for å lukke kameraet. Ved avvist eller manglende kameratilgang kan du alltid skrive EAN/GTIN manuelt i søkefeltet.",
       "Trykk ← Startside øverst i Prissøk for å gå tilbake til Startsiden. Da avsluttes aktivt Prissøk uten automatisk gjenåpning; den midlertidige arbeidslisten beholdes i samme nettleserfane.",
       "Legg aktuelle varer i den midlertidige arbeidslisten mens du sammenligner. Ved vanlig appbytte, dvale eller refresh skal Prissøk åpnes igjen med valgte varer bevart og prisene hentet på nytt fra backend.",
