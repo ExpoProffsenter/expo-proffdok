@@ -6,7 +6,9 @@ const SANDBOX_URL = "https://ppvircenkjizeiqdxphj.supabase.co";
 const SANDBOX_KEY = "sb_publishable_wSw_jYJ6t6StH3p0G10wnA_pjYOXVeR";
 const DEMO_EMAIL = "demo@expo-proffdok.no";
 const PRODUCTION_REPO = "ExpoProffsenter/expo-proffdok";
-const SANDBOX_PRODUCTION_BASELINE = "4f016ce35b2d22c9edcd30cddc1aaa3b38d715a3";
+// Oppdateres til main-committen som faktisk er merget inn i demo ved hver synk.
+// Golden reset påvirker data, ikke denne kodebaselinen.
+const SANDBOX_PRODUCTION_BASELINE = "fce6ffca37121f2e3953022f777826586dfb8aef";
 const DEMO_SKETCH_REQUEST_IDS = ["DEMO-01-FORESPORSEL", "DEMO-02-BEFARING"];
 const DEMO_BATHROOM_SKETCH = {
   version: 15,
@@ -61,6 +63,7 @@ const LABELS = {
   finished_deviations: "RESERVE avvik",
   handover: "Overtagelse",
   warranty: "Garantidokument",
+  warranty_contract: "Garanti har prosjektkontrakt",
   storage: "Storage",
   snapshot: "Golden snapshot",
 };
