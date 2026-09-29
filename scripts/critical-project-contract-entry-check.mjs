@@ -186,6 +186,25 @@ for (const needle of [
   assert(contractView.includes(needle), `Avtalegrunnlag mangler integrasjon: ${needle}`);
 }
 
+const contractViewCore = read("src/modules/contract/contractViewToolsCore.js");
+for (const needle of [
+  "readOnly = false",
+  "if (readOnly) return;",
+  "disabled: readOnly",
+  "!readOnly &&",
+  "Eksisterende tilbud, akseptbevis, kontrakter og øvrige avtaledokumenter kan åpnes nedenfor.",
+  "Supportmodus er skrivebeskyttet. Eksisterende avtaledokumenter kan åpnes, men ikke lastes opp, fjernes eller endres.",
+]) {
+  assert(
+    contractViewCore.includes(needle),
+    `Avtalegrunnlag mangler skrivebeskyttet dokumentvern: ${needle}`
+  );
+}
+assert(
+  contractViewCore.includes('children: "Åpne"'),
+  "skrivebeskyttet support må fortsatt kunne åpne eksisterende avtaledokumenter"
+);
+
 const salesModule = read("src/modules/sales/SalesModuleCore.jsx");
 assert(
   salesModule.includes('salesOfferId: selectedRequest.salesOfferId || ""'),

@@ -357,8 +357,8 @@ const SYSTEM_ADMIN_SECTIONS = [
     [
       "Godkjenn, avvis eller slett ventende brukere. Firma må være valgt før en ny bruker kan godkjennes, og rolle/modultilganger skal kontrolleres før aktivering.",
       "Generelle tilbud kan tildeles Ringside Rørleggerbedrift AS, Bademiljø Expo og Expo Proffsenter, samt eksterne Proff-firma der Systemadmin har aktivert minst én leverandør. For eksterne firma vises tilgangen som Generelle tilbud / Proff vareregister.",
-      "Bruk Supportmodus når du skal hjelpe et annet firma og avslutt supportmodus når arbeidet er ferdig.",
-      "Prosjekter som åpnes på tvers av firma i Supportmodus er skrivebeskyttet. Du kan kontrollere innhold og laste ned PDF, men ikke lagre, kopiere, avslutte/låse, laste opp eller endre prosjektdata.",
+      "Bruk Supportmodus når du skal hjelpe et annet firma. I et supportprosjekt tar Supportoversikt deg tilbake til samme firmas supportvisning; Avslutt supportmodus brukes først når supportarbeidet er ferdig.",
+      "Prosjekter som åpnes på tvers av firma i Supportmodus er skrivebeskyttet. I Salgsgrunnlag og Avtalegrunnlag kan du kontrollere og åpne eksisterende tilbud, akseptbevis, kontrakter og andre dokumenter, men ikke lagre, kopiere, avslutte/låse, laste opp, fjerne eller endre prosjektdata.",
       "Vedlikehold produktmaster og synkroniser bare aktive prosjekter når dette er riktig.",
       "Bruk Nyheter i appen til korte meldinger om nye funksjoner eller viktige endringer.",
       "Ved e-postutsending velger du mottakergruppe og om innholdet er en driftsmelding eller markedsføring. Kontroller mottakertallet og send alltid test til deg selv først.",

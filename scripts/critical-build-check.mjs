@@ -141,8 +141,13 @@ if (mainSource) {
 
   requireText(
     mainSource,
-    'withPrivateDocumentProjectAccess(file, { projectId, role: "kunde" })',
+    "withPrivateDocumentProjectAccess(file, {",
     `${mainPath}: private avtaledokumenter bindes ikke til prosjektet som faktisk er åpnet.`
+  );
+  requireText(
+    mainSource,
+    "supportMode: supportModeExplicit",
+    `${mainPath}: dokumentlenker fra supportprosjekt beholder ikke eksplisitt lesemarkør.`
   );
   requireText(
     mainSource,
@@ -167,11 +172,18 @@ const reboundUrlOnlyDocument = withPrivateDocumentProjectAccess(
   { projectId: "active-project", role: "kunde" }
 );
 const reboundUrlOnlyProjectUrl = new URL(reboundUrlOnlyDocument.url);
+const reboundSupportDocument = withPrivateDocumentProjectAccess(
+  copiedProjectDocument,
+  { projectId: "support-project", role: "kunde", supportMode: true }
+);
+const reboundSupportProjectUrl = new URL(reboundSupportDocument.url);
 if (
   reboundProjectUrl.searchParams.get("project") !== "active-project" ||
   reboundProjectUrl.searchParams.get("path") !== copiedProjectDocument.path ||
   reboundUrlOnlyProjectUrl.searchParams.get("project") !== "active-project" ||
-  reboundUrlOnlyProjectUrl.searchParams.get("path") !== copiedProjectDocument.path
+  reboundUrlOnlyProjectUrl.searchParams.get("path") !== copiedProjectDocument.path ||
+  reboundSupportProjectUrl.searchParams.get("project") !== "support-project" ||
+  reboundSupportProjectUrl.searchParams.get("support") !== "1"
 ) {
   failures.push(
     `${mainPath}: kopiert/gjenopprettet prosjekt beholder gammel prosjekt-ID i privat dokumentlenke.`
@@ -369,6 +381,16 @@ if (privateDocumentRedirectSource) {
     privateDocumentRedirectSource,
     "requestRef !== projectRequestRef",
     `${privateDocumentRedirectPath}: privat salgsdokument valideres ikke mot prosjektets salgssak.`
+  );
+  requireText(
+    privateDocumentRedirectSource,
+    "markSystemAdminProjectSupportQuery(projectQuery)",
+    `${privateDocumentRedirectPath}: eksplisitt systemadmin-support markerer ikke prosjektets sikre GET-oppslag.`
+  );
+  requireText(
+    privateDocumentRedirectSource,
+    "const supportMode = params.get('support') === '1';",
+    `${privateDocumentRedirectPath}: privat dokumentrute leser ikke eksplisitt supportmodus.`
   );
   requireText(
     privateDocumentRedirectSource,

@@ -96,6 +96,9 @@ if (salesList.indexOf('if (request?.status === "Forespørsel") return "requests"
 const desktopMenu = requireNeedles("src/modules/app/desktopSideMenu.js", [
   "styleBarHomeButton",
   "styleBarHelpButton",
+  "findNativeWorkspaceExitButton",
+  "['← Supportoversikt', '← Til startside']",
+  "supportProjectOpen ? '← Supportoversikt' : '← Startside'",
   "bar.append(toggle, homeButton, current, helpButton)",
   "styleBarHomeButton(shell.homeButton)",
   "styleBarHelpButton(shell.helpButton)",

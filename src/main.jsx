@@ -806,19 +806,23 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [portalAccessRecords, setPortalAccessRecords] = (0, import_react.useState)({});
     const [projects, setProjects] = (0, import_react.useState)([]);
     const [projectId, setProjectId] = (0, import_react.useState)(null);
+    const [currentProjectOwnerId, setCurrentProjectOwnerId] = (0, import_react.useState)("");
+    const [supportModeExplicit, setSupportModeExplicit] = (0, import_react.useState)(false);
     const projectScopedTilbud = (0, import_react.useMemo)(() => ({
       ...displayTilbud,
       files: projectId
         ? (displayTilbud.files || []).map((file) =>
-            withPrivateDocumentProjectAccess(file, { projectId, role: "kunde" })
+            withPrivateDocumentProjectAccess(file, {
+              projectId,
+              role: "kunde",
+              supportMode: supportModeExplicit
+            })
           )
         : displayTilbud.files || []
-    }), [displayTilbud, projectId]);
+    }), [displayTilbud, projectId, supportModeExplicit]);
     (0, import_react.useEffect)(() => {
       setMobileStatusOpen(false);
     }, [projectId]);
-    const [currentProjectOwnerId, setCurrentProjectOwnerId] = (0, import_react.useState)("");
-    const [supportModeExplicit, setSupportModeExplicit] = (0, import_react.useState)(false);
     const [mobileCreatingProject, setMobileCreatingProject] = (0, import_react.useState)(false);
     const [authUser, setAuthUser] = (0, import_react.useState)(null);
     const [authEmail, setAuthEmail] = (0, import_react.useState)("");
@@ -1299,6 +1303,8 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const portalAccessStorageKey = projectId && portalAccessRoleParam ? `expoProffDokPortalAccess:${projectId}:${portalAccessRoleParam}` : "";
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
     const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;
+    const supportReadOnlyMainIsInteractive =
+      isProjectSupportReadOnly && ["sales", "tilbud"].includes(tab);
     const supportProjectReadOnlyMessage = "Supportprosjekter er skrivebeskyttet. Avslutt supportmodus før du oppretter eller endrer prosjektdata.";
     const isCompanyAdminUser = !!authUser && !!profile?.approved && !profile?.deactivated && (profile?.company_role === "firmaadmin" || isSystemAdminUser);
     const currentCompanyName = String(profile?.company_name || company?.companyName || "").trim();
@@ -2111,6 +2117,10 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       }
       const canLeave = await confirmLeaveWithUnsavedChanges("går tilbake til startsiden");
       if (!canLeave) return;
+      const returnToSupportOverview = isProjectSupportReadOnly;
+      const supportCompanyForOverview = String(
+        supportProjectCompanyName || supportSelectedCompany || ""
+      ).trim();
       // FASE 23X: Når vi forlater arbeidsflaten, må også den innlastede prosjektstaten tømmes.
       // Ellers kan gamle prosjektdata fortsatt vises hvis en prosjektfane åpnes etter at projectId er nullstilt.
       pauseDirtyTrackingBriefly(1200);
@@ -2139,6 +2149,29 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setShowOpenDeviationsOnly(false);
       setProjectAutoSaveStatus("");
       resetProjectDirty();
+      if (returnToSupportOverview) {
+        if (profile) applyProfile(profile);
+        setSupportSelectedCompany(supportCompanyForOverview);
+        setOpenSupportCompany(supportCompanyForOverview);
+        setOpenAdminSections((prev) => ({ ...prev || {}, support: true }));
+        setTab("admin");
+        setMobileMenuOpen(false);
+        const supportUrl = new URL(window.location.href);
+        supportUrl.searchParams.delete("project");
+        supportUrl.searchParams.delete("role");
+        supportUrl.searchParams.delete("access");
+        supportUrl.searchParams.delete("support");
+        supportUrl.searchParams.delete("salesSupportCompany");
+        supportUrl.searchParams.set("tab", "systemadmin");
+        window.history.replaceState(
+          {},
+          document.title,
+          `${supportUrl.pathname}${supportUrl.search}${supportUrl.hash}`
+        );
+        setTimeout(() => scrollToMobileTabTarget("admin"), 90);
+        setTimeout(() => scrollToMobileTabTarget("admin"), 320);
+        return;
+      }
       setTab("prosjekt");
       setMobileMenuOpen(false);
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -6080,7 +6113,7 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
           !isProjectSupportReadOnly && !mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
           !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
-          projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: "← Til startside" }),
+          projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: isProjectSupportReadOnly ? "← Supportoversikt" : "← Til startside" }),
           hasActiveProjectWorkspace && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectDirty ? "● Lagre endringer" : projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
           projectId && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
           hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
@@ -6101,7 +6134,7 @@ ${appLink}`;
               "Firma: ", supportProjectCompanyName || "Ukjent firma",
               " · Prosjekt: ", project.projectName || project.address || "Uten navn",
               " · Prosjekteier: ", supportProjectOwner?.email || currentProjectOwnerId || "ukjent",
-              " · Skrivebeskyttet – ingen endringer kan lagres"
+              " · Skrivebeskyttet – lesing og dokumentvisning er tillatt"
             ] })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: exitSupportMode, children: "Avslutt supportmodus" })
@@ -6195,7 +6228,7 @@ ${appLink}`;
         ] })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
-        inert: isProjectSupportReadOnly ? true : void 0,
+        inert: isProjectSupportReadOnly && !supportReadOnlyMainIsInteractive ? true : void 0,
         "aria-readonly": isProjectSupportReadOnly ? "true" : void 0,
         "data-support-read-only": isProjectSupportReadOnly ? "true" : void 0,
         onInputCapture: () => {
@@ -6355,15 +6388,15 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: openActiveDeviations, children: "Se aktive avvik" })
           ] }),
           !isProjectLocked && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { margin: "10px 0" }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Arbeidsstatus", value: project.workflowStatus || "Pågår", options: workflowStatusOptions, onChange: (v) => setProject({ ...project, workflowStatus: v }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Select, { label: "Arbeidsstatus", value: project.workflowStatus || "Pågår", options: workflowStatusOptions, disabled: isProjectSupportReadOnly, onChange: (v) => setProject({ ...project, workflowStatus: v }) }),
             suggestedWorkflowStatus !== (project.workflowStatus || "Pågår") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
               "Forslag basert på prosjektet: ",
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: suggestedWorkflowStatus }),
               "."
             ] }),
-            suggestedWorkflowStatus !== (project.workflowStatus || "Pågår") && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setProject({ ...project, workflowStatus: suggestedWorkflowStatus }), children: "Bruk foreslått status" })
+            !isProjectSupportReadOnly && suggestedWorkflowStatus !== (project.workflowStatus || "Pågår") && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => setProject({ ...project, workflowStatus: suggestedWorkflowStatus }), children: "Bruk foreslått status" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectLocked ? `Prosjektet ble l\xE5st${project.lockedAt ? " " + new Date(project.lockedAt).toLocaleString("no-NO") : ""}${project.lockedBy ? " av " + project.lockedBy : ""}. L\xE5s opp prosjektet hvis du trenger \xE5 gj\xF8re endringer.` : "Prosjektet er åpent for endringer. Bruk arbeidsstatus for å vise om prosjektet er utkast, pågår, avventer, klart for kunde eller har åpne avvik." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isProjectSupportReadOnly ? "Prosjektet er skrivebeskyttet i supportmodus. Arbeidsstatus vises kun for kontroll." : isProjectLocked ? `Prosjektet ble l\xE5st${project.lockedAt ? " " + new Date(project.lockedAt).toLocaleString("no-NO") : ""}${project.lockedBy ? " av " + project.lockedBy : ""}. L\xE5s opp prosjektet hvis du trenger \xE5 gj\xF8re endringer.` : "Prosjektet er åpent for endringer. Bruk arbeidsstatus for å vise om prosjektet er utkast, pågår, avventer, klart for kunde eller har åpne avvik." }),
           persistedProjectHasOvertagelse ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [
             "✅ Overtagelse er registrert",
             overtagelse.dato ? ` ${new Date(overtagelse.dato).toLocaleDateString("no-NO")}` : "",
@@ -6506,7 +6539,11 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { "data-sales-resume-workspace": "true", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, {
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+            "data-sales-resume-workspace": "true",
+            inert: isProjectSupportReadOnly ? true : void 0,
+            "aria-readonly": isProjectSupportReadOnly ? "true" : void 0,
+            children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SalesModule, {
             supabaseClient: supabase,
             authUser,
             profile,
@@ -6522,7 +6559,8 @@ ${appLink}`;
             onStartNewRequestHandled: () => setSalesStartNewRequestSignal(0),
             onStartNewOfferHandled: () => setSalesStartNewOfferSignal(0),
             onOpenRequestHandled: () => setSalesOpenRequestSignal("")
-          }) })
+            })
+          })
         ] }),
         tab === "prosjektinfo" && renderProjectDescriptionPanel({
           project,
@@ -7332,16 +7370,16 @@ ${appLink}`;
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type, value, autoComplete, onKeyDown, disabled, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => !disabled && onChange(e.target.value) })
     ] });
   }
-  function Textarea({ label, value, onChange }) {
+  function Textarea({ label, value, onChange, disabled = false }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { onClick: stopInteractivePropagation, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { value, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => onChange(e.target.value) })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", { value, disabled, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => !disabled && onChange(e.target.value) })
     ] });
   }
-  function Select({ label, value, onChange, options, optionLabels = {} }) {
+  function Select({ label, value, onChange, options, optionLabels = {}, disabled = false }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { onClick: stopInteractivePropagation, children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: label }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => onChange(e.target.value), children: options.map((o) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: o, children: optionLabels[o] || o }, o)) })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("select", { value, disabled, onClick: stopInteractivePropagation, onMouseDown: stopInteractivePropagation, onTouchStart: stopInteractivePropagation, onChange: (e) => !disabled && onChange(e.target.value), children: options.map((o) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: o, children: optionLabels[o] || o }, o)) })
     ] });
   }
   const { ProjectImagesPanel, LimitedProjectImagesPanel } = createImageDocumentationTools({
