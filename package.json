@@ -8,6 +8,8 @@
   "dependencies": {
     "@vitejs/plugin-react": "latest",
     "vite": "latest",
+    "@zxing/browser": "0.2.1",
+    "@zxing/library": "0.23.0",
     "react": "latest",
     "react-dom": "latest",
     "lucide-react": "latest",

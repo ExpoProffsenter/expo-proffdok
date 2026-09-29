@@ -3,10 +3,15 @@
 .expoProjectWorkspaceGuide {
   min-width: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
-  flex: 1 1 auto;
-  overflow: hidden;
+  flex: 1 0 100%;
+  order: 20;
+  overflow: visible;
+}
+
+.expoDesktopMenuBarHasProjectGuide {
+  flex-wrap: wrap;
 }
 
 .expoProjectWorkspaceHint {
@@ -14,13 +19,16 @@
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+  padding-top: 9px;
 }
 
 .expoProjectWorkspaceQuickActions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .expoProjectWorkspaceQuickButton {
@@ -58,10 +66,6 @@
   .expoProjectWorkspaceQuickButton {
     padding: 0 8px;
     font-size: 11px;
-  }
-
-  .expoProjectWorkspaceQuickButton[data-source-label="Sjekklister"] {
-    display: none;
   }
 }
 

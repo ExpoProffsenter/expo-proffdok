@@ -4,7 +4,7 @@ Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsnin
 
 Produksjon: https://expo-proffdok.app
 
-**Gjeldende Production-baseline:** `main` med Fase 45B og godkjente Production-QA-rettelser (`4f016ce`). Ny funksjonalitet utvikles og verifiseres på separat branch/Preview og er ikke Production før egen godkjenning og merge.
+**Gjeldende Production-baseline:** `main` etter PR #200. Mobil Startside-knapp og strekkodeskanning i Prissøk ligger foreløpig kun på separat Sandbox-Preview og krever egen test og produksjonsgodkjenning.
 
 ## Teknologi
 
@@ -59,6 +59,7 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 - Låsing og opplåsing av prosjekt går gjennom `set_project_lock`, som kontrollerer prosjekt-/firmatilgang og oppdaterer både radens låsekolonner og speilet i `projects.data` atomisk. En idempotent parity-migrasjon gjenoppretter samme Production-RPC i eldre Sandbox-baselines.
 - Prosjektets sky-autolagring sammenligner normalisert data og tittel med serverraden før `PATCH`; ren gjenåpning eller oppfriskning skal ikke flytte `updated_at`. Etter en reell, bekreftet sky-lagring nullstilles «ulagret»-flagget bare når samme snapshot fortsatt er gjeldende, slik at unødige navigasjonspopuper fjernes uten å kunne skjule nyere endringer.
 - Desktop prosjektarbeidsflate bruker kollapset meny med få native hurtigvalg; full funksjonsliste ligger fortsatt i Meny.
+- Prissøk på mobil har en egen Startside-knapp som avslutter aktivt Prissøk og rydder resume-markøren. Strekkodeskanneren lastes bare ved bruk på mobil, foreslår bakre kamera og setter EAN/GTIN i det eksisterende skrivebeskyttede RPC-søket. Kamerasporet stoppes ved treff, avbrudd, navigasjon og bakgrunning; bildet lagres ikke.
 - Ordinært akseptert tilbud kan gå videre til prosjekt uten kontrakt, egen opplastet kontrakt eller Expo-kontrakt. Hvis Expo-kontrakt ikke ble opprettet før prosjektaktivering, kan samme låste aksept og kontraktmotor åpnes direkte fra prosjektets **Avtalegrunnlag** uten retur til Sales. Åpning av en allerede synkronisert sluttkontrakt er ren lesing og skal ikke berøre prosjektets endringstidspunkt. Kontrakt er valgfri med mindre garanti-/avtalegrunnlaget krever den.
 
 ## Fase 45B – Proff, Generelt tilbud og Enkel ordre
@@ -146,7 +147,7 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 
 - RLS og serverkontroll er sikkerhetsgrensen; frontend alene er ikke nok.
 - Ikke svekk company-scoping eller bruk systemadmin/supportmodus som write-bypass.
-- Prosjekter åpnet på tvers av firma i eksplisitt Systemadmin-supportmodus er skrivebeskyttet; kontroll og PDF er tillatt, mens lagring, kopiering, låsing og øvrige endringer er blokkert.
+- Prosjekter åpnet på tvers av firma i eksplisitt Systemadmin-supportmodus er skrivebeskyttet. Salgsgrunnlag og Avtalegrunnlag tillater kontroll og åpning av eksisterende tilbud, akseptbevis, kontrakter og øvrige dokumenter, mens lagring, opplasting, fjerning, kopiering, låsing og andre endringer er blokkert. Supportoversikt går tilbake til samme firmas supportvisning uten å avslutte supportmodus.
 - Aktiv arbeidsprofil/representert firma skal styre normal arbeidsflate.
 - Publiserte og aksepterte tilbud er immutable historikk.
 - Ingen historisk backfill uten eksplisitt beslutning.

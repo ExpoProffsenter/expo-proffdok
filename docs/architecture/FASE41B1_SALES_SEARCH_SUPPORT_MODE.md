@@ -35,6 +35,12 @@ Supportmodus skal brukes til feilsøking og kontroll. Nye saker må opprettes av
 
 Supportmodus skal ikke brukes som skrivebypass for publisering, prosjektaktivering eller andre handlinger som normalt krever målbrukerens rettigheter.
 
+## Prosjektretur og dokumentvisning
+
+Når et prosjekt er åpnet i eksplisitt supportmodus, viser prosjektets returhandling `Supportoversikt` i stedet for ordinær `Startside`. Handlingen går tilbake til Systemadmin med samme firma valgt og supportpanelet åpent. Den avslutter ikke supportmodus; dette skjer bare via `Avslutt supportmodus`.
+
+Prosjektets `Salgsgrunnlag` og `Avtalegrunnlag` er interaktive i skrivebeskyttet modus slik at Systemadmin kan åpne eksisterende tilbud, akseptbevis, kontrakter og øvrige avtaledokumenter. Opplasting, fjerning, skjemaendringer og andre skrivehandlinger er skjult eller deaktivert. Private Sales-dokumenter sender en eksplisitt supportmarkør til dokumentresolveren. Den eksisterende systemadmin-vakten godtar markøren bare for autentisert Systemadmin og bare for GET/HEAD; markøren gir ingen generell skrive- eller firmabypass.
+
 ## Avslutt supportmodus
 
 Når `Avslutt supportmodus` brukes:

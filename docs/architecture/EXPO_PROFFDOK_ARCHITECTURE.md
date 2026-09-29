@@ -129,13 +129,15 @@ E) Akseptert Generelt tilbud → Enkel ordre eller ordinært prosjekt
 
 Avtalegrunnlag kan inneholde akseptert tilbud/akseptbevis, signert Expo-kontrakt, bedriftens egen kontrakt, andre avtaledokumenter og senere tillegg/fradrag.
 
-For ordinære prosjekter aktivert fra et akseptert Sales-tilbud viser Avtalegrunnlag også kontrakthandlingen. Dersom kontrakten ikke ble laget før aktivering, henter prosjektet den samme låste, aksepterte tilbudsversjonen via eksisterende offentlig tilbudstoken og åpner eksisterende `SalesContractActions`/`SalesContractWizard` i prosjektfanen. Nye aktiveringer bevarer også `salesOfferId` i `project.salesOrigin`; eldre prosjekter kan utlede ID-en fra serverresponsen. Det opprettes ingen ny kontraktmodell, RPC, tabell eller RLS-bypass. Kunde-/UE-portal skjuler handlingen, og låst prosjekt/supportmodus tillater ikke kontraktskriving. Når prosjektet allerede inneholder slutt-PDF med samme `contractId`, Storage-path eller URL som kontraktraden, hoppes automatisk sluttarkivering/prosjektsynk over; ren visning skal ikke flytte `projects.updated_at`.
+For ordinære prosjekter aktivert fra et akseptert Sales-tilbud viser Avtalegrunnlag også kontrakthandlingen. Dersom kontrakten ikke ble laget før aktivering, henter prosjektet den samme låste, aksepterte tilbudsversjonen via eksisterende offentlig tilbudstoken og åpner eksisterende `SalesContractActions`/`SalesContractWizard` i prosjektfanen. Nye aktiveringer bevarer også `salesOfferId` i `project.salesOrigin`; eldre prosjekter kan utlede ID-en fra serverresponsen. Det opprettes ingen ny kontraktmodell, RPC, tabell eller RLS-bypass. Kunde-/UE-portal skjuler handlingen. I eksplisitt Systemadmin-supportmodus er Salgsgrunnlag og Avtalegrunnlag interaktive for lesing og åpning av eksisterende dokumenter, mens all kontraktskriving, opplasting og fjerning fortsatt er blokkert. Private Sales-dokumentlenker bærer en eksplisitt supportmarkør; eksisterende systemadmin-vakt tillater den bare for autentisert Systemadmin og bare på GET/HEAD. Når prosjektet allerede inneholder slutt-PDF med samme `contractId`, Storage-path eller URL som kontraktraden, hoppes automatisk sluttarkivering/prosjektsynk over; ren visning skal ikke flytte `projects.updated_at`.
 
 Historiske Butikktilbud beholder gammel avslutning uten prosjektaktivering. Fase 45B endrer den synlige funksjonen til Generelt tilbud; teknisk legacy-identitet kan fortsatt være `store offer` av hensyn til kompatibilitet.
 
 ### 4.1 Prosjektnavigasjon – Fase 42J/42K
 
 Desktop bruker kollapset prosjektmeny for å frigjøre plass i headingen. Når et prosjekt er aktivt viser `projectWorkspaceHeaderGuide.js` en kort veiviser og noen få hurtigvalg: **Oversikt, Bilder, Sjekklister og Chat**. Hurtigvalgene klikker eksisterende native prosjektfaner og lager ikke en ny navigasjonsmotor. Alt øvrig prosjektinnhold ligger fortsatt i **Meny**.
+
+Når Systemadmin har åpnet et annet firmas prosjekt i eksplisitt supportmodus, heter prosjektets returhandling **Supportoversikt**. Den går tilbake til Systemadmin-visningen med samme firma valgt og supportpanelet åpent; den avslutter ikke supportmodus. Bare den separate handlingen **Avslutt supportmodus** rydder supportkonteksten.
 
 Fase 42K stabiliserte legacy-prosjektmenyer slik at eldre prosjektdata ikke gir feil anbefalt rekkefølge. Mobilskallet endres ikke av desktop-veiviseren.
 
@@ -217,7 +219,7 @@ Viktig:
 Fase 42K er gjeldende Production-baseline og inkluderer blant annet:
 
 - korrekt systemadmin-arbeidsscope via valgt `Representerer`-firma
-- videre beskyttelse av Prissøk-resume og bevisst navigasjon
+- videre beskyttelse av Prissøk-resume og bevisst navigasjon. Mobil-Preview har egen `← Startside` i Prissøk, som bruker eksisterende close-flyt og rydder recovery-markøren; skanneren lastes ved behov, slipper kamerasporet ved treff/avbrudd/navigasjon og sender bare koden gjennom eksisterende read-only prissøk. Ingen bilde-/kameralagring eller nye prisrettigheter. Dette er ikke Production før separat godkjenning.
 - krav om Firma ved godkjenning av nye brukere
 - vern av intern Butikktilbud-/nettopristilgang ved firmabytte
 - legacy prosjektmeny og anbefalt prosjektløp konsolidert mot gjeldende navigasjon

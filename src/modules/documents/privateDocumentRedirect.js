@@ -14,6 +14,7 @@ import {
   isPrivateSalesLogicalPath,
   privateSalesRequestRefFromLogicalPath,
 } from './privateDocumentTools.js';
+import { markSystemAdminProjectSupportQuery } from '../access/systemAdminProjectScopeGuard.js';
 
 const normalizeRole = (value = '') => {
   const clean = String(value || '').trim().toLowerCase();
@@ -173,15 +174,18 @@ const showPortalCodeForm = ({ client, projectId, role, path, download }) => {
 
 const resolveAuthenticatedSalesCompanyScope = async (
   client,
-  { projectId = '', path = '' } = {}
+  { projectId = '', path = '', supportMode = false } = {}
 ) => {
   if (projectId) {
     const requestRef = privateSalesRequestRefFromLogicalPath(path);
-    const { data: projectRow, error: projectError } = await client
+    let projectQuery = client
       .from('projects')
       .select('id,company_scope_id,data')
-      .eq('id', projectId)
-      .maybeSingle();
+      .eq('id', projectId);
+    if (supportMode) {
+      projectQuery = markSystemAdminProjectSupportQuery(projectQuery);
+    }
+    const { data: projectRow, error: projectError } = await projectQuery.maybeSingle();
 
     if (projectError || !projectRow?.company_scope_id) {
       throw projectError || new Error('Prosjektet eller firmascope kunne ikke leses.');
@@ -282,6 +286,7 @@ export async function runPrivateDocumentRedirect() {
   const role = normalizeRole(params.get('role') || 'kunde');
   const offerToken = String(params.get('publicOffer') || '').trim();
   const download = params.get('download') === '1';
+  const supportMode = params.get('support') === '1';
 
   if (!path) {
     showError('Dokumentlenken mangler Storage-path.');
@@ -308,6 +313,7 @@ export async function runPrivateDocumentRedirect() {
         const companyScopeId = await resolveAuthenticatedSalesCompanyScope(client, {
           projectId,
           path,
+          supportMode,
         });
         physicalPath = buildPrivateSalesStoragePath({
           companyScopeId,
