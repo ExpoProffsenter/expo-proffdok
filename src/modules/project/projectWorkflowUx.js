@@ -482,7 +482,7 @@ function updateHelp(nav) {
       <li><strong>Arbeidsstatus og åpne avvik vises separat.</strong> Et prosjekt kan for eksempel stå som Pågår samtidig som et eget varsel viser at ett eller flere avvik krever oppfølging.</li>
       <li><strong>Åpne Avvik</strong> går direkte til Avvikssentralen. Nye HMS-/prosjektavvik krever en kort tittel før de opprettes, slik at tomme avvik ikke lagres ved et uhell.</li>
       <li><strong>Prosjektstatus / hva mangler</strong> er kollapset som standard. Fremdriften der følger utførte sjekkpunkter, for eksempel 0 av 54.</li>
-      <li>Prosjekter opprettet direkte uten salgssak beholder Befaring/Tilbud som separat funksjon, men den inngår ikke i prosjektets Forrige/Neste-flyt.</li>
+      <li>Prosjekter opprettet direkte uten salgssak viser bare prosjektfunksjonene. Befaring/Tilbud åpnes separat fra Startsiden.</li>
     </ul>`;
   quickStart.insertAdjacentElement('afterend', card);
 }

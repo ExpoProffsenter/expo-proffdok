@@ -66,6 +66,13 @@ requireCheck(
   "Nytt, ulagret prosjekt gjenkjennes ikke som samme prosjektarbeidsflate som et lagret prosjekt."
 );
 requireCheck(
+  workflowUx.includes(
+    "Prosjekter opprettet direkte uten salgssak viser bare prosjektfunksjonene. Befaring/Tilbud åpnes separat fra Startsiden."
+  ) &&
+    !workflowUx.includes("beholder Befaring/Tilbud som separat funksjon"),
+  "Hjelpeteksten beskriver fortsatt den gamle blandede menyen for direkte opprettede prosjekter."
+);
+requireCheck(
   main.includes("const tabs = hasActiveProjectWorkspace ? projectTabs : globalTabs;") &&
     main.includes("createProjectWorkspaceTabs({") &&
     main.includes("createGlobalAppTabs({"),
