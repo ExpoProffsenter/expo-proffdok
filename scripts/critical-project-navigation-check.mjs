@@ -12,9 +12,14 @@ const css = fs.readFileSync("src/modules/app/projectWorkspaceHeaderGuide.css", "
 const index = fs.readFileSync("index.html", "utf8");
 const workflowUx = fs.readFileSync("src/modules/project/projectWorkflowUx.js", "utf8");
 const overviewTools = fs.readFileSync("src/modules/project/projectOverviewTools.js", "utf8");
+const main = fs.readFileSync("src/main.jsx", "utf8");
 const { resolveProjectFlowNeighbors } = await import(
   "../src/modules/project/projectWorkflowNeighbors.mjs"
 );
+const {
+  createGlobalAppTabs,
+  createProjectWorkspaceTabs,
+} = await import("../src/modules/project/projectNavigationTabs.mjs");
 const { acceptedOfferTotalInclVat } = await import(
   "../src/modules/project/projectSalesOriginTotals.mjs"
 );
@@ -48,11 +53,23 @@ requireCheck(
 requireCheck(
   desktopMenu.includes("const projectWorkspaceNav =") &&
     desktopMenu.includes("labels.includes('Prosjektoversikt')") &&
+    desktopMenu.includes("labels.includes('Nytt prosjekt')") &&
     desktopMenu.includes("labels.includes('Prosjektering')") &&
     desktopMenu.includes("labels.includes('Sjekklister')") &&
     desktopMenu.includes("labels.includes('Avtalegrunnlag')") &&
     desktopMenu.includes("return labels.includes('Hjelp') && (globalNav || projectWorkspaceNav);"),
   "Desktopmenyen må kjenne igjen prosjektarbeidsflate også når eldre prosjekt viser Salgsgrunnlag i stedet for Befaring/Tilbud."
+);
+requireCheck(
+  guide.includes('label === "Prosjektoversikt" || label === "Nytt prosjekt"') &&
+    workflowUx.includes("navButtonForLabel(nav, 'Nytt prosjekt')"),
+  "Nytt, ulagret prosjekt gjenkjennes ikke som samme prosjektarbeidsflate som et lagret prosjekt."
+);
+requireCheck(
+  main.includes("const tabs = hasActiveProjectWorkspace ? projectTabs : globalTabs;") &&
+    main.includes("createProjectWorkspaceTabs({") &&
+    main.includes("createGlobalAppTabs({"),
+  "Appen skiller ikke eksplisitt mellom global navigasjon og prosjektmeny."
 );
 requireCheck(
   help.includes("anbefalt prosjektløp: Oversikt, Avtalegrunnlag, Prosjektering og Fremdrift") &&
@@ -78,10 +95,15 @@ const projectNavLabels = [
   "Prosjektoversikt",
   "Salgsgrunnlag",
   "Prosjektbeskrivelse",
-  "Garanti",
-  "Firmaprofil",
+  "Avtalegrunnlag",
   "Prosjektering",
   "Fremdrift",
+  "Produkter",
+  "Bilder",
+  "Sjekklister",
+  "Overtagelse",
+  "Rapport",
+  "Hjelp",
 ];
 requireCheck(
   JSON.stringify(resolveProjectFlowNeighbors("Prosjektoversikt", projectNavLabels)) ===
@@ -95,13 +117,60 @@ requireCheck(
 );
 requireCheck(
   JSON.stringify(resolveProjectFlowNeighbors("Prosjektbeskrivelse", projectNavLabels)) ===
-    JSON.stringify({ previousLabel: "Prosjektoversikt", nextLabel: "Garanti" }),
+    JSON.stringify({ previousLabel: "Prosjektoversikt", nextLabel: "Avtalegrunnlag" }),
   "Prosjektbeskrivelse gjenoppretter ikke korrekt neste steg etter spesialhoppet."
 );
 requireCheck(
   JSON.stringify(resolveProjectFlowNeighbors("Prosjektering", projectNavLabels)) ===
-    JSON.stringify({ previousLabel: "Firmaprofil", nextLabel: "Fremdrift" }),
-  "Ordinære prosjektfaner arver fortsatt gamle Forrige/Neste-etiketter."
+    JSON.stringify({ previousLabel: "Avtalegrunnlag", nextLabel: "Fremdrift" }),
+  "Forrige/Neste lekker fortsatt innom globale appfunksjoner."
+);
+
+const newProjectNavLabels = [
+  "Nytt prosjekt",
+  "Prosjektbeskrivelse",
+  "Avtalegrunnlag",
+  "Prosjektering",
+  "Fremdrift",
+];
+requireCheck(
+  JSON.stringify(resolveProjectFlowNeighbors("Nytt prosjekt", newProjectNavLabels)) ===
+    JSON.stringify({ previousLabel: "", nextLabel: "Prosjektbeskrivelse" }) &&
+    JSON.stringify(resolveProjectFlowNeighbors("Prosjektbeskrivelse", newProjectNavLabels)) ===
+      JSON.stringify({ previousLabel: "Nytt prosjekt", nextLabel: "Avtalegrunnlag" }),
+  "Nytt prosjekt følger ikke samme rene prosjektflyt som et eksisterende prosjekt."
+);
+
+const directProjectTabs = createProjectWorkspaceTabs({ isNewProject: true });
+const salesProjectTabs = createProjectWorkspaceTabs({ hasSalesOrigin: true });
+const globalTabs = createGlobalAppTabs({
+  isCompanyAdminUser: true,
+  canUseAdminProjectSync: true,
+});
+const directProjectIds = directProjectTabs.map(([id]) => id);
+const salesProjectIds = salesProjectTabs.map(([id]) => id);
+const globalIds = globalTabs.map(([id]) => id);
+const globalOnlyIds = ["firma", "innlogging", "firmaadmin", "prosjektliste", "admin"];
+const requiredProjectIds = [
+  "prosjekt", "prosjektinfo", "tilbud", "prosjektering", "fremdrift", "produkter",
+  "overflater", "bilder", "tilgang", "installasjoner", "sjekklister", "avvik",
+  "chat", "internt", "overtagelse", "garanti", "rapport",
+];
+requireCheck(
+  directProjectTabs[0]?.[1] === "Nytt prosjekt" &&
+    requiredProjectIds.every((id) => directProjectIds.includes(id)) &&
+    globalOnlyIds.every((id) => !directProjectIds.includes(id)) &&
+    !directProjectIds.includes("sales"),
+  "Direkte Nytt prosjekt viser ikke bare relevante prosjektfunksjoner."
+);
+requireCheck(
+  salesProjectIds.includes("sales") &&
+    salesProjectIds.indexOf("sales") < salesProjectIds.indexOf("prosjektinfo"),
+  "Prosjekt fra akseptert tilbud beholder ikke Salgsgrunnlag som historikk utenfor anbefalt Neste-flyt."
+);
+requireCheck(
+  requiredProjectIds.filter((id) => id !== "prosjekt").every((id) => !globalIds.includes(id)),
+  "Global appmeny blander fortsatt inn prosjektfaner uten at et prosjekt er åpnet."
 );
 requireCheck(
   overviewTools.includes("acceptedOfferTotalInclVat(project?.salesOrigin?.acceptedTotal)"),

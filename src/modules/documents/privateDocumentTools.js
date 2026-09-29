@@ -139,7 +139,16 @@ export const withPrivateDocumentProjectAccess = (
   { projectId = "", role = "kunde" } = {}
 ) => {
   if (!isPrivateDocumentFile(file)) return file;
-  const path = documentStoragePath(file);
+  let path = documentStoragePath(file);
+  if (!path) {
+    try {
+      const storedUrl = String(file?.url || file?.href || "").trim();
+      path = new URL(storedUrl, EXPO_PROFFDOK_CANONICAL_URL).searchParams.get("path") || "";
+    } catch {
+      path = "";
+    }
+  }
+  if (!path) return file;
   return {
     ...file,
     url: buildPrivateDocumentAppUrl({ path, projectId, role })

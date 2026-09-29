@@ -17,6 +17,8 @@ const SHORTCUTS = [
 ];
 
 const clean = (value = "") => String(value || "").replace(/\s+/g, " ").trim();
+const isOverviewLabel = (label = "") =>
+  label === "Prosjektoversikt" || label === "Nytt prosjekt";
 
 function findSourceNav() {
   return Array.from(document.querySelectorAll("nav")).find((nav) => {
@@ -25,7 +27,7 @@ function findSourceNav() {
     const labels = Array.from(nav.querySelectorAll(":scope > button")).map((button) =>
       clean(button.textContent)
     );
-    return labels.includes("Prosjektoversikt") && labels.includes("Bilder");
+    return labels.some(isOverviewLabel) && labels.includes("Bilder");
   }) || null;
 }
 
@@ -33,7 +35,14 @@ function sourceButton(label) {
   const nav = findSourceNav();
   if (!(nav instanceof HTMLElement)) return null;
   return Array.from(nav.querySelectorAll(":scope > button")).find(
-    (button) => clean(button.textContent) === label
+    (button) => {
+      const buttonLabel = clean(button.textContent);
+      return label === "Prosjektoversikt"
+        ? isOverviewLabel(buttonLabel)
+        : label === "Avtalegrunnlag"
+          ? buttonLabel === "Avtalegrunnlag" || buttonLabel === "Tilbud/kontrakt"
+          : buttonLabel === label;
+    }
   ) || null;
 }
 
@@ -108,7 +117,10 @@ function syncGuide() {
   const active = activeProjectLabel();
   guide.querySelectorAll(".expoProjectWorkspaceQuickButton").forEach((button) => {
     if (!(button instanceof HTMLButtonElement)) return;
-    const isActive = clean(button.dataset.sourceLabel) === active;
+    const sourceLabel = clean(button.dataset.sourceLabel);
+    const isActive = sourceLabel === active ||
+      (sourceLabel === "Prosjektoversikt" && isOverviewLabel(active)) ||
+      (sourceLabel === "Avtalegrunnlag" && active === "Tilbud/kontrakt");
     button.classList.toggle("isActive", isActive);
     if (isActive) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");

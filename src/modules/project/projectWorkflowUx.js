@@ -22,7 +22,7 @@ let lastStatusTabLabel = '';
 function getAppNav() {
   return Array.from(document.querySelectorAll('nav')).find((nav) => {
     const labels = Array.from(nav.querySelectorAll('button')).map((button) => cleanText(button.textContent));
-    return labels.includes('Startside') || labels.includes('Prosjektoversikt');
+    return labels.includes('Startside') || labels.includes('Prosjektoversikt') || labels.includes('Nytt prosjekt');
   }) || null;
 }
 
@@ -490,7 +490,9 @@ function updateHelp(nav) {
 function applyProjectWorkflowUx() {
   const nav = getAppNav();
   if (!nav) return;
-  const activeProject = Boolean(navButtonForLabel(nav, 'Prosjektoversikt'));
+  const activeProject = Boolean(
+    navButtonForLabel(nav, 'Prosjektoversikt') || navButtonForLabel(nav, 'Nytt prosjekt')
+  );
   const salesOrigin = updateStoredSalesOrigin(activeProject);
   const showSalesOrigin = activeProject && Boolean(salesOrigin.requestRef);
 

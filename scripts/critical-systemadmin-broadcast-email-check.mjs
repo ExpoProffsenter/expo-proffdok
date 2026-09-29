@@ -151,6 +151,8 @@ requireNeedles("src/modules/help/helpToolsCore.js", [
 requireNeedles("src/main.jsx", [
   "MarketingEmailPreference",
   "supabaseClient: supabase, authUser",
+]);
+requireNeedles("src/modules/project/projectNavigationTabs.mjs", [
   '["innlogging", "Min profil / e-postvalg"]',
 ]);
 
