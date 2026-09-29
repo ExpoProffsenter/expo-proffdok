@@ -126,8 +126,45 @@ if (!storedReferenceBlock || /purchase_net_ex_vat|purchase_discount_percent|gros
 if (!view.includes("restoreStoredProducts") || !view.includes("searchPrices(lookup, 10)")) {
   throw new Error("Mobil-sikker arbeidsliste skal rehydreres via backend etter reload.");
 }
+for (const needle of [
+  'lazy(() => import("./PriceSearchBarcodeScanner.jsx"))',
+  'window.matchMedia("(max-width: 700px)")',
+  'className="secondary priceSearchHome" onClick={onClose}',
+  "← Startside",
+  "Skann strekkode",
+  "onScan={handleScan}",
+  "onCancel={stopScanning}",
+  "onError={handleScanError}",
+  "setQuery(code)",
+  "{isMobile ? (",
+  "{scanning ? (",
+]) {
+  if (!view.includes(needle)) throw new Error(`Mobil Prissøk mangler navigasjon/skann-flyt: ${needle}`);
+}
 if (/Tilbake til Expo ProffDok|priceSearchShell|aria-modal=/.test(view)) {
   throw new Error("Prissøk skal ligge inne i appens arbeidsflate, ikke som fullskjerm-overlay.");
+}
+
+const scanner = requireNeedles("src/modules/storeCatalog/PriceSearchBarcodeScanner.jsx", [
+  "BrowserMultiFormatReader",
+  "BarcodeFormat.EAN_13",
+  "BarcodeFormat.EAN_8",
+  "DecodeHintType.POSSIBLE_FORMATS",
+  'facingMode: { ideal: "environment" }',
+  "reader.decodeFromConstraints(",
+  "onScan(code)",
+  "onError(cameraErrorMessage(error))",
+  "stopControls(callbackControls)",
+  "stopControls(scannerControls)",
+  "stream?.getTracks?.().forEach((track) => track.stop())",
+  'document.addEventListener("visibilitychange"',
+  'window.addEventListener("pagehide"',
+  "return () => {",
+  "stop();",
+  "Avbryt skanning",
+]);
+if (/\b(?:localStorage|sessionStorage|indexedDB|fetch|XMLHttpRequest|rpcWithStoredSession)\b|\.\s*(?:insert|update|upsert|upload)\s*\(/i.test(scanner)) {
+  throw new Error("Strekkodeskanneren skal ikke lagre, laste opp eller søke utenom eksisterende Prissøk.");
 }
 
 const storeOfferTools = requireNeedles("src/modules/storeCatalog/StoreCatalogOfferTools.jsx", [
@@ -164,6 +201,13 @@ if (/(?:window\.)?localStorage\s*\.\s*(?:getItem|setItem|removeItem|clear)\s*\(/
 }
 if (!ux.includes('sessionStorage.setItem(PRICE_SEARCH_RESUME_KEY, "1")') || !ux.includes("sessionStorage.removeItem(PRICE_SEARCH_RESUME_KEY)")) {
   throw new Error("Prissøk må både kunne sette resume-markør og rydde den ved bevisst navigasjon.");
+}
+const homeFlow = ux.match(/function returnToStartside\(\) \{[\s\S]*?\n\}/)?.[0] || "";
+if (!homeFlow.includes("closePriceSearch({ clearResume: true })") || !homeFlow.includes("target?.click()") || !ux.includes("onClose={returnToStartside}")) {
+  throw new Error("Mobil Startside må lukke Prissøk, rydde resume og velge appens Startside.");
+}
+if (/location\.(?:assign|replace|reload)|history\.pushState/.test(homeFlow)) {
+  throw new Error("Prissøk → Startside skal ikke reloade eller overstyre appens navigasjon.");
 }
 
 requireNeedles("src/modules/access/sensitiveAccessClient.js", [

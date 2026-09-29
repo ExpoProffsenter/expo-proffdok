@@ -5,11 +5,12 @@
 // mobil-dvale/refresh tåles. Kun vare-ID/oppslagsnøkkel lagres; priser hentes på
 // nytt gjennom backend. Arbeidslisten kan også skrives ut uten å lagre historikk.
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, ChevronUp, ExternalLink, Plus, Printer, Search, Trash2 } from "lucide-react";
+import { Camera, ChevronDown, ChevronUp, ExternalLink, Plus, Printer, Search, Trash2 } from "lucide-react";
 import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
 
+const PriceSearchBarcodeScanner = lazy(() => import("./PriceSearchBarcodeScanner.jsx"));
 const WORKLIST_SESSION_KEY = "expo-proffdok:price-search:worklist:v1";
 const MAX_STORED_WORKLIST_ITEMS = 30;
 const PRICE_SEARCH_PAGE_SIZE = 30;
@@ -300,8 +301,13 @@ function PrintDocument({ items, includeInternal }) {
   );
 }
 
-export default function StorePriceSearchView() {
+export default function StorePriceSearchView({ onClose }) {
   const [query, setQuery] = useState("");
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 700px)").matches
+  );
+  const [scanning, setScanning] = useState(false);
+  const [scanMessage, setScanMessage] = useState("");
   const [results, setResults] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [selectedExpanded, setSelectedExpanded] = useState(true);
@@ -330,6 +336,24 @@ export default function StorePriceSearchView() {
     if (results.length < totalResults) return `Viser ${results.length} av ${totalResults} treff`;
     return `${totalResults} treff`;
   }, [cleanQuery.length, results.length, searching, totalResults]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 700px)");
+    const updateMobile = () => setIsMobile(media.matches);
+    media.addEventListener("change", updateMobile);
+    return () => media.removeEventListener("change", updateMobile);
+  }, []);
+
+  const stopScanning = useCallback(() => setScanning(false), []);
+  const handleScan = useCallback((code) => {
+    setQuery(code);
+    setScanning(false);
+    window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
+  }, []);
+  const handleScanError = useCallback((text) => {
+    setScanning(false);
+    setScanMessage(text);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -465,6 +489,11 @@ export default function StorePriceSearchView() {
   return (
     <div className="priceSearchInlineView" aria-label="Prissøk">
       <section className="priceSearchIntro">
+        {isMobile ? (
+          <button type="button" className="secondary priceSearchHome" onClick={onClose}>
+            ← Startside
+          </button>
+        ) : null}
         <small>Expo ProffDok</small>
         <h2>Prissøk</h2>
         <p>Søk etter varer og legg dem i en midlertidig arbeidsliste mens du sammenligner produkter og priser.</p>
@@ -532,6 +561,28 @@ export default function StorePriceSearchView() {
             placeholder="Søk varenavn, leverandør, varenummer eller GTIN/EAN"
           />
         </div>
+        {isMobile ? (
+          <>
+            <button
+              type="button"
+              className="secondary priceSearchScanButton"
+              onClick={() => { setScanMessage(""); setScanning(true); }}
+              disabled={scanning}
+            >
+              <Camera size={18} /> Skann strekkode
+            </button>
+            {scanning ? (
+              <Suspense fallback={<div className="priceSearchMessage">Åpner kamera …</div>}>
+                <PriceSearchBarcodeScanner
+                  onScan={handleScan}
+                  onCancel={stopScanning}
+                  onError={handleScanError}
+                />
+              </Suspense>
+            ) : null}
+            {scanMessage ? <div className="priceSearchMessage isError" role="alert">{scanMessage}</div> : null}
+          </>
+        ) : null}
         <div className="priceSearchMeta" aria-live="polite">
           <span>{resultLabel}</span>
           <small>Arbeidslisten lagres kun midlertidig i denne fanen. Intern nto-pris vises bare for brukere med egen tilgang.</small>
@@ -574,6 +625,8 @@ export default function StorePriceSearchView() {
         .priceSearchInlineView{width:100%;color:#10212b;font-family:inherit}
         .priceSearchPrintPortal{display:none}
         .priceSearchIntro{margin-bottom:18px}
+        .priceSearchHome{display:none}
+        .priceSearchScanButton{display:none}
         .priceSearchIntro small,.priceSearchSelectedHeader small{font-weight:800;color:#159aa3}
         .priceSearchIntro h2{margin:4px 0 6px;font-size:34px}
         .priceSearchIntro p,.priceSearchSelectedHeader p{margin:0;color:#60737b;max-width:780px}
@@ -637,6 +690,14 @@ export default function StorePriceSearchView() {
           .priceSearchPrices{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));min-width:0}
           .priceSearchResultActions{justify-content:flex-start}
           .priceSearchMeta small{text-align:left}
+        }
+        @media(max-width:700px){
+          .priceSearchHome{display:inline-flex;align-items:center;min-height:44px;margin-bottom:12px}
+          .priceSearchScanButton{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;margin-top:12px}
+          .priceSearchScanner{margin-top:12px;padding:12px;border:1px solid #cfe1e6;border-radius:14px;background:#f7fafb}
+          .priceSearchScanner video{display:block;width:100%;max-height:300px;aspect-ratio:4/3;object-fit:cover;border-radius:10px;background:#10212b}
+          .priceSearchScanner p{margin:10px 0;color:#334b56}
+          .priceSearchScanner button{width:100%;min-height:44px}
         }
         @media(max-width:620px){
           .priceSearchIntro{margin-bottom:14px}
