@@ -1,5 +1,21 @@
 # Gjeldende release-status – Fase 45B
 
+## Pågående rettelse – firmainvitasjon og firmadekkende Generelle tilbud (29.09.2026)
+
+- Branch `fase45b-fix-invite-company-access` er opprettet fra gjeldende Production-`main` (`313c1851`). Production-kode og Production-Supabase er urørt.
+- PR #197 er `open`, draft, mergebar og ikke merget. Siste funksjonscommit er `fb7468bad65947950c4f0fcdd3c19418070cc7d9`.
+- Vercel Preview `dpl_BsmbEVjAY7NG4sJA2DUSin5z1s9n` er `READY`, `target=null`, på funksjonscommit `fb7468b`. `PR Core Safety` run 155 er `completed/success`.
+- Production ble kontrollert read-only. WBL-hendelsen skyldtes at klienten forsøkte å sette firma, rolle og `approved=true` direkte; databasesperren avviste selv-godkjenningen. Invitasjonen ble derfor stående ventende selv om profilen senere ble korrigert manuelt.
+- Den tilsynelatende ekstra `WBL AS (ikke i registrerte firmaer)`-verdien var en tom valgverdi med misvisende etikett, ikke et ekstra registrert firma.
+- Fire godkjente Production-profiler mangler faktisk `company_name`. «Uten firma (4)» viste ingen kort fordi et skjult legacy-filter fortsatt sto på «Nye». Når et firma åpnes, nullstilles de skjulte filtrene nå og alle firmabrukerne vises.
+- En gyldig invitasjon fra aktiv Firmaadmin eller Systemadministrator kobler nå brukeren til riktig firma og godkjenner kontoen uten en ny Systemadmin-handling. Deaktivert konto, annet firma og direkte selv-eskalering er sperret.
+- Generelle tilbud / Proff vareregister er flyttet til firmatilgang. Når Systemadministrator aktiverer den, arver alle nåværende og nye firmabrukere `sales` + `store_offers`. «Din nto pris» forblir individuell; Firmaadmin kan styre andre brukere i eget firma, men ikke gi pristilgang til seg selv.
+- Sandbox-Supabase har de additive migrasjonene `company_invite_and_general_offer_access`, `fix_company_store_offers_module_alias`, `limit_company_invite_guard_marker` og `harden_company_module_access`. Produksjonsdatabasen har ingen av dem ennå.
+- To autoritative Sandbox-tester med full tilbakerulling er grønne: invitasjon/autogodkjenning og firmaarv/nto-separasjon. ACL-kontrollen viser ingen klienttilgang til den private firmatabellen eller interne hjelperen.
+- Full critical-suite og Sandbox-bundet Vite-build var grønn før branch-commit. GitHub CI og faktisk Preview-build er grønne. Live Preview viser tydelig invitert modus for WBL AS og forklarer at inviterte brukere kobles automatisk.
+- Brukerens korte Preview-test og eksplisitte `TEST OK` gjenstår. PR-en skal ikke merges og ingenting skal deployes til Production før dette.
+
+
 ## Pågående rettelse – profilnavn og misvisende rollefelt (28.09.2026)
 
 - Branch `fix-profile-identity-copy` er opprettet fra gjeldende Production-`main` (`32bbdd4`). Production og permanent demo er urørt.
