@@ -94,7 +94,8 @@ export const buildPrivateDocumentAppUrl = ({
   projectId = "",
   role = "kunde",
   offerToken = "",
-  download = false
+  download = false,
+  supportMode = false
 } = {}) => {
   const cleanPath = normalizeStoragePath(path);
   if (!cleanPath) return "";
@@ -103,6 +104,7 @@ export const buildPrivateDocumentAppUrl = ({
   url.searchParams.set("path", cleanPath);
   if (projectId) url.searchParams.set("project", String(projectId).trim());
   if (projectId && role) url.searchParams.set("role", String(role).trim().toLowerCase());
+  if (projectId && supportMode) url.searchParams.set("support", "1");
   if (offerToken) url.searchParams.set("publicOffer", String(offerToken).trim());
   if (download) url.searchParams.set("download", "1");
   return url.toString();
@@ -136,13 +138,22 @@ export const buildPrivateProjectDocumentPath = ({
 
 export const withPrivateDocumentProjectAccess = (
   file = {},
-  { projectId = "", role = "kunde" } = {}
+  { projectId = "", role = "kunde", supportMode = false } = {}
 ) => {
   if (!isPrivateDocumentFile(file)) return file;
-  const path = documentStoragePath(file);
+  let path = documentStoragePath(file);
+  if (!path) {
+    try {
+      const storedUrl = String(file?.url || file?.href || "").trim();
+      path = new URL(storedUrl, EXPO_PROFFDOK_CANONICAL_URL).searchParams.get("path") || "";
+    } catch {
+      path = "";
+    }
+  }
+  if (!path) return file;
   return {
     ...file,
-    url: buildPrivateDocumentAppUrl({ path, projectId, role })
+    url: buildPrivateDocumentAppUrl({ path, projectId, role, supportMode })
   };
 };
 

@@ -209,13 +209,37 @@ const mainSource = requireNeedles("src/main.jsx", [
   'params.get("support") === "1"',
   "loadProjects(authUser, true, null, { supportMode: true })",
   "const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;",
+  'isProjectSupportReadOnly && ["sales", "tilbud"].includes(tab);',
   "if (isProjectSupportReadOnly) return notifySupportProjectReadOnly();",
-  "inert: isProjectSupportReadOnly ? true : void 0",
+  "inert: isProjectSupportReadOnly && !supportReadOnlyMainIsInteractive ? true : void 0",
   '"data-support-read-only": isProjectSupportReadOnly ? "true" : void 0',
+  'label: "Arbeidsstatus", value: project.workflowStatus || "Pågår", options: workflowStatusOptions, disabled: isProjectSupportReadOnly',
+  '!isProjectSupportReadOnly && suggestedWorkflowStatus !== (project.workflowStatus || "Pågår")',
+  'Prosjektet er skrivebeskyttet i supportmodus. Arbeidsstatus vises kun for kontroll.',
   "hasActiveProjectWorkspace && !isProjectSupportReadOnly",
   "projectId && !isProjectSupportReadOnly",
-  "Skrivebeskyttet – ingen endringer kan lagres",
+  'children: isProjectSupportReadOnly ? "← Supportoversikt" : "← Til startside"',
+  "const returnToSupportOverview = isProjectSupportReadOnly;",
+  "setSupportSelectedCompany(supportCompanyForOverview);",
+  "setOpenSupportCompany(supportCompanyForOverview);",
+  'setOpenAdminSections((prev) => ({ ...prev || {}, support: true }));',
+  'supportUrl.searchParams.set("tab", "systemadmin");',
+  '"data-sales-resume-workspace": "true"',
+  "inert: isProjectSupportReadOnly ? true : void 0",
+  "Skrivebeskyttet – lesing og dokumentvisning er tillatt",
 ]);
+const leaveWorkspaceStart = mainSource.indexOf("const leaveProjectWorkspace = async () => {");
+const leaveWorkspaceEnd = mainSource.indexOf("const cancelNewProject = () => {", leaveWorkspaceStart);
+const leaveWorkspaceSource = mainSource.slice(leaveWorkspaceStart, leaveWorkspaceEnd);
+if (
+  leaveWorkspaceStart < 0 ||
+  leaveWorkspaceEnd < 0 ||
+  leaveWorkspaceSource.indexOf("if (returnToSupportOverview) {") < 0 ||
+  leaveWorkspaceSource.indexOf("if (profile) applyProfile(profile);") < 0 ||
+  leaveWorkspaceSource.indexOf('setTab("admin")') > leaveWorkspaceSource.lastIndexOf('setTab("prosjekt")')
+) {
+  throw new Error("Startside fra et supportprosjekt går ikke kontrollert til samme firmas Supportoversikt før ordinær Startside.");
+}
 const supportMutationGuardCount = (
   mainSource.match(/if \(isProjectSupportReadOnly\) return notifySupportProjectReadOnly\(\);/g) || []
 ).length;

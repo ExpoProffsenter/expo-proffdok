@@ -140,6 +140,33 @@ function closePriceSearch({ clearResume = true } = {}) {
   syncActiveNavigation();
 }
 
+function returnToStartside() {
+  const homeButton = Array.from(findInternalNav()?.querySelectorAll(":scope > button") || []).find(
+    (button) => compactText(button.textContent) === "Startside"
+  );
+  const workspaceExit = !homeButton && Array.from(document.querySelectorAll("header button")).find(
+    (button) => ["← Til startside", "← Supportoversikt", "← Avbryt nytt prosjekt"].includes(compactText(button.textContent))
+  );
+  const mobileHome = !homeButton && !workspaceExit && Array.from(document.querySelectorAll(".mobileAllFunctionsGrid button")).find(
+    (button) => compactText(button.textContent) === "Startside"
+  );
+
+  closePriceSearch({ clearResume: true });
+  const target = homeButton || workspaceExit || mobileHome;
+  target?.click();
+
+  // Hvis Startsiden allerede var valgt da Prissøk åpnet, lager React ingen ny
+  // render. Gjenopprett den native markeringen uten å endre appens navigasjon.
+  if (homeButton && homeButton.isConnected) homeButton.classList.add("on");
+  window.requestAnimationFrame(() => {
+    if (priceSearchOpen || !homeButton?.isConnected) return;
+    document.querySelectorAll('.mobileNavSelectWrap select[aria-label="Velg side"]').forEach((select) => {
+      const option = Array.from(select.options).find((item) => compactText(item.textContent) === "Startside");
+      if (option) select.value = option.value;
+    });
+  });
+}
+
 function openPriceSearch({ restore = false } = {}) {
   if (!uiAllowed()) return;
   const main = findAppMain();
@@ -161,7 +188,7 @@ function openPriceSearch({ restore = false } = {}) {
   main.appendChild(mount);
   main.classList.add("expoPriceSearchActive");
   inlineRoot = createRoot(mount);
-  inlineRoot.render(<StorePriceSearchView />);
+  inlineRoot.render(<StorePriceSearchView onClose={returnToStartside} />);
   syncActiveNavigation();
   window.requestAnimationFrame(() => {
     main.scrollIntoView({ block: "start" });

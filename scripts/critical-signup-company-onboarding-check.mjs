@@ -20,6 +20,9 @@ const main = requireNeedles('src/main.jsx', [
   'notifySystemAdminsAboutSignup(cleanEmail, cleanName, cleanMobile)',
   'setAuthMode("login")',
   'company_user_invites',
+]);
+
+requireNeedles('src/modules/project/projectNavigationTabs.mjs', [
   '["firmaadmin", "Firma"]',
 ]);
 

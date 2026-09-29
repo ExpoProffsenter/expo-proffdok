@@ -11,6 +11,12 @@ const SALES_NAV_PREFIX = 'expo-proffdok-sales-preview-requests-v1';
 
 const cleanLabel = (value = '') => String(value || '').replace(/\s+/g, ' ').trim();
 
+const isProjectWorkspaceLabels = (labels = []) =>
+  (labels.includes('Prosjektoversikt') || labels.includes('Nytt prosjekt')) &&
+  labels.includes('Prosjektering') &&
+  labels.includes('Sjekklister') &&
+  (labels.includes('Avtalegrunnlag') || labels.includes('Tilbud/kontrakt'));
+
 function findInternalAppNav() {
   if (!window.matchMedia(DESKTOP_QUERY).matches) return null;
 
@@ -25,11 +31,7 @@ function findInternalAppNav() {
     const globalNav =
       labels.includes('Befaring/Tilbud') &&
       labels.some((label) => label === 'Startside' || label === 'Prosjektoversikt');
-    const projectWorkspaceNav =
-      labels.includes('Prosjektoversikt') &&
-      labels.includes('Prosjektering') &&
-      labels.includes('Sjekklister') &&
-      labels.includes('Avtalegrunnlag');
+    const projectWorkspaceNav = isProjectWorkspaceLabels(labels);
 
     return labels.includes('Hjelp') && (globalNav || projectWorkspaceNav);
   }) || null;
@@ -44,14 +46,21 @@ function findSourceNavButton(labels = []) {
   ) || null;
 }
 
-function findNativeHeaderButton(label) {
-  const normalizedLabel = cleanLabel(label).toLowerCase();
+function findNativeHeaderButton(labels = []) {
+  const accepted = new Set(
+    (Array.isArray(labels) ? labels : [labels])
+      .map((label) => cleanLabel(label).toLowerCase())
+      .filter(Boolean)
+  );
   return Array.from(document.querySelectorAll('button')).find((button) => {
     if (!(button instanceof HTMLButtonElement)) return false;
     if (button.id === HOME_ID || button.id === HELP_ID) return false;
-    return cleanLabel(button.textContent).toLowerCase() === normalizedLabel;
+    return accepted.has(cleanLabel(button.textContent).toLowerCase());
   }) || null;
 }
+
+const findNativeWorkspaceExitButton = () =>
+  findNativeHeaderButton(['← Supportoversikt', '← Til startside']);
 
 function restoreNativeHomeSourceButtons() {
   document.querySelectorAll(`[${NATIVE_HOME_MARKER}="1"]`).forEach((button) => {
@@ -63,7 +72,7 @@ function restoreNativeHomeSourceButtons() {
 
 function hideNativeWorkspaceHomeButton() {
   restoreNativeHomeSourceButtons();
-  const nativeLeaveWorkspace = findNativeHeaderButton('← Til startside');
+  const nativeLeaveWorkspace = findNativeWorkspaceExitButton();
   if (!(nativeLeaveWorkspace instanceof HTMLButtonElement)) return;
 
   nativeLeaveWorkspace.setAttribute(NATIVE_HOME_MARKER, '1');
@@ -96,7 +105,7 @@ function goToStartside() {
   clearRememberedSalesNavigation();
 
   // Prosjektarbeidsflate/new-project eier selv ulagret-varsel og må få førsteprioritet.
-  const nativeLeaveWorkspace = findNativeHeaderButton('← Til startside');
+  const nativeLeaveWorkspace = findNativeWorkspaceExitButton();
   if (nativeLeaveWorkspace instanceof HTMLButtonElement) {
     nativeLeaveWorkspace.click();
     return;
@@ -133,7 +142,8 @@ function goToHelp() {
 
 function styleBarHomeButton(homeButton) {
   if (!(homeButton instanceof HTMLButtonElement)) return;
-  homeButton.textContent = '← Startside';
+  const supportProjectOpen = Boolean(findNativeHeaderButton('← Supportoversikt'));
+  homeButton.textContent = supportProjectOpen ? '← Supportoversikt' : '← Startside';
   homeButton.hidden = false;
   homeButton.style.position = 'static';
   homeButton.style.zIndex = 'auto';
@@ -309,6 +319,11 @@ function syncDrawerWithSource(sourceNav, shell) {
   }
 
   const sourceButtons = Array.from(sourceNav.querySelectorAll(':scope > button'));
+  const sourceLabels = sourceButtons.map((button) => cleanLabel(button.textContent));
+  const projectWorkspaceNav = isProjectWorkspaceLabels(sourceLabels);
+  const drawerSourceButtons = projectWorkspaceNav
+    ? sourceButtons.filter((button) => cleanLabel(button.textContent) !== 'Hjelp')
+    : sourceButtons;
   const drawerNav = shell.drawer.querySelector('.expoDesktopDrawerNav');
   const current = shell.bar.querySelector('.expoDesktopMenuCurrent');
   if (!(drawerNav instanceof HTMLElement) || !(current instanceof HTMLElement)) return;
@@ -324,7 +339,7 @@ function syncDrawerWithSource(sourceNav, shell) {
   current.hidden = !showContext;
   current.textContent = showContext ? activeLabel : '';
 
-  const signature = sourceButtons
+  const signature = drawerSourceButtons
     .map((button) => `${cleanLabel(button.textContent)}:${button.classList.contains('on') ? '1' : '0'}`)
     .join('|');
 
@@ -332,7 +347,7 @@ function syncDrawerWithSource(sourceNav, shell) {
   drawerNav.dataset.sourceSignature = signature;
   drawerNav.replaceChildren();
 
-  sourceButtons.forEach((sourceButton) => {
+  drawerSourceButtons.forEach((sourceButton) => {
     const label = cleanLabel(sourceButton.textContent);
     if (!label) return;
 
