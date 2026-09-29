@@ -47,8 +47,9 @@ for (const needle of [
 }
 
 for (const needle of [
-  'rpcWithStoredSession("get_my_company_profile")',
-  'rpcWithStoredSession("set_my_company_profile"',
+  'getAppSupabaseClient',
+  'rpcWithAppSession("get_my_company_profile")',
+  'rpcWithAppSession("set_my_company_profile"',
   "p_org_number",
   "p_email",
 ]) {
