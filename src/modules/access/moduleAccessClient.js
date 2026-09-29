@@ -248,3 +248,23 @@ export async function setManagedModuleAccess(userId, moduleKeys, { notify = true
   }
   return result;
 }
+
+export async function getCompanyStoreOffersAccess(companyId) {
+  if (!companyId) throw new Error("Firma mangler.");
+  return rpcWithStoredSession("get_company_store_offers_access", {
+    p_company_id: companyId,
+  });
+}
+
+export async function setCompanyStoreOffersAccess(companyId, enabled) {
+  if (!companyId) throw new Error("Firma mangler.");
+  const result = await rpcWithStoredSession("set_company_store_offers_access", {
+    p_company_id: companyId,
+    p_enabled: enabled === true,
+  });
+  publishManagedAccessChange({
+    source: "company-store-offers-access",
+    companyId,
+  });
+  return result;
+}

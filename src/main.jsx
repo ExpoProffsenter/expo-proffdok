@@ -35,6 +35,7 @@ import { createInstallationViewTools } from './modules/installations/installatio
 import { createContractViewTools } from './modules/contract/contractViewTools.js';
 import { createWarrantyViewTools } from './modules/warranty/warrantyViewTools.js';
 import { createCompanyViewTools } from './modules/company/companyViewTools.js';
+import { getMyCompanyProfile, setMyCompanyProfile } from './modules/company/companyProfileClient.js';
 import { createCommunicationViewTools } from './modules/chat/chatViewTools.js';
 import { ensureExpoProffDokAppBranding, warrantyArchiveNotice, userGuidePdfPath, adminGuidePdfPath, EXPO_PROFFDOK_TERMS_VERSION, EXPO_PROFFDOK_TERMS_TITLE, expoProffDokTermsSections } from './modules/app/appStaticTools.js';
 import AppErrorBoundary from './modules/app/AppErrorBoundary.jsx';
@@ -745,7 +746,9 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [mobileMenuOpen, setMobileMenuOpen] = (0, import_react.useState)(false);
     const [mobileStatusOpen, setMobileStatusOpen] = (0, import_react.useState)(false);
     const [projectDirty, setProjectDirty] = (0, import_react.useState)(false);
-    const [company, setCompany] = (0, import_react.useState)({ companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" });
+    const defaultCompanyProfile = { companyName: "Expo Proffsenter", address: "", orgNumber: "", phone: "", email: "", website: "", logoUrl: "" };
+    const [company, setCompany] = (0, import_react.useState)({ ...defaultCompanyProfile });
+    const [companyProfileDraft, setCompanyProfileDraft] = (0, import_react.useState)({ ...defaultCompanyProfile });
     const [user, setUser] = (0, import_react.useState)({ name: "", email: "", role: "Eier / administrator" });
     const [project, setProject] = (0, import_react.useState)(emptyProject());
     const [checked, setChecked] = (0, import_react.useState)({});
@@ -2734,6 +2737,24 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       setProjectId(data.id);
       if (!silent) alert("Prosjektdata oppdatert.");
     };
+    const companyStateFromPayload = (payload = {}, fallback = {}) => ({
+      companyName: String(payload?.companyName || fallback?.companyName || "Expo Proffsenter").trim() || "Expo Proffsenter",
+      orgNumber: String(payload?.orgNumber ?? fallback?.orgNumber ?? "").trim(),
+      address: String(payload?.address ?? fallback?.address ?? "").trim(),
+      phone: String(payload?.phone ?? fallback?.phone ?? "").trim(),
+      email: String(payload?.email ?? fallback?.email ?? "").trim(),
+      website: String(payload?.website ?? fallback?.website ?? "").trim(),
+      logoUrl: String(payload?.logoUrl ?? fallback?.logoUrl ?? "").trim()
+    });
+    const profileCompanyFallback = (row = {}) => companyStateFromPayload({
+      companyName: row?.company_name || "Expo Proffsenter",
+      orgNumber: row?.org_number || "",
+      address: row?.address || "",
+      phone: row?.phone || "",
+      email: row?.email || "",
+      website: row?.website || "",
+      logoUrl: row?.logo_url || ""
+    });
     const applyProfile = (row, identityUser = authUser) => {
       if (!row) return;
       const authenticatedName = String(
@@ -2741,22 +2762,30 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         identityUser?.user_metadata?.name ||
         ""
       ).trim();
+      const fallbackCompany = profileCompanyFallback(row);
       setProfile(row);
       setUser((current) => ({
         ...current,
         name: authenticatedName || current.name || "",
         email: row.email || current.email || ""
       }));
-      setCompany((c) => ({
-        ...c,
-        companyName: row.company_name || c.companyName || "Expo Proffsenter",
-        orgNumber: row.org_number || "",
-        address: row.address || "",
-        phone: row.phone || "",
-        email: row.email || "",
-        website: row.website || "",
-        logoUrl: row.logo_url || c.logoUrl || ""
-      }));
+      setCompany((current) => ({ ...current, ...fallbackCompany }));
+      setCompanyProfileDraft(fallbackCompany);
+    };
+    const loadMyCompanyProfile = async (fallbackProfile = {}) => {
+      const fallbackCompany = profileCompanyFallback(fallbackProfile);
+      try {
+        const payload = await getMyCompanyProfile();
+        const sharedCompany = companyStateFromPayload(payload || {}, fallbackCompany);
+        setCompanyProfileDraft(sharedCompany);
+        setCompany(sharedCompany);
+        return sharedCompany;
+      } catch (companyProfileError) {
+        console.warn("Kunne ikke hente felles firmaprofil:", companyProfileError);
+        setCompanyProfileDraft(fallbackCompany);
+        setCompany(fallbackCompany);
+        return fallbackCompany;
+      }
     };
     const ensureProfile = async (sessionUser) => {
       if (!sessionUser) return null;
@@ -2779,27 +2808,18 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
         data = inserted;
       }
       try {
-        const inviteEmail = String(sessionUser.email || "").trim().toLowerCase();
-        if (inviteEmail) {
-          const { data: invite } = await supabase.from("company_user_invites").select("*").eq("email", inviteEmail).in("status", ["pending", "active"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
-          if (invite?.company_name && (!data.company_name || data.approved === false || data.deactivated === true)) {
-            const invitedRole = invite.company_role === "firmaadmin" ? "firmaadmin" : "ansatt";
-            const { data: updatedProfile, error: inviteUpdateError } = await supabase.from("profiles").update({
-              company_name: invite.company_name,
-              company_role: invitedRole,
-              approved: true,
-              deactivated: false
-            }).eq("id", sessionUser.id).select("*").maybeSingle();
-            if (!inviteUpdateError && updatedProfile) {
-              data = updatedProfile;
-              await supabase.from("company_user_invites").update({ status: "accepted", accepted_at: (/* @__PURE__ */ new Date()).toISOString() }).eq("id", invite.id);
-            }
-          }
+        const { data: inviteResult, error: inviteError } = await supabase.rpc("accept_company_user_invite");
+        if (inviteError) throw inviteError;
+        if (inviteResult?.accepted === true) {
+          const { data: updatedProfile, error: profileReloadError } = await supabase.from("profiles").select("*").eq("id", sessionUser.id).maybeSingle();
+          if (profileReloadError) throw profileReloadError;
+          if (updatedProfile) data = updatedProfile;
         }
       } catch (inviteError) {
-        console.warn("Kunne ikke kontrollere firmainvitasjon:", inviteError);
+        console.warn("Kunne ikke fullføre firmainvitasjon:", inviteError);
       }
       applyProfile(data, sessionUser);
+      await loadMyCompanyProfile(data);
       setProfileLoading(false);
       return data;
     };
@@ -4387,15 +4407,43 @@ ${company.phone ? "Tlf: " + company.phone + "\n" : ""}${company.email ? "E-post:
       if (error) return alert("Kunne ikke laste opp logo: " + error.message);
       const { data } = supabase.storage.from("project-images").getPublicUrl(path);
       setCompany((c) => ({ ...c, logoUrl: data.publicUrl }));
+      setCompanyProfileDraft((c) => ({ ...c, logoUrl: data.publicUrl }));
       alert("Logo lastet opp. Husk \xE5 trykke Lagre firmaprofil.");
     };
     const saveProfile = async () => {
       if (!authUser) return alert("Du m\xE5 v\xE6re logget inn.");
+
+      if (profile?.approved && profile?.company_name) {
+        const orgDigits = String(companyProfileDraft.orgNumber || "").replace(/[^0-9]/g, "");
+        const phoneDigits = String(companyProfileDraft.phone || "").replace(/[^0-9]/g, "");
+        const companyEmail = String(companyProfileDraft.email || "").trim();
+        if (orgDigits.length !== 9) return alert("Foretaksnummer m\xE5 inneholde 9 sifre.");
+        if (String(companyProfileDraft.address || "").trim().length < 5) return alert("Firmaadresse m\xE5 fylles ut.");
+        if (phoneDigits.length < 8) return alert("Firmatelefon m\xE5 inneholde minst 8 sifre.");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyEmail)) return alert("Skriv inn en gyldig firma-e-post.");
+        try {
+          const savedProfile = await setMyCompanyProfile({
+            orgNumber: companyProfileDraft.orgNumber,
+            address: companyProfileDraft.address,
+            phone: companyProfileDraft.phone,
+            email: companyEmail,
+            website: companyProfileDraft.website,
+            logoUrl: companyProfileDraft.logoUrl
+          });
+          const sharedCompany = companyStateFromPayload(savedProfile || {}, companyProfileDraft);
+          setCompanyProfileDraft(sharedCompany);
+          if (!projectId) setCompany(sharedCompany);
+          alert("Firmaprofil lagret. Firmaets e-post endrer ikke innloggingen din.");
+        } catch (companyProfileError) {
+          alert("Kunne ikke lagre firmaprofil: " + (companyProfileError?.message || String(companyProfileError)));
+        }
+        return;
+      }
+
       const existingCompanyRole = profile?.company_role || "";
       const shouldSetFirstUserAsCompanyAdmin = !existingCompanyRole && hasValue(company.companyName);
       const payload = {
         id: authUser.id,
-        email: company.email || authUser.email,
         company_name: company.companyName || "",
         org_number: company.orgNumber || "",
         address: company.address || "",
@@ -4626,30 +4674,53 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       const cleanEmail = String(newEmployeeEmail || "").trim().toLowerCase();
       if (!cleanEmail || !cleanEmail.includes("@")) return alert("Skriv inn en gyldig e-postadresse.");
       const cleanRole = newEmployeeRole === "firmaadmin" ? "firmaadmin" : "ansatt";
-      const { data: existingProfile, error: existingError } = await supabase.from("profiles").select("id,email,company_name,company_role,system_role").eq("email", cleanEmail).maybeSingle();
+      const { data: existingProfile, error: existingError } = await supabase.from("profiles").select("id,email,company_name,company_role,system_role,approved,deactivated").eq("email", cleanEmail).maybeSingle();
       if (existingError) {
         console.warn("Kunne ikke sjekke eksisterende bruker:", existingError.message);
       }
       if (existingProfile?.system_role === "systemadmin" && !isSystemAdminUser) {
         return alert("Denne brukeren er systemadministrator og kan ikke administreres fra firma.");
       }
+      const sameExistingCompany = existingProfile?.id && normalizeCompanyName(existingProfile.company_name) === normalizeCompanyName(companyNameForInvite);
+      if (existingProfile?.id && !isSystemAdminUser && existingProfile.company_name && !sameExistingCompany) {
+        return alert("Brukeren er allerede knyttet til et annet firma. Kontakt Systemadministrator.");
+      }
+      if (existingProfile?.id && !isSystemAdminUser && existingProfile.deactivated === true) {
+        return alert("Brukeren er deaktivert og må behandles av Systemadministrator.");
+      }
+      let invitationAcceptedImmediately = false;
       if (existingProfile?.id) {
-        const { error: updateError } = await supabase.from("profiles").update({
-          company_name: companyNameForInvite,
-          company_role: cleanRole,
-          approved: true,
-          deactivated: false
-        }).eq("id", existingProfile.id);
-        if (updateError) {
-          console.error(updateError);
-          return alert("Kunne ikke legge eksisterende bruker til firmaet: " + updateError.message);
+        if (isSystemAdminUser) {
+          const { error: updateError } = await supabase.from("profiles").update({
+            company_name: companyNameForInvite,
+            company_role: cleanRole,
+            approved: true,
+            deactivated: false
+          }).eq("id", existingProfile.id);
+          if (updateError) {
+            console.error(updateError);
+            return alert("Kunne ikke legge eksisterende bruker til firmaet: " + updateError.message);
+          }
+          invitationAcceptedImmediately = true;
+        } else if (sameExistingCompany && existingProfile.approved === true) {
+          const { error: roleError } = await supabase.from("profiles").update({
+            company_role: cleanRole
+          }).eq("id", existingProfile.id);
+          if (roleError) {
+            console.error(roleError);
+            return alert("Kunne ikke oppdatere brukerrollen: " + roleError.message);
+          }
+          invitationAcceptedImmediately = true;
         }
       }
       const { error } = await supabase.from("company_user_invites").upsert({
         email: cleanEmail,
         company_name: companyNameForInvite,
         company_role: cleanRole,
-        status: existingProfile?.id ? "accepted" : "pending",
+        status: invitationAcceptedImmediately ? "accepted" : "pending",
+        accepted: invitationAcceptedImmediately,
+        accepted_at: invitationAcceptedImmediately ? (/* @__PURE__ */ new Date()).toISOString() : null,
+        accepted_user_id: invitationAcceptedImmediately ? existingProfile?.id || null : null,
         invited_by: authUser?.email || profile?.email || ""
       }, { onConflict: "email,company_name" });
       if (error) {
@@ -4657,9 +4728,9 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
         return alert("Kunne ikke lagre invitasjon: " + error.message);
       }
       let invitationEmailSent = false;
-      if (!existingProfile?.id) {
+      if (!invitationAcceptedImmediately) {
         try {
-          const invitationLink = `${window.location.origin}${window.location.pathname}?signup=1&email=${encodeURIComponent(cleanEmail)}`;
+          const invitationLink = `${window.location.origin}${window.location.pathname}?signup=1&invited=1&email=${encodeURIComponent(cleanEmail)}&company=${encodeURIComponent(companyNameForInvite)}`;
           const { error: inviteMailError } = await supabase.functions.invoke("smart-worker", {
             body: {
               toEmail: cleanEmail,
@@ -4673,7 +4744,7 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
               sentViaText: `Sendt via Expo ProffDok på vegne av ${companyNameForInvite}`,
               footerCompanyText: `${companyNameForInvite} · Dokumentasjon levert gjennom Expo ProffDok`,
               fromName: profile?.email || authUser?.email || "Firmaadministrator",
-              message: `Du er invitert til ${companyNameForInvite} i Expo ProffDok. Åpne lenken, fyll inn fullt navn, mobilnummer og lag ditt eget passord. Bruk e-postadressen ${cleanEmail} når du oppretter brukeren.`,
+              message: `Du er invitert til ${companyNameForInvite} i Expo ProffDok. Åpne lenken og bruk e-postadressen ${cleanEmail}. Har du allerede konto, logger du inn. Ellers fyller du inn fullt navn og mobilnummer og lager ditt eget passord. Når innloggingen eller registreringen er bekreftet, kobles kontoen automatisk til firmaet og er klar til bruk.`,
               projectLink: invitationLink,
               subject: `Invitasjon til Expo ProffDok – ${companyNameForInvite}`
             }
@@ -4687,7 +4758,11 @@ Brukeren mister tilgang til Systemadmin, Produktmaster og global brukergodkjenni
       setNewEmployeeEmail("");
       setNewEmployeeRole("ansatt");
       await loadCompanyAdminData(false);
-      alert(existingProfile?.id ? "✔ Brukeren er lagt til i firmaet." : invitationEmailSent ? "✔ Invitasjon er registrert og e-post er forsøkt sendt til brukeren." : "✔ Invitasjon er registrert. E-post kunne ikke bekreftes sendt, så be brukeren opprette konto med samme e-postadresse.");
+      alert(invitationAcceptedImmediately
+        ? "✔ Brukeren er lagt til i firmaet."
+        : invitationEmailSent
+          ? "✔ Invitasjonen er registrert og sendt. Brukeren kobles automatisk til firmaet ved innlogging eller registrering."
+          : "✔ Invitasjonen er registrert. Be brukeren logge inn eller opprette konto med samme e-postadresse. Det kreves ingen ny Systemadmin-godkjenning.");
     };
     const updateCompanyUserRole = async (userRow, role) => {
       if (!isCompanyAdminUser) return alert("Du har ikke tilgang til firmaadministrasjon.");
@@ -5214,6 +5289,14 @@ ${appLink}`;
       const cleanEmail = authEmail.trim();
       const cleanName = authFullName.trim();
       const cleanMobile = authMobile.trim();
+      const invitedSignup = (() => {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          return params.get("signup") === "1" && params.get("invited") === "1";
+        } catch {
+          return false;
+        }
+      })();
       if (!cleanEmail || !cleanName || !cleanMobile || !authPassword || !authPasswordRepeat) return alert("Fyll inn fullt navn, mobilnummer, e-post, passord og gjenta passord.");
       if (authPassword !== authPasswordRepeat) return alert("Passordene er ikke like. Skriv inn samme passord to ganger.");
       if (authPassword.length < 6) return alert("Passordet m\xE5 v\xE6re minst 6 tegn.");
@@ -5233,8 +5316,10 @@ ${appLink}`;
       setAuthFullName("");
       setAuthMobile("");
       setAuthMode("login");
-      notifySystemAdminsAboutSignup(cleanEmail, cleanName, cleanMobile);
-      alert("Bruker opprettet. Kontoen m\xE5 godkjennes av administrator f\xF8r appen kan brukes.");
+      if (!invitedSignup) notifySystemAdminsAboutSignup(cleanEmail, cleanName, cleanMobile);
+      alert(invitedSignup
+        ? "Bruker opprettet. Bekreft e-postadressen og logg inn. En gyldig invitasjon kobler deg automatisk til firmaet uten ny Systemadmin-godkjenning."
+        : "Bruker opprettet. Kontoen må godkjennes av administrator før appen kan brukes.");
     };
     const resetPassword = async () => {
       const cleanEmail = authEmail.trim();
@@ -5827,7 +5912,7 @@ ${appLink}`;
               }
             )
           ] }),
-          authMode === "login" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ny bruker? Klikk Opprett bruker for registrering. Kontoen må godkjennes av administrator før du får tilgang." }),
+          authMode === "login" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: "12px" }, children: "Ny bruker? Klikk Opprett bruker for registrering. Nye firma må godkjennes av Systemadministrator. Har firmaet invitert deg, kobles og godkjennes kontoen automatisk etter bekreftet registrering." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }, children: authMode === "signup" ? [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: signUp, children: "Send registrering" }, "signup-submit"),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: () => { setAuthMode("login"); setAuthPasswordRepeat(""); }, children: "Jeg har allerede en konto" }, "signup-cancel")
@@ -6449,11 +6534,13 @@ ${appLink}`;
           appendProjectDescriptionTemplate
         }),
         tab === "firma" && renderCompanyProfilePanel({
-          company,
-          setCompany,
-          name,
+          company: companyProfileDraft,
+          setCompany: setCompanyProfileDraft,
+          name: companyProfileDraft.companyName || name,
           uploadLogo,
-          saveProfile
+          saveProfile,
+          canEdit: isCompanyAdminUser,
+          loginEmail: authUser?.email || ""
         }),
         tab === "innlogging" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: isProjectSupportReadOnly ? "Prosjektets rapportopplysninger" : "Innlogging og brukerprofil", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           isProjectSupportReadOnly ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", style: { marginBottom: "14px", background: "#fff7ed", borderColor: "#fed7aa" }, children: [
@@ -6806,7 +6893,7 @@ ${appLink}`;
             adminAccordionButton("brukere", "Brukere og roller", `${visibleAdminUsers.length} vises`),
             adminSectionIsOpen("brukere") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Brukergodkjenning" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Kun systemadministrator kan godkjenne, deaktivere, reaktivere og korrigere firma-/rolleoppsett. Endringer i rolle og firma lagres direkte etter bekreftelse." }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Systemadministrator godkjenner nye firma og brukere uten gyldig firmainvitasjon, og håndterer deaktivering, reaktivering og korrigering av firma/rolle. Gyldig invitasjon fra Firmaadmin godkjenner brukeren automatisk." }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", margin: "12px 0" }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: loadAdminUsers, children: adminLoading ? "Henter brukere..." : "Oppdater brukerliste" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: adminUserFilter === "pending" ? "" : "secondary", onClick: () => setAdminUserFilter("pending"), children: `Nye (${adminUserStats.pending})` }),
@@ -6845,7 +6932,7 @@ ${appLink}`;
                   label: "Firma",
                   value: registeredCompanyOptions.includes(u.company_name || "") ? u.company_name || "" : "",
                   options: registeredCompanyOptions,
-                  optionLabels: { "": u.company_name ? `${u.company_name} (ikke i registrerte firmaer)` : "Velg firma" },
+                  optionLabels: { "": "Velg firma" },
                   onChange: (v) => updateAdminUserCompanyName(u, v)
                 })
               ] }),

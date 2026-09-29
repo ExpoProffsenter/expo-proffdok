@@ -7,8 +7,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  getCompanyStoreOffersAccess,
   MANAGED_ACCESS_EVENT,
   listManagedModuleAccess,
+  setCompanyStoreOffersAccess,
 } from "./moduleAccessClient.js";
 import ProStoreCatalogAdminPanel from "../storeCatalog/ProStoreCatalogAdminPanel.jsx";
 import { listCatalogCompanies } from "../storeCatalog/proStoreCatalogClient.js";
@@ -149,6 +151,7 @@ function buildCompanyRows(users = [], companies = []) {
         companyName: cleanName,
         users: [],
         hasProCatalog: false,
+        hasStoreOffers: false,
       };
       rows.push(row);
     }
@@ -159,6 +162,7 @@ function buildCompanyRows(users = [], companies = []) {
     if (user && !row.users.some((entry) => entry.user_id === user.user_id)) {
       row.users.push(user);
       row.hasProCatalog = row.hasProCatalog || user.company_has_pro_catalog === true;
+      row.hasStoreOffers = row.hasStoreOffers || user.company_store_offers_enabled === true;
     }
     return row;
   };
@@ -184,13 +188,80 @@ function buildCompanyRows(users = [], companies = []) {
   });
 }
 
+function CompanyStoreOffersAccess({ row }) {
+  const [enabled, setEnabled] = useState(row?.hasStoreOffers === true);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const canEnable = row?.internalCompany === true || row?.hasProCatalog === true;
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setMessage("");
+    getCompanyStoreOffersAccess(row?.companyId)
+      .then((result) => {
+        if (!cancelled) setEnabled(result?.enabled === true);
+      })
+      .catch((error) => {
+        if (!cancelled) setMessage(error?.message || "Kunne ikke hente firmatilgangen.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [row?.companyId, row?.hasStoreOffers]);
+
+  async function changeEnabled(nextEnabled) {
+    if (saving || loading || (nextEnabled && !canEnable)) return;
+    const confirmation = nextEnabled
+      ? `Aktivere Generelle tilbud for alle brukere i ${row.companyName}?\n\nAlle nåværende og nye brukere i firmaet får modulen.`
+      : `Deaktivere Generelle tilbud for alle brukere i ${row.companyName}?\n\nFirmaets individuelle tilganger til «Din nto pris» fjernes samtidig.`;
+    if (!window.confirm(confirmation)) return;
+
+    setSaving(true);
+    setMessage("");
+    try {
+      const result = await setCompanyStoreOffersAccess(row.companyId, nextEnabled);
+      setEnabled(result?.enabled === true);
+      setMessage(nextEnabled
+        ? "Generelle tilbud er aktivert for hele firmaet."
+        : "Generelle tilbud er deaktivert for hele firmaet.");
+    } catch (error) {
+      setMessage(error?.message || "Kunne ikke lagre firmatilgangen.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="company-store-offers-access">
+      <label>
+        <input
+          type="checkbox"
+          checked={enabled}
+          disabled={loading || saving || (!enabled && !canEnable)}
+          onChange={(event) => void changeEnabled(event.target.checked)}
+        />
+        <span>
+          <strong>Generelle tilbud / Proff vareregister</strong>
+          <small>
+            Gjelder alle brukere i firmaet. Firmaadmin bestemmer deretter hvilke andre brukere som kan se firmaets «Din nto pris».
+          </small>
+        </span>
+      </label>
+      {!canEnable && !enabled ? <small>Aktiver minst én leverandør for firmaet først.</small> : null}
+      {message ? <small className={message.startsWith("Kunne") ? "is-error" : ""}>{message}</small> : null}
+    </div>
+  );
+}
+
 function CompanyNavigator({
   snapshot,
   activeKey,
   statusFilter,
   onStatusFilterChange,
   onActiveChange,
-  onSearchChange,
   onRefresh,
 }) {
   const [client] = useState(() => createDefaultSalesSupabaseClient());
@@ -240,7 +311,6 @@ function CompanyNavigator({
 
   function changeQuery(value) {
     setQuery(value);
-    onSearchChange(value);
   }
 
   function toggleCompany(row) {
@@ -290,7 +360,6 @@ function CompanyNavigator({
         {filteredRows.map((row) => {
           const open = activeKey === row.key;
           const userLabel = `${row.users.length} ${row.users.length === 1 ? "bruker" : "brukere"}`;
-          const visibleUserCount = row.users.filter((user) => userMatchesStatus(user, statusFilter) && userMatchesQuery(user, query)).length;
           return (
             <section key={row.key} className={`company-access-row${open ? " is-open" : ""}`}>
               <button
@@ -311,12 +380,18 @@ function CompanyNavigator({
               {open ? (
                 <div className="company-access-body">
                   {row.companyId && !row.internalCompany ? (
-                    <ProStoreCatalogAdminPanel companyId={row.companyId} />
+                    <>
+                      <CompanyStoreOffersAccess row={row} />
+                      <ProStoreCatalogAdminPanel companyId={row.companyId} />
+                    </>
                   ) : row.internalCompany ? (
-                    <div className="company-access-note">
-                      <strong>Internt firma</strong>
-                      <span>ERP-vareregisteret administreres i «Internt vareregister». Brukere og tilganger administreres her.</span>
-                    </div>
+                    <>
+                      <CompanyStoreOffersAccess row={row} />
+                      <div className="company-access-note">
+                        <strong>Internt firma</strong>
+                        <span>ERP-vareregisteret administreres i «Internt vareregister». Brukere og tilganger administreres her.</span>
+                      </div>
+                    </>
                   ) : (
                     <div className="company-access-note is-warning">
                       <strong>Firmascope mangler</strong>
@@ -327,9 +402,7 @@ function CompanyNavigator({
                   <div className="company-access-user-heading">
                     <strong>Brukere i firmaet</strong>
                     <small>
-                      {statusFilter === "all" && !query
-                        ? `${userLabel}. Brukerkortene med godkjenning, rolle, moduler og prisinnsyn vises rett under firmalisten.`
-                        : `${visibleUserCount} bruker(e) matcher valgt søk/filter. Brukerkortene vises rett under firmalisten.`}
+                      {userLabel}. Alle brukerkortene med godkjenning, rolle, moduler og prisinnsyn vises rett under firmalisten.
                     </small>
                   </div>
                 </div>
@@ -347,7 +420,7 @@ function CompanyNavigator({
         .company-access-search{width:100%;min-height:42px;border:1px solid #ccdadd;border-radius:10px;padding:0 11px;background:#fff;font:inherit}.company-access-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px}
         .company-access-list{display:grid;gap:8px}.company-access-row{border:1px solid #d7e2e5;border-radius:11px;background:#fff;overflow:hidden}.company-access-row.is-open{border-color:#8bcbd2;box-shadow:0 1px 0 rgba(8,127,136,.08)}
         .company-access-toggle{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;text-align:left;padding:12px 13px;border:0;border-radius:0;background:#fff;color:#10212b}.company-access-row.is-open .company-access-toggle{background:#f3fbfc}.company-access-chevron{font-size:12px}.company-access-name{font-weight:800;min-width:0}.company-access-summary{font-size:12px;text-align:right}
-        .company-access-body{display:grid;gap:14px;padding:14px;border-top:1px solid #d7e2e5}.company-access-body .pro-catalog-admin{margin:0}.company-access-note,.company-access-user-heading{display:grid;gap:4px;padding:10px 11px;border:1px solid #d7e2e5;border-radius:10px;background:#f8fafc}.company-access-note span{font-size:13px;color:#60737b}.company-access-note.is-warning{border-color:#e9d2a8;background:#fffaf0}.company-access-error{color:#a33232;font-weight:800}
+        .company-access-body{display:grid;gap:14px;padding:14px;border-top:1px solid #d7e2e5}.company-access-body .pro-catalog-admin{margin:0}.company-access-note,.company-access-user-heading{display:grid;gap:4px;padding:10px 11px;border:1px solid #d7e2e5;border-radius:10px;background:#f8fafc}.company-access-note span{font-size:13px;color:#60737b}.company-access-note.is-warning{border-color:#e9d2a8;background:#fffaf0}.company-access-error{color:#a33232;font-weight:800}.company-store-offers-access{display:grid;gap:6px;padding:12px;border:1px solid #8bcbd2;border-radius:10px;background:#f3fbfc}.company-store-offers-access label{display:flex;gap:9px;align-items:flex-start;cursor:pointer}.company-store-offers-access input{margin-top:3px}.company-store-offers-access span{display:grid;gap:3px}.company-store-offers-access small{color:#60737b}.company-store-offers-access .is-error{color:#a33232;font-weight:800}
         #${USER_STAGE_ID}{display:grid;gap:4px;margin:0 0 10px;padding:11px 12px;border:1px solid #8bcbd2;border-radius:11px;background:#f3fbfc}#${USER_STAGE_ID}[hidden]{display:none}#${USER_STAGE_ID} small{color:#60737b}
         @media(max-width:700px){.company-access-toggle{grid-template-columns:auto minmax(0,1fr)}.company-access-summary{grid-column:2;text-align:left}.company-access-intro{flex-direction:column}.company-access-body{padding:11px}.company-access-filters button{flex:1 1 auto}}
       `}</style>
@@ -360,7 +433,6 @@ let loadPromise = null;
 let activeCompanyKey = "";
 let activeCompanyLabel = "";
 let activeStatusFilter = "all";
-let activeSearchQuery = "";
 let root = null;
 let rootMount = null;
 let frame = 0;
@@ -387,11 +459,10 @@ function setReactInputValue(input, value) {
 }
 
 function normalizeLegacyFilters(panel) {
-  if (!panel || panel.dataset.companyAdminLegacyNormalized === "1") return;
-  panel.dataset.companyAdminLegacyNormalized = "1";
+  if (!panel) return;
 
   const allButton = Array.from(panel.querySelectorAll("button")).find((button) => /^Alle\s*\(\d+\)$/.test(compactText(button.textContent)));
-  allButton?.click?.();
+  if (allButton?.classList.contains("secondary")) allButton.click();
 
   const legacySearch = Array.from(panel.querySelectorAll("input[type='search'],input")).find((input) =>
     compactText(input.getAttribute("placeholder")) === "Søk e-post, firma eller rolle"
@@ -468,9 +539,7 @@ function updateUserStage(panel) {
   const stage = ensureUserStage(panel);
   if (!stage) return;
   const users = (snapshot?.users || []).filter((user) =>
-    companyKey(user.company_scope_id, user.company_name) === activeCompanyKey &&
-    userMatchesStatus(user, activeStatusFilter) &&
-    userMatchesQuery(user, activeSearchQuery)
+    companyKey(user.company_scope_id, user.company_name) === activeCompanyKey
   );
   if (!activeCompanyKey) {
     stage.hidden = true;
@@ -497,8 +566,7 @@ function applyCompanyVisibility(panel = findLegacyPanel()) {
     if (!user) return;
     const key = companyKey(user.company_scope_id, user.company_name);
     card.dataset.companyAdminUserCard = key;
-    const visible = Boolean(activeCompanyKey) && key === activeCompanyKey &&
-      userMatchesStatus(user, activeStatusFilter) && userMatchesQuery(user, activeSearchQuery);
+    const visible = Boolean(activeCompanyKey) && key === activeCompanyKey;
     if (visible) card.style.removeProperty("display");
     else card.style.display = "none";
   });
@@ -543,13 +611,10 @@ function mountNavigator(panel) {
         mountNavigator(findLegacyPanel());
         applyCompanyVisibility();
       }}
-      onSearchChange={(nextQuery) => {
-        activeSearchQuery = nextQuery;
-        window.requestAnimationFrame(() => applyCompanyVisibility());
-      }}
       onActiveChange={(nextKey, row) => {
         activeCompanyKey = nextKey;
         activeCompanyLabel = row?.companyName || "";
+        normalizeLegacyFilters(findLegacyPanel());
         mountNavigator(findLegacyPanel());
         applyCompanyVisibility();
       }}

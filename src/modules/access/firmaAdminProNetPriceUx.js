@@ -24,27 +24,36 @@ function findUserCard(manager, email) {
   }) || null;
 }
 
-function lockStoreModuleForFirmaadmin(card, proCompany) {
+function lockCompanyModulesForFirmaadmin(card, proCompany, companyStoreEnabled) {
   if (!(card instanceof HTMLElement)) return;
   Array.from(card.querySelectorAll("label")).forEach((label) => {
     const title = label.querySelector("b");
     const text = compactText(title?.textContent);
-    if (
-      text !== "Generelle tilbud" &&
-      text !== "Butikktilbud" &&
-      text !== "Generelle tilbud / Proff vareregister"
-    ) return;
+    const isStoreModule = [
+      "Generelle tilbud",
+      "Butikktilbud",
+      "Generelle tilbud / Proff vareregister",
+    ].includes(text);
+    const isRequiredSales = companyStoreEnabled && (
+      text === "Befaring / Våtromstilbud" || text === "Befaring/Tilbud"
+    );
+    if (!isStoreModule && !isRequiredSales) return;
 
-    if (proCompany && title && text !== "Generelle tilbud / Proff vareregister") {
+    if (isStoreModule && proCompany && title && text !== "Generelle tilbud / Proff vareregister") {
       title.textContent = "Generelle tilbud / Proff vareregister";
     }
     const checkbox = label.querySelector('input[type="checkbox"]');
     if (checkbox instanceof HTMLInputElement) checkbox.disabled = true;
     label.style.cursor = "default";
-    label.title = "Tilgangen gis eller fjernes av Systemadministrator.";
+    label.title = isStoreModule
+      ? "Tilgangen aktiveres samlet for hele firmaet av Systemadministrator."
+      : "Befaring / Våtromstilbud må beholdes når firmaet har Generelle tilbud.";
     const note = label.querySelector("small");
-    if (note && compactText(note.textContent) !== "Tilgangen styres av Systemadministrator.") {
-      note.textContent = "Tilgangen styres av Systemadministrator.";
+    const nextNote = isStoreModule
+      ? "Tilgangen gjelder alle brukere og styres av Systemadministrator på firmaet."
+      : "Påkrevd fordi firmaet har Generelle tilbud.";
+    if (note && compactText(note.textContent) !== nextNote) {
+      note.textContent = nextNote;
     }
   });
 }
@@ -182,7 +191,11 @@ export function installFirmaAdminProNetPriceUx() {
     (snapshot.users || []).forEach((user) => {
       const card = findUserCard(manager, user.email);
       if (!card) return;
-      lockStoreModuleForFirmaadmin(card, user.company_has_pro_catalog === true);
+      lockCompanyModulesForFirmaadmin(
+        card,
+        user.company_has_pro_catalog === true,
+        user.company_store_offers_enabled === true
+      );
       renderNetPriceControl(card, user, currentUserId, load);
     });
   }

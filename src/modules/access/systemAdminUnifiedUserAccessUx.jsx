@@ -51,13 +51,19 @@ function toggleModule(keys, key, checked) {
   return normalizeModuleKeys([...next]);
 }
 
-function modulePresentation(module, { internalCompany, proCompany }) {
+function modulePresentation(module, { internalCompany, proCompany, companyStoreEnabled }) {
   if (module.key !== "store_offers") return { label: module.label, note: "" };
+  if (companyStoreEnabled) {
+    return {
+      label: internalCompany ? "Generelle tilbud" : "Generelle tilbud / Proff vareregister",
+      note: "Aktivert for alle brukere i firmaet",
+    };
+  }
   if (internalCompany) {
-    return { label: "Generelle tilbud", note: "Krever Befaring / Våtromstilbud" };
+    return { label: "Generelle tilbud", note: "Aktiveres samlet på firmaet over" };
   }
   if (proCompany) {
-    return { label: "Generelle tilbud / Proff vareregister", note: "Krever Befaring / Våtromstilbud" };
+    return { label: "Generelle tilbud / Proff vareregister", note: "Aktiveres samlet på firmaet over" };
   }
   return {
     label: "Generelle tilbud / Proff vareregister",
@@ -69,6 +75,7 @@ function UnifiedAccessControls({ user, onReload }) {
   const targetIsSystemAdmin = user.system_role === "systemadmin";
   const internalCompany = INTERNAL_COMMERCE_COMPANIES.has(normalizeCompany(user.company_name));
   const proCompany = user.company_has_pro_catalog === true;
+  const companyStoreEnabled = user.company_store_offers_enabled === true;
   const canUseStoreModule = targetIsSystemAdmin || internalCompany || proCompany;
   const canUseInternalNet = targetIsSystemAdmin || internalCompany;
   const canUseProNet = !targetIsSystemAdmin && !internalCompany && proCompany;
@@ -97,6 +104,7 @@ function UnifiedAccessControls({ user, onReload }) {
     user.system_role,
     user.company_name,
     user.company_has_pro_catalog,
+    user.company_store_offers_enabled,
     user.pro_net_price_can_view,
     JSON.stringify(user.module_keys || []),
     JSON.stringify(user.feature_keys || []),
@@ -167,9 +175,10 @@ function UnifiedAccessControls({ user, onReload }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 8, marginTop: 10 }}>
         {MODULE_CATALOG.map((module) => {
-          const presentation = modulePresentation(module, { internalCompany, proCompany });
+          const presentation = modulePresentation(module, { internalCompany, proCompany, companyStoreEnabled });
           const storeModule = module.key === "store_offers";
-          const disabled = targetIsSystemAdmin || saving || (storeModule && !canUseStoreModule);
+          const companyRequiredModule = storeModule || (module.key === "sales" && companyStoreEnabled);
+          const disabled = targetIsSystemAdmin || saving || companyRequiredModule || (storeModule && !canUseStoreModule);
           return (
             <label
               key={module.key}
@@ -230,7 +239,7 @@ function UnifiedAccessControls({ user, onReload }) {
             <span>
               <b style={{ display: "block", fontSize: 13 }}>Se «Din nto pris»</b>
               <small style={{ color: "#477078" }}>
-                Proffkunde: viser firmaets rabattberegnede pris. Ringsides innkjøpspris eksponeres aldri.
+                Firmaadmin bestemmer hvilke andre brukere som kan se firmaets rabattberegnede pris. Ringsides innkjøpspris eksponeres aldri.
               </small>
             </span>
           </label>

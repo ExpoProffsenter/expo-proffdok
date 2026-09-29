@@ -42,12 +42,19 @@ export function createCompanyViewTools({
     setCompany,
     name,
     uploadLogo,
-    saveProfile
+    saveProfile,
+    canEdit = false,
+    loginEmail = ""
   }) {
     const representation = getSystemAdminRepresentationContext(company?.companyName);
     const profileNote = representation
       ? `Du representerer nå ${representation.activeCompanyName} for nye tilbud og prosjekter. Her redigerer du fortsatt din primære firmaprofil: ${representation.primaryCompanyName}.`
-      : 'Firmaprofilen lagres på brukeren din og brukes som standard i prosjekter og rapporter.';
+      : `Firmaprofilen er felles for alle brukere i ${company?.companyName || "firmaet"}.`;
+    const missingRequired =
+      !hasValue(company.orgNumber) ||
+      !hasValue(company.address) ||
+      !hasValue(company.phone) ||
+      !hasValue(company.email);
 
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, {
       title: "Firmaprofil",
@@ -57,9 +64,17 @@ export function createCompanyViewTools({
           className: "note",
           children: profileNote
         }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
+          className: "note",
+          children: [
+            "Firmaets kontakt-e-post brukes i prosjekter, rapporter og kundekommunikasjon. Den endrer ikke e-postadressen du logger inn med",
+            loginEmail ? ` (${loginEmail})` : "",
+            "."
+          ]
+        }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CollapsibleBlock, {
           title: "Firmainfo og logo",
-          defaultOpen: !hasValue(company.companyName) || !hasValue(company.email),
+          defaultOpen: !hasValue(company.companyName) || missingRequired,
           children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
             className: "two",
             children: [
@@ -70,7 +85,7 @@ export function createCompanyViewTools({
                     logo: company.logoUrl,
                     name
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+                  canEdit && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
                     className: "upload",
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
@@ -82,7 +97,7 @@ export function createCompanyViewTools({
                       })
                     ]
                   }),
-                  company.logoUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+                  canEdit && company.logoUrl && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
                     className: "secondary",
                     onClick: () => setCompany({ ...company, logoUrl: "" }),
                     children: "Fjern logo"
@@ -94,31 +109,43 @@ export function createCompanyViewTools({
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
                     label: "Firmanavn",
                     value: company.companyName,
-                    onChange: (v) => setCompany({ ...company, companyName: v })
+                    disabled: true,
+                    onChange: () => {}
                   }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-                    label: "Org.nr",
+                    label: "Foretaksnummer *",
                     value: company.orgNumber,
+                    disabled: !canEdit,
                     onChange: (v) => setCompany({ ...company, orgNumber: v })
                   }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-                    label: "Adresse",
+                    label: "Adresse *",
                     value: company.address,
+                    disabled: !canEdit,
+                    autoComplete: "street-address",
                     onChange: (v) => setCompany({ ...company, address: v })
                   }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-                    label: "Telefon",
+                    label: "Telefon *",
                     value: company.phone,
+                    disabled: !canEdit,
+                    type: "tel",
+                    autoComplete: "tel",
                     onChange: (v) => setCompany({ ...company, phone: v })
                   }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
-                    label: "E-post",
+                    label: "Firma-e-post *",
                     value: company.email,
+                    disabled: !canEdit,
+                    type: "email",
+                    autoComplete: "email",
                     onChange: (v) => setCompany({ ...company, email: v })
                   }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, {
                     label: "Hjemmeside",
                     value: company.website,
+                    disabled: !canEdit,
+                    autoComplete: "url",
                     onChange: (v) => setCompany({ ...company, website: v })
                   })
                 ]
@@ -126,14 +153,22 @@ export function createCompanyViewTools({
             ]
           })
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-          onClick: saveProfile,
-          children: "Lagre firmaprofil"
+        canEdit ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+            className: "note",
+            children: "* Foretaksnummer, adresse, telefon og firma-e-post må fylles ut før firmaprofilen kan lagres."
+          }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+            onClick: saveProfile,
+            children: "Lagre firmaprofil"
+          })
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+          className: "note",
+          children: "Firmaprofilen kan endres av Firmaadmin."
         })
       ]
     });
   }
-
   function renderCompanyAdminPanel({
     currentCompanyName,
     companyAdminLoading,
