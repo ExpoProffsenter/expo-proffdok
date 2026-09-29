@@ -11,6 +11,12 @@ const SALES_NAV_PREFIX = 'expo-proffdok-sales-preview-requests-v1';
 
 const cleanLabel = (value = '') => String(value || '').replace(/\s+/g, ' ').trim();
 
+const isProjectWorkspaceLabels = (labels = []) =>
+  (labels.includes('Prosjektoversikt') || labels.includes('Nytt prosjekt')) &&
+  labels.includes('Prosjektering') &&
+  labels.includes('Sjekklister') &&
+  (labels.includes('Avtalegrunnlag') || labels.includes('Tilbud/kontrakt'));
+
 function findInternalAppNav() {
   if (!window.matchMedia(DESKTOP_QUERY).matches) return null;
 
@@ -25,11 +31,7 @@ function findInternalAppNav() {
     const globalNav =
       labels.includes('Befaring/Tilbud') &&
       labels.some((label) => label === 'Startside' || label === 'Prosjektoversikt');
-    const projectWorkspaceNav =
-      labels.includes('Prosjektoversikt') &&
-      labels.includes('Prosjektering') &&
-      labels.includes('Sjekklister') &&
-      labels.includes('Avtalegrunnlag');
+    const projectWorkspaceNav = isProjectWorkspaceLabels(labels);
 
     return labels.includes('Hjelp') && (globalNav || projectWorkspaceNav);
   }) || null;
@@ -309,6 +311,11 @@ function syncDrawerWithSource(sourceNav, shell) {
   }
 
   const sourceButtons = Array.from(sourceNav.querySelectorAll(':scope > button'));
+  const sourceLabels = sourceButtons.map((button) => cleanLabel(button.textContent));
+  const projectWorkspaceNav = isProjectWorkspaceLabels(sourceLabels);
+  const drawerSourceButtons = projectWorkspaceNav
+    ? sourceButtons.filter((button) => cleanLabel(button.textContent) !== 'Hjelp')
+    : sourceButtons;
   const drawerNav = shell.drawer.querySelector('.expoDesktopDrawerNav');
   const current = shell.bar.querySelector('.expoDesktopMenuCurrent');
   if (!(drawerNav instanceof HTMLElement) || !(current instanceof HTMLElement)) return;
@@ -324,7 +331,7 @@ function syncDrawerWithSource(sourceNav, shell) {
   current.hidden = !showContext;
   current.textContent = showContext ? activeLabel : '';
 
-  const signature = sourceButtons
+  const signature = drawerSourceButtons
     .map((button) => `${cleanLabel(button.textContent)}:${button.classList.contains('on') ? '1' : '0'}`)
     .join('|');
 
@@ -332,7 +339,7 @@ function syncDrawerWithSource(sourceNav, shell) {
   drawerNav.dataset.sourceSignature = signature;
   drawerNav.replaceChildren();
 
-  sourceButtons.forEach((sourceButton) => {
+  drawerSourceButtons.forEach((sourceButton) => {
     const label = cleanLabel(sourceButton.textContent);
     if (!label) return;
 

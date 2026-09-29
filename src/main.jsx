@@ -26,6 +26,7 @@ import { createChecklistEditor } from './modules/checklist/checklistTools.js';
 import { createImageDocumentationTools } from './modules/images/imageDocumentationTools.js';
 import { createProjectOverviewTools } from './modules/project/projectOverviewTools.js';
 import { createProjectPersistenceFingerprint } from './modules/project/projectPersistenceFingerprint.mjs';
+import { createGlobalAppTabs, createProjectWorkspaceTabs } from './modules/project/projectNavigationTabs.mjs';
 import SimpleOrderOfferBasis, { isSimpleOrderProject } from './modules/project/SimpleOrderOfferBasis.jsx';
 import { createProjectListTools, normalizeSearchText, makeSearchableText, projectMatchesSearch } from './modules/project/projectListTools.js';
 import { createProductViewTools } from './modules/product/productViewTools.js';
@@ -46,6 +47,7 @@ import MarketingEmailPreference from './modules/app/MarketingEmailPreference.jsx
 import { shouldRebootstrapAuthState } from './modules/auth/authStateRefreshPolicy.mjs';
 import { markSystemAdminProjectSupportQuery } from './modules/access/systemAdminProjectScopeGuard.js';
 import { publishManagedAccessChange } from './modules/access/moduleAccessClient.js';
+import { withPrivateDocumentProjectAccess } from './modules/documents/privateDocumentTools.js';
 import {
   getAppSupabaseClient,
   registerAppSupabaseClient,
@@ -804,6 +806,14 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     const [portalAccessRecords, setPortalAccessRecords] = (0, import_react.useState)({});
     const [projects, setProjects] = (0, import_react.useState)([]);
     const [projectId, setProjectId] = (0, import_react.useState)(null);
+    const projectScopedTilbud = (0, import_react.useMemo)(() => ({
+      ...displayTilbud,
+      files: projectId
+        ? (displayTilbud.files || []).map((file) =>
+            withPrivateDocumentProjectAccess(file, { projectId, role: "kunde" })
+          )
+        : displayTilbud.files || []
+    }), [displayTilbud, projectId]);
     (0, import_react.useEffect)(() => {
       setMobileStatusOpen(false);
     }, [projectId]);
@@ -2007,37 +2017,24 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       enabled: !hasActiveProjectWorkspace && tab === "prosjekt"
     });
     const openProjectDeviationCount = (Array.isArray(project?.projectDeviations) ? project.projectDeviations : []).filter((entry) => (entry?.status || "Åpent") !== "Lukket").length;
-    const tabs = [
-      ["prosjekt", mobileCreatingProject && !projectId ? "Nytt prosjekt" : hasActiveProjectWorkspace ? "Prosjektoversikt" : "Startside"],
-      ["sales", "Befaring/Tilbud"],
-      ["prosjektinfo", "Prosjektbeskrivelse"],
-      ["garanti", warranty?.issued ? "Garanti ✓" : "Garanti"],
-      ["firma", "Firmaprofil"],
-      ["innlogging", "Min profil / e-postvalg"],
-      ...isCompanyAdminUser ? [["firmaadmin", "Firma"]] : [],
-      ["prosjektering", "Prosjektering"],
-      ["fremdrift", "Fremdrift"],
-      ["produkter", "Produkter"],
-      ["overflater", "Overflater og innredning"],
-      ["bilder", "Bilder"],
-      ["tilgang", "Tilgang"],
-      ["installasjoner", "Fag/utstyr"],
-      ["sjekklister", "Sjekklister"],
-      ["avvik", openProjectDeviationCount > 0 ? `Avvik (${openProjectDeviationCount})` : "Avvik"],
-      ["tilbud", "Tilbud/kontrakt"],
-      ["chat", unreadForAdmin > 0 ? `Chat (${unreadForAdmin} ulest)` : totalChatCount > 0 ? `Chat (${totalChatCount})` : "Chat"],
-      ["internt", "Interne notater"],
-      ["overtagelse", "Overtagelse"],
-      ["prosjektliste", "Prosjektliste"],
-      ["rapport", "Rapport"],
-      ["hjelp", "Hjelp"],
-      ...canUseAdminProjectSync ? [["admin", "Systemadmin"]] : []
-    ];
+    const projectTabs = createProjectWorkspaceTabs({
+      isNewProject: mobileCreatingProject && !projectId,
+      hasSalesOrigin: Boolean(project?.salesOrigin?.requestRef),
+      warrantyIssued: Boolean(warranty?.issued),
+      openDeviationCount: openProjectDeviationCount,
+      unreadForAdmin,
+      totalChatCount
+    });
+    const globalTabs = createGlobalAppTabs({
+      isCompanyAdminUser,
+      canUseAdminProjectSync
+    });
+    const tabs = hasActiveProjectWorkspace ? projectTabs : globalTabs;
     const mobilePrimaryTabs = hasActiveProjectWorkspace ? [
-      ["sales", "Befaring/Tilbud", "🧾"],
+      ["prosjekt", "Oversikt", "📋"],
+      ["prosjektering", "Prosjektering", "📐"],
       ["bilder", "Bilder", "📷"],
-      ["sjekklister", "Sjekklister", "✅"],
-      ["installasjoner", "Fag/utstyr", "🛠️"]
+      ["sjekklister", "Sjekklister", "✅"]
     ] : [
       ["sales", "Befaring/Tilbud", "🧾"],
       ["prosjektliste", "Prosjektliste", "📁"]
@@ -5400,7 +5397,7 @@ ${appLink}`;
       setWarranty,
       shouldIncludeProductReportDoc,
       surf,
-      tilbud: displayTilbud,
+      tilbud: projectScopedTilbud,
       user,
       warranty,
       warrantyReadiness
@@ -6050,7 +6047,7 @@ ${appLink}`;
     }
     if (isReadOnly) {
       return renderCustomerPortal({
-        hasValue, tilbud: displayTilbud, selected, manualSelected, photos, checklist, warranty, project,
+        hasValue, tilbud: projectScopedTilbud, selected, manualSelected, photos, checklist, warranty, project,
         getBaseChecklistTemplateForWarranty, getSoproChecklistTemplate, activeChecklistTemplate,
         projectHasOvertagelse, getWarrantyYears, warrantyReadiness, files, inst, getOpenDeviationCount,
         overtagelse, currentStatus, portalAccessOk, renderPortalAccessGate, company, name, Brand,
@@ -6081,11 +6078,11 @@ ${appLink}`;
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: projectId ? `${currentStatus.icon} ${currentStatus.label}` : authUser?.email || name })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" }),
-          !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
+          !isProjectSupportReadOnly && !mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: createNewProject, children: "+ Nytt prosjekt" }),
           !projectId && mobileCreatingProject && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: cancelNewProject, children: "← Avbryt nytt prosjekt" }),
           projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: leaveProjectWorkspace, children: "← Til startside" }),
           hasActiveProjectWorkspace && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveProject, children: projectDirty ? "● Lagre endringer" : projectId ? "Oppdater prosjekt" : "Lagre prosjekt" }),
-          hasActiveProjectWorkspace && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
+          projectId && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: saveAsNewProject, children: "Lagre som kopi" }),
           hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: downloadClickablePdfReport, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Download, { size: 18 }),
             " Last ned PDF"
@@ -6110,7 +6107,7 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: exitSupportMode, children: "Avslutt supportmodus" })
         ] }),
         hasActiveProjectWorkspace && projectAutoSaveStatus && !(String(projectAutoSaveStatus || "").toLowerCase().includes("supportprosjekt")) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "note", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 10px" }, children: isSupportModeActive ? projectAutoSaveStatus : `Autolagring: ${projectAutoSaveStatus}` }),
-        projectId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileNav", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 14px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavPanel", children: [
+        hasActiveProjectWorkspace && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mobileNav", style: { maxWidth: "1180px", margin: "0 auto", padding: "0 16px 14px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavPanel", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavTop", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mobileNavTitle", children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Meny" }),
@@ -6505,7 +6502,7 @@ ${appLink}`;
             ] })
           ] })
         ] }) }) }) })),
-        tab === "sales" && projectId && isSimpleOrderProject(project) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SimpleOrderOfferBasis, { project, tilbud: displayTilbud }) : tab === "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+        tab === "sales" && projectId && isSimpleOrderProject(project) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SimpleOrderOfferBasis, { project, tilbud: projectScopedTilbud }) : tab === "sales" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Befaring / Tilbud / Aksept", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Opprett og følg en forespørsel gjennom befaring, tilbud, kundeaksept og aktivering som ProffDok-prosjekt. Saker og tilbudskladder lagres sikkert og er avgrenset til innlogget bruker og firma." })
           ] }),
@@ -6562,13 +6559,14 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "secondary", onClick: signOut, children: "Logg ut" })
         ] }),
         tab === "prosjektering" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Prosjektering", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Angi fall som forholdstall, for eksempel 1:50 i dusjsone og 1:100 utenfor dusjsone. Prosjektering brukes til tekniske forutsetninger, fall, sluk, våtsone og membranløsning." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Beskriv hva som skal utføres, hvor arbeidet utføres, hvilket underlag løsningen bygges på og hvilken løsning som er valgt. Angi fall som forholdstall, for eksempel 1:50 i dusjsone og 1:100 utenfor dusjsone." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Hva bør dokumenteres her?" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("ul", { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Falltegning eller bilde/skjermbilde som viser fallforhold på badet." }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Plassering av sluk, terskel, våtsone og eventuelle nisjer eller spesielle løsninger." }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Valgt membranløsning og andre tekniske avklaringer som bør følge prosjektet." }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Produkt, type og plassering beskrives under Produkter eller Fag/utstyr, der produktdatablad også kan legges ved." }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("li", { children: "Tilbud og kontrakter lastes opp i fanen Tilbud/kontrakt, ikke her." })
             ] })
           ] }),
@@ -6712,7 +6710,7 @@ ${appLink}`;
         ) }),
         tab === "tilbud" && renderContractPanel({
           project,
-          tilbud: displayTilbud,
+          tilbud: projectScopedTilbud,
           setTilbud,
           uploadTilbudFiles,
           readOnly: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly || isProjectLocked,
@@ -6780,7 +6778,7 @@ ${appLink}`;
           companyInvites
         }),
                 tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
-                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: displayTilbud, overtagelse, projectLog }),
+                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: projectScopedTilbud, overtagelse, projectLog }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),
