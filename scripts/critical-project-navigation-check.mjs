@@ -25,26 +25,45 @@ const { acceptedOfferTotalInclVat } = await import(
 );
 
 requireCheck(
-  guide.includes("Anbefalt prosjektløp"),
-  "Prosjektarbeidsflaten mangler veivisertekst for anbefalt prosjektløp."
+  guide.includes('hint.textContent = "Prosjektmeny"'),
+  "Prosjektarbeidsflaten mangler tydelig etikett for den komplette prosjektmenyen."
+);
+const expectedHeaderProjectLabels = [
+  "Oversikt",
+  "Salgsgrunnlag",
+  "Prosjektbeskrivelse",
+  "Avtalegrunnlag",
+  "Prosjektering",
+  "Fremdrift",
+  "Produkter",
+  "Overflater og innredning",
+  "Bilder",
+  "Tilgang",
+  "Fag/utstyr",
+  "Sjekklister",
+  "Avvik",
+  "Chat",
+  "Interne notater",
+  "Overtagelse",
+  "Garanti",
+  "Rapport",
+];
+requireCheck(
+  expectedHeaderProjectLabels.every((label) => guide.includes(`label: \"${label}\"`)),
+  "Den kompakte toppmenyen mangler én eller flere prosjektrelaterte faner."
 );
 requireCheck(
-  ["Oversikt", "Avtalegrunnlag", "Prosjektering", "Fremdrift"].every((label) => guide.includes(`label: \"${label}\"`)),
-  "Prosjektarbeidsflaten mangler ett eller flere avtalte hurtigvalg i anbefalt rekkefølge."
-);
-requireCheck(
-  guide.indexOf('label: "Oversikt"') < guide.indexOf('label: "Avtalegrunnlag"') &&
+  guide.indexOf('label: "Oversikt"') < guide.indexOf('label: "Prosjektbeskrivelse"') &&
+    guide.indexOf('label: "Prosjektbeskrivelse"') < guide.indexOf('label: "Avtalegrunnlag"') &&
     guide.indexOf('label: "Avtalegrunnlag"') < guide.indexOf('label: "Prosjektering"') &&
     guide.indexOf('label: "Prosjektering"') < guide.indexOf('label: "Fremdrift"'),
-  "Anbefalt prosjektløp har feil rekkefølge."
+  "Prosjektfanene ligger ikke i avtalt arbeidsrekkefølge øverst."
 );
 requireCheck(
-  guide.includes('source: "Prosjektoversikt"') &&
-    guide.includes('source: "Avtalegrunnlag"') &&
-    guide.includes('source: "Prosjektering"') &&
-    guide.includes('source: "Fremdrift"') &&
+  guide.includes("sourceButton(shortcut.key)") &&
+    guide.includes("sourceButton(key)") &&
     guide.includes("target.click()"),
-  "Hurtigvalg bruker ikke eksisterende native prosjektnavigasjon."
+  "Toppfanene bruker ikke eksisterende native prosjektnavigasjon."
 );
 requireCheck(
   !guide.includes("window.location.assign") && !guide.includes("history.pushState"),
@@ -84,8 +103,12 @@ requireCheck(
   "React-Hjelp må beskrive samme anbefalte prosjektløp som prosjektveiviseren."
 );
 requireCheck(
-  css.includes("@media (max-width: 1180px)") && css.includes("display: none !important"),
-  "Desktop-veiviseren lekker inn i mobilskallet."
+  css.includes(".expoDesktopMenuBarHasProjectGuide") &&
+    css.includes("flex-wrap: wrap") &&
+    !css.includes('[data-source-label="Sjekklister"]') &&
+    css.includes("@media (max-width: 1180px)") &&
+    css.includes("display: none !important"),
+  "Den komplette prosjektmenyen er ikke synlig og brytbar på desktop, eller lekker inn i mobilskallet."
 );
 requireCheck(
   index.includes("installProjectWorkspaceHeaderGuide"),

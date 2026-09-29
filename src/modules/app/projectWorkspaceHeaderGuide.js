@@ -1,24 +1,42 @@
 // Expo ProffDok – FASE 42J / FASE 42K
-// Tydelig veiviser og få hurtigvalg i kollapset desktop-prosjektmeny.
+// Komplett prosjektmeny i den kollapsede desktop-arbeidsflaten.
 // Leser eksisterende native nav og klikker de samme knappene; lager ingen ny
 // navigasjonsmotor og endrer ingen prosjektdata.
-// FASE 42K viser anbefalt prosjektløp: Oversikt → Avtalegrunnlag → Prosjektering → Fremdrift.
+// Anbefalt prosjektløp beholdes i rekkefølgen, mens alle prosjektfunksjoner
+// ligger tilgjengelig øverst uten å blande inn globale appfunksjoner.
 
 import "./projectWorkspaceHeaderGuide.css";
 
 const DESKTOP_QUERY = "(min-width: 1181px)";
 const GUIDE_ID = "expo-project-workspace-guide";
 const BAR_ID = "expo-desktop-menu-bar";
-const SHORTCUTS = [
-  { label: "Oversikt", source: "Prosjektoversikt" },
-  { label: "Avtalegrunnlag", source: "Avtalegrunnlag" },
-  { label: "Prosjektering", source: "Prosjektering" },
-  { label: "Fremdrift", source: "Fremdrift" },
-];
-
 const clean = (value = "") => String(value || "").replace(/\s+/g, " ").trim();
 const isOverviewLabel = (label = "") =>
   label === "Prosjektoversikt" || label === "Nytt prosjekt";
+const exact = (...labels) => (label = "") => labels.includes(label);
+const startsWith = (prefix = "") => (label = "") =>
+  label === prefix || label.startsWith(`${prefix} (`) || label.startsWith(`${prefix} `);
+
+const PROJECT_SHORTCUTS = [
+  { key: "overview", label: "Oversikt", matches: isOverviewLabel },
+  { key: "sales", label: "Salgsgrunnlag", matches: exact("Salgsgrunnlag") },
+  { key: "description", label: "Prosjektbeskrivelse", matches: exact("Prosjektbeskrivelse") },
+  { key: "agreement", label: "Avtalegrunnlag", matches: exact("Avtalegrunnlag", "Tilbud/kontrakt") },
+  { key: "design", label: "Prosjektering", matches: exact("Prosjektering") },
+  { key: "progress", label: "Fremdrift", matches: exact("Fremdrift") },
+  { key: "products", label: "Produkter", matches: exact("Produkter") },
+  { key: "surfaces", label: "Overflater og innredning", matches: exact("Overflater og innredning") },
+  { key: "images", label: "Bilder", matches: exact("Bilder") },
+  { key: "access", label: "Tilgang", matches: exact("Tilgang") },
+  { key: "installations", label: "Fag/utstyr", matches: exact("Fag/utstyr") },
+  { key: "checklists", label: "Sjekklister", matches: exact("Sjekklister") },
+  { key: "deviations", label: "Avvik", matches: startsWith("Avvik"), dynamicLabel: true },
+  { key: "chat", label: "Chat", matches: startsWith("Chat"), dynamicLabel: true },
+  { key: "internal", label: "Interne notater", matches: exact("Interne notater") },
+  { key: "handover", label: "Overtagelse", matches: exact("Overtagelse") },
+  { key: "warranty", label: "Garanti", matches: startsWith("Garanti"), dynamicLabel: true },
+  { key: "report", label: "Rapport", matches: exact("Rapport") },
+];
 
 function findSourceNav() {
   return Array.from(document.querySelectorAll("nav")).find((nav) => {
@@ -31,18 +49,13 @@ function findSourceNav() {
   }) || null;
 }
 
-function sourceButton(label) {
+function sourceButton(key) {
   const nav = findSourceNav();
   if (!(nav instanceof HTMLElement)) return null;
+  const shortcut = PROJECT_SHORTCUTS.find((candidate) => candidate.key === key);
+  if (!shortcut) return null;
   return Array.from(nav.querySelectorAll(":scope > button")).find(
-    (button) => {
-      const buttonLabel = clean(button.textContent);
-      return label === "Prosjektoversikt"
-        ? isOverviewLabel(buttonLabel)
-        : label === "Avtalegrunnlag"
-          ? buttonLabel === "Avtalegrunnlag" || buttonLabel === "Tilbud/kontrakt"
-          : buttonLabel === label;
-    }
+    (button) => shortcut.matches(clean(button.textContent))
   ) || null;
 }
 
@@ -56,12 +69,7 @@ function activeProjectLabel() {
 }
 
 function isProjectWorkspace() {
-  const label = activeProjectLabel();
-  if (!label) return false;
-  if (["Startside", "Befaring/Tilbud", "Hjelp", "Firmaprofil", "Firma", "Systemadministrasjon"].includes(label)) {
-    return false;
-  }
-  return Boolean(sourceButton("Prosjektoversikt"));
+  return Boolean(sourceButton("overview"));
 }
 
 function buildGuide() {
@@ -74,40 +82,62 @@ function buildGuide() {
 
   const hint = document.createElement("span");
   hint.className = "expoProjectWorkspaceHint";
-  hint.textContent = "Anbefalt prosjektløp";
+  hint.textContent = "Prosjektmeny";
 
   const actions = document.createElement("div");
   actions.className = "expoProjectWorkspaceQuickActions";
-
-  SHORTCUTS.forEach(({ label, source }) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "expoProjectWorkspaceQuickButton";
-    button.dataset.sourceLabel = source;
-    button.textContent = label;
-    button.title = `Åpne ${label.toLowerCase()} i aktivt prosjekt`;
-    button.addEventListener("click", () => {
-      const target = sourceButton(source);
-      if (target instanceof HTMLButtonElement) target.click();
-    });
-    actions.append(button);
-  });
 
   guide.append(hint, actions);
   return guide;
 }
 
+function syncShortcutButtons(guide) {
+  const actions = guide.querySelector(".expoProjectWorkspaceQuickActions");
+  if (!(actions instanceof HTMLElement)) return;
+
+  const available = PROJECT_SHORTCUTS.flatMap((shortcut) => {
+    const target = sourceButton(shortcut.key);
+    if (!(target instanceof HTMLButtonElement)) return [];
+    const sourceLabel = clean(target.textContent);
+    return [{
+      ...shortcut,
+      visibleLabel: shortcut.dynamicLabel ? sourceLabel : shortcut.label,
+    }];
+  });
+  const signature = available.map(({ key, visibleLabel }) => `${key}:${visibleLabel}`).join("|");
+  if (actions.dataset.signature === signature) return;
+
+  actions.dataset.signature = signature;
+  actions.replaceChildren();
+  available.forEach(({ key, visibleLabel }) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "expoProjectWorkspaceQuickButton";
+    button.dataset.sourceKey = key;
+    button.textContent = visibleLabel;
+    button.title = `Åpne ${visibleLabel.toLowerCase()} i aktivt prosjekt`;
+    button.addEventListener("click", () => {
+      const target = sourceButton(key);
+      if (target instanceof HTMLButtonElement) target.click();
+    });
+    actions.append(button);
+  });
+}
+
 function syncGuide() {
   const existing = document.getElementById(GUIDE_ID);
+  const bar = document.getElementById(BAR_ID);
   if (!window.matchMedia(DESKTOP_QUERY).matches || !isProjectWorkspace()) {
     existing?.remove();
+    bar?.classList.remove("expoDesktopMenuBarHasProjectGuide");
     return;
   }
 
-  const bar = document.getElementById(BAR_ID);
   if (!(bar instanceof HTMLElement)) return;
+  bar.classList.add("expoDesktopMenuBarHasProjectGuide");
 
   const guide = buildGuide();
+  syncShortcutButtons(guide);
   const help = document.getElementById("expo-desktop-help-button");
   if (guide.parentElement !== bar) {
     if (help instanceof HTMLElement) bar.insertBefore(guide, help);
@@ -117,10 +147,10 @@ function syncGuide() {
   const active = activeProjectLabel();
   guide.querySelectorAll(".expoProjectWorkspaceQuickButton").forEach((button) => {
     if (!(button instanceof HTMLButtonElement)) return;
-    const sourceLabel = clean(button.dataset.sourceLabel);
-    const isActive = sourceLabel === active ||
-      (sourceLabel === "Prosjektoversikt" && isOverviewLabel(active)) ||
-      (sourceLabel === "Avtalegrunnlag" && active === "Tilbud/kontrakt");
+    const shortcut = PROJECT_SHORTCUTS.find(
+      (candidate) => candidate.key === clean(button.dataset.sourceKey)
+    );
+    const isActive = Boolean(shortcut?.matches(active));
     button.classList.toggle("isActive", isActive);
     if (isActive) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
