@@ -19,8 +19,8 @@
 - Firmaprofilen bruker appens aktive, autentiserte Supabase-klient ved lesing og lagring. Dermed unngås en egen lagret-sesjon-lesing ved full reload.
 - Full critical-suite og Sandbox-bundet Vite-build er grønne. GitHub CI og faktisk Preview-build er grønne. Live Preview viser obligatoriske firmafelt, separat firma-/innloggings-e-post, skrivebeskyttet ansattvisning og riktig standardlogo.
 - Brukeren ga eksplisitt `TEST OK` for invitasjonsflyten 29.09.2026. Sandbox viser at testbrukeren ble godkjent og koblet til `Proffkunde Demo AS` uten Systemadmin-handling.
-- Oppfølgingen for Firmaprofil er ferdig verifisert teknisk. Brukerens korte sluttkontroll og nye eksplisitte `TEST OK` gjenstår.
-- PR-en skal fortsatt ikke merges og ingenting skal deployes til Production før dette.
+- Brukeren ga eksplisitt `TEST OK` for Firmaprofil-oppfølgingen 29.09.2026 etter kontroll av obligatoriske firmafelt, separat firma-/innloggings-e-post og standardlogo i faktisk Preview.
+- All avtalt QA er dermed grønn. PR-en skal fortsatt ikke merges eller deployes til Production uten en egen, uttrykkelig Production-/mergegodkjenning.
 
 
 ## Pågående rettelse – profilnavn og misvisende rollefelt (28.09.2026)
