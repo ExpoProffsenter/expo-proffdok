@@ -3,19 +3,23 @@
 ## Pågående rettelse – firmainvitasjon og firmadekkende Generelle tilbud (29.09.2026)
 
 - Branch `fase45b-fix-invite-company-access` er opprettet fra gjeldende Production-`main` (`313c1851`). Production-kode og Production-Supabase er urørt.
-- PR #197 er `open`, draft, mergebar og ikke merget. Siste funksjonscommit er `fb7468bad65947950c4f0fcdd3c19418070cc7d9`.
-- Vercel Preview `dpl_BsmbEVjAY7NG4sJA2DUSin5z1s9n` er `READY`, `target=null`, på funksjonscommit `fb7468b`. `PR Core Safety` run 155 er `completed/success`.
+- PR #197 er `open`, draft, mergebar og ikke merget. Siste funksjonscommit er `7d13f406692f28a8940465a58ffb753a786bdf99`.
+- Vercel Preview `dpl_9Lx3m2J7euoV9TxrHADTtCz3t5mX` er `READY`, `target=null`, på funksjonscommit `7d13f40`. `PR Core Safety` run 158 er `completed/success`.
 - Production ble kontrollert read-only. WBL-hendelsen skyldtes at klienten forsøkte å sette firma, rolle og `approved=true` direkte; databasesperren avviste selv-godkjenningen. Invitasjonen ble derfor stående ventende selv om profilen senere ble korrigert manuelt.
 - Den tilsynelatende ekstra `WBL AS (ikke i registrerte firmaer)`-verdien var en tom valgverdi med misvisende etikett, ikke et ekstra registrert firma.
 - Fire godkjente Production-profiler mangler faktisk `company_name`. «Uten firma (4)» viste ingen kort fordi et skjult legacy-filter fortsatt sto på «Nye». Når et firma åpnes, nullstilles de skjulte filtrene nå og alle firmabrukerne vises.
 - En gyldig invitasjon fra aktiv Firmaadmin eller Systemadministrator kobler nå brukeren til riktig firma og godkjenner kontoen uten en ny Systemadmin-handling. Deaktivert konto, annet firma og direkte selv-eskalering er sperret.
 - Generelle tilbud / Proff vareregister er flyttet til firmatilgang. Når Systemadministrator aktiverer den, arver alle nåværende og nye firmabrukere `sales` + `store_offers`. «Din nto pris» forblir individuell; Firmaadmin kan styre andre brukere i eget firma, men ikke gi pristilgang til seg selv.
-- Sandbox-Supabase har de additive migrasjonene `company_invite_and_general_offer_access`, `fix_company_store_offers_module_alias`, `limit_company_invite_guard_marker` og `harden_company_module_access`. Produksjonsdatabasen har ingen av dem ennå.
+- Firmaprofilen er nå felles for firmaet. Foretaksnummer, adresse, telefon og firma-e-post er obligatoriske; bare Firmaadmin/Systemadministrator kan redigere, mens øvrige firmabrukere har lesevisning. Firma-e-post endrer aldri brukerens profil- eller auth-e-post.
+- Firmadata brukes i tilbud, rapporter, kontrakter, garantidokumenter og kundekommunikasjon. Nye kontrakt-PDF-er viser også firmaadresse og nettside. Utstedte dokumenter beholder lagret snapshot, mens prosjektansvarlig fortsatt settes fra innlogget bruker og lagres på saken.
+- Manglende egendefinert firmalogo gir Expo Proffsenter-logo. Preview-feilen skyldtes en syntetisk Sandbox-rad som pekte til en ikke-eksisterende logofil; raden er rettet og faktisk Preview viser standardlogoen.
+- Sandbox-Supabase har de additive migrasjonene `company_invite_and_general_offer_access`, `fix_company_store_offers_module_alias`, `limit_company_invite_guard_marker`, `harden_company_module_access`, `company_profile_contact_identity` og `harden_company_profile_helper_access`. Produksjonsdatabasen har ingen av dem ennå.
 - To autoritative Sandbox-tester med full tilbakerulling er grønne: invitasjon/autogodkjenning og firmaarv/nto-separasjon. ACL-kontrollen viser ingen klienttilgang til den private firmatabellen eller interne hjelperen.
-- Full critical-suite og Sandbox-bundet Vite-build var grønn før branch-commit. GitHub CI og faktisk Preview-build er grønne. Live Preview viser tydelig invitert modus for WBL AS og forklarer at inviterte brukere kobles automatisk.
+- Firmaprofil-RPC-ene er sperret for `anon`. Den interne profilleseren krever firmamedlemskap eller Systemadministrator. Autentisert kryssfirmakall returnerer ingen profil.
+- Full critical-suite og Sandbox-bundet Vite-build er grønne. GitHub CI og faktisk Preview-build er grønne. Live Preview viser obligatoriske firmafelt, separat firma-/innloggings-e-post, skrivebeskyttet ansattvisning og riktig standardlogo.
 - Brukeren ga eksplisitt `TEST OK` for invitasjonsflyten 29.09.2026. Sandbox viser at testbrukeren ble godkjent og koblet til `Proffkunde Demo AS` uten Systemadmin-handling.
-- Samme test avdekket at Firmaprofil fortsatt leste kontaktdata fra hver enkelt brukerprofil. Oppfølgingen flytter visningen og lagringen til en felles firmaprofil, skiller firma-e-post fra innloggings-e-post og krever foretaksnummer, adresse, telefon og firma-e-post. Ny Preview-verifisering gjenstår før merge.
-- PR-en skal fortsatt ikke merges og ingenting skal deployes til Production før oppfølgingen har grønn QA og nytt eksplisitt `TEST OK`.
+- Oppfølgingen for Firmaprofil er ferdig verifisert teknisk. Brukerens korte sluttkontroll og nye eksplisitte `TEST OK` gjenstår.
+- PR-en skal fortsatt ikke merges og ingenting skal deployes til Production før dette.
 
 
 ## Pågående rettelse – profilnavn og misvisende rollefelt (28.09.2026)
