@@ -10,14 +10,16 @@ import { createPortal } from "react-dom";
 import { Camera, ChevronDown, ChevronUp, ExternalLink, Plus, Printer, Search, Trash2 } from "lucide-react";
 import { getStoredSupabaseSession, rpcWithStoredSession } from "../access/moduleAccessClient.js";
 import { WORK_PROFILE_EVENT, getMyWorkProfileState, readCachedWorkProfileState } from "../access/workProfileClient.js";
+import { deleteMobilePicklist, listMobilePicklists, saveMobilePicklist } from "./mobilePicklistClient.js";
 import {
-  MAX_PICKLIST_ITEMS, deleteSavedPicklist, normalizePickQuantity,
-  picklistStorageKey, readSavedPicklist, savePicklist, toPicklistReference,
+  MAX_PICKLIST_ITEMS, MAX_SAVED_PICKLISTS, deleteLegacyPicklist, normalizePickQuantity,
+  picklistReferences, readLegacyPicklist, samePicklistContents, toPicklistReference,
 } from "./mobilePicklistStorage.mjs";
 
 const PriceSearchBarcodeScanner = lazy(() => import("./PriceSearchBarcodeScanner.jsx"));
 const WORKLIST_SESSION_KEY = "expo-proffdok:price-search:worklist:v1";
 const ORDER_SESSION_KEY = "expo-proffdok:price-search:order:v1";
+const ACTIVE_PICKLIST_SESSION_KEY = "expo-proffdok:price-search:active-picklist:v1";
 const MAX_STORED_WORKLIST_ITEMS = MAX_PICKLIST_ITEMS;
 const PRICE_SEARCH_PAGE_SIZE = 30;
 
@@ -119,6 +121,27 @@ function persistSessionOrderNumber(value) {
     else window.sessionStorage.removeItem(ORDER_SESSION_KEY);
   } catch {
     // Valgte varer og manuelt ordrenummer kan fortsatt brukes uten sessionStorage.
+  }
+}
+
+function readActivePicklistSession() {
+  try {
+    const parsed = JSON.parse(window.sessionStorage.getItem(ACTIVE_PICKLIST_SESSION_KEY) || "null");
+    return parsed?.id && parsed?.userId && parsed?.companyId ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistActivePicklistSession(identity, item = null) {
+  try {
+    if (!item) window.sessionStorage.removeItem(ACTIVE_PICKLIST_SESSION_KEY);
+    else window.sessionStorage.setItem(ACTIVE_PICKLIST_SESSION_KEY, JSON.stringify({
+      id: item.id, revision: item.revision,
+      userId: identity.userId, companyId: identity.companyId,
+    }));
+  } catch {
+    // Serveren er fortsatt varig fasit. Fanens aktive liste kan velges på nytt.
   }
 }
 
@@ -370,13 +393,22 @@ export default function StorePriceSearchView({ onClose }) {
   const [restoringSelected, setRestoringSelected] = useState(true);
   const [picklistIdentity, setPicklistIdentity] = useState(currentPicklistIdentity);
   const [profileResolved, setProfileResolved] = useState(() => Boolean(currentPicklistIdentity().companyId));
-  const [savedPicklistActive, setSavedPicklistActive] = useState(false);
+  const [picklists, setPicklists] = useState([]);
+  const [serverLoading, setServerLoading] = useState(true);
+  const [serverError, setServerError] = useState("");
+  const [activePicklistId, setActivePicklistId] = useState(null);
+  const [activeRevision, setActiveRevision] = useState(null);
+  const [listDirty, setListDirty] = useState(false);
+  const [saveBusy, setSaveBusy] = useState(false);
+  const [confirmOpenId, setConfirmOpenId] = useState(null);
+  const [confirmNew, setConfirmNew] = useState(false);
+  const [legacyToMigrate, setLegacyToMigrate] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [picklistMessage, setPicklistMessage] = useState("");
   const [restoreIncomplete, setRestoreIncomplete] = useState(false);
   const [restoreFailed, setRestoreFailed] = useState(false);
   const [restoreRevision, setRestoreRevision] = useState(0);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [searching, setSearching] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [totalResults, setTotalResults] = useState(0);
@@ -384,11 +416,13 @@ export default function StorePriceSearchView({ onClose }) {
   const searchInputRef = useRef(null);
   const restoredSelectionRef = useRef(false);
   const hydratedScopeRef = useRef("");
+  const hydrationGenerationRef = useRef(0);
   const activeQueryRef = useRef("");
-  const activeCompanyRef = useRef(picklistIdentity.companyId);
+  const activeScopeRef = useRef(`${picklistIdentity.userId}:${picklistIdentity.companyId}`);
 
-  const picklistScopeKey = picklistStorageKey(picklistIdentity);
-  const hydrationScope = isMobile ? `mobile:${picklistScopeKey || "unavailable"}` : "desktop";
+  const identityScope = `${picklistIdentity.userId}:${picklistIdentity.companyId}`;
+  const hydrationScope = `${isMobile ? "mobile" : "desktop"}:${identityScope}`;
+  const picklistMode = isMobile || Boolean(activePicklistId);
   const cleanQuery = query.trim();
   const selectedIds = useMemo(
     () => new Set(selectedProducts.map((item) => String(item.id))),
@@ -420,17 +454,23 @@ export default function StorePriceSearchView({ onClose }) {
     const syncProfile = () => {
       if (!active) return;
       const nextIdentity = currentPicklistIdentity();
-      if (activeCompanyRef.current && activeCompanyRef.current !== nextIdentity.companyId) {
+      const nextScope = `${nextIdentity.userId}:${nextIdentity.companyId}`;
+      if (activeScopeRef.current !== nextScope) {
+        hydrationGenerationRef.current += 1;
         persistStoredReferences([]);
         persistSessionOrderNumber("");
+        persistActivePicklistSession(nextIdentity);
         restoredSelectionRef.current = false;
         hydratedScopeRef.current = "";
         setSelectedProducts([]);
-        setSavedPicklistActive(false);
+        setPicklists([]);
+        setActivePicklistId(null);
+        setActiveRevision(null);
+        setListDirty(false);
         setOrderNumber("");
         setScanning(false);
       }
-      activeCompanyRef.current = nextIdentity.companyId;
+      activeScopeRef.current = nextScope;
       setPicklistIdentity(nextIdentity);
       setProfileResolved(true);
     };
@@ -458,49 +498,97 @@ export default function StorePriceSearchView({ onClose }) {
   }, []);
 
   useEffect(() => {
-    if (isMobile && !profileResolved) return undefined;
+    if (!profileResolved) return undefined;
     let cancelled = false;
+    const generation = ++hydrationGenerationRef.current;
     restoredSelectionRef.current = false;
     hydratedScopeRef.current = "";
     setRestoringSelected(true);
+    setServerLoading(true);
+    setServerError("");
     setPicklistMessage("");
     setRestoreFailed(false);
     setRestoreIncomplete(false);
-    const saved = isMobile && picklistScopeKey ? readSavedPicklist(picklistIdentity) : null;
-    const refs = saved?.items?.length ? saved.items : readStoredReferences();
-    const nextOrderNumber = saved ? saved.orderNumber : readSessionOrderNumber();
-    setSavedPicklistActive(Boolean(saved?.items?.length));
-    setOrderNumber(nextOrderNumber);
-    if (!refs.length) {
-      setSelectedProducts([]);
-      restoredSelectionRef.current = true;
-      hydratedScopeRef.current = hydrationScope;
-      setRestoringSelected(false);
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    setRestoringSelected(true);
-    void restoreStoredProducts(refs).then(({ items, missingCount }) => {
-      if (cancelled) return;
-      restoredSelectionRef.current = true;
-      hydratedScopeRef.current = hydrationScope;
-      setSelectedProducts(items);
-      if (missingCount && saved) {
-        setRestoreIncomplete(true);
-        setPicklistMessage(`${missingCount} vare(r) er ikke tilgjengelige i vareregisteret nå. Den lagrede originalen er beholdt; prøv igjen senere.`);
-      } else {
-        persistStoredReferences(items);
+    void (async () => {
+      let rows = [];
+      let loaded = false;
+      try {
+        rows = await listMobilePicklists();
+        loaded = true;
+      } catch (error) {
+        if (!cancelled && hydrationGenerationRef.current === generation) {
+          setServerError(error?.message || "Kunne ikke hente lagrede plukklister. Prøv igjen.");
+        }
       }
-      setRestoringSelected(false);
-    }).catch(() => {
-      if (cancelled) return;
-      setSelectedProducts([]);
-      setRestoringSelected(false);
-      setRestoreFailed(true);
-      setPicklistMessage("Kunne ikke hente alle varene akkurat nå. Listen er beholdt; prøv igjen når forbindelsen virker.");
-    });
+      if (cancelled || hydrationGenerationRef.current !== generation) return;
+      setPicklists(rows);
+      setServerLoading(false);
+
+      const sessionRefs = readStoredReferences();
+      const sessionOrder = readSessionOrderNumber();
+      const sessionActive = readActivePicklistSession();
+      const sameScope = sessionActive?.userId === picklistIdentity.userId
+        && sessionActive?.companyId === picklistIdentity.companyId;
+      const remote = loaded && sameScope ? rows.find((row) => row.id === sessionActive.id) : null;
+      const legacy = isMobile && !remote ? readLegacyPicklist(picklistIdentity) : null;
+      let refs = sessionRefs;
+      let nextOrder = sessionOrder;
+      if (remote) {
+        const localChanged = sessionRefs.length && !samePicklistContents(
+          sessionRefs, sessionOrder, remote.items, remote.order_number
+        );
+        const conflict = localChanged && Number(sessionActive.revision) !== Number(remote.revision);
+        refs = localChanged ? sessionRefs : remote.items;
+        nextOrder = localChanged ? sessionOrder : remote.order_number;
+        setActivePicklistId(remote.id);
+        setActiveRevision(remote.revision);
+        setListDirty(Boolean(localChanged));
+        if (conflict) {
+          setRestoreIncomplete(true);
+          setPicklistMessage("Listen er endret på en annen enhet. Ulagrede endringer er beholdt i denne fanen. Åpne serverversjonen bevisst før du gjør mer.");
+        } else {
+          persistActivePicklistSession(picklistIdentity, remote);
+        }
+      } else {
+        if (legacy?.items?.length) {
+          refs = legacy.items;
+          nextOrder = legacy.orderNumber;
+        }
+        setActivePicklistId(null);
+        setActiveRevision(null);
+        setListDirty(Boolean(refs.length));
+        if (loaded && sameScope && !legacy) persistActivePicklistSession(picklistIdentity);
+      }
+      setLegacyToMigrate(Boolean(legacy?.items?.length));
+      setOrderNumber(nextOrder);
+      if (!refs.length) {
+        setSelectedProducts([]);
+        restoredSelectionRef.current = true;
+        hydratedScopeRef.current = hydrationScope;
+        setRestoringSelected(false);
+        return;
+      }
+      try {
+        const { items, missingCount } = await restoreStoredProducts(refs);
+        if (cancelled || hydrationGenerationRef.current !== generation) return;
+        restoredSelectionRef.current = true;
+        hydratedScopeRef.current = hydrationScope;
+        setSelectedProducts(items);
+        if (missingCount) {
+          setRestoreIncomplete(true);
+          setPicklistMessage(`${missingCount} vare(r) er ikke tilgjengelige nå. Originalen er beholdt; prøv igjen før du lagrer.`);
+        } else {
+          persistStoredReferences(items);
+        }
+      } catch {
+        if (cancelled || hydrationGenerationRef.current !== generation) return;
+        setSelectedProducts([]);
+        setRestoreFailed(true);
+        setPicklistMessage("Kunne ikke hente alle varene. Listen er beholdt i fanen; prøv igjen.");
+      } finally {
+        if (!cancelled && hydrationGenerationRef.current === generation) setRestoringSelected(false);
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -508,17 +596,10 @@ export default function StorePriceSearchView({ onClose }) {
   }, [hydrationScope, isMobile, profileResolved, restoreRevision]);
 
   useEffect(() => {
-    if (!restoredSelectionRef.current || hydratedScopeRef.current !== hydrationScope) return;
+    if (!restoredSelectionRef.current || hydratedScopeRef.current !== hydrationScope || restoreIncomplete) return;
     persistStoredReferences(selectedProducts);
     persistSessionOrderNumber(orderNumber);
-    if (isMobile && savedPicklistActive && !restoreIncomplete && picklistScopeKey && selectedProducts.length) {
-      try {
-        savePicklist(picklistIdentity, selectedProducts, orderNumber);
-      } catch {
-        setPicklistMessage("Kunne ikke lagre endringene på denne mobilen. Sjekk lagringsinnstillingene.");
-      }
-    }
-  }, [selectedProducts, orderNumber, savedPicklistActive, restoreIncomplete, hydrationScope, isMobile, picklistScopeKey]);
+  }, [selectedProducts, orderNumber, hydrationScope, restoreIncomplete]);
 
   useEffect(() => {
     if (!canPrintInternal && includeInternalPrint) setIncludeInternalPrint(false);
@@ -590,13 +671,14 @@ export default function StorePriceSearchView({ onClose }) {
   };
 
   const addSelectedProduct = (item) => {
-    if (!item?.id || selectedIds.has(String(item.id)) || restoringSelected || restoreFailed || restoreIncomplete) return;
+    if (!item?.id || selectedIds.has(String(item.id)) || restoringSelected || restoreFailed || restoreIncomplete || saveBusy) return;
     if (selectedProducts.length >= MAX_PICKLIST_ITEMS) {
       setPicklistMessage(`Plukklisten kan inneholde opptil ${MAX_PICKLIST_ITEMS} varer. Skriv ut eller slett listen før du starter på en ny.`);
       return;
     }
     setSelectedProducts((current) => [...current, { ...item, pickQuantity: "1" }]);
-    setConfirmDelete(false);
+    setListDirty(true);
+    setConfirmDeleteId(null);
     setPicklistMessage("");
     setQuery("");
     setResults([]);
@@ -606,54 +688,195 @@ export default function StorePriceSearchView({ onClose }) {
   };
 
   const removeSelectedProduct = (itemId) => {
-    if (isMobile && savedPicklistActive && selectedProducts.length === 1) {
-      try {
-        deleteSavedPicklist(picklistIdentity);
-        setSavedPicklistActive(false);
-        setOrderNumber("");
-      } catch {
-        setPicklistMessage("Kunne ikke slette plukklisten fra denne mobilen.");
-        return;
-      }
+    if (saveBusy || restoreIncomplete) return;
+    if (activePicklistId && selectedProducts.length === 1) {
+      setPicklistMessage("Slett selve plukklisten dersom den siste varen skal fjernes.");
+      return;
     }
     setSelectedProducts((current) => current.filter((item) => String(item.id) !== String(itemId)));
-    setConfirmDelete(false);
+    setListDirty(true);
+    setConfirmDeleteId(null);
   };
 
   const updateSelectedQuantity = (itemId, quantity) => {
+    if (saveBusy || restoreIncomplete) return;
     setSelectedProducts((current) => current.map((item) =>
       String(item.id) === String(itemId) ? { ...item, pickQuantity: quantity } : item
     ));
+    setListDirty(true);
   };
 
-  const saveMobilePicklist = () => {
+  const saveCurrentPicklist = async () => {
+    if (saveBusy || restoringSelected || restoreFailed || restoreIncomplete || serverLoading || serverError) return;
+    if (!activePicklistId && picklists.length >= MAX_SAVED_PICKLISTS) {
+      setPicklistMessage("Du har allerede tre plukklister. Slett en liste før du lagrer en ny.");
+      return;
+    }
+    setSaveBusy(true);
     try {
-      savePicklist(picklistIdentity, selectedProducts, orderNumber);
-      setSavedPicklistActive(true);
-      setPicklistMessage("Plukklisten er lagret på denne mobilen. Endringer lagres automatisk.");
+      const saved = await saveMobilePicklist({
+        id: activePicklistId, revision: activeRevision,
+        items: selectedProducts, orderNumber,
+      });
+      setActivePicklistId(saved.id);
+      setActiveRevision(saved.revision);
+      setListDirty(false);
+      persistActivePicklistSession(picklistIdentity, saved);
+      if (legacyToMigrate) {
+        try { deleteLegacyPicklist(picklistIdentity); } catch { /* Serverkopien er lagret. */ }
+        setLegacyToMigrate(false);
+      }
+      try {
+        setPicklists(await listMobilePicklists());
+        setServerError("");
+      } catch {
+        setPicklists((current) => [{
+          id: saved.id, revision: saved.revision, order_number: orderNumber,
+          items: picklistReferences(selectedProducts), updated_at: saved.updated_at,
+        }, ...current.filter((row) => row.id !== saved.id)]);
+        setServerError("Listen er lagret, men oversikten kunne ikke oppdateres. Prøv igjen.");
+      }
+      setPicklistMessage("Plukklisten er lagret. Du finner den under Prissøk på PC og mobil med samme bruker.");
     } catch (error) {
-      setPicklistMessage(error?.message || "Kunne ikke lagre plukklisten på denne mobilen.");
+      setPicklistMessage(error?.message || "Kunne ikke lagre plukklisten.");
+      if (/endret eller slettet/.test(error?.message || "")) setRestoreIncomplete(true);
+    } finally {
+      setSaveBusy(false);
+    }
+  };
+
+  const openSavedPicklist = async (id) => {
+    if (saveBusy || restoringSelected || serverLoading) return;
+    if (listDirty && selectedProducts.length && confirmOpenId !== id) {
+      setConfirmOpenId(id);
+      setPicklistMessage("Denne fanen har ulagrede endringer. Lagre først, eller trykk Åpne på listen én gang til for å forkaste endringene.");
+      return;
+    }
+    const generation = ++hydrationGenerationRef.current;
+    setConfirmOpenId(null);
+    setRestoringSelected(true);
+    try {
+      const rows = await listMobilePicklists();
+      if (hydrationGenerationRef.current !== generation) return;
+      setPicklists(rows);
+      setServerError("");
+      const row = rows.find((item) => item.id === id);
+      if (!row) throw new Error("Plukklisten er slettet eller utilgjengelig.");
+      const { items, missingCount } = await restoreStoredProducts(row.items);
+      if (hydrationGenerationRef.current !== generation) return;
+      restoredSelectionRef.current = true;
+      hydratedScopeRef.current = hydrationScope;
+      persistStoredReferences(row.items);
+      persistSessionOrderNumber(row.order_number);
+      persistActivePicklistSession(picklistIdentity, row);
+      setActivePicklistId(row.id);
+      setActiveRevision(row.revision);
+      setSelectedProducts(items);
+      setOrderNumber(row.order_number);
+      setListDirty(false);
+      setLegacyToMigrate(false);
+      setConfirmDeleteId(null);
+      setRestoreFailed(false);
+      setRestoreIncomplete(Boolean(missingCount));
+      setPicklistMessage(missingCount
+        ? `${missingCount} vare(r) er ikke tilgjengelige nå. Originalen ligger fortsatt på serveren; prøv igjen senere.`
+        : "Plukklisten er åpnet fra serveren.");
+    } catch (error) {
+      if (hydrationGenerationRef.current === generation) {
+        setPicklistMessage(error?.message || "Kunne ikke åpne plukklisten.");
+      }
+    } finally {
+      if (hydrationGenerationRef.current === generation) setRestoringSelected(false);
+    }
+  };
+
+  const startNewPicklist = () => {
+    if (saveBusy || restoringSelected) return;
+    if (listDirty && selectedProducts.length && !confirmNew) {
+      setConfirmNew(true);
+      setPicklistMessage("Denne fanen har ulagrede endringer. Lagre først, eller trykk Ny plukkliste igjen for å forkaste endringene.");
+      return;
+    }
+    setSelectedProducts([]);
+    if (legacyToMigrate) {
+      try { deleteLegacyPicklist(picklistIdentity); } catch { /* Økten kan fortsatt tømmes. */ }
+    }
+    persistStoredReferences([]);
+    setOrderNumber("");
+    persistSessionOrderNumber("");
+    persistActivePicklistSession(picklistIdentity);
+    setActivePicklistId(null);
+    setActiveRevision(null);
+    setListDirty(false);
+    setLegacyToMigrate(false);
+    setConfirmNew(false);
+    setConfirmOpenId(null);
+    setRestoreIncomplete(false);
+    setRestoreFailed(false);
+    setSelectedExpanded(true);
+    setIncludeInternalPrint(false);
+    setConfirmDeleteId(null);
+    setPicklistMessage(picklists.length >= MAX_SAVED_PICKLISTS
+      ? "Du har tre lagrede plukklister. Slett én før du kan lagre en ny."
+      : "Ny plukkliste er klar. Skann eller søk etter varer.");
+    window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
+  };
+
+  const deletePicklist = async (id) => {
+    if (saveBusy || !id) return;
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id);
+      setPicklistMessage("Trykk Bekreft sletting for å slette plukklisten fra alle enhetene dine.");
+      return;
+    }
+    setSaveBusy(true);
+    try {
+      const deleted = await deleteMobilePicklist(id);
+      if (!deleted) throw new Error("Plukklisten var allerede slettet. Oppdater oversikten.");
+      setPicklists((current) => current.filter((row) => row.id !== id));
+      if (activePicklistId === id) {
+        setSelectedProducts([]);
+        persistStoredReferences([]);
+        setOrderNumber("");
+        persistSessionOrderNumber("");
+        persistActivePicklistSession(picklistIdentity);
+        setActivePicklistId(null);
+        setActiveRevision(null);
+        setListDirty(false);
+        setRestoreIncomplete(false);
+      }
+      setConfirmDeleteId(null);
+      setPicklistMessage("Plukklisten er slettet fra serveren og alle enhetene dine.");
+    } catch (error) {
+      setPicklistMessage(error?.message || "Kunne ikke slette plukklisten.");
+    } finally {
+      setSaveBusy(false);
     }
   };
 
   const clearSelectedProducts = () => {
-    if (isMobile && savedPicklistActive) {
-      try {
-        deleteSavedPicklist(picklistIdentity);
-      } catch {
-        setPicklistMessage("Kunne ikke slette plukklisten fra denne mobilen.");
-        return;
-      }
+    if (activePicklistId) {
+      void deletePicklist(activePicklistId);
+      return;
     }
-    setSavedPicklistActive(false);
+    if (isMobile && confirmDeleteId !== "draft") {
+      setConfirmDeleteId("draft");
+      setPicklistMessage("Trykk Bekreft sletting for å tømme kladden i denne fanen.");
+      return;
+    }
     setSelectedProducts([]);
+    if (legacyToMigrate) {
+      try { deleteLegacyPicklist(picklistIdentity); } catch { /* Økten kan fortsatt tømmes. */ }
+    }
     persistStoredReferences([]);
     setOrderNumber("");
     persistSessionOrderNumber("");
+    setListDirty(false);
+    setLegacyToMigrate(false);
+    setConfirmDeleteId(null);
     setSelectedExpanded(true);
     setIncludeInternalPrint(false);
-    setConfirmDelete(false);
-    setPicklistMessage(isMobile ? "Plukklisten er slettet fra denne mobilen." : "");
+    setPicklistMessage(isMobile ? "Kladden er tømt." : "");
     window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
 
@@ -666,8 +889,8 @@ export default function StorePriceSearchView({ onClose }) {
     ? createPortal(
         <PrintDocument
           items={selectedProducts}
-          includeInternal={!isMobile && canPrintInternal && includeInternalPrint}
-          picklistMode={isMobile}
+          includeInternal={!picklistMode && canPrintInternal && includeInternalPrint}
+          picklistMode={picklistMode}
           orderNumber={orderNumber.trim()}
         />,
         document.body
@@ -686,8 +909,53 @@ export default function StorePriceSearchView({ onClose }) {
         <h2>Prissøk</h2>
         <p>{isMobile
           ? "Skann eller søk varer, angi antall og lagre en midlertidig plukkliste til senere registrering i Cordel."
-          : "Søk etter varer og legg dem i en midlertidig arbeidsliste mens du sammenligner produkter og priser."}</p>
+          : "Søk varer og priser, eller åpne en lagret plukkliste for å føre antall og ordrenummer inn i Cordel."}</p>
       </section>
+
+      <section className="priceSearchSavedLists" aria-label="Lagrede plukklister">
+        <div className="priceSearchSavedHead">
+          <div>
+            <h3>Lagrede plukklister ({picklists.length}/{MAX_SAVED_PICKLISTS})</h3>
+            <p>Tilgjengelige for deg på PC og mobil. Slett en liste når den er registrert i Cordel.</p>
+          </div>
+          {activePicklistId ? (
+            <button type="button" className="secondary" onClick={startNewPicklist} disabled={saveBusy || restoringSelected}>
+              {confirmNew ? "Forkast endringer og start ny" : isMobile ? "Ny plukkliste" : "Lukk liste"}
+            </button>
+          ) : null}
+        </div>
+        {serverLoading ? <p>Henter plukklister …</p> : null}
+        {!serverLoading && !serverError && !picklists.length ? <p>Du har ingen lagrede plukklister ennå.</p> : null}
+        {picklists.length ? <div className="priceSearchSavedRows">{picklists.map((row) => (
+          <div className="priceSearchSavedRow" key={row.id}>
+            <div>
+              <strong>{row.order_number ? `Ordre ${row.order_number}` : "Uten ordrenummer"}</strong>
+              <small>{Array.isArray(row.items) ? row.items.length : 0} varer · lagret {row.updated_at ? formatDate(row.updated_at) : "–"}</small>
+            </div>
+            <div className="priceSearchSavedActions">
+              <button type="button" onClick={() => void openSavedPicklist(row.id)} disabled={saveBusy || restoringSelected || Boolean(serverError)}>
+                {confirmOpenId === row.id ? "Forkast endringer og åpne" : activePicklistId === row.id ? "Åpne på nytt" : "Åpne"}
+              </button>
+              <button type="button" className="secondary" onClick={() => void deletePicklist(row.id)} disabled={saveBusy}>
+                {confirmDeleteId === row.id ? "Bekreft sletting" : "Slett"}
+              </button>
+            </div>
+          </div>
+        ))}</div> : null}
+        {picklists.length >= MAX_SAVED_PICKLISTS ? (
+          <p className="priceSearchLimit">Du har nå tre plukklister. Slett en før du lagrer en ny.</p>
+        ) : null}
+      </section>
+
+      {serverError ? <div className="priceSearchMessage isError" role="alert">
+        {serverError} <button type="button" className="secondary" onClick={() => setRestoreRevision((current) => current + 1)}>Prøv igjen</button>
+      </div> : null}
+      {picklistMessage ? <div className="priceSearchMessage" role="status">
+        {picklistMessage}
+        {restoreIncomplete || restoreFailed ? (
+          <button type="button" className="secondary" onClick={() => setRestoreRevision((current) => current + 1)}>Prøv igjen</button>
+        ) : null}
+      </div> : null}
 
       {restoringSelected && !selectedProducts.length ? (
         <div className="priceSearchMessage">Gjenoppretter midlertidig arbeidsliste …</div>
@@ -698,15 +966,15 @@ export default function StorePriceSearchView({ onClose }) {
           <div className="priceSearchSelectedHeader">
             <div>
               <small>Midlertidig arbeidsliste</small>
-              <h3>{isMobile ? "Plukkliste" : "Valgte varer"} ({selectedProducts.length})</h3>
-              <p>{isMobile
-                ? savedPicklistActive
-                  ? "Lagret på denne mobilen for innlogget bruker og aktivt firma. Ingen priser lagres; endringer lagres automatisk til du sletter listen."
-                  : "Arbeidslisten tåler refresh/dvale i denne fanen. Trykk Lagre plukkliste for å beholde den på mobilen etter at fanen lukkes."
-                : "Listen lagres bare i denne nettleserfanen og tåler vanlig refresh/dvale. Prisene hentes på nytt etter reload."}</p>
+              <h3>{picklistMode ? "Plukkliste" : "Valgte varer"} ({selectedProducts.length})</h3>
+              <p>{activePicklistId
+                ? listDirty ? "Ulagrede endringer. Trykk Lagre endringer før du bytter enhet." : "Lagret på serveren. Du finner listen på PC og mobil med samme bruker."
+                : picklistMode
+                  ? "Kladden ligger i denne fanen. Trykk Lagre plukkliste for å finne den igjen på PC."
+                  : "Listen lagres bare i denne nettleserfanen og tåler vanlig refresh/dvale. Prisene hentes på nytt etter reload."}</p>
             </div>
             <div className="priceSearchSelectedHeaderActions">
-              {!isMobile && canPrintInternal ? (
+              {!picklistMode && canPrintInternal ? (
                 <label className="priceSearchPrintOption">
                   <input
                     type="checkbox"
@@ -716,13 +984,13 @@ export default function StorePriceSearchView({ onClose }) {
                   Inkluder interne priser
                 </label>
               ) : null}
-              {isMobile && !savedPicklistActive ? (
-                <button type="button" onClick={saveMobilePicklist} disabled={!picklistScopeKey}>
-                  Lagre plukkliste
+              {picklistMode && (listDirty || !activePicklistId) ? (
+                <button type="button" onClick={() => void saveCurrentPicklist()} disabled={saveBusy || serverLoading || Boolean(serverError) || restoreIncomplete || restoreFailed || (!activePicklistId && picklists.length >= MAX_SAVED_PICKLISTS)}>
+                  {saveBusy ? "Lagrer …" : activePicklistId ? "Lagre endringer" : "Lagre plukkliste"}
                 </button>
               ) : null}
-              <button type="button" className="secondary" onClick={printSelectedProducts} disabled={restoreIncomplete}>
-                <Printer size={16} /> {isMobile ? "Skriv ut plukkliste" : "Skriv ut"}
+              <button type="button" className="secondary" onClick={printSelectedProducts} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
+                <Printer size={16} /> {picklistMode ? "Skriv ut plukkliste" : "Skriv ut"}
               </button>
               <button
                 type="button"
@@ -735,51 +1003,34 @@ export default function StorePriceSearchView({ onClose }) {
               </button>
               <button
                 type="button" className="secondary"
-                onClick={() => isMobile && !confirmDelete ? setConfirmDelete(true) : clearSelectedProducts()}
+                onClick={clearSelectedProducts} disabled={saveBusy}
               >
-                <Trash2 size={16} /> {isMobile ? confirmDelete ? "Bekreft sletting" : "Slett plukkliste" : "Tøm liste"}
+                <Trash2 size={16} /> {activePicklistId
+                  ? confirmDeleteId === activePicklistId ? "Bekreft sletting" : "Slett plukkliste"
+                  : isMobile ? confirmDeleteId === "draft" ? "Bekreft sletting" : "Slett kladd" : "Tøm liste"}
               </button>
             </div>
           </div>
-          {isMobile ? (
+          {picklistMode ? (
             <label className="priceSearchOrderNumber">
               <span>Ordrenummer i Cordel (valgfritt)</span>
               <input
-                value={orderNumber} maxLength={64} autoComplete="off" disabled={restoreIncomplete}
-                onChange={(event) => setOrderNumber(event.target.value)}
+                value={orderNumber} maxLength={64} autoComplete="off" disabled={restoreIncomplete || saveBusy}
+                onChange={(event) => { setOrderNumber(event.target.value); setListDirty(true); }}
                 placeholder="Skriv inn ordrenummer manuelt"
               />
             </label>
           ) : null}
-          {isMobile && !picklistScopeKey ? (
-            <div className="priceSearchMessage isError">Velg aktivt firma og logg inn for å lagre plukklisten på mobilen.</div>
-          ) : null}
-          {picklistMessage ? <div className="priceSearchMessage" role="status">
-            {picklistMessage}
-            {restoreIncomplete ? <button type="button" className="secondary" onClick={() => setRestoreRevision((current) => current + 1)}>Prøv igjen</button> : null}
-          </div> : null}
           <div className={`priceSearchSelectedList${selectedExpanded ? "" : " isCollapsed"}`}>
             {selectedProducts.map((item) => (
               <SelectedProduct
                 key={item.id} item={item} onRemove={removeSelectedProduct}
-                onQuantityChange={updateSelectedQuantity} picklistMode={isMobile}
-                readOnly={restoreIncomplete}
+                onQuantityChange={updateSelectedQuantity} picklistMode={picklistMode}
+                readOnly={restoreIncomplete || saveBusy}
               />
             ))}
           </div>
         </section>
-      ) : null}
-
-      {!selectedProducts.length && picklistMessage ? (
-        <div className="priceSearchMessage" role="status">
-          {picklistMessage}
-          {restoreFailed || restoreIncomplete ? <button type="button" className="secondary" onClick={() => setRestoreRevision((current) => current + 1)}>Prøv igjen</button> : null}
-          {savedPicklistActive && !restoreFailed ? (
-            <button type="button" className="secondary" onClick={() => isMobile && !confirmDelete ? setConfirmDelete(true) : clearSelectedProducts()}>
-              {confirmDelete ? "Bekreft sletting" : "Slett lagret plukkliste"}
-            </button>
-          ) : null}
-        </div>
       ) : null}
 
       <section className={`priceSearchCard${selectedProducts.length ? " hasSelectedProducts" : ""}`}>
@@ -802,7 +1053,7 @@ export default function StorePriceSearchView({ onClose }) {
               type="button"
               className="secondary priceSearchScanButton"
               onClick={() => { setScanMessage(""); setScanning(true); }}
-              disabled={scanning}
+              disabled={scanning || saveBusy || restoreIncomplete}
             >
               <Camera size={18} /> Skann strekkode
             </button>
@@ -821,8 +1072,8 @@ export default function StorePriceSearchView({ onClose }) {
         <div className="priceSearchMeta" aria-live="polite">
           <span>{resultLabel}</span>
           <small>{isMobile
-            ? "Plukklisten lagres på denne mobilen når du velger Lagre plukkliste. Priser hentes alltid på nytt fra serveren."
-            : "Arbeidslisten lagres kun midlertidig i denne fanen. Intern nto-pris vises bare for brukere med egen tilgang."}</small>
+            ? "Trykk Lagre plukkliste for å hente den frem på PC. Ingen priser lagres i plukklisten."
+            : "Lagrede plukklister åpnes fra serveren. Intern nto-pris vises bare for brukere med egen tilgang."}</small>
         </div>
       </section>
 
@@ -839,7 +1090,7 @@ export default function StorePriceSearchView({ onClose }) {
                 key={item.id}
                 item={item}
                 selected={selectedIds.has(String(item.id))}
-                disabled={restoringSelected || restoreFailed || restoreIncomplete}
+                disabled={restoringSelected || restoreFailed || restoreIncomplete || saveBusy}
                 onSelect={addSelectedProduct}
               />
             ))}
@@ -868,6 +1119,10 @@ export default function StorePriceSearchView({ onClose }) {
         .priceSearchIntro small,.priceSearchSelectedHeader small{font-weight:800;color:#159aa3}
         .priceSearchIntro h2{margin:4px 0 6px;font-size:34px}
         .priceSearchIntro p,.priceSearchSelectedHeader p{margin:0;color:#60737b;max-width:780px}
+        .priceSearchSavedLists{padding:18px;border:1px solid #cfe1e6;border-radius:18px;background:#f5fafb;margin-bottom:16px}
+        .priceSearchSavedHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+        .priceSearchSavedHead h3{margin:0 0 4px;font-size:20px}.priceSearchSavedHead p,.priceSearchSavedLists>p{margin:0;color:#60737b}
+        .priceSearchSavedRows{display:grid;gap:8px;margin-top:12px}.priceSearchSavedRow{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px 13px;border:1px solid #d6e4e8;border-radius:12px;background:#fff}.priceSearchSavedRow>div:first-child{display:grid;gap:3px;min-width:0}.priceSearchSavedRow small{color:#60737b}.priceSearchSavedActions{display:flex;gap:7px}.priceSearchSavedActions button{min-height:42px}.priceSearchSavedLists .priceSearchLimit{margin-top:12px;color:#a34517;font-weight:800}
         .priceSearchCard{padding:20px;border:1px solid #cfe1e6;border-radius:18px;background:#fff;box-shadow:0 10px 30px rgba(15,23,42,.05)}
         .priceSearchCard.hasSelectedProducts{margin-top:16px}
         .priceSearchCard label{display:block;font-weight:900;margin-bottom:8px}
@@ -947,6 +1202,7 @@ export default function StorePriceSearchView({ onClose }) {
         }
         @media(max-width:620px){
           .priceSearchIntro{margin-bottom:14px}
+          .priceSearchSavedHead,.priceSearchSavedRow{align-items:stretch;flex-direction:column}.priceSearchSavedActions button{flex:1}.priceSearchSavedHead button{width:100%}
           .priceSearchCard,.priceSearchSelected{padding:14px}
           .priceSearchInputWrap input{font-size:16px;min-height:52px}
           .priceSearchMeta,.priceSearchSelectedHeader,.priceSearchSelectedHeading{align-items:stretch;flex-direction:column}

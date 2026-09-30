@@ -100,7 +100,8 @@ const priceSearch = requireNeedles("src/modules/storeCatalog/storePriceSearchUx.
   'label.textContent = "Prissøk"',
   "grid.appendChild(button)",
   "findInternalNav() || findMobileQuickGrid()",
-  'window.addEventListener("expo-proffdok-module-access"',
+  'window.addEventListener(MODULE_ACCESS_EVENT, recheckAccess)',
+  'window.addEventListener(WORK_PROFILE_EVENT, () => {',
   'rpcWithStoredSession("current_user_has_internal_store_price_search_access")',
 ]);
 

@@ -1,6 +1,6 @@
 import React from "react";
 
-const UPDATED = "Sist oppdatert: 29.09.2026";
+const UPDATED = "Sist oppdatert: 30.09.2026";
 
 function List({ items = [] }) {
   return React.createElement(

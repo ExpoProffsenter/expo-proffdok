@@ -340,7 +340,7 @@ const INTERNAL_COMMERCE_SECTIONS = [
       "Trykk Avbryt skanning for å lukke kameraet. Ved avvist eller manglende kameratilgang kan du alltid skrive EAN/GTIN manuelt i søkefeltet.",
       "Trykk ← Startside øverst i Prissøk for å gå tilbake til Startsiden. Da avsluttes aktivt Prissøk uten automatisk gjenåpning; den midlertidige arbeidslisten beholdes i samme nettleserfane.",
       "Legg aktuelle varer i den midlertidige arbeidslisten mens du sammenligner. Ved vanlig appbytte, dvale eller refresh skal Prissøk åpnes igjen med valgte varer bevart og prisene hentet på nytt fra backend.",
-      "På mobil kan du angi antall og et valgfritt Cordel-ordrenummer, trykke Lagre plukkliste og skrive den ut før varene punsjes inn i Cordel. Listen beholdes bare i denne mobilens nettleser for din bruker og det aktive firmaet; den deles ikke med andre enheter. Endringer lagres automatisk etter første lagring, og Slett plukkliste fjerner den lagrede listen. Ingen priser eller kamerabilder lagres i plukklisten.",
+      "På mobil kan du skanne varer, angi antall og et valgfritt Cordel-ordrenummer og trykke Lagre plukkliste. Du finner lagrede lister under Prissøk både på PC og mobil med samme bruker. Maks tre lister per bruker; slett en etter registrering i Cordel før du lagrer en fjerde. Endringer i en åpnet liste må lagres med Lagre endringer. Ingen priser eller kamerabilder lagres i plukklisten.",
       "Vareregisteret bygger på siste aktiverte Cordel-eksport.",
       "Varer merket Utgått i Cordel, varer med 0-pris og gamle ÅVP-leverandører hoppes automatisk over ved import.",
       "Oppdatering og aktivering av selve vareregisteret er en systemadmin-oppgave."

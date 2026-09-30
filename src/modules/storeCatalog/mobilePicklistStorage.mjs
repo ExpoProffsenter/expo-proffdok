@@ -1,6 +1,6 @@
-// En bevisst lagret mobilplukkliste er adskilt fra Prissøks fanespesifikke arbeidsliste.
-// Bare vareoppslagsnøkler, antall og manuelt ordrenummer lagres på denne enheten.
+// Referanser uten prisfelt. Gammel mobil lokalStorage leses kun for kontrollert overgang.
 export const MAX_PICKLIST_ITEMS = 30;
+export const MAX_SAVED_PICKLISTS = 3;
 const STORAGE_PREFIX = "expo-proffdok:mobile-picklist:v1:";
 
 export function normalizePickQuantity(value) {
@@ -18,14 +18,24 @@ export function toPicklistReference(item = {}) {
   };
 }
 
-export function picklistStorageKey({ userId = "", companyId = "" } = {}) {
-  // Både bruker og aktivt firma må være bekreftet før en lagret liste åpnes.
+export function legacyPicklistStorageKey({ userId = "", companyId = "" } = {}) {
   if (!/^[a-f\d-]{36}$/i.test(userId) || !/^[a-f\d-]{36}$/i.test(companyId)) return "";
   return `${STORAGE_PREFIX}${userId}:${companyId}`;
 }
 
-export function readSavedPicklist(identity, storage = globalThis.localStorage) {
-  const key = picklistStorageKey(identity);
+export function picklistReferences(items) {
+  return (Array.isArray(items) ? items : []).slice(0, MAX_PICKLIST_ITEMS)
+    .map(toPicklistReference)
+    .filter((item) => item.id && (item.supplier_product_number || item.gtin));
+}
+
+export function samePicklistContents(itemsA, orderA, itemsB, orderB) {
+  return String(orderA || "").trim() === String(orderB || "").trim()
+    && JSON.stringify(picklistReferences(itemsA)) === JSON.stringify(picklistReferences(itemsB));
+}
+
+export function readLegacyPicklist(identity, storage = globalThis.localStorage) {
+  const key = legacyPicklistStorageKey(identity);
   if (!key || !storage) return null;
   try {
     const raw = storage.getItem(key);
@@ -49,26 +59,7 @@ export function readSavedPicklist(identity, storage = globalThis.localStorage) {
   }
 }
 
-export function savePicklist(identity, items, orderNumber, storage = globalThis.localStorage) {
-  const key = picklistStorageKey(identity);
-  if (!key || !storage) throw new Error("Velg firma og logg inn før plukklisten lagres.");
-  if (Array.isArray(items) && items.length > MAX_PICKLIST_ITEMS) {
-    throw new Error(`Plukklisten kan inneholde opptil ${MAX_PICKLIST_ITEMS} varer.`);
-  }
-  const references = (Array.isArray(items) ? items : [])
-    .map(toPicklistReference)
-    .filter((item) => item.id && (item.supplier_product_number || item.gtin));
-  if (!references.length) throw new Error("Legg til minst én vare før plukklisten lagres.");
-  const snapshot = {
-    version: 1,
-    orderNumber: String(orderNumber || "").trim().slice(0, 64),
-    items: references,
-  };
-  storage.setItem(key, JSON.stringify(snapshot));
-  return snapshot;
-}
-
-export function deleteSavedPicklist(identity, storage = globalThis.localStorage) {
-  const key = picklistStorageKey(identity);
+export function deleteLegacyPicklist(identity, storage = globalThis.localStorage) {
+  const key = legacyPicklistStorageKey(identity);
   if (key && storage) storage.removeItem(key);
 }

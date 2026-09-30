@@ -94,6 +94,8 @@ export function StoreCatalogInlineLookup({ onUse, placeholder = "Søk vareregist
       if (!media.matches) setScanning(false);
     };
     media.addEventListener("change", updateMobile);
+    window.addEventListener("resize", updateMobile);
+    updateMobile();
     const invalidateAccess = () => {
       setAccess(false);
       setScanning(false);
@@ -109,6 +111,7 @@ export function StoreCatalogInlineLookup({ onUse, placeholder = "Søk vareregist
     window.addEventListener(OFFER_SCANNER_EVENT, closeOtherScanner);
     return () => {
       media.removeEventListener("change", updateMobile);
+      window.removeEventListener("resize", updateMobile);
       window.removeEventListener(WORK_PROFILE_EVENT, invalidateAccess);
       window.removeEventListener(MODULE_ACCESS_EVENT, invalidateAccess);
       window.removeEventListener(OFFER_SCANNER_EVENT, closeOtherScanner);
@@ -196,27 +199,25 @@ export function StoreCatalogInlineLookup({ onUse, placeholder = "Søk vareregist
         <Search size={17} />
         <input ref={inputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={placeholder} autoComplete="off" />
       </div>
-      {isMobile ? (
-        <>
-          <button
-            type="button" className="sales-secondary-button store-inline-catalog-scan"
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent(OFFER_SCANNER_EVENT, { detail: scannerIdRef.current }));
-              setScanMessage("");
-              setScanning(true);
-            }}
-            disabled={scanning}
-          >
-            <Camera size={17} /> Skann strekkode til denne posten
-          </button>
-          {scanning ? (
-            <Suspense fallback={<small className="store-inline-catalog-message">Åpner kamera …</small>}>
-              <PriceSearchBarcodeScanner onScan={handleScan} onCancel={stopScanning} onError={handleScanError} />
-            </Suspense>
-          ) : null}
-          {scanMessage ? <small className="store-inline-catalog-message is-error" role="alert">{scanMessage}</small> : null}
-        </>
+      <button
+        type="button" className="sales-secondary-button store-inline-catalog-scan"
+        onClick={() => {
+          if (!window.matchMedia("(max-width: 700px)").matches) return;
+          setIsMobile(true);
+          window.dispatchEvent(new CustomEvent(OFFER_SCANNER_EVENT, { detail: scannerIdRef.current }));
+          setScanMessage("");
+          setScanning(true);
+        }}
+        disabled={scanning}
+      >
+        <Camera size={17} /> Skann strekkode til denne posten
+      </button>
+      {isMobile && scanning ? (
+        <Suspense fallback={<small className="store-inline-catalog-message">Åpner kamera …</small>}>
+          <PriceSearchBarcodeScanner onScan={handleScan} onCancel={stopScanning} onError={handleScanError} />
+        </Suspense>
       ) : null}
+      {isMobile && scanMessage ? <small className="store-inline-catalog-message is-error" role="alert">{scanMessage}</small> : null}
       {searching ? <small className="store-inline-catalog-message">Søker …</small> : null}
       {alternativeSource ? <div className="store-inline-catalog-alternative-head"><strong>Velg leverandør for samme GTIN</strong><button type="button" onClick={() => { setAlternativeSource(null); setAlternatives([]); }}>Tilbake til treff</button></div> : null}
       {visible.length ? <div className="store-inline-catalog-results">{visible.map((item) => <InlineCatalogResult key={item.id} item={item} onUse={choose} onAlternatives={showAlternatives} />)}</div> : null}
@@ -224,7 +225,7 @@ export function StoreCatalogInlineLookup({ onUse, placeholder = "Søk vareregist
       {message ? <small className="store-inline-catalog-message is-error">{message}</small> : null}
       <style>{`
         .store-inline-catalog{display:grid;gap:8px;padding:10px;border:1px solid #cfe1e6;border-radius:12px;background:#f4fafb;margin:0 0 12px}.store-inline-catalog-search{position:relative}.store-inline-catalog-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#60757e;pointer-events:none}.store-inline-catalog-search input{width:100%;min-height:44px;box-sizing:border-box;padding:0 12px 0 38px;border:1px solid #bcd0d7;border-radius:11px;background:#fff;font:inherit;color:#10212b;outline:none}.store-inline-catalog-search input:focus{border-color:#18aeb8;box-shadow:0 0 0 3px rgba(24,174,184,.12)}
-        .store-inline-catalog-scan{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px}
+        .store-inline-catalog-scan{display:none;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px}
         .store-inline-catalog .priceSearchScanner{padding:10px;border:1px solid #cfe1e6;border-radius:12px;background:#fff}
         .store-inline-catalog .priceSearchScanner video{display:block;width:100%;max-height:360px;aspect-ratio:4/3;object-fit:contain;border-radius:10px;background:#10212b}
         .store-inline-catalog .priceSearchScanner p{margin:10px 0;color:#334b56}
@@ -234,6 +235,7 @@ export function StoreCatalogInlineLookup({ onUse, placeholder = "Søk vareregist
         .store-inline-catalog .priceSearchScanner button{width:100%;min-height:44px}
         .store-inline-catalog-results{display:grid;gap:7px;max-height:330px;overflow:auto}.store-inline-catalog-result{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:9px 10px;border:1px solid #d6e4e8;border-radius:10px;background:#fff;cursor:pointer}.store-inline-catalog-result:hover,.store-inline-catalog-result:focus{border-color:#18aeb8;background:#f4fcfd;outline:none}.store-inline-catalog-copy{display:grid;gap:2px;min-width:0}.store-inline-catalog-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.store-inline-catalog-copy span,.store-inline-catalog-copy small,.store-inline-catalog-price small{color:#60737b;font-size:12px}.store-inline-catalog-price{display:grid;text-align:right;gap:2px;white-space:nowrap}.store-inline-catalog-actions{display:flex;gap:6px}.store-inline-catalog-actions button{width:auto;min-height:38px;padding:7px 10px}.store-inline-catalog-message{color:#60737b;font-weight:650}.store-inline-catalog-message.is-error{color:#a33232}.store-inline-catalog-alternative-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.store-inline-catalog-alternative-head button{border:0;background:transparent;color:#087b82;font-weight:800;cursor:pointer}
         @media(max-width:760px){.store-inline-catalog-result{grid-template-columns:1fr}.store-inline-catalog-price{text-align:left}.store-inline-catalog-actions{justify-content:flex-start}}
+        @media(max-width:700px){.store-inline-catalog-scan{display:inline-flex}}
       `}</style>
     </div>
   );
