@@ -8,11 +8,17 @@
 import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Camera, ChevronDown, ChevronUp, ExternalLink, Plus, Printer, Search, Trash2 } from "lucide-react";
-import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
+import { getStoredSupabaseSession, rpcWithStoredSession } from "../access/moduleAccessClient.js";
+import { WORK_PROFILE_EVENT, getMyWorkProfileState, readCachedWorkProfileState } from "../access/workProfileClient.js";
+import {
+  MAX_PICKLIST_ITEMS, deleteSavedPicklist, normalizePickQuantity,
+  picklistStorageKey, readSavedPicklist, savePicklist, toPicklistReference,
+} from "./mobilePicklistStorage.mjs";
 
 const PriceSearchBarcodeScanner = lazy(() => import("./PriceSearchBarcodeScanner.jsx"));
 const WORKLIST_SESSION_KEY = "expo-proffdok:price-search:worklist:v1";
-const MAX_STORED_WORKLIST_ITEMS = 30;
+const ORDER_SESSION_KEY = "expo-proffdok:price-search:order:v1";
+const MAX_STORED_WORKLIST_ITEMS = MAX_PICKLIST_ITEMS;
 const PRICE_SEARCH_PAGE_SIZE = 30;
 
 const moneyIncl = new Intl.NumberFormat("nb-NO", {
@@ -77,11 +83,7 @@ async function searchPricePage(query, offset = 0, limit = PRICE_SEARCH_PAGE_SIZE
 }
 
 function toStoredReference(item) {
-  return {
-    id: String(item?.id || ""),
-    supplier_product_number: String(item?.supplier_product_number || ""),
-    gtin: String(item?.gtin || ""),
-  };
+  return toPicklistReference(item);
 }
 
 function readStoredReferences() {
@@ -96,10 +98,35 @@ function readStoredReferences() {
         id: String(item.id),
         supplier_product_number: String(item.supplier_product_number || ""),
         gtin: String(item.gtin || ""),
+        quantity: normalizePickQuantity(item.quantity),
       }));
   } catch {
     return [];
   }
+}
+
+function readSessionOrderNumber() {
+  try {
+    return String(window.sessionStorage.getItem(ORDER_SESSION_KEY) || "").slice(0, 64);
+  } catch {
+    return "";
+  }
+}
+
+function persistSessionOrderNumber(value) {
+  try {
+    if (value) window.sessionStorage.setItem(ORDER_SESSION_KEY, value);
+    else window.sessionStorage.removeItem(ORDER_SESSION_KEY);
+  } catch {
+    // Valgte varer og manuelt ordrenummer kan fortsatt brukes uten sessionStorage.
+  }
+}
+
+function currentPicklistIdentity() {
+  return {
+    userId: getStoredSupabaseSession().userId,
+    companyId: readCachedWorkProfileState().active_company_id,
+  };
 }
 
 function persistStoredReferences(items) {
@@ -118,31 +145,38 @@ function persistStoredReferences(items) {
 
 async function restoreStoredProducts(refs) {
   const restored = [];
+  let missingCount = 0;
   for (const ref of refs) {
     const lookup = ref.supplier_product_number || ref.gtin;
     if (!lookup) continue;
     try {
       const items = await searchPrices(lookup, 10);
-      const exact = items.find((item) => String(item.id) === String(ref.id));
-      if (exact) restored.push(exact);
-    } catch {
-      // En utilgjengelig/utgått vare droppes ved gjenoppretting.
+      let exact = items.find((item) => String(item.id) === String(ref.id));
+      if (!exact && ref.gtin && ref.gtin !== lookup) {
+        const byGtin = await searchPrices(ref.gtin, 30);
+        exact = byGtin.find((item) => String(item.id) === String(ref.id));
+      }
+      if (exact) restored.push({ ...exact, pickQuantity: normalizePickQuantity(ref.quantity) });
+      else missingCount += 1;
+    } catch (error) {
+      // Nettfeil må ikke overskrive en lagret plukkliste med et delvis resultat.
+      throw new Error(error?.message || "Kunne ikke hente varene i plukklisten.");
     }
   }
-  return restored;
+  return { items: restored, missingCount };
 }
 
-function PriceResult({ item, selected, onSelect }) {
+function PriceResult({ item, selected, disabled = false, onSelect }) {
   const hasNetPrice = item.purchase_net_ex_vat !== null && item.purchase_net_ex_vat !== undefined;
 
   const selectFromCard = (event) => {
-    if (selected) return;
+    if (selected || disabled) return;
     if (event.target instanceof Element && event.target.closest("a,button")) return;
     onSelect(item);
   };
 
   const handleKeyDown = (event) => {
-    if (selected || (event.key !== "Enter" && event.key !== " ")) return;
+    if (selected || disabled || (event.key !== "Enter" && event.key !== " ")) return;
     event.preventDefault();
     onSelect(item);
   };
@@ -152,6 +186,7 @@ function PriceResult({ item, selected, onSelect }) {
       className={`priceSearchResult${selected ? " isSelected" : ""}`}
       role="button"
       tabIndex={0}
+      aria-disabled={disabled || selected}
       onClick={selectFromCard}
       onKeyDown={handleKeyDown}
       aria-label={`${selected ? "Valgt" : "Legg til"}: ${item.description || "vare"}`}
@@ -193,7 +228,7 @@ function PriceResult({ item, selected, onSelect }) {
         <button
           type="button"
           className={selected ? "secondary" : ""}
-          disabled={selected}
+          disabled={selected || disabled}
           onClick={() => onSelect(item)}
         >
           <Plus size={16} /> {selected ? "Lagt til" : "Legg til"}
@@ -203,7 +238,7 @@ function PriceResult({ item, selected, onSelect }) {
   );
 }
 
-function SelectedProduct({ item, onRemove, printMode = false, includeInternal = true }) {
+function SelectedProduct({ item, onRemove, onQuantityChange, printMode = false, includeInternal = true, picklistMode = false, readOnly = false }) {
   const hasNetPrice = item.purchase_net_ex_vat !== null && item.purchase_net_ex_vat !== undefined;
   const hasDiscount = item.purchase_discount_percent !== null && item.purchase_discount_percent !== undefined;
   const hasMargin = item.gross_margin_percent !== null && item.gross_margin_percent !== undefined;
@@ -224,7 +259,7 @@ function SelectedProduct({ item, onRemove, printMode = false, includeInternal = 
             <span>{item.supplier_name || "Ukjent leverandør"}</span>
           </div>
           {!printMode ? (
-            <button type="button" className="secondary priceSearchRemove" onClick={() => onRemove(item.id)}>
+            <button type="button" className="secondary priceSearchRemove" onClick={() => onRemove(item.id)} disabled={readOnly}>
               <Trash2 size={16} /> Slett
             </button>
           ) : null}
@@ -238,7 +273,25 @@ function SelectedProduct({ item, onRemove, printMode = false, includeInternal = 
           <div><span>Prisdatert</span><strong>{item.price_date ? formatDate(item.price_date) : "–"}</strong></div>
         </div>
 
-        <div className="priceSearchSelectedPrices">
+        {picklistMode ? (
+          printMode ? (
+            <p className="priceSearchPickQuantityPrint"><strong>Antall:</strong> {normalizePickQuantity(item.pickQuantity)}</p>
+          ) : (
+            <label className="priceSearchPickQuantity">
+              <span>Antall til Cordel</span>
+              <input
+                type="number" inputMode="decimal" min="0.001" max="99999" step="any"
+                value={item.pickQuantity ?? "1"}
+                disabled={readOnly}
+                onChange={(event) => onQuantityChange(item.id, event.target.value)}
+                onBlur={() => onQuantityChange(item.id, normalizePickQuantity(item.pickQuantity))}
+                aria-label={`Antall for ${item.description || item.supplier_product_number || "vare"}`}
+              />
+            </label>
+          )
+        ) : null}
+
+        {(!picklistMode || !printMode) ? <div className="priceSearchSelectedPrices">
           <div className="priceSearchPrimaryPrice">
             <span>Kundepris inkl. mva.</span>
             <strong>{formatMoney(item.customer_price_incl_vat)}</strong>
@@ -265,7 +318,7 @@ function SelectedProduct({ item, onRemove, printMode = false, includeInternal = 
               <strong>{formatPercent(item.gross_margin_percent)}</strong>
             </div>
           ) : null}
-        </div>
+        </div> : null}
 
         {!printMode && item.product_url ? (
           <a className="priceSearchProductLink" href={item.product_url} target="_blank" rel="noreferrer">
@@ -277,14 +330,15 @@ function SelectedProduct({ item, onRemove, printMode = false, includeInternal = 
   );
 }
 
-function PrintDocument({ items, includeInternal }) {
+function PrintDocument({ items, includeInternal, picklistMode = false, orderNumber = "" }) {
   return (
     <div className="priceSearchPrintPortal" aria-hidden="true">
       <header className="priceSearchPrintHeader">
         <small>Expo ProffDok</small>
-        <h1>Prissøk – valgte varer</h1>
+        <h1>{picklistMode ? "Plukkliste til Cordel" : "Prissøk – valgte varer"}</h1>
         <p>{items.length} {items.length === 1 ? "vare" : "varer"} · skrevet ut {formatPrintTimestamp()}</p>
-        {includeInternal ? <p><strong>Interne priser er inkludert.</strong></p> : null}
+        {picklistMode ? <p><strong>Ordrenummer:</strong> {orderNumber || "Ikke oppgitt"}</p> : null}
+        {!picklistMode && includeInternal ? <p><strong>Interne priser er inkludert.</strong></p> : null}
       </header>
       <main className="priceSearchPrintList">
         {items.map((item) => (
@@ -294,6 +348,7 @@ function PrintDocument({ items, includeInternal }) {
             onRemove={() => {}}
             printMode
             includeInternal={includeInternal}
+            picklistMode={picklistMode}
           />
         ))}
       </main>
@@ -312,15 +367,28 @@ export default function StorePriceSearchView({ onClose }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [selectedExpanded, setSelectedExpanded] = useState(true);
   const [includeInternalPrint, setIncludeInternalPrint] = useState(false);
-  const [restoringSelected, setRestoringSelected] = useState(false);
+  const [restoringSelected, setRestoringSelected] = useState(true);
+  const [picklistIdentity, setPicklistIdentity] = useState(currentPicklistIdentity);
+  const [profileResolved, setProfileResolved] = useState(() => Boolean(currentPicklistIdentity().companyId));
+  const [savedPicklistActive, setSavedPicklistActive] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
+  const [picklistMessage, setPicklistMessage] = useState("");
+  const [restoreIncomplete, setRestoreIncomplete] = useState(false);
+  const [restoreFailed, setRestoreFailed] = useState(false);
+  const [restoreRevision, setRestoreRevision] = useState(0);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [searching, setSearching] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [totalResults, setTotalResults] = useState(0);
   const [message, setMessage] = useState("");
   const searchInputRef = useRef(null);
   const restoredSelectionRef = useRef(false);
+  const hydratedScopeRef = useRef("");
   const activeQueryRef = useRef("");
+  const activeCompanyRef = useRef(picklistIdentity.companyId);
 
+  const picklistScopeKey = picklistStorageKey(picklistIdentity);
+  const hydrationScope = isMobile ? `mobile:${picklistScopeKey || "unavailable"}` : "desktop";
   const cleanQuery = query.trim();
   const selectedIds = useMemo(
     () => new Set(selectedProducts.map((item) => String(item.id))),
@@ -339,9 +407,43 @@ export default function StorePriceSearchView({ onClose }) {
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 700px)");
-    const updateMobile = () => setIsMobile(media.matches);
+    const updateMobile = () => {
+      setScanning(false);
+      setIsMobile(media.matches);
+    };
     media.addEventListener("change", updateMobile);
     return () => media.removeEventListener("change", updateMobile);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const syncProfile = () => {
+      if (!active) return;
+      const nextIdentity = currentPicklistIdentity();
+      if (activeCompanyRef.current && activeCompanyRef.current !== nextIdentity.companyId) {
+        persistStoredReferences([]);
+        persistSessionOrderNumber("");
+        restoredSelectionRef.current = false;
+        hydratedScopeRef.current = "";
+        setSelectedProducts([]);
+        setSavedPicklistActive(false);
+        setOrderNumber("");
+        setScanning(false);
+      }
+      activeCompanyRef.current = nextIdentity.companyId;
+      setPicklistIdentity(nextIdentity);
+      setProfileResolved(true);
+    };
+    window.addEventListener(WORK_PROFILE_EVENT, syncProfile);
+    if (!readCachedWorkProfileState().active_company_id) {
+      void getMyWorkProfileState().then(syncProfile).catch(() => {
+        if (active) setProfileResolved(true);
+      });
+    }
+    return () => {
+      active = false;
+      window.removeEventListener(WORK_PROFILE_EVENT, syncProfile);
+    };
   }, []);
 
   const stopScanning = useCallback(() => setScanning(false), []);
@@ -356,33 +458,67 @@ export default function StorePriceSearchView({ onClose }) {
   }, []);
 
   useEffect(() => {
+    if (isMobile && !profileResolved) return undefined;
     let cancelled = false;
-    const refs = readStoredReferences();
+    restoredSelectionRef.current = false;
+    hydratedScopeRef.current = "";
+    setRestoringSelected(true);
+    setPicklistMessage("");
+    setRestoreFailed(false);
+    setRestoreIncomplete(false);
+    const saved = isMobile && picklistScopeKey ? readSavedPicklist(picklistIdentity) : null;
+    const refs = saved?.items?.length ? saved.items : readStoredReferences();
+    const nextOrderNumber = saved ? saved.orderNumber : readSessionOrderNumber();
+    setSavedPicklistActive(Boolean(saved?.items?.length));
+    setOrderNumber(nextOrderNumber);
     if (!refs.length) {
+      setSelectedProducts([]);
       restoredSelectionRef.current = true;
+      hydratedScopeRef.current = hydrationScope;
+      setRestoringSelected(false);
       return () => {
         cancelled = true;
       };
     }
 
     setRestoringSelected(true);
-    void restoreStoredProducts(refs).then((items) => {
+    void restoreStoredProducts(refs).then(({ items, missingCount }) => {
       if (cancelled) return;
       restoredSelectionRef.current = true;
+      hydratedScopeRef.current = hydrationScope;
       setSelectedProducts(items);
-      persistStoredReferences(items);
+      if (missingCount && saved) {
+        setRestoreIncomplete(true);
+        setPicklistMessage(`${missingCount} vare(r) er ikke tilgjengelige i vareregisteret nå. Den lagrede originalen er beholdt; prøv igjen senere.`);
+      } else {
+        persistStoredReferences(items);
+      }
       setRestoringSelected(false);
+    }).catch(() => {
+      if (cancelled) return;
+      setSelectedProducts([]);
+      setRestoringSelected(false);
+      setRestoreFailed(true);
+      setPicklistMessage("Kunne ikke hente alle varene akkurat nå. Listen er beholdt; prøv igjen når forbindelsen virker.");
     });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [hydrationScope, isMobile, profileResolved, restoreRevision]);
 
   useEffect(() => {
-    if (!restoredSelectionRef.current) return;
+    if (!restoredSelectionRef.current || hydratedScopeRef.current !== hydrationScope) return;
     persistStoredReferences(selectedProducts);
-  }, [selectedProducts]);
+    persistSessionOrderNumber(orderNumber);
+    if (isMobile && savedPicklistActive && !restoreIncomplete && picklistScopeKey && selectedProducts.length) {
+      try {
+        savePicklist(picklistIdentity, selectedProducts, orderNumber);
+      } catch {
+        setPicklistMessage("Kunne ikke lagre endringene på denne mobilen. Sjekk lagringsinnstillingene.");
+      }
+    }
+  }, [selectedProducts, orderNumber, savedPicklistActive, restoreIncomplete, hydrationScope, isMobile, picklistScopeKey]);
 
   useEffect(() => {
     if (!canPrintInternal && includeInternalPrint) setIncludeInternalPrint(false);
@@ -454,8 +590,14 @@ export default function StorePriceSearchView({ onClose }) {
   };
 
   const addSelectedProduct = (item) => {
-    if (!item?.id || selectedIds.has(String(item.id))) return;
-    setSelectedProducts((current) => [...current, item]);
+    if (!item?.id || selectedIds.has(String(item.id)) || restoringSelected || restoreFailed || restoreIncomplete) return;
+    if (selectedProducts.length >= MAX_PICKLIST_ITEMS) {
+      setPicklistMessage(`Plukklisten kan inneholde opptil ${MAX_PICKLIST_ITEMS} varer. Skriv ut eller slett listen før du starter på en ny.`);
+      return;
+    }
+    setSelectedProducts((current) => [...current, { ...item, pickQuantity: "1" }]);
+    setConfirmDelete(false);
+    setPicklistMessage("");
     setQuery("");
     setResults([]);
     setTotalResults(0);
@@ -464,13 +606,54 @@ export default function StorePriceSearchView({ onClose }) {
   };
 
   const removeSelectedProduct = (itemId) => {
+    if (isMobile && savedPicklistActive && selectedProducts.length === 1) {
+      try {
+        deleteSavedPicklist(picklistIdentity);
+        setSavedPicklistActive(false);
+        setOrderNumber("");
+      } catch {
+        setPicklistMessage("Kunne ikke slette plukklisten fra denne mobilen.");
+        return;
+      }
+    }
     setSelectedProducts((current) => current.filter((item) => String(item.id) !== String(itemId)));
+    setConfirmDelete(false);
+  };
+
+  const updateSelectedQuantity = (itemId, quantity) => {
+    setSelectedProducts((current) => current.map((item) =>
+      String(item.id) === String(itemId) ? { ...item, pickQuantity: quantity } : item
+    ));
+  };
+
+  const saveMobilePicklist = () => {
+    try {
+      savePicklist(picklistIdentity, selectedProducts, orderNumber);
+      setSavedPicklistActive(true);
+      setPicklistMessage("Plukklisten er lagret på denne mobilen. Endringer lagres automatisk.");
+    } catch (error) {
+      setPicklistMessage(error?.message || "Kunne ikke lagre plukklisten på denne mobilen.");
+    }
   };
 
   const clearSelectedProducts = () => {
+    if (isMobile && savedPicklistActive) {
+      try {
+        deleteSavedPicklist(picklistIdentity);
+      } catch {
+        setPicklistMessage("Kunne ikke slette plukklisten fra denne mobilen.");
+        return;
+      }
+    }
+    setSavedPicklistActive(false);
     setSelectedProducts([]);
+    persistStoredReferences([]);
+    setOrderNumber("");
+    persistSessionOrderNumber("");
     setSelectedExpanded(true);
     setIncludeInternalPrint(false);
+    setConfirmDelete(false);
+    setPicklistMessage(isMobile ? "Plukklisten er slettet fra denne mobilen." : "");
     window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
 
@@ -481,7 +664,12 @@ export default function StorePriceSearchView({ onClose }) {
 
   const printPortal = typeof document !== "undefined" && selectedProducts.length
     ? createPortal(
-        <PrintDocument items={selectedProducts} includeInternal={canPrintInternal && includeInternalPrint} />,
+        <PrintDocument
+          items={selectedProducts}
+          includeInternal={!isMobile && canPrintInternal && includeInternalPrint}
+          picklistMode={isMobile}
+          orderNumber={orderNumber.trim()}
+        />,
         document.body
       )
     : null;
@@ -496,7 +684,9 @@ export default function StorePriceSearchView({ onClose }) {
         ) : null}
         <small>Expo ProffDok</small>
         <h2>Prissøk</h2>
-        <p>Søk etter varer og legg dem i en midlertidig arbeidsliste mens du sammenligner produkter og priser.</p>
+        <p>{isMobile
+          ? "Skann eller søk varer, angi antall og lagre en midlertidig plukkliste til senere registrering i Cordel."
+          : "Søk etter varer og legg dem i en midlertidig arbeidsliste mens du sammenligner produkter og priser."}</p>
       </section>
 
       {restoringSelected && !selectedProducts.length ? (
@@ -508,11 +698,15 @@ export default function StorePriceSearchView({ onClose }) {
           <div className="priceSearchSelectedHeader">
             <div>
               <small>Midlertidig arbeidsliste</small>
-              <h3>Valgte varer ({selectedProducts.length})</h3>
-              <p>Listen lagres bare i denne nettleserfanen og tåler vanlig refresh/dvale. Prisene hentes på nytt etter reload.</p>
+              <h3>{isMobile ? "Plukkliste" : "Valgte varer"} ({selectedProducts.length})</h3>
+              <p>{isMobile
+                ? savedPicklistActive
+                  ? "Lagret på denne mobilen for innlogget bruker og aktivt firma. Ingen priser lagres; endringer lagres automatisk til du sletter listen."
+                  : "Arbeidslisten tåler refresh/dvale i denne fanen. Trykk Lagre plukkliste for å beholde den på mobilen etter at fanen lukkes."
+                : "Listen lagres bare i denne nettleserfanen og tåler vanlig refresh/dvale. Prisene hentes på nytt etter reload."}</p>
             </div>
             <div className="priceSearchSelectedHeaderActions">
-              {canPrintInternal ? (
+              {!isMobile && canPrintInternal ? (
                 <label className="priceSearchPrintOption">
                   <input
                     type="checkbox"
@@ -522,8 +716,13 @@ export default function StorePriceSearchView({ onClose }) {
                   Inkluder interne priser
                 </label>
               ) : null}
-              <button type="button" className="secondary" onClick={printSelectedProducts}>
-                <Printer size={16} /> Skriv ut
+              {isMobile && !savedPicklistActive ? (
+                <button type="button" onClick={saveMobilePicklist} disabled={!picklistScopeKey}>
+                  Lagre plukkliste
+                </button>
+              ) : null}
+              <button type="button" className="secondary" onClick={printSelectedProducts} disabled={restoreIncomplete}>
+                <Printer size={16} /> {isMobile ? "Skriv ut plukkliste" : "Skriv ut"}
               </button>
               <button
                 type="button"
@@ -534,17 +733,53 @@ export default function StorePriceSearchView({ onClose }) {
                 {selectedExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 {selectedExpanded ? "Skjul valgte varer" : "Vis valgte varer"}
               </button>
-              <button type="button" className="secondary" onClick={clearSelectedProducts}>
-                <Trash2 size={16} /> Tøm liste
+              <button
+                type="button" className="secondary"
+                onClick={() => isMobile && !confirmDelete ? setConfirmDelete(true) : clearSelectedProducts()}
+              >
+                <Trash2 size={16} /> {isMobile ? confirmDelete ? "Bekreft sletting" : "Slett plukkliste" : "Tøm liste"}
               </button>
             </div>
           </div>
+          {isMobile ? (
+            <label className="priceSearchOrderNumber">
+              <span>Ordrenummer i Cordel (valgfritt)</span>
+              <input
+                value={orderNumber} maxLength={64} autoComplete="off" disabled={restoreIncomplete}
+                onChange={(event) => setOrderNumber(event.target.value)}
+                placeholder="Skriv inn ordrenummer manuelt"
+              />
+            </label>
+          ) : null}
+          {isMobile && !picklistScopeKey ? (
+            <div className="priceSearchMessage isError">Velg aktivt firma og logg inn for å lagre plukklisten på mobilen.</div>
+          ) : null}
+          {picklistMessage ? <div className="priceSearchMessage" role="status">
+            {picklistMessage}
+            {restoreIncomplete ? <button type="button" className="secondary" onClick={() => setRestoreRevision((current) => current + 1)}>Prøv igjen</button> : null}
+          </div> : null}
           <div className={`priceSearchSelectedList${selectedExpanded ? "" : " isCollapsed"}`}>
             {selectedProducts.map((item) => (
-              <SelectedProduct key={item.id} item={item} onRemove={removeSelectedProduct} />
+              <SelectedProduct
+                key={item.id} item={item} onRemove={removeSelectedProduct}
+                onQuantityChange={updateSelectedQuantity} picklistMode={isMobile}
+                readOnly={restoreIncomplete}
+              />
             ))}
           </div>
         </section>
+      ) : null}
+
+      {!selectedProducts.length && picklistMessage ? (
+        <div className="priceSearchMessage" role="status">
+          {picklistMessage}
+          {restoreFailed || restoreIncomplete ? <button type="button" className="secondary" onClick={() => setRestoreRevision((current) => current + 1)}>Prøv igjen</button> : null}
+          {savedPicklistActive && !restoreFailed ? (
+            <button type="button" className="secondary" onClick={() => isMobile && !confirmDelete ? setConfirmDelete(true) : clearSelectedProducts()}>
+              {confirmDelete ? "Bekreft sletting" : "Slett lagret plukkliste"}
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
       <section className={`priceSearchCard${selectedProducts.length ? " hasSelectedProducts" : ""}`}>
@@ -585,7 +820,9 @@ export default function StorePriceSearchView({ onClose }) {
         ) : null}
         <div className="priceSearchMeta" aria-live="polite">
           <span>{resultLabel}</span>
-          <small>Arbeidslisten lagres kun midlertidig i denne fanen. Intern nto-pris vises bare for brukere med egen tilgang.</small>
+          <small>{isMobile
+            ? "Plukklisten lagres på denne mobilen når du velger Lagre plukkliste. Priser hentes alltid på nytt fra serveren."
+            : "Arbeidslisten lagres kun midlertidig i denne fanen. Intern nto-pris vises bare for brukere med egen tilgang."}</small>
         </div>
       </section>
 
@@ -602,6 +839,7 @@ export default function StorePriceSearchView({ onClose }) {
                 key={item.id}
                 item={item}
                 selected={selectedIds.has(String(item.id))}
+                disabled={restoringSelected || restoreFailed || restoreIncomplete}
                 onSelect={addSelectedProduct}
               />
             ))}
@@ -649,6 +887,11 @@ export default function StorePriceSearchView({ onClose }) {
         .priceSearchPrintOption input{width:17px;height:17px;margin:0}
         .priceSearchSelectedList{display:grid;gap:12px;margin-top:15px}
         .priceSearchSelectedList.isCollapsed{display:none}
+        .priceSearchOrderNumber,.priceSearchPickQuantity{display:grid;gap:6px;font-weight:800;color:#334b56}
+        .priceSearchOrderNumber{margin-top:16px;max-width:420px}
+        .priceSearchOrderNumber input,.priceSearchPickQuantity input{min-height:44px;box-sizing:border-box;padding:8px 12px;border:1px solid #bcd0d7;border-radius:10px;background:#fff;color:#10212b;font:inherit}
+        .priceSearchPickQuantity{width:160px}
+        .priceSearchPickQuantityPrint{margin:0}
         .priceSearchSelectedProduct{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;padding:16px;border:1px solid #d6e4e8;border-radius:15px;background:#fff}
         .priceSearchSelectedImage{width:96px;height:96px;display:grid;place-items:center;border:1px solid #e0e9ec;border-radius:12px;overflow:hidden;background:#fff}
         .priceSearchSelectedImage img{max-width:100%;max-height:100%;object-fit:contain}
@@ -710,6 +953,7 @@ export default function StorePriceSearchView({ onClose }) {
           .priceSearchSelectedHeaderActions{justify-content:stretch}
           .priceSearchPrintOption,.priceSearchSelectedHeaderActions button{width:100%;box-sizing:border-box;justify-content:center}
           .priceSearchSelectedProduct{grid-template-columns:1fr;padding:14px}
+          .priceSearchPickQuantity,.priceSearchPickQuantity input,.priceSearchOrderNumber{width:100%;max-width:none}
           .priceSearchSelectedImage{width:100%;height:160px}
           .priceSearchRemove{width:100%}
           .priceSearchResult{padding:14px}

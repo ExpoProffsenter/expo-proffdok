@@ -16,6 +16,7 @@ export function createHelp45BSection({ Section }) {
       "Systemadmin gir firmaet tilgang til bare de leverandørene firmaet skal kunne søke i. Andre leverandører vises ikke i proff-vareregisteret.",
       "Rabatt settes per firma og leverandør. «Din nto pris» beregnes fra Kundepris eks. mva. i vareregisteret.",
       "Kundepris eks. mva. brukes samtidig som foreslått salgspris når varen legges i tilbudet. Salgsprisen kan endres før tilbudet sendes.",
+      "Interne brukere kan på mobil skanne EAN/GTIN i varesøket på en aktiv tilbudspost eller opsjon. Velg riktig treff før varen legges inn; manuelt søk fungerer fortsatt.",
       "Bruk «Forhåndsvis som kunde» før utsending for å kontrollere logo, priser inkl. mva., opsjoner, vilkår og totalsum uten å publisere tilbudet eller sende e-post.",
       "Når kunden aksepterer kan mindre oppdrag videreføres som Enkel ordre, mens større oppdrag kan aktiveres som ordinært prosjekt.",
       "Aksepterte varetilbud har Bestillingsgrunnlag med varenummer, antall og relevante produktidentifikatorer. Pris og intern nto-pris skal ikke være med i bestillingslisten.",
