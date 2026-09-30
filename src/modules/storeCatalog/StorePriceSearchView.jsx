@@ -47,9 +47,10 @@ function formatPercent(value) {
 
 function formatDate(value) {
   if (!value) return "";
-  const date = new Date(`${value}T00:00:00`);
+  const raw = String(value);
+  const date = new Date(raw.includes("T") ? raw : `${raw}T00:00:00`);
   return Number.isNaN(date.getTime())
-    ? String(value)
+    ? raw
     : new Intl.DateTimeFormat("nb-NO").format(date);
 }
 
