@@ -8,7 +8,8 @@
 
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
+import { MODULE_ACCESS_EVENT, getStoredSupabaseSession, rpcWithStoredSession } from "../access/moduleAccessClient.js";
+import { WORK_PROFILE_EVENT, readCachedWorkProfileState } from "../access/workProfileClient.js";
 import StorePriceSearchView from "./StorePriceSearchView.jsx";
 
 const NAV_BUTTON_ID = "expo-price-search-nav-button";
@@ -28,6 +29,13 @@ let accessResolved = false;
 let accessPromise = null;
 let inlineRoot = null;
 let priceSearchOpen = false;
+let retryTimer = 0;
+let retryAttempt = 0;
+let lastConfirmedScope = "";
+
+function currentScope() {
+  return `${getStoredSupabaseSession().userId}:${readCachedWorkProfileState().active_company_id}`;
+}
 
 function compactText(value = "") {
   return String(value || "").replace(/\s+/g, " ").trim();
@@ -308,21 +316,49 @@ function syncUi() {
 
 async function refreshAccess() {
   if (accessPromise) return accessPromise;
+  const requestScope = currentScope();
   accessPromise = rpcWithStoredSession("current_user_has_internal_store_price_search_access")
     .then((allowed) => {
+      if (currentScope() !== requestScope) {
+        accessResolved = false;
+        return false;
+      }
       backendAllowed = allowed === true;
       accessResolved = true;
+      lastConfirmedScope = requestScope;
+      retryAttempt = 0;
+      if (retryTimer) window.clearTimeout(retryTimer);
+      retryTimer = 0;
+      if (!backendAllowed && (priceSearchOpen || shouldRestorePriceSearch())) {
+        closePriceSearch({ clearResume: true });
+      }
       syncUi();
       return backendAllowed;
     })
     .catch(() => {
-      backendAllowed = false;
-      if (priceSearchOpen || shouldRestorePriceSearch()) closePriceSearch({ clearResume: true });
+      if (currentScope() !== requestScope) {
+        accessResolved = false;
+        return false;
+      }
+      // En midlertidig nettfeil er ikke et avslag på tilgang. Siste bekreftede
+      // tilstand beholdes; backend kontrollerer fortsatt hvert varesøk.
+      accessResolved = true;
       syncUi();
-      return false;
+      if (!retryTimer) {
+        const delay = Math.min(1000 * 2 ** retryAttempt, 30000);
+        retryAttempt = Math.min(retryAttempt + 1, 5);
+        retryTimer = window.setTimeout(() => {
+          retryTimer = 0;
+          void refreshAccess();
+        }, delay);
+      }
+      return backendAllowed;
     })
     .finally(() => {
       accessPromise = null;
+      if (!accessResolved && (findInternalNav() || findMobileQuickGrid())) {
+        window.setTimeout(() => void refreshAccess(), 0);
+      }
     });
   return accessPromise;
 }
@@ -382,9 +418,20 @@ export function installStorePriceSearchUx() {
     void refreshAccess();
     scheduleSync();
   });
-  window.addEventListener("expo-proffdok-module-access", () => {
+  const recheckAccess = () => {
+    retryAttempt = 0;
+    if (lastConfirmedScope && currentScope() !== lastConfirmedScope) {
+      backendAllowed = false;
+      accessResolved = false;
+      if (priceSearchOpen || shouldRestorePriceSearch()) closePriceSearch({ clearResume: true });
+      syncUi();
+    }
     void refreshAccess();
     scheduleSync();
+  };
+  window.addEventListener(MODULE_ACCESS_EVENT, recheckAccess);
+  window.addEventListener(WORK_PROFILE_EVENT, () => {
+    recheckAccess();
   });
 
   const observer = new MutationObserver(scheduleSync);

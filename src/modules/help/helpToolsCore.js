@@ -318,6 +318,7 @@ const INTERNAL_COMMERCE_SECTIONS = [
       "Opprett Generelt tilbud fra ny sak eller viderefør en registrert befaring i samme sak.",
       "Bygg tilbudet med avsnitt, vare-/arbeidsposter, montering og eventuelle opsjoner.",
       "Varer kan hentes fra det interne vareregisteret når det er hensiktsmessig; manuelle poster kan alltid brukes.",
+      "På mobil kan interne brukere i Ringside, Bademiljø Expo og Expo Proffsenter skanne strekkoden i varesøket på en post eller opsjon. Kontroller treffet og velg varen før tilbudsposten fylles. Eksterne Proff-firma bruker fortsatt ordinært varesøk.",
       "Forhåndsvis og publiser riktig versjon til kunden.",
       "Ved avvisning beholdes den avviste versjonen som låst historikk. Opprett en revidert versjon når tilbudet skal endres og sendes på nytt.",
       "Ved aksept opprettes et skrivebeskyttet bestillingsgrunnlag for den aksepterte versjonen.",
@@ -339,6 +340,7 @@ const INTERNAL_COMMERCE_SECTIONS = [
       "Trykk Avbryt skanning for å lukke kameraet. Ved avvist eller manglende kameratilgang kan du alltid skrive EAN/GTIN manuelt i søkefeltet.",
       "Trykk ← Startside øverst i Prissøk for å gå tilbake til Startsiden. Da avsluttes aktivt Prissøk uten automatisk gjenåpning; den midlertidige arbeidslisten beholdes i samme nettleserfane.",
       "Legg aktuelle varer i den midlertidige arbeidslisten mens du sammenligner. Ved vanlig appbytte, dvale eller refresh skal Prissøk åpnes igjen med valgte varer bevart og prisene hentet på nytt fra backend.",
+      "På mobil kan du skanne varer, angi antall og et valgfritt Cordel-ordrenummer og trykke Lagre plukkliste. Du finner lagrede lister under Prissøk både på PC og mobil med samme bruker. Maks tre lister per bruker; slett en etter registrering i Cordel før du lagrer en fjerde. Endringer i en åpnet liste må lagres med Lagre endringer. Ingen priser eller kamerabilder lagres i plukklisten.",
       "Vareregisteret bygger på siste aktiverte Cordel-eksport.",
       "Varer merket Utgått i Cordel, varer med 0-pris og gamle ÅVP-leverandører hoppes automatisk over ved import.",
       "Oppdatering og aktivering av selve vareregisteret er en systemadmin-oppgave."
