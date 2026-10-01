@@ -167,6 +167,8 @@ Kritiske recovery-regler:
 - Rediger forespørsel gjenopprettes saksspesifikt
 - eksplisitt brukerhandling stopper gammel recovery
 
+Audit-recovery av tilbud sammenligner lokal sikkerhetskopi med aktiv kladd. Et bekreftet valg er bundet til sikkerhetskopiens revisjon, ikke til aktiv kladds senere `savedAt`; samme backup skal derfor ikke utløse nye dialoger ved hver autolagring. Dialogen omtaler begge som lokale versjoner. Valgt lokal kladd beholdes ved samtidig serverkonflikt, og varig autolagring forsøkes igjen etter recovery-overgangen. Dette er sikret i PR #206 og `critical-sales-recovery-check.mjs`.
+
 Generelt tilbud har i tillegg saksspesifikk serverautosave gjennom `salesStoreOfferAutosave.js`.
 
 ## 9. Kundevisning, PDF og aksept
