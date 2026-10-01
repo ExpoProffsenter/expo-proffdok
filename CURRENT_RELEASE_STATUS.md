@@ -9,8 +9,8 @@
 
 ## Permanent Demo Sandbox
 
-- Appkoden fra `main` er synkronisert kontrollert `main → demo`. Sist kontrollerte demo-commit for funksjonsendringen og Production-baseline er `129f0b8650dfd7a098ddbd71a467e011d29c0831`.
-- Fast Demo-deployment `dpl_7C7QuEp17wc6wxCMZUxviuK6FQ5P` var `READY`; app og `/demo-control.html` svarte 200 OK. Kontrollsidens Production-baseline peker på PR #206-commit. Avgrenset Vercel-kontroll fant ingen error/fatal for denne deploymenten.
+- Appkoden fra `main` er synkronisert kontrollert `main → demo`. Sist verifiserte Demo-funksjonsrelease var commit `129f0b8650dfd7a098ddbd71a467e011d29c0831`. Kontrollsidens Production-baseline oppdateres til siste synkroniserte `main`-commit også ved rene dokumentsynker.
+- Fast Demo-deployment `dpl_7C7QuEp17wc6wxCMZUxviuK6FQ5P` for denne funksjonsreleasen var `READY`; app og `/demo-control.html` svarte 200 OK. Avgrenset Vercel-kontroll fant ingen error/fatal for denne deploymenten.
 
 ## Åpent før viktig demo
 
