@@ -202,7 +202,12 @@ function metrics(formValue = {}) {
   const clean = pruneEmptyOfferDraftRows(formValue);
   let size = 0;
   try {
-    size = JSON.stringify(compactForAudit(clean)).length;
+    // Recovery legger til tomme mediefelt på gamle poster. De er ikke mer
+    // tilbudsinnhold og skal ikke alene utløse en ny «mer komplett»-dialog.
+    size = JSON.stringify(
+      compactForAudit(clean),
+      (_key, value) => (value === "" || value === null ? undefined : value)
+    ).length;
   } catch {
     size = 0;
   }
@@ -227,8 +232,10 @@ function auditKey(stableKey) {
   return `${stableKey}${AUDIT_SUFFIX}`;
 }
 
-function auditDecisionKey(stableKey, candidateSavedAt, liveSavedAt) {
-  return `${stableKey}${AUDIT_DECISION_SUFFIX}:${candidateSavedAt}:${liveSavedAt}`;
+function auditDecisionKey(stableKey, candidateSavedAt) {
+  // Valget gjelder denne konkrete sikkerhetskopien. Den aktive kladden får nytt
+  // savedAt ved autolagring, uten at brukeren dermed skal måtte velge på nytt.
+  return `${stableKey}${AUDIT_DECISION_SUFFIX}:${candidateSavedAt}`;
 }
 
 function auditTransitionKey(stableKey) {
@@ -374,7 +381,7 @@ function preferredAuditRecovery(requestId) {
 
   if (!candidate) return null;
 
-  const decisionKey = auditDecisionKey(stableKey, candidate.savedAtMs, liveSavedAt);
+  const decisionKey = auditDecisionKey(stableKey, candidate.savedAtMs);
   const decision = parseJson(store, decisionKey);
   if (decision?.choice) return null;
 
@@ -483,7 +490,15 @@ export function resolvePendingOfferDraftRecovery(requestId = "", choice = "") {
   }
 
   const corePending = core.getPendingOfferDraftRecovery(requestId);
-  if (corePending) core.resolvePendingOfferDraftRecovery(requestId, "server");
+  if (corePending) {
+    // Audit-valget står mellom to lokale kladder. Ved en samtidig konflikt mot
+    // server må den aktive lokale kladden beholdes til det valgte innholdet er
+    // synkronisert; "server" her ville forkaste lokale feltendringer.
+    core.resolvePendingOfferDraftRecovery(
+      requestId,
+      corePending.type === "server" ? "local" : "server"
+    );
+  }
 
   if (choice === "local") {
     const live = parseJson(store, auditRecovery.liveKey);

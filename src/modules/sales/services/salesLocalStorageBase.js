@@ -680,7 +680,6 @@ export function loadOfferDraft(input = {}) {
       "history",
       requestId,
       recovery.savedAt,
-      latestLive.savedAt,
     ].join(":");
     const decision = readRecoveryDecision(storage, decisionKey);
 

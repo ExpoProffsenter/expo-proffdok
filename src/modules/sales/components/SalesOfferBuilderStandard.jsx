@@ -98,7 +98,7 @@ function getLatestConfirmedServerBaseline(requestId) {
 
 function rememberRecoveredLocalChoiceAgainstServer(requestId, recovery) {
   if (
-    recovery?.type !== "history" ||
+    !["history", "audit"].includes(recovery?.type) ||
     typeof window === "undefined" ||
     !window.localStorage
   ) {
@@ -385,7 +385,11 @@ export default function SalesOfferBuilder(props) {
       rememberRecoveredLocalChoiceAgainstServer(requestId, recovery);
     }
 
-    installRecoveryTransitionGuard(pendingStorageKey, recovery);
+    // Audit-laget har sin egen korte overgangsvakt. En ekstra pending-vakt på
+    // to minutter ville hindre den gjenopprettede kladden i å synkroniseres.
+    if (recovery.type !== "audit") {
+      installRecoveryTransitionGuard(pendingStorageKey, recovery);
+    }
     setRecovery({ ...recovery, type: "transition" });
 
     window.dispatchEvent(
@@ -470,7 +474,7 @@ export default function SalesOfferBuilder(props) {
   }
 
   const visibleRecovery = recovery?.type === "transition" ? null : recovery;
-  const isHistoryRecovery = visibleRecovery?.type === "history";
+  const isHistoryRecovery = ["history", "audit"].includes(visibleRecovery?.type);
   const localTime = isHistoryRecovery
     ? visibleRecovery?.recoverySavedAtText
     : visibleRecovery?.localSavedAtText;
@@ -662,7 +666,7 @@ export default function SalesOfferBuilder(props) {
 
             <p style={{ margin: "0 0 16px", lineHeight: 1.55 }}>
               {isHistoryRecovery
-                ? "Expo ProffDok fant en lokal sikkerhetskopi med mer innhold enn kladden som sist var aktiv. Velg hvilken versjon du vil fortsette med."
+                ? "Expo ProffDok fant en lokal sikkerhetskopi med mer innhold enn den aktive kladden. Velg hvilken du vil fortsette med. Den aktive kladden kan ha nyere endringer i andre felt."
                 : "Dette kan skje hvis appen ble satt i bakgrunnen før siste endring rakk å bli synkronisert. Begge versjonene er beholdt til du velger hvilken du vil fortsette med."}
             </p>
 
@@ -682,13 +686,15 @@ export default function SalesOfferBuilder(props) {
                 }}
               >
                 <strong>
-                  Denne enheten – lokal versjon: {Number(visibleRecovery.localLines || 0)} tilbudslinjer og {Number(visibleRecovery.localOptions || 0)} opsjoner
+                  {isHistoryRecovery ? "Lokal sikkerhetskopi" : "Denne enheten – lokal versjon"}: {Number(visibleRecovery.localLines || 0)} tilbudslinjer og {Number(visibleRecovery.localOptions || 0)} opsjoner
                 </strong>
                 <div style={{ marginTop: 4, color: "#52616b", fontSize: 14 }}>
-                  Lagret på denne enheten {formatRecoveryTime(localTime)}
+                  {isHistoryRecovery ? "Sikkerhetskopi fra " : "Lagret på denne enheten "}{formatRecoveryTime(localTime)}
                 </div>
                 <p style={{ margin: "8px 0 0", lineHeight: 1.45, color: "#334155" }}>
-                  Velger du denne, fortsetter du med arbeidet fra denne enheten. Expo ProffDok forsøker deretter å lagre versjonen på serveren.
+                  {isHistoryRecovery
+                    ? "Velger du denne, gjenopprettes sikkerhetskopien. Nyere endringer som bare finnes i den aktive kladden blir ikke brukt."
+                    : "Velger du denne, fortsetter du med arbeidet fra denne enheten. Expo ProffDok forsøker deretter å lagre versjonen på serveren."}
                 </p>
               </div>
 
@@ -701,14 +707,14 @@ export default function SalesOfferBuilder(props) {
                 }}
               >
                 <strong>
-                  {isHistoryRecovery ? "Siste aktive kladd" : "Server – sist bekreftet lagret"}: {Number(visibleRecovery.serverLines || 0)} tilbudslinjer og {Number(visibleRecovery.serverOptions || 0)} opsjoner
+                  {isHistoryRecovery ? "Aktiv kladd på denne enheten" : "Server – sist bekreftet lagret"}: {Number(visibleRecovery.serverLines || 0)} tilbudslinjer og {Number(visibleRecovery.serverOptions || 0)} opsjoner
                 </strong>
                 <div style={{ marginTop: 4, color: "#52616b", fontSize: 14 }}>
-                  {isHistoryRecovery ? "Sist aktiv " : "Bekreftet på server "}{formatRecoveryTime(otherTime)}
+                  {isHistoryRecovery ? "Aktiv kladd sist endret " : "Bekreftet på server "}{formatRecoveryTime(otherTime)}
                 </div>
                 <p style={{ margin: "8px 0 0", lineHeight: 1.45, color: "#334155" }}>
                   {isHistoryRecovery
-                    ? "Velger du denne, beholder du kladden som var aktiv før sikkerhetskopien ble funnet."
+                    ? "Velger du denne, beholder du den aktive kladden og fortsetter å redigere den."
                     : "Velger du denne, fortsetter du med serverversjonen. Endringer som bare finnes på denne enheten blir ikke brukt."}
                 </p>
               </div>
@@ -742,7 +748,7 @@ export default function SalesOfferBuilder(props) {
                 onClick={() => chooseRecovery("server")}
               >
                 {isHistoryRecovery
-                  ? "Bruk siste aktive kladd"
+                  ? "Behold aktiv kladd"
                   : "Bruk serverversjonen"}
               </button>
               <button
@@ -752,7 +758,7 @@ export default function SalesOfferBuilder(props) {
                 onClick={() => chooseRecovery("local")}
                 autoFocus
               >
-                Bruk versjonen fra denne enheten
+                {isHistoryRecovery ? "Bruk sikkerhetskopien" : "Bruk versjonen fra denne enheten"}
               </button>
             </div>
           </div>
