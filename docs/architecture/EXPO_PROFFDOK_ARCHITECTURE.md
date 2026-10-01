@@ -180,6 +180,8 @@ Kritiske regler:
 
 Disse kontraktene er permanent regresjonsbeskyttet og skal vurderes ved alle endringer i Sales-navigasjon, hydrering eller media.
 
+PR #206 sikrer audit-recovery av tilbudskladd: brukerens valg identifiseres av den lokale sikkerhetskopiens revisjon, uavhengig av at aktiv kladd får nytt lagringstidspunkt. Dialogen navngir begge lokale versjoner korrekt. Valgt kladd bevares ved samtidig serverkonflikt, og autolagring prøves igjen etter overgangsvakten. Recovery skal fortsatt bare be om valg når to reelle versjoner krever det.
+
 ### 5.2 Badskisse og befaringsmedia – Fase 42A–42F
 
 Badskisse er en mobiltilpasset del av befaringen for enkle romskisser med vegger/mål, dør/vindu og relevante baderomsobjekter. Fase 42E forbedret målsatt visning og redigering. Fase 42F sikret at lagret Badskisse og servermedia overlever recovery/hydration.
@@ -351,6 +353,8 @@ Leverandøralternativer kobles via samme normaliserte GTIN/EAN. Varenummer alene
 `← Startside` vises i mobil Prissøk og bruker eksisterende `closePriceSearch({ clearResume: true })` før appens ordinære Startside-navigasjon. Bevisst avslutning rydder recovery-markøren. Ved reelt appbytte/dvale kan aktivt Prissøk gjenopprettes; den midlertidige arbeidslisten beholder kun vare-ID/oppslagsnøkler i samme fanes `sessionStorage`, og priser hentes på nytt fra backend.
 
 `Skann strekkode` vises bare på mobil. Skannerkomponenten og ZXing lastes ved behov, foretrekker bakre kamera og setter avlest EAN/GTIN i eksisterende søkefelt. Søket går gjennom de eksisterende read-only RPC-ene; ingen kamerabilder eller videodata lagres eller lastes opp. Videosporet stoppes ved treff, avbrudd, navigasjon, bakgrunning, unmount og sent innvilget kameratillatelse etter at skanneren er lukket. Manuell EAN-inntasting er fallback ved manglende kameratilgang. Desktop-visningen og serverens maskering av interne nettoprisfelter er uendret.
+
+Interne brukere kan lagre høyst tre plukklister per bruker via avgrensede RPC-er. Listene inneholder vareidentitet, antall og valgfritt manuelt Cordel-ordrenummer, men ingen priser eller kameradata; de kan åpnes på både mobil og PC og slettes av eieren. Mobilskanning i Generelt tilbud gjenbruker skanneren og fyller søket for aktuell post/opsjon, mens varevalget fortsatt er bevisst. Serverkontroll av firmascope, katalogtilgang og prisvisning gjelder uendret. Se [mobil plukkliste og skanning i Generelt tilbud](MOBILE_PICKLIST_AND_GENERAL_OFFER_SCAN.md) for datamodell, revisjonsvern og tilgangsvilkår.
 
 ## 8. Modul-/rolle-tilgang
 

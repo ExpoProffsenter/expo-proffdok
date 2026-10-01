@@ -4,7 +4,7 @@ Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsnin
 
 Produksjon: https://expo-proffdok.app
 
-**Gjeldende Production-baseline:** `main` inkluderer PR #201 med mobil Startside-knapp og strekkodeskanning i Prissøk. Den godkjente koden er også synkronisert `main → demo` via PR #202.
+**Siste funksjonsrelease:** `main` inkluderer PR #206 for tilbudsrecovery etter PR #203 (små strekkoder) og PR #205 (serverlagrede plukklister og mobilskanning i Generelt tilbud). Den godkjente appkoden er synkronisert `main → demo`. Se [gjeldende release-status](CURRENT_RELEASE_STATUS.md) for verifisering og åpne preflight-punkter.
 
 ## Teknologi
 
@@ -47,6 +47,8 @@ Sales-domene: [src/modules/sales/README.md](src/modules/sales/README.md)
 
 Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md](docs/architecture/FASE39B_INTERNAL_STORE_CATALOG.md)
 
+Mobil plukkliste og tilbudsskanning: [docs/architecture/MOBILE_PICKLIST_AND_GENERAL_OFFER_SCAN.md](docs/architecture/MOBILE_PICKLIST_AND_GENERAL_OFFER_SCAN.md)
+
 ## Kritisk produksjonsarkitektur
 
 - Sales-oversikten bruker lett summary/lazy loading; komplett sak hentes først når brukeren åpner den.
@@ -60,6 +62,8 @@ Internt vareregister / Fase 39B: [docs/architecture/FASE39B_INTERNAL_STORE_CATAL
 - Prosjektets sky-autolagring sammenligner normalisert data og tittel med serverraden før `PATCH`; ren gjenåpning eller oppfriskning skal ikke flytte `updated_at`. Etter en reell, bekreftet sky-lagring nullstilles «ulagret»-flagget bare når samme snapshot fortsatt er gjeldende, slik at unødige navigasjonspopuper fjernes uten å kunne skjule nyere endringer.
 - Desktop prosjektarbeidsflate bruker kollapset meny med få native hurtigvalg; full funksjonsliste ligger fortsatt i Meny.
 - Prissøk på mobil har `← Startside`, som avslutter aktivt Prissøk og rydder resume-markøren uten reload. `Skann strekkode` lastes ved behov, foretrekker bakre kamera og setter EAN/GTIN i det eksisterende read-only RPC-søket. Kamerasporet stoppes ved treff, avbrudd, navigasjon og bakgrunning; kamera/bilde lagres eller lastes ikke opp. Manuell EAN-inntasting fungerer hvis kameratilgang mangler. Desktop-Prissøk er uendret.
+- Interne brukere kan lagre inntil tre plukklister per bruker og hente dem frem på mobil og PC. Listene inneholder vareidentitet, antall og valgfritt Cordel-ordrenummer, men ingen priser eller kameradata. Cordel-registreringen er fortsatt manuell. Mobilskanning i Generelt tilbud fyller søket i aktuell post eller opsjon; brukeren velger selv varen før tilbudskladden oppdateres. Tilgang og prisfelter kontrolleres fortsatt på serveren.
+- Tilbudsrecovery skiller mellom lokal sikkerhetskopi og aktiv kladd. Et valg knyttes til sikkerhetskopiens stabile revisjon, slik at senere autolagring av aktiv kladd ikke viser samme valg om igjen. Valgt kladd bevares også når en separat serverkonflikt må håndteres, og varig autolagring forsøkes på nytt etter recovery-overgangen.
 - Ordinært akseptert tilbud kan gå videre til prosjekt uten kontrakt, egen opplastet kontrakt eller Expo-kontrakt. Hvis Expo-kontrakt ikke ble opprettet før prosjektaktivering, kan samme låste aksept og kontraktmotor åpnes direkte fra prosjektets **Avtalegrunnlag** uten retur til Sales. Åpning av en allerede synkronisert sluttkontrakt er ren lesing og skal ikke berøre prosjektets endringstidspunkt. Kontrakt er valgfri med mindre garanti-/avtalegrunnlaget krever den.
 
 ## Fase 45B – Proff, Generelt tilbud og Enkel ordre
