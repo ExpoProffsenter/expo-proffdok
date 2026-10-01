@@ -9,6 +9,14 @@ import {
   markSalesResumeForBackground,
   shouldBootstrapRestoreSales,
 } from "../src/modules/sales/services/salesResumeRecovery.mjs";
+import {
+  beginOfferDraftHydrationCycle,
+  buildStableOfferDraftKey,
+  getPendingOfferDraftRecovery,
+  loadOfferDraft,
+  resolvePendingOfferDraftRecovery,
+  saveOfferDraft,
+} from "../src/modules/sales/services/salesLocalStorage.js";
 
 const failures = [];
 
@@ -46,6 +54,12 @@ function memoryStorage(initial = {}, { throwOnSet = false } = {}) {
     removeItem(key) {
       entries.delete(key);
     },
+    key(index) {
+      return [...entries.keys()][index] ?? null;
+    },
+    get length() {
+      return entries.size;
+    },
   };
 }
 
@@ -54,6 +68,7 @@ const salesModulePath = "src/modules/sales/SalesModule.jsx";
 const salesResumeRecoveryPath = "src/modules/sales/services/salesResumeRecovery.mjs";
 const salesModuleCorePath = "src/modules/sales/SalesModuleCore.jsx";
 const offerBuilderPath = "src/modules/sales/components/SalesOfferBuilder.jsx";
+const offerBuilderStandardPath = "src/modules/sales/components/SalesOfferBuilderStandard.jsx";
 const inspectionNotePath = "src/modules/sales/components/SalesInspectionNote.jsx";
 const inspectionDraftDbPath = "src/modules/sales/services/salesInspectionDraftDb.js";
 const localStoragePath = "src/modules/sales/services/salesLocalStorage.js";
@@ -71,6 +86,7 @@ const salesModule = read(salesModulePath);
 const salesResumeRecovery = read(salesResumeRecoveryPath);
 const salesModuleCore = read(salesModuleCorePath);
 const offerBuilder = read(offerBuilderPath);
+const offerBuilderStandard = read(offerBuilderStandardPath);
 const inspectionNote = read(inspectionNotePath);
 const inspectionDraftDb = read(inspectionDraftDbPath);
 const localStorage = read(localStoragePath);
@@ -222,6 +238,96 @@ if (salesModule) {
 
 if (salesModuleCore) {
   requireText(salesModuleCore, "export default function SalesModule(", `${salesModuleCorePath}: eksisterende SalesModule-kjerne mangler.`);
+  requireText(salesModuleCore, "if (pendingRecovery.type !== \"transition\") return;", `${salesModuleCorePath}: uavklart recovery må sperre serverlagring.`);
+  requireText(salesModuleCore, "setOfferRecoveryRetry((count) => count + 1)", `${salesModuleCorePath}: valgt sikkerhetskopi synkroniseres ikke etter overgang.`);
+}
+
+// En reell nettleserkladd får nytt savedAt ved autolagring. Valget av en eldre,
+// mer komplett revisjon må likevel respekteres for samme revisjon på neste mount.
+{
+  const previousWindow = globalThis.window;
+  const requestId = "offer-recovery-regression";
+  const userId = "offer-recovery-user";
+  const liveTime = new Date(Date.now() - 10_000).toISOString();
+  const backupTime = new Date(Date.now() - 60_000).toISOString();
+  const serverTime = new Date(Date.now() - 120_000).toISOString();
+  const form = (optionCount) => ({
+    title: "Testtilbud",
+    lines: Array.from({ length: 8 }, (_, index) => ({ id: `line-${index}`, description: `Linje ${index}` })),
+    options: Array.from({ length: optionCount }, (_, index) => ({ id: `option-${index}`, title: `Opsjon ${index}` })),
+  });
+  const stableKey = buildStableOfferDraftKey({ userId, requestId });
+  const setup = ({ audit = true, history = false, server = false } = {}) => {
+    const store = memoryStorage({
+      "sb-recovery-auth-token": JSON.stringify({ user: { id: userId } }),
+      [stableKey]: JSON.stringify({ form: form(23), savedAt: liveTime }),
+      ...(audit ? { [`${stableKey}:audit-v2`]: JSON.stringify([{ form: form(24), savedAt: backupTime }]) } : {}),
+      ...(history ? { [`${stableKey}:history`]: JSON.stringify([{ form: form(24), savedAt: backupTime }]) } : {}),
+      ...(server ? { [`expo-proffdok:sales:v1:offer-server-baseline:${userId}:test-company:${requestId}`]: JSON.stringify({ userId, companyId: "test-company", requestRef: requestId, offerDraftSavedAt: serverTime, observedAt: new Date().toISOString(), meaningfulLines: 8, meaningfulOptions: 23 }) } : {}),
+    });
+    globalThis.window = {
+      localStorage: store,
+      location: { search: "" },
+      setTimeout: globalThis.setTimeout,
+      dispatchEvent() {},
+    };
+    beginOfferDraftHydrationCycle();
+    return store;
+  };
+  const expireTransition = (store) => {
+    const key = `${stableKey}:audit-transition-v2`;
+    const transition = JSON.parse(store.getItem(key));
+    store.setItem(key, JSON.stringify({ ...transition, expiresAt: new Date(Date.now() - 1).toISOString() }));
+  };
+
+  try {
+    let store = setup();
+    requireRecovery(loadOfferDraft(requestId)?.options?.length === 23, "lokal aktiv kladd lastes ikke før revisjonsvalget.");
+    requireRecovery(getPendingOfferDraftRecovery(requestId)?.type === "audit", "24 opsjoner i audit-revisjonen oppdages ikke.");
+    requireRecovery(resolvePendingOfferDraftRecovery(requestId, "server"), "valg om å beholde 23 lokale opsjoner feiler.");
+    expireTransition(store);
+    loadOfferDraft(requestId);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    requireRecovery(saveOfferDraft(stableKey, form(23)), "autolagring av valgt aktiv kladd blokkeres.");
+    loadOfferDraft(requestId);
+    requireRecovery(!getPendingOfferDraftRecovery(requestId), "samme audit-revisjon dukker opp på nytt etter autolagring.");
+    const newerTime = new Date(Date.now() - 1_000).toISOString();
+    store.setItem(`${stableKey}:audit-v2`, JSON.stringify([
+      { form: form(24), savedAt: backupTime },
+      { form: form(25), savedAt: newerTime },
+    ]));
+    loadOfferDraft(requestId);
+    requireRecovery(getPendingOfferDraftRecovery(requestId)?.localOptions === 25, "ny og mer komplett revisjon må fortsatt kunne tilbys.");
+
+    store = setup();
+    loadOfferDraft(requestId);
+    requireRecovery(resolvePendingOfferDraftRecovery(requestId, "local"), "gjenoppretting av 24 lokale opsjoner feiler.");
+    requireRecovery(JSON.parse(store.getItem(stableKey)).form.options.length === 24, "lokal sikkerhetskopi blir ikke skrevet som aktiv kladd.");
+    expireTransition(store);
+    requireRecovery(loadOfferDraft(requestId)?.options?.length === 24, "gjenopprettet kladd lastes ikke etter overgangen.");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    requireRecovery(saveOfferDraft(stableKey, form(24)), "gjenopprettet kladd kan ikke autolagres etter overgangen.");
+    requireRecovery(!getPendingOfferDraftRecovery(requestId), "gjenopprettet revisjon gir nytt valg.");
+
+    store = setup({ audit: false, history: true });
+    loadOfferDraft(requestId);
+    requireRecovery(getPendingOfferDraftRecovery(requestId)?.type === "history", "legacy-revisjon oppdages ikke.");
+    requireRecovery(resolvePendingOfferDraftRecovery(requestId, "server"), "valg av aktiv legacy-kladd feiler.");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    requireRecovery(saveOfferDraft(stableKey, form(23)), "legacy-kladd kan ikke autolagres.");
+    loadOfferDraft(requestId);
+    requireRecovery(!getPendingOfferDraftRecovery(requestId), "legacy-revisjon dukker opp på nytt etter autolagring.");
+
+    store = setup({ server: true });
+    loadOfferDraft(requestId);
+    requireRecovery(getPendingOfferDraftRecovery(requestId)?.type === "audit", "audit må vises først ved samtidig serverkonflikt.");
+    requireRecovery(resolvePendingOfferDraftRecovery(requestId, "server"), "aktiv lokal kladd kan ikke beholdes ved samtidig serverkonflikt.");
+    expireTransition(store);
+    requireRecovery(loadOfferDraft(requestId)?.options?.length === 23, "audit-valget om aktiv lokal kladd ble feiltolket som forkast til server.");
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
 }
 
 if (offerBuilder) {
@@ -233,6 +339,12 @@ if (offerBuilder) {
   requireText(offerBuilder, 'text: "✓ Lagret på server."', `${offerBuilderPath}: bekreftet serverstatus vises ikke eksplisitt.`);
   requireText(offerBuilder, 'text: "⚠ Lagret lokalt – venter på server."', `${offerBuilderPath}: lokal/offline-status vises ikke eksplisitt.`);
   requireText(offerBuilder, 'text: "⚠ Lagret lokalt – serveren er ikke tilgjengelig. Endringene beholdes på denne enheten."', `${offerBuilderPath}: serverfeil kan igjen gi falsk trygghet om lagring.`);
+}
+
+if (offerBuilderStandard) {
+  requireText(offerBuilderStandard, '["history", "audit"].includes(visibleRecovery?.type)', `${offerBuilderStandardPath}: audit-valg feilmerkes som servervalg.`);
+  requireText(offerBuilderStandard, 'recovery.type !== "audit"', `${offerBuilderStandardPath}: audit får feilaktig lang overgangssperre.`);
+  requireText(offerBuilderStandard, '"Lokal sikkerhetskopi"', `${offerBuilderStandardPath}: lokal revisjon forklares ikke i dialogen.`);
 }
 
 if (inspectionDraftDb) {

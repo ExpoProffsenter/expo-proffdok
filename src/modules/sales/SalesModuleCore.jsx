@@ -114,6 +114,7 @@ import {
   buildStableOfferDraftKey,
   clearInspectionDraft as clearStoredInspectionDraft,
   clearOfferDraft,
+  getPendingOfferDraftRecovery,
   loadInspectionDraft,
   loadOfferDraft as loadStoredOfferDraft,
   loadRequests,
@@ -320,6 +321,7 @@ export default function SalesModule({
   const [salesCompanyId, setSalesCompanyId] = useState(null);
   const [salesStorageError, setSalesStorageError] = useState("");
   const [offerDraftSaveStatus, setOfferDraftSaveStatus] = useState("idle");
+  const [offerRecoveryRetry, setOfferRecoveryRetry] = useState(0);
   const [offerTemplateSaveBusy, setOfferTemplateSaveBusy] = useState(false);
   const [offerTemplates, setOfferTemplates] = useState([]);
   const [offerTemplatesLoading, setOfferTemplatesLoading] = useState(false);
@@ -492,6 +494,21 @@ export default function SalesModule({
   useEffect(() => {
     if (mode !== "offer-builder" || !selectedRequestId || !offerFormReady) return;
 
+    const pendingRecovery = getPendingOfferDraftRecovery(selectedRequestId);
+    if (pendingRecovery) {
+      setOfferDraftSaveStatus("idle");
+      if (pendingRecovery.type !== "transition") return;
+
+      // Et bevisst valg remounter editoren mens gammel cleanup fortsatt er
+      // sperret. Prøv lagringen igjen når sperren er utløpt, også uten ny edit.
+      const expiresAt = Date.parse(pendingRecovery.expiresAt || "") || 0;
+      const retry = window.setTimeout(
+        () => setOfferRecoveryRetry((count) => count + 1),
+        Math.max(100, expiresAt - Date.now() + 50)
+      );
+      return () => window.clearTimeout(retry);
+    }
+
     try {
       saveOfferDraft(offerForm, selectedRequestId);
     } catch (error) {
@@ -554,11 +571,13 @@ export default function SalesModule({
     salesCompanyId,
     salesStorageKey,
     selectedRequestId,
+    offerRecoveryRetry,
   ]);
 
   useEffect(() => {
     return () => {
       if (offerModeRef.current !== "offer-builder" || !offerRequestIdRef.current) return;
+      if (getPendingOfferDraftRecovery(offerRequestIdRef.current)) return;
       try {
         saveOfferDraft(offerFormRef.current, offerRequestIdRef.current);
       } catch (error) {
