@@ -1,7 +1,7 @@
 # Expo ProffDok – Sales / Befaring / Tilbud / Generelt tilbud / Aksept / Kontrakt
 
-**Status:** Fase 45B og mobil Prissøk fra PR #201 er i Production og synkronisert til permanent Demo via PR #202.
-**Oppdatert:** 29.09.2026
+**Status:** Production inkluderer PR #206 og de godkjente mobil-/plukklisteendringene. Den aktive Preview-endringen utvider selvstendig Prissøk på PC; Sales-flyten og mobil tilbudsskanning er uendret.
+**Oppdatert:** 03.10.2026
 
 Sales håndterer både ordinær Befaring/Tilbud-flyt og Generelt tilbud for varer, arbeid, underentreprenører og andre leveranser. Den tekniske legacy-identiteten `Butikktilbud`/`store offer` beholdes der det trengs for kompatibilitet.
 
@@ -142,7 +142,7 @@ Komplette firmamaler beholder varige app-/Storage-bilder på poster og opsjoner.
 
 ## 7. Internt og eksternt proff-vareregister
 
-Selvstendig Prissøk i `src/modules/storeCatalog/` bruker eksisterende read-only RPC og er ikke del av Sales-editoren. På mobil avslutter `← Startside` Prissøk via eksisterende close-flyt og rydder resume-markøren. Skanneren fyller bare GTIN/EAN i samme søkefelt; kamera og bilde lagres eller lastes ikke opp. Ved avvist kameratilgang fungerer manuell inntasting. Desktop-søket og serverens maskering av intern nto-pris er uendret.
+Selvstendig Prissøk i `src/modules/storeCatalog/` bruker eksisterende read-only katalog-RPC og er ikke del av Sales-editoren. Plukklister med antall og valgfritt manuelt Cordel-ordrenummer kan opprettes/redigeres på både PC og mobil via eksisterende brukerbundne plukkliste-RPC-er. Plukklisteutskrift viser antall/ordrenummer uten priser, mens PC også har separat prisutskrift med serverstyrt intern nto-tilgang og eksplisitt avkryssing. På mobil avslutter `← Startside` Prissøk via eksisterende close-flyt og rydder resume-markøren. Skanneren finnes bare på mobil og fyller GTIN/EAN i samme søkefelt; kamera og bilde lagres eller lastes ikke opp. Ved avvist kameratilgang fungerer manuell inntasting. Se [plukklistemodellen](../../../docs/architecture/MOBILE_PICKLIST_AND_GENERAL_OFFER_SCAN.md).
 
 Generelt tilbud kan bruke vareregister fra `src/modules/storeCatalog/`.
 

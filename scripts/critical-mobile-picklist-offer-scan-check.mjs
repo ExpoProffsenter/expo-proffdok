@@ -53,6 +53,20 @@ for (const needle of [
   "persistActivePicklistSession", "samePicklistContents", "readLegacyPicklist(picklistIdentity)",
   "restoreStoredProducts(refs)", "searchPrices(lookup, 10)",
 ]) assert(view.includes(needle), `Plukkliste/PC-flyt mangler: ${needle}`);
+assert(!view.includes("const picklistMode = isMobile || Boolean(activePicklistId)"),
+  "En ny PC-plukkliste skal ha antall, ordrenummer og lagring uten å åpne en tidligere lagret liste.");
+assert(view.includes("onQuantityChange={updateSelectedQuantity} picklistMode\n"),
+  "Valgte varer skal ha antall også i en ny PC-kladd.");
+assert(view.includes("{listDirty || !activePicklistId ? ("),
+  "Lagre plukkliste skal være tilgjengelig for nye PC-lister.");
+for (const needle of ["Skriv ut priser", "printSelectedProducts(true)", "printSelectedProducts(false)",
+  "picklistMode={printPicklistMode}", "!printPicklistMode && canPrintInternal && includeInternalPrint"]) {
+  assert(view.includes(needle), `Separat, tilgangsstyrt pris-/plukklisteutskrift mangler: ${needle}`);
+}
+const printHandler = view.match(/const printSelectedProducts = [\s\S]*?\n  \};/)?.[0] || "";
+assert(printHandler.indexOf("flushSync(") >= 0
+  && printHandler.indexOf("flushSync(") < printHandler.indexOf("window.print()"),
+"Bytte mellom prisutskrift og prisfri plukkliste må oppdatere dokumentet før native utskrift.");
 assert(!/(?:window\.)?localStorage\s*\./.test(view), "Ny plukkliste må ikke skrives til mobilens localStorage.");
 assert(!/\.insert\s*\(|\.update\s*\(|\.upsert\s*\(/.test(view), "Ingen direkte tabellskriving fra Prissøk.");
 for (const rpc of ["list_mobile_store_picklists", "save_mobile_store_picklist", "delete_mobile_store_picklist"]) {

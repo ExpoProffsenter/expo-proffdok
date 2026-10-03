@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
 **Fase:** 45B – Proff / Generelt tilbud / Enkel ordre
-**Status:** Fase 45B, godkjente Production-QA-rettelser og mobil Prissøk fra PR #201 er i Production; godkjent kode er synkronisert til permanent Demo via PR #202
-**Dato:** 29.09.2026
-**Produksjonsbaseline:** `main` etter PR #201 (`0f61d197`); kode, backend og live system er autoritativt dersom statusdokumentet henger etter
+**Status:** Production inkluderer PR #206 og de godkjente mobil-/plukklisteendringene; utvidet PC-plukkliste er aktiv feature/Preview med miljømål BEGGE
+**Dato:** 03.10.2026
+**Produksjonsbaseline:** `main` `9802ef55`, siste funksjonsmerge PR #206; kode, backend og live system er autoritativt dersom statusdokumentet henger etter
 **Production Supabase:** `dqffxflaoyarbxyiyhop`  
 **Permanent Demo Sandbox:** branch `demo`, Supabase `ppvircenkjizeiqdxphj`
 
@@ -354,7 +354,7 @@ Leverandøralternativer kobles via samme normaliserte GTIN/EAN. Varenummer alene
 
 `Skann strekkode` vises bare på mobil. Skannerkomponenten og ZXing lastes ved behov, foretrekker bakre kamera og setter avlest EAN/GTIN i eksisterende søkefelt. Søket går gjennom de eksisterende read-only RPC-ene; ingen kamerabilder eller videodata lagres eller lastes opp. Videosporet stoppes ved treff, avbrudd, navigasjon, bakgrunning, unmount og sent innvilget kameratillatelse etter at skanneren er lukket. Manuell EAN-inntasting er fallback ved manglende kameratilgang. Desktop-visningen og serverens maskering av interne nettoprisfelter er uendret.
 
-Interne brukere kan lagre høyst tre plukklister per bruker via avgrensede RPC-er. Listene inneholder vareidentitet, antall og valgfritt manuelt Cordel-ordrenummer, men ingen priser eller kameradata; de kan åpnes på både mobil og PC og slettes av eieren. Mobilskanning i Generelt tilbud gjenbruker skanneren og fyller søket for aktuell post/opsjon, mens varevalget fortsatt er bevisst. Serverkontroll av firmascope, katalogtilgang og prisvisning gjelder uendret. Se [mobil plukkliste og skanning i Generelt tilbud](MOBILE_PICKLIST_AND_GENERAL_OFFER_SCAN.md) for datamodell, revisjonsvern og tilgangsvilkår.
+Interne brukere kan opprette og redigere høyst tre plukklister per bruker på både PC og mobil via de samme avgrensede RPC-ene. Listene inneholder vareidentitet, antall og valgfritt manuelt Cordel-ordrenummer, men ingen priser eller kameradata; de kan åpnes på begge enheter og slettes av eieren. Antall, ordrenummer og serversave vises også for en ny PC-kladd. Utskriftsmodus er separat fra redigeringsflaten: **Skriv ut plukkliste** skjuler alle priser og viser antall/ordrenummer, mens **Skriv ut priser** på PC beholder prisdokumentet og eksplisitt internprisvalg. React oppdaterer valgt dokument synkront før native utskrift, slik at bytte mellom de to aldri skriver ut forrige dokumenttype. Mobilskanning i Generelt tilbud gjenbruker skanneren og fyller søket for aktuell post/opsjon, mens varevalget fortsatt er bevisst. Serverkontroll av firmascope, katalogtilgang og prisvisning gjelder uendret. Se [plukklister og skanning i Generelt tilbud](MOBILE_PICKLIST_AND_GENERAL_OFFER_SCAN.md) for datamodell, revisjonsvern og tilgangsvilkår.
 
 ## 8. Modul-/rolle-tilgang
 

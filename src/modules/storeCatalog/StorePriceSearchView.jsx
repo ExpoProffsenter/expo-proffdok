@@ -6,7 +6,7 @@
 // nytt gjennom backend. Arbeidslisten kan også skrives ut uten å lagre historikk.
 
 import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { Camera, ChevronDown, ChevronUp, ExternalLink, Plus, Printer, Search, Trash2 } from "lucide-react";
 import { getStoredSupabaseSession, rpcWithStoredSession } from "../access/moduleAccessClient.js";
 import { WORK_PROFILE_EVENT, getMyWorkProfileState, readCachedWorkProfileState } from "../access/workProfileClient.js";
@@ -391,6 +391,7 @@ export default function StorePriceSearchView({ onClose }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [selectedExpanded, setSelectedExpanded] = useState(true);
   const [includeInternalPrint, setIncludeInternalPrint] = useState(false);
+  const [printPicklistMode, setPrintPicklistMode] = useState(true);
   const [restoringSelected, setRestoringSelected] = useState(true);
   const [picklistIdentity, setPicklistIdentity] = useState(currentPicklistIdentity);
   const [profileResolved, setProfileResolved] = useState(() => Boolean(currentPicklistIdentity().companyId));
@@ -423,7 +424,6 @@ export default function StorePriceSearchView({ onClose }) {
 
   const identityScope = `${picklistIdentity.userId}:${picklistIdentity.companyId}`;
   const hydrationScope = `${isMobile ? "mobile" : "desktop"}:${identityScope}`;
-  const picklistMode = isMobile || Boolean(activePicklistId);
   const cleanQuery = query.trim();
   const selectedIds = useMemo(
     () => new Set(selectedProducts.map((item) => String(item.id))),
@@ -722,6 +722,8 @@ export default function StorePriceSearchView({ onClose }) {
       setActivePicklistId(saved.id);
       setActiveRevision(saved.revision);
       setListDirty(false);
+      setConfirmNew(false);
+      setConfirmOpenId(null);
       persistActivePicklistSession(picklistIdentity, saved);
       if (legacyToMigrate) {
         try { deleteLegacyPicklist(picklistIdentity); } catch { /* Serverkopien er lagret. */ }
@@ -775,6 +777,7 @@ export default function StorePriceSearchView({ onClose }) {
       setSelectedProducts(items);
       setOrderNumber(row.order_number);
       setListDirty(false);
+      setConfirmNew(false);
       setLegacyToMigrate(false);
       setConfirmDeleteId(null);
       setRestoreFailed(false);
@@ -819,7 +822,8 @@ export default function StorePriceSearchView({ onClose }) {
     setConfirmDeleteId(null);
     setPicklistMessage(picklists.length >= MAX_SAVED_PICKLISTS
       ? "Du har tre lagrede plukklister. Slett én før du kan lagre en ny."
-      : "Ny plukkliste er klar. Skann eller søk etter varer.");
+      : isMobile ? "Ny plukkliste er klar. Skann eller søk etter varer."
+        : "Ny plukkliste er klar. Søk etter varer og angi antall.");
     window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
 
@@ -881,8 +885,11 @@ export default function StorePriceSearchView({ onClose }) {
     window.requestAnimationFrame(() => searchInputRef.current?.focus?.());
   };
 
-  const printSelectedProducts = () => {
+  const printSelectedProducts = (picklist = true) => {
     if (!selectedProducts.length) return;
+    // Native print reads the DOM immediately, including when the user switches
+    // between the price document and the price-free Cordel picklist.
+    flushSync(() => setPrintPicklistMode(picklist));
     window.print();
   };
 
@@ -890,8 +897,8 @@ export default function StorePriceSearchView({ onClose }) {
     ? createPortal(
         <PrintDocument
           items={selectedProducts}
-          includeInternal={!picklistMode && canPrintInternal && includeInternalPrint}
-          picklistMode={picklistMode}
+          includeInternal={!printPicklistMode && canPrintInternal && includeInternalPrint}
+          picklistMode={printPicklistMode}
           orderNumber={orderNumber.trim()}
         />,
         document.body
@@ -910,7 +917,7 @@ export default function StorePriceSearchView({ onClose }) {
         <h2>Prissøk</h2>
         <p>{isMobile
           ? "Skann eller søk varer, angi antall og lagre en midlertidig plukkliste til senere registrering i Cordel."
-          : "Søk varer og priser, eller åpne en lagret plukkliste for å føre antall og ordrenummer inn i Cordel."}</p>
+          : "Søk varer og priser, angi antall og lagre en plukkliste til senere manuell registrering i Cordel."}</p>
       </section>
 
       <section className="priceSearchSavedLists" aria-label="Lagrede plukklister">
@@ -919,9 +926,9 @@ export default function StorePriceSearchView({ onClose }) {
             <h3>Lagrede plukklister ({picklists.length}/{MAX_SAVED_PICKLISTS})</h3>
             <p>Tilgjengelige for deg på PC og mobil. Slett en liste når den er registrert i Cordel.</p>
           </div>
-          {activePicklistId ? (
+          {activePicklistId || selectedProducts.length || orderNumber ? (
             <button type="button" className="secondary" onClick={startNewPicklist} disabled={saveBusy || restoringSelected}>
-              {confirmNew ? "Forkast endringer og start ny" : isMobile ? "Ny plukkliste" : "Lukk liste"}
+              {confirmNew ? "Forkast endringer og start ny" : "Ny plukkliste"}
             </button>
           ) : null}
         </div>
@@ -967,32 +974,37 @@ export default function StorePriceSearchView({ onClose }) {
           <div className="priceSearchSelectedHeader">
             <div>
               <small>Midlertidig arbeidsliste</small>
-              <h3>{picklistMode ? "Plukkliste" : "Valgte varer"} ({selectedProducts.length})</h3>
+              <h3>Plukkliste ({selectedProducts.length})</h3>
               <p>{activePicklistId
                 ? listDirty ? "Ulagrede endringer. Trykk Lagre endringer før du bytter enhet." : "Lagret på serveren. Du finner listen på PC og mobil med samme bruker."
-                : picklistMode
-                  ? "Kladden ligger i denne fanen. Trykk Lagre plukkliste for å finne den igjen på PC."
-                  : "Listen lagres bare i denne nettleserfanen og tåler vanlig refresh/dvale. Prisene hentes på nytt etter reload."}</p>
+                : "Kladden ligger i denne fanen. Trykk Lagre plukkliste for å finne den igjen på PC og mobil."}</p>
             </div>
             <div className="priceSearchSelectedHeaderActions">
-              {!picklistMode && canPrintInternal ? (
-                <label className="priceSearchPrintOption">
-                  <input
-                    type="checkbox"
-                    checked={includeInternalPrint}
-                    onChange={(event) => setIncludeInternalPrint(event.target.checked)}
-                  />
-                  Inkluder interne priser
-                </label>
-              ) : null}
-              {picklistMode && (listDirty || !activePicklistId) ? (
+              {listDirty || !activePicklistId ? (
                 <button type="button" onClick={() => void saveCurrentPicklist()} disabled={saveBusy || serverLoading || Boolean(serverError) || restoreIncomplete || restoreFailed || (!activePicklistId && picklists.length >= MAX_SAVED_PICKLISTS)}>
                   {saveBusy ? "Lagrer …" : activePicklistId ? "Lagre endringer" : "Lagre plukkliste"}
                 </button>
               ) : null}
-              <button type="button" className="secondary" onClick={printSelectedProducts} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
-                <Printer size={16} /> {picklistMode ? "Skriv ut plukkliste" : "Skriv ut"}
+              <button type="button" className="secondary" onClick={() => printSelectedProducts(true)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
+                <Printer size={16} /> Skriv ut plukkliste
               </button>
+              {!isMobile ? (
+                <>
+                  <button type="button" className="secondary" onClick={() => printSelectedProducts(false)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
+                    <Printer size={16} /> Skriv ut priser
+                  </button>
+                  {canPrintInternal ? (
+                    <label className="priceSearchPrintOption">
+                      <input
+                        type="checkbox"
+                        checked={includeInternalPrint}
+                        onChange={(event) => setIncludeInternalPrint(event.target.checked)}
+                      />
+                      Inkluder interne priser i prisutskrift
+                    </label>
+                  ) : null}
+                </>
+              ) : null}
               <button
                 type="button"
                 className="secondary"
@@ -1012,21 +1024,19 @@ export default function StorePriceSearchView({ onClose }) {
               </button>
             </div>
           </div>
-          {picklistMode ? (
-            <label className="priceSearchOrderNumber">
-              <span>Ordrenummer i Cordel (valgfritt)</span>
-              <input
-                value={orderNumber} maxLength={64} autoComplete="off" disabled={restoreIncomplete || saveBusy}
-                onChange={(event) => { setOrderNumber(event.target.value); setListDirty(true); }}
-                placeholder="Skriv inn ordrenummer manuelt"
-              />
-            </label>
-          ) : null}
+          <label className="priceSearchOrderNumber">
+            <span>Ordrenummer i Cordel (valgfritt)</span>
+            <input
+              value={orderNumber} maxLength={64} autoComplete="off" disabled={restoreIncomplete || saveBusy}
+              onChange={(event) => { setOrderNumber(event.target.value); setListDirty(true); }}
+              placeholder="Skriv inn ordrenummer manuelt"
+            />
+          </label>
           <div className={`priceSearchSelectedList${selectedExpanded ? "" : " isCollapsed"}`}>
             {selectedProducts.map((item) => (
               <SelectedProduct
                 key={item.id} item={item} onRemove={removeSelectedProduct}
-                onQuantityChange={updateSelectedQuantity} picklistMode={picklistMode}
+                onQuantityChange={updateSelectedQuantity} picklistMode
                 readOnly={restoreIncomplete || saveBusy}
               />
             ))}
@@ -1072,9 +1082,7 @@ export default function StorePriceSearchView({ onClose }) {
         ) : null}
         <div className="priceSearchMeta" aria-live="polite">
           <span>{resultLabel}</span>
-          <small>{isMobile
-            ? "Trykk Lagre plukkliste for å hente den frem på PC. Ingen priser lagres i plukklisten."
-            : "Lagrede plukklister åpnes fra serveren. Intern nto-pris vises bare for brukere med egen tilgang."}</small>
+          <small>Lagrede plukklister er tilgjengelige på PC og mobil. Ingen priser lagres i plukklisten. Intern nto-pris vises bare for brukere med egen tilgang.</small>
         </div>
       </section>
 
