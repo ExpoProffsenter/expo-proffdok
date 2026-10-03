@@ -10,9 +10,10 @@
 
 - Branch: `fase45b-desktop-price-picklist`, fra gjeldende `main`. Draft-PR #207: https://github.com/ExpoProffsenter/expo-proffdok/pull/207. Remote source tree er identisk med lokalt QA-testet tre.
 - Miljømål: **BEGGE**. PC får antall og valgfritt Cordel-ordrenummer for nye plukklister, serversave, Ny plukkliste og separat plukkliste-/prisutskrift. Kameraskanning er kun på mobil. Eksisterende backend og tilgangsregler gjenbrukes uten migrasjon.
-- Preview mot Sandbox `ppvircenkjizeiqdxphj` er `READY` og svarer HTTP 200. Feature-deployment `dpl_6491we2eRTrpK2uAnfTrF5V9nEZS` bygget kildekoden `e7ceae63e27da77b158329feb90a16e1495b7acf`; GitHub Core Safety og Vercel-status er grønne. Preview: https://expo-proffdok-git-fase45b-desktop-price-picklist-ringside.vercel.app/?progressTest=safe.
+- Preview mot Sandbox `ppvircenkjizeiqdxphj` er `READY`. Innlogget PC-test er utført på feature-deployment `dpl_5XyThZcn8fXfguzqijbqjZXuYqcq`, kildekode `d7fe0ae8acd3a489edc922132c25f3b5a1342b34`. GitHub Core Safety er grønn. Preview: https://expo-proffdok-git-fase45b-desktop-price-picklist-ringside.vercel.app/?progressTest=safe.
 - Målrettede checks, hele `npm run check:critical`, Sandbox-build, diff-/scope- og dokumentkontroll er grønne. Backendtest i rollback verifiserer lagring/antall, revisjonsvern, tre-listersgrense, prisfri payload og brukerisolasjon.
-- Nettleseren viser innlogging. Sikker innlogging kom ikke videre til en attestert innlogget side; ingen synlig appfeil ble observert. Faktisk innlogget Preview-test av PC-flyten og utskriftsvalgene gjenstår. Draft beholdes.
+- Innlogget Preview bekrefter nye PC-lister, desimalantall, lagring/oppdatering, gjenåpning fra serveren, Ny plukkliste, vern av ulagrede endringer, Startside-retur og full sideoppdatering. En bekreftelse som ble stående etter lagring ble rettet; ny bekreftelse kreves igjen for senere ulagrede endringer. Begge utskriftsdokumenter er kontrollert: plukkliste har antall/ordrenummer uten priser, prisutskrift har kundepris og valgfritt tilgangsstyrte internpriser. Desktop har ingen kameraskanning. Faktisk mobiltest gjenstår. Draft beholdes.
+- Demo-brukeren har testlisten `QA-PC-20261003`, én syntetisk Sopro-vare med antall 4, tilgjengelig for Kenneths kontroll på PC og mobil. Serveren viser revisjon 2 og kun vareidentifikatorer/antall; ingen priser. Listen er en QA-fixture, ikke en registrert Cordel-ordre.
 - Kenneth-test: ikke utført. Produksjonsgodkjenning for denne endringen: ikke gitt.
 
 ## Permanent Demo Sandbox
@@ -23,5 +24,5 @@
 
 ## Blokkere og neste handling
 
-- Neste handling: fullfør Sandbox-innlogging og Preview-test av PC-antall, lagring/gjenåpning og begge utskriftsvalg. Kontroller deretter samme lagrede liste på mobil. Merge krever ny eksplisitt `PRODUCTION GODKJENT` for PR #207.
+- Neste handling: Kenneth kontrollerer `QA-PC-20261003` i samme Preview på PC og mobil, antall/lagring og de to PC-utskriftsvalgene. Merge krever deretter ny eksplisitt `PRODUCTION GODKJENT` for PR #207; `TEST OK` alene er ikke produksjonsgodkjenning.
 - Etter godkjent Production-QA: kontrollert `main → demo`-synk og Sandbox-preflight. Demo skal aldri merges tilbake til `main`.
