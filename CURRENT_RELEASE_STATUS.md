@@ -19,9 +19,9 @@
 
 - Godkjent funksjonskode `ca161ba5` er synkronisert kontrollert **main → demo**, merge `428ee71bec10ca1cd1f647e6ee0e998f6613a636`. Demo-overlay, syntetiske ressurser og Sandbox-data er bevart. Kontrollsidens baseline følger synkronisert `main`, også ved senere rene dokumentsynker.
 - Full Demo-critical QA og Sandbox-build er grønne; builden krever Sandbox-binding `ppvircenkjizeiqdxphj` og avviser Production-binding.
-- Verifisert funksjonsdeployment: `dpl_CAkBJRL5ZNp2Erv7yt4SP8GZtenk`, `READY`, kilde `428ee71b`. Fast Demo-app, `/demo-control.html` og de nye JS-filene svarte HTTP 200. Live funksjonskode har PC-utskriftsvalgene og Sandbox-binding; kontrollsiden har baseline `ca161ba5`.
-- Innlogget **Kjør preflight** gjenstår. Det sikre innloggingsfeltet fullførte ikke innlogging i den separate faste Demo-originen; appen viste ingen forklarende feil. Brukerinnlogging må fullføres via nettleseroverlevering. Demo skal ikke beskrives som fullt preflight-godkjent før faktisk kontroll er grønn.
+- Verifisert Demo-deployment: `dpl_Fg1bEJScPgGHe1ekgnTUzudWaNGi`, `READY`, kilde `5bafb9f47d1f635cf9e5247b2cfb38f3b97d68d0`, med synkronisert `main`-baseline `a69fce07`. Fast Demo-app, `/demo-control.html` og de nye JS-filene svarte HTTP 200. Live funksjonskode har PC-utskriftsvalgene og Sandbox-binding. Senere ren dokumentsynk skal oppdatere kontrollsidens baseline og få ny innlogget preflight.
+- Faktisk innlogget **Kjør preflight** på fast Demo er grønn 03.10.2026 etter fullført demo-innlogging. Kontrollsiden viser **✅ Demo Sandbox er klar.** Production-baseline er synkron, begge lokale Badskisser er installert (2/2), og serverkontrollene er grønne. De to skissene ble installert i den nye nettleseroriginen; serverdata, QA-plukkliste og Golden Demo er bevart uten reset.
 
 ## Neste handling
 
-- Fullfør innlogging og **Kjør preflight** på fast Demo. Release-dokumentasjon og kontrollsidens baseline synkroniseres **main → demo** før kontrollen. Etter grønn preflight registreres resultatet og en eventuell ny dokumentsynk får ny baseline/preflight. Kjør også ny preflight før en viktig kundedemo. Demo skal aldri merges tilbake til `main`; Sandbox-data og Golden Demo skal bevares.
+- PR #207 er godkjent og verifisert i Production, synkronisert til Demo og kontrollert med grønn innlogget preflight. Kjør alltid ny **Kjør preflight** før en viktig kundedemo. Ny `main`-commit, også dokumentasjon, krever kontrollert **main → demo**-synk med oppdatert baseline. Demo skal aldri merges tilbake til `main`; Sandbox-data og Golden Demo skal bevares.
