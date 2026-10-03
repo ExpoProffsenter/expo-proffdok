@@ -1,6 +1,6 @@
 # Expo ProffDok – Sales / Befaring / Tilbud / Generelt tilbud / Aksept / Kontrakt
 
-**Status:** Production inkluderer PR #206 og de godkjente mobil-/plukklisteendringene. Den aktive Preview-endringen utvider selvstendig Prissøk på PC; Sales-flyten og mobil tilbudsskanning er uendret.
+**Status:** Production inkluderer godkjent PR #207 med antall, nye serverlagrede plukklister og separate utskriftsvalg i Prissøk på PC, i tillegg til PR #206 og de tidligere mobil-/plukklisteendringene. Sales-flyten og mobil tilbudsskanning er bevart.
 **Oppdatert:** 03.10.2026
 
 Sales håndterer både ordinær Befaring/Tilbud-flyt og Generelt tilbud for varer, arbeid, underentreprenører og andre leveranser. Den tekniske legacy-identiteten `Butikktilbud`/`store offer` beholdes der det trengs for kompatibilitet.

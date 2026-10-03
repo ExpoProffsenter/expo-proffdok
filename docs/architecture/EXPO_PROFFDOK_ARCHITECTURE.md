@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
 **Fase:** 45B – Proff / Generelt tilbud / Enkel ordre
-**Status:** Production inkluderer PR #206 og de godkjente mobil-/plukklisteendringene; utvidet PC-plukkliste er aktiv feature/Preview med miljømål BEGGE
+**Status:** Production inkluderer godkjent PR #207 med utvidet PC-plukkliste og separate utskriftsvalg, samt PR #206 og de tidligere mobil-/plukklisteendringene; miljømål BEGGE
 **Dato:** 03.10.2026
-**Produksjonsbaseline:** `main` `9802ef55`, siste funksjonsmerge PR #206; kode, backend og live system er autoritativt dersom statusdokumentet henger etter
+**Produksjonsbaseline:** funksjonsmerge `ca161ba5`, PR #207; senere dokumentasjonscommits endrer ikke appkoden. Kode, backend og live system er autoritativt dersom statusdokumentet henger etter
 **Production Supabase:** `dqffxflaoyarbxyiyhop`  
 **Permanent Demo Sandbox:** branch `demo`, Supabase `ppvircenkjizeiqdxphj`
 
