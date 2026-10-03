@@ -722,6 +722,8 @@ export default function StorePriceSearchView({ onClose }) {
       setActivePicklistId(saved.id);
       setActiveRevision(saved.revision);
       setListDirty(false);
+      setConfirmNew(false);
+      setConfirmOpenId(null);
       persistActivePicklistSession(picklistIdentity, saved);
       if (legacyToMigrate) {
         try { deleteLegacyPicklist(picklistIdentity); } catch { /* Serverkopien er lagret. */ }
@@ -775,6 +777,7 @@ export default function StorePriceSearchView({ onClose }) {
       setSelectedProducts(items);
       setOrderNumber(row.order_number);
       setListDirty(false);
+      setConfirmNew(false);
       setLegacyToMigrate(false);
       setConfirmDeleteId(null);
       setRestoreFailed(false);
