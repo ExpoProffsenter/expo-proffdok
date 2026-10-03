@@ -1,18 +1,25 @@
-# Release-status – kontrollert 01.10.2026
+# Release-status – kontrollert 03.10.2026
 
 ## Production
 
-- Siste funksjonsendring på `main` er PR #206 («Stopp gjentatt tilbudsrecovery»), merge-commit `c6ece9fcef8b48dba7206522283795f189d48e5b`. Kenneth ga eksplisitt `TEST OK – Production godkjent`.
-- Deployment `dpl_6DZLrKPVMqneoe4Q3hqajSBFv3Nw` for denne appkoden var `READY`, `target=production`; `expo-proffdok.app` svarte 200 OK. En avgrenset Vercel-kontroll fant ingen error/fatal i runtime-loggene. Andreas' opprinnelige gjentatte dialog kan bare bekreftes på hans enhet og lokale tilbudskladd.
-- Tidligere godkjente endringer omfatter PR #201 (mobil Startside-knapp og EAN-skanning i Prissøk), PR #203 (bedre lesing av små strekkoder) og PR #205 (serverlagrede plukklister på tvers av enheter og mobilskanning i Generelt tilbud). Intern prisvisning og katalogtilgang er fortsatt serverstyrt; Cordel-overføring er manuell.
-- Dette dokumentet beskriver verifisert funksjonsrelease. Senere rene dokumentasjonscommits kan flytte `main` uten å endre appfunksjoner eller den historiske deployment-ID-en ovenfor.
+- `main`: `9802ef55194a5203c9dcaa1e3c4c5a15a361017a`. Siste funksjonsmerge er PR #206, godkjent med `TEST OK – Production godkjent`.
+- Gjeldende deployment: `dpl_BEgWys2wYFA8DrmntrUxWzXLbtwY`, `READY`, `target=production`; `expo-proffdok.app` svarte HTTP 200 ved startkontrollen. Production-Supabase er `ACTIVE_HEALTHY`.
+- Mobil Prissøk/EAN, små strekkoder, inntil tre serverlagrede plukklister, mobilskanning i Generelt tilbud og rettelsen mot gjentatt tilbudsrecovery er deployet.
+
+## Aktiv endring
+
+- Branch: `fase45b-desktop-price-picklist`, fra gjeldende `main`. PR opprettes som draft etter lokal QA.
+- Miljømål: **BEGGE**. PC får antall og valgfritt Cordel-ordrenummer for nye plukklister, serversave, Ny plukkliste og separat plukkliste-/prisutskrift. Kameraskanning er kun på mobil. Eksisterende backend og tilgangsregler gjenbrukes uten migrasjon.
+- Preview bygges mot Sandbox `ppvircenkjizeiqdxphj`. Målrettede checks, hele `npm run check:critical`, Sandbox-build, diff-/scope- og dokumentkontroll er grønne. Backendtest i rollback verifiserer lagring/antall, revisjonsvern, tre-listersgrense, prisfri payload og brukerisolasjon. Faktisk Preview-test gjenstår.
+- Kenneth-test: ikke utført. Produksjonsgodkjenning for denne endringen: ikke gitt.
 
 ## Permanent Demo Sandbox
 
-- Appkoden fra `main` er synkronisert kontrollert `main → demo`. Sist verifiserte Demo-funksjonsrelease var commit `129f0b8650dfd7a098ddbd71a467e011d29c0831`. Kontrollsidens Production-baseline oppdateres til siste synkroniserte `main`-commit også ved rene dokumentsynker.
-- Fast Demo-deployment `dpl_7C7QuEp17wc6wxCMZUxviuK6FQ5P` for denne funksjonsreleasen var `READY`; app og `/demo-control.html` svarte 200 OK. Avgrenset Vercel-kontroll fant ingen error/fatal for denne deploymenten.
+- `demo`: `d147dc586df373453183f1fae4d35a3c476d8094`; Production-baseline `9802ef55` er synkronisert kontrollert `main → demo`.
+- Deployment `dpl_At3o2pZ36z4RhVH29oypWnCXYoko` er `READY`; app og `/demo-control.html` svarte HTTP 200 ved startkontrollen.
+- Innlogget **Kjør preflight** er fortsatt ikke attestert grønn etter siste synk. Grenoversikten melder aktiv Sandbox, men har eldre `MIGRATIONS_FAILED`-status. Dette avklares før viktig kundedemo.
 
-## Åpent før viktig demo
+## Blokkere og neste handling
 
-- Den innloggede **Kjør preflight** på https://expo-proffdok-git-demo-ringside.vercel.app/demo-control.html er fortsatt ikke attestert grønn. Skybrowseren viste «Ikke innlogget i sandboxen»; dedikert demo-bruker må kjøre kontrollen før viktig kundedemo.
-- Kun `main` og `demo` er GitHub-brancher ved denne kontrollen. Demoressurser og sandbox-overlay skal aldri merges `demo → main`.
+- Teknisk QA og Kenneths korte Preview-test må fullføres før release. Merge krever ny eksplisitt `PRODUCTION GODKJENT` for den konkrete PR-en.
+- Etter godkjent Production-QA: kontrollert `main → demo`-synk og Sandbox-preflight. Demo skal aldri merges tilbake til `main`.
