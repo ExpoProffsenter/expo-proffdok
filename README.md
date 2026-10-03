@@ -4,7 +4,7 @@ Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsnin
 
 Produksjon: https://expo-proffdok.app
 
-**Produksjonsbaseline:** `main` inkluderer PR #206 for tilbudsrecovery etter PR #203 (små strekkoder) og PR #205 (serverlagrede plukklister og mobilskanning i Generelt tilbud). Den godkjente appkoden er synkronisert `main → demo`. Den aktive Preview-endringen gir også PC antall og oppretting av plukklister. Se [gjeldende release-status](CURRENT_RELEASE_STATUS.md) for verifisering og åpne preflight-punkter.
+**Produksjonsbaseline:** `main` inkluderer godkjent PR #207: antall, nye plukklister og separate plukkliste-/prisutskrifter i Prissøk på PC. Kameraskanning er fortsatt på mobil. Tidligere rettelser for tilbudsrecovery (PR #206), små strekkoder (PR #203) og serverlagrede plukklister (PR #205) er bevart. Se [gjeldende release-status](CURRENT_RELEASE_STATUS.md) for Production-verifisering og kontrollert `main → demo`-synk/preflight.
 
 ## Teknologi
 
