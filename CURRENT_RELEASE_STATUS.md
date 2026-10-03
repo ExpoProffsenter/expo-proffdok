@@ -8,9 +8,11 @@
 
 ## Aktiv endring
 
-- Branch: `fase45b-desktop-price-picklist`, fra gjeldende `main`. PR opprettes som draft etter lokal QA.
+- Branch: `fase45b-desktop-price-picklist`, fra gjeldende `main`. Draft-PR #207: https://github.com/ExpoProffsenter/expo-proffdok/pull/207. Remote source tree er identisk med lokalt QA-testet tre.
 - Miljømål: **BEGGE**. PC får antall og valgfritt Cordel-ordrenummer for nye plukklister, serversave, Ny plukkliste og separat plukkliste-/prisutskrift. Kameraskanning er kun på mobil. Eksisterende backend og tilgangsregler gjenbrukes uten migrasjon.
-- Preview bygges mot Sandbox `ppvircenkjizeiqdxphj`. Målrettede checks, hele `npm run check:critical`, Sandbox-build, diff-/scope- og dokumentkontroll er grønne. Backendtest i rollback verifiserer lagring/antall, revisjonsvern, tre-listersgrense, prisfri payload og brukerisolasjon. Faktisk Preview-test gjenstår.
+- Preview mot Sandbox `ppvircenkjizeiqdxphj` er `READY` og svarer HTTP 200. Feature-deployment `dpl_6491we2eRTrpK2uAnfTrF5V9nEZS` bygget kildekoden `e7ceae63e27da77b158329feb90a16e1495b7acf`; GitHub Core Safety og Vercel-status er grønne. Preview: https://expo-proffdok-git-fase45b-desktop-price-picklist-ringside.vercel.app/?progressTest=safe.
+- Målrettede checks, hele `npm run check:critical`, Sandbox-build, diff-/scope- og dokumentkontroll er grønne. Backendtest i rollback verifiserer lagring/antall, revisjonsvern, tre-listersgrense, prisfri payload og brukerisolasjon.
+- Nettleseren viser innlogging. Sikker innlogging kom ikke videre til en attestert innlogget side; ingen synlig appfeil ble observert. Faktisk innlogget Preview-test av PC-flyten og utskriftsvalgene gjenstår. Draft beholdes.
 - Kenneth-test: ikke utført. Produksjonsgodkjenning for denne endringen: ikke gitt.
 
 ## Permanent Demo Sandbox
@@ -21,5 +23,5 @@
 
 ## Blokkere og neste handling
 
-- Teknisk QA og Kenneths korte Preview-test må fullføres før release. Merge krever ny eksplisitt `PRODUCTION GODKJENT` for den konkrete PR-en.
+- Neste handling: fullfør Sandbox-innlogging og Preview-test av PC-antall, lagring/gjenåpning og begge utskriftsvalg. Kontroller deretter samme lagrede liste på mobil. Merge krever ny eksplisitt `PRODUCTION GODKJENT` for PR #207.
 - Etter godkjent Production-QA: kontrollert `main → demo`-synk og Sandbox-preflight. Demo skal aldri merges tilbake til `main`.
