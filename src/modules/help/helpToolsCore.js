@@ -5,6 +5,7 @@ import React, * as ReactNS from "react";
 import { FileText } from "lucide-react";
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
+import CordelGuide from "../cordel/CordelGuide.jsx";
 
 const import_react = { default: React, ...ReactNS };
 const import_lucide_react = { FileText };
@@ -16,6 +17,7 @@ function section(key, title, purpose, workflow = [], important = [], best = []) 
 }
 
 const BASE_SECTIONS = [
+  section("cordel", "Eksport av tilbud til Cordel", "A–Å: engangsoppsett, P:-mappe, importdefinisjoner, jobbliste, priser og plukkliste."),
   section(
     "start",
     "🚀 Startside / kom i gang",
@@ -396,7 +398,7 @@ const SYSTEM_ADMIN_SECTIONS = [
 const BASE_ORDER = [
   "start", "mobil", "quality", "sales", "badskisse", "info", "garanti", "firmaProfil", "epostvalg", "prosjektering",
   "produkter", "overflater", "bilder", "tilgang", "fagUtstyr", "sjekklister", "avvik", "tilbud", "chat",
-  "interne", "overtagelse", "prosjektliste", "rapport", "hjelp"
+  "interne", "overtagelse", "prosjektliste", "rapport", "hjelp", "cordel"
 ];
 
 export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK_TERMS_VERSION, expoProffDokTermsSections }) {
@@ -434,7 +436,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item.title }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 900, color: "#007f89" }, children: isOpen ? "Lukk" : "Åpne" })
         ] }) }),
-        isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px" }, children: [
+        isOpen && (item.key === "cordel" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CordelGuide, {}) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "14px" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { marginTop: 0 }, children: item.purpose }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Arbeidsflyt" }),
           renderList(item.workflow),
@@ -442,7 +444,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
           renderList(item.important),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h4", { children: "Anbefalt bruk" }),
           renderList(item.best)
-        ] })
+        ] }))
       ] }, item.key);
     };
 

@@ -39,6 +39,7 @@ import {
   getWorkflowSteps,
   sanitizeStoragePart,
 } from "../utils/salesUtils.js";
+import CordelOfferExport from "../../cordel/CordelOfferExport.jsx";
 
 const OFFER_FOLLOW_UP_DAYS = 7;
 
@@ -665,6 +666,7 @@ export default function SalesDetailView({
                       )}.
                     </p>
                     <p>Prosjektet er opprettet i den ordinære ProffDok-prosjektlisten.</p>
+                    <CordelOfferExport request={selectedRequest} />
                     {selectedRequest.projectId ? (
                       <button
                         className="sales-primary-button"
@@ -698,6 +700,7 @@ export default function SalesDetailView({
                         {selectedRequest.acceptedOfferVersionNumber}.
                       </p>
                     ) : null}
+                    <CordelOfferExport request={selectedRequest} />
                     {(selectedRequest.acceptedOfferLines?.length ||
                       selectedRequest.offerLines?.length) ? (
                       <div style={{ marginTop: 14 }}>
