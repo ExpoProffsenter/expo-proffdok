@@ -130,6 +130,7 @@ function decorateCustomerSections(pricesSection) {
 
 function applyStoreCustomerTerminology() {
   if (!isStoreCustomerView()) return false;
+  const vatLabel = document.querySelector("[data-offer-vat-label]")?.dataset.offerVatLabel || "inkl. mva.";
 
   const lead = document.querySelector(".sales-customer-lead");
   if (lead) {
@@ -146,13 +147,13 @@ function applyStoreCustomerTerminology() {
   const note = pricesSection.querySelector(".sales-customer-section-note");
   if (note) {
     note.textContent =
-      "Alle priser er oppgitt inkl. mva. Alternativer kan erstatte en valgt post og eventuell tilhørende montering. Valgene oppdaterer totalsummen automatisk.";
+      `Alle priser er oppgitt ${vatLabel} Alternativer kan erstatte en valgt post og eventuell tilhørende montering. Valgene oppdaterer totalsummen automatisk.`;
   }
 
   const totalLabel = pricesSection.querySelector(
     ".sales-customer-total-card .sales-customer-total-row:first-child > span"
   );
-  if (totalLabel) totalLabel.textContent = "Sum leveranse og montering inkl. mva.";
+  if (totalLabel) totalLabel.textContent = vatLabel === "inkl. mva." ? "Sum leveranse og montering inkl. mva." : "Sum leveranse og montering eks. mva.";
 
   pricesSection.querySelectorAll(".sales-customer-main-post").forEach((section) => {
     const title = section.querySelector(".sales-customer-main-post-heading h3");

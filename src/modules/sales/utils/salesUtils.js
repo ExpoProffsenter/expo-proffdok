@@ -102,6 +102,7 @@ export function createOfferTermsSnapshot(request = {}) {
     included: request.offerIncluded || "",
     excluded: request.offerExcluded || "",
     customerSupplied: request.offerCustomerSupplied || "",
+    showPricesExVat: request.offerShowPricesExVat === true,
   };
 }
 

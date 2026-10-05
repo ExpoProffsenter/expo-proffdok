@@ -1,3 +1,4 @@
+import { CompanyCustomerProvider, CompanyCustomerSearch, CompanyCustomerSave } from "../../customers/CompanyCustomerPicker.jsx";
 // Expo ProffDok – FASE 42J / FASE 38A1 / FASE 37D1 / FASE 23I / FASE 29C1 / FASE 45B
 // Presentasjonskomponent for ny og redigert forespørsel.
 // FASE 42J bevarer kunde-/adressefelter ved PC-fanebytte og mobil appbytte før
@@ -262,11 +263,13 @@ export default function SalesRequestForm({
             </p>
           </section>
 
+          <CompanyCustomerProvider disabled={supportMode} value={Object.fromEntries(["customer", "phone", "email", "address", "postnr", "city"].map(key => [key, form[key] || ""]))} onUse={customer => { for (const key of ["customer", "phone", "email", "address", "postnr", "city"]) onUpdateForm(key, customer[key] || ""); }}>
           <form className="sales-form-panel" onSubmit={onSubmit}>
             <p className="sales-offer-price-guidance" style={{ marginBottom: 16 }}>
               Felter merket * må fylles ut.
             </p>
             <div className="sales-form-grid">
+              <CompanyCustomerSearch />
               <label className="sales-field">
                 <span>Kundenavn *</span>
                 <input
@@ -424,6 +427,7 @@ export default function SalesRequestForm({
               </div>
             </div>
 
+            <CompanyCustomerSave />
             <div className="sales-form-actions">
               <button
                 className="sales-secondary-button"
@@ -449,6 +453,7 @@ export default function SalesRequestForm({
               </button>
             </div>
           </form>
+          </CompanyCustomerProvider>
         </main>
       </div>
     </div>

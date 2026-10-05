@@ -1,3 +1,4 @@
+import CompanyCustomerPicker from "./modules/customers/CompanyCustomerPicker.jsx";
 // Expo ProffDok – main application entry. Historical phase/deploy notes are preserved in Git history.
 // FASE 28C1: Startside viser konkrete prosjekter som krever oppfølging via projectListTools.
 // FASE 28D1: Appen varsler kontrollert når en nyere Vite/Vercel-versjon er tilgjengelig.
@@ -6515,6 +6516,7 @@ ${appLink}`;
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Adresse", value: project.address, onChange: (v) => setProject({ ...project, address: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Postnr.", value: project.postnr || "", onChange: (v) => setProject({ ...project, postnr: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Poststed / by", value: project.city || "", onChange: (v) => setProject({ ...project, city: v }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CompanyCustomerPicker, { disabled: isProjectSupportReadOnly, value: { customer: project.customer || "", phone: project.customerPhone || "", email: project.customerEmail || "", address: project.address || "", postnr: project.postnr || "", city: project.city || "" }, onUse: (customer) => setProject(current => ({ ...current, customer: customer.customer || "", customerPhone: customer.phone || "", customerEmail: customer.email || "", address: customer.address || "", postnr: customer.postnr || "", city: customer.city || "" })) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde", value: project.customer, onChange: (v) => setProject({ ...project, customer: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde e-post", type: "email", value: project.customerEmail || "", onChange: (v) => setProject({ ...project, customerEmail: v }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Input, { label: "Kunde telefon", type: "tel", value: project.customerPhone || "", onChange: (v) => setProject({ ...project, customerPhone: v }) }),

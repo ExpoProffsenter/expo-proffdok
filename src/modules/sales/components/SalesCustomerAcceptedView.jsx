@@ -1,3 +1,4 @@
+import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 37D2 / FASE 34B
 // Kundens ferdig aksepterte tilbud viser låst aksept med valgte alternativer/opsjoner,
 // akseptert totalsum inkl. mva. og signaturtidspunkt. Ingen akseptdata endres.
@@ -68,6 +69,7 @@ export default function SalesCustomerAcceptedView({
   selectedRequest = {},
   companyProfile = {},
 }) {
+  const vat = offerVatPresentation(selectedRequest);
   const options = getAcceptedOptions(selectedRequest);
   const acceptedTotalExVat = getAcceptedTotalExVat(selectedRequest, options);
   const storeMeta = selectedRequest?.storeOfferMeta?.__storeOfferMeta
@@ -217,7 +219,7 @@ export default function SalesCustomerAcceptedView({
                           ) : null}
                         </div>
                         <strong style={{ whiteSpace: "nowrap", color: "#0f172a", textAlign: "right" }}>
-                          {formatNok(amountInclVat)} inkl. mva.
+                          {formatNok(vat.fromIncl(amountInclVat))} {vat.label}
                           {isStoreAlternative ? (
                             <span style={{ display: "block", marginTop: 4, color: "#64748b", fontSize: 12, fontWeight: 700 }}>
                               Alternativpris
@@ -254,7 +256,8 @@ export default function SalesCustomerAcceptedView({
                 }}
               >
                 <strong style={{ display: "block", fontSize: 28, color: "#0f172a" }}>
-                  {formatNok(acceptedTotalExVat * 1.25)} inkl. mva.
+                  {formatNok(acceptedTotalExVat * vat.multiplier)} {vat.label}
+                  {vat.exVat && <small style={{ display: "block" }}>Mva. {formatNok(acceptedTotalExVat * 0.25)} · Inkl. mva. {formatNok(acceptedTotalExVat * 1.25)}</small>}
                 </strong>
                 <span style={{ display: "block", marginTop: 6, color: "#52616b" }}>
                   {isStoreOffer
