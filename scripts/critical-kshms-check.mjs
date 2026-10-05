@@ -103,4 +103,31 @@ const stopped=await addLibraryRoutines({companyId:'a',keys:chosen,isCurrent:()=>
 assert.equal(stopped.cancelled,true);assert.equal(abandoned.commands.length,1,'Old company batch continued after its workspace unmounted');
 assert.equal(routinesBySource([{archived:true,draft:{source_key:chosen[0]}}]).size,0);
 assert.equal(selectedCatalogRoutines([chosen[0],chosen[0]]).length,1);
-console.log('critical-kshms-check: OK – multi-select/import/retry, grant/profile races, cleanup, scoped draft recovery, navigation, relevance and 275 source pages');
+// Exercise the actual opening/publishing handlers, using the same source-based
+// runtime approach as the access hook above. Opening an approval must never
+// publish; each click must reveal the panel, even for the already open routine.
+const moduleSource=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');
+const openingStart=moduleSource.indexOf(' const choosePublication=');
+const publishingEnd=moduleSource.indexOf(' const addSelected=');
+assert(openingStart>=0&&publishingEnd>openingStart,'Approval opening lacks a visible focus/scroll action');
+const approvalUi={busy:false,publication:null,summary:'old comment',freshAck:false,focus:0,overviewFocus:0,feedback:'',error:'',notice:''};
+const approvalCommands=[];
+const setters=['publication','summary','freshAck','focus','overviewFocus','feedback','error','notice'].map(key=>next=>{approvalUi[key]=typeof next==='function'?next(approvalUi[key]):next;});
+const approvalHandlers=()=>new Function('busy','publication','summary','freshAck','data','run','setPublication','setSummary','setFreshAck','setPublicationFocus','setOverviewFocus','setPublicationFeedback','setError','setNotice',moduleSource.slice(openingStart,publishingEnd)+';return {choosePublication,publishRoutine};')(
+ approvalUi.busy,approvalUi.publication,approvalUi.summary,approvalUi.freshAck,{versions:[]},async(action,payload)=>{approvalCommands.push({action,payload});return {id:`v-${payload.id}`,number:1};},...setters);
+const firstRoutine={id:'r-one',revision:2,draft:{title:'First routine'}},secondRoutine={id:'r-two',revision:4,draft:{title:'Second routine'}};
+approvalHandlers().choosePublication(firstRoutine);
+assert.equal(approvalUi.publication.id,'r-one');assert.equal(approvalUi.summary,'');assert.equal(approvalUi.freshAck,true);assert.equal(approvalUi.focus,1);assert.equal(approvalCommands.length,0);
+await approvalHandlers().publishRoutine();assert.equal(approvalCommands.length,0,'Empty assessment published a routine');
+approvalUi.summary='Own assessment';approvalUi.freshAck=false;
+approvalHandlers().choosePublication(firstRoutine);assert.equal(approvalUi.summary,'Own assessment');assert.equal(approvalUi.freshAck,false);assert.equal(approvalUi.focus,2,'Clicking the already open routine did not reveal it');
+approvalHandlers().choosePublication(secondRoutine);assert.equal(approvalUi.publication.id,'r-two');assert.equal(approvalUi.summary,'');assert.equal(approvalUi.focus,3);
+approvalUi.summary='Second reviewed';await approvalHandlers().publishRoutine();
+assert.equal(approvalUi.publication,null);assert.equal(approvalCommands.length,1);assert.deepEqual(approvalCommands[0].payload,{id:'r-two',revision:4,change_summary:'Second reviewed',requires_ack:true});assert.equal(approvalUi.overviewFocus,1);assert(approvalUi.feedback.includes('Second routine'));
+approvalHandlers().choosePublication(firstRoutine);approvalUi.summary='First reviewed';await approvalHandlers().publishRoutine();assert.equal(approvalCommands[1].payload.id,'r-one');assert.equal(approvalCommands[1].payload.change_summary,'First reviewed');
+approvalUi.busy=true;approvalHandlers().choosePublication(secondRoutine);assert.equal(approvalUi.publication,null);await approvalHandlers().publishRoutine();assert.equal(approvalCommands.length,2);
+const approvalEffect=moduleSource.match(/useEffect\(\(\)=>\{if\(publicationFocus[\s\S]*?\},\[publicationFocus\]\);/);
+assert(approvalEffect,'Opening approval does not focus its visible panel');
+const revealed=[];new Function('useEffect','publicationFocus','publicationRef',approvalEffect[0])(effect=>effect(),1,{current:{focus:()=>revealed.push('focus'),scrollIntoView:options=>revealed.push(options.block)}});
+assert.deepEqual(revealed,['focus','start']);assert(moduleSource.includes('onClick={()=>choosePublication(r)}'));
+console.log('critical-kshms-check: OK – approval reveal/next routine, multi-select/import/retry, grant/profile races, cleanup, scoped draft recovery, navigation, relevance and 275 source pages');

@@ -71,7 +71,7 @@ Oppstart velger flere fag (mur/flis, tømrer, maler og VVS/Ringside), aktivitete
 |---|---|
 | Systemadmin | Aktivere/deaktivere modul for firma. Ingen automatisk tilgang til firmaets innhold eller personaldata. |
 | Firmaadmin i aktiv medlemskapskontekst | Administrere ansattes modulgrant, oppstart, utkast, tildeling, publisering og arkivering. Kan utpekes selv som KS/HMS-ansvarlig uten ekstra grant; signering krever eksplisitt utpeking. |
-| Dedikert KS/HMS-ansvarlig | Aktivt internt medlemskap + firmagrant `responsible`; utarbeide/redigere, følge opp bekreftelser. Den utpekte ansvarlige i oppstart signerer årlig revisjon. |
+| Dedikert KS/HMS-ansvarlig | Aktivt internt medlemskap + firmagrant `responsible`; utarbeide/redigere og godkjenne publisering, tildele rutiner og følge opp bekreftelser. Ingen administrasjon av ansattes tilgang, utpeking av revisjonsansvarlig eller arkivering. Den utpekte ansvarlige i oppstart signerer årlig revisjon. |
 | Ansatt | Aktivt internt medlemskap + eget firmagrant. Lese tildelte publiserte versjoner og bekrefte selv. Ingen utkast eller andre ansattes bekreftelser. |
 | HR-ansvarlig senere | Separat personaltillatelse og eksplisitt tjenstlig behov. KS-rolle gir ikke automatisk HR-innsyn. Medarbeider ser relevante egne opplysninger. |
 | Kunde/UE/innleid | Ingen ny modul-/SJA-tilgang. Melder i eget system; firmaets samordnings-/oppfølgingsrutiner gjelder fortsatt. Rapportmottaker får bare et konkret godkjent utdrag. |
@@ -113,6 +113,8 @@ Minimumsfelter i de kommende utførelsesdelene beholdes eksplisitt:
 
 Betingede svarhandlinger i første **utførelsesleveranse B**: kommentar- og bildekrav, kildekoblet avvik og signaturkrav. De dekker dokumentasjon/ansvar uten skjult forgrening. Underskjema krever separat versjonert mal, syklus-/rettighetskontroll og immutable dependency snapshot; leveres senere i B før utførelsesdelen regnes ferdig, med eksplisitt UI og tester. Ingen betinget handling omskriver allerede signerte data.
 
-Tre arbeidsflyter: (1) firma etablerer/tilpasser → firmaadmin publiserer → ansatte gjennomgår/bekrefter; (2) ansatt utfører sjekkliste/SJA → dokumenterer → ansvarlig signerer; (3) avvik → ansvarlig/frist → tiltak → kontrollert lukking → eventuelt konkret rapportutdrag. Bare (1) har første implementasjon i A. Gjennomførings- og avviksdelene erstattes ikke av håndbokrutiner.
+Tre arbeidsflyter: (1) firma etablerer/tilpasser → firmaadmin/KS-HMS-ansvarlig publiserer → ansatte gjennomgår/bekrefter; (2) ansatt utfører sjekkliste/SJA → dokumenterer → ansvarlig signerer; (3) avvik → ansvarlig/frist → tiltak → kontrollert lukking → eventuelt konkret rapportutdrag. Bare (1) har første implementasjon i A. Gjennomførings- og avviksdelene erstattes ikke av håndbokrutiner.
 
 Ordre, timer, materiell og ressursplanlegging bygges ikke. Tilsvarende rutinetema beholdes med kobling til firmaets andre systemer. Online mobil er tilstrekkelig; offline er ikke krav i første leveranse. Pris/fakturering avventer et reelt senere produktvalg.
+
+Rollebeslutning 2026-10-06: Produkteier har endret det første kravet om firmaadmin som eneste publiserer. Både firmaadmin og ansatte med aktiv KS/HMS-ansvarlig-tilgang kan nå godkjenne rutiner. Ansattes modultilgang, valg av revisjonsansvarlig og arkivering er fortsatt firmaadminoppgaver. Årlig revisjon signeres fortsatt bare av den eksplisitt utpekte ansvarlige. Ansatte starter i Les og bekreft og ser bare egne tildelte utgaver og egne bekreftelser.

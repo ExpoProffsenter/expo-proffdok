@@ -34,7 +34,7 @@ begin
  -- Systemadmin can activate unrelated firm but cannot read its content.
  begin perform public.kshms_get_state(a);raise exception 'Systemadmin support bypass';exception when insufficient_privilege then n:=n+1;end;
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
- assert (public.get_kshms_context()->>'publish')::boolean; n:=n+1;
+ assert (public.get_kshms_context()->>'publish')::boolean and (public.get_kshms_context()->>'administer')::boolean; n:=n+1;
  perform public.kshms_command(a,'access',jsonb_build_object('user_id',editor_id,'role','responsible','enabled',true));
  perform public.kshms_command(a,'access',jsonb_build_object('user_id',reader_id,'role','reader','enabled',true));
  begin perform public.kshms_command(a,'access',jsonb_build_object('user_id',other_id,'role','reader','enabled',true));raise exception 'Cross-firm grant';exception when others then if sqlerrm='Cross-firm grant' then raise;end if;n:=n+1;end;
@@ -43,7 +43,8 @@ begin
  begin perform public.kshms_command(a,'settings',jsonb_build_object('revision',0,'trades',jsonb_build_array('maler'),'responsible_user_id',editor_id));raise exception 'Stale settings allowed';exception when serialization_failure then n:=n+1;end;
  perform set_config('request.jwt.claim.sub',editor_id::text,true);
  r:=public.kshms_command(a,'save',jsonb_build_object('draft',draft));assert r->>'revision'='1';n:=n+1;
- begin perform public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',1,'change_summary','QA publication'));raise exception 'Editor published';exception when insufficient_privilege then n:=n+1;end;
+ assert (public.get_kshms_context()->>'publish')::boolean and not (public.get_kshms_context()->>'administer')::boolean,'Responsible publication/admin capabilities mixed';n:=n+1;
+ begin perform public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',1,'change_summary',''));raise exception 'Empty publication assessment';exception when others then if sqlerrm<>'Explain the publication/change' then raise;end if;n:=n+1;end;
  begin perform public.kshms_command(a,'access',jsonb_build_object('user_id',reader_id,'role','responsible','enabled',true));raise exception 'Editor granted access';exception when insufficient_privilege then n:=n+1;end;
  begin perform public.kshms_command(a,'archive',jsonb_build_object('id',r->>'id','revision',1));raise exception 'Editor archived';exception when insufficient_privilege then n:=n+1;end;
  begin perform public.kshms_command(a,'settings',jsonb_build_object('revision',1,'trades',jsonb_build_array('vvs'),'responsible_user_id',reader_id));raise exception 'Editor appointed responsible';exception when insufficient_privilege then n:=n+1;end;
@@ -51,17 +52,20 @@ begin
  perform set_config('request.jwt.claim.sub',reader_id::text,true);
  state:=public.kshms_get_state(a);assert jsonb_array_length(state->'routines')=0,'Reader saw unpublished draft';assert jsonb_array_length(state->'members')=0,'Reader saw roster';n:=n+2;
  begin perform public.kshms_command(a,'save',jsonb_build_object('draft',draft));raise exception 'Reader edited';exception when insufficient_privilege then n:=n+1;end;
- perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ begin perform public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',1,'change_summary','Reader cannot approve'));raise exception 'Reader published';exception when insufficient_privilege then n:=n+1;end;
+ perform set_config('request.jwt.claim.sub',editor_id::text,true);
  v1:=public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',1,'change_summary','Initial QA publication','requires_ack',true));
- assert v1->'content'=draft and v1->>'number'='1' and length(v1->>'content_hash')=64; n:=n+1;
+ assert (v1->>'published_by')::uuid=editor_id and v1->'content'=draft and v1->>'number'='1' and length(v1->>'content_hash')=64; n:=n+1;
  perform set_config('request.jwt.claim.sub',reader_id::text,true);
  state:=public.kshms_get_state(a);assert jsonb_array_length(state->'versions')=1 and not ((state->'routines'->0)?'draft');n:=n+1;
  perform public.kshms_command(a,'ack',jsonb_build_object('version_id',v1->>'id','statement',statement,'user_id',editor_id,'acknowledged_at','2000-01-01'));
  state:=public.kshms_get_state(a);assert (state->'acknowledgments'->0->>'user_id')::uuid=reader_id and (state->'acknowledgments'->0->>'acknowledged_at')::timestamptz>=now()-interval '1 minute';n:=n+1;
  perform public.kshms_command(a,'ack',jsonb_build_object('version_id',v1->>'id','statement',statement));assert jsonb_array_length(public.kshms_get_state(a)->'acknowledgments')=1,'Duplicate ack';n:=n+1;
+ begin perform public.kshms_command(b,'publish',jsonb_build_object('id',r->>'id','revision',2,'change_summary','Wrong firm cannot publish'));raise exception 'Wrong expected company publish';exception when insufficient_privilege then n:=n+1;end;
  begin perform public.kshms_command(b,'ack',jsonb_build_object('version_id',v1->>'id','statement',statement));raise exception 'Wrong expected company';exception when insufficient_privilege then n:=n+1;end;
  perform set_config('request.jwt.claim.sub',other_id::text,true);
  state:=public.kshms_get_state(b);assert jsonb_array_length(state->'routines')=0;n:=n+1;
+ begin perform public.kshms_command(b,'publish',jsonb_build_object('id',r->>'id','revision',2,'change_summary','Other firm cannot publish'));raise exception 'Cross-firm publish';exception when serialization_failure then n:=n+1;end;
  begin perform public.kshms_command(b,'save',jsonb_build_object('id',r->>'id','revision',2,'draft',draft));raise exception 'Cross-firm edit';exception when serialization_failure then n:=n+1;end;
  begin perform public.kshms_command(b,'ack',jsonb_build_object('version_id',v1->>'id','statement',statement));raise exception 'Cross-firm ack';exception when insufficient_privilege then n:=n+1;end;
  perform set_config('request.jwt.claim.sub',editor_id::text,true);
@@ -70,7 +74,7 @@ begin
  begin perform public.kshms_command(a,'save',jsonb_build_object('id',r->>'id','revision',2,'draft',draft));raise exception 'Stale draft accepted';exception when serialization_failure then n:=n+1;end;
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
  v2:=public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',3,'change_summary','Changed QA publication','requires_ack',true));
- assert v2->>'number'='2' and v2->>'content_hash'<>v1->>'content_hash';n:=n+1;
+ assert (v2->>'published_by')::uuid=admin_id and v2->>'number'='2' and v2->>'content_hash'<>v1->>'content_hash';n:=n+1;
  begin perform public.kshms_command(a,'review',jsonb_build_object('findings','Review finding','follow_up','Review follow-up','next_review_on',current_date+100));raise exception 'Admin signed responsible review';exception when insufficient_privilege then n:=n+1;end;
  perform set_config('request.jwt.claim.sub',reader_id::text,true);
  state:=public.kshms_get_state(a);assert jsonb_array_length(state->'versions')=2 and jsonb_array_length(state->'acknowledgments')=1 and state->'versions'->0->'content'=draft;n:=n+1;
@@ -107,6 +111,11 @@ begin
  begin perform public.kshms_command(a,'save',jsonb_build_object('id',r->>'id','revision',5,'draft',draft));raise exception 'Archived edit accepted';exception when others then if sqlerrm='Archived edit accepted' then raise;end if;n:=n+1;end;
  perform set_config('request.jwt.claim.sub',editor_id::text,true);
  begin perform public.kshms_command(a,'review',jsonb_build_object('settings_revision',2,'version_snapshot','[]'::jsonb,'findings','No active routines in handbook','follow_up','Restore relevant active routines','next_review_on',current_date+100));raise exception 'Empty active handbook review accepted';exception when others then if sqlerrm<>'No active published handbook to review' then raise;end if;n:=n+1;end;
+ perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ perform public.kshms_command(a,'access',jsonb_build_object('user_id',editor_id,'role','responsible','enabled',false));
+ perform set_config('request.jwt.claim.sub',editor_id::text,true);
+ assert not coalesce((public.get_kshms_context()->>'publish')::boolean,false),'Revoked responsible publication permission';n:=n+1;
+ begin perform public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',5,'change_summary','Revoked responsible cannot publish'));raise exception 'Revoked responsible published';exception when insufficient_privilege then n:=n+1;end;
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
  perform public.kshms_command(a,'access',jsonb_build_object('user_id',reader_id,'role','reader','enabled',false));
  perform set_config('request.jwt.claim.sub',reader_id::text,true);

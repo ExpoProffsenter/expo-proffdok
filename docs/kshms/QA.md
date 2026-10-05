@@ -4,7 +4,7 @@
 
 ## Verifikasjonskontrakt
 
-Firmaadmin etablerer → tilpasser → godkjenner → ansatt leser og bekrefter. Utpekt ansvarlig reviderer og signerer eksakte publiserte versjoner. Navigasjon/auth og eksisterende prosjekt-/salgssikkerhet skal fortsatt virke.
+Firmaadmin eller KS/HMS-ansvarlig etablerer → tilpasser → godkjenner → ansatt leser og bekrefter. Utpekt ansvarlig reviderer og signerer eksakte publiserte versjoner. Navigasjon/auth og eksisterende prosjekt-/salgssikkerhet skal fortsatt virke.
 
 | Kontroll | Resultat og grense |
 |---|---|
@@ -21,7 +21,7 @@ Firmaadmin etablerer → tilpasser → godkjenner → ansatt leser og bekrefter.
 | Innlogget full-app Preview / bruker TEST OK | GJENSTÅR. Komponenttesten erstatter ikke reell innlogging og serverflyt via appen. |
 | Merge / Production / main → demo | IKKE GODKJENT / IKKE UTFØRT. |
 
-SQL dekker deaktivert modul; systemadminaktivering uten automatisk innholdsinnsyn; firmaadmin grant; KS-ansvarlig kan redigere, men ikke publisere, arkivere, tildele tilgang eller utpeke ny revisjonsansvarlig; ansatt ser bare egne tildelinger uten utkast/roster; kryssfirma og feil forventet arbeidsfirma; tilbakekalt tilgang; deaktivert/ekstern bruker; stale oppstart/utkast; gamle versjoner/bekreftelser; ny versjon krever egen bekreftelse; serveravledet identitet/tid; idempotent tildeling; uforanderlige versjoner/bekreftelser/revisjoner; eksakt revisjonssnapshot, stale snapshot, ettårsgrense og avvisning av tom aktiv håndbok; kildekontrolldato i fremtiden avvises; direkte tabell/private helper/anon-adgang avvises.
+SQL dekker deaktivert modul; systemadminaktivering uten automatisk innholdsinnsyn; firmaadmin grant; KS-ansvarlig kan redigere og publisere, men ikke arkivere, tildele tilgang eller utpeke ny revisjonsansvarlig; ansatt ser bare egne tildelinger uten utkast/roster; kryssfirma og feil forventet arbeidsfirma; tilbakekalt tilgang; deaktivert/ekstern bruker; stale oppstart/utkast; gamle versjoner/bekreftelser; ny versjon krever egen bekreftelse; serveravledet identitet/tid; idempotent tildeling; uforanderlige versjoner/bekreftelser/revisjoner; eksakt revisjonssnapshot, stale snapshot, ettårsgrense og avvisning av tom aktiv håndbok; kildekontrolldato i fremtiden avvises; direkte tabell/private helper/anon-adgang avvises.
 
 Klientkontrollen dekker faktiske hook-racer ved grant-/arbeidsprofilbytte, auth-identitetsbytte før effekter, nettfeil, unmount og listener-opprydding; eksplisitt bruker-/firmabundet kladd med opprinnelig revisjon; global navigasjon bak grant, uendrede prosjektfaner; flerfaglig relevans og publisert versjonssnapshot.
 
@@ -88,3 +88,22 @@ Hver fane forklarer nå hva brukeren gjør der og neste steg. Håndboken viser f
 | Leveransestatus | Håndbokfundament A; resten av minimumsomfanget er fortsatt planlagt. Ny innlogget brukerprøve/TEST OK gjenstår. Ingen merge, main/demo-endring eller Production-godkjenning. |
 
 ![Enkel veiledning med fire trinn. Syntetisk komponentkontroll.](guidance-proof.jpg)
+
+
+## Godkjenning og tydelig ansattvisning (2026-10-06)
+
+Brukerens bilde viste en aktiv **Godkjenn publisering** på rutinekortet og et tomt vurderingsfelt med inaktiv **Godkjenn og publiser** lenger opp. Den første knappen åpnet bare panelet uten å flytte fokus/scroll; derfor kunne klikket se ut til å gjøre ingenting. Den heter nå **Åpne godkjenning** og følger editorens eksisterende fokusprinsipp. Gjentatt åpning av samme rutinerevisjon viser panelet igjen og beholder vurderingen; en annen rutine starter med tomt felt. Publiseringsknappen er grå ved tom/kort vurdering. Forklaring, fremdrift og serverfeil vises ved godkjenningen. Vellykket publisering viser navn og versjon og fokuserer rutineoversikten.
+
+Produkteier har uttrykkelig endret første krav om firmaadmin som eneste godkjenner: firmaadmin og aktive interne KS/HMS-ansvarlige kan nå publisere. Ny serveravledet `administer` beholder firmaadminstyrt ansattilgang, utpeking og arkivering. Årlig revisjon krever fortsatt den eksplisitt utpekte personen. Ansatte starter direkte i **Les og bekreft**, med egne tildelte versjoner, antall som gjenstår og registrert tidspunkt. De får ingen oppstarts-, redigerings-, publiserings- eller andre ansattes oppfølgingsverktøy.
+
+| Kontroll | Resultat og grense |
+|---|---|
+| Permanent runtime-kontroll | `critical-kshms-check` gjenskapte manglende synlig godkjenningsåpning før rettelsen. PASS etterpå: åpning publiserer ikke; tom vurdering avvises; gjentatt åpning fokuserer og beholder tekst; neste rutine nullstiller vurderingen; korrekt rutine-ID/revisjon/vurdering publiseres; navn/versjon og fokus i oversikt etter suksess; busy-vern. Tidligere grant-/profil-/faneretur- og bibliotekscenario er beholdt. |
+| Faktisk database/API | Sandbox-definisjoner var identiske med tidligere committet migrasjon før endring. `20261005225124_kshms_responsible_publication.sql` erstatter bare eksisterende kontekst-/command-funksjoner; kun Sandbox er migrert. Oppdatert `authenticated`-scenario PASS med rollback: responsible publiserer v1, firmaadmin publiserer v2, riktig godkjenneridentitet registreres, reader/tom vurdering/tilbakekalling/kryssfirma avvises; responsible kan ikke tildele modulgrant, arkivere eller utpeke ansvarlig. Eksisterende immutable-/revisjons-/modulgate-/tenant-/anon-/direkte ACL-kontroller passerer. Ingen ekte håndbok eller ansattbekreftelse endret. |
+| Desktop med faktisk React-modul | PASS i isolert QA `dpl_5f3PWzqmVnTPvNpMbyMoLSUj7Krj`, SHA `67aff6196fdb650f7d27521b8deea5ab9506da25`: to kladder, synlig fokusering på korrekt godkjenning, tom vurdering og grå knapp, samme rutine beholder tekst, firmaadmin publiserer første rutine. Responsible åpner neste med eget tomt felt og kan publisere. Syntetisk nettfeil vises ved felt/knapp; vurderingen beholdes og nytt forsøk lykkes. Responsible har ingen modultilgangsliste, aktivt ansvarligvalg eller arkiveringsknapp. Leser starter direkte i Les og bekreft med begge v1, ingen managerverktøy; én egen bekreftelse gir registrert tidspunkt og antall 2 → 1. |
+| Mobil med samme komponent | PASS i 390 px iframe / 375 px innvendig viewport: godkjenningspanelet fokuseres ved åpning og vises ca. 90 px fra toppen; tom vurdering gir inaktiv knapp, 52 px høy. scrollWidth 375. Dette er ikke en fysisk enhetstest. |
+| Klient og build | Full critical-kjede og Vite-build PASS etter rolleendringen. Etter siste avhengighets- og tekstpresisering passerer målrettet KS/HMS-kontroll og Vite. Siste statiske presisering skiller firmaadminens tilgangsliste fra responsible-veiledningen. Den endrer ingen handling eller ansattvisning. Eksakt publisert HEAD testes av GitHub Actions; status og feature-deploy føres i PR #216. |
+| Advisors og nettleser | Samme tilsiktede RPC-only RLS/SECURITY DEFINER-funn; ingen null-funn-påstand. Ingen app-/React-feil observert i den syntetiske flyten; metadatafeil fra nettleserutvidelsen er separat. |
+| Fast Preview og brukerprøve | Eksplisitt branch-mål `EXPO_BACKEND_TARGET=sandbox` kontrollert på nytt. Samme branch-alias beholdes. Ny innlogget brukerprøve, bruker TEST OK og Production-godkjenning gjenstår. Syntetisk UI beviser ikke ekte innlogging eller brukerens faktiske økt. |
+
+![Ansattvisning: én rutine bekreftet, én gjenstår. Syntetisk komponentkontroll.](employee-view-proof.jpg)

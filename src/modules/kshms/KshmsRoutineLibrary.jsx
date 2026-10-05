@@ -42,7 +42,7 @@ export default function KshmsRoutineLibrary({routines,recommended,selectedKeys,o
   <div className="ks-selection-review" aria-labelledby={`${id}-selection`}>
    <div className="ks-row"><h4 id={`${id}-selection`}>Disse rutinene legges inn</h4><span className="ks-badge">{selected.length} valgt</span></div>
    {selected.length?<ul className="ks-selected-list">{selected.map(routine=><li key={routine.key}>{routine.title}</li>)}</ul>:<p>Huk av rutinene du vil legge inn. Rutinene som er lagt til, kan du tilpasse med «Rediger her».</p>}
-   <p>Trykk «Legg inn» for å lagre alle valgte rutiner som utkast. Etterpå bruker du «Rediger her» for å tilpasse dem. Firmaadmin godkjenner når teksten er klar.</p>
+   <p>Trykk «Legg inn» for å lagre alle valgte rutiner som utkast. Etterpå bruker du «Rediger her» for å tilpasse dem. Firmaadmin eller KS/HMS-ansvarlig godkjenner når teksten er klar.</p>
    <button type="button" disabled={busy||!selected.length} onClick={()=>onAdd(selected.map(routine=>routine.key))}>{progress?`Legger inn ${progress.completed} av ${progress.total} …`:selected.length?`Legg inn ${selected.length} ${selected.length===1?'rutine':'rutiner'}`:'Legg inn valgte rutiner'}</button>
    {feedback&&<p className={feedback.error?'ks-error':'ks-notice'} role={feedback.error?'alert':'status'}>{feedback.message}</p>}
   </div>
