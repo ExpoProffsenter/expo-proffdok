@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FileSignature, LockKeyhole } from "lucide-react";
 import SalesContractActions from "../sales/components/SalesContractActions.jsx";
 import SalesContractWizard from "../sales/components/SalesContractWizard.jsx";
+import CordelOfferExport from "../cordel/CordelOfferExport.jsx";
 import {
   createDefaultSalesSupabaseClient,
   getSalesOfferByToken,
@@ -158,6 +159,7 @@ export default function ProjectSalesContractActions({
           if (canOpenWizard) setShowWizard(true);
         }}
       />
+      <CordelOfferExport request={request} enabled={acceptedBasisReady} disabled={readOnly} />
     </div>
   );
 }

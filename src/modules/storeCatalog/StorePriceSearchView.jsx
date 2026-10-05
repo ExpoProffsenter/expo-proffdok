@@ -11,6 +11,7 @@ import { Camera, ChevronDown, ChevronUp, ExternalLink, Plus, Printer, Search, Tr
 import { getStoredSupabaseSession, rpcWithStoredSession } from "../access/moduleAccessClient.js";
 import { WORK_PROFILE_EVENT, getMyWorkProfileState, readCachedWorkProfileState } from "../access/workProfileClient.js";
 import { deleteMobilePicklist, listMobilePicklists, saveMobilePicklist } from "./mobilePicklistClient.js";
+import CordelPicklistExport from "../cordel/CordelPicklistExport.jsx";
 import {
   MAX_PICKLIST_ITEMS, MAX_SAVED_PICKLISTS, deleteLegacyPicklist, normalizePickQuantity,
   picklistReferences, readLegacyPicklist, samePicklistContents, toPicklistReference,
@@ -988,6 +989,7 @@ export default function StorePriceSearchView({ onClose }) {
               <button type="button" className="secondary" onClick={() => printSelectedProducts(true)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
                 <Printer size={16} /> Skriv ut plukkliste
               </button>
+              <CordelPicklistExport items={selectedProducts} orderNumber={orderNumber} disabled={restoreIncomplete || restoreFailed || restoringSelected || !profileResolved || Boolean(serverError)} />
               {!isMobile ? (
                 <>
                   <button type="button" className="secondary" onClick={() => printSelectedProducts(false)} disabled={restoreIncomplete || restoreFailed || restoringSelected}>
