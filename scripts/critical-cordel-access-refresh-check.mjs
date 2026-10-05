@@ -1,0 +1,22 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+// Exercise hook refresh ordering without a browser session or backend writes.
+const source = fs.readFileSync('src/modules/cordel/cordelAccess.js','utf8');
+const hook = source.slice(source.indexOf('export function useCordelAccess')).replace('export function','function');
+const requests = [], cleanups = []; let allowed;
+const window = new EventTarget();
+const readCordelAccess = () => new Promise((resolve,reject) => requests.push({resolve,reject}));
+const useState = value => { allowed=value; return [value,value=>{allowed=value;}]; };
+const useEffect = fn => cleanups.push(fn());
+const run = new Function('useState','useEffect','readCordelAccess','window','MANAGED_ACCESS_EVENT','MODULE_ACCESS_EVENT','WORK_PROFILE_EVENT', hook+';return useCordelAccess;');
+run(useState,useEffect,readCordelAccess,window,'managed','module','profile')();
+assert.equal(allowed,false);
+requests[0].resolve(true); await Promise.resolve(); assert.equal(allowed,true);
+window.dispatchEvent(new Event('managed')); assert.equal(allowed,false);
+window.dispatchEvent(new Event('profile'));
+requests[2].resolve(false); await Promise.resolve();
+requests[1].resolve(true); await Promise.resolve(); assert.equal(allowed,false,'Stale grant resurrected access');
+window.dispatchEvent(new Event('focus')); requests[3].reject(new Error('offline')); await Promise.resolve(); await Promise.resolve(); assert.equal(allowed,false);
+window.dispatchEvent(new Event('module')); cleanups[0](); requests[4].resolve(true); await Promise.resolve(); assert.equal(allowed,false,'Unmount accepted stale response');
+const count=requests.length; window.dispatchEvent(new Event('managed')); assert.equal(requests.length,count);
+console.log('critical-cordel-access-refresh-check: OK – grant, revoke, profile race, failure and cleanup');

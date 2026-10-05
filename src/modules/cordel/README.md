@@ -1,7 +1,6 @@
 # Cordel export
 
-Read-only file export. It does not edit offers, projects, picklists, backend or
-Cordel data. Downloads run locally from the complete data already authorized and
+Read-only file export. File generation does not edit offers, projects, picklists or Cordel data. Access administration uses dedicated, Systemadmin-only server RPCs. Downloads run locally from the complete data already authorized and
 loaded by the existing app flow.
 
 ## Accepted offers
@@ -81,3 +80,10 @@ the user's acceptance test; the isolated check is not a full app QA.
 
 Miljømål: BEGGE. Implement on a feature/Preview branch; explicit TEST OK is
 required before main/Production, then main → demo according to AGENTS.md.
+
+
+### Cordel: importvalg og brukertilgang (05.10.2026)
+
+Samme eksport beholdes for våtromstilbud og generelle tilbud. AFG kan importeres alene uten jobbliste, med ønsket ordremetode. Ved bruk av jobbliste må jobblistefilen importeres først, med tilsvarende jobblisteoppsett i Cordel, deretter AFG uten sletting. 0 % materiellpåslag og øreavrunding kreves for å beholde akseptert pris også ved AFG alene. Den bekreftede Cordel-testen gjelder den kombinerte flyten; AFG alene med andre metoder må kontrolleres hos mottaker. Prisposter er fortsatt Rundsum; faktisk timebudsjett og kildekost følger ikke med.
+
+Systemadmin → bruker → **Eksport til Cordel** styrer tilbudseksport, plukklisteeksport og det spesifikke Hjelp-temaet samlet. Godkjent, aktiv Systemadmin har automatisk tilgang; andre brukere må få den eksplisitt. Firmaadmin kan ikke tildele den. Grantet bindes til brukerens firma; firmabytte krever ny tildeling. Eksisterende datatilgang og pristilganger gjelder i tillegg. `cordel_export_user_access` er RLS-beskyttet uten direkte klientrettigheter; avgrensede RPC-er leser egen tilgang og lar kun Systemadmin administrere. UI feiler lukket og sjekker tilgang på nytt før nedlasting.

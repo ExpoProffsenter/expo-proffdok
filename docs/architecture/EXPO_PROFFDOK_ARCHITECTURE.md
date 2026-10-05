@@ -13,9 +13,9 @@ Dette dokumentet beskriver gjeldende Production-arkitektur og sikkerhets-/bakove
 
 ### Cordel: lokal eksport fra låst grunnlag
 
-`src/modules/cordel` er en ren filgenerator og React-presentasjon. Eksportknapper integreres i Sales-detalj, prosjektets eksisterende kontraktkort og Prissøk/plukkliste. Ingen nye RPC-er, tabeller, lagringer eller endringer i bootstrap, tilgang, recovery, hydration eller eksisterende tilbuds-/plukklisteflyt.
+`src/modules/cordel` er en ren filgenerator og React-presentasjon. Eksportknapper integreres i Sales-detalj, prosjektets eksisterende kontraktkort og Prissøk/plukkliste. En separat, firmascope-bundet Cordel-tilgang leses fra server og administreres i eksisterende Systemadmin-brukerkort. Filgeneratorene endrer ikke tilbud, plukklister, recovery eller hydration.
 
-Aksepterte tilbud blir Windows-1252-jobbliste og native AFG v4 med komplette tekster, Rundsum-priser, nummererte overskrifter og delsummer. Akseptert sum kontrolleres i øre mot hver eksportert post. Mottakerflyten er jobbliste først og AFG uten sletting etterpå på en tom ordre. AFG-oppsettet bygger på faktisk Cordel-eksport og bekreftet TEST-import, ikke et publisert skjema. Egen Cordel-metode med 0 % materiellpåslag og øreavrunding kreves. Kildekost, timer og fortjeneste overføres ikke.
+Aksepterte tilbud blir Windows-1252-jobbliste og native AFG v4 med komplette tekster, Rundsum-priser, nummererte overskrifter og delsummer. Akseptert sum kontrolleres i øre mot hver eksportert post. På en tom ordre kan AFG importeres alene; ved jobbliste brukes jobbliste først og AFG uten sletting etterpå. AFG-oppsettet bygger på faktisk Cordel-eksport og bekreftet TEST-import, ikke et publisert skjema. Egen Cordel-metode med 0 % materiellpåslag og øreavrunding kreves. Kildekost, timer og fortjeneste overføres ikke.
 
 Plukklistefilen inneholder kun NR, Mengde og Fagområde/leverandør; Cordel bruker sin prisbok. Faste P:-filnavn gjenbruker importdefinisjoner. **Hjelp → Eksport av tilbud til Cordel** rendres i eksisterende React-Hjelp som ett nytt tema. TEST-bildene leveres som lazy-lastede, lokale bildeassets med originale PNG-bytes bevart. Øvrige Hjelp-temaer og deres rettighets-/åpne/lukk-logikk er bevart.
 
@@ -675,3 +675,10 @@ Minimum:
 17. Fase 45B: kundepreview åpnes i ny fane, originalfanen står på samme tilbud, og preview kan ikke publisere, sende e-post eller akseptere.
 18. Fase 45B: akseptert Generelt tilbud kan velges som Enkel ordre eller ordinært prosjekt; Enkel ordre blokkerer kundeportal og bruker låst akseptert snapshot.
 19. Etter godkjent merge og trippel Production-QA ryddes midlertidige brancher. GitHub skal ende med `main` + `demo`; Supabase med Production/default + `demo-sandbox`.
+
+
+### Cordel: importvalg og brukertilgang (05.10.2026)
+
+Samme eksport beholdes for våtromstilbud og generelle tilbud. AFG kan importeres alene uten jobbliste, med ønsket ordremetode. Ved bruk av jobbliste må jobblistefilen importeres først, med tilsvarende jobblisteoppsett i Cordel, deretter AFG uten sletting. 0 % materiellpåslag og øreavrunding kreves for å beholde akseptert pris også ved AFG alene. Den bekreftede Cordel-testen gjelder den kombinerte flyten; AFG alene med andre metoder må kontrolleres hos mottaker. Prisposter er fortsatt Rundsum; faktisk timebudsjett og kildekost følger ikke med.
+
+Systemadmin → bruker → **Eksport til Cordel** styrer tilbudseksport, plukklisteeksport og det spesifikke Hjelp-temaet samlet. Godkjent, aktiv Systemadmin har automatisk tilgang; andre brukere må få den eksplisitt. Firmaadmin kan ikke tildele den. Grantet bindes til brukerens firma; firmabytte krever ny tildeling. Eksisterende datatilgang og pristilganger gjelder i tillegg. `cordel_export_user_access` er RLS-beskyttet uten direkte klientrettigheter; avgrensede RPC-er leser egen tilgang og lar kun Systemadmin administrere. UI feiler lukket og sjekker tilgang på nytt før nedlasting.
