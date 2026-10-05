@@ -10,20 +10,26 @@ Firmaadmin etablerer → tilpasser → godkjenner → ansatt leser og bekrefter.
 |---|---|
 | Kildekapitler og rutiner | 125 sporbare rader; 105 kvalitetsoppføringer/88 personaloppføringer, 16 underemner og 4 metadatarader; 148/127 sider og begge filhash registrert. Alle 275 sider dekket av kildeintervallkontrollen. |
 | Krav/kilder og produktvalg | Registrert i PLAN og de 12 selvstendige standardutkastenes referanser, kontrollert 2026-10-05. Dette er ikke ferdig forfatting av alle kildetemaer. |
-| Preview-miljø | Branch-spesifikt `EXPO_BACKEND_TARGET=sandbox` satt via Vercel; feature-Preview verifiseres ved publisering. |
+| Preview-miljø | Branch-spesifikt `EXPO_BACKEND_TARGET=sandbox` verifisert via Vercel. Feature `dpl_DjdWNA3MuAWkLXtjyMzQ7DPwa7p4` READY, kode-SHA `f88eb975a541ee875f50eef233cb1e09245c44ac`. Publisert `workProfileClient-BeVSXbh6.js` inneholder Sandbox-URL og ingen Production-URL. |
 | Migrasjon | Håndbokfundament og avgrensede reparasjoner anvendt på Sandbox `ppvircenkjizeiqdxphj`. Ingen Production-endring eller blind branchmerge. Git-migrasjonene inneholder den endelige funksjonsdefinisjonen. |
 | Database/API | `scripts/kshms-sandbox-check.sql` PASS mot faktisk `authenticated`-rolle og ferske syntetiske auth-identiteter. Alle testdata rulles tilbake. Ingen faktisk ansatt eller håndbok bekreftet. |
 | Klient og eksisterende kritiske flyter | Full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS med hele eksisterende critical-kjeden og ny KS/HMS-kontroll. Vite-build PASS. Eksisterende advarsel om store bundle-chunks beholdes. |
 | Desktop-komponentflyt | PASS med faktisk React-modul og syntetiske RPC-svar: standardutkast, kilder/type/kontrolldato, firmatilpasning, publiseringsforhåndsvisning, godkjenning, ansattbekreftelse, ansvarlig revisjon/historikk og vesentlig ny versjon. V1-bekreftelsen beholdes; V2 vises som manglende. |
 | Mobil komponent | PASS i iframe med 390 px ramme / 375 px innvendig viewport. Ingen horisontal overflow; synlige tekstfelt og knapper har minst 44 px høyde. Mobil rutinekladd beholdes ved skjul/åpning av appfane. Dette er ingen fysisk enhetstest. |
 | Nettleserfeil | Ingen app-/React-feil observert i komponentflyten. Nettleserutvidelsen logger egne metadatafeil; disse er ikke appfeil. |
-| Git-scope/dokumentasjon | Kontrolleres mot hele committede endringen før PR. Ingen QA-fixture eller demo-overlay skal følge feature-PR. |
+| Git-scope/dokumentasjon | PASS mot hele committede endringen og `origin/main`. Publisert tree `694b78ce0c497c9708ed77e80238fe5723bc7a3e` er identisk med kontrollert lokal tree. Ingen QA-fixture eller demo-overlay i feature-PR. GitHub Actions-status følges separat. |
 | Innlogget full-app Preview / bruker TEST OK | GJENSTÅR. Komponenttesten erstatter ikke reell innlogging og serverflyt via appen. |
 | Merge / Production / main → demo | IKKE GODKJENT / IKKE UTFØRT. |
 
 SQL dekker deaktivert modul; systemadminaktivering uten automatisk innholdsinnsyn; firmaadmin grant; KS-ansvarlig kan redigere, men ikke publisere, arkivere, tildele tilgang eller utpeke ny revisjonsansvarlig; ansatt ser bare egne tildelinger uten utkast/roster; kryssfirma og feil forventet arbeidsfirma; tilbakekalt tilgang; deaktivert/ekstern bruker; stale oppstart/utkast; gamle versjoner/bekreftelser; ny versjon krever egen bekreftelse; serveravledet identitet/tid; idempotent tildeling; uforanderlige versjoner/bekreftelser/revisjoner; eksakt revisjonssnapshot, stale snapshot, ettårsgrense og avvisning av tom aktiv håndbok; kildekontrolldato i fremtiden avvises; direkte tabell/private helper/anon-adgang avvises.
 
 Klientkontrollen dekker faktiske hook-racer ved grant-/arbeidsprofilbytte, auth-identitetsbytte før effekter, nettfeil, unmount og listener-opprydding; eksplisitt bruker-/firmabundet kladd med opprinnelig revisjon; global navigasjon bak grant, uendrede prosjektfaner; flerfaglig relevans og publisert versjonssnapshot.
+
+## Review-Preview og PR
+
+[Draft PR #216](https://github.com/ExpoProffsenter/expo-proffdok/pull/216). [Faktisk feature-Preview](https://expo-proffdok-430gsf30h-ringside.vercel.app/?progressTest=safe) er åpnet i nettleser og viser eksisterende innloggingsflate. Full innlogget KS/HMS-flyt er fortsatt ikke verifisert. Ingen faktisk modulaktivering i et eksisterende firma er gjort.
+
+Før innlogging logger eksisterende arbeidsprofilklient «Innlogging er ikke klar ennå». Samme melding, samme `workProfileClient-BeVSXbh6.js` og fungerende innloggingsflate er observert i uendret main-baseline i Sandbox QA-Preview. Dette er et eksisterende oppstartsloggfunn, ikke rettet som sideendring i denne PR. Det hevdes derfor ikke null appfeil i hele Preview. Innlogget kontroll skal avklare at arbeidsprofilen lastes etter autentisering.
 
 ## Nettleserbevis og avgrensning
 
