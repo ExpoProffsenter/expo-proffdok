@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {readDraft,persistDraft} from '../src/modules/kshms/kshmsDraft.mjs';
 import {ROUTINE_CATALOG,suggestedRoutines,currentVersionSnapshot,ACK_STATEMENT} from '../src/modules/kshms/kshmsCatalog.mjs';
+import {addLibraryRoutines,routinesBySource,selectedCatalogRoutines} from '../src/modules/kshms/kshmsLibrary.mjs';
 import {createGlobalAppTabs,createProjectWorkspaceTabs} from '../src/modules/project/projectNavigationTabs.mjs';
 // Actual refresh hook: stale responses may never revive old company access.
 const source=fs.readFileSync('src/modules/kshms/kshmsAccess.js','utf8');
@@ -56,4 +57,50 @@ for(const [field,total] of [['quality_pages',148],['personal_pages',127]]){
  for(let page=1;page<=total;page++)assert(pages.has(page),`Source page ${field}:${page} missing`);
 }
 assert(fs.readFileSync('supabase/migrations/20261005195941_kshms_handbook_foundation.sql','utf8').includes(ACK_STATEMENT));
-console.log('critical-kshms-check: OK – grant/profile races, cleanup, scoped draft recovery, navigation, relevance and 275 source pages');
+// Multi-selection saves every chosen draft. Retrying must preserve an existing
+// company adaptation, including when a save committed but its response was lost.
+function libraryServer({failAt=0,lostResponse=false}={}) {
+ let calls=0,fail=true;
+ const saved=[],commands=[];
+ return {saved,commands,rpc:async(name,args)=>{
+  assert.equal(args.p_company_id,'a');
+  if(name==='kshms_get_state')return {context:{company_id:'a',manage:true},routines:structuredClone(saved)};
+  assert.equal(name,'kshms_command');assert.equal(args.p_action,'save');
+  commands.push(structuredClone(args.p_payload));calls++;
+  if(fail&&calls===failAt&&!lostResponse){fail=false;throw new Error('Temporary network failure');}
+  const row={id:`routine-${calls}`,revision:1,archived:false,draft:structuredClone(args.p_payload.draft)};
+  saved.push(row);
+  if(fail&&calls===failAt){fail=false;throw new Error('Response lost after commit');}
+  return {id:row.id,revision:1};
+ }};
+}
+const recommended=suggestedRoutines([], '', '', '');
+assert.equal(recommended.length,10);
+const chosen=recommended.map(r=>r.key),batch=libraryServer(),progress=[];
+const firstBatch=await addLibraryRoutines({companyId:'a',keys:[...chosen,chosen[0]],rpc:batch.rpc,onProgress:value=>progress.push(value)});
+assert.equal(firstBatch.addedCount,10);assert.equal(firstBatch.error,null);assert.equal(batch.saved.length,10);
+assert.deepEqual(new Set(firstBatch.confirmedKeys),new Set(chosen));assert.equal(batch.commands.length,10);
+assert(batch.commands.every(p=>p.id===null&&p.revision===0));assert.deepEqual(progress.at(-1),{completed:10,total:10});
+batch.saved[0].draft.procedure='Firmaets egen tilpasning som må beholdes';
+const retry=await addLibraryRoutines({companyId:'a',keys:ROUTINE_CATALOG.map(r=>r.key),rpc:batch.rpc});
+assert.equal(retry.addedCount,2);assert.equal(retry.skippedCount,10);assert.equal(batch.saved.length,12);
+assert.equal(batch.saved[0].draft.procedure,'Firmaets egen tilpasning som må beholdes');
+assert.equal(batch.commands.length,12,'Re-selected templates overwrote or duplicated company drafts');
+for(const lostResponse of [false,true]){
+ const interrupted=libraryServer({failAt:3,lostResponse});
+ const partial=await addLibraryRoutines({companyId:'a',keys:chosen,rpc:interrupted.rpc});
+ assert(partial.error);assert.equal(partial.addedCount,lostResponse?3:2);
+ assert.equal(interrupted.commands.length,3,'Batch continued after a failed save');
+ const complete=await addLibraryRoutines({companyId:'a',keys:chosen,rpc:interrupted.rpc});
+ assert.equal(complete.error,null);assert.equal(interrupted.saved.length,10);
+ assert.equal(new Set(interrupted.saved.map(r=>r.draft.source_key)).size,10,'Retry duplicated a save with a lost response');
+}
+const invalid=libraryServer();await assert.rejects(addLibraryRoutines({companyId:'a',keys:['unknown'],rpc:invalid.rpc}));assert.equal(invalid.commands.length,0);
+const wrongScope=await addLibraryRoutines({companyId:'a',keys:chosen,rpc:async()=>({context:{company_id:'b',manage:true},routines:[]})});
+assert(wrongScope.error);assert.equal(wrongScope.confirmedKeys.length,0);
+let active=true;const abandoned=libraryServer();
+const stopped=await addLibraryRoutines({companyId:'a',keys:chosen,isCurrent:()=>active,rpc:async(name,args)=>{const value=await abandoned.rpc(name,args);if(name==='kshms_command')active=false;return value;}});
+assert.equal(stopped.cancelled,true);assert.equal(abandoned.commands.length,1,'Old company batch continued after its workspace unmounted');
+assert.equal(routinesBySource([{archived:true,draft:{source_key:chosen[0]}}]).size,0);
+assert.equal(selectedCatalogRoutines([chosen[0],chosen[0]]).length,1);
+console.log('critical-kshms-check: OK – multi-select/import/retry, grant/profile races, cleanup, scoped draft recovery, navigation, relevance and 275 source pages');

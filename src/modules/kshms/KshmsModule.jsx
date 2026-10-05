@@ -1,8 +1,10 @@
-import { useEffect,useId,useState } from 'react';
+import { useEffect,useId,useRef,useState } from 'react';
 import { ACK_STATEMENT,CHAPTERS,ROUTINE_CATALOG,TRADES,blankRoutine,currentVersionSnapshot,suggestedRoutines } from './kshmsCatalog.mjs';
 import { draftKey,persistDraft,readDraft } from './kshmsDraft.mjs';
 import { kshmsRpc } from './kshmsAccess.js';
 import { publishManagedAccessChange } from '../access/moduleAccessClient.js';
+import { addLibraryRoutines } from './kshmsLibrary.mjs';
+import KshmsRoutineLibrary from './KshmsRoutineLibrary.jsx';
 import './kshms.css';
 const dateTime = value => new Date(value).toLocaleString('nb-NO');
 const sourceTypes = {law:'Lov / forskrift',professional:'Fag / veiledning / kontrakt',company:'Firmaets regel',product:'Produktvalg'};
@@ -37,12 +39,16 @@ export default function KshmsModule({context}) {
  const [publication,setPublication]=useState(null),[summary,setSummary]=useState(''),[freshAck,setFreshAck]=useState(true);
  const [reading,setReading]=useState(null),[checked,setChecked]=useState(false);
  const [findings,setFindings]=useState(''),[followUp,setFollowUp]=useState(''),[nextReview,setNextReview]=useState(''),[reviewChecked,setReviewChecked]=useState(false);
+ const [selectedKeys,setSelectedKeys]=useState([]),[libraryFilter,setLibraryFilter]=useState('recommended'),[libraryPreview,setLibraryPreview]=useState(null),[libraryProgress,setLibraryProgress]=useState(null),[libraryFeedback,setLibraryFeedback]=useState(null);
+ const requestScope=useRef(null),editorRef=useRef(null),libraryPreviewRef=useRef(null),[editorFocus,setEditorFocus]=useState(0);
  const load = async()=>{const value=await kshmsRpc('kshms_get_state',{p_company_id:companyId});setData(value);return value;};
- useEffect(()=>{let active=true;setData(null);setError('');
+ useEffect(()=>{let active=true;const scope={active:true};requestScope.current=scope;setData(null);setError('');setBusy(false);setLibraryProgress(null);
   kshmsRpc('kshms_get_state',{p_company_id:companyId}).then(value=>{if(active){setData(value);setSetup(value.settings||emptySetup);setCached(readDraft(window.localStorage,userId,companyId));setNextReview(value.settings?.next_review_on||new Date(Date.now()+360*86400000).toISOString().slice(0,10));}}).catch(e=>{if(active)setError(e.message)});
-  return()=>{active=false};
+  return()=>{active=false;scope.active=false};
  },[companyId,userId,context.manage,context.publish]);
  useEffect(()=>{const warn=e=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
+ useEffect(()=>{if(editorFocus&&editorRef.current){editorRef.current.focus();editorRef.current.scrollIntoView({block:'start'});}},[editorFocus]);
+ useEffect(()=>{if(libraryPreview&&libraryPreviewRef.current){libraryPreviewRef.current.focus();libraryPreviewRef.current.scrollIntoView({block:'start'});}},[libraryPreview]);
  const run=async(action,payload,success='Lagret.')=>{
   setBusy(true);setError('');setNotice('');
   try{const result=await kshmsRpc('kshms_command',{p_company_id:companyId,p_action:action,p_payload:payload});const value=await load();if(action==='settings')setSetup(value.settings||emptySetup);setNotice(success);return result;}
@@ -51,7 +57,23 @@ export default function KshmsModule({context}) {
  };
  const chooseEditor=(draft,routine=null)=>{
   if(dirty && !window.confirm('Åpne et annet utkast? Din gjeldende tekst er lokalt sikret og kan hentes inn igjen.'))return;
-  setEditor({id:routine?.id||null,revision:routine?.revision||0,draft:structuredClone(draft)});setSources(structuredClone(draft.references||[]));setDirty(false);setProposal(null);setScreen('handbook');
+  setEditor({id:routine?.id||null,revision:routine?.revision||0,draft:structuredClone(draft)});setSources(structuredClone(draft.references||[]));setDirty(false);setProposal(null);setScreen('handbook');setEditorFocus(previous=>previous+1);
+ };
+ const addSelected=async keys=>{
+  if(busy)return;
+  const scope=requestScope.current;
+  if(!scope?.active)return;
+  setBusy(true);setLibraryFeedback(null);setError('');setNotice('');
+  try {
+   const result=await addLibraryRoutines({companyId,keys,rpc:kshmsRpc,isCurrent:()=>scope.active,onProgress:setLibraryProgress});
+   if(result.cancelled||!scope.active)return;
+   if(result.state)setData(result.state);
+   setSelectedKeys(previous=>previous.filter(key=>!result.confirmedKeys.includes(key)));
+   const added=result.addedCount===1?'1 rutine er lagt inn':`${result.addedCount} rutiner er lagt inn`;
+   const existing=result.skippedCount?` ${result.skippedCount} var allerede lagt til og er beholdt.`:'';
+   setLibraryFeedback(result.error?{error:true,message:`${added} som kladder.${existing} De resterende valgene er beholdt. Prøv igjen. ${result.error.message}`}:{error:false,message:`${added} som kladder.${existing} Bruk «Rediger her» for å tilpasse hver rutine.`});
+  } catch(cause) {if(scope.active)setLibraryFeedback({error:true,message:cause.message});}
+  finally {if(scope.active){setBusy(false);setLibraryProgress(null);}}
  };
  const cacheEditor=(next,sourceValue=sources)=>{
   setEditor(next);setDirty(true);
@@ -96,10 +118,10 @@ export default function KshmsModule({context}) {
     {!data.settings&&<p className="ks-notice">Fullfør oppstart og velg KS/HMS-ansvarlig før publisering.</p>}
     <div className="ks-actions"><button type="button" disabled={busy} onClick={()=>chooseEditor(blankRoutine())}>Ny rutine fra blank mal</button></div>
     {cached&&<div className="ks-recovery"><p>Du har en lokalt sikret kladd fra {dateTime(cached.savedLocallyAt)}. Serverens gjeldende versjon vises før du velger å hente den inn.</p><button type="button" className="secondary" onClick={()=>{setEditor({id:cached.id,revision:cached.revision,draft:cached.draft});setSources(Array.isArray(cached.sources)?cached.sources:cached.draft.references||[]);setDirty(true);}}>Hent inn lokal kladd</button><button type="button" className="secondary" onClick={()=>{if(window.confirm('Slett denne lokale kladden?')){window.localStorage.removeItem(draftKey(userId,companyId));setCached(null)}}}>Slett lokal kladd</button></div>}
-    <details><summary>Anbefalt utgangspunkt ({suggestedRoutines(setup.trades,setup.activities,setup.responsibilities,setup.risks).length} forslag)</summary><p>Forslagene er et utgangspunkt. Vurder relevans, egne risikoer og prosjekt-/kontraktskrav.</p><div className="ks-library">{suggestedRoutines(setup.trades,setup.activities,setup.responsibilities,setup.risks).map(r=><button type="button" className="secondary" key={r.key} onClick={()=>chooseEditor(r)}><b>{r.title}</b><span>{r.relevance}</span></button>)}</div></details>
-    <details><summary>Alle første standardutkast</summary><div className="ks-library">{ROUTINE_CATALOG.map(r=><button type="button" className="secondary" key={r.key} onClick={()=>chooseEditor(r)}>{r.title}</button>)}</div></details>
+    <KshmsRoutineLibrary routines={data.routines} recommended={suggestedRoutines(setup.trades,setup.activities,setup.responsibilities,setup.risks)} selectedKeys={selectedKeys} onSelectionChange={setSelectedKeys} filter={libraryFilter} onFilterChange={setLibraryFilter} busy={busy} progress={libraryProgress} feedback={libraryFeedback} onAdd={addSelected} onEdit={routine=>chooseEditor(routine.draft,routine)} onPreview={setLibraryPreview}/>
+    {libraryPreview&&<article className="ks-proposal ks-editor" ref={libraryPreviewRef} tabIndex={-1}><h4>Standardutkast: {libraryPreview.title}</h4><p>Dette er bibliotekets utgangspunkt. Avkrysning og «Legg inn» legger rutinen i firmaets håndbok som en kladd.</p><Content content={libraryPreview}/><button type="button" className="secondary" onClick={()=>setLibraryPreview(null)}>Lukk standardutkast</button></article>}
    </div>}
-   {editor&&canManage&&<div className="ks-card"><h3>{editor.id?'Rediger rutinekladd':'Ny rutinekladd'}</h3><p>Publiserte versjoner beholder innholdet sitt. Ikke legg individuelle personalopplysninger i denne felles rutinen.</p>
+   {editor&&canManage&&<div className="ks-card ks-editor" ref={editorRef} tabIndex={-1}><h3>{editor.id?`Rediger rutine: ${editor.draft.title}`:'Ny rutinekladd'}</h3><p>Publiserte versjoner beholder innholdet sitt. Ikke legg individuelle personalopplysninger i denne felles rutinen.</p>
     <form onSubmit={save}>{[['Tittel','title'],['Kapittel','chapter'],['Mål','goal'],['Ansvar – tilpass til firmaet','responsibility'],['Fremgangsmåte','procedure'],['Dokumentasjon','documentation'],['Gjennomgang / avklaring','confirmation']].map(([label,key])=><Field key={key} label={label} value={editor.draft[key]} required multiline={!['title','chapter'].includes(key)} onChange={v=>cacheEditor({...editor,draft:{...editor.draft,[key]:v}})}/>)}
      <References value={sources} onChange={v=>{setSources(v);cacheEditor(editor,v)}}/>
      <div className="ks-actions"><button disabled={busy}>Lagre kladd</button><button type="button" className="secondary" onClick={()=>{setEditor(null);setDirty(false)}}>Lukk editor</button>{editor.draft.source_key&&<button type="button" className="secondary" onClick={()=>setProposal(ROUTINE_CATALOG.find(r=>r.key===editor.draft.source_key)||null)}>Vurder sentralt forslag</button>}</div>
@@ -108,12 +130,13 @@ export default function KshmsModule({context}) {
     {proposal&&<aside className="ks-proposal"><h4>Sentralt forslag – vurder felt for felt</h4><p>Firmaets tekst beholdes. Valgte felt legges bare i kladden og må publiseres av firmaadmin.</p><Content content={proposal}/>{['goal','responsibility','procedure','documentation','confirmation','references'].map(key=><button type="button" className="secondary" key={key} onClick={()=>{const next={...editor,draft:{...editor.draft,[key]:structuredClone(proposal[key]),source_revision:proposal.source_revision}};const refs=key==='references'?next.draft.references:sources;if(key==='references')setSources(refs);cacheEditor(next,refs)}}>Bruk felt: {({goal:'mål',responsibility:'ansvar',procedure:'fremgangsmåte',documentation:'dokumentasjon',confirmation:'gjennomgang',references:'kilder'})[key]}</button>)}</aside>}
    </div>}
    {publication&&<div className="ks-card"><h3>Godkjenn publisering: {publication.draft.title}</h3><Content content={publication.draft}/><Field label="Hva er vurdert eller endret?" value={summary} onChange={setSummary} required multiline/><label className="ks-check"><input type="checkbox" checked={freshAck} onChange={e=>setFreshAck(e.target.checked)}/>Krev ny gjennomgangsbekreftelse (alltid ved ny eller vesentlig endret rutine)</label><p>Du godkjenner firmaets tilpassede rutine og tildeler den til ansatte med modulgrant. En ny publikasjon erstatter ikke gamle bekreftelser.</p><div className="ks-actions"><button type="button" disabled={busy||summary.trim().length<5} onClick={async()=>{const result=await run('publish',{id:publication.id,revision:publication.revision,change_summary:summary,requires_ack:data.versions.some(v=>v.routine_id===publication.id)?freshAck:true},'Godkjent versjon publisert og tildelt ansatte.');if(result?.id)setPublication(null)}}>Godkjenn og publiser</button><button type="button" className="secondary" onClick={()=>setPublication(null)}>Avbryt</button></div></div>}
-   {!data.routines.length&&<div className="ks-card"><h3>{canManage?'Ingen rutiner ennå':'Ingen rutiner tildelt'}</h3><p>{canManage?'Velg utgangspunkt, tilpass og lagre en kladd.':'Firmaets ansvarlige tildeler publiserte rutiner du skal gjennomgå.'}</p></div>}
+   <div className="ks-routine-overview"><h3>Firmaets rutiner ({data.routines.filter(routine=>!routine.archived).length})</h3>{canManage&&<p>Rutiner som er lagt inn, er lagret her. Bruk «Rediger her» for å tilpasse hver rutine. Firmaadmin godkjenner publisering når innholdet er klart.</p>}</div>
+   {!data.routines.length&&<div className="ks-card"><h3>{canManage?'Ingen rutiner ennå':'Ingen rutiner tildelt'}</h3><p>{canManage?'Huk av standardrutiner over og trykk «Legg inn», eller lag en rutine fra blank mal.':'Firmaets ansvarlige tildeler publiserte rutiner du skal gjennomgå.'}</p></div>}
    {[...new Set(data.routines.map(r=>r.draft?.chapter||data.versions.find(v=>v.routine_id===r.id)?.content.chapter||'Historikk'))].map(chapter=><div className="ks-chapter" key={chapter}><h3>{chapter}</h3>{data.routines.filter(r=>(r.draft?.chapter||data.versions.find(v=>v.routine_id===r.id)?.content.chapter||'Historikk')===chapter).map(r=>{
     const versions=data.versions.filter(v=>v.routine_id===r.id),current=versions[0];
     return <article className="ks-card" key={r.id}><div className="ks-row"><h4>{r.draft?.title||current?.content.title}</h4><span className="ks-badge">{r.archived?'Arkivert':current?`Publisert v${current.number}`:'Kladd'}</span></div>
      {current&&<details><summary>Les publisert versjon {current.number}</summary><p>Godkjent {dateTime(current.published_at)} · Endring: {current.change_summary}</p><Content content={current.content}/></details>}
-     {canManage&&<div className="ks-actions">{!r.archived&&<button type="button" className="secondary" disabled={busy} onClick={()=>chooseEditor(r.draft,r)}>Rediger kladd</button>}<button type="button" className="secondary" onClick={()=>chooseEditor({...r.draft,title:`${r.draft.title} (kopi)`})}>Kopier</button>{!r.archived&&canPublish&&<button type="button" disabled={busy} onClick={()=>{setPublication(r);setSummary('');setFreshAck(true)}}>Godkjenn publisering</button>}{!r.archived&&canPublish&&<button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Arkiver rutinen? Publiserte versjoner og bekreftelser beholdes.'))run('archive',{id:r.id,revision:r.revision},'Rutinen er arkivert; historikken er bevart.')}}>Arkiver</button>}</div>}
+     {canManage&&<div className="ks-actions">{!r.archived&&<button type="button" className="secondary" disabled={busy} aria-label={`Rediger her: ${r.draft.title}`} onClick={()=>chooseEditor(r.draft,r)}>Rediger her</button>}<button type="button" className="secondary" onClick={()=>chooseEditor({...r.draft,title:`${r.draft.title} (kopi)`})}>Kopier</button>{!r.archived&&canPublish&&<button type="button" disabled={busy} onClick={()=>{setPublication(r);setSummary('');setFreshAck(true)}}>Godkjenn publisering</button>}{!r.archived&&canPublish&&<button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Arkiver rutinen? Publiserte versjoner og bekreftelser beholdes.'))run('archive',{id:r.id,revision:r.revision},'Rutinen er arkivert; historikken er bevart.')}}>Arkiver</button>}</div>}
      {versions.length>0&&<details><summary>Versjonshistorikk ({versions.length})</summary>{versions.map(v=><details key={v.id}><summary>Versjon {v.number} · {dateTime(v.published_at)} · {v.change_summary}</summary><Content content={v.content}/><p>Godkjenner: {data.members.find(m=>m.id===v.published_by)?.email||v.published_by} · innholdskontroll: {v.content_hash}</p></details>)}</details>}
     </article>;
    })}</div>)}
