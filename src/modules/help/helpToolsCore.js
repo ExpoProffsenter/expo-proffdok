@@ -5,6 +5,7 @@ import React, * as ReactNS from "react";
 import { FileText } from "lucide-react";
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { rpcWithStoredSession } from "../access/moduleAccessClient.js";
+import { useCordelAccess } from "../cordel/cordelAccess.js";
 import CordelGuide from "../cordel/CordelGuide.jsx";
 
 const import_react = { default: React, ...ReactNS };
@@ -403,6 +404,7 @@ const BASE_ORDER = [
 
 export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK_TERMS_VERSION, expoProffDokTermsSections }) {
   return function HelpCenter({ isAdmin = false, isCompanyAdmin = false, isSystemAdmin = false, termsAccepted = false, termsAcceptanceRecord = null, authUser = null, formatTermsAcceptedAt = (value) => value || "" }) {
+    const canExportCordel = useCordelAccess();
     const [openGuideKey, setOpenGuideKey] = (0, import_react.useState)("");
     const [canUseInternalCommerce, setCanUseInternalCommerce] = (0, import_react.useState)(Boolean(isSystemAdmin));
 
@@ -418,7 +420,7 @@ export function createHelpCenter({ Section, Grid, AppInstallGuide, EXPO_PROFFDOK
       return () => { active = false; };
     }, [isSystemAdmin]);
 
-    const orderedBase = [...BASE_SECTIONS].sort((a, b) => BASE_ORDER.indexOf(a.key) - BASE_ORDER.indexOf(b.key));
+    const orderedBase = BASE_SECTIONS.filter(item => item.key !== "cordel" || canExportCordel).sort((a, b) => BASE_ORDER.indexOf(a.key) - BASE_ORDER.indexOf(b.key));
     const visibleGuideSections = [
       ...orderedBase.slice(0, 5),
       ...(canUseInternalCommerce ? INTERNAL_COMMERCE_SECTIONS : []),

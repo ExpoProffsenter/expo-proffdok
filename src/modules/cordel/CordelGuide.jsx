@@ -23,9 +23,9 @@ function Picture({ name, alt, caption }) {
 
 export default function CordelGuide() {
   return <article data-cordel-guide="true" style={{ lineHeight: 1.65, overflowWrap: "anywhere" }}>
-    <p><strong>A–Å-veiledning · oppdatert 04.10.2026</strong></p>
-    <p>Overfør et akseptert tilbud direkte til en Cordel-ordre. ProffDok laster ned én ZIP med to filer. Importer jobblisten først og AFG-filen etterpå. Du trenger ikke opprette et tilbud i Cordel.</p>
-    <p><strong>Daglig flyt:</strong> last ned → pakk ut i {folder} → åpne riktig tom ordre → importer jobbliste → importer AFG → kontroller jobber og sum. Engangsoppsettet gjøres av Cordelansvarlig.</p>
+    <p><strong>A–Å-veiledning · oppdatert 05.10.2026</strong></p>
+    <p>Overfør et akseptert tilbud direkte til en Cordel-ordre. ProffDok laster ned én ZIP med to filer. Velg AFG alene hvis du ikke ønsker jobbliste. Ved bruk av jobbliste må jobblistefilen importeres først og AFG-filen etterpå, med tilsvarende jobblisteoppsett i Cordel. Du trenger ikke opprette et tilbud i Cordel.</p>
+    <p><strong>Daglig flyt:</strong> last ned → pakk ut i {folder} → åpne riktig tom ordre → importer jobbliste → importer AFG → kontroller jobber og sum. Uten jobbliste hopper du over jobblisteimporten. Engangsoppsettet gjøres av Cordelansvarlig.</p>
 
     <h3>A. Engangsoppsett: mappe og faste filer</h3>
     <ol>
@@ -41,7 +41,7 @@ export default function CordelGuide() {
     <p>Filene skal ligge direkte i {folder}, uten en ekstra undermappe. Slå gjerne på visning av filendelser i Utforsker, slik at du ser forskjell på .txt, .AFG, .zip og .html.</p>
 
     <h3>B. Engangsoppsett: ordremetode for akseptert pris</h3>
-    <p>Bruk en ordremetode med jobbliste. Den bekreftede testen brukte <strong>Jobbliste (veil. priser)</strong>. Be Cordelansvarlig gjøre de nødvendige innstillingene tilgjengelige som en egen ProffDok-metode, slik at ansatte kan velge denne ved opprettelse av ordre.</p>
+    <p>Ved bruk av jobbliste: bruk en ordremetode med jobbliste. Den bekreftede testen brukte <strong>Jobbliste (veil. priser)</strong>. Be Cordelansvarlig gjøre de nødvendige innstillingene tilgjengelige som en egen ProffDok-metode, slik at ansatte kan velge denne ved opprettelse av ordre.</p>
     <ol>
       <li>Åpne ordren og gå til <strong>Økonomi → Kalkyle-spesifikasjon/Ordrebekreftelse</strong>.</li>
       <li>Velg <strong>Ordremetode</strong>. I vinduet <strong>Ajourhold ordre-parametre</strong>, åpne <strong>Priskalkyle (F3)</strong>.</li>
@@ -57,7 +57,10 @@ export default function CordelGuide() {
     <Picture name="ordreparametere" alt="Cordel Priskalkyle med Standard Påslag og avrunding" caption="Historisk testbilde: Standard Påslag står her på 35,00 % og Totaler på Krone. For ProffDok skal disse feltene være 0,00 % og Øre. Priser og Beløp står allerede på Øre." />
     <p><strong>Prisgrunnlaget:</strong> ProffDok overfører kundens aksepterte salgspriser som ferdige rundsummer. Cordel behandler disse beløpene som materiell/selvkost. Reell innkjøpskost, arbeidstimer og fortjenestefordeling følger ikke med. Bruk derfor ikke denne importen som dokumentasjon av faktisk prosjektfortjeneste.</p>
 
+    <p>Ved AFG alene kan du velge ønsket ordremetode uten jobblisteoppsettet. Påslag og avrunding i metoden gjelder fortsatt: bruk 0 % materiellpåslag og øreavrunding når akseptert tilbudspris skal beholdes. Den dokumenterte Cordel-testen med bilder gjelder den kombinerte jobblisteflyten.</p>
+
     <h3>C. Engangsoppsett: importdefinisjon for jobbliste</h3>
+    <p>Dette punktet gjelder bare når du ønsker jobbliste.</p>
     <ol>
       <li>Ha {jobFile} tilgjengelig i {folder} før definisjonen settes opp.</li>
       <li>I Cordel-ordren: åpne <strong>Generelt → Jobb-liste (F6) → Import</strong>.</li>
@@ -75,6 +78,7 @@ export default function CordelGuide() {
     <Picture name="jobbkolonner" alt="Cordels feltnavn for jobblistekolonner" caption="Bruk feltene Jobb, Beskrivelse, Prisberegning matr., Fastpris materiell, Prisberegning arbeid, Fastpris arbeid og Sum fastpris." />
 
     <h3>D. For hvert tilbud: last ned fra ProffDok</h3>
+    <p>Systemadmin gir tilgangen under brukeren ved å velge <strong>Eksport til Cordel</strong>. Den viser både eksporten og denne veiledningen. Tilgang til selve tilbudet eller plukklisten kreves i tillegg.</p>
     <ol>
       <li>Åpne det <strong>aksepterte eller aktiverte tilbudet</strong> i ProffDok. På ordinære prosjekter finnes eksporten også ved kontraktkortet i Avtalegrunnlag.</li>
       <li>Finn kortet <strong>Cordel-ordre</strong>. Kontroller saksreferanse, antall jobber/poster og akseptert sum eks. mva.</li>
@@ -94,12 +98,13 @@ export default function CordelGuide() {
     <h3>F. Åpne riktig tom ordre</h3>
     <ol>
       <li>Opprett ordren på vanlig måte, eller åpne riktig eksisterende ordre som ennå ikke inneholder jobber/prisposter.</li>
-      <li>Velg den riktige kunden og kontroller ordrenummer og prosjekt. Bruk bedriftens ProffDok-ordremetode fra punkt B.</li>
-      <li>Kontroller jobbliste, 0 % materiellpåslag og øreavrunding før import. Testkundene i bildene er kun eksempler.</li>
+      <li>Velg den riktige kunden og kontroller ordrenummer og prosjekt. Ved bruk av jobbliste: bruk bedriftens ProffDok-ordremetode fra punkt B. Ved AFG alene: velg ønsket ordremetode og kontroller prisinnstillingene.</li>
+      <li>Kontroller jobblisteoppsettet hvis du bruker jobbliste. Kontroller alltid 0 % materiellpåslag og øreavrunding før import. Testkundene i bildene er kun eksempler.</li>
     </ol>
     <p>Den bekreftede flyten gjelder en tom ordre. En ordre med eksisterende arbeid, materiell, timer eller fakturering må avklares med Cordelansvarlig. Ikke slett eksisterende innhold eller importer samme tilbud på nytt som en prøve.</p>
 
     <h3>G. Import 1: opprett jobblisten</h3>
+    <p>Hopp over dette punktet ved AFG alene. Hvis du ønsker jobber ved timeføring, må jobblistefilen lastes inn og ordremetode/importdefinisjon være satt opp som i punkt B og C.</p>
     <ol>
       <li>Velg <strong>Generelt → Jobb-liste (F6) → Import</strong>.</li>
       <li>Velg definisjonen <strong>ProffDok – jobbliste</strong>. Den leser allerede riktig fast filsti.</li>
@@ -112,28 +117,28 @@ export default function CordelGuide() {
     <ol>
       <li>På samme ordre, gå til <strong>Økonomi → Kalkyle-spesifikasjon/Ordrebekreftelse</strong>.</li>
       <li>Velg <strong>Import → Anbud fra Grossist</strong>.</li>
-      <li>Velg filen <strong>{folder}\{afgFile}</strong>. Kontroller at informasjonen gjelder det samme tilbudet som jobblisten.</li>
+      <li>Velg filen <strong>{folder}\{afgFile}</strong>. Kontroller at informasjonen gjelder riktig tilbud, og samme nedlasting som jobblisten hvis den brukes.</li>
       <li>Bruk valgene i tabellen nedenfor. Velg <strong>Aktivér (F12)</strong> én gang.</li>
     </ol>
-    <Picture name="importmeny" alt="Cordels importmeny med Anbud fra Grossist" caption="AFG-filen leses inn via Anbud fra Grossist. Jobblisten skal allerede være importert på denne ordren." />
+    <Picture name="importmeny" alt="Cordels importmeny med Anbud fra Grossist" caption="AFG-filen leses inn via Anbud fra Grossist. Ved bruk av jobbliste skal den allerede være importert på denne ordren. AFG kan også importeres alene." />
     <Table headers={["Valg i AFG-importen", "Innstilling"]} rows={[
       ["Tilbuds-Spesifikasjon", "På. Kan være markert og låst/grått."],
       ["Kundeadresse / Vareadresse", "Av. Kunden er allerede valgt på ordren."],
       ["Stikkord/Prosjektnavn, Prosjekt-rabattmatrise og Tilbudets Notat", "Av."],
       ["Les akkordsatser fra fil", "Av."],
-      ["Slett nåværende spesifikasjon før innlesing", "Av. Jobblisten fra import 1 skal beholdes."],
+      ["Slett nåværende spesifikasjon før innlesing", "Av. Eksisterende innhold og eventuell jobbliste skal beholdes."],
       ["Tarifftillegg og std.påslag", "Kan være på og låst/grått. Kontroller derfor 0 % materiellpåslag i ordremetoden."],
     ]} />
-    <p>AFG alene oppretter ikke den nødvendige jobblisten i den bekreftede flyten. Derfor skal begge importene gjennomføres i denne rekkefølgen.</p>
+    <p>AFG alene gir postinnhold, priser og delsummer i spesifikasjonen. Den erstatter ikke jobblisteimporten hvis du ønsker egne jobber ved timeføring. Da skal begge filene importeres, jobbliste først, med tilsvarende jobblisteoppsett i Cordel.</p>
 
     <h3>I. Sluttkontroll og timeføring</h3>
     <ol>
       <li>Åpne noen jobber og kontroller beskrivelse, prisposter og <strong>SUM JOBB</strong>.</li>
-      <li>Gå tilbake til Jobb-liste (F6). Alle jobber og jobbsummer skal være bevart.</li>
+      <li>Ved bruk av jobbliste: gå tilbake til Jobb-liste (F6). Alle jobber og jobbsummer skal være bevart.</li>
       <li>Kontroller ordrenummer/kunde og totalsum eks. mva. mot det aksepterte tilbudet. Det skal ikke ligge ekstra samleposter som gjør beløpet dobbelt.</li>
-      <li>Kontroller at riktig jobb kan velges ved timeføring. I den bekreftede testen kommer jobbeskrivelsen frem når jobb velges. Ikke registrer testtimer på et virkelig prosjekt.</li>
+      <li>Ved bruk av jobbliste: kontroller at riktig jobb kan velges ved timeføring. I den bekreftede testen kommer jobbeskrivelsen frem når jobb velges. Ikke registrer testtimer på et virkelig prosjekt.</li>
     </ol>
-    <p><strong>Avsnitt i spesifikasjonen:</strong> Cordel kan vise overskriftene som «Avsnitt». Det er akseptert i denne flyten når jobbene samtidig finnes i Jobb-liste og kan brukes ved timeføring.</p>
+    <p><strong>Avsnitt i spesifikasjonen:</strong> Cordel kan vise overskriftene som «Avsnitt». Ved AFG alene er dette avsnitt i spesifikasjonen. Hvis du ønsker jobber ved timeføring, må jobbene også finnes i Jobb-liste etter den separate jobblisteimporten.</p>
     <Picture name="spesifikasjon" alt="Postinnhold, priser og SUM JOBB etter kombinert import" caption="Historisk, vellykket strukturtest med 11 jobber og 30 prisposter. Eksakt beløp er 402 164,10 eks. mva. Bildets Total-felt viser 402 164,00 fordi Totaler fortsatt var satt til Krone. Bruk Øre etter punkt B." />
 
     <h3>J. Egen flyt: eksport av plukkliste</h3>
@@ -154,7 +159,7 @@ export default function CordelGuide() {
       ["Filen er .html", "Bruk Last ned til Cordel i ProffDok. En lagret nettside er ikke importfilen."],
       ["Priser er høyere enn i tilbudet", "Kontroller Materiell → Standard Påslag = 0,00 %. Ikke korriger hver prispost manuelt."],
       ["Et lite øreavvik i totalsum", "Kontroller Avrunding → Totaler = Øre, ikke Krone."],
-      ["Bare postinnhold, ingen jobber ved timeføring", "Jobblisteimporten må være gjennomført først. Ikke kjør AFG en gang til som løsning."],
+      ["Bare postinnhold, ingen jobber ved timeføring", "Hvis du ønsker jobber ved timeføring, må jobblisteimporten være gjennomført først med riktig jobblisteoppsett. Ikke kjør AFG en gang til som løsning."],
       ["Kun en samlepost MATERIELL per jobb", "Jobblisten er lest inn, men AFG med detaljinnhold mangler. Fullfør import 2 på samme ordre."],
       ["Dobbelt beløp eller doble poster", "Stopp og avklar innholdet med Cordelansvarlig. Ikke bruk Slett nåværende spesifikasjon som tilfeldig opprydding."],
       ["Konto eller flate poster uten jobbstruktur", "Kontroller at jobblistefilen ble lest inn i Jobb-liste (F6), og at spesifikasjonen ble lest som Anbud fra Grossist."],
