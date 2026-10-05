@@ -70,13 +70,13 @@ Oppstart velger flere fag (mur/flis, tømrer, maler og VVS/Ringside), aktivitete
 | Rolle | Tilgang |
 |---|---|
 | Systemadmin | Aktivere/deaktivere modul for firma. Ingen automatisk tilgang til firmaets innhold eller personaldata. |
-| Firmaadmin i aktiv medlemskapskontekst | Administrere ansattes modulgrant, oppstart, utkast, tildeling, publisering og arkivering. |
+| Firmaadmin i aktiv medlemskapskontekst | Administrere ansattes modulgrant, oppstart, utkast, tildeling, publisering og arkivering. Kan utpekes selv som KS/HMS-ansvarlig uten ekstra grant; signering krever eksplisitt utpeking. |
 | Dedikert KS/HMS-ansvarlig | Aktivt internt medlemskap + firmagrant `responsible`; utarbeide/redigere, følge opp bekreftelser. Den utpekte ansvarlige i oppstart signerer årlig revisjon. |
 | Ansatt | Aktivt internt medlemskap + eget firmagrant. Lese tildelte publiserte versjoner og bekrefte selv. Ingen utkast eller andre ansattes bekreftelser. |
 | HR-ansvarlig senere | Separat personaltillatelse og eksplisitt tjenstlig behov. KS-rolle gir ikke automatisk HR-innsyn. Medarbeider ser relevante egne opplysninger. |
 | Kunde/UE/innleid | Ingen ny modul-/SJA-tilgang. Melder i eget system; firmaets samordnings-/oppfølgingsrutiner gjelder fortsatt. Rapportmottaker får bare et konkret godkjent utdrag. |
 
-Trinn A bruker eksisterende firmaskope og authklient. Tabeller har RLS og ingen direkte `anon`/`authenticated`-privilegier. Smale RPC-er kontrollerer godkjent aktiv profil, internt medlemskap, aktivt firma, modulgrant og riktig rolle ved hvert kall. Alle mutasjoner får forventet firma; utkast og oppstart har revisjonskontroll mot samtidige endringer. Publisert innhold, ansattbekreftelse, revisjonssnapshot og audit er uforanderlige. Arbeidsprofilbytte/tilbakekalt tilgang skjuler konteksten og avviser gamle skrivekall.
+Trinn A bruker eksisterende firmaskope og authklient. Tabeller har RLS og ingen direkte `anon`/`authenticated`-privilegier. Smale RPC-er kontrollerer godkjent aktiv profil, internt medlemskap, aktivt firma, modulgrant og riktig rolle ved hvert kall. Alle mutasjoner får forventet firma; utkast og oppstart har revisjonskontroll mot samtidige endringer. Publisert innhold, ansattbekreftelse, revisjonssnapshot og audit er uforanderlige. Gjenpublisering av samme arbeidsfirma beholder montert arbeidsflate, etter eksisterende Sales-prinsipp. Reelt arbeidsprofilbytte/tilbakekalt tilgang skjuler konteksten og avviser gamle skrivekall.
 
 ## Datamodell og oppbevaring
 

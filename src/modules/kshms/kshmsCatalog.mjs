@@ -1,5 +1,5 @@
 export const SOURCE_CHECKED_ON = '2026-10-05';
-export const TRADES = { mur_flis: 'Mur / flis', tomrer: 'Tømrer', maler: 'Maler', vvs: 'VVS / Ringside' };
+export const TRADES = { mur_flis: 'Mur / flis', tomrer: 'Tømrer', maler: 'Maler', vvs: 'VVS' };
 export const CHAPTERS = ['Virksomhet og kvalitetsledelse', 'Personal, kompetanse og arbeidsmiljø', 'Sikker utførelse og beredskap', 'Fag og kvalitet', 'Ytre miljø og bærekraft', 'Personvern og informasjonssikkerhet'];
 export const ACK_STATEMENT = 'Jeg har gjennomgått denne rutineversjonen, forstår mitt ansvar og vil følge rutinen. Jeg ber om forklaring eller nødvendig opplæring dersom noe er uklart, og melder fra om farlige forhold og avvik. Bekreftelsen dokumenterer gjennomgang; den erstatter ikke opplæring eller faktisk utførelse.';
 const source = (title, url, kind = 'law') => ({ title, url, kind, checked_on: SOURCE_CHECKED_ON });

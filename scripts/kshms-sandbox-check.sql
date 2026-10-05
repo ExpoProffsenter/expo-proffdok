@@ -85,6 +85,23 @@ begin
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
  perform public.kshms_command(a,'assign',jsonb_build_object('version_id',v2->>'id','user_id',reader_id));
  state:=public.kshms_get_state(a);assert jsonb_array_length(state->'assignments')=6,'Idempotent assignment';n:=n+1;
+ -- Firmaadmin is eligible without a redundant grant, but annual signature
+ -- authority still requires explicit appointment to this particular firm.
+ assert not (state->'context'->>'responsible')::boolean,'Unappointed firmaadmin could sign';n:=n+1;
+ assert exists(select 1 from jsonb_array_elements(state->'members') m where (m->>'id')::uuid=admin_id and m->>'workspace_role'='firmaadmin' and not (m->>'enabled')::boolean),'Firmaadmin without grant missing from candidate roster';n:=n+1;
+ perform public.kshms_command(a,'settings',jsonb_build_object('revision',2,'trades',jsonb_build_array('vvs'),'responsible_user_id',admin_id));
+ state:=public.kshms_get_state(a);assert (state->'context'->>'responsible')::boolean,'Explicit self-appointment failed';n:=n+1;
+ assert exists(select 1 from jsonb_array_elements(state->'members') m where (m->>'id')::uuid=admin_id and not (m->>'enabled')::boolean),'Appointment silently created a member grant';n:=n+1;
+ perform set_config('request.jwt.claim.sub',editor_id::text,true);
+ assert not (public.get_kshms_context()->>'responsible')::boolean,'Previous responsible still designated';n:=n+1;
+ begin perform public.kshms_command(a,'review',jsonb_build_object('settings_revision',3,'version_snapshot',snapshot,'findings','Meaningful review findings','follow_up','Owner and followup date','next_review_on',current_date+100));raise exception 'Previous responsible signed after replacement';exception when insufficient_privilege then n:=n+1;end;
+ perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ perform public.kshms_command(a,'review',jsonb_build_object('settings_revision',3,'version_snapshot',snapshot,'findings','Firmaadmin reviewed exact active versions','follow_up','Firmaadmin follows up within agreed date','next_review_on',current_date+100));
+ state:=public.kshms_get_state(a);assert jsonb_array_length(state->'reviews')=2 and exists(select 1 from jsonb_array_elements(state->'reviews') rv where (rv->>'signed_by')::uuid=admin_id and rv->'version_snapshot'=snapshot),'Appointed firmaadmin signature lost identity or versions';n:=n+1;
+ perform public.kshms_command(a,'settings',jsonb_build_object('revision',4,'trades',jsonb_build_array('vvs'),'responsible_user_id',editor_id));
+ assert not (public.get_kshms_context()->>'responsible')::boolean,'Removed firmaadmin designation retained signature permission';n:=n+1;
+ begin perform public.kshms_command(a,'settings',jsonb_build_object('revision',5,'trades',jsonb_build_array('vvs'),'responsible_user_id',other_id));raise exception 'Other firm admin appointed';exception when others then if sqlerrm='Other firm admin appointed' then raise;end if;n:=n+1;end;
+ begin perform public.kshms_command(a,'settings',jsonb_build_object('revision',5,'trades',jsonb_build_array('vvs'),'responsible_user_id',reader_id));raise exception 'Reader without responsible grant appointed';exception when others then if sqlerrm='Reader without responsible grant appointed' then raise;end if;n:=n+1;end;
  perform public.kshms_command(a,'archive',jsonb_build_object('id',r->>'id','revision',4));
  state:=public.kshms_get_state(a);assert (state->'routines'->0->>'archived')::boolean and jsonb_array_length(state->'versions')=2;n:=n+1;
  begin perform public.kshms_command(a,'save',jsonb_build_object('id',r->>'id','revision',5,'draft',draft));raise exception 'Archived edit accepted';exception when others then if sqlerrm='Archived edit accepted' then raise;end if;n:=n+1;end;

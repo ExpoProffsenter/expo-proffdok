@@ -7,9 +7,10 @@ import './kshms.css';
 const dateTime = value => new Date(value).toLocaleString('nb-NO');
 const sourceTypes = {law:'Lov / forskrift',professional:'Fag / veiledning / kontrakt',company:'Firmaets regel',product:'Produktvalg'};
 const emptySetup = {trades:[],activities:'',responsibilities:'',risks:'',responsible_user_id:'',revision:0};
-function Field({label,value,onChange,type='text',multiline=false,required=false}) {
+function Field({label,hint,value,onChange,type='text',multiline=false,required=false}) {
  const id=useId();
- return <label className="ks-field" htmlFor={id}><span>{label}</span>{multiline ? <textarea id={id} value={value||''} onChange={e=>onChange(e.target.value)} rows={5} required={required} maxLength={20000}/> : <input id={id} type={type} value={value||''} onChange={e=>onChange(e.target.value)} required={required} maxLength={20000}/>}</label>;
+ const description=hint?`${id}-hint`:undefined;
+ return <label className="ks-field" htmlFor={id}><span id={`${id}-label`}>{label}</span>{multiline ? <textarea id={id} aria-labelledby={`${id}-label`} aria-describedby={description} value={value||''} onChange={e=>onChange(e.target.value)} rows={5} required={required} maxLength={20000}/> : <input id={id} aria-labelledby={`${id}-label`} aria-describedby={description} type={type} value={value||''} onChange={e=>onChange(e.target.value)} required={required} maxLength={20000}/>} {hint&&<span id={description} className="ks-field-hint">{hint}</span>}</label>;
 }
 function Content({content}) {
  return <div className="ks-content">{[['Mål','goal'],['Ansvar','responsibility'],['Fremgangsmåte','procedure'],['Dokumentasjon','documentation'],['Gjennomgang','confirmation']].map(([label,key])=><div key={key}><h4>{label}</h4><p>{content[key]}</p></div>)}
@@ -75,13 +76,14 @@ export default function KshmsModule({context}) {
   <nav className="ks-tabs" aria-label="KS/HMS visning">{[['handbook','Håndbok'],['reading',`Les og bekreft (${pending.length})`],...(canManage?[['setup','Oppstart og tilgang'],['followup','Oppfølging og revisjon']]:[])].map(([key,label])=><button type="button" key={key} className={screen===key?'active':'secondary'} aria-pressed={screen===key} onClick={()=>setScreen(key)}>{label}</button>)}</nav>
   {error && <p role="alert" className="ks-error">{error}</p>}{notice && <p role="status" className="ks-notice">{notice}</p>}
   {screen==='setup'&&canManage&&<>
-   <div className="ks-card"><h3>1. Velg fag og beskriv virksomheten</h3><p>Velg flere fag. Beskriv også aktiviteter og risiko; fag alene avgjør ikke hvilke rutiner som er relevante.</p>
+   <div className="ks-card"><h3>1. Velg fag og beskriv virksomheten</h3><p>Velg ett eller flere fag og beskriv firmaets arbeid i feltene under. Stikkord eller korte setninger er nok som start. Dette brukes til å foreslå relevante rutiner; tilpass beskrivelsen til deres egen virksomhet.</p>
     <form onSubmit={async e=>{e.preventDefault();await run('settings',setup,'Oppstart lagret. Vurder forslagene i håndboken.')}}>
      <fieldset><legend>Fag</legend><div className="ks-options">{Object.entries(TRADES).map(([key,label])=><label key={key}><input type="checkbox" checked={setup.trades.includes(key)} onChange={e=>setSetup({...setup,trades:e.target.checked?[...setup.trades,key]:setup.trades.filter(t=>t!==key)})}/>{label}</label>)}</div></fieldset>
-     <Field label="Aktiviteter, f.eks. våtrom, rehabilitering eller kjemikaliebruk" value={setup.activities} multiline onChange={v=>setSetup({...setup,activities:v})}/>
-     <Field label="Ansvar og funksjoner, f.eks. utførende, prosjekterende og UE-oppfølging" value={setup.responsibilities} multiline onChange={v=>setSetup({...setup,responsibilities:v})}/>
-     <Field label="Viktigste risikoforhold og lokale behov" value={setup.risks} multiline onChange={v=>setSetup({...setup,risks:v})}/>
-     <label className="ks-field"><span>Utpekt KS/HMS-ansvarlig (firmaadmin velger)</span><select required disabled={!canPublish} value={setup.responsible_user_id||''} onChange={e=>setSetup({...setup,responsible_user_id:e.target.value})}><option value="">Velg ansvarlig etter tilgangstildeling</option>{data.members.filter(m=>m.enabled&&m.role==='responsible').map(m=><option key={m.id} value={m.id}>{m.email}</option>)}</select></label>
+     <Field label="Aktiviteter – hva gjør dere?" hint="Beskriv vanlige oppdrag og arbeidsoperasjoner. Eksempel for VVS: Montering og service på sanitær- og varmeanlegg, arbeid i våtrom og rehabilitering." value={setup.activities} multiline onChange={v=>setSetup({...setup,activities:v})}/>
+     <Field label="Ansvar og funksjoner – hvilken rolle har firmaet?" hint="Beskriv hva dere har ansvar for, og hvem som følger opp arbeidet. Eksempel: Utførende VVS-bedrift. Prosjektleder følger opp egne ansatte og samarbeidende foretak. Ta med prosjektering dersom dere har dette ansvaret." value={setup.responsibilities} multiline onChange={v=>setSetup({...setup,responsibilities:v})}/>
+     <Field label="Risiko og lokale behov – hva må dere særlig passe på?" hint="Beskriv farer og forhold dere faktisk møter. Eksempel for VVS: Lekkasjer, varmt arbeid, tunge løft, støv og kjemikalier. Arbeid i bebodde boliger krever hensyn til beboere og sikring av arbeidsområdet." value={setup.risks} multiline onChange={v=>setSetup({...setup,risks:v})}/>
+     <label className="ks-field"><span>Utpekt KS/HMS-ansvarlig (firmaadmin velger)</span><select required disabled={!canPublish||busy} value={setup.responsible_user_id||''} onChange={e=>setSetup({...setup,responsible_user_id:e.target.value})}><option value="">Velg ansvarlig</option>{data.members.filter(m=>m.workspace_role==='firmaadmin'||(m.enabled&&m.role==='responsible')).map(m=><option key={m.id} value={m.id}>{m.email}{m.id===userId?' (deg)':''}{m.workspace_role==='firmaadmin'?' · Firmaadmin':''}</option>)}</select></label>
+     <p className="ks-field-hint">Firmaadmin kan velge seg selv. For å velge en annen medarbeider, tildel vedkommende KS/HMS-ansvarlig under «Tildel ansattes tilgang». Valget gjelder når du lagrer oppstart. Bare den utpekte ansvarlige kan signere revisjonen.</p>
      <button disabled={busy}>Lagre oppstart</button>
     </form>
    </div>

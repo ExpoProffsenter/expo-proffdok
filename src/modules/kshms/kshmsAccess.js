@@ -17,7 +17,11 @@ export function useKshmsAccess(userId) {
   if(!userId)return;
   const refresh=(event)=>{
    const current=++revision;
-   if(event?.type===WORK_PROFILE_EVENT || event?.type===MANAGED_ACCESS_EVENT) setContext(null);
+   // Same contract as Sales' syncWorkProfileScope: a refreshed profile for
+   // the same firm must not remount the workspace and discard local input.
+   // A real firm change (or missing scope) still hides the old context at once.
+   if(event?.type===WORK_PROFILE_EVENT) setContext(previous=>previous?.company_id===event.detail?.active_company_id ? previous : null);
+   if(event?.type===MANAGED_ACCESS_EVENT) setContext(null);
    kshmsRpc('get_kshms_context').then(value=>{if(active && current===revision)setContext(value?.user_id===userId ? value : null);})
     .catch(()=>{if(active && current===revision)setContext(null);});
   };

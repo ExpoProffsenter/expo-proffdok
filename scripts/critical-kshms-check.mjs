@@ -6,21 +6,31 @@ import {createGlobalAppTabs,createProjectWorkspaceTabs} from '../src/modules/pro
 // Actual refresh hook: stale responses may never revive old company access.
 const source=fs.readFileSync('src/modules/kshms/kshmsAccess.js','utf8');
 const hook=source.slice(source.indexOf('export function useKshmsAccess')).replace('export function','function');
-const requests=[],cleanups=[];let context;
+const requests=[],cleanups=[];let context,surface=null;
 const window=new EventTarget();
 const rpc=()=>new Promise((resolve,reject)=>requests.push({resolve,reject}));
 const run=new Function('useState','useEffect','kshmsRpc','window','MANAGED_ACCESS_EVENT','MODULE_ACCESS_EVENT','WORK_PROFILE_EVENT',hook+';return useKshmsAccess;');
-run(v=>{context=v;return[v,v=>{context=v}]},f=>cleanups.push(f()),rpc,window,'managed','module','profile')('u1');
+// Mirror the App's actual scope-keyed mount gate: losing enabled context
+// unmounts KS/HMS and resets its local screen/setup on the next mount.
+const renderSurface=()=>{if(!context?.enabled)surface=null;else if(surface?.company!==context.company_id)surface={company:context.company_id,screen:'handbook',activities:''};};
+run(v=>{context=v;return[v,next=>{context=typeof next==='function'?next(context):next;renderSurface();}]},f=>cleanups.push(f()),rpc,window,'managed','module','profile')('u1');
 assert.equal(context,null);
 requests[0].resolve({user_id:'u1',company_id:'a',enabled:true});await Promise.resolve();assert.equal(context.company_id,'a');
+surface.screen='setup';surface.activities='Ulagret oppstart for firma A';
 window.dispatchEvent(new Event('focus'));assert.equal(context.company_id,'a','Background focus discarded visible draft context');
-window.dispatchEvent(new Event('profile'));assert.equal(context,null);
-requests[2].resolve({user_id:'u1',company_id:'b',enabled:false});await Promise.resolve();
-requests[1].resolve({user_id:'u1',company_id:'a',enabled:true});await Promise.resolve();assert.equal(context.company_id,'b');assert.equal(context.enabled,false);
+const profile=company=>{const event=new Event('profile');event.detail={active_company_id:company};window.dispatchEvent(event);};
+profile('a');
+assert.equal(surface?.screen,'setup','Same-company work-profile refresh remounted KS/HMS to its start screen');
+assert.equal(surface.activities,'Ulagret oppstart for firma A','Same-company foreground refresh lost the unsaved setup');
+requests[2].resolve({user_id:'u1',company_id:'a',enabled:true});await Promise.resolve();
+requests[1].resolve({user_id:'u1',company_id:'a',enabled:true});await Promise.resolve();assert.equal(surface.screen,'setup');
+window.dispatchEvent(new Event('focus'));profile('b');assert.equal(context,null);assert.equal(surface,null,'Real work-profile change must immediately unmount the old firm');
+requests[4].resolve({user_id:'u1',company_id:'b',enabled:false});await Promise.resolve();
+requests[3].resolve({user_id:'u1',company_id:'a',enabled:true});await Promise.resolve();assert.equal(context.company_id,'b');assert.equal(context.enabled,false);
 window.dispatchEvent(new Event('managed'));assert.equal(context,null);
-requests[3].resolve({user_id:'another-user',company_id:'a',enabled:true});await Promise.resolve();assert.equal(context,null);
-window.dispatchEvent(new Event('module'));requests[4].reject(new Error('network'));await Promise.resolve();await Promise.resolve();assert.equal(context,null);
-window.dispatchEvent(new Event('focus'));cleanups[0]();requests[5].resolve({user_id:'u1',enabled:true});await Promise.resolve();assert.equal(context,null);
+requests[5].resolve({user_id:'another-user',company_id:'a',enabled:true});await Promise.resolve();assert.equal(context,null);
+window.dispatchEvent(new Event('module'));requests[6].reject(new Error('network'));await Promise.resolve();await Promise.resolve();assert.equal(context,null);
+window.dispatchEvent(new Event('focus'));cleanups[0]();requests[7].resolve({user_id:'u1',enabled:true});await Promise.resolve();assert.equal(context,null);
 const count=requests.length;window.dispatchEvent(new Event('profile'));assert.equal(requests.length,count);
 // A new auth identity must not render the prior user's context before effects run.
 const renderHook=run(()=>[{user_id:'u1',company_id:'a',enabled:true},()=>{}],()=>{},rpc,window,'managed','module','profile');
