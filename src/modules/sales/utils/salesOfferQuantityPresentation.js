@@ -1,3 +1,4 @@
+import { offerVatPresentation } from "./salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 37D2 / FASE 31A2B / FASE 39B.2C
 // Felles, ren presentasjonsadapter for antall/enhetspris i kundetilbud og PDF.
 // Butikkalternativer viser faktisk alternativpris i egen presentasjon og skal aldri
@@ -36,16 +37,16 @@ export function getStoreSectionTitle(item = {}) {
   return description || body || "Avsnitt";
 }
 
-function getQuantityUnitPriceText(item = {}) {
+function getQuantityUnitPriceText(item = {}, multiplier = 1.25) {
   if (isStoreSectionLine(item) || !hasOfferQuantityDetails(item)) return "";
 
   return `Antall/enhetspris: ${formatOfferQuantity(item)} × ${formatNok(
-    getOfferUnitPrice(item) * 1.25
+    getOfferUnitPrice(item) * multiplier
   )}`;
 }
 
-function appendQuantityPresentation(value, item, fallback) {
-  const quantityText = getQuantityUnitPriceText(item);
+function appendQuantityPresentation(value, item, fallback, multiplier) {
+  const quantityText = getQuantityUnitPriceText(item, multiplier);
   const baseText = String(value || fallback || "").trim();
 
   if (!quantityText || item?.__quantityPresentationDecorated) {
@@ -55,12 +56,12 @@ function appendQuantityPresentation(value, item, fallback) {
   return `${baseText} — ${quantityText}`;
 }
 
-function decorateLine(line = {}) {
+function decorateLine(line = {}, multiplier = 1.25) {
   if (line?.__companyMeta || line?.__offerTermsMeta || isStoreSectionLine(line)) {
     return line;
   }
 
-  const quantityText = getQuantityUnitPriceText(line);
+  const quantityText = getQuantityUnitPriceText(line, multiplier);
   if (!quantityText || line?.__quantityPresentationDecorated) return line;
 
   return {
@@ -68,13 +69,13 @@ function decorateLine(line = {}) {
     description: appendQuantityPresentation(
       line.description,
       line,
-      "Tilbudspost"
+      "Tilbudspost", multiplier
     ),
     __quantityPresentationDecorated: true,
   };
 }
 
-function decorateOption(option = {}) {
+function decorateOption(option = {}, multiplier = 1.25) {
   // Store-alternativer lagrer differansen mot grunnpakken i amount. Den verdien
   // er korrekt for beregning, men er ikke en enhetspris kunden skal se.
   if (
@@ -84,22 +85,22 @@ function decorateOption(option = {}) {
     return option;
   }
 
-  const quantityText = getQuantityUnitPriceText(option);
+  const quantityText = getQuantityUnitPriceText(option, multiplier);
   if (!quantityText || option?.__quantityPresentationDecorated) return option;
 
   return {
     ...option,
-    title: appendQuantityPresentation(option.title, option, "Opsjon"),
+    title: appendQuantityPresentation(option.title, option, "Opsjon", multiplier),
     __quantityPresentationDecorated: true,
   };
 }
 
-function decorateLines(lines = []) {
-  return (Array.isArray(lines) ? lines : []).map(decorateLine);
+function decorateLines(lines = [], multiplier = 1.25) {
+  return (Array.isArray(lines) ? lines : []).map(line => decorateLine(line, multiplier));
 }
 
-function decorateOptions(options = []) {
-  return (Array.isArray(options) ? options : []).map(decorateOption);
+function decorateOptions(options = [], multiplier = 1.25) {
+  return (Array.isArray(options) ? options : []).map(option => decorateOption(option, multiplier));
 }
 
 export function decorateRequestForQuantityPresentation(request = {}) {
@@ -107,13 +108,13 @@ export function decorateRequestForQuantityPresentation(request = {}) {
 
   return {
     ...request,
-    offerLines: decorateLines(request.offerLines),
-    offerOptions: decorateOptions(request.offerOptions),
+    offerLines: decorateLines(request.offerLines, offerVatPresentation(request).multiplier),
+    offerOptions: decorateOptions(request.offerOptions, offerVatPresentation(request).multiplier),
     offerVersions: Array.isArray(request.offerVersions)
       ? request.offerVersions.map((version) => ({
           ...version,
-          lines: decorateLines(version.lines),
-          options: decorateOptions(version.options),
+          lines: decorateLines(version.lines, offerVatPresentation(request, version.lines).multiplier),
+          options: decorateOptions(version.options, offerVatPresentation(request, version.lines).multiplier),
         }))
       : request.offerVersions,
   };

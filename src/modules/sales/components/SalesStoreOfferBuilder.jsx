@@ -409,6 +409,7 @@ export default function SalesStoreOfferBuilder(props) {
         <main className="sales-main">
           <section className="sales-form-hero"><p className="sales-eyebrow">Generelt tilbud</p><h1 className="sales-title">Varer, arbeid og andre leveranser</h1><p className="sales-subtitle">{selectedRequest?.customer} · {customerAddress} · {selectedRequest?.id}</p><p className="sales-subtitle" style={{marginTop:8}}>{offerDraftSaveStatus === "saving" ? "Lagrer på server …" : offerDraftSaveStatus === "saved" ? "✓ Lagret på server." : "Kladden lagres automatisk."}</p></section>
           <form className="sales-form-panel" onSubmit={submitStoreOffer}>
+<label className="sales-field sales-field-full"><span><input type="checkbox" checked={offerForm.showPricesExVat === true} onChange={event => updateOfferForm("showPricesExVat", event.target.checked)} /> Vis priser eks. mva.</span><small>Valget gjelder kundelenke og tilbuds-PDF. Mva. beregnes fortsatt og vises i totalsummen. Nye tilbud starter inkl. mva.</small></label>
             <StoreBrandSelector brandKey={currentBrand.key} signatureName={signatureName} onBrandChange={(brandKey) => patchStoreMeta({ brandKey })} onSignatureChange={(name) => patchStoreMeta({ signatureName: name })} />
             <section className="store-builder-section">
               <div className="store-section-head"><div><h2>Tilbudstekst og vilkår</h2><p>Betalingsbetingelser og gyldighet er obligatoriske i Generelt tilbud. Kunden skal kunne se tydelig hva som gjelder før aksept eller avvisning.</p></div></div>

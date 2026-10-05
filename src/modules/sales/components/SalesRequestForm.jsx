@@ -1,3 +1,4 @@
+import CompanyCustomerPicker from "../../customers/CompanyCustomerPicker.jsx";
 // Expo ProffDok – FASE 42J / FASE 38A1 / FASE 37D1 / FASE 23I / FASE 29C1 / FASE 45B
 // Presentasjonskomponent for ny og redigert forespørsel.
 // FASE 42J bevarer kunde-/adressefelter ved PC-fanebytte og mobil appbytte før
@@ -267,6 +268,7 @@ export default function SalesRequestForm({
               Felter merket * må fylles ut.
             </p>
             <div className="sales-form-grid">
+              <CompanyCustomerPicker disabled={supportMode} value={Object.fromEntries(["customer", "phone", "email", "address", "postnr", "city"].map(key => [key, form[key] || ""]))} onUse={customer => { for (const key of ["customer", "phone", "email", "address", "postnr", "city"]) onUpdateForm(key, customer[key] || ""); }} />
               <label className="sales-field">
                 <span>Kundenavn *</span>
                 <input

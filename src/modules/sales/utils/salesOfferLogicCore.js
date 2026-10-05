@@ -244,6 +244,7 @@ export function mergeOfferDraftIntoRequests(
           offerCustomerSupplied: formValue.customerSupplied,
           offerTerms: formValue.terms,
           offerPaymentTerms: formValue.paymentTerms,
+          offerShowPricesExVat: formValue.showPricesExVat === true,
           offerValidityDays: formValue.validityDays,
           offerTotal: getOfferTotal(normalizedLines),
           offerDraftSavedAt: savedAt,
@@ -268,6 +269,7 @@ export function buildOfferFormFromRequest(request) {
     customerSupplied: request?.offerCustomerSupplied || "",
     terms: request?.offerTerms || "",
     paymentTerms: request?.offerPaymentTerms || "10 dager netto",
+    showPricesExVat: request?.offerShowPricesExVat === true,
     validityDays: request?.offerValidityDays || "30",
   };
 }
@@ -587,6 +589,7 @@ export function mapPublicOfferToRequest(result) {
     offerCustomerSupplied: offerTermsSnapshot.customerSupplied || "",
     offerTerms: offerTermsSnapshot.terms || "",
     offerPaymentTerms: offerTermsSnapshot.paymentTerms || "",
+    offerShowPricesExVat: offerTermsSnapshot.showPricesExVat === true,
     offerValidityDays: String(version.validity_days || 30),
     offerTotal: Number(version.total_ex_vat || 0),
     customer: offer.customer_name,

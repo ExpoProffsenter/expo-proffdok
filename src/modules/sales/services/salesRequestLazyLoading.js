@@ -85,6 +85,7 @@ function acceptedRequestState(request, publicOfferData) {
       request.sentOfferVersionNumber ||
       null,
     acceptedOfferLines,
+    acceptedShowPricesExVat: acceptedTermsSnapshot.showPricesExVat === true,
     acceptedOptionIds: acceptedOptions.map((option) => option?.id).filter(Boolean),
     acceptedOptions,
     acceptedTotal,

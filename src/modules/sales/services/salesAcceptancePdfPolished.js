@@ -1,3 +1,4 @@
+import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 31C / FASE 31A2B / FASE 39B.2C
 // Profesjonelt, låst akseptbevis basert på den allerede aksepterte tilbudsversjonen.
 // Hovedpostnummer beholdes fra tilbudsversjonen selv om uvalgte opsjonsposter utelates.
@@ -94,10 +95,10 @@ function optionLabel(option = {}, lines = []) {
   return "VALGT TILLEGG";
 }
 
-function quantityText(item = {}) {
+function quantityText(item = {}, multiplier = 1.25) {
   if (isStoreSectionLine(item) || !hasOfferQuantityDetails(item)) return "";
   return `${formatOfferQuantity(item)} x ${formatNok(
-    getOfferUnitPrice(item) * 1.25
+    getOfferUnitPrice(item) * multiplier
   )} pr. enhet`;
 }
 
@@ -256,6 +257,7 @@ export async function createAcceptanceProofPdfPolished({
   if (!JsPDF) throw new Error("PDF-verktøyet kunne ikke lastes.");
 
   const accepted = acceptedSnapshot(selectedRequest);
+  const vat = offerVatPresentation(selectedRequest);
   const company = companySnapshot(selectedRequest, companyProfile, accepted.rawLines);
   const groups = buildGroups(accepted.lines, accepted.options);
   const versionNumberMap = getAcceptedVersionNumberMap(selectedRequest, accepted);
@@ -400,7 +402,7 @@ export async function createAcceptanceProofPdfPolished({
     }
   };
 
-  const qty = (item) => quantityText(item);
+  const qty = (item) => quantityText(item, vat.multiplier);
 
   const measureLine = (line, replaced = false) => {
     if (isStoreSectionLine(line)) return clean(line.storeTextBody) ? 18 : 14;
@@ -427,7 +429,7 @@ export async function createAcceptanceProofPdfPolished({
     ensure(19 + Math.min(nextHeight, 36));
 
     const pricedLines = group.lines.filter((line) => !isStoreSectionLine(line));
-    const groupTotal = (getOfferTotal(pricedLines) + getOfferTotal(group.options)) * 1.25;
+    const groupTotal = (getOfferTotal(pricedLines) + getOfferTotal(group.options)) * vat.multiplier;
     const groupNumber = versionNumberMap.get(group.id) || groupIndex + 1;
     const visibleTitle =
       isStoreOffer && clean(group.title).toLowerCase() === "varer"
@@ -447,7 +449,7 @@ export async function createAcceptanceProofPdfPolished({
     font(11.2, "bold", COLORS.ink);
     pdf.text(formatNok(groupTotal), PAGE.right - 4, y + 11, { align: "right" });
     font(6.8, "normal", COLORS.muted);
-    pdf.text("inkl. mva.", PAGE.right - 4, y + 14.3, { align: "right" });
+    pdf.text(vat.label, PAGE.right - 4, y + 14.3, { align: "right" });
     y += 19;
   };
 
@@ -539,13 +541,13 @@ export async function createAcceptanceProofPdfPolished({
     }
     font(9.8, "bold", replacingOption ? COLORS.muted : COLORS.ink);
     pdf.text(
-      replacingOption ? "Grunnpris" : formatNok(getOfferTotal([line]) * 1.25),
+      replacingOption ? "Grunnpris" : formatNok(getOfferTotal([line]) * vat.multiplier),
       PAGE.right - 4,
       top + 7.2,
       { align: "right" }
     );
     font(6.7, "normal", COLORS.muted);
-    pdf.text(replacingOption ? "inngår i grunnsum" : "inkl. mva.", PAGE.right - 4, top + 10.5, { align: "right" });
+    pdf.text(replacingOption ? "inngår i grunnsum" : vat.label, PAGE.right - 4, top + 10.5, { align: "right" });
     y += height + 2;
   };
 
@@ -554,7 +556,7 @@ export async function createAcceptanceProofPdfPolished({
     const title = clean(option.title) || "Opsjon";
     const description = clean(option.description);
     const qText = qty(option);
-    const amount = getOfferTotal([option]) * 1.25;
+    const amount = getOfferTotal([option]) * vat.multiplier;
     const prefix = amount > 0 ? "+" : amount < 0 ? "-" : "";
     const price = amount === 0 ? "Ingen prisendring" : `${prefix} ${formatNok(Math.abs(amount))}`;
 
@@ -613,7 +615,7 @@ export async function createAcceptanceProofPdfPolished({
     pdf.text(price, PAGE.right - 4, y + 17, { align: "right" });
     if (amount !== 0) {
       font(6.7, "normal", COLORS.muted);
-      pdf.text("inkl. mva.", PAGE.right - 4, y + 20.2, { align: "right" });
+      pdf.text(vat.label, PAGE.right - 4, y + 20.2, { align: "right" });
     }
     y += height + 2;
   };
@@ -685,9 +687,10 @@ export async function createAcceptanceProofPdfPolished({
     pdf.setLineWidth(0.45);
     pdf.roundedRect(PAGE.left, y, WIDTH, 23, 3, 3, "FD");
     font(8.4, "bold", COLORS.green);
-    pdf.text("AKSEPTERT TOTAL INKL. MVA.", PAGE.left + 6, y + 8);
+    pdf.text(`AKSEPTERT TOTAL ${vat.label.toUpperCase()}`, PAGE.left + 6, y + 8);
     font(17, "bold", COLORS.ink);
-    pdf.text(formatNok(accepted.total * 1.25), PAGE.right - 6, y + 11.5, { align: "right" });
+    pdf.text(formatNok(accepted.total * vat.multiplier), PAGE.right - 6, y + 11.5, { align: "right" });
+  if (vat.exVat) { font(7.2, "normal", COLORS.muted); pdf.text(`Mva. ${formatNok(accepted.total * 0.25)} · Inkl. mva. ${formatNok(accepted.total * 1.25)}`, PAGE.right - 6, y + 20, { align: "right" }); }
     font(7.2, "normal", COLORS.muted);
     pdf.text(
       accepted.options.length
@@ -726,7 +729,7 @@ export async function createAcceptanceProofPdfPolished({
 
   sectionTitle(
     isStoreOffer ? "Akseptert leveranse og priser" : "Aksepterte arbeider og priser",
-    "Alle priser er inkl. mva. Kun opsjoner kunden faktisk valgte er med i akseptbeviset.",
+    `Alle priser er ${vat.label} Kun opsjoner kunden faktisk valgte er med i akseptbeviset.`,
     42
   );
 
@@ -757,9 +760,10 @@ export async function createAcceptanceProofPdfPolished({
   pdf.setLineWidth(0.45);
   pdf.roundedRect(PAGE.left, y, WIDTH, 23, 3, 3, "FD");
   font(8.5, "bold", COLORS.green);
-  pdf.text("AKSEPTERT TOTAL INKL. MVA.", PAGE.left + 6, y + 8);
+  pdf.text(`AKSEPTERT TOTAL ${vat.label.toUpperCase()}`, PAGE.left + 6, y + 8);
   font(17, "bold", COLORS.ink);
-  pdf.text(formatNok(accepted.total * 1.25), PAGE.right - 6, y + 11.5, { align: "right" });
+  pdf.text(formatNok(accepted.total * vat.multiplier), PAGE.right - 6, y + 11.5, { align: "right" });
+  if (vat.exVat) { font(7.2, "normal", COLORS.muted); pdf.text(`Mva. ${formatNok(accepted.total * 0.25)} · Inkl. mva. ${formatNok(accepted.total * 1.25)}`, PAGE.right - 6, y + 20, { align: "right" }); }
   font(7.2, "normal", COLORS.muted);
   pdf.text(`Tilbud ${offerId} - versjon ${accepted.version}`, PAGE.left + 6, y + 17);
   y += 29;

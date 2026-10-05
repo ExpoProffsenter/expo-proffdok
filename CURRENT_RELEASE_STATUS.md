@@ -19,3 +19,7 @@
 - Miljømål: BEGGE. Kontrollert main → demo via PR #212, merge 35b51ff45cf058f55c581b396ab18884d5c655a6. Eksisterende overlay og Golden Demo-data beholdes. Lokal sammenslåing med Sandbox-build er grønn.
 - Sandbox-migrasjonen er allerede anvendt. Innlogget Golden Demo-preflight gjenstår; kjør Kjør preflight før kurs/kundedemo. Ikke forveksle grønn build med innlogget preflight.
 - Ingen branches er slettet. Behold main og permanent demo.
+
+## Pågående separat oppgave – kundeprofiler og eks. mva.
+
+Miljømål BEGGE. KJØR 05.10.2026 gjelder ny feature/Preview `feat-company-customers-vat` fra main 86e6036, ingen Production-godkjenning. Kunderegister deles i aktivt firma, lagring er frivillig/av som standard, gjenbruk i prosjekt og begge tilbudstyper. Visning eks. mva. velges per tilbud, av som standard, følger låst kundevisning/PDF. Scope: customer-modul/migrasjon, én kundedataflate i main, forespørselsskjema, tilbudsform/snapshot og pris-presentasjon, dokumentasjon/Hjelp. Ingen urelaterte UX-/recoveryendringer.

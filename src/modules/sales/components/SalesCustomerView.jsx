@@ -1,3 +1,4 @@
+import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 42M / FASE 37A2 / FASE 37D2 / FASE 37D1 / FASE 34B / FASE 39B.2
 // Digital avvisning gjenbrukes nå også for ordinære Våtromstilbud. Butikktilbudets
 // presentasjon, utløpssperre og akseptflyt beholdes uendret.
@@ -168,7 +169,7 @@ function absoluteAssetUrl(value = "") {
   try { return new URL(clean, window.location.origin).href; } catch { return clean; }
 }
 
-function applyStoreOfferCopy({ isStoreOffer, signatureName = "", brandLabel = "", brandLogoUrl = "", legalCompanyName = "", readOnlyDeclined = false, hideDecisionControls = false } = {}) {
+function applyStoreOfferCopy({ vat, isStoreOffer, signatureName = "", brandLabel = "", brandLogoUrl = "", legalCompanyName = "", readOnlyDeclined = false, hideDecisionControls = false } = {}) {
   if (!isStoreOffer || typeof document === "undefined") return;
   const eyebrow = document.querySelector(".sales-customer-hero .sales-eyebrow");
   const lead = document.querySelector(".sales-customer-lead");
@@ -189,11 +190,11 @@ function applyStoreOfferCopy({ isStoreOffer, signatureName = "", brandLabel = ""
   const sectionNote = pricesSection?.querySelector(".sales-customer-section-note");
   if (sectionNote) {
     sectionNote.textContent = readOnlyDeclined
-      ? "Alle priser er oppgitt inkl. mva. Opsjoner og alternativer vises som del av tilbudsversjonen, men kan ikke velges i historisk visning."
-      : "Alle priser er oppgitt inkl. mva. Alternativer erstatter valgt vare og eventuell tilhørende montering. Valgene oppdaterer totalsummen automatisk.";
+      ? `Alle priser er oppgitt ${vat.label} Opsjoner og alternativer vises som del av tilbudsversjonen, men kan ikke velges i historisk visning.`
+      : `Alle priser er oppgitt ${vat.label} Alternativer erstatter valgt vare og eventuell tilhørende montering. Valgene oppdaterer totalsummen automatisk.`;
   }
   const totalLabel = pricesSection?.querySelector(".sales-customer-total-card .sales-customer-total-row:first-child > span");
-  if (totalLabel) totalLabel.textContent = "Sum varer og montering inkl. mva.";
+  if (totalLabel) totalLabel.textContent = `Sum varer og montering ${vat.label}`;
   pricesSection?.querySelectorAll(".sales-customer-main-post").forEach((section) => {
     const groupTitle = String(section.querySelector("h3")?.textContent || "").trim().toLowerCase();
     const sumLabel = section.querySelector(".sales-customer-main-post-sum > span");
@@ -241,6 +242,7 @@ function getOfferParts(request = {}) {
 }
 
 function applyStoreAlternativePresentation(request, selectedOptionIds = []) {
+  const vat = offerVatPresentation(request);
   if (typeof document === "undefined") return;
   const { options } = getOfferParts(request || {});
   const alternatives = options.filter((option) => option?.optionType === "alternative" && Number(option?.storeAlternativePricingVersion || 0) >= 2);
@@ -260,11 +262,11 @@ function applyStoreAlternativePresentation(request, selectedOptionIds = []) {
     const replacementNode = card.querySelector(".sales-customer-option-replacement");
     if (replacementNode) { const replaced = String(option?.replacementLineDescription || "").trim(); replacementNode.textContent = replaced ? `Erstatter ${replaced}.` : "Erstatter valgt vare eller montering."; }
     const hasInstallationOverride = String(option?.storeInstallationAlternativeTotalInclVat ?? "").trim();
-    const alternativePrice = Number(hasInstallationOverride ? option?.storeAlternativePackageTotalInclVat : option?.storeAlternativeItemTotalInclVat);
+    const alternativePrice = vat.fromIncl(hasInstallationOverride ? option?.storeAlternativePackageTotalInclVat : option?.storeAlternativeItemTotalInclVat);
     const priceNode = card.querySelector(".sales-customer-option-price");
     if (priceNode && Number.isFinite(alternativePrice)) {
-      priceNode.textContent = hasInstallationOverride ? `Alternativpris vare + montering: ${formatNok(alternativePrice)} inkl. mva.` : `Alternativpris: ${formatNok(alternativePrice)} inkl. mva.`;
-      const delta = Number(option?.storeAlternativeDeltaInclVat);
+      priceNode.textContent = hasInstallationOverride ? `Alternativpris vare + montering: ${formatNok(alternativePrice)} ${vat.label}` : `Alternativpris: ${formatNok(alternativePrice)} ${vat.label}`;
+      const delta = vat.fromIncl(option?.storeAlternativeDeltaInclVat);
       if (Number.isFinite(delta) && Math.abs(delta) >= 0.01) {
         const compare = document.createElement("span");
         compare.dataset.storePriceComparison = "1";
@@ -362,7 +364,7 @@ export default function SalesCustomerView(props) {
     const applyPresentation = () => {
       applyCustomerSectionOrder(signatureName);
       applyCustomerOptionsOnlyPresentation(brandedRequest, selectedOptionIds);
-      applyStoreOfferCopy({ isStoreOffer, signatureName, brandLabel, brandLogoUrl, legalCompanyName, readOnlyDeclined, hideDecisionControls });
+      applyStoreOfferCopy({ vat: offerVatPresentation(brandedRequest), isStoreOffer, signatureName, brandLabel, brandLogoUrl, legalCompanyName, readOnlyDeclined, hideDecisionControls });
       if (isStoreOffer) applyStoreAlternativePresentation(brandedRequest, selectedOptionIds);
       const root = document.querySelector(".sales-customer-offer-app");
       if (root) root.classList.toggle("store-customer-history-readonly", readOnlyDeclined);
