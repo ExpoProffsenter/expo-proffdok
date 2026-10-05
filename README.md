@@ -6,6 +6,10 @@ Produksjon: https://expo-proffdok.app
 
 **Produksjonsbaseline:** `main` inkluderer godkjent PR #207: antall, nye plukklister og separate plukkliste-/prisutskrifter i Prissøk på PC. Kameraskanning er fortsatt på mobil. Tidligere rettelser for tilbudsrecovery (PR #206), små strekkoder (PR #203) og serverlagrede plukklister (PR #205) er bevart. Se [gjeldende release-status](CURRENT_RELEASE_STATUS.md) for Production-verifisering og kontrollert `main → demo`-synk/preflight.
 
+## Cordel-eksport
+
+Cordel-eksporten finnes ved aksepterte/aktiverte tilbud, prosjektets kontraktkort og plukklister. Tilbud lastes ned som én ZIP med jobbliste og AFG-spesifikasjon, og leses direkte inn i en tom Cordel-ordre i to importer. Faste filnavn i `P:\Expo ProffDok` gjør at importdefinisjoner kan gjenbrukes. A–Å-veiledningen ligger under **Hjelp → Eksport av tilbud til Cordel**. Se [Cordel-modulen](src/modules/cordel/README.md) for kildegrunnlag, validering og pris-/kostbegrensninger.
+
 ## Teknologi
 
 - React / Vite

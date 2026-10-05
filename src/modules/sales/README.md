@@ -259,3 +259,11 @@ Ved Sales-endringer skal minst følgende verifiseres:
 - CSV/Excel-eksport av varebehov
 - kontrollert demo-/testdataflyt med reset/sletting
 - trygg oppgradering av eldre **redigerbare** tilbudsutkast; publisert/akseptert historikk forblir immutable
+
+## 17. Cordel-eksport av akseptert tilbud og plukkliste
+
+`src/modules/cordel` lager eksportfiler lokalt fra eksisterende, autorisert grunnlag. Aksepterte/aktiverte tilbud bruker kun låst versjon og valgte opsjoner; hver prispost avrundes til øre og summen må være identisk med eksplisitt akseptert total. Kladd brukes aldri som fallback. Eksporten endrer ingen tilbud, prosjekter, backenddata, hydration eller recovery.
+
+Én ZIP inneholder `ProffDok_Cordel_Jobbliste.txt` og `ProffDok_Cordel_Ordre.AFG`. Den bekreftede Cordel-flyten er jobbliste først, AFG etterpå på samme tomme ordre uten sletting. Jobber nummereres fra 1. Prekalkulerte Rundsum-priser unngår Cordels time-/pakkeoppslag. 0 % materiellpåslag og øreavrunding kreves; reell kost, timebudsjett og fortjeneste overføres ikke. AFG alene oppretter ikke jobbregisteret.
+
+Plukklisten bruker én prisfri ASCII-fil med NR, Mengde og Fagområde/leverandør. Cordel henter egne priser. Ordrenummeret i ProffDok er en brukerrettet påminnelse, ikke automatisk ruting. Hjelp-temaet **Eksport av tilbud til Cordel** beskriver oppsett, faste P:-filer, importene, kontroller og feilsøking med originale TEST-bilder.
