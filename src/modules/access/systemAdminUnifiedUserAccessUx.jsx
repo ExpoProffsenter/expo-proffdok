@@ -18,6 +18,8 @@ import {
 } from "./sensitiveAccessClient.js";
 import { setManagedProCatalogNetPriceAccess } from "./proUserAccessClient.js";
 
+import { readCordelAccess, setCordelAccess } from "../cordel/cordelAccess.js";
+
 const MOUNT_ATTR = "data-systemadmin-unified-access";
 const INTERNAL_COMMERCE_COMPANIES = new Set([
   "ringside rorleggerbedrift as",
@@ -89,6 +91,13 @@ function UnifiedAccessControls({ user, onReload }) {
   const [draftModules, setDraftModules] = useState(initialModules);
   const [draftInternalNet, setDraftInternalNet] = useState(initialInternalNet);
   const [draftProNet, setDraftProNet] = useState(initialProNet);
+  const [initialCordel, setInitialCordel] = useState(false);
+  const [draftCordel, setDraftCordel] = useState(false);
+  const [cordelLoaded, setCordelLoaded] = useState(false);
+  useEffect(() => { let active = true; setCordelLoaded(false);
+    readCordelAccess(user.user_id).then(value => { if (active) { setInitialCordel(value === true); setDraftCordel(value === true); setCordelLoaded(true); } }).catch(() => { if (active) setError("Kunne ikke hente Cordel-tilgangen. Oppdater brukerlisten og prøv igjen."); });
+    return () => { active = false; };
+  }, [user.user_id, user.company_name]);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -115,7 +124,8 @@ function UnifiedAccessControls({ user, onReload }) {
   const internalNetDirty = canUseInternalNet && Boolean(draftInternalNet) !== Boolean(initialInternalNet);
   const effectiveProNet = canUseProNet && storeSelected ? Boolean(draftProNet) : false;
   const proNetDirty = canUseProNet && effectiveProNet !== Boolean(initialProNet);
-  const dirty = modulesDirty || internalNetDirty || proNetDirty;
+  const cordelDirty = cordelLoaded && draftCordel !== initialCordel;
+  const dirty = modulesDirty || internalNetDirty || proNetDirty || cordelDirty;
 
   async function save() {
     if (!dirty || saving || targetIsSystemAdmin) return;
@@ -134,6 +144,10 @@ function UnifiedAccessControls({ user, onReload }) {
       }
       if (proNetDirty) {
         await setManagedProCatalogNetPriceAccess(user.user_id, effectiveProNet);
+      }
+      if (cordelDirty) {
+        await setCordelAccess(user.user_id, draftCordel);
+        setInitialCordel(draftCordel);
       }
       publishManagedAccessChange({
         source: "systemadmin-unified-access",
@@ -209,6 +223,10 @@ function UnifiedAccessControls({ user, onReload }) {
           );
         })}
 
+        <label style={{ display: "flex", gap: 8, padding: "9px 10px", border: "1px solid #e2e8f0", borderRadius: 10 }}>
+          <input type="checkbox" checked={targetIsSystemAdmin || draftCordel} disabled={targetIsSystemAdmin || saving || !cordelLoaded} onChange={event => setDraftCordel(event.target.checked)} />
+          <span><b>Eksport til Cordel</b><small style={{ display: "block" }}>Eksport av tilbud og plukklister, samt Cordel-veiledningen i Hjelp. Kun Systemadmin kan gi tilgangen.</small></span>
+        </label>
         {canUseInternalNet ? (
           <label style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "9px 10px", border: "1px solid #f1c27d", borderRadius: 10, background: targetIsSystemAdmin ? "#fffaf2" : "#fffdf8", cursor: targetIsSystemAdmin ? "default" : "pointer" }}>
             <input

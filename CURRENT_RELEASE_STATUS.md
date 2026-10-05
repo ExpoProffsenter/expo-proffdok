@@ -20,3 +20,10 @@
 - Miljømål: BEGGE. Kontrollert main → demo-synk er utført i PR #209. Demo-overlay, Sandbox-binding og eksisterende Golden Demo-data er bevart. Full Sandbox-build er grønn.
 - Kontrollsidens baseline følger synkronisert main. Innlogget demo-preflight er ikke kjørt i den nye skynettleseren; kjør Kjør preflight før kurs/kundedemo. Ingen ny Kenneth-test kreves for samme Cordel-funksjonskode.
 - Ingen branches eller data er slettet. Behold main og permanent demo; gammel feature-branch kan ryddes etter Kenneths bekreftelse.
+
+
+## Ny avgrenset endring – Cordel importvalg og tilgang
+
+Miljømål: BEGGE. KJØR 05.10.2026 gjelder feature/Preview med Sandbox, ikke Production. Separat eksportformat er tatt ut av scope: dagens ZIP/Rundsum beholdes. Hjelp forklarer AFG alene og obligatorisk jobblisteimport/oppsett når jobbliste brukes. Egen Systemadmin-brukertilgang styrer eksport og Cordel-Hjelp. Ny migrasjon skal kun testes i Sandbox før Preview. Production krever relevant TEST OK og eksplisitt godkjenning av denne konkrete endringen.
+
+Sandbox-migrasjonen er testet, alle tilgangsscenarioer passerte med rollback. Full critical-suite og build grønne. Feature-gren: `feat-cordel-access-guide`. Innlogget Preview-test og ny Production-godkjenning gjenstår. Ingen nye Production-endringer er utført.

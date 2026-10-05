@@ -8,7 +8,7 @@ Produksjon: https://expo-proffdok.app
 
 ## Cordel-eksport
 
-Cordel-eksporten finnes ved aksepterte/aktiverte tilbud, prosjektets kontraktkort og plukklister. Tilbud lastes ned som én ZIP med jobbliste og AFG-spesifikasjon, og leses direkte inn i en tom Cordel-ordre i to importer. Faste filnavn i `P:\Expo ProffDok` gjør at importdefinisjoner kan gjenbrukes. A–Å-veiledningen ligger under **Hjelp → Eksport av tilbud til Cordel**. Se [Cordel-modulen](src/modules/cordel/README.md) for kildegrunnlag, validering og pris-/kostbegrensninger.
+Cordel-eksporten finnes ved aksepterte/aktiverte tilbud, prosjektets kontraktkort og plukklister. Tilbud lastes ned som én ZIP med jobbliste og AFG-spesifikasjon, og leses direkte inn i en tom Cordel-ordre. AFG alene brukes uten jobbliste; ved jobbliste brukes begge importer med jobbliste først. Faste filnavn i `P:\Expo ProffDok` gjør at importdefinisjoner kan gjenbrukes. A–Å-veiledningen ligger under **Hjelp → Eksport av tilbud til Cordel**. Se [Cordel-modulen](src/modules/cordel/README.md) for kildegrunnlag, validering og pris-/kostbegrensninger.
 
 ## Teknologi
 
@@ -178,3 +178,10 @@ Ikke skriv secrets, passord, service_role keys, ERP-prisfiler eller andre sensit
 6. Kontroller åpne GitHub issues, åpne PR-er og siste legitime `main`-SHA.
 7. Kontroller Production og Supabase-status før større arbeid.
 8. Endre minst mulig per runde og beskytt produksjon foran alt.
+
+
+### Cordel: importvalg og brukertilgang (05.10.2026)
+
+Samme eksport beholdes for våtromstilbud og generelle tilbud. AFG kan importeres alene uten jobbliste, med ønsket ordremetode. Ved bruk av jobbliste må jobblistefilen importeres først, med tilsvarende jobblisteoppsett i Cordel, deretter AFG uten sletting. 0 % materiellpåslag og øreavrunding kreves for å beholde akseptert pris også ved AFG alene. Den bekreftede Cordel-testen gjelder den kombinerte flyten; AFG alene med andre metoder må kontrolleres hos mottaker. Prisposter er fortsatt Rundsum; faktisk timebudsjett og kildekost følger ikke med.
+
+Systemadmin → bruker → **Eksport til Cordel** styrer tilbudseksport, plukklisteeksport og det spesifikke Hjelp-temaet samlet. Godkjent, aktiv Systemadmin har automatisk tilgang; andre brukere må få den eksplisitt. Firmaadmin kan ikke tildele den. Grantet bindes til brukerens firma; firmabytte krever ny tildeling. Eksisterende datatilgang og pristilganger gjelder i tillegg. `cordel_export_user_access` er RLS-beskyttet uten direkte klientrettigheter; avgrensede RPC-er leser egen tilgang og lar kun Systemadmin administrere. UI feiler lukket og sjekker tilgang på nytt før nedlasting.
