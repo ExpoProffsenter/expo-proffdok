@@ -17,6 +17,6 @@
 
 ## Demo og neste handling
 
-- Miljømål: BEGGE. Kontrollert main → demo-synk gjenstår. Demo-overlay, Sandbox-binding og eksisterende Golden Demo-data skal bevares.
-- Neste: synkroniser main til demo, oppdater kontrollsidens baseline og verifiser Sandbox-build. Innlogget demo-preflight kreves før kurs/kundedemo.
+- Miljømål: BEGGE. Kontrollert main → demo-synk er utført i PR #209. Demo-overlay, Sandbox-binding og eksisterende Golden Demo-data er bevart. Full Sandbox-build er grønn.
+- Kontrollsidens baseline følger synkronisert main. Innlogget demo-preflight er ikke kjørt i den nye skynettleseren; kjør Kjør preflight før kurs/kundedemo. Ingen ny Kenneth-test kreves for samme Cordel-funksjonskode.
 - Ingen branches eller data er slettet. Behold main og permanent demo; gammel feature-branch kan ryddes etter Kenneths bekreftelse.
