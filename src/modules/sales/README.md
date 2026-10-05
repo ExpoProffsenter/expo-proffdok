@@ -267,3 +267,11 @@ Ved Sales-endringer skal minst følgende verifiseres:
 Én ZIP inneholder `ProffDok_Cordel_Jobbliste.txt` og `ProffDok_Cordel_Ordre.AFG`. Den bekreftede Cordel-flyten er jobbliste først, AFG etterpå på samme tomme ordre uten sletting. Jobber nummereres fra 1. Prekalkulerte Rundsum-priser unngår Cordels time-/pakkeoppslag. 0 % materiellpåslag og øreavrunding kreves; reell kost, timebudsjett og fortjeneste overføres ikke. AFG alene oppretter ikke jobbregisteret.
 
 Plukklisten bruker én prisfri ASCII-fil med NR, Mengde og Fagområde/leverandør. Cordel henter egne priser. Ordrenummeret i ProffDok er en brukerrettet påminnelse, ikke automatisk ruting. Hjelp-temaet **Eksport av tilbud til Cordel** beskriver oppsett, faste P:-filer, importene, kontroller og feilsøking med originale TEST-bilder.
+
+## Kundeprofiler og mva.-visning
+
+Firmakunderegisteret er frivillig, og kundeinformasjon kopieres ved eksplisitt valg i SalesRequestForm. Egen Lagre kunde-knapp skriver registeret; vanlig skjema-/tilbudslagring lagrer ikke kunden automatisk. Begge tilbudstyper har Vis priser eks. mva., av som standard. `offerShowPricesExVat` i kladden mappes til terms snapshot ved publisering; metadata styrer kundelenke, opsjoner/enhetspris, akseptvisning og PDF. Totalsummer viser også avgift og inkl.-total. Beregnet intern sum, kundens aksept og Cordel-eksport endres ikke av visningsvalget.
+
+Generelt tilbud: Prisvisning til kunden ligger øverst i aktive SalesStoreOfferBuilderGrouped. Valget følger lokal kundetilbud-forhåndsvisning og grunnsumfeltet, uten å konvertere de lagrede prislinjene.
+
+Kunderegister: velg kunde i nedtrekksmenyen eller søk. Lagring ligger i egen ramme nederst før opprett tilbud og må velges aktivt. Prisvisningsteksten presiserer bedriftskunder.

@@ -1726,6 +1726,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
       offerCustomerSupplied: cleanText(offerForm.customerSupplied),
       offerTerms: cleanText(offerForm.terms),
       offerPaymentTerms: customFieldValue(offerForm.paymentTerms).trim(),
+      offerShowPricesExVat: offerForm.showPricesExVat === true,
       offerValidityDays: customFieldValue(offerForm.validityDays).trim(),
       offerTotal: getOfferTotal(previewLines),
       offerVersions: [],
@@ -2022,6 +2023,14 @@ export default function SalesStoreOfferBuilderGrouped(props) {
               }
             }}
           >
+            <section className="store-builder-section">
+              <h2>Prisvisning til kunden</h2>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
+                <input type="checkbox" style={{ width: 20, height: 20, minWidth: 20, padding: 0, margin: 0, flexShrink: 0 }} checked={offerForm.showPricesExVat === true} onChange={event => updateOfferForm("showPricesExVat", event.target.checked)} />
+                <span>Vis priser eks. mva.</span>
+              </label>
+              <p>Eks. mva. brukes vanligvis for bedriftskunder. Nye tilbud starter inkl. mva. Valget gjelder forhåndsvisning, kundelenke og PDF. Mva. og totalsum inkl. mva. vises fortsatt.</p>
+            </section>
             <StoreBrandSelector
               brandKey={currentBrand.key}
               signatureName={signatureName}
@@ -2524,8 +2533,8 @@ export default function SalesStoreOfferBuilderGrouped(props) {
             <div className="store-summary">
               <div className="store-summary-price">
                 <span>Grunnsum varer + montering</span>
-                <strong>{formatNok(baseGrossTotal)} inkl. mva.</strong>
-                <small>{formatNok(netFromGross(baseGrossTotal))} eks. mva.</small>
+                <strong>{formatNok(offerForm.showPricesExVat ? netFromGross(baseGrossTotal) : baseGrossTotal)} {offerForm.showPricesExVat ? "eks. mva." : "inkl. mva."}</strong>
+                <small>{formatNok(offerForm.showPricesExVat ? baseGrossTotal : netFromGross(baseGrossTotal))} {offerForm.showPricesExVat ? "inkl. mva." : "eks. mva."}</small>
                 <small>Opsjoner kommer i tillegg eller erstatter grunnpakken.</small>
               </div>
               <div className="store-summary-actions">

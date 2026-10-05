@@ -1375,6 +1375,10 @@ export default function SalesOfferBuilder({
               </label>
 
               <label className="sales-field sales-field-full">
+                <span><input type="checkbox" checked={offerForm.showPricesExVat === true} onChange={event => updateOfferForm("showPricesExVat", event.target.checked)} /> Vis priser eks. mva.</span>
+                <small>Brukes vanligvis for bedriftskunder. Valget gjelder kundelenke og tilbuds-PDF. Mva. beregnes fortsatt og vises i totalsummen. Nye tilbud starter inkl. mva.</small>
+              </label>
+              <label className="sales-field sales-field-full">
                 <span>Vilkår</span>
                 <textarea
                   value={offerForm.terms}

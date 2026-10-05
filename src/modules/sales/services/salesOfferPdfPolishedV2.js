@@ -1,3 +1,4 @@
+import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 37D2 / FASE 37D1 / FASE 31C / FASE 39B.2C
 // Butikktilbud bruker versjonslåst valgt logo og saksbehandlersignatur i PDF.
 // Butikkalternativer viser faktisk alternativpris, ikke intern prisdifferanse som
@@ -51,10 +52,10 @@ function optionType(option={}, lines=[]) {
   return getOfferTotal([option])<0 ? "Fradrag / prisreduksjon" : "Tillegg / oppgradering";
 }
 
-function qty(item={}) {
+function qty(item={}, multiplier=1.25) {
   if(isStoreSectionLine(item) || storeAlt(item)) return "";
   if(!hasOfferQuantityDetails(item)) return "";
-  return `${formatOfferQuantity(item)} x ${formatNok(getOfferUnitPrice(item)*1.25)} pr. enhet`;
+  return `${formatOfferQuantity(item)} x ${formatNok(getOfferUnitPrice(item)*multiplier)} pr. enhet`;
 }
 
 function subheading(text="") {
@@ -68,6 +69,8 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
   const JsPDF=module.jsPDF||module.default?.jsPDF; if(!JsPDF) throw new Error("PDF-verktøyet kunne ikke lastes.");
   const pdf=new JsPDF({unit:"mm",format:"a4"}); let y=18; let section=0;
 
+  const vat=offerVatPresentation(selectedRequest);
+  const quantity = item => qty(item, vat.multiplier);
   const storeMeta=getStoreOfferMeta(selectedRequest.offerLines||[]);
   const isStoreOffer=Boolean(storeMeta?.__storeOfferMeta);
   const signatureName=clean(storeMeta?.signatureName||"");
@@ -128,9 +131,9 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
 
   const measureLine=(line)=>{
     if(isStoreSectionLine(line)) return clean(line.storeTextBody)?18:14;
-    const qt=qty(line); const width=qt?96:102; font(8.7,"bold",C.ink); const tl=pdf.splitTextToSize(lineTitle(line),width); font(7.4,"normal",C.muted); const ql=qt?pdf.splitTextToSize(qt,width):[]; return Math.max(12,5+tl.length*4.2+ql.length*3.8);
+    const qt=quantity(line); const width=qt?96:102; font(8.7,"bold",C.ink); const tl=pdf.splitTextToSize(lineTitle(line),width); font(7.4,"normal",C.muted); const ql=qt?pdf.splitTextToSize(qt,width):[]; return Math.max(12,5+tl.length*4.2+ql.length*3.8);
   };
-  const measureOption=(o)=>{ font(9,"bold",C.ink); const tl=pdf.splitTextToSize(clean(o.title)||(isStoreOffer?"Valg":"Opsjon"),108); font(7.6,"normal",C.text); const dl=clean(o.description)?pdf.splitTextToSize(clean(o.description),108):[]; const ql=qty(o)?pdf.splitTextToSize(qty(o),108):[]; return 15+tl.length*4.2+dl.length*3.8+ql.length*3.8; };
+  const measureOption=(o)=>{ font(9,"bold",C.ink); const tl=pdf.splitTextToSize(clean(o.title)||(isStoreOffer?"Valg":"Opsjon"),108); font(7.6,"normal",C.text); const dl=clean(o.description)?pdf.splitTextToSize(clean(o.description),108):[]; const ql=quantity(o)?pdf.splitTextToSize(quantity(o),108):[]; return 15+tl.length*4.2+dl.length*3.8+ql.length*3.8; };
 
   const mainHeader=(g,gi)=>{
     const next=g.lines.length?measureLine(g.lines[0]):g.options.length?8+measureOption(g.options[0]):12; ensure(19+Math.min(next,34));
@@ -145,7 +148,7 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
     } else {
       const groupTitle=clean(g.title).toLowerCase();
       const sumLabel=isStoreOffer?(groupTitle.includes("montering")?"Sum montering":groupTitle.includes("varer")?"Sum leveranse":"Sum"):"Sum hovedpost";
-      font(7.2,"bold",C.muted);pdf.text(sumLabel,P.r-4,y+5.5,{align:"right"});font(11.3,"bold",C.ink);pdf.text(formatNok(getOfferTotal(pricedLines)*1.25),P.r-4,y+11,{align:"right"});font(6.9,"normal",C.muted);pdf.text("inkl. mva.",P.r-4,y+14.3,{align:"right"});
+      font(7.2,"bold",C.muted);pdf.text(sumLabel,P.r-4,y+5.5,{align:"right"});font(11.3,"bold",C.ink);pdf.text(formatNok(getOfferTotal(pricedLines)*vat.multiplier),P.r-4,y+11,{align:"right"});font(6.9,"normal",C.muted);pdf.text(vat.label,P.r-4,y+14.3,{align:"right"});
     }
     y+=19;
   };
@@ -165,17 +168,17 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
   };
 
   const lineRow=(line,gi,li)=>{
-    const qt=qty(line), price=formatNok(getOfferTotal([line])*1.25), width=qt?96:102; font(8.7,"bold",C.ink); const tl=pdf.splitTextToSize(lineTitle(line),width); font(7.4,"normal",C.muted); const ql=qt?pdf.splitTextToSize(qt,width):[]; const h=Math.max(12,5+tl.length*4.2+ql.length*3.8); ensure(h+2);
+    const qt=quantity(line), price=formatNok(getOfferTotal([line])*vat.multiplier), width=qt?96:102; font(8.7,"bold",C.ink); const tl=pdf.splitTextToSize(lineTitle(line),width); font(7.4,"normal",C.muted); const ql=qt?pdf.splitTextToSize(qt,width):[]; const h=Math.max(12,5+tl.length*4.2+ql.length*3.8); ensure(h+2);
     const top=y; pdf.setFillColor(...C.white); pdf.setDrawColor(...C.line); pdf.roundedRect(P.l,y,W,h,1.8,1.8,"FD"); font(8.2,"bold",C.dark); pdf.text(`${String(gi+1).padStart(2,"0")}.${li+1}`,P.l+4,y+6.5);
     let ty=y+6.5; font(8.7,"bold",C.ink); tl.forEach(r=>{pdf.text(r,P.l+18,ty);ty+=4.2;}); if(ql.length){font(7.4,"normal",C.muted); ql.forEach(r=>{pdf.text(r,P.l+18,ty);ty+=3.8;});}
-    font(10,"bold",C.ink); pdf.text(price,P.r-4,top+7.2,{align:"right"}); font(6.8,"normal",C.muted); pdf.text("inkl. mva.",P.r-4,top+10.5,{align:"right"}); y+=h+2;
+    font(10,"bold",C.ink); pdf.text(price,P.r-4,top+7.2,{align:"right"}); font(6.8,"normal",C.muted); pdf.text(vat.label,P.r-4,top+10.5,{align:"right"}); y+=h+2;
   };
 
   const optionCard=(o,gLines)=>{
-    const titleText=clean(o.title)||(isStoreOffer?"Valg":"Opsjon"), desc=clean(o.description), q=qty(o), type=optionType(o,gLines);
+    const titleText=clean(o.title)||(isStoreOffer?"Valg":"Opsjon"), desc=clean(o.description), q=quantity(o), type=optionType(o,gLines);
     const isStoreAlternative=isStoreOffer&&storeAlt(o);
-    const deltaInclVat=getOfferTotal([o])*1.25;
-    const alternativePrice=Number(String(o?.storeAlternativePackageTotalInclVat??"").trim()||String(o?.storeAlternativeItemTotalInclVat??"").trim());
+    const deltaInclVat=getOfferTotal([o])*vat.multiplier;
+    const alternativePrice=vat.fromIncl(String(o?.storeAlternativePackageTotalInclVat??"").trim()||String(o?.storeAlternativeItemTotalInclVat??"").trim());
     const displayedAmount=isStoreAlternative&&Number.isFinite(alternativePrice)?alternativePrice:deltaInclVat;
     const sign=!isStoreAlternative&&displayedAmount>0?"+":!isStoreAlternative&&displayedAmount<0?"-":"";
     const price=isStoreAlternative?formatNok(displayedAmount):displayedAmount===0?"Ingen prisendring":`${sign} ${formatNok(Math.abs(displayedAmount))}`;
@@ -183,8 +186,8 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
     pdf.setFillColor(...C.panel); pdf.setDrawColor(...C.line); pdf.roundedRect(P.l+5,y,W-5,h,2,2,"FD"); pdf.setFillColor(...C.soft); pdf.roundedRect(P.l+9,y+4,50,5.5,2.5,2.5,"F"); font(6.5,"bold",C.dark); pdf.text(type.toUpperCase().slice(0,44),P.l+11,y+7.7);
     let ty=y+15; font(9,"bold",C.ink); tl.forEach(r=>{pdf.text(r,P.l+10,ty);ty+=4.2;}); if(ql.length){font(7.5,"normal",C.muted); ql.forEach(r=>{pdf.text(r,P.l+10,ty);ty+=3.8;});} if(dl.length){ty+=.5;font(7.8,"normal",C.text);dl.forEach(r=>{pdf.text(r,P.l+10,ty);ty+=3.8;});}
     font(9.8,"bold",C.ink); pdf.text(price,P.r-4,y+17,{align:"right"});
-    if(isStoreAlternative){font(6.8,"normal",C.muted);pdf.text("alternativpris inkl. mva.",P.r-4,y+20.3,{align:"right"});}
-    else if(displayedAmount!==0){font(6.8,"normal",C.muted);pdf.text("inkl. mva.",P.r-4,y+20.3,{align:"right"});}
+    if(isStoreAlternative){font(6.8,"normal",C.muted);pdf.text(`alternativpris ${vat.label}`,P.r-4,y+20.3,{align:"right"});}
+    else if(displayedAmount!==0){font(6.8,"normal",C.muted);pdf.text(vat.label,P.r-4,y+20.3,{align:"right"});}
     y+=h+2;
   };
 
@@ -202,7 +205,7 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
   if(clean(included)||clean(excluded)||clean(supplied)){sectionTitle("Leveranseomfang");textCard("Dette er inkludert",included);textCard("Dette er ikke inkludert",excluded);textCard("Dette sørger kunden for",supplied);}
   sectionTitle(
     isStoreOffer?"Leveranse og priser":"Arbeider og priser",
-    isStoreOffer?"Alle priser er inkl. mva. Alternativer og tillegg inngår først når kunden velger dem.":"Alle priser er inkl. mva. Opsjoner inngår først når kunden velger dem."
+    isStoreOffer?`Alle priser er ${vat.label} Alternativer og tillegg inngår først når kunden velger dem.`:`Alle priser er ${vat.label} Opsjoner inngår først når kunden velger dem.`
   );
   groups.forEach((g,gi)=>{
     mainHeader(g,gi);
@@ -214,7 +217,8 @@ export async function createPublishedOfferPdfPolishedV2({ selectedRequest }) {
     if(g.options.length){ensure(8+Math.min(measureOption(g.options[0]),34));font(8.5,"bold",C.ink);pdf.text(isStoreOffer?"Alternativer og tillegg":"Opsjoner",P.l+5,y+5);y+=8;g.options.forEach(o=>optionCard(o,g.lines));}
     y+=4;
   });
-  ensure(28);pdf.setFillColor(...C.soft);pdf.setDrawColor(...C.teal);pdf.roundedRect(P.l,y,W,23,3,3,"FD");font(8.5,"bold",C.dark);pdf.text("TILBUDSSUM INKL. MVA.",P.l+6,y+8);font(17,"bold",C.ink);pdf.text(formatNok(total*1.25),P.r-6,y+11.5,{align:"right"});if(options.length){font(7.2,"normal",C.muted);pdf.text(isStoreOffer?"Før valg av alternativer og tillegg":"Før valg av opsjoner",P.l+6,y+15.5);pdf.text(isStoreOffer?"Valg oppdaterer totalsummen automatisk.":"Opsjoner legges til eller trekkes fra når kunden velger dem.",P.l+6,y+19.5);}y+=29;
+  ensure(28);pdf.setFillColor(...C.soft);pdf.setDrawColor(...C.teal);pdf.roundedRect(P.l,y,W,23,3,3,"FD");font(8.5,"bold",C.dark);pdf.text(`TILBUDSSUM ${vat.label.toUpperCase()}`,P.l+6,y+8);font(17,"bold",C.ink);pdf.text(formatNok(total*vat.multiplier),P.r-6,y+11.5,{align:"right"});if(options.length){font(7.2,"normal",C.muted);pdf.text(isStoreOffer?"Før valg av alternativer og tillegg":"Før valg av opsjoner",P.l+6,y+15.5);pdf.text(isStoreOffer?"Valg oppdaterer totalsummen automatisk.":"Opsjoner legges til eller trekkes fra når kunden velger dem.",P.l+6,y+19.5);}y+=29;
+  if(vat.exVat){ensure(12);font(8,"normal",C.text);pdf.text(`Mva. ${formatNok(total*0.25)} · Totalt inkl. mva. ${formatNok(total*1.25)}`,P.l,y);y+=10;}
   if(clean(offerTerms)||clean(payment)){sectionTitle("Vilkår og betaling");textCard("Vilkår",offerTerms);textCard("Betalingsbetingelser",payment);}
   if(signatureName){ensure(24);pdf.setDrawColor(...C.teal);pdf.line(P.l,y,P.l+28,y);y+=6;font(8.6,"normal",C.text);pdf.text("Med vennlig hilsen",P.l,y);y+=5;font(10.2,"bold",C.ink);pdf.text(signatureName,P.l,y);y+=10;}
   ensure(15);pdf.setDrawColor(...C.line);pdf.line(P.l,y,P.r,y);y+=6;font(7.4,"normal",C.muted);pdf.text("Dokumentet er generert fra publisert tilbudsversjon i Expo ProffDok.",P.l,y);if(company.name)pdf.text(company.name,P.r,y,{align:"right"});

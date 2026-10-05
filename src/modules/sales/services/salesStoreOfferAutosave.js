@@ -84,6 +84,7 @@ export function buildStoreOfferDraftRequest(selectedRequest = {}, offerForm = {}
     offerCustomerSupplied: String(prunedForm?.customerSupplied || ""),
     offerTerms: String(prunedForm?.terms || ""),
     offerPaymentTerms: String(prunedForm?.paymentTerms || ""),
+    offerShowPricesExVat: prunedForm.showPricesExVat === true,
     offerValidityDays: String(prunedForm?.validityDays || ""),
     offerTotal: getOfferTotal(lines),
     offerDraftSavedAt: savedAt,

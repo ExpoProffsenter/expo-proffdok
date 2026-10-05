@@ -1,3 +1,4 @@
+import { offerVatPresentation } from "../utils/salesOfferVatPresentation.js";
 // Expo ProffDok – FASE 31B
 // Kundetilbudets hovedposter sorteres etter fast arbeidsgang uavhengig av
 // rekkefølgen postene ble opprettet i. Egne hovedposter legges etter standardpostene.
@@ -104,13 +105,13 @@ function isAlternativeOption(option = {}) {
   return option?.optionType === "alternative";
 }
 
-function getOptionPriceChangeText(option = {}) {
-  const amountInclVat = getOfferTotal([option]) * 1.25;
+function getOptionPriceChangeText(option = {}, vat) {
+  const amountInclVat = getOfferTotal([option]) * (vat?.multiplier || 1.25);
 
   if (amountInclVat === 0) return "Ingen prisendring";
 
   const prefix = amountInclVat > 0 ? "+" : "−";
-  return `${prefix} ${formatNok(Math.abs(amountInclVat))} inkl. mva.`;
+  return `${prefix} ${formatNok(Math.abs(amountInclVat))} ${vat?.label || "inkl. mva."}`;
 }
 
 function getOptionAmountInclVat(option = {}) {
@@ -249,6 +250,7 @@ export default function SalesCustomerView({
         selectedRequest.companyLogoUrl || companyProfile.logoUrl || "",
     };
     const activeOfferVersion = getActiveOfferVersion(selectedRequest);
+    const vat = offerVatPresentation(selectedRequest);
     const offerTotal = activeOfferVersion?.total || selectedRequest.offerTotal || 0;
     const offerTitle = activeOfferVersion?.title || selectedRequest.offerTitle;
     const offerIntro = activeOfferVersion?.intro || selectedRequest.offerIntro;
@@ -281,7 +283,7 @@ export default function SalesCustomerView({
     const offerGroups = buildCustomerOfferGroups(offerLines, offerOptions);
 
     return (
-      <div className="sales-app sales-customer-offer-app">
+      <div className="sales-app sales-customer-offer-app" data-offer-vat-label={vat.label}>
         <div className="sales-shell sales-customer-shell">
           <header className="sales-header sales-customer-header">
             {!selectedRequest.isPublicOffer ? (
@@ -410,7 +412,7 @@ export default function SalesCustomerView({
                     <h2>Arbeider og priser</h2>
                   </div>
                   <span className="sales-customer-section-note">
-                    Alle priser er oppgitt inkl. mva. En opsjon kan være et tillegg
+                    Alle priser er oppgitt {vat.label} En opsjon kan være et tillegg
                     til grunnprisen eller et alternativ som erstatter en konkret
                     underpost. Valget oppdaterer totalsummen automatisk.
                   </span>
@@ -445,9 +447,9 @@ export default function SalesCustomerView({
                                 : "Sum hovedpost"}
                             </span>
                             <strong>
-                              {formatNok(groupAcceptedTotal * 1.25)}
+                              {formatNok(groupAcceptedTotal * vat.multiplier)}
                             </strong>
-                            <small>inkl. mva.</small>
+                            <small>{vat.label}</small>
                           </div>
                         </div>
 
@@ -548,8 +550,8 @@ export default function SalesCustomerView({
                                     </strong>
                                   ) : (
                                     <strong className="sales-customer-line-price">
-                                      {formatNok(getOfferTotal([line]) * 1.25)}
-                                      <span>inkl. mva.</span>
+                                      {formatNok(getOfferTotal([line]) * vat.multiplier)}
+                                      <span>{vat.label}</span>
                                     </strong>
                                   )}
                                 </div>
@@ -675,7 +677,7 @@ export default function SalesCustomerView({
 
                                       <strong className="sales-customer-option-price">
                                         {getOptionPriceLabel(option)}:{" "}
-                                        {getOptionPriceChangeText(option)}
+                                        {getOptionPriceChangeText(option, vat)}
                                       </strong>
                                     </div>
                                   </label>
@@ -691,8 +693,8 @@ export default function SalesCustomerView({
 
                 <div className="sales-customer-total-card">
                   <div className="sales-customer-total-row">
-                    <span>Sum arbeider inkl. mva.</span>
-                    <strong>{formatNok(offerTotal * 1.25)}</strong>
+                    <span>Sum arbeider {vat.label}</span>
+                    <strong>{formatNok(offerTotal * vat.multiplier)}</strong>
                   </div>
                   {selectedOptions.length ? (
                     <div className="sales-customer-total-row sales-customer-total-muted">
@@ -703,14 +705,15 @@ export default function SalesCustomerView({
                           : `${
                               selectedOptionsTotal > 0 ? "+" : "−"
                             } ${formatNok(
-                              Math.abs(selectedOptionsTotal * 1.25)
+                              Math.abs(selectedOptionsTotal * vat.multiplier)
                             )}`}
                       </strong>
                     </div>
                   ) : null}
                   <div className="sales-customer-total-row sales-customer-total-grand">
-                    <span>Total inkl. mva.</span>
-                    <strong>{formatNok(acceptedTotal * 1.25)}</strong>
+                    <span>Total {vat.label}</span>
+                    <strong>{formatNok(acceptedTotal * vat.multiplier)}</strong>
+                    {vat.exVat && <small>Mva. {formatNok(acceptedTotal * 0.25)} · Inkl. mva. {formatNok(acceptedTotal * 1.25)}</small>}
                   </div>
                 </div>
               </article>
@@ -791,8 +794,9 @@ export default function SalesCustomerView({
 
                   <div className="sales-customer-accept-summary">
                     <div>
-                      <span>Total inkl. mva.</span>
-                      <strong>{formatNok(acceptedTotal * 1.25)}</strong>
+                      <span>Total {vat.label}</span>
+                      <strong>{formatNok(acceptedTotal * vat.multiplier)}</strong>
+                    {vat.exVat && <small>Mva. {formatNok(acceptedTotal * 0.25)} · Inkl. mva. {formatNok(acceptedTotal * 1.25)}</small>}
                     </div>
                     {selectedOptions.length ? (
                       <p>
@@ -823,7 +827,7 @@ export default function SalesCustomerView({
                                   )})`
                                 : ""}
                               : {getOptionPriceLabel(option)}{" "}
-                              {getOptionPriceChangeText(option)}
+                              {getOptionPriceChangeText(option, vat)}
                             </span>
                           );
                         })}
