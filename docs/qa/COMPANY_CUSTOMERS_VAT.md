@@ -18,3 +18,5 @@ Kort Preview-test:
 4. Åpne et eksisterende tilbud: tidligere prisvisning og innhold skal være bevart. Bytt nettleserfane og tilbake i editoren; samme kladd skal stå åpen.
 
 TEST OK kreves før merge, konkret Production OK før migrasjon/publisering til Production. Deretter main → demo og preflight.
+
+Preview-feedback 05.10 kl. 20:03: valget var lagt i eldre ubrukt generelt tilbudsbygger. Rettet i aktive grouped/catalog-routeren med egen Prisvisning til kunden-seksjon, flagg i kladdforhåndsvisning og totalsum som følger valget. Permanent React-render-test går gjennom faktisk SalesOfferBuilder-router med syntetisk avsenderprofil, begge modus og summary; ingen innloggings-/backendkall. Ny Preview må testes.

@@ -191,3 +191,5 @@ Systemadmin → bruker → **Eksport til Cordel** styrer tilbudseksport, plukkli
 Kundeinformasjon kan frivillig lagres i firmaets kunderegister fra prosjekt eller forespørsel/tilbud. Velg **Lagre i firmaets kunderegister** og deretter **Lagre kunde**; engangskunder trenger ikke lagres. Søk og velg faste kunder for å fylle kundedata på nytt. Kontroller prosjektadressen. Registeret er låst til innlogget arbeidsfirma på serveren.
 
 Begge tilbudstyper starter inkl. mva. **Vis priser eks. mva.** velges per tilbud i editoren og følger kundepreview, publisert kundelenke, akseptvisning og tilbuds-PDF. Valget fryses i tilbudsversjonen; eks. mva. er prisvisning, ikke avgiftsfritak. Mva. og total inkl. mva. vises ved totalsummen. Gamle versjoner uten flagget beholder inkl. mva.
+
+I Generelt tilbud velges prisvisningen i den aktive grupperte tilbudsbyggeren under «Prisvisning til kunden». Forhåndsvisning og editorens grunnsum følger valget.

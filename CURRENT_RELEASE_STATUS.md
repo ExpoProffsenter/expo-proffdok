@@ -23,3 +23,5 @@
 ## Pågående separat oppgave – kundeprofiler og eks. mva.
 
 Miljømål BEGGE. KJØR 05.10.2026 gjelder ny feature/Preview `feat-company-customers-vat` fra main 86e6036, ingen Production-godkjenning. Kunderegister deles i aktivt firma, lagring er frivillig/av som standard, gjenbruk i prosjekt og begge tilbudstyper. Visning eks. mva. velges per tilbud, av som standard, følger låst kundevisning/PDF. Scope: customer-modul/migrasjon, én kundedataflate i main, forespørselsskjema, tilbudsform/snapshot og pris-presentasjon, dokumentasjon/Hjelp. Ingen urelaterte UX-/recoveryendringer.
+
+Preview-feedback kl. 20:03: mva.-valg manglet i aktiv generell tilbudsbygger. Rettet i grouped/router-flyten, kladdforhåndsvisning og grunnsum. Ny permanent React-render-test beskytter faktisk router. Ny Preview krever fortsatt TEST OK og konkret Production OK.
