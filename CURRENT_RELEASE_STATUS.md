@@ -2,28 +2,20 @@
 
 ## Production
 
-- PR #208 er merget etter Kenneths eksisterende Production-godkjenning og TEST OK 05.10.2026 kl. 15:42 Europe/Oslo. Main funksjonscommit: 7acc8782decd2d3ca7c4b7b3154858de4840dabf.
-- Deployment dpl_5p8ou9Zxsbcr8BzLwNYYoDvTc1fz er READY, target=production, med riktig main-commit. App og Cordel-asset svarer HTTP 200. Build bekrefter bare Production Supabase. Ingen backend, RLS, data eller eksisterende tilgangs-/recoverylogikk er endret.
-- Ferdig: aksepterte/aktiverte tilbud og prosjektets kontraktkort har Last ned til Cordel. Én ZIP med jobbliste og AFG; direkte til samme tomme Cordel-ordre, jobbliste først. Plukklister har prisfri ASCII-eksport. Hjelp → Eksport av tilbud til Cordel har A–Å-flyt og seks TEST-bilder.
-- Cordel-metode krever 0 % materiellpåslag og øreavrunding. Reell innkjøpskost, timebudsjett og fortjenestefordeling overføres ikke.
-- PC-antall, serverlagrede plukklister, mobilskanning og tidligere recoveryvern er bevart.
+- PR #211 er merget etter Kenneths TEST OK kl. 16:29 og Production OK kl. 19:05 Europe/Oslo. Funksjonscommit: deaca065d37c6f51e4481898176e8987ca84fc6e.
+- Vercel dpl_ERi5YX2xU9NXegqT6nJzidre8fVo er READY, target=production, riktig SHA. expo-proffdok.app og arbeidsprofilasset svarer HTTP 200; asset bekrefter Production Supabase dqffxflaoyarbxyiyhop og ingen Sandbox-binding.
+- cordel_export_access-migrasjonen er anvendt i Production og tidligere scenario-testet i Sandbox med rollback. RLS aktiv, direkte klienttabelltilgang og anonym RPC stengt. Ingen brukertilgang er forhåndstildelt; aktiv Systemadmin har automatisk tilgang. Andre får Eksport til Cordel på brukerkortet i Systemadmin. Samme tilgang styrer tilbud/plukklisteeksport og det spesifikke Cordel-Hjelp-temaet.
+- Dagens ZIP/Rundsum beholdes. AFG kan importeres alene uten jobbliste. Ved jobbliste kreves jobblistefil først med tilsvarende Cordel-oppsett, deretter AFG uten sletting. 0 % materiellpåslag og øreavrunding beholder akseptert pris også ved AFG alene. Faktisk kildekost/timebudsjett/fortjeneste følger ikke med.
 
-## Siste QA
+## QA og avgrensning
 
-- Full critical-suite, eksakt 11-jobber/30-poster/402164,10-fixture, Core Safety, dokument- og scopekontroll er grønne.
-- Preview dpl_A2SyGWarJLz2vN28MxevgXjHNpuc er READY og bygget bare mot Sandbox. Branch-spesifikk EXPO_BACKEND_TARGET=sandbox gjelder kun Preview.
-- Kenneth har bekreftet TEST OK for nedlasting, Hjelp og relevante Preview-flater. Lokal nettleser-QA fra implementeringen kontrollerte ZIP, knapper, seks bilder og eksisterende Hjelp.
-- Production-verifisering omfatter riktig deployment, miljøbinding, HTTP og Cordel-asset. Innlogget Production-UI er ikke kontrollert i den nye skynettleseren, som ble blokkert under innlogging; ingen Production-testdata er skrevet.
+- Godkjent Preview: dpl_H6i4o4A48vAwTcvgSpPLAvFPE4FU, Sandbox-only, head b727b9d0a267b15ee9be5be4ea6c1a471470ab3a. Lokal og publisert tree identisk.
+- Full critical-suite, Vite-build, refresh-runtime-test, Core Safety og scope/docs guards grønne. Sandbox-scenarioer dekker tildeling/fjerning, vanlig bruker/Firmaadmin, firmascope, inaktiv/ikke godkjent/anonym og bevaring av prisrettigheter.
+- Innlogget Preview er godkjent av Kenneth. Innlogget Production-UI er ikke kontrollert i skynettleseren; tidligere innlogging var blokkert. Ingen Production-testdata eller brukertildelinger er skrevet.
+- Kundeprofiler og eks. mva.-visning fra brukerfeedback er egen, ikke implementert oppgave og inngår ikke i PR #211.
 
-## Demo og neste handling
+## Demo
 
-- Miljømål: BEGGE. Kontrollert main → demo-synk er utført i PR #209. Demo-overlay, Sandbox-binding og eksisterende Golden Demo-data er bevart. Full Sandbox-build er grønn.
-- Kontrollsidens baseline følger synkronisert main. Innlogget demo-preflight er ikke kjørt i den nye skynettleseren; kjør Kjør preflight før kurs/kundedemo. Ingen ny Kenneth-test kreves for samme Cordel-funksjonskode.
-- Ingen branches eller data er slettet. Behold main og permanent demo; gammel feature-branch kan ryddes etter Kenneths bekreftelse.
-
-
-## Ny avgrenset endring – Cordel importvalg og tilgang
-
-Miljømål: BEGGE. KJØR 05.10.2026 gjelder feature/Preview med Sandbox, ikke Production. Separat eksportformat er tatt ut av scope: dagens ZIP/Rundsum beholdes. Hjelp forklarer AFG alene og obligatorisk jobblisteimport/oppsett når jobbliste brukes. Egen Systemadmin-brukertilgang styrer eksport og Cordel-Hjelp. Ny migrasjon skal kun testes i Sandbox før Preview. Production krever relevant TEST OK og eksplisitt godkjenning av denne konkrete endringen.
-
-Sandbox-migrasjonen er testet, alle tilgangsscenarioer passerte med rollback. Full critical-suite og build grønne. Feature-gren: `feat-cordel-access-guide`. Innlogget Preview-test og ny Production-godkjenning gjenstår. Ingen nye Production-endringer er utført.
+- Miljømål: BEGGE. Kontrollert main → demo via PR #212, merge 35b51ff45cf058f55c581b396ab18884d5c655a6. Eksisterende overlay og Golden Demo-data beholdes. Lokal sammenslåing med Sandbox-build er grønn.
+- Sandbox-migrasjonen er allerede anvendt. Innlogget Golden Demo-preflight gjenstår; kjør Kjør preflight før kurs/kundedemo. Ikke forveksle grønn build med innlogget preflight.
+- Ingen branches er slettet. Behold main og permanent demo.
