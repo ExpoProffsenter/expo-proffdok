@@ -1,6 +1,6 @@
 import { useEffect,useId,useRef,useState } from 'react';
 import { ACK_STATEMENT,CHAPTERS,ROUTINE_CATALOG,TRADES,blankRoutine,currentVersionSnapshot,suggestedRoutines } from './kshmsCatalog.mjs';
-import { draftKey,persistDraft,readDraft } from './kshmsDraft.mjs';
+import { draftKey,persistDraft,readDraft,routineApprovalState,handbookProgress } from './kshmsDraft.mjs';
 import { kshmsRpc } from './kshmsAccess.js';
 import { publishManagedAccessChange } from '../access/moduleAccessClient.js';
 import { addLibraryRoutines } from './kshmsLibrary.mjs';
@@ -41,11 +41,11 @@ export default function KshmsModule({context}) {
  const publicationHeadingId=useId();
  const [reading,setReading]=useState(null),[checked,setChecked]=useState(false);
  const [findings,setFindings]=useState(''),[followUp,setFollowUp]=useState(''),[nextReview,setNextReview]=useState(''),[reviewChecked,setReviewChecked]=useState(false);
- const [selectedKeys,setSelectedKeys]=useState([]),[libraryFilter,setLibraryFilter]=useState('recommended'),[libraryPreview,setLibraryPreview]=useState(null),[libraryProgress,setLibraryProgress]=useState(null),[libraryFeedback,setLibraryFeedback]=useState(null);
- const requestScope=useRef(null),editorRef=useRef(null),libraryPreviewRef=useRef(null),[editorFocus,setEditorFocus]=useState(0);
+ const [selectedKeys,setSelectedKeys]=useState([]),[libraryFilter,setLibraryFilter]=useState('recommended'),[libraryPreview,setLibraryPreview]=useState(null),[libraryProgress,setLibraryProgress]=useState(null),[libraryFeedback,setLibraryFeedback]=useState(null),[libraryOpen,setLibraryOpen]=useState(false);
+ const requestScope=useRef(null),editorRef=useRef(null),libraryPreviewRef=useRef(null),firstView=useRef(false),flowRef=useRef(null),setupRef=useRef(null),libraryRef=useRef(null),followupRef=useRef(null),[editorFocus,setEditorFocus]=useState(0),[flowFocus,setFlowFocus]=useState(0),[libraryFocus,setLibraryFocus]=useState(0);
  const load = async()=>{const value=await kshmsRpc('kshms_get_state',{p_company_id:companyId});setData(value);return value;};
  useEffect(()=>{let active=true;const scope={active:true};requestScope.current=scope;setData(null);setError('');setBusy(false);setLibraryProgress(null);
-  kshmsRpc('kshms_get_state',{p_company_id:companyId}).then(value=>{if(active){setData(value);setSetup(value.settings||emptySetup);setCached(readDraft(window.localStorage,userId,companyId));setNextReview(value.settings?.next_review_on||new Date(Date.now()+360*86400000).toISOString().slice(0,10));}}).catch(e=>{if(active)setError(e.message)});
+  kshmsRpc('kshms_get_state',{p_company_id:companyId}).then(value=>{if(active){setData(value);setSetup(value.settings||emptySetup);if(!firstView.current){setScreen(value.context.manage?value.settings?'handbook':'setup':'reading');firstView.current=true;}setCached(readDraft(window.localStorage,userId,companyId));setNextReview(value.settings?.next_review_on||new Date(Date.now()+360*86400000).toISOString().slice(0,10));}}).catch(e=>{if(active)setError(e.message)});
   return()=>{active=false;scope.active=false};
  },[companyId,userId,context.manage,context.publish,context.administer]);
  useEffect(()=>{const warn=e=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
@@ -53,6 +53,8 @@ export default function KshmsModule({context}) {
  useEffect(()=>{if(libraryPreview&&libraryPreviewRef.current){libraryPreviewRef.current.focus();libraryPreviewRef.current.scrollIntoView({block:'start'});}},[libraryPreview]);
  useEffect(()=>{if(publicationFocus&&publicationRef.current){publicationRef.current.focus();publicationRef.current.scrollIntoView({block:'start'});}},[publicationFocus]);
  useEffect(()=>{if(overviewFocus&&overviewRef.current){overviewRef.current.focus();overviewRef.current.scrollIntoView({block:'start'});}},[overviewFocus]);
+ useEffect(()=>{if(flowFocus){const target=screen==='setup'?setupRef.current:screen==='followup'?followupRef.current:flowRef.current;target?.focus();target?.scrollIntoView({block:'start'});}},[flowFocus,screen]);
+ useEffect(()=>{if(libraryFocus){libraryRef.current?.focus();libraryRef.current?.scrollIntoView({block:'start'});}},[libraryFocus]);
  const run=async(action,payload,success='Lagret.')=>{
   setBusy(true);setError('');setNotice('');
   try{const result=await kshmsRpc('kshms_command',{p_company_id:companyId,p_action:action,p_payload:payload});const value=await load();if(action==='settings')setSetup(value.settings||emptySetup);setNotice(success);return result;}
@@ -69,10 +71,10 @@ export default function KshmsModule({context}) {
   setError('');setNotice('');setPublicationFeedback('');setPublicationFocus(previous=>previous+1);
  };
  const publishRoutine=async()=>{
-  if(busy||!publication||summary.trim().length<5)return;
+  if(busy||dirty||!publication||summary.trim().length<5)return;
   const routine=publication;
   const result=await run('publish',{id:routine.id,revision:routine.revision,change_summary:summary,requires_ack:data.versions.some(v=>v.routine_id===routine.id)?freshAck:true},'');
-  if(result?.id){setPublication(null);setPublicationFeedback(`«${routine.draft.title}» er godkjent og publisert som versjon ${result.number}. Åpne godkjenning på neste rutine når den er klar. Ansatte finner den publiserte rutinen i «Les og bekreft».`);setOverviewFocus(previous=>previous+1);}
+  if(result?.id){setPublication(null);setPublicationFeedback(`«${routine.draft.title}» er godkjent og publisert som versjon ${result.number}. Se neste steg over. Ansatte med KS/HMS-tilgang finner utgaven i «Les og bekreft».`);setFlowFocus(previous=>previous+1);}
  };
  const addSelected=async keys=>{
   if(busy)return;
@@ -87,6 +89,7 @@ export default function KshmsModule({context}) {
    const added=result.addedCount===1?'1 rutine er lagt inn':`${result.addedCount} rutiner er lagt inn`;
    const existing=result.skippedCount?` ${result.skippedCount} var allerede lagt til og er beholdt.`:'';
    setLibraryFeedback(result.error?{error:true,message:`${added} som utkast.${existing} De resterende valgene er beholdt. Prøv igjen. ${result.error.message}`}:{error:false,message:`${added} som utkast.${existing} Bruk «Rediger her» for å tilpasse hver rutine.`});
+   if(!result.error){setLibraryOpen(false);setFlowFocus(previous=>previous+1);}
   } catch(cause) {if(scope.active)setLibraryFeedback({error:true,message:cause.message});}
   finally {if(scope.active){setBusy(false);setLibraryProgress(null);}}
  };
@@ -97,11 +100,27 @@ export default function KshmsModule({context}) {
  };
  const save=async e=>{e.preventDefault();let draft;
   try{draft={...editor.draft,references:validateReferences(sources)}}catch(err){setError(err.message);return;}
-  const result=await run('save',{id:editor.id,revision:editor.revision,draft},'Utkastet er lagret. Neste steg: Firmaadmin eller KS/HMS-ansvarlig godkjenner rutinen før ansatte får den.');
-  if(result?.id){window.localStorage.removeItem(draftKey(userId,companyId));setCached(null);setDirty(false);setEditor(null);}
+  const result=await run('save',{id:editor.id,revision:editor.revision,draft},'');
+  if(result?.id){window.localStorage.removeItem(draftKey(userId,companyId));setCached(null);setDirty(false);setEditor(null);const approval=routineApprovalState({...result,draft},data.versions);if(data.context.publish&&approval.status!=='approved')choosePublication({...result,draft});else{setNotice(approval.status==='approved'?'Rutinen er lagret uten nye innholdsendringer. Den godkjente utgaven gjelder fortsatt.':'Utkastet er lagret og må godkjennes før ansatte får det.');setFlowFocus(previous=>previous+1);}}
+ };
+ const saveSetup=async e=>{
+  e.preventDefault();if(busy||!setup.responsible_user_id||!setup.trades.length)return;
+  const member=data.members.find(member=>member.id===setup.responsible_user_id);
+  if(!member){setError('Velg en aktiv medarbeider i dette firmaet.');return;}
+  const needsAccess=member.workspace_role!=='firmaadmin'&&!(member.enabled&&member.role==='responsible');
+  if(needsAccess&&!data.context.administer){setError('Firmaadmin må gi personen KS/HMS-ansvarlig tilgang.');return;}
+  const scope=requestScope.current;
+  if(!scope?.active)return;
+  if(needsAccess){const granted=await run('access',{user_id:member.id,role:'responsible',enabled:true},'');if(!granted||!scope?.active)return;}
+  const result=await run('settings',setup,'Oppstart er lagret. Nå kan du velge og godkjenne firmaets rutiner.');
+  if(!scope?.active)return;
+  if(result){setScreen('handbook');setFlowFocus(previous=>previous+1);if(needsAccess)publishManagedAccessChange();}
+  else if(needsAccess)setError(previous=>`Personen har fått KS/HMS-ansvarlig tilgang, men oppstart kunne ikke bekreftes. Valgene dine er beholdt. Kontroller feilen under før du prøver igjen. ${previous}`);
  };
  if(!data)return <section className="ks-module"><h2>KS/HMS</h2>{error?<p role="alert">{error}</p>:<p role="status">Henter firmaets håndbok …</p>}<button type="button" className="secondary" onClick={()=>load().catch(e=>setError(e.message))}>Prøv igjen</button></section>;
  const canManage=data.context.manage,canPublish=data.context.publish,canAdmin=data.context.administer===true;
+ const progress=canManage?handbookProgress(data):null;
+ const nextStep=()=>{if(busy||dirty)return;if(progress.step==='setup'){setScreen('setup');setFlowFocus(previous=>previous+1);}else if(progress.step==='approval'){setScreen('handbook');choosePublication(progress.waiting[0]);}else if(progress.step==='selection'){setScreen('handbook');setLibraryOpen(true);setLibraryFocus(previous=>previous+1);}else{setScreen('followup');setFlowFocus(previous=>previous+1);}};
  const pending=data.assignments.filter(a=>a.user_id===userId && !data.acknowledgments.some(k=>k.version_id===a.version_id && k.user_id===userId) && data.versions.some(v=>v.id===a.version_id && (v.requires_ack||v.number===1)));
  const latest=data.routines.filter(r=>!r.archived).map(r=>data.versions.find(v=>v.routine_id===r.id)).filter(Boolean);
  const eligibleMembers=data.members.filter(m=>m.enabled||m.workspace_role==='firmaadmin');
@@ -113,16 +132,18 @@ export default function KshmsModule({context}) {
   <nav className="ks-tabs" aria-label="KS/HMS visning">{[['handbook','Håndbok'],['reading',`Les og bekreft (${pending.length})`],...(canManage?[['setup','Oppstart og tilgang'],['followup','Oppfølging og revisjon']]:[])].map(([key,label])=><button type="button" key={key} className={screen===key?'active':'secondary'} aria-pressed={screen===key} onClick={()=>setScreen(key)}>{label}</button>)}</nav>
   {error&&!(screen==='handbook'&&publication)&&<p role="alert" className="ks-error">{error}</p>}{notice && <p role="status" className="ks-notice">{notice}</p>}
   {screen==='setup'&&canManage&&<>
-   <div className="ks-card"><h3>Her forteller du hva firmaet gjør</h3><p>Velg fag og skriv kort om arbeidet deres. Da kan ProffDok foreslå rutiner som passer. Du kan velge flere fag. Stikkord eller korte setninger er nok.</p>
-    <form onSubmit={async e=>{e.preventDefault();await run('settings',setup,'Oppstart er lagret. Neste steg: Åpne «Håndbok» og velg rutiner.')}}>
+   <div className="ks-card ks-flow-target" ref={setupRef} tabIndex={-1}><h3>1. Velg KS/HMS-ansvarlig</h3><p>Start med personen som skal følge opp håndboken og signere den årlige kontrollen. Firmaadmin velger en aktiv bruker i firmaet og kan velge seg selv.</p>
+    <form onSubmit={saveSetup}>
+     <label className="ks-field"><span>Utpekt KS/HMS-ansvarlig (firmaadmin velger)</span><select required disabled={!canAdmin||busy} value={setup.responsible_user_id||''} onChange={e=>setSetup({...setup,responsible_user_id:e.target.value})}><option value="">Velg ansvarlig</option>{data.members.map(m=><option key={m.id} value={m.id}>{m.email}{m.id===userId?' (deg)':''}{m.workspace_role==='firmaadmin'?' · Firmaadmin':''}</option>)}</select></label>
+     <p className="ks-field-hint">{canAdmin?'Når du lagrer, får den valgte personen KS/HMS-ansvarlig tilgang. Personen kan bygge og godkjenne rutiner. Firmaadmin beholder sitt ansvar og styrer ansattes tilgang.':'Firmaadmin velger ansvarlig og styrer tilgang. Du kan tilpasse fag og beskrivelsen av arbeidet. Be firmaadmin fullføre valget hvis ansvarlig mangler.'}</p>
+     <aside className="ks-role-help"><strong>KS/HMS-ansvarlig og verneombud er to ulike roller</strong><p>ProffDok ber firmaet velge en KS/HMS-ansvarlig, også i små firmaer. Fra fem ansatte skal virksomheten ha verneombud. Ved én til fire ansatte kan arbeidsgiver og ansatte avtale en annen ordning skriftlig. Risiko kan likevel gjøre verneombud nødvendig. Verneombudet velges av arbeidstakerne. Involver verneombudet i HMS-arbeidet. Dette valget i appen er ikke et verneombudsvalg.</p><a href="https://www.arbeidstilsynet.no/hms/roller-i-hms-arbeidet/verneombud/" target="_blank" rel="noreferrer">Arbeidstilsynet: regler om verneombud</a><span className="ks-field-hint"> · kilde kontrollert 2026-10-06</span></aside>
+     <h3>2. Fortell hva firmaet gjør</h3><p>Velg minst ett fag. Du kan velge flere. I de tre tekstfeltene kan du skrive stikkord om arbeidet. De hjelper ProffDok å foreslå rutiner og kan fylles ut senere.</p>
      <fieldset><legend>Fag</legend><div className="ks-options">{Object.entries(TRADES).map(([key,label])=><label key={key}><input type="checkbox" checked={setup.trades.includes(key)} onChange={e=>setSetup({...setup,trades:e.target.checked?[...setup.trades,key]:setup.trades.filter(t=>t!==key)})}/>{label}</label>)}</div></fieldset>
      <Field label="Aktiviteter – hva gjør dere?" hint="Skriv hvilke jobber dere gjør. Eksempel for VVS: Vi monterer rør og varmeutstyr. Vi gjør service og jobber i våtrom og ved oppussing." value={setup.activities} multiline onChange={v=>setSetup({...setup,activities:v})}/>
      <Field label="Ansvar – hvem følger opp arbeidet?" hint="Skriv hva firmaet har ansvar for, og hvem som følger opp. Eksempel: Prosjektleder følger opp våre ansatte og andre firmaer vi bruker. Ta også med ansvar for tegninger og beregninger (prosjektering), hvis dere har det." value={setup.responsibilities} multiline onChange={v=>setSetup({...setup,responsibilities:v})}/>
      <Field label="Risiko – hva kan gå galt?" hint="Skriv farer dere møter på jobb. Eksempel for VVS: Lekkasjer, varmt arbeid, tunge løft, støv og kjemikalier. Ta også med hensyn til folk som bor i huset mens dere jobber." value={setup.risks} multiline onChange={v=>setSetup({...setup,risks:v})}/>
-     <label className="ks-field"><span>Utpekt KS/HMS-ansvarlig (firmaadmin velger)</span><select required disabled={!canAdmin||busy} value={setup.responsible_user_id||''} onChange={e=>setSetup({...setup,responsible_user_id:e.target.value})}><option value="">Velg ansvarlig</option>{data.members.filter(m=>m.workspace_role==='firmaadmin'||(m.enabled&&m.role==='responsible')).map(m=><option key={m.id} value={m.id}>{m.email}{m.id===userId?' (deg)':''}{m.workspace_role==='firmaadmin'?' · Firmaadmin':''}</option>)}</select></label>
-     <p className="ks-field-hint">{canAdmin?'KS/HMS-ansvarlig følger opp håndboken og signerer når den er kontrollert. Firmaadmin kan velge seg selv. For å velge en annen ansatt, gi personen tilgang som KS/HMS-ansvarlig i listen under. Lagre oppstart når valget er klart.':'Firmaadmin velger hvem som signerer kontrollen av håndboken. Du kan endre fag og beskrivelsen av firmaets arbeid og lagre oppstart. Be firmaadmin om hjelp hvis ansvarlig eller ansattes tilgang skal endres.'}</p>
-     <button disabled={busy}>Lagre oppstart</button>
-     <p className="ks-next-step">Neste steg: Åpne «Håndbok» og velg rutinene firmaet trenger.</p>
+     <p className="ks-next-step" role="status">{!setup.responsible_user_id?'Velg ansvarlig først.':!setup.trades.length?'Velg minst ett fag før du går videre.':'Neste steg: Velg og tilpass rutinene i håndboken.'}</p>
+     <button disabled={busy||!setup.responsible_user_id||!setup.trades.length}>Lagre og gå videre</button>
     </form>
    </div>
    {canAdmin&&<div className="ks-card"><h3>Her velger du hvem som får bruke KS/HMS</h3><p>Velg tilgang ved siden av navnet til hver ansatt. «Ansatt» kan lese og bekrefte rutiner. «KS/HMS-ansvarlig» kan også bygge håndboken og godkjenne rutiner. Valget lagres med en gang. Firmaadmin styrer tilgangen. Firmaadmin og KS/HMS-ansvarlig kan godkjenne rutinene.</p>
@@ -130,13 +151,22 @@ export default function KshmsModule({context}) {
    </div>}
   </>}
   {screen==='handbook'&&<>
-   {canManage&&<div className="ks-card"><h3>Her bygger du firmaets KS/HMS-håndbok</h3><p>Velg rutiner, tilpass teksten og godkjenn hver rutine når den er klar. Et utkast er en rutine du fortsatt kan endre. Ansatte får rutinen når firmaadmin eller KS/HMS-ansvarlig godkjenner den.</p>
+   {canManage&&<div className={`ks-card ks-flow-target ks-handbook-progress${progress.step==='followup'&&!dirty?' ready':''}`} ref={flowRef} tabIndex={-1}>
+    <h3>{dirty?'Lagre endringene før du går videre':progress.step==='setup'?'Start med å velge ansvarlig':progress.step==='selection'?'Velg de første rutinene':progress.step==='approval'?'Tilpass og godkjenn rutinene':'Håndboken er klar'}</h3>
+    <p>{dirty?'Du har endret tekst som ennå ikke er lagret. Trykk «Lagre utkast» i redigeringen. Etterpå kan du godkjenne den lagrede teksten.':progress.step==='setup'?'Firmaadmin velger hvem som følger opp håndboken. Lagre ansvarlig og fag i oppstarten før du godkjenner rutiner.':progress.step==='selection'?'Åpne forslagene under. Huk av rutinene firmaet trenger, og trykk «Legg inn». De lagres som utkast.':progress.step==='approval'?`${progress.waiting.length} ${progress.waiting.length===1?'rutine trenger':'rutiner trenger'} godkjenning. Les og tilpass hver rutine. Godkjenn først når teksten passer arbeidet deres.`:'Alle valgte rutiner er godkjent. Nå skal ansatte lese og bekrefte dem. Åpne oppfølgingen for å se hvem som mangler gjennomgang.'}</p>
+    <p className="ks-progress-count" role="status">{progress.approved} av {progress.total} valgte rutiner er godkjent{dirty?' · ulagrede endringer gjenstår':''}.</p>
+    <button type="button" disabled={busy||dirty||(progress.step==='approval'&&!canPublish)} onClick={nextStep}>{progress.step==='setup'?'Neste: Velg KS/HMS-ansvarlig':progress.step==='selection'?'Neste: Velg rutiner':progress.step==='approval'?`Neste: Godkjenn rutinene (${progress.waiting.length})`:'Neste: Ansattes gjennomgang'}</button>
+    {publicationFeedback&&<p className="ks-notice" role="status">{publicationFeedback}</p>}
+   </div>}
+   {canManage&&<div className="ks-card"><h3>Her bygger du firmaets KS/HMS-håndbok</h3><p>Firmaets rutiner ligger under. «Utkast» er tekst som må vurderes. «Godkjent» er en utgave ansatte kan lese. Redigerer du en godkjent rutine, må endringene godkjennes før ansatte får dem.</p>
     <ol className="ks-steps"><li><strong>Velg rutiner</strong><span>Huk av rutinene firmaet trenger.</span></li><li><strong>Legg dem inn</strong><span>Se over listen og trykk «Legg inn».</span></li><li><strong>Tilpass teksten</strong><span>Trykk «Rediger her» og lagre utkastet.</span></li><li><strong>Godkjenn</strong><span>Firmaadmin eller KS/HMS-ansvarlig godkjenner. Ansatte leser og bekrefter.</span></li></ol>
     <p className="ks-field-hint">Det finnes {ROUTINE_CATALOG.length} forslag foreløpig. Flere rutiner og verktøy kommer etter hvert. Du kan også skrive en egen rutine.</p>
-    {!data.settings&&<p className="ks-notice">Fullfør oppstart og velg KS/HMS-ansvarlig før publisering.</p>}
     <div className="ks-actions"><button type="button" disabled={busy} onClick={()=>chooseEditor(blankRoutine())}>Ny rutine fra blank mal</button></div>
     {cached&&<div className="ks-recovery"><p>Du har et ulagret utkast fra {dateTime(cached.savedLocallyAt)} på denne enheten. Trykk «Hent inn utkast» for å fortsette med teksten. Sammenlign med firmaets lagrede rutine før du lagrer igjen.</p><button type="button" className="secondary" onClick={()=>{setEditor({id:cached.id,revision:cached.revision,draft:cached.draft});setSources(Array.isArray(cached.sources)?cached.sources:cached.draft.references||[]);setDirty(true);}}>Hent inn utkast</button><button type="button" className="secondary" onClick={()=>{if(window.confirm('Slette utkastet som er lagret på denne enheten?')){window.localStorage.removeItem(draftKey(userId,companyId));setCached(null)}}}>Slett utkast på enheten</button></div>}
-    <KshmsRoutineLibrary routines={data.routines} recommended={suggestedRoutines(setup.trades,setup.activities,setup.responsibilities,setup.risks)} selectedKeys={selectedKeys} onSelectionChange={setSelectedKeys} filter={libraryFilter} onFilterChange={setLibraryFilter} busy={busy} progress={libraryProgress} feedback={libraryFeedback} onAdd={addSelected} onEdit={routine=>chooseEditor(routine.draft,routine)} onPreview={setLibraryPreview}/>
+    <details className="ks-more-routines ks-flow-target" ref={libraryRef} tabIndex={-1} open={libraryOpen||progress.step==='selection'} onToggle={event=>setLibraryOpen(event.currentTarget.open)}><summary>{progress.total?'Legg til flere rutiner':'Velg rutiner fra ProffDoks forslag'}</summary>
+     <KshmsRoutineLibrary routines={data.routines} versions={data.versions} recommended={suggestedRoutines(setup.trades,setup.activities,setup.responsibilities,setup.risks)} selectedKeys={selectedKeys} onSelectionChange={setSelectedKeys} filter={libraryFilter} onFilterChange={setLibraryFilter} busy={busy} progress={libraryProgress} feedback={null} onAdd={addSelected} onEdit={routine=>chooseEditor(routine.draft,routine)} onPreview={setLibraryPreview}/>
+    </details>
+    {libraryFeedback&&<p className={libraryFeedback.error?'ks-error':'ks-notice'} role={libraryFeedback.error?'alert':'status'}>{libraryFeedback.message}</p>}
     {libraryPreview&&<article className="ks-proposal ks-editor" ref={libraryPreviewRef} tabIndex={-1}><h4>Forslag til rutine: {libraryPreview.title}</h4><p>Her kan du lese ProffDoks forslag. For å bruke det, lukk visningen, huk av rutinen og trykk «Legg inn». Deretter kan du endre teksten så den passer firmaet.</p><Content content={libraryPreview}/><button type="button" className="secondary" onClick={()=>setLibraryPreview(null)}>Lukk forslag</button></article>}
    </div>}
    {editor&&canManage&&<div className="ks-card ks-editor" ref={editorRef} tabIndex={-1}><h3>{editor.id?`Rediger rutine: ${editor.draft.title}`:'Skriv en ny rutine'}</h3><p>Her endrer du teksten så den passer firmaet. Trykk «Lagre utkast» når du er ferdig. Firmaadmin eller KS/HMS-ansvarlig må godkjenne før ansatte får rutinen. Tidligere godkjente utgaver beholdes.</p><p className="ks-field-hint">Rutinene er felles for firmaet. Hold private opplysninger om enkeltansatte utenfor teksten.</p>
@@ -149,21 +179,21 @@ export default function KshmsModule({context}) {
    </div>}
    {publication&&<div className="ks-card ks-editor ks-publication" ref={publicationRef} tabIndex={-1} aria-labelledby={publicationHeadingId} aria-busy={busy}>
     <h3 id={publicationHeadingId}>Her godkjenner du rutinen: {publication.draft.title}</h3>
-    <p>Les den lagrede teksten under og sjekk at den passer firmaet. Skriv kort hva du har kontrollert eller endret. «Godkjenn og publiser» godkjenner bare denne rutinen og gir den til ansatte med KS/HMS-tilgang. Tidligere utgaver og bekreftelser beholdes.</p>
+    <p>Denne rutinen venter på godkjenning. Les den lagrede teksten under og sjekk at den passer firmaet. Skriv kort hva du har kontrollert eller endret. «Godkjenn og publiser» godkjenner bare denne rutinen og gir den til ansatte med KS/HMS-tilgang. Tidligere utgaver og bekreftelser beholdes.</p>
     <Content content={publication.draft}/>
-    <Field label="Hva er vurdert eller endret?" hint="Må fylles ut før godkjenning. Skriv en kort setning (minst 5 tegn) om det du har sjekket. Hvis rutinen passer uten endringer, kan du skrive det." value={summary} onChange={setSummary} required multiline/>
+    <Field label="Hva er vurdert eller endret?" hint="Skriv før du godkjenner. Eksempel: «Gjennomgått og tilpasset firmaets arbeid». Skriv det du faktisk har kontrollert (minst 5 tegn). En grå knapp betyr at vurderingen mangler, ikke at rutinen er godkjent." value={summary} onChange={setSummary} required multiline/>
     <label className="ks-check"><input type="checkbox" checked={freshAck} onChange={e=>setFreshAck(e.target.checked)}/>Ansatte skal lese og bekrefte på nytt (alltid ved ny rutine eller viktig endring)</label>
-    <p className="ks-field-hint" role="status">{busy?'Godkjenner rutinen …':summary.trim().length<5?'Fyll ut vurderingen over før du godkjenner. Skriv en kort setning om det du har sjekket.':`Klar til å godkjenne «${publication.draft.title}».`}</p>
+    <p className="ks-field-hint" role="status">{busy?'Godkjenner rutinen …':dirty?'Lagre endringene i redigeringen før du godkjenner.':summary.trim().length<5?'Fyll ut vurderingen over før du godkjenner. Skriv en kort setning om det du har sjekket.':`Klar til å godkjenne «${publication.draft.title}».`}</p>
     {error&&<p role="alert" className="ks-error">{error}</p>}
-    <div className="ks-actions"><button type="button" className="ks-publish-button" disabled={busy||summary.trim().length<5} onClick={publishRoutine}>{busy?'Godkjenner …':'Godkjenn og publiser'}</button><button type="button" className="secondary" disabled={busy} onClick={()=>{setPublication(null);setOverviewFocus(previous=>previous+1)}}>Avbryt</button></div>
+    <div className="ks-actions"><button type="button" className="ks-publish-button" disabled={busy||dirty||summary.trim().length<5} onClick={publishRoutine}>{busy?'Godkjenner …':'Godkjenn og publiser'}</button><button type="button" className="secondary" disabled={busy} onClick={()=>{setPublication(null);setOverviewFocus(previous=>previous+1)}}>Avbryt</button></div>
    </div>}
-   <div className="ks-routine-overview" ref={overviewRef} tabIndex={-1}><h3>Firmaets rutiner ({data.routines.filter(routine=>!routine.archived).length})</h3>{publicationFeedback&&<p className="ks-notice" role="status">{publicationFeedback}</p>}{canManage&&<p>Her ligger rutinene du har lagt inn. «Utkast» betyr at teksten ikke er godkjent ennå. Trykk «Rediger her» for å endre den. «Åpne godkjenning» viser teksten og vurderingsfeltet. Rutinen publiseres først når du trykker «Godkjenn og publiser».</p>}</div>
+   <div className="ks-routine-overview" ref={overviewRef} tabIndex={-1}><h3>Firmaets rutiner ({data.routines.filter(routine=>!routine.archived).length})</h3>{canManage&&<p>Se statusen ved hver rutine. «Rediger her» åpner teksten. «Åpne godkjenning» og «Godkjenn endringene» åpner vurderingen. Knappen «Godkjenn og publiser» lagrer godkjenningen.</p>}</div>
    {!data.routines.length&&<div className="ks-card"><h3>{canManage?'Ingen rutiner ennå':'Ingen rutiner tildelt'}</h3><p>{canManage?'Huk av standardrutiner over og trykk «Legg inn», eller lag en rutine fra blank mal.':'Du får rutiner her når firmaets ansvarlige har gitt deg dem.'}</p></div>}
    {[...new Set(data.routines.map(r=>r.draft?.chapter||data.versions.find(v=>v.routine_id===r.id)?.content.chapter||'Historikk'))].map(chapter=><div className="ks-chapter" key={chapter}><h3>{chapter}</h3>{data.routines.filter(r=>(r.draft?.chapter||data.versions.find(v=>v.routine_id===r.id)?.content.chapter||'Historikk')===chapter).map(r=>{
-    const versions=data.versions.filter(v=>v.routine_id===r.id),current=versions[0];
-    return <article className="ks-card" key={r.id}><div className="ks-row"><h4>{r.draft?.title||current?.content.title}</h4><span className="ks-badge">{r.archived?'Arkivert':current?`Publisert v${current.number}`:'Utkast'}</span></div>
+    const versions=data.versions.filter(v=>v.routine_id===r.id),approval=routineApprovalState(r,versions),current=approval.current;
+    return <article className="ks-card" key={r.id}><div className="ks-row"><h4>{r.draft?.title||current?.content.title}</h4><span className={`ks-badge ks-status-${approval.status}`}>{approval.label}</span></div>
      {current&&<details><summary>Les publisert versjon {current.number}</summary><p>Godkjent {dateTime(current.published_at)} · Endring: {current.change_summary}</p><Content content={current.content}/></details>}
-     {canManage&&<div className="ks-actions">{!r.archived&&<button type="button" className="secondary" disabled={busy} aria-label={`Rediger her: ${r.draft.title}`} onClick={()=>chooseEditor(r.draft,r)}>Rediger her</button>}<button type="button" className="secondary" onClick={()=>chooseEditor({...r.draft,title:`${r.draft.title} (kopi)`})}>Kopier</button>{!r.archived&&canPublish&&<button type="button" disabled={busy} aria-label={`Åpne godkjenning: ${r.draft.title}`} onClick={()=>choosePublication(r)}>Åpne godkjenning</button>}{!r.archived&&canAdmin&&<button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Arkiver rutinen? Publiserte versjoner og bekreftelser beholdes.'))run('archive',{id:r.id,revision:r.revision},'Rutinen er arkivert; historikken er bevart.')}}>Arkiver</button>}</div>}
+     {canManage&&<div className="ks-actions">{!r.archived&&<button type="button" className="secondary" disabled={busy} aria-label={`Rediger her: ${r.draft.title}`} onClick={()=>chooseEditor(r.draft,r)}>Rediger her</button>}<button type="button" className="secondary" onClick={()=>chooseEditor({...r.draft,title:`${r.draft.title} (kopi)`})}>Kopier</button>{!r.archived&&canPublish&&approval.status!=='approved'&&<button type="button" disabled={busy||dirty||progress.step==='setup'} aria-label={`Åpne godkjenning: ${r.draft.title}`} onClick={()=>choosePublication(r)}>{approval.status==='changed'?'Godkjenn endringene':'Åpne godkjenning'}</button>}{!r.archived&&canAdmin&&<button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Arkiver rutinen? Publiserte versjoner og bekreftelser beholdes.'))run('archive',{id:r.id,revision:r.revision},'Rutinen er arkivert; historikken er bevart.')}}>Arkiver</button>}</div>}
      {versions.length>0&&<details><summary>Versjonshistorikk ({versions.length})</summary>{versions.map(v=><details key={v.id}><summary>Versjon {v.number} · {dateTime(v.published_at)} · {v.change_summary}</summary><Content content={v.content}/><p>Godkjenner: {data.members.find(m=>m.id===v.published_by)?.email||v.published_by} · innholdskontroll: {v.content_hash}</p></details>)}</details>}
     </article>;
    })}</div>)}
@@ -173,8 +203,10 @@ export default function KshmsModule({context}) {
    {reading&&<article><h3>{reading.content.title} · versjon {reading.number}</h3><Content content={reading.content}/><p className="ks-confirmation">{ACK_STATEMENT}</p>{data.acknowledgments.some(a=>a.version_id===reading.id&&a.user_id===userId)?<p>Din bekreftelse er registrert.</p>:<><label className="ks-check"><input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/>Jeg bekrefter egen gjennomgang og teksten over.</label><button type="button" disabled={!checked||busy} onClick={async()=>{await run('ack',{version_id:reading.id,statement:ACK_STATEMENT},'Du har bekreftet at du har lest denne utgaven. Navnet ditt, tidspunktet og utgaven er lagret.');setChecked(false)}}>Bekreft versjon {reading.number}</button></>}</article>}
   </div>}
   {screen==='followup'&&canManage&&<>
-   <div className="ks-card"><h3>Her følger du opp hvem som har lest</h3><p>Listen under viser hvem som ennå ikke har bekreftet en rutine. Følg opp disse ansatte og avklar om de trenger hjelp. Du kan gi nye ansatte rutiner fra listen nederst. Påminnelser i app og på e-post kommer senere.</p><h4>Manglende bekreftelser ({missing.length})</h4>{!missing.length&&<p>Alle påkrevde bekreftelser er registrert.</p>}{missing.map(a=><p key={`${a.version_id}:${a.user_id}`}>{data.members.find(m=>m.id===a.user_id)?.email||a.user_id} · {data.versions.find(v=>v.id===a.version_id)?.content.title} · v{data.versions.find(v=>v.id===a.version_id)?.number}</p>)}
-    <h4>Tildel til nye medarbeidere</h4>{latest.map(v=><details key={v.id}><summary>{v.content.title} · v{v.number}</summary>{eligibleMembers.filter(m=>!data.assignments.some(a=>a.user_id===m.id&&a.version_id===v.id)).map(m=><button type="button" className="secondary" key={m.id} disabled={busy} onClick={()=>run('assign',{version_id:v.id,user_id:m.id})}>Tildel til {m.email}</button>)}</details>)}
+   <div className="ks-card ks-flow-target" ref={followupRef} tabIndex={-1}><h3>Neste steg: Ansatte leser og bekrefter</h3><p>Når du godkjenner en rutine, får firmaadmin og ansatte med KS/HMS-tilgang utgaven i «Les og bekreft». De åpner hver rutine i sin egen app, leser teksten og bekrefter egen gjennomgang. Avklar spørsmål og nødvendig opplæring med dem.</p><p>Firmaadmin gir andre ansatte tilgang i «Oppstart og tilgang». Etterpå kan du gi nye medarbeidere de godkjente rutinene under. Påminnelser i app og på e-post kommer senere.</p>
+    {canAdmin&&<button type="button" className="secondary" onClick={()=>{setScreen('setup');setFlowFocus(previous=>previous+1)}}>Velg ansattes tilgang</button>}
+    <h4>Manglende bekreftelser ({missing.length})</h4>{!missing.length&&<p>{data.assignments.length?'Alle påkrevde bekreftelser på tildelte utgaver er registrert. Sjekk også at alle som trenger rutinene har tilgang og har fått dem.':'Ingen rutiner er tildelt ennå. Godkjenn rutiner og sjekk ansattes tilgang først.'}</p>}{missing.map(a=><p key={`${a.version_id}:${a.user_id}`}>{data.members.find(m=>m.id===a.user_id)?.email||a.user_id} · {data.versions.find(v=>v.id===a.version_id)?.content.title} · v{data.versions.find(v=>v.id===a.version_id)?.number}</p>)}
+    <h4>Gi godkjente rutiner til nye medarbeidere</h4><p>Åpne rutinen og trykk «Tildel til» ved medarbeideren. Bare personer som ikke har fått denne utgaven vises.</p>{latest.map(v=><details key={v.id}><summary>{v.content.title} · v{v.number}</summary>{eligibleMembers.filter(m=>!data.assignments.some(a=>a.user_id===m.id&&a.version_id===v.id)).map(m=><button type="button" className="secondary" key={m.id} disabled={busy} onClick={()=>run('assign',{version_id:v.id,user_id:m.id})}>Tildel til {m.email}</button>)}</details>)}
    </div>
    <div className="ks-card"><h3>Her kontrollerer dere at håndboken fortsatt passer</h3><p>Å kontrollere og oppdatere håndboken kalles revisjon. Les rutinene og sjekk om de passer arbeidet dere gjør nå. Noter hva som må endres, hvem som gjør det, og når det skal være klart.</p><p className={overdue?'ks-error':''}>Neste kontroll: {data.settings?.next_review_on||'Lagre oppstart først'}{overdue?' · Datoen er passert':''}</p><p>I ProffDok skal håndboken kontrolleres minst én gang i året. Dette er vår avtalte regel. Endringer eller hendelser kan gjøre at dere må kontrollere tidligere. Den valgte KS/HMS-ansvarlige signerer kontrollen.</p>
     {data.context.responsible?<form onSubmit={async e=>{e.preventDefault();const result=await run('review',{settings_revision:data.settings.revision,version_snapshot:currentVersionSnapshot(data),findings,follow_up:followUp,next_review_on:nextReview},'Kontrollen er signert og lagret sammen med utgavene du kontrollerte.');if(result){setReviewChecked(false);setFindings('');setFollowUp('')}}}>

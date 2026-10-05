@@ -11,7 +11,7 @@ const PV = source('Personvern på arbeidsplassen – Datatilsynets veiledning', 
 const make = (key, title, chapter, goal, responsibility, procedure, documentation, references, coverage, relevance = 'Felles grunnlag', trades = []) => ({
  key, title, chapter: CHAPTERS[chapter], goal, responsibility, procedure, documentation, references, coverage, relevance, trades,
  confirmation: 'Gjennomgå rutinen og avklar spørsmål med ansvarlig før du utfører oppgavene. Bekreft bare egen gjennomgang. Be om nødvendig opplæring og meld fra om mangler.',
- source_key: key, source_revision: 1,
+ source_key: key, source_revision: key==='revision'?2:1,
 });
 // Independently authored starting drafts. No import of source handbook text, forms or personal answers.
 export const ROUTINE_CATALOG = [
@@ -22,7 +22,7 @@ export const ROUTINE_CATALOG = [
   'Ansvarsoversikt, avtalte mål og datert oppfølging av tiltak.',[IK,AML],['K001','K002','K004','K007','K050']),
  make('revision','Revidere og forbedre håndboken',0,
   'Holde firmaets rutiner relevante for arbeidet som faktisk utføres.',
-  'KS/HMS-ansvarlig gjennomfører og signerer revisjonen. Firmaadmin godkjenner publisering.',
+  'Utpekt KS/HMS-ansvarlig gjennomfører og signerer revisjonen. Firmaadmin eller en medarbeider med KS/HMS-ansvarlig tilgang godkjenner nye rutineutgaver i ProffDok.',
   'Vurder endrede oppgaver, regelverk, hendelser og erfaringer fra ansatte. Kontroller utvalgte gjennomføringer mot rutinene. Registrer funn og avtal oppfølging med ansvar og frist. Lag endringer som utkast og få dem godkjent før publisering. I ProffDok avtales revisjon minst årlig; vurder tidligere revisjon ved behov. Den årlige frekvensen er et produktvalg.',
   'Revisjonsnotat med eksakte versjoner, funn, oppfølging og neste dato.',[IK,SAK,source('Årlig revisjon i ProffDok', 'https://expo-proffdok.app','product')],['K005','K006','K022','K037']),
  make('onboarding','Ta imot og lære opp medarbeidere',1,

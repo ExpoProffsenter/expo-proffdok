@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
-import {readDraft,persistDraft} from '../src/modules/kshms/kshmsDraft.mjs';
+import {readDraft,persistDraft,routineApprovalState,handbookProgress,sameRoutineContent} from '../src/modules/kshms/kshmsDraft.mjs';
 import {ROUTINE_CATALOG,suggestedRoutines,currentVersionSnapshot,ACK_STATEMENT} from '../src/modules/kshms/kshmsCatalog.mjs';
 import {addLibraryRoutines,routinesBySource,selectedCatalogRoutines} from '../src/modules/kshms/kshmsLibrary.mjs';
 import {createGlobalAppTabs,createProjectWorkspaceTabs} from '../src/modules/project/projectNavigationTabs.mjs';
@@ -110,11 +110,11 @@ const moduleSource=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');
 const openingStart=moduleSource.indexOf(' const choosePublication=');
 const publishingEnd=moduleSource.indexOf(' const addSelected=');
 assert(openingStart>=0&&publishingEnd>openingStart,'Approval opening lacks a visible focus/scroll action');
-const approvalUi={busy:false,publication:null,summary:'old comment',freshAck:false,focus:0,overviewFocus:0,feedback:'',error:'',notice:''};
+const approvalUi={busy:false,dirty:false,publication:null,summary:'old comment',freshAck:false,focus:0,overviewFocus:0,flowFocus:0,feedback:'',error:'',notice:''};
 const approvalCommands=[];
-const setters=['publication','summary','freshAck','focus','overviewFocus','feedback','error','notice'].map(key=>next=>{approvalUi[key]=typeof next==='function'?next(approvalUi[key]):next;});
-const approvalHandlers=()=>new Function('busy','publication','summary','freshAck','data','run','setPublication','setSummary','setFreshAck','setPublicationFocus','setOverviewFocus','setPublicationFeedback','setError','setNotice',moduleSource.slice(openingStart,publishingEnd)+';return {choosePublication,publishRoutine};')(
- approvalUi.busy,approvalUi.publication,approvalUi.summary,approvalUi.freshAck,{versions:[]},async(action,payload)=>{approvalCommands.push({action,payload});return {id:`v-${payload.id}`,number:1};},...setters);
+const setters=['publication','summary','freshAck','focus','overviewFocus','flowFocus','feedback','error','notice'].map(key=>next=>{approvalUi[key]=typeof next==='function'?next(approvalUi[key]):next;});
+const approvalHandlers=()=>new Function('busy','dirty','publication','summary','freshAck','data','run','setPublication','setSummary','setFreshAck','setPublicationFocus','setOverviewFocus','setFlowFocus','setPublicationFeedback','setError','setNotice',moduleSource.slice(openingStart,publishingEnd)+';return {choosePublication,publishRoutine};')(
+ approvalUi.busy,approvalUi.dirty,approvalUi.publication,approvalUi.summary,approvalUi.freshAck,{versions:[]},async(action,payload)=>{approvalCommands.push({action,payload});return {id:`v-${payload.id}`,number:1};},...setters);
 const firstRoutine={id:'r-one',revision:2,draft:{title:'First routine'}},secondRoutine={id:'r-two',revision:4,draft:{title:'Second routine'}};
 approvalHandlers().choosePublication(firstRoutine);
 assert.equal(approvalUi.publication.id,'r-one');assert.equal(approvalUi.summary,'');assert.equal(approvalUi.freshAck,true);assert.equal(approvalUi.focus,1);assert.equal(approvalCommands.length,0);
@@ -123,11 +123,70 @@ approvalUi.summary='Own assessment';approvalUi.freshAck=false;
 approvalHandlers().choosePublication(firstRoutine);assert.equal(approvalUi.summary,'Own assessment');assert.equal(approvalUi.freshAck,false);assert.equal(approvalUi.focus,2,'Clicking the already open routine did not reveal it');
 approvalHandlers().choosePublication(secondRoutine);assert.equal(approvalUi.publication.id,'r-two');assert.equal(approvalUi.summary,'');assert.equal(approvalUi.focus,3);
 approvalUi.summary='Second reviewed';await approvalHandlers().publishRoutine();
-assert.equal(approvalUi.publication,null);assert.equal(approvalCommands.length,1);assert.deepEqual(approvalCommands[0].payload,{id:'r-two',revision:4,change_summary:'Second reviewed',requires_ack:true});assert.equal(approvalUi.overviewFocus,1);assert(approvalUi.feedback.includes('Second routine'));
+assert.equal(approvalUi.publication,null);assert.equal(approvalCommands.length,1);assert.deepEqual(approvalCommands[0].payload,{id:'r-two',revision:4,change_summary:'Second reviewed',requires_ack:true});assert.equal(approvalUi.flowFocus,1,'Publishing must reveal the next action');assert(approvalUi.feedback.includes('Second routine'));
 approvalHandlers().choosePublication(firstRoutine);approvalUi.summary='First reviewed';await approvalHandlers().publishRoutine();assert.equal(approvalCommands[1].payload.id,'r-one');assert.equal(approvalCommands[1].payload.change_summary,'First reviewed');
 approvalUi.busy=true;approvalHandlers().choosePublication(secondRoutine);assert.equal(approvalUi.publication,null);await approvalHandlers().publishRoutine();assert.equal(approvalCommands.length,2);
+approvalUi.busy=false;approvalHandlers().choosePublication(firstRoutine);approvalUi.summary='Valid assessment';approvalUi.dirty=true;await approvalHandlers().publishRoutine();assert.equal(approvalCommands.length,2,'Unsaved edits must not approve stale saved content');
 const approvalEffect=moduleSource.match(/useEffect\(\(\)=>\{if\(publicationFocus[\s\S]*?\},\[publicationFocus\]\);/);
 assert(approvalEffect,'Opening approval does not focus its visible panel');
 const revealed=[];new Function('useEffect','publicationFocus','publicationRef',approvalEffect[0])(effect=>effect(),1,{current:{focus:()=>revealed.push('focus'),scrollIntoView:options=>revealed.push(options.block)}});
 assert.deepEqual(revealed,['focus','start']);assert(moduleSource.includes('onClick={()=>choosePublication(r)}'));
-console.log('critical-kshms-check: OK – approval reveal/next routine, multi-select/import/retry, grant/profile races, cleanup, scoped draft recovery, navigation, relevance and 275 source pages');
+const flowEffect=moduleSource.match(/useEffect\(\(\)=>\{if\(flowFocus[\s\S]*?\},\[flowFocus,screen\]\);/);
+assert(flowEffect,'Next step must reveal its destination');
+for(const screen of ['handbook','setup','followup']){
+ const targets=[];const target=name=>({current:{focus:()=>targets.push(name),scrollIntoView:options=>targets.push(options.block)}});
+ new Function('useEffect','flowFocus','screen','flowRef','setupRef','followupRef',flowEffect[0])(effect=>effect(),1,screen,target('handbook'),target('setup'),target('followup'));
+ assert.deepEqual(targets,[screen,'start']);
+}
+// JSONB key order is irrelevant; actual text, source changes and array order
+// are significant. A published v1 must remain unchanged while v2 is a draft.
+const v1Content={title:'Safe work',procedure:'Before change',references:[{title:'Rule',url:'https://example.invalid/rule',checked_on:'2026-10-05'}]};
+const draftRoutine={id:'r1',archived:false,draft:structuredClone(v1Content)};
+const versionOne={id:'v1',routine_id:'r1',number:1,content:structuredClone(v1Content)};
+const handbook={members:[{id:'u1',workspace_role:'firmaadmin'}],settings:{responsible_user_id:'u1'},routines:[draftRoutine],versions:[]};
+assert.equal(handbookProgress({...handbook,settings:null}).step,'setup');
+assert.equal(handbookProgress({...handbook,routines:[]}).step,'selection');
+assert.equal(routineApprovalState(draftRoutine,[]).status,'draft');assert.equal(handbookProgress(handbook).step,'approval');
+handbook.versions.push(versionOne);assert.equal(handbookProgress(handbook).step,'followup');assert.equal(handbookProgress(handbook).approved,1);
+assert(sameRoutineContent({procedure:v1Content.procedure,references:v1Content.references,title:v1Content.title},v1Content));
+draftRoutine.draft.procedure='After change';assert.equal(routineApprovalState(draftRoutine,handbook.versions).status,'changed');assert.equal(handbookProgress(handbook).step,'approval');
+assert.equal(versionOne.content.procedure,'Before change','Editing rewrote the signed version');
+handbook.versions.push({id:'v2',routine_id:'r1',number:2,content:structuredClone(draftRoutine.draft)});
+assert.equal(routineApprovalState(draftRoutine,handbook.versions).current.id,'v2');assert.equal(handbookProgress(handbook).step,'followup');
+assert.equal(routineApprovalState(draftRoutine,[{...versionOne,routine_id:'other'}]).status,'draft');
+assert(!sameRoutineContent({steps:['a','b']},{steps:['b','a']}));
+assert.equal(handbookProgress({...handbook,routines:[{...draftRoutine,archived:true}]}).step,'selection');
+assert.equal(handbookProgress({...handbook,members:[{id:'u1',enabled:false,role:'responsible'}]}).step,'setup','Revoked responsible must not mark setup ready');
+assert.equal(handbookProgress({...handbook,members:[{id:'u1',enabled:true,role:'responsible'}]}).step,'followup');
+// Actual setup handler composes existing access/settings commands. Failure of
+// the second call may retain a grant; it must say so and preserve the setup.
+const setupStart=moduleSource.indexOf(' const saveSetup=');
+const setupEnd=moduleSource.indexOf(' if(!data)return',setupStart);
+assert(setupStart>=0&&setupEnd>setupStart);
+async function setupScenario({member={id:'u1',workspace_role:'ansatt',enabled:false,role:'reader'},admin=true,failSettings=false,active=true}={}){
+ const ui={error:'',screen:'setup',focus:0,broadcast:0},commands=[];
+ const setup={trades:['vvs'],responsible_user_id:'u1',activities:'Local text'},scope={active};
+ const saveSetup=new Function('busy','setup','data','requestScope','run','setError','setScreen','setFlowFocus','publishManagedAccessChange',moduleSource.slice(setupStart,setupEnd)+';return saveSetup;')(false,setup,{members:member?[member]:[],context:{administer:admin}},{current:scope},async(action,payload)=>{commands.push({action,payload:structuredClone(payload)});return action==='settings'&&failSettings?null:{revision:1};},next=>{ui.error=typeof next==='function'?next(ui.error):next;},next=>{ui.screen=next;},next=>{ui.focus=next(ui.focus);},()=>ui.broadcast++);
+ await saveSetup({preventDefault(){}});return {ui,commands,setup};
+}
+const appointment=await setupScenario();assert.deepEqual(appointment.commands.map(c=>c.action),['access','settings']);assert.equal(appointment.ui.screen,'handbook');assert.equal(appointment.ui.broadcast,1);
+assert.deepEqual(appointment.commands[0].payload,{user_id:'u1',role:'responsible',enabled:true});
+const selfAppointment=await setupScenario({member:{id:'u1',workspace_role:'firmaadmin'}});assert.deepEqual(selfAppointment.commands.map(c=>c.action),['settings']);
+const partialAppointment=await setupScenario({failSettings:true});assert(partialAppointment.ui.error.includes('tilgang, men oppstart kunne ikke bekreftes'));assert.equal(partialAppointment.setup.activities,'Local text');assert.equal(partialAppointment.ui.screen,'setup');assert.equal(partialAppointment.ui.broadcast,0);
+assert.equal((await setupScenario({member:null})).commands.length,0,'Unknown/foreign user reached an access command');
+assert.equal((await setupScenario({admin:false})).commands.length,0,'Responsible tried to grant another person');
+assert.equal((await setupScenario({active:false})).commands.length,0,'Unmounted scope started an appointment command');
+// Saving an edited approved routine must open approval of the returned saved
+// revision. Saving unchanged content must not invent a new approval requirement.
+const saveStart=moduleSource.indexOf(' const save=');
+const saveEnd=moduleSource.indexOf(' const saveSetup=',saveStart);
+async function saveScenario(changed){
+ const ui={cached:true,dirty:true,editor:true,publication:null,notice:'',focus:0},commands=[];
+ const draft={...structuredClone(versionOne.content),procedure:changed?'New saved procedure':versionOne.content.procedure};
+ const save=new Function('editor','sources','data','run','validateReferences','window','draftKey','userId','companyId','setCached','setDirty','setEditor','routineApprovalState','choosePublication','setNotice','setFlowFocus',moduleSource.slice(saveStart,saveEnd)+';return save;')(
+  {id:'r1',revision:5,draft},draft.references,{context:{publish:true},versions:[versionOne]},async(action,payload)=>{commands.push({action,payload});return {id:'r1',revision:6};},refs=>refs,{localStorage:{removeItem(){}}},()=>'', 'u1','a',next=>{ui.cached=next;},next=>{ui.dirty=next;},next=>{ui.editor=next;},routineApprovalState,next=>{ui.publication=next;},next=>{ui.notice=next;},next=>{ui.focus=next(ui.focus);});
+ await save({preventDefault(){}});return {ui,commands};
+}
+const savedChange=await saveScenario(true);assert.equal(savedChange.ui.publication.revision,6);assert.equal(savedChange.ui.publication.draft.procedure,'New saved procedure');assert.equal(savedChange.commands.length,1);assert.equal(savedChange.commands[0].action,'save');assert.equal(savedChange.ui.dirty,false);
+const savedUnchanged=await saveScenario(false);assert.equal(savedUnchanged.ui.publication,null);assert(savedUnchanged.ui.notice.includes('uten nye innholdsendringer'));assert.equal(savedUnchanged.ui.focus,1);assert.equal(versionOne.content.procedure,'Before change');
+console.log('critical-kshms-check: OK – handbook progression/changed versions, composed appointment/failure, approval reveal/next step, multi-select/retry, grant/profile races, scoped recovery and 275 source pages');

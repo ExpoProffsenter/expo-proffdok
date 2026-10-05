@@ -1,8 +1,9 @@
 import { useId } from 'react';
 import { ROUTINE_CATALOG } from './kshmsCatalog.mjs';
 import { routinesBySource,selectedCatalogRoutines } from './kshmsLibrary.mjs';
+import { routineApprovalState } from './kshmsDraft.mjs';
 
-export default function KshmsRoutineLibrary({routines,recommended,selectedKeys,onSelectionChange,filter,onFilterChange,busy,progress,feedback,onAdd,onEdit,onPreview}) {
+export default function KshmsRoutineLibrary({routines,versions,recommended,selectedKeys,onSelectionChange,filter,onFilterChange,busy,progress,feedback,onAdd,onEdit,onPreview}) {
  const id=useId(),existing=routinesBySource(routines);
  const selected=selectedCatalogRoutines(selectedKeys).filter(routine=>!existing.has(routine.key));
  const selectedSet=new Set(selected.map(routine=>routine.key));
@@ -25,11 +26,11 @@ export default function KshmsRoutineLibrary({routines,recommended,selectedKeys,o
   </div>
   <div className="ks-library">
    {visible.map(routine=>{
-    const added=existing.get(routine.key),checked=Boolean(added)||selectedSet.has(routine.key);
-    return <article key={routine.key} className={`ks-library-card${added?' added':checked?' selected':''}`}>
+    const added=existing.get(routine.key),checked=Boolean(added)||selectedSet.has(routine.key),approval=added?routineApprovalState(added,versions):null;
+    return <article key={routine.key} className={`ks-library-card${added?approval.status==='approved'?' approved':' added':checked?' selected':''}`}>
      <div className="ks-library-card-heading">
-      <label htmlFor={`${id}-${routine.key}`}><input id={`${id}-${routine.key}`} type="checkbox" aria-label={`${added?'Lagt til':'Velg rutine'}: ${routine.title}`} aria-describedby={`${id}-${routine.key}-description`} checked={checked} disabled={busy||Boolean(added)} onChange={event=>toggle(routine.key,event.target.checked)}/><strong>{routine.title}</strong></label>
-      <span className="ks-library-status">{added?'Lagt til':checked?'Valgt':'Ikke valgt'}</span>
+      {added?<strong>{routine.title}</strong>:<label htmlFor={`${id}-${routine.key}`}><input id={`${id}-${routine.key}`} type="checkbox" aria-label={`Velg rutine: ${routine.title}`} aria-describedby={`${id}-${routine.key}-description`} checked={checked} disabled={busy} onChange={event=>toggle(routine.key,event.target.checked)}/><strong>{routine.title}</strong></label>}
+      <span className="ks-library-status">{approval?approval.label:checked?'Valgt':'Ikke valgt'}</span>
      </div>
      <p id={`${id}-${routine.key}-description`}>{routine.relevance}</p>
      <div className="ks-actions">
