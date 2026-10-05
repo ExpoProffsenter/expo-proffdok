@@ -10,14 +10,14 @@ export default function KshmsRoutineLibrary({routines,recommended,selectedKeys,o
  const selectable=visible.filter(routine=>!existing.has(routine.key));
  const toggle=(key,checked)=>onSelectionChange(previous=>checked?[...new Set([...previous,key])]:previous.filter(value=>value!==key));
  return <section className="ks-routine-library" aria-label="Velg standardrutiner">
-  <h4>1. Velg rutiner til håndboken</h4>
-  <p>Huk av én eller flere rutiner. Forslagene bygger på oppstarten; vurder relevans og firmaets egne behov.</p>
+  <h4>Velg rutinene firmaet trenger</h4>
+  <p>Huk av én eller flere rutiner. «Anbefalte» viser forslag som passer det du skrev i oppstarten. «Alle forslag» viser hele listen. Velg bare rutiner som passer firmaets arbeid.</p>
   <div className="ks-library-toolbar">
    <div className="ks-actions" role="group" aria-label="Vis standardutkast">
     <button type="button" className={filter==='recommended'?'active':'secondary'} aria-pressed={filter==='recommended'} disabled={busy} onClick={()=>onFilterChange('recommended')}>Anbefalte ({recommended.length})</button>
-    <button type="button" className={filter==='all'?'active':'secondary'} aria-pressed={filter==='all'} disabled={busy} onClick={()=>onFilterChange('all')}>Alle standardutkast ({ROUTINE_CATALOG.length})</button>
+    <button type="button" className={filter==='all'?'active':'secondary'} aria-pressed={filter==='all'} disabled={busy} onClick={()=>onFilterChange('all')}>Alle forslag ({ROUTINE_CATALOG.length})</button>
    </div>
-   <div className="ks-library-counts"><span className="ks-badge" role="status">{selected.length} valgt</span><span>{ROUTINE_CATALOG.filter(routine=>existing.has(routine.key)).length} av {ROUTINE_CATALOG.length} standardutkast lagt til</span></div>
+   <div className="ks-library-counts"><span className="ks-badge" role="status">{selected.length} valgt</span><span>{ROUTINE_CATALOG.filter(routine=>existing.has(routine.key)).length} av {ROUTINE_CATALOG.length} forslag lagt til</span></div>
   </div>
   <div className="ks-actions">
    <button type="button" className="secondary" disabled={busy||!selectable.some(routine=>!selectedSet.has(routine.key))} onClick={()=>onSelectionChange(previous=>[...new Set([...previous,...selectable.map(routine=>routine.key)])])}>Velg alle viste</button>
@@ -34,7 +34,7 @@ export default function KshmsRoutineLibrary({routines,recommended,selectedKeys,o
      <p id={`${id}-${routine.key}-description`}>{routine.relevance}</p>
      <div className="ks-actions">
       {added&&<button type="button" disabled={busy} aria-label={`Rediger her: ${added.draft.title}`} onClick={()=>onEdit(added)}>Rediger her</button>}
-      <button type="button" className="secondary" disabled={busy} aria-label={`Les standardutkast: ${routine.title}`} onClick={()=>onPreview(routine)}>Les standardutkast</button>
+      <button type="button" className="secondary" disabled={busy} aria-label={`Les forslag: ${routine.title}`} onClick={()=>onPreview(routine)}>Les forslag</button>
      </div>
     </article>;
    })}
@@ -42,7 +42,7 @@ export default function KshmsRoutineLibrary({routines,recommended,selectedKeys,o
   <div className="ks-selection-review" aria-labelledby={`${id}-selection`}>
    <div className="ks-row"><h4 id={`${id}-selection`}>Disse rutinene legges inn</h4><span className="ks-badge">{selected.length} valgt</span></div>
    {selected.length?<ul className="ks-selected-list">{selected.map(routine=><li key={routine.key}>{routine.title}</li>)}</ul>:<p>Huk av rutinene du vil legge inn. Rutinene som er lagt til, kan du tilpasse med «Rediger her».</p>}
-   <p>Rutinene lagres som kladder. Tilpass dem til firmaet før firmaadmin godkjenner publisering.</p>
+   <p>Trykk «Legg inn» for å lagre alle valgte rutiner som utkast. Etterpå bruker du «Rediger her» for å tilpasse dem. Firmaadmin godkjenner når teksten er klar.</p>
    <button type="button" disabled={busy||!selected.length} onClick={()=>onAdd(selected.map(routine=>routine.key))}>{progress?`Legger inn ${progress.completed} av ${progress.total} …`:selected.length?`Legg inn ${selected.length} ${selected.length===1?'rutine':'rutiner'}`:'Legg inn valgte rutiner'}</button>
    {feedback&&<p className={feedback.error?'ks-error':'ks-notice'} role={feedback.error?'alert':'status'}>{feedback.message}</p>}
   </div>

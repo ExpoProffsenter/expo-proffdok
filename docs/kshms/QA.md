@@ -73,3 +73,18 @@ Skjermbildene viser samme utvalg før og etter innlegging i den syntetiske kompo
 ![Ti rutiner valgt med synlig avkrysning, Valgt og samlet antall. Syntetisk komponentkontroll.](library-selection-proof.jpg)
 
 ![Ti rutiner lagt til med Rediger her på hver rutine. Syntetisk komponentkontroll.](library-added-proof.jpg)
+
+## Enkel veiledning og fast testlenke (2026-10-06)
+
+Hver fane forklarer nå hva brukeren gjør der og neste steg. Håndboken viser fire korte trinn: velg, legg inn, tilpass og godkjenn. Utkast, versjon og revisjon forklares. Rutinefeltene har konkrete hjelpeord og varige feltbeskrivelser. Godkjenning, lesing og oppfølging bruker samme knappnavn som [brukertestlisten](USER_TEST.md) og Hjelp. AGENTS krever fremover en konkret testliste med handling og forventet resultat, enkel veiledning og samme stabile Preview-adresse.
+
+| Kontroll | Resultat og grense |
+|---|---|
+| Klient og build | Full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS med uendret critical-kjede. Etter én siste statisk presisering om å lese alle tildelte rutiner er Vite-build PASS. Ny GitHub Actions-kontroll av publisert HEAD følges i PR #216. |
+| Desktop med faktisk React-modul | PASS i isolert QA `dpl_9WVR6ougoH43haYw7KFQxwc4cuKu`, SHA `8cbc8eeddd10e579782973e457aa901c06c4d009`: egen firmaadmin velges og lagres; to rutiner vises som Valgt og i samlet liste; filterskifte beholder begge; begge legges inn. Rutinefeltene viser tilknyttede forklaringer. Redigert mål beholdes ved samme-firma-refresh og skjul/åpning av appfane, lagres og vises i publiseringsvisningen. Begge rutiner godkjennes. Leser får begge eksakte v1, bekrefter dem og tas ut av listen over manglende bekreftelser. Oppfølgings- og revisjonsfeltene forklarer ansvar og neste steg. Ingen ny revisjonssignering er utført for denne tekstendringen. |
+| Mobil med samme komponent/hook | PASS i 390 px iframe: 375 px innvendig viewport og scrollWidth 375; de fire trinnene står under hverandre. KS/HMS-knapper er minst 44 px høye. Dette er ikke en fysisk mobiltest. Ingen app-/React-feil observert i komponentkontrollen; nettleserutvidelsens metadatafeil er separat. |
+| Innlogging og fast adresse | Vercels eksisterende branch-alias brukes videre. Appens eksisterende Supabase-klient og registrering er uendret; installert klient bruker vedvarende økt og automatisk tokenoppfriskning. Ny kode på samme adresse krever normalt ikke ny innlogging. Brukerens faktiske innloggede økt er ikke verifisert av komponenttesten. Oppfriskning på samme adresse/nettleser er derfor første brukertest. Ny adresse, nettleser, privat vindu eller avsluttet økt kan kreve innlogging. |
+| Uendrede regler | Ingen migrasjon, auth-løsning, RPC-argument, tilgangsregel, firmascope, innholdsversjon eller signaturregel endret. Den eksakte ansattbekreftelsen og revisjonsbekreftelsen er uendret. Tidligere authenticated SQL-kontroll er ikke gjentatt uten DB-endring. |
+| Leveransestatus | Håndbokfundament A; resten av minimumsomfanget er fortsatt planlagt. Ny innlogget brukerprøve/TEST OK gjenstår. Ingen merge, main/demo-endring eller Production-godkjenning. |
+
+![Enkel veiledning med fire trinn. Syntetisk komponentkontroll.](guidance-proof.jpg)
