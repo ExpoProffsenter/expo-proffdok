@@ -8,6 +8,13 @@ const server = await createServer({ server: { middlewareMode: true }, appType: '
 try {
   const { default: Builder } = await server.ssrLoadModule('/src/modules/sales/components/SalesOfferBuilder.jsx');
   globalThis.window = { __expoProffDokWorkProfile: {active_company_profile:{companyName:'Ringside Rørleggerbedrift AS'}}, location:{origin:'https://qa.invalid'} };
+  const { default: RequestForm } = await server.ssrLoadModule('/src/modules/sales/components/SalesRequestForm.jsx');
+  const requestHtml = renderToStaticMarkup(React.createElement(RequestForm, { form:{source:'Butikktilbud / varesalg'}, isDirectOffer:true, onUpdateForm:()=>{} }));
+  assert(requestHtml.includes('Velg lagret kunde'), 'Customer dropdown missing');
+  assert(requestHtml.includes('Søk kunder'), 'Customer search missing');
+  assert(requestHtml.indexOf('Lagre kunde for senere bruk') > requestHtml.indexOf('Kundenavn *'), 'Opt-in must follow customer fields');
+  assert(requestHtml.indexOf('Lagre kunde for senere bruk') < requestHtml.indexOf('sales-form-actions'), 'Opt-in must precede create offer actions');
+  assert(!/type="checkbox"[^>]*checked/.test(requestHtml), 'Customer save must default off');
   for (const ex of [false, true]) {
     const props = { selectedRequest: {id:'QA-vat-editor', directOffer:true, source:'Butikktilbud / varesalg'}, offerForm: { lines:[{id:'qa-product',lineType:'store_product',mainPostId:'butikk-varer',description:'QA vare',quantity:1,amount:100,storeUnitPriceInclVat:'125'}],options:[],showPricesExVat:ex }, updateOfferForm:()=>{} };
     const html = renderToStaticMarkup(React.createElement(Builder, props));

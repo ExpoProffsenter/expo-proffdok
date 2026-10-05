@@ -20,3 +20,5 @@ Kort Preview-test:
 TEST OK kreves før merge, konkret Production OK før migrasjon/publisering til Production. Deretter main → demo og preflight.
 
 Preview-feedback 05.10 kl. 20:03: valget var lagt i eldre ubrukt generelt tilbudsbygger. Rettet i aktive grouped/catalog-routeren med egen Prisvisning til kunden-seksjon, flagg i kladdforhåndsvisning og totalsum som følger valget. Permanent React-render-test går gjennom faktisk SalesOfferBuilder-router med syntetisk avsenderprofil, begge modus og summary; ingen innloggings-/backendkall. Ny Preview må testes.
+
+Kenneth TEST OK på prisvisning 05.10 kl. 20:13; ønsket UI-justering: separate rammer, lagringsvalg nederst før Opprett tilbud, nedtrekk og søk samt bedriftskundetekst. Samme branch. React-render kontrollerer begge innganger, riktig rekkefølge og lagring av som standard. Ingen SQL-endring. Ny Preview for sluttkontroll; Production ikke godkjent.

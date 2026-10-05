@@ -2029,7 +2029,7 @@ export default function SalesStoreOfferBuilderGrouped(props) {
                 <input type="checkbox" style={{ width: 20, height: 20, minWidth: 20, padding: 0, margin: 0, flexShrink: 0 }} checked={offerForm.showPricesExVat === true} onChange={event => updateOfferForm("showPricesExVat", event.target.checked)} />
                 <span>Vis priser eks. mva.</span>
               </label>
-              <p>Nye tilbud starter inkl. mva. Valget gjelder forhåndsvisning, kundelenke og PDF. Mva. og totalsum inkl. mva. vises fortsatt.</p>
+              <p>Eks. mva. brukes vanligvis for bedriftskunder. Nye tilbud starter inkl. mva. Valget gjelder forhåndsvisning, kundelenke og PDF. Mva. og totalsum inkl. mva. vises fortsatt.</p>
             </section>
             <StoreBrandSelector
               brandKey={currentBrand.key}
