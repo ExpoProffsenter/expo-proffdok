@@ -1,29 +1,21 @@
-# Release-status – kontrollert 05.10.2026
+# Release-status – 05.10.2026
 
 ## Production
 
-- PR #211 er merget etter Kenneths TEST OK kl. 16:29 og Production OK kl. 19:05 Europe/Oslo. Funksjonscommit: deaca065d37c6f51e4481898176e8987ca84fc6e.
-- Vercel dpl_ERi5YX2xU9NXegqT6nJzidre8fVo er READY, target=production, riktig SHA. expo-proffdok.app og arbeidsprofilasset svarer HTTP 200; asset bekrefter Production Supabase dqffxflaoyarbxyiyhop og ingen Sandbox-binding.
-- cordel_export_access-migrasjonen er anvendt i Production og tidligere scenario-testet i Sandbox med rollback. RLS aktiv, direkte klienttabelltilgang og anonym RPC stengt. Ingen brukertilgang er forhåndstildelt; aktiv Systemadmin har automatisk tilgang. Andre får Eksport til Cordel på brukerkortet i Systemadmin. Samme tilgang styrer tilbud/plukklisteeksport og det spesifikke Cordel-Hjelp-temaet.
-- Dagens ZIP/Rundsum beholdes. AFG kan importeres alene uten jobbliste. Ved jobbliste kreves jobblistefil først med tilsvarende Cordel-oppsett, deretter AFG uten sletting. 0 % materiellpåslag og øreavrunding beholder akseptert pris også ved AFG alene. Faktisk kildekost/timebudsjett/fortjeneste følger ikke med.
+- PR #214 er merget etter Kenneths TEST OK og Production OK kl. 20:19 Europe/Oslo. Feature head 1a9f51acc0668a0b52eab117fe0d14ad7c3c74fc, main merge d86ac10f4cb90eb7c15fba6e6ff6547656030d58.
+- Vercel dpl_AHHp5Bn8GvaHBWph5r3gkSHH1ydV READY, target=production, riktig SHA. expo-proffdok.app HTTP 200. workProfileClient-BQErwlYB.js bekrefter Production Supabase dqffxflaoyarbxyiyhop og ingen Sandbox-binding.
+- company_customer_profiles-migrasjonen er anvendt i Production. RLS aktiv; direkte klienttabelltilgang og anonym RPC stengt. Godkjent/aktiv profil og medlemskap i serveravledet arbeidsfirma kreves; revisjonsvern ved oppdatering. Ingen migrerte kundedata eller Production-testdata.
+- Frivillig kundelagring av som standard, nedtrekk og kundesøk i eget firma. Lagringsramme nederst før opprett tilbud. Gjenbruk i prosjekt og begge tilbudstyper. Prisvisning eks. mva. velges per tilbud og låses i publisert/akseptert versjon. Nye tilbud starter inkl. mva. Bedriftskundetekst, kundevisning, forhåndsvisning, tilbud-PDF og aksept-PDF oppdatert.
+- Cordel fra PR #211 er tidligere godkjent og publisert: ZIP/Rundsum, AFG alene eller jobbliste først + AFG. Eksporttilgang og Cordel-Hjelp styres av egen Systemadmin-brukertilgang. Tidligere Production-verifisering beholdes.
 
-## QA og avgrensning
+## QA
 
-- Godkjent Preview: dpl_H6i4o4A48vAwTcvgSpPLAvFPE4FU, Sandbox-only, head b727b9d0a267b15ee9be5be4ea6c1a471470ab3a. Lokal og publisert tree identisk.
-- Full critical-suite, Vite-build, refresh-runtime-test, Core Safety og scope/docs guards grønne. Sandbox-scenarioer dekker tildeling/fjerning, vanlig bruker/Firmaadmin, firmascope, inaktiv/ikke godkjent/anonym og bevaring av prisrettigheter.
-- Innlogget Preview er godkjent av Kenneth. Innlogget Production-UI er ikke kontrollert i skynettleseren; tidligere innlogging var blokkert. Ingen Production-testdata eller brukertildelinger er skrevet.
-- Kundeprofiler og eks. mva.-visning fra brukerfeedback er egen, ikke implementert oppgave og inngår ikke i PR #211.
+- Godkjent Preview dpl_8MALMgf8H82dTKoJZNoUfwPZDSsZ, Sandbox-only. Publisert tree identisk med kontrollert lokal kode. Full critical-suite, Vite-build, Core Safety og dokumentasjonsguard grønne.
+- Runtime mva.-test dekker defaults, publisert/akseptert valg, public-mapper og rehydrering. React-render bruker faktisk generell tilbudsrouter; kundesøk/nedtrekk, lagringsplassering og av-som-standard kontrollert. Sandbox SQL-scenarioer for firmascope, whitelist, revisjon, anonym og feil arbeidsfirma passerte med rollback.
+- Kenneth har testet innlogget Preview. Ingen innlogget Production-test hevdes. Security advisors for kunderegister: tilsiktet RPC-only RLS uten direkte policy og authenticated SECURITY DEFINER; auth-/medlemskapskontroll og låst search_path. Eksisterende prosjektfunn er utenfor scope.
 
-## Demo
+## Sandbox/demo
 
-- Miljømål: BEGGE. Kontrollert main → demo via PR #212, merge 35b51ff45cf058f55c581b396ab18884d5c655a6. Eksisterende overlay og Golden Demo-data beholdes. Lokal sammenslåing med Sandbox-build er grønn.
-- Sandbox-migrasjonen er allerede anvendt. Innlogget Golden Demo-preflight gjenstår; kjør Kjør preflight før kurs/kundedemo. Ikke forveksle grønn build med innlogget preflight.
-- Ingen branches er slettet. Behold main og permanent demo.
+Miljømål: BEGGE. Main → demo synk via PR #215, merge c7017fc7a036a610e32571a0f900fb2ed8ca7e5c. Eksisterende overlay og Golden-data beholdes; lokal sammenslåing med full Sandbox-build grønn. Kunderegistermigrasjonen finnes i Sandbox. Server-preflight er grønn 19/19, kontrollert med demoidentitet i rollback-transaksjon. Kontrollbaseline oppdateres til gjeldende main etter denne release-dokumentasjonen.
 
-## Pågående separat oppgave – kundeprofiler og eks. mva.
-
-Miljømål BEGGE. KJØR 05.10.2026 gjelder ny feature/Preview `feat-company-customers-vat` fra main 86e6036, ingen Production-godkjenning. Kunderegister deles i aktivt firma, lagring er frivillig/av som standard, gjenbruk i prosjekt og begge tilbudstyper. Visning eks. mva. velges per tilbud, av som standard, følger låst kundevisning/PDF. Scope: customer-modul/migrasjon, én kundedataflate i main, forespørselsskjema, tilbudsform/snapshot og pris-presentasjon, dokumentasjon/Hjelp. Ingen urelaterte UX-/recoveryendringer.
-
-Preview-feedback kl. 20:03: mva.-valg manglet i aktiv generell tilbudsbygger. Rettet i grouped/router-flyten, kladdforhåndsvisning og grunnsum. Ny permanent React-render-test beskytter faktisk router. Ny Preview krever fortsatt TEST OK og konkret Production OK.
-
-Kenneth har TEST OK på prisvisning kl. 20:13. Kunderegister-UX justeres etter feedback: nedtrekk og søk, separate rammer og frivillig lagring nederst før Opprett tilbud; bedriftskundetekst i prisvisningen. Ny Preview, ingen Production-godkjenning.
+Innlogget nettleser-preflight og lokal redigerbar Badskisse er ikke kontrollert her; bruk Kjør preflight før kurs/kundedemo. Featurebranch er ikke slettet. README, Architecture, modul-README, Hjelp og docs/qa/COMPANY_CUSTOMERS_VAT.md følger endringen.
