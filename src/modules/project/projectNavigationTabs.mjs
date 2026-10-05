@@ -4,6 +4,7 @@
 export function createGlobalAppTabs({
   isCompanyAdminUser = false,
   canUseAdminProjectSync = false,
+  canUseKshms = false,
 } = {}) {
   return [
     ["prosjekt", "Startside"],
@@ -12,6 +13,7 @@ export function createGlobalAppTabs({
     ["innlogging", "Min profil / e-postvalg"],
     ...(isCompanyAdminUser ? [["firmaadmin", "Firma"]] : []),
     ["prosjektliste", "Prosjektliste"],
+    ...(canUseKshms ? [["kshms", "KS/HMS"]] : []),
     ["hjelp", "Hjelp"],
     ...(canUseAdminProjectSync ? [["admin", "Systemadmin"]] : []),
   ];

@@ -1,4 +1,5 @@
 import CompanyCustomerPicker from "./modules/customers/CompanyCustomerPicker.jsx";
+import { useKshmsAccess } from './modules/kshms/kshmsAccess.js';
 // Expo ProffDok – main application entry. Historical phase/deploy notes are preserved in Git history.
 // FASE 28C1: Startside viser konkrete prosjekter som krever oppfølging via projectListTools.
 // FASE 28D1: Appen varsler kontrollert når en nyere Vite/Vercel-versjon er tilgjengelig.
@@ -71,6 +72,8 @@ const import_client = { createRoot };
 const import_supabase_js = { createClient };
 const import_lucide_react = { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck };
 const import_jsx_runtime = { jsx, jsxs, Fragment };
+const KshmsModule = React.lazy(() => import('./modules/kshms/KshmsModule.jsx'));
+const KshmsActivation = React.lazy(() => import('./modules/kshms/KshmsActivation.jsx'));
   var supabase = getAppSupabaseClient() || (0, import_supabase_js.createClient)(
     "https://dqffxflaoyarbxyiyhop.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZmZ4Zmxhb3lhcmJ4eWl5aG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzcxNTEsImV4cCI6MjA5MzA1MzE1MX0.5fkVNPooHGlayw4NgYM3fUVrAiv0XbUyTixkfeToMSE"
@@ -826,6 +829,12 @@ const import_jsx_runtime = { jsx, jsxs, Fragment };
     }, [projectId]);
     const [mobileCreatingProject, setMobileCreatingProject] = (0, import_react.useState)(false);
     const [authUser, setAuthUser] = (0, import_react.useState)(null);
+    const kshmsContext = useKshmsAccess(authUser?.id);
+    const [openedKshmsScope, setOpenedKshmsScope] = (0, import_react.useState)(null);
+    const kshmsScopeKey = kshmsContext?.enabled ? `${kshmsContext.user_id}:${kshmsContext.company_id}` : null;
+    (0, import_react.useEffect)(() => {
+      if (tab === "kshms" && kshmsScopeKey) setOpenedKshmsScope(kshmsScopeKey);
+    }, [tab, kshmsScopeKey]);
     const [authEmail, setAuthEmail] = (0, import_react.useState)("");
     const [authPassword, setAuthPassword] = (0, import_react.useState)("");
     const [authMode, setAuthMode] = (0, import_react.useState)("login");
@@ -2034,6 +2043,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     });
     const globalTabs = createGlobalAppTabs({
       isCompanyAdminUser,
+      canUseKshms: Boolean(kshmsContext?.enabled),
       canUseAdminProjectSync
     });
     const tabs = hasActiveProjectWorkspace ? projectTabs : globalTabs;
@@ -6819,10 +6829,13 @@ ${appLink}`;
         }),
                 tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
                 tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: projectScopedTilbud, overtagelse, projectLog }),
+        kshmsContext?.enabled && (tab === "kshms" || openedKshmsScope === kshmsScopeKey) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { hidden: tab !== "kshms", children: (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: tab === "kshms" ? "Henter KS/HMS …" : null, children: (0, import_jsx_runtime.jsx)(KshmsModule, { context: kshmsContext }, kshmsScopeKey) }) }),
+        tab === "kshms" && !kshmsContext?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { role: "status", children: "KS/HMS er ikke tilgjengelig i aktivt firma. Kontroller arbeidsprofil og modulgrant hos firmaadmin." }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),
           isSystemAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AppNewsAdmin, { supabaseClient: supabase, authUser }),
+          isSystemAdminUser && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter firmaktivering …", children: (0, import_jsx_runtime.jsx)(KshmsActivation, {}) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item adminAccordionItem", children: [
             adminAccordionButton("dokument", "Synk produktdokumenter", "Aktive prosjekter"),
             adminSectionIsOpen("dokument") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [

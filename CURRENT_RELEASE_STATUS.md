@@ -1,3 +1,12 @@
+# KS/HMS – pågående, ikke produksjonsgodkjent (2026-10-05)
+
+- Miljømål: **BEGGE**. Feature `feat-kshms-foundation` starter fra main `155f6c4`; eksisterende produksjonsrelease nedenfor gjelder fortsatt.
+- Full kildekartlegging, [krav-/gap-/leveranseplan](docs/kshms/PLAN.md) og [125-raders dekningsoversikt](docs/kshms/COVERAGE.md) er laget fra begge vedlegg (148/127 sider).
+- Trinn A bygger håndbok, firma-/ansattilgang, oppstart, tilpasningsutkast, firmagodkjenning, uforanderlige versjoner/bekreftelser og signert årlig revisjon. Dette er **ikke et komplett KS/HMS-system**. Hele resterende minimumsomfang er registrert i planen.
+- Kun Sandbox har fått nye KS/HMS-tabeller/RPC-er. Preview-branchen har eksplisitt sandbox-mål. Ingen Production-migrasjon, aktivering, betalingsintegrasjon, e-postutsending eller main/demo-merge er utført.
+- Faktisk SQL-scenario med `authenticated`-rolle passerer, med rollback av alle syntetiske identiteter/data. Tilgangs-/arbeidsprofilracer og kilde-/kladd-/navigasjonsscenario er grønne. [QA-status](docs/kshms/QA.md) skiller reell databaseverifikasjon fra syntetisk komponent-UI og innlogget Preview-test.
+- Ny bruker-**TEST OK**, relevant innlogget Preview-test og grønne repo-kontroller kreves før merge. Deretter kreves Production-verifisering og kontrollert main → demo-synk/preflight. Tidligere godkjenninger gjelder ikke denne modulen.
+
 # Release-status – 05.10.2026
 
 ## Production

@@ -4,7 +4,7 @@ Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsnin
 
 Produksjon: https://expo-proffdok.app
 
-**Produksjonsbaseline:** `main` inkluderer godkjent PR #207: antall, nye plukklister og separate plukkliste-/prisutskrifter i Prissøk på PC. Kameraskanning er fortsatt på mobil. Tidligere rettelser for tilbudsrecovery (PR #206), små strekkoder (PR #203) og serverlagrede plukklister (PR #205) er bevart. Se [gjeldende release-status](CURRENT_RELEASE_STATUS.md) for Production-verifisering og kontrollert `main → demo`-synk/preflight.
+**Produksjonsbaseline:** kontrollert 2026-10-05: `main` er `155f6c4`, Vercel Production er READY på samme SHA. Godkjent PR #214 gir firmakunder og mva.-visning, og tidligere Cordel-/prosjekt-/tilbudsfunksjoner er bevart. KS/HMS trinn A er fortsatt feature/Preview og ikke produksjonsgodkjent. Se [gjeldende release-status](CURRENT_RELEASE_STATUS.md).
 
 ## Cordel-eksport
 
@@ -195,3 +195,8 @@ Begge tilbudstyper starter inkl. mva. **Vis priser eks. mva.** velges per tilbud
 I Generelt tilbud velges prisvisningen i den aktive grupperte tilbudsbyggeren under «Prisvisning til kunden». Forhåndsvisning og editorens grunnsum følger valget.
 
 Kunderegisteret har nedtrekksmeny og søk på navn/e-post i egen ramme. Frivillig kundelagring ligger nederst i kunde-/tilbudsskjemaet, før Opprett tilbud, med avkrysning av som standard og egen Lagre kunde-knapp. Eks. mva. brukes vanligvis for bedriftskunder.
+# KS/HMS – håndbokfundament i Preview/Sandbox
+
+KS/HMS videreutvikler eksisterende ProffDok. [Plan og faktisk gap-analyse](docs/kshms/PLAN.md), [full kapittel-/rutinedekning](docs/kshms/COVERAGE.md) og [QA-status](docs/kshms/QA.md) beskriver hele minimumsomfanget. Trinn A gir firmaktivering, firmabundet ansattilgang, flerfaglig oppstart, 12 selvstendige tilpasningsutkast, blank/kopi, kapitler, kladd/godkjent versjon, ansattbekreftelse og signert årlig revisjon. Det er ikke et komplett KS/HMS-system; utførelse/SJA/risiko, samlet firmavvik, varsler/PDF og begrenset personal/stoffkartotek gjenstår i registrerte trinn.
+
+Systemadmin aktiverer firmaets modul, firmaadmin styrer grant og publisering, og utpekt KS/HMS-ansvarlig signerer revisjon. Alle API-operasjoner kontrollerer aktivt firma og rolle. Ingen pris-/betalingsintegrasjon innføres. Production er ikke endret, og ny TEST OK kreves før merge. Preview-branchen må ha eksplisitt `EXPO_BACKEND_TARGET=sandbox`.

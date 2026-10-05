@@ -1,9 +1,9 @@
 # Expo ProffDok – arkitekturkart
 
-**Fase:** 45B – Proff / Generelt tilbud / Enkel ordre
-**Status:** Production inkluderer godkjent PR #207 med utvidet PC-plukkliste og separate utskriftsvalg, samt PR #206 og de tidligere mobil-/plukklisteendringene; miljømål BEGGE
-**Dato:** 03.10.2026
-**Produksjonsbaseline:** funksjonsmerge `ca161ba5`, PR #207; senere dokumentasjonscommits endrer ikke appkoden. Kode, backend og live system er autoritativt dersom statusdokumentet henger etter
+**Fase:** eksisterende ProffDok med firmakunder/mva.; KS/HMS trinn A under utvikling i feature/Preview
+**Status:** Production inkluderer godkjent PR #214 og tidligere Cordel-/prosjekt-/tilbudsfunksjoner. KS/HMS er ikke merget eller produksjonsgodkjent.
+**Kontrolldato:** 05.10.2026
+**Produksjonsbaseline:** `main` = `155f6c4ac01f126c1db0c65da385cfd9305587d5`; Vercel `dpl_9wsjTrEVzvAF6jf7f9HgvzskYP5z` READY på samme SHA. Kode, backend og live system er autoritativt dersom statusdokumentet henger etter.
 **Production Supabase:** `dqffxflaoyarbxyiyhop`  
 **Permanent Demo Sandbox:** branch `demo`, Supabase `ppvircenkjizeiqdxphj`
 
@@ -692,3 +692,14 @@ Avtalte integrasjonspunkter: SalesRequestForm og prosjektets kundedata i main.js
 Mva.-valget i Generelt tilbud er integrert i `SalesStoreOfferBuilderGrouped` via eksisterende katalog/router-wrappere. Kladdforhåndsvisning bygger snapshot av nåværende formvalg; permanent render-QA verifiserer den faktiske routeren og begge prisvisninger.
 
 CompanyCustomerProvider deler eksisterende firmascope, valgt profil og revisjonsvern mellom Search øverst og Save nederst i SalesRequestForm. Prosjekt bruker samme komponent sammensatt. Dropdown og søk bruker samme avgrensede RPC; maks 30 treff, presiserende søk finner øvrige kunder. Ingen endring i serverrettigheter eller automatisk lagring.
+# KS/HMS – integrert domene, trinn A (2026-10-05)
+
+Ny modul under `src/modules/kshms` kobles til eksisterende globale navigasjon og appens ene Supabase-klient. Eksisterende prosjekt-/salg-/rapportflyter beholdes. Miljømål er BEGGE; første feature-Preview bruker Sandbox. [Planen](../kshms/PLAN.md) fastsetter full dekning, gjeldende krav, gjenbruk, tilgang, personvern og resterende trinn.
+
+Firmagrensen er `sales_company_scopes` med aktivt medlemskap, ikke legacy profil-/prosjektfirma. `company_module_access` utvides med `kshms`, mens `kshms_member_access` gir internt firmagrant. Systemadmin kan aktivere firma, men får ikke automatisk innholdsinnsyn. Firmaadmin utledes av aktivt medlemskap. Alle utsatte tabeller har RLS uten direkte API-privilegier; smale security-definer RPC-er med tom `search_path` utfører eksplisitt auth-, firma-, modul- og rollekontroll via ikke-eksponert `kshms_private`. Anonyme kall og direkte tabelltilgang avvises.
+
+`kshms_settings` lagrer flerfaglig oppstart/utpekt ansvarlig/neste revisjon. `kshms_routines` har revisjonskontrollert kladd og arkiveringsstatus; `kshms_versions` lagrer uforanderlig publisert innhold, kildekontroll, godkjenner, tidspunkt og SHA-256. `kshms_assignments` og `kshms_acknowledgments` knytter bruker og nøyaktig versjon. `kshms_reviews` fryser gjeldende versjons-ID-er/hash og signert revisjonsnotat. Trigger hindrer omskriving av publiserte og signerte poster; minimal audit følger mutasjoner. Nye/vesentlige versjoner har egen bekreftelse; tidligere poster beholdes. Sentrale forslag tas manuelt felt for felt inn i kladd og krever ny firmagodkjenning.
+
+React-komponenten beholdes montert ved vanlig appfanebytte; ordinær rutinekladd sikres lokalt per bruker/firma først ved faktisk redigering. Server leses før lokal gjenoppretting tilbys, og gjenoppretting er et bevisst valg med opprinnelig revisjonsnummer. Aktiv profil-/grantendring nuller tilgang; gamle skrivekall får forventet firma og kan ikke krysse kontekst. Ingen egen authklient eller automatisk tom kladd skriver til server. Lokalt innhold er bare felles håndboktekst; individuelle HR-data er utenfor denne komponenten.
+
+Trinn A har ingen filopplasting, betalingssystem, eksterne utsendinger eller individuelle personaldokumenter. Eksisterende offentlige bilde-buckets skal ikke brukes for senere sensitive KS/HR-filer. B/C/D bygger versjonerte maler/gjennomføringer/SJA/risiko, én samlet avvikssentral, varsler/PDF/avgrenset deling og separate HR-/SDS-domener. [Dekningsoversikten](../kshms/COVERAGE.md) beholder alle originale temaer, også VVS og historisk stoff. Årlig revisjon og 5×5 er produktvalg, ikke en generell lovpåstand.
