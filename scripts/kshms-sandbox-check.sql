@@ -8,7 +8,7 @@ do $$ declare a uuid:=gen_random_uuid(); b uuid:=gen_random_uuid(); uid uuid; k 
  foreach k in array array['admin','editor','reader','other'] loop
   uid:=gen_random_uuid(); perform set_config('kshms.test.'||k,uid::text,true);
   insert into auth.users(id,aud,role,email,created_at,updated_at,raw_app_meta_data,raw_user_meta_data)
-   values(uid,'authenticated','authenticated','ks-qa-'||uid||'@example.invalid',now(),now(),'{}','{}');
+   values(uid,'authenticated','authenticated','ks-qa-'||uid||'@example.invalid',now(),now(),'{}',jsonb_build_object('full_name','QA '||k));
   insert into public.profiles(id,email,company_name,approved,deactivated,role,company_role)
    values(uid,'ks-qa-'||uid||'@example.invalid','kshms-qa-'||case when k='other' then b else a end,true,false,case when k in ('admin','other') then 'admin' else 'member' end,case when k in ('admin','other') then 'firmaadmin' else 'ansatt' end)
    on conflict(id) do update set company_name=excluded.company_name,approved=true,deactivated=false,role=excluded.role,company_role=excluded.company_role,system_role=null;
@@ -56,10 +56,14 @@ begin
  perform set_config('request.jwt.claim.sub',editor_id::text,true);
  v1:=public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',1,'change_summary','Initial QA publication','requires_ack',true));
  assert (v1->>'published_by')::uuid=editor_id and v1->'content'=draft and v1->>'number'='1' and length(v1->>'content_hash')=64; n:=n+1;
+ assert v1->'publisher_identity'->>'name'='QA editor' and (v1->'publisher_identity'->>'id')::uuid=editor_id,'Publisher identity not captured';n:=n+1;
+ assert jsonb_array_length(public.kshms_get_state(a)->'acknowledgments')=0,'Publishing without own confirmation added an ack';n:=n+1;
  perform set_config('request.jwt.claim.sub',reader_id::text,true);
  state:=public.kshms_get_state(a);assert jsonb_array_length(state->'versions')=1 and not ((state->'routines'->0)?'draft');n:=n+1;
+ assert state->'versions'->0->'publisher_identity'->>'name'='QA editor' and jsonb_array_length(state->'members')=0,'Reader identity projection exposed roster or omitted publisher';n:=n+1;
  perform public.kshms_command(a,'ack',jsonb_build_object('version_id',v1->>'id','statement',statement,'user_id',editor_id,'acknowledged_at','2000-01-01'));
  state:=public.kshms_get_state(a);assert (state->'acknowledgments'->0->>'user_id')::uuid=reader_id and (state->'acknowledgments'->0->>'acknowledged_at')::timestamptz>=now()-interval '1 minute';n:=n+1;
+ assert state->'acknowledgments'->0->'user_identity'->>'name'='QA reader' and (state->'acknowledgments'->0->'user_identity'->>'id')::uuid=reader_id,'Ack identity accepted another employee';n:=n+1;
  perform public.kshms_command(a,'ack',jsonb_build_object('version_id',v1->>'id','statement',statement));assert jsonb_array_length(public.kshms_get_state(a)->'acknowledgments')=1,'Duplicate ack';n:=n+1;
  begin perform public.kshms_command(b,'publish',jsonb_build_object('id',r->>'id','revision',2,'change_summary','Wrong firm cannot publish'));raise exception 'Wrong expected company publish';exception when insufficient_privilege then n:=n+1;end;
  begin perform public.kshms_command(b,'ack',jsonb_build_object('version_id',v1->>'id','statement',statement));raise exception 'Wrong expected company';exception when insufficient_privilege then n:=n+1;end;
@@ -73,7 +77,16 @@ begin
  r:=public.kshms_command(a,'save',jsonb_build_object('id',r->>'id','revision',2,'draft',draft));assert r->>'revision'='3';n:=n+1;
  begin perform public.kshms_command(a,'save',jsonb_build_object('id',r->>'id','revision',2,'draft',draft));raise exception 'Stale draft accepted';exception when serialization_failure then n:=n+1;end;
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
- v2:=public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',3,'change_summary','Changed QA publication','requires_ack',true));
+ -- Invalid combined confirmation must roll the entire publication back.
+ begin perform public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',3,'change_summary','Invalid own confirmation','acknowledge_self',true,'self_statement','not the confirmation'));raise exception 'Invalid own statement published';exception when others then if sqlerrm<>'Own confirmation statement required' then raise;end if;n:=n+1;end;
+ begin perform public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',3,'change_summary','Missing own confirmation','acknowledge_self',true));raise exception 'Missing own statement published';exception when others then if sqlerrm<>'Own confirmation statement required' then raise;end if;n:=n+1;end;
+ begin perform public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',3,'change_summary','String boolean refused','acknowledge_self','true','self_statement',statement));raise exception 'Nonboolean choice accepted';exception when others then if sqlerrm<>'Explicit own confirmation must be a boolean' then raise;end if;n:=n+1;end;
+ assert jsonb_array_length(public.kshms_get_state(a)->'versions')=1,'Invalid combined confirmation left a new version';n:=n+1;
+ v2:=public.kshms_command(a,'publish',jsonb_build_object('id',r->>'id','revision',3,'change_summary','Changed QA publication','requires_ack',true,'acknowledge_self',true,'self_statement',statement,'user_id',reader_id,'acknowledged_at','2000-01-01'));
+ state:=public.kshms_get_state(a);
+ assert exists(select 1 from jsonb_array_elements(state->'acknowledgments') ack where (ack->>'user_id')::uuid=admin_id and ack->>'version_id'=v2->>'id' and ack->>'statement'=statement and ack->'user_identity'->>'name'='QA admin' and (ack->>'acknowledged_at')::timestamptz>=now()-interval '1 minute'),'Combined publication missed own exact confirmation';n:=n+1;
+ assert not exists(select 1 from jsonb_array_elements(state->'acknowledgments') ack where (ack->>'user_id')::uuid<>admin_id and ack->>'version_id'=v2->>'id'),'Combined publication signed for another employee';n:=n+1;
+
  assert (v2->>'published_by')::uuid=admin_id and v2->>'number'='2' and v2->>'content_hash'<>v1->>'content_hash';n:=n+1;
  begin perform public.kshms_command(a,'review',jsonb_build_object('findings','Review finding','follow_up','Review follow-up','next_review_on',current_date+100));raise exception 'Admin signed responsible review';exception when insufficient_privilege then n:=n+1;end;
  perform set_config('request.jwt.claim.sub',reader_id::text,true);
@@ -125,6 +138,7 @@ begin
  begin perform public.kshms_command(a,'save',jsonb_build_object('draft',draft));raise exception 'Disabled company wrote';exception when insufficient_privilege then n:=n+1;end;
  begin perform 1 from public.kshms_versions;raise exception 'Direct authenticated table read';exception when insufficient_privilege then n:=n+1;end;
  begin perform kshms_private.context();raise exception 'Direct private helper';exception when insufficient_privilege then n:=n+1;end;
+ begin perform kshms_private.identity_snapshot(admin_id);raise exception 'Direct identity helper';exception when insufficient_privilege then n:=n+1;end;
  perform set_config('request.jwt.claim.sub','',true);
  begin perform public.kshms_get_state(a);raise exception 'No-identity read';exception when insufficient_privilege then n:=n+1;end;
  perform set_config('kshms.test.passed',n::text,true);
@@ -150,5 +164,31 @@ do $$ declare n int:=current_setting('kshms.test.passed')::int; a uuid:=current_
  perform set_config('kshms.test.passed',n::text,true);
 end $$;
 select current_setting('kshms.test.passed')::integer as checks_passed,'Real authenticated role; synthetic fixtures; all changes roll back' as evidence;
-rollback;
+-- Prove that new identity snapshots survive account-name changes, while a
+-- genuinely legacy row is only enriched in the response, never backfilled.
+do $$ declare a uuid:=current_setting('kshms.test.company_a')::uuid; admin_id uuid:=current_setting('kshms.test.admin')::uuid; reader_id uuid:=current_setting('kshms.test.reader')::uuid; r uuid; v uuid; begin
+ update auth.users set raw_user_meta_data=jsonb_build_object('full_name','QA renamed') where id=admin_id;
+ assert exists(select 1 from public.kshms_versions where company_id=a and published_by=admin_id and publisher_identity->>'name'='QA admin'),'Published identity changed with account name';
+ assert exists(select 1 from public.kshms_acknowledgments where company_id=a and user_id=admin_id and user_identity->>'name'='QA admin'),'Own identity changed with account name';
+ insert into public.kshms_routines(company_id,draft,created_by,updated_by) values(a,'{"title":"Synthetic legacy","chapter":"Personal","goal":"Goal","responsibility":"Responsible","procedure":"Procedure","documentation":"Evidence","confirmation":"Read","references":[]}',admin_id,admin_id) returning id into r;
+ insert into public.kshms_versions(company_id,routine_id,number,content,content_hash,change_summary,published_by,published_at,requires_ack) select a,r,1,draft,repeat('a',64),'Synthetic legacy record',admin_id,'2020-01-01',true from public.kshms_routines where id=r returning id into v;
+ insert into public.kshms_assignments(company_id,version_id,user_id,assigned_by) values(a,v,reader_id,admin_id);
+ insert into public.kshms_acknowledgments(company_id,version_id,user_id,statement,acknowledged_at) values(a,v,reader_id,'Synthetic existing confirmation','2020-01-02');
+ update public.kshms_member_access set enabled=true where company_id=a and user_id=reader_id;
+ perform set_config('kshms.test.legacy',v::text,true);
+end $$;
+set local role authenticated;
+do $$ declare a uuid:=current_setting('kshms.test.company_a')::uuid; v uuid:=current_setting('kshms.test.legacy')::uuid; state jsonb; begin
+ perform set_config('request.jwt.claim.sub',current_setting('kshms.test.sys'),true);perform public.kshms_activate(a,true);
+ perform set_config('request.jwt.claim.sub',current_setting('kshms.test.reader'),true);state:=public.kshms_get_state(a);
+ assert exists(select 1 from jsonb_array_elements(state->'versions') row where (row->>'id')::uuid=v and row->'publisher_identity'->>'source'='current_account' and row->'publisher_identity'->>'name'='QA renamed'),'Legacy publisher label missing or misrepresented as snapshot';
+ assert exists(select 1 from jsonb_array_elements(state->'acknowledgments') row where (row->>'version_id')::uuid=v and row->'user_identity'->>'source'='current_account' and row->'user_identity'->>'name'='QA reader'),'Legacy own identity missing';
+ assert jsonb_array_length(state->'members')=0,'Legacy labels exposed firm roster';
+end $$;
+reset role;
+do $$ declare v uuid:=current_setting('kshms.test.legacy')::uuid; begin
+ assert (select publisher_identity is null from public.kshms_versions where id=v),'Legacy read backfilled immutable publication';
+ assert (select user_identity is null from public.kshms_acknowledgments where version_id=v),'Legacy read backfilled immutable confirmation';
+end $$;
 select 'All role/tenant/version/review assertions passed; synthetic records rolled back' as result;
+rollback;
