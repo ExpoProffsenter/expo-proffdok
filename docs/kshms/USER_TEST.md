@@ -4,7 +4,17 @@ Oppdatert 2026-10-06. Dette gjelder håndboken som er klar for testing nå. Rest
 
 Bruk alltid [samme Preview-adresse](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe) i samme nettleser. Nye oppdateringer kommer på denne adressen. Oppdater siden etter at en ny versjon er klar. Du skal normalt fortsatt være innlogget. En annen adresse, en annen nettleser, privat vindu eller en avsluttet økt kan kreve ny innlogging. Preview bruker Sandbox.
 
-## Siste endring: automatisk neste rutine og fullføring nederst
+## Siste endring: kort oversikt over medarbeiderne
+
+Oppdater samme Preview én gang. De ti godkjente rutinene beholdes; du trenger ikke godkjenne dem på nytt.
+
+1. **Kort oversikt:** Åpne **Oppfølging og revisjon**. Fire brukere med ti ubekreftede rutiner hver skal gi fire lukkede medarbeiderrader og **40 bekreftelser gjenstår**. Har noen allerede bekreftet, skal antallet være lavere. Åpne din rad: alle aktuelle utgaver skal vises med status og eventuelt tidspunkt. Prøv **Søk etter medarbeider** og **Tøm søk**.
+2. **Egen fremdrift:** Åpne **Les og bekreft**. Les én rutine du faktisk har igjen, huk av egen gjennomgang og trykk **Bekreft versjon N**. Neste utgave skal åpnes med avslått avkrysning. Tilbake i oppfølgingen skal bare din rad ha én ekstra bekreftelse, og totalsummen skal ha gått ned med én. Hvis du er ferdig, kontroller tidspunktet i raden uten å lage ny bekreftelse.
+3. **Tildeling og revisjon ved behov:** Begge områdene skal være lukket til du åpner dem. Under **Gi godkjente rutiner til nye medarbeidere** skal det ikke ligge tomme rutinebokser når alle allerede har fått utgavene. Neste revisjonsdato skal fortsatt være synlig. **Gjennomfør revisjon** åpner feltene; lukking og ny åpning skal beholde skrevet tekst. Du trenger ikke fylle ut eller signere en revisjon nå bare for å gå videre. Neste steg er at hver ansatt leser og bekrefter i sin egen app.
+
+Permanent kontroll og syntetisk komponentkontroll på stor skjerm og i mobilbredde passerer. Ingen av dine tildelinger, godkjenninger eller bekreftelser er endret av utviklerens tester. Din innloggede full-app-prøve gjenstår; påminnelser på e-post og i app er fortsatt et senere leveransetrinn.
+
+## Tidligere endring: automatisk neste rutine og fullføring nederst
 
 Du har allerede godkjent alle ti rutinene. Du trenger ikke godkjenne dem på nytt. Oppdater samme Preview én gang når oppdateringen er klar.
 

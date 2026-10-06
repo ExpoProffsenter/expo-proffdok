@@ -732,6 +732,14 @@ Automatisk fremdrift bruker fersk, autorisert state fra den eksisterende `run`-h
 
 Demomedarbeiderne for Expo Proffsenter er rene Sandbox-fixtures i eksisterende auth/profil/medlemsstruktur, med `.invalid`-adresser og ingen automatiske KS-grant. Seed, UI-harness og demo-overlay inngår ikke i feature/main-PR.
 
+## Kompakt oppfølging per medarbeider (2026-10-06)
+
+`kshmsFollowup` utleder oppfølging fra eksisterende, autorisert firmastate, bare når `context.manage` gjelder. `acknowledgmentOverview` grupperer tildelte påkrevde utgaver per bruker og kobler bekreftelser med eksakt bruker-/versjonspar. Første utgave og senere `requires_ack` følger eksisterende krav; informasjonsutgaver, ukjente versjoner og duplikatpar øker ikke antallet. Bekreftede utgaver med tidspunkt og ferdige medarbeidere beholdes. Map/Set-oppslag erstatter gjentatte søk uten ekstra serverlesing eller skriving.
+
+`KshmsAcknowledgments` viser fremdrift, lokalt søk og native details per medarbeider. Komponenten har ingen bekreftelses- eller signeringshandling. `pendingAssignmentOptions` beholder eksisterende kvalifisering (aktiv modultilgang eller firmaadmin), men viser bare gjeldende utgaver som minst én kvalifisert bruker mangler. Eksisterende `assign`-kommando, busy-vern og tilgangskontroll brukes uendret; funksjonen gir ingen tilgang.
+
+Ny tildeling og revisjon ligger i separate native details. Revisjonens eksisterende feltstate forblir montert og beholdes ved lukking/åpning og samme firmas faneretur. Dato, utpeking, signaturtekst, snapshot og revisjonspayload er uendret. Ansattes gjennomgang er neste steg etter publisering; revisjon innfører ingen ekstra fremdriftsport. Ingen auth-, nav-, database-, Storage-, rolle- eller betalt-tilgangsendring.
+
 ## Tekstforslag, søk og målrettet tilgangsoppdatering (2026-10-06)
 
 `publishManagedAccessChange` har allerede source/userId/companyId. KS/HMS sender nå målmedlem og firma ved grantendring. `useKshmsAccess` beholder den monterte arbeidsflaten når hendelsen gjelder en annen bruker og sjekker serveren i bakgrunnen; egen eller uavgrenset hendelse nuller kontekst umiddelbart. Revision/racevern, feilavslag, reelt firmabytte og auth-identitetskontroll beholdes. Ingen ny global event, authklient eller recoverymekanisme.

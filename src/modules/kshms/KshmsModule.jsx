@@ -7,6 +7,8 @@ import { addLibraryRoutines } from './kshmsLibrary.mjs';
 import KshmsRoutineLibrary from './KshmsRoutineLibrary.jsx';
 import KshmsRoutineSearch from './KshmsRoutineSearch.jsx';
 import KshmsHandbookProgress from './KshmsHandbookProgress.jsx';
+import KshmsAcknowledgments from './KshmsAcknowledgments.jsx';
+import { acknowledgmentOverview,pendingAssignmentOptions } from './kshmsFollowup.mjs';
 import { filterFirmRoutines,matchesRoutineSearch } from './kshmsSearch.mjs';
 import { SETUP_TEXT_FIELDS,ROUTINE_TEXT_SUGGESTIONS,fillEmptySetup,changeSetupTrades,routineWithSuggestions,fillEmptyRoutine,ROUTINE_WRITING_TIPS } from './kshmsWriting.mjs';
 import './kshms.css';
@@ -153,9 +155,9 @@ export default function KshmsModule({context}) {
  const nextStep=()=>{if(busy||dirty)return;if(progress.step==='setup'){setScreen('setup');setFlowFocus(previous=>previous+1);}else if(progress.step==='approval'){setScreen('handbook');choosePublication(progress.waiting[0]);}else if(progress.step==='selection'){setScreen('handbook');setLibraryOpen(true);setLibraryFocus(previous=>previous+1);}else{setScreen('followup');setFlowFocus(previous=>previous+1);}};
  const pending=pendingReadingVersions(data,userId);
  const latest=data.routines.filter(r=>!r.archived).map(r=>data.versions.find(v=>v.routine_id===r.id)).filter(Boolean);
- const eligibleMembers=data.members.filter(m=>m.enabled||m.workspace_role==='firmaadmin');
+ const followup=canManage?acknowledgmentOverview(data):null;
+ const assignmentOptions=canManage?pendingAssignmentOptions(data,latest):[];
  const overdue=data.settings && new Date(`${data.settings.next_review_on}T23:59:59`) < new Date();
- const missing=data.assignments.filter(a=>!data.acknowledgments.some(k=>k.version_id===a.version_id&&k.user_id===a.user_id) && data.versions.some(v=>v.id===a.version_id&&(v.requires_ack||v.number===1)));
  const visibleRoutines=filterFirmRoutines(data,handbookQuery);
  const ownAssignments=data.assignments.filter(assignment=>assignment.user_id===userId&&data.versions.some(version=>version.id===assignment.version_id));
  const visibleAssignments=ownAssignments.filter(assignment=>matchesRoutineSearch(data.versions.find(version=>version.id===assignment.version_id)?.content,readingQuery));
@@ -245,17 +247,19 @@ export default function KshmsModule({context}) {
   {screen==='followup'&&canManage&&<>
    <div className="ks-card ks-flow-target" ref={followupRef} tabIndex={-1}><h3>Neste steg: Ansatte leser og bekrefter</h3><p>Når du godkjenner en rutine, får firmaadmin og ansatte med KS/HMS-tilgang utgaven i «Les og bekreft». De åpner hver rutine i sin egen app, leser teksten og bekrefter egen gjennomgang. Avklar spørsmål og nødvendig opplæring med dem.</p><p>Firmaadmin gir andre ansatte tilgang i «Oppstart og tilgang». Etterpå kan du gi nye medarbeidere de godkjente rutinene under. Påminnelser i app og på e-post kommer senere.</p>
     {canAdmin&&<button type="button" className="secondary" onClick={()=>{setScreen('setup');setFlowFocus(previous=>previous+1)}}>Velg ansattes tilgang</button>}
-    <h4>Manglende bekreftelser ({missing.length})</h4>{!missing.length&&<p>{data.assignments.length?'Alle påkrevde bekreftelser på tildelte utgaver er registrert. Sjekk også at alle som trenger rutinene har tilgang og har fått dem.':'Ingen rutiner er tildelt ennå. Godkjenn rutiner og sjekk ansattes tilgang først.'}</p>}{missing.map(a=><p key={`${a.version_id}:${a.user_id}`}>{data.members.find(m=>m.id===a.user_id)?.email||a.user_id} · {data.versions.find(v=>v.id===a.version_id)?.content.title} · v{data.versions.find(v=>v.id===a.version_id)?.number}</p>)}
-    <h4>Gi godkjente rutiner til nye medarbeidere</h4><p>Åpne rutinen og trykk «Tildel til» ved medarbeideren. Bare personer som ikke har fått denne utgaven vises.</p>{latest.map(v=><details key={v.id}><summary>{v.content.title} · v{v.number}</summary>{eligibleMembers.filter(m=>!data.assignments.some(a=>a.user_id===m.id&&a.version_id===v.id)).map(m=><button type="button" className="secondary" key={m.id} disabled={busy} onClick={()=>run('assign',{version_id:v.id,user_id:m.id})}>Tildel til {m.email}</button>)}</details>)}
+    {pending.length>0&&<p>Du har også egne rutiner å lese. Åpne fanen «Les og bekreft» og bekreft din egen gjennomgang.</p>}
+    <KshmsAcknowledgments overview={followup}/>
+    <details className="ks-followup-section"><summary>Gi godkjente rutiner til nye medarbeidere</summary><p>Dette bruker du når en medarbeider trenger en godkjent utgave som personen ikke har fått. Firmaadmin gir først KS/HMS-tilgang. Åpne rutinen og trykk «Tildel til» ved medarbeideren.</p>{assignmentOptions.length?assignmentOptions.map(({version,members})=><details key={version.id}><summary>{version.content.title} · v{version.number}</summary><div className="ks-actions">{members.map(member=><button type="button" className="secondary" key={member.id} disabled={busy} onClick={()=>run('assign',{version_id:version.id,user_id:member.id})}>Tildel til {member.email}</button>)}</div></details>):<p>{latest.length?'Alle med KS/HMS-tilgang har allerede fått de gjeldende godkjente utgavene. Du trenger ikke tildele dem på nytt.':'Godkjenn rutiner før du tildeler dem til medarbeidere.'}</p>}</details>
    </div>
    <div className="ks-card"><h3>Her kontrollerer dere at håndboken fortsatt passer</h3><p>Å kontrollere og oppdatere håndboken kalles revisjon. Les rutinene og sjekk om de passer arbeidet dere gjør nå. Noter hva som må endres, hvem som gjør det, og når det skal være klart.</p><p className={overdue?'ks-error':''}>Neste kontroll: {data.settings?.next_review_on||'Lagre oppstart først'}{overdue?' · Datoen er passert':''}</p><p>I ProffDok skal håndboken kontrolleres minst én gang i året. Dette er vår avtalte regel. Endringer eller hendelser kan gjøre at dere må kontrollere tidligere. Den valgte KS/HMS-ansvarlige signerer kontrollen.</p>
-    {data.context.responsible?<form onSubmit={async e=>{e.preventDefault();const result=await run('review',{settings_revision:data.settings.revision,version_snapshot:currentVersionSnapshot(data),findings,follow_up:followUp,next_review_on:nextReview},'Kontrollen er signert og lagret sammen med utgavene du kontrollerte.');if(result){setReviewChecked(false);setFindings('');setFollowUp('')}}}>
+    <p>Neste steg etter publisering er at ansatte leser rutinene. Du trenger ikke signere en revisjon bare for å gå videre. Åpne kontrollen under når du faktisk skal gjennomgå håndboken.</p>
+    <details className="ks-followup-section"><summary>Gjennomfør revisjon</summary>{data.context.responsible?<form onSubmit={async e=>{e.preventDefault();const result=await run('review',{settings_revision:data.settings.revision,version_snapshot:currentVersionSnapshot(data),findings,follow_up:followUp,next_review_on:nextReview},'Kontrollen er signert og lagret sammen med utgavene du kontrollerte.');if(result){setReviewChecked(false);setFindings('');setFollowUp('')}}}>
      <p>Kontrollen gjelder {latest.length} godkjente rutiner. Sjekk også om utkast må ferdigstilles eller gamle rutiner tas ut av bruk før du signerer.</p>
      <Field label="Hva har du kontrollert?" hint="Skriv hvilke rutiner du har gått gjennom, og om noe må endres." value={findings} onChange={setFindings} multiline required/>
      <Field label="Hva skal gjøres videre?" hint="Skriv hva som skal gjøres, hvem som gjør det, og fristen. Hvis alt er i orden, forklar kort hvorfor." value={followUp} onChange={setFollowUp} multiline required/>
      <Field label="Neste revisjonsdato (innen ett år)" value={nextReview} type="date" onChange={setNextReview} required/>
      <label className="ks-check"><input type="checkbox" checked={reviewChecked} onChange={e=>setReviewChecked(e.target.checked)}/>Jeg har vurdert de oppførte versjonene, relevans og etterlevelse, og dokumentert funn og oppfølging. Dette er ingen myndighetsgodkjenning.</label><button disabled={busy||!reviewChecked||!latest.length}>Signer revisjon</button>
-    </form>:<p>Du kan følge opp og forberede endringer. Personen som er valgt som KS/HMS-ansvarlig i «Oppstart og tilgang», må signere kontrollen.</p>}
+    </form>:<p>Du kan følge opp og forberede endringer. Personen som er valgt som KS/HMS-ansvarlig i «Oppstart og tilgang», må signere kontrollen.</p>}</details>
     <details><summary>Revisjonshistorikk ({data.reviews.length})</summary>{data.reviews.map(r=><article key={r.id}><h4>{dateTime(r.signed_at)} · {data.members.find(m=>m.id===r.signed_by)?.email||r.signed_by}</h4><p>{r.statement}</p><p className="ks-text">{r.findings}</p><p className="ks-text">{r.follow_up}</p><p>Neste revisjon: {r.next_review_on} · {r.version_snapshot.length} versjoner</p>{r.version_snapshot.map(s=>{const v=data.versions.find(v=>v.id===s.id);return <p key={s.id}>{v?`${v.content.title} · v${v.number}`:s.id}</p>})}</article>)}</details>
    </div>
   </>}

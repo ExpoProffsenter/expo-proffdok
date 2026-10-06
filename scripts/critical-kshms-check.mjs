@@ -6,6 +6,7 @@ import {addLibraryRoutines,routinesBySource,selectedCatalogRoutines} from '../sr
 import {createGlobalAppTabs,createProjectWorkspaceTabs} from '../src/modules/project/projectNavigationTabs.mjs';
 import {fillEmptySetup,changeSetupTrades,routineWithSuggestions,fillEmptyRoutine,ROUTINE_WRITING_TIPS} from '../src/modules/kshms/kshmsWriting.mjs';
 import {filterFirmRoutines,matchesRoutineSearch} from '../src/modules/kshms/kshmsSearch.mjs';
+import {acknowledgmentOverview,pendingAssignmentOptions} from '../src/modules/kshms/kshmsFollowup.mjs';
 // Actual refresh hook: stale responses may never revive old company access.
 const source=fs.readFileSync('src/modules/kshms/kshmsAccess.js','utf8');
 const hook=source.slice(source.indexOf('export function useKshmsAccess')).replace('export function','function');
@@ -289,4 +290,36 @@ async function saveScenario(changed){
 }
 const savedChange=await saveScenario(true);assert.equal(savedChange.ui.publication.revision,6);assert.equal(savedChange.ui.publication.draft.procedure,'New saved procedure');assert.equal(savedChange.commands.length,1);assert.equal(savedChange.commands[0].action,'save');assert.equal(savedChange.ui.dirty,false);
 const savedUnchanged=await saveScenario(false);assert.equal(savedUnchanged.ui.publication,null);assert(savedUnchanged.ui.notice.includes('uten nye innholdsendringer'));assert.equal(savedUnchanged.ui.focus,1);assert.equal(versionOne.content.procedure,'Before change');
-console.log('critical-kshms-check: OK – confirmed publication/own reading auto-next, last-item completion, failure and late-scope retention; targeted grant retention/revocation, suggestion ownership, reader-scoped search, handbook/version progression, appointment/failure, approval, multi-select/retry, scoped recovery and 275 source pages');
+// The reported 40-line list is four employees with ten exact assignments.
+// Grouping must shorten the overview without hiding a required edition,
+// attributing another employee's signature or creating any new acknowledgment.
+const followupState={members:Array.from({length:4},(_,i)=>({id:`employee-${i}`,email:`demo-${i}@example.invalid`,workspace_role:i?'ansatt':'firmaadmin',enabled:true})),versions:Array.from({length:10},(_,i)=>({id:`edition-${i}`,routine_id:`routine-${i}`,number:1,requires_ack:true,content:{title:`Routine ${i}`}})),assignments:[],acknowledgments:[]};
+for(const member of followupState.members)for(const version of followupState.versions)followupState.assignments.push({user_id:member.id,version_id:version.id});
+const unchangedFollowup=JSON.stringify(followupState),forty=acknowledgmentOverview(followupState);
+assert.equal(forty.groups.length,4);assert.equal(forty.pendingMembers,4);assert.equal(forty.missing,40);
+assert(forty.groups.every(group=>group.entries.length===10&&group.confirmed===0&&group.missing===10));
+assert.equal(JSON.stringify(followupState),unchangedFollowup,'Overview changed assignments or confirmations');
+assert.equal(pendingAssignmentOptions(followupState,followupState.versions).length,0,'Fully assigned editions left empty assignment sections');
+followupState.acknowledgments.push({user_id:'employee-0',version_id:'edition-0',acknowledged_at:'2026-10-06T13:00:00Z'});
+const thirtyNine=acknowledgmentOverview(followupState);
+assert.equal(thirtyNine.missing,39);assert.equal(thirtyNine.groups.find(group=>group.userId==='employee-0').confirmed,1);
+assert.equal(thirtyNine.groups.find(group=>group.userId==='employee-1').confirmed,0,'Another employee borrowed the first confirmation');
+assert.equal(thirtyNine.groups.find(group=>group.userId==='employee-0').entries.find(row=>row.version.id==='edition-0').acknowledgment.acknowledged_at,'2026-10-06T13:00:00Z');
+for(const version of followupState.versions.slice(1))followupState.acknowledgments.push({user_id:'employee-0',version_id:version.id,acknowledged_at:'2026-10-06T13:01:00Z'});
+const thirty=acknowledgmentOverview(followupState);assert.equal(thirty.pendingMembers,3);assert.equal(thirty.missing,30);assert.equal(thirty.groups.at(-1).userId,'employee-0');assert.equal(thirty.groups.at(-1).confirmed,10);
+followupState.assignments.push({...followupState.assignments[0]},{user_id:'employee-0',version_id:'missing-version'});
+followupState.versions.push({id:'information-v2',routine_id:'routine-0',number:2,requires_ack:false,content:{title:'Information'}});followupState.assignments.push({user_id:'employee-0',version_id:'information-v2'});
+assert.equal(acknowledgmentOverview(followupState).missing,30,'Duplicate, missing or informational edition inflated required progress');
+followupState.versions.push({id:'required-v3',routine_id:'routine-0',number:3,requires_ack:true,content:{title:'Important change'}});followupState.assignments.push({user_id:'employee-0',version_id:'required-v3'});
+const changedOverview=acknowledgmentOverview(followupState),changedEmployee=changedOverview.groups.find(group=>group.userId==='employee-0');
+assert.equal(changedOverview.missing,31);assert.equal(changedEmployee.confirmed,10);assert.equal(changedEmployee.missing,1);assert.equal(changedEmployee.entries.length,11);assert.equal(followupState.acknowledgments.length,10,'Grouping rewrote old confirmation history');
+const newcomer={id:'new-reader',email:'new@example.invalid',workspace_role:'ansatt',enabled:false};followupState.members.push(newcomer);
+assert.equal(pendingAssignmentOptions(followupState,followupState.versions.slice(0,10)).length,0,'Newcomer without module access was offered assignment');
+newcomer.enabled=true;const newOptions=pendingAssignmentOptions(followupState,followupState.versions.slice(0,10));assert.equal(newOptions.length,10);assert(newOptions.every(option=>option.members.length===1&&option.members[0].id===newcomer.id));
+followupState.assignments.push({user_id:newcomer.id,version_id:'edition-0'});assert.equal(pendingAssignmentOptions(followupState,followupState.versions.slice(0,10)).length,9,'Assigned edition remained assignable to same newcomer');
+assert.deepEqual(acknowledgmentOverview({...followupState,assignments:[]}),{groups:[],missing:0,pendingMembers:0});
+const completeState=structuredClone(followupState);completeState.acknowledgments=completeState.assignments.map(row=>({...row,acknowledged_at:'2026-10-06T13:02:00Z'}));
+assert.equal(acknowledgmentOverview(completeState).missing,0);assert.equal(acknowledgmentOverview(completeState).pendingMembers,0);
+assert(moduleSource.includes('const followup=canManage?acknowledgmentOverview(data):null'),'Employee must not derive manager follow-up');
+assert(moduleSource.includes("screen==='followup'&&canManage"),'Employee gained another user\'s progress view');
+console.log('critical-kshms-check: OK – grouped 40 confirmations/four employees, exact progress/history and qualified new assignments; confirmed publication/own reading auto-next, last-item completion, failure and late-scope retention; targeted grant retention/revocation, suggestion ownership, reader-scoped search, handbook/version progression, appointment/failure, approval, multi-select/retry, scoped recovery and 275 source pages');
