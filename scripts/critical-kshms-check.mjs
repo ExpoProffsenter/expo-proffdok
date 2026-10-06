@@ -91,11 +91,21 @@ assert(!createProjectWorkspaceTabs().some(([id])=>id==='kshms'));
 assert(suggestedRoutines(['maler'],'våtrom').some(r=>r.key==='wetroom'));
 assert(!suggestedRoutines(['maler'],'fasade').some(r=>r.key==='wetroom'));
 assert(!suggestedRoutines(['tomrer'],'montering').some(r=>r.key==='chemicals'));
-assert(ROUTINE_CATALOG.length===12);
-for(const routine of ROUTINE_CATALOG){assert(routine.procedure && routine.references.length);assert(!/fyll inn/i.test(routine.procedure),'Writing instructions belong outside routine content');for(const tip of Object.values(ROUTINE_WRITING_TIPS))assert(!JSON.stringify(routine).includes(tip));for(const ref of routine.references)assert(ref.checked_on===(['leadership','leave','deviations','emergency'].includes(routine.key)?'2026-10-06':'2026-10-05')&&/^https:\/\//.test(ref.url));}
+assert.equal(ROUTINE_CATALOG.length,73,'A2 contains the 12 stable starting keys and 61 specific additional drafts');
+assert.equal(new Set(ROUTINE_CATALOG.map(r=>r.source_key)).size,ROUTINE_CATALOG.length);
+assert.equal(new Set(ROUTINE_CATALOG.map(r=>r.procedure)).size,ROUTINE_CATALOG.length,'Generic repeated bodies do not cover independent topics');
+for(const routine of ROUTINE_CATALOG){assert(routine.procedure && routine.references.length);assert(!/fyll inn/i.test(routine.procedure),'Writing instructions belong outside routine content');for(const tip of Object.values(ROUTINE_WRITING_TIPS))assert(!JSON.stringify(routine).includes(tip));for(const ref of routine.references)assert(ref.checked_on===((Object.hasOwn(routine,'recommendation')||['leadership','leave','deviations','emergency'].includes(routine.key))?'2026-10-06':'2026-10-05')&&/^https:\/\//.test(ref.url));}
 assert.deepEqual(currentVersionSnapshot({routines:[{id:'r1'},{id:'r2',archived:true}],versions:[{routine_id:'r1',id:'v2',content_hash:'new'},{routine_id:'r1',id:'v1',content_hash:'old'}]}),[{id:'v2',hash:'new'}]);
 const coverage=JSON.parse(fs.readFileSync('docs/kshms/coverage.json','utf8'));
 assert.equal(coverage.topics.filter(r=>r.id.startsWith('K')).length,105);assert.equal(coverage.topics.filter(r=>r.id.startsWith('K')&&r.personal_pages!=='—').length,88);
+for(const row of coverage.topics.filter(r=>!r.id.startsWith('M'))){
+ assert(ROUTINE_CATALOG.some(r=>r.coverage.includes(row.id)),`Content theme ${row.id} lacks a written draft`);
+ assert.deepEqual(row.library_keys,ROUTINE_CATALOG.filter(r=>r.coverage.includes(row.id)).map(r=>r.key));
+}
+assert(ROUTINE_CATALOG.find(r=>r.key==='infection').procedure.includes('eldre koronaregler'));
+assert(ROUTINE_CATALOG.find(r=>r.key==='whistleblowing').procedure.includes('ordinære'));
+assert(!suggestedRoutines().some(r=>['asbestos','gps','confined'].includes(r.key)));
+assert(suggestedRoutines([],'rehabilitering med asbest').some(r=>r.key==='asbestos'));
 for(const [field,total] of [['quality_pages',148],['personal_pages',127]]){
  const pages=new Set();for(const row of coverage.topics)for(const section of row[field].split(';')){const range=section.split('–').map(Number);if(range.every(Number.isFinite))for(let page=range[0];page<=(range[1]||range[0]);page++)pages.add(page);}
  for(let page=1;page<=total;page++)assert(pages.has(page),`Source page ${field}:${page} missing`);
@@ -127,9 +137,9 @@ assert.deepEqual(new Set(firstBatch.confirmedKeys),new Set(chosen));assert.equal
 assert(batch.commands.every(p=>p.id===null&&p.revision===0));assert.deepEqual(progress.at(-1),{completed:10,total:10});
 batch.saved[0].draft.procedure='Firmaets egen tilpasning som må beholdes';
 const retry=await addLibraryRoutines({companyId:'a',keys:ROUTINE_CATALOG.map(r=>r.key),rpc:batch.rpc});
-assert.equal(retry.addedCount,2);assert.equal(retry.skippedCount,10);assert.equal(batch.saved.length,12);
+assert.equal(retry.addedCount,ROUTINE_CATALOG.length-10);assert.equal(retry.skippedCount,10);assert.equal(batch.saved.length,ROUTINE_CATALOG.length);
 assert.equal(batch.saved[0].draft.procedure,'Firmaets egen tilpasning som må beholdes');
-assert.equal(batch.commands.length,12,'Re-selected templates overwrote or duplicated company drafts');
+assert.equal(batch.commands.length,ROUTINE_CATALOG.length,'Re-selected templates overwrote or duplicated company drafts');
 for(const lostResponse of [false,true]){
  const interrupted=libraryServer({failAt:3,lostResponse});
  const partial=await addLibraryRoutines({companyId:'a',keys:chosen,rpc:interrupted.rpc});

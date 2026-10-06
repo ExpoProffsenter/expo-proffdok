@@ -25,7 +25,18 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "leadership",
+        "risk"
+      ],
+      "library_titles": [
+        "Ansvar, mål og oppfølging",
+        "Vurdere risiko før arbeid"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K002",
@@ -39,7 +50,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "leadership"
+      ],
+      "library_titles": [
+        "Ansvar, mål og oppfølging"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K003",
@@ -53,7 +73,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Overlapp: leverandørvurdering og oppfølging samlet, ansvarsrett beholdes som forskjell.",
-      "body_similarity": 0.988
+      "body_similarity": 0.988,
+      "library_keys": [
+        "coordination"
+      ],
+      "library_titles": [
+        "Samordne arbeid og følge opp andre foretak"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K004",
@@ -67,7 +96,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "leadership"
+      ],
+      "library_titles": [
+        "Ansvar, mål og oppfølging"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K005",
@@ -81,7 +119,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken. Overlapp: systemgjennomgang/revisjon og ledelsens godkjenning.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "revision"
+      ],
+      "library_titles": [
+        "Revidere og forbedre håndboken"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K006",
@@ -95,7 +142,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Overlapp: systemgjennomgang/revisjon og ledelsens godkjenning.",
-      "body_similarity": 0.982
+      "body_similarity": 0.982,
+      "library_keys": [
+        "revision"
+      ],
+      "library_titles": [
+        "Revidere og forbedre håndboken"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K007",
@@ -109,7 +165,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "leadership"
+      ],
+      "library_titles": [
+        "Ansvar, mål og oppfølging"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K008",
@@ -123,7 +188,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Historisk covid-innhold: erstattes av risikobasert biologisk beredskap og aktuelle myndighetsråd; alle fem kildetema beholdes.",
-      "body_similarity": 0.982
+      "body_similarity": 0.982,
+      "library_keys": [
+        "infection"
+      ],
+      "library_titles": [
+        "Smittevern og trygg gjenopptakelse av arbeid"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Eldre koronaregler erstattet av oppgavebasert smittevern og aktuelle myndighetsråd; ingen gamle karantene-/isolasjonsfrister videreføres."
     },
     {
       "id": "K009",
@@ -137,7 +211,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Historisk covid-innhold: erstattes av risikobasert biologisk beredskap og aktuelle myndighetsråd; alle fem kildetema beholdes.",
-      "body_similarity": 0.991
+      "body_similarity": 0.991,
+      "library_keys": [
+        "infection"
+      ],
+      "library_titles": [
+        "Smittevern og trygg gjenopptakelse av arbeid"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Eldre koronaregler erstattet av oppgavebasert smittevern og aktuelle myndighetsråd; ingen gamle karantene-/isolasjonsfrister videreføres."
     },
     {
       "id": "K010",
@@ -151,7 +234,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Historisk covid-innhold: erstattes av risikobasert biologisk beredskap og aktuelle myndighetsråd; alle fem kildetema beholdes.",
-      "body_similarity": 0.975
+      "body_similarity": 0.975,
+      "library_keys": [
+        "infection"
+      ],
+      "library_titles": [
+        "Smittevern og trygg gjenopptakelse av arbeid"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Eldre koronaregler erstattet av oppgavebasert smittevern og aktuelle myndighetsråd; ingen gamle karantene-/isolasjonsfrister videreføres."
     },
     {
       "id": "K011",
@@ -165,7 +257,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Historisk covid-innhold: erstattes av risikobasert biologisk beredskap og aktuelle myndighetsråd; alle fem kildetema beholdes.",
-      "body_similarity": 0.964
+      "body_similarity": 0.964,
+      "library_keys": [
+        "infection"
+      ],
+      "library_titles": [
+        "Smittevern og trygg gjenopptakelse av arbeid"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Eldre koronaregler erstattet av oppgavebasert smittevern og aktuelle myndighetsråd; ingen gamle karantene-/isolasjonsfrister videreføres."
     },
     {
       "id": "K012",
@@ -179,7 +280,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Historisk covid-innhold: erstattes av risikobasert biologisk beredskap og aktuelle myndighetsråd; alle fem kildetema beholdes.",
-      "body_similarity": 0.978
+      "body_similarity": 0.978,
+      "library_keys": [
+        "infection"
+      ],
+      "library_titles": [
+        "Smittevern og trygg gjenopptakelse av arbeid"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Eldre koronaregler erstattet av oppgavebasert smittevern og aktuelle myndighetsråd; ingen gamle karantene-/isolasjonsfrister videreføres."
     },
     {
       "id": "K013",
@@ -193,7 +303,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Dobbelt oppføring; én beredskapsrutine, separate kildelenker og underinstrukser.",
-      "body_similarity": 0.992
+      "body_similarity": 0.992,
+      "library_keys": [
+        "emergency"
+      ],
+      "library_titles": [
+        "Beredskap og førstehjelp"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K014",
@@ -207,7 +326,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Dobbelt oppføring; én beredskapsrutine, separate kildelenker og underinstrukser.",
-      "body_similarity": 0.987
+      "body_similarity": 0.987,
+      "library_keys": [
+        "emergency"
+      ],
+      "library_titles": [
+        "Beredskap og førstehjelp"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Dobbelt beredskapskapittel samlet med K013. Kildesider beholdt."
     },
     {
       "id": "K015",
@@ -221,7 +349,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.853
+      "body_similarity": 0.853,
+      "library_keys": [
+        "leave"
+      ],
+      "library_titles": [
+        "Ferie og permisjon"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K016",
@@ -235,7 +372,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.964
+      "body_similarity": 0.964,
+      "library_keys": [
+        "leave"
+      ],
+      "library_titles": [
+        "Ferie og permisjon"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K017",
@@ -249,7 +395,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Tjenestemannsloven-henvisning skal ikke brukes som generell plikt for private foretak.",
-      "body_similarity": 0.965
+      "body_similarity": 0.965,
+      "library_keys": [
+        "ethics"
+      ],
+      "library_titles": [
+        "Etikk, habilitet og gaver"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K018",
@@ -263,7 +418,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.984
+      "body_similarity": 0.984,
+      "library_keys": [
+        "confined"
+      ],
+      "library_titles": [
+        "Arbeid i kum og lukkede rom"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K019",
@@ -277,7 +441,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.985
+      "body_similarity": 0.985,
+      "library_keys": [
+        "height"
+      ],
+      "library_titles": [
+        "Arbeid i høyden, stillas og personlift"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K020",
@@ -291,7 +464,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.965
+      "body_similarity": 0.965,
+      "library_keys": [
+        "chemicals"
+      ],
+      "library_titles": [
+        "Velge og bruke kjemikalier trygt"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K021",
@@ -305,7 +487,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Sertifikatkrav for varme arbeider må skilles fra arbeidsmiljøkrav og forsikrings-/kontraktsvilkår.",
-      "body_similarity": 0.98
+      "body_similarity": 0.98,
+      "library_keys": [
+        "hot-work"
+      ],
+      "library_titles": [
+        "Varme arbeider og brannberedskap"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K022",
@@ -319,7 +510,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Overlapp: systemgjennomgang/revisjon og ledelsens godkjenning.",
-      "body_similarity": 0.981
+      "body_similarity": 0.981,
+      "library_keys": [
+        "revision"
+      ],
+      "library_titles": [
+        "Revidere og forbedre håndboken"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K023",
@@ -333,7 +533,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Sertifikatkrav for varme arbeider må skilles fra arbeidsmiljøkrav og forsikrings-/kontraktsvilkår.",
-      "body_similarity": 0.98
+      "body_similarity": 0.98,
+      "library_keys": [
+        "grinder"
+      ],
+      "library_titles": [
+        "Bruk av vinkelsliper og kutteutstyr"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K024",
@@ -347,7 +556,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.986
+      "body_similarity": 0.986,
+      "library_keys": [
+        "dust"
+      ],
+      "library_titles": [
+        "Støv, kvarts og forurenset arbeidsatmosfære"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K025",
@@ -361,7 +579,18 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.979
+      "body_similarity": 0.979,
+      "library_keys": [
+        "wetroom",
+        "execution"
+      ],
+      "library_titles": [
+        "Planlegge og dokumentere våtromskontroll",
+        "Ansvarlig utførende og egenkontroll"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K026",
@@ -375,7 +604,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.984
+      "body_similarity": 0.984,
+      "library_keys": [
+        "design"
+      ],
+      "library_titles": [
+        "Ansvarlig prosjekterende og kontroll av løsninger"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K027",
@@ -389,7 +627,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.974
+      "body_similarity": 0.974,
+      "library_keys": [
+        "applicant"
+      ],
+      "library_titles": [
+        "Ansvarlig søker og oppstart av søknadspliktige tiltak"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K028",
@@ -403,7 +650,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.977
+      "body_similarity": 0.977,
+      "library_keys": [
+        "ppe"
+      ],
+      "library_titles": [
+        "Velge, bruke og kontrollere verneutstyr"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K029",
@@ -417,7 +673,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "execution"
+      ],
+      "library_titles": [
+        "Ansvarlig utførende og egenkontroll"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K030",
@@ -431,7 +696,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.983
+      "body_similarity": 0.983,
+      "library_keys": [
+        "emergency"
+      ],
+      "library_titles": [
+        "Beredskap og førstehjelp"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K031",
@@ -445,7 +719,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "design"
+      ],
+      "library_titles": [
+        "Ansvarlig prosjekterende og kontroll av løsninger"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K032",
@@ -459,7 +742,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.966
+      "body_similarity": 0.966,
+      "library_keys": [
+        "signage"
+      ],
+      "library_titles": [
+        "Skilting, merking og prosjektopplysninger"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K033",
@@ -473,7 +765,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "applicant"
+      ],
+      "library_titles": [
+        "Ansvarlig søker og oppstart av søknadspliktige tiltak"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K034",
@@ -487,7 +788,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.973
+      "body_similarity": 0.973,
+      "library_keys": [
+        "core-drilling"
+      ],
+      "library_titles": [
+        "Planlegge og utføre kjerneboring"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K035",
@@ -501,7 +811,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.984
+      "body_similarity": 0.984,
+      "library_keys": [
+        "deviations"
+      ],
+      "library_titles": [
+        "Melde og følge opp avvik og RUH"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K036",
@@ -515,7 +834,18 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.98
+      "body_similarity": 0.98,
+      "library_keys": [
+        "privacy",
+        "documents"
+      ],
+      "library_titles": [
+        "Behandle dokumentasjon og personopplysninger",
+        "Styresystem, dokumentversjoner og regelverksendringer"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K037",
@@ -529,7 +859,18 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.981
+      "body_similarity": 0.981,
+      "library_keys": [
+        "revision",
+        "documents"
+      ],
+      "library_titles": [
+        "Revidere og forbedre håndboken",
+        "Styresystem, dokumentversjoner og regelverksendringer"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K038",
@@ -543,7 +884,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Overlapp: leverandørvurdering og oppfølging samlet, ansvarsrett beholdes som forskjell.",
-      "body_similarity": 0.989
+      "body_similarity": 0.989,
+      "library_keys": [
+        "coordination"
+      ],
+      "library_titles": [
+        "Samordne arbeid og følge opp andre foretak"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K039",
@@ -557,7 +907,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.973
+      "body_similarity": 0.973,
+      "library_keys": [
+        "water-edge"
+      ],
+      "library_titles": [
+        "Arbeid ved sjø og vann"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K040",
@@ -571,7 +930,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.979
+      "body_similarity": 0.979,
+      "library_keys": [
+        "road"
+      ],
+      "library_titles": [
+        "Arbeid ved trafikkert vei"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K041",
@@ -585,7 +953,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.976
+      "body_similarity": 0.976,
+      "library_keys": [
+        "hms-plan"
+      ],
+      "library_titles": [
+        "HMS-plan og medvirkning"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K042",
@@ -599,7 +976,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.978
+      "body_similarity": 0.978,
+      "library_keys": [
+        "inspection"
+      ],
+      "library_titles": [
+        "Gjennomføre vernerunder"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K043",
@@ -613,7 +999,18 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.97
+      "body_similarity": 0.97,
+      "library_keys": [
+        "coordination",
+        "rig"
+      ],
+      "library_titles": [
+        "Samordne arbeid og følge opp andre foretak",
+        "Rigg, adkomst og felles sikkerhet"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K044",
@@ -627,7 +1024,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.981
+      "body_similarity": 0.981,
+      "library_keys": [
+        "crew"
+      ],
+      "library_titles": [
+        "Mannskapsoversikt og HMS-kort"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K045",
@@ -641,7 +1047,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.976
+      "body_similarity": 0.976,
+      "library_keys": [
+        "chemicals"
+      ],
+      "library_titles": [
+        "Velge og bruke kjemikalier trygt"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K046",
@@ -655,7 +1070,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.982
+      "body_similarity": 0.982,
+      "library_keys": [
+        "rig"
+      ],
+      "library_titles": [
+        "Rigg, adkomst og felles sikkerhet"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K047",
@@ -669,7 +1093,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.979
+      "body_similarity": 0.979,
+      "library_keys": [
+        "electrical"
+      ],
+      "library_titles": [
+        "Tilsyn med elektrisk anlegg og utstyr"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K048",
@@ -683,7 +1116,18 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.981
+      "body_similarity": 0.981,
+      "library_keys": [
+        "coordination",
+        "rig"
+      ],
+      "library_titles": [
+        "Samordne arbeid og følge opp andre foretak",
+        "Rigg, adkomst og felles sikkerhet"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K049",
@@ -697,7 +1141,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.976
+      "body_similarity": 0.976,
+      "library_keys": [
+        "signage"
+      ],
+      "library_titles": [
+        "Skilting, merking og prosjektopplysninger"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K050",
@@ -711,7 +1164,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.976
+      "body_similarity": 0.976,
+      "library_keys": [
+        "leadership"
+      ],
+      "library_titles": [
+        "Ansvar, mål og oppfølging"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K051",
@@ -725,7 +1187,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.925
+      "body_similarity": 0.925,
+      "library_keys": [
+        "welfare"
+      ],
+      "library_titles": [
+        "Orden, hygiene, røyk og pauser"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K052",
@@ -739,7 +1210,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.968
+      "body_similarity": 0.968,
+      "library_keys": [
+        "ethics"
+      ],
+      "library_titles": [
+        "Etikk, habilitet og gaver"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K053",
@@ -753,7 +1233,16 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "board"
+      ],
+      "library_titles": [
+        "Styrets ansvar og ledelsens rapportering"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K054",
@@ -767,7 +1256,16 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.864
+      "body_similarity": 0.864,
+      "library_keys": [
+        "onboarding"
+      ],
+      "library_titles": [
+        "Ta imot og lære opp medarbeidere"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K055",
@@ -781,7 +1279,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Prosedyre beholdes; ordre/materiell/ressursplanlegging/lagertransaksjoner bygges ikke.",
-      "body_similarity": 0.976
+      "body_similarity": 0.976,
+      "library_keys": [
+        "procurement"
+      ],
+      "library_titles": [
+        "Leverandørpriser og kontraktsforberedelse"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K056",
@@ -795,7 +1302,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Prosedyre beholdes; ordre/materiell/ressursplanlegging/lagertransaksjoner bygges ikke.",
-      "body_similarity": 0.975
+      "body_similarity": 0.975,
+      "library_keys": [
+        "procurement"
+      ],
+      "library_titles": [
+        "Leverandørpriser og kontraktsforberedelse"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K057",
@@ -809,7 +1325,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "applicant"
+      ],
+      "library_titles": [
+        "Ansvarlig søker og oppstart av søknadspliktige tiltak"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K058",
@@ -823,7 +1348,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.979
+      "body_similarity": 0.979,
+      "library_keys": [
+        "gas"
+      ],
+      "library_titles": [
+        "Gassanlegg og sikker overlevering"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K059",
@@ -837,7 +1371,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.973
+      "body_similarity": 0.973,
+      "library_keys": [
+        "sprinkler"
+      ],
+      "library_titles": [
+        "Sprinkleranlegg og endring av brannsikring"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K060",
@@ -851,7 +1394,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.982
+      "body_similarity": 0.982,
+      "library_keys": [
+        "machines"
+      ],
+      "library_titles": [
+        "Maskiner, kjøretøy og vedlikehold"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K061",
@@ -865,7 +1417,18 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.98
+      "body_similarity": 0.98,
+      "library_keys": [
+        "chemicals",
+        "dust"
+      ],
+      "library_titles": [
+        "Velge og bruke kjemikalier trygt",
+        "Støv, kvarts og forurenset arbeidsatmosfære"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K062",
@@ -879,7 +1442,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.974
+      "body_similarity": 0.974,
+      "library_keys": [
+        "warehouse"
+      ],
+      "library_titles": [
+        "Lager, mottak og sikker stabling"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K063",
@@ -893,7 +1465,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.976
+      "body_similarity": 0.976,
+      "library_keys": [
+        "lifting"
+      ],
+      "library_titles": [
+        "Tunge løft og ergonomisk arbeid"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K064",
@@ -907,7 +1488,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.973
+      "body_similarity": 0.973,
+      "library_keys": [
+        "transport"
+      ],
+      "library_titles": [
+        "Varetransport og servicebil"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K065",
@@ -921,7 +1511,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.969
+      "body_similarity": 0.969,
+      "library_keys": [
+        "execution"
+      ],
+      "library_titles": [
+        "Ansvarlig utførende og egenkontroll"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K066",
@@ -935,7 +1534,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "execution"
+      ],
+      "library_titles": [
+        "Ansvarlig utførende og egenkontroll"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K067",
@@ -949,7 +1557,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "withdrawal"
+      ],
+      "library_titles": [
+        "Avslutte eller endre ansvarsrett"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K068",
@@ -963,7 +1580,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.94
+      "body_similarity": 0.94,
+      "library_keys": [
+        "inquiries"
+      ],
+      "library_titles": [
+        "Henvendelser, klager og avklaringer"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K069",
@@ -977,7 +1603,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Prosedyre beholdes; ordre/materiell/ressursplanlegging/lagertransaksjoner bygges ikke.",
-      "body_similarity": 0.916
+      "body_similarity": 0.916,
+      "library_keys": [
+        "warehouse"
+      ],
+      "library_titles": [
+        "Lager, mottak og sikker stabling"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K070",
@@ -991,7 +1626,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Ikke viderefør formulering om at arbeidstaker tar eget ansvar for avvik fra sikring.",
-      "body_similarity": 0.986
+      "body_similarity": 0.986,
+      "library_keys": [
+        "excavation"
+      ],
+      "library_titles": [
+        "Arbeid i grøft og byggegrop"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K071",
@@ -1005,7 +1649,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.98
+      "body_similarity": 0.98,
+      "library_keys": [
+        "sewage"
+      ],
+      "library_titles": [
+        "Arbeid på avløp og forurensede anlegg"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K072",
@@ -1019,7 +1672,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.981
+      "body_similarity": 0.981,
+      "library_keys": [
+        "crew"
+      ],
+      "library_titles": [
+        "Mannskapsoversikt og HMS-kort"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K073",
@@ -1033,7 +1695,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.983
+      "body_similarity": 0.983,
+      "library_keys": [
+        "asbestos"
+      ],
+      "library_titles": [
+        "Mistanke om asbest og sanering"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K074",
@@ -1047,7 +1718,18 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.98
+      "body_similarity": 0.98,
+      "library_keys": [
+        "deviations",
+        "whistleblowing"
+      ],
+      "library_titles": [
+        "Melde og følge opp avvik og RUH",
+        "Varsle om kritikkverdige forhold"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K075",
@@ -1061,7 +1743,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Skille tiltaksklasse, funksjon og uavhengig kontroll; kilden blander disse.",
-      "body_similarity": 0.978
+      "body_similarity": 0.978,
+      "library_keys": [
+        "class"
+      ],
+      "library_titles": [
+        "Tiltaksklasse og kompetanse før oppdrag"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K076",
@@ -1075,7 +1766,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Skille tiltaksklasse, funksjon og uavhengig kontroll; kilden blander disse.",
-      "body_similarity": 0.977
+      "body_similarity": 0.977,
+      "library_keys": [
+        "class"
+      ],
+      "library_titles": [
+        "Tiltaksklasse og kompetanse før oppdrag"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K077",
@@ -1089,7 +1789,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Skille tiltaksklasse, funksjon og uavhengig kontroll; kilden blander disse.",
-      "body_similarity": 0.98
+      "body_similarity": 0.98,
+      "library_keys": [
+        "class"
+      ],
+      "library_titles": [
+        "Tiltaksklasse og kompetanse før oppdrag"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K078",
@@ -1103,7 +1812,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken. Prosedyre beholdes; ordre/materiell/ressursplanlegging/lagertransaksjoner bygges ikke.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "transport"
+      ],
+      "library_titles": [
+        "Varetransport og servicebil"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K079",
@@ -1117,7 +1835,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.972
+      "body_similarity": 0.972,
+      "library_keys": [
+        "legionella"
+      ],
+      "library_titles": [
+        "Forebygge legionella i vanninstallasjoner"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K080",
@@ -1131,7 +1858,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Arbeidstidsrutine beholdes; timeregistrering/Cordel/Dextro-funksjonalitet utenfor utviklingsomfang.",
-      "body_similarity": 0.91
+      "body_similarity": 0.91,
+      "library_keys": [
+        "working-time"
+      ],
+      "library_titles": [
+        "Arbeidstid, pauser og registrering"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K081",
@@ -1145,7 +1881,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.976
+      "body_similarity": 0.976,
+      "library_keys": [
+        "wetroom"
+      ],
+      "library_titles": [
+        "Planlegge og dokumentere våtromskontroll"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K082",
@@ -1159,7 +1904,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.978
+      "body_similarity": 0.978,
+      "library_keys": [
+        "risk"
+      ],
+      "library_titles": [
+        "Vurdere risiko før arbeid"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K083",
@@ -1173,7 +1927,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.984
+      "body_similarity": 0.984,
+      "library_keys": [
+        "occupational-health"
+      ],
+      "library_titles": [
+        "BHT og fysisk arbeidsmiljø"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K084",
@@ -1187,7 +1950,16 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.961
+      "body_similarity": 0.961,
+      "library_keys": [
+        "pay"
+      ],
+      "library_titles": [
+        "Lønnsjustering og bonus"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K085",
@@ -1201,7 +1973,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Kontroller gjeldende terskler for verneombud, ikke tidligere 10-ansattregel.",
-      "body_similarity": 0.977
+      "body_similarity": 0.977,
+      "library_keys": [
+        "safety-representative"
+      ],
+      "library_titles": [
+        "Verneombud og medvirkning"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K086",
@@ -1215,7 +1996,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.975
+      "body_similarity": 0.975,
+      "library_keys": [
+        "emergency"
+      ],
+      "library_titles": [
+        "Beredskap og førstehjelp"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K087",
@@ -1229,7 +2019,16 @@
       "phase": "A/B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken. Virkeområde må vurderes; ingen generell CSRD- eller åpenhetslovplikt for alle firma.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "transparency"
+      ],
+      "library_titles": [
+        "Åpenhetsloven og ansvarlige leverandørkjeder"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K088",
@@ -1243,7 +2042,18 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.984
+      "body_similarity": 0.984,
+      "library_keys": [
+        "environment",
+        "environment-policy"
+      ],
+      "library_titles": [
+        "Avfall og miljøhensyn i arbeidet",
+        "Miljømål og oppfølging"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K089",
@@ -1257,7 +2067,18 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.978
+      "body_similarity": 0.978,
+      "library_keys": [
+        "environment",
+        "environment-buying"
+      ],
+      "library_titles": [
+        "Avfall og miljøhensyn i arbeidet",
+        "Miljøhensyn ved innkjøp"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K090",
@@ -1271,7 +2092,18 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.975
+      "body_similarity": 0.975,
+      "library_keys": [
+        "environment",
+        "environment-transport"
+      ],
+      "library_titles": [
+        "Avfall og miljøhensyn i arbeidet",
+        "Miljøhensyn ved transport"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K091",
@@ -1285,7 +2117,16 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.986
+      "body_similarity": 0.986,
+      "library_keys": [
+        "environment"
+      ],
+      "library_titles": [
+        "Avfall og miljøhensyn i arbeidet"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K092",
@@ -1299,7 +2140,18 @@
       "phase": "B",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.959
+      "body_similarity": 0.959,
+      "library_keys": [
+        "environment",
+        "environment-energy"
+      ],
+      "library_titles": [
+        "Avfall og miljøhensyn i arbeidet",
+        "Energi og avslutning av arbeidsdagen"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K093",
@@ -1313,7 +2165,18 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.974
+      "body_similarity": 0.974,
+      "library_keys": [
+        "privacy",
+        "privacy-register"
+      ],
+      "library_titles": [
+        "Behandle dokumentasjon og personopplysninger",
+        "Personvernansvar og behandlingsoversikt"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K094",
@@ -1327,7 +2190,18 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Gamle samtykkepåstander og fødselsnummerfelt overføres ikke; formål/grunnlag/minimering må vurderes.",
-      "body_similarity": 0.979
+      "body_similarity": 0.979,
+      "library_keys": [
+        "privacy",
+        "privacy-register"
+      ],
+      "library_titles": [
+        "Behandle dokumentasjon og personopplysninger",
+        "Personvernansvar og behandlingsoversikt"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K095",
@@ -1341,7 +2215,16 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "gps"
+      ],
+      "library_titles": [
+        "GPS, lokalisering og andre kontrolltiltak"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K096",
@@ -1355,7 +2238,18 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.985
+      "body_similarity": 0.985,
+      "library_keys": [
+        "privacy",
+        "customer-data"
+      ],
+      "library_titles": [
+        "Behandle dokumentasjon og personopplysninger",
+        "Personopplysninger om kunder og leverandører"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K097",
@@ -1369,7 +2263,18 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.959
+      "body_similarity": 0.959,
+      "library_keys": [
+        "privacy",
+        "processors"
+      ],
+      "library_titles": [
+        "Behandle dokumentasjon og personopplysninger",
+        "Databehandlere, avtaler og overføringer"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K098",
@@ -1383,7 +2288,16 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.974
+      "body_similarity": 0.974,
+      "library_keys": [
+        "physical-access"
+      ],
+      "library_titles": [
+        "Adgang, nøkler og sikring av lokaler"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K099",
@@ -1397,7 +2311,16 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.974
+      "body_similarity": 0.974,
+      "library_keys": [
+        "camera"
+      ],
+      "library_titles": [
+        "Kameraovervåking og tilgang til opptak"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K100",
@@ -1411,7 +2334,16 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.983
+      "body_similarity": 0.983,
+      "library_keys": [
+        "intranet"
+      ],
+      "library_titles": [
+        "Publisering på intranett og deling av bilder"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K101",
@@ -1425,7 +2357,16 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.962
+      "body_similarity": 0.962,
+      "library_keys": [
+        "it-systems"
+      ],
+      "library_titles": [
+        "Godkjente IT-systemer og informasjonssikkerhet"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K102",
@@ -1439,7 +2380,18 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke.",
-      "body_similarity": 0.981
+      "body_similarity": 0.981,
+      "library_keys": [
+        "privacy",
+        "privacy-rights"
+      ],
+      "library_titles": [
+        "Behandle dokumentasjon og personopplysninger",
+        "Innsyn, retting, sletting og utlevering"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K103",
@@ -1453,7 +2405,16 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "email-inspection"
+      ],
+      "library_titles": [
+        "Innsyn i ansattes e-post og lagret materiale"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "K104",
@@ -1467,7 +2428,18 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Begge kilder; personlige svar/signaturer gjenbrukes ikke. Gamle samtykkepåstander og fødselsnummerfelt overføres ikke; formål/grunnlag/minimering må vurderes.",
-      "body_similarity": 0.982
+      "body_similarity": 0.982,
+      "library_keys": [
+        "privacy",
+        "leaving"
+      ],
+      "library_titles": [
+        "Behandle dokumentasjon og personopplysninger",
+        "Fratredelse, tilbakelevering og sletting"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "K105",
@@ -1481,7 +2453,16 @@
       "phase": "D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Kun kvalitetshåndboken. Gamle samtykkepåstander og fødselsnummerfelt overføres ikke; formål/grunnlag/minimering må vurderes.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "onboarding"
+      ],
+      "library_titles": [
+        "Ta imot og lære opp medarbeidere"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "U01",
@@ -1495,7 +2476,16 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K013;K014.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "emergency"
+      ],
+      "library_titles": [
+        "Beredskap og førstehjelp"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "U02",
@@ -1509,7 +2499,18 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K013;K014.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "emergency",
+        "serious-incident"
+      ],
+      "library_titles": [
+        "Beredskap og førstehjelp",
+        "Alvorlig ulykke, nestenulykke og krisekommunikasjon"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U03",
@@ -1523,7 +2524,18 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K013;K014.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "deviations",
+        "serious-incident"
+      ],
+      "library_titles": [
+        "Melde og følge opp avvik og RUH",
+        "Alvorlig ulykke, nestenulykke og krisekommunikasjon"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U04",
@@ -1537,7 +2549,18 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K003;K038.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "coordination",
+        "procurement"
+      ],
+      "library_titles": [
+        "Samordne arbeid og følge opp andre foretak",
+        "Leverandørpriser og kontraktsforberedelse"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U05",
@@ -1551,7 +2574,20 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K025;K026;K027;K029;K031;K033;K065.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "execution",
+        "design",
+        "applicant"
+      ],
+      "library_titles": [
+        "Ansvarlig utførende og egenkontroll",
+        "Ansvarlig prosjekterende og kontroll av løsninger",
+        "Ansvarlig søker og oppstart av søknadspliktige tiltak"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U06",
@@ -1565,7 +2601,18 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K097.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "privacy",
+        "processors"
+      ],
+      "library_titles": [
+        "Behandle dokumentasjon og personopplysninger",
+        "Databehandlere, avtaler og overføringer"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U07",
@@ -1579,7 +2626,18 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K098.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "environment-energy",
+        "physical-access"
+      ],
+      "library_titles": [
+        "Energi og avslutning av arbeidsdagen",
+        "Adgang, nøkler og sikring av lokaler"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U08",
@@ -1593,7 +2651,18 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K007;K041.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "risk",
+        "hms-plan"
+      ],
+      "library_titles": [
+        "Vurdere risiko før arbeid",
+        "HMS-plan og medvirkning"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U09",
@@ -1607,7 +2676,20 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K007;K047;K060;K061.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "hot-work",
+        "electrical",
+        "serious-incident"
+      ],
+      "library_titles": [
+        "Varme arbeider og brannberedskap",
+        "Tilsyn med elektrisk anlegg og utstyr",
+        "Alvorlig ulykke, nestenulykke og krisekommunikasjon"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U10",
@@ -1621,7 +2703,16 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K007.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "special-hazards"
+      ],
+      "library_titles": [
+        "Særskilt risiko: storulykke, stråling og helse/miljø"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "U11",
@@ -1635,7 +2726,18 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K083.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "lifting",
+        "occupational-health"
+      ],
+      "library_titles": [
+        "Tunge løft og ergonomisk arbeid",
+        "BHT og fysisk arbeidsmiljø"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U12",
@@ -1649,7 +2751,16 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K083.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "psychosocial"
+      ],
+      "library_titles": [
+        "Psykososialt miljø, tilrettelegging og sykefravær"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "U13",
@@ -1663,7 +2774,16 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K105;K054;K093;K094.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "onboarding"
+      ],
+      "library_titles": [
+        "Ta imot og lære opp medarbeidere"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "U14",
@@ -1677,7 +2797,18 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K104.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "privacy",
+        "leaving"
+      ],
+      "library_titles": [
+        "Behandle dokumentasjon og personopplysninger",
+        "Fratredelse, tilbakelevering og sletting"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U15",
@@ -1691,7 +2822,18 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K074.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "deviations",
+        "whistleblowing"
+      ],
+      "library_titles": [
+        "Melde og følge opp avvik og RUH",
+        "Varsle om kritikkverdige forhold"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Overlapp håndtert i felles grunnrutine og konkret særinstruks."
     },
     {
       "id": "U16",
@@ -1705,7 +2847,16 @@
       "phase": "A/B/D",
       "status": "Planlagt innhold; ikke ferdig rutine",
       "handling": "Underliggende tema/formål, ikke nytt kopiert skjema. Sporbarhet til K030;K086.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [
+        "emergency"
+      ],
+      "library_titles": [
+        "Beredskap og førstehjelp"
+      ],
+      "content_status": "Selvstendig standardtekst; firmatilpasning og godkjenning gjenstår",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildetema samlet i egen operativ rutine; offentlig krav og lokale valg skilles i teksten."
     },
     {
       "id": "M01",
@@ -1719,7 +2870,12 @@
       "phase": "A",
       "status": "Kartlagt",
       "handling": "Historiske navn/adresser/signaturer importeres ikke automatisk.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [],
+      "library_titles": [],
+      "content_status": "Dokumentmetadata; ingen rutine som skal signeres",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildens identitet/struktur beholdt i dekningsoversikten; individuelle opplysninger importeres ikke."
     },
     {
       "id": "M02",
@@ -1733,7 +2889,12 @@
       "phase": "A",
       "status": "Kartlagt",
       "handling": "Historiske navn/adresser/signaturer importeres ikke automatisk.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [],
+      "library_titles": [],
+      "content_status": "Dokumentmetadata; ingen rutine som skal signeres",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildens identitet/struktur beholdt i dekningsoversikten; individuelle opplysninger importeres ikke."
     },
     {
       "id": "M03",
@@ -1747,7 +2908,12 @@
       "phase": "A",
       "status": "Kartlagt",
       "handling": "Historiske navn/adresser/signaturer importeres ikke automatisk.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [],
+      "library_titles": [],
+      "content_status": "Dokumentmetadata; ingen rutine som skal signeres",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildens identitet/struktur beholdt i dekningsoversikten; individuelle opplysninger importeres ikke."
     },
     {
       "id": "M04",
@@ -1761,7 +2927,18 @@
       "phase": "A",
       "status": "Kartlagt",
       "handling": "Historiske navn/adresser/signaturer importeres ikke automatisk.",
-      "body_similarity": null
+      "body_similarity": null,
+      "library_keys": [],
+      "library_titles": [],
+      "content_status": "Dokumentmetadata; ingen rutine som skal signeres",
+      "content_checked_on": "2026-10-06",
+      "content_handling": "Kildens identitet/struktur beholdt i dekningsoversikten; individuelle opplysninger importeres ikke."
     }
-  ]
+  ],
+  "content": {
+    "checked_on": "2026-10-06",
+    "catalog_count": 73,
+    "covered_content_topics": 121,
+    "status": "Selvstendige forslag for firmatilpasning; ingen automatisk publisering eller signatur"
+  }
 }

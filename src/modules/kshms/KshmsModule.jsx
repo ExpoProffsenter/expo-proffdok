@@ -14,6 +14,7 @@ import { acknowledgmentOverview,pendingAssignmentOptions } from './kshmsFollowup
 import { filterFirmRoutines,matchesRoutineSearch } from './kshmsSearch.mjs';
 import { SETUP_TEXT_FIELDS,ROUTINE_TEXT_SUGGESTIONS,fillEmptySetup,changeSetupTrades,routineWithSuggestions,fillEmptyRoutine,ROUTINE_WRITING_TIPS } from './kshmsWriting.mjs';
 import './kshms.css';
+import KshmsDeviations from './KshmsDeviations.jsx';
 const dateTime = value => new Date(value).toLocaleString('nb-NO');
 const sourceTypes = {law:'Lov eller forskrift',professional:'Fag, veiledning eller kontrakt',company:'Firmaets egne regler',product:'ProffDoks valg'};
 const emptySetup = {trades:[],activities:'',responsibilities:'',risks:'',responsible_user_id:'',revision:0};
@@ -40,9 +41,12 @@ function References({value,onChange}) {
   <button type="button" className="secondary" onClick={()=>onChange(value.filter((_,index)=>index!==i))}>Fjern kilde {i+1}</button>
  </div>)}<button type="button" className="secondary" onClick={()=>onChange([...value,{title:'',url:'',kind:'law',checked_on:new Date().toISOString().slice(0,10)}])}>Legg til kilde</button></fieldset>;
 }
-export default function KshmsModule({context}) {
+export default function KshmsModule({context,deviationRequest}) {
  const companyId=context.company_id,userId=context.user_id;
  const [data,setData]=useState(null),[screen,setScreen]=useState(()=>context.manage?'handbook':'reading'),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+ const [deviationsOpened,setDeviationsOpened]=useState(false);
+ useEffect(()=>{if(deviationRequest?.companyId===companyId&&deviationRequest.userId===userId){firstView.current=true;setDeviationsOpened(true);setScreen('deviations');}},[deviationRequest?.nonce,companyId,userId]);
+ useEffect(()=>{if(screen==='deviations')setDeviationsOpened(true);},[screen]);
  const [setup,setSetup]=useState(emptySetup),[editor,setEditor]=useState(null),[sources,setSources]=useState([]),[dirty,setDirty]=useState(false),[cached,setCached]=useState(null),[proposal,setProposal]=useState(null);
  const [publication,setPublication]=useState(null),[summary,setSummary]=useState(''),[freshAck,setFreshAck]=useState(true),[selfAcknowledgment,setSelfAcknowledgment]=useState(false);
  const publicationRef=useRef(null),overviewRef=useRef(null),[publicationFocus,setPublicationFocus]=useState(0),[overviewFocus,setOverviewFocus]=useState(0),[publicationFeedback,setPublicationFeedback]=useState('');
@@ -168,7 +172,8 @@ export default function KshmsModule({context}) {
  return <section className="ks-module" aria-label="KS/HMS håndbok">
   <header className="ks-heading"><div><span className="ks-eyebrow">{context.company_name}</span><h2>KS/HMS</h2><p>Firmaets håndbok og rutiner</p></div><span className="ks-badge">{canManage?canAdmin?'Firmaadmin – bygge håndbok':'KS/HMS-ansvarlig – bygge håndbok':'Ansatt – lese og bekrefte'}</span></header>
   <p className="ks-scope">{canManage?'Du bygger firmaets KS/HMS-håndbok. Både firmaadmin og KS/HMS-ansvarlig kan velge, skrive, endre og godkjenne rutiner. En rutine forklarer hvordan en oppgave skal gjøres. Firmaadmin styrer ansattes tilgang. Firmaet må lære opp ansatte og følge rutinene i arbeidet.':'Her finner du rutinene du har fått. De forklarer hvordan du skal jobbe trygt og gjøre oppgavene riktig. I «Les og bekreft» ser du hva du skal lese og hva du allerede har bekreftet.'}</p>
-  <nav className="ks-tabs" aria-label="KS/HMS visning">{[...(canManage?[['handbook','Håndbok']]:[]),['personal','Min personalhåndbok'],['reading',`Les og bekreft (${pending.length})`],...(canManage?[['setup','Oppstart og tilgang'],['followup','Oppfølging og revisjon']]:[])].map(([key,label])=><button type="button" key={key} className={screen===key?'active':'secondary'} aria-pressed={screen===key} onClick={()=>setScreen(key)}>{label}</button>)}</nav>
+  <nav className="ks-tabs" aria-label="KS/HMS visning">{[...(canManage?[['handbook','Håndbok']]:[]),['personal','Min personalhåndbok'],['reading',`Les og bekreft (${pending.length})`],['deviations','Avvikssentral'],...(canManage?[['setup','Oppstart og tilgang'],['followup','Oppfølging og revisjon']]:[])].map(([key,label])=><button type="button" key={key} className={screen===key?'active':'secondary'} aria-pressed={screen===key} onClick={()=>setScreen(key)}>{label}</button>)}</nav>
+  {(screen==='deviations'||deviationsOpened)&&<div hidden={screen!=='deviations'}><KshmsDeviations context={context} request={deviationRequest}/></div>}
   {error&&!(screen==='handbook'&&publication)&&<p role="alert" className="ks-error">{error}</p>}{notice && <p role="status" className="ks-notice">{notice}</p>}
   {screen==='setup'&&canManage&&<>
    <div className="ks-card ks-flow-target" ref={setupRef} tabIndex={-1}><h3>1. Velg KS/HMS-ansvarlig</h3><p>Start med personen som skal følge opp håndboken og signere den årlige kontrollen. Firmaadmin velger en aktiv bruker i firmaet og kan velge seg selv.</p>
