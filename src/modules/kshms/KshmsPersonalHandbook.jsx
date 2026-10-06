@@ -7,7 +7,7 @@ export default function KshmsPersonalHandbook({data,userId,query,onQueryChange,o
  return <div className="ks-card" role="region" aria-label="Min personalhåndbok">
   <h3>Min personalhåndbok</h3>
   <p>Her finner du firmaets rutiner som er tildelt deg. Søk når du lurer på hvordan noe skal gjøres. Åpne en rutine for å lese teksten og se hvem som godkjente den, og om du selv har bekreftet denne utgaven. Dette gjelder også firmaadmin.</p>
-  <p>Under «Les og bekreft» gjennomgår du utgavene du har igjen. Bekreftede rutiner ligger fortsatt her, så du kan slå dem opp senere.</p>
+  <p>Du skal lese og bekrefte rutinene før du begynner å arbeide i firmaet. Under «Les og bekreft» gjennomgår du utgavene du har igjen. Dette gjelder også firmaadmin og KS/HMS-ansvarlig. Bekreftede rutiner ligger fortsatt her, så du kan slå dem opp senere.</p>
   <KshmsRoutineSearch label="Søk i min personalhåndbok" query={query} onChange={onQueryChange} count={visible.length} total={all.length}/>
   {!all.length&&<p>Du har ikke fått noen rutiner ennå. Be firmaadmin eller KS/HMS-ansvarlig kontrollere tilgangen og tildelingene dine.</p>}
   {all.length>0&&!visible.length&&<p>Ingen rutiner passer søket. Prøv et annet ord eller tøm søket.</p>}

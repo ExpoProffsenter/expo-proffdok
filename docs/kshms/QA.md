@@ -2,6 +2,8 @@
 
 2026-10-05. Branch `feat-kshms-foundation`, baseline main `155f6c4`. Miljømål BEGGE. Kun Supabase Sandbox er endret. Trinn A er ikke full KS/HMS eller produksjonsgodkjent.
 
+Siste brukerstatus: TEST OK er mottatt for den prøvde versjonen 2026-10-06 kl. 18:56 Europe/Oslo. Ordlyd om «frivillig» presiseres som valg av tidspunkt for påkrevd egen gjennomgang. Kontrollhistorikken under beskriver tidligere teststatus; Production-godkjenning er fortsatt ikke gitt.
+
 ## Verifikasjonskontrakt
 
 Firmaadmin eller KS/HMS-ansvarlig etablerer → tilpasser → godkjenner → ansatt leser og bekrefter. Utpekt ansvarlig reviderer og signerer eksakte publiserte versjoner. Navigasjon/auth og eksisterende prosjekt-/salgssikkerhet skal fortsatt virke.
@@ -18,7 +20,7 @@ Firmaadmin eller KS/HMS-ansvarlig etablerer → tilpasser → godkjenner → ans
 | Mobil komponent | PASS i iframe med 390 px ramme / 375 px innvendig viewport. Ingen horisontal overflow; synlige tekstfelt og knapper har minst 44 px høyde. Mobil rutinekladd beholdes ved skjul/åpning av appfane. Dette er ingen fysisk enhetstest. |
 | Nettleserfeil | Ingen app-/React-feil observert i komponentflyten. Nettleserutvidelsen logger egne metadatafeil; disse er ikke appfeil. |
 | Git-scope/dokumentasjon | PASS mot hele committede endringen og `origin/main`. Første kodepublisering brukte verifisert tree `694b78ce0c497c9708ed77e80238fe5723bc7a3e`; senere rettelser gjennomgår samme lokal/API-tree-kontroll. Ingen QA-fixture eller demo-overlay i feature-PR. GitHub Actions-status følges separat. |
-| Innlogget full-app Preview / bruker TEST OK | GJENSTÅR. Komponenttesten erstatter ikke reell innlogging og serverflyt via appen. |
+| Innlogget full-app Preview / bruker TEST OK | Bruker meldte TEST OK 2026-10-06 kl. 18:56 Europe/Oslo for Preview-head `6dfb74dad244ff9bd0e416a08f0a34bc88da3c3a`. Det er ikke oppgitt en ny detaljert rolle-/enhetsprøve; utviklerens komponentkontroll og faktiske SQL-prøve beskrives separat. |
 | Merge / Production / main → demo | IKKE GODKJENT / IKKE UTFØRT. |
 
 SQL dekker deaktivert modul; systemadminaktivering uten automatisk innholdsinnsyn; firmaadmin grant; KS-ansvarlig kan redigere og publisere, men ikke arkivere, tildele tilgang eller utpeke ny revisjonsansvarlig; ansatt ser bare egne tildelinger uten utkast/roster; kryssfirma og feil forventet arbeidsfirma; tilbakekalt tilgang; deaktivert/ekstern bruker; stale oppstart/utkast; gamle versjoner/bekreftelser; ny versjon krever egen bekreftelse; serveravledet identitet/tid; idempotent tildeling; uforanderlige versjoner/bekreftelser/revisjoner; eksakt revisjonssnapshot, stale snapshot, ettårsgrense og avvisning av tom aktiv håndbok; kildekontrolldato i fremtiden avvises; direkte tabell/private helper/anon-adgang avvises.
@@ -209,3 +211,18 @@ Produkteier ber om søkbart personlig oppslag, også for firmaadmin, og om å un
 ![Personlig oppslag etter egen bekreftelse, med faktisk firmagodkjenner og eget navn/tidspunkt. Syntetiske demoidentiteter.](personal-handbook-proof.jpg)
 
 README, Architecture, Hjelp, plan og release-status beskriver den samme flyten. Tre konkrete kontroller står øverst i USER_TEST.md; tidligere godkjenninger skal ikke gjentas bare for prøven.
+
+
+## Presisering av påkrevd gjennomgang og mottatt TEST OK (2026-10-06)
+
+Bruker meldte «test ok» og presiserte at signering av rutiner er et krav før arbeid i firmaet. Dette registreres for faktisk prøvd feature-head `6dfb74dad244ff9bd0e416a08f0a34bc88da3c3a`, READY `dpl_B8Vn551uVzGFZ3D1aHnJTDTZhD9W`. GitHub feature/main/demo og åpen draft PR #216 er kontrollert på nytt; main/demo er fortsatt `155f6c4ac01f126c1db0c65da385cfd9305587d5` / `67f336f5a111ac6d997fa66c572e1b2e084390e8`. Meldingen innebærer ikke Production-godkjenning eller at hver ansatt faktisk har bekreftet.
+
+Bare ordlyd i KS/HMS-publisering, Les og bekreft, personlig oppslag, oppfølging, Hjelp og tilhørende dokumentasjon endres. «Valgfritt» ved egen gjennomgang er fjernet. Alle, også firmaadmin/KS-HMS-ansvarlig, skal lese og bekrefte etter firmaets arbeidsregel før arbeid. Valget gjelder bare «ved publisering eller etterpå». Ingen automatisk bekreftelse, fritak eller signering på vegne av andre. Dette er firmakrav, ikke en generell lovpåstand om signatur.
+
+| Kontroll | Resultat og avgrensning |
+|---|---|
+| Uendrede handlinger | Publish-/ack-/auto-neste-/scope-/versjonsfunksjoner og kravflagg er uendret. Manglende egen avkrysning gir fortsatt ingen ack og ingen sletting av påkrevd tildeling; egen gjennomgang står fortsatt i kø og manageroppfølging. Eksisterende permanente runtime-scenario PASS, inklusive feil/retention, eksakt egen identitet, ingen andres ack, fire rader/40 og gamle utgaver. Ingen nye speiltester for tekst. |
+| Read-only Sandbox | Faktisk metadata: ti publiserte førsteutgaver, null informasjonsutgaver og null registrerte ansattbekreftelser ved kontrollen. Ingen data/signatur/grant/migrasjon er skrevet. Brukerens ti firmagodkjenninger står urørt. TEST OK er ikke brukt til å opprette noen egen bekreftelse. |
+| Målrettet bygg | KS/HMS-critical PASS og Sandbox Vite-build PASS etter UI-/Hjelp-tekstene; diff-check PASS. Hele feature-PR følger eksisterende Core Safety/dokumentasjonsguard og CI på eksakt publisert head. Full database-/desktop-/mobilprøve fra godkjent funksjonsversjon beholdes; de gjentas ikke for samme mekanisme ved ordlydsendring. |
+| Faktisk arbeidsadgang | A registrerer og følger opp bekreftelser. Den innfører ingen automatisk sperre av prosjektarbeid i andre moduler. Ledelsen følger opp firmaets arbeidsregel. Et teknisk arbeidsadgangsvilkår må spesifiseres senere før beskyttede prosjekt-/tilgangsflyter endres; teksten fremstiller ingen slik sperre som levert. |
+| Ny tekstkontroll | På samme Preview: åpne Les og bekreft eller Min personalhåndbok og se kravet før arbeid. Publiseringspanelet forklarer tidspunktet ved neste faktiske godkjenning. Ingen ny signering, ekstra rutineversjon eller gjentatt full funksjonsprøve trengs bare for teksten. Endelig head/CI/READY registreres i PR #216. Production og permanent demo er uendret. |

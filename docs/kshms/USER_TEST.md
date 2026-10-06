@@ -4,7 +4,13 @@ Oppdatert 2026-10-06. Dette gjelder håndboken som er klar for testing nå. Rest
 
 Bruk alltid [samme Preview-adresse](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe) i samme nettleser. Nye oppdateringer kommer på denne adressen. Oppdater siden etter at en ny versjon er klar. Du skal normalt fortsatt være innlogget. En annen adresse, en annen nettleser, privat vindu eller en avsluttet økt kan kreve ny innlogging. Preview bruker Sandbox.
 
-## Siste endring: Min personalhåndbok og egen gjennomgang ved publisering
+## Siste presisering: gjennomgang er påkrevd
+
+TEST OK er mottatt 2026-10-06 kl. 18:56 Europe/Oslo for Preview-head `6dfb74dad244ff9bd0e416a08f0a34bc88da3c3a`. Valget gjelder bare om firmaadmin/KS-HMS-ansvarlig bekrefter egen gjennomgang ved publisering eller etterpå. Egen gjennomgang er fortsatt påkrevd før arbeid etter firmaets regel. Production-godkjenning er en egen beslutning.
+
+Bare én tekstkontroll er relevant nå: På samme Preview, åpne **Les og bekreft** eller **Min personalhåndbok** og se at kravet før arbeid står tydelig. Når dere senere faktisk publiserer, skal godkjenningspanelet forklare «her eller etterpå» uten å kalle gjennomgangen valgfri. Ikke lag ny utgave, godkjenning eller bekreftelse bare for teksten. Den tidligere godkjente funksjonsprøven skal ikke gjentas.
+
+## Testet endring: Min personalhåndbok og egen gjennomgang ved publisering
 
 Oppdater samme Preview én gang. Dine ti godkjente rutiner og tidligere bekreftelser beholdes. De gamle godkjenningene er ikke gjort om til egne lesebekreftelser.
 
@@ -12,7 +18,7 @@ Oppdater samme Preview én gang. Dine ti godkjente rutiner og tidligere bekrefte
 2. **Slå opp etter bekreftelse:** Har du en rutine du faktisk har lest og skal bekrefte, bruk **Les og bekreft denne utgaven**. Bekreft egen gjennomgang. Neste gjenstående utgave skal åpnes med avslått avkrysning. Gå tilbake til **Min personalhåndbok**: rutinen skal fortsatt finnes med **Bekreftet**, ditt navn og tidspunktet. Har du allerede bekreftet, kontroller bare oppslaget og historikken.
 3. **Unngå dobbel gjennomgang ved neste ekte godkjenning:** Når du senere har en testklar ny rutine eller endring, kan du selv velge **Jeg bekrefter også egen gjennomgang av denne utgaven.** før **Godkjenn og publiser**. Etter lagring skal akkurat denne nye utgaven være både godkjent for firmaet og bekreftet av deg. Du skal slippe ny egen bekreftelse av samme utgave. Andre ansatte skal fortsatt bekrefte selv. Neste godkjenning skal starte med dette valget avslått. Ikke endre eller godkjenn de ti rutinene på nytt bare for testen; utvikleren har kontrollert dette med syntetiske data og en databaseprøve som rulles tilbake.
 
-Permanent kontroll, databasekontroll og syntetisk visning på stor skjerm/mobil passerer. Din innloggede full-app-prøve gjenstår. Medarbeidersamtaler og private kompetansedokumenter er ikke levert i denne endringen; de følger senere med egen personaltilgang.
+Permanent kontroll, databasekontroll og syntetisk visning på stor skjerm/mobil passerer. Brukeren har meldt TEST OK for Preview-head 6dfb74dad244ff9bd0e416a08f0a34bc88da3c3a den 2026-10-06 kl. 18:56 Europe/Oslo. Medarbeidersamtaler og private kompetansedokumenter er ikke levert i denne endringen; de følger senere med egen personaltilgang.
 
 ## Tidligere endring: kort oversikt over medarbeiderne
 
