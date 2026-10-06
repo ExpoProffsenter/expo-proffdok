@@ -1,13 +1,16 @@
-import { useId } from 'react';
+import { useId,useState } from 'react';
 import { ROUTINE_CATALOG } from './kshmsCatalog.mjs';
 import { routinesBySource,selectedCatalogRoutines } from './kshmsLibrary.mjs';
 import { routineApprovalState } from './kshmsDraft.mjs';
+import { matchesRoutineSearch } from './kshmsSearch.mjs';
+import KshmsRoutineSearch from './KshmsRoutineSearch.jsx';
 
 export default function KshmsRoutineLibrary({routines,versions,recommended,selectedKeys,onSelectionChange,filter,onFilterChange,busy,progress,feedback,onAdd,onEdit,onPreview}) {
- const id=useId(),existing=routinesBySource(routines);
+ const id=useId(),[query,setQuery]=useState(''),existing=routinesBySource(routines);
  const selected=selectedCatalogRoutines(selectedKeys).filter(routine=>!existing.has(routine.key));
  const selectedSet=new Set(selected.map(routine=>routine.key));
- const visible=filter==='all'?ROUTINE_CATALOG:recommended;
+ const available=filter==='all'?ROUTINE_CATALOG:recommended;
+ const visible=available.filter(routine=>matchesRoutineSearch(routine,query));
  const selectable=visible.filter(routine=>!existing.has(routine.key));
  const toggle=(key,checked)=>onSelectionChange(previous=>checked?[...new Set([...previous,key])]:previous.filter(value=>value!==key));
  return <section className="ks-routine-library" aria-label="Velg standardrutiner">
@@ -20,6 +23,9 @@ export default function KshmsRoutineLibrary({routines,versions,recommended,selec
    </div>
    <div className="ks-library-counts"><span className="ks-badge" role="status">{selected.length} valgt</span><span>{ROUTINE_CATALOG.filter(routine=>existing.has(routine.key)).length} av {ROUTINE_CATALOG.length} forslag lagt til</span></div>
   </div>
+  <KshmsRoutineSearch label="Søk i ProffDoks forslag" query={query} onChange={setQuery} count={visible.length} total={available.length}/>
+  {query.trim()&&!visible.length&&<p>Ingen forslag passer søket. Prøv «Alle forslag», et annet ord eller tøm søket.</p>}
+  {query.trim()&&<p className="ks-field-hint">Valgene dine beholdes når du søker. Hele utvalget står under «Disse rutinene legges inn».</p>}
   <div className="ks-actions">
    <button type="button" className="secondary" disabled={busy||!selectable.some(routine=>!selectedSet.has(routine.key))} onClick={()=>onSelectionChange(previous=>[...new Set([...previous,...selectable.map(routine=>routine.key)])])}>Velg alle viste</button>
    <button type="button" className="secondary" disabled={busy||!selected.length} onClick={()=>onSelectionChange([])}>Fjern markeringer</button>

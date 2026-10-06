@@ -8,17 +8,18 @@ const SAK = source('SAK10 kapittel 10', 'https://www.dibk.no/regelverk/sak/3/10/
 const AML = source('Arbeidsmiljøloven', 'https://www.arbeidstilsynet.no/regelverk/lover/arbeidsmiljoloven--aml/');
 const UTF = source('Forskrift om utførelse av arbeid', 'https://www.arbeidstilsynet.no/regelverk/forskrifter/forskrift-om-utforelse-av-arbeid/');
 const PV = source('Personvern på arbeidsplassen – Datatilsynets veiledning', 'https://www.datatilsynet.no/personvern-pa-ulike-omrader/personvern-pa-arbeidsplassen/', 'professional');
+const renewedSources = new Set(['leadership','leave','deviations','emergency']);
 const make = (key, title, chapter, goal, responsibility, procedure, documentation, references, coverage, relevance = 'Felles grunnlag', trades = []) => ({
- key, title, chapter: CHAPTERS[chapter], goal, responsibility, procedure, documentation, references, coverage, relevance, trades,
+ key, title, chapter: CHAPTERS[chapter], goal, responsibility, procedure, documentation, references:references.map(reference=>({...reference,checked_on:renewedSources.has(key)?'2026-10-06':reference.checked_on})), coverage, relevance, trades,
  confirmation: 'Gjennomgå rutinen og avklar spørsmål med ansvarlig før du utfører oppgavene. Bekreft bare egen gjennomgang. Be om nødvendig opplæring og meld fra om mangler.',
- source_key: key, source_revision: key==='revision'?2:1,
+ source_key: key, source_revision: ['revision','leadership','leave','deviations','emergency'].includes(key)?2:1,
 });
 // Independently authored starting drafts. No import of source handbook text, forms or personal answers.
 export const ROUTINE_CATALOG = [
  make('leadership','Ansvar, mål og oppfølging',0,
   'Gjøre det klart hvem som beslutter, utfører og følger opp kvalitet og arbeidsmiljø.',
   'Firmaadmin fastsetter ansvar. KS/HMS-ansvarlig holder oversikten oppdatert sammen med ansatte og verneombud.',
-  'Beskriv virksomhetens faktiske arbeid og viktigste risikoforhold. Avtal konkrete forbedringsmål og hvem som følger dem opp. Gjennomgå ansvarsfordelingen med medarbeiderne. Ta opp nye aktiviteter og organisatoriske endringer før de settes i gang. Fyll inn lokale navn og kontaktpunkter.',
+  'Ledelsen beskriver virksomhetens arbeid og viktigste risikoforhold, fordeler ansvar og gjør kontaktpersoner kjent for medarbeiderne. Ledelsen og medarbeiderne avtaler konkrete forbedringsmål og hvem som følger dem opp. KS/HMS-ansvarlig holder ansvarsoversikten oppdatert. Nye aktiviteter og organisatoriske endringer vurderes før de settes i gang.',
   'Ansvarsoversikt, avtalte mål og datert oppfølging av tiltak.',[IK,AML],['K001','K002','K004','K007','K050']),
  make('revision','Revidere og forbedre håndboken',0,
   'Holde firmaets rutiner relevante for arbeidet som faktisk utføres.',
@@ -33,7 +34,7 @@ export const ROUTINE_CATALOG = [
  make('leave','Ferie og permisjon',1,
   'Behandle ønsker om fravær forutsigbart og i samsvar med relevante rettigheter og avtaler.',
   'Leder avklarer fravær med medarbeider og sikrer nødvendig informasjon om beslutningen.',
-  'Medarbeider melder ønsket tidsrom og fraværstype gjennom firmaets avtalte kanal. Leder vurderer lovfestet rett, arbeids-/tariffavtale og eventuelle egne velferdsregler hver for seg. Avklar bemanning og kommuniser beslutningen. Be bare om nødvendig dokumentasjon. Fyll inn firmaets kanal og eventuelle interne regler før publisering.',
+  'Medarbeider melder ønsket tidsrom og fraværstype til nærmeste leder. Leder vurderer lovfestet rett, arbeids-/tariffavtale og eventuelle egne velferdsregler hver for seg. Leder drøfter ferie med medarbeideren, avklarer bemanning og gir beskjed om beslutningen. Det innhentes bare nødvendig dokumentasjon. Opplysninger om fraværet deles bare med dem som trenger dem for sin oppgave.',
   'Avklart fravær og beslutning i firmaets personalsystem. Helseopplysninger og enkeltsøknader legges ikke i felles håndbok.',[AML,source('Ferieloven §§5–11','https://www.arbeidstilsynet.no/regelverk/lover/ferieloven--feriel/')],['K015','K016']),
  make('risk','Vurdere risiko før arbeid',2,
   'Avdekke farer og velge tiltak før arbeid starter og når forutsetningene endrer seg.',
@@ -43,13 +44,13 @@ export const ROUTINE_CATALOG = [
  make('deviations','Melde og følge opp avvik og RUH',0,
   'Få farlige forhold og kvalitetsfeil rettet og bruke erfaringene til forbedring.',
   'Den som oppdager forholdet varsler arbeidsleder. Utpekt saksbehandler fordeler tiltak og kontrollerer resultatet.',
-  'Sikre situasjonen først. Beskriv hendelsen saklig, velg kategori og legg ved relevant dokumentasjon. Avtal rettingsansvarlig, saksbehandler og frist. Undersøk årsak og følg opp strakstiltak og forbedring. Lukk først etter kontroll av resultatet. Sensitive personal- og varslingssaker håndteres fortrolig gjennom egen kanal. Fyll inn lokale kanaler og ansvar.',
+  'Den som oppdager et avvik sikrer situasjonen og melder hendelsen til arbeidsleder. Hendelsen beskrives saklig med kategori og relevant dokumentasjon. Saksbehandler avklarer rettingsansvarlig og frist, undersøker årsak og følger opp strakstiltak og forbedring. Avviket lukkes først når resultatet er kontrollert og kontrollen er dokumentert. Fortrolige personal- og varslingssaker håndteres utenfor det ordinære avviksregisteret. Firmaets varslingsrutine skal beskrive mottak og oppfølging. Den skal ikke begrense retten til å varsle via verneombud, tillitsvalgt eller advokat, eller direkte til offentlig myndighet.',
   'Hendelse, tiltak, kontrollgrunnlag og sporbar lukking. Del bare et godkjent, avgrenset utdrag med relevant mottaker.',[IK,AML],['K035','K074','U03','U15']),
  make('emergency','Beredskap og førstehjelp',2,
   'Sikre rask hjelp og tydelige oppgaver når en alvorlig hendelse oppstår.',
   'Arbeidsleder avklarer lokale kontaktpunkter og tilgjengelig førstehjelpsutstyr før oppstart.',
-  'Fyll inn arbeidssted, møtepunkt, nødadkomst og hvem som møter hjelpen. Ved akutt hendelse varsles nødetatene og nødvendige interne kontaktpersoner. Sikre området uten å utsette flere for fare. Gi hjelp innen egen kompetanse og følg nødetatenes instruksjoner. Avklar hvem som håndterer informasjon og videre oppfølging. Øv og kontroller utstyr etter behov.',
-  'Lokal beredskapsoversikt, utstyrskontroll, øvelser og hendelsesoppfølging. Firmaet vurderer egne varslingsplikter ved alvorlig ulykke.',[AML,UTF],['K013','K014','K030','K086','U01','U02','U16']),
+  'Arbeidsleder gjennomgår arbeidssted, møtepunkt, nødadkomst og hvem som møter hjelpen med medarbeiderne før oppstart. Ved akutt hendelse varsles nødetatene og nødvendige interne kontaktpersoner. Området sikres uten å utsette flere for fare. Førstehjelp gis innen egen kompetanse og etter nødetatenes instruksjoner. Arbeidsleder avklarer hvem som håndterer informasjon og videre oppfølging. Beredskapen øves og utstyret kontrolleres etter behov.',
+  'Lokal beredskapsoversikt, utstyrskontroll, øvelser og hendelsesoppfølging. Firmaet vurderer egne varslingsplikter ved alvorlig ulykke.',[AML,source('Arbeidsplassforskriften §3-10 – førstehjelpsutstyr','https://www.arbeidstilsynet.no/regelverk/forskrifter/arbeidsplassforskriften/')],['K013','K014','K030','K086','U01','U02','U16']),
  make('coordination','Samordne arbeid og følge opp andre foretak',0,
   'Avklare ansvar og grensesnitt når flere foretak arbeider sammen.',
   'Prosjektleder avklarer egen rolle og kontakt med hovedbedrift, byggherre og øvrige foretak.',

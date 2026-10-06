@@ -21,7 +21,10 @@ export function useKshmsAccess(userId) {
    // the same firm must not remount the workspace and discard local input.
    // A real firm change (or missing scope) still hides the old context at once.
    if(event?.type===WORK_PROFILE_EVENT) setContext(previous=>previous?.company_id===event.detail?.active_company_id ? previous : null);
-   if(event?.type===MANAGED_ACCESS_EVENT) setContext(null);
+   // The existing managed-access event identifies the affected user. Editing
+   // another member's grant cannot change our grant; keep this workspace while
+   // rechecking the server. Own/unscoped changes still fail closed immediately.
+   if(event?.type===MANAGED_ACCESS_EVENT&&(!event.detail?.userId||event.detail.userId===userId)) setContext(null);
    kshmsRpc('get_kshms_context').then(value=>{if(active && current===revision)setContext(value?.user_id===userId ? value : null);})
     .catch(()=>{if(active && current===revision)setContext(null);});
   };

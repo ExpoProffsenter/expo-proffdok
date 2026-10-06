@@ -4,6 +4,8 @@ import {readDraft,persistDraft,routineApprovalState,handbookProgress,sameRoutine
 import {ROUTINE_CATALOG,suggestedRoutines,currentVersionSnapshot,ACK_STATEMENT} from '../src/modules/kshms/kshmsCatalog.mjs';
 import {addLibraryRoutines,routinesBySource,selectedCatalogRoutines} from '../src/modules/kshms/kshmsLibrary.mjs';
 import {createGlobalAppTabs,createProjectWorkspaceTabs} from '../src/modules/project/projectNavigationTabs.mjs';
+import {fillEmptySetup,changeSetupTrades,routineWithSuggestions,fillEmptyRoutine,ROUTINE_WRITING_TIPS} from '../src/modules/kshms/kshmsWriting.mjs';
+import {filterFirmRoutines,matchesRoutineSearch} from '../src/modules/kshms/kshmsSearch.mjs';
 // Actual refresh hook: stale responses may never revive old company access.
 const source=fs.readFileSync('src/modules/kshms/kshmsAccess.js','utf8');
 const hook=source.slice(source.indexOf('export function useKshmsAccess')).replace('export function','function');
@@ -36,6 +38,46 @@ const count=requests.length;window.dispatchEvent(new Event('profile'));assert.eq
 // A new auth identity must not render the prior user's context before effects run.
 const renderHook=run(()=>[{user_id:'u1',company_id:'a',enabled:true},()=>{}],()=>{},rpc,window,'managed','module','profile');
 assert.equal(renderHook('u1').company_id,'a');assert.equal(renderHook('u2'),null);assert.equal(renderHook(null),null);
+// Actual hook + mount gate: changing another employee's access must not erase
+// unsaved setup, editor, search or assessment. Own/unscoped events still hide
+// access immediately, and a stale response must not undo a later revocation.
+const memberWindow=new EventTarget(),memberRequests=[];let memberContext,workspace;
+run(initial=>{memberContext=initial;return[initial,next=>{memberContext=typeof next==='function'?next(memberContext):next;if(!memberContext?.enabled)workspace=null;else workspace||={screen:'setup',activities:'Egen ulagret tekst',query:'våtrom',assessment:'Egen vurdering'};}];},effect=>effect(),()=>new Promise((resolve,reject)=>memberRequests.push({resolve,reject})),memberWindow,'managed','module','profile')('admin');
+const adminContext={user_id:'admin',company_id:'a',enabled:true,manage:true,publish:true,administer:true};
+memberRequests[0].resolve(adminContext);await Promise.resolve();const originalWorkspace=workspace;
+const memberEvent=userId=>{const event=new Event('managed');event.detail={source:'kshms-member-access',userId,companyId:'a'};memberWindow.dispatchEvent(event);};
+memberEvent('employee-one');assert.equal(workspace,originalWorkspace,'Grant for another member unmounted the workspace');
+memberRequests[1].resolve({...adminContext});await Promise.resolve();assert.equal(workspace.activities,'Egen ulagret tekst');
+memberEvent('employee-two');assert.equal(workspace.assessment,'Egen vurdering');assert.equal(workspace.query,'våtrom');
+memberEvent('admin');assert.equal(workspace,null,'Own access changes must fail closed immediately');
+memberRequests[3].resolve({...adminContext,enabled:false});await Promise.resolve();memberRequests[2].resolve(adminContext);await Promise.resolve();assert.equal(memberContext.enabled,false,'Stale other-member response undid own revocation');
+memberEvent('');assert.equal(workspace,null);
+memberRequests[4].reject(new Error('Access check failed'));await Promise.resolve();await Promise.resolve();assert.equal(memberContext,null);
+
+// Editable suggestions never replace meaningful saved/custom text. Only fields
+// still owned by the suggestion may follow a later multi-trade selection.
+const savedSetup={revision:7,trades:['vvs'],activities:'Firmaets faktiske oppgaver',responsibilities:'Eget ansvar',risks:''};
+const preparedSetup=fillEmptySetup(savedSetup);assert.equal(savedSetup.risks,'');assert.deepEqual(preparedSetup.filled,['risks']);
+assert.equal(preparedSetup.setup.activities,savedSetup.activities);assert.equal(preparedSetup.setup.revision,7);
+const preparedTrades=changeSetupTrades(preparedSetup.setup,['vvs','maler'],new Set(preparedSetup.filled));
+assert.equal(preparedTrades.activities,savedSetup.activities);assert(preparedTrades.risks.includes('lekkasjer'));assert(preparedTrades.risks.includes('ventilasjon'));
+const customRisk={...preparedTrades,risks:'Firmaets egen vurdering'};
+assert.equal(changeSetupTrades(customRisk,['tomrer'],new Set()).risks,customRisk.risks);
+const deliberatelyCleared={...customRisk,risks:''};assert.equal(changeSetupTrades(deliberatelyCleared,['tomrer'],new Set()).risks,'','Trade selection replaced a field the user cleared');
+const proposedRoutine=routineWithSuggestions();assert.equal(proposedRoutine.title,'');assert.equal(proposedRoutine.source_key,null);assert(proposedRoutine.procedure.includes('1.'));
+const localRoutine={...proposedRoutine,goal:'Firmaets egne mål',documentation:''};const filledRoutine=fillEmptyRoutine(localRoutine);
+assert.equal(localRoutine.documentation,'');assert.equal(filledRoutine.goal,'Firmaets egne mål');assert(filledRoutine.documentation);
+for(const draft of [proposedRoutine,filledRoutine])for(const tip of Object.values(ROUTINE_WRITING_TIPS))assert(!JSON.stringify(draft).includes(tip),'Editor guidance leaked into routine content');
+
+// A reader search cannot discover draft wording or another employee's edition,
+// even when an over-broad synthetic state is supplied. The server remains the
+// real authorization boundary; search does not make broader API calls.
+const searchState={context:{manage:false,user_id:'reader'},routines:[{id:'r1',draft:{title:'Hemmelig utkast'}},{id:'r2',draft:{title:'Personalnotat'}}],versions:[{id:'own',routine_id:'r1',number:1,content:{title:'Våtrom',chapter:'Fag og kvalitet',procedure:'Kontroll av membran'}},{id:'other',routine_id:'r2',number:1,content:{title:'Bare andre'}}],assignments:[{user_id:'reader',version_id:'own'},{user_id:'another',version_id:'other'}]};
+assert.equal(filterFirmRoutines(searchState,'').length,1);assert.equal(filterFirmRoutines(searchState,'vatrom membran').length,1);
+assert.equal(filterFirmRoutines(searchState,'hemmelig').length,0);assert.equal(filterFirmRoutines(searchState,'personal').length,0);assert.equal(filterFirmRoutines(searchState,'andre').length,0);
+assert.equal(filterFirmRoutines({...searchState,context:{manage:true,user_id:'admin'}},'hemmelig').length,1);
+assert.equal(filterFirmRoutines({...searchState,context:{manage:true,user_id:'admin'}},'membran').length,1,'Published wording disappeared from a manager search after draft changes');
+assert(matchesRoutineSearch({title:'VERKTØY',procedure:'Før kontroll'},'verktoy for'));assert(!matchesRoutineSearch({title:'Våtrom'},'våtrom kjemikalier'));
 // Company/user draft recovery is explicit and keeps the original server revision.
 const memory=new Map();const storage={getItem:k=>memory.get(k),setItem:(k,v)=>memory.set(k,v)};
 persistDraft(storage,'u1','a',{id:'r1',revision:4,draft:{title:'Meaningful local text',procedure:'Local work'}});
@@ -48,7 +90,7 @@ assert(suggestedRoutines(['maler'],'våtrom').some(r=>r.key==='wetroom'));
 assert(!suggestedRoutines(['maler'],'fasade').some(r=>r.key==='wetroom'));
 assert(!suggestedRoutines(['tomrer'],'montering').some(r=>r.key==='chemicals'));
 assert(ROUTINE_CATALOG.length===12);
-for(const routine of ROUTINE_CATALOG){assert(routine.procedure && routine.references.length);for(const ref of routine.references)assert(ref.checked_on==='2026-10-05'&&/^https:\/\//.test(ref.url));}
+for(const routine of ROUTINE_CATALOG){assert(routine.procedure && routine.references.length);assert(!/fyll inn/i.test(routine.procedure),'Writing instructions belong outside routine content');for(const tip of Object.values(ROUTINE_WRITING_TIPS))assert(!JSON.stringify(routine).includes(tip));for(const ref of routine.references)assert(ref.checked_on===(['leadership','leave','deviations','emergency'].includes(routine.key)?'2026-10-06':'2026-10-05')&&/^https:\/\//.test(ref.url));}
 assert.deepEqual(currentVersionSnapshot({routines:[{id:'r1'},{id:'r2',archived:true}],versions:[{routine_id:'r1',id:'v2',content_hash:'new'},{routine_id:'r1',id:'v1',content_hash:'old'}]}),[{id:'v2',hash:'new'}]);
 const coverage=JSON.parse(fs.readFileSync('docs/kshms/coverage.json','utf8'));
 assert.equal(coverage.topics.filter(r=>r.id.startsWith('K')).length,105);assert.equal(coverage.topics.filter(r=>r.id.startsWith('K')&&r.personal_pages!=='—').length,88);
@@ -164,12 +206,13 @@ const setupStart=moduleSource.indexOf(' const saveSetup=');
 const setupEnd=moduleSource.indexOf(' if(!data)return',setupStart);
 assert(setupStart>=0&&setupEnd>setupStart);
 async function setupScenario({member={id:'u1',workspace_role:'ansatt',enabled:false,role:'reader'},admin=true,failSettings=false,active=true}={}){
- const ui={error:'',screen:'setup',focus:0,broadcast:0},commands=[];
+ const ui={error:'',screen:'setup',focus:0,broadcast:0,broadcastDetail:null},commands=[];
  const setup={trades:['vvs'],responsible_user_id:'u1',activities:'Local text'},scope={active};
- const saveSetup=new Function('busy','setup','data','requestScope','run','setError','setScreen','setFlowFocus','publishManagedAccessChange',moduleSource.slice(setupStart,setupEnd)+';return saveSetup;')(false,setup,{members:member?[member]:[],context:{administer:admin}},{current:scope},async(action,payload)=>{commands.push({action,payload:structuredClone(payload)});return action==='settings'&&failSettings?null:{revision:1};},next=>{ui.error=typeof next==='function'?next(ui.error):next;},next=>{ui.screen=next;},next=>{ui.focus=next(ui.focus);},()=>ui.broadcast++);
+ const saveSetup=new Function('busy','setup','data','requestScope','run','setError','setScreen','setFlowFocus','publishManagedAccessChange','companyId',moduleSource.slice(setupStart,setupEnd)+';return saveSetup;')(false,setup,{members:member?[member]:[],context:{administer:admin}},{current:scope},async(action,payload)=>{commands.push({action,payload:structuredClone(payload)});return action==='settings'&&failSettings?null:{revision:1};},next=>{ui.error=typeof next==='function'?next(ui.error):next;},next=>{ui.screen=next;},next=>{ui.focus=next(ui.focus);},detail=>{ui.broadcast++;ui.broadcastDetail=detail;},'a');
  await saveSetup({preventDefault(){}});return {ui,commands,setup};
 }
 const appointment=await setupScenario();assert.deepEqual(appointment.commands.map(c=>c.action),['access','settings']);assert.equal(appointment.ui.screen,'handbook');assert.equal(appointment.ui.broadcast,1);
+assert.deepEqual(appointment.ui.broadcastDetail,{source:'kshms-member-access',userId:'u1',companyId:'a'});
 assert.deepEqual(appointment.commands[0].payload,{user_id:'u1',role:'responsible',enabled:true});
 const selfAppointment=await setupScenario({member:{id:'u1',workspace_role:'firmaadmin'}});assert.deepEqual(selfAppointment.commands.map(c=>c.action),['settings']);
 const partialAppointment=await setupScenario({failSettings:true});assert(partialAppointment.ui.error.includes('tilgang, men oppstart kunne ikke bekreftes'));assert.equal(partialAppointment.setup.activities,'Local text');assert.equal(partialAppointment.ui.screen,'setup');assert.equal(partialAppointment.ui.broadcast,0);
@@ -189,4 +232,4 @@ async function saveScenario(changed){
 }
 const savedChange=await saveScenario(true);assert.equal(savedChange.ui.publication.revision,6);assert.equal(savedChange.ui.publication.draft.procedure,'New saved procedure');assert.equal(savedChange.commands.length,1);assert.equal(savedChange.commands[0].action,'save');assert.equal(savedChange.ui.dirty,false);
 const savedUnchanged=await saveScenario(false);assert.equal(savedUnchanged.ui.publication,null);assert(savedUnchanged.ui.notice.includes('uten nye innholdsendringer'));assert.equal(savedUnchanged.ui.focus,1);assert.equal(versionOne.content.procedure,'Before change');
-console.log('critical-kshms-check: OK – handbook progression/changed versions, composed appointment/failure, approval reveal/next step, multi-select/retry, grant/profile races, scoped recovery and 275 source pages');
+console.log('critical-kshms-check: OK – targeted grant retention/revocation, suggestion ownership, reader-scoped search, handbook/version progression, appointment/failure, approval, multi-select/retry, scoped recovery and 275 source pages');
