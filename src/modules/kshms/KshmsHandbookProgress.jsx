@@ -1,0 +1,9 @@
+export default function KshmsHandbookProgress({progress,dirty,busy,canPublish,onNext,targetRef,feedback='',label='Neste steg i håndboken',announce=true}) {
+ return <div className={`ks-card ks-handbook-progress ks-flow-target${progress.step==='followup'&&!dirty?' ready':''}`} ref={targetRef} tabIndex={-1} role="region" aria-label={label}>
+  <h3>{dirty?'Lagre endringene før du går videre':progress.step==='setup'?'Start med å velge ansvarlig':progress.step==='selection'?'Velg de første rutinene':progress.step==='approval'?'Tilpass og godkjenn rutinene':'Håndboken er klar'}</h3>
+  <p>{dirty?'Du har endret tekst som ennå ikke er lagret. Trykk «Lagre utkast» i redigeringen. Etterpå kan du godkjenne den lagrede teksten.':progress.step==='setup'?'Firmaadmin velger hvem som følger opp håndboken. Lagre ansvarlig og fag i oppstarten før du godkjenner rutiner.':progress.step==='selection'?'Åpne forslagene under. Huk av rutinene firmaet trenger, og trykk «Legg inn». De lagres som utkast.':progress.step==='approval'?`${progress.waiting.length} ${progress.waiting.length===1?'rutine trenger':'rutiner trenger'} godkjenning. Les og tilpass hver rutine. Godkjenn først når teksten passer arbeidet deres.`:'Alle valgte rutiner er godkjent. Nå skal ansatte lese og bekrefte dem. Åpne oppfølgingen for å se hvem som mangler gjennomgang.'}</p>
+  <p className="ks-progress-count" role={announce?'status':undefined}>{progress.approved} av {progress.total} valgte rutiner er godkjent{dirty?' · ulagrede endringer gjenstår':''}.</p>
+  <button type="button" disabled={busy||dirty||(progress.step==='approval'&&!canPublish)} onClick={onNext}>{progress.step==='setup'?'Neste: Velg KS/HMS-ansvarlig':progress.step==='selection'?'Neste: Velg rutiner':progress.step==='approval'?`Neste: Godkjenn rutinene (${progress.waiting.length})`:'Neste: Ansattes gjennomgang'}</button>
+  {feedback&&<p className="ks-notice" role={announce?'status':undefined}>{feedback}</p>}
+ </div>;
+}

@@ -24,3 +24,13 @@ export function handbookProgress(data) {
  const responsible=data.members.find(member=>member.id===data.settings?.responsible_user_id&&(member.workspace_role==='firmaadmin'||member.enabled&&member.role==='responsible'));
  return {total:active.length,approved:active.length-waiting.length,waiting,step:!responsible?'setup':!active.length?'selection':waiting.length?'approval':'followup'};
 }
+
+// The next reading is derived from the refreshed, authorized server state.
+// A search must never hide another required assignment or borrow another
+// employee's acknowledgment. Informational editions remain available to read.
+export function pendingReadingVersions(data,userId) {
+ const versions=new Map(data.versions.map(version=>[version.id,version]));
+ const acknowledged=new Set(data.acknowledgments.filter(row=>row.user_id===userId).map(row=>row.version_id));
+ return data.assignments.filter(row=>row.user_id===userId&&!acknowledged.has(row.version_id))
+  .map(row=>versions.get(row.version_id)).filter(version=>version&&(version.requires_ack||version.number===1));
+}

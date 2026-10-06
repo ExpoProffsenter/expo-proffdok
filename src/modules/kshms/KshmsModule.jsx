@@ -1,11 +1,12 @@
 import { useEffect,useId,useRef,useState } from 'react';
 import { ACK_STATEMENT,CHAPTERS,ROUTINE_CATALOG,TRADES,blankRoutine,currentVersionSnapshot,suggestedRoutines } from './kshmsCatalog.mjs';
-import { draftKey,persistDraft,readDraft,routineApprovalState,handbookProgress } from './kshmsDraft.mjs';
+import { draftKey,persistDraft,readDraft,routineApprovalState,handbookProgress,pendingReadingVersions } from './kshmsDraft.mjs';
 import { kshmsRpc } from './kshmsAccess.js';
 import { publishManagedAccessChange } from '../access/moduleAccessClient.js';
 import { addLibraryRoutines } from './kshmsLibrary.mjs';
 import KshmsRoutineLibrary from './KshmsRoutineLibrary.jsx';
 import KshmsRoutineSearch from './KshmsRoutineSearch.jsx';
+import KshmsHandbookProgress from './KshmsHandbookProgress.jsx';
 import { filterFirmRoutines,matchesRoutineSearch } from './kshmsSearch.mjs';
 import { SETUP_TEXT_FIELDS,ROUTINE_TEXT_SUGGESTIONS,fillEmptySetup,changeSetupTrades,routineWithSuggestions,fillEmptyRoutine,ROUTINE_WRITING_TIPS } from './kshmsWriting.mjs';
 import './kshms.css';
@@ -43,6 +44,7 @@ export default function KshmsModule({context}) {
  const publicationRef=useRef(null),overviewRef=useRef(null),[publicationFocus,setPublicationFocus]=useState(0),[overviewFocus,setOverviewFocus]=useState(0),[publicationFeedback,setPublicationFeedback]=useState('');
  const publicationHeadingId=useId();
  const [reading,setReading]=useState(null),[checked,setChecked]=useState(false);
+ const readingRef=useRef(null),readingDoneRef=useRef(null),completionRef=useRef(null),[readingFocus,setReadingFocus]=useState(0),[completionFocus,setCompletionFocus]=useState(0),[readingFeedback,setReadingFeedback]=useState('');
  const [handbookQuery,setHandbookQuery]=useState(''),[readingQuery,setReadingQuery]=useState('');
  const setupSuggestionFields=useRef(new Set());
  const [findings,setFindings]=useState(''),[followUp,setFollowUp]=useState(''),[nextReview,setNextReview]=useState(''),[reviewChecked,setReviewChecked]=useState(false);
@@ -57,12 +59,14 @@ export default function KshmsModule({context}) {
  useEffect(()=>{if(editorFocus&&editorRef.current){editorRef.current.focus();editorRef.current.scrollIntoView({block:'start'});}},[editorFocus]);
  useEffect(()=>{if(libraryPreview&&libraryPreviewRef.current){libraryPreviewRef.current.focus();libraryPreviewRef.current.scrollIntoView({block:'start'});}},[libraryPreview]);
  useEffect(()=>{if(publicationFocus&&publicationRef.current){publicationRef.current.focus();publicationRef.current.scrollIntoView({block:'start'});}},[publicationFocus]);
+ useEffect(()=>{if(readingFocus){const target=reading?readingRef.current:readingDoneRef.current;target?.focus();target?.scrollIntoView({block:'start'});}},[readingFocus]);
+ useEffect(()=>{if(completionFocus){completionRef.current?.focus();completionRef.current?.scrollIntoView({block:'start'});}},[completionFocus]);
  useEffect(()=>{if(overviewFocus&&overviewRef.current){overviewRef.current.focus();overviewRef.current.scrollIntoView({block:'start'});}},[overviewFocus]);
  useEffect(()=>{if(flowFocus){const target=screen==='setup'?setupRef.current:screen==='followup'?followupRef.current:flowRef.current;target?.focus();target?.scrollIntoView({block:'start'});}},[flowFocus,screen]);
  useEffect(()=>{if(libraryFocus){libraryRef.current?.focus();libraryRef.current?.scrollIntoView({block:'start'});}},[libraryFocus]);
- const run=async(action,payload,success='Lagret.')=>{
+ const run=async(action,payload,success='Lagret.',onSaved=null)=>{
   setBusy(true);setError('');setNotice('');
-  try{const result=await kshmsRpc('kshms_command',{p_company_id:companyId,p_action:action,p_payload:payload});const value=await load();if(action==='settings'){setupSuggestionFields.current.clear();setSetup(value.settings||emptySetup);}setNotice(success);return result;}
+  try{const result=await kshmsRpc('kshms_command',{p_company_id:companyId,p_action:action,p_payload:payload});const value=await load();if(action==='settings'){setupSuggestionFields.current.clear();setSetup(value.settings||emptySetup);}setNotice(success);onSaved?.(result,value);return result;}
   catch(e){if(e.code==='40001'){try{await load()}catch{}setError('En annen person har lagret endringer. Sammenlign din tekst med den lagrede teksten før du lagrer igjen. Ditt utkast er beholdt på denne enheten.');}else setError(e.message);return null;}
   finally{setBusy(false);}
  };
@@ -77,9 +81,30 @@ export default function KshmsModule({context}) {
  };
  const publishRoutine=async()=>{
   if(busy||dirty||!publication||summary.trim().length<5)return;
-  const routine=publication;
-  const result=await run('publish',{id:routine.id,revision:routine.revision,change_summary:summary,requires_ack:data.versions.some(v=>v.routine_id===routine.id)?freshAck:true},'');
-  if(result?.id){setPublication(null);setPublicationFeedback(`«${routine.draft.title}» er godkjent og publisert som versjon ${result.number}. Se neste steg over. Ansatte med KS/HMS-tilgang finner utgaven i «Les og bekreft».`);setFlowFocus(previous=>previous+1);}
+  const routine=publication,scope=requestScope.current;let savedState;
+  if(!scope?.active)return;
+  const result=await run('publish',{id:routine.id,revision:routine.revision,change_summary:summary,requires_ack:data.versions.some(v=>v.routine_id===routine.id)?freshAck:true},'',(_,value)=>{savedState=value;});
+  if(!scope.active||requestScope.current!==scope||!result?.id||savedState?.context?.company_id!==companyId||savedState.context.user_id!==userId||!savedState.context.publish)return;
+  const progress=handbookProgress(savedState),next=progress.waiting[0];
+  const feedback=`«${routine.draft.title}» er godkjent og publisert som versjon ${result.number}.`;
+  if(next){choosePublication(next);if(!matchesRoutineSearch(next.draft,handbookQuery))setHandbookQuery('');setPublicationFeedback(`${feedback} Neste rutine som trenger godkjenning, er åpnet under.`);}
+  else{setPublication(null);setSummary('');setFreshAck(true);setPublicationFeedback(`${feedback} Ansatte med KS/HMS-tilgang finner utgaven i «Les og bekreft».`);if(progress.step==='followup')setCompletionFocus(previous=>previous+1);else setFlowFocus(previous=>previous+1);}
+ };
+ const chooseReading=version=>{
+  if(busy)return;
+  setReading(version);setChecked(false);setReadingFeedback('');setError('');setNotice('');setReadingFocus(previous=>previous+1);
+ };
+ const acknowledgeRoutine=async()=>{
+  if(busy||!checked||!reading)return;
+  const version=reading,scope=requestScope.current;let savedState;
+  if(!scope?.active)return;
+  const result=await run('ack',{version_id:version.id,statement:ACK_STATEMENT},'',(_,value)=>{savedState=value;});
+  if(!scope.active||requestScope.current!==scope||!result||savedState?.context?.company_id!==companyId||savedState.context.user_id!==userId)return;
+  if(!savedState.acknowledgments.some(row=>row.user_id===userId&&row.version_id===version.id)){setError('Vi kunne ikke kontrollere at bekreftelsen er lagret. Prøv igjen.');return;}
+  const next=pendingReadingVersions(savedState,userId)[0];
+  const feedback=`Du har bekreftet «${version.content.title}», versjon ${version.number}. Navnet ditt, tidspunktet og utgaven er lagret.`;
+  if(next){chooseReading(next);if(!matchesRoutineSearch(next.content,readingQuery))setReadingQuery('');setReadingFeedback(`${feedback} Neste rutine som mangler bekreftelse, er åpnet under.`);}
+  else{setReading(null);setChecked(false);setReadingFeedback(feedback);setReadingFocus(previous=>previous+1);}
  };
  const addSelected=async keys=>{
   if(busy)return;
@@ -126,7 +151,7 @@ export default function KshmsModule({context}) {
  const canManage=data.context.manage,canPublish=data.context.publish,canAdmin=data.context.administer===true;
  const progress=canManage?handbookProgress(data):null;
  const nextStep=()=>{if(busy||dirty)return;if(progress.step==='setup'){setScreen('setup');setFlowFocus(previous=>previous+1);}else if(progress.step==='approval'){setScreen('handbook');choosePublication(progress.waiting[0]);}else if(progress.step==='selection'){setScreen('handbook');setLibraryOpen(true);setLibraryFocus(previous=>previous+1);}else{setScreen('followup');setFlowFocus(previous=>previous+1);}};
- const pending=data.assignments.filter(a=>a.user_id===userId && !data.acknowledgments.some(k=>k.version_id===a.version_id && k.user_id===userId) && data.versions.some(v=>v.id===a.version_id && (v.requires_ack||v.number===1)));
+ const pending=pendingReadingVersions(data,userId);
  const latest=data.routines.filter(r=>!r.archived).map(r=>data.versions.find(v=>v.routine_id===r.id)).filter(Boolean);
  const eligibleMembers=data.members.filter(m=>m.enabled||m.workspace_role==='firmaadmin');
  const overdue=data.settings && new Date(`${data.settings.next_review_on}T23:59:59`) < new Date();
@@ -162,13 +187,7 @@ export default function KshmsModule({context}) {
    </div>}
   </>}
   {screen==='handbook'&&<>
-   {canManage&&<div className={`ks-card ks-flow-target ks-handbook-progress${progress.step==='followup'&&!dirty?' ready':''}`} ref={flowRef} tabIndex={-1}>
-    <h3>{dirty?'Lagre endringene før du går videre':progress.step==='setup'?'Start med å velge ansvarlig':progress.step==='selection'?'Velg de første rutinene':progress.step==='approval'?'Tilpass og godkjenn rutinene':'Håndboken er klar'}</h3>
-    <p>{dirty?'Du har endret tekst som ennå ikke er lagret. Trykk «Lagre utkast» i redigeringen. Etterpå kan du godkjenne den lagrede teksten.':progress.step==='setup'?'Firmaadmin velger hvem som følger opp håndboken. Lagre ansvarlig og fag i oppstarten før du godkjenner rutiner.':progress.step==='selection'?'Åpne forslagene under. Huk av rutinene firmaet trenger, og trykk «Legg inn». De lagres som utkast.':progress.step==='approval'?`${progress.waiting.length} ${progress.waiting.length===1?'rutine trenger':'rutiner trenger'} godkjenning. Les og tilpass hver rutine. Godkjenn først når teksten passer arbeidet deres.`:'Alle valgte rutiner er godkjent. Nå skal ansatte lese og bekrefte dem. Åpne oppfølgingen for å se hvem som mangler gjennomgang.'}</p>
-    <p className="ks-progress-count" role="status">{progress.approved} av {progress.total} valgte rutiner er godkjent{dirty?' · ulagrede endringer gjenstår':''}.</p>
-    <button type="button" disabled={busy||dirty||(progress.step==='approval'&&!canPublish)} onClick={nextStep}>{progress.step==='setup'?'Neste: Velg KS/HMS-ansvarlig':progress.step==='selection'?'Neste: Velg rutiner':progress.step==='approval'?`Neste: Godkjenn rutinene (${progress.waiting.length})`:'Neste: Ansattes gjennomgang'}</button>
-    {publicationFeedback&&<p className="ks-notice" role="status">{publicationFeedback}</p>}
-   </div>}
+   {canManage&&<KshmsHandbookProgress progress={progress} dirty={dirty} busy={busy} canPublish={canPublish} onNext={nextStep} targetRef={flowRef} feedback={publication?'':publicationFeedback}/>}
    {canManage&&<div className="ks-card"><h3>Her bygger du firmaets KS/HMS-håndbok</h3><p>Firmaets rutiner ligger under. «Utkast» er tekst som må vurderes. «Godkjent» er en utgave ansatte kan lese. Redigerer du en godkjent rutine, må endringene godkjennes før ansatte får dem.</p>
     <ol className="ks-steps"><li><strong>Velg rutiner</strong><span>Huk av rutinene firmaet trenger.</span></li><li><strong>Legg dem inn</strong><span>Se over listen og trykk «Legg inn».</span></li><li><strong>Tilpass teksten</strong><span>Trykk «Rediger her» og lagre utkastet.</span></li><li><strong>Godkjenn</strong><span>Firmaadmin eller KS/HMS-ansvarlig godkjenner. Ansatte leser og bekrefter.</span></li></ol>
     <p className="ks-field-hint">Det finnes {ROUTINE_CATALOG.length} forslag foreløpig. Flere rutiner og verktøy kommer etter hvert. Du kan også skrive en egen rutine.</p>
@@ -190,8 +209,9 @@ export default function KshmsModule({context}) {
     {data.routines.some(r=>r.id===editor.id&&r.revision!==editor.revision)&&<aside className="ks-proposal"><h4>En annen person har endret rutinen</h4><p>Teksten under er lagret av en annen person. Sammenlign den med teksten du jobber med. Velg å beholde din tekst først når du har sjekket forskjellene.</p><Content content={data.routines.find(r=>r.id===editor.id).draft} draft/><button type="button" className="secondary" onClick={()=>{cacheEditor({...editor,revision:data.routines.find(r=>r.id===editor.id).revision});setError('')}}>Jeg har sammenlignet – behold min tekst</button></aside>}
     {proposal&&<aside className="ks-proposal"><h4>Velg hvilken tekst du vil bruke</h4><p>Her ser du ProffDoks forslag. Trykk på et felt du vil bruke. Bare det feltet endres i utkastet ditt. Lagre utkastet etterpå. Firmaadmin eller KS/HMS-ansvarlig må godkjenne endringen.</p><Content content={proposal} draft/>{['goal','responsibility','procedure','documentation','confirmation','references'].map(key=><button type="button" className="secondary" key={key} onClick={()=>{const next={...editor,draft:{...editor.draft,[key]:structuredClone(proposal[key]),source_revision:proposal.source_revision}};const refs=key==='references'?next.draft.references:sources;if(key==='references')setSources(refs);cacheEditor(next,refs)}}>Bruk forslagets {({goal:'mål',responsibility:'ansvar',procedure:'fremgangsmåte',documentation:'dokumentasjon',confirmation:'gjennomgang',references:'kilder'})[key]}</button>)}</aside>}
    </div>}
-   {publication&&<div className="ks-card ks-editor ks-publication" ref={publicationRef} tabIndex={-1} aria-labelledby={publicationHeadingId} aria-busy={busy}>
+   {publication&&canPublish&&<div className="ks-card ks-editor ks-publication" ref={publicationRef} tabIndex={-1} aria-labelledby={publicationHeadingId} aria-busy={busy}>
     <h3 id={publicationHeadingId}>Her godkjenner du rutinen: {publication.draft.title}</h3>
+    {publicationFeedback&&<p className="ks-notice" role="status">{publicationFeedback}</p>}
     <p>Denne rutinen venter på godkjenning. Les den lagrede teksten under og sjekk at den passer firmaet. Skriv kort hva du har kontrollert eller endret. «Godkjenn og publiser» godkjenner bare denne rutinen og gir den til ansatte med KS/HMS-tilgang. Tidligere utgaver og bekreftelser beholdes.</p>
     <Content content={publication.draft} draft/>
     <Field label="Hva er vurdert eller endret?" hint="Skriv før du godkjenner. Eksempel: «Gjennomgått og tilpasset firmaets arbeid». Skriv det du faktisk har kontrollert (minst 5 tegn). En grå knapp betyr at vurderingen mangler, ikke at rutinen er godkjent." value={summary} onChange={setSummary} required multiline/>
@@ -213,12 +233,14 @@ export default function KshmsModule({context}) {
      {versions.length>0&&<details><summary>Versjonshistorikk ({versions.length})</summary>{versions.map(v=><details key={v.id}><summary>Versjon {v.number} · {dateTime(v.published_at)} · {v.change_summary}</summary><Content content={v.content}/><p>Godkjenner: {data.members.find(m=>m.id===v.published_by)?.email||v.published_by} · innholdskontroll: {v.content_hash}</p></details>)}</details>}
     </article>;
    })}</div>)}
+   {canManage&&progress.step==='followup'&&!dirty&&<KshmsHandbookProgress progress={progress} dirty={dirty} busy={busy} canPublish={canPublish} onNext={nextStep} targetRef={completionRef} feedback={publicationFeedback} label="Neste steg etter siste godkjenning" announce={false}/>}
   </>}
-  {screen==='reading'&&<div className="ks-card"><h3>Her leser du rutinene du har fått</h3><p>Åpne en rutine og les hele teksten. Spør ansvarlig hvis noe er uklart. Når du har lest, huker du av og trykker «Bekreft». Gjør det samme for alle rutinene på listen. Bekreftelsen viser at du selv har lest denne utgaven.</p><p>En versjon er en bestemt utgave av rutinen. Hvis teksten endres, kan du få en ny utgave å lese. Du skal fortsatt få opplæringen du trenger før du gjør arbeidet.</p><p className="ks-notice" role="status">{pending.length?`${pending.length} ${pending.length===1?'rutine venter':'rutiner venter'} på din bekreftelse.`:'Ingen rutiner venter på din bekreftelse.'}</p>
+  {screen==='reading'&&<div className="ks-card"><h3>Her leser du rutinene du har fått</h3><p>Åpne en rutine og les hele teksten. Spør ansvarlig hvis noe er uklart. Når du har lest, huker du av og trykker «Bekreft». Når bekreftelsen er lagret, åpnes neste rutine som mangler bekreftelse. Du må lese og bekrefte hver rutine selv. Bekreftelsen viser at du selv har lest denne utgaven.</p><p>En versjon er en bestemt utgave av rutinen. Hvis teksten endres, kan du få en ny utgave å lese. Du skal fortsatt få opplæringen du trenger før du gjør arbeidet.</p><p className="ks-notice" role="status">{pending.length?`${pending.length} ${pending.length===1?'rutine venter':'rutiner venter'} på din bekreftelse.`:'Ingen rutiner venter på din bekreftelse.'}</p>
    <KshmsRoutineSearch label="Søk i rutinene du har fått" query={readingQuery} onChange={setReadingQuery} count={visibleAssignments.length} total={ownAssignments.length}/>
    {readingQuery.trim()&&!visibleAssignments.length&&<p>Ingen av rutinene dine passer søket. Prøv et annet ord eller tøm søket.</p>}
-   {visibleAssignments.map(a=>{const v=data.versions.find(v=>v.id===a.version_id),ack=data.acknowledgments.find(k=>k.user_id===userId&&k.version_id===a.version_id);if(!v)return null;return <div key={v.id} className="ks-reading-row"><button type="button" className="secondary" onClick={()=>{setReading(v);setChecked(false)}}>{v.content.title} · v{v.number}</button><span>{ack?`Bekreftet ${dateTime(ack.acknowledged_at)}`:v.requires_ack||v.number===1?'Gjennomgang mangler':'Informasjon – ny bekreftelse valgfri'}</span></div>})}
-   {reading&&<article><h3>{reading.content.title} · versjon {reading.number}</h3><Content content={reading.content}/><p className="ks-confirmation">{ACK_STATEMENT}</p>{data.acknowledgments.some(a=>a.version_id===reading.id&&a.user_id===userId)?<p>Din bekreftelse er registrert.</p>:<><label className="ks-check"><input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/>Jeg bekrefter egen gjennomgang og teksten over.</label><button type="button" disabled={!checked||busy} onClick={async()=>{await run('ack',{version_id:reading.id,statement:ACK_STATEMENT},'Du har bekreftet at du har lest denne utgaven. Navnet ditt, tidspunktet og utgaven er lagret.');setChecked(false)}}>Bekreft versjon {reading.number}</button></>}</article>}
+   {visibleAssignments.map(a=>{const v=data.versions.find(v=>v.id===a.version_id),ack=data.acknowledgments.find(k=>k.user_id===userId&&k.version_id===a.version_id);if(!v)return null;return <div key={v.id} className="ks-reading-row"><button type="button" className="secondary" disabled={busy} onClick={()=>chooseReading(v)}>{v.content.title} · v{v.number}</button><span>{ack?`Bekreftet ${dateTime(ack.acknowledged_at)}`:v.requires_ack||v.number===1?'Gjennomgang mangler':'Informasjon – ny bekreftelse valgfri'}</span></div>})}
+   {reading&&<article className="ks-reading ks-flow-target" ref={readingRef} tabIndex={-1}><h3>{reading.content.title} · versjon {reading.number}</h3>{readingFeedback&&<p className="ks-notice" role="status">{readingFeedback}</p>}<Content content={reading.content}/><p className="ks-confirmation">{ACK_STATEMENT}</p>{data.acknowledgments.some(a=>a.version_id===reading.id&&a.user_id===userId)?<p>Din bekreftelse er registrert.</p>:<><label className="ks-check"><input type="checkbox" checked={checked} disabled={busy} onChange={e=>setChecked(e.target.checked)}/>Jeg bekrefter egen gjennomgang og teksten over.</label>{error&&<p role="alert" className="ks-error">{error}</p>}<button type="button" disabled={!checked||busy} onClick={acknowledgeRoutine}>{busy?'Lagrer bekreftelsen …':`Bekreft versjon ${reading.number}`}</button></>}</article>}
+   {!reading&&ownAssignments.length>0&&!pending.length&&<div className="ks-card ks-handbook-progress ready ks-flow-target" ref={readingDoneRef} tabIndex={-1} role="region" aria-label="Gjennomgangen er fullført"><h3>Du er ferdig med gjennomgangen</h3><p>Alle rutineutgaver som krever bekreftelse, er bekreftet. Du kan åpne rutinene over når du trenger dem. Nye eller viktige endringer kan gi deg en ny utgave å lese og bekrefte.</p>{readingFeedback&&<p className="ks-notice" role="status">{readingFeedback}</p>}</div>}
   </div>}
   {screen==='followup'&&canManage&&<>
    <div className="ks-card ks-flow-target" ref={followupRef} tabIndex={-1}><h3>Neste steg: Ansatte leser og bekrefter</h3><p>Når du godkjenner en rutine, får firmaadmin og ansatte med KS/HMS-tilgang utgaven i «Les og bekreft». De åpner hver rutine i sin egen app, leser teksten og bekrefter egen gjennomgang. Avklar spørsmål og nødvendig opplæring med dem.</p><p>Firmaadmin gir andre ansatte tilgang i «Oppstart og tilgang». Etterpå kan du gi nye medarbeidere de godkjente rutinene under. Påminnelser i app og på e-post kommer senere.</p>
