@@ -133,3 +133,9 @@ A = håndbok og tilgang; B = utførelse/risiko/avvik og faginnhold; C = varsler/
 | M02 | Dokumentmetadata / Bedriftsopplysninger og organisasjonskart | 2–3 | 2–3 | Virksomhet og kvalitetsledelse / Metadata, ikke rutine | — / A | Historiske navn/adresser/signaturer importeres ikke automatisk. |
 | M03 | Dokumentmetadata / Innholdsfortegnelse | 4–5 | 4–5 | Virksomhet og kvalitetsledelse / Metadata, ikke rutine | — / A | Historiske navn/adresser/signaturer importeres ikke automatisk. |
 | M04 | Dokumentmetadata / Tom avslutningsside | 148 | 127 | Virksomhet og kvalitetsledelse / Metadata, ikke rutine | — / A | Historiske navn/adresser/signaturer importeres ikke automatisk. |
+
+## A2 – gjeldende innholdsstatus
+
+A2 oppdatert 6. oktober 2026: Biblioteket har 73 egne forslag med sporbar dekning av alle 121 innholdstemaer + fire metadatarader fra kvalitetshåndboken (148 sider) og personalhåndboken (127 sider). Avvikssentral gir ansvarlig/frister, åpne/lukkede saker, tiltak/egen kontroll, private vedlegg og hendelseshistorikk. Bare valgt ansvarlig får fast varsel i interne faner og lukker selv. Prosjekt-/sjekkpunktavvik som kobles inn har serverbeskyttet status; ukoblet legacy-flyt består. 73 Sandbox-kontroller PASS med rollback; ingen ekte e-post eller produksjonsendring. Full-app-brukerprøve og e-postmottak gjenstår. Sandbox mangler RESEND_API_KEY og CHAT_FROM_EMAIL; utsending er derfor deaktivert. Gammel TEST OK for 6dfb74d dekker håndbokversjonen, ikke A2.
+
+CONTENT_STATUS.md kobler alle temaer til egne rutineforslag. CSV/JSON har library_keys, library_titles, content_status, content_checked_on og content_handling. De opprinnelige phase/status/handling-feltene er bevart som kildekartleggingens historiske plan, og er ikke dagens forfattingsstatus. Metadata importerer ingen personlige svar eller skjemaer.

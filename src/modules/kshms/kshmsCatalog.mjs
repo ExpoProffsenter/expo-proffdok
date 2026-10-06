@@ -1,3 +1,4 @@
+import { extendedCatalog } from './kshmsExtendedCatalog.mjs';
 export const SOURCE_CHECKED_ON = '2026-10-05';
 export const TRADES = { mur_flis: 'Mur / flis', tomrer: 'Tømrer', maler: 'Maler', vvs: 'VVS' };
 export const CHAPTERS = ['Virksomhet og kvalitetsledelse', 'Personal, kompetanse og arbeidsmiljø', 'Sikker utførelse og beredskap', 'Fag og kvalitet', 'Ytre miljø og bærekraft', 'Personvern og informasjonssikkerhet'];
@@ -12,7 +13,7 @@ const renewedSources = new Set(['leadership','leave','deviations','emergency']);
 const make = (key, title, chapter, goal, responsibility, procedure, documentation, references, coverage, relevance = 'Felles grunnlag', trades = []) => ({
  key, title, chapter: CHAPTERS[chapter], goal, responsibility, procedure, documentation, references:references.map(reference=>({...reference,checked_on:renewedSources.has(key)?'2026-10-06':reference.checked_on})), coverage, relevance, trades,
  confirmation: 'Gjennomgå rutinen og avklar spørsmål med ansvarlig før du utfører oppgavene. Bekreft bare egen gjennomgang. Be om nødvendig opplæring og meld fra om mangler.',
- source_key: key, source_revision: ['revision','leadership','leave','deviations','emergency'].includes(key)?2:1,
+ source_key: key, source_revision: key==='deviations'?3:['revision','leadership','leave','emergency'].includes(key)?2:1,
 });
 // Independently authored starting drafts. No import of source handbook text, forms or personal answers.
 export const ROUTINE_CATALOG = [
@@ -43,8 +44,8 @@ export const ROUTINE_CATALOG = [
   'Datert risikovurdering med deltakelse, tiltak, ansvar og oppfølging. SJA brukes når en konkret jobb trenger en felles vurdering.',[IK,source('Arbeidstilsynets veiledning om risiko','https://www.arbeidstilsynet.no/hms/risikovurdering/','professional')],['K001','K082','U08']),
  make('deviations','Melde og følge opp avvik og RUH',0,
   'Få farlige forhold og kvalitetsfeil rettet og bruke erfaringene til forbedring.',
-  'Den som oppdager forholdet varsler arbeidsleder. Utpekt saksbehandler fordeler tiltak og kontrollerer resultatet.',
-  'Den som oppdager et avvik sikrer situasjonen og melder hendelsen til arbeidsleder. Hendelsen beskrives saklig med kategori og relevant dokumentasjon. Saksbehandler avklarer rettingsansvarlig og frist, undersøker årsak og følger opp strakstiltak og forbedring. Avviket lukkes først når resultatet er kontrollert og kontrollen er dokumentert. Fortrolige personal- og varslingssaker håndteres utenfor det ordinære avviksregisteret. Firmaets varslingsrutine skal beskrive mottak og oppfølging. Den skal ikke begrense retten til å varsle via verneombud, tillitsvalgt eller advokat, eller direkte til offentlig myndighet.',
+  'Melder velger ansvarlig og frist. Valgt ansvarlig dokumenterer tiltak, kontrollerer resultatet og lukker selv.',
+  'Den som oppdager et avvik sikrer situasjonen og beskriver hendelsen saklig med kategori og relevant dokumentasjon. I KS/HMS velger melderen en aktiv ansvarlig med tilgang i samme firma og setter frist. Bare den valgte ansvarlige får ansvarligvarsel og e-post. Ansvarlig dokumenterer årsak, strakstiltak, forbedring og egen kontroll. Avviket lukkes først når kontrollen er utført og lukkingen er lagret. Varslet står til lagret lukking; lesing fjerner det ikke. For prosjektavvik som er koblet inn, styres lukkingen fra KS/HMS. Fortrolige personal- og varslingssaker behandles gjennom firmaets separate varslingskanal. Retten til å varsle via verneombud, tillitsvalgt, advokat eller offentlig myndighet begrenses ikke.',
   'Hendelse, tiltak, kontrollgrunnlag og sporbar lukking. Del bare et godkjent, avgrenset utdrag med relevant mottaker.',[IK,AML],['K035','K074','U03','U15']),
  make('emergency','Beredskap og førstehjelp',2,
   'Sikre rask hjelp og tydelige oppgaver når en alvorlig hendelse oppstår.',
@@ -76,10 +77,12 @@ export const ROUTINE_CATALOG = [
   'Firmaadmin avklarer behandlingsformål, tilgang og oppbevaring. Medarbeidere bruker avtalte lagringssteder.',
   'Vurder hva dokumentasjonen skal brukes til før innsamling. Unngå unødvendige personer i bilder og fritekst. Kontroller mottakere og vedlegg før rapportdeling. Legg individuelle personalsaker i avgrenset område. Avtal hvem som håndterer innsyn, retting og sletting. Ved fratredelse sperres tilgang og videre oppbevaring vurderes per dokumenttype.',
   'Formål og tilgangsoversikt, avtaler med databehandlere og dokumentert bevarings-/slettevurdering. Ikke lagre personopplysninger på ubestemt tid bare fordi historikk er nyttig.',[source('Personopplysningsloven','https://lovdata.no/lov/2018-06-15-38'),PV],['K036','K093','K094','K096','K097','K102','K104','U06','U14']),
+ ...extendedCatalog({make,IK,SAK,AML,UTF,PV,source}),
 ];
 export function suggestedRoutines(trades = [], activities = '', responsibilities = '', risks = '') {
  const context = `${activities} ${responsibilities} ${risks}`.toLocaleLowerCase('nb');
  return ROUTINE_CATALOG.filter(r => !r.trades.length || r.trades.some(t => trades.includes(t)))
+  .filter(r => !Object.hasOwn(r,'recommendation') || r.recommendation && new RegExp(r.recommendation,'i').test(context))
   .filter(r => r.key !== 'wetroom' || /våtrom|bad|dusj|membran/.test(context))
   .filter(r => r.key !== 'chemicals' || trades.some(t => ['mur_flis','maler','vvs'].includes(t)) || /kjem|lim|løse|maling/.test(context));
 }

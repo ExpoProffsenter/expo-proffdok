@@ -1,3 +1,17 @@
+## Gjeldende A2-brukerprøve
+
+A2 oppdatert 6. oktober 2026: Biblioteket har 73 egne forslag med sporbar dekning av alle 121 innholdstemaer + fire metadatarader fra kvalitetshåndboken (148 sider) og personalhåndboken (127 sider). Avvikssentral gir ansvarlig/frister, åpne/lukkede saker, tiltak/egen kontroll, private vedlegg og hendelseshistorikk. Bare valgt ansvarlig får fast varsel i interne faner og lukker selv. Prosjekt-/sjekkpunktavvik som kobles inn har serverbeskyttet status; ukoblet legacy-flyt består. 73 Sandbox-kontroller PASS med rollback; ingen ekte e-post eller produksjonsendring. Full-app-brukerprøve og e-postmottak gjenstår. Sandbox mangler RESEND_API_KEY og CHAT_FROM_EMAIL; utsending er derfor deaktivert. Gammel TEST OK for 6dfb74d dekker håndbokversjonen, ikke A2.
+
+Bruk samme faste adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe . Oppdater siden etter at ny Preview er klar. Samme adresse/nettleser skal normalt beholde innlogging.
+
+1. **Håndbok → Legg til flere rutiner → Alle forslag.** Biblioteket har 73 forslag. Søk «asbest», «arbeidstid» og «e-post», eller velg kapittel. **Les forslag** skal vise temaets konkrete tekst og kilder. Dagens firmatekster/godkjente utgaver beholdes. Nye valgte rutiner blir kladder først etter **Legg inn**.
+2. **Trond: KS/HMS → Avvikssentral → Registrer avvik.** Skriv en tydelig testsak, velg Eli som **Ansvarlig**, sett **Frist**, og trykk **Lagre avvik**. Trond finner saken han meldte og får ikke Elis ansvarligvarsel. Eli må ha godkjent intern KS/HMS-tilgang i firmaet.
+3. **Eli:** Hun ser **Du er ansvarlig for 1 åpent avvik**. Bytt mellom interne faner og åpne saken med **Åpne avvik**. Varselet skal stå også etter lesing.
+4. **Eli:** Skriv **Årsak**, **Utførte tiltak / forbedring** og **Egen kontroll av resultatet**. Huk av at tiltak og kontroll er gjennomført. Trykk **Kontroller og lukk avvik** og vent på **Lukkingen er lagret**. Varselet forsvinner. **Lukkede** viser saken, Elis navn/tidspunkt og historikk. Firmaadmin kan ikke lukke Elis sak som en annen aktør.
+5. **Prosjekt og feil:** Fra et lagret testsjekkpunkt-/prosjektavvik, velg **Koble til KS/HMS** i prosjektets Avvikssentral. Etter kobling brukes **Åpne i KS/HMS**; gamle prosjektknapper kan ikke lukke saken. Et annet ukoblet avvik bruker dagens flyt. Nettverks-/lagringsfeil beholder kladd/avkrysning, åpen sak og sist bekreftede varsel. Prøv igjen etter gjenopprettet forbindelse.
+
+E-postprøven krever først sikkert avsenderoppsett (EMAIL_SETUP.md); sending er deaktivert. Innlogget full-app-prøve og visuell mobilkontroll gjenstår. Tidligere testlister under gjelder håndbokhistorikken.
+
 # Brukertest av KS/HMS-håndboken
 
 Oppdatert 2026-10-06. Dette gjelder håndboken som er klar for testing nå. Resten av KS/HMS-modulen følger leveranseplanen.

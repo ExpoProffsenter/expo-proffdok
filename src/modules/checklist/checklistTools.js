@@ -29,7 +29,7 @@ export function createChecklistEditor({
   checklistAttachmentDocumentTypeOptions,
   publicProjectFileUrl
 }) {
-  return function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "" }) {
+  return function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "", onOpenKshmsDeviation = null }) {
     const activeChecklistTemplate = providedActiveChecklistTemplate || getActiveChecklistTemplate(warranty);
     const customChecklistAllowed = canUseCustomChecklistForWarranty(warranty);
     const [newCustomChecklistTrade, setNewCustomChecklistTrade] = import_react.default.useState(customChecklistTradeOptions[0] || "Rørlegger");
@@ -122,6 +122,7 @@ export function createChecklistEditor({
     };
     const handleStatusClick = (category, item, status) => {
       const currentValue = checklist?.[category]?.[item] || {};
+      if (currentValue.ks_deviation_id) return;
       const hasWarrantyDocumentation = (currentValue?.photos || []).some((photo) => hasValue(photo?.url)) || hasValue(currentValue?.comment);
       const isWarrantyCheckpoint = isSoproWarrantyPoint(category);
       setChecklistValue(category, item, { status }, { autoSave: true });
@@ -185,6 +186,7 @@ export function createChecklistEditor({
     };
     const collapseDone = showRemainingAndJump;
     const closeDeviation = (category, item, value = {}) => {
+      if (value.ks_deviation_id) return;
       const closeComment = window.prompt("Kommentar til lukking av avvik:", value.closeComment || "Utført/kontrollert og lukket.");
       if (closeComment === null) return;
       setChecklistValue(category, item, {
@@ -195,6 +197,7 @@ export function createChecklistEditor({
       });
     };
     const reopenDeviation = (category, item) => {
+      if (checklist?.[category]?.[item]?.ks_deviation_id) return;
       if (!window.confirm("Vil du åpne avviket igjen?")) return;
       setChecklistValue(category, item, {
         status: "Avvik",
@@ -339,6 +342,7 @@ export function createChecklistEditor({
                   {
                     type: "button",
                     className: value.status === status ? "" : "secondary",
+                    disabled: Boolean(value.ks_deviation_id),
                     onClick: () => handleStatusClick(group.category, item, status),
                     children: status
                   },
@@ -353,7 +357,11 @@ export function createChecklistEditor({
                   onChange: (v) => setChecklistValue(group.category, item, { comment: v })
                 }
               ),
-              value.status === "Avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "deviationCloseBox", children: [
+              value.ks_deviation_id && (0, import_jsx_runtime.jsxs)("div", { className: "deviationCloseBox", children: [
+                (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Dette avviket er koblet til KS/HMS. Ansvarlig dokumenterer tiltak og kontroll og lukker der." }),
+                onOpenKshmsDeviation && (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => onOpenKshmsDeviation(value.ks_deviation_id), children: "Åpne i KS/HMS" })
+              ] }),
+              value.status === "Avvik" && !value.ks_deviation_id && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "deviationCloseBox", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Avviket er åpent. Lukk det når tiltak er utført og kontrollert." }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => closeDeviation(group.category, item, value), children: "✅ Lukk avvik" })
               ] }),
@@ -364,7 +372,7 @@ export function createChecklistEditor({
                   value.closedBy ? ` Lukket av ${value.closedBy}.` : "",
                   value.closedAt ? ` ${new Date(value.closedAt).toLocaleString("no-NO")}.` : ""
                 ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => reopenDeviation(group.category, item), children: "Åpne avvik igjen" })
+                !value.ks_deviation_id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => reopenDeviation(group.category, item), children: "Åpne avvik igjen" })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "stretch" }, children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", onClick: (e) => e.stopPropagation(), onDragOver: stopChecklistFileDragNavigation, onDragEnter: stopChecklistFileDragNavigation, onDrop: (e) => handleChecklistPhotoDrop(group.category, item, e), title: "Dra bilde hit eller velg bilde fra bildebibliotek", children: [

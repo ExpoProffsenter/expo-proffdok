@@ -1,16 +1,16 @@
 import { useId,useState } from 'react';
-import { ROUTINE_CATALOG } from './kshmsCatalog.mjs';
+import { ROUTINE_CATALOG,CHAPTERS } from './kshmsCatalog.mjs';
 import { routinesBySource,selectedCatalogRoutines } from './kshmsLibrary.mjs';
 import { routineApprovalState } from './kshmsDraft.mjs';
 import { matchesRoutineSearch } from './kshmsSearch.mjs';
 import KshmsRoutineSearch from './KshmsRoutineSearch.jsx';
 
 export default function KshmsRoutineLibrary({routines,versions,recommended,selectedKeys,onSelectionChange,filter,onFilterChange,busy,progress,feedback,onAdd,onEdit,onPreview}) {
- const id=useId(),[query,setQuery]=useState(''),existing=routinesBySource(routines);
+ const id=useId(),[query,setQuery]=useState(''),[chapter,setChapter]=useState(''),existing=routinesBySource(routines);
  const selected=selectedCatalogRoutines(selectedKeys).filter(routine=>!existing.has(routine.key));
  const selectedSet=new Set(selected.map(routine=>routine.key));
  const available=filter==='all'?ROUTINE_CATALOG:recommended;
- const visible=available.filter(routine=>matchesRoutineSearch(routine,query));
+ const visible=available.filter(routine=>(!chapter||routine.chapter===chapter)&&matchesRoutineSearch(routine,query));
  const selectable=visible.filter(routine=>!existing.has(routine.key));
  const toggle=(key,checked)=>onSelectionChange(previous=>checked?[...new Set([...previous,key])]:previous.filter(value=>value!==key));
  return <section className="ks-routine-library" aria-label="Velg standardrutiner">
@@ -24,6 +24,7 @@ export default function KshmsRoutineLibrary({routines,versions,recommended,selec
    <div className="ks-library-counts"><span className="ks-badge" role="status">{selected.length} valgt</span><span>{ROUTINE_CATALOG.filter(routine=>existing.has(routine.key)).length} av {ROUTINE_CATALOG.length} forslag lagt til</span></div>
   </div>
   <KshmsRoutineSearch label="Søk i ProffDoks forslag" query={query} onChange={setQuery} count={visible.length} total={available.length}/>
+  <label className="ks-field"><span>Vis kapittel</span><select value={chapter} onChange={event=>setChapter(event.target.value)}><option value="">Alle kapitler</option>{CHAPTERS.map(value=><option key={value} value={value}>{value}</option>)}</select></label>
   {query.trim()&&!visible.length&&<p>Ingen forslag passer søket. Prøv «Alle forslag», et annet ord eller tøm søket.</p>}
   {query.trim()&&<p className="ks-field-hint">Valgene dine beholdes når du søker. Hele utvalget står under «Disse rutinene legges inn».</p>}
   <div className="ks-actions">
@@ -38,7 +39,7 @@ export default function KshmsRoutineLibrary({routines,versions,recommended,selec
       {added?<strong>{routine.title}</strong>:<label htmlFor={`${id}-${routine.key}`}><input id={`${id}-${routine.key}`} type="checkbox" aria-label={`Velg rutine: ${routine.title}`} aria-describedby={`${id}-${routine.key}-description`} checked={checked} disabled={busy} onChange={event=>toggle(routine.key,event.target.checked)}/><strong>{routine.title}</strong></label>}
       <span className="ks-library-status">{approval?approval.label:checked?'Valgt':'Ikke valgt'}</span>
      </div>
-     <p id={`${id}-${routine.key}-description`}>{routine.relevance}</p>
+     <p id={`${id}-${routine.key}-description`}>{routine.chapter} · {routine.relevance}</p>
      <div className="ks-actions">
       {added&&<button type="button" disabled={busy} aria-label={`Rediger her: ${added.draft.title}`} onClick={()=>onEdit(added)}>Rediger her</button>}
       <button type="button" className="secondary" disabled={busy} aria-label={`Les forslag: ${routine.title}`} onClick={()=>onPreview(routine)}>Les forslag</button>

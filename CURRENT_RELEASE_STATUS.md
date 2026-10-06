@@ -40,3 +40,9 @@
 Miljømål: BEGGE. Main → demo synk via PR #215, merge c7017fc7a036a610e32571a0f900fb2ed8ca7e5c. Eksisterende overlay og Golden-data beholdes; lokal sammenslåing med full Sandbox-build grønn. Kunderegistermigrasjonen finnes i Sandbox. Server-preflight er grønn 19/19, kontrollert med demoidentitet i rollback-transaksjon. Kontrollbaseline oppdateres til gjeldende main etter denne release-dokumentasjonen.
 
 Innlogget nettleser-preflight og lokal redigerbar Badskisse er ikke kontrollert her; bruk Kjør preflight før kurs/kundedemo. Featurebranch er ikke slettet. README, Architecture, modul-README, Hjelp og docs/qa/COMPANY_CUSTOMERS_VAT.md følger endringen.
+
+## Gjeldende A2 – ny Preview-leveranse
+
+A2 oppdatert 6. oktober 2026: Biblioteket har 73 egne forslag med sporbar dekning av alle 121 innholdstemaer + fire metadatarader fra kvalitetshåndboken (148 sider) og personalhåndboken (127 sider). Avvikssentral gir ansvarlig/frister, åpne/lukkede saker, tiltak/egen kontroll, private vedlegg og hendelseshistorikk. Bare valgt ansvarlig får fast varsel i interne faner og lukker selv. Prosjekt-/sjekkpunktavvik som kobles inn har serverbeskyttet status; ukoblet legacy-flyt består. 73 Sandbox-kontroller PASS med rollback; ingen ekte e-post eller produksjonsendring. Full-app-brukerprøve og e-postmottak gjenstår. Sandbox mangler RESEND_API_KEY og CHAT_FROM_EMAIL; utsending er derfor deaktivert. Gammel TEST OK for 6dfb74d dekker håndbokversjonen, ikke A2.
+
+Den faste feature-Preview-en bruker eksplisitt EXPO_BACKEND_TARGET=sandbox. Ny TEST OK/full-app-prøve kreves før eventuell Production-migrering/merge og senere main → demo-synk. SCOPE_A2/QA beskriver gjennomførte kontraktskontroller og gjenværende grenser. Eldre head-/deployreferanser over er kontrollhistorikk.
