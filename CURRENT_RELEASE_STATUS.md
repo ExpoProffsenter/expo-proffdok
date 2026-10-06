@@ -46,3 +46,14 @@ Innlogget nettleser-preflight og lokal redigerbar Badskisse er ikke kontrollert 
 A2 oppdatert 6. oktober 2026: Biblioteket har 73 egne forslag med sporbar dekning av alle 121 innholdstemaer + fire metadatarader fra kvalitetshåndboken (148 sider) og personalhåndboken (127 sider). Avvikssentral gir ansvarlig/frister, åpne/lukkede saker, tiltak/egen kontroll, private vedlegg og hendelseshistorikk. Bare valgt ansvarlig får fast varsel i interne faner og lukker selv. Prosjekt-/sjekkpunktavvik som kobles inn har serverbeskyttet status; ukoblet legacy-flyt består. 73 Sandbox-kontroller PASS med rollback; ingen ekte e-post eller produksjonsendring. Full-app-brukerprøve og e-postmottak gjenstår. Sandbox mangler RESEND_API_KEY og CHAT_FROM_EMAIL; utsending er derfor deaktivert. Gammel TEST OK for 6dfb74d dekker håndbokversjonen, ikke A2.
 
 Den faste feature-Preview-en bruker eksplisitt EXPO_BACKEND_TARGET=sandbox. Ny TEST OK/full-app-prøve kreves før eventuell Production-migrering/merge og senere main → demo-synk. SCOPE_A2/QA beskriver gjennomførte kontraktskontroller og gjenværende grenser. Eldre head-/deployreferanser over er kontrollhistorikk.
+
+## Bekreftet sluttkontroll for kodehead 6bf84204 (2026-10-06)
+
+- Hele critical build PASS i Vercel, inkludert actual editor/task/legacy/mail-stub-scenario i critical-kshms-deviations-check. Ny katalog- og eksisterende håndbokkontroll PASS; miljø-/navigasjon/Sales/tilbuds-/rapport-/profil-/Cordel-vern inngår i uendret kjede.
+- GitHub PR Core Safety run 37526599994, job 112485065961: completed/success. Scope isolation, release-doc guard og full critical build var grønne.
+- Feature-Preview READY: dpl_DyJEcTbmRETSNCWMB8UYJompaF8r, kode-SHA 6bf84204db9c7869bebafb19c034dc02f53f25ca. Fast alias expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app. Vercel bekreftet branch-spesifikk plain EXPO_BACKEND_TARGET=sandbox for preview/feat-kshms-foundation.
+- 73 Sandbox-kontroller PASS med rollback, outbox etter QA=0. Mailer v3 ACTIVE; autentisert health bekreftet transport_safe=true, begge e-postkonfigurasjoner false. enabled=false.
+- Production er fortsatt READY på 155f6c4ac01f126c1db0c65da385cfd9305587d5/dpl_9wsjTrEVzvAF6jf7f9HgvzskYP5z. Ingen produksjonsmigrering/merge/demo-synk.
+- Full-app/visuell nettleserkontroll gjenstår. Cloud Browser mistet exec-server-forbindelsen (environment_offline). Uautentisert web-oppslag kunne ikke hente siden. Vercels fetch-verktøy ble avvist av automatisk godkjenningskontroll fordi det kan opprette autentiseringsomgåelse/share-lenke, som ikke var autorisert. Ingen tilgangslenke eller bypass ble opprettet. Deployment/alias/bygg er verifisert via autorisert Vercel-API; det er ikke bevis på innlogget skjermflyt.
+
+Ingen ny TEST OK er gitt for A2. Følg USER_TEST.md; e-post må konfigureres sikkert før faktisk mottak kan prøves. Denne kontrollregistreringen endrer bare dokumentasjon; kodehead over identifiserer den testede funksjonen.
