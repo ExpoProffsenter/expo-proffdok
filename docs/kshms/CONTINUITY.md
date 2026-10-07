@@ -1,3 +1,13 @@
+# Gjeldende fortsettelsespunkt – meny/RUH/dato kontrollert lokalt, publisering gjenstår
+
+Oppdatert 8. oktober 2026, Europe/Oslo. Kenneths tre skjermbilder viser at desktopmenyen skjulte det nye navnet Avvik/SJA/RUH. Matcher og snarveier er rettet. KS/HMS-menyen heter nå Avvik/RUH. Frister vises norsk; hendelsestidspunkter bruker Europe/Oslo.
+
+Full critical QA/build, faktisk desktop DOM og faktisk React parent/SJA/RUH/listedato/historikk PASS. Ingen SQL-endringer i denne rettelsen. Main er kontrollert uendret på 155f6c4ac01f126c1db0c65da385cfd9305587d5. Neste steg er publisering på samme Sandbox Preview, kontroll av READY og CI, og deretter kort brukerprøve. Ingen ny SJA/RUH-TEST OK.
+
+Se [testbevis og avgrensning](NAV_RUH_DATE_20261008.md). Denne toppen erstattes med faktisk releasebevis etter publisering; eldre notater nedenfor er historikk.
+
+---
+
 # Gjeldende fortsettelsespunkt – prosjekt-SJA/RUH og nummererte rutiner READY
 
 Oppdatert 8. oktober 2026, Europe/Oslo. Les OVERSIKT.md først. Kenneth avklarte ca. 00:24–00:32 at ordreforslag skal være bedriftens faktiske aktiverte ProffDok-prosjekter, samtidig med manuell ekstern referanse. Han ba om nummererte bedriftens rutiner, fagforslag for mur/flis/tømrer, RUH med samme logikk og direkte Opprett SJA / Registrer RUH i prosjektets Avvik/SJA/RUH, bare ved personlig modultilgang. Dette er implementert, ikke SJA/RUH-TEST OK.

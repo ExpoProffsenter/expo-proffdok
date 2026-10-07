@@ -35,7 +35,24 @@ const { resolveProjectFlowNeighbors } = await import(
 const {
   createGlobalAppTabs,
   createProjectWorkspaceTabs,
+  isProjectDeviationNavLabel,
 } = await import("../src/modules/project/projectNavigationTabs.mjs");
+
+// Reported missing desktop entry, 8 Oct 2026: test the actual header matcher,
+// including its dynamic label, rather than only checking the native tab array.
+const shortcutDefinitions = guide.slice(guide.indexOf('const clean ='), guide.indexOf('function findSourceNav()'));
+const actualShortcuts = new Function('isProjectDeviationNavLabel', `${shortcutDefinitions}; return PROJECT_SHORTCUTS;`)(isProjectDeviationNavLabel);
+const actualDeviationShortcut = actualShortcuts.find(item => item.key === 'deviations');
+for (const label of ['Avvik', 'Avvik (4)', 'Avvik/SJA/RUH', 'Avvik/SJA/RUH (4)']) {
+  requireCheck(actualDeviationShortcut?.matches(label) && actualDeviationShortcut.dynamicLabel, `Toppmenyen skjuler eller forkorter ${label}.`);
+}
+for (const label of ['Avvikssentral', 'Avvik/RUH', 'SJA', 'RUH', 'Avvik/SJA/RUH annet']) {
+  requireCheck(!isProjectDeviationNavLabel(label), `Prosjektmenyen matcher feil funksjon: ${label}.`);
+}
+const bootstrap = fs.readFileSync('src/bootstrap.jsx', 'utf8');
+requireCheck(bootstrap.includes('return isProjectDeviationNavLabel(label);') &&
+  workflowUx.includes('setFlowTarget(button, cleanText(destination.textContent),'),
+  'Åpne Avvik bruker fortsatt det gamle navnet i stedet for faktisk prosjektnavigasjon.');
 const { acceptedOfferTotalInclVat } = await import(
   "../src/modules/project/projectSalesOriginTotals.mjs"
 );

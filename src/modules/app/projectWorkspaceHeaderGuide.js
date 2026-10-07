@@ -6,6 +6,7 @@
 // ligger tilgjengelig øverst uten å blande inn globale appfunksjoner.
 
 import "./projectWorkspaceHeaderGuide.css";
+import { isProjectDeviationNavLabel } from '../project/projectNavigationTabs.mjs';
 
 const DESKTOP_QUERY = "(min-width: 1181px)";
 const GUIDE_ID = "expo-project-workspace-guide";
@@ -30,7 +31,7 @@ const PROJECT_SHORTCUTS = [
   { key: "access", label: "Tilgang", matches: exact("Tilgang", "UE-tilgang") },
   { key: "installations", label: "Fag/utstyr", matches: exact("Fag/utstyr") },
   { key: "checklists", label: "Sjekklister", matches: exact("Sjekklister") },
-  { key: "deviations", label: "Avvik", matches: startsWith("Avvik"), dynamicLabel: true },
+  { key: "deviations", label: "Avvik", matches: isProjectDeviationNavLabel, dynamicLabel: true },
   { key: "chat", label: "Chat", matches: startsWith("Chat"), dynamicLabel: true },
   { key: "internal", label: "Interne notater", matches: exact("Interne notater") },
   { key: "handover", label: "Overtagelse", matches: exact("Overtagelse") },

@@ -1,4 +1,5 @@
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import { formatDeviationDate } from './deviationDates.mjs';
 
 const import_jsx_runtime = { jsx, jsxs, Fragment };
 
@@ -108,7 +109,7 @@ export function createDeviationCenter({
           if (entry.ks_deviation_id) return (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${isClosed ? "done" : "avvik"}`, children: [
             (0, import_jsx_runtime.jsx)("h4", { children: entry.title }),
             (0, import_jsx_runtime.jsx)("p", { children: entry.description }),
-            (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [entry.status, " · Ansvarlig: ", entry.responsible, " · Frist: ", entry.dueDate] }),
+            (0, import_jsx_runtime.jsxs)("p", { className: "note", children: [entry.status, " · Ansvarlig: ", entry.responsible, " · Frist: ", formatDeviationDate(entry.dueDate)] }),
             (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Avviket er koblet til KS/HMS. Endringer og lagret lukking styres der. Prosjektets øvrige avvik følger dagens flyt." }),
             isClosed && (0, import_jsx_runtime.jsx)("p", { children: entry.closeComment }),
             onOpenKshms && (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => onOpenKshms(entry.ks_deviation_id), children: "Åpne i KS/HMS" })

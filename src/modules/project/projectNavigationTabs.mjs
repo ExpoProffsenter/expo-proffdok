@@ -1,6 +1,10 @@
 // Felles navigasjonskontrakt for startsiden og prosjektarbeidsflaten.
 // Globale appfunksjoner skal ikke blandes inn i et aktivt eller nytt prosjekt.
 
+export function isProjectDeviationNavLabel(label = '') {
+  return /^Avvik(?:\/SJA\/RUH)?(?:\s*\(\d+\))?$/.test(String(label).trim());
+}
+
 export function createGlobalAppTabs({
   isCompanyAdminUser = false,
   canUseAdminProjectSync = false,

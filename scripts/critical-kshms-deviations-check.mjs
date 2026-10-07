@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { formatDeviationDate, formatDeviationDateTime } from '../src/modules/deviations/deviationDates.mjs';
 import { deviationForm,validateDeviation,deviationClosureIssues,saveDeviation,storeDeviationDraft,readDeviationDraft,deviationDraftKey,projectAfterDeviation,checklistAfterDeviation,readDeviationLink,deviationFileType } from '../src/modules/kshms/kshmsDeviations.mjs';
 import { createAssignmentMailer,assignmentEmail } from '../supabase/functions/_shared/kshms-assignment-mailer.mjs';
 import { createDeviationCenter } from '../src/modules/deviations/deviationViewTools.js';
 import { createProjectDeviation,newProjectDeviation,projectDeviationDraftKey,readProjectDeviationDraft } from '../src/modules/deviations/projectDeviationCreate.mjs';
 import { ruhRegistrationIssues } from '../src/modules/kshms/kshmsRuh.mjs';
+
+assert.equal(formatDeviationDate('2026-10-10'), '10.10.2026');
+assert.equal(formatDeviationDate('2026-01-02'), '02.01.2026');
+assert.equal(formatDeviationDate(null), '');
+assert.equal(formatDeviationDate('10.10.2026'), '10.10.2026');
+assert.equal(formatDeviationDateTime('2026-10-07T22:30:00Z'), '08.10.2026 kl. 00:30:00');
+assert.equal(formatDeviationDateTime('2026-01-02T23:30:00Z'), '03.01.2026 kl. 00:30:00');
+assert.equal(formatDeviationDateTime('invalid'), '');
 
 const caseId='11111111-1111-4111-8111-111111111111',companyId='22222222-2222-4222-8222-222222222222',eli='eli';
 const open={id:caseId,company_id:companyId,responsible_id:eli,revision:1,status:'open',category:'hms',title:'Trond → Eli',event:'A relevant actual incident',due_on:'2026-10-10',responsible_identity:{name:'Eli'},source_kind:'company'};

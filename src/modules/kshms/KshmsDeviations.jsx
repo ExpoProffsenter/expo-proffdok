@@ -5,10 +5,11 @@ import { ProjectChoice, RoutineChoice, useKshmsJobChoices } from './KshmsJobChoi
 import { appendSjaSuggestion } from './kshmsSja.mjs';
 import { RUH_HINTS, RUH_SUGGESTIONS, ruhRegistrationIssues } from './kshmsRuh.mjs';
 import { identityText } from './kshmsPersonal.mjs';
+import { formatDeviationDate, formatDeviationDateTime } from '../deviations/deviationDates.mjs';
 import { DeviationEditorSurface } from '../deviations/DeviationDialog.jsx';
 import { DEVIATION_CATEGORY,DEVIATION_STATUS,DEVIATION_CHANGE_EVENT,DEVIATION_CLOSURE_REQUIREMENTS,deviationClosureIssues,deviationForm,validateDeviation,saveDeviation,publishDeviationChange,storeDeviationDraft,readDeviationDraft,deviationDraftKey,deviationFileType } from './kshmsDeviations.mjs';
 
-const when=value=>value?new Date(value).toLocaleString('nb-NO'):'';
+const when=formatDeviationDateTime;
 const notes=[['Årsak','cause'],['Strakstiltak','immediate_action'],['Utførte tiltak / forbedring','improvement_action'],['Videre oppfølging','follow_up'],['Egen kontroll av resultatet','control_note']];
 const eventNames={create:'Registrert',save:'Endret',close:'Lukket etter egen kontroll',reopen:'Gjenåpnet',file:'Vedlegg lagt til'};
 function Field({label,value,onChange,multiline=false,type='text',required=false,maxLength=20000,hint='',error='',inputRef,suggestions=[]}) {
@@ -17,7 +18,7 @@ function Field({label,value,onChange,multiline=false,type='text',required=false,
  return <div className={`ks-field${error?' ks-field-invalid':''}`}><label htmlFor={id}>{label}</label>{(hint||error)&&<small id={descriptionId} className={error?'ks-field-error':'ks-field-hint'}>{error||hint}</small>}{multiline?<textarea {...props} rows={4}/>:<input {...props} type={type}/>}{suggestions.length>0&&<details className="sja-suggestions"><summary>Se forslag til {label.toLocaleLowerCase('nb-NO')}</summary><p>Velg og tilpass til det som faktisk skjedde. Erstatt [klammene]. Forslaget bekrefter ingen utførte tiltak.</p>{suggestions.map(text=><button type="button" className="secondary" key={text} onClick={()=>onChange(appendSjaSuggestion(value,text,multiline?'\n':' · '))}>{text}</button>)}</details>}</div>;
 }
 function Snapshot({row}) {
- return <dl className="ks-case-snapshot"><dt>Tittel</dt><dd>{row.title}</dd><dt>Hendelse</dt><dd>{row.event}</dd><dt>Type</dt><dd>{DEVIATION_CATEGORY[row.category]}</dd>{row.project_id&&<><dt>Prosjekt</dt><dd>Koblet til firmaprosjekt</dd></>}{row.project_reference&&<><dt>Ekstern / egen referanse</dt><dd>{row.project_reference}</dd></>}{row.routines&&<><dt>Rutiner</dt><dd>{row.routines}</dd></>}<dt>Ansvarlig</dt><dd>{identityText(row.responsible_identity)}</dd><dt>Frist / status</dt><dd>{row.due_on} · {DEVIATION_STATUS[row.status]}</dd>{notes.map(([label,key])=>row[key]?<div key={key}><dt>{label}</dt><dd>{row[key]}</dd></div>:null)}{row.closed_at&&<><dt>Lagret lukking</dt><dd>{identityText(row.closed_identity)} · {when(row.closed_at)}</dd></>}</dl>;
+ return <dl className="ks-case-snapshot"><dt>Tittel</dt><dd>{row.title}</dd><dt>Hendelse</dt><dd>{row.event}</dd><dt>Type</dt><dd>{DEVIATION_CATEGORY[row.category]}</dd>{row.project_id&&<><dt>Prosjekt</dt><dd>Koblet til firmaprosjekt</dd></>}{row.project_reference&&<><dt>Ekstern / egen referanse</dt><dd>{row.project_reference}</dd></>}{row.routines&&<><dt>Rutiner</dt><dd>{row.routines}</dd></>}<dt>Ansvarlig</dt><dd>{identityText(row.responsible_identity)}</dd><dt>Frist / status</dt><dd>{formatDeviationDate(row.due_on)} · {DEVIATION_STATUS[row.status]}</dd>{notes.map(([label,key])=>row[key]?<div key={key}><dt>{label}</dt><dd>{row[key]}</dd></div>:null)}{row.closed_at&&<><dt>Lagret lukking</dt><dd>{identityText(row.closed_identity)} · {when(row.closed_at)}</dd></>}</dl>;
 }
 
 export default function KshmsDeviations({context,request,projectId=null,ruhOnly=false,scopeReadOnly=false,active=true}) {
@@ -155,7 +156,7 @@ export default function KshmsDeviations({context,request,projectId=null,ruhOnly=
    <div className="ks-actions"><button type="button" className={status==='open'?'active':'secondary'} aria-pressed={status==='open'} onClick={()=>setStatus('open')}>Åpne ({overview?.counts?.open??'…'})</button><button type="button" className={status==='closed'?'active':'secondary'} aria-pressed={status==='closed'} onClick={()=>setStatus('closed')}>Lukkede ({overview?.counts?.closed??'…'})</button><button type="button" className="secondary" disabled={loading} onClick={()=>loadOverview()}>Oppdater liste</button></div>
    <form className="ks-case-search" onSubmit={e=>{e.preventDefault();setQuery(search.trim());}}><Field label="Søk i tittel, hendelse eller ansvarlig" value={search} onChange={setSearch} maxLength={200}/><button type="submit">Søk</button>{query&&<button type="button" className="secondary" onClick={()=>{setSearch('');setQuery('');}}>Tøm søk</button>}</form>
    {loading&&<p role="status">Henter saker …</p>}
-   <div className="ks-case-list">{overview?.cases.map(item=><button type="button" className="secondary ks-case-row" key={item.id} disabled={busy||caseLoading} onClick={()=>openCase(item.id)}><strong>{item.title}</strong><span>{DEVIATION_CATEGORY[item.category]} · {DEVIATION_STATUS[item.status]} · frist {item.due_on}</span><span>Ansvarlig: {identityText(item.responsible_identity)}</span></button>)}</div>
+   <div className="ks-case-list">{overview?.cases.map(item=><button type="button" className="secondary ks-case-row" key={item.id} disabled={busy||caseLoading} onClick={()=>openCase(item.id)}><strong>{item.title}</strong><span>{DEVIATION_CATEGORY[item.category]} · {DEVIATION_STATUS[item.status]} · frist {formatDeviationDate(item.due_on)}</span><span>Ansvarlig: {identityText(item.responsible_identity)}</span></button>)}</div>
    {overview&&!overview.cases.length&&!loading&&<p>{query?'Ingen saker passer søket.':status==='closed'?'Ingen lukkede saker å vise.':'Ingen åpne saker å vise.'}</p>}
    {overview?.next&&<button type="button" className="secondary" disabled={loading} onClick={()=>loadOverview(overview.next)}>Vis flere saker</button>}
   </div>

@@ -18,6 +18,7 @@
 // og Butikktilbud bruker generisk kundetekst for varer, service og fagarbeid.
 import { installGlobalStorageImageOptimizer } from './modules/images/imageUploadOptimizer.js';
 import { installProjectWorkflowUx } from './modules/project/projectWorkflowUx.js';
+import { isProjectDeviationNavLabel } from './modules/project/projectNavigationTabs.mjs';
 import { installSalesInspectionHistoryUx } from './modules/project/salesInspectionHistoryUx.js';
 import { installProgressPlanUx } from './modules/progress/progressPlanUx.jsx';
 import { installProgressPlanHelpUx } from './modules/progress/progressPlanHelpUx.js';
@@ -101,15 +102,16 @@ function installProjectDeviationShortcutRouting() {
       if (text !== 'Åpne Avvik') return;
 
       const nav = Array.from(document.querySelectorAll('nav')).find((candidate) =>
-        Array.from(candidate.querySelectorAll('button')).some((button) =>
-          String(button.textContent || '').replace(/\s+/g, ' ').trim() === 'Prosjektoversikt'
-        )
+        Array.from(candidate.querySelectorAll('button')).some((button) => {
+          const label = String(button.textContent || '').replace(/\s+/g, ' ').trim();
+          return label === 'Prosjektoversikt' || label === 'Ordreoversikt';
+        })
       );
       if (!nav) return;
 
       const destination = Array.from(nav.querySelectorAll('button')).find((button) => {
         const label = String(button.textContent || '').replace(/\s+/g, ' ').trim();
-        return label === 'Avvik' || /^Avvik\s*\(\d+\)$/.test(label);
+        return isProjectDeviationNavLabel(label);
       });
       if (!(destination instanceof HTMLButtonElement)) return;
 
