@@ -1,6 +1,6 @@
-## Meny-/RUH-/datoretting 8. oktober 2026 – READY
+## Meny-/RUH-/datoretting 8. oktober 2026 – TEST OK
 
-Skjermbildene viste at desktopadapteren utelot Avvik/SJA/RUH. Matcher og Åpne Avvik er rettet, KS/HMS viser Avvik/RUH, og avvik/RUH har norsk dato og Oslo-tid. Funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265` READY/Core safety success. Full critical/build og faktisk DOM-/React-prøve PASS. Ingen SQL-mutasjoner eller produksjonsendringer i denne rettelsen. Neste er bare den korte meny-/RUH-/datoprøven øverst i USER_TEST.md; full SJA/RUH-brukergodkjenning og videre utførelses-/HR-scope består. Se NAV_RUH_DATE_20261008.md.
+Skjermbildene viste at desktopadapteren utelot Avvik/SJA/RUH. Matcher og Åpne Avvik er rettet, KS/HMS viser Avvik/RUH, og avvik/RUH har norsk dato og Oslo-tid. Funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265` READY/Core safety success. Full critical/build og faktisk DOM-/React-prøve PASS. Ingen SQL-mutasjoner eller produksjonsendringer i denne rettelsen. Kenneth bekreftet TEST OK 8. oktober 2026 kl. 01:28 Europe/Oslo for meny, RUH-inngang og norsk dato. Denne prøven er ferdig. Neste nødvendige brukerprøve er SJA/RUH-lagring, gjenåpning og egen lukking øverst i USER_TEST.md. Videre utførelses-/HR-scope og krav om separat Production-godkjenning består. Se NAV_RUH_DATE_20261008.md.
 
 ---
 

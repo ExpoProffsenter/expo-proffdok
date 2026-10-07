@@ -1,16 +1,3 @@
-# Neste korte Preview-prøve – meny, RUH-inngang og norsk dato
-
-Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
-Rettelse READY på funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. Oppdater eksisterende Preview-side én gang for å hente det nye bygget.
-
-1. Åpne aktivt prosjekt eller enkel ordre med din personlige KS/HMS-tilgang. I toppmenyen skal **Avvik/SJA/RUH** være synlig, også når antall åpne avvik vises. Klikk fanen: **Opprett SJA**, **Registrer RUH**, **Åpne SJA** og **Åpne RUH** skal finnes, med forklaring på begrepene. Prøv **Registrer RUH**: tomt skjema skal ha riktig prosjekt. Det er nok å lukke med **Behold kladd og lukk**; ingen ny lagring kreves for denne menyprøven. **Åpne Avvik** på oversikten skal også gå hit.
-2. Gå til **Startside → KS/HMS → Avvik/RUH**. Her skal **Registrer avvik** og **Registrer RUH** finnes. **SJA** ligger ved siden av som eget valg. Prøv **Registrer RUH** og lukk skjemaet igjen.
-3. Åpne en eksisterende avviks-/RUH-sak. Fristen i listen og historikken skal vises som **10.10.2026** (med sakens faktiske dato). Hendelsestid vises med norsk dato og Oslo-tid. Server-/date-inputverdiene er ikke endret.
-
-Svar gjerne **TEST OK – meny, RUH-inngang og dato**, eller oppgi hvilken knapp som mangler. Dette godkjenner denne rettelsen; det erstatter ikke den tidligere planlagte fulle SJA/RUH-prøven nedenfor. Brukere uten modultilgang skal fortsatt bare ha **Avvik** og ingen SJA/RUH-verktøy.
-
----
-
 # Neste korte Preview-prøve – SJA/RUH i prosjekt
 
 Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
@@ -20,6 +7,15 @@ Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.a
 3. Ved behov fra **KS/HMS → SJA → Ny SJA** velger du et faktisk firmaprosjekt i **Prosjekt i ProffDok**. **Manuelt / eksternt oppdrag** og **Ekstern ordre / egen referanse** er fortsatt tilgjengelig. Valg av prosjekt eller forslag skal ikke fylle risiko-/gjennomgangssvar for deg. RUH i **Avvikssentral** har samme prosjekt-/eksternvalg.
 
 Utviklerkontroll: 93 faktiske SQL-assertioner med rollback, ny faktisk React-prosjekt/SJA/RUH-prøve, eksisterende SJA-/parent-prøver og full critical QA/build PASS. Faktisk personlig modul-/prosjektgate, tilgangsavslag og låst prosjekt er prøvd i kode/database. Brukere uten KS/HMS-tilgang beholder **Avvik** og får ikke SJA/RUH-knappene. Ingen ny innlogget skjerm-/mobilprøve hevdes. Kode `694a4a9a114044ead724532c18133c28045c5863` READY på samme adresse, Core Safety success. Meny og sjekklistepopup er tidligere TEST OK og gjentas ikke i denne prøven.
+
+
+---
+
+# Godkjent delprøve – meny, RUH-inngang og norsk dato
+
+Kenneth svarte «test ok» 8. oktober 2026 kl. 01:28 Europe/Oslo på den avgrensede meny-/RUH-/datoprøven. Kontrollert feature-head `42204af397fc1fb6187e7e475c951ecdcd007550`, funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. Prøven omfattet synlig Avvik/SJA/RUH, prosjektets Opprett SJA / Registrer RUH, KS/HMS → Avvik/RUH og norsk dato. Ikke gjenta uten ny konkret feil. Dette er ikke Production-godkjenning eller godkjenning av hele SJA/RUH-lagrings-/signeringsflyten.
+
+Den neste brukerprøven står øverst. Tidligere godkjente delprøver og eldre testlister nedenfor er historikk.
 
 ---
 

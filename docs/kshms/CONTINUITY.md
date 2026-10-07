@@ -1,4 +1,18 @@
-# Gjeldende fortsettelsespunkt – Avvik/SJA/RUH, RUH-meny og norsk dato READY
+# Gjeldende fortsettelsespunkt – meny, RUH-inngang og norsk dato TEST OK
+
+Kenneth svarte «test ok» 8. oktober 2026 kl. 01:28 Europe/Oslo på den avgrensede prøven for prosjektets Avvik/SJA/RUH, Opprett SJA / Registrer RUH, KS/HMS → Avvik/RUH og norsk dato. Godkjenningen er registrert mot kontrollert feature-head `42204af397fc1fb6187e7e475c951ecdcd007550` og funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. Dette er ikke godkjenning av hele SJA/RUH-lagrings-/signeringsflyten, hele modulen eller Production.
+
+Den korte meny-/RUH-/datoprøven skal ikke gjentas uten en ny konkret feil. Neste nødvendige brukerprøve er SJA-utkast med rutinenummer → lagring/gjenåpning fra samme prosjekt, samt RUH → lagring for oppfølging → ansvarligs egen dokumenterte lukking → bevart rapport. Se de faktiske knappene øverst i [USER_TEST.md](USER_TEST.md). Tidligere håndbok-, avvik-, menyretur- og sjekklistepopup-TEST OK består.
+
+Overtakelseskontrollen bekreftet samme faste Preview READY på `dpl_6LSTm6CzDM94bZEj6Wf58NwvhP27` / `42204af397fc1fb6187e7e475c951ecdcd007550`, PR Core Safety completed/success på funksjonskoden, branch-spesifikk `EXPO_BACKEND_TARGET=sandbox` og de tre SJA/prosjekt/RUH-migrasjonene i Sandbox-historikken. Denne registreringen endrer bare dokumentasjon. Ingen appkode, SQL, tilgang, e-post, signerte analyser eller rutineutgaver endres. Ingen ny innlogget utviklerprøve eller fysisk mobilprøve hevdes; eksisterende Preview-fane kunne ikke bindes og øktens tabbliste var tom.
+
+Miljømål BEGGE, fortsatt feature/Sandbox Preview. PR #216 beholdes draft. Main/Production er kontrollert READY på `155f6c4ac01f126c1db0c65da385cfd9305587d5` / `dpl_9wsjTrEVzvAF6jf7f9HgvzskYP5z`. Ingen Production-godkjenning, merge, Production-DDL eller demo-synk. Vernerunder/selvstendige kontroller og 5×5-risiko følger den korte SJA/RUH-prøven; utførelse før separat HR og bygging før Ringside-pilot er fortsatt vedtatt.
+
+CURRENT_RELEASE_STATUS.md viser nå bare dagens status. Det tidligere samlede statusinnholdet er bevart som [historisk arkiv](archive/CURRENT_RELEASE_STATUS_before_TEST_OK_20261008.md). Eldre avsnitt nedenfor er kontrollhistorikk og skal ikke starte nye godkjenningsrunder.
+
+---
+
+# Historikk før TEST OK – Avvik/SJA/RUH, RUH-meny og norsk dato READY
 
 Oppdatert 8. oktober 2026, Europe/Oslo. Kenneths tre skjermbilder viste en faktisk desktopmenyfeil: det nye navnet Avvik/SJA/RUH ble ikke gjenkjent av adapteren og manglet i toppmenyen. Dette er rettet i menyen, bootstrap-snarveien og workflowmålet. Åpne Avvik går til den faktiske prosjektfanen, også fra Ordreoversikt. KS/HMS har nå Avvik/RUH → Registrer avvik / Registrer RUH og eget SJA-valg. Kun personlig modulbruker får prosjektets SJA/RUH-verktøy.
 

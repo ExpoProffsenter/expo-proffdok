@@ -43,3 +43,7 @@ Fortsettelsesnotatet er varig lagret i Git-repoet. Det trenger ikke kopieres man
 ## Kontrollert publisering
 
 Funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`, identisk lokal/remote tree `c746110e2025cb11b06087bec2084abf651442b2`. Samme Preview READY på `dpl_7eswiB6TH89b1VcUJBxAsiX5ckDA`; Core safety + critical build `113066107707` completed/success. EXPO_BACKEND_TARGET=sandbox for denne feature-Preview er kontrollert. Main fortsatt `155f6c4ac01f126c1db0c65da385cfd9305587d5`, PR #216 draft. Ingen TEST OK eller produksjonsrelease.
+
+## Kenneths godkjente delprøve
+
+Kenneth svarte «test ok» 8. oktober 2026 kl. 01:28 Europe/Oslo etter den konkrete meny-/RUH-/datoprøven. Registrert mot feature-head `42204af397fc1fb6187e7e475c951ecdcd007550` og funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. Avvik/SJA/RUH, prosjektets SJA/RUH-innganger, KS/HMS → Avvik/RUH og norsk dato er godkjent. Den prøven skal ikke gjentas uten ny feil. Lagring/gjenåpning av prosjekt-SJA, RUH-oppfølging/egen lukking, resterende fysisk mobil-/flerbrukerprøve og Production-godkjenning er separate gjenstående punkter.
