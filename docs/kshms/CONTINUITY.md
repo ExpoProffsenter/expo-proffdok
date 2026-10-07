@@ -1,3 +1,16 @@
+# Gjeldende fortsettelsespunkt – SJA bygget og verifisert; Preview-publisering neste
+
+Les OVERSIKT.md først. Kenneths svar 23:02 er lagret: begge delprøver TEST OK, utførelse før HR, bygg før Ringside-pilot, ledere bare tildelte HR-medarbeidere/firmaadmin alle, og tom SJA med hjelp over feltene. Meny/sjekklistepopup skal ikke testes på nytt uten ny feil.
+
+Avgrenset SJA er bygget: blank jobb, valgbare forslag, utkast/readback, lokal kladd ved fanebytte/remount, kollegasammenligning, ansvarlig PLs egen signatur og uforanderlig analyse. 38 faktiske SQL-kontroller i Sandbox og faktisk React-scenario med simulert transport PASS. Full critical/Vite-build PASS. Migrasjon 20261007212858_kshms_sja er bekreftet fra Sandbox-historikken og eksakt SQL lagret i repoet. Syntetiske rader rullet tilbake. Ingen ny nettlesertest hevdes; skynettleseren er fortsatt blokkert og ingen nye faner åpnes.
+
+Miljømål BEGGE. Neste: publiser kontrollert kode til samme feat-kshms-foundation Preview, bekreft READY/riktig kodehead/Sandbox-binding, og noter bevis her. Bare SJA-prøven øverst i USER_TEST.md gjenstår for denne leveransen. Main/Production/demo er uendret på gjeldende baseline. Vernerunder, 5×5 risiko, PDF, HR og øvrige B–E-deler består. Se SJA_20261007.md.
+
+
+---
+
+# Bevart publiseringshistorikk fra tidligere kjøring
+
 # Gjeldende fortsettelsespunkt – SJA bygget og utviklertestet
 
 Påbegynt SJA fra avbrutt chat er gjenopptatt i separat recovery-arbeidsmappe. Tomme jobbspesifikke felt, veiledning over feltene, aktivt valgte forslag, delvise utkast, prosjektleders egen signering og uforanderlig signert innhold er implementert. Migrasjon `20261007212858_kshms_sja.sql` er kun anvendt i Sandbox; 37 reelle SQL-kontroller med full rollback, permanent kontroll, faktisk React-flyt og full critical QA/build PASS. Se [SJA_20261007.md](SJA_20261007.md) for scope/kilder/testgrenser og [USER_TEST.md](USER_TEST.md) for kort prøve.

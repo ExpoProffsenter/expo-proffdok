@@ -154,3 +154,10 @@ A2-tekstdekningen er implementert og operativt tematisk skrevet. Firmatilpasning
 ## Avgrenset B-leveranse – Sjekklistesentral, 7. oktober 2026
 
 Fagspesifikke firmamaler, utkast/publisering, faste utgaver og innhenting under Sjekklister i generell ordre og Fag/utstyr i våtromsprosjekt er implementert for Preview. Ved aktivert firmamodul kan interne prosjektbrukere hente publiserte lister uten personlig KS/HMS-grant. Firmaadmin og KS/HMS-ansvarlig bygger og publiserer. Eksisterende ukoblede avvik og utfylling videreføres. 27 Sandbox-kontroller og kort faktisk React-flyt PASS. Ny brukerprøve gjenstår; denne delprøven erstatter ikke resterende B–E eller Production-godkjenning. Se CHECKLIST_CENTRAL_20261007.md.
+
+
+## Avklart og delvis levert 07.10.2026
+
+Kenneth 23:02: begge delprøver (meny/sjekklistepopup) TEST OK. Fullfør utførelsesdelen før HR. Bygg avtalt minimum først; Ringside tester etterpå. Ingen tidlig begrenset pilot. Ved individuell HR får ledere bare tildelte medarbeidere, firmaadmin ser/behandler alle og tildeler ansvar; KS-rollen gir ikke slik tilgang automatisk.
+
+SJA starter tom for hver jobb med hjelpetekst over feltene og eksplisitt valgbare forslag. Egen PL-signatur og dokumentert medvirkning består. Den avgrensede SJA-form-/utkast-/signaturleveransen er bygget og utviklerverifisert i Sandbox, med egen brukerprøve etter READY-publisering. Se SJA_20261007.md. Det betyr ikke at hele B er ferdig: vernerunder, selvstendige sjekklistegjennomføringer, 5×5 risiko, vedlegg/PDF og øvrige C–E-krav gjenstår. Historisk opprinnelig gap-tabell ovenfor beskriver tilstanden før implementering.

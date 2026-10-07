@@ -16,7 +16,7 @@ Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er
 | Sjekklistesentral | Bygge/publisere fagmaler og hente faste utgaver inn i ordrer og våtromsprosjekter. | Implementert og utviklertestet. Kenneths egen godkjenning av sentral/innhenting er ikke registrert. |
 | Sjekklistepopup | Sammenfoldede lister, egne punkter, Lagre, Sjekkliste fullført, Start ny kontroll og historikk med person/tidspunkt. | Database-/React-prøver og tidligere innlogget desktopprøve PASS. Kenneth bekreftet 7. oktober kl. 23:02 TEST OK også for lagring/fullføring/historikk. |
 | Meny | Kompakt ordremeny og bevart hovedmeny etter retur til Startside. | Menyrettelsen er TEST OK 7. oktober kl. 22:39. Ikke gjenta denne prøven uten ny feil. |
-| SJA | Tomt skjema, veiledning over feltene, valgbare forslag, lagrede utkast, ansvarlig PLs egen signering og bevart signert innhold. | Publisert/READY på samme Preview. 37 SQL-kontroller med rollback, faktisk React-flyt og full critical QA/build PASS. Innlogget skjermprøve og Kenneths SJA-TEST OK gjenstår. |
+| SJA | Tomt skjema, veiledning over feltene, valgbare forslag, lagrede utkast, ansvarlig PLs egen signering og bevart signert innhold. | Publisert/READY på samme Preview. 38 SQL-kontroller med rollback, faktisk React-flyt og full critical QA/build PASS. Innlogget skjermprøve og Kenneths SJA-TEST OK gjenstår. |
 | E-post | Tildelingsworker og kø er laget. Appvarslene fungerer uavhengig av e-post. | Sandbox-utsending er deaktivert; avsenderoppsett og faktisk mottaksprøve gjenstår. |
 
 ## Det som fortsatt skal bygges

@@ -84,6 +84,11 @@ reset role;
 do $$ declare c uuid:=current_setting('ks.sja.company')::uuid;target_sja uuid:=current_setting('ks.sja.id')::uuid;n integer:=current_setting('ks.sja.count')::integer; begin
  begin update public.kshms_sjas set content='{}' where public.kshms_sjas.id=target_sja;raise exception 'Signed snapshot mutated directly';exception when insufficient_privilege then n:=n+1;end;
  begin delete from public.kshms_sjas where public.kshms_sjas.id=target_sja;raise exception 'Signed snapshot deleted';exception when insufficient_privilege then n:=n+1;end;
+ begin
+  insert into public.kshms_sjas(id,company_id,content,status,leader_id,created_by,creator_identity,updated_by,signed_by,signed_identity,signed_at,statement)
+  select gen_random_uuid(),company_id,content,'signed',null,created_by,creator_identity,updated_by,signed_by,signed_identity,signed_at,statement from public.kshms_sjas where public.kshms_sjas.id=target_sja;
+  raise exception 'Signed SJA without selected leader passed its constraint';
+ exception when check_violation then n:=n+1;end;
  assert not has_function_privilege('anon','public.kshms_sja_state(uuid,text,text)','execute') and not has_function_privilege('anon','public.kshms_sja_command(uuid,text,uuid,jsonb)','execute');n:=n+1;
  assert not has_table_privilege('authenticated','public.kshms_sjas','select') and not has_table_privilege('authenticated','public.kshms_sja_commands','update');n:=n+1;
  assert (select relrowsecurity from pg_class where oid='public.kshms_sjas'::regclass) and (select relrowsecurity from pg_class where oid='public.kshms_sja_commands'::regclass);n:=n+1;

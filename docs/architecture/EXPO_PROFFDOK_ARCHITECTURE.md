@@ -1,5 +1,7 @@
 # Expo ProffDok – arkitekturkart
 
+SJA utvider bare KS/HMS-parenten med en bevart SJA-fane og ny popup. kshms_sjas/kshms_sja_commands bruker eksisterende arbeidsfirma-/KS-gates, revisjonsvern, idempotente kommandoer, bekreftet readback og uforanderlig signert snapshot. Ingen main.jsx-/auth-/prosjektendring. Sandbox-migrasjon 20261007212858_kshms_sja; ingen Production-migrasjon. Se [SJA-kontrakt og tester](../kshms/SJA_20261007.md).
+
 Preview 07.10.2026: Native React-menykontroller bærer gjeldende navn i `data-expo-nav-label`. Enkel ordre bruker dette ved gjenoppretting etter sidebytte, fordi React gjenbruker knapper og samme salgsprop også når arbeidsflaten endres. Den eksisterende desktop-/prosjektmenyen klikker fortsatt de samme native kontrollene. Ingen ny navigasjonsmotor, tilgangsregel eller datastrøm innføres. Se [avgrenset returprøve](../kshms/MENU_RETURN_20261007.md).
 
 **Fase:** eksisterende ProffDok med firmakunder/mva.; KS/HMS trinn A under utvikling i feature/Preview

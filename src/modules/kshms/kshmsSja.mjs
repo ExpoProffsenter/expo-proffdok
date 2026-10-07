@@ -9,6 +9,8 @@ export const SJA_HINTS = {
   workplace: 'Skriv adresse eller område og hvor arbeidet foregår.',
   project_reference: 'Skriv ordrenummer eller prosjektnavn hvis jobben er knyttet til et oppdrag.',
   task: 'Beskriv hva dere skal gjøre, hva som inngår og hvem arbeidet kan berøre.',
+  planned_on: 'Velg datoen arbeidet er planlagt utført. Vurder forholdene på nytt hvis planen endres.',
+  reviewed_on: 'Velg datoen arbeidslaget gikk gjennom denne analysen.',
   activity: 'Del jobben i konkrete arbeidstrinn, i den rekkefølgen dere skal utføre dem.',
   hazard: 'Vurder forholdene på stedet, andre aktiviteter, utstyr og energi som kan skade noen.',
   consequence: 'Beskriv hvem som kan rammes og hvilken skade eller helseplage som kan oppstå.',
@@ -21,6 +23,9 @@ export const SJA_HINTS = {
   emergency: 'Beskriv hvordan dere varsler, møter hjelp og finner førstehjelpsutstyr på arbeidsstedet.',
   stop_conditions: 'Beskriv hvilke endringer eller uavklarte forhold som betyr at arbeidet skal stanses og vurderes på nytt.',
   communication: 'Skriv hvordan arbeidslaget gjennomgikk jobben og forstod tiltakene, for eksempel møte på stedet.',
+  name: 'Skriv navnet på personen som deltar i arbeidet eller gjennomgangen.',
+  role: 'Skriv personens oppgave i denne jobben, for eksempel utførende eller arbeidsleder.',
+  company: 'Oppgi firmaet personen representerer, hvis det er relevant.',
   involvement: 'Dokumenter personens bidrag eller gjennomgang. Dette er dokumentasjon av medvirkning, ikke en signatur på personens vegne.',
 };
 export const SJA_SUGGESTIONS = {
@@ -91,6 +96,7 @@ export function readSjaDraft(storage, userId, companyId) {
 }
 export function persistSjaDraft(storage, userId, companyId, editor) { storage.setItem(sjaDraftKey(userId, companyId), JSON.stringify({ userId, companyId, editor })); }
 export async function saveSja({ companyId, userId, editor, action, checked = false, rpc, isCurrent = () => true }) {
+  if (!['save', 'sign'].includes(action)) throw new Error('Velg lagring av utkast eller egen signering.');
   const content = sjaContent(editor.content);
   if (!content.title) throw new Error('Skriv et navn på jobben før du lagrer.');
   if (action === 'sign' && (!checked || sjaSigningIssues(content).length)) throw new Error('Fyll ut SJA-en og bekreft egen gjennomgang før signering.');

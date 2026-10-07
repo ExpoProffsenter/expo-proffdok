@@ -1,5 +1,7 @@
 # Expo ProffDok
 
+SJA: **KS/HMS → SJA → Ny SJA** gir et tomt jobbskjema, hjelpetekst over feltene og valgbare forslag. Utkast og ansvarlig PLs egen signering er separate handlinger; signert analyse beholdes uendret. Meny og sjekklistepopup er TEST OK fra Kenneth. [SJA-omfang og testbevis](docs/kshms/SJA_20261007.md). Samme feature/Sandbox Preview; SJA krever egen brukerprøve.
+
 Preview 07.10.2026: Retur fra generell ordre bevarer Reacts gjeldende menynavn, slik at Startsiden fortsatt bruker den kompakte Meny-knappen. Den faktiske returfeilen er gjenskapt og har fast runtime-regresjonsvern samt en React-prøve med appens menyadaptere. Se [menyprøven](docs/kshms/MENU_RETURN_20261007.md). KS/HMS er fortsatt kun feature/Preview.
 
 Expo ProffDok er en produksjonsapp for håndverks- og prosjektbedrifter. Løsningen støtter prosjektstyring, dokumentasjon, sjekklister, bilder, avvik, kunde-/UE-portal, garanti, befaring, Badskisse, ordinære tilbud, Generelt tilbud, digital aksept, kontrakt og rapport/PDF.

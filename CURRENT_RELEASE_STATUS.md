@@ -1,3 +1,12 @@
+# Gjeldende SJA – klar til samme feature/Sandbox Preview (07.10.2026)
+
+Miljømål BEGGE. Meny og sjekklistepopup er begge Kenneths TEST OK 23:02. SJA er bygget med tom jobb, hjelpetekst/forslag, sikker utkastlagring, egen PL-signatur og bevart analyse. 38 faktiske Sandbox SQL-kontroller, React/DOM-scenario og full critical/build PASS. Sandbox-migrasjon 20261007212858_kshms_sja er registrert; ingen Production-migrasjon/main-merge/demo-synk. SJA har egen utestående brukerprøve. Publiseringsbevis føres i CONTINUITY.md etter READY. Se docs/kshms/SJA_20261007.md.
+
+
+---
+
+# Bevart publiseringshistorikk fra tidligere kjøring
+
 # Gjeldende KS/HMS-status – 7. oktober 2026
 
 SJA med tomme felt/veiledning/valgbare forslag, utkast og ansvarlig PLs egen signering er publisert på samme Preview. Funksjonskode fcea0492 er READY på dpl_4LUb8LoDB3EVhkko6nwYae29Sy4G, fast alias/Sandbox-binding kontrollert og Core Safety/critical build 37690659010 success. 37 SQL-kontroller med rollback, faktisk React-flyt og full lokal critical QA/build PASS; migrasjon 20261007212858 kun i Sandbox. Eksisterende skynettleserfane kunne bindes, men viste innlogging. Kort brukerprøve står først i USER_TEST.md. Innlogget SJA-prøve/TEST OK gjenstår; main/Production/demo er uendret. Eksakte detaljer i docs/kshms/SJA_20261007.md.
