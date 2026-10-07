@@ -2,6 +2,10 @@
 
 Oppdatert 7. oktober 2026, Europe/Oslo. Dette dokumentet samler gjeldende brukerbeslutninger og verifiserte referanser etter to avbrutte samtaler. En ny chat skal lese dette først, deretter PLAN.md, SCOPE_A2.md, QA.md og USER_TEST.md. Dette er ikke en ordrett kopi av historikken eller en attest på at hele modulen er ferdig.
 
+## Ny avviksrunde – 7. oktober, etter brukerens krasjrapport
+
+Arbeid fra kontrollert 794a9e5f. Brukeren har levert konkret removeChild-feil; faktisk React-renderer/DOM-adapter gjenskaper feilen i isolert prøve, og én samlet tekstverdi i Forrige/Neste løser denne prøven. Stor dialog med ansvarligvalg, frist, «Lagre avvik for oppfølging», bekreftet prosjektkilde/KS-kobling og beholdt kladd er bygget. Se AVVIK_DIALOG_20261007.md for årsak, scope, kontroller og neste steg. Ny live Preview-prøve og endelig testet SHA skal føres før denne runden omtales som ferdig. Tidligere UI-prøver nedenfor beholdes som historikk.
+
 ## Mål og leveranseomfang
 
 Bygge en integrert KS/HMS-modul i Expo ProffDok, med Ringside som pilot og mulighet for flere firmaer. Modulen skal omfatte selvstendige, tilpassbare rutiner, dokumentert egen gjennomgang, oppfølging/revisjon, utførelsessjekklister, SJA, risikovurdering, avvik/RUH, varsler og rapporter. Valgfrie deler omfatter individuell personal/kompetanse og stoffkartotek. Kapasitetsmålet på 100 firmaer er en plan, ikke en utført lasttest.

@@ -1,3 +1,21 @@
+# Ny avviksprøve – dialog 7. oktober 2026
+
+Samme faste Preview: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
+
+1. Åpne et lagret prosjekt → Avvik → + Nytt HMS/prosjektavvik. Det skal åpne en stor dialog; på smal skjerm fyller den skjermen.
+2. Fyll Kort tittel og Beskrivelse av avvik. Velg en faktisk bruker i Ansvarlig for oppfølging og lukking og sett Frist.
+3. Velg Lagre avvik for oppfølging. Ett lagret prosjektavvik skal bli koblet til KS/HMS, og riktig sak skal åpne direkte.
+4. Melder skal bare få ansvarligvarsel når melder selv er valgt ansvarlig. Valgt ansvarlig dokumenterer årsak/tiltak/egen kontroll og lagrer lukkingen selv.
+5. Gå tilbake til prosjektets Avvik. Den koblede posten skal vise lagret status og Åpne i KS/HMS. Last siden på nytt og kontroller samme post.
+6. Prøv Behold kladd og lukk før lagring. Hent avvikskladd skal hente samme felt tilbake. Ved lagringsfeil skal felt/kladd beholdes.
+7. Ditt eksisterende Test-prosjektavvik kan åpnes via Koble til KS/HMS uten removeChild-feil. Frist og beskrivelse tas med; et fritekstnavn velges ikke automatisk som bruker-ID.
+
+Utviklerens faktiske skyprøver og begrensninger føres i AVVIK_DIALOG_20261007.md. Brukerens prøve kommer i tillegg. Relevant TEST OK kreves fortsatt før merge.
+
+---
+
+## Tidligere prøvetekst og historikk
+
 ## Gjeldende A2-brukerprøve
 
 Status 7. oktober: utvikleren har prøvd faktisk innlogget desktopflyt med Kenneth Demo som både melder og ansvarlig. Kapittelfilter, registrering, varsel gjennom lesing/navigasjon/ny fane, beholdt kladd og lagret lukking passerer. Etter brukerbestilt nettlesernullstilling passerer også eget testsjekkpunkt → KS/HMS-kobling → sperret direkte lukking → ansvarligs lagrede lukking tilbake til prosjektet og faktisk omlasting med bevart innlogging/status; se [testloggen](UI_TEST_20261007.md). **Gjenstående prøve gjelder to forskjellige brukere, separat HMS-/prosjektavviksrad/full legacy-lukking og mobil**, samt avviksteller for egne sjekkpunkter og reelt e-postmottak etter sikkert avsenderoppsett. Enkeltkonto-prøvene er ikke en ny A2-TEST OK. Firmaets ti eksisterende godkjenninger skal ikke gjøres om. Brukerens egen Preview-prøve erstatter ikke utviklerens skjermtest.

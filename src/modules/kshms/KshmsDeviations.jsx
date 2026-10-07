@@ -2,6 +2,7 @@ import { useEffect,useId,useRef,useState } from 'react';
 import { getAppSupabaseClient } from '../access/appSupabaseClientRegistry.js';
 import { kshmsRpc } from './kshmsAccess.js';
 import { identityText } from './kshmsPersonal.mjs';
+import { DeviationEditorSurface } from '../deviations/DeviationDialog.jsx';
 import { DEVIATION_CATEGORY,DEVIATION_STATUS,DEVIATION_CHANGE_EVENT,deviationForm,validateDeviation,saveDeviation,publishDeviationChange,storeDeviationDraft,readDeviationDraft,deviationDraftKey,deviationFileType } from './kshmsDeviations.mjs';
 
 const when=value=>value?new Date(value).toLocaleString('nb-NO'):'';
@@ -69,7 +70,7 @@ export default function KshmsDeviations({context,request}) {
  const newCase=(link=null,restore=null)=>{
   if(!leaveEditor())return;
   caseSerial.current++;setCaseLoading(false);setDetail(null);setFiles([]);setFileLinks({});setConflict(null);setError('');setNotice('');setControlled(false);setSource(restore?.source||link);setRequestId(restore?.requestId||crypto.randomUUID());setRevision(0);
-  setForm(restore?.form||deviationForm({title:link?.title||'',event:link?.event||'',category:link?.category||'hms'}));setDirty(Boolean(restore));pendingUpload.current=null;setPendingFile(false);setFocus(value=>value+1);
+  setForm(restore?.form||deviationForm({title:link?.title||'',event:link?.event||'',category:link?.category||'hms',due_on:link?.due_on||'',immediate_action:link?.immediate_action||''}));setDirty(Boolean(restore));pendingUpload.current=null;setPendingFile(false);setFocus(value=>value+1);
  };
  useEffect(()=>{
   if(!request||request.companyId!==companyId||request.userId!==userId||handled.current===request.nonce||locked.current)return;
@@ -77,6 +78,7 @@ export default function KshmsDeviations({context,request}) {
   if(request.id)openCase(request.id);else if(request.source)newCase(request.source);
  },[request?.nonce,companyId,userId,busy]);
  const restoreDraft=()=>{if(cached?.id)openCase(cached.id,cached);else if(cached)newCase(null,cached);};
+ const dismissNewCase=()=>{if(locked.current)return;if(dirty)keepDraft(form);setForm(null);setDirty(false);setFocus(0);};
  const save=async(action)=>{
   if(locked.current||!form||!editable)return;
   const validation=validateDeviation(form,{closing:action==='close'});if(validation){setError(validation);return;}
@@ -87,7 +89,7 @@ export default function KshmsDeviations({context,request}) {
   try{const payload=id?{...form,id,revision,...(action==='close'?{controlled:true}:{})}:{...form,request_id:requestId,...(source?{project_id:source.project_id,source_kind:source.source_kind,source_key:source.source_key,source_group:source.source_group,source_item:source.source_item}:{source_kind:'company'})};
    const result=await saveDeviation({rpc:kshmsRpc,companyId,userId,action:id?action:'create',payload,isCurrent:()=>current(owner)&&serial===caseSerial.current});
    if(!result)return;
-   installDetail(result);window.localStorage.removeItem(deviationDraftKey(userId,companyId));setCached(null);setNotice(action==='close'?'Lukkingen er lagret. Ansvarligvarselet fjernes.':'Avviket er lagret.');publishDeviationChange(result.case);
+   installDetail(result);window.localStorage.removeItem(deviationDraftKey(userId,companyId));setCached(null);setNotice(action==='close'?'Lukkingen er lagret. Ansvarligvarselet fjernes.':'Avviket er lagret.');setFocus(value=>value+1);publishDeviationChange(result.case);
    try{const items=await kshmsRpc('kshms_deviation_files',{p_company_id:companyId,p_id:result.case.id});if(current(owner)&&serial===caseSerial.current)setFiles(items);}catch{if(current(owner))setError('Avviket er lagret, men vedleggene kunne ikke oppdateres. Trykk «Oppdater sak».');}
   }catch(e){if(current(owner)&&serial===caseSerial.current){setError(e.code==='40001'?'En annen har endret saken. Din kladd er beholdt. Sammenlign med lagret sak under før du lagrer igjen.':`Kunne ikke bekrefte lagringen. Kladden er beholdt. ${e.message}`);if(id)try{const server=await kshmsRpc('kshms_deviation_detail',{p_company_id:companyId,p_id:id});if(current(owner)&&serial===caseSerial.current)setConflict(server);}catch{}}}
   finally{locked.current=false;if(current(owner))setBusy(false);}
@@ -141,7 +143,7 @@ export default function KshmsDeviations({context,request}) {
   </div>
   {cached&&!dirty&&<div className="ks-card"><p>En ulagret avvikskladd er beholdt på denne enheten: «{cached.form.title||'Nytt avvik'}».</p><button type="button" className="secondary" disabled={busy||caseLoading} onClick={restoreDraft}>Hent avvikskladd</button><button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Slette den lokale avvikskladden?')){window.localStorage.removeItem(deviationDraftKey(userId,companyId));setCached(null);}}}>Slett lokal kladd</button></div>}
   {error&&<p className="ks-error" role="alert">{error}</p>}{notice&&<p className="ks-notice" role="status">{notice}</p>}{caseLoading&&<p role="status">Henter sak …</p>}
-  {form&&<article className="ks-card ks-case-editor" ref={editorRef} tabIndex={-1} aria-label={row?'Åpent avvik':'Registrer avvik'}>
+  {form&&<DeviationEditorSurface modal={!row} onClose={dismissNewCase} busy={busy} className="ks-card ks-case-editor" editorRef={editorRef} tabIndex={-1} aria-label={row?'Åpent avvik':'Registrer avvik'}>
    <div className="ks-row"><h3>{row?row.title:'Registrer avvik'}</h3>{row&&<span className="ks-badge">{DEVIATION_STATUS[row.status]}</span>}</div>
    {row&&<p>Meldt av {identityText(row.creator_identity)} · {when(row.created_at)} {row.project_id&&'· Koblet til prosjekt'}</p>}
    {source&&<p>Dette kobler det lagrede {source.source_kind==='checklist'?'sjekkpunktavviket':'prosjektavviket'} til KS/HMS. Etter lagring styres lukkingen her.</p>}
@@ -152,7 +154,8 @@ export default function KshmsDeviations({context,request}) {
      <label className="ks-field"><span>Ansvarlig</span><select required value={form.responsible_id} disabled={Boolean(row&&!context.manage)} onChange={e=>change('responsible_id',e.target.value)}><option value="">Velg medarbeider</option>{form.responsible_id&&!members.some(m=>m.id===form.responsible_id)&&<option value={form.responsible_id} disabled>{identityText(row?.responsible_identity)} – tilgang må avklares</option>}{members.map(member=><option key={member.id} value={member.id}>{identityText(member.identity)}</option>)}</select></label><Field label="Frist" value={form.due_on} onChange={v=>change('due_on',v)} type="date" required/></div>
      <Field label="Strakstiltak / sikring nå" value={form.immediate_action} onChange={v=>change('immediate_action',v)} multiline/>
      {row&&<><label className="ks-field"><span>Status under arbeid</span><select value={form.status} onChange={e=>change('status',e.target.value)}><option value="open">Åpent</option><option value="in_progress">Under behandling</option></select></label>{notes.filter(([,key])=>key!=='immediate_action').map(([label,key])=><Field key={key} label={label} value={form[key]} onChange={v=>change(key,v)} multiline/>)}{row.source_kind==='project'&&<label className="ks-check"><input type="checkbox" checked={Boolean(form.include_in_report)} onChange={e=>change('include_in_report',e.target.checked)}/>Ta med i sluttrapport</label>}</>}
-     <button type="submit">{busy?'Lagrer …':row?'Lagre endringer':'Lagre avvik'}</button>
+     {error&&!row&&<p className="ks-error" role="alert">{error}</p>}
+     <div className={!row?'deviation-dialog-footer':'ks-actions'}>{!row&&<button type="button" className="secondary" onClick={dismissNewCase}>Behold kladd og lukk</button>}<button type="submit">{busy?'Lagrer …':row?'Lagre endringer':'Lagre avvik for oppfølging'}</button></div>
     </fieldset>
    </form>}
    {row?.status!=='closed'&&row&&<div className="ks-case-closure"><h4>Lukking etter egen kontroll</h4>{canClose?<><p>Dokumenter årsak, utførte tiltak og hva du selv har kontrollert. Huk av under og lagre lukkingen.</p><label className="ks-check"><input type="checkbox" checked={controlled} disabled={busy||caseLoading} onChange={e=>setControlled(e.target.checked)}/>Jeg har gjennomført og dokumentert tiltakene og kontrollert at resultatet er i orden.</label><button type="button" disabled={busy||caseLoading||!controlled||pendingFile} onClick={()=>save('close')}>{busy?'Lagrer …':'Kontroller og lukk avvik'}</button>{pendingFile&&<p>Fullfør vedlegget før du lukker.</p>}</>:<p>Valgt ansvarlig må dokumentere kontrollen og lukke selv. {context.manage?'Du kan endre ansvarlig hvis oppgaven skal overtas av en annen.':'Lesing av saken fjerner ikke ansvarligvarselet.'}</p>}</div>}
@@ -160,7 +163,7 @@ export default function KshmsDeviations({context,request}) {
    {row?.status==='closed'&&context.manage&&<details><summary>Åpne saken igjen</summary><p>Forklar hvorfor og velg en ansvarlig som fortsatt har tilgang. Historikken fra tidligere lukking beholdes.</p><Field label="Grunn til gjenåpning (minst 10 tegn)" value={reason} onChange={setReason} multiline/><label className="ks-field"><span>Ansvarlig ved gjenåpning</span><select value={reopenResponsible} onChange={e=>setReopenResponsible(e.target.value)}>{!members.some(m=>m.id===reopenResponsible)&&<option value="">Velg aktiv medarbeider</option>}{members.map(m=><option key={m.id} value={m.id}>{identityText(m.identity)}</option>)}</select></label><Field label="Ny frist" value={reopenDue} onChange={setReopenDue} type="date"/><button type="button" disabled={busy||reason.trim().length<10||!members.some(m=>m.id===reopenResponsible)||!reopenDue} onClick={reopen}>Lagre gjenåpning</button></details>}
    {detail&&<section className="ks-case-history" aria-label="Avvikshistorikk"><h4>Historikk</h4>{detail.events.map(event=><details key={event.id}><summary>{eventNames[event.action]||event.action} · {when(event.created_at)} · {identityText(event.actor_identity)}</summary>{event.action==='file'?<p>{event.snapshot.name} · {Math.ceil(event.snapshot.size_bytes/1024)} KB</p>:<Snapshot row={event.snapshot}/>}</details>)}{detail.next&&<button type="button" className="secondary" disabled={busy||caseLoading} onClick={olderEvents}>Vis eldre historikk</button>}</section>}
    {row&&<button type="button" className="secondary" disabled={busy||caseLoading} onClick={()=>openCase(row.id)}>Oppdater sak</button>}
-  </article>}
+  </DeviationEditorSurface>}
   {conflict&&<article className="ks-card"><h3>Sist lagrede sak – sammenlign med kladden din</h3><Snapshot row={conflict.case}/><button type="button" className="secondary" disabled={busy} onClick={()=>{if(window.confirm('Erstatte teksten på skjermen med lagret sak? Den lokale kladden beholdes til neste lagring.'))installDetail(conflict);}}>Bruk lagret sak</button></article>}
  </section>;
 }

@@ -34,7 +34,8 @@ import { createProjectListTools, normalizeSearchText, makeSearchableText, projec
 import { createProductViewTools } from './modules/product/productViewTools.js';
 import { createSurfaceViewTools, emptyBathroomEquipment, buildBathroomEquipmentReportGroups } from './modules/surfaces/surfaceViewTools.js';
 import { createDeviationCenter } from './modules/deviations/deviationViewTools.js';
-import { DEVIATION_CHANGE_EVENT,projectAfterDeviation,checklistAfterDeviation } from './modules/kshms/kshmsDeviations.mjs';
+import ProjectDeviationCreator from './modules/deviations/ProjectDeviationCreator.jsx';
+import { DEVIATION_CHANGE_EVENT,projectAfterDeviation,checklistAfterDeviation,publishDeviationChange } from './modules/kshms/kshmsDeviations.mjs';
 import { createInstallationViewTools } from './modules/installations/installationViewTools.js';
 import { createContractViewTools } from './modules/contract/contractViewTools.js';
 import { createWarrantyViewTools } from './modules/warranty/warrantyViewTools.js';
@@ -2549,6 +2550,34 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       if (!projectId || isProjectLocked) return;
       if (cloudAutoSaveTimerRef.current) window.clearTimeout(cloudAutoSaveTimerRef.current);
       cloudAutoSaveTimerRef.current = window.setTimeout(() => autoSaveProjectToCloud(snapshot), delay);
+    };
+    const saveProjectDeviation = async (entry) => {
+      if (!authUser || isProjectLocked || isReadOnly || isProjectSupportReadOnly) throw new Error('Prosjektet kan ikke endres med denne tilgangen.');
+      const snapshot = buildProjectSnapshot();
+      const entries = Array.isArray(snapshot.project.projectDeviations) ? snapshot.project.projectDeviations : [];
+      const previous = entries.find(row => row.id === entry.id);
+      if (previous?.ks_deviation_id) return previous;
+      if (previous?.status === 'Lukket') throw new Error('Prosjektavviket er allerede lukket. Åpne den lagrede saken før du endrer.');
+      snapshot.project = { ...snapshot.project, projectDeviations: previous ? entries.map(row => row.id === entry.id ? { ...row, ...entry, photos: row.photos || [] } : row) : [entry, ...entries] };
+      latestStateRef.current = snapshot;
+      setProject(snapshot.project);
+      saveLocalDraftNow(snapshot);
+      if (!projectId) return { ...entry, localOnly: true };
+      if (cloudAutoSaveTimerRef.current) window.clearTimeout(cloudAutoSaveTimerRef.current);
+      await autoSaveProjectToCloud(snapshot);
+      const result = await supabase.from('projects').select('id,data').eq('id', projectId).maybeSingle();
+      if (result.error) throw result.error;
+      const saved = result.data?.data?.project?.projectDeviations?.find(row => row.id === entry.id);
+      if (!saved || !saved.ks_deviation_id && ['title','description','action','responsible','responsible_id','dueDate','immediate_action','type','severity','affectsWarranty','includeInReport'].some(field => (saved[field] || '') !== (entry[field] || ''))) throw new Error('Prosjektavviket kunne ikke bekreftes lagret på server.');
+      return saved;
+    };
+    const openCreatedProjectDeviation = async (row) => {
+      const snapshot = { ...latestStateRef.current, project: projectAfterDeviation(latestStateRef.current.project, row) };
+      latestStateRef.current = snapshot;
+      setProject(snapshot.project);
+      resetProjectDirty(snapshot);
+      publishDeviationChange(row);
+      return openKshmsDeviation(row.id);
     };
     (0, import_react.useEffect)(() => {
       const snapshot = buildProjectSnapshot();
@@ -6773,6 +6802,12 @@ ${appLink}`;
             checklist,
             activeChecklistTemplate,
             uploadImages,
+            projectId,
+            userId: authUser?.id,
+            kshmsContext: kshmsContext?.enabled ? kshmsContext : null,
+            onSaveProjectDeviation: saveProjectDeviation,
+            onCreatedKshms: openCreatedProjectDeviation,
+            readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
             onLinkKshms: kshmsContext?.enabled && !isProjectLocked && !isReadOnly && !isProjectSupportReadOnly ? linkKshmsDeviation : null,
             onOpenKshms: kshmsContext?.enabled ? openKshmsDeviation : null,
             onGoToChecklistPoint: (point) => {
@@ -7229,7 +7264,7 @@ ${appLink}`;
         padding: "0 18px",
         flexWrap: "wrap"
       }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "button",
           {
             type: "button",
@@ -7237,24 +7272,17 @@ ${appLink}`;
             disabled: !previousTab,
             onClick: () => previousTab && goToTab(previousTab[0]),
             style: { flex: "1 1 150px" },
-            children: [
-              "\u2190 Forrige",
-              previousTab ? `: ${previousTab[1]}` : ""
-            ]
+            children: previousTab ? `← Forrige: ${previousTab[1]}` : "← Forrige"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "button",
           {
             type: "button",
             onClick: () => nextTab && goToTab(nextTab[0]),
             disabled: !nextTab,
             style: { flex: "1 1 150px" },
-            children: [
-              "Neste",
-              nextTab ? `: ${nextTab[1]}` : "",
-              " \u2192"
-            ]
+            children: nextTab ? `Neste: ${nextTab[1]} →` : "Neste →"
           }
         )
       ] })
@@ -7447,6 +7475,7 @@ ${appLink}`;
     Select,
     Input,
     Textarea,
+    ProjectDeviationCreator,
     Plus: import_lucide_react.Plus
   });
 

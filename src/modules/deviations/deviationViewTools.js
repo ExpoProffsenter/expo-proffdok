@@ -9,9 +9,10 @@ export function createDeviationCenter({
   Select,
   Input,
   Textarea,
+  ProjectDeviationCreator,
   Plus
 }) {
-  function DeviationCenter({ project, setProject, checklist = {}, activeChecklistTemplate = [], uploadImages = null, onGoToChecklistPoint = null, onPrepareChatDraft = null, onLinkKshms = null, onOpenKshms = null }) {
+  function DeviationCenter({ project, setProject, checklist = {}, activeChecklistTemplate = [], uploadImages = null, onGoToChecklistPoint = null, onPrepareChatDraft = null, onLinkKshms = null, onOpenKshms = null, projectId = null, userId = null, kshmsContext = null, onSaveProjectDeviation = null, onCreatedKshms = null, readOnly = false }) {
     const projectDeviations = Array.isArray(project?.projectDeviations) ? project.projectDeviations : [];
     const checklistDeviationRows = (activeChecklistTemplate || []).flatMap((group) => (group.items || []).map((item) => {
       const value = checklist?.[group.category]?.[item] || {};
@@ -38,34 +39,6 @@ export function createDeviationCenter({
         ...project,
         projectDeviations: projectDeviations.map((entry) => entry.id === id ? { ...entry, ...patch } : entry)
       });
-    };
-    const addProjectDeviation = () => {
-      const requestedTitle = window.prompt("Kort tittel på avviket:", "");
-      if (requestedTitle === null) return;
-      const title = requestedTitle.trim();
-      if (!title) {
-        window.alert("Skriv en kort tittel før avviket opprettes.");
-        return;
-      }
-      const next = {
-        id: uid(),
-        type: "HMS",
-        severity: "Middels",
-        status: "Åpent",
-        title,
-        description: "",
-        action: "",
-        responsible: "",
-        dueDate: "",
-        affectsWarranty: false,
-        includeInReport: false,
-        photos: [],
-        createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-        closedAt: "",
-        closedBy: "",
-        closeComment: ""
-      };
-      setProject({ ...project, projectDeviations: [next, ...projectDeviations] });
     };
     const removeProjectDeviation = (id) => {
       if (projectDeviations.find(entry => entry.id === id)?.ks_deviation_id) return;
@@ -104,7 +77,7 @@ export function createDeviationCenter({
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Bruk sjekkpunktavvik for konkrete kontrollpunkter, HMS-avvik for forhold knyttet til sikkerhet, helse og arbeidsmiljø, og Annet for øvrige prosjektavvik. Avvik vises ikke i kundeportalen. Sjekkpunktavvik blir alltid med i sluttrapporten. HMS-/prosjektavvik tas kun med hvis du aktivt velger «Ta med i sluttrapport». Bruk eventuelt Klargjør i chat for å lage et chatutkast dersom noe skal kommuniseres videre." }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: addProjectDeviation, children: "+ Nytt HMS/prosjektavvik" })
+        ProjectDeviationCreator && (0, import_jsx_runtime.jsx)(ProjectDeviationCreator, { uid, project, projectId, userId, context: kshmsContext, onSave: onSaveProjectDeviation, onCreatedKshms, onOpenKshms, disabled: readOnly })
       ] }),
       checklistDeviationRows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "item", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "Sjekkpunktavvik" }),
@@ -139,7 +112,7 @@ export function createDeviationCenter({
             (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Avviket er koblet til KS/HMS. Endringer og lagret lukking styres der. Prosjektets øvrige avvik følger dagens flyt." }),
             isClosed && (0, import_jsx_runtime.jsx)("p", { children: entry.closeComment }),
             onOpenKshms && (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => onOpenKshms(entry.ks_deviation_id), children: "Åpne i KS/HMS" })
-          ] }, entry.id);
+          ], "data-project-deviation-id": entry.id, tabIndex: -1 }, entry.id);
           const missingSummary = !String(entry.title || "").trim() && !String(entry.description || "").trim();
           return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `checklistPoint checklistPoint-${isClosed ? "done" : "avvik"}`, children: [
             missingSummary && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", style: { fontWeight: 700 }, children: "⚠️ Dette eldre avviket mangler tittel og beskrivelse. Fyll inn hva avviket gjelder, eller fjern det hvis det ble opprettet ved en feil." }),
@@ -176,12 +149,12 @@ export function createDeviationCenter({
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "10px" }, children: [
               !isClosed && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", onClick: () => closeProjectDeviation(entry), children: "✅ Lukk avvik" }),
-              !isClosed && onLinkKshms && (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => onLinkKshms({ source_kind: "project", source_key: entry.id, title: entry.title, event: entry.description, category: ["HMS", "SHA"].includes(entry.type) ? "hms" : "quality" }), children: "Koble til KS/HMS" }),
+              !isClosed && onLinkKshms && (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => onLinkKshms({ source_kind: "project", source_key: entry.id, title: entry.title, event: entry.description, due_on: entry.dueDate, category: ["HMS", "SHA"].includes(entry.type) ? "hms" : "quality" }), children: "Koble til KS/HMS" }),
               isClosed && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => reopenProjectDeviation(entry), children: "Åpne igjen" }),
               onPrepareChatDraft && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => onPrepareChatDraft({ ...entry, source: "project" }), children: "Klargjør i chat" }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: () => removeProjectDeviation(entry.id), children: "Fjern" })
             ] })
-          ] }, entry.id);
+          ], "data-project-deviation-id": entry.id, tabIndex: -1 }, entry.id);
         })
       ] })
     ] });

@@ -262,3 +262,8 @@ Sluttbuild/CI og deployment verifiseres etter publisering. Kildegrunnlag for pg_
 - Full-app/visuell nettleserkontroll gjenstår. Cloud Browser mistet exec-server-forbindelsen (environment_offline). Uautentisert web-oppslag kunne ikke hente siden. Vercels fetch-verktøy ble avvist av automatisk godkjenningskontroll fordi det kan opprette autentiseringsomgåelse/share-lenke, som ikke var autorisert. Ingen tilgangslenke eller bypass ble opprettet. Deployment/alias/bygg er verifisert via autorisert Vercel-API; det er ikke bevis på innlogget skjermflyt.
 
 Ingen ny TEST OK er gitt for A2. Følg USER_TEST.md; e-post må konfigureres sikkert før faktisk mottak kan prøves. Denne kontrollregistreringen endrer bare dokumentasjon; kodehead over identifiserer den testede funksjonen.
+
+
+## Avviksdialog – 7. oktober, ny brukerfeil
+
+Se AVVIK_DIALOG_20261007.md. removeChild er gjenskapt med faktisk React DOM-renderer/adapter og løst i samme prøve. Utvidede avvik-/navigasjonschecker tester konkret kilde/readback/ansvarlig, gamle bilder og andre prosjektfelt. Full Sandbox build og ny Preview-prøve dokumenteres i rapporten før ferdigstatus. Tidligere 73 SQL-kontroller gjentas ikke for denne endringen uten ny grunn.

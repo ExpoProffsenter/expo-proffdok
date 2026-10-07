@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { deviationForm,validateDeviation,saveDeviation,storeDeviationDraft,readDeviationDraft,deviationDraftKey,projectAfterDeviation,checklistAfterDeviation,readDeviationLink,deviationFileType } from '../src/modules/kshms/kshmsDeviations.mjs';
 import { createAssignmentMailer,assignmentEmail } from '../supabase/functions/_shared/kshms-assignment-mailer.mjs';
 import { createDeviationCenter } from '../src/modules/deviations/deviationViewTools.js';
+import { createProjectDeviation,newProjectDeviation,projectDeviationDraftKey,readProjectDeviationDraft } from '../src/modules/deviations/projectDeviationCreate.mjs';
 
 const caseId='11111111-1111-4111-8111-111111111111',companyId='22222222-2222-4222-8222-222222222222',eli='eli';
 const open={id:caseId,company_id:companyId,responsible_id:eli,revision:1,status:'open',title:'Trond → Eli',event:'A relevant actual incident',due_on:'2026-10-10',responsible_identity:{name:'Eli'},source_kind:'company'};
@@ -27,6 +28,39 @@ const checklist={A:{B:{status:'Avvik',comment:'Keep own comment',photos:[1]},C:{
 const after=checklistAfterDeviation(checklist,{...closed,source_kind:'checklist',source_group:'A',source_item:'B'});assert.equal(after.A.B.status,'Lukket avvik');assert.equal(after.A.B.comment,'Keep own comment');assert.equal(after.A.C,checklist.A.C);assert.equal(checklist.A.B.status,'Avvik');
 assert.equal(readDeviationLink('?kshmsDeviation='+caseId+'&kshmsCompany='+companyId,companyId).matchingCompany,true);assert.equal(readDeviationLink('?kshmsDeviation='+caseId+'&kshmsCompany='+companyId,'other').matchingCompany,false);assert.equal(readDeviationLink('?kshmsDeviation=../../other',companyId),null);
 assert.equal(deviationFileType({name:'safe.pdf',type:'',size:10}),'application/pdf');assert.throws(()=>deviationFileType({name:'bad.html',type:'text/html',size:10}));assert.throws(()=>deviationFileType({name:'big.pdf',type:'application/pdf',size:10485761}));
+
+// New project dialog: verify the source before linking; retry uses the same
+// source/request IDs and only the server-confirmed recipient opens the case.
+const createdEntry={...newProjectDeviation('project-source'),title:'Actual test incident',description:'Actual test incident with enough detail',responsible:'Eli',responsible_id:eli,dueDate:'2026-10-10',immediate_action:'Secured the area'};
+const createContext={enabled:true,company_id:companyId,user_id:'trond'};
+for (const failure of ['source','read','recipient','foreign-source','late','']) {
+ const order=[];let active=true;
+ const attempt=createProjectDeviation({entry:createdEntry,requestId:'stable-project-request',projectId:'project-id',context:createContext,isCurrent:()=>active,
+  saveProject:async entry=>{order.push('source');if(failure==='source')throw new Error('not saved');if(failure==='late')active=false;return entry;},
+  rpc:async(name,args)=>{order.push(name);assert.equal(args.p_company_id,companyId);const saved={...open,title:createdEntry.title,event:createdEntry.description,immediate_action:createdEntry.immediate_action,project_id:'project-id',source_kind:'project',source_key:createdEntry.id};
+   if(name==='kshms_deviation_command'){assert.equal(args.p_payload.request_id,'stable-project-request');assert.equal(args.p_payload.source_key,createdEntry.id);assert.equal(args.p_payload.responsible_id,eli);return saved;}
+   if(failure==='read')throw new Error('unconfirmed');return {case:{...saved,...(failure==='recipient'?{responsible_id:'trond'}:failure==='foreign-source'?{source_key:'other'}:{})},events:[]};}});
+ if(['source','read','recipient','foreign-source'].includes(failure))await assert.rejects(attempt);else assert.equal((await attempt)?.case?.responsible_id,failure==='late'?undefined:eli);
+ assert.equal(order[0],'source');assert.equal(order.length,failure==='source'||failure==='late'?1:3);
+}
+let legacyRpc=0;const legacyCreated=await createProjectDeviation({entry:createdEntry,context:null,saveProject:async entry=>entry,rpc:()=>legacyRpc++});assert.equal(legacyCreated.case,null);assert.equal(legacyRpc,0);
+let invalidSourceSaved=false;await assert.rejects(createProjectDeviation({entry:{...createdEntry,responsible_id:''},context:createContext,saveProject:()=>invalidSourceSaved=true}));assert.equal(invalidSourceSaved,false);
+const projectKey=projectDeviationDraftKey('trond',companyId,'project-id');memory.set(projectKey,JSON.stringify({entry:createdEntry,requestId:'stable-project-request',savedAt:Date.now()}));
+assert.equal(readProjectDeviationDraft(storage,projectKey).entry.id,createdEntry.id);assert.equal(readProjectDeviationDraft(storage,projectDeviationDraftKey('eli',companyId,'project-id')),null);assert.equal(readProjectDeviationDraft(storage,projectDeviationDraftKey('trond',companyId,'other-project')),null);
+
+// Exercise the actual integration callback, including server readback failure,
+// source retries, photos and unrelated project/checklist fields.
+const mainSource=fs.readFileSync('src/main.jsx','utf8');
+const sourceSaveCode=mainSource.slice(mainSource.indexOf('    const saveProjectDeviation = async'),mainSource.indexOf('    const openCreatedProjectDeviation = async'));
+for(const mode of ['normal','unconfirmed','linked','closed','photos']) {
+ const previous=mode==='linked'?{...createdEntry,ks_deviation_id:caseId}:mode==='closed'?{...createdEntry,status:'Lukket'}:mode==='photos'?{...createdEntry,photos:[{id:'keep-photo'}]}:null;
+ const before={project:{projectName:'Keep project',projectDeviations:[...(previous?[previous]:[]),{id:'other',description:'Keep other case',photos:[1]}]},checklist:{A:{B:{comment:'Keep comment',photos:[2]}}},overtagelse:{signKunde:'Keep signature'}};
+ let persisted=structuredClone(before),calls=0;const latest={current:structuredClone(before)};
+ const invoke=new Function('bindings',`const {authUser,isProjectLocked,isReadOnly,isProjectSupportReadOnly,buildProjectSnapshot,latestStateRef,setProject,saveLocalDraftNow,projectId,cloudAutoSaveTimerRef,autoSaveProjectToCloud,supabase,window}=bindings;${sourceSaveCode};return saveProjectDeviation;`)({authUser:{id:'trond'},isProjectLocked:false,isReadOnly:false,isProjectSupportReadOnly:false,buildProjectSnapshot:()=>structuredClone(before),latestStateRef:latest,setProject(){},saveLocalDraftNow(){},projectId:'project-id',cloudAutoSaveTimerRef:{current:null},window:{clearTimeout(){}},autoSaveProjectToCloud:async snapshot=>{calls++;if(mode!=='unconfirmed')persisted=structuredClone(snapshot);},supabase:{from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{id:'project-id',data:persisted},error:null})})})})}});
+ if(mode==='unconfirmed'||mode==='closed')await assert.rejects(invoke(createdEntry));else {const saved=await invoke(createdEntry);assert.equal(saved.id,createdEntry.id);if(mode==='photos')assert.deepEqual(saved.photos,previous.photos);}
+ if(mode==='linked'||mode==='closed')assert.equal(calls,0);
+ assert.deepEqual(persisted.checklist,before.checklist);assert.deepEqual(persisted.overtagelse,before.overtagelse);assert.deepEqual(persisted.project.projectDeviations.find(row=>row.id==='other'),before.project.projectDeviations.find(row=>row.id==='other'));
+}
 
 // Actual task effect: out-of-order replies, offline retention, cleanup.
 const taskSource=fs.readFileSync('src/modules/kshms/KshmsTasks.jsx','utf8');const taskBody=taskSource.slice(taskSource.indexOf('export default function')).replace('export default ','').split(' if(!tasks?.count')[0]+'\n}';

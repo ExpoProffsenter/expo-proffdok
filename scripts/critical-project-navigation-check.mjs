@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import * as jsxRuntime from "react/jsx-runtime";
 
 const failures = [];
 const requireCheck = (condition, message) => {
@@ -13,6 +14,21 @@ const index = fs.readFileSync("index.html", "utf8");
 const workflowUx = fs.readFileSync("src/modules/project/projectWorkflowUx.js", "utf8");
 const overviewTools = fs.readFileSync("src/modules/project/projectOverviewTools.js", "utf8");
 const main = fs.readFileSync("src/main.jsx", "utf8");
+// User-reported removeChild crash, 7 Oct 2026: the legacy workflow adapter
+// replaces button.textContent. React must own one host text value, not several
+// conditional Text fibers which it later tries to remove when opening KS/HMS.
+const bottomStart = main.indexOf('(0, import_jsx_runtime.jsxs)("div", { className: "bottomPrevNext"');
+const bottomEnd = main.indexOf('\n    ] });', bottomStart);
+requireCheck(bottomStart >= 0 && bottomEnd > bottomStart, 'Fant ikke faktisk Forrige/Neste-renderer for krasjkontroll.');
+if (bottomStart >= 0 && bottomEnd > bottomStart) {
+  const renderBottom = new Function('import_jsx_runtime', 'previousTab', 'nextTab', 'goToTab', `return ${main.slice(bottomStart, bottomEnd)}`);
+  for (const [previous, next] of [[['sjekklister', 'Sjekklister'], ['chat', 'Chat (2 ulest)']], [null, null]]) {
+    const rendered = renderBottom(jsxRuntime, previous, next, () => {});
+    requireCheck(rendered.props.children.every(button => typeof button.props.children === 'string'), 'Forrige/Neste bruker betingede tekstnoder som kan gi removeChild-krasj ved KS/HMS-overgangen.');
+    requireCheck(rendered.props.children[0].props.children === (previous ? `← Forrige: ${previous[1]}` : '← Forrige'), 'Forrige mistet faktisk prosjektnavn/etikett.');
+    requireCheck(rendered.props.children[1].props.children === (next ? `Neste: ${next[1]} →` : 'Neste →'), 'Neste mistet faktisk prosjektnavn/etikett.');
+  }
+}
 const { resolveProjectFlowNeighbors } = await import(
   "../src/modules/project/projectWorkflowNeighbors.mjs"
 );
