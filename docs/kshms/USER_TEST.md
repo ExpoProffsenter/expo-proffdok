@@ -1,3 +1,19 @@
+# Neste korte Preview-prøve – SJA-varsel, forslag og prosjektkobling
+
+Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
+
+1. Åpne en testordre eller et testprosjekt. I **Prosjektoversikt / Ordreoversikt**, trykk **Åpne SJA → Ny SJA → Signer SJA** mens feltene er tomme. Et tydelig varsel skal liste det som mangler, også egen bekreftelse. Trykk et feltnavn: du skal havne i riktig felt.
+2. Gi jobben navnet **TEST – prosjekt-SJA**. Velg et forslag i et tekstfelt, rediger det og trykk **Lagre utkast → Lukk**. Åpne prosjektet igjen og trykk **Åpne SJA**: analysen og prosjektkoblingen skal stå der. Nye SJA-er starter fortsatt med tomme svar.
+3. Fyll feltene merket **\***, velg deg selv som **Ansvarlig prosjektleder**, bekreft egen gjennomgang og trykk **Signer SJA**. Åpne igjen fra prosjektet: navn/tidspunkt skal vises, og teksten skal være låst. Ordre / prosjektreferanse, rutiner og deltakerens firma er valgfrie.
+
+Tidligere selvstendige SJA-er blir stående i KS/HMS og flyttes ikke automatisk. Inngangen vises bare med personlig KS/HMS-tilgang. Prosjektet må være lagret og tilgjengelig; en valgt leder trenger prosjekt- og KS/HMS-tilgang.
+
+Utviklerkontroller: full critical QA/build, begge faktiske React/DOM-scenarioer og 60 rollback SQL-kontroller PASS. Publisert READY på samme adresse, funksjonskode `06a5abbed3ed6a921265c96468f1253d278ca5ee`. Eksisterende signert analyse bevart. Dette er ikke ny innlogget nettleser-/mobil-PASS eller Kenneths TEST OK. Testbevis i [SJA_UX_PROJECT_20261008.md](SJA_UX_PROJECT_20261008.md).
+
+---
+
+# Historikk – forrige SJA-leveranse og godkjente delprøver
+
 # Neste korte Preview-prøve – bare SJA
 
 Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe

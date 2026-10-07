@@ -1,3 +1,9 @@
+## SJA-oppfølging 8. oktober 2026 – levert på samme Preview
+
+Kenneths nye scope er levert: samlet mangelliste/fokus ved signering, forslag i alle SJA-tekstfelt og prosjektinngang med faktisk prosjektkobling og dobbel tilgangskontroll. Full critical/build, begge React-scenarioer og 60 rollback SQL-kontroller PASS. Ingen SJA-TEST OK mottatt. Kort brukerprøve først i USER_TEST.md; testbevis i SJA_UX_PROJECT_20261008.md. Main/Production/demo er urørt. Vernerunder/5×5 risiko er videre utførelsesscope, vedlegg/PDF og separat HR består.
+
+---
+
 # KS/HMS – status, krav, gap og leveranseplan
 
 **Start ved gjenopptakelse:** [CONTINUITY.md](CONTINUITY.md) samler gjeldende beslutninger, original-PDF-referanser, vedtatt kapittelinndeling og neste ufullførte oppgave. Eldre baseline/tabeller nedenfor må leses sammen med siste A2-status.

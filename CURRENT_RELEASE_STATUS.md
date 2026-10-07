@@ -1,3 +1,15 @@
+# Gjeldende KS/HMS – SJA-UX og prosjektkobling READY 8. oktober 2026
+
+Miljømål BEGGE, samme feature/Sandbox Preview. Funksjonskode `06a5abbed3ed6a921265c96468f1253d278ca5ee` er READY på `dpl_DPUuLEqTcrN2mFr3HN5nrE8D3u4r`, Core safety + critical build `113042525234` success, og branch-binding sandbox er kontrollert. SJA har samlet mangelliste ved signering, forslag i alle tekstfelt og Prosjektoversikt/Ordreoversikt → Åpne SJA med faktisk lagret prosjekt-ID.
+
+60 rollback SQL-kontroller, begge faktiske React-scenarioer/ProjectSjaEntry og full critical QA/build PASS. Eksisterende signert analyse bevart. Additiv migrasjon `20261007220221_kshms_sja_project_link` bare i Sandbox. Main uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 fortsatt draft. Ingen Production-release eller demo-synk. SJA-brukerprøve/TEST OK gjenstår; meny/sjekklistepopup er tidligere TEST OK.
+
+Testbevis: docs/kshms/SJA_UX_PROJECT_20261008.md. Kort neste prøve: docs/kshms/USER_TEST.md.
+
+---
+
+# Historikk – tidligere publiseringer
+
 # Gjeldende SJA – READY på samme feature/Sandbox Preview (07.10.2026)
 
 Miljømål BEGGE. Meny og sjekklistepopup er begge Kenneths TEST OK 23:02. SJA er bygget med tom jobb, hjelpetekst/forslag, sikker utkastlagring, egen PL-signatur og bevart analyse. 38 faktiske Sandbox SQL-kontroller, React/DOM-scenario og full critical/build PASS. Sandbox-migrasjon 20261007212858_kshms_sja er registrert; ingen Production-migrasjon/main-merge/demo-synk. SJA har egen utestående brukerprøve. Publiseringsbevis er lagret i CONTINUITY.md. Se docs/kshms/SJA_20261007.md.

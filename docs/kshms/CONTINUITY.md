@@ -1,3 +1,21 @@
+# Gjeldende fortsettelsespunkt – SJA-UX og prosjektinngang READY
+
+Oppdatert 8. oktober 2026, Europe/Oslo. Les OVERSIKT.md først. Kenneths nye tilbakemelding 7. oktober ca. 23:50 er håndtert: samlet mangelliste med feltnavn og fokus ved signering, aktive forslag i alle SJA-tekstfelt og inngang fra prosjekt ved KS/HMS-tilgang. Dette er tilbakemelding og ny scope, ikke ny SJA-TEST OK.
+
+Prosjektoversikt / Ordreoversikt → Åpne SJA viser bare analyser med faktisk prosjekt-ID. Nye analyser derfra følger prosjektet etter lagring/signering. Gamle selvstendige analyser og signert innhold flyttes ikke. Lokale prosjektkladder og tidligere KS/HMS-kladd er separate. Server krever KS/HMS-grant, aktivt firma og prosjektadgang; låst prosjekt avviser endringer. Egen PL-signatur og dokumentert medvirkning består.
+
+Funksjonskode `06a5abbed3ed6a921265c96468f1253d278ca5ee`, tree `ce2df79089500734b0770a0938e0f3f0d736a6c3`, er READY på `dpl_DPUuLEqTcrN2mFr3HN5nrE8D3u4r` med samme faste Preview og bekreftet branch-binding `EXPO_BACKEND_TARGET=sandbox`. Core safety + critical build check `113042525234` completed/success. Eksakt lokal/remote tree samsvarer.
+
+Full critical QA/build, faktisk React/DOM-skjema/ProjectSjaEntry, parent-/fanebyttescenario og 60 faktiske SQL-kontroller PASS. Alle syntetiske SQL-rader er rullet tilbake. Eksisterende signerte analyse (1) bevart med identisk kontrollsum. Sandbox-migrasjon `20261007220221_kshms_sja_project_link.sql` er registrert; tidligere SJA-migrasjon `20261007212858` består. Ingen Production-DDL.
+
+Neste handling er den korte brukerprøven først i USER_TEST.md. Ingen ny innlogget nettleser-/mobilprøve hevdes; tidligere verktøyblokkering må ikke gjentas i løkke. SJA-TEST OK er fortsatt ikke mottatt. Meny/sjekklistepopup er allerede TEST OK. Miljømål BEGGE, main fortsatt `155f6c4ac01f126c1db0c65da385cfd9305587d5`; ingen merge/Production-release/demo-synk. Vernerunder, 5×5 risiko, vedlegg/PDF, separat HR og resten av minimumsomfanget består.
+
+Se [SJA_UX_PROJECT_20261008.md](SJA_UX_PROJECT_20261008.md) for scope og testbevis. Ikke bygg denne delen på nytt ved chatbytte.
+
+---
+
+# Historikk – tidligere SJA-status
+
 # Gjeldende fortsettelsespunkt – SJA READY på samme Preview; kort brukerprøve gjenstår
 
 Les OVERSIKT.md først. Kenneths svar 23:02 er lagret: begge delprøver TEST OK, utførelse før HR, bygg før Ringside-pilot, ledere bare tildelte HR-medarbeidere/firmaadmin alle, og tom SJA med hjelp over feltene. Meny/sjekklistepopup skal ikke testes på nytt uten ny feil.
