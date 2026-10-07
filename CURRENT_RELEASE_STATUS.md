@@ -1,5 +1,9 @@
 # Gjeldende Preview-retting – hovedmeny etter generell ordre (07.10.2026)
 
+**TEST OK fra Kenneth 07.10.2026 kl. 22:39 Europe/Oslo for menyrettelsen.** Godkjenningen er registrert mot kontrollert feature-head `2c7c2b5ee68230056e9dd385986a33756a9b2561`, med funksjonskode `9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f`. Menyprøven er ferdig; neste avgrensede brukerprøve gjelder sjekklistepopupens lagring, omlasting og historikk. Godkjenningen gjelder menyprøven; hele KS/HMS og Production krever fortsatt egne avklaringer. Bare disse status-/testnotatene oppdateres. Main/Production/demo er uendret.
+
+Historikk fra publiseringen før TEST OK:
+
 Returfeilen som skrev Prosjektoversikt/Salgsgrunnlag over Reacts globale menynavn er gjenskapt og rettet. Gjeldende React-etikett vinner nå over ordrevisningens gamle DOM-minne. Fast runtime-regresjon, faktisk React-returprøve, eksisterende sjekklistepopupscenario og full Sandbox critical/build PASS. Kodehead 9a8bc9d er READY på dpl_95rV35jiRQTjca3Mik9Yecp8qrYU; fast alias, Sandbox-binding og grønn Core Safety er kontrollert. Se [menyprøven](docs/kshms/MENU_RETURN_20261007.md) og CONTINUITY/USER_TEST. Ny innlogget skjermkontroll ble ikke bekreftet i skynettleseren; Kenneths korte prøve gjenstår. Miljømål BEGGE, først samme feature/Sandbox-Preview. Main/Production/demo er ikke oppdatert.
 
 ---

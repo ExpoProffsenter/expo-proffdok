@@ -1,4 +1,14 @@
-# Gjeldende fortsettelsespunkt – hovedmeny etter ordre, 7. oktober 2026
+# Gjeldende fortsettelsespunkt – meny TEST OK, sjekklistepopup neste
+
+Kenneth meldte **«test ok» 7. oktober 2026 kl. 22:39 Europe/Oslo** etter den korte menyprøven. Dette er godkjenning av kompakt Meny og retur fra generell ordre til Startside. Registrert mot kontrollert feature-head `2c7c2b5ee68230056e9dd385986a33756a9b2561`, funksjonskode `9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f`. Ikke gjenta den beståtte menyprøven uten ny feil. Godkjenningen omfatter ikke hele KS/HMS, popupens lagring/historikk eller Production.
+
+Neste avgrensede handling er den korte sjekklistepopup-prøven øverst i USER_TEST.md: et testpunkt → Lagre → omlasting/gjenåpning → Sjekkliste fullført → Start ny kontroll → bevart historikk med navn/tidspunkt. Utviklerens tidligere innloggede popupprøve, 35 rollback-databasekontroller og React-scenarioer består; ikke bygg funksjonen på nytt eller gjenta SQL-rundene. Miljømål BEGGE, først samme Sandbox Preview. Ingen main-merge, Production-endring eller demo-synk utføres ved registrering av meny-TEST OK. Utviklerens nye skynettleserøkt fikk ingen bekreftet innlogget flate; brukerens TEST OK er eget bevis, ikke en ny utvikler-skjermtest.
+
+Kenneth ba kl. 22:44 Europe/Oslo om nullstilling av skynettleseren. Den støttede REPL-nullstillingen fullførte (`js kernel reset`). Deretter avviste både åpning av ny Preview-fane og gjenkobling til cdp med `native credential state cannot be safely resumed. Start a new browser runtime to continue.` Dette er en verktøyblokkering, ikke påvist botblokkering eller feil i appen. Full restart av nettleserprosessen er ikke eksponert i de tilgjengelige dokumenterte API-ene. Ingen full nettlesernullstilling eller ny skjermtest hevdes som bestått. Ikke gjenta de samme avviste kallene i løkke.
+
+---
+
+# Historikk før meny-TEST OK – hovedmeny etter ordre, 7. oktober 2026
 
 Kenneth har meldt reell regresjon i den globale menyen etter bruk av generell ordre. Den er gjenskapt med hans nøyaktige Prosjektoversikt/Salgsgrunnlag-knapperekke. Årsaken er ordre-adapterens gamle etiketter som overskriver gjenbrukte React-kontroller ved retur, ikke manglende ny menykode. Rettelsen følger den gjeldende React-etiketten på source controls. Scope og før/etter-prøver står i [MENU_RETURN_20261007.md](MENU_RETURN_20261007.md). Miljømål BEGGE, først samme Sandbox Preview. Full critical/build, faktisk React-retur og eksisterende sjekklistepopupscenario PASS. Koden er publisert som 9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f, eksakt lokal/remote tree-kontroll, READY dpl_95rV35jiRQTjca3Mik9Yecp8qrYU, fast alias og Sandbox-binding kontrollert, Core Safety 37682948736 success. Sikker skynettleserinnlogging ga ingen bekreftet innlogget flate; ingen innlogget skjerm-PASS hevdes. Ikke bygg sjekklistefunksjonen på nytt eller gjenta gamle SQL-runder. Production er kontrollert uendret på 155f6c4. Neste handling er Kenneths samme Preview → generell ordre → ← Startside, og kompakt Meny skal bestå. Ingen ny TEST OK eller produksjonsgodkjenning hevdes.
 

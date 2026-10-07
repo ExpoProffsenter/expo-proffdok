@@ -28,7 +28,7 @@ Dette er faktisk React/DOM med syntetisk prosjektoppslag og sjekkliste-RPC. Inge
 
 Kodehead `9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f` er publisert på feat-kshms-foundation. Remote tree `950a4646b284fdec1b9a35413ed9981bd0776a04` er identisk med kontrollert lokal kode. Vercel `dpl_95rV35jiRQTjca3Mik9Yecp8qrYU` er READY, og det faste aliaset er kontrollert mot denne deploymenten. Branchens `EXPO_BACKEND_TARGET=sandbox` er kontrollert. PR Core Safety `37682948736` completed/success. Lokal kodecommit er 8f1a95e på work-kshms-menu-return-20261007; SHA-ene varierer fordi publiseringen bruker samme tree gjennom GitHub-API.
 
-Skynettleseren åpnet nettstedets innloggingsside i en ny økt. Sikker browserAuth-forespørsel returnerte submitted, men en innlogget appside ble ikke bekreftet etter dokumentnavigasjon. Dette er ikke et innlogget PASS eller en konklusjon om årsak til innloggingstilstanden. Ingen ny autentiseringsendring eller lavnivåinnlegging av passord er gjort. Kenneths korte prøve nedenfor gjenstår. Ikke gjenta allerede beståtte kode-/databaseprøver for å kompensere for denne skjermgrensen.
+Skynettleseren åpnet nettstedets innloggingsside i en ny økt. Sikker browserAuth-forespørsel returnerte submitted, men en innlogget appside ble ikke bekreftet etter dokumentnavigasjon. Dette er ikke et innlogget PASS eller en konklusjon om årsak til innloggingstilstanden. Ingen ny autentiseringsendring eller lavnivåinnlegging av passord er gjort. Kenneths korte prøve nedenfor er nå TEST OK, se godkjenningen sist i dokumentet. Ikke gjenta allerede beståtte kode-/databaseprøver for å kompensere for denne skjermgrensen.
 
 ## Kort brukerprøve
 
@@ -36,4 +36,8 @@ Skynettleseren åpnet nettstedets innloggingsside i en ny økt. Sikker browserAu
 2. Åpne generell ordre → Sjekklister, åpne en liste og lukk popupen. Trykk ← Startside.
 3. Meny skal fortsatt vises. Åpne Befaring/Tilbud eller KS/HMS fra Meny. Den gamle knapperekken skal ikke komme tilbake.
 
-Ny bruker-TEST OK og Production-godkjenning er ikke gitt. Ingen main-merge, Production-endring eller demo-synk er utført.
+## Brukerens godkjenning
+
+Kenneth meldte **«test ok» 07.10.2026 kl. 22:39 Europe/Oslo** etter den korte menyprøven. Godkjenningen registreres mot kontrollert feature-head `2c7c2b5ee68230056e9dd385986a33756a9b2561` med funksjonskode `9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f`. Menyprøven ovenfor er ferdig og skal ikke gjentas uten ny feil. Avsnittet om skynettleseren beskriver utviklerens tidligere forsøk; brukerens TEST OK er separat.
+
+Godkjenningen gjelder kompakt hovedmeny og retur fra ordre til Startside. Popupens lagring/historikk, hele KS/HMS og Production krever fortsatt egne avklaringer. Neste korte prøve står øverst i USER_TEST.md. Ingen main-merge, Production-endring eller demo-synk er utført.

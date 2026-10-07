@@ -1,4 +1,18 @@
-# Nåværende korte Preview-prøve – hovedmeny etter generell ordre
+# Nåværende korte Preview-prøve – lagring og historikk i sjekklistepopup
+
+**Menyrettelsen er TEST OK fra Kenneth 07.10.2026 kl. 22:39 Europe/Oslo.** Neste prøve gjelder bare popupens lagring og historikk. Bruk en testordre og et tydelig merket testpunkt.
+
+Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
+
+1. Åpne **generell ordre → Sjekklister → Åpne sjekkliste**. Bruk et testpunkt, sett **Ok** og skriv en testkommentar. Trykk **Lagre**, lukk popupen og oppdater siden. Åpne igjen: svaret og kommentaren skal stå der.
+2. Trykk **Sjekkliste fullført**, deretter **Start ny kontroll**. Den nye kontrollen skal starte uten de gamle svarene.
+3. Åpne den fullførte kontrollen i historikken. Den skal vise navn, tidspunkt og det opprinnelige svaret og kommentaren.
+
+Utviklerens tidligere innloggede desktopprøve av lagring/omlasting/to fullføringer/historikk, 35 rollback-databasekontroller og React-prøver PASS består. Disse kjøres ikke om igjen uten ny feil. TEST OK for denne delen og Production-godkjenning er fortsatt egne, utestående avklaringer.
+
+---
+
+# Godkjent Preview-prøve – hovedmeny etter generell ordre
 
 Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
@@ -6,7 +20,7 @@ Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.a
 2. Åpne en generell ordre → **Sjekklister**. Åpne en liste, lukk popupen og trykk **← Startside**.
 3. **Meny** skal fortsatt vises. Åpne **Befaring/Tilbud** eller **KS/HMS** derfra. Den gamle knapperekken skal ikke komme tilbake.
 
-Utviklerens faktiske React-/adapterprøve gjenskapte feilbildet før retting og passerer etterpå, inkludert ordre → våtrom, faktisk native Startside-/KS-klikk og mobilens etiketter. Eksisterende sjekklistepopup-prøve og full critical/build PASS. Rettelsen er publisert READY på samme adresse, Sandbox-binding og Core Safety er kontrollert. Innlogget skjermkontroll ble ikke bekreftet i den nye skynettleserøkten; derfor gjenstår denne korte brukerprøven. Denne prøven gir ingen automatisk Production-godkjenning.
+**TEST OK fra Kenneth 07.10.2026 kl. 22:39 Europe/Oslo**, registrert mot feature-head `2c7c2b5ee68230056e9dd385986a33756a9b2561` og funksjonskode `9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f`. Ikke gjenta denne prøven uten ny feil. Utviklerens faktiske React-/adapterprøve gjenskapte feilbildet før retting og passerer etterpå, inkludert ordre → våtrom, faktisk native Startside-/KS-klikk og mobilens etiketter. Eksisterende sjekklistepopup-prøve og full critical/build PASS. Rettelsen er publisert READY på samme adresse, Sandbox-binding og Core Safety er kontrollert. Utviklerens innloggede skjermkontroll ble ikke bekreftet i den nye skynettleserøkten; brukerens godkjenning er separat. Denne prøven gir ingen automatisk Production-godkjenning.
 
 ---
 
