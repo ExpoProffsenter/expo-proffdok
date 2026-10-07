@@ -1,6 +1,6 @@
 # Gjeldende Preview-retting – hovedmeny etter generell ordre (07.10.2026)
 
-Returfeilen som skrev Prosjektoversikt/Salgsgrunnlag over Reacts globale menynavn er gjenskapt og rettet. Gjeldende React-etikett vinner nå over ordrevisningens gamle DOM-minne. Fast runtime-regresjon, faktisk React-returprøve, eksisterende sjekklistepopupscenario og full Sandbox critical/build PASS. Se [menyprøven](docs/kshms/MENU_RETURN_20261007.md) og CONTINUITY/USER_TEST. Ny innlogget skjermkontroll følger publisering. Miljømål BEGGE, først samme feature/Sandbox-Preview. Main/Production/demo er ikke oppdatert.
+Returfeilen som skrev Prosjektoversikt/Salgsgrunnlag over Reacts globale menynavn er gjenskapt og rettet. Gjeldende React-etikett vinner nå over ordrevisningens gamle DOM-minne. Fast runtime-regresjon, faktisk React-returprøve, eksisterende sjekklistepopupscenario og full Sandbox critical/build PASS. Kodehead 9a8bc9d er READY på dpl_95rV35jiRQTjca3Mik9Yecp8qrYU; fast alias, Sandbox-binding og grønn Core Safety er kontrollert. Se [menyprøven](docs/kshms/MENU_RETURN_20261007.md) og CONTINUITY/USER_TEST. Ny innlogget skjermkontroll ble ikke bekreftet i skynettleseren; Kenneths korte prøve gjenstår. Miljømål BEGGE, først samme feature/Sandbox-Preview. Main/Production/demo er ikke oppdatert.
 
 ---
 

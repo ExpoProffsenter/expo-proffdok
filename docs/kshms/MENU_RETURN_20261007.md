@@ -22,7 +22,13 @@ Scope: fire menynavn-attributter i main.jsx; gjenoppretting/lagring/lesing av na
 - Eksisterende `project-checklist-workspace-react-check.mjs` PASS: sammenfoldet liste, popup, lagring/gjenåpning, immutable fullføringer, svarmist/gjenforsøk, samtidige lagringer, bevart kladd og avviksoppfølging.
 - Full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS med hele critical-kjeden. Ingen databaseprøver gjentas for en endring uten databaseeffekt.
 
-Dette er faktisk React/DOM med syntetisk prosjektoppslag og sjekkliste-RPC. Ingen ansatt-, ordre- eller sjekklisterad er endret av prøvene. Innlogget skjermkontroll av publisert kode følger etter kodecheckpoint; den skal ikke graderes bestått på forhånd. Fysisk mobil, kamera, PDF/UE og to faktiske samtidige brukerøkter har ikke fått ny PASS.
+Dette er faktisk React/DOM med syntetisk prosjektoppslag og sjekkliste-RPC. Ingen ansatt-, ordre- eller sjekklisterad er endret av prøvene. Fysisk mobil, kamera, PDF/UE og to faktiske samtidige brukerøkter har ikke fått ny PASS.
+
+## Kontrollert publisering og skjermgrense
+
+Kodehead `9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f` er publisert på feat-kshms-foundation. Remote tree `950a4646b284fdec1b9a35413ed9981bd0776a04` er identisk med kontrollert lokal kode. Vercel `dpl_95rV35jiRQTjca3Mik9Yecp8qrYU` er READY, og det faste aliaset er kontrollert mot denne deploymenten. Branchens `EXPO_BACKEND_TARGET=sandbox` er kontrollert. PR Core Safety `37682948736` completed/success. Lokal kodecommit er 8f1a95e på work-kshms-menu-return-20261007; SHA-ene varierer fordi publiseringen bruker samme tree gjennom GitHub-API.
+
+Skynettleseren åpnet nettstedets innloggingsside i en ny økt. Sikker browserAuth-forespørsel returnerte submitted, men en innlogget appside ble ikke bekreftet etter dokumentnavigasjon. Dette er ikke et innlogget PASS eller en konklusjon om årsak til innloggingstilstanden. Ingen ny autentiseringsendring eller lavnivåinnlegging av passord er gjort. Kenneths korte prøve nedenfor gjenstår. Ikke gjenta allerede beståtte kode-/databaseprøver for å kompensere for denne skjermgrensen.
 
 ## Kort brukerprøve
 

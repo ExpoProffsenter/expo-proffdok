@@ -6,7 +6,7 @@ Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.a
 2. Åpne en generell ordre → **Sjekklister**. Åpne en liste, lukk popupen og trykk **← Startside**.
 3. **Meny** skal fortsatt vises. Åpne **Befaring/Tilbud** eller **KS/HMS** derfra. Den gamle knapperekken skal ikke komme tilbake.
 
-Utviklerens faktiske React-/adapterprøve gjenskapte feilbildet før retting og passerer etterpå, inkludert ordre → våtrom, faktisk native Startside-/KS-klikk og mobilens etiketter. Eksisterende sjekklistepopup-prøve og full critical/build PASS. Innlogget kontroll på publisert kode følger etter kodecheckpoint. Denne prøven gir ingen automatisk Production-godkjenning.
+Utviklerens faktiske React-/adapterprøve gjenskapte feilbildet før retting og passerer etterpå, inkludert ordre → våtrom, faktisk native Startside-/KS-klikk og mobilens etiketter. Eksisterende sjekklistepopup-prøve og full critical/build PASS. Rettelsen er publisert READY på samme adresse, Sandbox-binding og Core Safety er kontrollert. Innlogget skjermkontroll ble ikke bekreftet i den nye skynettleserøkten; derfor gjenstår denne korte brukerprøven. Denne prøven gir ingen automatisk Production-godkjenning.
 
 ---
 
