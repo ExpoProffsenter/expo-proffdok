@@ -98,6 +98,7 @@ export function createProjectOverviewTools({
           ["fremdrift", "Fremdrift"],
           ["produkter", "Produkter / FDV"],
           ["bilder", "Bilder"],
+          ["installasjoner", "Fag/utstyr"],
           ["sjekklister", "Sjekklister"],
           ["tilgang", "UE-tilgang"],
           ["rapport", "Sluttdokumentasjon"]

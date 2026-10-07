@@ -307,3 +307,8 @@ Arbeid fra 67efa37616a779559b7004c9f40e8c61df0015c2; appscope er de fire KS/HMS-
 - EXPO_BACKEND_TARGET=sandbox vite build PASS, exit 0; faktisk JSX/CSS kompilerer. git diff --check PASS.
 - Bannerens oppfriskning/retention er uendret. Forklaring/listen er lagt i en foldbar visning, og selve baren har mindre padding/typografi. Faktisk viewporthøyde, mobil og brukerens lukkingsprøve er ikke gradert PASS av kildekode eller build.
 - USER_TEST.md starter med én kort prøve av eksisterende åpne sak og lavere varsel. Ingen ny full skynettleserrunde, databaseprøve eller e-postsending er kjørt. Ingen ny TEST OK/Production-godkjenning.
+
+
+## Sjekklistesentral – 7. oktober 2026
+
+Kenneth TEST OK for popup/direktelukking ca2f er registrert. Ny sentral: permanent critical-kshms-checklists-check PASS; faktiske React-komponenter med avgrenset RPC-stub PASS (builder, fanebytte/kladd, retry, publisering, personlig ugrantet prosjektbruker, fast gammel prosjektkopi, generell ordre Fag/utstyr og Ok/Avvik). Sandbox SQL: 27 kontroller PASS med rollback. Migrasjoner 20261007170928 og 20261007171313 anvendt bare i Sandbox. RPC-privilegier, tom search_path og advisor kontrollert. Den nye handleren bevarer eksisterende avvik, svar/bilder, signaturer og installasjoner. Eksakt scope/bevis/gjenstående begrensninger står i CHECKLIST_CENTRAL_20261007.md; kort brukerprøve står øverst i USER_TEST. Innlogget ny Preview-flyt og ny PDF er ikke gradert PASS. Hele B–E består.

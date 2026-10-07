@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import './deviationDialog.css';
 
 // React owns the complete dialog. Legacy DOM adapters must not move its fields.
-export default function DeviationDialog({ title, context, children, onClose, busy = false }) {
+export default function DeviationDialog({ title, context, children, onClose, busy = false, closeLabel = 'Lukk avviksdialog' }) {
   const titleId = useId();
   const panel = useRef(null);
   const close = useRef(onClose);
@@ -39,7 +39,7 @@ export default function DeviationDialog({ title, context, children, onClose, bus
   return createPortal(<div className="deviation-dialog-backdrop">
     <section className="deviation-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-busy={busy} ref={panel} tabIndex={-1}>
       <header className="deviation-dialog-header"><div><h2 id={titleId}>{title}</h2>{context && <p>{context}</p>}</div>
-        <button type="button" className="secondary deviation-dialog-close" aria-label="Lukk avviksdialog" disabled={busy} onClick={onClose}>×</button>
+        <button type="button" className="secondary deviation-dialog-close" aria-label={closeLabel} disabled={busy} onClick={onClose}>×</button>
       </header>
       <div className="deviation-dialog-body">{children}</div>
     </section>

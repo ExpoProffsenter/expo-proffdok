@@ -26,7 +26,6 @@ const HIDDEN_NAV_LABELS = new Set([
   'Firma',
   'Prosjektering',
   'Overflater og innredning',
-  'Fag/utstyr',
   'Tilbud/kontrakt',
   'Chat',
   'Overtagelse',
@@ -269,7 +268,7 @@ function ensureBadge(simpleOrder) {
   const badge = document.createElement('div');
   badge.id = id;
   badge.setAttribute('role', 'status');
-  badge.innerHTML = '<strong>Enkel ordre</strong><span>Gjenbruker ProffDok-motoren, men uten kundelenke. Fremdrift, FDV, bilder, sjekklister, UE og sluttdokumentasjon er valgfrie arbeidsverktøy.</span>';
+  badge.innerHTML = '<strong>Enkel ordre</strong><span>Gjenbruker ProffDok-motoren, men uten kundelenke. Fremdrift, FDV, bilder, fag/utstyr, sjekklister, UE og sluttdokumentasjon er valgfrie arbeidsverktøy.</span>';
   Object.assign(badge.style, {
     maxWidth: '1180px',
     margin: '0 auto 10px',

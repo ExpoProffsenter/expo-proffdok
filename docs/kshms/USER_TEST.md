@@ -1,4 +1,19 @@
-# Nåværende korte Preview-prøve – popup og direkte lukking
+# Nåværende korte Preview-prøve – Sjekklistesentral
+
+Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
+
+Popup og direkte avvikslukking på ca2f er **TEST OK fra Kenneth**. Neste lille prøve gjelder bare ny sjekklistesentral:
+
+1. Åpne **KS/HMS → Sjekklistesentral → Ny sjekkliste**. Skriv navn, velg fag og legg inn et par sjekkpunkter. Trykk **Lagre og publiser** direkte. Listen skal vises som publisert med versjonsnummer.
+2. Åpne en lagret **generell ordre eller et våtromsprosjekt → Fag/utstyr**. Under **Sjekklister for fag**, velg fag og trykk **Hent sjekkliste**, deretter **Åpne sjekkliste**. Punktene skal vises i Sjekklister. Sett ett punkt til **Ok**, oppdater siden og kontroller at listen og svaret består.
+
+Gi resultatet for denne delen før neste prøve. Deretter kan den andre prosjektvarianten og en egen testbruker uten personlig KS/HMS-grant prøves i en kort separat del. Firmaet må ha aktivert modulen. Den brukeren skal kunne hente publiserte lister og bruke **Avvik → + Nytt HMS/prosjektavvik** som før, mens sentralens utkast/bygging er skjult. Ikke endre eller lukk eksisterende «Test»-avvik.
+
+Utvikler: full critical QA/Sandbox-build, 27 faktiske databasekontroller med rollback og kort React-flyt passerer. Ny faktisk innlogget Preview-prøve, mobil, ny PDF og to faktiske brukerøkter er ikke gradert PASS. Ikke start en stor skynettleserrunde automatisk. Ingen e-post eller Production-endring er utført.
+
+---
+
+# Godkjent delprøve – popup og direkte lukking
 
 Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 

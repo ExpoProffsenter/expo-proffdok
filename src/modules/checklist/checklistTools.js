@@ -317,6 +317,7 @@ export function createChecklistEditor({
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `checklistGroupBadge checklistGroupBadge-${groupTone}`, children: stats.deviations > 0 ? "⚠️ Avvik" : stats.missing === 0 ? "✅ Ferdig" : stats.done > 0 ? "🟡 Pågår" : "⚪ Mangler" })
           ] }),
+          isOpen && group.instructions && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "ks-checklist-instructions", children: group.instructions }),
           isOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistGroupBody", children: group.items.filter((item) => !showOpenDeviationsOnly || checklist?.[group.category]?.[item]?.status === "Avvik").map((item) => {
             const value = checklist[group.category]?.[item] || {};
             const pointTone = value.status === "Avvik" ? "avvik" : value.status === "Lukket avvik" ? "done" : value.status ? "done" : "missing";
@@ -327,6 +328,7 @@ export function createChecklistEditor({
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistHeader", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistPointTitle", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: item }),
+                  pointRequirement.guidance && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "ks-checklist-guidance", children: pointRequirement.guidance }),
                   warrantyPoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "🛡️ Garantipunkt" }),
                   warrantyPoint && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "📷/✍️ Bilde eller kommentar" }),
                   !warrantyPoint && pointRequirement.image_required && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "warrantyPointBadge", children: "📷 Bilde påkrevd" }),
