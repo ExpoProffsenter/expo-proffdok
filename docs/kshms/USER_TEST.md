@@ -1,12 +1,14 @@
-# Nåværende korte Preview-prøve – lukking og kompakt varsel
+# Nåværende korte Preview-prøve – popup og direkte lukking
 
 Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
-1. Oppdater siden og åpne **Åpne avvik** i det lavere toppvarselet. **Vis oppgaver** skal åpne listen og forklaringen; folding og lesing fjerner ikke varselet. Hvis den ulagrede kladden tilbys, velg **Hent avvikskladd**.
-2. I saken: kontroller **Årsak** (minst 5 tegn), **Utførte tiltak / forbedring** og **Egen kontroll av resultatet** (minst 10 tegn i hver). Ved ufullstendig lukkeforsøk skal bare manglende felter markeres og det første få fokus. Utfylt årsak skal bli stående.
-3. Når tiltak og kontroll faktisk er utført: huk av egen kontroll og trykk **Kontroller og lukk avvik**. Vent på **Lukkingen er lagret**; først da skal varselet forsvinne. Gi resultatet for denne delen før neste test.
+1. Oppdater siden. Åpne ditt avvik via **Åpne avvik** eller **KS/HMS → Avvikssentral**. Saken skal åpne i en popup. Hvis en lokal kladd for samme sak finnes, skal teksten hentes tilbake.
+2. Fyll **Årsak**, **Utførte tiltak / forbedring** og **Egen kontroll av resultatet**. Kort tekst som **OK** godtas. Når tiltak og kontroll faktisk er utført, huk av egen kontroll.
+3. Trykk **Lagre og lukk avvik** direkte. Popupen skal lukkes etter bekreftet lagring, og ansvarligvarselet skal oppdateres. Ved lagringsfeil skal popup og tekst bli stående. Gi resultatet for denne lille delen før neste prøve.
 
-Målrettede utviklerkontroller og Sandbox-build passerer. Faktisk visuell Preview-prøve er brukerens neste del; mobilhøyde er ikke gradert PASS uten prøven. Ingen ny full skynettleserrunde, utsending eller Production-endring er utført.
+«Lagre uten å lukke» er tilgjengelig for pågående arbeid. Den skal bevare teksten og plasseringen i popupen. Den er ikke et ekstra påkrevd steg før lukking.
+
+Utviklerens korte React-/handlerprøver og 14 faktiske Sandbox-kontroller passerer; full critical QA og Sandbox-build passerer. Den innloggede visuelle prøven er brukerens neste del. Mobil, to brukere og reelt e-postmottak er fortsatt uprøvd. Ingen full skynettleserrunde, e-postutsending eller Production-endring er utført.
 
 ---
 

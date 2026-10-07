@@ -13,10 +13,10 @@ export default function DeviationDialog({ title, context, children, onClose, bus
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const dialog = panel.current;
-    const focusable = () => [...dialog.querySelectorAll('input,select,textarea,button,a[href],[tabindex="0"]')]
-      .filter(node => !node.disabled && node.getClientRects().length);
-    const firstField = dialog.querySelector('input:not([type="checkbox"]),textarea,select');
-    (firstField || dialog).focus();
+    const focusable = () => [...dialog.querySelectorAll('input,select,textarea,button,a[href],summary,[tabindex="0"]')]
+      .filter(node => !node.matches(':disabled') && node.getClientRects().length);
+    const firstField = focusable().find(node => node.matches('input:not([type="checkbox"]),textarea,select'));
+    (firstField || dialog).focus({ preventScroll: true });
     const keydown = event => {
       if (event.key === 'Escape') { event.preventDefault(); close.current?.(); }
       if (event.key !== 'Tab') return;
@@ -46,7 +46,7 @@ export default function DeviationDialog({ title, context, children, onClose, bus
   </div>, document.body);
 }
 
-export function DeviationEditorSurface({ modal, editorRef, children, onClose, busy, ...props }) {
-  if (modal) return <DeviationDialog title="Registrer avvik" context="KS/HMS · Ansvar og oppfølging" onClose={onClose} busy={busy}>{children}</DeviationDialog>;
+export function DeviationEditorSurface({ modal, editorRef, children, onClose, busy, title = 'Registrer avvik', context = 'KS/HMS · Ansvar og oppfølging', ...props }) {
+  if (modal) return <DeviationDialog title={title} context={context} onClose={onClose} busy={busy}>{children}</DeviationDialog>;
   return <article {...props} ref={editorRef}>{children}</article>;
 }

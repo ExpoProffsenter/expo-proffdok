@@ -6,19 +6,19 @@ export function deviationForm(row={}) {
  return Object.fromEntries(fields.map(key=>[key,row[key]??({category:'hms',status:'open'}[key]||'')]));
 }
 export const DEVIATION_CLOSURE_REQUIREMENTS=[
- {key:'cause',label:'Årsak',minLength:5},
- {key:'improvement_action',label:'Utførte tiltak / forbedring',minLength:10},
- {key:'control_note',label:'Egen kontroll av resultatet',minLength:10},
+ {key:'cause',label:'Årsak',minLength:1},
+ {key:'improvement_action',label:'Utførte tiltak / forbedring',minLength:1},
+ {key:'control_note',label:'Egen kontroll av resultatet',minLength:1},
 ];
 export function deviationClosureIssues(form={}) {
  return DEVIATION_CLOSURE_REQUIREMENTS.filter(({key,minLength})=>String(form[key]||'').trim().length<minLength)
-  .map(item=>({...item,message:`Skriv ${item.minLength===5?'årsaken':item.key==='improvement_action'?'hvilke tiltak du har utført':'hva du har kontrollert'} med minst ${item.minLength} tegn.`}));
+  .map(item=>({...item,message:`Fyll inn ${item.label.toLocaleLowerCase('nb-NO')}. Kort tekst, for eksempel «OK», godtas.`}));
 }
 export function validateDeviation(form,{closing=false}={}) {
  if(form.title.trim().length<3||form.title.trim().length>200)return 'Skriv en tittel med 3–200 tegn.';
  if(form.event.trim().length<10)return 'Beskriv hendelsen med minst 10 tegn.';
  if(!Object.hasOwn(DEVIATION_CATEGORY,form.category)||!form.responsible_id||!/^\d{4}-\d{2}-\d{2}$/.test(form.due_on))return 'Velg type, ansvarlig og frist.';
- if(closing){const missing=deviationClosureIssues(form);if(missing.length)return `Før lukking mangler: ${missing.map(({label,minLength})=>`${label} (minst ${minLength} tegn)`).join('; ')}.`;}
+ if(closing){const missing=deviationClosureIssues(form);if(missing.length)return `Før lukking mangler: ${missing.map(({label})=>label).join('; ')}.`;}
  return '';
 }
 export function projectDeviationProjection(row) {
@@ -53,6 +53,14 @@ export async function saveDeviation({rpc,companyId,userId,action,payload,isCurre
  const row=detail?.case;
  if(row?.id!==result.id||row.company_id!==companyId||row.revision<result.revision)throw new Error('Kunne ikke kontrollere lagret sak. Kladden er beholdt.');
  if(action==='close'&&(row.status!=='closed'||row.closed_by!==userId||!row.closed_at))throw new Error('Lukkingen kunne ikke bekreftes. Kladden er beholdt. Oppdater saken før du prøver igjen.');
+ if(action==='save'||action==='close'){
+  const submitted=['title','event','category','responsible_id','due_on','cause','immediate_action','improvement_action','follow_up','control_note','include_in_report'];
+  for(const key of submitted){
+   if(!Object.hasOwn(payload,key)||payload[key]===undefined)continue;
+   const value=['title','event'].includes(key)||key==='control_note'&&action==='close'?String(payload[key]??'').trim():payload[key];
+   if(String(row[key]??'')!==String(value??''))throw new Error('Lagret tekst samsvarer ikke med det du skrev. Kladden er beholdt. Sammenlign med lagret sak før du prøver igjen.');
+  }
+ }
  return detail;
 }
 export const deviationDraftKey=(userId,companyId)=>`expo:kshms:deviation-draft:v1:${userId}:${companyId}`;

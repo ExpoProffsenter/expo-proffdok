@@ -1,5 +1,15 @@
 # Avviksdialog og removeChild-feil – 7. oktober 2026
 
+## Nyere rettelse – kontrolltekst og eksisterende avvik i popup
+
+Gjeldende brukerønske 7. oktober: tekst i Egen kontroll forsvinner etter «Lagre endringer», lagring sender siden oppover, «OK» bør godtas, og eksisterende avvik ønskes i en popup som lukkes ved lagret lukking. Den påviste datafeilen er at save satte control_note til tom streng. Den målrettede serverprøven feiler med «Save erased the control note» før rettelsen og passerer 14 kontroller etter migrasjon 20261007163024 i Sandbox. All prøve-data rulles tilbake; ingen ekte prosjektavvik er endret.
+
+Alle KS/HMS-saker bruker nå popupen. «Lagre og lukk avvik» lagrer hele skjemaet og lukker etter kontrollert readback; feil beholder popup/tekst/kladd. «Lagre uten å lukke» bevarer kontrollteksten og samme scroll. Kladd hentes ved ny åpning av samme sak. Readback som har mistet innsendt tekst er ikke en vellykket lagring. Ikke-blank årsak/tiltak/egen kontroll, inkludert «OK», godtas i klient/server; egen kontroll og bare ansvarligs lukking er fortsatt påkrevd. Tidligere 5/10/10-grenser og fokus/scroll etter save er erstattet.
+
+Full critical QA/Sandbox-build og permanent handlercheck PASS. Kort faktisk React/jsdom-prøve med RPC-stub PASS for portal, åpning/gjenåpning, tekst, samme popup/scroll ved save, feilbevaring og lukking etter bekreftet close. Innlogget visuell brukerprøve gjenstår på fast Preview. E-postworker disabled; anon-EXECUTE sperret, tilgangskontroller bevart. Ingen main-/demo-merge eller Production-endring. Tidligere skjermbevis og roadmapen beholdes; se CONTINUITY.md og den korte aktuelle USER_TEST.md.
+
+## Tidligere dialog- og removeChild-runde – kontrollhistorikk
+
 Miljømål: **BEGGE**. Arbeid fra kontrollert feature-HEAD 794a9e5f4e875f4212ad4123c46d518446e87dce. Main 155f6c4ac01f126c1db0c65da385cfd9305587d5. Ingen merge eller Production-/demo-oppdatering i denne runden.
 
 ## Brukerens problem

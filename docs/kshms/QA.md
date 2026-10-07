@@ -1,5 +1,21 @@
 # KS/HMS QA – trinn A
 
+## Gjeldende liten prøve – popup og tekst som beholdes, 7. oktober 2026
+
+Denne statusen erstatter tidligere minimumsgrenser 5/10/10. Brukerens årsak/tiltak/egen kontroll kan være «OK». Rotfeilen er bevist i faktisk Sandbox-RPC: vanlig save tømte control_note. Migrasjon 20261007163024 er anvendt bare i Sandbox og bevarer teksten; lukking validerer ikke-blanke felt, ansvarlig og egen kontroll som før.
+
+| Kontroll | Resultat og grense |
+|---|---|
+| Målrettet faktisk serverprøve | PASS, 14 kontroller i rollback; vanlig lagring/bevart note, separat save bevarer tidligere note, «OK» i direkte close, blanke felt/ukontrollert/annen aktør avvises, historikk og varsel følger bekreftet lukking |
+| Permanent critical-avvikscheck | PASS, faktisk editor/task-handler, korttekst, teksttap ved readback avvises, kladd ved gjenåpning, save/feil/retry/close |
+| Faktiske React-komponenter med avgrenset RPC-stub | PASS i jsdom: eksisterende sak i popup, portal, gjenfunnet tekst, samme popup/scroll etter vanlig save, beholdt popup/tekst ved feil og lukket popup etter bekreftet close |
+| Full critical QA og Sandbox-build | PASS; etter siste fokustilpasning også ny Sandbox Vite-build PASS |
+| Tilgang/worker | Anon EXECUTE false, authenticated true, tom search_path; bevisst SECURITY DEFINER med firmatilgang og ansvarligkontroll vurdert. Worker disabled. Ingen sending |
+| Innlogget visuell Preview-prøve | Gjenstår hos bruker på samme faste adresse; ingen ny full skynettleserrunde er startet |
+| Production/main/demo | Uendret; ingen ny TEST OK/merge |
+
+Dette er avgrensede utviklerbevis. Tidligere faktiske skjermprøver nedenfor beholdes som historikk, ikke som test av denne popup-endringen. Mobil og to faktiske brukerøkter gjenstår. Se CONTINUITY.md og USER_TEST.md for gjeldende fortsettelse.
+
 ## Siste dialogprøve – 7. oktober 2026
 
 Funksjonskode d73cd78935ab769b36c37ae4721934f586f05d27, READY dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA, PR Core Safety 37644638589 success. Full Sandbox critical build PASS. Faktisk egen skynettleserprøve passerer stor dialog, valgt bruker, kladd etter reload, bekreftet prosjektkilde/KS-sak, riktig sak direkte, omfordeling/egen lukking, varsel bort og Lukket tilbake i prosjektet etter faktisk reload. Eksisterende Test-prosjektavvik åpnes bare for koblingsinspeksjon og er uendret. Se [AVVIK_DIALOG_20261007.md](AVVIK_DIALOG_20261007.md) for eksakte case-ID-er, skjermbevis og grenser. Ingen mobil-/to-konto-/e-postmottak-PASS eller ny A2-godkjenning.

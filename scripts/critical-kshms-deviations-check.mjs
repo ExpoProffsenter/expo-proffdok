@@ -7,19 +7,21 @@ import { createProjectDeviation,newProjectDeviation,projectDeviationDraftKey,rea
 
 const caseId='11111111-1111-4111-8111-111111111111',companyId='22222222-2222-4222-8222-222222222222',eli='eli';
 const open={id:caseId,company_id:companyId,responsible_id:eli,revision:1,status:'open',title:'Trond → Eli',event:'A relevant actual incident',due_on:'2026-10-10',responsible_identity:{name:'Eli'},source_kind:'company'};
-const closed={...open,revision:2,status:'closed',closed_by:eli,closed_at:'2026-10-06T20:00:00Z',closed_identity:{name:'Eli'},control_note:'Actual result checked'};
 const form=deviationForm(open);assert.equal(validateDeviation(form),'');assert(validateDeviation(form,{closing:true}));
 const completed={...form,cause:'A known cause',improvement_action:'Actual corrective action',control_note:'Eli checked the corrected work'};
+const closed={...open,...completed,revision:2,status:'closed',closed_by:eli,closed_at:'2026-10-06T20:00:00Z',closed_identity:{name:'Eli'}};
 assert.equal(validateDeviation(completed,{closing:true}),'');
 const causeOnly={...form,cause:completed.cause};
 assert.deepEqual(deviationClosureIssues(causeOnly).map(item=>item.key),['improvement_action','control_note']);
 assert(!validateDeviation(causeOnly,{closing:true}).includes('Årsak'),'Filled cause was reported missing');
-assert(validateDeviation({...completed,control_note:' kort '},{closing:true}).includes('Egen kontroll av resultatet (minst 10 tegn)'));
-for(const failure of ['command','read','foreign','signer','late','']){
- const calls=[];const result=saveDeviation({companyId,userId:eli,action:'close',payload:{id:caseId,revision:1,...completed,controlled:true},isCurrent:()=>failure!=='late',rpc:async(name)=>{calls.push(name);if(name==='kshms_deviation_command'){if(failure==='command')throw new Error('not saved');return closed;}if(failure==='read')throw new Error('not verified');return {case:{...closed,...(failure==='foreign'?{company_id:'other'}:failure==='signer'?{closed_by:'trond'}:{})},events:[]};}});
- if(['command','read','foreign','signer'].includes(failure))await assert.rejects(result);else assert.equal((await result)?.case?.status,failure==='late'?undefined:'closed');
+assert.equal(validateDeviation({...completed,cause:'OK',improvement_action:'OK',control_note:'OK'},{closing:true}),'','Short closure notes were rejected');
+assert.deepEqual(deviationClosureIssues({...completed,control_note:'   '}).map(item=>item.key),['control_note']);
+for(const failure of ['command','read','foreign','signer','text','late','']){
+ const calls=[];const result=saveDeviation({companyId,userId:eli,action:'close',payload:{id:caseId,revision:1,...completed,controlled:true},isCurrent:()=>failure!=='late',rpc:async(name)=>{calls.push(name);if(name==='kshms_deviation_command'){if(failure==='command')throw new Error('not saved');return closed;}if(failure==='read')throw new Error('not verified');return {case:{...closed,...(failure==='foreign'?{company_id:'other'}:failure==='signer'?{closed_by:'trond'}:failure==='text'?{control_note:''}:{})},events:[]};}});
+ if(['command','read','foreign','signer','text'].includes(failure))await assert.rejects(result);else assert.equal((await result)?.case?.status,failure==='late'?undefined:'closed');
  assert.equal(calls.length,['command','late'].includes(failure)?1:2);
 }
+await assert.rejects(saveDeviation({companyId,userId:eli,action:'save',payload:{id:caseId,revision:1,control_note:'OK'},rpc:async name=>name==='kshms_deviation_command'?{...open,revision:2}:{case:{...open,revision:2,control_note:''},events:[]}}),/Lagret tekst samsvarer ikke/,'Ordinary save silently accepted erased text');
 const memory=new Map(),storage={getItem:k=>memory.get(k),setItem:(k,v)=>memory.set(k,v)};
 storeDeviationDraft(storage,eli,companyId,{form:completed,id:caseId,revision:1,requestId:'stable-request'});
 assert.equal(readDeviationDraft(storage,eli,companyId).revision,1);assert.equal(readDeviationDraft(storage,'trond',companyId),null);assert.equal(readDeviationDraft(storage,eli,'other'),null);
@@ -86,14 +88,14 @@ buttons.find(n=>n.props.children==='✅ Lukk avvik').props.onClick();assert.equa
 
 // Actual editor handlers with persistent hook slots and failed-close retry.
 const editorSource=fs.readFileSync('src/modules/kshms/KshmsDeviations.jsx','utf8');
-const editorBody=editorSource.slice(editorSource.indexOf('export default function')).replace('export default ','').split('\n return <section')[0]+'\n return {openCase,change,save,setControlled,closureFields,state:{detail,form,dirty,controlled,error,notice,conflict,closureAttempted,closureIssues}};\n}';
+const editorBody=editorSource.slice(editorSource.indexOf('export default function')).replace('export default ','').split('\n return <section')[0]+'\n return {openCase,change,save,dismissEditor,setControlled,closureFields,state:{detail,form,dirty,controlled,error,notice,conflict,closureAttempted,closureIssues}};\n}';
 const slots=[],effects=[],queue=[],published=[];let slot=0,serverCase={...open},failClose=true,commands=0;
 const editorStorage={...storage,removeItem:k=>memory.delete(k)},editorWindow=new EventTarget();editorWindow.localStorage=editorStorage;editorWindow.confirm=()=>true;
-const editorRpc=async name=>{
+const editorRpc=async(name,args)=>{
  if(name==='kshms_deviation_state')return {context:{company_id:companyId,user_id:eli},members:[],cases:[serverCase],counts:{open:1,closed:0}};
  if(name==='kshms_deviation_detail')return {case:serverCase,events:[]};
  if(name==='kshms_deviation_files')return [];
- if(name==='kshms_deviation_command'){commands++;if(failClose)throw new Error('Synthetic failed close');serverCase=closed;return closed;}
+ if(name==='kshms_deviation_command'){commands++;if(args.p_action==='close'&&failClose)throw new Error('Synthetic failed close');serverCase={...serverCase,...args.p_payload,revision:serverCase.revision+1};if(args.p_action==='close')serverCase={...serverCase,status:'closed',closed_by:eli,closed_at:closed.closed_at,closed_identity:closed.closed_identity,control_note:args.p_payload.control_note.trim()};return serverCase;}
  throw new Error(name);
 };
 const Editor=new Function('bindings','const {useState,useRef,useEffect,kshmsRpc,window,readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange,DEVIATION_CHANGE_EVENT}=bindings;'+editorBody+';return KshmsDeviations;')({
@@ -110,11 +112,15 @@ view.setControlled(true);view=renderEditor();await view.save('close');view=rende
 assert.equal(commands,0,'Incomplete closure reached the server');assert.equal(focusedMissing,1,'First missing field was not focused');
 assert.equal(view.state.form.cause,completed.cause);assert.equal(view.state.dirty,true);assert.equal(view.state.closureAttempted,true);
 assert.deepEqual(view.state.closureIssues.map(item=>item.key),['improvement_action','control_note']);
-for(const key of ['cause','improvement_action','control_note']){view.change(key,completed[key]);view=renderEditor();}
+for(const key of ['cause','improvement_action','control_note']){view.change(key,'OK');view=renderEditor();}
+view.dismissEditor();view=renderEditor();assert.equal(view.state.form,null);
+await view.openCase(caseId);view=renderEditor();assert.equal(view.state.form.control_note,'OK','Reopening the popup lost the local draft');assert.equal(view.state.dirty,true);
 await view.save('close');assert.equal(commands,0,'Unchecked control submitted closure');
+await view.save('save');view=renderEditor();assert.equal(view.state.form.control_note,'OK','Ordinary save erased the editor text');assert.equal(view.state.detail.case.status,'open');assert.equal(view.state.dirty,false);assert.equal(commands,1);assert.equal(published.length,1);
+view.change('control_note',' OK ');view=renderEditor();
 view.setControlled(true);view=renderEditor();await view.save('close');view=renderEditor();
-assert.equal(view.state.detail.case.status,'open');assert.equal(view.state.dirty,true);assert.equal(view.state.controlled,true);assert.equal(view.state.form.control_note,completed.control_note);assert(view.state.error.includes('Kladden er beholdt'));assert.equal(published.length,0);
-failClose=false;await view.save('close');view=renderEditor();assert.equal(view.state.detail.case.status,'closed');assert.equal(view.state.detail.case.closed_by,eli);assert.equal(view.state.dirty,false);assert(view.state.notice.includes('Lukkingen er lagret'));assert.equal(published.length,1);assert.equal(readDeviationDraft(editorStorage,eli,companyId),null);
+assert.equal(view.state.detail.case.status,'open');assert.equal(view.state.dirty,true);assert.equal(view.state.controlled,true);assert.equal(view.state.form.control_note,' OK ');assert(view.state.error.includes('Kladden er beholdt'));assert.equal(published.length,1);
+failClose=false;await view.save('close');view=renderEditor();assert.equal(view.state.form,null,'Confirmed closure left the popup open');assert.equal(view.state.detail,null);assert.equal(published.at(-1).status,'closed');assert.equal(published.at(-1).closed_by,eli);assert.equal(published.at(-1).control_note,'OK');assert.equal(view.state.dirty,false);assert(view.state.notice.includes('lukket og lagret'));assert.equal(published.length,2);assert.equal(readDeviationDraft(editorStorage,eli,companyId),null);
 for(const effect of effects)effect?.cleanup?.();
 
 // Real worker with stubbed transport; no email leaves this test.
