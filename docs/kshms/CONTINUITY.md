@@ -14,7 +14,7 @@ Modulen aktiveres per firma av systemadmin. Firmaadmin gir aktive interne medarb
 |---|---|
 | Repo | ExpoProffsenter/expo-proffdok |
 | Arbeidsbranch | feat-kshms-foundation |
-| Kontrollert head før dette dokumenttillegget | 228357afbaf175cf8cf0453e5556b503296e87f6 |
+| Kontrollert head før dette dokumenttillegget | b97a6d6339109a0a693d4427c8bf4575e8a2376d |
 | Testet funksjonskode, ifølge lagret sluttkontroll | 6bf84204db9c7869bebafb19c034dc02f53f25ca |
 | PR | #216, åpen draft, ikke merget |
 | Eksisterende checkpoint | checkpoint-kshms-recovery-20261006, 9e88f4cc41db905898a4fbf0e013905ddee30343 |
@@ -29,9 +29,9 @@ Dette tillegget endrer dokumentasjon. De dokumenterte database-, build- og deplo
 
 Tidligere håndbok-TEST OK for 6dfb74dad244ff9bd0e416a08f0a34bc88da3c3a gjelder den prøvde håndboken. Ny A2-TEST OK og eksplisitt Production-godkjenning er ikke gitt.
 
-## Originaler og kapittelvalg – brukerpresiseringer 7. oktober
+## Originaler og vedtatt kapittelinndeling – 7. oktober
 
-Kenneth ønsker at originalenes kapittelinndeling tas med i vurderingen, samtidig som rutinetekstene skal være selvstendig skrevet. Han har deretter presisert at han ennå ikke har sett ProffDoks inndeling, og spør om den kanskje er bedre. De fem originalkapitlene er dokumentert som kildegrunnlag; det er ikke besluttet å erstatte dagens seks grupper. Vis begge inndelingene og anbefal en praktisk struktur før eventuell endring.
+Kenneth har etter sammenligningen besluttet å beholde ProffDoks seks inndelinger **som egne hovedkapitler**: Virksomhet og kvalitetsledelse; Personal, kompetanse og arbeidsmiljø; Sikker utførelse og beredskap; Fag og kvalitet; Ytre miljø og bærekraft; Personvern og informasjonssikkerhet. Originalenes fem kapitler beholdes som sporbar kildestruktur. Rutinetekstene skal fortsatt være selvstendig skrevet. Kapittelvalget er avklart og skal ikke spørres om på nytt.
 
 Begge originalene har følgende hovedkapitler, kontrollert i tekst og visuelt på PDF-side 4–5:
 
@@ -48,13 +48,13 @@ Begge originalene har følgende hovedkapitler, kontrollert i tekst og visuelt p�
 
 Originalene kan hentes igjen med disse filreferansene. Gjeldende lokale kopier i denne samtalen ligger i /workspace/scratch/19673519cc9a/sources/. Ikke bygg videre utelukkende på en gammel lokal filsti. Ikke legg originalenes fulltekst, personlige svar, skjemaer eller illustrasjoner inn i Git-repoet.
 
-Kilder og tema brukes som dekningsgrunnlag. Skriv egne mål, ansvar, fremgangsmåte og dokumentasjonskrav fra arbeidsoppgaven og aktuelle primærkilder. Ikke omskriv originalen setning for setning. Rutineoverskrifter kan være egne, korte beskrivelser. Originalenes kapittel/tema og kildetilknytning skal være sporbar også dersom brukerflaten beholder ProffDoks seks grupper. Gjeldende krav må kontrolleres ved faglig forfatting; historiske covid-regler skal ikke publiseres som universelle gjeldende regler.
+Kilder og tema brukes som dekningsgrunnlag. Skriv egne mål, ansvar, fremgangsmåte og dokumentasjonskrav fra arbeidsoppgaven og aktuelle primærkilder. Ikke omskriv originalen setning for setning. Rutineoverskrifter kan være egne, korte beskrivelser. Originalenes kapittel/tema og kildetilknytning skal være sporbar sammen med brukerflatens seks egne hovedkapitler. Gjeldende krav må kontrolleres ved faglig forfatting; historiske covid-regler skal ikke publiseres som universelle gjeldende regler.
 
 ### Originalenes fem kapitler og katalogens seks grupper
 
 Katalogen på 228357af bruker fremdeles seks grupper: Virksomhet og kvalitetsledelse; Personal, kompetanse og arbeidsmiljø; Sikker utførelse og beredskap; Fag og kvalitet; Ytre miljø og bærekraft; Personvern og informasjonssikkerhet.
 
-Siste brukerinnspill åpner for å beholde ProffDoks seks grupper etter å ha sett dem. Agentens anbefaling er å beholde disse fordi de skiller personal, sikker utførelse og faglig kvalitet som originalene samler i Rutiner. Kapittelvalget er ikke endelig avklart. Inntil konkret nytt valg foreligger beholdes eksisterende struktur. Bevar stabile rutine- og kilde-ID-er, firmaets egne utkast/kapittelvalg, publiserte versjoner, signaturer og bekreftelser. Eventuell senere omgruppering av standardforslag skal ikke automatisk omskrive allerede godkjent firmainnhold.
+Brukerens valg er bekreftet 7. oktober 2026 kl. 14:31 Europe/Oslo: seks egne hovedkapitler. Katalogen har allerede disse seks. Kodekontroll av KshmsModule.jsx bekrefter separate kapittelområder med egne h3-overskrifter for firmaets rutiner; KshmsRoutineLibrary.jsx har et kapittelvalg for standardforslagene. Dette er kodebevis, ikke en ny innlogget skjermprøve. Bevar stabile rutine- og kilde-ID-er, firmaets egne utkast/kapittelvalg, publiserte versjoner, signaturer og bekreftelser. Omgruppering til originalenes fem kapitler skal ikke gjennomføres. Ingen rutinetekst eller firmadata endres av denne beslutningsregistreringen.
 
 ### Tekstlikhetskontroll utført i denne samtalen
 
@@ -82,7 +82,7 @@ Denne kontrollen dokumenterer direkte lang tekstlikhet i de valgte feltene. Den 
 | Trinn | Målet | Status / neste arbeid |
 |---|---|---|
 | A | Aktivering, firmatilgang, oppstart, håndbok/utkast/publisering/versjoner, Min personalhåndbok, egne bekreftelser, oppfølging og signert revisjon | Fundamentet er levert i Preview. Tidligere håndbokprøve er godkjent for sin eksakte versjon. |
-| A2 + fremskyndet avvik | Full tematisk rutinedekning fra begge håndbøkene, avvikssentral, prosjektkobling, fast ansvarligvarsel og tildelings-e-post | 73 forslag dekker 121 innholdstemaer + fire metadatarader. Kode og testfiler er lagret. Kapittelvalget vurderes etter sammenligning (Preview har seks grupper). Full-app-/mobilprøve, reelt e-postmottak og A2-TEST OK gjenstår. |
+| A2 + fremskyndet avvik | Full tematisk rutinedekning fra begge håndbøkene, avvikssentral, prosjektkobling, fast ansvarligvarsel og tildelings-e-post | 73 forslag dekker 121 innholdstemaer + fire metadatarader. Kode og testfiler er lagret. De seks egne hovedkapitlene er vedtatt. Full-app-/mobilprøve, reelt e-postmottak og A2-TEST OK gjenstår. |
 | B | Versjonerte firmamaler/gjennomføringer med og uten prosjekt, typede svar/bilder/filer/signaturer, mobile SJA og 5×5 risikoanalyse | Utførelsesverktøy/SJA/risiko gjenstår. Håndbokrutiner erstatter ikke gjennomføringer. SJA signeres av ansvarlig PL; deltaker-/medvirkningsbevis uten automatisk krav om alle deltakersignaturer. Betingede krav og senere underskjema skal versjoneres og bevare signerte snapshot. |
 | C | Flere varsler/påminnelser, kildeoppdateringsforslag, PDF rutine/sjekkliste/SJA/risiko/avvik, begrenset rapportutdrag og valgfritt sluttrapportvalg | Tildelingsworker er fremskyndet til A2. Fristpåminnelser, eksport/PDF/tilsynsuttrekk og øvrig C gjenstår. |
 | D | Valgfri individuell kompetanse/kurs/sertifikater/utløp, medarbeidersamtaler/oppfølging med separat HR-tilgang; valgfritt stoffkartotek | Gjenstår. KS-rolle gir ikke automatisk tilgang til andres personalmappe. Innsyn, personvern, oppbevaring og kontrollert sletting må spesifiseres før implementering. |
@@ -100,7 +100,7 @@ Sandbox-worker v3 er lagret/deployet, men RESEND_API_KEY og CHAT_FROM_EMAIL er i
 
 ## Neste avgrensede oppgaver og avbruddsrutine
 
-1. Vis og sammenlign originalenes fem kapitler med katalogens seks grupper. Siste brukerinnspill ber om denne vurderingen før valg. Behold dagens struktur inntil et annet konkret valg foreligger; hvis seks beholdes, trengs ingen omgruppering før skjermprøven. Bevar eksplisitt kildedekning av alle 121 temaer.
+1. Kapittelvalget er avklart: behold seks egne hovedkapitler og eksplisitt kildedekning av alle 121 temaer. Kontroller den faktiske kapittelvisningen ved neste innloggede skjermprøve; ikke omgrupper standardbiblioteket til originalenes fem kapitler.
 2. Gjennomfør relevant skjermprøve på samme faste Preview. USER_TEST.md gir faktiske knappnavn for Trond → Eli → fanebytte/lesing → egen kontroll/lukking → varsel bort, samt koblet/ukoblet prosjektavvik. Hvis nettleserverktøyet fortsatt er utilgjengelig, rapporter den konkrete grensen og bruk dokumentert brukerprøve; ikke start samme verktøykall om og om igjen.
 3. Klargjør/avklar e-postoppsett og testmottaker sikkert, og kontroller reelt mottak før funksjonen omtales som ferdig verifisert.
 4. Fullfør resterende B–E i avgrensede leveranser etter planen. Ny relevant TEST OK og Production-godkjenning kreves før release.
@@ -111,6 +111,6 @@ Arbeid i korte, avgrensede deler. Etter hver del lagres kode, migrasjoner, kontr
 
 En ny chat kan få denne teksten: «Fortsett KS/HMS Expo ProffDok. Les docs/kshms/CONTINUITY.md på feat-kshms-foundation, deretter gjeldende PLAN/QA/USER_TEST og faktisk branch/PR. Bevar alle beslutninger og hele roadmapen. Fortsett fra første dokumenterte ufullførte oppgave.»
 
-Kapittelsammenligningen er lagt frem i samtalen, med anbefaling om de seks ProffDok-gruppene. Nye funksjonsavklaringer er ikke nødvendige for å fortsette eksisterende Preview-test; kapittelpreferansen kan avgjøres særskilt.
+Kapittelsammenligningen er lagt frem og Kenneth har valgt de seks som egne hovedkapitler. Nye funksjonsavklaringer er ikke nødvendige for å fortsette eksisterende Preview-test.
 
 Arbeidsmåten begrenser tap av kontekst og gjenoppbygging ved avbrudd. Den gir ingen garanti mot feil i selve chat-/verktøyplattformen.

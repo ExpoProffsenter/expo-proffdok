@@ -1,6 +1,6 @@
 # KS/HMS – status, krav, gap og leveranseplan
 
-**Start ved gjenopptakelse:** [CONTINUITY.md](CONTINUITY.md) samler gjeldende beslutninger, original-PDF-referanser, kapittelvurderingen og neste ufullførte oppgave. Eldre baseline/tabeller nedenfor må leses sammen med siste A2-status.
+**Start ved gjenopptakelse:** [CONTINUITY.md](CONTINUITY.md) samler gjeldende beslutninger, original-PDF-referanser, vedtatt kapittelinndeling og neste ufullførte oppgave. Eldre baseline/tabeller nedenfor må leses sammen med siste A2-status.
 
 Kontrollert 2026-10-05. Miljømål: **BEGGE**. Dette er en integrert utvidelse av Expo ProffDok. Trinn A er et håndbokfundament i Preview/Sandbox, **ikke et komplett KS/HMS-system**. Alle trinn og temaer nedenfor gjelder fortsatt. Betaling/pris er uavklart og det innføres ingen betalingsintegrasjon.
 
@@ -67,7 +67,7 @@ Kildene er primært offentlige. **Kontrolldato for alle lenker nedenfor: 2026-10
 
 Målkapitler: Virksomhet og kvalitetsledelse; Personal, kompetanse og arbeidsmiljø; Sikker utførelse og beredskap; Fag og kvalitet; Ytre miljø og bærekraft; Personvern og informasjonssikkerhet. Alle originale kapitler er kartlagt til disse. Firmaet kan flytte rutiner til egne kapittelnavn.
 
-**Brukerpresiseringer 2026-10-07:** Begge original-PDF-ene og innholdsfortegnelsene er kontrollert på nytt. De har **01. Vår bedrift; 02. HMSK; 03. Rutiner; 04. Miljø; 05. Personvern**. Kenneth ønsker selvstendige tekster og at originalenes kapittelinndeling vurderes. Han har deretter spurt om ProffDoks inndeling kanskje er bedre, siden han ikke har sett den. De seks gjeldende gruppene skal derfor presenteres og sammenlignes før eventuell omgruppering. Ingen ny femkapittelstruktur er besluttet eller implementert. Originalenes kapittel-/temadekning skal være sporbar uansett valgt visning. Eventuell omgruppering skal bevare stabile nøkler og firmaets egne kapittelvalg, godkjente utgaver og signaturer.
+**Vedtatt kapittelinndeling 2026-10-07:** Kenneth har etter sammenligningen valgt ProffDoks seks inndelinger **som egne hovedkapitler**, jf. listen over. Begge original-PDF-ene og innholdsfortegnelsene er kontrollert på nytt: **01. Vår bedrift; 02. HMSK; 03. Rutiner; 04. Miljø; 05. Personvern** beholdes som kildestruktur i dekningsgrunnlaget. Originalenes kapittel-/temadekning skal være sporbar til de seks ProffDok-kapitlene. Rutinetekstene skal være selvstendig skrevet. Ingen omgruppering til fem kapitler er ønsket. Bevar stabile nøkler og firmaets egne kapittelvalg, godkjente utgaver og signaturer.
 
 Oppstart begynner med firmaadminens valg av KS/HMS-ansvarlig blant aktive interne firmabrukere, inkludert egen firmaadmin. Ved lagring gis eventuell eksisterende responsible-tilgang før utpekingen lagres. Deretter velges flere fag (mur/flis, tømrer, maler og VVS), aktiviteter, funksjoner/ansvarsrett, ansvar og risiko. Felles kjernetema foreslås sammen med relevante aktiviteter. Firmaet vurderer relevans og fyller inn faktiske ansvar, lokalt utstyr, kontaktpunkter og prosjektgrensesnitt. Første standardutkast er selvstendig skrevet og merket som tilpasningsgrunnlag, aldri automatisk publisert. En blank mal, kopi og manuell oppdatering fra sentral versjon følger samme godkjenningsflyt.
 
