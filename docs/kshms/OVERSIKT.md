@@ -7,7 +7,7 @@ Oppdatert 7. oktober 2026, Europe/Oslo. Les denne først ved chatbytte; detaljer
 Ny KS/HMS-funksjonalitet ligger i samme Sandbox Preview:
 https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
-Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert feature-head/funksjonskode før denne dokumentoppdateringen: `fcea0492531d860ea006e3650b85d3dd18b80c47`. SJA er READY på samme Preview, Core Safety/critical build success. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
+Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert feature-head/funksjonskode før denne dokumentoppdateringen: `8f14d58282408d872eee0505dc61646dfe4a5c20`. SJA er READY på samme Preview, Core Safety/critical build success. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
 
 | Del | Hva finnes nå | Godkjenning / gjenstående |
 |---|---|---|

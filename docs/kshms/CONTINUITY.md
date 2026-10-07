@@ -1,11 +1,14 @@
-# Gjeldende fortsettelsespunkt – SJA bygget og verifisert; Preview-publisering neste
+# Gjeldende fortsettelsespunkt – SJA READY på samme Preview; kort brukerprøve gjenstår
 
 Les OVERSIKT.md først. Kenneths svar 23:02 er lagret: begge delprøver TEST OK, utførelse før HR, bygg før Ringside-pilot, ledere bare tildelte HR-medarbeidere/firmaadmin alle, og tom SJA med hjelp over feltene. Meny/sjekklistepopup skal ikke testes på nytt uten ny feil.
 
-Avgrenset SJA er bygget: blank jobb, valgbare forslag, utkast/readback, lokal kladd ved fanebytte/remount, kollegasammenligning, ansvarlig PLs egen signatur og uforanderlig analyse. 38 faktiske SQL-kontroller i Sandbox og faktisk React-scenario med simulert transport PASS. Full critical/Vite-build PASS. Migrasjon 20261007212858_kshms_sja er bekreftet fra Sandbox-historikken og eksakt SQL lagret i repoet. Syntetiske rader rullet tilbake. Ingen ny nettlesertest hevdes; skynettleseren er fortsatt blokkert og ingen nye faner åpnes.
+Avgrenset SJA er bygget: blank jobb, valgbare forslag, utkast/readback, lokal kladd ved fanebytte/remount, kollegasammenligning, ansvarlig PLs egen signatur og uforanderlig analyse. 38 faktiske SQL-kontroller i Sandbox og faktisk React-scenario med simulert transport PASS. Begge faktiske React-scenarioer (den gjenfunne og parent-/fanebyttescenarioet) samt full critical/Vite-build PASS. Migrasjon 20261007212858_kshms_sja er bekreftet fra Sandbox-historikken og eksakt SQL lagret i repoet. Syntetiske rader rullet tilbake. Ingen ny nettlesertest hevdes; skynettleseren er fortsatt blokkert og ingen nye faner åpnes.
 
-Miljømål BEGGE. Neste: publiser kontrollert kode til samme feat-kshms-foundation Preview, bekreft READY/riktig kodehead/Sandbox-binding, og noter bevis her. Bare SJA-prøven øverst i USER_TEST.md gjenstår for denne leveransen. Main/Production/demo er uendret på gjeldende baseline. Vernerunder, 5×5 risiko, PDF, HR og øvrige B–E-deler består. Se SJA_20261007.md.
+Miljømål BEGGE. Neste utviklingsdel er vernerunder og 5×5 risiko. Bare den korte SJA-prøven kan registrere egen SJA-TEST OK; Ringside-pilot kommer etter bygging av avtalt minimum. Bare SJA-prøven øverst i USER_TEST.md gjenstår for denne leveransen. Main/Production/demo er uendret på gjeldende baseline. Vernerunder, 5×5 risiko, PDF, HR og øvrige B–E-deler består. Se SJA_20261007.md.
 
+
+
+Funksjonskode `8f14d58282408d872eee0505dc61646dfe4a5c20`, tree `8ad9492809bbd41f8ca37925c1f43e20bf2e53f1`, er publisert READY på `dpl_H3XMgUxRsSHW2pvUiTdxV9Spzuzs`. Fast branch-alias peker til denne deployen; `EXPO_BACKEND_TARGET=sandbox` gjelder feat-kshms-foundation/preview. PR Core Safety run `37691631432` er completed/success på koden. Lokal og publisert tree er identiske. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
 
 ---
 

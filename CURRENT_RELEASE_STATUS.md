@@ -1,7 +1,10 @@
-# Gjeldende SJA – klar til samme feature/Sandbox Preview (07.10.2026)
+# Gjeldende SJA – READY på samme feature/Sandbox Preview (07.10.2026)
 
-Miljømål BEGGE. Meny og sjekklistepopup er begge Kenneths TEST OK 23:02. SJA er bygget med tom jobb, hjelpetekst/forslag, sikker utkastlagring, egen PL-signatur og bevart analyse. 38 faktiske Sandbox SQL-kontroller, React/DOM-scenario og full critical/build PASS. Sandbox-migrasjon 20261007212858_kshms_sja er registrert; ingen Production-migrasjon/main-merge/demo-synk. SJA har egen utestående brukerprøve. Publiseringsbevis føres i CONTINUITY.md etter READY. Se docs/kshms/SJA_20261007.md.
+Miljømål BEGGE. Meny og sjekklistepopup er begge Kenneths TEST OK 23:02. SJA er bygget med tom jobb, hjelpetekst/forslag, sikker utkastlagring, egen PL-signatur og bevart analyse. 38 faktiske Sandbox SQL-kontroller, React/DOM-scenario og full critical/build PASS. Sandbox-migrasjon 20261007212858_kshms_sja er registrert; ingen Production-migrasjon/main-merge/demo-synk. SJA har egen utestående brukerprøve. Publiseringsbevis er lagret i CONTINUITY.md. Se docs/kshms/SJA_20261007.md.
 
+
+
+Funksjonskode `8f14d58282408d872eee0505dc61646dfe4a5c20`, tree `8ad9492809bbd41f8ca37925c1f43e20bf2e53f1`, er publisert READY på `dpl_H3XMgUxRsSHW2pvUiTdxV9Spzuzs`. Fast branch-alias peker til denne deployen; `EXPO_BACKEND_TARGET=sandbox` gjelder feat-kshms-foundation/preview. PR Core Safety run `37691631432` er completed/success på koden. Lokal og publisert tree er identiske. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
 
 ---
 

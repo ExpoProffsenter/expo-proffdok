@@ -6,7 +6,7 @@ Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.a
 2. Gi testjobben et navn, fyll noen felt og trykk **Lagre utkast → Lukk**. Oppdater siden, åpne samme SJA i oversikten: tekstene skal stå der.
 3. Fyll resten, velg deg selv som **Ansvarlig prosjektleder**, bekreft egen gjennomgang og trykk **Signer SJA**. Åpne analysen på nytt: navn/tidspunkt vises og feltene er låst. **Ny SJA** skal starte tom; den første analysen skal være bevart.
 
-Utviklerkontroller: 38 faktiske rollback SQL-kontroller, faktisk React/DOM-flyt med simulert transport og full critical/Vite-build PASS. Ingen ny innlogget skynettleser- eller fysisk mobilprøve hevdes. Publiseringsstatus føres i CONTINUITY.md. Meny og sjekklistepopup er allerede TEST OK og gjentas ikke i denne prøven.
+Utviklerkontroller: 38 faktiske rollback SQL-kontroller, faktisk React/DOM-flyt med simulert transport og full critical/Vite-build PASS. Ingen ny innlogget skynettleser- eller fysisk mobilprøve hevdes. Publisert READY på samme adresse, funksjonskode 8f14d582. Publiseringsbevis står i CONTINUITY.md. Meny og sjekklistepopup er allerede TEST OK og gjentas ikke i denne prøven.
 
 
 ---
