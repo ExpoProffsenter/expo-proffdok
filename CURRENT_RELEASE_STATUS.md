@@ -1,3 +1,11 @@
+# Gjeldende KS/HMS – meny/RUH/dato READY 8. oktober 2026
+
+Miljømål BEGGE, først samme feature/Sandbox Preview. Funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`, tree `c746110e2025cb11b06087bec2084abf651442b2`, READY `dpl_7eswiB6TH89b1VcUJBxAsiX5ckDA`, Core safety + critical build `113066107707` success. Desktopadapteren viser igjen Avvik/SJA/RUH; Åpne Avvik peker til riktig fane. KS/HMS viser Avvik/RUH → Registrer RUH. Frister viser norsk dato; hendelsestid er i Europe/Oslo. Personlig modulgate og ISO-lagring består.
+
+Full critical/build, faktisk DOM-meny/snarvei/enkel ordre/retur og faktisk React KS/HMS-parent/prosjekt/SJA/RUH/liste-/historikkdato PASS. Ingen SQL-endringer i denne rettelsen; forrige 93 rollback-databasekontroller er ikke gjentatt. Main uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft; ingen Production-release/DDL/demo-synk. Ny innlogget brukerprøve og TEST OK gjenstår. Se docs/kshms/NAV_RUH_DATE_20261008.md og kort USER_TEST.md.
+
+---
+
 # Gjeldende KS/HMS – SJA/RUH direkte fra prosjekt READY 8. oktober 2026
 
 Miljømål BEGGE, først samme feature/Sandbox Preview. Funksjonskode `694a4a9a114044ead724532c18133c28045c5863`, tree `e25b2562a45dcde9ced79ecfb54a6b52b053416c`, READY på `dpl_AX9QTyWPY7KQovT3bGBFPSyKxsdg`, Core safety + critical build `113058866219` success; fast alias og EXPO_BACKEND_TARGET=sandbox kontrollert. Modulbrukere har Avvik/SJA/RUH → Opprett SJA / Registrer RUH og egne prosjektoversikter. Faktisk firmaprosjektvalg, manuell ekstern referanse, fast R-rutinenummer/eksakt godkjent utgave og fagforslag for mur/flis/tømrer/VVS er levert.

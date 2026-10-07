@@ -1,3 +1,16 @@
+# Neste korte Preview-prøve – meny, RUH-inngang og norsk dato
+
+Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
+Rettelse READY på funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. Oppdater eksisterende Preview-side én gang for å hente det nye bygget.
+
+1. Åpne aktivt prosjekt eller enkel ordre med din personlige KS/HMS-tilgang. I toppmenyen skal **Avvik/SJA/RUH** være synlig, også når antall åpne avvik vises. Klikk fanen: **Opprett SJA**, **Registrer RUH**, **Åpne SJA** og **Åpne RUH** skal finnes, med forklaring på begrepene. Prøv **Registrer RUH**: tomt skjema skal ha riktig prosjekt. Det er nok å lukke med **Behold kladd og lukk**; ingen ny lagring kreves for denne menyprøven. **Åpne Avvik** på oversikten skal også gå hit.
+2. Gå til **Startside → KS/HMS → Avvik/RUH**. Her skal **Registrer avvik** og **Registrer RUH** finnes. **SJA** ligger ved siden av som eget valg. Prøv **Registrer RUH** og lukk skjemaet igjen.
+3. Åpne en eksisterende avviks-/RUH-sak. Fristen i listen og historikken skal vises som **10.10.2026** (med sakens faktiske dato). Hendelsestid vises med norsk dato og Oslo-tid. Server-/date-inputverdiene er ikke endret.
+
+Svar gjerne **TEST OK – meny, RUH-inngang og dato**, eller oppgi hvilken knapp som mangler. Dette godkjenner denne rettelsen; det erstatter ikke den tidligere planlagte fulle SJA/RUH-prøven nedenfor. Brukere uten modultilgang skal fortsatt bare ha **Avvik** og ingen SJA/RUH-verktøy.
+
+---
+
 # Neste korte Preview-prøve – SJA/RUH i prosjekt
 
 Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe

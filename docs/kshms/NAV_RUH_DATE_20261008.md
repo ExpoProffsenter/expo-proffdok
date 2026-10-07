@@ -39,3 +39,7 @@ Publiseringsbevis og kontrollert feature-/main-head registreres i CONTINUITY.md 
 SQL-kallene i forrige leveranse gjaldt Sandbox-migrasjonen og testene; syntetiske testdata ble rullet tilbake. Selve additive migrasjonen består. Ingen KS/HMS-DDL eller release ble gjort i produksjon. De konkrete tekstene i Kenneths to godkjenningsdialoger er ikke tilgjengelige her.
 
 Fortsettelsesnotatet er varig lagret i Git-repoet. Det trenger ikke kopieres manuelt. En ny chat kan bes om å lese docs/kshms/OVERSIKT.md og CONTINUITY.md; automatisk overføring av hele notatet via ChatGPT-prosjektet er ikke forutsatt.
+
+## Kontrollert publisering
+
+Funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`, identisk lokal/remote tree `c746110e2025cb11b06087bec2084abf651442b2`. Samme Preview READY på `dpl_7eswiB6TH89b1VcUJBxAsiX5ckDA`; Core safety + critical build `113066107707` completed/success. EXPO_BACKEND_TARGET=sandbox for denne feature-Preview er kontrollert. Main fortsatt `155f6c4ac01f126c1db0c65da385cfd9305587d5`, PR #216 draft. Ingen TEST OK eller produksjonsrelease.

@@ -7,7 +7,7 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Les denne først ved chatbytte; detaljer
 Ny KS/HMS-funksjonalitet ligger i samme Sandbox Preview:
 https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
-Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert feature-head/funksjonskode før denne dokumentoppdateringen: `694a4a9a114044ead724532c18133c28045c5863`. SJA/RUH-prosjektinngang, faktiske prosjektvalg og nummererte rutiner er READY på samme Preview, Core Safety/critical build success. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
+Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert feature-head/funksjonskode før denne dokumentoppdateringen: `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. SJA/RUH-prosjektinngang, faktiske prosjektvalg og nummererte rutiner er READY på samme Preview. Den rapporterte menyfeilen er rettet: Avvik/SJA/RUH vises i desktopmenyen, KS/HMS har Avvik/RUH og avviksdatoer vises norsk. Core Safety/critical build success. Testbevis: NAV_RUH_DATE_20261008.md. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
 
 | Del | Hva finnes nå | Godkjenning / gjenstående |
 |---|---|---|
@@ -15,7 +15,7 @@ Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er
 | Avvik og RUH | Popup, ansvarlig/frister, fast appvarsel, prosjektkobling, bevart kladd, lagring og ansvarligs egen lukking. Registrer RUH direkte fra prosjektets Avvik/SJA/RUH eller fritt i KS/HMS, med faktisk prosjektvalg/ekstern referanse og nummererte rutiner. | Tidligere avvikspopup/lukking er TEST OK. Ny RUH-prosjektflyt er utvikler-/databaseprøvd; Kenneths egen prøve og mobil/flere brukerøkter gjenstår. |
 | Sjekklistesentral | Bygge/publisere fagmaler og hente faste utgaver inn i ordrer og våtromsprosjekter. | Implementert og utviklertestet. Kenneths egen godkjenning av sentral/innhenting er ikke registrert. |
 | Sjekklistepopup | Sammenfoldede lister, egne punkter, Lagre, Sjekkliste fullført, Start ny kontroll og historikk med person/tidspunkt. | Database-/React-prøver og tidligere innlogget desktopprøve PASS. Kenneth bekreftet 7. oktober kl. 23:02 TEST OK også for lagring/fullføring/historikk. |
-| Meny | Kompakt ordremeny og bevart hovedmeny etter retur til Startside. | Menyrettelsen er TEST OK 7. oktober kl. 22:39. Ikke gjenta denne prøven uten ny feil. |
+| Meny | Kompakt ordremeny og bevart hovedmeny etter retur til Startside. Ny Avvik/SJA/RUH-etikett gjenkjennes nå i desktopmeny/snarvei. KS/HMS viser Avvik/RUH. | Tidligere menyretur er TEST OK 7. oktober kl. 22:39. Ny meny-/RUH-/datoretting har DOM-/React-/build PASS og trenger bare den korte prøven øverst i USER_TEST.md. |
 | SJA | Tomt skjema, veiledning, valgbare forslag for mur/flis/tømrer/VVS, samlet signeringsmangelliste, utkast, egen PL-signatur og uendret signert innhold. Avvik/SJA/RUH → Opprett SJA gir direkte prosjektkobling. KS/HMS har faktisk firmaprosjektvalg/ekstern referanse og godkjente rutiner med fast nummer og utgave. | READY på samme Preview. 93 rollback SQL-kontroller, faktisk React prosjekt-/SJA-/RUH-flyt og full critical QA/build PASS. Eksisterende signert analyse og 10 rutineutgaver bevart. Kenneths SJA/RUH-TEST OK og innlogget skjerm-/mobilprøve gjenstår. |
 | E-post | Tildelingsworker og kø er laget. Appvarslene fungerer uavhengig av e-post. | Sandbox-utsending er deaktivert; avsenderoppsett og faktisk mottaksprøve gjenstår. |
 

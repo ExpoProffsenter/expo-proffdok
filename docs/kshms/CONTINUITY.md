@@ -1,10 +1,16 @@
-# Gjeldende fortsettelsespunkt – meny/RUH/dato kontrollert lokalt, publisering gjenstår
+# Gjeldende fortsettelsespunkt – Avvik/SJA/RUH, RUH-meny og norsk dato READY
 
-Oppdatert 8. oktober 2026, Europe/Oslo. Kenneths tre skjermbilder viser at desktopmenyen skjulte det nye navnet Avvik/SJA/RUH. Matcher og snarveier er rettet. KS/HMS-menyen heter nå Avvik/RUH. Frister vises norsk; hendelsestidspunkter bruker Europe/Oslo.
+Oppdatert 8. oktober 2026, Europe/Oslo. Kenneths tre skjermbilder viste en faktisk desktopmenyfeil: det nye navnet Avvik/SJA/RUH ble ikke gjenkjent av adapteren og manglet i toppmenyen. Dette er rettet i menyen, bootstrap-snarveien og workflowmålet. Åpne Avvik går til den faktiske prosjektfanen, også fra Ordreoversikt. KS/HMS har nå Avvik/RUH → Registrer avvik / Registrer RUH og eget SJA-valg. Kun personlig modulbruker får prosjektets SJA/RUH-verktøy.
 
-Full critical QA/build, faktisk desktop DOM og faktisk React parent/SJA/RUH/listedato/historikk PASS. Ingen SQL-endringer i denne rettelsen. Main er kontrollert uendret på 155f6c4ac01f126c1db0c65da385cfd9305587d5. Neste steg er publisering på samme Sandbox Preview, kontroll av READY og CI, og deretter kort brukerprøve. Ingen ny SJA/RUH-TEST OK.
+Frister vises dd.mm.åååå i liste, historikksaksbilder, fast ansvarligvarsel og koblede prosjektavvik. Hendelsestidspunkter viser norsk dato og Europe/Oslo. Date-input/payload/lagring forblir ISO. Ingen SQL-/Auth-/Storage-/e-postendringer i denne rettelsen. Forrige Sandbox-migrasjon består; syntetiske SQL-testdata ble rullet tilbake. De konkrete tekstene i Kenneths to SQL-godkjenningsdialoger er ikke kjent.
 
-Se [testbevis og avgrensning](NAV_RUH_DATE_20261008.md). Denne toppen erstattes med faktisk releasebevis etter publisering; eldre notater nedenfor er historikk.
+Funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`, tree `c746110e2025cb11b06087bec2084abf651442b2`: READY på `dpl_7eswiB6TH89b1VcUJBxAsiX5ckDA`, Core safety + critical build `113066107707` completed/success. Fast Preview-alias og branch EXPO_BACKEND_TARGET=sandbox kontrollert. Full critical QA/Vite-bygg, faktisk desktop DOM og faktisk React parent/prosjekt/SJA/RUH med norsk listedato/historikk PASS. Ingen ny innlogget nettleserprøve er hevdet; den dokumenterte verktøyblokkeringen ble ikke gjentatt. Testbevis: [NAV_RUH_DATE_20261008.md](NAV_RUH_DATE_20261008.md).
+
+Main er kontrollert uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`. PR #216 er draft. Ingen produksjonsrelease/DDL/demo-synk. Ingen ny SJA/RUH-TEST OK. Tidligere godkjente menyretur-/sjekkliste-/avvikprøver består, men denne nye menynavnfeilen krever den korte prøven øverst i USER_TEST.md.
+
+Neste steg: Kenneth kontrollerer bare synlig Avvik/SJA/RUH, prosjektets Opprett SJA / Registrer RUH, KS/HMS → Avvik/RUH og norsk dato. Full ny SJA/RUH-godkjenning, mobil/flere faktiske brukerøkter og senere vernerunder/5×5-risiko/HR følger tidligere plan. Ikke bygg godkjente deler om eller gjenta gamle databaseprøver uten ny feil.
+
+Notatet er lagret i Git-repoet og trenger ikke kopieres manuelt. Ved ny chat: «Fortsett KS/HMS; les docs/kshms/OVERSIKT.md og CONTINUITY.md.» Hele notatet forutsettes ikke automatisk overført av ChatGPT-prosjektet.
 
 ---
 

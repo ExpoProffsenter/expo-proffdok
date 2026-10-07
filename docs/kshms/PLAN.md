@@ -1,3 +1,9 @@
+## Meny-/RUH-/datoretting 8. oktober 2026 – READY
+
+Skjermbildene viste at desktopadapteren utelot Avvik/SJA/RUH. Matcher og Åpne Avvik er rettet, KS/HMS viser Avvik/RUH, og avvik/RUH har norsk dato og Oslo-tid. Funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265` READY/Core safety success. Full critical/build og faktisk DOM-/React-prøve PASS. Ingen SQL-mutasjoner eller produksjonsendringer i denne rettelsen. Neste er bare den korte meny-/RUH-/datoprøven øverst i USER_TEST.md; full SJA/RUH-brukergodkjenning og videre utførelses-/HR-scope består. Se NAV_RUH_DATE_20261008.md.
+
+---
+
 ## SJA/RUH-oppfølging 8. oktober 2026 – READY på samme Preview
 
 Kenneths prosjektvalg-/rutine-/fag-/RUH-scope ca. 00:24–00:32 er levert. Modulbrukerens Avvik/SJA/RUH har direkte Opprett SJA og Registrer RUH. Faktiske aktive tilgjengelige prosjekter og manuell ekstern referanse støttes. Godkjente firmarutiner har fast R-nummer, separat versjon og aktivt valgt referanse. SJA/RUH forklares; forslag omfatter mur/flis/tømrer/VVS. RUH bruker eksisterende ansvar, fast appvarsel, egne tiltak/lukking og historikk. 93 SQL-assertioner med rollback, faktiske React-handlerforløp og full critical/build PASS. Kode `694a4a9a114044ead724532c18133c28045c5863` READY/Core Safety success. Main/Production/demo urørt. Neste er den korte brukerprøven først i USER_TEST.md; ikke bygg delen på nytt. Vernerunder/5×5 risiko, vedlegg/PDF og separat HR består. Se SJA_RUH_PROJECT_20261008.md.
