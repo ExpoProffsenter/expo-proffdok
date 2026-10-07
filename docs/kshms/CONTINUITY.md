@@ -1,3 +1,7 @@
+## Siste overgangskontroll – åpne sjekkliste i generell ordre
+
+Den avklarte inngangen består: generelle ordrer henter under **Sjekklister**, våtrom under **Fag/utstyr**. Baseline er 4b84bab86d1172f84c189615c4f99d17401d9be4. «Åpne sjekkliste» kan nå også åpne riktig gruppe når ChecklistEditor allerede er montert på samme fane; den eksisterende hopprutinen håndterer både mount og et avgrenset åpningssignal. Svar/kladd og prosjektrettigheter endres ikke. Kort faktisk React-prøve av kollapset gruppe → åpnesignal PASS; full critical QA/Sandbox-build PASS. Ingen ny SQL, e-post, main-/demo-merge eller Production-endring. Sjekk aktuell feature-HEAD og fast Preview ved videre arbeid; ikke gjenta eldre fulltester. Den korte prøven i USER_TEST er fortsatt neste brukerhandling.
+
 # Gjeldende fortsettelsespunkt – Sjekklistesentral, 7. oktober 2026
 
 Kenneth har gitt **TEST OK for popup og direkte lukking på ca2f0cb676755338c87e3d4f2a082281d309da8b**. Ikke start denne hele flyten igjen automatisk. Ny bestilling er fagspesifikk Sjekklistesentral med innhenting under Sjekklister i generelle ordrer og Fag/utstyr i våtromsprosjekter. Tilgang avklart: **«Har firma KS/HMS modulen så ja»** – prosjektbrukere trenger ikke personlig KS/HMS-grant for å hente publiserte lister. Sentralen bygges av firmaadmin/KS/HMS-ansvarlig. Ukoblede prosjektavvik fungerer som før.

@@ -91,20 +91,25 @@ export function createChecklistEditor({
       window.setTimeout(() => scrollToChecklistPoint(firstOpenDeviationPoint, "start"), 320);
     }, [showOpenDeviationsOnly, firstOpenDeviationPoint?.anchorId]);
     import_react.default.useEffect(() => {
-      try {
-        const rawTarget = window.sessionStorage.getItem("expoProffDokChecklistJumpTarget");
-        if (!rawTarget) return;
-        window.sessionStorage.removeItem("expoProffDokChecklistJumpTarget");
-        const targetPoint = JSON.parse(rawTarget);
-        if (!targetPoint?.category || !targetPoint?.item) return;
-        scrollToChecklistPoint({
-          category: targetPoint.category,
-          item: targetPoint.item,
-          anchorId: targetPoint.anchorId || checklistPointAnchor(targetPoint.category, targetPoint.item)
-        }, "start");
-      } catch (error) {
-        console.warn("Kunne ikke hoppe til sjekkpunkt:", error);
-      }
+      const jumpToRequestedChecklistPoint = () => {
+        try {
+          const rawTarget = window.sessionStorage.getItem("expoProffDokChecklistJumpTarget");
+          if (!rawTarget) return;
+          window.sessionStorage.removeItem("expoProffDokChecklistJumpTarget");
+          const targetPoint = JSON.parse(rawTarget);
+          if (!targetPoint?.category || !targetPoint?.item) return;
+          scrollToChecklistPoint({
+            category: targetPoint.category,
+            item: targetPoint.item,
+            anchorId: targetPoint.anchorId || checklistPointAnchor(targetPoint.category, targetPoint.item)
+          }, "start");
+        } catch (error) {
+          console.warn("Kunne ikke hoppe til sjekkpunkt:", error);
+        }
+      };
+      jumpToRequestedChecklistPoint();
+      window.addEventListener('expoProffDokChecklistJump', jumpToRequestedChecklistPoint);
+      return () => window.removeEventListener('expoProffDokChecklistJump', jumpToRequestedChecklistPoint);
     }, []);
     import_react.default.useEffect(() => {
       if (mobileInitialChecklistJumpRef.current) return;

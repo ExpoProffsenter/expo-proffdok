@@ -2580,6 +2580,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       if (!group) return;
       window.sessionStorage.setItem('expoProffDokChecklistJumpTarget', JSON.stringify({ category: group.category, item: group.items[0] }));
       goToTab('sjekklister');
+      window.dispatchEvent(new Event('expoProffDokChecklistJump'));
     };
     const saveProjectDeviation = async (entry) => {
       if (!authUser || isProjectLocked || isReadOnly || isProjectSupportReadOnly) throw new Error('Prosjektet kan ikke endres med denne tilgangen.');
