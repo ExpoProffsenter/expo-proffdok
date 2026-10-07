@@ -2558,7 +2558,12 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const previous = entries.find(row => row.id === entry.id);
       if (previous?.ks_deviation_id) return previous;
       if (previous?.status === 'Lukket') throw new Error('Prosjektavviket er allerede lukket. Åpne den lagrede saken før du endrer.');
-      snapshot.project = { ...snapshot.project, projectDeviations: previous ? entries.map(row => row.id === entry.id ? { ...row, ...entry, photos: row.photos || [] } : row) : [entry, ...entries] };
+      const sourceEntry = { ...previous, ...entry, photos: previous?.photos || entry.photos || [] };
+      // The selected user ID belongs to the authoritative KS/HMS case. The
+      // legacy project source keeps its name and must not retain a stale ID
+      // when the case is reassigned later.
+      delete sourceEntry.responsible_id;
+      snapshot.project = { ...snapshot.project, projectDeviations: previous ? entries.map(row => row.id === entry.id ? sourceEntry : row) : [sourceEntry, ...entries] };
       latestStateRef.current = snapshot;
       setProject(snapshot.project);
       saveLocalDraftNow(snapshot);
@@ -2568,7 +2573,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       const result = await supabase.from('projects').select('id,data').eq('id', projectId).maybeSingle();
       if (result.error) throw result.error;
       const saved = result.data?.data?.project?.projectDeviations?.find(row => row.id === entry.id);
-      if (!saved || !saved.ks_deviation_id && ['title','description','action','responsible','responsible_id','dueDate','immediate_action','type','severity','affectsWarranty','includeInReport'].some(field => (saved[field] || '') !== (entry[field] || ''))) throw new Error('Prosjektavviket kunne ikke bekreftes lagret på server.');
+      if (!saved || !saved.ks_deviation_id && ['title','description','action','responsible','dueDate','immediate_action','type','severity','affectsWarranty','includeInReport'].some(field => (saved[field] || '') !== (entry[field] || ''))) throw new Error('Prosjektavviket kunne ikke bekreftes lagret på server.');
       return saved;
     };
     const openCreatedProjectDeviation = async (row) => {

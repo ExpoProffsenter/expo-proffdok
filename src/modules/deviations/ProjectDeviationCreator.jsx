@@ -97,8 +97,8 @@ export default function ProjectDeviationCreator({ uid, project, projectId, userI
             <Field label="Frist" type="date" value={draft.entry.dueDate} onChange={value => change('dueDate', value)} required={Boolean(context?.enabled)}/>
           </div>
           <Field label={context?.enabled ? 'Strakstiltak / sikring nå' : 'Tiltak / videre oppfølging'} value={context?.enabled ? draft.entry.immediate_action : draft.entry.action} onChange={value => change(context?.enabled ? 'immediate_action' : 'action', value)} multiline/>
-          <label className="check"><input type="checkbox" checked={draft.entry.affectsWarranty} onChange={e => change('affectsWarranty', e.target.checked)}/>Kan påvirke garanti/sluttdokumentasjon</label>
-          {!context?.enabled && <label className="check"><input type="checkbox" checked={draft.entry.includeInReport} onChange={e => change('includeInReport', e.target.checked)}/>Ta med i sluttrapport</label>}
+          <label className="deviation-dialog-check"><input type="checkbox" checked={draft.entry.affectsWarranty} onChange={e => change('affectsWarranty', e.target.checked)}/><span>Kan påvirke garanti/sluttdokumentasjon</span></label>
+          {!context?.enabled && <label className="deviation-dialog-check"><input type="checkbox" checked={draft.entry.includeInReport} onChange={e => change('includeInReport', e.target.checked)}/><span>Ta med i sluttrapport</span></label>}
         </fieldset>
         {error && <p role="alert" className="deviation-dialog-error">{error}</p>}
         {savedCaseId && <button type="button" className="secondary" disabled={busy} onClick={() => onOpenKshms(savedCaseId)}>Åpne lagret avvik</button>}
