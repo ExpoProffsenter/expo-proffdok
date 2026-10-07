@@ -27,6 +27,7 @@ import { createHelpCenter } from './modules/help/helpTools.js';
 import { createChecklistEditor } from './modules/checklist/checklistTools.js';
 import ProjectChecklistPicker from './modules/checklist/ProjectChecklistPicker.jsx';
 import ProjectChecklistWorkspace from './modules/checklist/ProjectChecklistWorkspace.jsx';
+import ProjectSjaEntry from './modules/kshms/ProjectSjaEntry.jsx';
 import { appendProjectChecklist,projectChecklistTemplate,sameChecklistContent } from './modules/kshms/kshmsChecklists.mjs';
 import { createImageDocumentationTools } from './modules/images/imageDocumentationTools.js';
 import { createProjectOverviewTools } from './modules/project/projectOverviewTools.js';
@@ -6572,6 +6573,7 @@ ${appLink}`;
           projectGuideStats.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openActiveDeviations, children: "Se aktive avvik" })
         ] }),
         tab === "prosjekt" && projectId && renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace }),
+        tab === "prosjekt" && projectId && authUser?.id === kshmsContext?.user_id && kshmsContext?.enabled && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectSjaEntry, { context: kshmsContext, projectId, readOnly: isProjectLocked || isReadOnly }, `${kshmsScopeKey}:${projectId}`),
         tab === "prosjekt" && (!hasActiveProjectWorkspace ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "desktopOnlyWhenNoProject desktopNoProjectWelcome", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "desktopNoProjectHero", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),

@@ -10,7 +10,7 @@ import { blankSja, sjaContent, sjaDraftKey, SJA_STATEMENT } from '../src/modules
 const { JSDOM } = await import(process.env.KSHMS_JSDOM_PATH || 'jsdom');
 const dir = process.cwd(), temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'kshms-sja-react-'));
 const entry = path.join(temporary, 'entry.jsx');
-fs.writeFileSync(entry, `import React,{act} from '${dir}/node_modules/react/index.js';import {createRoot} from '${dir}/node_modules/react-dom/client.js';import Sja from '${dir}/src/modules/kshms/KshmsSja.jsx';const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=props=>root.render(React.createElement(Sja,{...props,key:props.context.company_id+':'+props.context.user_id}));globalThis.__unmount=()=>root.render(null);`);
+fs.writeFileSync(entry, `import React,{act} from '${dir}/node_modules/react/index.js';import {createRoot} from '${dir}/node_modules/react-dom/client.js';import Sja from '${dir}/src/modules/kshms/KshmsSja.jsx';import ProjectEntry from '${dir}/src/modules/kshms/ProjectSjaEntry.jsx';const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=props=>root.render(React.createElement(Sja,{...props,key:props.context.company_id+':'+props.context.user_id}));globalThis.__renderProject=props=>root.render(React.createElement(ProjectEntry,{...props,key:props.projectId}));globalThis.__unmount=()=>root.render(null);`);
 const bundled = await build({ root: dir, configFile: false, logLevel: 'silent', define: { 'process.env.NODE_ENV': '"development"' }, build: { write: false, minify: false, lib: { entry, formats: ['iife'], name: 'SjaProof', cssFileName: 'sja-proof' } }, plugins: [react(), { name: 'scoped-rpc', enforce: 'pre', resolveId(id) { if (/kshmsAccess\.js$/.test(id)) return '\0rpc'; }, load(id) { if (id === '\0rpc') return 'export const kshmsRpc=(...args)=>globalThis.__rpc(...args);'; } }] });
 const dom = new JSDOM('<div id="app"></div>', { url: 'https://example.invalid', runScripts: 'outside-only', pretendToBeVisual: true });
 const { window } = dom;
@@ -21,13 +21,16 @@ const company = '11111111-1111-4111-8111-111111111111', user = '22222222-2222-42
 const context = { company_id: company, user_id: user, enabled: true, manage: true, company_name: 'SJA QA' };
 const members = [{ id: user, identity: { id: user, name: 'QA leader' } }, { id: colleague, identity: { id: colleague, name: 'QA colleague' } }];
 const rows = new Map(), receipts = new Map(), commands = [];
-let mode = '', detailDeferred = null, stateDeferred = null;
+const projectOne='55555555-5555-4555-8555-555555555555',projectTwo='66666666-6666-4666-8666-666666666666';
+const projectName=id=>id===projectOne?'QA prosjekt én':'QA prosjekt to';
+let mode = '', detailDeferred = null, stateDeferred = null, stateReads = 0;
 const detail = (id, scope = context) => ({ context: scope, sja: structuredClone(rows.get(id) || null) });
 window.__rpc = async (name, args) => {
-  if (name === 'kshms_sja_state') {
+  if (name === 'kshms_sja_state' || name === 'kshms_project_sja_state') {
+    stateReads++;
     if (stateDeferred) return stateDeferred.promise;
-    const items = [...rows.values()].filter(row => row.company_id === args.p_company_id).map(row => ({ ...row, ...row.content, content: undefined }));
-    return { context: { ...context, company_id: args.p_company_id }, members, total: items.length, items };
+    const items = [...rows.values()].filter(row => row.company_id === args.p_company_id&&(!args.p_project_id||row.project_id===args.p_project_id)).map(row => ({ ...row, ...row.content, content: undefined }));
+    return { context: { ...context, company_id: args.p_company_id, project_id: args.p_project_id }, project:args.p_project_id?{id:args.p_project_id,name:projectName(args.p_project_id),locked:false}:null, members, total: items.length, items };
   }
   if (name === 'kshms_sja_detail') {
     if (detailDeferred) return detailDeferred.promise;
@@ -41,7 +44,7 @@ window.__rpc = async (name, args) => {
   const before = rows.get(args.p_payload.id);
   if (before?.revision !== undefined && before.revision !== args.p_payload.revision) throw Object.assign(Error('Synthetic revision conflict'), { code: '40001' });
   const content = sjaContent(args.p_payload.content), signed = args.p_action === 'sign';
-  const row = { id: args.p_payload.id, company_id: company, content, revision: (before?.revision || 0) + 1, status: signed ? 'signed' : 'draft', created_by: user, leader_id: content.leader_id, leader_identity: members.find(member => member.id === content.leader_id)?.identity, signed_by: signed ? user : null, signed_identity: signed ? members[0].identity : null, signed_at: signed ? '2026-10-07T21:35:00Z' : null, statement: signed ? SJA_STATEMENT : null };
+  const row = { id: args.p_payload.id, company_id: company, project_id:args.p_payload.project_id||null, project_name:args.p_payload.project_id?projectName(args.p_payload.project_id):null, content, revision: (before?.revision || 0) + 1, status: signed ? 'signed' : 'draft', created_by: user, leader_id: content.leader_id, leader_identity: members.find(member => member.id === content.leader_id)?.identity, signed_by: signed ? user : null, signed_identity: signed ? members[0].identity : null, signed_at: signed ? '2026-10-07T21:35:00Z' : null, statement: signed ? SJA_STATEMENT : null };
   rows.set(row.id, row); const result = { sja: row }; receipts.set(args.p_request_id, structuredClone(result));
   if (mode === 'lost-sign') { mode = ''; throw Error('Synthetic lost response after signature commit'); }
   return structuredClone(result);
@@ -62,6 +65,10 @@ await render(); await click(button('Ny SJA'));
 for (const input of doc.querySelectorAll('[data-sja-field]')) assert.equal(input.value, '', `New job inherited ${input.dataset.sjaField}`);
 const hint = field('task').getAttribute('aria-describedby'); assert(doc.getElementById(hint));
 assert(doc.getElementById(hint).compareDocumentPosition(field('task')) & window.Node.DOCUMENT_POSITION_FOLLOWING);
+for(const node of doc.querySelectorAll('[data-sja-field]'))if(node.type!=='date'&&node.tagName!=='SELECT')assert(node.closest('.sja-field').querySelector('.sja-suggestions'),`No selectable suggestions for ${node.dataset.sjaField}`);
+await click(button('Signer SJA'));assert.equal(commands.length,0,'Incomplete form sent a signature');
+const missing=doc.querySelector('.sja-missing');assert.equal(doc.activeElement,missing,'Missing-field warning did not receive focus');assert(missing.textContent.includes('Arbeidstrinn 1: Mulige konsekvenser'));assert(missing.textContent.includes('Deltaker 1: Bidrag / gjennomgang'));assert(missing.textContent.includes('Bekreft egen gjennomgang'));
+assert.equal(field('task').getAttribute('aria-invalid'),'true');await click(button('Arbeidsoppgave'));assert.equal(doc.activeElement,field('task'));await click(button('Signer SJA'));assert.equal(doc.activeElement,missing,'Second attempt left the warning out of view');
 await write('title', 'QA SJA'); await write('steps.0.hazard', 'Own hazard'); await click(button('Trykk eller lagret energi'));
 assert.equal(field('steps.0.hazard').value, 'Own hazard\nTrykk eller lagret energi');
 await render({ active: false }); assert.equal(doc.querySelector('[role="dialog"]'), null);
@@ -91,6 +98,7 @@ await click(button('Lagre utkast'));
 for (const [key, value] of Object.entries({ workplace: 'QA place', planned_on: '2026-10-08', reviewed_on: '2026-10-07', equipment: 'QA equipment checked', ppe: 'QA PPE', emergency: 'QA emergency', stop_conditions: 'Stop when conditions change', communication: 'QA joint review', 'steps.0.activity': 'QA work step', 'steps.0.consequence': 'QA harm', 'steps.0.measures': 'QA safeguards', 'steps.0.owner': 'QA owner', 'steps.0.check': 'QA before-start check', 'participants.0.name': 'QA worker', 'participants.0.role': 'Worker', 'participants.0.involvement': 'Reviewed work steps and safeguards' })) await write(key, value);
 await write('leader_id', colleague); assert(button('Signer SJA').disabled, 'Other person allowed to sign');
 await write('leader_id', user); const beforeSign = commands.length; await click(button('Signer SJA')); assert.equal(commands.length, beforeSign, 'Unchecked signature submitted');
+assert.equal(doc.querySelectorAll('.sja-missing li').length,1,'Completed form still shows missing fields');await click(button('Bekreft egen gjennomgang'));assert.equal(doc.activeElement,doc.querySelector('.sja-confirm input'));
 await click(doc.querySelector('.sja-confirm input')); mode = 'lost-sign'; await click(button('Signer SJA'));
 assert(field('task')); assert(window.localStorage.getItem(sjaDraftKey(user, company)), 'Lost response erased draft');
 await click(button('Signer SJA')); assert.equal(commands.at(-1).p_request_id, commands.at(-2).p_request_id);
@@ -120,5 +128,18 @@ assert(window.localStorage.getItem(sjaDraftKey(user, company)), 'Company switch 
 stateDeferred = defer(); await act(async () => window.__unmount()); await render();
 assert(button('Fortsett lokal kladd').disabled, 'Editor could open before initial server state');
 await act(async () => stateDeferred.resolve({ context, members, total: 1, items: [] })); stateDeferred = null;
+// The same editor is reused by a project. A separate scope preserves the global draft.
+await act(async()=>window.__unmount());await render({projectId:projectOne});await click(button('Ny SJA'));
+assert([...doc.querySelectorAll('[data-sja-field]')].every(node=>node.value===''),'Project context filled risk answers');
+assert(doc.querySelector('.sja-project-link').textContent.includes('QA prosjekt én'));
+await write('title','QA prosjektanalyse');await click(button('Lagre utkast'));const linked=[...rows.values()].find(row=>row.project_id===projectOne);assert(linked);assert.equal(linked.project_id,projectOne);assert(!doc.querySelector('.sja-list').textContent.includes('QA SJA'),'Project list included a standalone job');
+await write('task','Prosjektkladd som skal bevares');await click(button('Lukk'));assert(window.localStorage.getItem(sjaDraftKey(user,company,projectOne)));assert(window.localStorage.getItem(sjaDraftKey(user,company)),'Project work erased previous global draft');
+await act(async()=>window.__unmount());await render({projectId:projectTwo});assert.equal(doc.querySelectorAll('.sja-list-row').length,0);assert(!button('Fortsett lokal kladd'),'Another project inherited a local draft');await click(button('Ny SJA'));assert.equal(field('title').value,'');await click(button('Lukk'));
+await act(async()=>window.__unmount());await render({projectId:projectOne});await click(button('Fortsett lokal kladd'));assert.equal(field('task').value,'Prosjektkladd som skal bevares');assert(doc.querySelector('.sja-project-link').textContent.includes('QA prosjekt én'));await click(button('Lagre utkast'));await click(button('Lukk'));
+await render({projectId:projectOne,scopeReadOnly:true});assert(button('Ny SJA').disabled,'Read-only project allowed creation');await click(doc.querySelector('.sja-list-row'));assert(field('task').matches(':disabled'));assert(!button('Lagre utkast'),'Read-only project allowed changes');await click(doc.querySelector('[aria-label="Lukk SJA"]'));
+await act(async()=>window.__unmount());const readsBeforeEntry=stateReads;
+await act(async()=>window.__renderProject({context:{...context,enabled:false},projectId:projectOne}));assert(!button('Åpne SJA'));assert.equal(stateReads,readsBeforeEntry,'Unauthorized entry fetched SJA');
+await act(async()=>window.__renderProject({context,projectId:projectOne}));assert(button('Åpne SJA'));assert.equal(stateReads,readsBeforeEntry,'Closed project entry fetched SJA');await click(button('Åpne SJA'));assert(doc.querySelector('.sja-list-row').textContent.includes('QA prosjektanalyse'));await click(button('Lukk SJA-oversikten'));assert(doc.querySelector('.ks-project-sja [hidden]'));await click(button('Åpne SJA'));await click(button('Ny SJA'));await write('title','Kladd fra prosjektinngang');
+await act(async()=>window.__renderProject({context:{...context,enabled:false},projectId:projectOne}));assert(!doc.querySelector('[role="dialog"]'));assert(window.localStorage.getItem(sjaDraftKey(user,company,projectOne)),'Access change erased project draft');
 await act(async () => window.__unmount()); dom.window.close(); fs.rmSync(temporary, { recursive: true, force: true });
 console.log('Real React SJA: PASS — blank form, hints, chosen suggestions, hidden tabs, save failure/retry, stable scroll, server-first resume, conflict choice, revoked-read lock, own explicit signature, lost-response retry, immutable signed view, stale local comparison/discard and company-change cancellation.');

@@ -14,10 +14,18 @@ do $$ declare c uuid:=gen_random_uuid(); u uuid; sys uuid; kind text; pid uuid:=
   on conflict(id) do update set company_name=excluded.company_name,approved=true,deactivated=false,role=excluded.role,company_role=excluded.company_role,system_role=null;
   insert into public.sales_company_memberships(company_id,user_id,is_primary,workspace_role) values(c,u,true,case when kind='admin' then 'firmaadmin' else 'ansatt' end) on conflict(company_id,user_id) do update set workspace_role=excluded.workspace_role;
   insert into public.user_active_company_scope(user_id,company_id) values(u,c) on conflict(user_id) do update set company_id=excluded.company_id;
+  insert into public.user_module_access(user_id,module_key) values(u,'projects') on conflict do nothing;
  end loop;
  perform set_config('ks.sja.project',pid::text,true);
  insert into public.projects(id,user_id,company_scope_id,title,data) values(pid,current_setting('ks.sja.creator')::uuid,c,'SJA QA unrelated project','{"project":{"projectName":"QA","projectDeviations":[{"id":"unchanged","status":"Åpent"}]},"checklist":{"Point":{"status":"Ok","comment":"keep"}},"overtagelse":{"signKunde":"keep"}}');
  perform set_config('ks.sja.project.data',(select data::text from public.projects where id=pid),true);
+ -- Extra project fixtures prove that IDs, not typed references, determine linkage.
+ pid:=gen_random_uuid();perform set_config('ks.sja.other_project',pid::text,true);
+ insert into public.projects(id,user_id,company_scope_id,title,data) values(pid,current_setting('ks.sja.creator')::uuid,c,'SJA QA other project','{"project":{"projectName":"Other QA project"}}');
+ u:=gen_random_uuid();insert into public.sales_company_scopes(id,normalized_name,display_name) values(u,public.sales_normalize_company_name('SJA foreign QA '||u),'SJA foreign QA '||u);
+ insert into public.sales_company_memberships(company_id,user_id,is_primary,workspace_role) values(u,current_setting('ks.sja.without')::uuid,false,'ansatt');
+ pid:=gen_random_uuid();perform set_config('ks.sja.foreign_project',pid::text,true);
+ insert into public.projects(id,user_id,company_scope_id,title,data) values(pid,current_setting('ks.sja.without')::uuid,u,'Foreign QA project','{"project":{"projectName":"Foreign QA project"}}');
 end $$;
 set local role authenticated;
 do $$ declare c uuid:=current_setting('ks.sja.company')::uuid; a uuid:=current_setting('ks.sja.admin')::uuid; creator uuid:=current_setting('ks.sja.creator')::uuid; leader uuid:=current_setting('ks.sja.leader')::uuid; colleague uuid:=current_setting('ks.sja.colleague')::uuid;
@@ -80,6 +88,56 @@ begin
  begin perform public.kshms_sja_detail(c,id);raise exception 'Revoked leader read SJA';exception when insufficient_privilege then n:=n+1;end;
  perform set_config('ks.sja.id',id::text,true);perform set_config('ks.sja.count',n::text,true);
 end $$;
+do $$ declare c uuid:=current_setting('ks.sja.company')::uuid; creator uuid:=current_setting('ks.sja.creator')::uuid; pid uuid:=current_setting('ks.sja.project')::uuid; other_pid uuid:=current_setting('ks.sja.other_project')::uuid;
+ id uuid:=gen_random_uuid(); req uuid:=gen_random_uuid(); sign_req uuid:=gen_random_uuid(); payload jsonb; original jsonb; r jsonb; state jsonb; n integer:=current_setting('ks.sja.count')::integer; begin
+ perform set_config('request.jwt.claim.sub',creator::text,true);
+ original:=public.kshms_sja_detail(c,current_setting('ks.sja.id')::uuid)->'sja';
+ payload:=jsonb_build_object('id',id,'revision',0,'project_id',pid,'content',(original->'content')||jsonb_build_object('title','QA prosjektkoblet jobb','project_reference','','leader_id',creator));
+ r:=public.kshms_sja_command(c,'save',req,payload);assert r->'sja'->>'project_id'=pid::text,'Project ID not saved';n:=n+1;
+ assert public.kshms_sja_command(c,'save',req,payload)=r,'Project retry created or moved a job';n:=n+1;
+ state:=public.kshms_project_sja_state(c,pid);assert state->'context'->>'project_id'=pid::text and state->>'total'='1' and state->'items'->0->>'id'=id::text,'Project list includes another job';n:=n+1;
+ assert public.kshms_project_sja_state(c,other_pid)->>'total'='0','Other project inherited SJA';n:=n+1;
+ assert public.kshms_sja_state(c,'prosjektkoblet')->>'total'='1','Project job missing in global KS list';n:=n+1;
+ assert public.kshms_sja_detail(c,id)->'sja'->>'project_name'='QA','Project name not read from project';n:=n+1;
+ payload:=jsonb_set(payload,'{revision}','1');
+ begin perform public.kshms_sja_command(c,'save',gen_random_uuid(),jsonb_set(payload,'{project_id}',to_jsonb(other_pid)));raise exception 'Existing SJA moved to another project';exception when insufficient_privilege then n:=n+1;end;
+ begin perform public.kshms_sja_command(c,'save',gen_random_uuid(),jsonb_set(payload,'{project_id}','null'));raise exception 'Project link silently removed';exception when insufficient_privilege then n:=n+1;end;
+ begin perform public.kshms_sja_command(c,'save',gen_random_uuid(),jsonb_set(jsonb_set(payload,'{id}',to_jsonb(gen_random_uuid())),'{project_id}',to_jsonb(current_setting('ks.sja.foreign_project')::uuid))||jsonb_build_object('revision',0));raise exception 'Cross-company project accepted';exception when insufficient_privilege then n:=n+1;end;
+ perform set_config('request.jwt.claim.sub',current_setting('ks.sja.colleague'),true);
+ begin perform public.kshms_project_sja_state(c,pid);raise exception 'Employee without project rights opened project SJA';exception when insufficient_privilege then n:=n+1;end;
+ begin perform public.kshms_sja_detail(c,id);raise exception 'Employee without project rights read details';exception when insufficient_privilege then n:=n+1;end;
+ perform set_config('request.jwt.claim.sub',current_setting('ks.sja.without'),true);
+ begin perform public.kshms_project_sja_state(c,pid);raise exception 'Employee without KS grant read project SJA';exception when insufficient_privilege then n:=n+1;end;
+ perform set_config('request.jwt.claim.sub',creator::text,true);
+ r:=public.kshms_sja_command(c,'save',gen_random_uuid(),payload-'project_id');assert r->'sja'->>'project_id'=pid::text,'Older client lost existing link';n:=n+1;
+ payload:=jsonb_set(payload,'{revision}',to_jsonb((r->'sja'->>'revision')::bigint))||jsonb_build_object('prepared',true,'statement',original->>'statement');
+ r:=public.kshms_sja_command(c,'sign',sign_req,payload);assert r->'sja'->>'status'='signed' and r->'sja'->>'project_id'=pid::text and r->'sja'->>'signed_by'=creator::text,'Own project signature or linkage missing';n:=n+1;
+ assert public.kshms_sja_command(c,'sign',sign_req,payload)=r,'Project signature retry changed snapshot';n:=n+1;
+ state:=public.kshms_project_sja_state(c,pid,'','signed');assert state->>'total'='1' and state->'items'->0->>'project_id'=pid::text,'Signed history no longer follows project';n:=n+1;
+ perform set_config('ks.sja.project_sja_id',id::text,true);perform set_config('ks.sja.project_sign_request',sign_req::text,true);perform set_config('ks.sja.project_sign_payload',payload::text,true);perform set_config('ks.sja.count',n::text,true);
+end $$;
+reset role;
+do $$ declare pid uuid:=current_setting('ks.sja.other_project')::uuid; begin update public.projects set locked=true where id=pid;end $$;
+set local role authenticated;
+do $$ declare c uuid:=current_setting('ks.sja.company')::uuid; pid uuid:=current_setting('ks.sja.other_project')::uuid; payload jsonb; n integer:=current_setting('ks.sja.count')::integer; begin
+ perform set_config('request.jwt.claim.sub',current_setting('ks.sja.creator'),true);
+ assert (public.kshms_project_sja_state(c,pid)->'project'->>'locked')::boolean,'Locked project not reported';n:=n+1;
+ payload:=jsonb_build_object('id',gen_random_uuid(),'revision',0,'project_id',pid,'content',public.kshms_sja_detail(c,current_setting('ks.sja.id')::uuid)->'sja'->'content');
+ begin perform public.kshms_sja_command(c,'save',gen_random_uuid(),payload);raise exception 'New SJA written to locked project';exception when insufficient_privilege then n:=n+1;end;
+ perform set_config('ks.sja.count',n::text,true);
+end $$;
+reset role;
+do $$ declare c uuid:=current_setting('ks.sja.company')::uuid;n integer:=current_setting('ks.sja.count')::integer;begin
+ update public.projects set user_id=current_setting('ks.sja.admin')::uuid where id=current_setting('ks.sja.project')::uuid;
+ perform set_config('request.jwt.claim.sub',current_setting('ks.sja.creator'),true);
+ begin perform public.kshms_sja_command(c,'sign',current_setting('ks.sja.project_sign_request')::uuid,current_setting('ks.sja.project_sign_payload')::jsonb);raise exception 'Receipt leaked project after access removal';exception when insufficient_privilege then n:=n+1;end;
+ begin perform public.kshms_sja_detail(c,current_setting('ks.sja.project_sja_id')::uuid);raise exception 'Signed project history bypassed revoked project access';exception when insufficient_privilege then n:=n+1;end;
+ assert public.kshms_sja_state(c,'prosjektkoblet')->>'total'='0','Global list leaked a project without current project access';n:=n+1;
+ update public.projects set user_id=current_setting('ks.sja.creator')::uuid where id=current_setting('ks.sja.project')::uuid;
+ assert not has_function_privilege('anon','public.kshms_project_sja_state(uuid,uuid,text,text)','execute') and not has_function_privilege('authenticated','kshms_private.sja_state(uuid,text,text,uuid)','execute'),'New RPC/helper ACL exposed';n:=n+1;
+ perform set_config('ks.sja.count',n::text,true);
+end $$;
+set local role authenticated;
 reset role;
 do $$ declare c uuid:=current_setting('ks.sja.company')::uuid;target_sja uuid:=current_setting('ks.sja.id')::uuid;n integer:=current_setting('ks.sja.count')::integer; begin
  begin update public.kshms_sjas set content='{}' where public.kshms_sjas.id=target_sja;raise exception 'Signed snapshot mutated directly';exception when insufficient_privilege then n:=n+1;end;

@@ -92,7 +92,7 @@ assert(document.querySelector('.sja-comparison').textContent.includes('2026-10-0
 await click(button('Jeg har sammenlignet – fortsett med min kladd')); assert.equal(field('task').value, 'Min videre vurdering'); await click(button('Lagre utkast')); assert.equal(rows.get(id).content.task, 'Min videre vurdering');
 
 // Own explicit signature, confirmed readback, immutable history and a blank next job.
-await fillComplete('QA signert'); await click(button('Signer SJA')); assert(document.body.textContent.includes('bekreft egen gjennomgang')); assert.equal(rows.get(id).status, 'draft');
+await fillComplete('QA signert'); await click(button('Signer SJA')); assert(document.querySelector('.sja-missing').textContent.includes('Bekreft egen gjennomgang')); assert.equal(document.querySelectorAll('.sja-missing li').length,1); assert.equal(rows.get(id).status, 'draft');
 await click(document.querySelector('.sja-confirm input')); failReadback = true; await click(button('Signer SJA')); assert.equal(rows.get(id).status, 'signed'); assert.equal(field('title').value, 'QA signert'); assert(button('Signer SJA'));
 const signRequest = requests.at(-1).p_request_id; await click(button('Signer SJA')); assert.equal(requests.at(-1).p_request_id, signRequest); assert(!button('Signer SJA')); assert(field('title').matches(':disabled')); assert(document.body.textContent.includes('Signert av QA Prosjektleder'));
 const first = structuredClone(rows.get(id)); await click(document.querySelector('[aria-label="Lukk SJA"]')); await act(async () => window.__unmount()); await act(async () => window.__render(context, 'sja')); await open('QA signert');
