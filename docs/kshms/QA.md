@@ -1,5 +1,12 @@
 # KS/HMS QA – trinn A
 
+## Innlogget Sandbox-prøve – 7. oktober 2026
+
+[UI_TEST_20261007.md](UI_TEST_20261007.md) dokumenterer faktisk innlogget desktopflyt på READY-deployment `dpl_DB3wi9z7fTnfnuVGCo1357NVCNvZ`, head `3c51dc5edea1da0fb52e31ae204bfaf9f8342793`. PASS med én demo-konto: seks kapittelvalg/73 forslag, registrering med riktig ansvar/frist, fast varsel etter lesing og navigasjon/ny fane, beholdt sakskladd og lagret egen lukking med aktør/tidspunkt/historikk og varsel bort. SQL bekrefter resultatet; arbeider deaktivert, ingen e-postforsøk. Den lukkede syntetiske saken er beholdt som kontrollspor.
+
+To separate brukerøkter, prosjektkobling/legacy, full-app-mobil og reelt e-postmottak gjenstår. Nettleserverktøyets innloggingsbeskyttelse sperret videre inspeksjon etter omlasting, også etter én dokumentert gjenoppretting. Dette er ingen ny påvist appfeil. Resten av dokumentet er kontrollhistorikk; rapporten over er nyeste faktiske skjermprøve. Tidligere rollback-/runtime-kontroller er ikke kjørt om for dokumentendringen. Ny A2-TEST OK, merge og Production-godkjenning er ikke gitt.
+
+
 2026-10-05. Branch `feat-kshms-foundation`, baseline main `155f6c4`. Miljømål BEGGE. Kun Supabase Sandbox er endret. Trinn A er ikke full KS/HMS eller produksjonsgodkjent.
 
 Siste brukerstatus: TEST OK er mottatt for den prøvde versjonen 2026-10-06 kl. 18:56 Europe/Oslo. Ordlyd om «frivillig» presiseres som valg av tidspunkt for påkrevd egen gjennomgang. Kontrollhistorikken under beskriver tidligere teststatus; Production-godkjenning er fortsatt ikke gitt.

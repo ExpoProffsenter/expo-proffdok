@@ -14,7 +14,7 @@ Modulen aktiveres per firma av systemadmin. Firmaadmin gir aktive interne medarb
 |---|---|
 | Repo | ExpoProffsenter/expo-proffdok |
 | Arbeidsbranch | feat-kshms-foundation |
-| Kontrollert head før dette dokumenttillegget | b97a6d6339109a0a693d4427c8bf4575e8a2376d |
+| Kontrollert head og faktisk UI-prøve før dette dokumenttillegget | 3c51dc5edea1da0fb52e31ae204bfaf9f8342793 |
 | Testet funksjonskode, ifølge lagret sluttkontroll | 6bf84204db9c7869bebafb19c034dc02f53f25ca |
 | PR | #216, åpen draft, ikke merget |
 | Eksisterende checkpoint | checkpoint-kshms-recovery-20261006, 9e88f4cc41db905898a4fbf0e013905ddee30343 |
@@ -22,10 +22,10 @@ Modulen aktiveres per firma av systemadmin. Firmaadmin gir aktive interne medarb
 | Preview-backend | Sandbox ppvircenkjizeiqdxphj; branch-spesifikk EXPO_BACKEND_TARGET=sandbox |
 | Main ved kontroll | 155f6c4ac01f126c1db0c65da385cfd9305587d5 |
 | Production-backend | dqffxflaoyarbxyiyhop |
-| Dokumentert siste kode-Preview | dpl_DyJEcTbmRETSNCWMB8UYJompaF8r, READY på 6bf84204 |
+| Faktisk skjermprøve-Preview | dpl_DB3wi9z7fTnfnuVGCo1357NVCNvZ, READY på 3c51dc5e |
 | Permanent demo | demo; https://expo-proffdok-git-demo-ringside.vercel.app |
 
-Dette tillegget endrer dokumentasjon. De dokumenterte database-, build- og deployment-resultatene er fra forrige kjøring, ikke nye full-app-tester i denne samtalen. GitHub-HEAD, PR-status, faktisk lagring av katalog/avvik/UI/worker/testfiler og original-PDF-ene er kontrollert på nytt. Miljømål for den samlede funksjonen er BEGGE; leveransen går først gjennom eksisterende Sandbox-Preview.
+Dette tillegget endrer dokumentasjon. 7. oktober er aktuell READY-deployment, GitHub-HEAD, draft PR #216 og branch-spesifikk Sandbox-binding kontrollert på nytt. En faktisk innlogget desktopprøve med demo-kontoen passerer registrering, vedvarende ansvarligvarsel, navigasjon/ny fane, beholdt sakskladd og lagret egen lukking med databasekontroll. Se UI_TEST_20261007.md for eksakt omfang, sak-ID og skjermbevis. Tidligere full critical build og 73 rollback-kontroller er ikke kjørt på nytt for denne dokumentendringen. Miljømål for den samlede funksjonen er BEGGE; leveransen går først gjennom eksisterende Sandbox-Preview.
 
 Tidligere håndbok-TEST OK for 6dfb74dad244ff9bd0e416a08f0a34bc88da3c3a gjelder den prøvde håndboken. Ny A2-TEST OK og eksplisitt Production-godkjenning er ikke gitt.
 
@@ -54,7 +54,7 @@ Kilder og tema brukes som dekningsgrunnlag. Skriv egne mål, ansvar, fremgangsm�
 
 Katalogen på 228357af bruker fremdeles seks grupper: Virksomhet og kvalitetsledelse; Personal, kompetanse og arbeidsmiljø; Sikker utførelse og beredskap; Fag og kvalitet; Ytre miljø og bærekraft; Personvern og informasjonssikkerhet.
 
-Brukerens valg er bekreftet 7. oktober 2026 kl. 14:31 Europe/Oslo: seks egne hovedkapitler. Katalogen har allerede disse seks. Kodekontroll av KshmsModule.jsx bekrefter separate kapittelområder med egne h3-overskrifter for firmaets rutiner; KshmsRoutineLibrary.jsx har et kapittelvalg for standardforslagene. Dette er kodebevis, ikke en ny innlogget skjermprøve. Bevar stabile rutine- og kilde-ID-er, firmaets egne utkast/kapittelvalg, publiserte versjoner, signaturer og bekreftelser. Omgruppering til originalenes fem kapitler skal ikke gjennomføres. Ingen rutinetekst eller firmadata endres av denne beslutningsregistreringen.
+Brukerens valg er bekreftet 7. oktober 2026 kl. 14:31 Europe/Oslo: seks egne hovedkapitler. Katalogen har allerede disse seks. Kodekontroll av KshmsModule.jsx bekrefter separate kapittelområder med egne h3-overskrifter for firmaets rutiner; KshmsRoutineLibrary.jsx har et kapittelvalg for standardforslagene. Innlogget skjermprøve 7. oktober bekrefter alle seks valg i «Vis kapittel», 73 forslag og eget filter for «Fag og kvalitet». Firmaets ti eksisterende rutiner ligger under fem befolkede kapitteloverskrifter; ingen fagrutine er valgt der ennå. Bevar stabile rutine- og kilde-ID-er, firmaets egne utkast/kapittelvalg, publiserte versjoner, signaturer og bekreftelser. Omgruppering til originalenes fem kapitler skal ikke gjennomføres. Ingen rutinetekst eller firmadata endres av denne beslutningsregistreringen.
 
 ### Tekstlikhetskontroll utført i denne samtalen
 
@@ -82,7 +82,7 @@ Denne kontrollen dokumenterer direkte lang tekstlikhet i de valgte feltene. Den 
 | Trinn | Målet | Status / neste arbeid |
 |---|---|---|
 | A | Aktivering, firmatilgang, oppstart, håndbok/utkast/publisering/versjoner, Min personalhåndbok, egne bekreftelser, oppfølging og signert revisjon | Fundamentet er levert i Preview. Tidligere håndbokprøve er godkjent for sin eksakte versjon. |
-| A2 + fremskyndet avvik | Full tematisk rutinedekning fra begge håndbøkene, avvikssentral, prosjektkobling, fast ansvarligvarsel og tildelings-e-post | 73 forslag dekker 121 innholdstemaer + fire metadatarader. Kode og testfiler er lagret. De seks egne hovedkapitlene er vedtatt. Full-app-/mobilprøve, reelt e-postmottak og A2-TEST OK gjenstår. |
+| A2 + fremskyndet avvik | Full tematisk rutinedekning fra begge håndbøkene, avvikssentral, prosjektkobling, fast ansvarligvarsel og tildelings-e-post | 73 forslag dekker 121 innholdstemaer + fire metadatarader. Kode og testfiler er lagret. De seks egne hovedkapitlene er vedtatt. Innlogget desktopprøve med én demo-konto passerer avviksflyten og kapittelfilteret. To separate brukerøkter, prosjektkobling/legacy, full-app-mobil, reelt e-postmottak og A2-TEST OK gjenstår. |
 | B | Versjonerte firmamaler/gjennomføringer med og uten prosjekt, typede svar/bilder/filer/signaturer, mobile SJA og 5×5 risikoanalyse | Utførelsesverktøy/SJA/risiko gjenstår. Håndbokrutiner erstatter ikke gjennomføringer. SJA signeres av ansvarlig PL; deltaker-/medvirkningsbevis uten automatisk krav om alle deltakersignaturer. Betingede krav og senere underskjema skal versjoneres og bevare signerte snapshot. |
 | C | Flere varsler/påminnelser, kildeoppdateringsforslag, PDF rutine/sjekkliste/SJA/risiko/avvik, begrenset rapportutdrag og valgfritt sluttrapportvalg | Tildelingsworker er fremskyndet til A2. Fristpåminnelser, eksport/PDF/tilsynsuttrekk og øvrig C gjenstår. |
 | D | Valgfri individuell kompetanse/kurs/sertifikater/utløp, medarbeidersamtaler/oppfølging med separat HR-tilgang; valgfritt stoffkartotek | Gjenstår. KS-rolle gir ikke automatisk tilgang til andres personalmappe. Innsyn, personvern, oppbevaring og kontrollert sletting må spesifiseres før implementering. |
@@ -94,14 +94,14 @@ PLAN.md inneholder detaljert minimumsdekning, offentlige kilder, roller, datamod
 
 Lagret QA på funksjonskode 6bf84204 dokumenterer 73 Sandbox-kontroller med full rollback, grønn eksisterende håndbokkontroll, faktiske React-handler-/task-/legacy-scenarioer, mailer med erstattet transport og grønn full critical build/Core Safety. Disse kontrollene skal ikke omtales som en innlogget full-app-/mobilprøve.
 
-Full-app/visuell nettleserkontroll gjenstår. Forrige logg registrerer environment_offline i nettleserverktøyet og utilgjengelig lokal testserver. Dette er et verktøyproblem, ikke dokumentasjon på at lagret implementasjon er tapt.
+UI_TEST_20261007.md dokumenterer innlogget desktopprøve med Kenneth Demo / Expo Proffsenter: registrering, fast varsel etter lesing/appnavigasjon og i ny fane, beholdt kladd, lagret lukking med aktør/tidspunkt og varsel bort. Testsak 683a29cb-4ccd-47db-9377-8d8504d86db2 er lukket i Sandbox; e-postarbeider er deaktivert, attempts=0, sent_at=null. To brukerøkter, prosjektkobling/legacy, full-app-mobil og faktisk e-postmottak gjenstår. Etter lukking sperret nettleserverktøyets credential_observation_restricted inspeksjon ved omlasting; én dokumentert gjenoppretting ga samme sperre. Dette er en konkret verktøygrense, ikke påvist datatap eller appfeil. Tidligere environment_offline og utilgjengelig lokal testserver er kontrollhistorikk.
 
 Sandbox-worker v3 er lagret/deployet, men RESEND_API_KEY og CHAT_FROM_EMAIL er ikke konfigurert og sending er deaktivert. EMAIL_SETUP.md beskriver sikkert oppsett, health/check-mode og avtalt mottaksprøve. Ingen hemmeligheter skal legges i chat, kildekode eller dokumentasjon. Faktisk avsenderoppsett og avtalt testmottaker må avklares ved e-postprøven; dette er ikke et åpent spørsmål om avviksfunksjonen.
 
 ## Neste avgrensede oppgaver og avbruddsrutine
 
-1. Kapittelvalget er avklart: behold seks egne hovedkapitler og eksplisitt kildedekning av alle 121 temaer. Kontroller den faktiske kapittelvisningen ved neste innloggede skjermprøve; ikke omgrupper standardbiblioteket til originalenes fem kapitler.
-2. Gjennomfør relevant skjermprøve på samme faste Preview. USER_TEST.md gir faktiske knappnavn for Trond → Eli → fanebytte/lesing → egen kontroll/lukking → varsel bort, samt koblet/ukoblet prosjektavvik. Hvis nettleserverktøyet fortsatt er utilgjengelig, rapporter den konkrete grensen og bruk dokumentert brukerprøve; ikke start samme verktøykall om og om igjen.
+1. Kapittelvalget er avklart og innlogget kapittelfilter er prøvd: behold seks egne hovedkapitler og eksplisitt kildedekning av alle 121 temaer. Ikke omgrupper standardbiblioteket til originalenes fem kapitler.
+2. Fortsett fra ufullført prosjektkobling/legacy, to separate brukere etter Trond → Eli-eksemplet og mobil på samme faste Preview. Enkeltkonto-prøven står i UI_TEST_20261007.md; ikke gjenta den eller firmaets håndbokgodkjenninger uten grunn. USER_TEST.md gir faktiske knappnavn. Ved fortsatt sperre i nettleserverktøyets innloggingsbeskyttelse brukes dokumentert sikker/manuell overlevering; ikke omgå sperren eller kjør samme verktøykall i løkke.
 3. Klargjør/avklar e-postoppsett og testmottaker sikkert, og kontroller reelt mottak før funksjonen omtales som ferdig verifisert.
 4. Fullfør resterende B–E i avgrensede leveranser etter planen. Ny relevant TEST OK og Production-godkjenning kreves før release.
 
