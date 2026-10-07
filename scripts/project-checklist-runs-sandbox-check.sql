@@ -53,12 +53,32 @@ do $$ declare company uuid:=current_setting('ks.checklist.company')::uuid;employ
  payload:=payload||jsonb_build_object('revision',2);r:=public.project_checklist_command(company,pid,'complete',gen_random_uuid(),payload);
  assert r->'run'->'answers'->'Kontroller rør'->>'status'='Avvik','Completion silently closed deviation';n:=n+1;
  state:=public.project_checklist_state(company,pid);assert jsonb_array_length(state->'runs')=2 and state->'runs'->1->'answers'->'Kontroller rør'->>'comment'='Kollega kontrollerte';n:=n+1;
+ -- Follow up an unlinked deviation in a new control; completed evidence stays fixed.
+ previous:=r->'run';
+ payload:=payload||jsonb_build_object('id',gen_random_uuid(),'revision',0,'predecessor_id',previous->'id');
+ payload:=jsonb_set(payload,'{answers,Kontroller rør}',(payload#>'{answers,Kontroller rør}')||jsonb_build_object('status','Lukket avvik','closedAt',now(),'closedBy','Checklist QA employee','closeComment','OK'));
+ r:=public.project_checklist_command(company,pid,'save',gen_random_uuid(),payload);
+ assert r->'run'->'answers'->'Kontroller rør'->>'status'='Lukket avvik';n:=n+1;
+ state:=public.project_checklist_state(company,pid);
+ assert state->'runs'->1->'answers'->'Kontroller rør'->>'status'='Avvik','Follow-up changed a completed control';n:=n+1;
+ -- Own points can be added while a control is still under work.
+ payload:=payload||jsonb_build_object('revision',1);
+ payload:=jsonb_set(payload,'{definition,items}',(payload#>'{definition,items}')||jsonb_build_array('Kontroller trykk'));
+ payload:=jsonb_set(payload,'{answers,Kontroller trykk}',jsonb_build_object('status','Ikke aktuelt'));
+ r:=public.project_checklist_command(company,pid,'save',gen_random_uuid(),payload);
+ assert jsonb_array_length(r->'run'->'definition'->'items')=3;n:=n+1;
+
  update public.projects set data=jsonb_set(data,'{checklist}','{"Egne sjekkpunkter – Rørlegger":{"Kontroller rør":{"status":"Ok"}},"Legacy":{"Point":{"status":"Avvik","comment":"keep"}}}') where id=pid;
- assert (select data#>>'{checklist,Egne sjekkpunkter – Rørlegger,Kontroller rør,status}' from public.projects where id=pid)='Avvik','Ordinary stale autosave overwrote popup';n:=n+1;
+ assert (select data#>>'{checklist,Egne sjekkpunkter – Rørlegger,Kontroller rør,status}' from public.projects where id=pid)='Lukket avvik','Ordinary stale autosave overwrote popup';n:=n+1;
  assert (select data#>>'{checklist,Egne sjekkpunkter – Rørlegger,Kontroller rør,photos,0,name}' from public.projects where id=pid)='bevis';n:=n+1;
  assert (select data#>>'{project,projectDeviations,0,status}' from public.projects where id=pid)='Åpent' and (select data#>>'{overtagelse,signKunde}' from public.projects where id=pid)='keep';n:=n+1;
  begin perform public.project_checklist_state(gen_random_uuid(),pid);raise exception 'Foreign firm read history';exception when insufficient_privilege then n:=n+1;end;
  begin perform public.project_checklist_command(company,gen_random_uuid(),'save',gen_random_uuid(),payload);raise exception 'Foreign project wrote history';exception when insufficient_privilege then n:=n+1;end;
+ -- Reopen the live draft explicitly before linking the new issue to KS/HMS.
+ payload:=payload||jsonb_build_object('revision',2);
+ payload:=jsonb_set(payload,'{answers,Kontroller rør}',(payload#>'{answers,Kontroller rør}')||jsonb_build_object('status','Avvik','closedAt','','closedBy','','closeComment',''));
+ r:=public.project_checklist_command(company,pid,'save',gen_random_uuid(),payload);
+ assert r->'run'->'answers'->'Kontroller rør'->>'status'='Avvik';n:=n+1;
  -- Existing KS/HMS closure remains authoritative over the project mirror.
  perform set_config('request.jwt.claim.sub',current_setting('ks.checklist.sys'),true);perform public.kshms_activate(company,true);
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
@@ -67,7 +87,7 @@ do $$ declare company uuid:=current_setting('ks.checklist.company')::uuid;employ
  dev:=public.kshms_deviation_command(company,'close',jsonb_build_object('id',dev->>'id','revision',dev->'revision','controlled',true,'cause','Synthetic cause','improvement_action','Synthetic completed measure','control_note','Synthetic controlled result'));
  update public.projects set data=jsonb_set(data,'{project,projectName}','"Changed title"') where id=pid;
  assert (select data#>>'{checklist,Egne sjekkpunkter – Rørlegger,Kontroller rør,status}' from public.projects where id=pid)='Lukket avvik','Mirror reopened authoritative KS/HMS closure';n:=n+1;
- assert public.project_checklist_state(company,pid)->'runs'->0->'answers'->'Kontroller rør'->>'status'='Avvik','Later KS/HMS closure mutated completed inspection';n:=n+1;
+ assert exists(select 1 from jsonb_array_elements(public.project_checklist_state(company,pid)->'runs') as t(value) where value->'id'=previous->'id' and value->>'status'='completed' and value->'answers'->'Kontroller rør'->>'status'='Avvik'),'Later KS/HMS closure mutated completed inspection';n:=n+1;
  -- Imported requirements and version cannot be changed at first save.
  version:=public.kshms_checklist_command(company,'publish',gen_random_uuid(),jsonb_build_object('id',gen_random_uuid(),'revision',0,'content',jsonb_build_object('title','QA imported control','trade','Rørlegger','instructions','QA','points',jsonb_build_array(jsonb_build_object('id',point,'title','Imported point','guidance','QA','image_required',true,'comment_required',false)))))->'version';
  update public.projects set data=jsonb_set(data,'{project,kshmsChecklistInstances}',jsonb_build_array(jsonb_build_object('category','QA imported','version_id',version->'id','content',version->'content'))) where id=pid;

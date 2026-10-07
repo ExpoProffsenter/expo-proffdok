@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {answersForDefinition,commitChecklistRun,completionProblem,currentRunAnswers,readRunDraft,sameRunValue} from '../src/modules/checklist/checklistRuns.mjs';
+import {checklistRunDraftKey,runDefinition,answersForDefinition,commitChecklistRun,completionProblem,currentRunAnswers,readRunDraft,sameRunValue} from '../src/modules/checklist/checklistRuns.mjs';
 const main=fs.readFileSync('src/main.jsx','utf8');
 const start=main.indexOf('    const customChecklistAllowed ='),end=main.indexOf('    const dynamicSoproWarrantyRequirementStatus =',start);
 assert(start>=0&&end>start);
@@ -36,3 +36,53 @@ assert(sql.includes('public.project_row_access_allowed')&&sql.includes('public.c
 assert(sql.includes('kshms_private.project_checklist_receipts')&&sql.includes('project_checklist_completed_immutable'));
 assert(sql.includes('create trigger kshms_checklist_answers'),'Delayed project autosave can replace popup data');
 console.log('critical-project-checklist-runs-check: OK — actual order template selection, own points without warranty, preserved wetroom lists, completion evidence, source status and verified-save failures');
+
+{
+const definition={category:'Egne sjekkpunkter – Rørlegger',items:['Rør','Merking'],requirements:{Rør:{comment_required:true}}};
+const draft={id:'run',revision:0,requestId:'request',definition,answers:{Rør:{status:'Ok',comment:'Kontrollert'},Merking:{status:'Ikke aktuelt'}}};
+assert.equal(completionProblem(definition,draft.answers),'');
+assert.match(completionProblem(definition,{...draft.answers,Rør:{status:'Ok'}}),/kommentar/);
+assert.match(completionProblem(definition,{...draft.answers,Merking:{}}),/Vurder/);
+assert.equal(answersForDefinition(definition,{Rør:{status:'Ok',comment:'old'},Merking:{status:'Avvik',photos:[{url:'photo'}]}},true).Rør.status,undefined);
+assert.equal(answersForDefinition(definition,{Merking:{status:'Avvik'}},true).Merking.status,'Avvik');
+assert.equal(runDefinition(definition,[],true).requirements.Rør.documentation_either,true);
+assert(sameRunValue({b:1,a:{b:2,a:3}},{a:{a:3,b:2},b:1}));
+const key=checklistRunDraftKey('user','company','project',definition.category);
+assert.notEqual(key,checklistRunDraftKey('other','company','project',definition.category));
+assert.equal(readRunDraft({getItem:()=>JSON.stringify(draft)},key).requestId,'request');
+assert.equal(readRunDraft({getItem:()=>'{broken'},key),null);
+assert.equal(currentRunAnswers({...draft,category:definition.category,status:'draft'},{[definition.category]:{Rør:{ks_deviation_id:'deviation',status:'Lukket avvik'}}}).Rør.status,'Lukket avvik');
+assert.equal(currentRunAnswers({...draft,category:definition.category,status:'completed'},{[definition.category]:{Rør:{status:'Avvik'}}}).Rør.status,'Ok');
+
+for(const failure of ['', 'command','read','foreign','changed','late']){
+ let calls=0;
+ const row={...draft,company_id:'company',project_id:'project',revision:1,status:'completed'};
+ const context={company_id:'company',project_id:'project',user_id:'user'};
+ const result=commitChecklistRun({companyId:'company',projectId:'project',userId:'user',draft,action:'complete',isCurrent:()=>failure!=='late',rpc:async(name,args)=>{
+  calls++;
+  if(name==='project_checklist_command'){
+   assert.equal(args.p_request_id,'request');assert.equal(args.p_payload.revision,0);
+   if(failure==='command')throw Error('lost response');
+   return {context,run:row,answers:row.answers};
+  }
+  if(failure==='read')throw Error('readback failed');
+  return {context:failure==='foreign'?{...context,company_id:'other'}:context,runs:[failure==='changed'?{...row,answers:{}}:row]};
+ }});
+ if(failure&&failure!=='late')await assert.rejects(result);
+ else assert.equal(Boolean(await result),failure!=='late');
+ assert.equal(calls,['command','late'].includes(failure)?1:2);
+}
+const main=fs.readFileSync('src/main.jsx','utf8');
+assert(main.includes('isSimpleOrderProject(project) ? [] : getActiveChecklistTemplate'),'Orders inherited wetroom defaults');
+assert(main.includes('isSimpleOrderProject(project) || canUseCustomChecklistForWarranty'),'Own points require KS/HMS or wetroom warranty');
+const workspace=fs.readFileSync('src/modules/checklist/ProjectChecklistWorkspace.jsx','utf8');
+assert(workspace.includes('followPoint:value.item'),'Point navigation lost the deviation target');
+assert(workspace.includes('Fortsett med lagret kontroll')&&workspace.includes('Vis tidligere kladd'),'Concurrent edits cannot be resolved without losing the original draft');
+const editor=fs.readFileSync('src/modules/checklist/checklistTools.js','utf8');
+assert(editor.includes('openCategories[group.category] === true'),'Lists should begin collapsed');
+const migration=fs.readFileSync('supabase/migrations/20261007180955_project_checklist_runs.sql','utf8');
+assert(migration.includes('project_checklist_completed_immutable')&&migration.includes('project_checklist_one_draft'));
+assert(migration.includes("r.status<>'draft'")&&migration.includes('r.revision<>'));
+console.log('critical-project-checklist-runs-check: OK — local safety, confirmed readback, fresh controls, retained deviations, project isolation and order defaults');
+
+}

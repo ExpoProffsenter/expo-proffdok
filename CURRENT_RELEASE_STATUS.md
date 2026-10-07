@@ -1,3 +1,9 @@
+# Gjeldende Preview – kompakt ordremeny og sjekklistepopup (07.10.2026)
+
+Miljømål BEGGE. Kodehead `dba4ee3ad8ce700e5eb64df101f95063c65a1d91` ligger på samme faste feat-kshms-foundation-Preview, eksplisitt Sandbox-binding. Kompakt ordremeny, egne sjekkpunkter uten KS/HMS på generelle ordrer, ingen automatisk våtromsliste, popup med Lagre/Sjekkliste fullført, versjonerte gjennomføringer og konfliktvalg. Full critical QA/build, React-prøver og 35 rollback-databasekontroller PASS. Innlogget desktopflyt med lagring/reload/to gjennomføringer/historikk PASS. USER_TEST.md har neste korte brukerprøve; CONTINUITY.md har faktisk aktør, tidspunkt og bevis. Ny bruker-TEST OK og Production-godkjenning gjenstår; tidligere godkjente delprøver består. Main/Production/demo er ikke oppdatert av denne leveransen.
+
+---
+
 # KS/HMS – pågående, ikke produksjonsgodkjent (2026-10-06)
 
 - Miljømål: **BEGGE**. Feature `feat-kshms-foundation` starter fra main `155f6c4`; eksisterende produksjonsrelease nedenfor gjelder fortsatt.

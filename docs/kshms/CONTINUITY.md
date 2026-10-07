@@ -1,3 +1,19 @@
+# Gjeldende fortsettelsespunkt – sjekklistepopup, 7. oktober 2026
+
+Miljømål **BEGGE**, først samme Sandbox Preview. Forrige kjøring fortsatte i bakgrunnen etter forbindelsesbruddet og publiserte kodehead `dba4ee3ad8ce700e5eb64df101f95063c65a1d91` (tree `207d8051c449aee8e94d6bdda11805739cc3f015`). En separat recovery-arbeidsmappe ble derfor åpnet på den eksakt samme lokale treutgaven for å unngå samtidige overskrivinger. Ikke bygg denne funksjonen på nytt.
+
+Fast Preview: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe. Vercel `dpl_DCieSStSwjVhZq6rQS9iDNCAiG7C` READY; branchvariabelen `EXPO_BACKEND_TARGET=sandbox` er kontrollert. PR Core Safety run `37668916442` completed/success. Main var uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`. Ingen Production-migrasjon, merge eller demo-synk.
+
+Avklart funksjon: kompakt ordremeny; ingen automatisk våtromsliste i generelle ordrer; egne punkter uten KS/HMS-/garantikrav på disse ordrene; publiserte firmamaler ved aktiv firmamodul. Listene starter kollapset. Popupen har **Lagre**, **Sjekkliste fullført**, **Start ny kontroll** og historikk. Vanlige åpne sjekkpunktavvik kan følges opp i en ny kontroll via Gå til punkt; historikken beholdes. Samtidige endringer gir konfliktvisning, og videreføring av lagret kontroll beholder tidligere lokal kladd for sammenligning.
+
+Kontroll ved overtakelsen: full critical QA/Sandbox-build PASS; de eksisterende React-prøvene for sentralen/popupen samt en ekstra konkret prøve for konflikthåndtering og avviksoppfølging PASS. Utvidet faktisk Sandbox SQL har **35 kontroller PASS med rollback**. Ingen ny databasemigrasjon ble nødvendig i denne overtakelsen. Den ekstra SQL-prøven verifiserer lukking i ny kontroll, egne nye punkter, gjenåpning, koblet KS/HMS-status og bevart fullført snapshot.
+
+Innlogget desktopprøve på samme Preview er nå PASS: demoordre `a45b0000-0000-4000-8000-000000000001`; egen kategori Annet fag med punkt **QA – sjekklistepopup, syntetisk prøve 07.10.2026**. Lagre → lukk → reload → åpne bevarer Ok og kommentaren. Første fullføring `ddee47a5-84fe-43b1-a18c-a93d0707ca4c` kl. 20:55:53 Europe/Oslo; ny kontroll starter uten tidligere svar og fullføres separat som `7832ff92-31e3-479a-bc2c-13c7a0261bdf` kl. 20:57:08 med Ikke aktuelt og en annen kommentar. Begge har Kenneth Demo som faktisk aktør. Historikken viser begge; første kontroll gjenåpnes skrivebeskyttet med sitt opprinnelige Ok og sin opprinnelige kommentar. [Skjermbevis](checklist-popup-history-proof.jpg). Bare det tydelig merkede testpunktet har fått disse syntetiske gjennomføringene; den innhentede Bunnledning-listen er bare åpnet og inspisert.
+
+Neste handling er Kenneths korte prøve øverst i USER_TEST.md. Ingen ny bruker-TEST OK eller Production-godkjenning hevdes. Ikke gjenta allerede beståtte runder uten en ny feil. To samtidige personer er kontrollert i database-/komponentprøver, ikke som to faktiske browserinnlogginger. Mobilbredde, fysisk kamera, ny PDF og UE-portal for lister med nye gjennomføringer er ikke verifisert her. De gjenværende roadmapdelene består.
+
+---
+
 ## Siste overgangskontroll – åpne sjekkliste i generell ordre
 
 Den avklarte inngangen består: generelle ordrer henter under **Sjekklister**, våtrom under **Fag/utstyr**. Baseline er 4b84bab86d1172f84c189615c4f99d17401d9be4. «Åpne sjekkliste» kan nå også åpne riktig gruppe når ChecklistEditor allerede er montert på samme fane; den eksisterende hopprutinen håndterer både mount og et avgrenset åpningssignal. Svar/kladd og prosjektrettigheter endres ikke. Kort faktisk React-prøve av kollapset gruppe → åpnesignal PASS; full critical QA/Sandbox-build PASS. Ingen ny SQL, e-post, main-/demo-merge eller Production-endring. Sjekk aktuell feature-HEAD og fast Preview ved videre arbeid; ikke gjenta eldre fulltester. Den korte prøven i USER_TEST er fortsatt neste brukerhandling.

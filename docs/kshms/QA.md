@@ -312,3 +312,10 @@ Arbeid fra 67efa37616a779559b7004c9f40e8c61df0015c2; appscope er de fire KS/HMS-
 ## Sjekklistesentral – 7. oktober 2026
 
 Kenneth TEST OK for popup/direktelukking ca2f er registrert. Ny sentral: permanent critical-kshms-checklists-check PASS; faktiske React-komponenter med avgrenset RPC-stub PASS (builder, fanebytte/kladd, retry, publisering, personlig ugrantet prosjektbruker, fast gammel prosjektkopi, generell ordre Sjekklister uten Fag/utstyr og Ok/Avvik). Sandbox SQL: 27 kontroller PASS med rollback. Migrasjoner 20261007170928 og 20261007171313 anvendt bare i Sandbox. RPC-privilegier, tom search_path og advisor kontrollert. Den nye handleren bevarer eksisterende avvik, svar/bilder, signaturer og installasjoner. Eksakt scope/bevis/gjenstående begrensninger står i CHECKLIST_CENTRAL_20261007.md; kort brukerprøve står øverst i USER_TEST. Innlogget ny Preview-flyt og ny PDF er ikke gradert PASS. Hele B–E består.
+
+
+## Overtakelse etter sjekklistepopup-avbrudd – 7. oktober 2026
+
+Kodeutgaven dba4ee3a/tree 207d8051 var allerede publisert av forrige kjøring. Recovery bruker en isolert arbeidsmappe og bevarer denne utgaven. Utvidelse i denne oppfølgingen er ekstra kontrollscenarioer og dokumentasjon, ikke en ny app-/databaserelease. Full critical QA/Sandbox-build PASS; sentral-/popup-/workspace-React-prøver PASS. 35 faktiske SQL-kontroller PASS med alle syntetiske transaksjonsrader rullet tilbake. Den varige browserprøven bruker bare et nytt, tydelig merket syntetisk punkt i demoordren, med to fullføringer; ingen reelle brukerdata eller gamle avvik er slettet.
+
+Faktisk browser→RPC→database→readback: Lagre beholder popupen; reload beholder svar/kommentar; fullføring lagrer aktør/tid; ny kontroll starter tom; andre fullføring beholder første snapshot; historikken åpner første versjon skrivebeskyttet. Eksakte prosjekt-/gjennomførings-ID-er og begrensninger står øverst i CONTINUITY.md. Skjermbevis: checklist-popup-history-proof.jpg. To browseridentiteter, mobil, kamera, ny rapport/PDF og UE-portal er ikke gradert PASS. Ingen ny TEST OK, main-merge eller Production-endring.

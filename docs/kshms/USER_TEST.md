@@ -1,3 +1,15 @@
+# Nåværende korte Preview-prøve – ordremeny og sjekklistepopup
+
+Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
+
+1. Åpne din **generelle ordre → Sjekklister**. Menyen skal være kompakt, og listene sammenfoldet. Vanlige våtromspunkter skal ikke legges til automatisk.
+2. Åpne **Egne sjekkpunkter og vedlegg**. Velg fag, skriv et punkt og trykk **+ Legg til eget sjekkpunkt**. Åpne listen med **Åpne sjekkliste**, sett **Ok** og skriv en kommentar. Trykk **Lagre**, lukk popupen og oppdater siden. Åpne listen igjen: svaret og kommentaren skal stå der.
+3. Trykk **Sjekkliste fullført**, deretter **Start ny kontroll**. Den nye kontrollen skal starte uten gamle Ok-/Ikke aktuelt-svar. Den fullførte kontrollen skal fortsatt kunne åpnes fra historikken i den sammenfoldede radens detaljer, med navn, tidspunkt og opprinnelige svar. Åpne avvik videreføres for oppfølging.
+
+Utvikleren har kontrollert denne flyten innlogget i desktop-Sandbox, full critical QA/build, 35 databasekontroller med rollback og React-prøver for historikk, bilder, samtidige endringer, konfliktvalg og avviksoppfølging. Firma uten KS/HMS kan legge til egne punkter i generelle ordrer; publiserte maler krever aktiv firmamodul. Mobil og to faktiske innlogginger gjenstår. Denne korte brukerprøven gjelder den nye ordremenyen/popupen; tidligere TEST OK for avvikslukking består. Production-godkjenning er ikke gitt.
+
+---
+
 # Nåværende korte Preview-prøve – Sjekklistesentral
 
 Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
