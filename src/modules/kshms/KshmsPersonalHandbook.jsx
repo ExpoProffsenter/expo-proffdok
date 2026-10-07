@@ -1,6 +1,7 @@
 import KshmsRoutineSearch from './KshmsRoutineSearch.jsx';
 import KshmsVersionIdentity from './KshmsVersionIdentity.jsx';
 import { personalHandbook } from './kshmsPersonal.mjs';
+import { routineNumber } from './kshmsJobChoices.mjs';
 
 export default function KshmsPersonalHandbook({data,userId,query,onQueryChange,onRead,busy,ContentComponent}) {
  const {all,visible}=personalHandbook(data,userId,query);
@@ -12,7 +13,7 @@ export default function KshmsPersonalHandbook({data,userId,query,onQueryChange,o
   {!all.length&&<p>Du har ikke fått noen rutiner ennå. Be firmaadmin eller KS/HMS-ansvarlig kontrollere tilgangen og tildelingene dine.</p>}
   {all.length>0&&!visible.length&&<p>Ingen rutiner passer søket. Prøv et annet ord eller tøm søket.</p>}
   {visible.map(group=>{const current=group.editions[0],version=current.version;return <details className="ks-personal-routine" key={group.routineId}>
-   <summary><span>{version.content.title} · v{version.number}</span><span className={`ks-badge ${current.acknowledgment?'ks-status-approved':'ks-status-draft'}`}>{group.archived?'Utgått':current.acknowledgment?'Bekreftet':version.requires_ack||version.number===1?'Må bekreftes':'Til informasjon'}</span></summary>
+   <summary><span>{routineNumber(data.routines.find(row=>row.id===group.routineId)?.reference_number)&&`${routineNumber(data.routines.find(row=>row.id===group.routineId)?.reference_number)} · `}{version.content.title} · v{version.number}</span><span className={`ks-badge ${current.acknowledgment?'ks-status-approved':'ks-status-draft'}`}>{group.archived?'Utgått':current.acknowledgment?'Bekreftet':version.requires_ack||version.number===1?'Må bekreftes':'Til informasjon'}</span></summary>
    <p className="ks-field-hint">Kapittel: {version.content.chapter}</p>
    {group.archived&&<p>Rutinen er tatt ut av bruk. Den er beholdt som historikk. Spør ansvarlig hvilken rutine som gjelder nå.</p>}
    <KshmsVersionIdentity version={version} acknowledgment={current.acknowledgment} data={data} userId={userId}/>

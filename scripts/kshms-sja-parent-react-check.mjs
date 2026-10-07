@@ -25,6 +25,7 @@ const identity = { id: user, name: 'QA Prosjektleder' }, otherIdentity = { id: c
 const rows = new Map(), receipts = new Map(), requests = [];
 let failBefore = false, failAfterCommit = false, failReadback = false, lateState = null;
 window.__rpc = async (name, args) => {
+  if (name === 'kshms_job_choices') return { context: { ...context, company_id: args.p_company_id }, projects: [], project_total: 0, routines: [] };
   const scoped = { ...context, company_id: args.p_company_id };
   if (name === 'kshms_get_state') return { context: scoped, settings: null, routines: [], versions: [], members: [], assignments: [], acknowledgments: [], reviews: [] };
   if (name === 'kshms_sja_state') {

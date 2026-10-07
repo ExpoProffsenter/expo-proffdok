@@ -4,9 +4,10 @@ import { deviationForm,validateDeviation,deviationClosureIssues,saveDeviation,st
 import { createAssignmentMailer,assignmentEmail } from '../supabase/functions/_shared/kshms-assignment-mailer.mjs';
 import { createDeviationCenter } from '../src/modules/deviations/deviationViewTools.js';
 import { createProjectDeviation,newProjectDeviation,projectDeviationDraftKey,readProjectDeviationDraft } from '../src/modules/deviations/projectDeviationCreate.mjs';
+import { ruhRegistrationIssues } from '../src/modules/kshms/kshmsRuh.mjs';
 
 const caseId='11111111-1111-4111-8111-111111111111',companyId='22222222-2222-4222-8222-222222222222',eli='eli';
-const open={id:caseId,company_id:companyId,responsible_id:eli,revision:1,status:'open',title:'Trond → Eli',event:'A relevant actual incident',due_on:'2026-10-10',responsible_identity:{name:'Eli'},source_kind:'company'};
+const open={id:caseId,company_id:companyId,responsible_id:eli,revision:1,status:'open',category:'hms',title:'Trond → Eli',event:'A relevant actual incident',due_on:'2026-10-10',responsible_identity:{name:'Eli'},source_kind:'company'};
 const form=deviationForm(open);assert.equal(validateDeviation(form),'');assert(validateDeviation(form,{closing:true}));
 const completed={...form,cause:'A known cause',improvement_action:'Actual corrective action',control_note:'Eli checked the corrected work'};
 const closed={...open,...completed,revision:2,status:'closed',closed_by:eli,closed_at:'2026-10-06T20:00:00Z',closed_identity:{name:'Eli'}};
@@ -26,6 +27,9 @@ const memory=new Map(),storage={getItem:k=>memory.get(k),setItem:(k,v)=>memory.s
 storeDeviationDraft(storage,eli,companyId,{form:completed,id:caseId,revision:1,requestId:'stable-request'});
 assert.equal(readDeviationDraft(storage,eli,companyId).revision,1);assert.equal(readDeviationDraft(storage,'trond',companyId),null);assert.equal(readDeviationDraft(storage,eli,'other'),null);
 const key=deviationDraftKey(eli,companyId),cached=JSON.parse(memory.get(key));memory.set(key,JSON.stringify({...cached,savedAt:Date.now()-8*86400000}));assert.equal(readDeviationDraft(storage,eli,companyId),null);
+const legacyForm={...completed};delete legacyForm.project_reference;delete legacyForm.routines;memory.set(key,JSON.stringify({...cached,form:legacyForm}));assert.equal(readDeviationDraft(storage,eli,companyId).form.control_note,completed.control_note,'New optional RUH fields erased a legacy deviation draft');
+storeDeviationDraft(storage,eli,companyId,{form:completed,revision:1,projectId:'project-one'},'project-one');assert.equal(readDeviationDraft(storage,eli,companyId,'project-one').form.control_note,completed.control_note);assert.equal(readDeviationDraft(storage,eli,companyId,'project-two'),null);assert(readDeviationDraft(storage,eli,companyId),'Project draft displaced standalone draft');
+assert.deepEqual(ruhRegistrationIssues(deviationForm(),[]).map(row=>row.key),['title','event','responsible_id','due_on']);assert.equal(ruhRegistrationIssues(form,[{id:eli}]).length,0);
 memory.set(key,JSON.stringify({...cached,form:{title:'incomplete'}}));assert.equal(readDeviationDraft(storage,eli,companyId),null);memory.set(key,'invalid');assert.equal(readDeviationDraft(storage,eli,companyId),null);
 const project={projectName:'Unchanged',projectDeviations:[{id:'linked',photos:[{id:'proof'}]},{id:'ordinary',status:'Åpent'}]},linked={...closed,source_kind:'project',source_key:'linked'};
 const next=projectAfterDeviation(project,linked);assert.equal(next.projectDeviations[0].status,'Lukket');assert.deepEqual(next.projectDeviations[0].photos,project.projectDeviations[0].photos);assert.equal(next.projectDeviations[1],project.projectDeviations[1]);assert.equal(project.projectDeviations[0].status,undefined);
@@ -98,11 +102,11 @@ const editorRpc=async(name,args)=>{
  if(name==='kshms_deviation_command'){commands++;if(args.p_action==='close'&&failClose)throw new Error('Synthetic failed close');serverCase={...serverCase,...args.p_payload,revision:serverCase.revision+1};if(args.p_action==='close')serverCase={...serverCase,status:'closed',closed_by:eli,closed_at:closed.closed_at,closed_identity:closed.closed_identity,control_note:args.p_payload.control_note.trim()};return serverCase;}
  throw new Error(name);
 };
-const Editor=new Function('bindings','const {useState,useRef,useEffect,kshmsRpc,window,readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange,DEVIATION_CHANGE_EVENT}=bindings;'+editorBody+';return KshmsDeviations;')({
+const Editor=new Function('bindings','const {useState,useRef,useEffect,kshmsRpc,window,useKshmsJobChoices,ruhRegistrationIssues,readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange,DEVIATION_CHANGE_EVENT}=bindings;'+editorBody+';return KshmsDeviations;')({
  useState:init=>{const id=slot++;if(!(id in slots))slots[id]=typeof init==='function'?init():init;return [slots[id],value=>slots[id]=typeof value==='function'?value(slots[id]):value];},
  useRef:init=>{const id=slot++;if(!(id in slots))slots[id]={current:init};return slots[id];},
  useEffect:(fn,deps)=>{const id=slot++;if(!effects[id]||deps.some((value,i)=>value!==effects[id].deps[i]))queue.push(()=>{effects[id]?.cleanup?.();effects[id]={deps,cleanup:fn()};});},
- kshmsRpc:editorRpc,window:editorWindow,readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange:row=>published.push(row),DEVIATION_CHANGE_EVENT:'changed'
+ kshmsRpc:editorRpc,window:editorWindow,useKshmsJobChoices:()=>({value:null}),ruhRegistrationIssues:()=>[],readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange:row=>published.push(row),DEVIATION_CHANGE_EVENT:'changed'
 });
 const renderEditor=()=>{slot=0;const view=Editor({context:{company_id:companyId,user_id:eli,manage:false}});for(const effect of queue.splice(0))effect();return view;};
 let view=renderEditor();await view.openCase(caseId);view=renderEditor();

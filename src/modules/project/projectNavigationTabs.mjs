@@ -26,6 +26,7 @@ export function createProjectWorkspaceTabs({
   openDeviationCount = 0,
   unreadForAdmin = 0,
   totalChatCount = 0,
+  canUseKshms = false,
 } = {}) {
   return [
     ["prosjekt", isNewProject ? "Nytt prosjekt" : "Prosjektoversikt"],
@@ -40,7 +41,7 @@ export function createProjectWorkspaceTabs({
     ["tilgang", "Tilgang"],
     ["installasjoner", "Fag/utstyr"],
     ["sjekklister", "Sjekklister"],
-    ["avvik", openDeviationCount > 0 ? `Avvik (${openDeviationCount})` : "Avvik"],
+    ["avvik", `${canUseKshms ? 'Avvik/SJA/RUH' : 'Avvik'}${openDeviationCount > 0 ? ` (${openDeviationCount})` : ''}`],
     [
       "chat",
       unreadForAdmin > 0

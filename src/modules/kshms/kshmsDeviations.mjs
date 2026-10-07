@@ -1,7 +1,7 @@
 export const DEVIATION_CHANGE_EVENT='expo:kshms:deviation-change';
 export const DEVIATION_STATUS={open:'Åpent',in_progress:'Under behandling',closed:'Lukket'};
 export const DEVIATION_CATEGORY={quality:'Kvalitet',hms:'HMS',ruh:'RUH / nestenulykke'};
-const fields=['title','event','category','responsible_id','due_on','cause','immediate_action','improvement_action','follow_up','status','control_note'];
+const fields=['title','event','category','responsible_id','due_on','cause','immediate_action','improvement_action','follow_up','status','control_note','project_reference','routines'];
 export function deviationForm(row={}) {
  return Object.fromEntries(fields.map(key=>[key,row[key]??({category:'hms',status:'open'}[key]||'')]));
 }
@@ -53,8 +53,9 @@ export async function saveDeviation({rpc,companyId,userId,action,payload,isCurre
  const row=detail?.case;
  if(row?.id!==result.id||row.company_id!==companyId||row.revision<result.revision)throw new Error('Kunne ikke kontrollere lagret sak. Kladden er beholdt.');
  if(action==='close'&&(row.status!=='closed'||row.closed_by!==userId||!row.closed_at))throw new Error('Lukkingen kunne ikke bekreftes. Kladden er beholdt. Oppdater saken før du prøver igjen.');
- if(action==='save'||action==='close'){
-  const submitted=['title','event','category','responsible_id','due_on','cause','immediate_action','improvement_action','follow_up','control_note','include_in_report'];
+ if(action==='create'&&payload.project_id&&row.project_id!==payload.project_id)throw new Error('Prosjektkoblingen kunne ikke kontrolleres. Kladden er beholdt.');
+ if(action==='create'||action==='save'||action==='close'){
+  const submitted=action==='create'?['title','event','category','responsible_id','due_on','immediate_action','project_reference','routines']:['title','event','category','responsible_id','due_on','cause','immediate_action','improvement_action','follow_up','control_note','include_in_report','project_reference','routines'];
   for(const key of submitted){
    if(!Object.hasOwn(payload,key)||payload[key]===undefined)continue;
    const value=['title','event'].includes(key)||key==='control_note'&&action==='close'?String(payload[key]??'').trim():payload[key];
@@ -63,12 +64,14 @@ export async function saveDeviation({rpc,companyId,userId,action,payload,isCurre
  }
  return detail;
 }
-export const deviationDraftKey=(userId,companyId)=>`expo:kshms:deviation-draft:v1:${userId}:${companyId}`;
-export function storeDeviationDraft(storage,userId,companyId,draft) {
- try{storage.setItem(deviationDraftKey(userId,companyId),JSON.stringify({...draft,userId,companyId,savedAt:Date.now()}));return true;}catch{return false;}
+export const deviationDraftKey=(userId,companyId,projectId=null)=>`expo:kshms:deviation-draft:v1:${userId}:${companyId}${projectId?`:project:${projectId}`:''}`;
+export function storeDeviationDraft(storage,userId,companyId,draft,projectId=null) {
+ try{storage.setItem(deviationDraftKey(userId,companyId,projectId),JSON.stringify({...draft,userId,companyId,savedAt:Date.now()}));return true;}catch{return false;}
 }
-export function readDeviationDraft(storage,userId,companyId) {
- try{const row=JSON.parse(storage.getItem(deviationDraftKey(userId,companyId))||'null');
+export function readDeviationDraft(storage,userId,companyId,projectId=null) {
+ try{const row=JSON.parse(storage.getItem(deviationDraftKey(userId,companyId,projectId))||'null');
+  if(row?.form)row.form={project_reference:'',routines:'',...row.form};
+  if(projectId&&row?.projectId!==projectId)return null;
   if(row?.userId!==userId||row.companyId!==companyId||!Number.isFinite(row.savedAt)||Date.now()-row.savedAt>7*86400000||row.savedAt>Date.now()+60000||!Number.isInteger(row.revision)||row.revision<0||!row.form||fields.some(key=>typeof row.form[key]!=='string'))return null;
   return row;
  }catch{return null;}

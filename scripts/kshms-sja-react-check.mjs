@@ -26,6 +26,7 @@ const projectName=id=>id===projectOne?'QA prosjekt én':'QA prosjekt to';
 let mode = '', detailDeferred = null, stateDeferred = null, stateReads = 0;
 const detail = (id, scope = context) => ({ context: scope, sja: structuredClone(rows.get(id) || null) });
 window.__rpc = async (name, args) => {
+  if (name === 'kshms_job_choices') return { context: { ...context, company_id: args.p_company_id }, projects: [], project_total: 0, routines: [] };
   if (name === 'kshms_sja_state' || name === 'kshms_project_sja_state') {
     stateReads++;
     if (stateDeferred) return stateDeferred.promise;

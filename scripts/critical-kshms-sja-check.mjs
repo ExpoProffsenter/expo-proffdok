@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { SJA_HINTS, SJA_STATEMENT, SJA_SUGGESTIONS, appendSjaSuggestion, blankSja, newSjaRequests, persistSjaDraft, readSjaDraft, sameSjaContent, saveSja, sjaContent, sjaDraftKey, sjaSigningIssues } from '../src/modules/kshms/kshmsSja.mjs';
+import { routineNumber,routineReference } from '../src/modules/kshms/kshmsJobChoices.mjs';
 const company = crypto.randomUUID(), user = crypto.randomUUID();
 const blank = blankSja();
 for (const key of ['title','workplace','task','leader_id','planned_on','reviewed_on','routines','equipment','ppe','emergency','stop_conditions','communication']) assert.equal(blank.content[key], '', `${key} was filled without the user`);
 assert(blank.content.steps.every(row => Object.entries(row).every(([key,value]) => key === 'id' || value === '')));
 assert(blank.content.participants.every(row => Object.entries(row).every(([key,value]) => key === 'id' || value === '')));
 assert.notEqual(blank.id, blankSja().id);assert(sjaSigningIssues(blank.content).length > 10);
+assert.equal(routineNumber(12),'R-012');assert.equal(routineNumber(null),'');assert.equal(routineReference({reference_number:12,number:3,content:{title:'QA støv'}}),'R-012 – QA støv (versjon 3)');
+for(const trade of ['Muring','Flislegging','Tømrerarbeid'])assert(SJA_SUGGESTIONS.title.some(text=>text.includes(trade)),`Missing ${trade} writing prompt`);
 assert.equal(appendSjaSuggestion('Own site note', SJA_SUGGESTIONS.hazard[0]), `Own site note\n${SJA_SUGGESTIONS.hazard[0]}`);
 assert.equal(appendSjaSuggestion('Own site note', 'Own site note'), 'Own site note');
 assert.equal(sjaContent(blank.content).task, '');assert(SJA_HINTS.task.length > 10);
@@ -55,5 +58,5 @@ const main=fs.readFileSync('src/main.jsx','utf8');assert(main.includes('authUser
 const integration=main.split('\n').find(line=>line.includes('ProjectSjaEntry, { context:')).trim().replace(/,$/,'');
 const renderEntry=new Function('tab','projectId','authUser','kshmsContext','isProjectSupportReadOnly','isProjectLocked','isReadOnly','import_jsx_runtime','ProjectSjaEntry','kshmsScopeKey',`return ${integration}`);
 const gate=(patch={})=>{const options={tab:'prosjekt',projectId,authUser:{id:user},context:{user_id:user,enabled:true},support:false,locked:false,readOnly:false,...patch};return renderEntry(options.tab,options.projectId,options.authUser,options.context,options.support,options.locked,options.readOnly,{jsx:(_,props)=>props},()=>{},'scope');};
-assert.equal(gate().projectId,projectId);assert.equal(gate({locked:true}).readOnly,true);for(const patch of [{projectId:null},{tab:'sjekklister'},{context:{user_id:user,enabled:false}},{context:{user_id:crypto.randomUUID(),enabled:true}},{support:true}])assert(!gate(patch),'Project SJA bypassed the actual app gate');
+assert.equal(gate().projectId,projectId);assert.equal(gate({tab:'avvik'}).projectId,projectId);assert.equal(gate({locked:true}).readOnly,true);for(const patch of [{projectId:null},{tab:'sjekklister'},{context:{user_id:user,enabled:false}},{context:{user_id:crypto.randomUUID(),enabled:true}},{support:true}])assert(!gate(patch),'Project SJA bypassed the actual app gate');
 console.log('critical-kshms-sja-check: PASS – blank jobs, separate hints/suggestions, scoped drafts, confirmed readback, explicit own signature, retries and company-change cancellation');

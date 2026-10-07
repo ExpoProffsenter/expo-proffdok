@@ -2058,6 +2058,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       hasSalesOrigin: Boolean(project?.salesOrigin?.requestRef),
       warrantyIssued: Boolean(warranty?.issued),
       openDeviationCount: openProjectDeviationCount,
+      canUseKshms: Boolean(kshmsContext?.enabled && authUser?.id === kshmsContext?.user_id && !isProjectSupportReadOnly),
       unreadForAdmin,
       totalChatCount
     });
@@ -6573,7 +6574,7 @@ ${appLink}`;
           projectGuideStats.openDeviationCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { type: "button", className: "secondary", onClick: openActiveDeviations, children: "Se aktive avvik" })
         ] }),
         tab === "prosjekt" && projectId && renderProjectOverviewPanel({ project, goToTab, leaveProjectWorkspace }),
-        tab === "prosjekt" && projectId && authUser?.id === kshmsContext?.user_id && kshmsContext?.enabled && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectSjaEntry, { context: kshmsContext, projectId, readOnly: isProjectLocked || isReadOnly }, `${kshmsScopeKey}:${projectId}`),
+        (tab === "prosjekt" || tab === "avvik") && projectId && authUser?.id === kshmsContext?.user_id && kshmsContext?.enabled && !isProjectSupportReadOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectSjaEntry, { context: kshmsContext, projectId, readOnly: isProjectLocked || isReadOnly }, `${kshmsScopeKey}:${projectId}`),
         tab === "prosjekt" && (!hasActiveProjectWorkspace ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", { className: "desktopOnlyWhenNoProject desktopNoProjectWelcome", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "desktopNoProjectHero", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "mobileHomeEyebrow", children: "Expo ProffDok" }),
@@ -6871,7 +6872,7 @@ ${appLink}`;
             }
           )
         ] }),
-        tab === "avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: "Avvik", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+        tab === "avvik" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Section, { title: kshmsContext?.enabled && authUser?.id === kshmsContext?.user_id && !isProjectSupportReadOnly ? "Avvik/SJA/RUH" : "Avvik", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.ClipboardCheck, {}), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           DeviationCenter,
           {
             project,

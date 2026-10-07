@@ -1,13 +1,15 @@
 export const SJA_STATEMENT = 'Jeg har gjennomgått denne SJA-en sammen med deltakerne. Arbeidsoppgaven, farene, tiltakene og beredskapen er vurdert for forholdene på stedet. Nødvendige tiltak er kontrollert før arbeidet starter. Ved endringer eller uavklart risiko stanser vi og vurderer arbeidet på nytt.';
 export const SJA_SOURCES = [
   { title: 'Arbeidstilsynet – risikovurdering', url: 'https://www.arbeidstilsynet.no/hms/risikovurdering/', checked_on: '2026-10-07' },
+  { title: 'Arbeidstilsynet – kvartsstøv', url: 'https://www.arbeidstilsynet.no/risikofylt-arbeid/kjemikalier/kvarts/', checked_on: '2026-10-08' },
+  { title: 'Arbeidstilsynet – arbeid i høyden', url: 'https://www.arbeidstilsynet.no/risikofylt-arbeid/arbeid-i-hoyden/', checked_on: '2026-10-08' },
   { title: 'NDLA – sikker jobb-analyse', url: 'https://ndla.no/r/teknologi-tp-pin-vg2/sikker-jobb-analyse---sja/f9d424ab0c', checked_on: '2026-10-07' },
 ];
 // Writing prompts are separate from the record. A new job never inherits answers.
 export const SJA_HINTS = {
   title: 'Gi jobben et kort navn som arbeidslaget kjenner igjen.',
   workplace: 'Skriv adresse eller område og hvor arbeidet foregår.',
-  project_reference: 'Skriv ordrenummer eller prosjektnavn hvis jobben er knyttet til et oppdrag.',
+  project_reference: 'Skriv egen referanse ved et eksternt oppdrag. Firmaprosjekt velges fra listen «Prosjekt i ProffDok», og lagres som en egen prosjektkobling.',
   task: 'Beskriv hva dere skal gjøre, hva som inngår og hvem arbeidet kan berøre.',
   planned_on: 'Velg datoen arbeidet er planlagt utført. Vurder forholdene på nytt hvis planen endres.',
   reviewed_on: 'Velg datoen arbeidslaget gikk gjennom denne analysen.',
@@ -29,23 +31,23 @@ export const SJA_HINTS = {
   involvement: 'Dokumenter personens bidrag eller gjennomgang. Dette er dokumentasjon av medvirkning, ikke en signatur på personens vegne.',
 };
 export const SJA_SUGGESTIONS = {
-  title: ['Bytte rør eller sanitærutstyr', 'Arbeid i høyden', 'Løft og transport av utstyr'],
+  title: ['Muring og pussing', 'Flislegging og kapping av fliser', 'Tømrerarbeid og montering av konstruksjoner', 'Bytte rør eller sanitærutstyr', 'Arbeid i høyden', 'Løft og transport av utstyr'],
   workplace: ['[Adresse], [etasje/rom/område]', '[Arbeidsområde] – avgrensning og adkomst: [beskriv]'],
-  project_reference: ['[Ordrenummer] – [prosjektnavn]', 'Selvstendig jobb uten prosjekt'],
-  task: ['Demontere og bytte [rør/utstyr]. Avgrens jobben og beskriv hvem som berøres.', 'Montere [utstyr] i [område]. Beskriv adkomst, andre fag og hva som inngår.'],
-  activity: ['Avklare og sikre arbeidsstedet før oppstart', 'Transportere og plassere utstyr', 'Demontere, montere og kontrollere [beskriv delen av jobben]'],
-  hazard: ['Trykk eller lagret energi', 'Fall og arbeid i høyden', 'Tunge løft og arbeidsstilling', 'Støv, kjemikalier eller biologisk eksponering', 'Andre aktiviteter og personer i området'],
+  project_reference: ['Eksternt oppdrag: [ordrenummer / oppdragsgiver]', 'Selvstendig jobb uten prosjekt'],
+  task: ['Mure eller pusse [vegg/område]. Avklar underlag, stillas, materialtransport og andre fag.', 'Legge fliser i [rom/område]. Avklar underlag, kapping, lim/fugemasse og adkomst.', 'Sage og montere [trevirke/konstruksjon]. Avklar stabilitet, arbeidshøyde, verktøy og løft.', 'Demontere og bytte [rør/utstyr]. Avgrens jobben og beskriv hvem som berøres.', 'Montere [utstyr] i [område]. Beskriv adkomst, andre fag og hva som inngår.'],
+  activity: ['Blande og påføre mørtel eller puss', 'Kappe, legge og fuge fliser', 'Kappe trevirke og montere konstruksjonen', 'Avklare og sikre arbeidsstedet før oppstart', 'Transportere og plassere utstyr', 'Demontere, montere og kontrollere [beskriv delen av jobben]'],
+  hazard: ['Kvartsstøv ved kapping, boring eller meisling i mur, betong, stein og fliser', 'Kutt, treff eller klemming ved sag og annet håndverktøy', 'Ustabile materialer eller konstruksjoner under montering', 'Belastning ved knestående arbeid, pussing og materialhåndtering', 'Trykk eller lagret energi', 'Fall og arbeid i høyden', 'Tunge løft og arbeidsstilling', 'Støv, kjemikalier eller biologisk eksponering', 'Andre aktiviteter og personer i området'],
   consequence: ['Personskade ved fall, treff eller klemming – beskriv hvem som kan rammes', 'Helseplager ved støv eller eksponering – beskriv stoff og berørte personer', 'Vannlekkasje eller skade på bygg og utstyr – beskriv mulig omfang'],
-  measures: ['Avklar hvordan energi og trykk isoleres før inngrep. Beskriv sikring og ansvar.', 'Avgrens arbeidsområdet og avklar adkomst med andre fag.', 'Planlegg løftet, egnede hjelpemidler og bemanning før transport.'],
+  measures: ['Avklar materialets støvfare og velg arbeidsmetode og støvbegrensning, for eksempel våt bearbeiding eller egnet avsug. Beskriv kontroll og ansvar.', 'Planlegg arbeidsplattform, fallsikring, avsperring og håndtering av materialer for denne arbeidshøyden.', 'Avklar stabilitet og midlertidig sikring før konstruksjoner eller tunge materialer monteres.', 'Avklar hvordan energi og trykk isoleres før inngrep. Beskriv sikring og ansvar.', 'Avgrens arbeidsområdet og avklar adkomst med andre fag.', 'Planlegg løftet, egnede hjelpemidler og bemanning før transport.'],
   owner: ['[Navn] utfører tiltaket. [Navn] følger opp før start.'],
   routines: ['Risikovurdering før arbeid', 'Kontroll og bruk av arbeidsutstyr', 'Samordning med andre fag', 'Beredskap og førstehjelp'],
-  equipment: ['[Utstyr] – egnethet, kontroll og nødvendig opplæring avklares av [navn] før bruk.', 'Løfteutstyr eller arbeidsplattform – oppgi type, kontroll og hvem som kan bruke det.'],
+  equipment: ['Sag, fliskutter, blandemaskin eller håndverktøy – oppgi egnethet, vern, støvbegrensning og kontroll før bruk.', '[Utstyr] – egnethet, kontroll og nødvendig opplæring avklares av [navn] før bruk.', 'Løfteutstyr eller arbeidsplattform – oppgi type, kontroll og hvem som kan bruke det.'],
   ppe: ['Vurder øyevern, hansker og vernefottøy ut fra farene i denne jobben.', 'Vurder åndedrettsvern eller hørselsvern etter eksponering og øvrige tiltak.', 'Særskilt verneutstyr er ikke aktuelt fordi [begrunn ut fra vurderte farer].'],
   emergency: ['Varsling: [hvem/hvordan]. Møtested for hjelp: [sted]. Førstehjelpsutstyr: [sted].', 'Avklar hvordan en skadet person kan nås og hjelpes på dette arbeidsstedet.'],
   stop_conditions: ['Stans ved endrede forhold, nye farer eller tiltak som ikke kan gjennomføres. Kontakt [ansvarlig] før ny vurdering.', 'Stans ved uavklart trykk, energi, eksponering eller samordning med andre fag.'],
   communication: ['Gjennomgang på arbeidsstedet med deltakerne [dato]. Beskriv spørsmål, avklaringer og endringer i analysen.', 'Arbeidstrinn og tiltak gjennomgått i oppstartsmøte. Beskriv hvordan dere avklarte felles forståelse.'],
   name: ['[Navn på deltaker]'],
-  role: ['Utførende', 'Ansvarlig prosjektleder', 'Arbeidsleder', 'Representant for annet fag'],
+  role: ['Murer', 'Flislegger', 'Tømrer', 'Utførende', 'Ansvarlig prosjektleder', 'Arbeidsleder', 'Representant for annet fag'],
   company: ['[Firma for ekstern deltaker]'],
   involvement: ['Gjennomgikk arbeidstrinn og tiltak. Tok opp [konkret forhold] og avklarte [tiltak].', 'Bidro med vurdering av [fare/arbeidstrinn]. Beskriv hva dere ble enige om.'],
   check: ['Sikring og avgrensning av arbeidsområdet', 'Kontroll av utstyr og nødvendige kvalifikasjoner', 'Gjennomgang av tiltak med arbeidslaget'],
@@ -98,9 +100,9 @@ export function sjaSigningIssues(value) {
   content.participants.forEach((row, index) => { for (const key of ['name', 'role', 'involvement']) if (!row[key]) issues.push({ key: `participants.${index}.${key}`, label: `Deltaker ${index + 1}: ${SJA_ROW_LABELS[key]}` }); });
   return issues;
 }
-export function appendSjaSuggestion(value, suggestion) {
-  const lines = String(value || '').split('\n');
-  return lines.includes(suggestion) ? value : [...lines.filter(Boolean), suggestion].join('\n');
+export function appendSjaSuggestion(value, suggestion, separator = '\n') {
+  const lines = String(value || '').split(separator);
+  return lines.includes(suggestion) ? value : [...lines.filter(Boolean), suggestion].join(separator);
 }
 export function sameSjaContent(a, b) { try { return JSON.stringify(sjaContent(a)) === JSON.stringify(sjaContent(b)); } catch { return false; } }
 export const sjaDraftKey = (userId, companyId, projectId = null) => `expo:kshms:sja-draft:v1:${userId}:${companyId}${projectId ? `:project:${projectId}` : ''}`;
