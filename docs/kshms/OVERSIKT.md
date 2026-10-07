@@ -7,16 +7,16 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Les denne først ved chatbytte; detaljer
 Ny KS/HMS-funksjonalitet ligger i samme Sandbox Preview:
 https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
-Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert feature-head/funksjonskode før denne dokumentoppdateringen: `06a5abbed3ed6a921265c96468f1253d278ca5ee`. SJA er READY på samme Preview, Core Safety/critical build success. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
+Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert feature-head/funksjonskode før denne dokumentoppdateringen: `694a4a9a114044ead724532c18133c28045c5863`. SJA/RUH-prosjektinngang, faktiske prosjektvalg og nummererte rutiner er READY på samme Preview, Core Safety/critical build success. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
 
 | Del | Hva finnes nå | Godkjenning / gjenstående |
 |---|---|---|
-| Håndbok og Min personalhåndbok | Tilgang, firmatilpasning, godkjenning, eksakte rutineutgaver, egen bekreftelse, oppfølging og årlig revisjon. Biblioteket har 73 forslag med sporbar dekning av 121 temaer fra begge PDF-ene, fordelt på seks kapitler. | Tidligere håndbokdelprøve er TEST OK. Firmaene må fortsatt velge, tilpasse og godkjenne sine rutiner. Temadekning betyr ikke at alle utførelsesverktøy er bygget. |
-| Avvik | Popup, ansvarlig/frister, fast appvarsel, prosjektkobling, bevart kladd, lagring og ansvarligs egen lukking. Ukoblede prosjektavvik har eksisterende flyt. | Popup/direkte lukking er TEST OK fra Kenneth. Separate faktiske brukerøkter, mobil og enkelte legacy-flyter er fortsatt ikke fullt verifisert. |
+| Håndbok og Min personalhåndbok | Faste rutinenumre (R-001 osv.), separat versjon, tilgang, firmatilpasning, godkjenning, eksakte rutineutgaver, egen bekreftelse, oppfølging og årlig revisjon. Biblioteket har 73 forslag med sporbar dekning av 121 temaer fra begge PDF-ene, fordelt på seks kapitler. | Tidligere håndbokdelprøve er TEST OK. Firmaene må fortsatt velge, tilpasse og godkjenne sine rutiner. Temadekning betyr ikke at alle utførelsesverktøy er bygget. |
+| Avvik og RUH | Popup, ansvarlig/frister, fast appvarsel, prosjektkobling, bevart kladd, lagring og ansvarligs egen lukking. Registrer RUH direkte fra prosjektets Avvik/SJA/RUH eller fritt i KS/HMS, med faktisk prosjektvalg/ekstern referanse og nummererte rutiner. | Tidligere avvikspopup/lukking er TEST OK. Ny RUH-prosjektflyt er utvikler-/databaseprøvd; Kenneths egen prøve og mobil/flere brukerøkter gjenstår. |
 | Sjekklistesentral | Bygge/publisere fagmaler og hente faste utgaver inn i ordrer og våtromsprosjekter. | Implementert og utviklertestet. Kenneths egen godkjenning av sentral/innhenting er ikke registrert. |
 | Sjekklistepopup | Sammenfoldede lister, egne punkter, Lagre, Sjekkliste fullført, Start ny kontroll og historikk med person/tidspunkt. | Database-/React-prøver og tidligere innlogget desktopprøve PASS. Kenneth bekreftet 7. oktober kl. 23:02 TEST OK også for lagring/fullføring/historikk. |
 | Meny | Kompakt ordremeny og bevart hovedmeny etter retur til Startside. | Menyrettelsen er TEST OK 7. oktober kl. 22:39. Ikke gjenta denne prøven uten ny feil. |
-| SJA | Tomt skjema, veiledning, valgbare forslag i alle tekstfelt, samlet mangelliste ved signering, lagrede utkast, egen PL-signatur og bevart signert innhold. Prosjektoversikt/Ordreoversikt → Åpne SJA kobler nye analyser til prosjektet med faktisk ID. | READY på samme Preview. 60 rollback SQL-kontroller, faktisk React-flyt/prosjektinngang og full critical QA/build PASS. Eksisterende signert analyse bevart. Kenneths SJA-TEST OK og innlogget skjerm-/mobilprøve gjenstår. |
+| SJA | Tomt skjema, veiledning, valgbare forslag for mur/flis/tømrer/VVS, samlet signeringsmangelliste, utkast, egen PL-signatur og uendret signert innhold. Avvik/SJA/RUH → Opprett SJA gir direkte prosjektkobling. KS/HMS har faktisk firmaprosjektvalg/ekstern referanse og godkjente rutiner med fast nummer og utgave. | READY på samme Preview. 93 rollback SQL-kontroller, faktisk React prosjekt-/SJA-/RUH-flyt og full critical QA/build PASS. Eksisterende signert analyse og 10 rutineutgaver bevart. Kenneths SJA/RUH-TEST OK og innlogget skjerm-/mobilprøve gjenstår. |
 | E-post | Tildelingsworker og kø er laget. Appvarslene fungerer uavhengig av e-post. | Sandbox-utsending er deaktivert; avsenderoppsett og faktisk mottaksprøve gjenstår. |
 
 ## Det som fortsatt skal bygges
@@ -29,7 +29,7 @@ Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er
 
 ## Beslutninger som består
 
-Seks egne hovedkapitler. Egen gjennomgang av tildelte rutiner er påkrevd. Valgt ansvarlig lukker avviket selv. Firmaadmin/KS-HMS-ansvarlig kan bygge og publisere. Generelle ordrer har egne sjekkpunkter uten KS/HMS-tilgang og henter publiserte maler når firmaet har modulen; Fag/utstyr brukes i våtrom. Fullførte kontroller beholder historikken. SJA skal ha ansvarlig prosjektleders signatur og dokumentert medvirkning. KS-rolle gir ikke automatisk innsyn i andres personalmappe.
+Seks egne hovedkapitler. Egen gjennomgang av tildelte rutiner er påkrevd. Valgt ansvarlig lukker avviket selv. Firmaadmin/KS-HMS-ansvarlig kan bygge og publisere. Generelle ordrer har egne sjekkpunkter uten KS/HMS-tilgang og henter publiserte maler når firmaet har modulen; Fag/utstyr brukes i våtrom. Fullførte kontroller beholder historikken. SJA skal ha ansvarlig prosjektleders signatur og dokumentert medvirkning. SJA og RUH er tilgjengelig fra prosjekt bare ved personlig KS/HMS-tilgang. RUH bruker avvikssentralens ansvar/frist, egne tiltak og egen lukking. Rutinenummer er fast, versjon viser godkjent utgave; manuelt eksternt oppdrag beholdes. KS-rolle gir ikke automatisk innsyn i andres personalmappe.
 
 ## Neste steg og besvarede spørsmål
 

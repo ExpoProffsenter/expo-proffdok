@@ -1,3 +1,17 @@
+# Neste korte Preview-prøve – SJA/RUH i prosjekt
+
+Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
+
+1. Åpne et aktivt testprosjekt med din KS/HMS-tilgang. Velg **Avvik/SJA/RUH → Opprett SJA**. Skjemaet skal åpne direkte, vise riktig prosjekt og ha tomme vurderingsfelt. Under **Velg fra bedriftens godkjente rutiner** kan du lese en rutine og bruke **Legg inn rutine**. R-nummer og versjon skal fremkomme. Skriv et testnavn og **Lagre utkast**. Lukk og **Åpne SJA**: analysen følger samme prosjekt. Tidligere signeringsvarsel med mangelliste består.
+2. I samme prosjekt velger du **Registrer RUH**. Trykk først **Lagre RUH for oppfølging** med tomt skjema: én liste skal vise hva som mangler. Skriv et tydelig testnavn og hendelse, velg deg selv som **Ansvarlig** og en **Frist**, og lagre. Rapporten skal følge prosjektet og gi deg fast ansvarligvarsel. Fyll **Årsak**, **Utførte tiltak / forbedring** og **Egen kontroll av resultatet**, bekreft egen kontroll og velg **Lagre og lukk RUH**. Varselet for denne saken skal forsvinne; rapporten skal fortsatt finnes under **Åpne RUH → Lukkede**.
+3. Ved behov fra **KS/HMS → SJA → Ny SJA** velger du et faktisk firmaprosjekt i **Prosjekt i ProffDok**. **Manuelt / eksternt oppdrag** og **Ekstern ordre / egen referanse** er fortsatt tilgjengelig. Valg av prosjekt eller forslag skal ikke fylle risiko-/gjennomgangssvar for deg. RUH i **Avvikssentral** har samme prosjekt-/eksternvalg.
+
+Utviklerkontroll: 93 faktiske SQL-assertioner med rollback, ny faktisk React-prosjekt/SJA/RUH-prøve, eksisterende SJA-/parent-prøver og full critical QA/build PASS. Faktisk personlig modul-/prosjektgate, tilgangsavslag og låst prosjekt er prøvd i kode/database. Brukere uten KS/HMS-tilgang beholder **Avvik** og får ikke SJA/RUH-knappene. Ingen ny innlogget skjerm-/mobilprøve hevdes. Kode `694a4a9a114044ead724532c18133c28045c5863` READY på samme adresse, Core Safety success. Meny og sjekklistepopup er tidligere TEST OK og gjentas ikke i denne prøven.
+
+---
+
+# Historikk – tidligere SJA-brukerprøver
+
 # Neste korte Preview-prøve – SJA-varsel, forslag og prosjektkobling
 
 Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe

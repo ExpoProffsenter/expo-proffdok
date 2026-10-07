@@ -28,7 +28,7 @@ Faglige primærkilder kontrollert 8. oktober: [avvik/nestenulykker](https://www.
 
 ## Publisering og neste prøve
 
-Publiseringsbevis oppdateres før avslutning. Fast Preview:
+Funksjonskode `694a4a9a114044ead724532c18133c28045c5863`, tree `e25b2562a45dcde9ced79ecfb54a6b52b053416c`, er identisk med den lokalt testede treen. Vercel `dpl_AX9QTyWPY7KQovT3bGBFPSyKxsdg` er **READY** på samme branch-alias. **Core safety + critical build** check `113058866219` er completed/success på denne koden. Branch-binding **EXPO_BACKEND_TARGET=sandbox** gjelder feat-kshms-foundation/preview. PR #216 er fortsatt draft. Fast Preview:
 https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
 Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`. Ingen merge, Production-DDL/-release eller demo-synk. PR #216 beholdes draft. Ny innlogget skjerm-/mobilprøve er ikke gjennomført; den tidligere verktøyblokkeringen ble ikke gjentatt. Neste handling er den korte prøven først i USER_TEST.md. SJA/RUH-TEST OK gjenstår. Meny og sjekklistepopup er tidligere TEST OK og gjentas ikke uten ny feil.

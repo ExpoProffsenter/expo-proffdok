@@ -1,3 +1,13 @@
+# Gjeldende KS/HMS – SJA/RUH direkte fra prosjekt READY 8. oktober 2026
+
+Miljømål BEGGE, først samme feature/Sandbox Preview. Funksjonskode `694a4a9a114044ead724532c18133c28045c5863`, tree `e25b2562a45dcde9ced79ecfb54a6b52b053416c`, READY på `dpl_AX9QTyWPY7KQovT3bGBFPSyKxsdg`, Core safety + critical build `113058866219` success; fast alias og EXPO_BACKEND_TARGET=sandbox kontrollert. Modulbrukere har Avvik/SJA/RUH → Opprett SJA / Registrer RUH og egne prosjektoversikter. Faktisk firmaprosjektvalg, manuell ekstern referanse, fast R-rutinenummer/eksakt godkjent utgave og fagforslag for mur/flis/tømrer/VVS er levert.
+
+93 rollback SQL-assertioner, faktisk React-prosjekt/SJA/RUH samt eksisterende SJA-/parent-prøver og full critical QA/build PASS. Signert SJA (1) og publiserte rutineutgaver (10) er uendret. Migrasjon `20261007224149_kshms_job_choices_routine_references_ruh` bare i Sandbox. Main uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`, PR #216 draft, ingen Production-DDL/-release/demo-synk. Ny kort brukerprøve står først i USER_TEST.md; SJA/RUH-TEST OK gjenstår. Meny/sjekklistepopup er tidligere godkjent. Testbevis: docs/kshms/SJA_RUH_PROJECT_20261008.md.
+
+---
+
+# Historikk – tidligere release-status
+
 # Gjeldende KS/HMS – SJA-UX og prosjektkobling READY 8. oktober 2026
 
 Miljømål BEGGE, samme feature/Sandbox Preview. Funksjonskode `06a5abbed3ed6a921265c96468f1253d278ca5ee` er READY på `dpl_DPUuLEqTcrN2mFr3HN5nrE8D3u4r`, Core safety + critical build `113042525234` success, og branch-binding sandbox er kontrollert. SJA har samlet mangelliste ved signering, forslag i alle tekstfelt og Prosjektoversikt/Ordreoversikt → Åpne SJA med faktisk lagret prosjekt-ID.

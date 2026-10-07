@@ -1,3 +1,19 @@
+# Gjeldende fortsettelsespunkt – prosjekt-SJA/RUH og nummererte rutiner READY
+
+Oppdatert 8. oktober 2026, Europe/Oslo. Les OVERSIKT.md først. Kenneth avklarte ca. 00:24–00:32 at ordreforslag skal være bedriftens faktiske aktiverte ProffDok-prosjekter, samtidig med manuell ekstern referanse. Han ba om nummererte bedriftens rutiner, fagforslag for mur/flis/tømrer, RUH med samme logikk og direkte Opprett SJA / Registrer RUH i prosjektets Avvik/SJA/RUH, bare ved personlig modultilgang. Dette er implementert, ikke SJA/RUH-TEST OK.
+
+Prosjektoversikt / Ordreoversikt og Avvik/SJA/RUH har Opprett SJA og Registrer RUH samt Åpne SJA / Åpne RUH. Begrepene forklares. Ny blank analyse/rapport derfra binder prosjekt-ID. SJA og RUH i KS/HMS kan også velge faktisk tilgjengelig aktivt firmaprosjekt eller manuell ekstern referanse. Godkjente, tilgjengelige rutiner kan leses og velges med fast R-nummer og versjon. Nummer er metadata uavhengig av publisert innhold. Forslag dekker mur, flis, tømrer, VVS og generelle jobber; ingen risiko-/signatursvar autofylles. RUH gjenbruker existing deviation-category/kommando, ansvarligvarsel, egne tiltak/lukking, private vedlegg og historikk. Kladd og retry/readback er vernet per bruker/firma/prosjekt. Legacy avvik/prosjekt-/sjekkpunkt-JSON beholdes.
+
+Funksjonskode `694a4a9a114044ead724532c18133c28045c5863`, tree `e25b2562a45dcde9ced79ecfb54a6b52b053416c`, er READY på `dpl_AX9QTyWPY7KQovT3bGBFPSyKxsdg` og fast alias. Core safety + critical build `113058866219` completed/success. Lokal og remote tree er eksakt like. EXPO_BACKEND_TARGET=sandbox gjelder feature-branchen/preview. Migrasjon `20261007224149_kshms_job_choices_routine_references_ruh.sql` er registrert bare i Sandbox. 93 SQL-assertioner PASS med full rollback, nye faktiske React/DOM-prosjekt-/SJA-/RUH-handlere PASS, eksisterende SJA- og parent-/fanebytteprøver og full critical/build PASS. Eksisterende signert SJA (1) og publiserte rutineutgaver (10) har identiske fingeravtrykk før/etter.
+
+Neste handling: kort SJA/RUH-prøve først i USER_TEST.md. Ingen ny innlogget nettleser-/mobilprøve hevdes; dokumentert skynettleserblokkering ble ikke gjentatt. Kenneths SJA/RUH-TEST OK gjenstår. Gamle meny/sjekklistepopup-TEST OK består, uten nye omtester. Vernerunder, 5×5 risiko, SJA-vedlegg/PDF, separat HR og øvrig minimum gjenstår. Utførelse før HR og bygging før pilot er fortsatt vedtatt. Miljømål BEGGE, main uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft; ingen merge/Production-DDL/-release/demo-synk. Ikke bygg denne delen på nytt ved chatbytte.
+
+Se [SJA_RUH_PROJECT_20261008.md](SJA_RUH_PROJECT_20261008.md) for scope/testbevis.
+
+---
+
+# Historikk – tidligere fortsettelsespunkter
+
 # Gjeldende fortsettelsespunkt – SJA-UX og prosjektinngang READY
 
 Oppdatert 8. oktober 2026, Europe/Oslo. Les OVERSIKT.md først. Kenneths nye tilbakemelding 7. oktober ca. 23:50 er håndtert: samlet mangelliste med feltnavn og fokus ved signering, aktive forslag i alle SJA-tekstfelt og inngang fra prosjekt ved KS/HMS-tilgang. Dette er tilbakemelding og ny scope, ikke ny SJA-TEST OK.

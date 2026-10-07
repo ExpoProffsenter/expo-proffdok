@@ -1,3 +1,9 @@
+## SJA/RUH-oppfølging 8. oktober 2026 – READY på samme Preview
+
+Kenneths prosjektvalg-/rutine-/fag-/RUH-scope ca. 00:24–00:32 er levert. Modulbrukerens Avvik/SJA/RUH har direkte Opprett SJA og Registrer RUH. Faktiske aktive tilgjengelige prosjekter og manuell ekstern referanse støttes. Godkjente firmarutiner har fast R-nummer, separat versjon og aktivt valgt referanse. SJA/RUH forklares; forslag omfatter mur/flis/tømrer/VVS. RUH bruker eksisterende ansvar, fast appvarsel, egne tiltak/lukking og historikk. 93 SQL-assertioner med rollback, faktiske React-handlerforløp og full critical/build PASS. Kode `694a4a9a114044ead724532c18133c28045c5863` READY/Core Safety success. Main/Production/demo urørt. Neste er den korte brukerprøven først i USER_TEST.md; ikke bygg delen på nytt. Vernerunder/5×5 risiko, vedlegg/PDF og separat HR består. Se SJA_RUH_PROJECT_20261008.md.
+
+---
+
 ## SJA-oppfølging 8. oktober 2026 – levert på samme Preview
 
 Kenneths nye scope er levert: samlet mangelliste/fokus ved signering, forslag i alle SJA-tekstfelt og prosjektinngang med faktisk prosjektkobling og dobbel tilgangskontroll. Full critical/build, begge React-scenarioer og 60 rollback SQL-kontroller PASS. Ingen SJA-TEST OK mottatt. Kort brukerprøve først i USER_TEST.md; testbevis i SJA_UX_PROJECT_20261008.md. Main/Production/demo er urørt. Vernerunder/5×5 risiko er videre utførelsesscope, vedlegg/PDF og separat HR består.
