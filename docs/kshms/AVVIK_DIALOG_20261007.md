@@ -34,3 +34,12 @@ Feil beholder dialog/kladd. Kladd er scoped til bruker/firma/prosjekt og har syv
 ## Neste steg
 
 Bekreft grønn full critical build, publiser feature med forventet-SHA-kontroll, kontroller READY/Sandbox-binding, og prøv dialog/kladd/valgt ansvarlig, automatisk prosjektkobling, konkret sak, egen lukking og tilbakeføring/omlasting i skynettleser. Oppdater denne rapporten og CONTINUITY/QA/USER_TEST med eksakt testet commit, case-ID og skjermbevis. Bevar øvrig roadmap B–E, seks hovedkapitler og tidligere publiserte rutiner.
+
+
+## Gjenopptatt sluttstatus og arbeidsmåte – 7. oktober 2026
+
+Funksjonskode d73cd78935ab769b36c37ae4721934f586f05d27 er uavhengig gjenfunnet. Vercel dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA er READY, fast branch-alias peker dit, og PR Core Safety 37644638589 er completed/success. PR #216 er fortsatt draft. Main er uendret. Dette er dokumentarbeid, ikke en ny full build eller skjermprøve.
+
+Siste assistentstatus som brukeren limte inn fra den avbrutte økten rapporterer bestått desktopopprettelse med tittelfokus, beholdt kladd ved omlasting, annen valgt ansvarlig, automatisk KS/HMS-kobling og konkret åpnet sak. Melder fikk ikke den andres ansvarligoppgave og kunne ikke lukke på den andres vegne. Overtakelse/egen lagret lukking, bortfalt varsel, Lukket i prosjektet og hendelseshistorikk ble deretter rapportert. Eksakt ny case-ID/skjermbevis er ikke lagret i denne rapporten; siste endelige omlastingsreadback ble avbrutt. Disse resultatene er videreført som tidligere rapportert, uten å konstruere ny PASS-evidens. Full-app-mobil er fortsatt utestående.
+
+Brukerens nyeste instrukser: bruker tester Preview; assistent gjør små, målrettede kontroller. Ikke gjenta hele skynettleserrunden. Første prøve gjelder bare ny avviksdialog, ansvarlig/frist og direkte åpning av lagret sak. USER_TEST.md har tre korte trinn. Hele roadmapen og øvrige ufullførte kontroller er bevart i CONTINUITY.md.

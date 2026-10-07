@@ -1,16 +1,16 @@
-# Ny avviksprøve – dialog 7. oktober 2026
+# Nåværende korte Preview-prøve – ny avviksdialog
 
-Samme faste Preview: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
+Bruk samme faste adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
-1. Åpne et lagret prosjekt → Avvik → + Nytt HMS/prosjektavvik. Det skal åpne en stor dialog; på smal skjerm fyller den skjermen.
-2. Fyll Kort tittel og Beskrivelse av avvik. Velg en faktisk bruker i Ansvarlig for oppfølging og lukking og sett Frist.
-3. Velg Lagre avvik for oppfølging. Ett lagret prosjektavvik skal bli koblet til KS/HMS, og riktig sak skal åpne direkte.
-4. Melder skal bare få ansvarligvarsel når melder selv er valgt ansvarlig. Valgt ansvarlig dokumenterer årsak/tiltak/egen kontroll og lagrer lukkingen selv.
-5. Gå tilbake til prosjektets Avvik. Den koblede posten skal vise lagret status og Åpne i KS/HMS. Last siden på nytt og kontroller samme post.
-6. Prøv Behold kladd og lukk før lagring. Hent avvikskladd skal hente samme felt tilbake. Ved lagringsfeil skal felt/kladd beholdes.
-7. Ditt eksisterende Test-prosjektavvik kan åpnes via Koble til KS/HMS uten removeChild-feil. Frist og beskrivelse tas med; et fritekstnavn velges ikke automatisk som bruker-ID.
+Arbeidsmåte avtalt etter chatbruddet 7. oktober: bruker tester skjermflyten i Preview, assistent gjør korte målrettede kontroller. Prøv bare følgende del nå. Eldre testlister nedenfor er historikk og skal ikke utføres som én ny full runde.
 
-Utviklerens faktiske skyprøver og begrensninger føres i AVVIK_DIALOG_20261007.md. Brukerens prøve kommer i tillegg. Relevant TEST OK kreves fortsatt før merge.
+1. Åpne et lagret testprosjekt → **Avvik** → **+ Nytt HMS/prosjektavvik**. En stor dialog skal åpne. På mobil skal den fylle skjermen.
+2. Skriv en tydelig testtittel og beskrivelse. Velg en faktisk bruker i **Ansvarlig for oppfølging og lukking**, og sett **Frist**.
+3. Trykk **Lagre avvik for oppfølging**. Den lagrede saken skal åpne direkte i KS/HMS med riktig ansvarlig, frist og prosjektkobling.
+
+Gi resultatet for denne delen før neste test. Eksisterende «Test»-avvik skal ikke lukkes eller endres bare for å teste. Bruk en ny syntetisk testsak. Innlogging på samme adresse/nettleser skal normalt bevares. E-postmottak er ikke en del av denne prøven; Sandbox-sending er fortsatt dokumentert deaktivert. Relevant TEST OK kreves fortsatt før eventuell merge. Ingen Production-endring er utført.
+
+Utviklerens tidligere skjermresultat, kontrollert kode/deployment og gjenstående tester er samlet i CONTINUITY.md og AVVIK_DIALOG_20261007.md. Separate brukerøkter, mobil, ukoblet legacy/teller og faktisk e-post følger i små deler; ingen full omtest startes automatisk.
 
 ---
 

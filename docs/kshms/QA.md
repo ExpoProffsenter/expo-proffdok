@@ -267,3 +267,10 @@ Ingen ny TEST OK er gitt for A2. Følg USER_TEST.md; e-post må konfigureres sik
 ## Avviksdialog – 7. oktober, ny brukerfeil
 
 Se AVVIK_DIALOG_20261007.md. removeChild er gjenskapt med faktisk React DOM-renderer/adapter og løst i samme prøve. Utvidede avvik-/navigasjonschecker tester konkret kilde/readback/ansvarlig, gamle bilder og andre prosjektfelt. Full Sandbox build og ny Preview-prøve dokumenteres i rapporten før ferdigstatus. Tidligere 73 SQL-kontroller gjentas ikke for denne endringen uten ny grunn.
+
+
+## Gjenopptakelse etter nytt chatbrudd – 7. oktober 2026
+
+Uavhengig read-only kontroll: kodehead d73cd78935ab769b36c37ae4721934f586f05d27; PR #216 open/draft; main 155f6c4ac01f126c1db0c65da385cfd9305587d5; PR Core Safety 37644638589 completed/success; Vercel dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA READY og fast alias samsvarer. Nye lokale builds, SQL-migrasjoner, databaseprøver og skynettleserrunder er ikke kjørt.
+
+Siste desktopresultat er bevart fra brukerens innlimte assistentstatus, med tydelig proveniens i CONTINUITY.md og AVVIK_DIALOG_20261007.md. Ikke oppgrader manglende siste omlastingsreadback, to-konto-økt, mobil eller e-postmottak til PASS. Bruker tester nå skjermflyten i Preview, og utvikler gjør korte relevante kontroller. Gamle beståtte kontroller beholdes, ikke kjøres automatisk på nytt for denne dokumentendringen. Ingen ny TEST OK/Production-godkjenning er gitt.

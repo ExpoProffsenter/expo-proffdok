@@ -2,7 +2,33 @@
 
 Oppdatert 7. oktober 2026, Europe/Oslo. Dette dokumentet samler gjeldende brukerbeslutninger og verifiserte referanser etter to avbrutte samtaler. En ny chat skal lese dette først, deretter PLAN.md, SCOPE_A2.md, QA.md og USER_TEST.md. Dette er ikke en ordrett kopi av historikken eller en attest på at hele modulen er ferdig.
 
-## Ny avviksrunde – 7. oktober, etter brukerens krasjrapport
+## Gjeldende fortsettelsespunkt etter nytt chatbrudd – 7. oktober 2026
+
+Dette avsnittet er nyere enn statusene og testlistene nedenfor. Brukeren har bedt om at han tester skjermflyten i den faste Preview-adressen, mens assistenten gjør korte, målrettede utviklerkontroller. Ikke start en ny full skynettleserrunde eller gjenta beståtte prøver uten en konkret grunn. Gi én avgrenset brukerprøve om gangen, rapporter resultat og lagre neste steg før videre arbeid. Dette erstatter de eldre arbeidsmåteformuleringene om at brukerens Preview-prøve ikke kan erstatte utviklerens lange skjermrunde. Relevante permanente critical checks, sikker lagring og eksplisitt TEST OK før eventuell merge gjelder fortsatt.
+
+### Uavhengig kontrollert ved denne gjenopptakelsen
+
+- Arbeidsbranch: feat-kshms-foundation. Funksjonskode: d73cd78935ab769b36c37ae4721934f586f05d27.
+- Siste kodecommit er «fix(kshms): keep assignment identity in case and align dialog controls». Forrige kodecommit 88e1bfec7655026ecdb08c9b9796d7cb5b97938b inneholder stor avviksdialog og sikker prosjektkobling.
+- Vercel dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA er READY på d73cd789. Fast alias peker på denne deploymenten: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe .
+- GitHub PR Core Safety 37644638589 er completed/success på d73cd789. Eksisterende CI er lest; ingen full lokal build eller database-/skynettleserprøve er gjentatt i denne gjenopptakelsen.
+- PR #216 er fortsatt åpen draft, ikke merget. Main er fortsatt 155f6c4ac01f126c1db0c65da385cfd9305587d5. Ingen Production- eller demo-endring utføres.
+- Begge håndbøkenes dekningsgrunnlag, 73 selvstendige forslag, 121 innholdstemaer og seks vedtatte hovedkapitler er bevart. Ikke spør om kapittelvalget på nytt.
+- Gjenværende B–E er fortsatt hele utførelsesdelen med firmamaler/sjekklister/vernerunder, SJA, 5×5 risiko, øvrige varsler/PDF/rapporter, separat individuell HR/kompetanse/medarbeidersamtaler, valgfritt stoffkartotek og pilot/drift.
+
+### Siste skjermstatus fra den avbrutte chatten
+
+Brukeren har limt inn den siste assistentstatusen fra forrige økt. Den rapporterer at ny dialog åpner med tittelfokus, kladd overlever omlasting, valgt annen syntetisk ansvarlig beholdes og lagring åpner riktig KS/HMS-sak direkte. Melder får ikke den andres ansvarligvarsel og kan ikke lukke på den andres vegne. Deretter er overtakelse/egen lagret lukking, forsvunnet ansvarligvarsel, Lukket i prosjektet og tildelings-/overtakelses-/lukkehistorikk rapportert. Full-app-mobil var fortsatt utestående. Chatten frøs ved «Bekrefter lukket prosjektavvik etter omlasting», med planindikator «1 av 4».
+
+Dette videreføres som rapportert resultat fra den avbrutte økten, ikke en ny skjerm- eller databaseprøve. Eksakt sak-ID, nye rå skjermbevis og en eksplisitt siste readback etter den aller siste omlastingen er ikke lagret i de gjenfunne testnotatene. Ikke konstruer disse eller grader siste omlasting som ny PASS. Eldre dokumenterte case-ID-er og UI-prøver beholdes som historikk. Koden og deploymenten over er uavhengig gjenfunnet; arbeidet skal ikke bygges på nytt fordi testnotatene var eldre.
+
+### Neste avgrensede handling
+
+Brukeren prøver først bare den nye dialogen på samme faste Preview: lagret prosjekt → Avvik → + Nytt HMS/prosjektavvik → velg ansvarlig og frist → Lagre avvik for oppfølging. Stor dialog, faktisk brukervalg og direkte åpning av riktig KS/HMS-sak skal vises. Se den korte aktuelle listen øverst i USER_TEST.md. Deretter håndteres brukerens resultat før neste avgrensede prøve eller utførelsesleveranse. To separate faktiske brukerøkter, mobil, avviksteller/ukoblet legacy og reelt e-postmottak beholdes som ufullførte kontroller; ingen lang omtest startes automatisk.
+
+E-postlevering i Preview er fortsatt dokumentert deaktivert på grunn av manglende Sandbox-avsenderoppsett. Ingen faktisk mottaksprøve er bekreftet. Den tilstanden er ikke kontrollert på nytt i databasen ved dette dokumentarbeidet.
+
+## Tidligere checkpoint: ny avviksrunde – 7. oktober, etter brukerens krasjrapport
 
 Arbeid fra kontrollert 794a9e5f. Brukeren har levert konkret removeChild-feil; faktisk React-renderer/DOM-adapter gjenskaper feilen i isolert prøve, og én samlet tekstverdi i Forrige/Neste løser denne prøven. Stor dialog med ansvarligvalg, frist, «Lagre avvik for oppfølging», bekreftet prosjektkilde/KS-kobling og beholdt kladd er bygget. Se AVVIK_DIALOG_20261007.md for årsak, scope, kontroller og neste steg. Ny live Preview-prøve og endelig testet SHA skal føres før denne runden omtales som ferdig. Tidligere UI-prøver nedenfor beholdes som historikk.
 
