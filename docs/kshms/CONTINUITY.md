@@ -178,3 +178,20 @@ En ny chat kan få denne teksten: «Fortsett KS/HMS Expo ProffDok. Les docs/kshm
 Kapittelsammenligningen er lagt frem og Kenneth har valgt de seks som egne hovedkapitler. Nye funksjonsavklaringer er ikke nødvendige for å fortsette eksisterende Preview-test.
 
 Arbeidsmåten begrenser tap av kontekst og gjenoppbygging ved avbrudd. Den gir ingen garanti mot feil i selve chat-/verktøyplattformen.
+
+
+## 2026-10-07 — kompakt ordremeny og sjekklistepopup
+
+Miljømål BEGGE. Arbeidet bygger på remote 12183b181e4ce603394ac71b817b3eccb3fac6fa. Bare eksisterende feature/Sandbox Preview oppdateres; ikke main eller produksjonsdatabasen.
+
+Generelle ordrer bruker prosjektets kompakte desktopmeny med ordreetiketter og uten skjulte våtromsfaner. Ingen standard våtromsliste legges automatisk til. Egne sjekkpunkter kan legges til uten garanti eller personlig KS/HMS-tilgang. Firmaets aktiverte modul styrer fortsatt innhenting av publiserte malutgaver. Eksisterende svar som ikke er aktive i ordren, beholdes under «Tidligere dokumentasjon».
+
+Sjekklistene og innhentingen vises kollapset. «Åpne sjekkliste» åpner en React-eid popup. «Lagre» lagrer en kontroll under arbeid for videreføring av personer som allerede har prosjektets redigeringsrett. «Sjekkliste fullført» lagrer en uforanderlig kontroll med definisjon, svar, bilder, serverens brukeridentitet og tidspunkt. «Start ny kontroll» beholder fullførte kontroller og viderefører åpne/koblede avvik. Fullføring lukker ikke avvik. Egne punkter kan legges til en pågående kontroll; fullførte og innhentede maldefinisjoner forblir faste.
+
+Prosjektkontroller lagres i private tabeller med eksisterende prosjekt-/firma-/profilkontroll og låssjekk. Ingen personlig KS/HMS-rett kreves for egne punkter. Revisjonskontroll hindrer at to personer overskriver hverandre. Faste lagrings-ID-er gjør tapt svar trygt å prøve igjen. Readback kontrolleres før lokal kladd slettes. Triggeren beskytter popupens svar mot forsinket vanlig prosjekt-autolagring; eksisterende KS/HMS-trigger kjøres etterpå og beholder autoritativ avvikslukking. Andre prosjektdata, signaturer, vedlegg og legacyavvik beholdes.
+
+Sandbox-migrasjonsloggen er fasit for filnavn: 20261007180955 project_checklist_runs, 20261007182126 project_checklist_command_scope, 20261007182209 project_checklist_command_block, 20261007182259 project_checklist_mirror_scope og 20261007182742 project_checklist_custom_points. De små oppfølgingsmigrasjonene retter SQL-variabelscope før publisering og tillater egne punkter i en kladd. De skal følge grunnmigrasjonen i samme rekkefølge ved senere godkjent produksjonsutrulling.
+
+Verifisert: 31 reelle SQL-kontroller med syntetiske rader og rollback; faktisk React-popup med fanebytte, lagringsfeil/retry, kollegas videreføring, egne nye punkter, bilder, flere kontroller, historikk, konfliktvisning, skrivebeskyttelse og sen firmabytte-respons; kompakt ordremeny videresender til native knapper uten skjulte våtromsvalg. Eksisterende React-test for malbygging/publisering/innhenting og montert sjekklistehopp passerer. «Åpne først»-kravet endrer med vilje gammel tests forventning om automatisk utvidet liste; hoppkontrakten er bevart. Ny critical-check er lagt inn i build/QA. Innlogget Preview-prøve gjenstår før TEST OK/merge.
+
+Kort brukertest på samme faste Preview: Åpne testordren → Sjekklister. Menyen skal være kompakt og listene kollapset. Åpne «Egne sjekkpunkter og vedlegg», legg til et punkt, åpne listen og lagre. Åpne den igjen (gjerne med en annen person som har prosjektadgang), fortsett og trykk «Sjekkliste fullført». «Start ny kontroll» skal åpne neste kontroll mens den første kan leses i historikken. Prøv også en publisert KS/HMS-liste.

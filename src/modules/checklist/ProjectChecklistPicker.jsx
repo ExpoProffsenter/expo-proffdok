@@ -5,7 +5,7 @@ import { MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT } from '../access/moduleAccess
 import { WORK_PROFILE_EVENT } from '../access/workProfileClient.js';
 import '../kshms/kshmsChecklists.css';
 
-export default function ProjectChecklistPicker({companyId,userId,projectId,instances=[],readOnly,onImport,onOpen}) {
+export default function ProjectChecklistPicker({companyId,userId,projectId,instances=[],readOnly,onImport,onOpen,collapsed=false}) {
  const [data,setData]=useState(null),[trade,setTrade]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const scopeRef=useRef(null),request=useRef(0),locked=useRef(false),attempts=useRef(new Map());
  const current=scope=>scope?.active&&scopeRef.current===scope;
@@ -41,7 +41,7 @@ export default function ProjectChecklistPicker({companyId,userId,projectId,insta
  };
  if(!projectId||!companyId||!userId||!installed.length&&data?.context.enabled===false)return null;
  const visible=(data?.versions||[]).filter(version=>!trade||version.content.trade===trade);
- return <section className="ks-checklists ks-project-checklists"><h2>Sjekklister for fag</h2><p>Hent firmaets publiserte sjekklister til dette prosjektet. Fyll dem ut i Sjekklister. Utgaven du henter, beholdes når firmaet senere endrer malen.</p>
+ const content=<section className="ks-checklists ks-project-checklists"><h2>Sjekklister for fag</h2><p>Hent firmaets publiserte sjekklister til dette prosjektet. Fyll dem ut i Sjekklister. Utgaven du henter, beholdes når firmaet senere endrer malen.</p>
   {error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}
   {!!installed.length&&<div className="ks-checklist-grid">{installed.map(instance=><article className="ks-card" key={instance.id}><span className="ks-badge">{instance.content.trade}</span><h3>{instance.content.title}</h3><p>{`Hentet inn · versjon ${instance.version}`}</p><button type="button" className="secondary" onClick={()=>onOpen(instance)}>Åpne sjekkliste</button></article>)}</div>}
   {data?.context.enabled&&<><div className="ks-checklist-filters"><label className="ks-field"><span>Velg fag</span><select value={trade} onChange={e=>setTrade(e.target.value)}><option value="">Alle fag</option>{CHECKLIST_TRADES.map(value=><option key={value}>{value}</option>)}</select></label><button type="button" className="secondary" disabled={busy} onClick={()=>load().catch(cause=>setError(cause.message))}>Oppdater publiserte sjekklister</button></div>
@@ -52,4 +52,5 @@ export default function ProjectChecklistPicker({companyId,userId,projectId,insta
   {error&&!data&&<button type="button" className="secondary" disabled={busy} onClick={()=>load().catch(cause=>setError(cause.message))}>Prøv igjen</button>}
   {readOnly&&<p>Prosjektet er skrivebeskyttet. Innhentede lister kan åpnes.</p>}
  </section>;
+ return collapsed?<details className="item"><summary>Hent sjekklister fra KS/HMS</summary>{content}</details>:content;
 }

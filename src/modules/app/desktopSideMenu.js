@@ -12,10 +12,11 @@ const SALES_NAV_PREFIX = 'expo-proffdok-sales-preview-requests-v1';
 const cleanLabel = (value = '') => String(value || '').replace(/\s+/g, ' ').trim();
 
 const isProjectWorkspaceLabels = (labels = []) =>
-  (labels.includes('Prosjektoversikt') || labels.includes('Nytt prosjekt')) &&
+  ((labels.includes('Prosjektoversikt') || labels.includes('Nytt prosjekt')) &&
   labels.includes('Prosjektering') &&
   labels.includes('Sjekklister') &&
-  (labels.includes('Avtalegrunnlag') || labels.includes('Tilbud/kontrakt'));
+  (labels.includes('Avtalegrunnlag') || labels.includes('Tilbud/kontrakt'))) ||
+  (labels.includes('Ordreoversikt') && labels.includes('Ordrebeskrivelse') && labels.includes('Sjekklister'));
 
 function findInternalAppNav() {
   if (!window.matchMedia(DESKTOP_QUERY).matches) return null;
@@ -318,7 +319,8 @@ function syncDrawerWithSource(sourceNav, shell) {
     sourceNav.parentNode?.insertBefore(shell.bar, sourceNav);
   }
 
-  const sourceButtons = Array.from(sourceNav.querySelectorAll(':scope > button'));
+  const sourceButtons = Array.from(sourceNav.querySelectorAll(':scope > button'))
+    .filter((button) => !button.hidden && button.style.display !== 'none');
   const sourceLabels = sourceButtons.map((button) => cleanLabel(button.textContent));
   const projectWorkspaceNav = isProjectWorkspaceLabels(sourceLabels);
   const drawerSourceButtons = projectWorkspaceNav

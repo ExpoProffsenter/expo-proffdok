@@ -59,8 +59,8 @@ await click(button('Oppdater publiserte sjekklister'));assert.equal(JSON.stringi
 await act(async()=>window.__unmount());
 let answers={};const groups=window.__groups(project.kshmsChecklistInstances);
 const editorProps=()=>({checklist:answers,activeChecklistTemplate:groups,warranty:{},files:[],setFiles:()=>{},addFiles:()=>{},addChecklistPhoto:()=>{},setChecklistValue:(group,item,patch,options)=>{assert(options.autoSave);answers={...answers,[group]:{...answers[group],[item]:{...answers[group]?.[item],...patch}}};window.__render('editor',editorProps());}});
-await act(async()=>window.__render('editor',editorProps()));assert(window.document.body.textContent.includes('Kontroller koblinger'));
-await click(window.document.querySelector('.checklistGroupHeader'));assert.equal(window.document.querySelector('.checklistGroupHeader').getAttribute('aria-expanded'),'false');
+await act(async()=>window.__render('editor',editorProps()));assert.equal(window.document.querySelector('.checklistGroupHeader').getAttribute('aria-expanded'),'false','Checklist must start collapsed');
+assert(!window.document.body.textContent.includes('Kontroller koblinger'),'Collapsed checklist leaked point fields');
 await act(async()=>{window.sessionStorage.setItem('expoProffDokChecklistJumpTarget',JSON.stringify({category:groups[0].category,item:groups[0].items[0]}));window.dispatchEvent(new window.Event('expoProffDokChecklistJump'));});
 assert.equal(window.document.querySelector('.checklistGroupHeader').getAttribute('aria-expanded'),'true','Already-mounted general order checklist did not open its requested group');
 assert.equal(window.sessionStorage.getItem('expoProffDokChecklistJumpTarget'),null,'Handled jump retained a stale navigation target');

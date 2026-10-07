@@ -29,9 +29,9 @@ export function createChecklistEditor({
   checklistAttachmentDocumentTypeOptions,
   publicProjectFileUrl
 }) {
-  return function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "", onOpenKshmsDeviation = null }) {
+  return function ChecklistEditor({ checklist, setChecklistValue, addChecklistPhoto, addFiles, files, setFiles, closedByName = "Utførende", showOpenDeviationsOnly = false, setShowOpenDeviationsOnly = null, warranty = {}, activeChecklistTemplate: providedActiveChecklistTemplate = null, customChecklistGroups = [], onAddCustomChecklistPoint = null, onRemoveCustomChecklistPoint = null, onSaveChecklistNow = null, checklistSaveStatus = "", onOpenKshmsDeviation = null, customChecklistEnabled, embedded = false, toolsOnly = false, initiallyExpanded = false, consumeChecklistJump = true }) {
     const activeChecklistTemplate = providedActiveChecklistTemplate || getActiveChecklistTemplate(warranty);
-    const customChecklistAllowed = canUseCustomChecklistForWarranty(warranty);
+    const customChecklistAllowed = !embedded && (customChecklistEnabled ?? canUseCustomChecklistForWarranty(warranty));
     const [newCustomChecklistTrade, setNewCustomChecklistTrade] = import_react.default.useState(customChecklistTradeOptions[0] || "Rørlegger");
     const [newCustomChecklistText, setNewCustomChecklistText] = import_react.default.useState("");
     const customChecklistEntries = Array.isArray(customChecklistGroups) ? customChecklistGroups : [];
@@ -43,8 +43,7 @@ export function createChecklistEditor({
       setOpenCategories((prev) => ({ ...prev, [customChecklistCategoryFromTrade(newCustomChecklistTrade)]: true }));
     };
     const [openCategories, setOpenCategories] = import_react.default.useState(() => {
-      const firstMissingGroup = activeChecklistTemplate.find((group) => (group.items || []).some((item) => !hasValue(checklist?.[group.category]?.[item]?.status)));
-      return { [firstMissingGroup?.category || activeChecklistTemplate[0]?.category || ""]: true };
+      return initiallyExpanded ? Object.fromEntries(activeChecklistTemplate.map(group => [group.category, true])) : {};
     });
     const mobileInitialChecklistJumpRef = import_react.default.useRef(false);
     import_react.default.useEffect(() => {
@@ -91,6 +90,7 @@ export function createChecklistEditor({
       window.setTimeout(() => scrollToChecklistPoint(firstOpenDeviationPoint, "start"), 320);
     }, [showOpenDeviationsOnly, firstOpenDeviationPoint?.anchorId]);
     import_react.default.useEffect(() => {
+      if (!consumeChecklistJump) return;
       const jumpToRequestedChecklistPoint = () => {
         try {
           const rawTarget = window.sessionStorage.getItem("expoProffDokChecklistJumpTarget");
@@ -110,9 +110,9 @@ export function createChecklistEditor({
       jumpToRequestedChecklistPoint();
       window.addEventListener('expoProffDokChecklistJump', jumpToRequestedChecklistPoint);
       return () => window.removeEventListener('expoProffDokChecklistJump', jumpToRequestedChecklistPoint);
-    }, []);
+    }, [consumeChecklistJump]);
     import_react.default.useEffect(() => {
-      if (mobileInitialChecklistJumpRef.current) return;
+      if (!initiallyExpanded || mobileInitialChecklistJumpRef.current) return;
       if (showOpenDeviationsOnly) return;
       if (typeof window === "undefined" || window.innerWidth > 700) return;
       if (!firstIncompletePoint) return;
@@ -225,7 +225,7 @@ export function createChecklistEditor({
       }
     };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryCard", children: [
+      !embedded && !toolsOnly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "checklistSummaryCard", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Sjekklistefremdrift" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
@@ -300,7 +300,7 @@ export function createChecklistEditor({
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "checklistList checklistAccordion", children: visibleChecklistGroups.map((group) => {
         const stats = groupStats(group);
-        const isOpen = openCategories[group.category] !== false;
+        const isOpen = openCategories[group.category] === true;
         const groupTone = stats.deviations > 0 ? "avvik" : stats.missing === 0 ? "done" : stats.done > 0 ? "progress" : "missing";
         return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `item checklistGroup checklistGroup-${groupTone}`, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { type: "button", className: "checklistGroupHeader", onClick: () => toggleCategory(group.category), "aria-expanded": isOpen, children: [
@@ -401,7 +401,7 @@ export function createChecklistEditor({
           }) })
         ] }, group.category);
       }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Opplastede sjekklister / vedlegg fra andre fag", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+      !embedded && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Opplastede sjekklister / vedlegg fra andre fag", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "upload checklistUpload", onDragOver: stopChecklistFileDragNavigation, onDragEnter: stopChecklistFileDragNavigation, onDrop: handleChecklistAttachmentDrop, title: "Dra PDF, bilde eller dokument hit – eller klikk for å laste opp", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.Plus, { size: 18 }),
           " Last opp sjekkliste / vedlegg – dra filer hit eller klikk",

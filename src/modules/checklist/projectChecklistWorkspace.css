@@ -1,0 +1,13 @@
+.project-checklist-workspace fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.project-checklist-workspace details > summary { cursor: pointer; font-weight: 700; }
+.project-checklist-workspace details[open] > summary { margin-bottom: 14px; }
+.project-checklist-workspace fieldset:disabled .checklistUpload { pointer-events: none; }
+.project-checklist-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; text-align: left; width: 100%; }
+.project-checklist-heading b { flex: 1; min-width: 160px; }
+.project-checklist-heading span:last-child { font-size: 13px; font-weight: 500; }
+.project-checklist-card-actions { margin-top: 10px; }
+.project-checklist-card > div > button { margin: 4px; }
+.project-checklist-footer { display: flex; flex-wrap: wrap; gap: 8px; position: sticky; bottom: 0; background: white; border-top: 1px solid #dbe3ed; padding: 14px 0 8px; z-index: 2; }
+.deviation-dialog fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.deviation-dialog fieldset:disabled .checklistUpload { pointer-events: none; }
+.deviation-dialog .checklistGroupBody { max-height: none; }

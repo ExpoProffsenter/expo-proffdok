@@ -12,22 +12,22 @@ const GUIDE_ID = "expo-project-workspace-guide";
 const BAR_ID = "expo-desktop-menu-bar";
 const clean = (value = "") => String(value || "").replace(/\s+/g, " ").trim();
 const isOverviewLabel = (label = "") =>
-  label === "Prosjektoversikt" || label === "Nytt prosjekt";
+  label === "Prosjektoversikt" || label === "Nytt prosjekt" || label === "Ordreoversikt";
 const exact = (...labels) => (label = "") => labels.includes(label);
 const startsWith = (prefix = "") => (label = "") =>
   label === prefix || label.startsWith(`${prefix} (`) || label.startsWith(`${prefix} `);
 
 const PROJECT_SHORTCUTS = [
   { key: "overview", label: "Oversikt", matches: isOverviewLabel },
-  { key: "sales", label: "Salgsgrunnlag", matches: exact("Salgsgrunnlag") },
-  { key: "description", label: "Prosjektbeskrivelse", matches: exact("Prosjektbeskrivelse") },
+  { key: "sales", label: "Salgsgrunnlag", matches: exact("Salgsgrunnlag", "Tilbudsgrunnlag") },
+  { key: "description", label: "Prosjektbeskrivelse", matches: exact("Prosjektbeskrivelse", "Ordrebeskrivelse") },
   { key: "agreement", label: "Avtalegrunnlag", matches: exact("Avtalegrunnlag", "Tilbud/kontrakt") },
   { key: "design", label: "Prosjektering", matches: exact("Prosjektering") },
   { key: "progress", label: "Fremdrift", matches: exact("Fremdrift") },
-  { key: "products", label: "Produkter", matches: exact("Produkter") },
+  { key: "products", label: "Produkter", matches: exact("Produkter", "Produkter / FDV") },
   { key: "surfaces", label: "Overflater og innredning", matches: exact("Overflater og innredning") },
   { key: "images", label: "Bilder", matches: exact("Bilder") },
-  { key: "access", label: "Tilgang", matches: exact("Tilgang") },
+  { key: "access", label: "Tilgang", matches: exact("Tilgang", "UE-tilgang") },
   { key: "installations", label: "Fag/utstyr", matches: exact("Fag/utstyr") },
   { key: "checklists", label: "Sjekklister", matches: exact("Sjekklister") },
   { key: "deviations", label: "Avvik", matches: startsWith("Avvik"), dynamicLabel: true },
@@ -35,7 +35,7 @@ const PROJECT_SHORTCUTS = [
   { key: "internal", label: "Interne notater", matches: exact("Interne notater") },
   { key: "handover", label: "Overtagelse", matches: exact("Overtagelse") },
   { key: "warranty", label: "Garanti", matches: startsWith("Garanti"), dynamicLabel: true },
-  { key: "report", label: "Rapport", matches: exact("Rapport") },
+  { key: "report", label: "Rapport", matches: exact("Rapport", "Sluttdokumentasjon") },
 ];
 
 function findSourceNav() {
@@ -55,7 +55,7 @@ function sourceButton(key) {
   const shortcut = PROJECT_SHORTCUTS.find((candidate) => candidate.key === key);
   if (!shortcut) return null;
   return Array.from(nav.querySelectorAll(":scope > button")).find(
-    (button) => shortcut.matches(clean(button.textContent))
+    (button) => !button.hidden && button.style.display !== "none" && shortcut.matches(clean(button.textContent))
   ) || null;
 }
 
@@ -95,13 +95,16 @@ function syncShortcutButtons(guide) {
   const actions = guide.querySelector(".expoProjectWorkspaceQuickActions");
   if (!(actions instanceof HTMLElement)) return;
 
+  const orderWorkspace = clean(sourceButton("overview")?.textContent) === "Ordreoversikt";
+  const hint = guide.querySelector(".expoProjectWorkspaceHint");
+  if (hint) hint.textContent = orderWorkspace ? "Ordremeny" : "Prosjektmeny";
   const available = PROJECT_SHORTCUTS.flatMap((shortcut) => {
     const target = sourceButton(shortcut.key);
     if (!(target instanceof HTMLButtonElement)) return [];
     const sourceLabel = clean(target.textContent);
     return [{
       ...shortcut,
-      visibleLabel: shortcut.dynamicLabel ? sourceLabel : shortcut.label,
+      visibleLabel: shortcut.dynamicLabel || orderWorkspace ? sourceLabel : shortcut.label,
     }];
   });
   const signature = available.map(({ key, visibleLabel }) => `${key}:${visibleLabel}`).join("|");

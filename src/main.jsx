@@ -26,6 +26,7 @@ import { createOvertagelseCompletionTools, renderOvertagelsePanel } from './modu
 import { createHelpCenter } from './modules/help/helpTools.js';
 import { createChecklistEditor } from './modules/checklist/checklistTools.js';
 import ProjectChecklistPicker from './modules/checklist/ProjectChecklistPicker.jsx';
+import ProjectChecklistWorkspace from './modules/checklist/ProjectChecklistWorkspace.jsx';
 import { appendProjectChecklist,projectChecklistTemplate,sameChecklistContent } from './modules/kshms/kshmsChecklists.mjs';
 import { createImageDocumentationTools } from './modules/images/imageDocumentationTools.js';
 import { createProjectOverviewTools } from './modules/project/projectOverviewTools.js';
@@ -1146,14 +1147,14 @@ const KshmsActivation = React.lazy(() => import('./modules/kshms/KshmsActivation
       productMasterByProduct,
       productMasterCheckpointsByProduct
     }), [warranty, selected, productMasterByProduct, productMasterCheckpointsByProduct]);
-    const customChecklistAllowed = canUseCustomChecklistForWarranty(warranty);
+    const customChecklistAllowed = isSimpleOrderProject(project) || canUseCustomChecklistForWarranty(warranty);
     const customChecklistTemplate = (0, import_react.useMemo)(() => customChecklistAllowed ? normalizeCustomChecklistGroups(project?.customChecklistGroups || []) : [], [project?.customChecklistGroups, customChecklistAllowed]);
     const firmChecklistTemplate = (0, import_react.useMemo)(() => projectChecklistTemplate(project?.kshmsChecklistInstances), [project?.kshmsChecklistInstances]);
     const activeChecklistTemplate = (0, import_react.useMemo)(() => dedupeChecklistTemplate([
-      ...getActiveChecklistTemplate(warranty, selectedSoproProductChecklistTemplate),
+      ...(isSimpleOrderProject(project) ? [] : getActiveChecklistTemplate(warranty, selectedSoproProductChecklistTemplate)),
       ...customChecklistTemplate,
       ...firmChecklistTemplate
-    ]), [warranty, selectedSoproProductChecklistTemplate, customChecklistTemplate, firmChecklistTemplate]);
+    ]), [project.workflowType, project.simpleOrder, warranty, selectedSoproProductChecklistTemplate, customChecklistTemplate, firmChecklistTemplate]);
     const dynamicSoproWarrantyRequirementStatus = (0, import_react.useMemo)(() => getDynamicSoproWarrantyRequirementStatus(checklist, selectedSoproProductChecklistTemplate), [checklist, selectedSoproProductChecklistTemplate]);
 
     const addCustomChecklistPoint = (trade, textValue) => {
@@ -2581,6 +2582,14 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
       window.sessionStorage.setItem('expoProffDokChecklistJumpTarget', JSON.stringify({ category: group.category, item: group.items[0] }));
       goToTab('sjekklister');
       window.dispatchEvent(new Event('expoProffDokChecklistJump'));
+    };
+    const applySavedChecklistControl = (category, answers) => {
+      if (cloudAutoSaveTimerRef.current) window.clearTimeout(cloudAutoSaveTimerRef.current);
+      if (checklistAutoSaveTimerRef.current) window.clearTimeout(checklistAutoSaveTimerRef.current);
+      const nextChecklist = { ...(latestStateRef.current?.checklist || checklist), [category]: answers };
+      latestStateRef.current = { ...(latestStateRef.current || buildProjectSnapshot()), checklist: nextChecklist };
+      setChecklist(nextChecklist);
+      saveLocalDraftNow(latestStateRef.current);
     };
     const saveProjectDeviation = async (entry) => {
       if (!authUser || isProjectLocked || isReadOnly || isProjectSupportReadOnly) throw new Error('Prosjektet kan ikke endres med denne tilgangen.');
@@ -6817,6 +6826,7 @@ ${appLink}`;
         }, `${authUser.id}:${kshmsContext.company_id}:${projectId}`)] }),
         tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
           isSimpleOrderProject(project) && authUser && kshmsContext?.company_id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistPicker, {
+            collapsed: true,
             companyId: kshmsContext.company_id,
             userId: authUser.id,
             projectId,
@@ -6825,10 +6835,20 @@ ${appLink}`;
             onImport: saveProjectChecklist,
             onOpen: openProjectChecklist
           }, `${authUser.id}:${kshmsContext.company_id}:${projectId}`),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Åpne en sjekkliste for å fylle den ut. Lagre underveis, eller fullfør kontrollen når punktene er vurdert." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            ChecklistEditor,
+            ProjectChecklistWorkspace,
             {
+              Editor: ChecklistEditor,
+              companyId: kshmsContext?.company_id,
+              userId: authUser?.id,
+              projectId,
+              instances: project.kshmsChecklistInstances || [],
+              readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
+              customChecklistAllowed,
+              isWarrantyPoint: isSoproWarrantyPoint,
+              onSaved: applySavedChecklistControl,
+              uploadImages,
               checklist,
               setChecklistValue,
               onOpenKshmsDeviation: kshmsContext?.enabled ? openKshmsDeviation : null,
