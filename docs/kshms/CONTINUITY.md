@@ -2,7 +2,9 @@
 
 Påbegynt SJA fra avbrutt chat er gjenopptatt i separat recovery-arbeidsmappe. Tomme jobbspesifikke felt, veiledning over feltene, aktivt valgte forslag, delvise utkast, prosjektleders egen signering og uforanderlig signert innhold er implementert. Migrasjon `20261007212858_kshms_sja.sql` er kun anvendt i Sandbox; 37 reelle SQL-kontroller med full rollback, permanent kontroll, faktisk React-flyt og full critical QA/build PASS. Se [SJA_20261007.md](SJA_20261007.md) for scope/kilder/testgrenser og [USER_TEST.md](USER_TEST.md) for kort prøve.
 
-Neste handling: kontrollert publisering/READY på **samme** feature-Preview og SJA-brukerprøve. Bekreftet publiseringshead og skynettleserresultat føres inn før overlevering. Ingen main-/Production-/demo-endring. Ingen SJA-TEST OK er registrert ennå. Meny og sjekklistepopup er allerede TEST OK; ikke start gamle prøver automatisk. Vernerunder, 5×5-risiko, prosjektkobling/vedlegg/PDF, separat HR og øvrige roadmapdeler følger senere avgrensede leveranser.
+Funksjonskode `fcea0492531d860ea006e3650b85d3dd18b80c47`, tree `006797ae29ed0f9fb2fadb4897df25bf9c348a03`, er publisert på **samme** feature-Preview. Vercel `dpl_4LUb8LoDB3EVhkko6nwYae29Sy4G` READY og Core safety + critical build `37690659010` success på denne SHA-en. Fast alias/Sandbox-binding og eksakt lokal/remote tree er kontrollert. Eksisterende skynettleserfane 1 kunne bindes, men viste innlogging; ingen ny fane, credentialforespørsel eller innlogget SJA-skjerm-PASS. Ingen main-/Production-/demo-endring; main er kontrollert `155f6c4`.
+
+Neste handling er den **korte SJA-prøven** øverst i USER_TEST.md. Ingen SJA-TEST OK er registrert ennå. Meny og sjekklistepopup er allerede TEST OK; ikke start gamle prøver automatisk eller bygg SJA på nytt. Vernerunder og 5×5-risiko er neste avgrensede utførelsesdeler etter SJA. Prosjektkobling/vedlegg/PDF, separat HR og øvrige roadmapdeler består. Denne dokumentoppdateringen endrer ikke funksjonskoden.
 
 ---
 

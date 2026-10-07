@@ -7,7 +7,7 @@ Oppdatert 7. oktober 2026, Europe/Oslo. Les denne først ved chatbytte; detaljer
 Ny KS/HMS-funksjonalitet ligger i samme Sandbox Preview:
 https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
-Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert feature-head før denne dokumentoppdateringen: `93783240fa86a32dedbc6f796b78be1a3c2886f2`; funksjonskode `9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f`. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
+Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert feature-head/funksjonskode før denne dokumentoppdateringen: `fcea0492531d860ea006e3650b85d3dd18b80c47`. SJA er READY på samme Preview, Core Safety/critical build success. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
 
 | Del | Hva finnes nå | Godkjenning / gjenstående |
 |---|---|---|
@@ -16,7 +16,7 @@ Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er
 | Sjekklistesentral | Bygge/publisere fagmaler og hente faste utgaver inn i ordrer og våtromsprosjekter. | Implementert og utviklertestet. Kenneths egen godkjenning av sentral/innhenting er ikke registrert. |
 | Sjekklistepopup | Sammenfoldede lister, egne punkter, Lagre, Sjekkliste fullført, Start ny kontroll og historikk med person/tidspunkt. | Database-/React-prøver og tidligere innlogget desktopprøve PASS. Kenneth bekreftet 7. oktober kl. 23:02 TEST OK også for lagring/fullføring/historikk. |
 | Meny | Kompakt ordremeny og bevart hovedmeny etter retur til Startside. | Menyrettelsen er TEST OK 7. oktober kl. 22:39. Ikke gjenta denne prøven uten ny feil. |
-| SJA | Tomt skjema, veiledning over feltene, valgbare forslag, lagrede utkast, ansvarlig PLs egen signering og bevart signert innhold. | 37 SQL-kontroller med rollback, faktisk React-flyt og full critical QA/build PASS. Preview-publisering kontrolleres i SJA_20261007.md; Kenneths SJA-TEST OK gjenstår. |
+| SJA | Tomt skjema, veiledning over feltene, valgbare forslag, lagrede utkast, ansvarlig PLs egen signering og bevart signert innhold. | Publisert/READY på samme Preview. 37 SQL-kontroller med rollback, faktisk React-flyt og full critical QA/build PASS. Innlogget skjermprøve og Kenneths SJA-TEST OK gjenstår. |
 | E-post | Tildelingsworker og kø er laget. Appvarslene fungerer uavhengig av e-post. | Sandbox-utsending er deaktivert; avsenderoppsett og faktisk mottaksprøve gjenstår. |
 
 ## Det som fortsatt skal bygges
@@ -33,7 +33,7 @@ Seks egne hovedkapitler. Egen gjennomgang av tildelte rutiner er påkrevd. Valgt
 
 ## Neste steg og besvarede spørsmål
 
-Meny og sjekklistepopup er godkjent; ingen ny popupprøve startes automatisk. Tom SJA med veiledning/forslag, lagring og egen signering er utviklertestet. Kort SJA-brukerprøve står først i USER_TEST.md etter bekreftet Preview-publisering. Beståtte utvikler-/databaseprøver gjentas ikke uten ny feil. Spørsmålene nedenfor er historikk og skal ikke stilles på nytt.
+Meny og sjekklistepopup er godkjent; ingen ny popupprøve startes automatisk. Tom SJA med veiledning/forslag, lagring og egen signering er publisert og utviklertestet. Kort SJA-brukerprøve står først i USER_TEST.md. Beståtte utvikler-/databaseprøver gjentas ikke uten ny feil. Spørsmålene nedenfor er historikk og skal ikke stilles på nytt.
 
 1. Gjaldt siste TEST OK bare menyen, eller også sjekklistepopupens Lagre, fullføring og historikk?
 2. Hva skal prioriteres etter sjekklistene: utførelse med vernerunder/SJA/risiko, eller HR/medarbeidersamtaler? Foreslått rekkefølge er å fullføre utførelsesdelen først; dette er et forslag, ikke en ny beslutning.
@@ -45,6 +45,6 @@ Svar mottatt 7. oktober kl. 23:02 Europe/Oslo: (1) TEST OK gjelder både meny og
 
 ## Arbeidsmåte ved nye chatter
 
-Bevar samme Preview-adresse. Én avgrenset del og kort brukerprøve om gangen. Ingen nye lange nettleserrunder eller ombygging av ferdig arbeid. Skynettleseren har en dokumentert verktøyblokkering etter innlogging; nullstilling av styringsøkten og gjenbruk av eksisterende fane løste den ikke. Ingen full restart eller ny innlogget skjermtest hevdes som bestått. Ikke gjenta de avviste kallene i løkke. Følg repoets QA-/TEST OK-/produksjonsløp for konkret release; hovedretning for senere demo-synk er main → demo.
+Bevar samme Preview-adresse. Én avgrenset del og kort brukerprøve om gangen. Ingen nye lange nettleserrunder eller ombygging av ferdig arbeid. Tidligere native-credential-blokkering er dokumentert; bindingskallet til eksisterende fane fungerte i SJA-chatten, men viste innlogging. Ingen full restart eller ny innlogget skjermtest hevdes som bestått. Ikke gjenta de avviste kallene i løkke. Følg repoets QA-/TEST OK-/produksjonsløp for konkret release; hovedretning for senere demo-synk er main → demo.
 
 Detaljer: [CONTINUITY.md](CONTINUITY.md), [PLAN.md](PLAN.md), [USER_TEST.md](USER_TEST.md), [MENU_RETURN_20261007.md](MENU_RETURN_20261007.md), [CONTENT_STATUS.md](CONTENT_STATUS.md).

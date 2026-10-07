@@ -7,7 +7,7 @@ Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.a
 3. Velg deg selv som **Ansvarlig prosjektleder**. Fyll ut arbeidstrinn/farer/konsekvenser/tiltak/ansvar/kontroll, datoene, utstyr, verneutstyr, beredskap, når arbeidet skal stanses, metode for gjennomgang og deltakerens navn/rolle/bidrag. Bekreft egen gjennomgang og trykk **Signer SJA**. Det skal vises hvem som signerte og når; innholdet skal ikke kunne endres. Oppdater og åpne igjen for å se at dette er lagret.
 4. Åpne **Ny SJA**. Den skal være tom. Den signerte TEST-analysen skal fortsatt kunne leses fra oversikten.
 
-Utviklerkontroll: 37 faktiske Sandbox SQL-kontroller med rollback, full critical QA/build og faktisk React-flyt PASS. React-prøven dekker blant annet feil/retry, konfliktvalg, signering og bevart kladd. Dette er ikke en innlogget full-app-/mobilprøve. Vercel READY/eksakt kode bekreftes i SJA_20261007.md før lenken over overleveres som oppdatert.
+Utviklerkontroll: 37 faktiske Sandbox SQL-kontroller med rollback, full critical QA/build og faktisk React-flyt PASS. React-prøven dekker blant annet feil/retry, konfliktvalg, signering og bevart kladd. Dette er ikke en innlogget full-app-/mobilprøve. Vercel READY på fcea0492, fast alias og Core Safety success er bekreftet i SJA_20261007.md. Eksisterende skynettleserfane viser innlogging; ingen innlogget SJA-prøve hevdes bestått.
 
 ---
 
