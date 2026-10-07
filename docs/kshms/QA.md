@@ -1,12 +1,16 @@
 # KS/HMS QA – trinn A
 
-## Innlogget Sandbox-prøve – 7. oktober 2026
+## Siste dialogprøve – 7. oktober 2026
+
+Funksjonskode d73cd78935ab769b36c37ae4721934f586f05d27, READY dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA, PR Core Safety 37644638589 success. Full Sandbox critical build PASS. Faktisk egen skynettleserprøve passerer stor dialog, valgt bruker, kladd etter reload, bekreftet prosjektkilde/KS-sak, riktig sak direkte, omfordeling/egen lukking, varsel bort og Lukket tilbake i prosjektet etter faktisk reload. Eksisterende Test-prosjektavvik åpnes bare for koblingsinspeksjon og er uendret. Se [AVVIK_DIALOG_20261007.md](AVVIK_DIALOG_20261007.md) for eksakte case-ID-er, skjermbevis og grenser. Ingen mobil-/to-konto-/e-postmottak-PASS eller ny A2-godkjenning.
+
+## Tidligere innloggede Sandbox-prøver – kontrollhistorikk
 
 [UI_TEST_20261007.md](UI_TEST_20261007.md) dokumenterer faktisk innlogget desktopflyt på READY-deployment `dpl_DB3wi9z7fTnfnuVGCo1357NVCNvZ`, head `3c51dc5edea1da0fb52e31ae204bfaf9f8342793`. PASS med én demo-konto: seks kapittelvalg/73 forslag, registrering med riktig ansvar/frist, fast varsel etter lesing og navigasjon/ny fane, beholdt sakskladd og lagret egen lukking med aktør/tidspunkt/historikk og varsel bort. SQL bekrefter resultatet; arbeider deaktivert, ingen e-postforsøk. Den lukkede syntetiske saken er beholdt som kontrollspor.
 
 Supplerende faktisk prøve etter brukerbestilt nettlesernullstilling: READY `dpl_56BPxK5WNcbpWv1qJqV5wKZMd3m5`, head `b53fa201e76612e548d7d370b4e8991094e1b0c0`. PASS: nytt eget prosjektsjekkpunkt lagret i UI → riktig KS/HMS-skjema/stabil kildekobling → sperrede direkte status-/lukkekontroller → Åpne i KS/HMS → ansvarligs egen lukking → Lukket avvik tilbake i prosjektet → faktisk reload med bevart innlogging og lagret lukking. Sak `bbaa4b37-48d3-49d1-99d8-96da49e73cbf`, closed revision=2, aktør/tid og prosjektsnapshot bekreftet i SQL. Eksisterende ukoblede avvik og firmaets håndbokutgaver er bevart. Worker disabled, outbox pending/attempts=0/sent_at=null. Se testloggen for skjermbevis og nøyaktig grense.
 
-GJENSTÅR: to separate brukerøkter, separat HMS-/prosjektavviksrad/full legacy-lukking/gjenåpning, toppfanens teller for egne sjekkpunkter, full-app-mobil og reelt e-postmottak. `getJsDialog` for prosjektavvikets native tittelprompt ga `retained_data_restricted`; normal synlig skjema-/DOM-flyt virket. Den sperrede dialogen ble ikke omgått. Før lukking viste toppfanen Avvik (1) samtidig med to åpne sjekkpunktavvik i avvikssentral/sjekklistesammendrag; telleren er ikke gradert PASS. Første prøves andre-fane-blokk og resten av dokumentet er kontrollhistorikk. Tidligere rollback-/runtime-kontroller er ikke kjørt om for dokumentendringen. Ny A2-TEST OK, merge og Production-godkjenning er ikke gitt.
+GJENSTÅR etter siste dialogprøve: to separate brukerøkter, full ukoblet legacy-lukking/gjenåpning, toppfanens teller for egne sjekkpunkter, full-app-mobil og reelt e-postmottak. Den tidligere native tittelprompten er erstattet av en React-dialog som er faktisk prøvd. Tidligere getJsDialog-/andre-fane-grenser er kontrollhistorikk; de ble ikke omgått. Toppfanens egne sjekkpunktantall er ikke rettet eller gradert PASS. Ny A2-TEST OK, merge og Production-godkjenning er ikke gitt.
 
 
 2026-10-05. Branch `feat-kshms-foundation`, baseline main `155f6c4`. Miljømål BEGGE. Kun Supabase Sandbox er endret. Trinn A er ikke full KS/HMS eller produksjonsgodkjent.
@@ -266,10 +270,13 @@ Ingen ny TEST OK er gitt for A2. Følg USER_TEST.md; e-post må konfigureres sik
 
 ## Avviksdialog – 7. oktober, ny brukerfeil
 
-Se AVVIK_DIALOG_20261007.md. removeChild er gjenskapt med faktisk React DOM-renderer/adapter og løst i samme prøve. Utvidede avvik-/navigasjonschecker tester konkret kilde/readback/ansvarlig, gamle bilder og andre prosjektfelt. Full Sandbox build og ny Preview-prøve dokumenteres i rapporten før ferdigstatus. Tidligere 73 SQL-kontroller gjentas ikke for denne endringen uten ny grunn.
+Se AVVIK_DIALOG_20261007.md. removeChild gjenskapes før rettelsen med faktisk React DOM-renderer/adapter og passerer etter rettelsen. Utvidede avvik-/navigasjonschecker tester konkret kilde/readback/ansvarlig, gamle bilder og andre prosjektfelt. Full EXPO_BACKEND_TARGET=sandbox npm run build PASS etter siste kodeendring. Ny Preview-UI og serverhistorikk PASS innen eksplisitt desktop-/enkeltkonto-scope. Alle tre eksisterende prosjektavvik er uendrede; mailworker deaktivert og ingen sendehendelse. Tidligere 73 SQL-kontroller gjentas ikke uten ny grunn.
 
 
-## Gjenopptakelse etter nytt chatbrudd – 7. oktober 2026
+## Historikk: read-only gjenopptakelse før endelige dialogbevis
+
+Notatet under er bevart fra 65f3aa51. De konkrete case-ID-ene, siste readback og skjermbevis er siden lagret i AVVIK_DIALOG_20261007.md; se gjeldende status øverst. Arbeidsmåten med korte Preview-prøver beholdes.
+
 
 Uavhengig read-only kontroll: kodehead d73cd78935ab769b36c37ae4721934f586f05d27; PR #216 open/draft; main 155f6c4ac01f126c1db0c65da385cfd9305587d5; PR Core Safety 37644638589 completed/success; Vercel dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA READY og fast alias samsvarer. Nye lokale builds, SQL-migrasjoner, databaseprøver og skynettleserrunder er ikke kjørt.
 

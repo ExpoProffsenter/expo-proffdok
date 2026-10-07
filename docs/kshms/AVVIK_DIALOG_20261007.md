@@ -22,21 +22,65 @@ Lagre avvik for oppfølging bekrefter prosjektkilden på server før eksisterend
 
 Feil beholder dialog/kladd. Kladd er scoped til bruker/firma/prosjekt og har syv dagers gjenopprettingsfrist. Retry bevarer ID-er, eksisterende bilder og andre rader. Allerede koblet kilde skrives ikke over fra en gammel kladd; lukket kilde gjenåpnes ikke av kladdlagring. KS/HMS sin Registrer avvik/Koble-dialog bruker samme ramme. Bekreftet lagring gir fokus til lagret sak.
 
-## Kontrollstatus før Preview-prøve
+## Kontrollert kode og Preview
 
-- Målrettede avvik-, prosjektmeny-, Tilgang- og mobil-shell-checker: PASS.
-- Ny regresjonskontroll: kilde lagres/bekreftes før kobling, feilet readback, feil mottaker/kilde, sene svar, grantløs legacy, kladdscope, faktiske prosjekt-save-callbacker, bevarte bilder/sjekkliste/signatur/øvrige avvik.
-- Full EXPO_BACKEND_TARGET=sandbox npm run build: PASS etter siste kodeendring (dialog-build-final.log, exit 0).
-- Sky-UI på oppdatert Preview: gjenstår på dette checkpointet. Ingen mobilprøve eller to-konto-prøve er gradert PASS.
-- Sandbox e-postarbeider: enabled=false kontrollert før prøver. Ingen ekte medarbeider-e-post sendes.
-- Brukerens Test-prosjektavvik, id mad549mztrmuy7nmwb, åpnes bare for koblingsinspeksjon. Det skal ikke brukes som disponibel data eller lukkes av utvikleren.
+Første dialogcommit: 88e1bfec7655026ecdb08c9b9796d7cb5b97938b. Siste testede funksjonskode: **d73cd78935ab769b36c37ae4721934f586f05d27**. Siste rettelse bruker egen checkbox-layout og lar ansvarlig-ID være autoritativ i KS-saken, uten redundant ID i den gamle prosjektposten. Eksisterende SQL-projeksjon endres ikke. Historisk source_snapshot fra første test er uforanderlig og kan inneholde den daværende ID-en; den styrer ikke nåværende ansvarlig eller lukkebehørighet.
 
-## Neste steg
+Fast Preview: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe. READY dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA på eksakt d73-head. PR Core Safety run 37644638589 success. Branch-binding EXPO_BACKEND_TARGET=sandbox verifisert; database ppvircenkjizeiqdxphj. Main fortsatt 155f6c4ac01f126c1db0c65da385cfd9305587d5. Main → d73: ahead 20, behind 0, 91 filer. Denne runden fra 794 berører 13 avgrensede funksjons-/kontroll-/dokumentfiler, pluss eksisterende UI-testlogg i sluttregistreringen, totalt 14 stier.
 
-Bekreft grønn full critical build, publiser feature med forventet-SHA-kontroll, kontroller READY/Sandbox-binding, og prøv dialog/kladd/valgt ansvarlig, automatisk prosjektkobling, konkret sak, egen lukking og tilbakeføring/omlasting i skynettleser. Oppdater denne rapporten og CONTINUITY/QA/USER_TEST med eksakt testet commit, case-ID og skjermbevis. Bevar øvrig roadmap B–E, seks hovedkapitler og tidligere publiserte rutiner.
+## Lokale og automatiske kontroller
+
+- Målrettede avvik-, prosjektmeny-, Tilgang- og mobil-shell-checker: PASS. Ingen eksisterende check er svekket.
+- Faktisk React DOM/adapter-prøve: eksakt removeChild-unntak før rettelsen, PASS etter rettelsen. jsdom ligger kun i separat prøvemappe; package.json/lock er uendrede.
+- Utvidet regresjonskontroll: kilde lagres/bekreftes før kobling, feilet readback, feil mottaker/kilde, sene svar, grantløs legacy, kladdscope, faktiske prosjekt-save-callbacker og bevarte bilder/sjekkliste/signatur/øvrige avvik. Gamle koblede/lukkede kilder overskrives eller gjenåpnes ikke av kladd. Redundant ansvarlig-ID lagres ikke i prosjektkilden.
+- Full EXPO_BACKEND_TARGET=sandbox npm run build: PASS etter siste kodeendring, dialog-build-layout.log exit 0. Første dialog-build-final.log passerer også. Vercel READY og Core Safety kontrollert på samme SHA.
+- Tidligere 73 SQL-scenarier med rollback er kontrollhistorikk; ingen DB-/mailer-endring krever ny migrasjon eller gjentatt SQL-scenariokjøring i denne dialogrunden.
+
+## Egen faktisk skynettleserprøve
+
+Innlogget Kenneth Demo / Expo Proffsenter, eksisterende firmaadmin-/KS/HMS-grant. Prosjekt DEMO – HOVED – Badrenovering i arbeid, a0000000-0000-4000-8000-000000000001. Vanlige synlige DOM/AX-felt og native date-setValue brukt; ingen browser-state/auth-/RPC-omgåelse. Ingen reell hendelse eller privat personalsak registrert.
+
+| Del av flyten | Resultat og bevis |
+|---|---|
+| Stor dialog og faktisk ansvarlig | PASS. + Nytt HMS/prosjektavvik åpner fullskjema; første input får fokus. Fire aktive KS-brukere i dropdown. Første test velger Demo medarbeider 1 og frist 2026-10-08. Ingen fritekst gjettes som ID. |
+| Kladd etter lukking/reload | PASS. Behold kladd og lukk → Hent avvikskladd → faktisk reload → samme tittel/beskrivelse/bruker/frist/strakstiltak. Ingen native prompt. |
+| Lagre → prosjektkilde → KS-sak | PASS. Lagre avvik for oppfølging åpner konkret bekreftet sak direkte. SQL bekrefter prosjekt/kilde/request-ID, valgte ansvarlig-ID og felt. Én kilde og én sak per opprettelse. |
+| Melder er ikke valgt ansvarlig | PASS innen denne økten. Melder får ingen ansvarligoppgave eller lukkeknapp for den andres sak. Admin kan omfordele; det er ikke en separat medarbeiderinnlogging. |
+| Omfordeling og egen lukking | PASS. Lagre endringer flytter ansvarlig til Kenneth Demo; egen oppgave/lukkekontroller vises. Lukking deaktivert før egenkontroll-avkrysning. Årsak/tiltak/kontroll → avkrysning → Kontroller og lukk avvik gir bekreftet lukking, egen aktør/tid/historikk og varsel bort. |
+| Prosjektvisning/omlasting | PASS. Koblet prosjektpost viser Lukket, Kenneth Demo, frist og Åpne i KS/HMS, uten legacy-lukk/fjern-bypass. Faktisk reload beholder innlogging og lagret lukking. |
+| Eksisterende brukeravvik → koblingsdialog | PASS for åpning/lesing på d73. Test-prosjektavvik mad549mztrmuy7nmwb åpner Registrer avvik med tittel/beskrivelse/frist 2026-10-08; ansvarlig er Velg medarbeider. Lukket uten endring/lagring. Ikke koblet eller lukket av utvikleren. |
+| Ny opprettelse på siste d73 | PASS. Nytt syntetisk avvik med egen ansvarlig åpner riktig sak, lukkes dokumentert og vises Lukket etter reload. SQL bekrefter faktisk ansvarlig-ID i KS og ingen responsible_id i prosjektkilden. |
+| Bevaring og ingen utsending | PASS innen testgrensen. Alle tre opprinnelige prosjektavviksrader identiske før/etter: mad549mztrmuy7nmwb, demo-dev-open-01, demo-dev-closed-01. Worker enabled=false; tre nye utboksrader pending, attempts=0, sent_at=null. Ingen e-post sendt. |
+
+### Eksakte lagrede kontrollspor
+
+| Test | KS-sak | Prosjektkilde | Lagret lukking |
+|---|---|---|---|
+| UI-TEST 2026-10-07 – stor avviksdialog, opprettet på 88 og omfordelt til egen bruker | 68a26ff6-d9c2-4e1e-a766-e3769b2060fa | nvlgxwqf6lmuy97b4n | closed revision 3, 2026-10-07T15:29:30.020749+00:00 / 17:29:30 Europe/Oslo |
+| UI-TEST 2026-10-07 – bekreftet dialog, ny opprettelse på d73 | 6dc89fcd-bb48-44a0-9430-31dbeb75bcaa | x7oiji8yi5pmuy9wk64 | closed revision 2, 2026-10-07T15:40:21.99489+00:00 / 17:40:21 Europe/Oslo |
+
+Aktør for begge lukkinger: d0000000-0000-4000-8000-000000000001, lik aktuell responsible_id. Første historikk: create til Demo medarbeider 1 → save med Kenneth Demo som ansvarlig → close som Kenneth Demo. Andre: create → close som Kenneth Demo. Syntetiske saker beholdes lukket som kontrollspor.
+
+### Skjermbevis fra siste d73-kode
+
+| Bilde | Varig filreferanse |
+|---|---|
+| kshms-ny-avviksdialog-1791387585936.jpg – stor dialog, felt, faktisk bruker og lagreknapp | libfile_a3e59a101f048191b17642b44cc838db |
+| kshms-dialog-lukket-prosjekt-1791387726113.jpg – Lukket tilbake i prosjektet etter faktisk reload, kildekobling beholdt | libfile_25adef42c84481918e0afd92846e7a72 |
+
+## Konkret testgrense og neste steg
+
+Desktopprøven er utført av utvikleren i skynettleseren. Mobilbredde kan ikke settes med denne øktens dokumenterte API; ett vanlig zoomforsøk endret ikke 1363 px-viewporten. Mobil-CSS er bygget, men ingen faktisk mobil/full-app-mobil-PASS. To separate innloggede brukere etter Trond → Eli-eksemplet gjenstår; omfordeling i én adminøkt erstatter ikke Eli sin økt. Dev-logs returnerer retained_data_restricted etter tidligere sikker innlogging og er ikke omgått. DOM/AX/skjerm/reload/data bekrefter de graderte resultatene. Brukerens eksakte opprinnelige timing er ikke gjenskapt i live UI; samme unntak er gjenskapt med faktisk React-renderer/adapter isolert.
+
+Full ukoblet legacy-lukking/gjenåpning, toppfanens teller for egne sjekkpunkter og reelt e-postmottak etter sikkert avsenderoppsett gjenstår. Ingen e-postarbeider er aktivert. Ny A2-TEST OK/merge/Production-godkjenning er ikke gitt.
+
+Bevar seks hovedkapitler, 73 egne rutineforslag, firmaets publiserte utgaver og tidligere egne bekreftelser. Roadmap B–E ligger i PLAN/CONTINUITY: eksisterende prosjektsjekklister finnes; versjonerte firmamal-/gjennomføringsverktøy, SJA og 5×5 risiko er neste B-arbeid. HR/kompetanse/medarbeidersamtaler er ikke bygget og hører til D med separat tilgang. Chatavbrudd kan ikke garanteres borte; Git-checkpoint, testloggen og CONTINUITY gjør at arbeidet kan gjenopptas uten å bygge funksjonen på nytt.
 
 
-## Gjenopptatt sluttstatus og arbeidsmåte – 7. oktober 2026
+## Historikk: samtidig gjenopptakelse før de konkrete bevisene var lagret
+
+Følgende notat ble lagt inn i parallell dokumentoppdatering 65f3aa51. Da var case-ID-er og endelig readback ikke tilgjengelige i testloggen. De er nå lagret og verifisert i tabellene ovenfor. Avtalen om korte brukerprøver beholdes.
+
 
 Funksjonskode d73cd78935ab769b36c37ae4721934f586f05d27 er uavhengig gjenfunnet. Vercel dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA er READY, fast branch-alias peker dit, og PR Core Safety 37644638589 er completed/success. PR #216 er fortsatt draft. Main er uendret. Dette er dokumentarbeid, ikke en ny full build eller skjermprøve.
 

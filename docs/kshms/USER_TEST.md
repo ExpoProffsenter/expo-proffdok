@@ -12,11 +12,14 @@ Gi resultatet for denne delen før neste test. Eksisterende «Test»-avvik skal 
 
 Utviklerens tidligere skjermresultat, kontrollert kode/deployment og gjenstående tester er samlet i CONTINUITY.md og AVVIK_DIALOG_20261007.md. Separate brukerøkter, mobil, ukoblet legacy/teller og faktisk e-post følger i små deler; ingen full omtest startes automatisk.
 
+
+Utviklerens opprinnelige dialogrunde har nå fått lagret sine konkrete bevis: d73cd789 passerer stor dialog, kladd etter reload, faktisk ansvarlig, direkte åpnet KS-sak, egen lukking og Lukket tilbake i prosjektet etter reload. Test-prosjektavvik er uendret. Mobil, separate brukerøkter og e-postmottak er ikke gradert PASS. Se AVVIK_DIALOG_20261007.md. Ingen ny full omtest kreves for denne dokumentlagringen.
+
 ---
 
 ## Tidligere prøvetekst og historikk
 
-## Gjeldende A2-brukerprøve
+## Tidligere A2-brukerprøve – før dialogrettelsen
 
 Status 7. oktober: utvikleren har prøvd faktisk innlogget desktopflyt med Kenneth Demo som både melder og ansvarlig. Kapittelfilter, registrering, varsel gjennom lesing/navigasjon/ny fane, beholdt kladd og lagret lukking passerer. Etter brukerbestilt nettlesernullstilling passerer også eget testsjekkpunkt → KS/HMS-kobling → sperret direkte lukking → ansvarligs lagrede lukking tilbake til prosjektet og faktisk omlasting med bevart innlogging/status; se [testloggen](UI_TEST_20261007.md). **Gjenstående prøve gjelder to forskjellige brukere, separat HMS-/prosjektavviksrad/full legacy-lukking og mobil**, samt avviksteller for egne sjekkpunkter og reelt e-postmottak etter sikkert avsenderoppsett. Enkeltkonto-prøvene er ikke en ny A2-TEST OK. Firmaets ti eksisterende godkjenninger skal ikke gjøres om. Brukerens egen Preview-prøve erstatter ikke utviklerens skjermtest.
 
