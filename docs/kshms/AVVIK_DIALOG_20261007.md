@@ -87,3 +87,11 @@ Funksjonskode d73cd78935ab769b36c37ae4721934f586f05d27 er uavhengig gjenfunnet. 
 Siste assistentstatus som brukeren limte inn fra den avbrutte økten rapporterer bestått desktopopprettelse med tittelfokus, beholdt kladd ved omlasting, annen valgt ansvarlig, automatisk KS/HMS-kobling og konkret åpnet sak. Melder fikk ikke den andres ansvarligoppgave og kunne ikke lukke på den andres vegne. Overtakelse/egen lagret lukking, bortfalt varsel, Lukket i prosjektet og hendelseshistorikk ble deretter rapportert. Eksakt ny case-ID/skjermbevis er ikke lagret i denne rapporten; siste endelige omlastingsreadback ble avbrutt. Disse resultatene er videreført som tidligere rapportert, uten å konstruere ny PASS-evidens. Full-app-mobil er fortsatt utestående.
 
 Brukerens nyeste instrukser: bruker tester Preview; assistent gjør små, målrettede kontroller. Ikke gjenta hele skynettleserrunden. Første prøve gjelder bare ny avviksdialog, ansvarlig/frist og direkte åpning av lagret sak. USER_TEST.md har tre korte trinn. Hele roadmapen og øvrige ufullførte kontroller er bevart i CONTINUITY.md.
+
+## Neste brukerinnspill: lukking og toppvarselets plass
+
+Brukeren har skrevet årsak, men fikk den samlede meldingen om årsak/tiltak/kontroll. Eksisterende kontroll krever 5 tegn i årsak og 10 tegn i hver av utførte tiltak og egen kontroll. Meldingen fortalte ikke hvilket felt som manglet eller var for kort.
+
+Avgrenset rettelse fra head 67efa376: konkrete feltmeldinger/minimumslengder og fokus til første manglende felt, med beholdt kladd. Ansvarligvarselet er en kompakt rad, mens veiledning/oppgaveliste åpnes under Vis oppgaver; mobil har kortere synlige etiketter og samme tilgjengelige knappnavn. Ansvarlig, lukkerettighet, egen kontroll og serverbekreftet lagring følger samme kontrakt.
+
+Målrettet avvikscheck og håndbokcheck PASS, Sandbox Vite-build PASS. Ingen ny lang skjermrunde er kjørt. Bruker prøver nå den eksisterende åpne saken og toppvarselet etter oppdatering på samme Preview. Se aktuell kort liste i USER_TEST.md.

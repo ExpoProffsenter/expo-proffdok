@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { deviationForm,validateDeviation,saveDeviation,storeDeviationDraft,readDeviationDraft,deviationDraftKey,projectAfterDeviation,checklistAfterDeviation,readDeviationLink,deviationFileType } from '../src/modules/kshms/kshmsDeviations.mjs';
+import { deviationForm,validateDeviation,deviationClosureIssues,saveDeviation,storeDeviationDraft,readDeviationDraft,deviationDraftKey,projectAfterDeviation,checklistAfterDeviation,readDeviationLink,deviationFileType } from '../src/modules/kshms/kshmsDeviations.mjs';
 import { createAssignmentMailer,assignmentEmail } from '../supabase/functions/_shared/kshms-assignment-mailer.mjs';
 import { createDeviationCenter } from '../src/modules/deviations/deviationViewTools.js';
 import { createProjectDeviation,newProjectDeviation,projectDeviationDraftKey,readProjectDeviationDraft } from '../src/modules/deviations/projectDeviationCreate.mjs';
@@ -11,6 +11,10 @@ const closed={...open,revision:2,status:'closed',closed_by:eli,closed_at:'2026-1
 const form=deviationForm(open);assert.equal(validateDeviation(form),'');assert(validateDeviation(form,{closing:true}));
 const completed={...form,cause:'A known cause',improvement_action:'Actual corrective action',control_note:'Eli checked the corrected work'};
 assert.equal(validateDeviation(completed,{closing:true}),'');
+const causeOnly={...form,cause:completed.cause};
+assert.deepEqual(deviationClosureIssues(causeOnly).map(item=>item.key),['improvement_action','control_note']);
+assert(!validateDeviation(causeOnly,{closing:true}).includes('Årsak'),'Filled cause was reported missing');
+assert(validateDeviation({...completed,control_note:' kort '},{closing:true}).includes('Egen kontroll av resultatet (minst 10 tegn)'));
 for(const failure of ['command','read','foreign','signer','late','']){
  const calls=[];const result=saveDeviation({companyId,userId:eli,action:'close',payload:{id:caseId,revision:1,...completed,controlled:true},isCurrent:()=>failure!=='late',rpc:async(name)=>{calls.push(name);if(name==='kshms_deviation_command'){if(failure==='command')throw new Error('not saved');return closed;}if(failure==='read')throw new Error('not verified');return {case:{...closed,...(failure==='foreign'?{company_id:'other'}:failure==='signer'?{closed_by:'trond'}:{})},events:[]};}});
  if(['command','read','foreign','signer'].includes(failure))await assert.rejects(result);else assert.equal((await result)?.case?.status,failure==='late'?undefined:'closed');
@@ -82,7 +86,7 @@ buttons.find(n=>n.props.children==='✅ Lukk avvik').props.onClick();assert.equa
 
 // Actual editor handlers with persistent hook slots and failed-close retry.
 const editorSource=fs.readFileSync('src/modules/kshms/KshmsDeviations.jsx','utf8');
-const editorBody=editorSource.slice(editorSource.indexOf('export default function')).replace('export default ','').split('\n return <section')[0]+'\n return {openCase,change,save,setControlled,state:{detail,form,dirty,controlled,error,notice,conflict}};\n}';
+const editorBody=editorSource.slice(editorSource.indexOf('export default function')).replace('export default ','').split('\n return <section')[0]+'\n return {openCase,change,save,setControlled,closureFields,state:{detail,form,dirty,controlled,error,notice,conflict,closureAttempted,closureIssues}};\n}';
 const slots=[],effects=[],queue=[],published=[];let slot=0,serverCase={...open},failClose=true,commands=0;
 const editorStorage={...storage,removeItem:k=>memory.delete(k)},editorWindow=new EventTarget();editorWindow.localStorage=editorStorage;editorWindow.confirm=()=>true;
 const editorRpc=async name=>{
@@ -92,14 +96,20 @@ const editorRpc=async name=>{
  if(name==='kshms_deviation_command'){commands++;if(failClose)throw new Error('Synthetic failed close');serverCase=closed;return closed;}
  throw new Error(name);
 };
-const Editor=new Function('bindings','const {useState,useRef,useEffect,kshmsRpc,window,readDeviationDraft,deviationForm,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange,DEVIATION_CHANGE_EVENT}=bindings;'+editorBody+';return KshmsDeviations;')({
+const Editor=new Function('bindings','const {useState,useRef,useEffect,kshmsRpc,window,readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange,DEVIATION_CHANGE_EVENT}=bindings;'+editorBody+';return KshmsDeviations;')({
  useState:init=>{const id=slot++;if(!(id in slots))slots[id]=typeof init==='function'?init():init;return [slots[id],value=>slots[id]=typeof value==='function'?value(slots[id]):value];},
  useRef:init=>{const id=slot++;if(!(id in slots))slots[id]={current:init};return slots[id];},
  useEffect:(fn,deps)=>{const id=slot++;if(!effects[id]||deps.some((value,i)=>value!==effects[id].deps[i]))queue.push(()=>{effects[id]?.cleanup?.();effects[id]={deps,cleanup:fn()};});},
- kshmsRpc:editorRpc,window:editorWindow,readDeviationDraft,deviationForm,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange:row=>published.push(row),DEVIATION_CHANGE_EVENT:'changed'
+ kshmsRpc:editorRpc,window:editorWindow,readDeviationDraft,deviationForm,deviationClosureIssues,storeDeviationDraft,deviationDraftKey,validateDeviation,saveDeviation,publishDeviationChange:row=>published.push(row),DEVIATION_CHANGE_EVENT:'changed'
 });
 const renderEditor=()=>{slot=0;const view=Editor({context:{company_id:companyId,user_id:eli,manage:false}});for(const effect of queue.splice(0))effect();return view;};
 let view=renderEditor();await view.openCase(caseId);view=renderEditor();
+view.change('cause',completed.cause);view=renderEditor();
+let focusedMissing=0;view.closureFields.current.improvement_action={focus:()=>focusedMissing++,scrollIntoView(){}};
+view.setControlled(true);view=renderEditor();await view.save('close');view=renderEditor();
+assert.equal(commands,0,'Incomplete closure reached the server');assert.equal(focusedMissing,1,'First missing field was not focused');
+assert.equal(view.state.form.cause,completed.cause);assert.equal(view.state.dirty,true);assert.equal(view.state.closureAttempted,true);
+assert.deepEqual(view.state.closureIssues.map(item=>item.key),['improvement_action','control_note']);
 for(const key of ['cause','improvement_action','control_note']){view.change(key,completed[key]);view=renderEditor();}
 await view.save('close');assert.equal(commands,0,'Unchecked control submitted closure');
 view.setControlled(true);view=renderEditor();await view.save('close');view=renderEditor();

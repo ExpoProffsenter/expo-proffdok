@@ -281,3 +281,13 @@ Notatet under er bevart fra 65f3aa51. De konkrete case-ID-ene, siste readback og
 Uavhengig read-only kontroll: kodehead d73cd78935ab769b36c37ae4721934f586f05d27; PR #216 open/draft; main 155f6c4ac01f126c1db0c65da385cfd9305587d5; PR Core Safety 37644638589 completed/success; Vercel dpl_G5pZJCaMa4pQwNyu1DcakbXt4AiA READY og fast alias samsvarer. Nye lokale builds, SQL-migrasjoner, databaseprøver og skynettleserrunder er ikke kjørt.
 
 Siste desktopresultat er bevart fra brukerens innlimte assistentstatus, med tydelig proveniens i CONTINUITY.md og AVVIK_DIALOG_20261007.md. Ikke oppgrader manglende siste omlastingsreadback, to-konto-økt, mobil eller e-postmottak til PASS. Bruker tester nå skjermflyten i Preview, og utvikler gjør korte relevante kontroller. Gamle beståtte kontroller beholdes, ikke kjøres automatisk på nytt for denne dokumentendringen. Ingen ny TEST OK/Production-godkjenning er gitt.
+
+## Lukkefelter og kompakt varsel – kort utviklerkontroll 7. oktober
+
+Arbeid fra 67efa37616a779559b7004c9f40e8c61df0015c2; appscope er de fire KS/HMS-filene for editor, task-banner, validering og CSS. Ingen SQL/RLS/e-post/endring av lukkerettighet. Bevis fra tidligere dialogrunde beholdes; nye tester er avgrenset til brukerens melding.
+
+- critical-kshms-deviations-check PASS: utfylt årsak markeres ikke som manglende, bare tiltak/kontroll vises, første manglende felt fokuseres og ufullstendig lukking sender ingen skrive-RPC. Tekst/kladd beholdes. Eksisterende feil/retry og bekreftet serverlukking/varsler passerer.
+- critical-kshms-check PASS: håndbok, roller, identitet, versjoner og bekreftelser består.
+- EXPO_BACKEND_TARGET=sandbox vite build PASS, exit 0; faktisk JSX/CSS kompilerer. git diff --check PASS.
+- Bannerens oppfriskning/retention er uendret. Forklaring/listen er lagt i en foldbar visning, og selve baren har mindre padding/typografi. Faktisk viewporthøyde, mobil og brukerens lukkingsprøve er ikke gradert PASS av kildekode eller build.
+- USER_TEST.md starter med én kort prøve av eksisterende åpne sak og lavere varsel. Ingen ny full skynettleserrunde, databaseprøve eller e-postsending er kjørt. Ingen ny TEST OK/Production-godkjenning.

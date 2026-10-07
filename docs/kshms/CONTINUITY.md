@@ -2,7 +2,17 @@
 
 Oppdatert 7. oktober 2026, Europe/Oslo. Dette dokumentet samler gjeldende brukerbeslutninger og verifiserte referanser etter to avbrutte samtaler. En ny chat skal lese dette først, deretter PLAN.md, SCOPE_A2.md, QA.md og USER_TEST.md. Dette er ikke en ordrett kopi av historikken eller en attest på at hele modulen er ferdig.
 
-## Gjeldende fortsettelsespunkt etter nytt chatbrudd – 7. oktober 2026
+## Gjeldende liten UX-rettelse – lukkefelter og kompakt ansvarligvarsel
+
+Brukeren meldte etter Preview-prøven at utfylt Årsak fortsatt ga avslag ved lukking, og at det faste ansvarligvarselet tok for mye plass. Skjermbildet viser den samlede valideringen; kodekontroll bekrefter eksisterende minstegrenser: Årsak 5 tegn, Utførte tiltak / forbedring 10 tegn og Egen kontroll av resultatet 10 tegn. Årsak alene avslutter ikke avviket. Ingen ny databasefeil er påvist eller rettingskrav svekket.
+
+Miljømål BEGGE, først samme Sandbox-Preview. Scope: KshmsDeviations.jsx, KshmsTasks.jsx, kshmsDeviations.mjs, kshms.css og eksisterende avvikscheck, samt dette fortsettelsespunktet/QA/USER_TEST/avviksrapport. Arbeid fra kontrollert head 67efa37616a779559b7004c9f40e8c61df0015c2 i separat arbeidsmappe. Main sammenlignet før endring; ingen main/demo-merge, migrasjon eller utsending.
+
+Rettelsen merker de tre nødvendige lukkefeltene med minimumslengde. Feilet lukkeforsøk markerer bare de manglende feltene, fokuserer det første og bevarer utfylt tekst/kladd. Lukking krever fortsatt egen kontroll og serverbekreftet lagring. Toppvarselet er en kompakt rad; forklaring og oppgaveliste åpnes ved «Vis oppgaver», med kortere handlingsetiketter på mobil og fortsatt tilgjengelige knappnavn. Å lese/folde sammen fjerner ikke oppgaven.
+
+Målrettet critical-kshms-deviations-check PASS, inklusive faktisk handler med utfylt årsak/to manglende felter, riktig fokus og ingen skrive-RPC før komplett lukking; eksisterende feilet-lukking/retry/task-retention passerer. critical-kshms-check PASS. Sandbox Vite-build PASS. Visuell brukerprøve på ny versjon gjenstår. Ingen ny lang skynettleserrunde er startet. USER_TEST.md begynner nå med denne lille lukkings-/varselprøven; ikke gjenta opprettelsesrunden automatisk. Hele roadmapen og tidligere skjermbevis nedenfor består.
+
+## Tidligere fortsettelsespunkt etter nytt chatbrudd – 7. oktober 2026
 
 **Tillegg med de konkrete bevisene fra den opprinnelige dialogkjøringen:** AVVIK_DIALOG_20261007.md er nå ferdig med case-ID-er 68a26ff6-d9c2-4e1e-a766-e3769b2060fa og 6dc89fcd-bb48-44a0-9430-31dbeb75bcaa, SQL-bekreftet egen lukking, Lukket tilbake i prosjektet og siste faktiske reload på d73. To skjermbevis er lagret med varige referanser. Alle tre opprinnelige prosjektavvik er uendrede, worker er verifisert deaktivert og ingen sending er utført. Dette kompletterer den avbrutte kjøringens bevis; det er ikke en ny automatisk full omtest. Delavsnittet «Siste skjermstatus fra den avbrutte chatten» beskriver hva som var tilgjengelig ved den parallelle gjenopptakelsen før bevisene ble lagret. Den korte tretrinnsprøven i USER_TEST.md og hele roadmapen beholdes.
 

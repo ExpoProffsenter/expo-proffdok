@@ -5,11 +5,20 @@ const fields=['title','event','category','responsible_id','due_on','cause','imme
 export function deviationForm(row={}) {
  return Object.fromEntries(fields.map(key=>[key,row[key]??({category:'hms',status:'open'}[key]||'')]));
 }
+export const DEVIATION_CLOSURE_REQUIREMENTS=[
+ {key:'cause',label:'Årsak',minLength:5},
+ {key:'improvement_action',label:'Utførte tiltak / forbedring',minLength:10},
+ {key:'control_note',label:'Egen kontroll av resultatet',minLength:10},
+];
+export function deviationClosureIssues(form={}) {
+ return DEVIATION_CLOSURE_REQUIREMENTS.filter(({key,minLength})=>String(form[key]||'').trim().length<minLength)
+  .map(item=>({...item,message:`Skriv ${item.minLength===5?'årsaken':item.key==='improvement_action'?'hvilke tiltak du har utført':'hva du har kontrollert'} med minst ${item.minLength} tegn.`}));
+}
 export function validateDeviation(form,{closing=false}={}) {
  if(form.title.trim().length<3||form.title.trim().length>200)return 'Skriv en tittel med 3–200 tegn.';
  if(form.event.trim().length<10)return 'Beskriv hendelsen med minst 10 tegn.';
  if(!Object.hasOwn(DEVIATION_CATEGORY,form.category)||!form.responsible_id||!/^\d{4}-\d{2}-\d{2}$/.test(form.due_on))return 'Velg type, ansvarlig og frist.';
- if(closing&&(form.cause.trim().length<5||form.improvement_action.trim().length<10||form.control_note.trim().length<10))return 'Før lukking: Skriv årsak, utførte tiltak og hva du selv har kontrollert.';
+ if(closing){const missing=deviationClosureIssues(form);if(missing.length)return `Før lukking mangler: ${missing.map(({label,minLength})=>`${label} (minst ${minLength} tegn)`).join('; ')}.`;}
  return '';
 }
 export function projectDeviationProjection(row) {
