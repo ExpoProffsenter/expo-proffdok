@@ -1,5 +1,7 @@
 # Gjeldende fortsettelsespunkt – meny TEST OK, sjekklistepopup neste
 
+**Kort samlet status ved chatbytte:** Les [OVERSIKT.md](OVERSIKT.md) først. Den skiller implementert arbeid, Kenneths godkjente delprøver, gjenstående leveranser og spørsmål som fortsatt avventer svar. Eldre avsnitt nedenfor er testhistorikk og skal ikke utløse nye fulle omtester.
+
 Kenneth meldte **«test ok» 7. oktober 2026 kl. 22:39 Europe/Oslo** etter den korte menyprøven. Dette er godkjenning av kompakt Meny og retur fra generell ordre til Startside. Registrert mot kontrollert feature-head `2c7c2b5ee68230056e9dd385986a33756a9b2561`, funksjonskode `9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f`. Ikke gjenta den beståtte menyprøven uten ny feil. Godkjenningen omfatter ikke hele KS/HMS, popupens lagring/historikk eller Production.
 
 Neste avgrensede handling er den korte sjekklistepopup-prøven øverst i USER_TEST.md: et testpunkt → Lagre → omlasting/gjenåpning → Sjekkliste fullført → Start ny kontroll → bevart historikk med navn/tidspunkt. Utviklerens tidligere innloggede popupprøve, 35 rollback-databasekontroller og React-scenarioer består; ikke bygg funksjonen på nytt eller gjenta SQL-rundene. Miljømål BEGGE, først samme Sandbox Preview. Ingen main-merge, Production-endring eller demo-synk utføres ved registrering av meny-TEST OK. Utviklerens nye skynettleserøkt fikk ingen bekreftet innlogget flate; brukerens TEST OK er eget bevis, ikke en ny utvikler-skjermtest.
