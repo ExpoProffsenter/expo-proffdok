@@ -1,5 +1,7 @@
 # Expo ProffDok – arkitekturkart
 
+Preview 07.10.2026: Native React-menykontroller bærer gjeldende navn i `data-expo-nav-label`. Enkel ordre bruker dette ved gjenoppretting etter sidebytte, fordi React gjenbruker knapper og samme salgsprop også når arbeidsflaten endres. Den eksisterende desktop-/prosjektmenyen klikker fortsatt de samme native kontrollene. Ingen ny navigasjonsmotor, tilgangsregel eller datastrøm innføres. Se [avgrenset returprøve](../kshms/MENU_RETURN_20261007.md).
+
 **Fase:** eksisterende ProffDok med firmakunder/mva.; KS/HMS trinn A under utvikling i feature/Preview
 **Status:** Production inkluderer godkjent PR #214 og tidligere Cordel-/prosjekt-/tilbudsfunksjoner. KS/HMS er ikke merget eller produksjonsgodkjent.
 **Kontrolldato:** 05.10.2026

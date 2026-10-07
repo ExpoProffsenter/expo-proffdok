@@ -105,7 +105,15 @@ function allNavEntries() {
 function restoreElement(element) {
   const original = element.getAttribute(ORIGINAL_LABEL_ATTR);
   if (original !== null) {
-    element.textContent = original;
+    // React reuses keyed menu buttons when leaving an order. Its newly rendered
+    // Startside/Befaring labels must win over the previous project's memory.
+    // Restore only text that this adapter still owns, then forget the old label.
+    const sourceLabel = element.getAttribute('data-expo-nav-label');
+    if (sourceLabel !== null) {
+      element.textContent = sourceLabel;
+    } else if (clean(element.textContent) === VISIBLE_LABELS.get(original)) {
+      element.textContent = original;
+    }
     element.removeAttribute(ORIGINAL_LABEL_ATTR);
   }
   if (element.getAttribute(HIDDEN_ATTR) === '1') {
@@ -121,7 +129,7 @@ function restoreElement(element) {
 function rememberAndSetLabel(element, nextLabel) {
   if (!element || clean(element.textContent) === nextLabel) return;
   if (!element.hasAttribute(ORIGINAL_LABEL_ATTR)) {
-    element.setAttribute(ORIGINAL_LABEL_ATTR, clean(element.textContent));
+    element.setAttribute(ORIGINAL_LABEL_ATTR, element.getAttribute('data-expo-nav-label') || clean(element.textContent));
   }
   element.textContent = nextLabel;
 }
@@ -156,7 +164,7 @@ function adaptNavigation(simpleOrder) {
     }
 
     const text = clean(element.textContent);
-    const original = clean(element.getAttribute(ORIGINAL_LABEL_ATTR) || text);
+    const original = clean(element.getAttribute('data-expo-nav-label') || element.getAttribute(ORIGINAL_LABEL_ATTR) || text);
     const base = original.replace(/\s*\(\d+.*\)$/, '');
     const hide = HIDDEN_NAV_LABELS.has(base)
       || base === 'Garanti ✓'

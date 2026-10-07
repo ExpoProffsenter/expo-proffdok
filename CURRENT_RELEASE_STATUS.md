@@ -1,3 +1,9 @@
+# Gjeldende Preview-retting – hovedmeny etter generell ordre (07.10.2026)
+
+Returfeilen som skrev Prosjektoversikt/Salgsgrunnlag over Reacts globale menynavn er gjenskapt og rettet. Gjeldende React-etikett vinner nå over ordrevisningens gamle DOM-minne. Fast runtime-regresjon, faktisk React-returprøve, eksisterende sjekklistepopupscenario og full Sandbox critical/build PASS. Se [menyprøven](docs/kshms/MENU_RETURN_20261007.md) og CONTINUITY/USER_TEST. Ny innlogget skjermkontroll følger publisering. Miljømål BEGGE, først samme feature/Sandbox-Preview. Main/Production/demo er ikke oppdatert.
+
+---
+
 # Gjeldende Preview – kompakt ordremeny og sjekklistepopup (07.10.2026)
 
 Miljømål BEGGE. Kodehead `dba4ee3ad8ce700e5eb64df101f95063c65a1d91` ligger på samme faste feat-kshms-foundation-Preview, eksplisitt Sandbox-binding. Kompakt ordremeny, egne sjekkpunkter uten KS/HMS på generelle ordrer, ingen automatisk våtromsliste, popup med Lagre/Sjekkliste fullført, versjonerte gjennomføringer og konfliktvalg. Full critical QA/build, React-prøver og 35 rollback-databasekontroller PASS. Innlogget desktopflyt med lagring/reload/to gjennomføringer/historikk PASS. USER_TEST.md har neste korte brukerprøve; CONTINUITY.md har faktisk aktør, tidspunkt og bevis. Ny bruker-TEST OK og Production-godkjenning gjenstår; tidligere godkjente delprøver består. Main/Production/demo er ikke oppdatert av denne leveransen.

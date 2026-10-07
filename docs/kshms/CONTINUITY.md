@@ -1,3 +1,9 @@
+# Gjeldende fortsettelsespunkt – hovedmeny etter ordre, 7. oktober 2026
+
+Kenneth har meldt reell regresjon i den globale menyen etter bruk av generell ordre. Den er gjenskapt med hans nøyaktige Prosjektoversikt/Salgsgrunnlag-knapperekke. Årsaken er ordre-adapterens gamle etiketter som overskriver gjenbrukte React-kontroller ved retur, ikke manglende ny menykode. Rettelsen følger den gjeldende React-etiketten på source controls. Scope og før/etter-prøver står i [MENU_RETURN_20261007.md](MENU_RETURN_20261007.md). Miljømål BEGGE, først samme Sandbox Preview. Full critical/build, faktisk React-retur og eksisterende sjekklistepopupscenario PASS. Publisert innlogget skjermkontroll følger etter kodecheckpoint. Ikke bygg sjekklistefunksjonen på nytt eller gjenta gamle SQL-runder. Production er kontrollert uendret på 155f6c4. Neste handling er samme Preview → generell ordre → ← Startside, og kompakt Meny skal bestå. Ingen ny TEST OK eller produksjonsgodkjenning hevdes.
+
+---
+
 # Gjeldende fortsettelsespunkt – sjekklistepopup, 7. oktober 2026
 
 Miljømål **BEGGE**, først samme Sandbox Preview. Forrige kjøring fortsatte i bakgrunnen etter forbindelsesbruddet og publiserte kodehead `dba4ee3ad8ce700e5eb64df101f95063c65a1d91` (tree `207d8051c449aee8e94d6bdda11805739cc3f015`). En separat recovery-arbeidsmappe ble derfor åpnet på den eksakt samme lokale treutgaven for å unngå samtidige overskrivinger. Ikke bygg denne funksjonen på nytt.

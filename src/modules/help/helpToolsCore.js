@@ -26,6 +26,7 @@ const BASE_SECTIONS = [
     [
       "Velg Ny forespørsel for å registrere en ny kundesak, eller åpne Befaring/Tilbud for å fortsette en eksisterende sak.",
       "Opprett prosjekt direkte når tilbudsprosessen ikke er nødvendig, eller åpne et eksisterende prosjekt fra prosjektlisten.",
+      "På PC åpner Meny appens funksjoner. Fra et prosjekt eller en generell ordre bruker du ← Startside for å gå tilbake. Da viser Meny igjen appens funksjoner.",
       "Når et prosjekt er åpnet på PC, viser topplinjen anbefalt prosjektløp: Oversikt, Avtalegrunnlag, Prosjektering og Fremdrift. Velg Meny for Bilder, Sjekklister, Produkter, Chat og øvrig prosjektinnhold.",
       "Bruk Krever oppfølging for prosjekter med ulest kundemelding, åpne avvik eller status Klar for kunde.",
       "Bruk Tilbud som bør følges opp for sendte tilbud som trenger manuell oppfølging."

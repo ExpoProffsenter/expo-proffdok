@@ -1,4 +1,16 @@
-# Nåværende korte Preview-prøve – ordremeny og sjekklistepopup
+# Nåværende korte Preview-prøve – hovedmeny etter generell ordre
+
+Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
+
+1. Oppdater siden. På Startsiden skal du se **Meny**. Åpne menyen: **KS/HMS** skal finnes ved din tilgang.
+2. Åpne en generell ordre → **Sjekklister**. Åpne en liste, lukk popupen og trykk **← Startside**.
+3. **Meny** skal fortsatt vises. Åpne **Befaring/Tilbud** eller **KS/HMS** derfra. Den gamle knapperekken skal ikke komme tilbake.
+
+Utviklerens faktiske React-/adapterprøve gjenskapte feilbildet før retting og passerer etterpå, inkludert ordre → våtrom, faktisk native Startside-/KS-klikk og mobilens etiketter. Eksisterende sjekklistepopup-prøve og full critical/build PASS. Innlogget kontroll på publisert kode følger etter kodecheckpoint. Denne prøven gir ingen automatisk Production-godkjenning.
+
+---
+
+# Tidligere korte Preview-prøve – ordremeny og sjekklistepopup
 
 Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
