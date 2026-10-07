@@ -1,4 +1,20 @@
-# Gjeldende fortsettelsespunkt – meny TEST OK, sjekklistepopup neste
+# Gjeldende fortsettelsespunkt – SJA bygget og utviklertestet
+
+Påbegynt SJA fra avbrutt chat er gjenopptatt i separat recovery-arbeidsmappe. Tomme jobbspesifikke felt, veiledning over feltene, aktivt valgte forslag, delvise utkast, prosjektleders egen signering og uforanderlig signert innhold er implementert. Migrasjon `20261007212858_kshms_sja.sql` er kun anvendt i Sandbox; 37 reelle SQL-kontroller med full rollback, permanent kontroll, faktisk React-flyt og full critical QA/build PASS. Se [SJA_20261007.md](SJA_20261007.md) for scope/kilder/testgrenser og [USER_TEST.md](USER_TEST.md) for kort prøve.
+
+Neste handling: kontrollert publisering/READY på **samme** feature-Preview og SJA-brukerprøve. Bekreftet publiseringshead og skynettleserresultat føres inn før overlevering. Ingen main-/Production-/demo-endring. Ingen SJA-TEST OK er registrert ennå. Meny og sjekklistepopup er allerede TEST OK; ikke start gamle prøver automatisk. Vernerunder, 5×5-risiko, prosjektkobling/vedlegg/PDF, separat HR og øvrige roadmapdeler følger senere avgrensede leveranser.
+
+---
+
+# Vedtatte avklaringer – meny og sjekklistepopup TEST OK; SJA
+
+Kenneth svarte 7. oktober 2026 kl. 23:02 Europe/Oslo: TEST OK gjelder begge deler, meny og sjekklistepopup med lagring/fullføring/historikk. Utførelsesdelen prioriteres før HR; vi bygger før Ringside-piloten. Ved individuell HR får ledere bare tildelte medarbeidere; firmaadmin ser/behandler alle og tildeler ansvar. SJA starter tom for hver jobb, med forslag til rutiner/sjekkpunkter og hjelpetekst over feltene. Primærkilder undersøkes før innholdet skrives. Ansvarlig PL signerer fortsatt selv etter dokumentert medvirkning. Dette er ikke Production-godkjenning.
+
+Miljømål BEGGE, først samme Sandbox Preview. Neste avgrensede kodeleveranse er SJA i KS/HMS, med nytt avgrenset datadomene og RPC-er; ingen endring av main.jsx, global meny, prosjektdata, avviksregler, auth eller e-post. Se OVERSIKT.md og kommende SJA-leveransenotat. Vernerunder, 5×5 risiko, PDF, HR og øvrige roadmapdeler består. Ingen gamle godkjenninger skal gjentas automatisk.
+
+---
+
+# Historikk – meny TEST OK, før godkjenning av sjekklistepopup
 
 **Kort samlet status ved chatbytte:** Les [OVERSIKT.md](OVERSIKT.md) først. Den skiller implementert arbeid, Kenneths godkjente delprøver, gjenstående leveranser og spørsmål som fortsatt avventer svar. Eldre avsnitt nedenfor er testhistorikk og skal ikke utløse nye fulle omtester.
 

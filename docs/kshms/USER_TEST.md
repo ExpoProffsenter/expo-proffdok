@@ -1,4 +1,23 @@
-# Nåværende korte Preview-prøve – lagring og historikk i sjekklistepopup
+# Neste korte Preview-prøve – SJA
+
+Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
+
+1. Åpne **KS/HMS → SJA → Ny SJA**. Alle svar skal være tomme. Hjelpeteksten skal stå over feltene. Åpne et forslag under Farer; valgt tekst skal kunne redigeres.
+2. Bruk navnet **TEST – SJA**, skriv arbeidssted og en oppgave. Trykk **Lagre utkast**, lukk og oppdater siden. Åpne analysen igjen: teksten skal være bevart. Resten kan fortsatt være tomt.
+3. Velg deg selv som **Ansvarlig prosjektleder**. Fyll ut arbeidstrinn/farer/konsekvenser/tiltak/ansvar/kontroll, datoene, utstyr, verneutstyr, beredskap, når arbeidet skal stanses, metode for gjennomgang og deltakerens navn/rolle/bidrag. Bekreft egen gjennomgang og trykk **Signer SJA**. Det skal vises hvem som signerte og når; innholdet skal ikke kunne endres. Oppdater og åpne igjen for å se at dette er lagret.
+4. Åpne **Ny SJA**. Den skal være tom. Den signerte TEST-analysen skal fortsatt kunne leses fra oversikten.
+
+Utviklerkontroll: 37 faktiske Sandbox SQL-kontroller med rollback, full critical QA/build og faktisk React-flyt PASS. React-prøven dekker blant annet feil/retry, konfliktvalg, signering og bevart kladd. Dette er ikke en innlogget full-app-/mobilprøve. Vercel READY/eksakt kode bekreftes i SJA_20261007.md før lenken over overleveres som oppdatert.
+
+---
+
+# Godkjent Preview-prøve – meny og sjekklistepopup
+
+Kenneth bekreftet 7. oktober 2026 kl. 23:02 at TEST OK omfatter både menyrettelsen og popupens lagring/fullføring/historikk. Ikke gjenta disse prøvene uten konkret ny feil. SJA-prøven over gjelder bare den nye delen.
+
+---
+
+# Historikk før TEST OK – lagring og historikk i sjekklistepopup
 
 **Menyrettelsen er TEST OK fra Kenneth 07.10.2026 kl. 22:39 Europe/Oslo.** Neste prøve gjelder bare popupens lagring og historikk. Bruk en testordre og et tydelig merket testpunkt.
 

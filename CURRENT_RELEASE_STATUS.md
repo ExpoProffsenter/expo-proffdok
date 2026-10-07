@@ -1,3 +1,11 @@
+# Gjeldende KS/HMS-status – 7. oktober 2026
+
+SJA med tomme felt/veiledning/valgbare forslag, utkast og ansvarlig PLs egen signering er bygget og utviklertestet. 37 Sandbox SQL-kontroller med rollback, faktisk React-flyt og full critical QA/build PASS; migrasjon 20261007212858 kun i Sandbox. Fast feature-Preview oppdateres kontrollert; eksakt READY/commit registreres i docs/kshms/SJA_20261007.md. Kort brukerprøve står først i USER_TEST.md. SJA-TEST OK gjenstår; main/Production/demo er uendret.
+
+TEST OK fra Kenneth kl. 23:02 gjelder både meny og sjekklistepopup med lagring/fullføring/historikk. Utførelsesdelen prioriteres; vi bygger før Ringside-piloten. Neste avgrensede leveranse er tom SJA med feltveiledning/forslag og ansvarlig PLs egen signering. HR-innsyn er avklart i OVERSIKT/CONTINUITY: ledere kun tildelte medarbeidere, firmaadmin alle og tildeling. Miljømål BEGGE, først samme Sandbox Preview. Dette er ingen Production-godkjenning. Tidligere status under er historikk.
+
+---
+
 # Gjeldende Preview-retting – hovedmeny etter generell ordre (07.10.2026)
 
 **TEST OK fra Kenneth 07.10.2026 kl. 22:39 Europe/Oslo for menyrettelsen.** Godkjenningen er registrert mot kontrollert feature-head `2c7c2b5ee68230056e9dd385986a33756a9b2561`, med funksjonskode `9a8bc9d64ec2ac18d82778eca26fbaa9fae10a9f`. Menyprøven er ferdig; neste avgrensede brukerprøve gjelder sjekklistepopupens lagring, omlasting og historikk. Godkjenningen gjelder menyprøven; hele KS/HMS og Production krever fortsatt egne avklaringer. Bare disse status-/testnotatene oppdateres. Main/Production/demo er uendret.
