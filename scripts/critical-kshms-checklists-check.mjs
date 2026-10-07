@@ -59,11 +59,15 @@ for(const mode of ['saved','unconfirmed','locked','readonly','support']){
  assert.deepEqual(persisted.project.projectDeviations,before.project.projectDeviations);
 }
 const panels=[...main.matchAll(/tab === "installasjoner"/g)].map(match=>match.index);
-const picker=main.indexOf('(ProjectChecklistPicker,');assert.equal(panels.length,2);assert(picker>panels[1]&&picker<main.indexOf('tab === "sjekklister"',panels[1]),'Template intake leaked into the external project surface');
+const pickers=[...main.matchAll(/\(ProjectChecklistPicker,/g)].map(match=>match.index);assert.equal(panels.length,2);assert.equal(pickers.length,2);
+const checklistPanel=main.indexOf('tab === "sjekklister"',panels[1]);
+assert(pickers[0]>panels[1]&&pickers[0]<checklistPanel&&pickers[1]>checklistPanel,'Template intake leaked into the external project surface');
+assert(main.slice(panels[1],pickers[0]).includes('!isSimpleOrderProject(project)'),'General orders exposed equipment intake');
+assert(main.slice(checklistPanel,pickers[1]).includes('isSimpleOrderProject(project) && authUser'),'General orders need intake directly in Sjekklister');
 assert(main.includes('...firmChecklistTemplate'),'Imported copies omitted from checklist/progress/report');
 const central=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(central.includes("['checklists','Sjekklistesentral']")&&central.includes("screen==='checklists'||checklistsOpened"));
 const orderUx=fs.readFileSync('src/modules/project/simpleOrderWorkspaceUx.js','utf8');
 const hidden=orderUx.slice(orderUx.indexOf('const HIDDEN_NAV_LABELS'),orderUx.indexOf('const CUSTOMER_ACTION_PATTERN'));
-assert(!hidden.includes("'Fag/utstyr'"),'General order hides the requested trade/template surface');
+assert(hidden.includes("'Fag/utstyr'"),'General order exposed Fag/utstyr against the agreed scope');
 for(const label of ['Garanti','Prosjektering','Overflater og innredning','Tilbud/kontrakt','Chat','Overtagelse'])assert(hidden.includes(`'${label}'`),'Unrelated general order navigation changed');
 console.log('critical-kshms-checklists-check: OK — company intake without personal grant, confirmed saves, retained drafts, immutable project copies and unchanged legacy data');

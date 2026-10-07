@@ -42,4 +42,3 @@ begin
  insert into public.kshms_audit(company_id,actor_id,action,object_id) values(p_company_id,auth.uid(),'checklist-'||p_action,t.id);
  return result;
 end $$;
-

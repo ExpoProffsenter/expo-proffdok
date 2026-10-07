@@ -47,7 +47,7 @@ export default function KshmsChecklistCentral({context,active=true}) {
    if(!saved||!current(scope))return;
    setData(saved.state);setDirty(false);setCached(null);
    window.localStorage.removeItem(checklistDraftKey(userId,companyId));
-   setNotice(action==='publish'?`«${saved.template.draft.title}» er publisert som versjon ${saved.version.number}. Den kan nå hentes under Fag/utstyr i firmaets prosjekter.`:'Utkastet er lagret. Publiser når sjekklisten er klar for prosjekter.');
+   setNotice(action==='publish'?`«${saved.template.draft.title}» er publisert som versjon ${saved.version.number}. Den kan nå hentes under Sjekklister i generelle ordrer og under Fag/utstyr i våtromsprosjekter.`:'Utkastet er lagret. Publiser når sjekklisten er klar for prosjekter.');
    setEditor(action==='publish'?null:{id:saved.template.id,revision:saved.template.revision,requestId:crypto.randomUUID(),content:saved.template.draft});
   }catch(cause){if(current(scope)){if(cause.code==='40001'){try{await load();}catch{}setError('En annen person har endret sjekklisten. Din kladd er beholdt. Sammenlign teksten under før du lagrer igjen.');}else setError(`${cause.message} Kladden er beholdt.`);}}
   finally{locked.current=false;if(current(scope))setBusy(false);}
@@ -65,7 +65,7 @@ export default function KshmsChecklistCentral({context,active=true}) {
  const conflict=latest&&latest.revision!==editor.revision;
  const visible=(data?.templates||[]).filter(row=>!row.archived&&(!trade||row.draft.trade===trade)&&`${row.draft.title} ${row.draft.trade}`.toLocaleLowerCase('nb-NO').includes(query.toLocaleLowerCase('nb-NO')));
  return <div className="ks-checklists">
-  <div className="ks-card"><h3>Sjekklistesentral</h3><p>Bygg firmaets sjekklister og velg fag. Trykk «Lagre og publiser» når listen er klar. Prosjektbrukere kan hente den under Fag/utstyr i generelle ordrer og våtromsprosjekter.</p><p className="ks-field-hint">En publisert utgave er fast. Endringer publiseres som en ny versjon. Prosjekter beholder utgaven de har hentet inn.</p>
+  <div className="ks-card"><h3>Sjekklistesentral</h3><p>Bygg firmaets sjekklister og velg fag. Trykk «Lagre og publiser» når listen er klar. Prosjektbrukere kan hente den under Sjekklister i generelle ordrer og under Fag/utstyr i våtromsprosjekter.</p><p className="ks-field-hint">En publisert utgave er fast. Endringer publiseres som en ny versjon. Prosjekter beholder utgaven de har hentet inn.</p>
    <div className="ks-checklist-actions"><button type="button" disabled={busy||!data} onClick={()=>choose(null)}>Ny sjekkliste</button>{cached&&<button type="button" className="secondary" disabled={busy} onClick={()=>{setEditor(cached);setDirty(true);setError('');}}>Fortsett lokalt utkast</button>}<button type="button" className="secondary" disabled={busy} onClick={()=>load().catch(cause=>setError(cause.message))}>Oppdater sjekklister</button></div>
   </div>
   {error&&!editor&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}

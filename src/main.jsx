@@ -6805,7 +6805,7 @@ ${appLink}`;
           setInst,
           uploadImages,
           authorName: authenticatedFullName || user.name || authUser?.email || profile?.email || "Ukjent"
-        }), authUser && kshmsContext?.company_id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistPicker, {
+        }), !isSimpleOrderProject(project) && authUser && kshmsContext?.company_id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistPicker, {
           companyId: kshmsContext.company_id,
           userId: authUser.id,
           projectId,
@@ -6815,6 +6815,15 @@ ${appLink}`;
           onOpen: openProjectChecklist
         }, `${authUser.id}:${kshmsContext.company_id}:${projectId}`)] }),
         tab === "sjekklister" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Sjekklister og vedlegg", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.FileText, {}), children: [
+          isSimpleOrderProject(project) && authUser && kshmsContext?.company_id && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ProjectChecklistPicker, {
+            companyId: kshmsContext.company_id,
+            userId: authUser.id,
+            projectId,
+            instances: project.kshmsChecklistInstances || [],
+            readOnly: isProjectLocked || isReadOnly || isProjectSupportReadOnly,
+            onImport: saveProjectChecklist,
+            onOpen: openProjectChecklist
+          }, `${authUser.id}:${kshmsContext.company_id}:${projectId}`),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: "Velg status per kontrollpunkt. Kategoriene kan \xE5pnes/lukkes for mindre scrolling p\xE5 mobil. Ved Avvik kan du skrive kommentar og ta bilde." }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             ChecklistEditor,
