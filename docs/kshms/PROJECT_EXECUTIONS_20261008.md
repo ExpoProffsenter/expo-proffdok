@@ -32,8 +32,14 @@ Arbeidsmiljøet falt ut med `409 Conflict, environment_offline` før forrige byg
 
 ### Sluttkontroll og publisering
 
-Full `EXPO_BACKEND_TARGET=sandbox npm run build` etter oppdatert Hjelp er PASS med bekreftet exit code 0. Hele den permanente critical-kjeden og Vite-bygg passerer. `git diff --check` PASS. Branch-spesifikk Vercel `EXPO_BACKEND_TARGET=sandbox` er bekreftet som plain config for target preview / feat-kshms-foundation. Commit/tree, CI og READY-bevis fylles inn etter faktisk publisering til samme faste Sandbox Preview. Main er uendret 155f6c4a, PR #216 open/draft. Ingen ny innlogget browser-/mobil-PASS eller bruker-TEST OK hevdes. Kontroll-/risiko-PDF, automatisk bildeoverføring til avvik og separat HR følger senere avtalt scope.
+Full `EXPO_BACKEND_TARGET=sandbox npm run build` etter oppdatert Hjelp er PASS med bekreftet exit code 0. Hele den permanente critical-kjeden og Vite-bygg passerer. `git diff --check` PASS. Branch-spesifikk Vercel `EXPO_BACKEND_TARGET=sandbox` er bekreftet som plain config for target preview / feat-kshms-foundation. Publisering er bekreftet i beviset nedenfor. Main er uendret 155f6c4a, PR #216 open/draft. Ingen ny innlogget browser-/mobil-PASS eller bruker-TEST OK hevdes. Kontroll-/risiko-PDF, automatisk bildeoverføring til avvik og separat HR følger senere avtalt scope.
 
 Sluttprøven av den faktiske React-flaten inkluderer også CSS: avkrysningen er 24 × 24 piksler, uten global input-padding, og etiketten bruker grid ved fullføringsknappen. En eksisterende avviksoppgave blir stående når kontroll eller risiko fullføres. Mottaker uten prosjekttilgang ser bare tildelingsbeskjeden. Åpnet oppgavedialog avgrenses til gjeldende firma og bruker også før scope-effekten rydder state. Hele siste Sandbox critical/build etter dette PASS, bekreftet exit code 0 (project-executions-final-build.log).
 
 Eksakte migrasjonsfiler samsvarer med Sandbox-historikken: 20261008175102 MD5 f79175672d083fc9be01d1aa9b82c199; 20261008180504 MD5 7114ca887130fe4b737f0b7455f5e1e7. Ny read-only kontroll av grant/search_path bekrefter anon=false, authenticated=true og tom search_path for begge RPC-er.
+
+## Bekreftet publisering
+
+Funksjonskode `8bce982fb75bf105ee614601e604e438f89a78bc`, tree `ed17f78782d6a49944bd55be6b008d0ef29995e9`. Fast Sandbox Preview er READY på `dpl_4gwb3VsRp7Wf2GWmRrxFNre8DY87`, med samme feature-alias og eksakt SHA. PR Core Safety `37827572425` og jobb Core safety + critical build `113484256816` er completed/success på samme SHA. Lokal og publisert tree er identiske.
+
+PR #216 er fortsatt open/draft. Main er uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`. De etterfølgende bevisnotatene endrer ingen funksjonskode, SQL eller rettigheter. Innlogget flere-konto-/mobilprøve og relevant bruker-TEST OK gjenstår; tidligere TEST OK beholdes. Kort prøve står øverst i USER_TEST.md. Ingen Production-migrering, merge eller demo-synk er utført.

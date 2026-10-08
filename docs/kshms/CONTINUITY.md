@@ -1,3 +1,15 @@
+# Gjeldende fortsettelsespunkt – prosjektinnganger og ansvarligvarsel publisert
+
+Funksjonskode `8bce982fb75bf105ee614601e604e438f89a78bc`, tree `ed17f78782d6a49944bd55be6b008d0ef29995e9`. Fast Sandbox Preview er READY på `dpl_4gwb3VsRp7Wf2GWmRrxFNre8DY87`, med samme feature-alias og eksakt SHA. PR Core Safety `37827572425` og jobb Core safety + critical build `113484256816` er completed/success på samme SHA. Lokal og publisert tree er identiske.
+
+Begge brukerbestillingene er implementert: prosjektinngang kun med modultilgang, separate prosjektoversikter og kladder, ansvarligs appvarsel til lagret egen fullføring, godkjente rutineutgaver og stor avkrysning ved begge fullføringsknapper. 44 nye rollback SQL-kontroller, faktisk React/DOM med CSS, gamle berørte brukerreiser og hele critical/build PASS. Rutinene velges med nummer og eksakt utgave; avviksvarsler beholdes når kontroll eller risiko fullføres.
+
+Neste handling er bare den nye korte innloggede brukerprøven i USER_TEST.md. Flere faktiske kontoer og mobil er ikke hevdet prøvd. Tidligere TEST OK består. Main/Production/demo er uendret; PR #216 er draft. Ved ny chat: bruk denne statusen og PROJECT_EXECUTIONS_20261008.md, og ikke behandle den historiske frakoblingen nedenfor som aktiv.
+
+---
+
+## Historikk – gjenoppretting og publisering
+
 # Gjeldende fortsettelsespunkt – forbindelsen gjenopprettet, originalarbeid intakt
 
 8. oktober 2026 etter kl. 20:34 Europe/Oslo svarte arbeidsmiljøet igjen. Originalarbeidet i `/workspace/scratch/31e71b5bfc49/expo-proffdok` er intakt, inkludert den nye faktiske React-prøven og critical-testtilleggene som ikke lå fullt i backupen. Forrige bygglogg viser ferdig Sandbox-bygg. Remote-head 8549888f er fast-forwardet inn uten tap av app-/testendringer. Backupen brukes bare som historisk gjenopprettingsbevis.

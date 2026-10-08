@@ -1,3 +1,13 @@
+# Prosjekttillegg 8. oktober 2026 – bekreftet grønn leveranse
+
+Funksjonskode `8bce982fb75bf105ee614601e604e438f89a78bc`, tree `ed17f78782d6a49944bd55be6b008d0ef29995e9`. Fast Sandbox Preview er READY på `dpl_4gwb3VsRp7Wf2GWmRrxFNre8DY87`, med samme feature-alias og eksakt SHA. PR Core Safety `37827572425` og jobb Core safety + critical build `113484256816` er completed/success på samme SHA. Lokal og publisert tree er identiske.
+
+44 faktiske nye Sandbox SQL-assertioner med full rollback PASS. Faktisk React-prosjekt/varsel/dialog med simulert RPC og reell CSS PASS, inkludert prosjektkladder, rutineutgave, ansvarligs åpning, varsel ved offline/tapt readback, retry, 24 × 24 avkrysning, minimal tilgangsbeskjed og uendrede avviksvarsler ved begge fullføringer. Utvidet critical prøver den faktiske varseleffekten med sene svar, firma-/brukerskifte, synlighet, revokering og cleanup. Eksisterende berørte React-prøver og siste full Sandbox critical/build PASS. Begge migrasjonsfilers MD5 samsvarer med Sandbox-historikken. Signert SJA og rutineutgaver har identiske før/etter-fingeravtrykk.
+
+Ingen ny innlogget mobil-/flere-kontoprøve eller bruker-TEST OK hevdes. Se PROJECT_EXECUTIONS_20261008.md og øverste korte USER_TEST.md-prøve. Main/Production/demo er uendret.
+
+---
+
 # Gjeldende nye utviklerbevis – vernerunder og 5×5-risiko, 8. oktober 2026
 
 54 faktiske Sandbox SQL-kontroller med full rollback, reell React-/dialogflyt med simulert RPC og ny permanent kritisk prøve PASS. Bevis og grenser står i [EXECUTIONS_20261008.md](EXECUTIONS_20261008.md). Signert SJA og 10 rutineutgaver har uendrede fingeravtrykk. Kenneths prosjektrapportprøve er TEST OK kl. 14:48; tidligere delprøver skal ikke gjentas uten konkret feil. Bare den nye prøven øverst i USER_TEST.md gjenstår. Full Sandbox critical/build PASS; Samme Preview er READY på 829ae35315d5e09d4f4e18d7f231f4a2826b8915 / dpl_6nK5QuRTshRSYX5ZAbd3MMPNYBAg og Core safety + critical build success. Se leveransenotatet. Ingen Production-godkjenning.

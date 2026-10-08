@@ -10,7 +10,7 @@ Kenneths «kjør» kl. 13:38 autoriserte valgfri SJA/RUH i prosjektets Rapport/P
 
 ## Prosjekttillegg og gjenoppretting 8. oktober
 
-Arbeidsmiljøet er tilbake og originalarbeidet intakt. Vernerunder/5×5 har nå direkte prosjektinnganger, prosjektvise kladder/oversikter, ansvarligvarsel til lagret egen fullføring, godkjente rutineutgaver og stor bekreftelse ved fullføringsknappen. 44 nye rollback SQL-kontroller og faktisk React-prosjekt/varsel/dialog PASS. Full sluttbygg/critical-kjede PASS. Publisering til samme Preview kontrolleres; endelig status og bevis står i CURRENT_RELEASE_STATUS.md og PROJECT_EXECUTIONS_20261008.md. Ny brukerprøve i USER_TEST.md gjenstår.
+Arbeidsmiljøet er tilbake og originalarbeidet intakt. Vernerunder/5×5 har nå direkte prosjektinnganger, prosjektvise kladder/oversikter, ansvarligvarsel til lagret egen fullføring, godkjente rutineutgaver og stor bekreftelse ved fullføringsknappen. 44 nye rollback SQL-kontroller og faktisk React-prosjekt/varsel/dialog PASS. Full sluttbygg/critical-kjede PASS. Samme Preview er READY på 8bce982f med grønn PR Core Safety / critical build; endelig status og bevis står i CURRENT_RELEASE_STATUS.md og PROJECT_EXECUTIONS_20261008.md. Ny brukerprøve i USER_TEST.md gjenstår.
 
 ## Hvor vi er
 

@@ -1,6 +1,6 @@
 # Kort brukerprøve – prosjektinnganger, rutiner og ansvarligvarsel
 
-Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Publiseringsstatus står i CURRENT_RELEASE_STATUS.md. Tidligere TEST OK for håndbok, meny, SJA/RUH og rapport består. Denne prøven gjelder bare vernerunde/risiko og de nye tilleggene.
+Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). READY på funksjonskode 8bce982f med grønn PR Core Safety / critical build. Publiseringsbevis står i CURRENT_RELEASE_STATUS.md. Tidligere TEST OK for håndbok, meny, SJA/RUH og rapport består. Denne prøven gjelder bare vernerunde/risiko og de nye tilleggene.
 
 1. **Prosjekt → Avvik/SJA/RUH → Opprett vernerunde.** Riktig prosjekt skal stå fast. Skriv TEST-navn, arbeidssted og dato, velg deg selv som **Ansvarlig** og oppgi deltakere. Les en rutine under **Velg fra bedriftens godkjente rutiner** og trykk **Legg inn rutine**: R-nummer og utgave skal stå i **Rutiner / utgaver som brukes**. Lagre utkast, lukk og bruk **Åpne vernerunder**: teksten skal være bevart i dette prosjektet.
 2. **Ansvarligvarselet → Åpne gjennomføring.** Varselet skal bli stående etter lesing og lukking. Fyll kontrollpunkter og **Gjennomgang og videre oppfølging**. Huk av den store bekreftelsen ved **Kontroll fullført**, og trykk knappen. Først lagret fullføring fjerner denne oppgaven. Dokumentasjonen skal være bevart under **Fullførte / historikk**. Eventuelle avvik beholder egne oppgaver til ansvarlig lukker dem.
