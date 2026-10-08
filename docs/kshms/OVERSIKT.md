@@ -4,6 +4,8 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Dette er samlet gjeldende status. PLAN.m
 
 ## Nyeste forbedring
 
+Egne PDF-er for godkjente rutineutgaver, publiserte tomme sjekklistemaler og lagrede prosjektkontroller er bygget og utviklertestet. Kort ny prøve står først i USER_TEST.md; publiseringsbevis står i CONTINUITY.md. Ingen ny HR- eller Production-leveranse.
+
 Prosjektets Avvik/SJA/RUH er publisert READY på funksjonskode 990ce731 med grønn Core Safety/critical build. Visningen er gjort kompakt: fire lukkede dokumentgrupper viser antall/status, og avviksgrupper/rader er lukket med åpne saker først. Kort oversiktsprøve i USER_TEST.md gjenstår sammen med PDF-prøven. Samme Sandbox Preview; tidligere TEST OK består. Dette endrer visning og hjelp, ikke planens øvrige omfang.
 
 ## Hvor vi er
@@ -19,7 +21,7 @@ Vi har levert håndbokfundamentet og rutinebiblioteket i Sandbox Preview. Utfør
 | A – håndbok og tilgang | Firmaaktivering, roller, oppstart, utkast/godkjenning, faste utgaver, egen bekreftelse, Min personalhåndbok og signert revisjon. Tidligere delprøver TEST OK. | Samlet QA før release. Firmaet må velge, tilpasse og godkjenne sine rutiner før bruk. |
 | A2 – rutineinnhold | 73 egne forslag med sporbar dekning av 121 innholdstemaer fra begge håndbøkene, seks egne hovedkapitler og faste rutinenumre. | Firmatilpasning og konkret faglig vurdering. Temadekning er ikke godkjenning av alle spesialtilfeller. |
 | B – utførelse | Sjekklistesentral, prosjektpopup/historikk, Avvik/RUH, SJA, vernerunder/kontroller og 5×5-risiko med prosjektkobling, egne fullføringer og bevarte utgaver. Flere delprøver TEST OK. | Ny kort popup-prøve; resterende sentral-/signerings-/mobil-/flere-brukerprøver. Fullstendig vedleggsdekning og senere versjonerte underskjema inngår fortsatt i planen; underskjema er ikke dokumentert levert. |
-| C – varsler og rapporter | Faste appoppgaver, deduplisert e-postkø for seks oppgavetyper og valgfri SJA/RUH-del i prosjektets Rapport/PDF/utskrift (TEST OK). Nye egne kontroll-/risiko-PDF-er og valgfri inkludering i prosjektrapport er utviklertestet. | Ny PDF-brukerprøve; PDF/uttrekk for rutiner og sjekklister; RUH-bilder/full historikk og samlet tilsynsuttrekk; frist-/utløpspåminnelser og kildeoppdateringsforslag. Faktisk e-postlevering etter separat godkjent oppsett/release. |
+| C – varsler og rapporter | Faste appoppgaver, deduplisert e-postkø for seks oppgavetyper og valgfri SJA/RUH-del i prosjektets Rapport/PDF/utskrift (TEST OK). Egne kontroll-/risiko-PDF-er og valgfri inkludering i prosjektrapport er utviklertestet. Egne PDF-er for rutineutgaver, sjekklistemaler og prosjektkontroller er også utviklertestet. | Nye PDF-brukerprøver; øvrig samlet dokumentuttrekk; RUH-bilder/full historikk og samlet tilsynsuttrekk; frist-/utløpspåminnelser og kildeoppdateringsforslag. Faktisk e-postlevering etter separat godkjent oppsett/release. |
 | D – HR og stoffkartotek | Felles personalrutiner er tilgjengelige i håndboken. | Individuelle kurs/sertifikater/kompetanse, utløp, medarbeidersamtaler/tiltak og separat HR-tilgang/oppbevaring/sletting. Valgfritt stoffkartotek med arbeids-/SJA-koblinger. |
 | E – pilot og drift | Løpende database-/React-/critical-QA og delvise desktop-/PDF-prøver. | Full tematisk/funksjonell kontroll, mobil/flere brukere, kapasitet/drift, Ringside-pilot etter minimumsomfang, deretter release-godkjenning og Production-verifisering. Avgrenset supportmodus følger etter pilot. |
 

@@ -1,3 +1,9 @@
+# Rutine-/sjekkliste-PDF – avgrenset B/C i Sandbox
+
+KshmsDocumentPdfButton og kshmsDocumentPdf.mjs bruker eksisterende kshms_get_state/kshms_checklist_state/project_checklist_state og firmaprofil. Eksakte utgaver/hash/svar/revisjon og eksisterende firma-/bruker-/prosjekttilgang kontrolleres før/etter asynkron lasting. Ulagret kontroll sperres; sene scope-/skjermsvar stoppes. appendExecutionPdf gjenbrukes uten layout-/lagringsendring; eksisterende logo-loader eksporteres. Main sender bare eksisterende publicProjectFileUrl til prosjektpopupen. Ingen DDL/RLS/Storage/auth-, autosave-/navigasjons- eller e-postendring. Filadresser blir rasterbilder, ikke tekst/lenker. Rutine-PDF utelater medarbeidertildelinger/bekreftelser og upubliserte utkast. Se [kontrakt og tester](../kshms/DOCUMENT_PDF_20261008.md).
+
+---
+
 # Kontroll-/risiko-PDF – Sandbox 8. oktober 2026
 
 `executionReportDocument` mapper kun lagrede snapshots til både egen PDF, prosjektrapport-PDF og React/utskrift. Foto-data valideres og feil stopper eksport, identiteter/utgaver slås ikke opp på nytt. Utkast vises uten fullføringsidentitet; forventet risiko er skilt fra kontrollert effekt. `downloadExecutionPdf` krever fersk detail med riktig bruker/firma/prosjekt/type/revisjon og enabled; den leser firmaprofil og bruker samme eksisterende jsPDF-versjon. Aktivt dokument/scope kontrolleres etter hvert asynkrone steg og før nedlasting. Ingen save-/complete-kall fra eksporten.

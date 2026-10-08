@@ -6857,6 +6857,7 @@ ${appLink}`;
               customChecklistAllowed,
               isWarrantyPoint: isSoproWarrantyPoint,
               onSaved: applySavedChecklistControl,
+              resolveFileUrl: publicProjectFileUrl,
               uploadImages,
               checklist,
               setChecklistValue,

@@ -71,3 +71,6 @@ const hidden=orderUx.slice(orderUx.indexOf('const HIDDEN_NAV_LABELS'),orderUx.in
 assert(hidden.includes("'Fag/utstyr'"),'General order exposed Fag/utstyr against the agreed scope');
 for(const label of ['Garanti','Prosjektering','Overflater og innredning','Tilbud/kontrakt','Chat','Overtagelse'])assert(hidden.includes(`'${label}'`),'Unrelated general order navigation changed');
 console.log('critical-kshms-checklists-check: OK — company intake without personal grant, confirmed saves, retained drafts, immutable project copies and unchanged legacy data');
+
+// PDF must remain subject to the same edition/project access contracts.
+await import('./critical-kshms-document-pdf-check.mjs');

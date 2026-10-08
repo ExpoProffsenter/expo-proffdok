@@ -58,6 +58,6 @@ export async function downloadExecutionPdf({rpc,companyId,userId,editor,isCurren
  const name=(document.type+' - '+document.title).replace(/[\\/:*?"<>|\x00-\x1f]/g,'-').slice(0,100)+'.pdf';doc.save(name);
  return {logoMissing:Boolean(profile.logoUrl&&!logo)};
 }
-async function loadCompanyLogo(value){
+export async function loadCompanyLogo(value){
  try{const url=new URL(value,window.location.origin);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)return null;const image=new Image();image.crossOrigin='anonymous';await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('logo timeout')),5000);image.onload=()=>{clearTimeout(timer);resolve();};image.onerror=()=>{clearTimeout(timer);reject(Error('logo unavailable'));};image.src=url.href;});const canvas=document.createElement('canvas'),scale=Math.min(1,800/Math.max(image.width,image.height));canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0,canvas.width,canvas.height);return canvas.toDataURL('image/png');}catch{return null;}
 }

@@ -1,3 +1,9 @@
+# KS/HMS – egne rutine- og sjekkliste-PDF-er
+
+Godkjente rutineutgaver og publiserte sjekklistemaler kan lastes ned. Lagrede prosjektkontroller har egen PDF med svar, bilder og eventuell fullføring. Utkast/maler og historikk merkes; tilgang og lagret innhold leses på nytt. Ingen automatisk deling eller egen ansattbekreftelse. [Omfang/testbevis](docs/kshms/DOCUMENT_PDF_20261008.md), [kort prøve](docs/kshms/USER_TEST.md). Samme feature/Sandbox; Production er ikke godkjent.
+
+---
+
 # KS/HMS – kompakt prosjektoversikt
 
 Avvik/SJA/RUH starter med lukkede SJA-, RUH-, kontroll- og risikogrupper med antall/status. Sjekkpunkt- og prosjektavvik vises som lukkede rader med åpne saker først. Eksisterende redigering og oppfølging består. [Omfang og tester](docs/kshms/PROJECT_OVERVIEW_20261008.md), [kort brukerprøve](docs/kshms/USER_TEST.md). Samme feature/Sandbox før Production-godkjenning.

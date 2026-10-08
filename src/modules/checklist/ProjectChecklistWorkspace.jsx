@@ -4,10 +4,11 @@ import {kshmsRpc} from '../kshms/kshmsAccess.js';
 import {identityText} from '../kshms/kshmsPersonal.mjs';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT} from '../access/moduleAccessClient.js';
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
-import {answersForDefinition,checklistRunDraftKey,commitChecklistRun,completionProblem,currentRunAnswers,readRunDraft,runDefinition} from './checklistRuns.mjs';
+import {answersForDefinition,checklistRunDraftKey,commitChecklistRun,completionProblem,currentRunAnswers,readRunDraft,runDefinition,sameRunValue} from './checklistRuns.mjs';
 import './projectChecklistWorkspace.css';
+import KshmsDocumentPdfButton from '../kshms/KshmsDocumentPdfButton.jsx';
 
-export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,...editorProps}) {
+export default function ProjectChecklistWorkspace({Editor,companyId,userId,projectId,checklist,activeChecklistTemplate,instances=[],readOnly=false,customChecklistAllowed=false,isWarrantyPoint=()=>false,onSaved,uploadImages,resolveFileUrl,...editorProps}) {
  const [data,setData]=useState(null),[selected,setSelected]=useState(null),[expanded,setExpanded]=useState({}),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[uploads,setUploads]=useState(0);
  const owner=useRef(null),locked=useRef(false),selection=useRef(null),cached=useRef(new Map());
  selection.current=selected;
@@ -137,6 +138,8 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
  const groups=activeChecklistTemplate;
  const historical=(data?.runs||[]).filter(value=>value.status==='completed');
  const previousGroups=Object.entries(data?.checklist||checklist||{}).filter(([category,answers])=>!groups.some(group=>group.category===category)&&Object.values(answers||{}).some(answer=>answer?.status||answer?.comment||answer?.photos?.length));
+ const savedSelection=selected&&data?.runs?.find(row=>row.id===selected.id);
+ const pdfReady=Boolean(savedSelection&&!selected.earlierDraft&&!selected.pendingAction&&savedSelection.revision===selected.revision&&sameRunValue(savedSelection.definition,selected.definition)&&sameRunValue(answersForDefinition(savedSelection.definition,savedSelection.answers),answersForDefinition(selected.definition,selected.answers)));
  const title=definition=>definition.category.replace(/^KS\/HMS sjekkliste – /,'');
  return <div className="project-checklist-workspace">
   <p className="note">Åpne en sjekkliste for å fylle den ut. «Lagre» lar deg eller en kollega fortsette senere. «Sjekkliste fullført» lagrer en ferdig kontroll.</p>
@@ -161,6 +164,8 @@ export default function ProjectChecklistWorkspace({Editor,companyId,userId,proje
    {error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}
    {selected.completed_identity&&<p>Fullført av {identityText(selected.completed_identity)} · {new Date(selected.completed_at).toLocaleString('nb-NO')}</p>}
    <fieldset disabled={readOnly||selected.readOnly||busy||uploads>0||!!selected.pendingAction}><Editor {...editorProps} key={selected.id} embedded initiallyExpanded consumeChecklistJump={false} customChecklistEnabled={false} showOpenDeviationsOnly={false} setShowOpenDeviationsOnly={null} activeChecklistTemplate={[selected.definition]} checklist={{[selected.definition.category]:selected.answers}} setChecklistValue={change} addChecklistPhoto={addPhoto} onOpenKshmsDeviation={editorProps.onOpenKshmsDeviation?id=>{if(remember(selection.current)){setSelected(null);selection.current=null;editorProps.onOpenKshmsDeviation(id);}}:null}/></fieldset>
+   {savedSelection&&!selected.earlierDraft&&<KshmsDocumentPdfButton kind="run" row={selected} companyId={companyId} userId={userId} projectId={projectId} resolveFileUrl={resolveFileUrl} disabled={!pdfReady||busy||uploads>0}/> }
+   {!savedSelection&&<p className="note">Lagre kontrollen først for å laste ned egen PDF. Tidligere dokumentasjon uten kontrollhistorikk finnes i prosjektets ordinære rapport.</p>}
    <div className="project-checklist-footer">
     {!selected.readOnly&&!readOnly&&<><button type="button" disabled={busy||uploads>0} onClick={()=>save('save')}>{selected.pendingAction?'Prøv lagring igjen':'Lagre'}</button><button type="button" disabled={busy||uploads>0||!!selected.pendingAction} onClick={()=>save('complete')}>Sjekkliste fullført</button></>}
     {selected.readOnly&&selected.status==='completed'&&!readOnly&&groups.some(group=>group.category===selected.definition.category)&&<button type="button" disabled={busy} onClick={()=>begin(groups.find(group=>group.category===selected.definition.category),{fresh:true})}>Start ny kontroll</button>}

@@ -1,5 +1,6 @@
 import KshmsRoutineSearch from './KshmsRoutineSearch.jsx';
 import KshmsVersionIdentity from './KshmsVersionIdentity.jsx';
+import KshmsDocumentPdfButton from './KshmsDocumentPdfButton.jsx';
 import { personalHandbook } from './kshmsPersonal.mjs';
 import { routineNumber } from './kshmsJobChoices.mjs';
 
@@ -17,9 +18,9 @@ export default function KshmsPersonalHandbook({data,userId,query,onQueryChange,o
    <p className="ks-field-hint">Kapittel: {version.content.chapter}</p>
    {group.archived&&<p>Rutinen er tatt ut av bruk. Den er beholdt som historikk. Spør ansvarlig hvilken rutine som gjelder nå.</p>}
    <KshmsVersionIdentity version={version} acknowledgment={current.acknowledgment} data={data} userId={userId}/>
-   <ContentComponent content={version.content}/>
+   <ContentComponent content={version.content}/><KshmsDocumentPdfButton kind="routine" row={version} companyId={data.context.company_id} userId={userId}/>
    {!current.acknowledgment&&(version.requires_ack||version.number===1)&&<button type="button" className="secondary" disabled={busy} onClick={()=>onRead(version)}>Les og bekreft denne utgaven</button>}
-   {group.editions.length>1&&<details><summary>Tidligere tildelte utgaver ({group.editions.length-1})</summary>{group.editions.slice(1).map(row=><details key={row.version.id}><summary>Versjon {row.version.number} · {row.version.change_summary}</summary><KshmsVersionIdentity version={row.version} acknowledgment={row.acknowledgment} data={data} userId={userId}/><ContentComponent content={row.version.content}/></details>)}</details>}
+   {group.editions.length>1&&<details><summary>Tidligere tildelte utgaver ({group.editions.length-1})</summary>{group.editions.slice(1).map(row=><details key={row.version.id}><summary>Versjon {row.version.number} · {row.version.change_summary}</summary><KshmsVersionIdentity version={row.version} acknowledgment={row.acknowledgment} data={data} userId={userId}/><ContentComponent content={row.version.content}/><KshmsDocumentPdfButton kind="routine" row={row.version} companyId={data.context.company_id} userId={userId}/></details>)}</details>}
   </details>})}
  </div>;
 }

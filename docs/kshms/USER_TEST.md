@@ -1,3 +1,15 @@
+# Kort ny prøve – rutine- og sjekkliste-PDF
+
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Publiseringsstatus står i CONTINUITY.md. Tidligere TEST OK beholdes; prøv bare dette nye uttrekket:
+
+1. **KS/HMS → Min personalhåndbok:** Åpne en tildelt rutine → **Last ned PDF**. Se firmanavn/logo, R-nummer, utgave, godkjenner, riktig rutinetekst og kilder. PDF-en skal ikke registrere eller vise andre ansattes bekreftelser. Du trenger ikke godkjenne eller bekrefte rutinene på nytt.
+2. **Sjekklistesentral → Publisert sjekklistemal · vN → Last ned PDF:** Malen skal vise fag, punkter, veiledning og bilde-/kommentarkrav. Den skal vise **TOM MAL – IKKE UTFØRT KONTROLL**. Et endret upublisert utkast skal ikke følge med. Bruk en allerede publisert liste; ingen ny publisering er nødvendig.
+3. **Prosjekt → Sjekklister:** Åpne en lagret/fullført kontroll → **Last ned PDF**. Se lagrede svar, kommentarer, bilder og eventuell fullfører/tid. Lagret utkast skal vise **UNDER ARBEID – IKKE FULLFØRT**. Når du endrer et svar uten å lagre, skal PDF være sperret til du lagrer eller åpner den lagrede kontrollen. Avvik må fortsatt følges opp separat.
+
+Utviklerprøver: fem faktiske React/jsPDF-uttrekk med simulert transport, permanent kritisk kontroll, tre berørte eksisterende React-flyter og full Sandbox critical/build er kontrollert. Innlogget bruker-/mobilprøve gjenstår. Separate filvedlegg følger ikke selve PDF-en; dette står i uttrekket. Ingen automatisk kunde-/portal-/e-postdeling. E-postsending er deaktivert. De åpne oversikts-/kontroll-/risiko-/popup-prøvene nedenfor beholdes som separate delprøver.
+
+---
+
 # Kort ny prøve – kompakt prosjektoversikt
 
 Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Ny oversikt er READY på funksjonskode 990ce731 med grønn Core Safety/critical build. Testprosjekt: **DEMO – HOVED – Badrenovering i arbeid** i Expo Proffsenter. Dette prosjektet har kontrollen **test vernerunde**. Et annet prosjekt med eksisterende avvik kan også brukes for avviksradene.

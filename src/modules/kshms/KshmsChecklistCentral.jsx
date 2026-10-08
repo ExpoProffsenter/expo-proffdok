@@ -3,6 +3,7 @@ import { kshmsRpc } from './kshmsAccess.js';
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import { CHECKLIST_TRADES,blankChecklist,checklistDraftKey,persistChecklistDraft,readChecklistDraft,sameChecklistContent,saveChecklistTemplate } from './kshmsChecklists.mjs';
 import './kshmsChecklists.css';
+import KshmsDocumentPdfButton from './KshmsDocumentPdfButton.jsx';
 
 function Field({label,value,onChange,multiline=false,maxLength=600}) {
  const id=useId();
@@ -72,7 +73,7 @@ export default function KshmsChecklistCentral({context,active=true}) {
   {!data?<p role="status">Henter sjekklister …</p>:<>
    <div className="ks-checklist-filters"><Field label="Søk i sjekklister" value={query} onChange={setQuery}/><label className="ks-field"><span>Fag</span><select value={trade} onChange={e=>setTrade(e.target.value)}><option value="">Alle fag</option>{CHECKLIST_TRADES.map(value=><option key={value}>{value}</option>)}</select></label></div>
    {!visible.length&&<p>Ingen sjekklister i dette utvalget. Bruk «Ny sjekkliste» for å bygge en.</p>}
-   <div className="ks-checklist-grid">{visible.map(row=>{const version=data.versions.find(item=>item.template_id===row.id);const published=version&&sameChecklistContent(row.draft,version.content);return <article className="ks-card" key={row.id}><span className="ks-badge">{row.draft.trade}</span><h4>{row.draft.title}</h4><p>{`${row.draft.points.length} sjekkpunkter · ${version?published?`Publisert · v${version.number}`:`Endret utkast · v${version.number} er publisert`:'Utkast'}`}</p><div className="ks-checklist-actions"><button type="button" className="secondary" disabled={busy} onClick={()=>choose(row)}>Rediger sjekkliste</button><button type="button" className="secondary" disabled={busy} onClick={()=>archive(row)}>Arkiver sjekkliste</button></div></article>;})}</div>
+   <div className="ks-checklist-grid">{visible.map(row=>{const version=data.versions.find(item=>item.template_id===row.id);const published=version&&sameChecklistContent(row.draft,version.content);return <article className="ks-card" key={row.id}><span className="ks-badge">{row.draft.trade}</span><h4>{row.draft.title}</h4><p>{`${row.draft.points.length} sjekkpunkter · ${version?published?`Publisert · v${version.number}`:`Endret utkast · v${version.number} er publisert`:'Utkast'}`}</p><div className="ks-checklist-actions"><button type="button" className="secondary" disabled={busy} onClick={()=>choose(row)}>Rediger sjekkliste</button><button type="button" className="secondary" disabled={busy} onClick={()=>archive(row)}>Arkiver sjekkliste</button></div>{version&&<details><summary>Publisert sjekklistemal · v{version.number}</summary><p>{version.content.title} · {version.content.trade}. PDF-en er en tom mal. Endringer i utkastet følger ikke med.</p><KshmsDocumentPdfButton kind="template" row={version} companyId={companyId} userId={userId} active={active}/></details>}</article>;})}</div>
   </>}
   {editor&&active&&<DeviationDialog title="Bygg sjekkliste" context="KS/HMS · Firmaets sjekklistesentral" closeLabel="Lukk sjekklistedialog" busy={busy} onClose={()=>{if(!locked.current){setEditor(null);setDirty(false);setError('');}}}>
    <form className="ks-checklists" onSubmit={event=>{event.preventDefault();save('publish');}}>
