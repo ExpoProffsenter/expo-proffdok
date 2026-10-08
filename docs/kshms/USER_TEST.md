@@ -1,6 +1,6 @@
 # Kort ny prøve – rutine- og sjekkliste-PDF
 
-Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Publiseringsstatus står i CONTINUITY.md. Tidligere TEST OK beholdes; prøv bare dette nye uttrekket:
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Funksjonskode 64143a3a er READY med grønn Core Safety/critical build; bevis står i CONTINUITY.md. Tidligere TEST OK beholdes; prøv bare dette nye uttrekket:
 
 1. **KS/HMS → Min personalhåndbok:** Åpne en tildelt rutine → **Last ned PDF**. Se firmanavn/logo, R-nummer, utgave, godkjenner, riktig rutinetekst og kilder. PDF-en skal ikke registrere eller vise andre ansattes bekreftelser. Du trenger ikke godkjenne eller bekrefte rutinene på nytt.
 2. **Sjekklistesentral → Publisert sjekklistemal · vN → Last ned PDF:** Malen skal vise fag, punkter, veiledning og bilde-/kommentarkrav. Den skal vise **TOM MAL – IKKE UTFØRT KONTROLL**. Et endret upublisert utkast skal ikke følge med. Bruk en allerede publisert liste; ingen ny publisering er nødvendig.
