@@ -4,14 +4,14 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Les denne først ved chatbytte; detaljer
 
 ## Ny rapportleveranse 8. oktober
 
-Kenneths «kjør» kl. 13:38 autoriserte valgfri SJA/RUH i prosjektets Rapport/PDF/utskrift. Valg, rutinehenvisning, deltagere/signatur, status/tiltak/ansvarlig/lukking er bygget. 34 databasekontroller, 5 faktiske PDF-er, 3 utskrifter og visuell PDF-kontroll PASS. Publisering på samme Preview pågår. Rapporttillegget venter på kort brukerprøve; tidligere TEST OK består. Testbevis: [PROJECT_REPORT_20261008.md](PROJECT_REPORT_20261008.md).
+Kenneths «kjør» kl. 13:38 autoriserte valgfri SJA/RUH i prosjektets Rapport/PDF/utskrift. Valg, rutinehenvisning, deltagere/signatur, status/tiltak/ansvarlig/lukking er bygget. 34 databasekontroller, 5 faktiske PDF-er, 3 utskrifter og visuell PDF-kontroll PASS. Samme Preview er READY på funksjonskode b17ec9be887b4b5b3d16219e77f509db84a8a269; Core safety + critical build completed/success. Publiseringsbevis står i PROJECT_REPORT_20261008.md. Rapporttillegget venter på kort brukerprøve; tidligere TEST OK består. Testbevis: [PROJECT_REPORT_20261008.md](PROJECT_REPORT_20261008.md).
 
 ## Hvor vi er
 
 Ny KS/HMS-funksjonalitet ligger i samme Sandbox Preview:
 https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
-Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert feature-head/funksjonskode før denne dokumentoppdateringen: `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. SJA/RUH-prosjektinngang, faktiske prosjektvalg og nummererte rutiner er READY på samme Preview. Den rapporterte menyfeilen er rettet: Avvik/SJA/RUH vises i desktopmenyen, KS/HMS har Avvik/RUH og avviksdatoer vises norsk. Core Safety/critical build success. Testbevis: NAV_RUH_DATE_20261008.md. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
+Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert funksjonskode: `b17ec9be887b4b5b3d16219e77f509db84a8a269`; fast Preview READY på samme SHA. Valgfri prosjekt-SJA/RUH i Rapport/PDF/utskrift er publisert. SJA/RUH-prosjektinngang, faktiske prosjektvalg og nummererte rutiner er READY på samme Preview. Den rapporterte menyfeilen er rettet: Avvik/SJA/RUH vises i desktopmenyen, KS/HMS har Avvik/RUH og avviksdatoer vises norsk. Core Safety/critical build success. Testbevis: NAV_RUH_DATE_20261008.md. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
 
 | Del | Hva finnes nå | Godkjenning / gjenstående |
 |---|---|---|

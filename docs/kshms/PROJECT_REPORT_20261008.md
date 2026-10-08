@@ -44,4 +44,4 @@ Ingen ny innlogget nettleser-, mobil- eller flere faktiske brukerøkter-prøve h
 
 ## Publiseringsbevis
 
-Endelig kode-SHA/tree, CI og samme Preview-alias registreres etter verifisert publisering. Production main skal fortsatt være 155f6c4ac01f126c1db0c65da385cfd9305587d5. Ingen produksjonsmigrering, merge eller demo-synk er godkjent.
+Funksjonskode `b17ec9be887b4b5b3d16219e77f509db84a8a269`, tree `11adb88561b0ad56b7a31d67581d8d596852d2be`, er identisk med lokalt utviklertestet tree (lokal commit `ce49184348b8683fa7f2ba766b227daaaca25b82`). GitHub check `113309760983` – Core safety + critical build – completed/success. Fast Preview-alias READY på `dpl_GE4ZFUEanKuwSB3SmE99SC7Xqwkr` for samme kode-SHA. Vercel Preview Comments check completed/success. Publisering verifisert 8. oktober 2026. Etterfølgende dokumentregistrering endrer bare status/testnotater, ikke funksjonskoden. Production main skal fortsatt være 155f6c4ac01f126c1db0c65da385cfd9305587d5. Ingen produksjonsmigrering, merge eller demo-synk er godkjent.
