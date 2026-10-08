@@ -1,4 +1,8 @@
-## Kort ny prøve – vedleggspakke (ZIP)
+## TEST OK 9. oktober kl. 01:55: ZIP-nedlasting og innhold
+
+Kenneths TEST OK er presisert **9. oktober 2026 kl. 01:55 Europe/Oslo**: ZIP fra Voldsløkka-vernerunden er lastet ned og åpnet, med **to bilder i vedlegg og én JSON-fil**. Skjermbildet viser åpnet «KS-HMS vedlegg – test omfang», mappen «vedlegg» og «manifest.json». Dette bekrefter innlogget ZIP-nedlasting/innhold på publisert head **359dac0ed2df86ab43cb545ece6716161f9bdc87** (funksjon 42a38e91), etter PDF-/ZIP-avklaringen kl. 01:51–01:53. Tidligere TEST OK beholdes. Ingen ny mobil-, flerbruker-, privat RUH-original-/prosjektkontrollfil- eller Production-/merge-/e-postgodkjenning følger.
+
+Nedlasting/innhold er ferdig prøvd. Listen under beholdes som testgrunnlag. Mobil/flere brukere, private RUH-originaler/prosjektkontrollfiler og egen brukerprøve av nullstilling/tom pakke er fortsatt åpne. Utviklerscenarioene for nullstilling/tom pakke består.
 
 Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe) og eksisterende innlogging. Tidligere TEST OK beholdes.
 
@@ -6,7 +10,7 @@ Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-rin
 2. Trykk **Vis vedleggslisten**. Kontroller filnavn, dokument, punkt og størrelse. Bekreft vedleggslisten og trykk **Last ned vedlegg (ZIP)**. Åpne pakken: bare vedleggene til valgte dokumenter og **manifest.json** skal følge med. Manifestet viser dokument-ID, revisjon, filstørrelse og kontrollsum.
 3. Fjern dokumentet eller endre omfanget. Vedleggslisten og bekreftelsen skal nullstilles. Velg et dokument uten vedlegg: listen skal si at ingen støttede vedlegg er lagret, og ZIP-knappen skal være sperret.
 
-Utvikler har testet ekte React/ZIP med fem syntetiske vedlegg og privat/prosjekt-Storage, filinnhold/CRC/SHA-256, manglende/endret fil og endret tilgang/firma/bruker/avmontering. Utvikler lastet også ned faktisk ZIP med begge Voldsløkka-bildene og manifest på funksjonskode 42a38e91 (READY/grønn full critical build). CRC, bildeinnhold/SHA-256, bekreftelse/tomt omfang/nullstilling, RUH uten vedlegg og publisert HJELP PASS; eksisterende samle-PDF med SJA/signatur og begge bilder fortsatt PASS. Én fane, alle popup lukket, ingen dataendring. ZIP er ikke Kenneths TEST OK ennå; mobil/flere ekte brukere gjenstår. Private lagrede RUH-originaler og prosjektkontrollfiler må også prøves innlogget når slike saker finnes. Ikke opprett/signér/lukk en sak bare for denne prøven. Pakken inkluderer ikke rapport-PDF eller HR; andre dokumenttilknytninger er fortsatt B/C-scope. ZIP er ikke kryptert; vurder innhold og mottaker før deling.
+Utvikler har testet ekte React/ZIP med fem syntetiske vedlegg og privat/prosjekt-Storage, filinnhold/CRC/SHA-256, manglende/endret fil og endret tilgang/firma/bruker/avmontering. Utvikler lastet også ned faktisk ZIP med begge Voldsløkka-bildene og manifest på funksjonskode 42a38e91 (READY/grønn full critical build). CRC, bildeinnhold/SHA-256, bekreftelse/tomt omfang/nullstilling, RUH uten vedlegg og publisert HJELP PASS; eksisterende samle-PDF med SJA/signatur og begge bilder fortsatt PASS. Én fane, alle popup lukket, ingen dataendring. ZIP-nedlasting/innhold er Kenneths TEST OK 9. oktober kl. 01:55; mobil/flere ekte brukere gjenstår. Private lagrede RUH-originaler og prosjektkontrollfiler må også prøves innlogget når slike saker finnes. Ikke opprett/signér/lukk en sak bare for denne prøven. Pakken inkluderer ikke rapport-PDF eller HR; andre dokumenttilknytninger er fortsatt B/C-scope. ZIP er ikke kryptert; vurder innhold og mottaker før deling.
 
 ---
 
