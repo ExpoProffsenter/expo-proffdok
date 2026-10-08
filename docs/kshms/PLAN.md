@@ -1,4 +1,12 @@
-## Meny-/RUH-/datoretting 8. oktober 2026 – TEST OK
+## SJA-utkast og RUH-oppfølging 8. oktober 2026 kl. 13:30 – TEST OK
+
+Kenneth svarte «test ok» 8. oktober 2026 kl. 13:30 Europe/Oslo på prøven rett ovenfor i chatten: SJA-utkast med rutinenummer → Lagre utkast → lukk/gjenåpne fra samme prosjekt, og RUH → lagring med ansvarlig/frister → egne tiltak/egen kontroll/lukking → bortfalt ansvarligvarsel og bevart sak under Lukkede.
+
+Disse prøvepunktene er ferdige. Ingen ny app-/databaseendring, produksjonsgodkjenning eller ny signerings-/mobilprøve følger registreringen. Kenneth spør om SJA/RUH kommer med i prosjektrapporten: PDF-koblingen mangler. Prosjekt-ID alene gir ikke rapportinkludering. En valgfri rapportdel for prosjektets SJA/RUH, med signatur/deltakere/rutineutgaver for SJA og status/tiltak/ansvarlig/lukking for RUH, foreslås som en egen avgrenset leveranse. Omfang, inkludering og prioritering er ikke besluttet av spørsmålet alene. Avtalt videre utførelsesarbeid med vernerunder/selvstendige kontroller og 5×5-risiko, deretter separat HR og Ringside-pilot etter minimumsomfang, består.
+
+---
+
+## Historikk – meny-/RUH-/datoretting 8. oktober 2026 – TEST OK
 
 Skjermbildene viste at desktopadapteren utelot Avvik/SJA/RUH. Matcher og Åpne Avvik er rettet, KS/HMS viser Avvik/RUH, og avvik/RUH har norsk dato og Oslo-tid. Funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265` READY/Core safety success. Full critical/build og faktisk DOM-/React-prøve PASS. Ingen SQL-mutasjoner eller produksjonsendringer i denne rettelsen. Kenneth bekreftet TEST OK 8. oktober 2026 kl. 01:28 Europe/Oslo for meny, RUH-inngang og norsk dato. Denne prøven er ferdig. Neste nødvendige brukerprøve er SJA/RUH-lagring, gjenåpning og egen lukking øverst i USER_TEST.md. Videre utførelses-/HR-scope og krav om separat Production-godkjenning består. Se NAV_RUH_DATE_20261008.md.
 

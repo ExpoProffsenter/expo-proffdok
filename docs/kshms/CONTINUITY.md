@@ -1,4 +1,18 @@
-# Gjeldende fortsettelsespunkt – meny, RUH-inngang og norsk dato TEST OK
+# Gjeldende fortsettelsespunkt – SJA-utkast og RUH-oppfølging TEST OK; rapportkobling gjenstår
+
+Kenneth svarte «test ok» 8. oktober 2026 kl. 13:30 Europe/Oslo på prøven rett ovenfor i chatten: SJA-utkast med rutinenummer → Lagre utkast → lukk/gjenåpne fra samme prosjekt, og RUH → lagring med ansvarlig/frister → egne tiltak/egen kontroll/lukking → bortfalt ansvarligvarsel og bevart sak under Lukkede.
+
+Godkjenningen er registrert mot kontrollert feature-head `75f6ba1f53817a17e4efb3cac778a63d3cfcb9c5` og funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. Samme Preview var READY på `dpl_39J3zc2PeqRSq6A8GtGs5pzNwfoA`. Den gjelder de konkrete prøvepunktene, ikke en ny signerings-/mobil-/flere faktiske brukerøkter-prøve, hele KS/HMS eller Production. De godkjente lagrings-/gjenåpnings-/RUH-lukkepunktene og tidligere meny-/dato-/sjekkliste-/håndbokprøver skal ikke gjentas uten en ny feil.
+
+Kodekontroll bekrefter at nye prosjektkoblede SJA-er og RUH-er foreløpig ikke inngår i prosjektets PDF-/rapportvisning. reportTools.js og reportViewTools.js leser eksisterende sjekkpunktavvik og project.projectDeviations valgt med includeInReport. createReportTools får ikke KS/HMS-/SJA-/RUH-data. Nye RUH-er opprettes med source_kind=company og project_id; projectAfterDeviation oppdaterer bare allerede koblede source_kind=project-saker. Dette er en bekreftet rapportmangel, ikke en feil i den godkjente lagringen.
+
+En valgfri rapportdel for prosjektets SJA/RUH, med signatur/deltakere/rutineutgaver for SJA og status/tiltak/ansvarlig/lukking for RUH, foreslås som en egen avgrenset leveranse. Omfang, inkludering og prioritering er ikke besluttet av spørsmålet alene. Avtalt videre utførelsesarbeid med vernerunder/selvstendige kontroller og 5×5-risiko, deretter separat HR og Ringside-pilot etter minimumsomfang, består.
+
+Denne registreringen endrer bare dokumentasjon. Ingen appkode, SQL, rapport, tilgang, e-post, signert analyse eller rutineutgave endres. Main uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 beholdes draft. Ingen Production-migrering/merge/release eller demo-synk. Ingen nye utviklerprøver er hevdet i denne dokumentregistreringen.
+
+---
+
+# Historikk – meny, RUH-inngang og norsk dato TEST OK
 
 Kenneth svarte «test ok» 8. oktober 2026 kl. 01:28 Europe/Oslo på den avgrensede prøven for prosjektets Avvik/SJA/RUH, Opprett SJA / Registrer RUH, KS/HMS → Avvik/RUH og norsk dato. Godkjenningen er registrert mot kontrollert feature-head `42204af397fc1fb6187e7e475c951ecdcd007550` og funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. Dette er ikke godkjenning av hele SJA/RUH-lagrings-/signeringsflyten, hele modulen eller Production.
 

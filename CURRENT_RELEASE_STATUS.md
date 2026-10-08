@@ -12,9 +12,9 @@ Miljømål: **BEGGE**, først feature/Sandbox Preview.
 ## Aktiv branch og Preview
 
 - Branch: `feat-kshms-foundation`; [PR #216](https://github.com/ExpoProffsenter/expo-proffdok/pull/216), åpen draft.
-- Kontrollert head før denne dokumentoppdateringen: `42204af397fc1fb6187e7e475c951ecdcd007550`.
+- Kontrollert head før denne dokumentoppdateringen: `75f6ba1f53817a17e4efb3cac778a63d3cfcb9c5`.
 - Siste funksjonskode: `4cebc9f8e7d115887a7ef4264c9f5390b3504265`.
-- [Fast Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe): READY på `dpl_6LSTm6CzDM94bZEj6Wf58NwvhP27`.
+- [Fast Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe): READY på `dpl_39J3zc2PeqRSq6A8GtGs5pzNwfoA`.
 - Branch-spesifikk `EXPO_BACKEND_TARGET=sandbox`; backend `ppvircenkjizeiqdxphj`. SJA-, prosjektkoblings- og RUH/rutinereferansemigrasjonene er bekreftet i Sandbox-historikken.
 
 ## Implementert og siste QA
@@ -27,11 +27,12 @@ Dokumentert full critical QA/build, faktiske DOM-/React-prøver og 93 rollback S
 
 - Tidligere håndbok-, avvikspopup/lukking-, menyretur- og sjekklistepopup-prøver er TEST OK for sine prøvde leveranser.
 - **TEST OK 8. oktober 2026 kl. 01:28 Europe/Oslo: meny, RUH-inngang og norsk dato**, registrert mot kontrollert head `42204af397fc1fb6187e7e475c951ecdcd007550`.
-- Prosjekt-SJA-utkast/lagring/gjenåpning og RUH-oppfølging/egen lukking har fortsatt den korte nødvendige brukerprøven i USER_TEST.md. Ingen godkjenning av hele KS/HMS eller Production er gitt.
+- **TEST OK 8. oktober 2026 kl. 13:30 Europe/Oslo: SJA-utkast/rutinenummer/lagring/gjenåpning og RUH-oppfølging/ansvarligvarsel/egen dokumenterte lukking/bevart sak**, registrert mot kontrollert head `75f6ba1f53817a17e4efb3cac778a63d3cfcb9c5`. Ingen godkjenning av hele KS/HMS eller Production er gitt.
 
 ## Gjenstående og blokkere
 
-- Den korte SJA/RUH-brukerprøven; signerings-/mobil-/flere faktiske brukerøkter, sentral-/portal-/rapportkontroll etter avtalt scope.
+- Signerings-/mobil-/flere faktiske brukerøkter, sentral-/portal-/rapportkontroll etter avtalt scope.
+- Nye SJA-/RUH-er inngår foreløpig ikke i prosjektets PDF/rapport; det krever en egen rapportkobling. Eldre prosjektavvik har sitt eksisterende Ta med i sluttrapport-valg.
 - Vernerunder/selvstendige kontroller, 5×5-risiko, SJA-vedlegg/PDF, separat HR/kompetanse/medarbeidersamtaler, fristpåminnelser/rapportuttrekk og øvrig minimum før Ringside-pilot.
 - Sandbox-e-postsending er deaktivert; sikkert avsenderoppsett og avtalt faktisk mottaksprøve gjenstår.
 - Eksisterende Preview-fane kunne ikke bindes i denne skynettleserøkten. Ingen nye faner eller gjentatte blokkerte innloggingsforsøk er gjort.
@@ -39,6 +40,6 @@ Dokumentert full critical QA/build, faktiske DOM-/React-prøver og 93 rollback S
 
 ## Neste handling
 
-Kenneth tester bare SJA-utkast → lagring/gjenåpning fra samme prosjekt og RUH → oppfølging/ansvarligvarsel → ansvarligs egen lukking/bevart rapport, etter [USER_TEST.md](docs/kshms/USER_TEST.md). Beståtte delprøver gjentas ikke. Deretter videreføres utførelsesdelen før separat HR. Relevant TEST OK og eksplisitt PRODUCTION GODKJENT for PR #216 kreves før Production-migrering/merge; senere synkretning er main → demo.
+Prøven for SJA-utkast/gjenåpning og RUH-egen-lukking er TEST OK. Beståtte delprøver gjentas ikke. Rapportkoblingen er bekreftet gjenstående; en egen valgfri SJA/RUH-rapportdel er foreslått, uten ny prioriteringsbeslutning. Utførelsesdelen videreføres før separat HR. Relevant TEST OK og eksplisitt PRODUCTION GODKJENT for PR #216 kreves før Production-migrering/merge; senere synkretning er main → demo.
 
 Fortsettelsespunkt: [OVERSIKT.md](docs/kshms/OVERSIKT.md) og [CONTINUITY.md](docs/kshms/CONTINUITY.md). Historiske release-statusnotater er bevart i [arkivet](docs/kshms/archive/CURRENT_RELEASE_STATUS_before_TEST_OK_20261008.md).

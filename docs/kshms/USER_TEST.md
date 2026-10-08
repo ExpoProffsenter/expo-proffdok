@@ -1,4 +1,14 @@
-# Neste korte Preview-prøve – SJA/RUH i prosjekt
+# Godkjent delprøve – SJA-utkast og RUH-oppfølging
+
+Kenneth svarte «test ok» 8. oktober 2026 kl. 13:30 Europe/Oslo på prøven rett ovenfor i chatten: SJA-utkast med rutinenummer → Lagre utkast → lukk/gjenåpne fra samme prosjekt, og RUH → lagring med ansvarlig/frister → egne tiltak/egen kontroll/lukking → bortfalt ansvarligvarsel og bevart sak under Lukkede.
+
+Kontrollert feature-head `75f6ba1f53817a17e4efb3cac778a63d3cfcb9c5`, funksjonskode `4cebc9f8e7d115887a7ef4264c9f5390b3504265`. Disse punktene gjentas ikke uten ny konkret feil. Dette er ikke en ny full signerings-/mobil-/flere faktiske brukerøkter-prøve eller Production-godkjenning.
+
+Prosjektrapport: Nye SJA-er/RUH-er følger prosjektet i KS/HMS, men kommer ennå ikke med i prosjektets PDF-/rapportvisning. «Bevart rapport» i tidligere RUH-prøve betyr den lagrede RUH-saken under Lukkede, ikke en eksportert PDF. Neste korte brukerprøve skrives når neste avgrensede leveranse er bygget og utviklertestet.
+
+---
+
+# Gjennomført prøve – SJA/RUH i prosjekt
 
 Samme adresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
