@@ -22,7 +22,7 @@ window.MessageChannel = class { constructor() { this.port1 = { onmessage: null }
 window.confirm = () => true;
 const company = '11111111-1111-4111-8111-111111111111', user = '22222222-2222-4222-8222-222222222222', colleague = '33333333-3333-4333-8333-333333333333';
 const project = '44444444-4444-4444-8444-444444444444', secondProject = '55555555-5555-4555-8555-555555555555';
-let context = { company_id: company, user_id: user, enabled: true, manage: true, company_name: 'QA firma' }, failReadback = false, offlineTasks = false;
+let context = { company_id: company, user_id: user, enabled: true, manage: true, company_name: 'QA firma' }, failReadback = false, offlineTasks = false, missingProjectAccess = false;
 const members = [{ id: user, identity: { name: 'QA melder' } }, { id: colleague, identity: { name: 'QA ansvarlig' } }];
 const routines = [{ id: '66666666-6666-4666-8666-666666666666', reference_number: 12, number: 3, content: { title: 'Støv ved arbeid', chapter: 'HMSK', procedure: 'QA godkjent rutine' } }];
 const rows = new Map(), receipts = new Map(), calls = [];
@@ -30,10 +30,10 @@ window.__rpc = async (name, args) => {
   calls.push({ name, args: structuredClone(args) });
   const scoped = { ...context, company_id: args.p_company_id, ...(args.p_project_id ? { project_id: args.p_project_id } : {}) };
   if (name === 'kshms_job_choices') return { context: scoped, projects: [{ id: project, name: 'QA prosjekt A' }, { id: secondProject, name: 'QA prosjekt B' }], project_total: 2, routines };
-  if (name === 'kshms_deviation_tasks') return { company_id: company, user_id: scoped.user_id, count: 0, overdue: 0, items: [] };
+  if (name === 'kshms_deviation_tasks') return { company_id: company, user_id: scoped.user_id, count: 1, overdue: 0, items: [{ id: '77777777-7777-4777-8777-777777777777', title: 'QA eksisterende avvik', due_on: '2026-10-09' }] };
   if (name === 'kshms_execution_tasks') {
     if (offlineTasks) throw Error('QA offline');
-    const items = [...rows.values()].filter(row => row.status === 'draft' && row.responsible_id === scoped.user_id).map(row => ({ id: row.id, kind: row.kind, project_id: row.project_id, title: row.content.title, due_on: row.content.planned_on, accessible: true }));
+    const items = [...rows.values()].filter(row => row.status === 'draft' && row.responsible_id === scoped.user_id).map(row => ({ id: row.id, kind: row.kind, project_id: row.project_id, title: row.content.title, due_on: row.content.planned_on, accessible: !missingProjectAccess }));
     return { company_id: company, user_id: scoped.user_id, count: items.length, overdue: 0, items };
   }
   if (name === 'kshms_execution_state' || name === 'kshms_project_execution_state') {
@@ -54,6 +54,9 @@ window.__rpc = async (name, args) => {
   rows.set(row.id, structuredClone(row)); const result = { record: { id: row.id, company_id: company, revision: row.revision } }; receipts.set(args.p_request_id, result); return result;
 };
 window.eval((Array.isArray(bundle) ? bundle[0] : bundle).output.find(item => item.type === 'chunk').code);
+const style = doc.createElement('style');
+style.textContent = 'input{display:block;width:100%;padding:12px}' + (Array.isArray(bundle) ? bundle[0] : bundle).output.filter(item => item.type === 'asset' && item.fileName.endsWith('.css')).map(item => String(item.source)).join('\n');
+doc.head.append(style);
 const act = window.__act;
 const render = async (mode, extra = {}) => act(async () => window.__render(mode, { context, onOpen: () => false, ...extra }));
 const button = text => [...doc.querySelectorAll('button')].find(node => node.textContent.trim() === text || node.getAttribute('aria-label') === text);
@@ -63,7 +66,7 @@ const writeNode = async (node, value) => { assert(node, 'Missing field'); assert
 const write = async (label, value) => writeNode(field(label), value);
 const common = async title => { for (const [label, value] of Object.entries({ 'Navn': title, 'Arbeidssted / område': 'QA lager', 'Dato for gjennomføring': '2026-10-08', 'Deltakere og medvirkning': 'QA ansatte og verneombud deltok.', 'Gjennomgang og videre oppfølging': 'QA gjennomgått; tiltak følges opp.' })) await write(label, value); };
 const addRoutine = async () => { await click(button('Legg inn rutine R-012')); await click(button('Legg inn rutine R-012')); assert.equal(field('Rutiner / utgaver som brukes').value, 'R-012 – Støv ved arbeid (versjon 3)'); };
-const complete = async label => { const box = doc.querySelector('.ks-execution-completion'), checkbox = doc.querySelector('[data-execution-field="confirmation"]'); assert(box.contains(checkbox) && box.contains(button(label)), 'Confirmation is separated from completion'); await click(checkbox); await click(button(label)); };
+const complete = async label => { const box = doc.querySelector('.ks-execution-completion'), checkbox = doc.querySelector('[data-execution-field="confirmation"]'); assert(box.contains(checkbox) && box.contains(button(label)), 'Confirmation is separated from completion'); assert.equal(window.getComputedStyle(checkbox).width, '24px'); assert.equal(window.getComputedStyle(checkbox).height, '24px'); assert.equal(window.getComputedStyle(checkbox).padding, '0px'); assert.equal(window.getComputedStyle(checkbox.closest('label')).display, 'grid'); await click(checkbox); await click(button(label)); };
 
 await render('project', { projectId: project, context: { ...context, enabled: false } });
 assert(!button('Opprett vernerunde') && !button('Opprett risikovurdering 5×5')); assert.equal(calls.length, 0);
@@ -81,11 +84,16 @@ await render('project', { projectId: project }); await click(button('Åpne verne
 await click(button('Lagre utkast')); await click(button('Lukk gjennomføring'));
 await render('tasks'); assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]'), 'Reporter received responsible alert');
 context = { ...context, user_id: colleague, manage: false }; await render('tasks'); assert(doc.body.textContent.includes('1 gjennomføring'));
+assert(doc.querySelector('[aria-label="Dine åpne KS/HMS-avvik"]'), 'Existing deviation alert disappeared');
+missingProjectAccess = true; await act(async () => window.dispatchEvent(new window.Event('focus')));
+assert(doc.body.textContent.includes('Prosjekttilgang kreves')); assert(!button('Åpne gjennomføring')); assert(!doc.body.textContent.includes('QA prosjektkontroll'), 'Inaccessible task exposed its title');
+missingProjectAccess = false; await act(async () => window.dispatchEvent(new window.Event('focus')));
+
 offlineTasks = true; await act(async () => window.dispatchEvent(new window.Event('focus'))); assert(doc.body.textContent.includes('1 gjennomføring')); assert(doc.body.textContent.includes('Sist bekreftede oppgaver er beholdt')); offlineTasks = false;
 await click(button('Åpne gjennomføring')); assert.equal(field('Navn').value, 'QA prosjektkontroll'); assert(!button('Kontroll fullført').disabled);
 await click(doc.querySelector('[data-execution-field="confirmation"]')); failReadback = true; await click(button('Kontroll fullført'));
 assert(doc.body.textContent.includes('1 gjennomføring'), 'Failed confirmation removed alert'); assert(doc.body.textContent.includes('Kladden er beholdt'));
-await click(button('Kontroll fullført')); assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]')); assert.equal(rows.get(round.id).completed_by, colleague); assert(field('Navn').matches(':disabled')); await click(button('Lukk gjennomføring'));
+await click(button('Kontroll fullført')); assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]')); assert(doc.querySelector('[aria-label="Dine åpne KS/HMS-avvik"]'), 'Control completion removed the existing deviation task'); assert.equal(rows.get(round.id).completed_by, colleague); assert(field('Navn').matches(':disabled')); await click(button('Lukk gjennomføring'));
 
 context = { ...context, user_id: user, manage: true }; await render('project', { projectId: project }); await click(button('Opprett risikovurdering 5×5'));
 assert.equal(doc.querySelector('[data-job-project]').value, project); await common('QA prosjektrisiko'); await addRoutine();
@@ -94,7 +102,7 @@ await click([...doc.querySelectorAll('label')].find(node => node.textContent.inc
 for (const phase of ['before', 'after']) for (const [key, value] of [['probability', phase === 'before' ? '3' : '1'], ['consequence', phase === 'before' ? '4' : '2']]) await writeNode(doc.querySelector(`[data-execution-field$="-${key}_${phase}"]`), value);
 await click(button('Lagre utkast')); const risk = [...rows.values()].find(row => row.kind === 'risk'); assert.equal(risk.project_id, project); await click(button('Lukk gjennomføring'));
 await render('tasks'); assert(doc.body.textContent.includes('1 gjennomføring')); await click(button('Åpne gjennomføring')); assert.equal(field('Navn').value, 'QA prosjektrisiko'); await complete('Vurdering fullført');
-assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]')); assert.equal(rows.get(risk.id).content.risks[0].decision, 'needs_action'); await click(button('Lukk gjennomføring'));
+assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]')); assert(doc.querySelector('[aria-label="Dine åpne KS/HMS-avvik"]'), 'Risk completion removed the existing deviation task'); assert.equal(rows.get(risk.id).content.risks[0].decision, 'needs_action'); await click(button('Lukk gjennomføring'));
 await render('project', { projectId: secondProject }); await click(button('Åpne risikovurderinger')); assert(!doc.body.textContent.includes('QA prosjektrisiko'));
 await render('project', { projectId: project, readOnly: true }); assert(button('Opprett vernerunde').disabled && button('Opprett risikovurdering 5×5').disabled); await click(button('Åpne vernerunder')); await click(button('Åpne dokumentasjon')); assert(field('Navn').matches(':disabled')); assert(!button('Kontroll fullført'));
 await render('tasks', { context: { ...context, enabled: false } }); assert(!doc.querySelector('[role="dialog"]')); assert(!doc.querySelector('.ks-task-banner'));

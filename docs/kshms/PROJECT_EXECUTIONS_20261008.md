@@ -33,3 +33,7 @@ Arbeidsmiljøet falt ut med `409 Conflict, environment_offline` før forrige byg
 ### Sluttkontroll og publisering
 
 Full `EXPO_BACKEND_TARGET=sandbox npm run build` etter oppdatert Hjelp er PASS med bekreftet exit code 0. Hele den permanente critical-kjeden og Vite-bygg passerer. `git diff --check` PASS. Branch-spesifikk Vercel `EXPO_BACKEND_TARGET=sandbox` er bekreftet som plain config for target preview / feat-kshms-foundation. Commit/tree, CI og READY-bevis fylles inn etter faktisk publisering til samme faste Sandbox Preview. Main er uendret 155f6c4a, PR #216 open/draft. Ingen ny innlogget browser-/mobil-PASS eller bruker-TEST OK hevdes. Kontroll-/risiko-PDF, automatisk bildeoverføring til avvik og separat HR følger senere avtalt scope.
+
+Sluttprøven av den faktiske React-flaten inkluderer også CSS: avkrysningen er 24 × 24 piksler, uten global input-padding, og etiketten bruker grid ved fullføringsknappen. En eksisterende avviksoppgave blir stående når kontroll eller risiko fullføres. Mottaker uten prosjekttilgang ser bare tildelingsbeskjeden. Åpnet oppgavedialog avgrenses til gjeldende firma og bruker også før scope-effekten rydder state. Hele siste Sandbox critical/build etter dette PASS, bekreftet exit code 0 (project-executions-final-build.log).
+
+Eksakte migrasjonsfiler samsvarer med Sandbox-historikken: 20261008175102 MD5 f79175672d083fc9be01d1aa9b82c199; 20261008180504 MD5 7114ca887130fe4b737f0b7455f5e1e7. Ny read-only kontroll av grant/search_path bekrefter anon=false, authenticated=true og tom search_path for begge RPC-er.

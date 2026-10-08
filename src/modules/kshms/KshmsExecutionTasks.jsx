@@ -54,6 +54,6 @@ export default function KshmsExecutionTasks({ context }) {
       </>}
       {error && <p className="ks-task-message" role="status">{error} <button type="button" className="secondary" onClick={() => refreshRef.current?.()}>Prøv igjen</button></p>}
     </aside>}
-    {opened && <KshmsExecutions key={`${companyId}:${userId}:${opened.id}`} context={context} kind={opened.kind} projectId={opened.projectId} openRequest={opened} dialogOnly onClose={() => setOpened(null)} />}
+    {opened?.companyId === companyId && opened.userId === userId && <KshmsExecutions key={`${companyId}:${userId}:${opened.id}`} context={context} kind={opened.kind} projectId={opened.projectId} openRequest={opened} dialogOnly onClose={() => setOpened(null)} />}
   </>;
 }
