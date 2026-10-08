@@ -1,7 +1,8 @@
+import {executionReportDocument,appendExecutionPdf} from './kshmsExecutionReport.mjs';
 import { formatDeviationDate, formatDeviationDateTime } from '../deviations/deviationDates.mjs';
 
-export const emptyKshmsReport = () => ({ sjas: [], ruhs: [] });
-export const kshmsReportSelectionKey = data => JSON.stringify([(data?.sjas || []).map(row => [row.id, row.revision]), (data?.ruhs || []).map(row => [row.id, row.revision])]);
+export const emptyKshmsReport = () => ({ sjas: [], ruhs: [], rounds: [], risks: [] });
+export const kshmsReportSelectionKey = data => JSON.stringify(['sjas','ruhs','rounds','risks'].map(key=>(data?.[key]||[]).map(row=>[row.id,row.revision])));
 const identity = value => value?.name || value?.email || 'Ikke oppgitt';
 const date = value => formatDeviationDate(value) || 'Ikke oppgitt';
 const when = value => formatDeviationDateTime(value) || 'Ikke oppgitt';
@@ -34,6 +35,8 @@ export function kshmsReportDocuments(data) {
       ['Årsak', row.cause], ['Utførte tiltak / forbedring', row.improvement_action], ['Videre oppfølging', row.follow_up], ['Egen kontroll av resultatet', row.control_note],
       ...(row.status === 'closed' ? [['Lukket av', identity(row.closed_identity)], ['Lukket dato', when(row.closed_at)]] : [['Lukking', 'Ikke lukket. Oppfølging gjenstår.']]),
     ] })),
+    ...(data?.rounds||[]).map(executionReportDocument),
+    ...(data?.risks||[]).map(executionReportDocument),
   ];
 }
 
@@ -54,6 +57,7 @@ export function appendKshmsPdfReport(doc, data, { margin = 14 } = {}) {
     y += gap;
   };
   for (const document of documents) {
+    if(document.blocks){y=appendExecutionPdf(doc,document,{margin});continue;}
     doc.addPage(); y = 16;
     write(document.type, true, 15); write(document.title, true, 12, 4);
     for (const [label, value] of document.fields) {

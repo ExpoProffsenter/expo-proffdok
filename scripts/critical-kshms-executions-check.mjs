@@ -64,3 +64,5 @@ task.fakeWindow.dispatchEvent(new Event('focus'));task.requests.at(-1).reject(Ob
 task.fakeWindow.dispatchEvent(new Event('focus'));const late=task.requests.at(-1);task.cleanups[0]();late.resolve(pending);await Promise.resolve();assert.equal(task.states[0],null,'Unmounted scope accepted a late task response');const beforeCleanup=task.requests.length;task.fakeWindow.dispatchEvent(new Event('focus'));assert.equal(task.requests.length,beforeCleanup);
 const module=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(module.includes("['rounds','Vernerunder/kontroller']")&&module.includes("['risk','Risikovurdering']"));assert(module.includes('opened[key]||screen===key'),'Navigation must keep execution draft surfaces mounted');
 console.log('critical-kshms-executions-check: OK — scoped project drafts, risk decisions, confirmed completion/readback and actual task effect with offline/late/revoked access');
+
+await import('./critical-kshms-execution-pdf-check.mjs');

@@ -1,6 +1,6 @@
 ## Samlet status 8. oktober 2026 – les først
 
-[OVERSIKT.md](OVERSIKT.md) er gjeldende samlet A–E-status og videre rekkefølge. A/A2 er levert i Preview, B langt på vei bygget, C delvis levert, individuell D og pilot E gjenstår. De opprinnelige gap-tabellene nedenfor er historikk; bruk dem som omfang, ikke som aktuell implementasjonsstatus. Neste anbefalte avgrensede del er kontroll-/risiko-PDF innen avtalt utførelses-/rapportscope. Ingen Production-godkjenning følger dokumentgodkjenningen. E-post gjenbruker eksisterende Production-Resend; Sandbox KS/HMS-sending holdes deaktivert.
+[OVERSIKT.md](OVERSIKT.md) er gjeldende samlet A–E-status og videre rekkefølge. A/A2 er levert i Preview, B langt på vei bygget, C delvis levert, individuell D og pilot E gjenstår. De opprinnelige gap-tabellene nedenfor er historikk; bruk dem som omfang, ikke som aktuell implementasjonsstatus. Kontroll-/risiko-PDF er nå implementert og utviklertestet med egen nedlasting og valgfritt prosjektvedlegg; ny brukerprøve står i USER_TEST.md. Publiseringsstatus står i CONTINUITY.md. Øvrige B/C-punkter følger før separat HR. Ingen Production-godkjenning følger dokumentgodkjenningen. E-post gjenbruker eksisterende Production-Resend; Sandbox KS/HMS-sending holdes deaktivert.
 
 ---
 

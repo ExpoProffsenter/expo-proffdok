@@ -1,3 +1,10 @@
+# Kontroll-/risiko-PDF – Sandbox 8. oktober 2026
+
+`executionReportDocument` mapper kun lagrede snapshots til både egen PDF, prosjektrapport-PDF og React/utskrift. Foto-data valideres og feil stopper eksport, identiteter/utgaver slås ikke opp på nytt. Utkast vises uten fullføringsidentitet; forventet risiko er skilt fra kontrollert effekt. `downloadExecutionPdf` krever fersk detail med riktig bruker/firma/prosjekt/type/revisjon og enabled; den leser firmaprofil og bruker samme eksisterende jsPDF-versjon. Aktivt dokument/scope kontrolleres etter hvert asynkrone steg og før nedlasting. Ingen save-/complete-kall fra eksporten.
+
+Prosjektvalget utvides fra to til fire dokumenttyper. Eksisterende `kshms_project_report` beholdes; ny `kshms_project_execution_report` bruker samme firma-/modul-/prosjekttilgang og eksisterende `execution_visible`. Nøyaktig valgte ID-er/type/prosjekt må finnes, ellers avvises hele uttrekket. SECURITY DEFINER med tom search_path og eksplisitte PUBLIC/anon-revokes; authenticated-grant er kontrollert med negative SQL-prøver. Ny migrasjon 20261008202524 er kun anvendt i Sandbox. Ingen endring i main.jsx, reportTools.js, signerte data eller portal. [Bevis](../kshms/EXECUTION_PDF_20261008.md).
+---
+
 # SJA/RUH i prosjektrapporten – Preview 8. oktober 2026
 
 `useKshmsProjectReport` holder rapportvalget utenfor prosjekt-/portaldata og nøkkler det på bruker, firma, prosjekt, modultilgang og managerrett. Ved scopeendring tømmes også den lagrede klientkopien; retur til tidligere prosjekt gjenoppliver ikke gamle snapshots. Dialogen gjenbrukes av rapportvisning, begge utskriftsknapper og PDF-knappene. Bare et aktivt valg gir SJA/RUH-innhold. Ny read-only `kshms_project_report` bruker eksisterende `require_context`, `project_checklist_access` og `deviation_visible`; private SJA-utkast følger eksisterende SJA-synlighet. Både valglisten og det ferske eksportuttrekket avgrenses server-side. Manglende, fremmede eller tilbakekalte ID-er stopper hele uttrekket. RPC-en har tom search_path, ingen PUBLIC/anon-grant og authenticated-grant med eksplisitte interne porter.

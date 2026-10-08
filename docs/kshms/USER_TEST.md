@@ -1,3 +1,14 @@
+# Kort ny prøve – PDF for kontroller og risiko
+
+Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK består. Ny kode/deploystatus står i CONTINUITY.md. Prøv bare PDF-tillegget:
+
+1. Åpne en lagret **vernerunde/kontroll** og trykk **Last ned PDF**. Se firmanavn/logo, kontrollsvar, lagrede bilder og navn/tidspunkt for egen fullføring. Har du et utkast, skal det vise **UNDER ARBEID – IKKE FULLFØRT**. Etter ulagret endring skal PDF være sperret til du lagrer.
+2. Åpne en lagret **5×5-risikovurdering → Last ned PDF**. Se farget matrise, før/etter, tiltak, ansvarlig/frister og beslutning. Forventet effekt skal ikke fremstilles som kontrollert eller akseptert.
+3. I prosjektets **Rapport → Velg KS/HMS til rapport**, velg én kontroll og én risiko. Bare valgte dokumenter skal følge PDF/utskrift. Ved **Fortsett uten KS/HMS** får du ordinær rapport. Bare dokumenter faktisk koblet til dette prosjektet kan velges; frittstående dokumenter har egen PDF.
+
+Svar TEST OK for PDF når dette består, eller oppgi knappen og konkret feil. Firmaets rutiner og gamle godkjente delprøver skal ikke gjøres om. E-postsending er fortsatt deaktivert i Sandbox. Den korte popup-prøven nedenfor kan gjøres samtidig hvis den ikke er bekreftet.
+---
+
 # Kort prøve – popup etter fullføring
 
 TEST OK for prosjektinnganger, rutinevalg og ansvarligvarsel er registrert 8. oktober kl. 21:04 Europe/Oslo. Godkjente deler trenger ingen ny full prøve. Funksjonskode e96e20ad er READY med grønn PR Core Safety / critical build. Ny brukerprøve gjelder bare denne rettelsen på samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe):

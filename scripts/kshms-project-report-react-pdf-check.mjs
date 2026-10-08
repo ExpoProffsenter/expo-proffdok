@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { build } from 'vite';
 import react from '@vitejs/plugin-react';
+import {round as roundFixture,risk as riskFixture} from './critical-kshms-execution-pdf-check.mjs';
 
 // Real hook, dialog, Report/CustomerReport, print handlers and complete PDF
 // generator. Only transport and browser download are replaced. jsPDF is real.
@@ -42,13 +43,18 @@ const project = { projectName: 'QA prosjektrapport', address: 'QA adresse', cust
 const before = JSON.stringify({ rows, project });
 window.__viewProps = { company: { companyName: 'QA firma' }, name: 'QA firma', project, selected: [], manualProducts: [], other: {}, surf: {}, bathroomEquipment: {}, photos: [], access: [], inst: [], files: [], checklist: { Kontroll: { Punkt: { status: 'Ok', comment: 'QA eksisterende sjekkpunkt' } } }, tilbud: { enabled: false }, overtagelse: {}, projectLog: {} };
 window.__deps = { ...window.__viewProps, user: { name: 'QA bruker' }, authUser: { id: userId }, manualSelected: [], DEFAULT_REPORT_HERO_IMAGE_URL: '', activeChecklistTemplate: [], warranty: { enabled: false }, warrantyReadiness: {}, emptyWarranty: () => ({ enabled: false }), getOpenDeviationCount: () => 0, getPhotoIdentity: p => p.id, getWarrantyYears: () => 10, hasValue: v => v != null && String(v).trim() !== '', isProjectLocked: true, makeProjectLink: () => '', normalizeExternalUrl: v => /^https?:/.test(v || '') ? v : '', projectHasOvertagelse: () => false, publicProjectFileUrl: () => '', buildBathroomEquipmentReportGroups: () => [], shouldIncludeProductReportDoc: () => false, productReportDocumentOptions: [], setTab: () => {}, setWarranty: () => { throw Error('Read-only report modified warranty'); } };
+const roundRow={...structuredClone(roundFixture),company_id:company,project_id:projectId,content:{...structuredClone(roundFixture.content),title:'QA SAVED ROUND'}};
+const riskRow={...structuredClone(riskFixture),company_id:company,project_id:projectId,content:{...structuredClone(riskFixture.content),title:'QA SAVED RISK'}};
+const realPhoto=process.env.KSHMS_QA_PHOTO; if(realPhoto)roundRow.content.answers[roundRow.content.points[0].id].photos[0].data='data:image/png;base64,'+fs.readFileSync(realPhoto).toString('base64');
+rows.rounds=[roundRow,{...structuredClone(roundRow),id:'66666666-6666-4666-8666-666666666660',status:'draft',content:{...roundRow.content,title:'QA DRAFT ROUND'}}];rows.risks=[riskRow];
 let failExport = false, wrongScope = false, deferList = null;
 window.__rpc = async (name, args) => {
+  if(name==='kshms_project_execution_report')return {context:{...context,project_id:args.p_project_id},...(args.p_round_ids===null?{choices:Object.fromEntries(['rounds','risks'].map(key=>[key,rows[key].filter(row=>row.project_id===args.p_project_id).map(row=>({id:row.id,title:row.content.title,status:row.status,completed_at:row.completed_at}))]))}:{rounds:structuredClone(rows.rounds.filter(row=>args.p_round_ids.includes(row.id))),risks:structuredClone(rows.risks.filter(row=>args.p_risk_ids.includes(row.id)))})};
   assert.equal(name, 'kshms_project_report'); calls.push(structuredClone(args));
   if (args.p_sja_ids === null && deferList) await deferList.promise;
   if (args.p_sja_ids !== null && failExport) { failExport = false; throw Error('QA valgt dokument mistet tilgang'); }
   const scoped = { ...context, company_id: args.p_company_id, project_id: wrongScope ? otherProject : args.p_project_id };
-  if (args.p_sja_ids === null) return { context: scoped, choices: Object.fromEntries(Object.entries(rows).map(([key, list]) => [key, list.filter(row => row.project_id === args.p_project_id).map(row => ({ id: row.id, title: key === 'sjas' ? row.content.title : row.title, status: row.status, signed_at: row.signed_at }))])) };
+  if (args.p_sja_ids === null) return { context: scoped, choices: Object.fromEntries(Object.entries(rows).filter(([key])=>['sjas','ruhs'].includes(key)).map(([key, list]) => [key, list.filter(row => row.project_id === args.p_project_id).map(row => ({ id: row.id, title: key === 'sjas' ? row.content.title : row.title, status: row.status, signed_at: row.signed_at }))])) };
   return { context: scoped, sjas: structuredClone(rows.sjas.filter(row => args.p_sja_ids.includes(row.id))), ruhs: structuredClone(rows.ruhs.filter(row => args.p_ruh_ids.includes(row.id))) };
 };
 window.eval((Array.isArray(bundle) ? bundle[0] : bundle).output.find(row => row.type === 'chunk' && row.isEntry).code);
@@ -60,7 +66,7 @@ const choose = async index => click([...doc.querySelectorAll('[role="dialog"] in
 const settle = () => act(async () => { await pause(200); });
 const textOf = async item => { const pdf = await getDocument({ data: new Uint8Array(item.bytes), useSystemFonts: true }).promise; const pages = []; for (let i = 1; i <= pdf.numPages; i++) pages.push((await (await pdf.getPage(i)).getTextContent()).items.map(item => item.str).join(' ')); await pdf.destroy(); return { pages, text: pages.join(' ') }; };
 
-await render({ ...props, context: { ...context, enabled: false } }); assert(!button('Velg SJA/RUH til rapport'));
+await render({ ...props, context: { ...context, enabled: false } }); assert(!button('Velg KS/HMS til rapport'));
 await click(button('Lag test-PDF')); await settle(); assert.equal(calls.length, 0); assert.equal(exports.length, 1, alerts.join('\n'));
 let pdf = await textOf(exports.at(-1)); assert(pdf.text.replace(/\s+/g,'').includes('QALEGACYAVVIKBEVART')); assert(!pdf.text.includes('QA SIGNERT FLISKAPPING'));
 await render(props); await click(button('Lag test-PDF')); assert(doc.querySelector('[role="dialog"]')); assert([...doc.querySelectorAll('[role="dialog"] input')].every(input => !input.checked));
@@ -70,9 +76,9 @@ for (const required of ['QA SIGNERT FLISKAPPING', 'R-012', 'versjon 3', 'QA hist
 assert(!pdf.text.includes('QA UTKAST TØMRERJOBB')); assert(!pdf.text.includes('QA ÅPEN RUH')); assert(!pdf.text.includes('QA LEGACY RUH SPEIL'), 'Selected RUH duplicated its project mirror'); assert(pdf.pages.length > 6);
 const output = process.env.KSHMS_REPORT_PDF_OUTPUT || path.join(temp, 'kshms-selected-report.pdf'); fs.writeFileSync(output, exports.at(-1).bytes);
 assert(doc.querySelector('.report').textContent.includes('QA historisk signatur')); assert(!doc.querySelector('.report').textContent.includes('QA ÅPEN RUH'));
-assert.equal(JSON.stringify({ rows, project }), before, 'Report/PDF mutated source or project JSON');
+assert.equal(JSON.stringify({ rows:{sjas:rows.sjas,ruhs:rows.ruhs}, project }), before, 'Report/PDF mutated source or project JSON');
 
-await click(button('Skriv ut test')); await click(button('Skriv ut med valget')); await settle(); assert.equal(printed.length, 1); assert(printed.at(-1).includes('QA historisk signatur')); assert(printed.at(-1).includes('QA HENDELSE SLUTT')); assert(!printed.at(-1).includes('QA ÅPEN RUH')); assert(!printed.at(-1).includes('Velg SJA/RUH til rapport'));
+await click(button('Skriv ut test')); await click(button('Skriv ut med valget')); await settle(); assert.equal(printed.length, 1); assert(printed.at(-1).includes('QA historisk signatur')); assert(printed.at(-1).includes('QA HENDELSE SLUTT')); assert(!printed.at(-1).includes('QA ÅPEN RUH')); assert(!printed.at(-1).includes('Velg KS/HMS til rapport'));
 await click(button('Åpne rapport og skriv ut test')); await click(button('Skriv ut med valget')); await act(async () => { await pause(750); }); assert.equal(printed.length, 2);
 await click(button('Lag test-PDF')); await click(button('Avbryt')); await settle(); assert.equal(exports.length, 2); assert(doc.querySelector('.report').textContent.includes('QA historisk signatur'));
 await click(button('Lag test-PDF')); failExport = true; await click(button('Lag PDF med valget')); assert(doc.querySelector('[role="alert"]').textContent.includes('mistet tilgang')); assert.equal(exports.length, 2);
@@ -80,18 +86,23 @@ await click(button('Oppdater listen')); assert([...doc.querySelectorAll('[role="
 assert.equal(exports.length, 3); pdf = await textOf(exports.at(-1)); assert(pdf.text.includes('UTKAST')); assert(pdf.text.includes('IKKE SIGNERT')); assert(pdf.text.includes('QA UTKAST TØMRERJOBB')); assert(pdf.text.includes('QA ÅPEN RUH')); assert(pdf.text.includes('Oppfølging gjenstår')); assert(!pdf.text.includes('QA historisk signatur')); assert(!pdf.text.includes('QA LUKKET RUH'));
 
 await click(button('Lag test-PDF')); wrongScope = true; await click(button('Lag PDF med valget')); assert(doc.querySelector('[role="alert"]').textContent.includes('tilgang er endret')); assert.equal(exports.length, 3);
-await click(button('Fortsett uten SJA/RUH')); await settle(); assert.equal(exports.length, 4); pdf = await textOf(exports.at(-1)); assert(!pdf.text.includes('QA UTKAST TØMRERJOBB')); assert(!doc.querySelector('.ks-project-report-documents')); wrongScope = false;
+await click(button('Fortsett uten KS/HMS')); await settle(); assert.equal(exports.length, 4); pdf = await textOf(exports.at(-1)); assert(!pdf.text.includes('QA UTKAST TØMRERJOBB')); assert(!doc.querySelector('.ks-project-report-documents')); wrongScope = false;
 deferList = {}; deferList.promise = new Promise(resolve => { deferList.resolve = resolve; });
-await click(button('Lag test-PDF')); assert(doc.querySelector('[role="status"]')); await click(button('Fortsett uten SJA/RUH')); await settle(); assert.equal(exports.length, 5, 'Explicit skip waited for a stalled list request'); deferList.resolve(); deferList = null; await settle(); assert(!doc.querySelector('[role="dialog"]'));
+await click(button('Lag test-PDF')); assert(doc.querySelector('[role="status"]')); await click(button('Fortsett uten KS/HMS')); await settle(); assert.equal(exports.length, 5, 'Explicit skip waited for a stalled list request'); deferList.resolve(); deferList = null; await settle(); assert(!doc.querySelector('[role="dialog"]'));
 deferList = {}; deferList.promise = new Promise(resolve => { deferList.resolve = resolve; });
 await click(button('Lag test-PDF')); await render({ ...props, projectId: otherProject }); assert(!doc.querySelector('[role="dialog"]')); deferList.resolve(); deferList = null; await settle(); assert.equal(exports.length, 5); assert(!doc.querySelector('.ks-project-report-documents'));
-await render({ ...props, context: { ...context, user_id: 'other-user' } }); assert(!button('Velg SJA/RUH til rapport'));
-await render({ ...props, disabled: true }); assert(!button('Velg SJA/RUH til rapport'));
-await render(props); await click(button('Velg SJA/RUH til rapport')); await choose(0); await click(button('Bruk valget i rapporten')); assert(doc.querySelector('.ks-project-report-documents'));
+await render({ ...props, context: { ...context, user_id: 'other-user' } }); assert(!button('Velg KS/HMS til rapport'));
+await render({ ...props, disabled: true }); assert(!button('Velg KS/HMS til rapport'));
+await render(props); await click(button('Velg KS/HMS til rapport')); await choose(0); await click(button('Bruk valget i rapporten')); assert(doc.querySelector('.ks-project-report-documents'));
 await render({ ...props, projectId: otherProject }); await render(props); assert(!doc.querySelector('.ks-project-report-documents'), 'Previous project choice resurfaced after returning');
-await render({ ...props, context: { ...context, manage: true } }); await click(button('Velg SJA/RUH til rapport')); await choose(0); await click(button('Bruk valget i rapporten')); assert(doc.querySelector('.ks-project-report-documents'));
+await render({ ...props, context: { ...context, manage: true } }); await click(button('Velg KS/HMS til rapport')); await choose(0); await click(button('Bruk valget i rapporten')); assert(doc.querySelector('.ks-project-report-documents'));
 await render({ ...props, context: { ...context, manage: false } }); assert(!doc.querySelector('.ks-project-report-documents'), 'Role downgrade retained cached report documents');
 await render({ ...props, portal: true, disabled: true }); assert(!doc.querySelector('.ks-project-report-documents'), 'Private module documents appeared in CustomerReport');
 await click(button('Skriv ut test')); await settle(); assert.equal(printed.length, 3, 'Ordinary portal print was blocked');
+await render(props);await click(button('Lag test-PDF'));await choose(4);await choose(6);await click(button('Lag PDF med valget'));await settle();pdf=await textOf(exports.at(-1));
+for(const required of ['QA SAVED ROUND','QA SAVED RISK','Lagret fullfører','Lagret egen bekreftelse','R-001 utgave 2','forventet effekt - ikke kontrollert','Videre tiltak kreves','5x5: sannsynlighet x konsekvens'])assert(pdf.text.replace(/\s+/g,'').includes(required.replace(/\s+/g,'')),`Actual combined PDF missing ${required}`);
+assert(!pdf.text.includes('QA DRAFT ROUND'));assert.equal(doc.querySelectorAll('.ks-project-report-documents img').length,1);assert(doc.querySelector('.ks-project-report-documents table'));fs.writeFileSync(path.join(path.dirname(output),'combined-control-risk.pdf'),exports.at(-1).bytes);
+await click(button('Skriv ut test'));await click(button('Skriv ut med valget'));await settle();assert(printed.at(-1).includes('data:image/png;base64,'));assert(printed.at(-1).includes('sannsynlighet'));
+await click(button('Lag test-PDF'));await choose(4);await choose(6);await choose(5);await click(button('Lag PDF med valget'));await settle();pdf=await textOf(exports.at(-1));assert(pdf.text.includes('QA DRAFT ROUND'));assert(pdf.text.includes('IKKE FULLFØRT'));assert(!pdf.text.includes('QA SAVED RISK'));assert(!pdf.text.includes('QA SAVED ROUND'));
 await act(async () => window.__unmount()); dom.window.close(); fs.rmSync(temp, { recursive: true, force: true });
 console.log(JSON.stringify({ result: 'PASS', actualPdfs: exports.length, actualPrints: printed.length, selectedPdfPages: (await textOf(exports[1])).pages.length, pdf: output, scenarios: 'module-only chooser; initially empty selection; exact signature/routines/participants; closure and dates; unselected and mirrored exclusion; draft/open markers; both print paths; cancel; revoked/malformed-scope export; explicit skip during stalled fetch; late response/project switch and return; role downgrade clears choice; support/portal gates; no source mutation' }));

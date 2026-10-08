@@ -1,3 +1,14 @@
+## Gjeldende arbeid – kontroll-/risiko-PDF 8. oktober 2026
+
+Kenneths «kjør» autoriserer neste avgrensede PDF-del i samme feature/Sandbox. Avklarte valg: lagrede kontrollbilder, farget 5×5 med detaljer, lagrede utkast tydelig under arbeid, både egen PDF og valgfritt prosjektvedlegg, firmaprofilens navn/logo. Miljømål BEGGE; først Sandbox. Ingen main-/Production-/demo-endring eller reell e-postsending.
+
+Egen **Last ned PDF** og **Velg KS/HMS til rapport** er implementert. Fersk lesing kontrollerer tilgang/revisjon; ulagrede endringer stopper egen PDF. Lagrede identiteter, rutine-/malutgaver og egen fullføring beholdes. Forventet risiko er tydelig skilt fra kontrollert effekt; fullført kontroll lukker ikke avvik. Utkast kan eksporteres, men får ingen oppdiktet fullføring. Bare uttrykkelig valgte prosjektdokumenter følger rapporten, og portal får ingen KS/HMS-data.
+
+Sandbox-migrasjon **20261008202524_kshms_execution_report** er anvendt. Ny lesende RPC; gamle SJA/RUH-RPC-er og kommandoer er uendret. **79** faktiske SQL-assertioner PASS med full rollback. Faktisk React/jsPDF: tre egne PDF-er og syv prosjektrapport-PDF-er/fire utskrifter PASS med simulert transport. Lange dokumenter, bilder/logo, matrise og kombinasjon er visuelt kontrollert. Permanent critical og full Sandbox build PASS. Ingen ny innlogget mobil-/flere-konto-PASS eller brukerens TEST OK for PDF er hevdet. Signert SJA/rutineutgaver har samme fingeravtrykk; e-post-enabled=false. [Detaljer](docs/kshms/EXECUTION_PDF_20261008.md).
+
+Publisering/CI/READY registreres etter bekreftet Sandbox-deploy. Fortsett med den korte nye PDF-prøven i USER_TEST.md; tidligere godkjente deler gjentas ikke. Fullplanen A–E og øvrige vedlegg/rapporter/påminnelser/HR består.
+---
+
 ## Gjeldende avklaring – eksisterende Resend, Sandbox uten reell sending
 
 8. oktober 2026: Kenneth autoriserer videre kontroll og gjenbruk av eksisterende Resend. Sandbox/Preview holdes uten ekte KS/HMS-e-post; tidligere krav om å sette Sandbox-hemmeligheter/aktivere der er erstattet. Lesende Production-kontroll bekrefter smart-worker v18 ACTIVE med RESEND_API_KEY/CHAT_FROM_EMAIL. KS/HMS-kilde bruker allerede de samme prosjekthemmelighetene; smart-worker/payload endres ikke. Sandbox har også smart-worker v18, så eldre e-posttester kan ikke utelukkes; metoden er ikke gjenfunnet. KS/HMS enabled=false er direkte SQL-verifisert. Dagens permanent-test bruker providerstub, ikke innbokslevering. Se [gjeldende oppsett](docs/kshms/EMAIL_SETUP.md).
