@@ -1,4 +1,18 @@
-## Kort ny prøve – samlet dokumentuttrekk
+## Kort ny prøve – vedleggspakke (ZIP)
+
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe) og eksisterende innlogging. Tidligere TEST OK beholdes.
+
+1. Åpne **KS/HMS → Dokumentuttrekk**. Beskriv omfanget og trykk **Hent dokumentlisten**. Velg et lagret dokument med vedlegg, for eksempel **Voldsløkka vernerunde 1**.
+2. Trykk **Vis vedleggslisten**. Kontroller filnavn, dokument, punkt og størrelse. Bekreft vedleggslisten og trykk **Last ned vedlegg (ZIP)**. Åpne pakken: bare vedleggene til valgte dokumenter og **manifest.json** skal følge med. Manifestet viser dokument-ID, revisjon, filstørrelse og kontrollsum.
+3. Fjern dokumentet eller endre omfanget. Vedleggslisten og bekreftelsen skal nullstilles. Velg et dokument uten vedlegg: listen skal si at ingen støttede vedlegg er lagret, og ZIP-knappen skal være sperret.
+
+Utvikler har testet ekte React/ZIP med fem syntetiske vedlegg og privat/prosjekt-Storage, filinnhold/CRC/SHA-256, manglende/endret fil og endret tilgang/firma/bruker/avmontering. Ny innlogget ZIP-prøve, mobil og flere ekte brukere er ikke godkjent av Kenneth ennå. Private lagrede RUH-originaler og prosjektkontrollfiler må også prøves innlogget når slike saker finnes. Ikke opprett/signér/lukk en sak bare for denne prøven. Pakken inkluderer ikke rapport-PDF eller HR; andre dokumenttilknytninger er fortsatt B/C-scope. ZIP er ikke kryptert; vurder innhold og mottaker før deling.
+
+---
+
+## TEST OK 9. oktober kl. 01:29: samlet dokumentuttrekk
+
+**Godkjent av Kenneth på head c5e128c6.** Listen nedenfor er historisk testgrunnlag; prøven skal ikke gjentas uten konkret feil eller relevant regresjon.
 
 Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe) og eksisterende innlogging. Tidligere TEST OK beholdes, inkludert egen lagret SJA-PDF.
 
@@ -6,7 +20,7 @@ Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-rin
 2. Åpne ønskede dokumentgrupper, huk av for eksempel en godkjent rutine, Test sja, test ruh og test vernerunde. Velg eventuelt prosjekt og trykk **Hent prosjektkontroller**. Kontroller listen **Dette blir med i PDF-en** og bekreft valget.
 3. Trykk **Last ned samlet PDF**. Se omfang, bare valgte dokumenter, bevart status/signatur, RUH-historikk og manifest med dokument-ID/utgave/sider. Fjern ett dokument med **Fjern**, bekreft på nytt og se at det er borte i neste PDF. Eksisterende saker skal ikke endres.
 
-Utvikler har kontrollert to ekte samle-PDF-er, tilgangs-/revisjons-/bilde-/avbrytvern og eksisterende berørte PDF-flyter. Funksjonskode 8d045d0c er READY med grønn Core Safety/full critical build. Innlogget utviklerprøve lastet faktisk ned seks dokumenter på 12 sider, med bevart signatur/RUH-historikk og to lagrede vernerunde-bilder. Etter fjerning av rutinen ble PDF-en 10 sider. Søk, tømming og bekreftelsessperre fungerer. Alle popup lukket, én fane; eksakt bevis i CONTINUITY. Ny TEST OK for samlet uttrekk gjenstår. Privat bilde fra en allerede lagret RUH, mobil og flere brukere er egne åpne prøver. Separate originalfiler hentes separat; PDF-en er ikke full tilsynsgodkjenning. Ingen signering eller fullføring kreves for å teste uttrekket.
+Utvikler har kontrollert to ekte samle-PDF-er, tilgangs-/revisjons-/bilde-/avbrytvern og eksisterende berørte PDF-flyter. Funksjonskode 8d045d0c er READY med grønn Core Safety/full critical build. Innlogget utviklerprøve lastet faktisk ned seks dokumenter på 12 sider, med bevart signatur/RUH-historikk og to lagrede vernerunde-bilder. Etter fjerning av rutinen ble PDF-en 10 sider. Søk, tømming og bekreftelsessperre fungerer. Alle popup lukket, én fane; eksakt bevis i CONTINUITY. Kenneth ga TEST OK for samlet uttrekk 9. oktober kl. 01:29. Privat bilde fra en allerede lagret RUH, mobil og flere brukere er egne åpne prøver. Separate originalfiler hentes separat; PDF-en er ikke full tilsynsgodkjenning. Ingen signering eller fullføring kreves for å teste uttrekket.
 
 ---
 

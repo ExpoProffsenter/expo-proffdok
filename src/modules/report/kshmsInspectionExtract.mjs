@@ -52,12 +52,14 @@ function reviewDocument(row){
  return {id:row.id,type:'Signert håndbokrevisjon',title:when(row.signed_at),fields:[['Dokument-ID',row.id],['Signert av - lagret bruker-ID',row.signed_by],['Identitet','Historisk navn er ikke lagret på denne revisjonen. Bruker-ID vises uten nytt kontooppslag.'],['Signert tidspunkt',when(row.signed_at)],['Funn',row.findings],['Videre oppfølging',row.follow_up],['Neste revisjon',formatDeviationDate(row.next_review_on)]],blocks:row.version_snapshot.map((v,i)=>({title:`Kontrollert rutineutgave ${i+1}`,fields:[['Utgave-ID',v.id],['Lagret innholdskontroll',v.hash]],photos:[]})),closing:[['Lagret bekreftelse',row.statement],['Rutinetekst','Referansene dokumenterer hva som ble gjennomgått. Rutinetekst tas bare med når den utgaven er valgt separat.']]};
 }
 
-// All selected rows are read twice. Slow image/PDF loads cannot turn a mixed
-// revision or a revoked permission into a partial or apparently complete file.
-export async function downloadInspectionExtract({selection,scopeText,rpc,companyId,userId,downloadFile,resolveFileUrl=file=>file.url,isCurrent=()=>true,loadImage=loadCompanyLogo,loadPrivateImage=loadRuhImage,loadPdf=()=>import('https://esm.sh/jspdf@2.5.1')}){
- if(!Array.isArray(selection)||!selection.length||selection.length>50||new Set(selection.map(extractKey)).size!==selection.length||selection.some(v=>!EXTRACT_GROUPS[v.kind]||!v.id)||!scopeText?.trim()||scopeText.length>2000)throw Error('Beskriv omfanget og velg mellom 1 og 50 dokumenter.');
- const check=async()=>{const x=await rpc('get_kshms_context');if(!isCurrent())return false;checkContext(x,companyId,userId);return true;};
- const read=async()=>{
+export function validateInspectionSelection(selection){
+ if(!Array.isArray(selection)||!selection.length||selection.length>50||new Set(selection.map(extractKey)).size!==selection.length||selection.some(v=>!EXTRACT_GROUPS[v.kind]||!v.id))throw Error('Velg mellom 1 og 50 dokumenter.');
+}
+export async function checkInspectionContext({rpc,companyId,userId,isCurrent=()=>true}){
+ const x=await rpc('get_kshms_context');if(!isCurrent())return false;checkContext(x,companyId,userId);return true;
+}
+export async function readInspectionSnapshots({selection,rpc,companyId,userId,isCurrent=()=>true}){
+ validateInspectionSelection(selection);
   const cache=new Map();const state=name=>{if(!cache.has(name))cache.set(name,rpc(name,{p_company_id:companyId}));return cache.get(name);};
   const saved=[];
   for(const expected of selection){
@@ -80,7 +82,14 @@ export async function downloadInspectionExtract({selection,scopeText,rpc,company
    }
    saved.push(bundle);
   }return saved;
- };
+}
+
+// All selected rows are read twice. Slow image/PDF loads cannot turn a mixed
+// revision or a revoked permission into a partial or apparently complete file.
+export async function downloadInspectionExtract({selection,scopeText,rpc,companyId,userId,downloadFile,resolveFileUrl=file=>file.url,isCurrent=()=>true,loadImage=loadCompanyLogo,loadPrivateImage=loadRuhImage,loadPdf=()=>import('https://esm.sh/jspdf@2.5.1')}){
+ if(!Array.isArray(selection)||!selection.length||selection.length>50||new Set(selection.map(extractKey)).size!==selection.length||selection.some(v=>!EXTRACT_GROUPS[v.kind]||!v.id)||!scopeText?.trim()||scopeText.length>2000)throw Error('Beskriv omfanget og velg mellom 1 og 50 dokumenter.');
+ const check=async()=>{const x=await rpc('get_kshms_context');if(!isCurrent())return false;checkContext(x,companyId,userId);return true;};
+ const read=()=>readInspectionSnapshots({selection,rpc,companyId,userId,isCurrent});
  if(!await check())return null;const saved=await read();if(!saved)return null;
  const profile=await rpc('work_profile_company_profile',{p_company_id:companyId});if(!isCurrent())return null;if(profile?.companyId!==companyId)throw Error('Firmaprofilen kunne ikke bekreftes.');
  const documents=saved.map(({kind,row,parent,snapshot})=>kind==='routines'?routinePdfDocument(row,parent):kind==='templates'?checklistTemplatePdfDocument(row,parent):kind==='reviews'?reviewDocument(row):kind==='sjas'?sjaPdfDocument(row):kind==='ruhs'?ruhPdfDocument(snapshot):kind==='runs'?checklistRunPdfDocument(row):executionReportDocument(row));

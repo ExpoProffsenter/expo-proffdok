@@ -1,3 +1,11 @@
+## Vedleggspakke – neste avgrensede B/C-leveranse
+
+Kenneth ga **TEST OK 9. oktober 2026 kl. 01:29 Europe/Oslo** for samlet dokument-/tilsynsuttrekk på publisert head `c5e128c6fde2d0fb1368accb78a9414c05f0c81d`. HJELP, architecture og README var oppdatert ved godkjenningen. Tidligere TEST OK beholdes, inkludert egen SJA-PDF kl. 00:59. Dette er ingen Production-/merge-/e-postgodkjenning.
+
+Ny levering: **Dokumentuttrekk → Vis vedleggslisten → Last ned vedlegg (ZIP)**. Valgte lagrede RUH-originaler, vernerunde-bilder og prosjektkontrollvedlegg med manifest, filstørrelser og SHA-256. Egen bekreftelse; endring av omfang/valg tømmer listen. Ny ZIP-brukerprøve gjenstår. [Scope og QA](ATTACHMENT_ARCHIVE_20261009.md). Øvrig vedleggsdekning, versjonerte underskjema, påminnelser og kildeoppdatering følger før HR. Ingen ny backend eller sending.
+
+---
+
 ## Publisert samlet uttrekk – READY, grønn QA og innlogget nedlasting
 
 Funksjonskode **8d045d0cd9956d47d93e1b606b75eef7097dda32**, eksakt testet/publisert tree **ded14b7df45dc08e810ed569c2630e6e8e65a033**, identisk med lokal testcommit **a298a29b7bb784e5a60334ffb5db4c0994879e5b**. Feature ref oppdatert via GitHub-kobling med expected baseline 9ac259fa og uten force. Lokalt er faktisk publisert git-objekt/head også hentet og hashkontrollert; original testcommit bevart. Funksjonsleveranse: 16 filer, samlet branch mot main: 214 filer, fem nye scope-filer. Ingen ny SQL/backend/global navigasjon/konfigurasjon. Etterfølgende beviscommit er bare dokumentasjon og skjermbilde.
@@ -633,3 +641,5 @@ Sandbox-migrasjonsloggen er fasit for filnavn: 20261007180955 project_checklist_
 Verifisert: 31 reelle SQL-kontroller med syntetiske rader og rollback; faktisk React-popup med fanebytte, lagringsfeil/retry, kollegas videreføring, egne nye punkter, bilder, flere kontroller, historikk, konfliktvisning, skrivebeskyttelse og sen firmabytte-respons; kompakt ordremeny videresender til native knapper uten skjulte våtromsvalg. Eksisterende React-test for malbygging/publisering/innhenting og montert sjekklistehopp passerer. «Åpne først»-kravet endrer med vilje gammel tests forventning om automatisk utvidet liste; hoppkontrakten er bevart. Ny critical-check er lagt inn i build/QA. Innlogget Preview-prøve gjenstår før TEST OK/merge.
 
 Kort brukertest på samme faste Preview: Åpne testordren → Sjekklister. Menyen skal være kompakt og listene kollapset. Åpne «Egne sjekkpunkter og vedlegg», legg til et punkt, åpne listen og lagre. Åpne den igjen (gjerne med en annen person som har prosjektadgang), fortsett og trykk «Sjekkliste fullført». «Start ny kontroll» skal åpne neste kontroll mens den første kan leses i historikken. Prøv også en publisert KS/HMS-liste.
+
+ZIP-leveransens endelige lokale full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS exit 0. PR-scope/release-docs-guard PASS mot faktisk main. Berørt eksisterende samle-PDF React/Storage/jsPDF PASS: begge faktiske PDF-er, innhold/signaturer/bilder/manifest, fjerning av valgt dokument og sent kontekstbytte. QA-foto er større enn forrige testfoto, så sideantallet endret seg; dette er ingen tap av felter. Innlogget ny ZIP/nedlasting vurderes etter publisering, ikke gradert PASS her.

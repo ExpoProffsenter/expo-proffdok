@@ -1,8 +1,16 @@
+## KS/HMS: vedleggspakke – feature/Sandbox under QA
+
+Kenneth ga **TEST OK 9. oktober 2026 kl. 01:29 Europe/Oslo** for samlet dokument-/tilsynsuttrekk på publisert head `c5e128c6fde2d0fb1368accb78a9414c05f0c81d`. HJELP, architecture og README var oppdatert ved godkjenningen. Tidligere TEST OK beholdes, inkludert egen SJA-PDF kl. 00:59. Dette er ingen Production-/merge-/e-postgodkjenning.
+
+Valgt vedleggspakke er bygget og lokale permanente/React ZIP-tester PASS. Full build og publiserings-/nettleserbevis følger i CONTINUITY. ZIP har egen ny brukerprøve. PR #216 forblir draft; samme Preview, main og Production urørt. [Scope](docs/kshms/ATTACHMENT_ARCHIVE_20261009.md).
+
+---
+
 ## KS/HMS: valgt samlet uttrekk – feature/Sandbox READY
 
 Funksjonskode `8d045d0cd9956d47d93e1b606b75eef7097dda32`, tree `ded14b7df45dc08e810ed569c2630e6e8e65a033`, READY `dpl_FpiuDdxSxd5yaauYXkSgpKfDcmC3`; Core Safety `37858562063` / full critical build `113588549210` success. Ny intern managerflate Dokumentuttrekk med eksplisitt valg av åtte dokumentgrupper, full RUH-historikk/private bilder og manifest. Innlogget faktisk PDF: seks dokumenter/12 sider; uten rutine fem/10 sider. SJA-signatur, begge RUH-hendelser og to faktiske vernerunde-bilder bevart. Én fane, popup lukket; ingen lagrede data mutert. Lokale relevante React/PDF og full Sandbox build PASS. [Scope og QA](docs/kshms/INSPECTION_EXTRACT_20261009.md), [eksakt bevis/handoff](docs/kshms/CONTINUITY.md), [kort ny prøve](docs/kshms/USER_TEST.md).
 
-Samme branch-Preview og tidligere TEST OK beholdes; ny TEST OK for samlet uttrekk gjenstår. Neste B/C: øvrig vedleggsdekning/versjonerte underskjema/påminnelser/kildeoppdatering før HR. PR #216 fortsatt draft, main uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`. Ingen Production-release, main/demo-merge eller ekte e-postsending; KS/HMS-utsending forblir deaktivert. Etterfølgende beviscommit endrer bare dokumentasjon/skjermbilde.
+Samme branch-Preview og tidligere TEST OK beholdes; samlet uttrekk TEST OK 9. oktober kl. 01:29. Neste B/C: øvrig vedleggsdekning/versjonerte underskjema/påminnelser/kildeoppdatering før HR. PR #216 fortsatt draft, main uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`. Ingen Production-release, main/demo-merge eller ekte e-postsending; KS/HMS-utsending forblir deaktivert. Etterfølgende beviscommit endrer bare dokumentasjon/skjermbilde.
 
 ---
 

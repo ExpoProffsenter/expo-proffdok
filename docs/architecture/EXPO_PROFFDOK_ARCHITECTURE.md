@@ -852,3 +852,10 @@ DeviationCenter pakker eksisterende kort i native details/summary med scopesatte
 ## Valgt samlet KS/HMS-uttrekk
 
 `KshmsInspectionExtract.jsx` er en intern managerflate i KS/HMS. `kshmsInspectionExtract.mjs` samler eksplisitt valgte eksisterende read-RPC-snapshots og bruker de etablerte PDF-rendererne/rammene. Felles `readRuhPdfSnapshot` uttømmer paginert RUH-historikk i både egen og samlet PDF. Privat Storage download med eksisterende appklient; dobbel snapshotlesing, endelig tilgangskontroll og kontekst-/avmonteringsvern før save. Ingen ny backend, global navigasjon, skrivemodell, e-post eller HR. Katalog/listeside og 50-dokumentgrense samt originalfil-/tilsynsavgrensning er dokumentert i `docs/kshms/INSPECTION_EXTRACT_20261009.md`.
+
+
+## Valgt KS/HMS-vedleggspakke
+
+`kshmsAttachmentArchive.mjs` gjenbruker den ekstraherte `readInspectionSnapshots`-leseren fra PDF-uttrekket. `KshmsInspectionExtract.jsx` viser først et eksplisitt vedleggsutvalg og krever egen bekreftelse. Dokumenter leses ved forhåndsvisning, før henting og etter henting, med firma-/rolle-/bruker-/kontekstvern og ingen delvis save. Private RUH-originaler lastes med samme innloggede appklient fra `kshms-private`; lagrede prosjektkontrollvedlegg bare fra samme aktive Supabase-origin og kjente `project-images`-objektprefikser; vernerunde-bilder dekodes fra lagret data-URI. Ingen URL-fetch eller tokenlenke i manifestet.
+
+ZIP bruker avgrensede, ukomprimerte UTF-8/CRC32-records (PKWARE APPNOTE), maks 100 vedlegg, 10 MB per fil og 50 MB totalt. Hver fil har unik, renset sti; `manifest.json` har valgt dokument-ID/revisjon, tilknytning, MIME/størrelse og SHA-256 av faktisk filinnhold. Det er et klientuttrekk med dobbel kontroll, ingen atomisk serverarkivering eller kryptering. Uendrede RPC-/Storage-/backendkontrakter, ingen ny skrivemodell eller avhengighet. Full tilsyns-/vedleggsdekning og HR er ikke erklært levert. [Scope/QA](../kshms/ATTACHMENT_ARCHIVE_20261009.md).
