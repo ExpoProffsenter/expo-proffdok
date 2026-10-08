@@ -8,6 +8,10 @@ Rapporttillegget er Kenneths TEST OK 8. oktober kl. 14:48 Europe/Oslo. SJA/RUH-v
 
 Kenneths «kjør» kl. 13:38 autoriserte valgfri SJA/RUH i prosjektets Rapport/PDF/utskrift. Valg, rutinehenvisning, deltagere/signatur, status/tiltak/ansvarlig/lukking er bygget. 34 databasekontroller, 5 faktiske PDF-er, 3 utskrifter og visuell PDF-kontroll PASS. Samme Preview er READY på funksjonskode f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c; Core safety + critical build completed/success. Publiseringsbevis står i PROJECT_REPORT_20261008.md. Rapporttillegget er TEST OK kl. 14:48; tidligere TEST OK består. Testbevis: [PROJECT_REPORT_20261008.md](PROJECT_REPORT_20261008.md).
 
+## Prosjekttillegg og gjenoppretting 8. oktober
+
+Arbeidsmiljøet er tilbake og originalarbeidet intakt. Vernerunder/5×5 har nå direkte prosjektinnganger, prosjektvise kladder/oversikter, ansvarligvarsel til lagret egen fullføring, godkjente rutineutgaver og stor bekreftelse ved fullføringsknappen. 44 nye rollback SQL-kontroller og faktisk React-prosjekt/varsel/dialog PASS. Full sluttbygg/critical-kjede PASS. Publisering til samme Preview kontrolleres; endelig status og bevis står i CURRENT_RELEASE_STATUS.md og PROJECT_EXECUTIONS_20261008.md. Ny brukerprøve i USER_TEST.md gjenstår.
+
 ## Hvor vi er
 
 Ny KS/HMS-funksjonalitet ligger i samme Sandbox Preview:

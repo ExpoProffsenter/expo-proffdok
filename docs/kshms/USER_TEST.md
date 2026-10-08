@@ -1,3 +1,18 @@
+# Kort brukerprøve – prosjektinnganger, rutiner og ansvarligvarsel
+
+Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Publiseringsstatus står i CURRENT_RELEASE_STATUS.md. Tidligere TEST OK for håndbok, meny, SJA/RUH og rapport består. Denne prøven gjelder bare vernerunde/risiko og de nye tilleggene.
+
+1. **Prosjekt → Avvik/SJA/RUH → Opprett vernerunde.** Riktig prosjekt skal stå fast. Skriv TEST-navn, arbeidssted og dato, velg deg selv som **Ansvarlig** og oppgi deltakere. Les en rutine under **Velg fra bedriftens godkjente rutiner** og trykk **Legg inn rutine**: R-nummer og utgave skal stå i **Rutiner / utgaver som brukes**. Lagre utkast, lukk og bruk **Åpne vernerunder**: teksten skal være bevart i dette prosjektet.
+2. **Ansvarligvarselet → Åpne gjennomføring.** Varselet skal bli stående etter lesing og lukking. Fyll kontrollpunkter og **Gjennomgang og videre oppfølging**. Huk av den store bekreftelsen ved **Kontroll fullført**, og trykk knappen. Først lagret fullføring fjerner denne oppgaven. Dokumentasjonen skal være bevart under **Fullførte / historikk**. Eventuelle avvik beholder egne oppgaver til ansvarlig lukker dem.
+3. **Samme prosjekt → Opprett risikovurdering 5×5.** Prosjektet skal stå fast og scorene starte tomme. Velg en godkjent rutine, fyll den konkrete vurderingen og lagre utkast. **Åpne risikovurderinger** skal bare vise dette prosjektets vurderinger. Varselet står også her frem til ansvarlig bruker den store bekreftelsen ved **Vurdering fullført** og fullføringen er lagret. **Videre tiltak kreves** skal fortsatt stå i den fullførte dokumentasjonen når det er valgt. Detaljer for utfyllingen ligger i den opprinnelige vernerunde-/risikoprøven nedenfor.
+4. Med en annen bruker som har KS/HMS- og prosjekttilgang: tildel ett testutkast til personen. Bare den valgte ansvarlige skal ha denne oppgaven. Bytt ansvarlig og lagre: oppgaven flyttes. Den nye ansvarlige fullfører selv. Et annet prosjekt skal ha egen oversikt og kladd. Uten personlig KS/HMS-tilgang skal de nye prosjektknappene være skjult; et låst prosjekt lar deg lese dokumentasjon.
+
+Utviklerkontroll: 44 nye faktiske Sandbox SQL-assertioner PASS med full rollback. Faktisk React/DOM-prosjekt/varsel/dialog med simulert RPC PASS, inkludert offlinevarsel, tapt readback/retry, egne prosjektkladder, rutineutgaver, begge fullføringer og låst/avslått tilgang. Eksisterende gjennomførings-, SJA-parent- og prosjekt/SJA/RUH-prøver PASS. Utvidet permanent critical-test prøver faktisk varseleffekt. Full Sandbox critical/build PASS. Publisering dokumenteres i [PROJECT_EXECUTIONS_20261008.md](PROJECT_EXECUTIONS_20261008.md). Innlogget flere-konto-/mobilprøve og brukerens TEST OK gjenstår.
+
+---
+
+## Historikk – opprinnelig vernerunde-/risikoprøve (ikke tidligere TEST OK)
+
 # Kort brukerprøve – vernerunder og risikovurdering
 
 Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe), READY på funksjonskode cdac7cf1 med grønn Core Safety/critical build. Rapportprøven er TEST OK 8. oktober kl. 14:48; tidligere godkjente deler gjentas ikke. Disse verktøyene kan prøves uten prosjekt.

@@ -2,9 +2,15 @@ import { formatDeviationDate } from '../deviations/deviationDates.mjs';
 import { useEffect,useRef,useState } from 'react';
 import { kshmsRpc } from './kshmsAccess.js';
 import { DEVIATION_CHANGE_EVENT,readDeviationLink } from './kshmsDeviations.mjs';
+import KshmsExecutionTasks from './KshmsExecutionTasks.jsx';
 import './kshms.css';
 
 export default function KshmsTasks({context,onOpen}) {
+ if(!context?.enabled)return null;
+ return <><DeviationTasks context={context} onOpen={onOpen}/><KshmsExecutionTasks context={context}/></>;
+}
+
+function DeviationTasks({context,onOpen}) {
  const {company_id:companyId,user_id:userId}=context;
  const [tasks,setTasks]=useState(null),[error,setError]=useState(''),refreshRef=useRef(null);
  const [emailLink,setEmailLink]=useState(()=>readDeviationLink(window.location.search,companyId));

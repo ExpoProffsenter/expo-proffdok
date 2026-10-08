@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {newExecution,newRisk,executionContent,executionIssues,riskScore,riskBand,validDate,saveExecution,EXECUTION_STATEMENT,storeExecutionDraft,readExecutionDraft} from '../src/modules/kshms/kshmsExecutions.mjs';
+import {newExecution,newRisk,executionContent,executionIssues,riskScore,riskBand,validDate,saveExecution,EXECUTION_STATEMENT,EXECUTION_CHANGE_EVENT,publishExecutionChange,isUuid,storeExecutionDraft,readExecutionDraft} from '../src/modules/kshms/kshmsExecutions.mjs';
 const user=crypto.randomUUID(),company=crypto.randomUUID();
 const round=newExecution('round',user);round.content.title='Kontroll før arbeid';
 assert.equal(riskScore('',4),null);assert.equal(riskScore(null,4),null);assert.equal(riskScore(0,4),null);assert.equal(riskScore(6,4),null);assert.equal(riskScore(5,5),25);assert.equal(riskScore('3','4'),12);
@@ -24,6 +24,12 @@ risk.content.risks[0].decision='needs_action';assert.equal(executionIssues(execu
 Object.assign(risk.content.risks[0],{effect_status:'verified',verified_on:'2026-10-08',decision:'accepted'});assert.equal(executionIssues(executionContent(risk.content,'risk'),'risk').length,0);
 risk.content.risks[0].probability_after=5;risk.content.risks[0].consequence_after=5;assert(executionIssues(executionContent(risk.content,'risk'),'risk').some(i=>i.key.endsWith('-decision')),'High residual risk cannot be accepted');
 const values=new Map(),storage={getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v)};storeExecutionDraft(storage,user,company,round);assert.equal(readExecutionDraft(storage,user,company,'round').id,round.id);assert.equal(readExecutionDraft(storage,'other',company,'round'),null);assert.equal(readExecutionDraft(storage,user,'other','round'),null);assert.equal(readExecutionDraft(storage,user,company,'risk'),null);
+const projectOne=crypto.randomUUID(),projectTwo=crypto.randomUUID(),projectDraft={...round,id:crypto.randomUUID(),project_id:projectOne};
+storeExecutionDraft(storage,user,company,projectDraft,projectOne);
+assert.equal(readExecutionDraft(storage,user,company,'round',projectOne).id,projectDraft.id);
+assert.equal(readExecutionDraft(storage,user,company,'round',projectTwo),null,'Another project inherited the draft');
+assert.equal(readExecutionDraft(storage,user,company,'round').id,round.id,'Project draft replaced standalone work');
+assert.throws(()=>storeExecutionDraft(storage,user,company,projectDraft,projectTwo),/annet prosjekt/);
 for(const failure of ['command','read','scope','text','revision','signer','late','']){
  let calls=0;const snapshot=structuredClone(round);
  const row={id:round.id,company_id:company,kind:'round',revision:1,project_id:null,template_version_id:null,content:executionContent(round.content,'round'),status:'completed',completed_by:user,completed_at:'2026-10-08T13:00:00Z',statement:EXECUTION_STATEMENT};
@@ -31,5 +37,30 @@ for(const failure of ['command','read','scope','text','revision','signer','late'
  if(['command','read','scope','text','revision','signer'].includes(failure))await assert.rejects(result);else assert.equal(Boolean(await result),failure!=='late');assert.deepEqual(round,snapshot,'Transport/readback mutated local answers');assert.equal(calls,['command','late'].includes(failure)?1:2);
 }
 assert(await saveExecution({rpc:async name=>name==='kshms_execution_command'?{record:{id:round.id,company_id:company,revision:1}}:{context:{company_id:company,user_id:user,enabled:true},record:{...round,id:round.id,company_id:company,project_id:null,template_version_id:null,revision:1,content:executionContent(round.content,'round')}},companyId:company,userId:user,editor:round,action:'save',confirmed:false}));
+// Exercise the actual app task effect: retained alerts, authoritative completion,
+// out-of-order replies, visibility, company/user boundaries and revoked access.
+const taskSource=fs.readFileSync('src/modules/kshms/KshmsExecutionTasks.jsx','utf8');
+const taskBody=taskSource.slice(taskSource.indexOf('export default function')).replace('export default ','').split('  const open = row')[0]+'\nreturn {refreshRef};\n}';
+function taskHarness(enabled=true){
+ const requests=[],cleanups=[],states=[],fakeWindow=new EventTarget(),fakeDocument=new EventTarget();let index=0;
+ fakeDocument.visibilityState='visible';fakeWindow.setInterval=()=>1;fakeWindow.clearInterval=()=>{};
+ const hook=new Function('bindings','const {useState,useRef,useEffect,kshmsRpc,window,document,EXECUTION_CHANGE_EVENT,isUuid}=bindings;'+taskBody+';return KshmsExecutionTasks;')({
+  useState:init=>{const id=index++;states[id]=typeof init==='function'?init():init;return [states[id],next=>states[id]=typeof next==='function'?next(states[id]):next];},
+  useRef:init=>({current:init}),useEffect:fn=>cleanups.push(fn()),window:fakeWindow,document:fakeDocument,EXECUTION_CHANGE_EVENT,isUuid,
+  kshmsRpc:(name,args)=>new Promise((resolve,reject)=>requests.push({name,args,resolve,reject}))
+ });hook({context:{company_id:company,user_id:user,enabled}});return {requests,cleanups,states,fakeWindow,fakeDocument};
+}
+assert.equal(taskHarness(false).requests.length,0,'Disabled module loaded assignment tasks');
+const task=taskHarness(),pending={company_id:company,user_id:user,count:2,overdue:1,items:[{id:round.id,kind:'round',project_id:projectOne,accessible:true},{id:risk.id,kind:'risk',project_id:null,accessible:true}]};
+assert.equal(task.requests[0].name,'kshms_execution_tasks');assert.equal(task.requests[0].args.p_company_id,company);
+task.requests[0].resolve(pending);await Promise.resolve();assert.equal(task.states[0].count,2);
+publishExecutionChange({company_id:'another-company'},task.fakeWindow);assert.equal(task.requests.length,1,'Another company refreshed the tasks');
+publishExecutionChange({company_id:company},task.fakeWindow);task.requests.at(-1).reject(Error('Offline'));await Promise.resolve();assert.equal(task.states[0].count,2,'Network error removed a confirmed alert');assert(task.states[1]);
+task.fakeWindow.dispatchEvent(new Event('focus'));task.requests.at(-1).resolve({...pending,user_id:'another-user'});await Promise.resolve();assert.equal(task.states[0].count,2,'Another user replaced the current tasks');assert(task.states[1]);
+task.fakeWindow.dispatchEvent(new Event('focus'));const stale=task.requests.at(-1);task.fakeWindow.dispatchEvent(new Event('focus'));task.requests.at(-1).resolve({...pending,count:0,overdue:0,items:[]});await Promise.resolve();stale.resolve(pending);await Promise.resolve();assert.equal(task.states[0].count,0,'Late reply restored a completed task');
+task.fakeDocument.visibilityState='hidden';const beforeHidden=task.requests.length;task.fakeDocument.dispatchEvent(new Event('visibilitychange'));assert.equal(task.requests.length,beforeHidden);
+task.fakeDocument.visibilityState='visible';task.fakeDocument.dispatchEvent(new Event('visibilitychange'));task.requests.at(-1).resolve(pending);await Promise.resolve();assert.equal(task.states[0].count,2);
+task.fakeWindow.dispatchEvent(new Event('focus'));task.requests.at(-1).reject(Object.assign(Error('Access revoked'),{code:'42501'}));await Promise.resolve();assert.equal(task.states[0],null,'Revoked module retained private task data');
+task.fakeWindow.dispatchEvent(new Event('focus'));const late=task.requests.at(-1);task.cleanups[0]();late.resolve(pending);await Promise.resolve();assert.equal(task.states[0],null,'Unmounted scope accepted a late task response');const beforeCleanup=task.requests.length;task.fakeWindow.dispatchEvent(new Event('focus'));assert.equal(task.requests.length,beforeCleanup);
 const module=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(module.includes("['rounds','Vernerunder/kontroller']")&&module.includes("['risk','Risikovurdering']"));assert(module.includes('opened[key]||screen===key'),'Navigation must keep execution draft surfaces mounted');
-console.log('critical-kshms-executions-check: OK — blank drafts, risk math/decisions, required evidence, scoped recovery, confirmed own completion and failed/late readback');
+console.log('critical-kshms-executions-check: OK — scoped project drafts, risk decisions, confirmed completion/readback and actual task effect with offline/late/revoked access');

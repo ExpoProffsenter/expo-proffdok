@@ -1,3 +1,15 @@
+# Gjeldende fortsettelsespunkt – forbindelsen gjenopprettet, originalarbeid intakt
+
+8. oktober 2026 etter kl. 20:34 Europe/Oslo svarte arbeidsmiljøet igjen. Originalarbeidet i `/workspace/scratch/31e71b5bfc49/expo-proffdok` er intakt, inkludert den nye faktiske React-prøven og critical-testtilleggene som ikke lå fullt i backupen. Forrige bygglogg viser ferdig Sandbox-bygg. Remote-head 8549888f er fast-forwardet inn uten tap av app-/testendringer. Backupen brukes bare som historisk gjenopprettingsbevis.
+
+Prosjektinngang, separate prosjektkladder, ansvarligvarsler, godkjente rutineutgaver og stor egen bekreftelse ved begge fullføringsknapper er ferdig målrettet prøvd. 44 nye rollback SQL-assertioner og faktisk React-prosjekt/varsel/dialog PASS; tidligere relevante scenarioer og fingeravtrykk består. Hjelp, README, arkitektur og kort testliste er oppdatert. Endelig full Sandbox critical/build etter oppdatert Hjelp er PASS med bekreftet exit code 0; diff-check og branchens Vercel Sandbox-binding er kontrollert. Publisering til samme feature/Sandbox Preview følger nå. Endelig commit/CI/READY registreres her når det er bekreftet.
+
+Miljømål BEGGE. Ingen ny DDL, main-/Production-/demo-endring eller tidligere godkjent brukerprøve gjentas. PR #216 beholdes draft. Ny vernerunde-/risiko-/ansvarligvarselprøve i USER_TEST.md gjenstår. Neste kilde for omfang og prøvebevis er PROJECT_EXECUTIONS_20261008.md. Det tidligere environment_offline nedenfor er historikk og skal ikke behandles som gjeldende hvis ny publisering er bekreftet.
+
+---
+
+## Historikk – frakoblingen før gjenoppretting
+
 # Gjeldende fortsettelsespunkt – prosjektinnganger/ansvarligvarsler testet, arbeidsmiljø frakoblet
 
 Chatten 8. oktober etter ca. 20:07 Europe/Oslo gjenfant arbeidsmappen `/workspace/scratch/31e71b5bfc49/expo-proffdok` på base `2079f5b4ec3e7eaeff0d755c37f7a31294b2182b`. Tilleggene for prosjektets vernerunde og 5×5, ansvarligs faste appvarsel, godkjente rutineutgaver og bekreftelse ved fullføringsknappen er skrevet og målrettet prøvd. Miljømål BEGGE, først samme feature/Sandbox Preview.
