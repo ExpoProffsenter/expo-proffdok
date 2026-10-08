@@ -7,7 +7,7 @@ import './kshmsProjectReport.css';
 
 export function useKshmsProjectReport({ context, userId, projectId, disabled = false }) {
   const enabled = !!(context?.enabled && context.user_id === userId && projectId && !disabled);
-  const scope = `${userId || ''}:${context?.company_id || ''}:${projectId || ''}:${enabled}`;
+  const scope = `${userId || ''}:${context?.company_id || ''}:${projectId || ''}:${enabled}:${!!context?.manage}`;
   const current = useRef(scope), pending = useRef(null), sequence = useRef(0);
   current.current = scope;
   const [dialog, setDialog] = useState(null), [data, setData] = useState(null);
@@ -15,6 +15,8 @@ export function useKshmsProjectReport({ context, userId, projectId, disabled = f
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const active = () => current.current === scope;
   useEffect(() => {
+    setData(null); setDialog(null); setChoices(null);
+    setSelection({ sjas: [], ruhs: [] }); setError(''); setBusy(false);
     return () => { sequence.current++; pending.current?.resolve(null); pending.current = null; };
   }, [scope]);
   const reportData = enabled && data?.scope === scope ? data : emptyKshmsReport();
