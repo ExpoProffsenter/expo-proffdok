@@ -1,3 +1,15 @@
+## Publisert RUH-PDF – READY og innlogget prøve
+
+Funksjonskode **7ed7eefae961aeb56e6a3fbcee3c5bc3b8a68e45**, tree **567f57ccdeb447b7dbded48a2e75305b73fe253f**, identisk med lokal testet commit 4da0b46f. GitHub-koblingen publiserte med expected-head ff2b2aae og uten force. Lokal originalcommit er bevart. Samlet branch-diff mot main er 203 filer; denne avgrensede leveransen er 11 filer.
+
+Samme faste Sandbox Preview er **READY** på **dpl_HJbefJLJnyttRvmktyQf4BMkcYS1** med eksakt funksjons-SHA og fast alias. **PR Core Safety 37851991453**, jobb **Core safety + critical build 113566887268**, completed/success. Lokal full Sandbox critical/build PASS. Branchbinding EXPO_BACKEND_TARGET=sandbox, target preview, gitBranch feat-kshms-foundation er kontrollert. Main er uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**; PR #216 er open/draft.
+
+Innlogget skynettleser på denne publiserte funksjonskoden: DEMO – HOVED → Avvik/SJA/RUH → RUH → Lukkede → **test ruh → Last ned RUH-PDF**. Faktisk fil lastet ned, 4 sider / 37231 byte. Sak **e3b21d35-9acb-4a1f-b4db-842a46f44f3e**, revisjon 2, bevart lukking Kenneth Demo **08.10.2026 kl. 01:28:17**. Tekstkontroll av sak, begge historikkhendelser (registrert/lukket), tiltak, egen kontroll og firmaprofil PASS. MuPDF-layout side 1/4 PASS. Denne saken har **0 vedlegg**; reell privat bildenedlasting er derfor ikke bevist av denne nettleserprøven. Bildeinnbygging/privat GET og feiltilfeller er prøvd med autentisert Storage-stub og ekte PDF-motor. Innlogget bilde-, mobil- og flere-konto-prøve består som eget gap.
+
+Innlogging bevart etter ny deploy i samme fane. Alle dialoger lukket etter prøve; inventar bekrefter bare fane 3 på samme prosjektadresse. Ingen saker, vedlegg, godkjenninger, bekreftelser, signeringer eller varsler endret. Skjermbilde av vellykket uttrekk gjort tilgjengelig. Denne utviklerprøven er ingen ny Kenneth TEST OK. Tidligere TEST OK beholdes. Neste B/C er øvrig vedleggs-/dokumentdekning, samlet tilsynsuttrekk, underskjema og påminnelser/kildeoppdatering; deretter HR med presisert særskilt tilgang. Ingen Production/main/demo-release, databaseendring eller ekte e-postsending/aktivering. Etterfølgende ren dokumentcommit lagrer dette beviset uten funksjonsendring.
+
+---
+
 ## RUH-PDF og presisert HR-lesetilgang – 9. oktober 2026
 
 Utgangspunkt ff2b2aaee40902e74f53d4af019d51f4ff200a9a. Miljømål BEGGE; bare samme feature/Sandbox, draft PR #216. Main 155f6c4a. Avgrenset B/C: egen PDF fra lagret RUH med full paginert historikk og autentisert private bilder. Nye rapporthelper/knapp og to QA-scripts; KshmsDeviations får bare import/knapp, eksisterende critical-kjede får ny import. Ingen SQL, global navigasjon, e-post, portal- eller ordinær rapportendring. [Funksjon, sikkerhet, bevis og begrensninger](RUH_PDF_20261009.md). [Ny kort delprøve](USER_TEST.md) erstatter ikke eldre TEST OK.

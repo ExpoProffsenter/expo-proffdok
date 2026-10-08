@@ -4,7 +4,7 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Dette er samlet gjeldende status. PLAN.m
 
 ## Nyeste forbedring
 
-Egen **Last ned RUH-PDF** fra lagret sak med hele historikken og private bilder er utviklertestet. Ulagret tekst og endret/avslått tilgang sperrer uttrekk; andre vedlegg listes med tydelig originalfil-beskjed. [Scope/bevis](RUH_PDF_20261009.md), publisering i CONTINUITY og kort ny prøve i USER_TEST. Full historikk/bilder er avgrenset til egen RUH-PDF; prosjektrapportens tidligere sammendrag er uendret. Øvrige B/C-punkter består.
+Egen **Last ned RUH-PDF** fra lagret sak med hele historikken og private bilder er READY på funksjonskode 7ed7eefa med grønn Core Safety/full critical build. Innlogget test ruh ga faktisk 4-siders PDF med begge hendelser og bevart lukking. Saken har 0 vedlegg; innlogget bildeprøve gjenstår. Ulagret tekst og endret/avslått tilgang sperrer uttrekk; andre vedlegg listes med tydelig originalfil-beskjed. [Scope/bevis](RUH_PDF_20261009.md), publisering i CONTINUITY og kort ny prøve i USER_TEST. Full historikk/bilder er avgrenset til egen RUH-PDF; prosjektrapportens tidligere sammendrag er uendret. Øvrige B/C-punkter består.
 
 HR-lesetilgang er presisert: medarbeideren selv, registrert nærmeste leder og firmaadmin; firmaadmin kan gi uttrykkelig, tilbakekallbar lesetilgang til andre per medarbeider. [Byggekontrakt](HR_SCOPE_20261008.md). Ingen faktisk HR-implementering/rettigheter ennå.
 

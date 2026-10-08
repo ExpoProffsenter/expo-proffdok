@@ -1,6 +1,6 @@
 # Kort ny prøve – RUH-PDF med historikk og bilder
 
-Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK beholdes. Bare nytt RUH-uttrekk skal prøves:
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Funksjonskode 7ed7eefa er READY med grønn Core Safety/full critical build. Innlogget skynettleser har lastet ned test ruh: 4 sider, begge historikkhendelser, lagret lukking og firmaprofil kontrollert. Denne saken har 0 vedlegg; innlogget bildeprøve gjenstår. Popupen er lukket; én fane. Tidligere TEST OK beholdes. Bare nytt RUH-uttrekk skal prøves:
 
 1. **Prosjekt → Avvik/SJA/RUH → RUH → Lukkede:** Åpne en lagret testsak og trykk **Last ned RUH-PDF**. Se sak/revisjon, lagrede navn/tidspunkt, tiltak, egen lukking og hele historikken. Testprosjekt DEMO – HOVED har en lukket RUH. Nedlasting skal ikke gjenåpne eller endre saken.
 2. Med en lagret test-RUH som har bilder: bildet skal følge PDF-en. Word/Excel/PDF-vedlegg skal stå med navn og beskjed om å åpne originalen i appen. Ingen sikker filadresse skal være skrevet i uttrekket.
