@@ -1,6 +1,6 @@
 # Kort ny prøve – rammer i alle KS/HMS-rapporter
 
-Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK beholdes, også «det fungerte» for RUH-uttrekket. Bare det nye oppsettet skal vurderes:
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Funksjonskode 709bf7d4 er READY med grønn Core Safety/full critical build. Innlogget skyfane har faktisk lastet ned test ruh (2 sider) og test vernerunde (1 side); rammer og lagret dokumentasjon er kontrollert. Popupene er lukket, én fane. Tidligere TEST OK beholdes, også «det fungerte» for RUH-uttrekket. Bare det nye oppsettet skal vurderes:
 
 1. **Prosjekt → Avvik/SJA/RUH → RUH → Lukkede → test ruh → Last ned RUH-PDF**: Se rammer og korte punkter i to kolonner. Hele historikken, lagret lukking og navn/tidspunkt skal være med. Samme testsak skal nå få plass på 2 sider.
 2. Prøv valgfritt **Last ned PDF** fra en eksisterende rutine, publisert sjekklistemal, lagret sjekklistekontroll eller **Vernerunde / kontroll → Åpne dokumentasjon** / risikovurdering. Samme stil skal brukes. Lange tekster bruker hele bredden; bilder og 5×5-matrise beholdes. Ingen ny signering/fullføring nødvendig.

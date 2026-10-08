@@ -1,3 +1,17 @@
+## Publisert felles KS/HMS-rammer – READY og faktisk nedlasting
+
+Funksjonskode **709bf7d44bb0341a166299e8eab02a79b589afca**, tree **b04bdb0458fda7d42c820bd9add397afade6d157**, identisk med lokal testet commit **8a05bf53624b9fb6479d3c724ef2f3e16809f255**. GitHub-koblingen publiserte med expected head bf5d3449 og uten force. Denne leveransen er 17 filer; samlet branch mot main er 205 filer, kun to nye scope-filer. Lokal originalcommit er bevart.
+
+Full lokal Sandbox critical/build PASS, exit 0. READY **dpl_9Y1JYgasP2332eYhrXZxGkKbFtKi** på samme faste alias, eksakt funksjons-SHA. PR Core Safety **37854417849**, Core safety + critical build **113575047296**, completed/success. Branchbinding EXPO_BACKEND_TARGET=sandbox, target preview, gitBranch feat-kshms-foundation kontrollert uten dekryptering. Main uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**. PR #216 open/draft; beskrivelsen oppdatert med endelig layoutscope.
+
+Innlogget skynettleser på publisert funksjonskode: **test ruh → Last ned RUH-PDF** gir **2 sider / 36486 byte før filens provenance-metadata**. Sak e3b21d35-9acb-4a1f-b4db-842a46f44f3e revisjon 2, begge historikkhendelser, alle tiltak/egen kontroll og lagret lukking **08.10.2026 kl. 01:28:17** kontrollert. MuPDF-render av begge sider viser lesbare rammer/tokolonner uten kutt/overlapp. Testsaken har fortsatt 0 vedlegg; faktisk innlogget privat RUH-bildeprøve gjenstår.
+
+Også **Vernerunde / kontroll → test vernerunde → Åpne dokumentasjon → Last ned PDF** lastet ned på samme nye kode: **1 side**, ny rammet layout, R-007 v1, Kenneth Demo, lagret fullføring **08.10.2026 kl. 21:03:15**, deltakere, svar og egen bekreftelse kontrollert. Ingen ny fullføring eller datalagring. Begge popupene er lukket. Faneinventaret bekrefter kun fane 3 på samme prosjektadresse; innlogging ble beholdt etter deploy.
+
+Fire berørte permanente checks og fire faktiske React/jsPDF-suiter PASS, inklusive rutine/mal/lagret kontroll, bilder/matrise, SJA/RUH i prosjekt-PDF, HTML/utskrift og negative tilgang-/revisjons-/avbryt-scenarioer. Endelig layout rendret for alle ulike dokumenttyper/sider; [scope og QA-kontrakt](BOXED_PDF_20261009.md). Dokumentcommit etter dette endrer bare bevisnotater. Tidligere TEST OK er bevart. Layout er fortsatt ny avgrenset brukerprøve; ingen Production, main/demo-merge, HR-rettigheter eller ekte e-postsending.
+
+---
+
 ## Felles innrammet KS/HMS-layout – ny avgrenset leveranse
 
 9. oktober 2026, Europe/Oslo. Miljømål BEGGE, bare feature/Sandbox publiseres. Kenneth presiserte at rammer/tettere oppsett gjelder alle KS/HMS-rapporter. [Scope, QA-kontrakt og bevis](BOXED_PDF_20261009.md). Felles PDF-renderer, to kolonner for korte felt og full bredde/fortsettelsesbokser for langtekst; tilsvarende scoped HTML/print. Alle lagrede verdier, status/bekreftelse, bilder og matrise beholdes. Fire relevante critical-checker og fire faktiske React/jsPDF-flyter PASS. Tidligere TEST OK beholdes; «det fungerte» er brukerbekreftelse på forrige RUH-uttrekk. Ny layout må fortsatt vurderes av bruker. Ingen nye HR-rettigheter, Production eller ekte e-postsending.
