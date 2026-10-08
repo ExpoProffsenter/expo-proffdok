@@ -10,7 +10,13 @@ Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`. Prod
 
 Branch `feat-kshms-foundation`, [PR #216](https://github.com/ExpoProffsenter/expo-proffdok/pull/216), åpen draft. Fast [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe), branch-spesifikk EXPO_BACKEND_TARGET=sandbox, backend ppvircenkjizeiqdxphj. Rapportfunksjonskode f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c, tree eb943df4b8748ad25a49b7fe5ec12010e76e7253. Core safety + critical build check 113313774858 completed/success. Fast alias READY på dpl_2icyHcqi37uG3GYJf3cJL44eE2aM for samme kode-SHA. Etterfølgende dokumentregistrering endrer bare status/testnotater. Publiseringsbevis står i PROJECT_REPORT_20261008.md.
 
-## Siste avgrensede leveranse og QA
+## Ny leveranse – vernerunder/kontroller og 5×5-risiko
+
+Begge verktøyene ligger i KS/HMS og kan brukes med eller uten et faktisk firmaprosjekt. Utkast, egne sjekkpunkter/fast malutgave, svar/bilder, ansvar/frister, egen fullføring og bevart historikk er bygget. Kontrollavvik opprettes én gang via eksisterende sak/varsel. Risiko har tomme scorer, firmavurderte grenser, planlagt/kontrollert effekt og uttrykkelig beslutning. Fullførte dokumenter og historisk identitet beholdes.
+
+54 faktiske Sandbox SQL-kontroller PASS med full rollback. Reell React-/dialogflyt med RPC-fixture og permanent kritisk prøve PASS. Signert SJA (1) og rutineutgaver (10) har samme fingeravtrykk før/etter. Migrasjon 20261008131207 finnes bare i Sandbox. Advisor-varslene om RPC-only RLS og tilsiktede SECURITY DEFINER-grants er vurdert mot faktiske negative tilgangsprøver; nye FK-indekser beholdes. Ingen generell advisor-opprydding er hevdet. Endelig full Sandbox critical/build PASS. Samme Preview-publisering registreres i [EXECUTIONS_20261008.md](docs/kshms/EXECUTIONS_20261008.md). Ny brukerprøve gjenstår; tidligere TEST OK består.
+
+## Tidligere rapportleveranse og QA
 
 Kenneths «kjør» kl. 13:38 autoriserer valgfri prosjekt-SJA/RUH i Rapport/PDF/utskrift. Dialogen brukes av alle tre eksportfunksjoner og viser bare prosjektets tilgjengelige dokumenter. SJA får lagret rutinehenvisning, deltakere/medvirkning og PL-signatur. RUH får hendelse/tiltak/ansvarlig/frist/status/egen kontroll/lukking. Utkast/åpne saker merkes. Ingen automatisk avkrysning eller ny lagring i prosjekt-/portal-JSON.
 
@@ -20,12 +26,12 @@ Kenneths «kjør» kl. 13:38 autoriserer valgfri prosjekt-SJA/RUH i Rapport/PDF/
 
 Rapporttillegget er TEST OK 8. oktober kl. 14:48 Europe/Oslo på kontrollert head 564778722c17d77358464de4fe465d02d336956e / funksjonskode f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c. Gjelder prosjektets rapportvalg og PDF med/uten SJA/RUH. Neste del er vernerunder/selvstendige kontroller og 5×5-risikovurdering; ingen Production-godkjenning.
 
-Tidligere håndbok-, avvikspopup/lukking-, menyretur- og sjekklistepopup-prøver er TEST OK for sine prøvde leveranser. TEST OK 8. oktober kl. 01:28 Europe/Oslo for meny, RUH-inngang og norsk dato gjelder kontrollert head 42204af397fc1fb6187e7e475c951ecdcd007550. TEST OK kl. 13:30 for SJA-utkast/rutinenummer/lagring/gjenåpning og RUH-oppfølging/ansvarligvarsel/egen dokumentert lukking/bevart sak gjelder kontrollert head 75f6ba1f53817a17e4efb3cac778a63d3cfcb9c5. Dette godkjenner ikke hele KS/HMS eller Production. Rapporttillegget har egen kort prøve i USER_TEST.md og er ikke TEST OK ennå.
+Tidligere håndbok-, avvikspopup/lukking-, menyretur- og sjekklistepopup-prøver er TEST OK for sine prøvde leveranser. TEST OK 8. oktober kl. 01:28 Europe/Oslo for meny, RUH-inngang og norsk dato gjelder kontrollert head 42204af397fc1fb6187e7e475c951ecdcd007550. TEST OK kl. 13:30 for SJA-utkast/rutinenummer/lagring/gjenåpning og RUH-oppfølging/ansvarligvarsel/egen dokumentert lukking/bevart sak gjelder kontrollert head 75f6ba1f53817a17e4efb3cac778a63d3cfcb9c5. Dette godkjenner ikke hele KS/HMS eller Production. Rapporttillegget er også TEST OK kl. 14:48 og skal ikke prøves på nytt uten konkret feil.
 
 ## Gjenstående og neste handling
 
-Bare rapportvalget og PDF-innholdet skal prøves nå; godkjente delprøver gjentas ikke. Første rapportdel har dokumenttekst og elektronisk signering/lukking; RUH-bildevedlegg og full endringshistorikk følger ikke med. Ingen ny innlogget nettleser-/mobil-/flere faktiske brukerøkter-PASS hevdes; tidligere verktøyblokkering gjentas ikke.
+Bare de nye vernerunde-/risikoflytene i USER_TEST.md skal prøves nå; godkjente delprøver gjentas ikke. Første rapportdel har dokumenttekst og elektronisk signering/lukking; RUH-bildevedlegg og full endringshistorikk følger ikke med. Ingen ny innlogget nettleser-/mobil-/flere faktiske brukerøkter-PASS hevdes; tidligere verktøyblokkering gjentas ikke.
 
-Vernerunder/selvstendige kontroller, 5×5-risiko, vedleggs-/øvrige rapportuttrekk, separat HR/kompetanse/medarbeidersamtaler og fristpåminnelser gjenstår før Ringside-pilot som avtalt. Sandbox-e-postsending er deaktivert; avsenderoppsett/faktisk mottaksprøve gjenstår. Utførelse før HR; leder bare tildelte ansatte, firmaadmin alle/tildele ansvar. Relevant TEST OK og eksplisitt PRODUCTION GODKJENT for PR #216 kreves før Production-migrering/merge. Senere synkretning main → demo.
+Vedleggs-/øvrige rapportuttrekk, separat HR/kompetanse/medarbeidersamtaler og fristpåminnelser gjenstår før Ringside-pilot som avtalt. Sandbox-e-postsending er deaktivert; avsenderoppsett/faktisk mottaksprøve gjenstår. Utførelse før HR; leder bare tildelte ansatte, firmaadmin alle/tildele ansvar. Relevant TEST OK og eksplisitt PRODUCTION GODKJENT for PR #216 kreves før Production-migrering/merge. Senere synkretning main → demo.
 
 Fortsettelsespunkt: [OVERSIKT.md](docs/kshms/OVERSIKT.md) og [CONTINUITY.md](docs/kshms/CONTINUITY.md). Eldre release-status er bevart i [arkivet](docs/kshms/archive/CURRENT_RELEASE_STATUS_before_TEST_OK_20261008.md).

@@ -17,10 +17,16 @@ import { SETUP_TEXT_FIELDS,ROUTINE_TEXT_SUGGESTIONS,fillEmptySetup,changeSetupTr
 import './kshms.css';
 import KshmsDeviations from './KshmsDeviations.jsx';
 import KshmsChecklistCentral from './KshmsChecklistCentral.jsx';
+import KshmsExecutions from './KshmsExecutions.jsx';
 import KshmsSja from './KshmsSja.jsx';
 const dateTime = value => new Date(value).toLocaleString('nb-NO');
 const sourceTypes = {law:'Lov eller forskrift',professional:'Fag, veiledning eller kontrakt',company:'Firmaets egne regler',product:'ProffDoks valg'};
 const emptySetup = {trades:[],activities:'',responsibilities:'',risks:'',responsible_user_id:'',revision:0};
+export function ExecutionSurfaces({screen,companyId,userId,context}){
+ const [opened,setOpened]=useState({});
+ useEffect(()=>{if(['rounds','risk'].includes(screen))setOpened(previous=>({...previous,[screen]:true}));},[screen]);
+ return <>{[['rounds','round'],['risk','risk']].map(([key,kind])=>(opened[key]||screen===key)&&<div key={key} hidden={screen!==key}><KshmsExecutions key={`${companyId}:${userId}:${kind}:${Boolean(context.manage)}`} context={context} kind={kind} active={screen===key}/></div>)}</>;
+}
 function Field({label,hint,value,onChange,type='text',multiline=false,required=false}) {
  const id=useId();
  const description=hint?`${id}-hint`:undefined;
@@ -179,7 +185,8 @@ export default function KshmsModule({context,deviationRequest}) {
  return <section className="ks-module" aria-label="KS/HMS håndbok">
   <header className="ks-heading"><div><span className="ks-eyebrow">{context.company_name}</span><h2>KS/HMS</h2><p>Firmaets håndbok og rutiner</p></div><span className="ks-badge">{canManage?canAdmin?'Firmaadmin – bygge håndbok':'KS/HMS-ansvarlig – bygge håndbok':'Ansatt – lese og bekrefte'}</span></header>
   <p className="ks-scope">{canManage?'Du bygger firmaets KS/HMS-håndbok. Både firmaadmin og KS/HMS-ansvarlig kan velge, skrive, endre og godkjenne rutiner. En rutine forklarer hvordan en oppgave skal gjøres. Firmaadmin styrer ansattes tilgang. Firmaet må lære opp ansatte og følge rutinene i arbeidet.':'Her finner du rutinene du har fått. De forklarer hvordan du skal jobbe trygt og gjøre oppgavene riktig. I «Les og bekreft» ser du hva du skal lese og hva du allerede har bekreftet.'}</p>
-  <nav className="ks-tabs" aria-label="KS/HMS visning">{[...(canManage?[['handbook','Håndbok'],['checklists','Sjekklistesentral']]:[]),['personal','Min personalhåndbok'],['reading',`Les og bekreft (${pending.length})`],['deviations','Avvik/RUH'],['sja','SJA'],...(canManage?[['setup','Oppstart og tilgang'],['followup','Oppfølging og revisjon']]:[])].map(([key,label])=><button type="button" key={key} className={screen===key?'active':'secondary'} aria-pressed={screen===key} onClick={()=>setScreen(key)}>{label}</button>)}</nav>
+  <nav className="ks-tabs" aria-label="KS/HMS visning">{[...(canManage?[['handbook','Håndbok'],['checklists','Sjekklistesentral']]:[]),['personal','Min personalhåndbok'],['reading',`Les og bekreft (${pending.length})`],['deviations','Avvik/RUH'],['sja','SJA'],['rounds','Vernerunder/kontroller'],['risk','Risikovurdering'],...(canManage?[['setup','Oppstart og tilgang'],['followup','Oppfølging og revisjon']]:[])].map(([key,label])=><button type="button" key={key} className={screen===key?'active':'secondary'} aria-pressed={screen===key} onClick={()=>setScreen(key)}>{label}</button>)}</nav>
+  <ExecutionSurfaces screen={screen} companyId={companyId} userId={userId} context={context}/>
   {canManage&&(screen==='checklists'||checklistsOpened)&&<div hidden={screen!=='checklists'}><KshmsChecklistCentral key={`${companyId}:${userId}`} context={data.context} active={screen==='checklists'}/></div>}
   {(screen==='deviations'||deviationsOpened)&&<div hidden={screen!=='deviations'}><KshmsDeviations context={context} request={deviationRequest}/></div>}
   {(screen==='sja'||sjaOpened)&&<div hidden={screen!=='sja'}><KshmsSja key={`${companyId}:${userId}`} context={context} active={screen==='sja'}/></div>}

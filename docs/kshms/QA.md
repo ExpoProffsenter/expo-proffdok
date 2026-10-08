@@ -1,3 +1,11 @@
+# Gjeldende nye utviklerbevis – vernerunder og 5×5-risiko, 8. oktober 2026
+
+54 faktiske Sandbox SQL-kontroller med full rollback, reell React-/dialogflyt med simulert RPC og ny permanent kritisk prøve PASS. Bevis og grenser står i [EXECUTIONS_20261008.md](EXECUTIONS_20261008.md). Signert SJA og 10 rutineutgaver har uendrede fingeravtrykk. Kenneths prosjektrapportprøve er TEST OK kl. 14:48; tidligere delprøver skal ikke gjentas uten konkret feil. Bare den nye prøven øverst i USER_TEST.md gjenstår. Full Sandbox critical/build PASS; Preview-bevis registreres i leveransenotatet. Ingen Production-godkjenning.
+
+---
+
+## Historiske utviklerbevis
+
 # KS/HMS QA – trinn A
 
 ## Gjeldende liten prøve – popup og tekst som beholdes, 7. oktober 2026

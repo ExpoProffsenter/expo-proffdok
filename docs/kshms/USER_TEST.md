@@ -1,3 +1,17 @@
+# Neste korte Preview-prøve – vernerunde og risikovurdering
+
+Bruk samme [Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Du trenger ikke åpne et prosjekt: begge verktøyene ligger i **KS/HMS**. Tidligere rapport-, SJA-/RUH-, håndbok-, meny- og sjekklisteprøver er TEST OK og skal ikke gjentas.
+
+1. **Vernerunder/kontroller → Ny vernerunde / kontroll**: bruk navnet **TEST – vernerunde**, fyll arbeidssted, dato og deltakere, og behold deg selv som ansvarlig. Lag ett eget sjekkpunkt. Velg **Avvik**, skriv en kommentar, velg deg selv som tiltaksansvarlig og en frist. Fyll gjennomgang og trykk **Lagre utkast**. Lukk og **Fortsett gjennomføring**: teksten og svaret skal stå der. Bekreft egen gjennomgang og trykk **Kontroll fullført**. Navn/tidspunkt skal vises og innholdet skal være låst. En åpen sak for punktet skal finnes i **Avvik/RUH**; kontrollen lukker den ikke.
+2. I den fullførte kontrollen: **Start ny gjennomføring fra listen**. Punktene beholdes, men svar og dato skal være tomme. Den gamle kontrollen ligger fortsatt under **Fullførte / historikk**.
+3. **Risikovurdering → Ny risikovurdering**: fyll én testfare, dagens/nye tiltak, skala og firmaets akseptkrav, ansvar/frister og oppfølging. Sett før tiltak til S=3/K=4, etter tiltak S=1/K=2, og behold **Forventet effekt**. Matrisen skal vise 12 før og 2 etter, merket forventet. Velg **Videre tiltak kreves**, begrunn og lagre utkast. Lukk/gjenåpne, bekreft egen gjennomgang og trykk **Vurdering fullført**. Dokumentasjonen skal ha navn/tidspunkt og beholde at tiltakene er planlagte. **Ny vurdering med samme farer** skal starte med tomme scorer og nye tiltak.
+
+Svar **TEST OK** når de tre punktene består, eller oppgi konkret knapp/feil. Utviklerprøvene omfatter databaseporter, reell React-flyt med simulert RPC, kladd/feil/retry, konflikt, fast malutgave, egen fullføring og sene firmabyttesvar. Innlogget skjerm-/mobilprøve er ikke registrert for denne nye delen. Dette er ingen Production-godkjenning.
+
+---
+
+## Historikk – godkjent rapportprøve
+
 # Godkjent brukerprøve – SJA/RUH i prosjektrapporten
 
 Kenneths «test ok» 8. oktober 2026 kl. 14:48 Europe/Oslo godkjenner rapportprøven nedenfor på kontrollert feature-head `564778722c17d77358464de4fe465d02d336956e`. Prøven skal ikke gjentas uten ny konkret feil. Neste prøve kommer når vernerunder/risiko er bygget og utviklertestet. Dette er ingen Production-godkjenning.
@@ -8,7 +22,7 @@ Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside
 2. Trykk prosjektets **PDF**-knapp. Kontroller samme valg og trykk **Lag PDF med valget**. Fortsett gjennom den vanlige arkiveringsbekreftelsen. Åpne PDF-en og se at SJA/RUH, norsk dato og eventuell signatur/egen kontroll/lukking er med.
 3. Ved en ny PDF: trykk **Fortsett uten SJA/RUH**. Denne PDF-en skal ha ordinært prosjektinnhold uten den nye SJA/RUH-delen.
 
-Svar TEST OK hvis denne korte rapportprøven består, eller oppgi konkret feil/knapp. Utviklerprøvene er allerede PASS og gjentas ikke uten grunn. RUH-bildevedlegg og full endringshistorikk er ikke med i første rapportdel. Ingen produksjonsgodkjenning følger denne prøven.
+Denne rapportprøven er allerede TEST OK og skal ikke gjentas uten konkret ny feil. Utviklerprøvene er allerede PASS og gjentas ikke uten grunn. RUH-bildevedlegg og full endringshistorikk er ikke med i første rapportdel. Ingen produksjonsgodkjenning følger denne prøven.
 
 ---
 

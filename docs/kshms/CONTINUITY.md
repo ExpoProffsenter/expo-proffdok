@@ -1,3 +1,15 @@
+# Fortsettelsespunkt – vernerunder/kontroller og 5×5-risiko bygget
+
+Kenneths rapport-TEST OK 8. oktober 2026 kl. 14:48 Europe/Oslo er registrert. Neste tidligere avtalte utførelsesdel er bygget: KS/HMS har Vernerunder/kontroller og Risikovurdering, med eller uten prosjekt, lokal kladd, serverlagring, egen fullføring og bevart historikk. Kontrollavvik går til eksisterende Avvik/RUH med ansvar/frister; fullføring lukker dem ikke. Risiko har blanke scorer, firmavurderte grenser, før/etter-matrise og planlagt/kontrollert effekt med uttrykkelig beslutning.
+
+54 faktiske rollback SQL-kontroller, permanent ny kritisk prøve og reell React/dialog med simulert RPC PASS. Sandbox-migrasjon 20261008131207 er anvendt. Signert SJA (1) og rutineutgaver (10) har uendrede fingeravtrykk. Omfang/testbevis i [EXECUTIONS_20261008.md](EXECUTIONS_20261008.md). Full build og publiseringsbevis registreres der. Ny innlogget skjerm-/mobil-PASS er ikke hevdet; tidligere avviste nettleserkall gjentas ikke.
+
+Samme faste feature/Sandbox Preview beholdes. Main er kontrollert uendret 155f6c4ac01f126c1db0c65da385cfd9305587d5, PR #216 fortsatt draft, miljømål BEGGE. Ingen merge, Production-DDL/release eller demo-synk. Neste brukerhandling er bare den nye korte vernerunde-/risikoprøven øverst i USER_TEST.md; tidligere TEST OK gjelder fortsatt. Øvrige rapport-/vedleggsuttrekk, fristpåminnelser og separat HR/kompetanse følger minimumsplanen før Ringside-pilot. Utførelse før HR består.
+
+---
+
+## Historikk – rapport-TEST OK registrert før utførelsesarbeid
+
 # Fortsettelsespunkt – prosjektrapport TEST OK; vernerunder og risiko er neste del
 
 Kenneth svarte «test ok» 8. oktober 2026 kl. 14:48 Europe/Oslo på den korte rapportprøven gitt i chatten: velg prosjektets SJA/RUH i Rapport, PDF med valget og ordinær PDF uten SJA/RUH. Kontrollert feature-head `564778722c17d77358464de4fe465d02d336956e`, funksjonskode `f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c`, samme faste Preview READY på `dpl_5L5KriFjsuoex1g4e3WGfAvzJNZA`. Godkjenningen gjelder rapporttillegget, ikke hele modulen eller Production. Tidligere delprøver består og gjentas ikke uten konkret feil.
