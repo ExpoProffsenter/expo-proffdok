@@ -1,4 +1,12 @@
-# Fortsettelsespunkt – SJA/RUH i prosjektrapporten bygget, kort rapportprøve gjenstår
+# Fortsettelsespunkt – prosjektrapport TEST OK; vernerunder og risiko er neste del
+
+Kenneth svarte «test ok» 8. oktober 2026 kl. 14:48 Europe/Oslo på den korte rapportprøven gitt i chatten: velg prosjektets SJA/RUH i Rapport, PDF med valget og ordinær PDF uten SJA/RUH. Kontrollert feature-head `564778722c17d77358464de4fe465d02d336956e`, funksjonskode `f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c`, samme faste Preview READY på `dpl_5L5KriFjsuoex1g4e3WGfAvzJNZA`. Godkjenningen gjelder rapporttillegget, ikke hele modulen eller Production. Tidligere delprøver består og gjentas ikke uten konkret feil.
+
+Neste avgrensede arbeid er vernerunder/selvstendige kontroller og 5×5-risikovurdering, fortsatt BEGGE og først samme Sandbox Preview. Egen lagring, fullføringshistorikk, valgfri prosjektkobling og kontrollerte avvik er innenfor dette. Se EXECUTIONS_20261008.md. Ingen Production-migrering/merge/release eller demo-synk er autorisert. Utførelse før separat HR og minimum før Ringside-pilot består.
+
+---
+
+# Historikk – SJA/RUH i prosjektrapporten bygget og publisert
 
 Kenneths «kjør» 8. oktober 2026 kl. 13:38 Europe/Oslo godkjente avgrenset valgfri SJA/RUH-del i prosjektets Rapport/PDF/utskrift. Miljømål BEGGE, først samme Sandbox Preview. Brukere med modulen velger konkrete prosjektdokumenter; ingen automatisk avkrysning. SJA viser oppgave/arbeidstrinn/tiltak/rutinenummer og utgave/deltakere/lagret PL-signatur, RUH viser hendelse/tiltak/ansvarlig/frist/status/egen kontroll og lukking. Utkast og åpne saker merkes tydelig. Rapportvalg lagres ikke i prosjektets JSON eller kundeportal.
 

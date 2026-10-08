@@ -1,4 +1,6 @@
-# Kort brukerprøve – SJA/RUH i prosjektrapporten
+# Godkjent brukerprøve – SJA/RUH i prosjektrapporten
+
+Kenneths «test ok» 8. oktober 2026 kl. 14:48 Europe/Oslo godkjenner rapportprøven nedenfor på kontrollert feature-head `564778722c17d77358464de4fe465d02d336956e`. Prøven skal ikke gjentas uten ny konkret feil. Neste prøve kommer når vernerunder/risiko er bygget og utviklertestet. Dette er ingen Production-godkjenning.
 
 Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Test bare rapporttillegget i et eksisterende prosjekt med SJA og RUH. Tidligere godkjent lagring/meny/lukking skal ikke prøves på nytt.
 

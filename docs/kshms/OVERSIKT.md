@@ -4,6 +4,8 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Les denne først ved chatbytte; detaljer
 
 ## Ny rapportleveranse 8. oktober
 
+Rapporttillegget er Kenneths TEST OK 8. oktober kl. 14:48 Europe/Oslo. SJA/RUH-valg og PDF med/uten er godkjent for denne delprøven. Neste leveranse er vernerunder/selvstendige kontroller og 5×5-risikovurdering. Ingen tidligere godkjente prøver gjentas uten konkret feil, og Production er fortsatt uendret.
+
 Kenneths «kjør» kl. 13:38 autoriserte valgfri SJA/RUH i prosjektets Rapport/PDF/utskrift. Valg, rutinehenvisning, deltagere/signatur, status/tiltak/ansvarlig/lukking er bygget. 34 databasekontroller, 5 faktiske PDF-er, 3 utskrifter og visuell PDF-kontroll PASS. Samme Preview er READY på funksjonskode f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c; Core safety + critical build completed/success. Publiseringsbevis står i PROJECT_REPORT_20261008.md. Rapporttillegget venter på kort brukerprøve; tidligere TEST OK består. Testbevis: [PROJECT_REPORT_20261008.md](PROJECT_REPORT_20261008.md).
 
 ## Hvor vi er
