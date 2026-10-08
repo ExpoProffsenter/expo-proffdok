@@ -1,3 +1,15 @@
+## Innlogget kontroll/PDF og HR-avklaringer – 8. oktober kl. 23:47
+
+Kenneth logget inn skynettleseren. Én fane. På feature-head 7113e4bf ble test vernerunde i DEMO – HOVED funnet via Avvik/SJA/RUH → Vernerunde / kontroll → Åpne dokumentasjon. Fullført Kenneth Demo 08.10.2026 kl. 21:03:15 beholdt etter lukking/gjenåpning. Faktisk PDF nedlastet og tekst-/MuPDF-layout kontrollert. Også R-008 v1 fra Min personalhåndbok og tom Bunnledning v1 fra Sjekklistesentral faktisk nedlastet og tekstkontrollert. Ingen dokumenter/bekreftelser endret. Alle dialoger lukket. [Nettleserbevis og begrensninger](UI_TEST_20261008_PDF.md).
+
+Gamle demosjekklister har svar, men mangler ny strukturert kontrollhistorikk; derfor ingen egen kontroll-PDF før en faktisk lagret kontroll. Ordinær prosjektrapport beholder tidligere dokumentasjon. Ny strukturert kontroll med bilder/ulagret sperre, risiko/PDF/prosjektvalg, mobil og flere faktiske kontoer gjenstår. Denne utviklerprøven er ikke ny Kenneth TEST OK.
+
+Ti HR-svar mottatt 23:47: eget HR-valg/Mine oppfølginger; avtalt tildelt leder/firmaadmin-tilgang, KS-rolle uten HR; medarbeider forbereder før felles møte; temaer og egne firmamaler; tiltak valgfritt uten behov, ellers ansvar/frist; begge bekrefter og kan kommentere uenighet; egen historikk under ansettelsen, ny leder overtar tilgang; ansatt mister tilgang ved fratredelse og sensitivt innhold slettes; nærmeste leder settes i nedtrekksliste blant aktive appbrukere og starter sykefravær manuelt. Anbefalt sett: årlig samtale, prøvetid og enkel oppfølgingssamtale. NHO, NAV, Arbeidstilsynet og Datatilsynet lest. [Byggekontrakt](HR_SCOPE_20261008.md) skiller beslutninger, anbefalinger og nødvendig begrenset bevaringsvurdering.
+
+Miljømål BEGGE. Denne runden bare dokumentasjon i feature. B/C før HR består; HR er ikke implementert. Main 155f6c4a og feature 7113e4bf bekreftet før dokumentendring. Ingen Production/main/demo-release, reell sletting, databaseendring eller e-postsending. Tidligere TEST OK består. Etterfølgende dokumentcommit publiserer dette beviset uten funksjonsendring.
+
+---
+
 ## Publisert rutine-/sjekkliste-PDF – READY
 
 Funksjonskode **64143a3a4a982f442bbafcacaf40d535073751a8**, tree **86813dd63f72714995ea88bf71d26bd7b72cb571**. Hver publisert blob og samlet tree er identiske med lokal testet commit bb4b0053. Git-push manglet skriveinnlogging; GitHub-koblingen publiserte samme tree med expected-head aea7e766 og uten force. Ingen lokal branchhistorikk er slettet.

@@ -4,6 +4,10 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Dette er samlet gjeldende status. PLAN.m
 
 ## Nyeste forbedring
 
+Innlogget skynettleser 8. oktober: **test vernerunde** funnet i testprosjektets **Avvik/SJA/RUH → Vernerunde / kontroll**, gjenåpning og faktisk PDF kontrollert. Også rutine R-008 og tom Bunnledning-mal lastet ned. [Bevis og konkrete begrensninger](UI_TEST_20261008_PDF.md). Tidligere TEST OK beholdes; gjenværende PDF-/mobil-/flere-brukerprøver består.
+
+Kenneths ti HR-svar er avklart: eget HR-valg, separat medarbeider-/ledertilgang, forberedelse før felles møte, firmamaler, behovsstyrte tiltak, begge bekreftelser, lederbytte og sletting ved fratredelse. Nærmeste leder velges blant aktive appbrukere og starter sykefravær manuelt. [Byggekontrakt og anbefalt sykefraværsflyt](HR_SCOPE_20261008.md) er dokumentert, ikke implementert. B/C før HR, ingen Production eller ekte e-postsending, består.
+
 Egne PDF-er for godkjente rutineutgaver, publiserte tomme sjekklistemaler og lagrede prosjektkontroller er READY på funksjonskode 64143a3a med grønn Core Safety/critical build. Kort ny prøve står først i USER_TEST.md; publiseringsbevis står i CONTINUITY.md. Ingen ny HR- eller Production-leveranse.
 
 Prosjektets Avvik/SJA/RUH er publisert READY på funksjonskode 990ce731 med grønn Core Safety/critical build. Visningen er gjort kompakt: fire lukkede dokumentgrupper viser antall/status, og avviksgrupper/rader er lukket med åpne saker først. Kort oversiktsprøve i USER_TEST.md gjenstår sammen med PDF-prøven. Samme Sandbox Preview; tidligere TEST OK består. Dette endrer visning og hjelp, ikke planens øvrige omfang.

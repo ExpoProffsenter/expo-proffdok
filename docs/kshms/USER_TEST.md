@@ -1,5 +1,9 @@
 # Kort ny prøve – rutine- og sjekkliste-PDF
 
+**Hvor finner du lagret kontroll?** Testen **test vernerunde** finnes i **DEMO – HOVED – Badrenovering i arbeid → Avvik/SJA/RUH → Vernerunde / kontroll → Åpne dokumentasjon**. Innlogget skynettleser har kontrollert gjenåpning og faktisk PDF 8. oktober. Den ligger ikke under prosjektets Sjekklister. De gamle demosjekklistesvarene uten ny kontrollhistorikk bruker ordinær prosjektrapport; egen sjekkliste-PDF krever en faktisk lagret kontroll. Ingen gammel fullføring skal gjøres om bare for testen. [Nettleserbevis](UI_TEST_20261008_PDF.md).
+
+Rutine-PDF for R-008 og publisert tom Bunnledning-mal er også lastet ned med faktisk innlogging/transport. Den gjenværende nye sjekklisteprøven gjelder strukturert lagret kontroll, bilder og ulagret sperre. Disse utviklerprøvene er ikke en ny bruker-TEST OK.
+
 Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Funksjonskode 64143a3a er READY med grønn Core Safety/critical build; bevis står i CONTINUITY.md. Tidligere TEST OK beholdes; prøv bare dette nye uttrekket:
 
 1. **KS/HMS → Min personalhåndbok:** Åpne en tildelt rutine → **Last ned PDF**. Se firmanavn/logo, R-nummer, utgave, godkjenner, riktig rutinetekst og kilder. PDF-en skal ikke registrere eller vise andre ansattes bekreftelser. Du trenger ikke godkjenne eller bekrefte rutinene på nytt.
