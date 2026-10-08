@@ -1,4 +1,6 @@
-## Ny kort prøve: egen SJA-PDF
+## TEST OK 9. oktober kl. 00:59: egen SJA-PDF
+
+**Godkjent av Kenneth.** Denne delprøven skal ikke gjentas uten konkret feil/relevant regresjon. Listen under beholdes som historisk testgrunnlag. Øvrige åpne delprøver er fortsatt åpne.
 
 Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe) og eksisterende innlogging. Funksjonskode f7128eff er READY med grønn Core Safety/full critical build. Innlogget **Test sja** er faktisk lastet ned og visuelt kontrollert: én side, rammer, full analyse og bevart signatur. Popup lukket, én fane. Tidligere TEST OK skal ikke gjentas.
 

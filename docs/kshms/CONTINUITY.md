@@ -1,3 +1,22 @@
+## TEST OK og handoff – 9. oktober 2026 kl. 00:59 Europe/Oslo
+
+Kenneth svarte **«test ok. Lagre historikk der du pleier å gi meg en handoff prompt til ny chat»** etter leveransen av egen lagret SJA-PDF. **TEST OK gjelder denne avgrensede SJA-PDF-leveransen.** Tidligere TEST OK beholdes; ikke krev omprøving uten konkret feil/relevant regresjon. Ingen Production-release, main/demo-merge eller ekte e-postsending er godkjent.
+
+Siste verifiserte head før denne dokumentoppdateringen: **0194b2c8173410af71f89a7b2c42c5c39c0b83eb**, tree **e8742eb9ea433caf52a97bda6769c2fca78e8f40**. READY **dpl_5hhq2T6pUeXRaaumhkkW7UWiFnaM** på samme Sandbox-alias. Core Safety **37856612512** / jobb **113582206113**, completed/success med full critical build. Funksjonskode/innlogget PDF-bevis står nedenfor. Main uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**. PR #216 fortsatt open/draft på **feat-kshms-foundation**. Denne oppdateringen gjelder bare fire KS/HMS-dokumenter; ingen appkode/SQL/test/konfigurasjon endres.
+
+### Neste chat
+
+1. Hent faktisk main og feature-head, kontroller PR #216/READY/QA. Ikke anta at et historisk head i teksten er nyeste branch-head.
+2. Les AGENTS.md, hele PROJECT_GUARDRAILS.md, docs/kshms/OVERSIKT.md, CONTINUITY.md, USER_TEST.md og relevant PLAN/QA/critical-check før endring. HR-beslutninger er bevart i HR_SCOPE_20261008.md.
+3. Fortsett **gjenstående B/C før HR**, én avgrenset leveranse om gangen: samlet dokument-/tilsynsuttrekk med RUH-historikk/private bilder, øvrig vedleggsdekning og versjonerte underskjema, frist-/utløpspåminnelser og kildeoppdatering. Mobil/flere reelle brukere, ny popup-prøve og ikke allerede bekreftede delprøver består. Velg og beskriv neste scope fra gjeldende plan; SJA-PDF skal ikke bygges om eller testes på nytt som obligatorisk start.
+4. Samme Preview: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe . Supabase Sandbox ppvircenkjizeiqdxphj; EXPO_BACKEND_TARGET=sandbox på branch-Preview. KS/HMS-e-postutsending forblir deaktivert. Ingen nye hemmeligheter eller aktivering på grunnlag av denne TEST OK.
+5. Skynettleser sist: én innlogget fane (3), KS/HMS → SJA, alle popup lukket. Gjenbruk samme fane/økt hvis tilgjengelig; kontroller faktisk økt ved gjenopptak. Ikke krev ny innlogging bare på grunn av deploy. Ikke signér eller fullfør reelle saker som test.
+6. HR er avtalt, ikke implementert: medarbeideren selv, registrert nærmeste leder og firmaadmin kan lese; firmaadmin kan gi tilbakekallbar ekstra lesetilgang per medarbeider. Leder velges fra aktive appbrukere i nedtrekksliste og starter sykefravær manuelt. Lederbytte/historikk og sletting av sensitivt innhold ved fratredelse følger byggekontrakten. NHO/NAV-kilder må verifiseres på nytt ved faktisk implementering. KS/HMS/systemadmin/prosjektrolle gir ikke automatisk HR-innsyn.
+
+Overleveringen ligger varig i Git-repoet; hele chathistorikken antas ikke automatisk overført til ny chat. Fortsett fra de gjeldende notatene og faktisk branch. TEST OK er en delprøve, ikke samlet ferdigstillelse av KS/HMS eller produksjonsgodkjenning.
+
+---
+
 ## Publisert SJA-PDF – READY, grønn QA og innlogget nedlasting
 
 Funksjonskode **f7128eff77de3950bfc59f228514069c6c4e3e5c**, tree **461df19cab19286b089d18d8d11461ce899ff541**, identisk med lokal testet commit **b19d54baa8c1260560ce7536b9485a1b826f74b1**. Publisert via GitHub-koblingen med expected SHA 5f19f330, uten force. Lokal originalcommit er bevart. 11 filer i denne leveransen; samlet branch mot main er 209 filer, fire nye scope-filer. Ingen nye backend-/navigasjonsfiler i siste diff.
