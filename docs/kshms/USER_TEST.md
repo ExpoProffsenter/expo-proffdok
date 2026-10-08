@@ -1,3 +1,15 @@
+# Kort ny prøve – kompakt prosjektoversikt
+
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Testprosjekt: **DEMO – HOVED – Badrenovering i arbeid** i Expo Proffsenter. Dette prosjektet har kontrollen **test vernerunde**. Et annet prosjekt med eksisterende avvik kan også brukes for avviksradene.
+
+1. **Prosjekt → Avvik/SJA/RUH:** SJA, RUH, Vernerunde / kontroll og Risikovurdering 5×5 skal starte lukket. Antall og status skal stå på overskriftene. Trykk en overskrift: registrerte dokumenter og Opprett/Registrer vises. Åpne neste gruppe: den forrige lukkes.
+2. Under **Avvikssentral**, åpne **Sjekkpunktavvik** eller **HMS- og prosjektavvik**, og deretter én sak. Åpne saker skal stå først. Du skal se status og eventuelt ansvarlig/frist uten å åpne saken. Gå til punkt / Åpne i KS/HMS skal fortsatt åpne riktig oppfølging.
+3. Endre en ukoblet testavvikstekst, lukk raden og åpne den igjen: teksten skal stå der. Et nytt HMS/prosjektavvik skal bli synlig etter lagring. Ikke lukk reelle avvik som test.
+
+Utviklertest: faktisk React/DOM med simulert transport og berørte tidligere brukerreiser PASS. Full critical/build og publiseringsbevis står i CONTINUITY.md. Innlogget mobilvisning er fortsatt din brukerprøve. Tidligere TEST OK gjentas ikke. PDF-prøven nedenfor er fortsatt åpen. E-postsending i Sandbox er fortsatt deaktivert.
+
+---
+
 # Kort ny prøve – PDF for kontroller og risiko
 
 Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK består. Ny funksjonskode c6dc21d5 er READY med grønn Core Safety/critical build; bevis står i CONTINUITY.md. Prøv bare PDF-tillegget:

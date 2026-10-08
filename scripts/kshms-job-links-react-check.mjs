@@ -26,6 +26,8 @@ let failCreate = false, handbook = {settings:null,routines:[],versions:[],member
 window.__rpc = async (name, args) => {
   calls.push({ name, args: structuredClone(args) });
   const scoped = { ...context, company_id: args.p_company_id, ...(args.p_project_id ? { project_id: args.p_project_id } : {}) };
+  if(name==='kshms_project_report')return {context:scoped,choices:{sjas:[...sjas.values()].filter(row=>row.project_id===args.p_project_id).map(row=>({id:row.id,status:row.status})),ruhs:[...cases.values()].filter(row=>row.project_id===args.p_project_id&&row.category==='ruh').map(row=>({id:row.id,status:row.status}))}};
+  if(name==='kshms_project_execution_report')return {context:scoped,choices:{rounds:[],risks:[]}};
   if (name === 'kshms_get_state') return {...handbook,context:scoped};
   if (name === 'kshms_job_choices') { return { context: scoped, projects: projects.filter(row => row.name.includes(args.p_project_query || '')), project_total: 2, routines }; }
   if (name === 'kshms_sja_state' || name === 'kshms_project_sja_state') {
@@ -51,7 +53,7 @@ window.__rpc = async (name, args) => {
   cases.set(row.id, row); if (p.request_id) receipts.set(p.request_id, row); return row;
 };
 window.eval((Array.isArray(bundle) ? bundle[0] : bundle).output.find(row => row.type === 'chunk').code);
-const act = window.__act, button = text => [...doc.querySelectorAll('button')].find(node => node.textContent.trim() === text);
+const act = window.__act, button = text => [...doc.querySelectorAll('button')].find(node => node.textContent.trim() === text || node.getAttribute('aria-label')===text);
 const click = async node => { assert(node, 'Missing action'); assert(!node.matches(':disabled'), node.textContent); await act(async () => node.click()); };
 const write = async (node, value) => { assert(node, 'Missing field'); assert(!node.matches(':disabled')); await act(async () => { const proto = node.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : node.tagName === 'SELECT' ? window.HTMLSelectElement.prototype : window.HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(proto, 'value').set.call(node, value); node.dispatchEvent(new window.Event(node.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); }); };
 const field = label => { const node = [...doc.querySelectorAll('label')].find(row => (row.htmlFor ? row.textContent.trim() : row.querySelector('span')?.textContent.trim()) === label); return node?.control || node?.querySelector('input,textarea,select'); };
@@ -60,8 +62,8 @@ const render = async (kind, props = {}) => act(async () => window.__render(kind,
 assert.equal(createProjectWorkspaceTabs().find(row => row[0] === 'avvik')[1], 'Avvik');
 assert.equal(createProjectWorkspaceTabs({ canUseKshms: true, openDeviationCount: 2 }).find(row => row[0] === 'avvik')[1], 'Avvik/SJA/RUH (2)');
 await render('entry', { projectId, context: { ...context, enabled: false } }); assert(!button('Opprett SJA')); assert(!button('Registrer RUH')); assert.equal(calls.length, 0);
-await render('entry', { projectId }); assert(doc.body.textContent.includes('sikker jobbanalyse')); assert(doc.body.textContent.includes('rapport om uønsket hendelse')); assert.equal(calls.length, 0, 'Closed project entry fetched documentation');
-await click(button('Opprett SJA')); assert(doc.querySelector('[role="dialog"]')); assert.equal(doc.querySelector('[data-sja-field="title"]').value, ''); assert.equal(doc.querySelector('[data-job-project]').value, projectId); assert(doc.querySelector('[data-job-project]').disabled);
+await render('entry', { projectId }); assert(doc.body.textContent.includes('sikker jobbanalyse')); assert(doc.body.textContent.includes('rapport om uønsket hendelse')); assert.deepEqual(calls.map(row=>row.name),['kshms_project_report','kshms_project_execution_report'],'Collapsed entry must fetch only scoped choice metadata');
+await click(button('Åpne SJA')); await click(button('Opprett SJA')); assert(doc.querySelector('[role="dialog"]')); assert.equal(doc.querySelector('[data-sja-field="title"]').value, ''); assert.equal(doc.querySelector('[data-job-project]').value, projectId); assert(doc.querySelector('[data-job-project]').disabled);
 await write(doc.querySelector('[data-sja-field="title"]'), 'QA murarbeid'); await click(button('Muring og pussing')); assert(doc.querySelector('[data-sja-field="title"]').value.includes('QA murarbeid · Muring og pussing'));
 await click(doc.querySelector('[aria-label="Legg inn rutine R-012"]')); assert.equal(doc.querySelector('[data-sja-field="routines"]').value, 'R-012 – Støv ved mur og flis (versjon 3)');
 await click(button('Lagre utkast')); assert.equal([...sjas.values()][0].project_id, projectId); assert.equal(doc.querySelector('[data-sja-field="workplace"]').value, '', 'Project filled a risk answer'); await click(button('Lukk'));
@@ -69,7 +71,7 @@ await act(async () => window.__unmount());
 await render('sja'); await click(button('Ny SJA')); await write(doc.querySelector('[data-job-project]'), otherProject); await write(doc.querySelector('[data-sja-field="title"]'), 'QA valgt firmaprosjekt'); await click(button('Lagre utkast')); assert([...sjas.values()].some(row => row.project_id === otherProject)); assert(doc.querySelector('[data-job-project]').disabled); await click(button('Lukk'));
 await click(button('Ny SJA')); await write(doc.querySelector('[data-sja-field="title"]'), 'QA ekstern oppgave'); await write(doc.querySelector('[data-sja-field="project_reference"]'), 'Ekstern ordre 123'); await click(button('Lagre utkast')); assert([...sjas.values()].some(row => row.project_id === null && row.content.project_reference === 'Ekstern ordre 123')); await click(button('Lukk'));
 
-await render('entry', { projectId }); await click(button('Registrer RUH')); assert(doc.querySelector('[role="dialog"]')); assert.equal(field('Kort tittel').value, ''); assert.equal(doc.querySelector('[data-job-project]').value, projectId);
+await render('entry', { projectId }); await click(button('Åpne RUH')); await click(button('Registrer RUH')); assert(doc.querySelector('[role="dialog"]')); assert.equal(field('Kort tittel').value, ''); assert.equal(doc.querySelector('[data-job-project]').value, projectId);
 const createsBefore = calls.filter(row => row.name === 'kshms_deviation_command').length;
 await click(button('Lagre RUH for oppfølging')); const warning = [...doc.querySelectorAll('[role="alert"]')].find(row => row.textContent.includes('Dette mangler')); assert(warning); assert.equal(doc.activeElement, warning); assert(warning.textContent.includes('Ansvarlig medarbeider')); assert(warning.textContent.includes('Gyldig frist')); assert.equal(calls.filter(row => row.name === 'kshms_deviation_command').length, createsBefore);
 await write(field('Kort tittel'), 'QA nestenulykke'); await write(field('Hva skjedde / hva er feil?'), 'QA materialer falt under transport'); await write(field('Ansvarlig'), user); await write(field('Frist'), '2026-10-10'); await click(doc.querySelector('[aria-label="Legg inn rutine R-012"]'));

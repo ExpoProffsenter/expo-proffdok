@@ -66,3 +66,5 @@ const module=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(
 console.log('critical-kshms-executions-check: OK — scoped project drafts, risk decisions, confirmed completion/readback and actual task effect with offline/late/revoked access');
 
 await import('./critical-kshms-execution-pdf-check.mjs');
+
+await import("./critical-project-document-overview-check.mjs");

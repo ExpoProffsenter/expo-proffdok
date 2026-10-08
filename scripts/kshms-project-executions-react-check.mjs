@@ -29,6 +29,8 @@ const rows = new Map(), receipts = new Map(), calls = [];
 window.__rpc = async (name, args) => {
   calls.push({ name, args: structuredClone(args) });
   const scoped = { ...context, company_id: args.p_company_id, ...(args.p_project_id ? { project_id: args.p_project_id } : {}) };
+  if(name==='kshms_project_report')return {context:scoped,choices:{sjas:[],ruhs:[]}};
+  if(name==='kshms_project_execution_report')return {context:scoped,choices:Object.fromEntries([['rounds','round'],['risks','risk']].map(([key,kind])=>[key,[...rows.values()].filter(row=>row.project_id===args.p_project_id&&row.kind===kind).map(row=>({id:row.id,status:row.status}))]))};
   if (name === 'kshms_job_choices') return { context: scoped, projects: [{ id: project, name: 'QA prosjekt A' }, { id: secondProject, name: 'QA prosjekt B' }], project_total: 2, routines };
   if (name === 'kshms_deviation_tasks') return { company_id: company, user_id: scoped.user_id, count: 1, overdue: 0, items: [{ id: '77777777-7777-4777-8777-777777777777', title: 'QA eksisterende avvik', due_on: '2026-10-09' }] };
   if (name === 'kshms_execution_tasks') {
@@ -71,7 +73,7 @@ const complete = async label => { const box = doc.querySelector('.ks-execution-c
 await render('project', { projectId: project, context: { ...context, enabled: false } });
 assert(!button('Opprett vernerunde') && !button('Opprett risikovurdering 5×5')); assert.equal(calls.length, 0);
 await render('project', { projectId: project }); assert(button('Opprett SJA') && button('Registrer RUH'));
-await click(button('Opprett vernerunde')); assert(doc.querySelector('[role="dialog"]')); assert.equal(doc.querySelector('[data-job-project]').value, project); assert(doc.querySelector('[data-job-project]').disabled);
+await click(button('Åpne vernerunder')); await click(button('Opprett vernerunde')); assert(doc.querySelector('[role="dialog"]')); assert.equal(doc.querySelector('[data-job-project]').value, project); assert(doc.querySelector('[data-job-project]').disabled);
 await common('QA prosjektkontroll'); await write('Tekst for sjekkpunktet', 'QA ryddig ferdsel'); await write('Svar', 'ok'); await addRoutine(); await write('Ansvarlig for gjennomføringen', colleague);
 assert(button('Kontroll fullført').disabled); await click(button('Lagre utkast'));
 const round = [...rows.values()].find(row => row.kind === 'round'); assert.equal(round.project_id, project); assert(round.content.routines.includes('R-012'));
@@ -79,7 +81,7 @@ await click(button('Lukk gjennomføring')); await render('project', { projectId:
 assert(!doc.querySelector('.ks-execution-list').textContent.includes('QA prosjektkontroll'), 'Other project listed the control');
 await render('project', { projectId: project }); await click(button('Åpne vernerunder')); await click(button('Fortsett gjennomføring')); assert.equal(field('Navn').value, 'QA prosjektkontroll');
 await write('Gjennomgang og videre oppfølging', 'QA lokal kladd i prosjekt A'); await click(button('Lukk gjennomføring'));
-await render('project', { projectId: secondProject }); await click(button('Opprett vernerunde')); assert.equal(field('Navn').value, '');
+await render('project', { projectId: secondProject }); await click(button('Åpne vernerunder')); await click(button('Opprett vernerunde')); assert.equal(field('Navn').value, '');
 await render('project', { projectId: project }); await click(button('Åpne vernerunder')); await click(button('Fortsett lokal kladd')); assert.equal(field('Gjennomgang og videre oppfølging').value, 'QA lokal kladd i prosjekt A');
 await click(button('Lagre utkast')); await click(button('Lukk gjennomføring'));
 await render('tasks'); assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]'), 'Reporter received responsible alert');
@@ -95,7 +97,7 @@ await click(doc.querySelector('[data-execution-field="confirmation"]')); failRea
 assert(doc.body.textContent.includes('1 gjennomføring'), 'Failed confirmation removed alert'); assert(doc.body.textContent.includes('Kladden er beholdt')); assert(doc.querySelector('[role="dialog"]'), 'Failed readback closed the dialog');
 await click(button('Kontroll fullført')); assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]')); assert(doc.querySelector('[aria-label="Dine åpne KS/HMS-avvik"]'), 'Control completion removed the existing deviation task'); assert.equal(rows.get(round.id).completed_by, colleague); assert(!doc.querySelector('[role="dialog"]'), 'Verified completion left the task popup open');
 
-context = { ...context, user_id: user, manage: true }; await render('project', { projectId: project }); await click(button('Opprett risikovurdering 5×5'));
+context = { ...context, user_id: user, manage: true }; await render('project', { projectId: project }); await click(button('Åpne risikovurderinger')); await click(button('Opprett risikovurdering 5×5'));
 assert.equal(doc.querySelector('[data-job-project]').value, project); await common('QA prosjektrisiko'); await addRoutine();
 for (const [label, value] of Object.entries({ 'Vurderingsgrunnlag og skala 1–5': 'QA personskade og sannsynlighet for dagens jobb.', 'Hva krever firmaet før risiko kan aksepteres?': 'QA utførte og kontrollerte tiltak.', 'Arbeidsoppgave': 'QA kapping', 'Fare / uønsket hendelse': 'QA støv', 'Mulig konsekvens': 'QA personskade', 'Tiltak som allerede er på plass': 'QA avskjerming', 'Nye tiltak som skal gjennomføres': 'QA avsug', 'Tiltaksansvarlig': user, 'Frist for tiltak': '2026-10-09', 'Hvordan og når kontrolleres tiltakene?': 'QA verneombud kontrollerer avsuget.', 'Beslutning': 'needs_action', 'Begrunnelse for vurdering og beslutning': 'QA videre tiltak før oppstart.' })) await write(label, value);
 await click([...doc.querySelectorAll('label')].find(node => node.textContent.includes('Grensene og kravene er vurdert')).querySelector('input'));

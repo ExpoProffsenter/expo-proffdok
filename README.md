@@ -1,3 +1,9 @@
+# KS/HMS – kompakt prosjektoversikt
+
+Avvik/SJA/RUH starter med lukkede SJA-, RUH-, kontroll- og risikogrupper med antall/status. Sjekkpunkt- og prosjektavvik vises som lukkede rader med åpne saker først. Eksisterende redigering og oppfølging består. [Omfang og tester](docs/kshms/PROJECT_OVERVIEW_20261008.md), [kort brukerprøve](docs/kshms/USER_TEST.md). Samme feature/Sandbox før Production-godkjenning.
+
+---
+
 # KS/HMS – kontroll-/risiko-PDF i Sandbox
 
 Lagrede vernerunder/kontroller og 5×5-risikovurderinger har **Last ned PDF**, med firmaprofil, lagrede bilder, farget matrise, tiltak og lagret fullføringsinformasjon. Utkast merkes under arbeid; ulagret tekst må lagres først. Prosjektets **Velg KS/HMS til rapport** inkluderer nå uttrykkelig valgte kontroller og risiko sammen med SJA/RUH. Ingen dokumenter tas automatisk med eller legges i portal. Ny lesende Sandbox-RPC; Production er uendret. [Omfang og testbevis](docs/kshms/EXECUTION_PDF_20261008.md), [gjeldende planstatus](docs/kshms/OVERSIKT.md).

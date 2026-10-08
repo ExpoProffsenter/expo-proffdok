@@ -1,3 +1,4 @@
+import './projectDeviationOverview.css';
 import { useEffect, useId, useRef, useState } from 'react';
 import DeviationDialog from './DeviationDialog.jsx';
 import { kshmsRpc } from '../kshms/kshmsAccess.js';
@@ -38,6 +39,7 @@ export default function ProjectDeviationCreator({ uid, project, projectId, userI
   useEffect(() => {
     if (!focusEntry) return;
     const card = document.querySelector(`[data-project-deviation-id="${CSS.escape(focusEntry)}"]`);
+    for (let parent=card?.parentElement;parent;parent=parent.parentElement) if(parent.tagName==='DETAILS') parent.open=true;
     card?.focus({ preventScroll: true }); card?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }, [focusEntry]);
   const keep = next => {

@@ -2,6 +2,10 @@
 
 Oppdatert 8. oktober 2026, Europe/Oslo. Dette er samlet gjeldende status. PLAN.md inneholder hele omfanget og historiske gap; CONTINUITY.md inneholder overlevering og testbevis. Historiske «gjenstår»-tekster der må ikke overstyre denne oversikten.
 
+## Nyeste forbedring
+
+Prosjektets Avvik/SJA/RUH er gjort kompakt: fire lukkede dokumentgrupper viser antall/status, og avviksgrupper/rader er lukket med åpne saker først. Kort oversiktsprøve i USER_TEST.md gjenstår sammen med PDF-prøven. Samme Sandbox Preview; tidligere TEST OK består. Dette endrer visning og hjelp, ikke planens øvrige omfang.
+
 ## Hvor vi er
 
 Vi har levert håndbokfundamentet og rutinebiblioteket i Sandbox Preview. Utførelsesdelen er langt på vei bygget. Varsling og rapporter er delvis levert. Individuell HR og full Ringside-pilot er ikke startet. Hele KS/HMS-modulen er ikke ferdig eller satt i produksjon.
