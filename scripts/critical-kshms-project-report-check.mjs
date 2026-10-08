@@ -13,7 +13,7 @@ assert(JSON.stringify(kshmsReportDocuments({ sjas: [{ ...signed, status: 'draft'
 assert(!JSON.stringify(kshmsReportDocuments({ sjas: [{ ...signed, status: 'draft' }], ruhs: [] })).includes('Historisk prosjektleder'));
 assert(JSON.stringify(kshmsReportDocuments({ sjas: [], ruhs: [{ ...closed, status: 'open' }] })).includes('Oppfølging gjenstår'));
 const printed = []; let pages = 1;
-const pdf = { internal: { pageSize: { getWidth: () => 210, getHeight: () => 297 } }, addPage() { pages++; }, setFont() {}, setFontSize() {}, setTextColor() {}, splitTextToSize: value => String(value).match(/[\s\S]{1,90}/g) || [''], text(line, x, y) { printed.push({ line, x, y }); } };
+const pdf = { internal: { pageSize: { getWidth: () => 210, getHeight: () => 297 } }, addPage() { pages++; }, setFont() {}, setFontSize() {}, setTextColor() {}, setLineWidth() {}, setFillColor() {}, setDrawColor() {}, rect() {}, splitTextToSize: value => String(value).match(/[\s\S]{1,90}/g) || [''], text(line, x, y) { printed.push({ line, x, y }); } };
 appendKshmsPdfReport(pdf, { sjas: [], ruhs: [{ ...closed, event: 'Lang beskrivelse '.repeat(1200) + 'SLUTT PÅ HENDELSEN' }] });
 assert(pages > 3); assert(printed.every(row => row.y >= 16 && row.y <= 277)); assert(printed.map(row => row.line).join('').includes('SLUTT PÅ HENDELSEN'));
 const main = fs.readFileSync('src/main.jsx', 'utf8'), tools = fs.readFileSync('src/modules/report/reportTools.js', 'utf8'), view = fs.readFileSync('src/modules/report/reportViewTools.js', 'utf8');

@@ -43,27 +43,7 @@ export function kshmsReportDocuments(data) {
 // KS fields can be 20,000 characters. Write line by line so valid long content
 // never runs through the footer or off the page in the existing jsPDF report.
 export function appendKshmsPdfReport(doc, data, { margin = 14 } = {}) {
-  const documents = kshmsReportDocuments(data);
-  const width = doc.internal.pageSize.getWidth() - margin * 2;
-  const bottom = doc.internal.pageSize.getHeight() - 20;
-  let y = 16;
-  const clean = value => String(value ?? '').normalize('NFC').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0E\uFE0F\u200D]/gu, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
-  const write = (value, bold = false, size = 10, gap = 2) => {
-    doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(size); doc.setTextColor(15, 23, 42);
-    for (const line of doc.splitTextToSize(clean(value) || 'Ikke fylt ut', width)) {
-      if (y > bottom) { doc.addPage(); y = 16; }
-      doc.text(line, margin, y); y += size >= 14 ? 7 : 5;
-    }
-    y += gap;
-  };
-  for (const document of documents) {
-    if(document.blocks){y=appendExecutionPdf(doc,document,{margin});continue;}
-    doc.addPage(); y = 16;
-    write(document.type, true, 15); write(document.title, true, 12, 4);
-    for (const [label, value] of document.fields) {
-      if (y + 15 > bottom) { doc.addPage(); y = 16; }
-      write(label, true, 9, 0); write(value);
-    }
-  }
-  return documents.length ? y : null;
+ let y=null;
+ for(const document of kshmsReportDocuments(data))y=appendExecutionPdf(doc,document,{margin});
+ return y;
 }

@@ -4,6 +4,8 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Dette er samlet gjeldende status. PLAN.m
 
 ## Nyeste forbedring
 
+Alle KS/HMS-uttrekk får felles **rammer og tettere to-kolonne-oppsett**, med full bredde og fortsettelsesbokser for langtekst. Rutine/mal/lagret kontroll/vernerunde/risiko/egen RUH samt valgte KS-dokumenter i prosjektrapporten er utviklertestet med ekte PDF-motor. [Scope og QA](BOXED_PDF_20261009.md). Tidligere TEST OK beholdes; nytt layoutbevis/READY står øverst i CONTINUITY. Ingen Production eller ekte e-postsending. B/C før HR består.
+
 Egen **Last ned RUH-PDF** fra lagret sak med hele historikken og private bilder er READY på funksjonskode 7ed7eefa med grønn Core Safety/full critical build. Innlogget test ruh ga faktisk 4-siders PDF med begge hendelser og bevart lukking. Saken har 0 vedlegg; innlogget bildeprøve gjenstår. Ulagret tekst og endret/avslått tilgang sperrer uttrekk; andre vedlegg listes med tydelig originalfil-beskjed. [Scope/bevis](RUH_PDF_20261009.md), publisering i CONTINUITY og kort ny prøve i USER_TEST. Full historikk/bilder er avgrenset til egen RUH-PDF; prosjektrapportens tidligere sammendrag er uendret. Øvrige B/C-punkter består.
 
 HR-lesetilgang er presisert: medarbeideren selv, registrert nærmeste leder og firmaadmin; firmaadmin kan gi uttrykkelig, tilbakekallbar lesetilgang til andre per medarbeider. [Byggekontrakt](HR_SCOPE_20261008.md). Ingen faktisk HR-implementering/rettigheter ennå.

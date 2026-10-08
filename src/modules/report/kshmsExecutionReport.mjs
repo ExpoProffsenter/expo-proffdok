@@ -1,3 +1,4 @@
+import {appendBoxedPdf} from './kshmsBoxedPdf.mjs';
 import {formatDeviationDate,formatDeviationDateTime} from '../deviations/deviationDates.mjs';
 import {riskScore,riskBand} from '../kshms/kshmsExecutions.mjs';
 
@@ -21,25 +22,8 @@ export function executionReportDocument(row){
 }
 
 const clean=v=>String(v??'').normalize('NFC').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0E\uFE0F\u200D]/gu,'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'').replace(/→/g,'>').replace(/×/g,'x');
-export function appendExecutionPdf(doc,document,{margin=14,newPage=true,companyName='',logo=null}={}){
- const width=doc.internal.pageSize.getWidth()-margin*2,bottom=doc.internal.pageSize.getHeight()-20;let y=16;
- const page=()=>{doc.addPage();y=16;};if(newPage)page();
- const room=h=>{if(y+h>bottom)page();};
- const write=(v,bold=false,size=10,gap=2)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);doc.setTextColor(15,23,42);for(const line of doc.splitTextToSize(clean(v)||'Ikke fylt ut',width)){room(size>=14?7:5);doc.text(line,margin,y);y+=size>=14?7:5;}y+=gap;};
- if(logo){const properties=doc.getImageProperties(logo),w=Math.min(42,18*properties.width/properties.height),h=w*properties.height/properties.width;doc.addImage(logo,margin,y,w,h);y+=h+5;}
- if(companyName)write(companyName,true,11,4);
- write(document.type,true,16);write(document.title,true,12,4);
- const fields=rows=>{for(const [label,value]of rows){room(16);write(label,true,9,0);write(value);}};
- fields(document.fields);
- if(document.matrix){
-  room(95);write('5x5: sannsynlighet x konsekvens',true,11,3);const cell=12,startX=margin+14,top=y,a=document.matrix;
-  doc.setFontSize(9);doc.setFont('helvetica','normal');
-  for(let k=1;k<=5;k++)doc.text(String(k),startX+(k-.5)*cell,top,{align:'center'});
-  for(let s=5;s>=1;s--){const cy=top+3+(5-s)*cell;doc.setTextColor(15,23,42);doc.text(String(s),margin+5,cy+8);for(let k=1;k<=5;k++){const band=riskBand(s*k,a),color=band==='Lav'?[187,247,208]:band==='Moderat'?[254,240,138]:[254,202,202];doc.setFillColor(...color);doc.setDrawColor(255,255,255);doc.rect(startX+(k-1)*cell,cy,cell,cell,'FD');doc.text(String(s*k),startX+(k-.5)*cell,cy+8,{align:'center'});}}
-  y=top+70;write('Rader: sannsynlighet 5-1. Kolonner: konsekvens 1-5.');
- }
- for(const block of document.blocks){room(22);write(block.title,true,11,3);fields(block.fields);for(const [i,photo]of block.photos.entries()){const properties=doc.getImageProperties(photo.data);const w=Math.min(width,100,100*properties.width/properties.height),h=w*properties.height/properties.width;const caption=`Bilde ${i+1} til ${block.title}`;doc.setFont('helvetica','normal');doc.setFontSize(9);room(h+doc.splitTextToSize(clean(caption),width).length*5+5);write(caption,false,9,0);doc.addImage(photo.data,margin,y,w,h);y+=h+5;}}
- fields(document.closing);return y;
+export function appendExecutionPdf(doc,document,options={}){
+ return appendBoxedPdf(doc,document,{newPage:true,...options});
 }
 
 export async function downloadExecutionPdf({rpc,companyId,userId,editor,isCurrent,loadPdf=()=>import('https://esm.sh/jspdf@2.5.1'),loadLogo=loadCompanyLogo}){

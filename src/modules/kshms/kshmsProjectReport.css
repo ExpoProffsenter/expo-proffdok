@@ -4,4 +4,11 @@
 .ks-report-dialog .ks-report-option { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; cursor: pointer; }
 .ks-report-option input { flex: 0 0 auto; width: 20px; height: 20px; margin-top: 2px; }
 .ks-report-choice { margin: 16px 0; }
-@media print { .ks-report-choice, .ks-report-backdrop { display: none !important; } .ks-project-report-documents section { break-inside: auto; page-break-inside: auto; } .ks-report-field { break-inside: auto; } .ks-report-field dt { break-after: avoid; } }
+.ks-project-report-documents dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin: 8px 0 14px; }
+.ks-project-report-documents .ks-report-field { border: 1px solid #94a3b8; padding: 7px 9px; min-width: 0; }
+.ks-project-report-documents .ks-report-field dt { font-size: .85em; }
+.ks-project-report-documents .ks-report-field dd { margin: 3px 0 0; }
+.ks-project-report-documents .ks-report-wide { grid-column: 1 / -1; }
+.ks-project-report-documents h4 { border: 1px solid #94a3b8; background: #e8f0f6; padding: 6px 9px; margin-bottom: 6px; }
+@media (max-width: 600px) { .ks-project-report-documents dl { grid-template-columns: minmax(0,1fr); } }
+@media print { .ks-report-choice, .ks-report-backdrop { display: none !important; } .ks-project-report-documents section { break-inside: auto; page-break-inside: auto; } .ks-project-report-documents dl { grid-template-columns: repeat(2,minmax(0,1fr)); } .ks-report-field { break-inside: avoid; } .ks-report-field.ks-report-wide { break-inside: auto; } .ks-report-field dt { break-after: avoid; } }

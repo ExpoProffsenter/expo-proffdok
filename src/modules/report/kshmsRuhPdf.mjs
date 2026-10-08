@@ -1,4 +1,5 @@
-import {appendExecutionPdf,loadCompanyLogo,reportPhoto} from './kshmsExecutionReport.mjs';
+import {loadCompanyLogo,reportPhoto} from './kshmsExecutionReport.mjs';
+import {appendBoxedPdf} from './kshmsBoxedPdf.mjs';
 import {identityText} from '../kshms/kshmsPersonal.mjs';
 import {DEVIATION_STATUS,DEVIATION_CATEGORY} from '../kshms/kshmsDeviations.mjs';
 import {sameRunValue} from '../checklist/checklistRuns.mjs';
@@ -81,7 +82,7 @@ export async function downloadRuhPdf({expected,rpc,companyId,userId,projectId=nu
  const logo=profile.logoUrl?await loadLogo(profile.logoUrl):null;if(!isCurrent())return null;
  const final=await read();if(!final)return null;if(!sameRunValue(saved,final))throw Error('Historikk eller vedlegg er endret. Trykk «Oppdater sak» før PDF.');
  if(!await scope())return null;
- const doc=new JsPDF({unit:'mm',format:'a4',compress:true});appendExecutionPdf(doc,document,{newPage:false,companyName:profile.companyName,logo});
+ const doc=new JsPDF({unit:'mm',format:'a4',compress:true});appendBoxedPdf(doc,document,{companyName:profile.companyName,logo});
  const count=doc.internal.getNumberOfPages();for(let i=1;i<=count;i++){doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(71,85,105);doc.text(`${String(profile.companyName||'').slice(0,65)} · Expo ProffDok`,14,285);doc.text(`Side ${i} av ${count}`,196,285,{align:'right'});}
  if(!isCurrent())return null;doc.save(('RUH - '+document.title).replace(/[\\/:*?"<>|\x00-\x1f]/g,'-').slice(0,100)+'.pdf');return {logoMissing:Boolean(profile.logoUrl&&!logo)};
 }

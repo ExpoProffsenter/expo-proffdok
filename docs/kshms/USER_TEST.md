@@ -1,3 +1,15 @@
+# Kort ny prøve – rammer i alle KS/HMS-rapporter
+
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK beholdes, også «det fungerte» for RUH-uttrekket. Bare det nye oppsettet skal vurderes:
+
+1. **Prosjekt → Avvik/SJA/RUH → RUH → Lukkede → test ruh → Last ned RUH-PDF**: Se rammer og korte punkter i to kolonner. Hele historikken, lagret lukking og navn/tidspunkt skal være med. Samme testsak skal nå få plass på 2 sider.
+2. Prøv valgfritt **Last ned PDF** fra en eksisterende rutine, publisert sjekklistemal, lagret sjekklistekontroll eller **Vernerunde / kontroll → Åpne dokumentasjon** / risikovurdering. Samme stil skal brukes. Lange tekster bruker hele bredden; bilder og 5×5-matrise beholdes. Ingen ny signering/fullføring nødvendig.
+3. I prosjektets **Rapport**: Ta med ønskede KS/HMS-dokumenter og last ned PDF eller skriv ut. Valgte SJA/RUH/kontroll/risiko skal følge det nye oppsettet. Andre rapportdeler følger eksisterende layout.
+
+Utviklertester med ekte PDF-motor er grønne for alle dokumenttypene, samt eksisterende tilgang-/revisjons-/ulagret- og avbrytvern. Eksakt publisering og innlogget prøve dokumenteres i CONTINUITY.md. Ny layout er ikke Production-godkjenning. Mobil, flere kontoer og ekte privat RUH-bildeprøve gjenstår som før.
+
+---
+
 # Kort ny prøve – RUH-PDF med historikk og bilder
 
 Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Funksjonskode 7ed7eefa er READY med grønn Core Safety/full critical build. Innlogget skynettleser har lastet ned test ruh: 4 sider, begge historikkhendelser, lagret lukking og firmaprofil kontrollert. Denne saken har 0 vedlegg; innlogget bildeprøve gjenstår. Popupen er lukket; én fane. Tidligere TEST OK beholdes. Bare nytt RUH-uttrekk skal prøves:

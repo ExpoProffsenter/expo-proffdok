@@ -1,3 +1,11 @@
+## Felles innrammet KS/HMS-layout – ny avgrenset leveranse
+
+9. oktober 2026, Europe/Oslo. Miljømål BEGGE, bare feature/Sandbox publiseres. Kenneth presiserte at rammer/tettere oppsett gjelder alle KS/HMS-rapporter. [Scope, QA-kontrakt og bevis](BOXED_PDF_20261009.md). Felles PDF-renderer, to kolonner for korte felt og full bredde/fortsettelsesbokser for langtekst; tilsvarende scoped HTML/print. Alle lagrede verdier, status/bekreftelse, bilder og matrise beholdes. Fire relevante critical-checker og fire faktiske React/jsPDF-flyter PASS. Tidligere TEST OK beholdes; «det fungerte» er brukerbekreftelse på forrige RUH-uttrekk. Ny layout må fortsatt vurderes av bruker. Ingen nye HR-rettigheter, Production eller ekte e-postsending.
+
+Publisering og innlogget prøve føres inn etter eksakt head/READY/Core Safety-kontroll. Øvrige B/C-punkter består før HR.
+
+---
+
 ## Publisert RUH-PDF – READY og innlogget prøve
 
 Funksjonskode **7ed7eefae961aeb56e6a3fbcee3c5bc3b8a68e45**, tree **567f57ccdeb447b7dbded48a2e75305b73fe253f**, identisk med lokal testet commit 4da0b46f. GitHub-koblingen publiserte med expected-head ff2b2aae og uten force. Lokal originalcommit er bevart. Samlet branch-diff mot main er 203 filer; denne avgrensede leveransen er 11 filer.

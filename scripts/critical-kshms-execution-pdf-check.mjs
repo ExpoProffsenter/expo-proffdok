@@ -10,11 +10,14 @@ const documents=kshmsReportDocuments({sjas:[],ruhs:[],rounds:[round],risks:[risk
 const draft=executionReportDocument({...round,status:'draft'});assert(JSON.stringify(draft).includes('IKKE FULLFØRT'));assert(!JSON.stringify(draft).includes('Lagret fullfører'));assert.throws(()=>executionReportDocument({...round,kind:'unknown'}));
 assert.throws(()=>executionReportDocument({...round,content:{...round.content,answers:{[point]:{photos:[{data:'https://private.invalid/photo'}]}}}}),/kontrollbilde/);
 assert.notEqual(kshmsReportSelectionKey({rounds:[round]}),kshmsReportSelectionKey({rounds:[{...round,revision:4}]}));
-const prints=[],images=[],fills=[];let pages=1,saves=0;
-class FakePdf{constructor(){this.internal={pageSize:{getWidth:()=>210,getHeight:()=>297},getNumberOfPages:()=>pages};}addPage(){pages++;}setPage(){}setFont(){}setFontSize(){}setTextColor(){}setDrawColor(){}setFillColor(...c){fills.push(c);}rect(){}splitTextToSize(v){return String(v).match(/[\s\S]{1,90}/g)||[''];}text(v,x,y){prints.push({v,x,y});}getImageProperties(){return {width:700,height:400};}addImage(data,x,y,w,h){images.push({data,x,y,w,h});}save(){saves++;}}
+const prints=[],images=[],fills=[],boxes=[];let pages=1,saves=0;
+class FakePdf{constructor(){this.internal={pageSize:{getWidth:()=>210,getHeight:()=>297},getNumberOfPages:()=>pages};}addPage(){pages++;}setPage(){}setFont(){}setFontSize(){}setTextColor(){}setLineWidth(){}setDrawColor(){}setFillColor(...c){fills.push(c);}rect(x,y,w,h){boxes.push({x,y,w,h});}splitTextToSize(v){return String(v).match(/[\s\S]{1,90}/g)||[''];}text(v,x,y){prints.push({v,x,y});}getImageProperties(){return {width:700,height:400};}addImage(data,x,y,w,h){images.push({data,x,y,w,h});}save(){saves++;}}
 appendExecutionPdf(new FakePdf(),executionReportDocument({...round,content:{...round.content,review:'Lang kontrolltekst '.repeat(2500)+'QA SLUTT'}}));
 assert(pages>4);assert(prints.every(p=>p.y>=16&&p.y<=277));assert(prints.map(p=>p.v).join('').includes('QA SLUTT'));assert(images.every(p=>p.y+p.h<=277));
-appendExecutionPdf(new FakePdf(),executionReportDocument(risk));assert.equal(fills.length,25);assert(fills.some(c=>c[0]===187)&&fills.some(c=>c[0]===254));
+assert(boxes.every(b=>b.x>=14&&b.x+b.w<=196.001&&b.y>=16&&b.y+b.h<=277.001),'Frames stay inside printable page');
+assert(boxes.some(b=>b.x>100&&b.w<100),'Short fields use right-hand column');
+assert(boxes.some(b=>b.x===14&&b.w===182&&b.h>50),'Long text uses full-width framed continuation');
+appendExecutionPdf(new FakePdf(),executionReportDocument(risk));assert.equal(fills.filter(c=>c[0]===187||c[0]===254).length,25);assert(fills.some(c=>c[0]===187)&&fills.some(c=>c[0]===254));
 const context={company_id:company,user_id:user,enabled:true};
 for(const mode of ['ok','revoked','company','project','revision','profile','late-rpc','late-engine','logo-missing']){
  let active=true,logoCalls=0;const prior=saves;
