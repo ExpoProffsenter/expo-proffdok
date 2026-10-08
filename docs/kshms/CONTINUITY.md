@@ -1,3 +1,17 @@
+## Publisert SJA-PDF – READY, grønn QA og innlogget nedlasting
+
+Funksjonskode **f7128eff77de3950bfc59f228514069c6c4e3e5c**, tree **461df19cab19286b089d18d8d11461ce899ff541**, identisk med lokal testet commit **b19d54baa8c1260560ce7536b9485a1b826f74b1**. Publisert via GitHub-koblingen med expected SHA 5f19f330, uten force. Lokal originalcommit er bevart. 11 filer i denne leveransen; samlet branch mot main er 209 filer, fire nye scope-filer. Ingen nye backend-/navigasjonsfiler i siste diff.
+
+READY **dpl_HxxWA3HJQKobyEcTXhkZmUa9v5Qy**, eksakt funksjons-SHA på samme faste Sandbox-alias. PR Core Safety **37856299814**, jobb **Core safety + critical build 113581173376**, completed/success (inkludert full critical build). Lokal full Sandbox critical/build exit 0. Branchbinding EXPO_BACKEND_TARGET=sandbox, target preview, gitBranch feat-kshms-foundation kontrollert uten dekryptering. Main uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**; PR #216 open/draft.
+
+Innlogget skynettleser på publisert funksjonskode: **Meny → KS/HMS → SJA → Test sja → Last ned PDF**. Lagret analyse **b0f0d6c2-c888-44d7-8b6e-60513aac1f48**, revisjon **2**, signert. Faktisk PDF **1 side / 33612 byte**. MuPDF-render og tekst kontrollert: rammer/tokolonner, hele analysen, arbeidstrinn, Tom/Ringside/bidrag, Kenneth Demo som lagret prosjektleder/signatur og **07.10.2026 kl. 23:47:45**, signert bekreftelse, ordre 78555 og arbeidsdato 12.10.2026. Denne eksisterende analysen har ingen valgte rutineutgaver og ingen prosjektkobling; begge er korrekt merket. Rutineutgaver og låst prosjekt er dekket av de faktiske lokale React/PDF-prøvene, ikke av denne innloggede saken.
+
+Nedlasting viste «PDF er laget fra den lagrede dokumentasjonen». Lagret signatur/status stod uendret etterpå. Ingen lagring, ny signatur eller andre dataendringer. Popup lukket; inventar bekrefter kun fane 3 på samme faste Preview, innlogging beholdt etter deploy. Innlogget utkast-/mobil-/flere-konto-prøve gjenstår; lokale negative scenarioer er dekket. Etterfølgende dokumentcommit endrer bare bevisnotater.
+
+Tidligere TEST OK beholdes. Ny kort SJA-PDF-prøve står først i USER_TEST. Øvrige B/C, samlet tilsynsuttrekk, vedlegg/underskjema og påminnelser/kilder består før HR. Ingen Production, main/demo-merge eller ekte e-postsending. [Scope og QA](SJA_PDF_20261009.md).
+
+---
+
 ## Egen lagret SJA-PDF – ny C-leveranse
 
 9. oktober 2026, Europe/Oslo. Miljømål BEGGE, først feature/Sandbox. Fra head 5f19f3304d7eb481ccbebfbb2ef07a2a783eb78b, main uendret 155f6c4ac01f126c1db0c65da385cfd9305587d5. [Scope/kontrakt/bevis](SJA_PDF_20261009.md). Lagret SJA får egen PDF-knapp, felles rammer, full analyse/lagrede rutiner og historisk signatur. Utkast merkes. Dobbel serverlesing sperrer ny revisjon/endret innhold/tilgang; sent svar etter redigering/lukking/firma-/brukerbytte avbrytes. Ingen ny DDL, tilgang, lagring eller signering.

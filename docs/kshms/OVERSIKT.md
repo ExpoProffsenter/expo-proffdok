@@ -4,7 +4,7 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Dette er samlet gjeldende status. PLAN.m
 
 ## Nyeste forbedring
 
-Egen **Last ned PDF** fra lagret SJA er implementert og utviklertestet med felles rammer, full analyse, deltakere, rutineutgaver og lagret signatur. Utkast er tydelig merket. Ulagret/nyere innhold, endret tilgang og sent svar sperres. [Scope og QA](SJA_PDF_20261009.md). Publiseringsbevis føres i CONTINUITY; ny kort prøve i USER_TEST. Tidligere TEST OK og øvrige B/C-punkter før HR består.
+Egen **Last ned PDF** fra lagret SJA er implementert og utviklertestet med felles rammer, full analyse, deltakere, rutineutgaver og lagret signatur. Utkast er tydelig merket. Ulagret/nyere innhold, endret tilgang og sent svar sperres. [Scope og QA](SJA_PDF_20261009.md). Funksjonskode f7128eff er READY med grønn Core Safety/full critical build. Innlogget Test sja gir én side med full analyse og bevart signatur; popup lukket, én fane. Eksakt bevis i CONTINUITY; ny kort prøve i USER_TEST. Tidligere TEST OK og øvrige B/C-punkter før HR består.
 
 Alle KS/HMS-uttrekk har nå felles **rammer og tettere to-kolonne-oppsett**, med full bredde og fortsettelsesbokser for langtekst. Rutine/mal/lagret kontroll/vernerunde/risiko/egen RUH samt valgte KS-dokumenter i prosjektrapporten er utviklertestet med ekte PDF-motor. [Scope og QA](BOXED_PDF_20261009.md). Funksjonskode 709bf7d4 er READY med grønn Core Safety/full critical build. Innlogget test ruh gir 2 sider og test vernerunde 1 side, med rammer og dokumentasjon kontrollert. Tidligere TEST OK beholdes; eksakt bevis står øverst i CONTINUITY. Ingen Production eller ekte e-postsending. B/C før HR består.
 

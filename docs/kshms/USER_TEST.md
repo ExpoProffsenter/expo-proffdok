@@ -1,12 +1,12 @@
 ## Ny kort prøve: egen SJA-PDF
 
-Bruk samme Sandbox Preview og eksisterende innlogging. Tidligere TEST OK skal ikke gjentas.
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe) og eksisterende innlogging. Funksjonskode f7128eff er READY med grønn Core Safety/full critical build. Innlogget **Test sja** er faktisk lastet ned og visuelt kontrollert: én side, rammer, full analyse og bevart signatur. Popup lukket, én fane. Tidligere TEST OK skal ikke gjentas.
 
 1. Åpne **KS/HMS → SJA**, eller prosjektets **Avvik/SJA/RUH → SJA – sikker jobbanalyse**. Åpne en allerede lagret analyse.
 2. Trykk **Last ned PDF**. PDF skal ha rammer, analyse/arbeidstrinn/deltakere, lagrede rutineutgaver og riktig status. Signert SJA viser lagret prosjektleders signatur/tid; utkast viser **UTKAST – IKKE SIGNERT**.
 3. I et utkast: skriv en endring uten å lagre. PDF-knappen skal være sperret. Lukk når du er ferdig; lokal kladd skal bevares. Nedlasting skal aldri signere eller fullføre noe.
 
-Utvikler har kjørt permanent PDF-check, tre faktiske SJA/React/jsPDF-uttrekk, eksisterende SJA/parent-flyter, fem eksisterende rutine-/mal-/kontroll-PDF-flyter og full Sandbox critical/build: PASS. Innlogget nettleserbevis føres i CONTINUITY. Mobil og flere ekte brukere er fortsatt egne åpne prøver. Ingen Production eller e-postsending er godkjent.
+Utvikler har kjørt permanent PDF-check, tre faktiske SJA/React/jsPDF-uttrekk, eksisterende SJA/parent-flyter, fem eksisterende rutine-/mal-/kontroll-PDF-flyter og full Sandbox critical/build: PASS. Eksakt innlogget nettleserbevis står i CONTINUITY. Denne prøven dekker en eksisterende signert analyse uten prosjekt/rutineutgaver; lokal React/PDF dekker også utkast, rutineutgaver og låst prosjekt. Mobil og flere ekte brukere er fortsatt egne åpne prøver. Ingen Production eller e-postsending er godkjent.
 
 ---
 
