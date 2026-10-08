@@ -1,3 +1,15 @@
+## Ny kort prøve: egen SJA-PDF
+
+Bruk samme Sandbox Preview og eksisterende innlogging. Tidligere TEST OK skal ikke gjentas.
+
+1. Åpne **KS/HMS → SJA**, eller prosjektets **Avvik/SJA/RUH → SJA – sikker jobbanalyse**. Åpne en allerede lagret analyse.
+2. Trykk **Last ned PDF**. PDF skal ha rammer, analyse/arbeidstrinn/deltakere, lagrede rutineutgaver og riktig status. Signert SJA viser lagret prosjektleders signatur/tid; utkast viser **UTKAST – IKKE SIGNERT**.
+3. I et utkast: skriv en endring uten å lagre. PDF-knappen skal være sperret. Lukk når du er ferdig; lokal kladd skal bevares. Nedlasting skal aldri signere eller fullføre noe.
+
+Utvikler har kjørt permanent PDF-check, tre faktiske SJA/React/jsPDF-uttrekk, eksisterende SJA/parent-flyter, fem eksisterende rutine-/mal-/kontroll-PDF-flyter og full Sandbox critical/build: PASS. Innlogget nettleserbevis føres i CONTINUITY. Mobil og flere ekte brukere er fortsatt egne åpne prøver. Ingen Production eller e-postsending er godkjent.
+
+---
+
 # Kort ny prøve – rammer i alle KS/HMS-rapporter
 
 Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Funksjonskode 709bf7d4 er READY med grønn Core Safety/full critical build. Innlogget skyfane har faktisk lastet ned test ruh (2 sider) og test vernerunde (1 side); rammer og lagret dokumentasjon er kontrollert. Popupene er lukket, én fane. Tidligere TEST OK beholdes, også «det fungerte» for RUH-uttrekket. Bare det nye oppsettet skal vurderes:

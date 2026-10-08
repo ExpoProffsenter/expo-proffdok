@@ -26,6 +26,7 @@ const projectName=id=>id===projectOne?'QA prosjekt én':'QA prosjekt to';
 let mode = '', detailDeferred = null, stateDeferred = null, stateReads = 0;
 const detail = (id, scope = context) => ({ context: scope, sja: structuredClone(rows.get(id) || null) });
 window.__rpc = async (name, args) => {
+  if (name === 'kshms_project_report' || name === 'kshms_project_execution_report') return { context: { ...context, project_id: args.p_project_id }, choices: { sjas: [...rows.values()].filter(row => row.project_id === args.p_project_id).map(row => ({ id: row.id, status: row.status })), ruhs: [], rounds: [], risks: [] } };
   if (name === 'kshms_job_choices') return { context: { ...context, company_id: args.p_company_id }, projects: [], project_total: 0, routines: [] };
   if (name === 'kshms_sja_state' || name === 'kshms_project_sja_state') {
     stateReads++;
@@ -52,7 +53,7 @@ window.__rpc = async (name, args) => {
 };
 window.eval((Array.isArray(bundled) ? bundled[0] : bundled).output.find(item => item.type === 'chunk').code);
 const act = window.__act, doc = window.document;
-const button = text => [...doc.querySelectorAll('button')].find(node => node.textContent.trim() === text);
+const button = text => [...doc.querySelectorAll('button')].find(node => (node.getAttribute('aria-label') || node.textContent.trim()) === text);
 const field = key => doc.querySelector(`[data-sja-field="${key}"]`);
 const click = async node => { assert(node, 'Missing button'); assert(!node.matches(':disabled'), node.textContent); await act(async () => node.click()); };
 const write = async (key, value) => {

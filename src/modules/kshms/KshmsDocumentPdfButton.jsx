@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {kshmsRpc} from './kshmsAccess.js';
 import {downloadDocumentPdf} from '../report/kshmsDocumentPdf.mjs';
+import {downloadSjaPdf} from '../report/kshmsSjaPdf.mjs';
 
 export default function KshmsDocumentPdfButton({kind,row,companyId,userId,projectId=null,disabled=false,active=true,resolveFileUrl}){
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
@@ -12,9 +13,9 @@ export default function KshmsDocumentPdfButton({kind,row,companyId,userId,projec
   const scope=owner.current,snapshot=fingerprint;
   const current=()=>scope?.active&&owner.current===scope&&latest.current===snapshot;
   locked.current=true;setBusy(true);setError('');setNotice('');
-  try{const result=await downloadDocumentPdf({kind,expected:row,companyId,userId,projectId,rpc:kshmsRpc,isCurrent:current,resolveFileUrl});if(current()&&result)setNotice(result.logoMissing?'PDF er laget med firmanavn. Logoen kunne ikke hentes.':'PDF er laget fra den lagrede dokumentasjonen.');}
+  try{const exportPdf=kind==='sja'?downloadSjaPdf:downloadDocumentPdf;const result=await exportPdf({kind,expected:row,companyId,userId,projectId,rpc:kshmsRpc,isCurrent:current,resolveFileUrl});if(current()&&result)setNotice(result.logoMissing?'PDF er laget med firmanavn. Logoen kunne ikke hentes.':'PDF er laget fra den lagrede dokumentasjonen.');}
   catch(cause){if(current())setError(cause.message);}
   finally{locked.current=false;if(scope?.active&&owner.current===scope)setBusy(false);}
  };
- return <div className="ks-pdf-action"><button type="button" className="secondary" disabled={disabled||busy||!active} onClick={download}>{busy?'Lager PDF …':'Last ned PDF'}</button>{disabled&&<p className="ks-field-hint">Lagre endringene først, eller åpne den lagrede kontrollen.</p>}{error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}</div>;
+ return <div className="ks-pdf-action"><button type="button" className="secondary" disabled={disabled||busy||!active} onClick={download}>{busy?'Lager PDF …':'Last ned PDF'}</button>{disabled&&<p className="ks-field-hint">{kind==='sja'?'Lagre utkastet først, eller åpne den lagrede SJA-en.':'Lagre endringene først, eller åpne den lagrede kontrollen.'}</p>}{error&&<p role="alert" className="ks-error">{error}</p>}{notice&&<p role="status" className="ks-notice">{notice}</p>}</div>;
 }

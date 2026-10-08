@@ -1,3 +1,11 @@
+## Egen lagret SJA-PDF – ny C-leveranse
+
+9. oktober 2026, Europe/Oslo. Miljømål BEGGE, først feature/Sandbox. Fra head 5f19f3304d7eb481ccbebfbb2ef07a2a783eb78b, main uendret 155f6c4ac01f126c1db0c65da385cfd9305587d5. [Scope/kontrakt/bevis](SJA_PDF_20261009.md). Lagret SJA får egen PDF-knapp, felles rammer, full analyse/lagrede rutiner og historisk signatur. Utkast merkes. Dobbel serverlesing sperrer ny revisjon/endret innhold/tilgang; sent svar etter redigering/lukking/firma-/brukerbytte avbrytes. Ingen ny DDL, tilgang, lagring eller signering.
+
+Permanent check, faktisk SJA-PDF React, eksisterende SJA/parent React og fem eksisterende dokument-PDF-flyter PASS. Full Sandbox critical/build PASS exit 0. Tre faktiske QA-PDF-er / fire sider visuelt kontrollert. Eldre prosjekt-SJA-test bruker nå tilgjengelig navn og simulerte read-only antalls-RPC-er for allerede levert sammenfoldet oversikt; verneassertions beholdes. Publiserings-/innlogget bevis følger etter eksakt kontroll. Tidligere TEST OK beholdes. Ingen Production, main/demo-merge, ekte e-post eller HR-implementering. Øvrige B/C før HR består.
+
+---
+
 ## Publisert felles KS/HMS-rammer – READY og faktisk nedlasting
 
 Funksjonskode **709bf7d44bb0341a166299e8eab02a79b589afca**, tree **b04bdb0458fda7d42c820bd9add397afade6d157**, identisk med lokal testet commit **8a05bf53624b9fb6479d3c724ef2f3e16809f255**. GitHub-koblingen publiserte med expected head bf5d3449 og uten force. Denne leveransen er 17 filer; samlet branch mot main er 205 filer, kun to nye scope-filer. Lokal originalcommit er bevart.

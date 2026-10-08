@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import './critical-kshms-sja-pdf-check.mjs';
 import fs from 'node:fs';
 import { SJA_HINTS, SJA_STATEMENT, SJA_SUGGESTIONS, appendSjaSuggestion, blankSja, newSjaRequests, persistSjaDraft, readSjaDraft, sameSjaContent, saveSja, sjaContent, sjaDraftKey, sjaSigningIssues } from '../src/modules/kshms/kshmsSja.mjs';
 import { routineNumber,routineReference } from '../src/modules/kshms/kshmsJobChoices.mjs';
