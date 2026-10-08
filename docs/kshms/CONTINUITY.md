@@ -1,3 +1,15 @@
+# Gjeldende fortsettelsespunkt – gjenopptatt kontroll-/risikoleveranse
+
+Arbeidet fra avbrutt chat 8. oktober er gjenfunnet. Den opprinnelige vernerunde-/5×5-leveransen nådde Preview på 829ae353; etterfølgende bevis er på feature-head 65f62e0b. Rapportens TEST OK kl. 14:48 og tidligere godkjente delprøver består. Ingen av disse prøves på nytt uten feil.
+
+En påvist kladdfeil er rettet: etter uttrykkelig valg av kollegaens lagrede utgave ryddes den forkastede lokale kladden, så gjenåpning beholder servervalget. Nye meldinger ryddes ved ny åpning. Matrise-/malhistorikk-/Avbryt-vern fra siste publisering er bevart. Ny faktisk React-remount/servervalg-regresjon, eksisterende SJA-parent/sjekklistebygger, 54 rollback SQL-kontroller og full Sandbox critical/build PASS. Migrasjon 20261008131207 og dens eksakte SQL er uendret; ingen ny DDL.
+
+Publisering av den avgrensede kladdrettelsen verifiseres og føres i EXECUTIONS_20261008.md. Samme faste Preview beholdes; main 155f6c4a og PR #216 draft. Én eksisterende skynettleserfane er gjenbrukt, ingen nye faner/reset; faktisk visning når innloggingssiden, så ingen ny innlogget skjerm-/mobil-PASS hevdes. Ikke gjenta tidligere blokkerte credential-kall. Neste brukerhandling er bare vernerunde-/risikoprøven øverst i USER_TEST.md. Rapport-/vedleggsuttrekk, fristpåminnelser og separat HR følger fortsatt avtalt minimum før Ringside-pilot. Ingen Production-godkjenning.
+
+---
+
+## Opprinnelig publiseringsbevis fra forrige chat
+
 # Fortsettelsespunkt – vernerunder/kontroller og 5×5-risiko READY
 
 Kenneths rapport-TEST OK 8. oktober 2026 kl. 14:48 Europe/Oslo er registrert. Neste tidligere avtalte utførelsesdel er bygget: KS/HMS har Vernerunder/kontroller og Risikovurdering, med eller uten prosjekt, lokal kladd, serverlagring, egen fullføring og bevart historikk. Kontrollavvik går til eksisterende Avvik/RUH med ansvar/frister; fullføring lukker dem ikke. Risiko har blanke scorer, firmavurderte grenser, før/etter-matrise og planlagt/kontrollert effekt med uttrykkelig beslutning.

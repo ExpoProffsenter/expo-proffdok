@@ -1,3 +1,9 @@
+## Gjeldende utførelsesleveranse 8. oktober 2026
+
+Rapportprøven er Kenneths TEST OK kl. 14:48. Vernerunder/selvstendige kontroller og 5×5-risikovurdering er gjenopptatt fra bevart arbeidsmappe, bygget og utviklertestet. 54 rollback SQL-kontroller og faktisk React-flyt PASS. Sluttkontroll/publiseringsbevis: EXECUTIONS_20261008.md. USER_TEST.md starter med bare den nye kontroll-/risikoprøven. Videre utførelse før separat HR, minimum før Ringside-pilot og ingen Production-release før egen godkjenning består. Eldre status nedenfor er historikk.
+
+---
+
 ## SJA/RUH i prosjektrapporten – autorisert og bygget 8. oktober 2026
 
 «Kjør» kl. 13:38 avklarer prioriteringen: valgfri prosjektrapportdel for SJA/RUH før videre utførelsesarbeid. Valgdialog, lesende uttrekk med nye kontroller, identiske rapportfelter, PDF/utskrift og norsk dato er bygget. 34 rollback SQL-kontroller og 5 faktiske PDF-/3 utskriftsprøver PASS. Lang PDF på 12 sider er kontrollert visuelt. Samme Preview er READY på funksjonskode f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c; Core safety + critical build completed/success. Publiseringsbevis står i PROJECT_REPORT_20261008.md. Se PROJECT_REPORT_20261008.md og ny, kort brukerprøve i USER_TEST.md. Rapporttillegget er ikke Kenneths TEST OK eller Production-godkjenning ennå. Tidligere delprøver skal ikke gjentas.

@@ -38,3 +38,12 @@ Faglig veiledning: Arbeidstilsynets https://www.arbeidstilsynet.no/hms/risikovur
 Funksjonskode `829ae35315d5e09d4f4e18d7f231f4a2826b8915`, tree `50421488d1498c3045f1d68f56b5efd62c2043d0`: samme faste Preview er READY på `dpl_6nK5QuRTshRSYX5ZAbd3MMPNYBAg`. Core safety + critical build `113342140090` er completed/success på samme SHA. Branch-spesifikk `EXPO_BACKEND_TARGET=sandbox` er kontrollert på nytt (target preview, branch feat-kshms-foundation).
 
 Fast brukeradresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe. Lokal og remote kode-tree er eksakt like. PR #216 er open/draft med main 155f6c4ac01f126c1db0c65da385cfd9305587d5 som uendret base. Ingen merge eller Production-endring. Etterfølgende dokumentcommit registrerer bare dette beviset; app-/SQL-koden endres ikke. Relevant ny bruker-TEST OK gjenstår.
+
+
+## Gjenopptakelse etter avbrutt chat
+
+Den opprinnelige publiseringen 829ae353 nådde samme Preview under gjenopptakelsen. Leveransen bygges derfor ikke på nytt. Avbrutt arbeid er bevart; videre app-delta gjelder rydding av forkastet lokal kladd ved uttrykkelig valg av kollegaens lagrede utgave og nullstilling av gamle statusmeldinger ved åpning. Ny faktisk React-regresjon viser at servervalget blir stående etter lukking/gjenåpning. Full remount med lokal kladd, eksisterende SJA-parent og sjekklistebygger er også prøvd og PASS. Sluttkjøringen har ingen act-advarsler.
+
+Gjenopptakelsen bekreftet 54 faktiske rollback SQL-assertioner PASS, full EXPO_BACKEND_TARGET=sandbox npm run build PASS og uendret migrasjon. Anvendt SQL og fil har identisk MD5 45ebbf72d435a895a8fc3ca24fed38f1. Ingen ny SQL kjøres ved denne kladdrettelsen. Hjelpen forklarer at kontrollbilder ligger i kontrolldokumentasjonen og at kontroll-/risiko-PDF følger senere. Rapport-TEST OK kl. 14:48 består.
+
+Skynettleserens inventar har én eksisterende about:blank-fane som er gjenbrukt; ingen nye faner eller nettleserreset er gjort. Eventuell faktisk innlogging/skjermprøve registreres separat og hevdes ikke av React-/databaseprøven. Endelig rettelses-SHA og publiseringsstatus tilføyes etter kontroll.
