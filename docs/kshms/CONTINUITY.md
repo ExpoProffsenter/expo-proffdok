@@ -1,3 +1,28 @@
+## Publisert vedleggspakke – READY, grønn QA og innlogget ZIP
+
+Funksjonskode **42a38e91f38594a0b8ece947157481c77af93e91**, eksakt testet/publisert tree **96ed970ef2ab78cb1a610b0f53effe32e35fd719**, identisk med lokal testcommit **dd88b7aab0d203efca653c46971c1451cbce854b**. Alle 17 publiserte blobber/tree hashkontrollert via GitHub-kobling, expected-head c5e128c6 og uten force. Faktisk publisert git-objekt er hentet/hashkontrollert lokalt; testcommit bevart på refs/codex/local-zip-tested. Samlet branch mot main: 219 filer; denne funksjonsleveransen er 17 avgrensede filer (fire nye). Ingen SQL/backend/global navigasjon/konfigurasjon. Etterfølgende dokument-/skjermbevis endrer ingen funksjonskode.
+
+READY **dpl_HY7SG3fjVEMjYJtV4JR8nkYnMvKa**, eksakt SHA og fast Sandbox-alias. **PR Core Safety 37860831491**, jobb **Core safety + critical build 113595879925**, completed/success; scope isolation og full critical build success. Lokal full Sandbox critical/build, PR-scope og release-docs-guard PASS. Permanent ZIP-check og faktisk React/ZIP-flyt PASS; eksisterende samle-PDF React/Storage/jsPDF også PASS etter felles leser. PR #216 open/draft, faktisk main kontrollert uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Eksisterende branchbinding EXPO_BACKEND_TARGET=sandbox beholdt. Ingen main/demo/Production eller ekte e-post; KS/HMS-utsending forblir deaktivert.
+
+### Faktisk skynettleser og bytebevis
+
+Én eksisterende fane (4), samme faste URL og bevart demo@expo-proffdok.no-økt i Expo Proffsenter etter reload; ingen ny innlogging. Dokumentuttrekk startet med null automatisk valg. **Voldsløkka vernerunde 1**, dokument **21401807-1827-425f-858f-a3431737a611**, revisjon **2**, ga en vedleggsliste med de to allerede lagrede JPEG-bildene. Før egen bekreftelse var ZIP-knappen sperret. Faktisk ZIP-nedlasting: **381240 byte**, SHA-256 **eb521184f167d1e2acbc78fd1ef4199fde7a642a63e939972fe3fe8eb9e9b6ec**, arkiv-ID **1a006222-7bee-40f4-b5df-e4a01b69b98d**, tidspunkt **09.10.2026 kl. 01:43:24 Europe/Oslo**. Uavhengig Python zipfile/Pillow bekrefter CRC, tre ZIP-filer (to JPEG + manifest), to gyldige 960×1280 JPEG-er, riktig dokument/revisjon/punkt/byte og begge SHA-256. Ingen andre dokumenter, rapport-PDF eller Storage-/tokenlenker i manifest. [Skjermbilde etter nedlasting](attachment-archive-proof.jpg).
+
+| Lagret bilde-ID | Punkt | Byte | SHA-256 |
+|---|---|---:|---|
+| 464db59a-84e4-440b-a753-0953d06c37e9 | Er underlaget sjekket og funnet tilfredstillende? | 178896 | ed23773ed5d339053cb0d9216a7e0fbc5b0a74c61e565dbd6f0294648c0d5679 |
+| 54c7f57e-deab-4355-9775-c60d6a20e023 | Fall | 200131 | 18b6859fe94d7c179c588b24c84b012914d50580326c7c372f872b07b0e9c55a |
+
+Omfangsendring tømte vedleggslisten og bekreftelsen; tomt omfang sperret ZIP selv etter ny liste/bekreftelse. **Fjern** Voldsløkka ga null valgt og sperret forhåndsvisning. Valgt eksisterende **test ruh** (e3b21d35-9acb-4a1f-b4db-842a46f44f3e) har 0 vedlegg: eksplisitt tom-liste-beskjed, deaktivert bekreftelse og ZIP. Oppdatering nullstilte dokumentvalget. Faktisk **Hjelp → KS/HMS – samlet dokumentuttrekk** viste de nye ZIP-trinnene, grenser, manifest og avgrensning.
+
+Relevant eksisterende samle-PDF-regresjon: bare **Test sja** revisjon 2 og **Voldsløkka vernerunde 1** revisjon 2 ga **5 sider / 419287 byte**, SHA-256 **44e72f6dfd3ee9d3bea9eb36b74bb7ea74193903e5d93ff1f3e2160d6670bb7f**. Rendret og visuelt kontrollert: full SJA, bevart Kenneth Demo-signatur **07.10.2026 kl. 23:47:45**, begge vernerundebilder/fullføring, rammer og riktig to-dokumenters manifest. Ikke-valgt RUH-ID er borte. Ingen eksisterende lagring, signering, lukking, fullføring eller saksendring utført. Alle popup lukket. Til slutt Dokumentuttrekk med tømt dokumentvalg/omfang; én fane beholdt for brukerprøven.
+
+### Handoff og gjenstående
+
+Kenneths **TEST OK 9. oktober kl. 01:29 på c5e128c6** gjelder forrige samle-PDF. Ny ZIP-del venter på sin avgrensede brukerprøve i USER_TEST.md. Faktisk innlogget privat RUH-original/prosjektkontrollvedlegg var ikke tilgjengelig i eksisterende testdata og er ikke gradert PASS; lokale Storage-scenariotester dekker dem. Mobil/flere ekte brukere, øvrig vedleggsdekning, versjonerte underskjema, påminnelser og kildeoppdatering består før HR. Ingen testdokumenter er opprettet for å fylle hull. HJELP, architecture og README er oppdatert også for ZIP. Tidligere TEST OK og HR_SCOPE_20261008.md beholdes.
+
+---
+
 ## Vedleggspakke – neste avgrensede B/C-leveranse
 
 Kenneth ga **TEST OK 9. oktober 2026 kl. 01:29 Europe/Oslo** for samlet dokument-/tilsynsuttrekk på publisert head `c5e128c6fde2d0fb1368accb78a9414c05f0c81d`. HJELP, architecture og README var oppdatert ved godkjenningen. Tidligere TEST OK beholdes, inkludert egen SJA-PDF kl. 00:59. Dette er ingen Production-/merge-/e-postgodkjenning.

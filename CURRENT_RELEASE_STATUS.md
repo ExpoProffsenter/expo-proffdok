@@ -1,8 +1,8 @@
-## KS/HMS: vedleggspakke – feature/Sandbox under QA
+## KS/HMS: vedleggspakke – feature/Sandbox READY
 
 Kenneth ga **TEST OK 9. oktober 2026 kl. 01:29 Europe/Oslo** for samlet dokument-/tilsynsuttrekk på publisert head `c5e128c6fde2d0fb1368accb78a9414c05f0c81d`. HJELP, architecture og README var oppdatert ved godkjenningen. Tidligere TEST OK beholdes, inkludert egen SJA-PDF kl. 00:59. Dette er ingen Production-/merge-/e-postgodkjenning.
 
-Valgt vedleggspakke er bygget og lokale permanente/React ZIP-tester PASS. Full build og publiserings-/nettleserbevis følger i CONTINUITY. ZIP har egen ny brukerprøve. PR #216 forblir draft; samme Preview, main og Production urørt. [Scope](docs/kshms/ATTACHMENT_ARCHIVE_20261009.md).
+Funksjonskode **42a38e91** / tree **96ed970e**, READY **dpl_HY7SG3fjVEMjYJtV4JR8nkYnMvKa**, Core Safety **37860831491** / full critical build **113595879925** success. Innlogget ZIP med to allerede lagrede Voldsløkka-bilder + manifest (381240 byte) PASS: CRC, JPEG-er, riktige dokument/revisjon/punkt og SHA-256 kontrollert. Bekreftelse, tomt omfang, nullstilling og RUH uten vedlegg PASS. Publisert HJELP kontrollert. Eksisterende samle-PDF med SJA/signatur og begge vernerundebilder fortsatt PASS (5 sider). Én fane, alle popup lukket, ingen lagrede data mutert. Eksakt bevis/handoff i CONTINUITY. Ny ZIP-TEST OK, private RUH-originaler/prosjektkontrollvedlegg innlogget, mobil/flere brukere gjenstår. ZIP har egen ny brukerprøve. PR #216 forblir draft; samme Preview, main og Production urørt. [Scope](docs/kshms/ATTACHMENT_ARCHIVE_20261009.md).
 
 ---
 

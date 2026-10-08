@@ -1,3 +1,9 @@
+## Publisert ZIP-del – READY
+
+Funksjonskode **42a38e91** / tree **96ed970e**, READY **dpl_HY7SG3fjVEMjYJtV4JR8nkYnMvKa**, Core Safety **37860831491** / full critical build **113595879925** success. Innlogget ZIP med to allerede lagrede Voldsløkka-bilder + manifest (381240 byte) PASS: CRC, JPEG-er, riktige dokument/revisjon/punkt og SHA-256 kontrollert. Bekreftelse, tomt omfang, nullstilling og RUH uten vedlegg PASS. Publisert HJELP kontrollert. Eksisterende samle-PDF med SJA/signatur og begge vernerundebilder fortsatt PASS (5 sider). Én fane, alle popup lukket, ingen lagrede data mutert. Eksakt bevis/handoff i CONTINUITY. Ny ZIP-TEST OK, private RUH-originaler/prosjektkontrollvedlegg innlogget, mobil/flere brukere gjenstår.
+
+---
+
 # Valgt KS/HMS-vedleggspakke – 9. oktober 2026
 
 Miljømål **BEGGE**, først feature/Sandbox; baseline c5e128c6, faktisk main 155f6c4ac01f126c1db0c65da385cfd9305587d5, draft PR #216. Samlet PDF er Kenneths TEST OK kl. 01:29. Denne ZIP-delen er neste avgrensede B/C-leveranse; egen TEST OK gjenstår. Samme faste Preview/innlogging.
