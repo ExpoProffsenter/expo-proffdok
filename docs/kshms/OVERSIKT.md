@@ -6,7 +6,7 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Dette er samlet gjeldende status. PLAN.m
 
 Vi har levert håndbokfundamentet og rutinebiblioteket i Sandbox Preview. Utførelsesdelen er langt på vei bygget. Varsling og rapporter er delvis levert. Individuell HR og full Ringside-pilot er ikke startet. Hele KS/HMS-modulen er ikke ferdig eller satt i produksjon.
 
-[Samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). PR #216 er fortsatt draft på feat-kshms-foundation. Kontroll-/risiko-PDF med bilder, matrise, utkastmerking og firmaprofil er implementert og utviklertestet. Ny leveranse publiseres til samme feature; eksakt SHA/CI/READY står i CONTINUITY.md. Main er 155f6c4ac01f126c1db0c65da385cfd9305587d5 ved siste kontroll. Godkjenningen kl. 22:09 gjelder dokumentasjonsendring til feature-branchen, ikke Production-release.
+[Samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). PR #216 er fortsatt draft på feat-kshms-foundation. Kontroll-/risiko-PDF med bilder, matrise, utkastmerking og firmaprofil er implementert og utviklertestet. Funksjonskode c6dc21d5 er READY på samme feature/Sandbox, med grønn Core Safety/critical build. Eksakt publiseringsbevis står i CONTINUITY.md. Main er 155f6c4ac01f126c1db0c65da385cfd9305587d5 ved siste kontroll. Godkjenningen kl. 22:09 gjelder dokumentasjonsendring til feature-branchen, ikke Production-release.
 
 ## Planen A–E
 

@@ -1,6 +1,6 @@
 # Kort ny prøve – PDF for kontroller og risiko
 
-Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK består. Ny kode/deploystatus står i CONTINUITY.md. Prøv bare PDF-tillegget:
+Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK består. Ny funksjonskode c6dc21d5 er READY med grønn Core Safety/critical build; bevis står i CONTINUITY.md. Prøv bare PDF-tillegget:
 
 1. Åpne en lagret **vernerunde/kontroll** og trykk **Last ned PDF**. Se firmanavn/logo, kontrollsvar, lagrede bilder og navn/tidspunkt for egen fullføring. Har du et utkast, skal det vise **UNDER ARBEID – IKKE FULLFØRT**. Etter ulagret endring skal PDF være sperret til du lagrer.
 2. Åpne en lagret **5×5-risikovurdering → Last ned PDF**. Se farget matrise, før/etter, tiltak, ansvarlig/frister og beslutning. Forventet effekt skal ikke fremstilles som kontrollert eller akseptert.
