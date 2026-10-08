@@ -8,7 +8,7 @@ Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`. Prod
 
 ## Aktiv branch og Preview
 
-Branch `feat-kshms-foundation`, [PR #216](https://github.com/ExpoProffsenter/expo-proffdok/pull/216), åpen draft. Fast [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe), branch-spesifikk EXPO_BACKEND_TARGET=sandbox, backend ppvircenkjizeiqdxphj. Rapportfunksjonskode b17ec9be887b4b5b3d16219e77f509db84a8a269, tree 11adb88561b0ad56b7a31d67581d8d596852d2be. Core safety + critical build check 113309760983 completed/success. Fast alias READY på dpl_GE4ZFUEanKuwSB3SmE99SC7Xqwkr for samme kode-SHA. Etterfølgende dokumentregistrering endrer bare status/testnotater. Publiseringsbevis står i PROJECT_REPORT_20261008.md.
+Branch `feat-kshms-foundation`, [PR #216](https://github.com/ExpoProffsenter/expo-proffdok/pull/216), åpen draft. Fast [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe), branch-spesifikk EXPO_BACKEND_TARGET=sandbox, backend ppvircenkjizeiqdxphj. Rapportfunksjonskode f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c, tree eb943df4b8748ad25a49b7fe5ec12010e76e7253. Core safety + critical build check 113313774858 completed/success. Fast alias READY på dpl_2icyHcqi37uG3GYJf3cJL44eE2aM for samme kode-SHA. Etterfølgende dokumentregistrering endrer bare status/testnotater. Publiseringsbevis står i PROJECT_REPORT_20261008.md.
 
 ## Siste avgrensede leveranse og QA
 
