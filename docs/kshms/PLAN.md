@@ -1,3 +1,9 @@
+## Samlet status 8. oktober 2026 – les først
+
+[OVERSIKT.md](OVERSIKT.md) er gjeldende samlet A–E-status og videre rekkefølge. A/A2 er levert i Preview, B langt på vei bygget, C delvis levert, individuell D og pilot E gjenstår. De opprinnelige gap-tabellene nedenfor er historikk; bruk dem som omfang, ikke som aktuell implementasjonsstatus. Neste anbefalte avgrensede del er kontroll-/risiko-PDF innen avtalt utførelses-/rapportscope. Ingen Production-godkjenning følger dokumentgodkjenningen. E-post gjenbruker eksisterende Production-Resend; Sandbox KS/HMS-sending holdes deaktivert.
+
+---
+
 ## Gjeldende utførelsesleveranse 8. oktober 2026
 
 Rapportprøven er Kenneths TEST OK kl. 14:48. Vernerunder/selvstendige kontroller og 5×5-risikovurdering er gjenopptatt fra bevart arbeidsmappe, bygget og utviklertestet. 54 rollback SQL-kontroller og faktisk React-flyt PASS. Sluttkontroll/publiseringsbevis: EXECUTIONS_20261008.md. USER_TEST.md starter med bare den nye kontroll-/risikoprøven. Videre utførelse før separat HR, minimum før Ringside-pilot og ingen Production-release før egen godkjenning består. Eldre status nedenfor er historikk.

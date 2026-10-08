@@ -5,7 +5,7 @@ TEST OK for prosjektinnganger, rutinevalg og ansvarligvarsel er registrert 8. ok
 1. Fullfør et testutkast med **Kontroll fullført** eller **Vurdering fullført**. Popupen skal lukke seg automatisk når fullføringen er bekreftet lagret.
 2. Åpne dokumentasjonen i **Fullførte / historikk**. Den skal være bevart. Eventuelle åpne avvik beholder egne varsler.
 
-E-postflyten for alle dagens KS/HMS-ansvar er bygget og prøvd med kø/leverandørstub. Faktisk sending venter på **RESEND_API_KEY** og **CHAT_FROM_EMAIL** i Sandbox. [Oppsett](EMAIL_SETUP.md). Ikke bruk en uteblitt e-post som popup-test; ingen innbokslevering er aktivert eller hevdet. Når oppsettet er klart, skal tildeling til ansvarlig gi én e-post med korrekt beskyttet oppgavelenke. Lesing/vanlig lagring skal ikke gi duplikat, og fullføring/bytte av ansvar før levering stopper gammel oppgave.
+E-postflyten for alle dagens KS/HMS-ansvar er bygget og prøvd med kø/leverandørstub. Sandbox-utsending holdes deaktivert. Faktisk sending skal senere gjenbruke Production sitt eksisterende **RESEND_API_KEY** og **CHAT_FROM_EMAIL**, etter separat godkjent oppsett/release. [Oppsett](EMAIL_SETUP.md). Ikke bruk en uteblitt e-post som popup-test; ingen innbokslevering er aktivert eller hevdet. Når oppsettet er klart, skal tildeling til ansvarlig gi én e-post med korrekt beskyttet oppgavelenke. Lesing/vanlig lagring skal ikke gi duplikat, og fullføring/bytte av ansvar før levering stopper gammel oppgave.
 
 ---
 
