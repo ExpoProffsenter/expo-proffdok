@@ -2,6 +2,10 @@
 
 Oppdatert 8. oktober 2026, Europe/Oslo. Les denne først ved chatbytte; detaljer og testbevis ligger i CONTINUITY.md og de lenkede testnotatene. Dette er gjeldende samlet oversikt, ikke en godkjenning av hele modulen.
 
+## Ny rapportleveranse 8. oktober
+
+Kenneths «kjør» kl. 13:38 autoriserte valgfri SJA/RUH i prosjektets Rapport/PDF/utskrift. Valg, rutinehenvisning, deltagere/signatur, status/tiltak/ansvarlig/lukking er bygget. 34 databasekontroller, 5 faktiske PDF-er, 3 utskrifter og visuell PDF-kontroll PASS. Publisering på samme Preview pågår. Rapporttillegget venter på kort brukerprøve; tidligere TEST OK består. Testbevis: [PROJECT_REPORT_20261008.md](PROJECT_REPORT_20261008.md).
+
 ## Hvor vi er
 
 Ny KS/HMS-funksjonalitet ligger i samme Sandbox Preview:
@@ -12,11 +16,11 @@ Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er
 | Del | Hva finnes nå | Godkjenning / gjenstående |
 |---|---|---|
 | Håndbok og Min personalhåndbok | Faste rutinenumre (R-001 osv.), separat versjon, tilgang, firmatilpasning, godkjenning, eksakte rutineutgaver, egen bekreftelse, oppfølging og årlig revisjon. Biblioteket har 73 forslag med sporbar dekning av 121 temaer fra begge PDF-ene, fordelt på seks kapitler. | Tidligere håndbokdelprøve er TEST OK. Firmaene må fortsatt velge, tilpasse og godkjenne sine rutiner. Temadekning betyr ikke at alle utførelsesverktøy er bygget. |
-| Avvik og RUH | Popup, ansvarlig/frister, fast appvarsel, prosjektkobling, bevart kladd, lagring og ansvarligs egen lukking. Registrer RUH direkte fra prosjektets Avvik/SJA/RUH eller fritt i KS/HMS, med faktisk prosjektvalg/ekstern referanse og nummererte rutiner. | Tidligere avvikspopup/lukking er TEST OK. Kenneths RUH-prosjektprøve for lagring, ansvarligvarsel, egen dokumenterte lukking og bevart sak er TEST OK 8. oktober kl. 13:30. Nye RUH-er er ennå ikke koblet til prosjekt-PDF. Mobil/flere brukerøkter gjenstår. |
+| Avvik og RUH | Popup, ansvarlig/frister, fast appvarsel, prosjektkobling, bevart kladd, lagring og ansvarligs egen lukking. Registrer RUH direkte fra prosjektets Avvik/SJA/RUH eller fritt i KS/HMS, med faktisk prosjektvalg/ekstern referanse og nummererte rutiner. | Tidligere avvikspopup/lukking er TEST OK. Kenneths RUH-prosjektprøve for lagring, ansvarligvarsel, egen dokumenterte lukking og bevart sak er TEST OK 8. oktober kl. 13:30. RUH kan nå velges til prosjektrapport/PDF med tiltak, status, ansvarlig og lagret lukking; rapportprøve gjenstår. Mobil/flere brukerøkter gjenstår. |
 | Sjekklistesentral | Bygge/publisere fagmaler og hente faste utgaver inn i ordrer og våtromsprosjekter. | Implementert og utviklertestet. Kenneths egen godkjenning av sentral/innhenting er ikke registrert. |
 | Sjekklistepopup | Sammenfoldede lister, egne punkter, Lagre, Sjekkliste fullført, Start ny kontroll og historikk med person/tidspunkt. | Database-/React-prøver og tidligere innlogget desktopprøve PASS. Kenneth bekreftet 7. oktober kl. 23:02 TEST OK også for lagring/fullføring/historikk. |
 | Meny | Kompakt ordremeny og bevart hovedmeny etter retur til Startside. Ny Avvik/SJA/RUH-etikett gjenkjennes nå i desktopmeny/snarvei. KS/HMS viser Avvik/RUH. | Tidligere menyretur er TEST OK 7. oktober kl. 22:39. Ny meny-/RUH-/datoretting er Kenneths TEST OK 8. oktober 2026 kl. 01:28 Europe/Oslo. Ikke gjenta denne prøven uten ny konkret feil. |
-| SJA | Tomt skjema, veiledning, valgbare forslag for mur/flis/tømrer/VVS, samlet signeringsmangelliste, utkast, egen PL-signatur og uendret signert innhold. Avvik/SJA/RUH → Opprett SJA gir direkte prosjektkobling. KS/HMS har faktisk firmaprosjektvalg/ekstern referanse og godkjente rutiner med fast nummer og utgave. | READY på samme Preview. 93 rollback SQL-kontroller, faktisk React prosjekt-/SJA-/RUH-flyt og full critical QA/build PASS. Eksisterende signert analyse og 10 rutineutgaver bevart. Kenneths SJA-utkast med rutinenummer, lagring og gjenåpning er TEST OK 8. oktober kl. 13:30. SJA-prosjekt-PDF og signerings-/mobil-/flere brukerøkter-prøve gjenstår. |
+| SJA | Tomt skjema, veiledning, valgbare forslag for mur/flis/tømrer/VVS, samlet signeringsmangelliste, utkast, egen PL-signatur og uendret signert innhold. Avvik/SJA/RUH → Opprett SJA gir direkte prosjektkobling. KS/HMS har faktisk firmaprosjektvalg/ekstern referanse og godkjente rutiner med fast nummer og utgave. | READY på samme Preview. 93 rollback SQL-kontroller, faktisk React prosjekt-/SJA-/RUH-flyt og full critical QA/build PASS. Eksisterende signert analyse og 10 rutineutgaver bevart. Kenneths SJA-utkast med rutinenummer, lagring og gjenåpning er TEST OK 8. oktober kl. 13:30. Valgfri SJA/RUH i prosjektrapport/PDF er bygget og utviklertestet; egen kort rapportprøve gjenstår. Signerings-/mobil-/flere brukerøkter-prøve gjenstår. |
 | E-post | Tildelingsworker og kø er laget. Appvarslene fungerer uavhengig av e-post. | Sandbox-utsending er deaktivert; avsenderoppsett og faktisk mottaksprøve gjenstår. |
 
 ## Det som fortsatt skal bygges
@@ -33,7 +37,7 @@ Seks egne hovedkapitler. Egen gjennomgang av tildelte rutiner er påkrevd. Valgt
 
 ## Neste steg og besvarede spørsmål
 
-Menyretur og sjekklistepopup er godkjent. Kenneth bekreftet også TEST OK for Avvik/SJA/RUH-menyen, RUH-inngangen og norsk dato 8. oktober 2026 kl. 01:28 Europe/Oslo. Ingen ny prøve av disse godkjente delene startes automatisk. SJA med mangelliste, forslag i alle tekstfelt og prosjektinngang er publisert og utviklertestet. Kenneths tilbakemelding om manglende felt/forslag og prosjektkobling er innarbeidet. Dette er ikke SJA-TEST OK. Kort SJA/RUH-prøve for lagring, gjenåpning og egen lukking står først i USER_TEST.md. Beståtte utvikler-/databaseprøver gjentas ikke uten ny feil. Spørsmålene nedenfor er historikk og skal ikke stilles på nytt.
+Tidligere menyretur/sjekklistepopup og meny-/RUH-/datoprøve er TEST OK. Kenneths SJA-utkast med rutine, lagring/gjenåpning og RUH-oppfølging/egen lukking er også TEST OK 8. oktober kl. 13:30. Rapporttillegget er autorisert «kjør» kl. 13:38, bygget og utviklertestet. Bare den korte SJA/RUH-rapportprøven i USER_TEST.md gjenstår nå. Ingen beståtte delprøver skal gjentas uten konkret feil. Spørsmålene nedenfor er historikk og skal ikke stilles på nytt.
 
 1. Gjaldt siste TEST OK bare menyen, eller også sjekklistepopupens Lagre, fullføring og historikk?
 2. Hva skal prioriteres etter sjekklistene: utførelse med vernerunder/SJA/risiko, eller HR/medarbeidersamtaler? Foreslått rekkefølge er å fullføre utførelsesdelen først; dette er et forslag, ikke en ny beslutning.
@@ -41,7 +45,7 @@ Menyretur og sjekklistepopup er godkjent. Kenneth bekreftet også TEST OK for Av
 4. Ved HR: hvem skal få tilgang til medarbeidersamtaler – særskilt utpekt HR-/lederrolle for hele firmaet, eller ledere bare for tildelte medarbeidere?
 5. Hvilke to–tre konkrete arbeidsoppgaver skal få de første ferdige SJA-/kontrollmalene?
 
-Svar mottatt 7. oktober kl. 23:02 Europe/Oslo: (1) TEST OK gjelder både meny og sjekklistepopup. (2) Utførelsesdelen prioriteres før HR. (3) Vi bygger først; Ringside tester etterpå, ingen avgrenset tidlig pilot. (4) Ledere ser bare tildelte medarbeidere; firmaadmin ser/behandler alle og tildeler ansvar. (5) SJA starter tom for hver jobb med veiledning over feltene og forslag til rutiner/sjekkpunkter. Ingen forhåndsutfylte jobbanalyser. Faglig innhold skal undersøkes i primærkilder. SJA-utkast og RUH-oppfølging er nå TEST OK for de prøvde punktene. Vernerunder, risikomatrise og øvrige B–E-deler består. SJA/RUH i prosjekt-PDF mangler; rapportkobling er foreslått som egen avgrenset leveranse.
+Svar mottatt 7. oktober kl. 23:02 Europe/Oslo: (1) TEST OK gjelder både meny og sjekklistepopup. (2) Utførelsesdelen prioriteres før HR. (3) Vi bygger først; Ringside tester etterpå, ingen avgrenset tidlig pilot. (4) Ledere ser bare tildelte medarbeidere; firmaadmin ser/behandler alle og tildeler ansvar. (5) SJA starter tom for hver jobb med veiledning over feltene og forslag til rutiner/sjekkpunkter. Ingen forhåndsutfylte jobbanalyser. Faglig innhold skal undersøkes i primærkilder. SJA-utkast og RUH-oppfølging er nå TEST OK for de prøvde punktene. Vernerunder, risikomatrise og øvrige B–E-deler består. Den avgrensede SJA/RUH-rapportkoblingen ble autorisert kl. 13:38 og er nå bygget/utviklertestet; kort rapportprøve gjenstår.
 
 ## Arbeidsmåte ved nye chatter
 

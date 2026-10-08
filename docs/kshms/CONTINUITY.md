@@ -1,3 +1,17 @@
+# Fortsettelsespunkt – SJA/RUH i prosjektrapporten bygget, kort rapportprøve gjenstår
+
+Kenneths «kjør» 8. oktober 2026 kl. 13:38 Europe/Oslo godkjente avgrenset valgfri SJA/RUH-del i prosjektets Rapport/PDF/utskrift. Miljømål BEGGE, først samme Sandbox Preview. Brukere med modulen velger konkrete prosjektdokumenter; ingen automatisk avkrysning. SJA viser oppgave/arbeidstrinn/tiltak/rutinenummer og utgave/deltakere/lagret PL-signatur, RUH viser hendelse/tiltak/ansvarlig/frist/status/egen kontroll og lukking. Utkast og åpne saker merkes tydelig. Rapportvalg lagres ikke i prosjektets JSON eller kundeportal.
+
+Implementering og 34 rollback databasekontroller PASS. Faktisk React/PDF/utskrift: 5 PDF-er og 3 utskrifter PASS; lang prøve-PDF på 12 sider kontrollert visuelt med Poppler Cairo. Eksisterende signert SJA og 10 rutineutgaver har uendrede fingeravtrykk. Endelig critical QA/build og publiseringsbevis samles i [PROJECT_REPORT_20261008.md](PROJECT_REPORT_20261008.md). Publisering på samme Preview pågår. Ingen Production- eller demo-synk.
+
+Neste brukerprøve gjelder bare rapportvalget og PDF-innholdet i USER_TEST.md. Tidligere TEST OK 8. oktober kl. 13:30 for SJA-utkast/rutine/lagring/gjenåpning og RUH-oppfølging/egen lukking bortfalt varsel/bevart sak består. Ingen nye signerings-/mobil-/flere faktiske brukerøkter-prøver er godkjent av dette. RUH-bildevedlegg/full endringshistorikk er ikke med i første rapportuttrekk. Ingen ny innlogget skjermtest hevdes; ikke gjenta tidligere avviste nettleserkall.
+
+Hovedretningen består: utførelse først, vernerunder/selvstendige kontroller og 5×5-risiko gjenstår; så separat HR (leder bare tildelte ansatte, firmaadmin alle/tildele), minimumsomfang før Ringside-pilot. Production main 155f6c4ac01f126c1db0c65da385cfd9305587d5 er uendret. Hovedretning for senere demo-synk er main → demo.
+
+---
+
+## Historikk før autorisert rapportleveranse
+
 # Gjeldende fortsettelsespunkt – SJA-utkast og RUH-oppfølging TEST OK; rapportkobling gjenstår
 
 Kenneth svarte «test ok» 8. oktober 2026 kl. 13:30 Europe/Oslo på prøven rett ovenfor i chatten: SJA-utkast med rutinenummer → Lagre utkast → lukk/gjenåpne fra samme prosjekt, og RUH → lagring med ansvarlig/frister → egne tiltak/egen kontroll/lukking → bortfalt ansvarligvarsel og bevart sak under Lukkede.

@@ -1,0 +1,7 @@
+.ks-report-backdrop { position: fixed; inset: 0; z-index: 10000; background: #0f172a99; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.ks-report-dialog { background: white; border-radius: 16px; padding: 24px; width: min(720px, 100%); max-height: calc(100dvh - 32px); overflow: auto; box-shadow: 0 20px 60px #0004; }
+.ks-report-dialog fieldset { margin: 16px 0; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
+.ks-report-dialog .ks-report-option { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; cursor: pointer; }
+.ks-report-option input { flex: 0 0 auto; width: 20px; height: 20px; margin-top: 2px; }
+.ks-report-choice { margin: 16px 0; }
+@media print { .ks-report-choice, .ks-report-backdrop { display: none !important; } .ks-project-report-documents section { break-inside: auto; page-break-inside: auto; } .ks-report-field { break-inside: auto; } .ks-report-field dt { break-after: avoid; } }

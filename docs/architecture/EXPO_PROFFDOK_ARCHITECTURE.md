@@ -1,3 +1,9 @@
+# SJA/RUH i prosjektrapporten – Preview 8. oktober 2026
+
+`useKshmsProjectReport` holder rapportvalget utenfor prosjekt-/portaldata og nøkkler det på bruker, firma, prosjekt og modultilgang. Dialogen gjenbrukes av rapportvisning, begge utskriftsknapper og PDF-knappene. Bare et aktivt valg gir SJA/RUH-innhold. Ny read-only `kshms_project_report` bruker eksisterende `require_context`, `project_checklist_access` og `deviation_visible`; private SJA-utkast følger eksisterende SJA-synlighet. Både valglisten og det ferske eksportuttrekket avgrenses server-side. Manglende, fremmede eller tilbakekalte ID-er stopper hele uttrekket. RPC-en har tom search_path, ingen PUBLIC/anon-grant og authenticated-grant med eksplisitte interne porter.
+
+`kshmsReportDocuments` gir samme felter til intern rapport og faktisk jsPDF. Signaturer, deltakertekst og rutinenummer/utgave kommer fra lagrede snapshots; de slås ikke opp eller skrives på nytt. Signerte SJA-er og prosjektets JSON endres ikke. Utkast merkes usignert, åpne RUH-er viser gjenstående oppfølging. Lange KS-felter får egne kontrollerte sideskift. Valgt RUH undertrykker samme legacy-speil i avvikslisten; øvrige legacy-avvik beholdes. CustomerReport/portal får ingen SJA/RUH-innsprøyting. Main-koblingene er bare hook, rapportavhengigheter/props, valgpanel og dialog. Ingen navigasjons-/autosave-/auth-endring. Sandbox-migrasjon 20261008115650, ingen Production-migrasjon. [QA, omfang og begrensninger](../kshms/PROJECT_REPORT_20261008.md).
+
 # Expo ProffDok – arkitekturkart
 
 SJA utvider bare KS/HMS-parenten med en bevart SJA-fane og ny popup. kshms_sjas/kshms_sja_commands bruker eksisterende arbeidsfirma-/KS-gates, revisjonsvern, idempotente kommandoer, bekreftet readback og uforanderlig signert snapshot. Ingen main.jsx-/auth-/prosjektendring. Sandbox-migrasjon 20261007212858_kshms_sja; ingen Production-migrasjon. Se [SJA-kontrakt og tester](../kshms/SJA_20261007.md).

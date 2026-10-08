@@ -1,3 +1,13 @@
+## SJA/RUH i prosjektrapporten – autorisert og bygget 8. oktober 2026
+
+«Kjør» kl. 13:38 avklarer prioriteringen: valgfri prosjektrapportdel for SJA/RUH før videre utførelsesarbeid. Valgdialog, lesende uttrekk med nye kontroller, identiske rapportfelter, PDF/utskrift og norsk dato er bygget. 34 rollback SQL-kontroller og 5 faktiske PDF-/3 utskriftsprøver PASS. Lang PDF på 12 sider er kontrollert visuelt. Publisering på samme Preview pågår. Se PROJECT_REPORT_20261008.md og ny, kort brukerprøve i USER_TEST.md. Rapporttillegget er ikke Kenneths TEST OK eller Production-godkjenning ennå. Tidligere delprøver skal ikke gjentas.
+
+Neste faglige omfang etter denne prøven er fortsatt utførelse med vernerunder/selvstendige kontroller og 5×5-risiko, før separat HR og deretter pilot etter minimumsomfang. Ingen ny beslutning om disse detaljene innføres her.
+
+---
+
+## Historikk før rapportleveransen
+
 ## SJA-utkast og RUH-oppfølging 8. oktober 2026 kl. 13:30 – TEST OK
 
 Kenneth svarte «test ok» 8. oktober 2026 kl. 13:30 Europe/Oslo på prøven rett ovenfor i chatten: SJA-utkast med rutinenummer → Lagre utkast → lukk/gjenåpne fra samme prosjekt, og RUH → lagring med ansvarlig/frister → egne tiltak/egen kontroll/lukking → bortfalt ansvarligvarsel og bevart sak under Lukkede.

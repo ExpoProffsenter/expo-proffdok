@@ -1,6 +1,6 @@
 # Expo ProffDok
 
-SJA: **KS/HMS → SJA → Ny SJA** gir et tomt jobbskjema, hjelpetekst over feltene og valgbare forslag. Utkast og ansvarlig PLs egen signering er separate handlinger; signert analyse beholdes uendret. Meny og sjekklistepopup er TEST OK fra Kenneth. [SJA-omfang og testbevis](docs/kshms/SJA_20261007.md). Samme feature/Sandbox Preview; SJA krever egen brukerprøve.
+KS/HMS har prosjektkoblede SJA-er og RUH-er. I Rapport/PDF/utskrift velger brukere med modultilgang hvilke dokumenter som skal følge rapporten. SJA viser lagret rutinehenvisning, deltakere og prosjektleders signatur; RUH viser tiltak, ansvarlig, status og eventuell dokumentert lukking. Utkast og åpne saker merkes tydelig. Samme feature/Sandbox Preview, før produksjonsgodkjenning. [Rapportomfang og testbevis](docs/kshms/PROJECT_REPORT_20261008.md). Tidligere TEST OK for SJA-utkast/RUH-oppfølging består.
 
 Preview 07.10.2026: Retur fra generell ordre bevarer Reacts gjeldende menynavn, slik at Startsiden fortsatt bruker den kompakte Meny-knappen. Den faktiske returfeilen er gjenskapt og har fast runtime-regresjonsvern samt en React-prøve med appens menyadaptere. Se [menyprøven](docs/kshms/MENU_RETURN_20261007.md). KS/HMS er fortsatt kun feature/Preview.
 

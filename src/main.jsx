@@ -1,5 +1,6 @@
 import CompanyCustomerPicker from "./modules/customers/CompanyCustomerPicker.jsx";
 import { useKshmsAccess } from './modules/kshms/kshmsAccess.js';
+import { useKshmsProjectReport, KshmsProjectReportChoice, KshmsProjectReportDialog } from './modules/kshms/KshmsProjectReport.jsx';
 // Expo ProffDok – main application entry. Historical phase/deploy notes are preserved in Git history.
 // FASE 28C1: Startside viser konkrete prosjekter som krever oppfølging via projectListTools.
 // FASE 28D1: Appen varsler kontrollert når en nyere Vite/Vercel-versjon er tilgjengelig.
@@ -1333,6 +1334,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const portalAccessStorageKey = projectId && portalAccessRoleParam ? `expoProffDokPortalAccess:${projectId}:${portalAccessRoleParam}` : "";
     const isSystemAdminUser = !!authUser && profile?.system_role === "systemadmin";
     const isProjectSupportReadOnly = supportModeExplicit && isSystemAdminUser && !!projectId;
+    const kshmsProjectReport = useKshmsProjectReport({ context: kshmsContext, userId: authUser?.id, projectId, disabled: isReadOnly || isUnderleverandorView || isProjectSupportReadOnly });
     const supportReadOnlyMainIsInteractive =
       isProjectSupportReadOnly && ["sales", "tilbud"].includes(tab);
     const supportProjectReadOnlyMessage = "Supportprosjekter er skrivebeskyttet. Avslutt supportmodus før du oppretter eller endrer prosjektdata.";
@@ -5515,6 +5517,8 @@ ${appLink}`;
     };
     // FASE 24A: Rapport/PDF ligger nå i egen modul.
     const { printVisibleReport, printReport, downloadClickablePdfReport } = createReportTools({
+      prepareKshmsReport: kshmsProjectReport.prepareExport,
+      isKshmsReportCurrent: kshmsProjectReport.isCurrent,
       DEFAULT_REPORT_HERO_IMAGE_URL,
       access,
       activeChecklistTemplate,
@@ -6976,7 +6980,11 @@ ${appLink}`;
           companyInvites
         }),
                 tab === "garanti" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(WarrantyPanel, { warranty, setWarranty, readiness: warrantyReadiness, issueWarranty, systems: soproWarrantySystems, goToTab, project, company, name, overtagelse, isProjectLocked, downloadClickablePdfReport }),
-                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: projectScopedTilbud, overtagelse, projectLog }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportDialog, { chooser: kshmsProjectReport.chooser }),
+                tab === "rapport" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(KshmsProjectReportChoice, { report: kshmsProjectReport }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Report, { company, name, project, selected, manualProducts: manualSelected, other, surf, bathroomEquipment, photos, access, inst, files, checklist, tilbud: projectScopedTilbud, overtagelse, projectLog, kshmsReport: kshmsProjectReport.reportData })
+                ] }),
         kshmsContext?.enabled && (tab === "kshms" || openedKshmsScope === kshmsScopeKey) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { hidden: tab !== "kshms", children: (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: tab === "kshms" ? "Henter KS/HMS …" : null, children: (0, import_jsx_runtime.jsx)(KshmsModule, { context: kshmsContext, deviationRequest: kshmsDeviationRequest }, kshmsScopeKey) }) }),
         tab === "kshms" && !kshmsContext?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { role: "status", children: "KS/HMS er ikke tilgjengelig i aktivt firma. Kontroller arbeidsprofil og modulgrant hos firmaadmin." }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt }),

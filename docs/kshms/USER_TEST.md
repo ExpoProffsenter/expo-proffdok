@@ -1,3 +1,17 @@
+# Kort brukerprøve – SJA/RUH i prosjektrapporten
+
+Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Test bare rapporttillegget i et eksisterende prosjekt med SJA og RUH. Tidligere godkjent lagring/meny/lukking skal ikke prøves på nytt.
+
+1. Åpne prosjektets **Rapport → Velg SJA/RUH til rapport**. Huk av én SJA og én RUH og trykk **Bruk valget i rapporten**. Se at bare valgte dokumenter vises; rutinenummer/utgave, deltagere og eventuell lagret signatur/lukking følger med. Utkast skal være merket **Ikke signert**.
+2. Trykk prosjektets **PDF**-knapp. Kontroller samme valg og trykk **Lag PDF med valget**. Fortsett gjennom den vanlige arkiveringsbekreftelsen. Åpne PDF-en og se at SJA/RUH, norsk dato og eventuell signatur/egen kontroll/lukking er med.
+3. Ved en ny PDF: trykk **Fortsett uten SJA/RUH**. Denne PDF-en skal ha ordinært prosjektinnhold uten den nye SJA/RUH-delen.
+
+Svar TEST OK hvis denne korte rapportprøven består, eller oppgi konkret feil/knapp. Utviklerprøvene er allerede PASS og gjentas ikke uten grunn. RUH-bildevedlegg og full endringshistorikk er ikke med i første rapportdel. Ingen produksjonsgodkjenning følger denne prøven.
+
+---
+
+## Tidligere godkjente delprøver / historikk
+
 # Godkjent delprøve – SJA-utkast og RUH-oppfølging
 
 Kenneth svarte «test ok» 8. oktober 2026 kl. 13:30 Europe/Oslo på prøven rett ovenfor i chatten: SJA-utkast med rutinenummer → Lagre utkast → lukk/gjenåpne fra samme prosjekt, og RUH → lagring med ansvarlig/frister → egne tiltak/egen kontroll/lukking → bortfalt ansvarligvarsel og bevart sak under Lukkede.
