@@ -1,3 +1,9 @@
+# Oppfølging 8. oktober – popup og ansvarse-post
+
+TEST OK kl. 21:04 for prosjekttillegget er registrert. Ny popup-/varselendring: 36 nye + 45/54/73/93 relevante rollback-SQL-kontroller PASS; faktisk React/DOM for gjennomføring/prosjekt/oppgaver/SJA/rutine/revisjonslenker PASS; permanent seks-typers mailer/lenke/konfigurasjon/fencing-prøve PASS; full Sandbox critical/build PASS exit 0. Signert SJA/rutineutgaver uendret. Mailer v4 ACTIVE, check HTTP503 mangler api_key og sender, enabled=false. Ingen innbokslevering hevdet. [Detaljer](NOTIFICATIONS_20261008.md).
+
+---
+
 # Prosjekttillegg 8. oktober 2026 – bekreftet grønn leveranse
 
 Funksjonskode `8bce982fb75bf105ee614601e604e438f89a78bc`, tree `ed17f78782d6a49944bd55be6b008d0ef29995e9`. Fast Sandbox Preview er READY på `dpl_4gwb3VsRp7Wf2GWmRrxFNre8DY87`, med samme feature-alias og eksakt SHA. PR Core Safety `37827572425` og jobb Core safety + critical build `113484256816` er completed/success på samme SHA. Lokal og publisert tree er identiske.

@@ -1,3 +1,16 @@
+# Kort prøve – popup etter fullføring
+
+TEST OK for prosjektinnganger, rutinevalg og ansvarligvarsel er registrert 8. oktober kl. 21:04 Europe/Oslo. Godkjente deler trenger ingen ny full prøve. Ny brukerprøve gjelder bare denne rettelsen på samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe):
+
+1. Fullfør et testutkast med **Kontroll fullført** eller **Vurdering fullført**. Popupen skal lukke seg automatisk når fullføringen er bekreftet lagret.
+2. Åpne dokumentasjonen i **Fullførte / historikk**. Den skal være bevart. Eventuelle åpne avvik beholder egne varsler.
+
+E-postflyten for alle dagens KS/HMS-ansvar er bygget og prøvd med kø/leverandørstub. Faktisk sending venter på **RESEND_API_KEY** og **CHAT_FROM_EMAIL** i Sandbox. [Oppsett](EMAIL_SETUP.md). Ikke bruk en uteblitt e-post som popup-test; ingen innbokslevering er aktivert eller hevdet. Når oppsettet er klart, skal tildeling til ansvarlig gi én e-post med korrekt beskyttet oppgavelenke. Lesing/vanlig lagring skal ikke gi duplikat, og fullføring/bytte av ansvar før levering stopper gammel oppgave.
+
+---
+
+## TEST OK – prosjekttillegg 8. oktober kl. 21:04
+
 # Kort brukerprøve – prosjektinnganger, rutiner og ansvarligvarsel
 
 Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). READY på funksjonskode 8bce982f med grønn PR Core Safety / critical build. Publiseringsbevis står i CURRENT_RELEASE_STATUS.md. Tidligere TEST OK for håndbok, meny, SJA/RUH og rapport består. Denne prøven gjelder bare vernerunde/risiko og de nye tilleggene.
@@ -7,7 +20,7 @@ Samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside
 3. **Samme prosjekt → Opprett risikovurdering 5×5.** Prosjektet skal stå fast og scorene starte tomme. Velg en godkjent rutine, fyll den konkrete vurderingen og lagre utkast. **Åpne risikovurderinger** skal bare vise dette prosjektets vurderinger. Varselet står også her frem til ansvarlig bruker den store bekreftelsen ved **Vurdering fullført** og fullføringen er lagret. **Videre tiltak kreves** skal fortsatt stå i den fullførte dokumentasjonen når det er valgt. Detaljer for utfyllingen ligger i den opprinnelige vernerunde-/risikoprøven nedenfor.
 4. Med en annen bruker som har KS/HMS- og prosjekttilgang: tildel ett testutkast til personen. Bare den valgte ansvarlige skal ha denne oppgaven. Bytt ansvarlig og lagre: oppgaven flyttes. Den nye ansvarlige fullfører selv. Et annet prosjekt skal ha egen oversikt og kladd. Uten personlig KS/HMS-tilgang skal de nye prosjektknappene være skjult; et låst prosjekt lar deg lese dokumentasjon.
 
-Utviklerkontroll: 44 nye faktiske Sandbox SQL-assertioner PASS med full rollback. Faktisk React/DOM-prosjekt/varsel/dialog med simulert RPC PASS, inkludert offlinevarsel, tapt readback/retry, egne prosjektkladder, rutineutgaver, begge fullføringer og låst/avslått tilgang. Eksisterende gjennomførings-, SJA-parent- og prosjekt/SJA/RUH-prøver PASS. Utvidet permanent critical-test prøver faktisk varseleffekt. Full Sandbox critical/build PASS. Publisering dokumenteres i [PROJECT_EXECUTIONS_20261008.md](PROJECT_EXECUTIONS_20261008.md). Innlogget flere-konto-/mobilprøve og brukerens TEST OK gjenstår.
+Utviklerkontroll: 44 nye faktiske Sandbox SQL-assertioner PASS med full rollback. Faktisk React/DOM-prosjekt/varsel/dialog med simulert RPC PASS, inkludert offlinevarsel, tapt readback/retry, egne prosjektkladder, rutineutgaver, begge fullføringer og låst/avslått tilgang. Eksisterende gjennomførings-, SJA-parent- og prosjekt/SJA/RUH-prøver PASS. Utvidet permanent critical-test prøver faktisk varseleffekt. Full Sandbox critical/build PASS. Publisering dokumenteres i [PROJECT_EXECUTIONS_20261008.md](PROJECT_EXECUTIONS_20261008.md). Brukerens TEST OK er registrert 8. oktober kl. 21:04. Ingen ny utviklerdrevet innlogget flere-konto-/mobil-PASS hevdes.
 
 ---
 

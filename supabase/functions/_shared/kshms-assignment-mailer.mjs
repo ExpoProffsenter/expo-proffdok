@@ -2,11 +2,21 @@ const reply=(status,value)=>new Response(JSON.stringify(value),{status,headers:{
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function assignmentEmail(job,from) {
  const url=new URL(job.app_url);
- if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash||!uuid.test(job.company_id)||!uuid.test(job.deviation_id))throw new Error('invalid_delivery_configuration');
- url.searchParams.set('kshmsDeviation',job.deviation_id);url.searchParams.set('kshmsCompany',job.company_id);
+ const kind=job.notification_kind||'deviation',id=kind==='deviation'?job.deviation_id:job.object_id;
+ const messages={
+  deviation:['kshmsDeviation','Du har fått ansvar for et KS/HMS-avvik','Du er valgt som ansvarlig for et avvik i KS/HMS.','Åpne saken i ProffDok og dokumenter tiltak og egen kontroll. Oppgaven står i appen til lukkingen er lagret.'],
+  round:['kshmsExecution','Du har fått ansvar for en vernerunde / kontroll','Du er valgt som ansvarlig for en vernerunde eller kontroll i KS/HMS.','Åpne gjennomføringen i ProffDok, dokumenter kontrollen og bekreft egen gjennomgang før fullføring.'],
+  risk:['kshmsExecution','Du har fått ansvar for en risikovurdering','Du er valgt som ansvarlig for en risikovurdering i KS/HMS.','Åpne vurderingen i ProffDok, dokumenter risiko og oppfølging og bekreft egen gjennomgang før fullføring.'],
+  sja:['kshmsSja','Du har fått ansvar for en SJA','Du er valgt som ansvarlig prosjektleder for en SJA i KS/HMS.','Åpne KS/HMS → SJA i ProffDok. Gå gjennom analysen med deltakerne og signer din egen gjennomgang når dokumentasjonen er ferdig.'],
+  reading:['kshmsVersion','Du har fått en KS/HMS-rutine å lese og bekrefte','En godkjent rutineutgave er tildelt deg for egen gjennomgang.','Åpne KS/HMS → Les og bekreft i ProffDok, les utgaven og bekreft egen gjennomgang.'],
+  review:['kshmsReview','KS/HMS-håndboken har passert datoen for revisjon','Du er utpekt som ansvarlig for revisjon av KS/HMS-håndboken. Datoen for neste kontroll er passert.','Åpne KS/HMS → Oppfølging og revisjon i ProffDok. Kontroller håndboken og signer revisjonen når gjennomgangen er utført.']
+ };
+ const message=Object.hasOwn(messages,kind)?messages[kind]:null;
+ if(url.protocol!=='https:'||url.username||url.password||url.pathname!=='/'||url.search||url.hash||!uuid.test(job.company_id)||!uuid.test(id)||!message)throw new Error('invalid_delivery_configuration');
+ url.searchParams.set(message[0],id);url.searchParams.set('kshmsCompany',job.company_id);
  // No title, description, images, personal case notes or identity in the email.
- const text=`Du er valgt som ansvarlig for et avvik i KS/HMS.\n\nÅpne saken i ProffDok og dokumenter tiltak og egen kontroll. Oppgaven står i appen til lukkingen er lagret.\n\n${url.href}\n\nDu må være logget inn med tilgang i riktig firma for å åpne saken.`;
- return {from,to:[job.email],subject:'Du har fått ansvar for et KS/HMS-avvik',text};
+ const text=`${message[2]}\n\n${message[3]}\n\n${url.href}\n\nDu må være logget inn med tilgang i riktig firma for å åpne saken.`;
+ return {from,to:[job.email],subject:message[1],text};
 }
 export function createAssignmentMailer({rpc,apiKey,from,verifyTransport=async()=>false,fetcher=fetch,now=()=>Date.now()}) {
  return async req=>{
@@ -15,10 +25,12 @@ export function createAssignmentMailer({rpc,apiKey,from,verifyTransport=async()=
   if(!/^[0-9a-f]{64}$/.test(token))return reply(401,{error:'unauthorized'});
   try{
    const authorized=await rpc('kshms_email_worker_authorize',{p_token:token});
-   if(!authorized?.enabled)return reply(401,{error:'unauthorized'});
+   if(!authorized||typeof authorized.enabled!=='boolean')return reply(401,{error:'unauthorized'});
+   const checking=req.headers.get('x-kshms-worker-mode')==='check';
+   if(!checking&&!authorized.enabled)return reply(401,{error:'unauthorized'});
    const transportSafe=await verifyTransport();
    const configuration={api_key_configured:Boolean(apiKey),sender_configured:Boolean(from),transport_safe:transportSafe};
-   if(req.headers.get('x-kshms-worker-mode')==='check')return reply(apiKey&&from&&transportSafe?200:503,{configured:Boolean(apiKey&&from&&transportSafe),...configuration});
+   if(checking)return reply(apiKey&&from&&transportSafe?200:503,{configured:Boolean(apiKey&&from&&transportSafe),...configuration});
    if(!transportSafe)return reply(503,{error:'transport_exposure_not_verified'});
    if(!apiKey||!from)return reply(503,{error:'delivery_not_configured'});
    const counts={accepted:0,retry:0,suppressed:0},started=now();

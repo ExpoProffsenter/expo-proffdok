@@ -3,6 +3,7 @@ import { kshmsRpc } from './kshmsAccess.js';
 import { EXECUTION_CHANGE_EVENT, isUuid } from './kshmsExecutions.mjs';
 import { formatDeviationDate } from '../deviations/deviationDates.mjs';
 import KshmsExecutions from './KshmsExecutions.jsx';
+import { readNotificationLink } from './kshmsNotificationLinks.mjs';
 
 const taskLabel = kind => kind === 'round' ? 'Vernerunde' : 'Risikovurdering 5×5';
 
@@ -37,10 +38,31 @@ export default function KshmsExecutionTasks({ context }) {
     return () => { active = false; serial++; refreshRef.current = null; window.clearInterval(timer); window.removeEventListener(EXECUTION_CHANGE_EVENT, changed); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', visible); };
   }, [companyId, userId, enabled]);
   const open = row => { if (row?.accessible === false || !row) return; setOpened({ id: row.id, kind: row.kind, projectId: row.project_id || null, companyId, userId, nonce: crypto.randomUUID() }); };
+  const emailLink = readNotificationLink(window.location?.search || '', companyId);
+  const [emailOpened, setEmailOpened] = useState(''), [emailBusy, setEmailBusy] = useState(false);
+  const emailScope = useRef(null);
+  useEffect(() => {
+    const scope = { active: enabled }; emailScope.current = scope; setEmailBusy(false);
+    return () => { scope.active = false; };
+  }, [companyId, userId, enabled]);
+  const emailKey = `${companyId}:${userId}:${emailLink?.companyId}:${emailLink?.id}`;
+  const showEmail = emailLink?.kind === 'execution' && emailOpened !== emailKey;
+  const openEmail = async () => {
+    if (emailBusy || !emailLink?.matchingCompany || !enabled) return;
+    const scope = emailScope.current; setEmailBusy(true); setError('');
+    try {
+      const detail = await kshmsRpc('kshms_execution_detail', { p_company_id: companyId, p_id: emailLink.id });
+      if (!scope?.active || emailScope.current !== scope) return;
+      if (detail?.context?.company_id !== companyId || detail.context.user_id !== userId || !detail.context.enabled
+        || detail.record?.company_id !== companyId || detail.record.id !== emailLink.id || !['round', 'risk'].includes(detail.record.kind)) throw Error('Gjennomføringen er ikke tilgjengelig i denne arbeidsprofilen.');
+      open(detail.record); setEmailOpened(emailKey);
+    } catch { if (scope?.active && emailScope.current === scope) setError('Lenken kunne ikke åpnes. Kontroller firma og KS/HMS-/prosjekttilgang, og prøv igjen.'); }
+    finally { if (scope?.active && emailScope.current === scope) setEmailBusy(false); }
+  };
   const firstAvailable = tasks?.items.find(row => row.accessible !== false);
   if (!enabled) return null;
   return <>
-    {(tasks?.count > 0 || error) && <aside className="ks-task-banner" aria-label="Dine vernerunder og risikovurderinger">
+    {(tasks?.count > 0 || error || showEmail) && <aside className="ks-task-banner" aria-label="Dine vernerunder og risikovurderinger">
       {tasks?.count > 0 && <>
         <div className="ks-task-heading"><strong>Du har {tasks.count} {tasks.count === 1 ? 'gjennomføring' : 'gjennomføringer'} å fullføre</strong>{tasks.overdue > 0 && <span> · {tasks.overdue} etter planlagt dato</span>}</div>
         <details className="ks-task-details"><summary aria-label={`Vis gjennomføringer (${tasks.count})`}>Vis oppgaver</summary><div className="ks-task-content">
@@ -53,6 +75,7 @@ export default function KshmsExecutionTasks({ context }) {
         {firstAvailable ? <button type="button" className="ks-task-open" onClick={() => open(firstAvailable)}>Åpne gjennomføring</button> : <span className="ks-task-message">Prosjekttilgang kreves</span>}
       </>}
       {error && <p className="ks-task-message" role="status">{error} <button type="button" className="secondary" onClick={() => refreshRef.current?.()}>Prøv igjen</button></p>}
+      {showEmail && <div className="ks-task-message"><p>{emailLink.matchingCompany ? 'Du har åpnet en lenke til en vernerunde eller risikovurdering.' : 'Lenken gjelder et annet firma. Bytt til riktig arbeidsprofil før du åpner gjennomføringen.'}</p>{emailLink.matchingCompany && <button type="button" disabled={emailBusy} onClick={openEmail}>Åpne gjennomføringen fra e-posten</button>}</div>}
     </aside>}
     {opened?.companyId === companyId && opened.userId === userId && <KshmsExecutions key={`${companyId}:${userId}:${opened.id}`} context={context} kind={opened.kind} projectId={opened.projectId} openRequest={opened} dialogOnly onClose={() => setOpened(null)} />}
   </>;

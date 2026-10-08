@@ -64,7 +64,7 @@ reset role;
 do $$declare c uuid:=current_setting('ks.exec.company')::uuid;sid uuid:=current_setting('ks.exec.complete')::uuid;pid uuid:=current_setting('ks.exec.project')::uuid;begin
  perform pg_temp.ex_reject(format('update public.kshms_executions set content=''{}'' where id=%L',sid),'42501');perform pg_temp.ex_reject(format('delete from public.kshms_executions where id=%L',sid),'42501');
  perform pg_temp.ex_assert((select data::text=current_setting('ks.exec.project.data') from public.projects where id=pid),'project checklist, deviations, signature and portal JSON unchanged');
- perform pg_temp.ex_assert((select count(*) from public.kshms_execution_deviations l join public.kshms_executions e on e.id=l.execution_id where e.company_id=c)=1,'one deviation despite complete retry');perform pg_temp.ex_assert((select count(*) from public.kshms_notification_outbox where company_id=c)=1,'one pending assignment notification');
+ perform pg_temp.ex_assert((select count(*) from public.kshms_execution_deviations l join public.kshms_executions e on e.id=l.execution_id where e.company_id=c)=1,'one deviation despite complete retry');perform pg_temp.ex_assert((select count(*) from public.kshms_notification_outbox where company_id=c and notification_kind='deviation')=1,'one deviation assignment notification despite completion retry');
  update public.projects set locked=true where id=pid;
 end$$;
 set local role authenticated;

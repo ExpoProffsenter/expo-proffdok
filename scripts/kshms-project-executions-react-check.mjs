@@ -92,8 +92,8 @@ missingProjectAccess = false; await act(async () => window.dispatchEvent(new win
 offlineTasks = true; await act(async () => window.dispatchEvent(new window.Event('focus'))); assert(doc.body.textContent.includes('1 gjennomføring')); assert(doc.body.textContent.includes('Sist bekreftede oppgaver er beholdt')); offlineTasks = false;
 await click(button('Åpne gjennomføring')); assert.equal(field('Navn').value, 'QA prosjektkontroll'); assert(!button('Kontroll fullført').disabled);
 await click(doc.querySelector('[data-execution-field="confirmation"]')); failReadback = true; await click(button('Kontroll fullført'));
-assert(doc.body.textContent.includes('1 gjennomføring'), 'Failed confirmation removed alert'); assert(doc.body.textContent.includes('Kladden er beholdt'));
-await click(button('Kontroll fullført')); assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]')); assert(doc.querySelector('[aria-label="Dine åpne KS/HMS-avvik"]'), 'Control completion removed the existing deviation task'); assert.equal(rows.get(round.id).completed_by, colleague); assert(field('Navn').matches(':disabled')); await click(button('Lukk gjennomføring'));
+assert(doc.body.textContent.includes('1 gjennomføring'), 'Failed confirmation removed alert'); assert(doc.body.textContent.includes('Kladden er beholdt')); assert(doc.querySelector('[role="dialog"]'), 'Failed readback closed the dialog');
+await click(button('Kontroll fullført')); assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]')); assert(doc.querySelector('[aria-label="Dine åpne KS/HMS-avvik"]'), 'Control completion removed the existing deviation task'); assert.equal(rows.get(round.id).completed_by, colleague); assert(!doc.querySelector('[role="dialog"]'), 'Verified completion left the task popup open');
 
 context = { ...context, user_id: user, manage: true }; await render('project', { projectId: project }); await click(button('Opprett risikovurdering 5×5'));
 assert.equal(doc.querySelector('[data-job-project]').value, project); await common('QA prosjektrisiko'); await addRoutine();
@@ -102,9 +102,14 @@ await click([...doc.querySelectorAll('label')].find(node => node.textContent.inc
 for (const phase of ['before', 'after']) for (const [key, value] of [['probability', phase === 'before' ? '3' : '1'], ['consequence', phase === 'before' ? '4' : '2']]) await writeNode(doc.querySelector(`[data-execution-field$="-${key}_${phase}"]`), value);
 await click(button('Lagre utkast')); const risk = [...rows.values()].find(row => row.kind === 'risk'); assert.equal(risk.project_id, project); await click(button('Lukk gjennomføring'));
 await render('tasks'); assert(doc.body.textContent.includes('1 gjennomføring')); await click(button('Åpne gjennomføring')); assert.equal(field('Navn').value, 'QA prosjektrisiko'); await complete('Vurdering fullført');
-assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]')); assert(doc.querySelector('[aria-label="Dine åpne KS/HMS-avvik"]'), 'Risk completion removed the existing deviation task'); assert.equal(rows.get(risk.id).content.risks[0].decision, 'needs_action'); await click(button('Lukk gjennomføring'));
+assert(!doc.querySelector('[aria-label="Dine vernerunder og risikovurderinger"]')); assert(doc.querySelector('[aria-label="Dine åpne KS/HMS-avvik"]'), 'Risk completion removed the existing deviation task'); assert.equal(rows.get(risk.id).content.risks[0].decision, 'needs_action'); assert(!doc.querySelector('[role="dialog"]'), 'Verified risk completion left the task popup open');
 await render('project', { projectId: secondProject }); await click(button('Åpne risikovurderinger')); assert(!doc.body.textContent.includes('QA prosjektrisiko'));
 await render('project', { projectId: project, readOnly: true }); assert(button('Opprett vernerunde').disabled && button('Opprett risikovurdering 5×5').disabled); await click(button('Åpne vernerunder')); await click(button('Åpne dokumentasjon')); assert(field('Navn').matches(':disabled')); assert(!button('Kontroll fullført'));
+window.history.replaceState({}, '', `/?kshmsExecution=${risk.id}&kshmsCompany=${company}`); await render('tasks');
+assert(button('Åpne gjennomføringen fra e-posten')); await click(button('Åpne gjennomføringen fra e-posten')); assert.equal(field('Navn').value, 'QA prosjektrisiko'); assert(field('Navn').matches(':disabled')); await click(button('Lukk gjennomføring'));
+window.history.replaceState({}, '', `/?kshmsExecution=${risk.id}&kshmsCompany=ffffffff-ffff-4fff-8fff-ffffffffffff`); await render('tasks'); const beforeForeignEmail = calls.length;
+assert(doc.body.textContent.includes('Lenken gjelder et annet firma')); assert(!button('Åpne gjennomføringen fra e-posten')); assert.equal(calls.length, beforeForeignEmail);
+window.history.replaceState({}, '', '/');
 await render('tasks', { context: { ...context, enabled: false } }); assert(!doc.querySelector('[role="dialog"]')); assert(!doc.querySelector('.ks-task-banner'));
 await act(async () => window.__unmount()); dom.window.close(); fs.rmSync(temp, { recursive: true, force: true });
 console.log('kshms-project-executions-react-check: PASS — actual project buttons/lists, routine editions, scoped local drafts, responsible task dialog, failed-readback retry and both completion types');

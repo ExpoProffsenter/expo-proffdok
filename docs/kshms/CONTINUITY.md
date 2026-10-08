@@ -1,3 +1,11 @@
+## Sluttkontroll – popup/ansvarse-post, under publisering
+
+Popup og e-postflyt er bygget og tester grønne. Faktisk Sandbox-migrasjon 20261008192529, mailer v4 ACTIVE. Ny rollback-SQL 36 PASS + prosjekt 45, gjennomføring 54, avvik/worker 73, SJA/RUH 93 PASS. Faktisk React/DOM/prøvelenker og full Sandbox critical/build PASS. Fingeravtrykk signert SJA/rutineutgaver uendret. Check request 4 viser HTTP503, transport_safe=true, api_key_configured=false, sender_configured=false; enabled=false, ingen ekte e-post. Samme feature-Preview er neste publisering, main uendret på 155f6c4a. [Bevis](NOTIFICATIONS_20261008.md). Registerbehov: funksjons-SHA/tree, READY og CI etter publisering. Gjenstående ekstern konfigurasjon er RESEND_API_KEY/CHAT_FROM_EMAIL i Sandbox; ingen flere bruker-/Production-godkjenninger er utledet.
+
+## Aktivt arbeid – 8. oktober kl. 21:04 Europe/Oslo
+
+Kenneth: «test ok, popup burde lukke seg når godkjent. Alle varsler vi sender i appens ks/hms bør også sendes ansvarlig person på epost». TEST OK er registrert for prosjekttillegget publisert på 8bce982f: prosjektinnganger, rutinevalg og ansvarligvarsel. Dette er ikke Production-godkjenning. Nytt miljømål BEGGE, først samme Sandbox/Preview. Pågående rettelse lukker gjennomføringsdialogen først etter lagring og autoritativ readback; feil beholder kladden. E-post kobles til Avvik/RUH, vernerunder/kontroller, risiko, SJA, pliktig rutinegjennomgang og forfalt håndbokrevisjon, med deduplisering og undertrykking av inaktivt ansvar. Mailer er fortsatt avslått; helse/oppsett må verifiseres uten reell sending. Ingen Production-migrasjon, main-merge eller release er autorisert.
+
 # Gjeldende fortsettelsespunkt – prosjektinnganger og ansvarligvarsel publisert
 
 Funksjonskode `8bce982fb75bf105ee614601e604e438f89a78bc`, tree `ed17f78782d6a49944bd55be6b008d0ef29995e9`. Fast Sandbox Preview er READY på `dpl_4gwb3VsRp7Wf2GWmRrxFNre8DY87`, med samme feature-alias og eksakt SHA. PR Core Safety `37827572425` og jobb Core safety + critical build `113484256816` er completed/success på samme SHA. Lokal og publisert tree er identiske.

@@ -4,6 +4,7 @@ import { ProjectChoice, RoutineChoice, useKshmsJobChoices } from './KshmsJobChoi
 import DeviationDialog from '../deviations/DeviationDialog.jsx';
 import { SJA_HINTS, SJA_ROW_LABELS as labels, SJA_SOURCES, SJA_STATEMENT, SJA_SUGGESTIONS, appendSjaSuggestion, blankSja, blankSjaParticipant, blankSjaStep, newSjaRequests, participantFields, persistSjaDraft, readSjaDraft, sameSjaContent, saveSja, sjaDraftKey, sjaSigningIssues, stepFields } from './kshmsSja.mjs';
 import './kshmsSja.css';
+import { readNotificationLink } from './kshmsNotificationLinks.mjs';
 
 const dateTime = value => new Date(value).toLocaleString('nb-NO');
 function Field({ label, hint, value, onChange, multiline = false, type = 'text', maxLength = 4000, fieldKey, suggestions = [], requiredForSigning = false, invalid = false }) {
@@ -24,6 +25,7 @@ function Snapshot({ content, members = [], identity }) {
 
 export default function KshmsSja({ context, active = true, projectId = null, scopeReadOnly = false, createRequest = null }) {
   const companyId = context.company_id, userId = context.user_id;
+  const emailLink = readNotificationLink(window.location?.search || '', companyId);
   const [data, setData] = useState(null), [editor, setEditor] = useState(null), [record, setRecord] = useState(null), [cached, setCached] = useState(null), [conflict, setConflict] = useState(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState(''), [dirty, setDirty] = useState(false), [checked, setChecked] = useState(false), [attempted, setAttempted] = useState(false);
   const [query, setQuery] = useState(''), [status, setStatus] = useState('all');
@@ -133,6 +135,7 @@ export default function KshmsSja({ context, active = true, projectId = null, sco
     {cached && <aside className="sja-local"><p>Du har en lokal kladd på denne enheten. Fortsett kladden og lagre den før du starter en ny SJA.</p><button type="button" className="secondary" disabled={busy || opening} onClick={() => setDiscarding(true)}>Forkast lokal kladd</button>{discarding && <div><p>Dette fjerner bare kladden på denne enheten. Lagrede SJA-er beholdes.</p><button type="button" disabled={busy || opening} onClick={() => { if (clearDraft()) close(); }}>Ja, forkast lokal kladd</button><button type="button" className="secondary" onClick={() => setDiscarding(false)}>Behold kladden</button></div>}</aside>}
     {opening && !editor && <p role="status">Henter lagret SJA …</p>}
     {error && !editor && <p className="ks-error" role="alert">{error}</p>}{notice && !editor && <p className="ks-notice" role="status">{notice}</p>}
+    {active && !projectId && emailLink?.kind === 'sja' && <div className="ks-notice"><p>{emailLink.matchingCompany ? 'Du har åpnet en lenke til en SJA.' : 'Lenken gjelder et annet firma. Bytt til riktig arbeidsprofil før du åpner SJA-en.'}</p>{emailLink.matchingCompany && <button type="button" disabled={busy || opening || !data} onClick={() => choose({ id: emailLink.id })}>Åpne SJA fra e-posten</button>}</div>}
     <form className="sja-search" onSubmit={event => { event.preventDefault(); load().catch(cause => setError(cause.message)); }}><Field label="Søk i SJA" value={query} onChange={setQuery} maxLength={160} /><label className="ks-field"><span>Status</span><select value={status} onChange={event => setStatus(event.target.value)}><option value="all">Alle</option><option value="draft">Utkast</option><option value="signed">Signert</option></select></label><button type="submit" className="secondary" disabled={busy}>Søk</button></form>
     {data && <p className="ks-field-hint">{`${data.total} analyser i dette søket${data.total > data.items.length ? `. Viser de ${data.items.length} nyeste. Avgrens søket for eldre analyser.` : ''}`}</p>}
     <div className="sja-list">{data?.items.map(row => <button type="button" className="secondary sja-list-row" key={row.id} disabled={busy} onClick={() => choose(row)}><div><strong>{row.title}</strong><span>{row.workplace || 'Arbeidssted ikke utfylt'}{row.project_name ? ` · Prosjekt: ${row.project_name}` : row.project_reference ? ` · ${row.project_reference}` : ''}</span></div><div><span className="ks-badge">{row.status === 'signed' ? 'Signert' : 'Utkast'}</span><span>{row.status === 'signed' ? `${row.signed_identity?.name} · ${dateTime(row.signed_at)}` : row.leader_identity?.name ? `Ansvarlig: ${row.leader_identity.name}` : 'Ansvarlig ikke valgt'}</span></div></button>)}</div>

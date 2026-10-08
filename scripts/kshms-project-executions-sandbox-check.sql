@@ -92,6 +92,7 @@ set local role anon;
 do $$begin perform pg_temp.ex_reject(format('select public.kshms_project_execution_state(%L,%L,''round'')',current_setting('ks.exec.company'),current_setting('ks.exec.project')),'42501');perform pg_temp.ex_reject(format('select public.kshms_execution_tasks(%L)',current_setting('ks.exec.company')),'42501');end$$;
 reset role;
 select pg_temp.ex_assert((select data::text=current_setting('ks.exec.project.data') from public.projects where id=current_setting('ks.exec.project')::uuid),'project/checklist/signature JSON preserved');
-select pg_temp.ex_assert((select count(*)=0 from public.kshms_notification_outbox where company_id=current_setting('ks.exec.company')::uuid),'control tasks create no email queue');
+select pg_temp.ex_assert((select count(*)=0 from public.kshms_notification_outbox where company_id=current_setting('ks.exec.company')::uuid and notification_kind='deviation'),'control assignment alone creates no deviation email');
+select pg_temp.ex_assert((select count(*)>0 from public.kshms_notification_outbox where company_id=current_setting('ks.exec.company')::uuid and notification_kind in('round','risk')),'control assignments also create responsible email notifications');
 select 'PASS – all synthetic rows rolled back' as result,current_setting('ks.exec.checks')::integer as assertions;
 rollback;

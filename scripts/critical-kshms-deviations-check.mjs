@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import './critical-kshms-notifications-check.mjs';
 import fs from 'node:fs';
 import { formatDeviationDate, formatDeviationDateTime } from '../src/modules/deviations/deviationDates.mjs';
 import { deviationForm,validateDeviation,deviationClosureIssues,saveDeviation,storeDeviationDraft,readDeviationDraft,deviationDraftKey,projectAfterDeviation,checklistAfterDeviation,readDeviationLink,deviationFileType } from '../src/modules/kshms/kshmsDeviations.mjs';

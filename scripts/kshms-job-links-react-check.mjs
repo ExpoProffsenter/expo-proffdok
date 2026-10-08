@@ -22,11 +22,11 @@ const context = { company_id: company, user_id: user, enabled: true, manage: tru
 const projects = [{ id: projectId, name: 'QA mur og flis', address: 'QA arbeidssted' }, { id: otherProject, name: 'QA tømrerordre', address: '' }];
 const routines = [{ id: '55555555-5555-4555-8555-555555555555', routine_id: '66666666-6666-4666-8666-666666666666', reference_number: 12, number: 3, content: { title: 'Støv ved mur og flis', chapter: 'HMSK', procedure: 'QA godkjent arbeidsmetode' } }];
 const sjas = new Map(), cases = new Map(), receipts = new Map(), calls = [];
-let failCreate = false;
+let failCreate = false, handbook = {settings:null,routines:[],versions:[],members:[],assignments:[],acknowledgments:[],reviews:[]};
 window.__rpc = async (name, args) => {
   calls.push({ name, args: structuredClone(args) });
   const scoped = { ...context, company_id: args.p_company_id, ...(args.p_project_id ? { project_id: args.p_project_id } : {}) };
-  if (name === 'kshms_get_state') return {context:scoped,settings:null,routines:[],versions:[],members:[],assignments:[],acknowledgments:[],reviews:[]};
+  if (name === 'kshms_get_state') return {...handbook,context:scoped};
   if (name === 'kshms_job_choices') { return { context: scoped, projects: projects.filter(row => row.name.includes(args.p_project_query || '')), project_total: 2, routines }; }
   if (name === 'kshms_sja_state' || name === 'kshms_project_sja_state') {
     const items = [...sjas.values()].filter(row => !args.p_project_id || row.project_id === args.p_project_id).map(row => ({ ...row, title: row.content.title }));
@@ -86,5 +86,17 @@ await render('cases'); await click(button('Registrer RUH')); await write(field('
 await act(async () => window.__unmount());
 await render('module'); assert(button('Avvik/RUH')); assert(button('SJA')); await click(button('Avvik/RUH')); assert(button('Registrer avvik')); assert(button('Registrer RUH')); assert(doc.body.textContent.includes('RUH betyr rapport om uønsket hendelse'));
 assert(doc.querySelector('.ks-case-list').textContent.includes('frist 11.10.2026')); await click(button('Registrer RUH')); assert(doc.querySelector('[role="dialog"]')); assert.equal(field('Type avvik').value,'ruh'); await click(button('Behold kladd og lukk')); await click(button('SJA')); assert(button('Ny SJA'));
+// Email links select authorized reads in the real module, with no implicit signatures/acknowledgments.
+await act(async () => window.__unmount()); const linkedSja = [...sjas.values()][0];
+window.history.replaceState({}, '', `/?kshmsSja=${linkedSja.id}&kshmsCompany=${company}`); await render('module');
+assert.equal(button('SJA').getAttribute('aria-pressed'), 'true'); await click(button('Åpne SJA fra e-posten')); assert.equal(doc.querySelector('[data-sja-field="title"]').value, linkedSja.content.title); await click(button('Lukk'));
+await act(async () => window.__unmount());
+handbook = {...handbook,versions:[{...routines[0],requires_ack:true}],assignments:[{company_id:company,version_id:routines[0].id,user_id:user}]};
+window.history.replaceState({}, '', `/?kshmsVersion=${routines[0].id}&kshmsCompany=${company}`); await render('module');
+assert.equal(button('Les og bekreft (1)').getAttribute('aria-pressed'), 'true'); const acknowledgmentsBefore = calls.filter(row => row.name === 'kshms_command').length;
+await click(button('Åpne rutinen fra e-posten')); assert(doc.body.textContent.includes('Støv ved mur og flis')); assert(!doc.querySelector('input[type="checkbox"]:checked')); assert.equal(calls.filter(row => row.name === 'kshms_command').length, acknowledgmentsBefore);
+window.history.replaceState({}, '', `/?kshmsVersion=${routines[0].id}&kshmsCompany=${otherProject}`); await render('module'); assert(doc.body.textContent.includes('Lenken gjelder et annet firma')); assert(!button('Åpne rutinen fra e-posten'));
+await act(async () => window.__unmount()); handbook = {...handbook,settings:{revision:1,trades:['mur_flis'],responsible_user_id:user,next_review_on:'2026-10-07'}};
+window.history.replaceState({}, '', `/?kshmsReview=${company}&kshmsCompany=${company}`); await render('module'); assert.equal(button('Oppfølging og revisjon').getAttribute('aria-pressed'), 'true'); assert(doc.body.textContent.includes('Datoen er passert'));
 await act(async () => window.__unmount()); dom.window.close(); fs.rmSync(temp, { recursive: true, force: true });
 console.log('Real React project/SJA/RUH: PASS – module-only navigation/actions, direct blank creation, real project choices/manual references, numbered exact routine edition, optional trade prompts, complete missing-field alert, network retry/draft retention, own closure, scoped history and read-only actions.');

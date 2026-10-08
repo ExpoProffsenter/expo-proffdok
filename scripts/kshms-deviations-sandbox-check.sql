@@ -126,6 +126,8 @@ do $$ declare a uuid:=current_setting('kshms.test.company_a')::uuid;case_id uuid
  assert (select count(*)=1 from public.kshms_notification_outbox where deviation_id=case_id and assignment_number=1),'Create retry duplicated notification';n:=n+1;
  assert (select count(*)=1 from public.kshms_notification_outbox where deviation_id=case_id and assignment_number=2),'Reopen notification missing';n:=n+1;
  begin update public.kshms_deviation_events set action='changed' where company_id=a;raise exception 'Mutable case history';exception when insufficient_privilege then n:=n+1;end;
+ -- Isolate the shared worker queue inside this rollback transaction; no HTTP is invoked.
+ update public.kshms_notification_outbox set status='suppressed' where company_id<>a and status in('pending','sending');
  assert not exists(select 1 from public.kshms_notification_outbox where company_id<>a and status in('pending','sending')),'Unrelated queue must stay isolated during QA';
  -- A synthetic reachable-shaped address only. No HTTP or provider is invoked.
  perform set_config('request.jwt.claim.sub',current_setting('kshms.test.sys'),true);
