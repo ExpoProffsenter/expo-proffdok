@@ -4,7 +4,7 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Dette er samlet gjeldende status. PLAN.m
 
 ## Nyeste forbedring
 
-Prosjektets Avvik/SJA/RUH er gjort kompakt: fire lukkede dokumentgrupper viser antall/status, og avviksgrupper/rader er lukket med åpne saker først. Kort oversiktsprøve i USER_TEST.md gjenstår sammen med PDF-prøven. Samme Sandbox Preview; tidligere TEST OK består. Dette endrer visning og hjelp, ikke planens øvrige omfang.
+Prosjektets Avvik/SJA/RUH er publisert READY på funksjonskode 990ce731 med grønn Core Safety/critical build. Visningen er gjort kompakt: fire lukkede dokumentgrupper viser antall/status, og avviksgrupper/rader er lukket med åpne saker først. Kort oversiktsprøve i USER_TEST.md gjenstår sammen med PDF-prøven. Samme Sandbox Preview; tidligere TEST OK består. Dette endrer visning og hjelp, ikke planens øvrige omfang.
 
 ## Hvor vi er
 

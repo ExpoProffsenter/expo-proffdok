@@ -1,8 +1,16 @@
+## Publisert kompakt prosjektoversikt – READY
+
+Funksjonskode **990ce731d983c8f6bbfd92b8498723d03c956868**, tree **18151a4384ba493e166801500bd5af7d09b78aee**. Lokal testet og publisert source tree er identiske. Fast Sandbox Preview er **READY** på **dpl_Gm7bVWwzsQ7N3nrcXiaL32RQbebW**, alias expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app, med eksakt SHA. PR Core Safety **37844000342**, jobb Core safety + critical build **113540184367**, completed/success på samme SHA. Branchbinding EXPO_BACKEND_TARGET=sandbox, target preview, gitBranch feat-kshms-foundation er kontrollert. PR #216 er fortsatt open/draft. Main står uendret på **155f6c4ac01f126c1db0c65da385cfd9305587d5**.
+
+Neste er den korte oversiktsprøven i USER_TEST.md. Alle 14 skjermbilder er lest. Tidligere TEST OK består; denne UX-delen og PDF-prøven har fortsatt ikke egen bruker-TEST OK. Ingen main-/Production-/demo-, database- eller e-postendring i UX-runden. En etterfølgende ren dokumentcommit registrerer dette beviset uten funksjonsendring.
+
+---
+
 ## Prosjektoversikt – sammenfolding, 8. oktober 2026
 
 Kenneths 14 skjermbilder er lest. Avvik/SJA/RUH er gjort kompakt i samme feature/Sandbox: fire lukkede dokumentgrupper med antall/status, og lukkede grupper/rader for sjekkpunkt- og prosjektavvik. Åpne avvik står først; ansvarlig og frist vises på raden. Nye prosjektavvik åpnes etter lagring. Miljømål BEGGE, først Sandbox Preview; tidligere TEST OK består.
 
-Faktisk React/DOM med simulert RPC PASS: metadataantall, folding, bevart redigering, ny sak synlig etter lagring, offline/tapt tilgang/sene svar, låst prosjekt, legacy-lukking og koblet KS/HMS-sak. Eksisterende prosjekt/SJA/RUH- og gjennomføringsprøver PASS. Ingen ny innlogget mobil-/flere-konto-PASS hevdes. Full Sandbox critical/build PASS med exit code 0. Publiseringsbevis føres her etter kontroll. Ingen database-, e-post-, main-, Production- eller demo-endring i denne UX-runden. PR #216 beholdes draft.
+Faktisk React/DOM med simulert RPC PASS: metadataantall, folding, bevart redigering, ny sak synlig etter lagring, offline/tapt tilgang/sene svar, låst prosjekt, legacy-lukking og koblet KS/HMS-sak. Eksisterende prosjekt/SJA/RUH- og gjennomføringsprøver PASS. Ingen ny innlogget mobil-/flere-konto-PASS hevdes. Full Sandbox critical/build PASS med exit code 0. Publiseringsbevis er bekreftet ovenfor. Ingen database-, e-post-, main-, Production- eller demo-endring i denne UX-runden. PR #216 beholdes draft.
 
 Neste er den korte oversiktsprøven øverst i USER_TEST.md. PDF-prøven under den er fortsatt åpen. [Omfang og kontroller](PROJECT_OVERVIEW_20261008.md).
 

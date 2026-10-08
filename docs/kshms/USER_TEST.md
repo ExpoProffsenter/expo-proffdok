@@ -1,6 +1,6 @@
 # Kort ny prøve – kompakt prosjektoversikt
 
-Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Testprosjekt: **DEMO – HOVED – Badrenovering i arbeid** i Expo Proffsenter. Dette prosjektet har kontrollen **test vernerunde**. Et annet prosjekt med eksisterende avvik kan også brukes for avviksradene.
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Ny oversikt er READY på funksjonskode 990ce731 med grønn Core Safety/critical build. Testprosjekt: **DEMO – HOVED – Badrenovering i arbeid** i Expo Proffsenter. Dette prosjektet har kontrollen **test vernerunde**. Et annet prosjekt med eksisterende avvik kan også brukes for avviksradene.
 
 1. **Prosjekt → Avvik/SJA/RUH:** SJA, RUH, Vernerunde / kontroll og Risikovurdering 5×5 skal starte lukket. Antall og status skal stå på overskriftene. Trykk en overskrift: registrerte dokumenter og Opprett/Registrer vises. Åpne neste gruppe: den forrige lukkes.
 2. Under **Avvikssentral**, åpne **Sjekkpunktavvik** eller **HMS- og prosjektavvik**, og deretter én sak. Åpne saker skal stå først. Du skal se status og eventuelt ansvarlig/frist uten å åpne saken. Gå til punkt / Åpne i KS/HMS skal fortsatt åpne riktig oppfølging.
