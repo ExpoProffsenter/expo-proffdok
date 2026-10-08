@@ -1,3 +1,15 @@
+## Kort ny prøve – samlet dokumentuttrekk
+
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe) og eksisterende innlogging. Tidligere TEST OK beholdes, inkludert egen lagret SJA-PDF.
+
+1. Åpne **KS/HMS → Dokumentuttrekk**. Skriv hva du vil dokumentere i **Omfang / hva skal dokumenteres?** og trykk **Hent dokumentlisten**. Ingen dokumenter skal være valgt.
+2. Åpne ønskede dokumentgrupper, huk av for eksempel en godkjent rutine, Test sja, test ruh og test vernerunde. Velg eventuelt prosjekt og trykk **Hent prosjektkontroller**. Kontroller listen **Dette blir med i PDF-en** og bekreft valget.
+3. Trykk **Last ned samlet PDF**. Se omfang, bare valgte dokumenter, bevart status/signatur, RUH-historikk og manifest med dokument-ID/utgave/sider. Fjern ett dokument med **Fjern**, bekreft på nytt og se at det er borte i neste PDF. Eksisterende saker skal ikke endres.
+
+Utvikler har kontrollert to ekte samle-PDF-er, tilgangs-/revisjons-/bilde-/avbrytvern og eksisterende berørte PDF-flyter. Faktisk innlogget skynettleserbevis og publisert SHA føres i CONTINUITY. Ny TEST OK for samlet uttrekk gjenstår. Privat bilde fra en allerede lagret RUH, mobil og flere brukere er egne åpne prøver. Separate originalfiler hentes separat; PDF-en er ikke full tilsynsgodkjenning. Ingen signering eller fullføring kreves for å teste uttrekket.
+
+---
+
 ## TEST OK 9. oktober kl. 00:59: egen SJA-PDF
 
 **Godkjent av Kenneth.** Denne delprøven skal ikke gjentas uten konkret feil/relevant regresjon. Listen under beholdes som historisk testgrunnlag. Øvrige åpne delprøver er fortsatt åpne.

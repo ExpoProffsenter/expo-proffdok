@@ -1,3 +1,9 @@
+## Samlet dokument-/tilsynsuttrekk – utviklerbevis
+
+Ny permanent critical-check er koblet inn i eksisterende KS/HMS/build-kjede, uten svekkede eksisterende krav. PASS: eksplisitt valg av åtte dokumenttyper, uttømmende RUH-historikk over flere sider, private Storage-bilder, sperre ved endrede snapshots/utgaver/tilgang, sent firma-/brukerbytte og unmount, ingen kommando-RPC eller lekkasje av utkast/ansattbekreftelser/tokenlenker. Faktisk React/Storage/jsPDF gir to samle-PDF-er (15 sider med alle åtte typer, 14 uten rutine); innhold, langtekst, signaturer, bilder, matrise, manifest og sidegrenser er kontrollert, også visuelt. Eksisterende RUH React/PDF og fem rutine-/mal-/prosjektkontroll-PDF-er PASS. Full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS exit 0. Eksakt publisert CI/READY følger sluttkontrollen i CONTINUITY. Innlogget privat RUH-bilde, mobil og flere reelle brukere gjenstår; syntetisk Storage-test er ikke bevis for disse prøvene. [Scope](INSPECTION_EXTRACT_20261009.md).
+
+---
+
 ## Publisert rutine-/sjekkliste-PDF – READY
 
 Funksjonskode **64143a3a4a982f442bbafcacaf40d535073751a8**, tree **86813dd63f72714995ea88bf71d26bd7b72cb571**. Hver publisert blob og samlet tree er identiske med lokal testet commit bb4b0053. Git-push manglet skriveinnlogging; GitHub-koblingen publiserte samme tree med expected-head aea7e766 og uten force. Ingen lokal branchhistorikk er slettet.

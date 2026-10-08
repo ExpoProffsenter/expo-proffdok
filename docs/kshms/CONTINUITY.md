@@ -1,3 +1,13 @@
+## Samlet dokument-/tilsynsuttrekk – ny avgrenset B/C-leveranse
+
+Miljømål **BEGGE**, publisering først på samme feature/Sandbox. Baseline `9ac259fa8027a3d88e57c5ab761d71fbeaef5cb7`, faktisk main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 open/draft. Tidligere TEST OK beholdes, også Kenneths SJA-PDF-prøve 9. oktober kl. 00:59.
+
+Firmaadmin/KS/HMS-ansvarlig får **KS/HMS → Dokumentuttrekk**: beskriv omfang, hent listen, velg lagrede dokumenter og bekreft valget før **Last ned samlet PDF**. Åtte dokumentgrupper, full RUH-historikk/private bilder, felles rammer og manifest med dokument-ID, utgave/revisjon og sider. Ingen dokumenter velges automatisk. [Scope, testbevis og avgrensning](INSPECTION_EXTRACT_20261009.md). Publisert head/CI/READY og faktisk skynettleserprøve føres ved sluttkontroll.
+
+Neste ufullførte B/C-punkt etter denne leveransen er øvrig vedleggsdekning/versjonerte underskjema; deretter frist-/utløpspåminnelser og kildeoppdatering. Full tilsynsdekning, andre avvik enn RUH, separate originalfiler og framtidige HR-/opplæringsbevis er ikke levert gjennom denne PDF-en. Ingen databaseendring, Production/main/demo-merge eller ekte e-postsending; KS/HMS-utsending forblir deaktivert.
+
+---
+
 ## TEST OK og handoff – 9. oktober 2026 kl. 00:59 Europe/Oslo
 
 Kenneth svarte **«test ok. Lagre historikk der du pleier å gi meg en handoff prompt til ny chat»** etter leveransen av egen lagret SJA-PDF. **TEST OK gjelder denne avgrensede SJA-PDF-leveransen.** Tidligere TEST OK beholdes; ikke krev omprøving uten konkret feil/relevant regresjon. Ingen Production-release, main/demo-merge eller ekte e-postsending er godkjent.

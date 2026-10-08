@@ -1,3 +1,13 @@
+## Samlet dokument-/tilsynsuttrekk – ny avgrenset B/C-leveranse
+
+Miljømål **BEGGE**, publisering først på samme feature/Sandbox. Baseline `9ac259fa8027a3d88e57c5ab761d71fbeaef5cb7`, faktisk main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 open/draft. Tidligere TEST OK beholdes, også Kenneths SJA-PDF-prøve 9. oktober kl. 00:59.
+
+Firmaadmin/KS/HMS-ansvarlig får **KS/HMS → Dokumentuttrekk**: beskriv omfang, hent listen, velg lagrede dokumenter og bekreft valget før **Last ned samlet PDF**. Åtte dokumentgrupper, full RUH-historikk/private bilder, felles rammer og manifest med dokument-ID, utgave/revisjon og sider. Ingen dokumenter velges automatisk. [Scope, testbevis og avgrensning](INSPECTION_EXTRACT_20261009.md). Publisert head/CI/READY og faktisk skynettleserprøve føres ved sluttkontroll.
+
+Neste ufullførte B/C-punkt etter denne leveransen er øvrig vedleggsdekning/versjonerte underskjema; deretter frist-/utløpspåminnelser og kildeoppdatering. Full tilsynsdekning, andre avvik enn RUH, separate originalfiler og framtidige HR-/opplæringsbevis er ikke levert gjennom denne PDF-en. Ingen databaseendring, Production/main/demo-merge eller ekte e-postsending; KS/HMS-utsending forblir deaktivert.
+
+---
+
 ## Samlet status 8. oktober 2026 – les først
 
 [OVERSIKT.md](OVERSIKT.md) er gjeldende samlet A–E-status og videre rekkefølge. A/A2 er levert i Preview, B langt på vei bygget, C delvis levert, individuell D og pilot E gjenstår. De opprinnelige gap-tabellene nedenfor er historikk; bruk dem som omfang, ikke som aktuell implementasjonsstatus. Kontroll-/risiko-PDF er nå implementert og utviklertestet med egen nedlasting og valgfritt prosjektvedlegg; ny brukerprøve står i USER_TEST.md. Publiseringsstatus står i CONTINUITY.md. Øvrige B/C-punkter følger før separat HR. Ingen Production-godkjenning følger dokumentgodkjenningen. E-post gjenbruker eksisterende Production-Resend; Sandbox KS/HMS-sending holdes deaktivert.

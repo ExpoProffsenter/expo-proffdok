@@ -50,24 +50,7 @@ export async function downloadRuhPdf({expected,rpc,companyId,userId,projectId=nu
   const x=projectId?response?.context:response;
   if(!x?.enabled||x.company_id!==companyId||x.user_id!==userId||projectId&&x.project_id!==projectId)throw Error('Tilgangen er endret. Åpne saken på nytt.');return true;
  };
- const read=async()=>{
-  let cursor=null;const events=[],seen=new Set(),cursors=new Set();let row;
-  do{
-   const result=await rpc('kshms_deviation_detail',{p_company_id:companyId,p_id:expected.id,p_before:cursor?.before||null,p_before_id:cursor?.id||null});if(!isCurrent())return null;
-   if(result.case?.company_id!==companyId||result.case.id!==expected.id||result.case.category!=='ruh'||projectId&&result.case.project_id!==projectId||!sameRunValue(result.case,expected))throw Error('En nyere sak er lagret. Trykk «Oppdater sak» før PDF.');
-   row=result.case;if(!Array.isArray(result.events))throw Error('Historikken kunne ikke bekreftes.');
-   for(const event of result.events){
-    if(!event.id||seen.has(event.id)||event.company_id!==companyId||event.deviation_id!==row.id||!names[event.action]||!event.snapshot||event.action!=='file'&&(event.snapshot.id!==row.id||event.snapshot.company_id!==companyId))throw Error('Historikken er ufullstendig eller gjelder en annen sak. PDF er ikke laget.');
-    seen.add(event.id);events.push(event);
-   }
-   cursor=result.next;
-   if(cursor){const key=JSON.stringify(cursor);if(!cursor.before||!cursor.id||!result.events.length||cursors.has(key)||events.length>10000)throw Error('Hele historikken kunne ikke hentes. PDF er ikke laget.');cursors.add(key);}
-  }while(cursor);
-  const files=await rpc('kshms_deviation_files',{p_company_id:companyId,p_id:expected.id});if(!isCurrent())return null;
-  const ids=new Set();if(!Array.isArray(files))throw Error('Vedleggene kunne ikke bekreftes for denne saken.');
-  for(const file of files){if(!file.id||ids.has(file.id)||file.company_id!==companyId||file.deviation_id!==row.id||!file.uploaded_at||!file.object_name?.startsWith(`${companyId}/${row.id}/`)||file.object_name.includes('..')||file.object_name.split('/').length!==3||!file.size_bytes)throw Error('Vedleggene kunne ikke bekreftes for denne saken.');ids.add(file.id);}
-  return {case:row,events,files};
- };
+ const read=()=>readRuhPdfSnapshot({expected,rpc,companyId,projectId,isCurrent});
  if(!await scope())return null;const saved=await read();if(!saved)return null;
  const profile=await rpc('work_profile_company_profile',{p_company_id:companyId});if(!isCurrent())return null;if(profile?.companyId!==companyId)throw Error('Firmaprofilen kunne ikke bekreftes.');
  const document=ruhPdfDocument(saved);
@@ -85,4 +68,24 @@ export async function downloadRuhPdf({expected,rpc,companyId,userId,projectId=nu
  const doc=new JsPDF({unit:'mm',format:'a4',compress:true});appendBoxedPdf(doc,document,{companyName:profile.companyName,logo});
  const count=doc.internal.getNumberOfPages();for(let i=1;i<=count;i++){doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(71,85,105);doc.text(`${String(profile.companyName||'').slice(0,65)} · Expo ProffDok`,14,285);doc.text(`Side ${i} av ${count}`,196,285,{align:'right'});}
  if(!isCurrent())return null;doc.save(('RUH - '+document.title).replace(/[\\/:*?"<>|\x00-\x1f]/g,'-').slice(0,100)+'.pdf');return {logoMissing:Boolean(profile.logoUrl&&!logo)};
+}
+
+// Shared complete, read-only RUH snapshot for standalone and selected extracts.
+export async function readRuhPdfSnapshot({expected,rpc,companyId,projectId=null,isCurrent=()=>true}){
+  let cursor=null;const events=[],seen=new Set(),cursors=new Set();let row;
+  do{
+   const result=await rpc('kshms_deviation_detail',{p_company_id:companyId,p_id:expected.id,p_before:cursor?.before||null,p_before_id:cursor?.id||null});if(!isCurrent())return null;
+   if(result.case?.company_id!==companyId||result.case.id!==expected.id||result.case.category!=='ruh'||projectId&&result.case.project_id!==projectId||!sameRunValue(result.case,expected))throw Error('En nyere sak er lagret. Trykk «Oppdater sak» før PDF.');
+   row=result.case;if(!Array.isArray(result.events))throw Error('Historikken kunne ikke bekreftes.');
+   for(const event of result.events){
+    if(!event.id||seen.has(event.id)||event.company_id!==companyId||event.deviation_id!==row.id||!names[event.action]||!event.snapshot||event.action!=='file'&&(event.snapshot.id!==row.id||event.snapshot.company_id!==companyId))throw Error('Historikken er ufullstendig eller gjelder en annen sak. PDF er ikke laget.');
+    seen.add(event.id);events.push(event);
+   }
+   cursor=result.next;
+   if(cursor){const key=JSON.stringify(cursor);if(!cursor.before||!cursor.id||!result.events.length||cursors.has(key)||events.length>10000)throw Error('Hele historikken kunne ikke hentes. PDF er ikke laget.');cursors.add(key);}
+  }while(cursor);
+  const files=await rpc('kshms_deviation_files',{p_company_id:companyId,p_id:expected.id});if(!isCurrent())return null;
+  const ids=new Set();if(!Array.isArray(files))throw Error('Vedleggene kunne ikke bekreftes for denne saken.');
+  for(const file of files){if(!file.id||ids.has(file.id)||file.company_id!==companyId||file.deviation_id!==row.id||!file.uploaded_at||!file.object_name?.startsWith(`${companyId}/${row.id}/`)||file.object_name.includes('..')||file.object_name.split('/').length!==3||!file.size_bytes)throw Error('Vedleggene kunne ikke bekreftes for denne saken.');ids.add(file.id);}
+  return {case:row,events,files};
 }
