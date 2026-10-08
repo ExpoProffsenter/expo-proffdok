@@ -32,3 +32,9 @@ Faglig veiledning: Arbeidstilsynets https://www.arbeidstilsynet.no/hms/risikovur
 ## Endelig lokal QA
 
 `EXPO_BACKEND_TARGET=sandbox npm run build` PASS etter siste app-/Hjelp-endring. Hele eksisterende kritiske kjeden er kjørt, inkludert håndbok/SJA/rapport/avvik/maler/prosjektkontroller og Sales server-hydrering, kladd/faneretur, meny, auth/firmatilgang, Badskisse og portalvern. Vite bygger. Ingen eksisterende tester er svekket. Git-diff sammenlignet med main og med leveransens dokumentbase; app-delta er bare ny utførelse, to interne KS/HMS-faner og Hjelp. Resten av den store feature-diffen er tidligere KS/HMS-leveranser, ikke nye endringer i denne runden.
+
+## Bekreftet publisering
+
+Funksjonskode `829ae35315d5e09d4f4e18d7f231f4a2826b8915`, tree `50421488d1498c3045f1d68f56b5efd62c2043d0`: samme faste Preview er READY på `dpl_6nK5QuRTshRSYX5ZAbd3MMPNYBAg`. Core safety + critical build `113342140090` er completed/success på samme SHA. Branch-spesifikk `EXPO_BACKEND_TARGET=sandbox` er kontrollert på nytt (target preview, branch feat-kshms-foundation).
+
+Fast brukeradresse: https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe. Lokal og remote kode-tree er eksakt like. PR #216 er open/draft med main 155f6c4ac01f126c1db0c65da385cfd9305587d5 som uendret base. Ingen merge eller Production-endring. Etterfølgende dokumentcommit registrerer bare dette beviset; app-/SQL-koden endres ikke. Relevant ny bruker-TEST OK gjenstår.

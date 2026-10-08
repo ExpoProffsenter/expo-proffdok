@@ -1,6 +1,6 @@
 # Neste korte Preview-prøve – vernerunde og risikovurdering
 
-Bruk samme [Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Du trenger ikke åpne et prosjekt: begge verktøyene ligger i **KS/HMS**. Tidligere rapport-, SJA-/RUH-, håndbok-, meny- og sjekklisteprøver er TEST OK og skal ikke gjentas.
+Publisert READY på funksjonskode `829ae35315d5e09d4f4e18d7f231f4a2826b8915`. Bruk samme [Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Du trenger ikke åpne et prosjekt: begge verktøyene ligger i **KS/HMS**. Tidligere rapport-, SJA-/RUH-, håndbok-, meny- og sjekklisteprøver er TEST OK og skal ikke gjentas.
 
 1. **Vernerunder/kontroller → Ny vernerunde / kontroll**: bruk navnet **TEST – vernerunde**, fyll arbeidssted, dato og deltakere, og behold deg selv som ansvarlig. Lag ett eget sjekkpunkt. Velg **Avvik**, skriv en kommentar, velg deg selv som tiltaksansvarlig og en frist. Fyll gjennomgang og trykk **Lagre utkast**. Lukk og **Fortsett gjennomføring**: teksten og svaret skal stå der. Bekreft egen gjennomgang og trykk **Kontroll fullført**. Navn/tidspunkt skal vises og innholdet skal være låst. En åpen sak for punktet skal finnes i **Avvik/RUH**; kontrollen lukker den ikke.
 2. I den fullførte kontrollen: **Start ny gjennomføring fra listen**. Punktene beholdes, men svar og dato skal være tomme. Den gamle kontrollen ligger fortsatt under **Fullførte / historikk**.

@@ -4,7 +4,7 @@ Oppdatert 8. oktober 2026, Europe/Oslo. Les denne først ved chatbytte; detaljer
 
 ## Ny rapportleveranse 8. oktober
 
-Rapporttillegget er Kenneths TEST OK 8. oktober kl. 14:48 Europe/Oslo. SJA/RUH-valg og PDF med/uten er godkjent for denne delprøven. Vernerunder/selvstendige kontroller og 5×5-risikovurdering er nå bygget og utviklertestet; egen kort brukerprøve gjenstår. Ingen tidligere godkjente prøver gjentas uten konkret feil, og Production er fortsatt uendret.
+Rapporttillegget er Kenneths TEST OK 8. oktober kl. 14:48 Europe/Oslo. SJA/RUH-valg og PDF med/uten er godkjent for denne delprøven. Vernerunder/selvstendige kontroller og 5×5-risikovurdering er nå READY på samme Preview; egen kort brukerprøve gjenstår. Ingen tidligere godkjente prøver gjentas uten konkret feil, og Production er fortsatt uendret.
 
 Kenneths «kjør» kl. 13:38 autoriserte valgfri SJA/RUH i prosjektets Rapport/PDF/utskrift. Valg, rutinehenvisning, deltagere/signatur, status/tiltak/ansvarlig/lukking er bygget. 34 databasekontroller, 5 faktiske PDF-er, 3 utskrifter og visuell PDF-kontroll PASS. Samme Preview er READY på funksjonskode f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c; Core safety + critical build completed/success. Publiseringsbevis står i PROJECT_REPORT_20261008.md. Rapporttillegget er TEST OK kl. 14:48; tidligere TEST OK består. Testbevis: [PROJECT_REPORT_20261008.md](PROJECT_REPORT_20261008.md).
 
@@ -13,7 +13,7 @@ Kenneths «kjør» kl. 13:38 autoriserte valgfri SJA/RUH i prosjektets Rapport/P
 Ny KS/HMS-funksjonalitet ligger i samme Sandbox Preview:
 https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe
 
-Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert funksjonskode: `f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c`; fast Preview READY på samme SHA. Valgfri prosjekt-SJA/RUH i Rapport/PDF/utskrift er publisert. SJA/RUH-prosjektinngang, faktiske prosjektvalg og nummererte rutiner er READY på samme Preview. Den rapporterte menyfeilen er rettet: Avvik/SJA/RUH vises i desktopmenyen, KS/HMS har Avvik/RUH og avviksdatoer vises norsk. Core Safety/critical build success. Testbevis: NAV_RUH_DATE_20261008.md. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
+Produksjon står på tidligere godkjent main. Ingen KS/HMS-produksjonsrelease er utført. Kontrollert ny funksjonskode: `829ae35315d5e09d4f4e18d7f231f4a2826b8915`; fast Preview READY på samme SHA, Core safety + critical build success. Vernerunder/kontroller og 5×5-risiko er publisert. Testbevis: EXECUTIONS_20261008.md. Valgfri prosjekt-SJA/RUH i Rapport/PDF/utskrift er publisert. SJA/RUH-prosjektinngang, faktiske prosjektvalg og nummererte rutiner er READY på samme Preview. Den rapporterte menyfeilen er rettet: Avvik/SJA/RUH vises i desktopmenyen, KS/HMS har Avvik/RUH og avviksdatoer vises norsk. Core Safety/critical build success. Testbevis: NAV_RUH_DATE_20261008.md. Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
 
 | Del | Hva finnes nå | Godkjenning / gjenstående |
 |---|---|---|
@@ -39,7 +39,7 @@ Seks egne hovedkapitler. Egen gjennomgang av tildelte rutiner er påkrevd. Valgt
 
 ## Neste steg og besvarede spørsmål
 
-Tidligere menyretur/sjekklistepopup og meny-/RUH-/datoprøve er TEST OK. Kenneths SJA-utkast med rutine, lagring/gjenåpning og RUH-oppfølging/egen lukking er også TEST OK 8. oktober kl. 13:30. Rapporttillegget er autorisert «kjør» kl. 13:38, bygget og utviklertestet. Rapportprøven er TEST OK kl. 14:48. Bare den nye vernerunde-/risikoprøven i USER_TEST.md skal prøves nå. Ingen beståtte delprøver skal gjentas uten konkret feil. Spørsmålene nedenfor er historikk og skal ikke stilles på nytt.
+Tidligere menyretur/sjekklistepopup og meny-/RUH-/datoprøve er TEST OK. Kenneths SJA-utkast med rutine, lagring/gjenåpning og RUH-oppfølging/egen lukking er også TEST OK 8. oktober kl. 13:30. Rapporttillegget er bygget etter «kjør» kl. 13:38. Rapportprøven er TEST OK kl. 14:48. Bare den nye vernerunde-/risikoprøven i USER_TEST.md skal prøves nå. Ingen beståtte delprøver skal gjentas uten konkret feil. Spørsmålene nedenfor er historikk og skal ikke stilles på nytt.
 
 1. Gjaldt siste TEST OK bare menyen, eller også sjekklistepopupens Lagre, fullføring og historikk?
 2. Hva skal prioriteres etter sjekklistene: utførelse med vernerunder/SJA/risiko, eller HR/medarbeidersamtaler? Foreslått rekkefølge er å fullføre utførelsesdelen først; dette er et forslag, ikke en ny beslutning.
