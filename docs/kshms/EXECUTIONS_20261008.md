@@ -46,4 +46,8 @@ Den opprinnelige publiseringen 829ae353 nådde samme Preview under gjenopptakels
 
 Gjenopptakelsen bekreftet 54 faktiske rollback SQL-assertioner PASS, full EXPO_BACKEND_TARGET=sandbox npm run build PASS og uendret migrasjon. Anvendt SQL og fil har identisk MD5 45ebbf72d435a895a8fc3ca24fed38f1. Ingen ny SQL kjøres ved denne kladdrettelsen. Hjelpen forklarer at kontrollbilder ligger i kontrolldokumentasjonen og at kontroll-/risiko-PDF følger senere. Rapport-TEST OK kl. 14:48 består.
 
-Skynettleserens inventar har én eksisterende about:blank-fane som er gjenbrukt; ingen nye faner eller nettleserreset er gjort. Eventuell faktisk innlogging/skjermprøve registreres separat og hevdes ikke av React-/databaseprøven. Endelig rettelses-SHA og publiseringsstatus tilføyes etter kontroll.
+Skynettleserens inventar hadde én eksisterende about:blank-fane som er gjenbrukt; ingen nye faner eller nettleserreset er gjort. Fast Preview åpner på innloggingssiden. Ingen ny innlogget skjerm-/mobilprøve eller flere faktiske brukerøkter hevdes. Tidligere avviste credential-kall er ikke gjentatt.
+
+## Bekreftet kladdrettelse etter gjenopptakelse
+
+Funksjonskode `cdac7cf1fe50b724bb87163422e5a0424b01fd58`, tree `47f6249fb6433a6181c9ac94256dd862b097f3bd`, er publisert etter dokumenthead `65f62e0b63bed0d98c40592ba7a8ccb19f34b2f0`. Samme faste Preview-alias er READY på `dpl_7ViZBuSk1G3bjNJ8vUfozN2u8Qhn` og peker til rettelses-SHA-en. PR Core Safety `37788569184` og jobb Core safety + critical build `113349595488` er completed/success; alle jobbtrinn er success. Lokalt Git-tre og publisert tre er identiske. Branch-spesifikk EXPO_BACKEND_TARGET=sandbox, target preview, er bekreftet. PR #216 er fortsatt open/draft med main `155f6c4ac01f126c1db0c65da385cfd9305587d5` som uendret base. Etterfølgende dokumentcommit lagrer dette beviset uten app-/SQL-endring. Kort ny brukerprøve står øverst i USER_TEST.md; ingen ny TEST OK eller Production-endring.

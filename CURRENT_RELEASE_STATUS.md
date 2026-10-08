@@ -8,7 +8,7 @@ Main er kontrollert uendret på `155f6c4ac01f126c1db0c65da385cfd9305587d5`. Prod
 
 ## Aktiv branch og Preview
 
-Branch `feat-kshms-foundation`, [PR #216](https://github.com/ExpoProffsenter/expo-proffdok/pull/216), open/draft. Fast [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe), backend ppvircenkjizeiqdxphj. Funksjonskode `829ae35315d5e09d4f4e18d7f231f4a2826b8915`, tree `50421488d1498c3045f1d68f56b5efd62c2043d0`: samme faste Preview er READY på `dpl_6nK5QuRTshRSYX5ZAbd3MMPNYBAg`. Core safety + critical build `113342140090` er completed/success på samme SHA. Branch-spesifikk `EXPO_BACKEND_TARGET=sandbox` er kontrollert på nytt (target preview, branch feat-kshms-foundation). Senere dokumentregistrering endrer bare notater. Bevis: [EXECUTIONS_20261008.md](docs/kshms/EXECUTIONS_20261008.md).
+Branch `feat-kshms-foundation`, [PR #216](https://github.com/ExpoProffsenter/expo-proffdok/pull/216), open/draft. Fast [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe), backend ppvircenkjizeiqdxphj. Funksjonskode med kladdrettelsen `cdac7cf1fe50b724bb87163422e5a0424b01fd58`, tree `47f6249fb6433a6181c9ac94256dd862b097f3bd`: samme faste Preview er READY på `dpl_7ViZBuSk1G3bjNJ8vUfozN2u8Qhn`. PR Core Safety `37788569184`, jobb Core safety + critical build `113349595488`, er completed/success på samme SHA. Branch-spesifikk `EXPO_BACKEND_TARGET=sandbox` er kontrollert (target preview, branch feat-kshms-foundation). Senere dokumentregistrering endrer bare notater. Bevis: [EXECUTIONS_20261008.md](docs/kshms/EXECUTIONS_20261008.md).
 
 ## Ny leveranse – vernerunder/kontroller og 5×5-risiko
 
@@ -30,7 +30,7 @@ Tidligere håndbok-, avvikspopup/lukking-, menyretur- og sjekklistepopup-prøver
 
 ## Gjenstående og neste handling
 
-Bare de nye vernerunde-/risikoflytene i USER_TEST.md skal prøves nå; godkjente delprøver gjentas ikke. Første rapportdel har dokumenttekst og elektronisk signering/lukking; RUH-bildevedlegg og full endringshistorikk følger ikke med. Ingen ny innlogget nettleser-/mobil-/flere faktiske brukerøkter-PASS hevdes; tidligere verktøyblokkering gjentas ikke.
+Bare de nye vernerunde-/risikoflytene i USER_TEST.md skal prøves nå; godkjente delprøver gjentas ikke. Første rapportdel har dokumenttekst og elektronisk signering/lukking; RUH-bildevedlegg og full endringshistorikk følger ikke med. Ingen ny innlogget nettleser-/mobil-/flere faktiske brukerøkter-PASS hevdes. Den eksisterende skynettleserfanen åpner fast Preview på innloggingssiden; tidligere avviste credential-kall gjentas ikke.
 
 Vedleggs-/øvrige rapportuttrekk, separat HR/kompetanse/medarbeidersamtaler og fristpåminnelser gjenstår før Ringside-pilot som avtalt. Sandbox-e-postsending er deaktivert; avsenderoppsett/faktisk mottaksprøve gjenstår. Utførelse før HR; leder bare tildelte ansatte, firmaadmin alle/tildele ansvar. Relevant TEST OK og eksplisitt PRODUCTION GODKJENT for PR #216 kreves før Production-migrering/merge. Senere synkretning main → demo.
 

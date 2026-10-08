@@ -331,4 +331,6 @@ Faktisk browser→RPC→database→readback: Lagre beholder popupen; reload beho
 
 ## Gjenopptakelse 8. oktober – kontroll-/risikokladd
 
+Funksjonskode cdac7cf1 er READY på samme faste Preview, deployment dpl_7ViZBuSk1G3bjNJ8vUfozN2u8Qhn. PR Core Safety 37788569184 og Core safety + critical build 113349595488 er completed/success. Publisert tre og lokalt tre er identiske. Skynettleserens eksisterende fane åpner innloggingssiden; innlogget brukerprøve gjenstår. Ingen ny DDL, main-merge eller Production-endring.
+
 54 rollback SQL-assertioner PASS uten ny migrering. Faktisk ny React/DOM-prøve PASS etter rettelse av uttrykkelig servervalg: den forkastede lokale kladden ryddes og kommer ikke tilbake etter lukking/gjenåpning. Full remount/offline-kladd, idempotent retry, kollegakonflikt, historisk mal/identitet og sen firma-/brukerrespons er også kontrollert. Eksisterende SJA-parent og sjekklistebygger/innhenting PASS. Full Sandbox critical/build PASS. Dette er simulerte transportscenarioer og separate faktiske databaseprøver, ikke nye faktiske brukerøkter. Opprinnelig READY-bevis og fingeravtrykk er bevart i EXECUTIONS_20261008.md.
