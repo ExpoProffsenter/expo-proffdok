@@ -1,6 +1,6 @@
 # Kort prøve – popup etter fullføring
 
-TEST OK for prosjektinnganger, rutinevalg og ansvarligvarsel er registrert 8. oktober kl. 21:04 Europe/Oslo. Godkjente deler trenger ingen ny full prøve. Ny brukerprøve gjelder bare denne rettelsen på samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe):
+TEST OK for prosjektinnganger, rutinevalg og ansvarligvarsel er registrert 8. oktober kl. 21:04 Europe/Oslo. Godkjente deler trenger ingen ny full prøve. Funksjonskode e96e20ad er READY med grønn PR Core Safety / critical build. Ny brukerprøve gjelder bare denne rettelsen på samme [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe):
 
 1. Fullfør et testutkast med **Kontroll fullført** eller **Vurdering fullført**. Popupen skal lukke seg automatisk når fullføringen er bekreftet lagret.
 2. Åpne dokumentasjonen i **Fullførte / historikk**. Den skal være bevart. Eventuelle åpne avvik beholder egne varsler.

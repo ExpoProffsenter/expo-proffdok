@@ -2,15 +2,19 @@
 
 Oppdatert 8. oktober 2026, Europe/Oslo. Les denne først ved chatbytte; detaljer og testbevis ligger i CONTINUITY.md og de lenkede testnotatene. Dette er gjeldende samlet oversikt, ikke en godkjenning av hele modulen.
 
+## Popup og ansvarse-post – publisert 8. oktober
+
+Prosjekttillegget er Kenneths TEST OK kl. 21:04. Fullført-popupen lukker etter bekreftet lagring. Ansvarse-post dekker Avvik/RUH, vernerunde, risiko, SJA, pliktig rutinegjennomgang og forfalt revisjon, med deduplisering og inaktivt ansvar stoppet. Funksjonskode `e96e20ade6605ddb0e8bc735f862ef842ea9b1b8`, tree `dc9c7397eb66bcedcee930769c1243c82f72523d`. Samme faste feature-Preview er READY på `dpl_HNUqhySypafZmk9d9CaQXSUVZcVn` med eksakt SHA/alias. PR Core Safety `37833698123`, Core safety + critical build `113505254109`, completed/success. Lokal og publisert source tree er identiske. Preview-binding EXPO_BACKEND_TARGET=sandbox er kontrollert for feat-kshms-foundation. Ingen Production-endring. Mailer v4 ACTIVE; faktisk check viser manglende Resend-nøkkel/avsender. enabled=false, ingen reell levering. 36 nye og relevante 45/54/73/93 rollback SQL-kontroller, faktiske React/prøvelenker og full critical/build PASS. [Omfang/testbevis](NOTIFICATIONS_20261008.md), [gjenstående oppsett](EMAIL_SETUP.md). Bare ny popup-prøve gjenstår nå; tidligere godkjente prøver gjentas ikke.
+
 ## Ny rapportleveranse 8. oktober
 
-Rapporttillegget er Kenneths TEST OK 8. oktober kl. 14:48 Europe/Oslo. SJA/RUH-valg og PDF med/uten er godkjent for denne delprøven. Vernerunder/selvstendige kontroller og 5×5-risikovurdering er nå READY på samme Preview; egen kort brukerprøve gjenstår. Ingen tidligere godkjente prøver gjentas uten konkret feil, og Production er fortsatt uendret.
+Rapporttillegget er Kenneths TEST OK 8. oktober kl. 14:48 Europe/Oslo. SJA/RUH-valg og PDF med/uten er godkjent for denne delprøven. Vernerunder/selvstendige kontroller og 5×5-risikovurdering er nå READY på samme Preview; prosjekttilleggets TEST OK er registrert kl. 21:04. Ingen tidligere godkjente prøver gjentas uten konkret feil, og Production er fortsatt uendret.
 
 Kenneths «kjør» kl. 13:38 autoriserte valgfri SJA/RUH i prosjektets Rapport/PDF/utskrift. Valg, rutinehenvisning, deltagere/signatur, status/tiltak/ansvarlig/lukking er bygget. 34 databasekontroller, 5 faktiske PDF-er, 3 utskrifter og visuell PDF-kontroll PASS. Samme Preview er READY på funksjonskode f5c28dd3324a89ec0dd15b3f0c187d47e7bf1e9c; Core safety + critical build completed/success. Publiseringsbevis står i PROJECT_REPORT_20261008.md. Rapporttillegget er TEST OK kl. 14:48; tidligere TEST OK består. Testbevis: [PROJECT_REPORT_20261008.md](PROJECT_REPORT_20261008.md).
 
 ## Prosjekttillegg og gjenoppretting 8. oktober
 
-Arbeidsmiljøet er tilbake og originalarbeidet intakt. Vernerunder/5×5 har nå direkte prosjektinnganger, prosjektvise kladder/oversikter, ansvarligvarsel til lagret egen fullføring, godkjente rutineutgaver og stor bekreftelse ved fullføringsknappen. 44 nye rollback SQL-kontroller og faktisk React-prosjekt/varsel/dialog PASS. Full sluttbygg/critical-kjede PASS. Samme Preview er READY på 8bce982f med grønn PR Core Safety / critical build; endelig status og bevis står i CURRENT_RELEASE_STATUS.md og PROJECT_EXECUTIONS_20261008.md. Ny brukerprøve i USER_TEST.md gjenstår.
+Arbeidsmiljøet er tilbake og originalarbeidet intakt. Vernerunder/5×5 har nå direkte prosjektinnganger, prosjektvise kladder/oversikter, ansvarligvarsel til lagret egen fullføring, godkjente rutineutgaver og stor bekreftelse ved fullføringsknappen. 44 nye rollback SQL-kontroller og faktisk React-prosjekt/varsel/dialog PASS. Full sluttbygg/critical-kjede PASS. Samme Preview er READY på 8bce982f med grønn PR Core Safety / critical build; endelig status og bevis står i CURRENT_RELEASE_STATUS.md og PROJECT_EXECUTIONS_20261008.md. Prosjekttilleggets TEST OK er registrert kl. 21:04; USER_TEST.md har bare den nye popup-prøven.
 
 ## Hvor vi er
 
