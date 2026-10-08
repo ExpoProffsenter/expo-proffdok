@@ -1,3 +1,19 @@
+# Gjeldende fortsettelsespunkt – prosjektinnganger/ansvarligvarsler testet, arbeidsmiljø frakoblet
+
+Chatten 8. oktober etter ca. 20:07 Europe/Oslo gjenfant arbeidsmappen `/workspace/scratch/31e71b5bfc49/expo-proffdok` på base `2079f5b4ec3e7eaeff0d755c37f7a31294b2182b`. Tilleggene for prosjektets vernerunde og 5×5, ansvarligs faste appvarsel, godkjente rutineutgaver og bekreftelse ved fullføringsknappen er skrevet og målrettet prøvd. Miljømål BEGGE, først samme feature/Sandbox Preview.
+
+44 faktiske nye SQL-assertioner PASS med full rollback: begge oppgavetyper, lesing beholder varsel, omfordeling, minimal varsling uten prosjekttilgang, egen fullføring, beholdt historikk, prosjektisolasjon/paginering, låst prosjekt, revokert modul, anon og ingen e-postkø. Ny faktisk React-prosjekt/varsel/dialog-prøve med simulert RPC PASS; eksisterende utførelses-, SJA-parent- og prosjekt/SJA/RUH-prøver PASS. Utvidet permanent execution-critical for prosjektkladder og faktisk varseleffekt, samt deviation-critical PASS. Samme signerte SJA (1) og rutineutgaver (10) har uendrede MD5 av sortert jsonb_agg: `9a8185f140b7483664c0d98a62b54b8e` / `474ef0379b5149c307ad43be792c18f0`.
+
+Sandbox-migrasjonene `20261008175102_kshms_project_executions_and_tasks` og `20261008180504_kshms_execution_task_access_hint` var allerede anvendt ved gjenopptakelsen. Den sistnevntes manglende lokale fil er gjenfunnet fra migrasjonshistorikken. Ikke kjør dem igjen. Nye funksjoner har eksplisitt firma-/bruker-/modul-/prosjektport, tom search_path og anon/PUBLIC-revokes; tilsiktet authenticated SECURITY DEFINER-advisor er vurdert mot negative SQL-prøver.
+
+`EXPO_BACKEND_TARGET=sandbox npm run build` ble startet. Før sluttresultatet kunne leses, sluttet verktøyet å svare. Siste konkrete feil: `failed to query exec-server capabilities ... 409 Conflict, environment_offline: Environment is not connected.` Full build kan derfor IKKE graderes PASS. Ingen nye appfiler ble pushet, og de nye tilleggene er IKKE publisert. GitHub fungerer; kun dokumentasjon og kildebackup er lagret. Main/Production og PR #216 draft er bevart. Browser-listen var tom; ingen ny fane/reset, innlogget/mobil-PASS eller credential-kall.
+
+Varig [kildebackup og prøvebevis](recovery/PROJECT_EXECUTIONS_20261008_environment_offline.json) er lagret i GitHub i commit `a79372a52a104c3be72fcb442f4e7335fbfe586d`. Backupen er et inert dokument, ikke installert appkode. Den inneholder syv app-/QA-filer og to allerede anvendte migrasjoner. Eksekveringsheader/hjelpere/CSS er rekonstruert fra hentet baseline og gjennomgåtte endringer; sammenlign med original arbeidsmappe når den svarer. Nye lokale React-/critical-testtillegg finnes i arbeidsmappen, men deres fulle kilde er ikke i backupen; ikke påstå at alt lokalt arbeid allerede er pushet.
+
+Neste: gjenkoble arbeidsmiljøet, kontroller original arbeidsmappe og anvend kun backup dersom originalen mangler. Bevar `scripts/kshms-project-executions-react-check.mjs` og utvidet `critical-kshms-executions-check.mjs`; deviation-critical skal nå hente den uendrede gamle varseleffekten fra `function DeviationTasks`. Bekreft full critical/build, oppdater kort testliste/README/arkitektur/Hjelp, og publiser appkode kun til `feat-kshms-foundation` med expected-SHA-kontroll. Verifiser samme faste Preview, CI/Core Safety og Sandbox-binding. Ingen ny Production-godkjenning. Tidligere TEST OK består; ikke gjenta godkjente deler uten ny feil. Ingen nye unødvendige avklaringer kreves.
+
+---
+
 # Gjeldende fortsettelsespunkt – gjenopptatt kontroll-/risikoleveranse
 
 Arbeidet fra avbrutt chat 8. oktober er gjenfunnet. Den opprinnelige vernerunde-/5×5-leveransen nådde Preview på 829ae353; etterfølgende bevis er på feature-head 65f62e0b. Rapportens TEST OK kl. 14:48 og tidligere godkjente delprøver består. Ingen av disse prøves på nytt uten feil.
