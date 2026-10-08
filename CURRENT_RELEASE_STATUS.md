@@ -1,3 +1,11 @@
+## KS/HMS: valgt samlet uttrekk – feature/Sandbox READY
+
+Funksjonskode `8d045d0cd9956d47d93e1b606b75eef7097dda32`, tree `ded14b7df45dc08e810ed569c2630e6e8e65a033`, READY `dpl_FpiuDdxSxd5yaauYXkSgpKfDcmC3`; Core Safety `37858562063` / full critical build `113588549210` success. Ny intern managerflate Dokumentuttrekk med eksplisitt valg av åtte dokumentgrupper, full RUH-historikk/private bilder og manifest. Innlogget faktisk PDF: seks dokumenter/12 sider; uten rutine fem/10 sider. SJA-signatur, begge RUH-hendelser og to faktiske vernerunde-bilder bevart. Én fane, popup lukket; ingen lagrede data mutert. Lokale relevante React/PDF og full Sandbox build PASS. [Scope og QA](docs/kshms/INSPECTION_EXTRACT_20261009.md), [eksakt bevis/handoff](docs/kshms/CONTINUITY.md), [kort ny prøve](docs/kshms/USER_TEST.md).
+
+Samme branch-Preview og tidligere TEST OK beholdes; ny TEST OK for samlet uttrekk gjenstår. Neste B/C: øvrig vedleggsdekning/versjonerte underskjema/påminnelser/kildeoppdatering før HR. PR #216 fortsatt draft, main uendret `155f6c4ac01f126c1db0c65da385cfd9305587d5`. Ingen Production-release, main/demo-merge eller ekte e-postsending; KS/HMS-utsending forblir deaktivert. Etterfølgende beviscommit endrer bare dokumentasjon/skjermbilde.
+
+---
+
 ## Publisert rutine-/sjekkliste-PDF – READY
 
 Funksjonskode **64143a3a4a982f442bbafcacaf40d535073751a8**, tree **86813dd63f72714995ea88bf71d26bd7b72cb571**. Hver publisert blob og samlet tree er identiske med lokal testet commit bb4b0053. Git-push manglet skriveinnlogging; GitHub-koblingen publiserte samme tree med expected-head aea7e766 og uten force. Ingen lokal branchhistorikk er slettet.

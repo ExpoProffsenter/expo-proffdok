@@ -1,6 +1,6 @@
 # KS/HMS – gjeldende planstatus
 
-Oppdatert 9. oktober 2026 kl. 00:59, Europe/Oslo. Dette er samlet gjeldende status. PLAN.md inneholder hele omfanget og historiske gap; CONTINUITY.md inneholder overlevering og testbevis. Historiske «gjenstår»-tekster der må ikke overstyre denne oversikten.
+Oppdatert 9. oktober 2026 etter innlogget prøve av samlet uttrekk, Europe/Oslo. Dette er samlet gjeldende status. PLAN.md inneholder hele omfanget og historiske gap; CONTINUITY.md inneholder overlevering og testbevis. Historiske «gjenstår»-tekster der må ikke overstyre denne oversikten.
 
 ## Nyeste forbedring
 
@@ -8,11 +8,9 @@ Oppdatert 9. oktober 2026 kl. 00:59, Europe/Oslo. Dette er samlet gjeldende stat
 
 Miljømål **BEGGE**, publisering først på samme feature/Sandbox. Baseline `9ac259fa8027a3d88e57c5ab761d71fbeaef5cb7`, faktisk main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 open/draft. Tidligere TEST OK beholdes, også Kenneths SJA-PDF-prøve 9. oktober kl. 00:59.
 
-Firmaadmin/KS/HMS-ansvarlig får **KS/HMS → Dokumentuttrekk**: beskriv omfang, hent listen, velg lagrede dokumenter og bekreft valget før **Last ned samlet PDF**. Åtte dokumentgrupper, full RUH-historikk/private bilder, felles rammer og manifest med dokument-ID, utgave/revisjon og sider. Ingen dokumenter velges automatisk. [Scope, testbevis og avgrensning](INSPECTION_EXTRACT_20261009.md). Publisert head/CI/READY og faktisk skynettleserprøve føres ved sluttkontroll.
+Firmaadmin/KS/HMS-ansvarlig får **KS/HMS → Dokumentuttrekk**: beskriv omfang, hent listen, velg lagrede dokumenter og bekreft valget før **Last ned samlet PDF**. Åtte dokumentgrupper, full RUH-historikk/private bilder, felles rammer og manifest med dokument-ID, utgave/revisjon og sider. Ingen dokumenter velges automatisk. [Scope, testbevis og avgrensning](INSPECTION_EXTRACT_20261009.md). Funksjonskode **8d045d0c** er READY med grønn Core Safety/full critical build. Innlogget seksdokumenters PDF ga 12 sider med bevart SJA-signatur, begge RUH-hendelser, to vernerunde-bilder og manifest; uten rutine ga den 10 sider. Én fane, alle popup lukket; ingen lagrede saker endret. Eksakt bevis i CONTINUITY.
 
 Neste ufullførte B/C-punkt etter denne leveransen er øvrig vedleggsdekning/versjonerte underskjema; deretter frist-/utløpspåminnelser og kildeoppdatering. Full tilsynsdekning, andre avvik enn RUH, separate originalfiler og framtidige HR-/opplæringsbevis er ikke levert gjennom denne PDF-en. Ingen databaseendring, Production/main/demo-merge eller ekte e-postsending; KS/HMS-utsending forblir deaktivert.
-
-
 
 Egen **Last ned PDF** fra lagret SJA er implementert og utviklertestet med felles rammer, full analyse, deltakere, rutineutgaver og lagret signatur. Utkast er tydelig merket. Ulagret/nyere innhold, endret tilgang og sent svar sperres. [Scope og QA](SJA_PDF_20261009.md). Funksjonskode f7128eff er READY med grønn Core Safety/full critical build. Innlogget Test sja gir én side med full analyse og bevart signatur; popup lukket, én fane. Kenneth ga **TEST OK 9. oktober kl. 00:59** for egen SJA-PDF. Eksakt bevis og handoff i CONTINUITY; USER_TEST fører prøven som godkjent. Tidligere TEST OK og øvrige B/C-punkter før HR består.
 

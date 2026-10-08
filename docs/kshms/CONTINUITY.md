@@ -1,3 +1,27 @@
+## Publisert samlet uttrekk – READY, grønn QA og innlogget nedlasting
+
+Funksjonskode **8d045d0cd9956d47d93e1b606b75eef7097dda32**, eksakt testet/publisert tree **ded14b7df45dc08e810ed569c2630e6e8e65a033**, identisk med lokal testcommit **a298a29b7bb784e5a60334ffb5db4c0994879e5b**. Feature ref oppdatert via GitHub-kobling med expected baseline 9ac259fa og uten force. Lokalt er faktisk publisert git-objekt/head også hentet og hashkontrollert; original testcommit bevart. Funksjonsleveranse: 16 filer, samlet branch mot main: 214 filer, fem nye scope-filer. Ingen ny SQL/backend/global navigasjon/konfigurasjon. Etterfølgende beviscommit er bare dokumentasjon og skjermbilde.
+
+READY **dpl_FpiuDdxSxd5yaauYXkSgpKfDcmC3** med eksakt funksjons-SHA på samme faste Sandbox-alias. **PR Core Safety 37858562063**, jobb **Core safety + critical build 113588549210**, completed/success; scope isolation og full critical build success. Lokal full `EXPO_BACKEND_TARGET=sandbox npm run build` PASS exit 0. Vercel branchbinding `EXPO_BACKEND_TARGET=sandbox`, target preview, gitBranch feat-kshms-foundation direkte kontrollert. PR #216 open/draft og main uendret **155f6c4ac01f126c1db0c65da385cfd9305587d5** ved sluttkontroll. KS/HMS-utsending forblir deaktivert; ingen e-post-/database-/Production-handling.
+
+### Faktisk innlogget skynettleser
+
+Eksisterende demo@expo-proffdok.no-økt i Expo Proffsenter ble bevart etter reload på samme URL. Én fane (4), ingen ny innlogging. **KS/HMS → Dokumentuttrekk** starter uten katalog/valg. Katalogen viste 10 godkjente rutineutgaver, én mal, én SJA, én RUH, to vernerunder, null signerte håndbokrevisjoner og null risiko. Prosjekt DEMO – HOVED kunne velges og **Hent prosjektkontroller** ga null lagrede strukturerte kontroller. Ingen testdokumenter ble opprettet for å fylle hullene.
+
+Faktisk valg av R-007 v1, Bunnledning v1, Test sja revisjon 2, test ruh revisjon 2, test vernerunde revisjon 1 og Voldsløkka vernerunde 1 revisjon 2 ga **12 sider / 433696 byte**, SHA-256 **843367314c3456983cd8fd214479a6f5d090576fed39f7b62f40d2263d980e36**. PDF rendret og visuelt kontrollert: omfang, firmanavn/logo, full rutinetekst/kilder, tom mal, full SJA med lagret Kenneth Demo-signatur **07.10.2026 kl. 23:47:45**, begge RUH-historikkhendelser/bevart lukking, begge vernerunder og **to faktiske lagrede bilder fra Voldsløkka**, samt manifest med riktige seks ID-er/revisjoner/hashes og sideintervaller. Ingen ikke-valgt R-008-utgave i filen. [Skjermbilde etter vellykket nedlasting](inspection-extract-proof.jpg).
+
+**Fjern** R-007 nullstilte bekreftelsen og sperret nedlasting. Ny bekreftelse ga **10 sider / 429751 byte**, SHA-256 **bfa69dd6d02e1231f01ecc6d2d7e371f6e25783871adcb183a2c56f014648dfe**; rutineutgave-ID og rutinetekst er borte, signatur/historikk/bilder/manifest beholdt. Tomt omfang sperret knappen. Søk «test» reduserte vernerunder fra to til én; **Oppdater dokumentlisten** ga null valgte dokumenter og ny bekreftelsessperre. **Tøm dokumentvalget** fungerte. Gruppevalg/filtrering/nedlasting endret ingen lagrede saker, signeringer eller fullføringer.
+
+Relevant regresjon: **Avvik/RUH → Lukkede → test ruh → Last ned RUH-PDF** ga **2 sider / 36486 byte**, SHA-256 **98628a8c5445cd088a084a97b09d0ff6409353d8943a09a5a953a6f79b001bda**, begge historikkhendelser og lukking **08.10.2026 kl. 01:28:17** bevart. Dialogen ble lukket. Ingen lagring/signering/gjenåpning utført. Til slutt én fane på **Dokumentuttrekk**, alle popup lukket, valgt liste nullstilt. Observerte konsollfeil gjelder nettleserutvidelsens metadata, ikke appkode.
+
+### Gjenstår / neste chat
+
+Ny bruker-TEST OK for samlet uttrekk gjenstår; tidligere TEST OK består, inkludert Kenneths SJA-PDF 9. oktober kl. 00:59. Privat RUH-bilde er lokalt testet med ekte Storage/Blob/PDF, men faktisk innlogget test ruh har fortsatt 0 vedlegg. Innlogget signert håndbokrevisjon, risiko og strukturert prosjektkontroll var ikke tilgjengelig; disse åtte-type-gruppene er dekket i lokal React/PDF. Mobil og flere reelle brukere er fortsatt åpne. Dette er ingen tilsynsgodkjenning.
+
+Fortsett fra første dokumenterte ufullførte B/C-punkt: **øvrig vedleggsdekning**, deretter **versjonerte underskjema**, **frist-/utløpspåminnelser** og **kildeoppdatering**, før separat HR. Ikke gjenta allerede avklarte HR-krav eller tidligere godkjente tester. Hent faktisk feature/main og CI/READY ved neste start; ikke anta at funksjons-SHA over er siste dokumenthead. Samme Sandbox Preview og eksisterende innlogging/én fane; ikke signér/fullfør reelle saker som test. Ingen Production-release, main/demo-merge eller ekte e-postsending er godkjent.
+
+---
+
 ## Samlet dokument-/tilsynsuttrekk – ny avgrenset B/C-leveranse
 
 Miljømål **BEGGE**, publisering først på samme feature/Sandbox. Baseline `9ac259fa8027a3d88e57c5ab761d71fbeaef5cb7`, faktisk main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 open/draft. Tidligere TEST OK beholdes, også Kenneths SJA-PDF-prøve 9. oktober kl. 00:59.
