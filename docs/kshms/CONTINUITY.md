@@ -1,3 +1,13 @@
+## RUH-PDF og presisert HR-lesetilgang – 9. oktober 2026
+
+Utgangspunkt ff2b2aaee40902e74f53d4af019d51f4ff200a9a. Miljømål BEGGE; bare samme feature/Sandbox, draft PR #216. Main 155f6c4a. Avgrenset B/C: egen PDF fra lagret RUH med full paginert historikk og autentisert private bilder. Nye rapporthelper/knapp og to QA-scripts; KshmsDeviations får bare import/knapp, eksisterende critical-kjede får ny import. Ingen SQL, global navigasjon, e-post, portal- eller ordinær rapportendring. [Funksjon, sikkerhet, bevis og begrensninger](RUH_PDF_20261009.md). [Ny kort delprøve](USER_TEST.md) erstatter ikke eldre TEST OK.
+
+Permanent eksport-/tilgangsvern, faktisk React-editor/Storage-stub/ekte jsPDF og tekst-/visuell QA av 8-siders historikk/bilder PASS. Berørt tidligere React-prosjekt/SJA/RUH og uendrede critical-avviksassertions PASS. Full lokal Sandbox critical/build PASS. Publisert funksjons-SHA, Core Safety og READY føres etter publisering; ingen innlogget ny PDF-PASS hevdes før faktisk prøve.
+
+Kenneth presiserer at bare medarbeider, registrert nærmeste leder, firmaadmin og dem firmaadmin uttrykkelig gir tilgang, kan lese medarbeiderens innhold. HR_SCOPE oppdatert med egen tilbakekallbar lesetilgang per medarbeider til aktive appbrukere i samme firma. Anbefalt minste rettighet er lesing, ikke redigering/bekreftelse på andres vegne. Ingen automatisk innsyn fra KS/HMS/systemadmin. Dette er byggekontrakt; HR er ikke implementert. B/C før HR, samme Preview, tidligere TEST OK, ingen Production eller ekte e-post, består.
+
+---
+
 ## Innlogget kontroll/PDF og HR-avklaringer – 8. oktober kl. 23:47
 
 Kenneth logget inn skynettleseren. Én fane. På feature-head 7113e4bf ble test vernerunde i DEMO – HOVED funnet via Avvik/SJA/RUH → Vernerunde / kontroll → Åpne dokumentasjon. Fullført Kenneth Demo 08.10.2026 kl. 21:03:15 beholdt etter lukking/gjenåpning. Faktisk PDF nedlastet og tekst-/MuPDF-layout kontrollert. Også R-008 v1 fra Min personalhåndbok og tom Bunnledning v1 fra Sjekklistesentral faktisk nedlastet og tekstkontrollert. Ingen dokumenter/bekreftelser endret. Alle dialoger lukket. [Nettleserbevis og begrensninger](UI_TEST_20261008_PDF.md).

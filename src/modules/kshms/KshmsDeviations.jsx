@@ -7,6 +7,7 @@ import { RUH_HINTS, RUH_SUGGESTIONS, ruhRegistrationIssues } from './kshmsRuh.mj
 import { identityText } from './kshmsPersonal.mjs';
 import { formatDeviationDate, formatDeviationDateTime } from '../deviations/deviationDates.mjs';
 import { DeviationEditorSurface } from '../deviations/DeviationDialog.jsx';
+import KshmsRuhPdfButton from './KshmsRuhPdfButton.jsx';
 import { DEVIATION_CATEGORY,DEVIATION_STATUS,DEVIATION_CHANGE_EVENT,DEVIATION_CLOSURE_REQUIREMENTS,deviationClosureIssues,deviationForm,validateDeviation,saveDeviation,publishDeviationChange,storeDeviationDraft,readDeviationDraft,deviationDraftKey,deviationFileType } from './kshmsDeviations.mjs';
 
 const when=formatDeviationDateTime;
@@ -166,6 +167,7 @@ export default function KshmsDeviations({context,request,projectId=null,ruhOnly=
    {error&&<p className="ks-error" role="alert">{error}</p>}{notice&&<p className="ks-notice" role="status">{notice}</p>}{caseLoading&&<p role="status">Henter sak …</p>}
    {row&&<span className="ks-badge">{DEVIATION_STATUS[row.status]}</span>}
    {row&&<p>Meldt av {identityText(row.creator_identity)} · {when(row.created_at)} {row.project_id&&'· Koblet til prosjekt'}</p>}
+   {row?.category==='ruh'&&<KshmsRuhPdfButton row={row} companyId={companyId} userId={userId} projectId={projectId} active={active} disabled={dirty||busy||caseLoading||pendingFile}/>}
    {source&&source.source_kind!=='company'&&<p>Dette kobler det lagrede {source.source_kind==='checklist'?'sjekkpunktavviket':'prosjektavviket'} til KS/HMS. Etter lagring styres lukkingen her.</p>}
    {row&&!editable?<Snapshot row={row}/>:<form noValidate={isRuh} onSubmit={e=>{e.preventDefault();save('save');}}>
     <fieldset disabled={busy||caseLoading||!editable} className="ks-case-fields"><legend>Hendelse og ansvar</legend>

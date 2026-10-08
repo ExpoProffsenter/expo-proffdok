@@ -1,3 +1,15 @@
+# Kort ny prøve – RUH-PDF med historikk og bilder
+
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe). Tidligere TEST OK beholdes. Bare nytt RUH-uttrekk skal prøves:
+
+1. **Prosjekt → Avvik/SJA/RUH → RUH → Lukkede:** Åpne en lagret testsak og trykk **Last ned RUH-PDF**. Se sak/revisjon, lagrede navn/tidspunkt, tiltak, egen lukking og hele historikken. Testprosjekt DEMO – HOVED har en lukket RUH. Nedlasting skal ikke gjenåpne eller endre saken.
+2. Med en lagret test-RUH som har bilder: bildet skal følge PDF-en. Word/Excel/PDF-vedlegg skal stå med navn og beskjed om å åpne originalen i appen. Ingen sikker filadresse skal være skrevet i uttrekket.
+3. Endre tekst uten å lagre på en åpen test-RUH: PDF skal være sperret. Lagre eller åpne lagret sak igjen før nedlasting. Ikke lukk reelle saker som test. KS/HMS-varselet følger fortsatt ansvarligs faktiske lukking.
+
+Utviklertest: permanent tilgang-/konsistensvern, faktisk React/Storage-stub/ekte PDF, visuell PDF-kontroll, berørte eksisterende RUH-flyter og full Sandbox critical/build PASS. Publisering og eventuell innlogget prøve står øverst i CONTINUITY.md. Ingen Production eller ekte e-postsending. Full historikk/bilder leveres i egen RUH-PDF; prosjektrapportens tidligere RUH-sammendrag er uendret.
+
+---
+
 # Kort ny prøve – rutine- og sjekkliste-PDF
 
 **Hvor finner du lagret kontroll?** Testen **test vernerunde** finnes i **DEMO – HOVED – Badrenovering i arbeid → Avvik/SJA/RUH → Vernerunde / kontroll → Åpne dokumentasjon**. Innlogget skynettleser har kontrollert gjenåpning og faktisk PDF 8. oktober. Den ligger ikke under prosjektets Sjekklister. De gamle demosjekklistesvarene uten ny kontrollhistorikk bruker ordinær prosjektrapport; egen sjekkliste-PDF krever en faktisk lagret kontroll. Ingen gammel fullføring skal gjøres om bare for testen. [Nettleserbevis](UI_TEST_20261008_PDF.md).
