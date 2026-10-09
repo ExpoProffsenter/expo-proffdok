@@ -12,10 +12,13 @@ export function assignmentEmail(job,from) {
   review:['kshmsReview','KS/HMS-håndboken har passert datoen for revisjon','Du er utpekt som ansvarlig for revisjon av KS/HMS-håndboken. Datoen for neste kontroll er passert.','Åpne KS/HMS → Oppfølging og revisjon i ProffDok. Kontroller håndboken og signer revisjonen når gjennomgangen er utført.']
  };
  const phase=job.notification_phase||'assignment';
- if(!['assignment','reminder'].includes(phase)||(phase==='reminder'&&!['deviation','review'].includes(kind)))throw new Error('invalid_delivery_configuration');
- const message=phase==='reminder'
-  ?kind==='review'?['kshmsReview','Påminnelse: KS/HMS-håndboken må revideres',messages.review[2],messages.review[3]]:['kshmsDeviation','Påminnelse: fristen for et KS/HMS-avvik er passert','Du har en åpen KS/HMS-oppgave med passert frist.','Åpne saken i ProffDok, dokumenter tiltak og egen kontroll, og lagre lukkingen når arbeidet er utført.']
-  :Object.hasOwn(messages,kind)?messages[kind]:null;
+ if(!['assignment','reminder'].includes(phase))throw new Error('invalid_delivery_configuration');
+ const reminderSubjects={deviation:'Påminnelse: fristen for et KS/HMS-avvik er passert',review:'Påminnelse: KS/HMS-håndboken må revideres',round:'Påminnelse: fullfør din vernerunde / kontroll',risk:'Påminnelse: fullfør din risikovurdering',sja:'Påminnelse: din SJA mangler egen signering',reading:'Påminnelse: les og bekreft din tildelte KS/HMS-rutine'};
+ const initial=Object.hasOwn(messages,kind)?messages[kind]:null;
+ const message=phase==='reminder'&&initial
+  ?kind==='deviation'?['kshmsDeviation',reminderSubjects.deviation,'Du har en åpen KS/HMS-oppgave med passert frist.','Åpne saken i ProffDok, dokumenter tiltak og egen kontroll, og lagre lukkingen når arbeidet er utført.']
+   :[initial[0],reminderSubjects[kind],kind==='review'?initial[2]:'Du har en tildelt KS/HMS-oppgave som fortsatt mangler din egen gjennomgang.',initial[3]]
+  :initial;
  if(url.protocol!=='https:'||url.username||url.password||url.pathname!=='/'||url.search||url.hash||!uuid.test(job.company_id)||!uuid.test(id)||!message)throw new Error('invalid_delivery_configuration');
  url.searchParams.set(message[0],id);url.searchParams.set('kshmsCompany',job.company_id);
  // No title, description, images, personal case notes or identity in the email.

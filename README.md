@@ -1,3 +1,9 @@
+## Oppgavepåminnelser – feature/Sandbox
+
+KS/HMS følger opp dine ufullførte vernerunder, risikovurderinger, SJA og lesebekreftelser etter minst sju dager. Snarveier åpner eksisterende arbeidsflater; fullføring og egen bekreftelse/signering lagres fortsatt av deg. Styrt ukentlig e-postoppfølging er klar i privat kø; Sandbox-transport er fortsatt deaktivert. [Scope og QA](docs/kshms/TASK_REMINDERS_20261009.md). Tidligere TEST OK beholdes.
+
+---
+
 ## Håndbokrevisjonspåminnelse – feature/Sandbox
 
 Utpekt ansvarlig ser nær/passert revisjonsdato og åpner eksisterende skjema med **Åpne håndbokrevisjon**. Egen vurdering og **Signer revisjon** lagrer gjennomgangen. Styrte ukentlige påminnelser er klare i privat kø; e-posttransport er fortsatt deaktivert. [Scope og utviklerbevis](docs/kshms/REVIEW_REMINDERS_20261009.md). Tidligere TEST OK beholdes.

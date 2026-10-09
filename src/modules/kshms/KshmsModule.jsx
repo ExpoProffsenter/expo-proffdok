@@ -8,6 +8,7 @@ import { addLibraryRoutines } from './kshmsLibrary.mjs';
 import KshmsRoutineLibrary from './KshmsRoutineLibrary.jsx';
 import KshmsSourceUpdates from './KshmsSourceUpdates.jsx';
 import KshmsReviewReminder from './KshmsReviewReminder.jsx';
+import KshmsAssignmentReminders from './KshmsAssignmentReminders.jsx';
 import KshmsSourceProposal from './KshmsSourceProposal.jsx';
 import {applySourceField,markSourceReviewed} from './kshmsSourceUpdates.mjs';
 import KshmsRoutineSearch from './KshmsRoutineSearch.jsx';
@@ -203,6 +204,7 @@ export default function KshmsModule({context,deviationRequest}) {
   <header className="ks-heading"><div><span className="ks-eyebrow">{context.company_name}</span><h2>KS/HMS</h2><p>Firmaets håndbok og rutiner</p></div><span className="ks-badge">{canManage?canAdmin?'Firmaadmin – bygge håndbok':'KS/HMS-ansvarlig – bygge håndbok':'Ansatt – lese og bekrefte'}</span></header>
   <p className="ks-scope">{canManage?'Du bygger firmaets KS/HMS-håndbok. Både firmaadmin og KS/HMS-ansvarlig kan velge, skrive, endre og godkjenne rutiner. En rutine forklarer hvordan en oppgave skal gjøres. Firmaadmin styrer ansattes tilgang. Firmaet må lære opp ansatte og følge rutinene i arbeidet.':'Her finner du rutinene du har fått. De forklarer hvordan du skal jobbe trygt og gjøre oppgavene riktig. I «Les og bekreft» ser du hva du skal lese og hva du allerede har bekreftet.'}</p>
   <nav className="ks-tabs" aria-label="KS/HMS visning">{[...(canManage?[['handbook','Håndbok'],['checklists','Sjekklistesentral']]:[]),['personal','Min personalhåndbok'],['reading',`Les og bekreft (${pending.length})`],['deviations','Avvik/RUH'],['sja','SJA'],['rounds','Vernerunder/kontroller'],['risk','Risikovurdering'],...(canManage?[['extract','Dokumentuttrekk'],['setup','Oppstart og tilgang'],['followup','Oppfølging og revisjon']]:[])].map(([key,label])=><button type="button" key={key} className={screen===key?'active':'secondary'} aria-pressed={screen===key} onClick={()=>setScreen(key)}>{label}</button>)}</nav>
+  <KshmsAssignmentReminders key={`assignment-reminders:${companyId}:${userId}`} context={data.context} refreshKey={data.acknowledgments.length} busy={busy} onOpen={target=>setScreen(target)}/>
   <KshmsReviewReminder key={`${companyId}:${userId}`} context={data.context} settingsRevision={data.settings?.revision} busy={busy} onOpen={openReview}/>
   {canManage&&screen==='extract'&&<KshmsInspectionExtract key={`${companyId}:${userId}`} context={data.context}/>}
   <ExecutionSurfaces screen={screen} companyId={companyId} userId={userId} context={context}/>
