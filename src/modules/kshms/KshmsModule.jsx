@@ -59,10 +59,10 @@ function References({value,onChange}) {
   <button type="button" className="secondary" onClick={()=>onChange(value.filter((_,index)=>index!==i))}>Fjern kilde {i+1}</button>
  </div>)}<button type="button" className="secondary" onClick={()=>onChange([...value,{title:'',url:'',kind:'law',checked_on:new Date().toISOString().slice(0,10)}])}>Legg til kilde</button></fieldset>;
 }
-export default function KshmsModule({context,deviationRequest}) {
+export default function KshmsModule({context,deviationRequest,personalOnly=false}) {
  const companyId=context.company_id,userId=context.user_id;
  const emailLink=readNotificationLink(window.location?.search||'',companyId);
- const [data,setData]=useState(null),[screen,setScreen]=useState(()=>context.manage?'handbook':'reading'),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+ const [data,setData]=useState(null),[screen,setScreen]=useState(()=>personalOnly?'personal':context.manage?'handbook':'reading'),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
  const [deviationsOpened,setDeviationsOpened]=useState(false);
  const [checklistsOpened,setChecklistsOpened]=useState(false);
  const [sjaOpened,setSjaOpened]=useState(false);
@@ -84,9 +84,9 @@ export default function KshmsModule({context,deviationRequest}) {
  const requestScope=useRef(null),editorRef=useRef(null),libraryPreviewRef=useRef(null),firstView=useRef(false),flowRef=useRef(null),setupRef=useRef(null),libraryRef=useRef(null),followupRef=useRef(null),[editorFocus,setEditorFocus]=useState(0),[flowFocus,setFlowFocus]=useState(0),[libraryFocus,setLibraryFocus]=useState(0);
  const load = async()=>{const value=await kshmsRpc('kshms_get_state',{p_company_id:companyId});setData(value);return value;};
  useEffect(()=>{let active=true;const scope={active:true};requestScope.current=scope;setData(null);setError('');setBusy(false);setLibraryProgress(null);
-  kshmsRpc('kshms_get_state',{p_company_id:companyId}).then(value=>{if(active){setData(value);const prepared=fillEmptySetup(value.settings||emptySetup);setupSuggestionFields.current=new Set(prepared.filled);setSetup(prepared.setup);if(!firstView.current){const linkedTab=emailLink?.matchingCompany?emailLink.kind==='sja'?'sja':emailLink.kind==='reading'?'reading':emailLink.kind==='review'&&value.context.manage?'followup':null:null;setScreen(linkedTab||(value.context.manage?value.settings?'handbook':'setup':'reading'));firstView.current=true;}setCached(readDraft(window.localStorage,userId,companyId));setNextReview(value.settings?.next_review_on||new Date(Date.now()+360*86400000).toISOString().slice(0,10));}}).catch(e=>{if(active)setError(e.message)});
+  kshmsRpc('kshms_get_state',{p_company_id:companyId}).then(value=>{if(active){setData(value);const prepared=fillEmptySetup(value.settings||emptySetup);setupSuggestionFields.current=new Set(prepared.filled);setSetup(prepared.setup);if(!firstView.current){const linkedTab=emailLink?.matchingCompany?emailLink.kind==='sja'?'sja':emailLink.kind==='reading'?'reading':emailLink.kind==='review'&&value.context.manage?'followup':null:null;setScreen(personalOnly?'personal':linkedTab||(value.context.manage?value.settings?'handbook':'setup':'reading'));firstView.current=true;}setCached(readDraft(window.localStorage,userId,companyId));setNextReview(value.settings?.next_review_on||new Date(Date.now()+360*86400000).toISOString().slice(0,10));}}).catch(e=>{if(active)setError(e.message)});
   return()=>{active=false;scope.active=false};
- },[companyId,userId,context.manage,context.publish,context.administer]);
+ },[companyId,userId,context.manage,context.publish,context.administer,personalOnly]);
  useEffect(()=>{const warn=e=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
  useEffect(()=>{if(editorFocus&&editorRef.current){editorRef.current.focus();editorRef.current.scrollIntoView({block:'start'});}},[editorFocus]);
  useEffect(()=>{if(libraryPreview&&libraryPreviewRef.current){libraryPreviewRef.current.focus();libraryPreviewRef.current.scrollIntoView({block:'start'});}},[libraryPreview]);
@@ -189,7 +189,7 @@ export default function KshmsModule({context,deviationRequest}) {
   else if(needsAccess)setError(previous=>`Personen har fått KS/HMS-ansvarlig tilgang, men oppstart kunne ikke bekreftes. Valgene dine er beholdt. Kontroller feilen under før du prøver igjen. ${previous}`);
  };
  if(!data)return <section className="ks-module"><h2>KS/HMS</h2>{error?<p role="alert">{error}</p>:<p role="status">Henter firmaets håndbok …</p>}<button type="button" className="secondary" onClick={()=>load().catch(e=>setError(e.message))}>Prøv igjen</button></section>;
- const canManage=data.context.manage,canPublish=data.context.publish,canAdmin=data.context.administer===true;
+ const canManage=!personalOnly&&data.context.manage,canPublish=!personalOnly&&data.context.publish,canAdmin=!personalOnly&&data.context.administer===true;
  const progress=canManage?handbookProgress(data):null;
  const nextStep=()=>{if(busy||dirty)return;if(progress.step==='setup'){setScreen('setup');setFlowFocus(previous=>previous+1);}else if(progress.step==='approval'){setScreen('handbook');choosePublication(progress.waiting[0]);}else if(progress.step==='selection'){setScreen('handbook');setLibraryOpen(true);setLibraryFocus(previous=>previous+1);}else{setScreen('followup');setFlowFocus(previous=>previous+1);}};
  const pending=pendingReadingVersions(data,userId);
@@ -202,11 +202,11 @@ export default function KshmsModule({context,deviationRequest}) {
  const visibleAssignments=ownAssignments.filter(assignment=>matchesRoutineSearch(data.versions.find(version=>version.id===assignment.version_id)?.content,readingQuery));
  const changeSetupText=(field,value)=>{setupSuggestionFields.current.delete(field);setSetup(previous=>({...previous,[field]:value}));};
  return <section className="ks-module" aria-label="KS/HMS håndbok">
-  <header className="ks-heading"><div><span className="ks-eyebrow">{context.company_name}</span><h2>KS/HMS</h2><p>Rutiner, trygt arbeid og dokumentasjon</p></div><span className="ks-badge">{canManage?canAdmin?'Firmaadmin':'KS/HMS-ansvarlig':'Ansatt'}</span></header>
+  <header className="ks-heading"><div><span className="ks-eyebrow">{context.company_name}</span><h2>{personalOnly?'Personalhåndboka':'KS/HMS'}</h2><p>{personalOnly?'Dine tildelte rutiner og egen gjennomgang':'Rutiner, trygt arbeid og dokumentasjon'}</p></div><span className="ks-badge">{canManage?canAdmin?'Firmaadmin':'KS/HMS-ansvarlig':'Ansatt'}</span></header>
   <p className="ks-scope">{canManage?'Du bygger firmaets KS/HMS-håndbok. Både firmaadmin og KS/HMS-ansvarlig kan velge, skrive, endre og godkjenne rutiner. En rutine forklarer hvordan en oppgave skal gjøres. Firmaadmin styrer ansattes tilgang. Firmaet må lære opp ansatte og følge rutinene i arbeidet.':'Her finner du rutinene du har fått. De forklarer hvordan du skal jobbe trygt og gjøre oppgavene riktig. I «Les og bekreft» ser du hva du skal lese og hva du allerede har bekreftet.'}</p>
-  <KshmsNavigation screen={screen} canManage={canManage} pendingCount={pending.length} onNavigate={setScreen}/>
-  <KshmsAssignmentReminders key={`assignment-reminders:${companyId}:${userId}`} context={data.context} refreshKey={data.acknowledgments.length} busy={busy} onOpen={target=>setScreen(target)}/>
-  <KshmsReviewReminder key={`${companyId}:${userId}`} context={data.context} settingsRevision={data.settings?.revision} busy={busy} onOpen={openReview}/>
+  <KshmsNavigation screen={screen} canManage={canManage} pendingCount={pending.length} onNavigate={setScreen} personalOnly={personalOnly}/>
+  {!personalOnly&&<KshmsAssignmentReminders key={`assignment-reminders:${companyId}:${userId}`} context={data.context} refreshKey={data.acknowledgments.length} busy={busy} onOpen={target=>setScreen(target)}/>}
+  {!personalOnly&&<KshmsReviewReminder key={`${companyId}:${userId}`} context={data.context} settingsRevision={data.settings?.revision} busy={busy} onOpen={openReview}/>}
   {canManage&&screen==='extract'&&<KshmsInspectionExtract key={`${companyId}:${userId}`} context={data.context}/>}
   <ExecutionSurfaces screen={screen} companyId={companyId} userId={userId} context={context}/>
   {canManage&&(screen==='checklists'||checklistsOpened)&&<div hidden={screen!=='checklists'}><KshmsChecklistCentral key={`${companyId}:${userId}`} context={data.context} active={screen==='checklists'}/></div>}

@@ -24,6 +24,7 @@ try{
    if(name==='hr_purge_status')return {data:{...result(),receipts:structuredClone(purges),next:null}};
    if(name==='hr_foundation_state')return {data:{...result(),settings,members:args.p_after_user?members.slice(3):members.slice(0,3),next:args.p_after_user?null:'old'}};
    if(name==='hr_employee_list'){if(failAfterWrite){failAfterWrite=false;return {error:{message:'Nettfeil etter lagret handling'}};}return {data:{...result(),employees:structuredClone(employees),next:null}};}
+   if(name==='hr_contact_get')return {data:{context,registered:true,available:false,employee:{id:args.p_employee_id,revision:1}}};
    if(name==='hr_employee_get'){
     if(lateGet)return await new Promise(resolve=>lateGet.resolve=resolve);
     return {data:{...result(),employee:structuredClone(employees.find(e=>e.id===args.p_employee_id))}};

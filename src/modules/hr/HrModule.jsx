@@ -4,6 +4,9 @@ import {hrRpc} from './hrAccess.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,publishManagedAccessChange} from '../access/moduleAccessClient.js';
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import './hr.css';
+import HrTextSuggestion from './HrTextSuggestion.jsx';
+import PrivateContact from './PrivateContact.jsx';
+import {HR_SETUP_SUGGESTIONS,suggestedReviewDate} from './hrSetupSuggestions.mjs';
 
 const emptyConfig={purpose:'',legalBasis:'',reviewOn:'',enabled:false};
 function Field({label,children}) {return <label className="hr-field"><span>{label}</span>{children}</label>;}
@@ -14,8 +17,10 @@ function UserSelect({label,value,onChange,members,exclude=[],required=false}) {
  </select></Field>;
 }
 
-export default function HrModule({context}) {
- const {company_id:companyId,user_id:userId,administer}=context;
+export default function HrModule({context,audience='legacy'}) {
+ const {company_id:companyId,user_id:userId}=context;
+ const administer=context.administer===true&&audience!=='personal';
+ const list=(session,after=null)=>audience==='personal'?session.personalList(after):audience==='management'?session.managementList(after):session.list(after);
  const [data,setData]=useState(null),[members,setMembers]=useState([]),[memberNext,setMemberNext]=useState(null);
  const [detail,setDetail]=useState(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
  const [config,setConfig]=useState(emptyConfig),[employeeUser,setEmployeeUser]=useState(''),[newLeader,setNewLeader]=useState('');
@@ -27,10 +32,10 @@ export default function HrModule({context}) {
  const load=useCallback(async(session)=>{
   const state=administer?await session.state():null;
   const enabled=state?Boolean(state.settings?.enabled):context.enabled;
-  const listing=enabled?await session.list():{employees:[],next:null};
+  const listing=enabled?await list(session):{employees:[],next:null};
   const purges=administer?await session.purgeStatus():{receipts:[],next:null};
   return {state,listing,enabled,purges};
- },[administer,context.enabled]);
+ },[administer,context.enabled,audience]);
  const install=result=>{
   setData({settings:result.state?.settings||null,...result.listing,enabled:result.enabled,purges:result.purges});
   setMembers(result.state?.members||[]);setMemberNext(result.state?.next||null);
@@ -93,18 +98,22 @@ export default function HrModule({context}) {
  const oldHasReader=Boolean(detail?.leader_id&&detail.readers?.some(grant=>grant.user_id===detail.leader_id));
  const selectedLeaderMissing=Boolean(leader&&!members.some(member=>member.id===leader));
  return <section className="hr-module" aria-label="HR">
-  <header className="hr-heading"><div><span className="hr-eyebrow">{context.company_name}</span><h2>HR</h2><p>{administer?'Medarbeidere og tilgang':'Mine oppfølginger'}</p></div><span className="hr-status">{administer?'Firmaadmin':'Personlig tilgang'}</span></header>
-  <div className="hr-intro"><strong>Riktig leder. Riktig tilgang.</strong><p>{administer?'Registrer medarbeidere og velg nærmeste leder. Se over hvem som får lese før dere begynner med oppfølging.':'Her ser du medarbeiderregisteret du har tilgang til, som medarbeider, nærmeste leder eller særskilt leser.'}</p><p>Samtaler og sykefraværsoppfølging kommer i neste del. Du kan foreløpig ikke lagre referat, fraværsopplysninger eller filer her.</p></div>
+  <header className="hr-heading"><div><span className="hr-eyebrow">{context.company_name}</span><h2>{audience==='personal'?'Mine oppfølginger':'HR'}</h2><p>{administer?'Medarbeidere og tilgang':audience==='management'?'Medarbeideroppfølging':'Mine oppfølginger'}</p></div><span className="hr-status">{administer?'Firmaadmin':audience==='management'?'Nærmeste leder':'Personlig tilgang'}</span></header>
+  <div className="hr-intro"><strong>Riktig leder. Riktig tilgang.</strong><p>{administer?'Registrer medarbeidere og velg nærmeste leder. Se over hvem som får lese før dere begynner med oppfølging.':audience==='management'?'Her ser du medarbeiderne du er registrert som nærmeste leder for. Egne oppfølginger ligger på Min side.':'Her ser du egen registeroppføring og medarbeidere du har fått uttrykkelig lesetilgang til.'}</p><p>Samtaler og sykefraværsoppfølging kommer i neste del. Du kan foreløpig ikke lagre referat, fraværsopplysninger eller filer her.</p></div>
   <div className="hr-toolbar"><h3>{administer?'Medarbeiderregister':'Mine oppfølginger'}</h3><button type="button" className="secondary" disabled={busy} onClick={refresh}>Oppdater registeret</button></div>
   {error&&<p className="hr-error" role="alert">{error}</p>}{notice&&<p className="hr-notice" role="status">{notice}</p>}
   {busy&&<p role="status">Kontrollerer tilgang og register …</p>}
   {administer&&data&&<details className="hr-card" open={!data.settings}>
    <summary>Oppsett og kontrollfrist{!data.enabled?' · registeret er avslått':''}</summary>
    <p>Beskriv hvorfor firmaet trenger registeret, hvilket grunnlag dere bruker, og når dere skal kontrollere behov og tilgang igjen. Hold private opplysninger om enkeltansatte utenfor disse feltene.</p>
-   <form onSubmit={event=>{event.preventDefault();run(async(session,current)=>{await session.configure({revision:data.settings?.revision||0,...config});const result=await load(session);if(current()){install(result);setNotice('HR-oppsettet er lagret.');}publishManagedAccessChange({source:'hr-config',companyId});});}}>
-    <fieldset disabled={busy}><Field label="Formål med registeret"><textarea required minLength={10} maxLength={500} value={config.purpose} onChange={e=>setConfig({...config,purpose:e.target.value})}/></Field>
-    <Field label="Firmaets vurderte behandlingsgrunnlag"><textarea required minLength={10} maxLength={500} value={config.legalBasis} onChange={e=>setConfig({...config,legalBasis:e.target.value})}/></Field>
-    <Field label="Neste kontroll av behov og tilgang"><input type="date" required value={config.reviewOn} onChange={e=>setConfig({...config,reviewOn:e.target.value})}/></Field>
+   <form onSubmit={event=>{event.preventDefault();if(/\[[^\]]+\]/.test(config.legalBasis)){setError('Fyll ut firmaets egen vurdering der forslaget har klammer før du lagrer.');return;}run(async(session,current)=>{await session.configure({revision:data.settings?.revision||0,...config});const result=await load(session);if(current()){install(result);setNotice('HR-oppsettet er lagret.');}publishManagedAccessChange({source:'hr-config',companyId});});}}>
+    <fieldset disabled={busy}><div className="hr-fields hr-setup-fields"><div><Field label="Formål med registeret"><textarea required minLength={10} maxLength={500} rows={3} value={config.purpose} onChange={e=>setConfig({...config,purpose:e.target.value})}/></Field>
+    <HrTextSuggestion label="formål" text={HR_SETUP_SUGGESTIONS.purpose} value={config.purpose} onUse={value=>setConfig(previous=>({...previous,purpose:value}))}/></div>
+    <div><Field label="Firmaets vurderte behandlingsgrunnlag"><textarea required minLength={10} maxLength={500} rows={3} value={config.legalBasis} onChange={e=>setConfig({...config,legalBasis:e.target.value})}/></Field>
+    <HrTextSuggestion label="behandlingsgrunnlag" text={HR_SETUP_SUGGESTIONS.legalBasis} value={config.legalBasis} onUse={value=>setConfig(previous=>({...previous,legalBasis:value}))}/></div></div>
+    <div className="hr-review"><Field label="Neste kontroll av behov og tilgang"><input type="date" required value={config.reviewOn} onChange={e=>setConfig({...config,reviewOn:e.target.value})}/></Field>
+    <div className="hr-review-options"><button type="button" className="secondary" onClick={()=>setConfig(previous=>({...previous,reviewOn:suggestedReviewDate(3)}))}>Om 3 måneder</button><button type="button" className="secondary" onClick={()=>setConfig(previous=>({...previous,reviewOn:suggestedReviewDate(6)}))}>Om 6 måneder</button></div></div>
+    <p className="hr-hint">Datoen er firmaets egen kontrollfrist. Tekstforslaget er et utkast; firmaet må vurdere grunnlaget før lagring.</p>
     <label className="hr-check"><input type="checkbox" checked={config.enabled} onChange={e=>setConfig({...config,enabled:e.target.checked})}/>Aktiver medarbeiderregisteret</label>
     <button>Lagre HR-oppsett</button></fieldset>
    </form>
@@ -120,7 +129,7 @@ export default function HrModule({context}) {
    {employees.length>0&&<Field label="Søk etter medarbeider"><input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></Field>}
    <div className="hr-list">{shown.map(employee=><button type="button" className="hr-employee secondary" key={employee.id} disabled={busy} aria-pressed={detail?.id===employee.id} onClick={()=>open(employee.id)}><span><strong>{employee.email||'Medarbeider'}</strong><small>{employee.user_id===userId?'Din medarbeidertilgang':employee.leader_id===userId?'Du er nærmeste leder':administer?'Firmaregister':'Ekstra lesetilgang'}</small></span><span>{employee.leader_id?'Leder registrert':'Leder mangler'} →</span></button>)}</div>
    {!shown.length&&<div className="hr-empty"><h4>{employees.length?'Ingen treff':'Ingen medarbeidere å vise'}</h4><p>{employees.length?'Prøv et annet søk.':administer?'Start med «Legg til medarbeider». Deretter velger du leder og kontrollerer tilgangen.':'Firmaadmin registrerer medarbeider og nærmeste leder. Oppfølgingene vises her når de er tilgjengelige for deg.'}</p></div>}
-   {data.next&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await session.list(data.next);if(current())setData(previous=>({...previous,employees:[...previous.employees,...page.employees.filter(employee=>!previous.employees.some(p=>p.id===employee.id))],next:page.next}));})}>Hent flere medarbeidere</button>}
+   {data.next&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await list(session,data.next);if(current())setData(previous=>({...previous,employees:[...previous.employees,...page.employees.filter(employee=>!previous.employees.some(p=>p.id===employee.id))],next:page.next}));})}>Hent flere medarbeidere</button>}
   </>}
   {administer&&data?.purges?.receipts.length>0&&<details className="hr-card"><summary>Slettekvitteringer</summary><p>Tilgangen sperres straks ved avslutning. «Slettet» vises først når registrert innhold og filer er slettet. Ved filfeil prøver systemet igjen.</p>
    <ul>{data.purges.receipts.map(receipt=><li key={receipt.id}>{receipt.kind==='employment'?'Avsluttet arbeidsforhold':'Slettet HR-innhold'} · {new Date(receipt.requested_at).toLocaleString('nb-NO',{timeZone:'Europe/Oslo'})} · <strong>{receipt.state==='complete'?'Slettet':'Tilgang sperret · filsletting pågår'}</strong></li>)}</ul>
@@ -128,6 +137,7 @@ export default function HrModule({context}) {
   </details>}
   {detail&&<article className="hr-card hr-detail" ref={regionRef} tabIndex={-1} aria-label="Medarbeiderens tilgang"><div className="hr-toolbar"><h3>{detail.email||'Medarbeider'}</h3><button type="button" className="secondary" onClick={()=>installDetail(null)}>Lukk medarbeider</button></div>
    <p>{administer?'Kontroller leder og ekstra lesere. Endringen lagres først når du trykker knappen.':'Dette er din tilgjengelige registeroppføring. Firmaadmin styrer leder og ekstra lesetilgang.'}</p>
+   <PrivateContact key={detail.id+':'+detail.revision} context={context} employee={detail}/>
    {!administer&&<p>{detail.leader_id?'Nærmeste leder er registrert.':'Nærmeste leder er ikke registrert. Kontakt firmaadmin.'}</p>}
    {administer&&<><form onSubmit={event=>{event.preventDefault();command('leader',{id:detail.id,revision:detail.revision,leader_id:leader||null,clear_old_leader_reader:clearOld},'Nærmeste leder er oppdatert.');}}><fieldset disabled={busy}>
     <UserSelect label="Nærmeste leder" value={leader} onChange={id=>{setLeader(id);setClearOld(false);}} members={selectedLeaderMissing?[{id:leader,email:'Nåværende leder – hent flere brukere for å kontrollere'},...members]:members} exclude={[detail.user_id]}/>

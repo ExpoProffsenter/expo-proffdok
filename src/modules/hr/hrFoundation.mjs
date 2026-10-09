@@ -21,6 +21,8 @@ export function createHrFoundationSession({rpc,companyId,userId,onClear=()=>{}})
   invalidate:clear,
   dispose(){disposed=true;clear();},
   list(after=null){return call('hr_employee_list',{p_after:after});},
+  personalList(after=null){return call('hr_personal_list',{p_after:after});},
+  managementList(after=null){return call('hr_management_list',{p_after:after});},
   state(afterUser=null){return call('hr_foundation_state',{p_after_user:afterUser});},
   purgeStatus(after=null){return call('hr_purge_status',{p_after:after});},
   async get(employeeId){
