@@ -4,6 +4,9 @@ Kenneth plasserer byggeren under **KS/HMS**, tilgjengelig også uten HR-avtale. 
 
 **63 nye faktiske rollback Sandbox SQL assertions PASS**, berørte H1/H3 **75/61 PASS**, faktisk ny/berørt React PASS, tre syntetiske PDF-sider med 48 medarbeidere visuelt kontrollert og ferske eksportavslag PASS. H3 fant og fikk rettet en konkret trigger-scope-regresjon uten svekket prøve. 8 live funksjoner byteidentiske/ACL/tomt search_path. Privat HR fortsatt stengt; ingen mail/main/demo/Production. Full critical/build og eksakt publiseringsbevis føres i draft PR #216. Tidligere Kenneth TEST OK og B/C/PDF/ZIP-bevis beholdes. [Avklart scope, prøver, PDF og nye brukerknapper](ORGANIZATION_SCOPE_20261010.md).
 
+**Faktisk publisert og innlogget kontroll:** kode **0b638fc27d0b987cb61a54fc439727b4d03b5325**, Core Safety **38005156679 / 114072124333 SUCCESS**, **dpl_76xSBAeGxpsS2Q2W37X7BYJVVoZ7 READY** eksakt SHA/Sandbox. Skynett viser kartet under KS/HMS, fire aktive demobrukere, kompakt avdelingsdialog og bevart kart ved fokusretur. Faktisk PDF-nedlasting (én A3-side, fire navn) tekst- og visuelt kontrollert. Ingen data/rettigheter lagret; desktop har fortsatt noe vertikal scrolling. Originalbilder og presise grenser i [sluttbeviset](ORGANIZATION_SCOPE_20261010.md#faktisk-innlogget-preview-kontroll). Siste dokumentasjons-head/CI/Preview føres i draft PR #216; kode uendret.
+
+
 ## HR H5a og godkjent KS/HMS-/HR-layout – 10. oktober 2026
 
 Kenneths «kjempefint, takk. kjør videre» er registrert som **TEST OK for levert KS/HMS-/HR-layout**. Varig ønske om senere vurdering av samme utforming i hele appen beholdes. Ingen ny layout-/B/C-/PDF-/ZIP-omtest kreves.

@@ -41,4 +41,16 @@ Privat HR-kontakt/samtale/sykefravær er fortsatt stengt. H5a sin eksterne drift
 2. Åpne **medarbeidere venter på plassering**, velg person, fyll **Stilling**, velg **Rolle i kartet** og **Avdeling**. **Lagre plassering**. Velg Lærling for egen markering. **Vis medarbeidere** åpner kortene.
 3. **Last ned PDF**. Hele firmaets organisasjon følger med, også lukkede/filtrerte avdelinger. Kontroller mottaker før manuell videresending.
 
-Innlogget Skynett-kontroll skjer på publisert kode etter eksakt SHA/READY/Sandbox-kontroll; ingen ny browser-PASS påstås i dette avsnittet ennå.
+## Faktisk innlogget Preview-kontroll
+
+Kontrollert på kode **0b638fc27d0b987cb61a54fc439727b4d03b5325**, tree **9881344d893aae9b03255d9abd467239d7394bda**. [PR Core Safety 38005156679](https://github.com/ExpoProffsenter/expo-proffdok/actions/runs/38005156679) **SUCCESS**, jobb **114072124333**, scope guard og full critical build grønne. Preview **dpl_76xSBAeGxpsS2Q2W37X7BYJVVoZ7 READY** eksakt kode-SHA/feature-ref/prosjekt/fast alias; direkte branch-env **EXPO_BACKEND_TARGET=sandbox**. Publisert på faktisk remote parent **fba8d412ca7e2cde7844a32e50c1496eaa4f37ef** med expected-head lease/force=false, alle 28 blobs og remote tree identiske med testet lokal tree. Main **155f6c4ac01f126c1db0c65da385cfd9305587d5**, draft PR #216, ikke merged.
+
+Innlogget Skynett-desktop, én eksisterende fane, ordinær reload/bevart innlogging:
+
+- **KS/HMS → Organisasjonskart** er synlig under Mine rutiner med ikon; alle 12 KS-valg har ikon. Faktisk Sandbox-lesing viser **0 avdelinger / 4 aktive firmabrukere / 0 lærlinger / 4 ikke plassert**. Ingen HR-registerkrav for disse brukerne. Tomtilstand, fire statistikkort, søk/filter og første avdeling-knapp er synlig uten feil.
+- **Faktisk Last ned PDF PASS**: nettleseren lastet ned 10 661 byte; én A3 liggende side, alle fire demo-navn/stillinger tekstkontrollert, siden rendret og visuelt kontrollert. Dette er en faktisk appnedlasting med eksisterende uplacerede demobrukere, ikke det syntetiske 48-personers dokumentet. Privat HR/kontaktinnhold er ikke med. Ingen mail sendt.
+- **Legg til første avdeling** åpner kompakt dialog med navn, overordnet avdeling, avdelingsleder og farge. **560 × 556,5 px**, ingen intern overflow, input/select **44 px** høye; lukking returnerer fokus til startknappen. Dialogen ble lukket uten lagring eller tilgangsendring. Åpningen setter fokus på lukkeknappen; forbedret startfeltfokus kan vurderes senere.
+- F6/Escape konkret browser-fokusprøve beholder kartvalget og ferskt innhold. Dette er ikke Windows screenshotverktøy eller separate samtidige kontoer. Sidebredde **1348 px** i **1363 × 936 px** viewport, ingen horisontal sideoverflow. Eksisterende KS-header/meny medfører fortsatt noe vertikal scrolling; mobil/pass på alle skjermstørrelser påstås ikke.
+- [Originalt kartbilde](evidence/organization/organization-preview-final-20261010.jpg) og [original dialog](evidence/organization/organization-preview-dialog-20261010.jpg) er samme uredigerte JPEG-bytes som ble vist i Skynett. Meny og dialog lukket ved avslutning. Ingen aktiv person, avdeling, firmainnstilling, HR-leder eller rettighet ble lagret i browseren. Skriving/negativ rolleavgrensning er dokumenterte SQL-/React-prøver, ikke nye separate browserkonto-bevis.
+
+Sluttbevis-commiten endrer bare dokumentasjon og lagrer to originale JPEG-er. Appkode/database uendret fra kode-SHA over; endelig dokumentasjons-head, tree, CI og eksakt Preview føres i draft PR #216 etter fersk remote-kontroll.
