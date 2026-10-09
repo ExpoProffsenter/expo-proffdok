@@ -1,3 +1,9 @@
+## Fristpåminnelser for avvik/RUH – feature/Sandbox
+
+Oppgavelisten skiller passert frist, frist i dag og frist innen tre dager i norsk tid. Åpne avvik/RUH får styrte ukespåminnelser via eksisterende privat leveringskø når e-post senere aktiveres. Kø og leveringskontroll følger ansvarlig, frist og gjeldende tilgang; gamle perioder og reaktiverte køer spilles ikke av. Transport forblir deaktivert i Sandbox. `kshms_deviation_tasks` beregner friststatus med Europe/Oslo. Private collector låser saken og oppretter kun aktuell syvdagersperiode i outbox; separate delvise unike indekser bevarer tildelings-idempotens og påminnelses-idempotens. `notification_active` bevarer de seks eksisterende oppgavetypenes kontroll og legger til frist-/periode-/aktiveringsvern for påminnelser. Profilens tilgangsendringer undertrykker ventende påminnelser. Workerens token, reservasjon, retry, siste tilgangskontroll og beskyttede lenke er bevart. [Scope og QA](../kshms/DEVIATION_REMINDERS_20261009.md).
+
+---
+
 # Risikobilder i eksisterende privat gjennomføringssnapshot – Preview 9. oktober 2026
 
 `KshmsExecutions` gjenbruker den eksisterende komprimerings- og bildevalideringen for inntil tre JPG-/PNG-/WebP-bilder per fare. Bildene ligger i samme private, versjonerte `kshms_executions.content` som fare, tiltak og score. Migrasjon `20261009030000_kshms_risk_photos.sql` utvider bare den private innholdsvalidatoren; den oppretter ingen tabell, Storage-bucket, RLS-policy eller offentlig RPC. Eldre snapshots normaliseres til tom bildeliste. Ny vurdering med samme farer kopierer tekstgrunnlaget, men ikke bildene. Konfliktvisningen viser bare antall bilder og eksponerer ikke base64-data.

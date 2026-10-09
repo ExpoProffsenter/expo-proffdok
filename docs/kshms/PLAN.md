@@ -1,3 +1,11 @@
+## Fristpåminnelser for avvik/RUH – 9. oktober 2026
+
+Miljømål **BEGGE**, levering bare feature/Sandbox. Oppgavelisten viser passert frist, frist i dag og frist innen tre dager etter norsk kalenderdato. Periodiske e-postpåminnelser for åpne avvik/RUH bruker den private køen, høyst én per syv dager og tidligst syv dager etter siste tildelingslevering. Bare aktuell ukesperiode opprettes. Ansvar, frist, status, firmaaktivering, medlemskap og grant kontrolleres før levering. Deaktivering og reaktivering skal ikke spille av gamle påminnelser. E-posttransport forblir avslått.
+
+Utviklerkontroller og faktiske bruker-TEST OK holdes atskilt; ingen ny obligatorisk Kenneth-prøve opprettes. Tidligere TEST OK beholdes. Skynettleseren er fortsatt blokkert av verktøyets credential-state-grense; det er ikke påstått innlogget nettleserbevis for denne leveransen. Påminnelser for andre oppgavetyper og HR-utløp inngår ikke i denne første avgrensningen. Neste utviklingspunkt er kildeoppdatering. [Scope og QA](DEVIATION_REMINDERS_20261009.md).
+
+---
+
 ## Testarbeid – avklart med Kenneth 9. oktober 2026
 
 Kenneth påpekte kl. 15:17 at gjentatte like brukerprøver skaper en testsløyfe, og ba om at agenten tester i skynettleseren. Agenten tar teknisk QA: felles PDF-/ZIP-flyter regresjonstestes samlet, med målrettede tester for hver dokumenttypes datakobling. En ny variant blir ikke automatisk en ny obligatorisk Kenneth-prøve. Brukerprøver samles til en kort helhetlig gjennomgang når det finnes en vesentlig ny arbeidsflyt eller et konkret hull som agenten ikke kan dekke. Kritiske regresjonsvern og krav til eksplisitt godkjenning før eventuell merge består. Ingen eksisterende TEST OK skal gjentas uten konkret feil/relevant regresjon.

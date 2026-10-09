@@ -1,3 +1,11 @@
+## Fristpåminnelser for avvik/RUH – 9. oktober 2026
+
+Miljømål **BEGGE**, levering bare feature/Sandbox. Oppgavelisten viser passert frist, frist i dag og frist innen tre dager etter norsk kalenderdato. Periodiske e-postpåminnelser for åpne avvik/RUH bruker den private køen, høyst én per syv dager og tidligst syv dager etter siste tildelingslevering. Bare aktuell ukesperiode opprettes. Ansvar, frist, status, firmaaktivering, medlemskap og grant kontrolleres før levering. Deaktivering og reaktivering skal ikke spille av gamle påminnelser. E-posttransport forblir avslått.
+
+Utviklerkontroller og faktiske bruker-TEST OK holdes atskilt; ingen ny obligatorisk Kenneth-prøve opprettes. Tidligere TEST OK beholdes. Skynettleseren er fortsatt blokkert av verktøyets credential-state-grense; det er ikke påstått innlogget nettleserbevis for denne leveransen. Påminnelser for andre oppgavetyper og HR-utløp inngår ikke i denne første avgrensningen. Neste utviklingspunkt er kildeoppdatering. [Scope og QA](DEVIATION_REMINDERS_20261009.md).
+
+---
+
 ## TEST OK – SJA-bilder, 9. oktober 2026 kl. 15:01
 
 Kenneth svarte «test ok» etter den avgrensede SJA-bildeprøven i samme Sandbox Preview. Godkjenningen gjelder ett testbilde i SJA-utkast med lagring/gjenåpning, egen og samlet PDF, og bilde/manifest.json i vedleggs-ZIP på head `65655dea4a220352075b3c50dd0530a53aab758f`. Dette er brukerens godkjenning, ikke en ny utviklerdrevet nettleserprøve. Ingen bestemt sak, enhet eller antall filer utover prøven er dokumentert.

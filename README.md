@@ -1,3 +1,9 @@
+## Fristpåminnelser for avvik/RUH – feature/Sandbox
+
+Oppgavelisten skiller passert frist, frist i dag og frist innen tre dager i norsk tid. Åpne avvik/RUH får styrte ukespåminnelser via eksisterende privat leveringskø når e-post senere aktiveres. Kø og leveringskontroll følger ansvarlig, frist og gjeldende tilgang; gamle perioder og reaktiverte køer spilles ikke av. Transport forblir deaktivert i Sandbox. [Scope og QA](docs/kshms/DEVIATION_REMINDERS_20261009.md).
+
+---
+
 # KS/HMS – versjonerte underskjema i Sandbox
 
 Sjekklistesentral kan feste en eksakt publisert underskjemaversjon etter et punkt. Publisering lagrer rotpunkter, ferdig utføringsliste og komplett dependency-ID/hash/snapshot. Syklus, fremmed/arkivert mal og mer enn 100 ferdige punkter stoppes server-side. Eksisterende prosjekt- og selvstendige kontroller bruker samme utførelsesmodell; gamle publiserte utgaver omskrives ikke. Tom mal-PDF viser child-versjonene. [Scope/testbevis](docs/kshms/CHECKLIST_SUBFORMS_20261009.md), [kort prøve](docs/kshms/USER_TEST.md). Bare feature/Sandbox; Production er ikke godkjent.
