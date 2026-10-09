@@ -22,6 +22,7 @@ export function createHrFoundationSession({rpc,companyId,userId,onClear=()=>{}})
   dispose(){disposed=true;clear();},
   list(after=null){return call('hr_employee_list',{p_after:after});},
   state(afterUser=null){return call('hr_foundation_state',{p_after_user:afterUser});},
+  purgeStatus(after=null){return call('hr_purge_status',{p_after:after});},
   async get(employeeId){
    const ticket=generation;
    const first=await call('hr_employee_get',{p_employee_id:employeeId});
@@ -37,4 +38,10 @@ export function createHrFoundationSession({rpc,companyId,userId,onClear=()=>{}})
    return call('hr_foundation_configure',{p_revision:revision,p_enabled:enabled,p_purpose:purpose,p_legal_basis:legalBasis,p_review_on:reviewOn});
   }
  };
+}
+
+export function hrClosureMessage(result) {
+ return result.deleted===true
+  ? 'Arbeidsforholdet er avsluttet i HR. Register, tildelinger og registrert HR-innhold er slettet.'
+  : 'Arbeidsforholdet er avsluttet i HR, og tilgangen er sperret. Innhold er fjernet fra databasen. Filsletting pågår; se Slettekvitteringer.';
 }

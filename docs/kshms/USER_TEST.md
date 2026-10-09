@@ -1,3 +1,9 @@
+## Samlet Hjelp – 9. oktober 2026
+
+Åpne **Hjelp → KS/HMS**. Alle KS/HMS-veiledningene ligger som kapitler under dette ene punktet. Åpne et kapittel for å lese det. **Hjelp → HR** samler HR-veiledningen på samme måte. Alt tidligere hjelpeinnhold beholdes.
+
+Kenneths TEST OK for H2-menyen er mottatt. Ingen ny B/C-/PDF-/ZIP-omtest kreves. H3-slette-/filfundamentet er kontrollert med 61 faktiske rollback-assertions, én faktisk syntetisk privat Storage-fil og React-flyter. Sensitivt HR-innhold er fortsatt stengt; uavhengig slettemanifest og full isolert restore gjenstår. [Detaljer](HR_PURGE_FILES_20261009.md).
+
 ## HR-register og smartere KS/HMS-meny – 9. oktober 2026
 
 Miljømål **BEGGE**, levering bare feature/Preview/Sandbox, draft PR #216. H2 gir eget HR-hovedvalg med firmaadmins medarbeider-/leder-/leserregister og medarbeiderens Mine oppfølginger. HR har fortsatt ingen samtale-/fraværsinnhold, filer eller eksport; full innholdspurge/restore må leveres før sensitivt innhold åpnes. Ingen firma aktivert av leveransen. KS/HMS-menyen er gruppert i Daglig arbeid, Mine rutiner og Forvaltning; eksisterende faner, snarveier og utkastbevaring beholdes.

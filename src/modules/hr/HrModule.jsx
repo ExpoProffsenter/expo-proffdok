@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
-import {createHrFoundationSession} from './hrFoundation.mjs';
+import {createHrFoundationSession,hrClosureMessage} from './hrFoundation.mjs';
 import {hrRpc} from './hrAccess.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,publishManagedAccessChange} from '../access/moduleAccessClient.js';
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
@@ -28,10 +28,11 @@ export default function HrModule({context}) {
   const state=administer?await session.state():null;
   const enabled=state?Boolean(state.settings?.enabled):context.enabled;
   const listing=enabled?await session.list():{employees:[],next:null};
-  return {state,listing,enabled};
+  const purges=administer?await session.purgeStatus():{receipts:[],next:null};
+  return {state,listing,enabled,purges};
  },[administer,context.enabled]);
  const install=result=>{
-  setData({settings:result.state?.settings||null,...result.listing,enabled:result.enabled});
+  setData({settings:result.state?.settings||null,...result.listing,enabled:result.enabled,purges:result.purges});
   setMembers(result.state?.members||[]);setMemberNext(result.state?.next||null);
   if(result.state){const s=result.state.settings;setConfig(s?{purpose:s.purpose,legalBasis:s.legal_basis,reviewOn:s.review_on,enabled:s.enabled}:emptyConfig);}
  };
@@ -58,7 +59,7 @@ export default function HrModule({context}) {
     const result=await load(session);
     const fresh=selected?await session.get(selected.id):null;
     if(alive&&ticket===revision.current){
-     setData({settings:result.state?.settings||null,...result.listing,enabled:result.enabled});
+     setData({settings:result.state?.settings||null,...result.listing,enabled:result.enabled,purges:result.purges});
      if(fresh&&fresh.employee.revision!==selected.revision){installDetail(fresh.employee);setNotice('Tilgangen er endret. Se over den oppdaterte medarbeideren.');}
     }
    }catch(e){if(alive&&ticket===revision.current)setError(e.message);}
@@ -80,6 +81,7 @@ export default function HrModule({context}) {
   // Fresh detail before every edit; expected revision still protects the write.
   if(action!=='create'){const fresh=await session.get(payload.id);if(fresh.employee.revision!==payload.revision){session.invalidate();throw new Error('Medarbeideren er endret. Oppdater registeret før du fortsetter.');}}
   const result=await session.command(action,payload);
+  if(action==='end')message=hrClosureMessage(result);
   let refreshed;
   try{refreshed=await load(session);}catch(e){if(current()){installDetail(null);setNotice(message);setError('Handlingen er lagret. Registeret kunne ikke hentes på nytt. Kontroller aktivt firma og oppdater registeret.');}return;}
   if(current()){install(refreshed);installDetail(result.employee||null);setEmployeeUser('');setNewLeader('');setNotice(message);}
@@ -120,6 +122,10 @@ export default function HrModule({context}) {
    {!shown.length&&<div className="hr-empty"><h4>{employees.length?'Ingen treff':'Ingen medarbeidere å vise'}</h4><p>{employees.length?'Prøv et annet søk.':administer?'Start med «Legg til medarbeider». Deretter velger du leder og kontrollerer tilgangen.':'Firmaadmin registrerer medarbeider og nærmeste leder. Oppfølgingene vises her når de er tilgjengelige for deg.'}</p></div>}
    {data.next&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await session.list(data.next);if(current())setData(previous=>({...previous,employees:[...previous.employees,...page.employees.filter(employee=>!previous.employees.some(p=>p.id===employee.id))],next:page.next}));})}>Hent flere medarbeidere</button>}
   </>}
+  {administer&&data?.purges?.receipts.length>0&&<details className="hr-card"><summary>Slettekvitteringer</summary><p>Tilgangen sperres straks ved avslutning. «Slettet» vises først når registrert innhold og filer er slettet. Ved filfeil prøver systemet igjen.</p>
+   <ul>{data.purges.receipts.map(receipt=><li key={receipt.id}>{receipt.kind==='employment'?'Avsluttet arbeidsforhold':'Slettet HR-innhold'} · {new Date(receipt.requested_at).toLocaleString('nb-NO',{timeZone:'Europe/Oslo'})} · <strong>{receipt.state==='complete'?'Slettet':'Tilgang sperret · filsletting pågår'}</strong></li>)}</ul>
+   {data.purges.next&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await session.purgeStatus(data.purges.next);if(current())setData(previous=>({...previous,purges:{receipts:[...previous.purges.receipts,...page.receipts.filter(receipt=>!previous.purges.receipts.some(p=>p.id===receipt.id))],next:page.next}}));})}>Hent flere slettekvitteringer</button>}
+  </details>}
   {detail&&<article className="hr-card hr-detail" ref={regionRef} tabIndex={-1} aria-label="Medarbeiderens tilgang"><div className="hr-toolbar"><h3>{detail.email||'Medarbeider'}</h3><button type="button" className="secondary" onClick={()=>installDetail(null)}>Lukk medarbeider</button></div>
    <p>{administer?'Kontroller leder og ekstra lesere. Endringen lagres først når du trykker knappen.':'Dette er din tilgjengelige registeroppføring. Firmaadmin styrer leder og ekstra lesetilgang.'}</p>
    {!administer&&<p>{detail.leader_id?'Nærmeste leder er registrert.':'Nærmeste leder er ikke registrert. Kontakt firmaadmin.'}</p>}
@@ -135,7 +141,7 @@ export default function HrModule({context}) {
     <UserSelect label="Ekstra leser" value={reader} onChange={setReader} members={members} exclude={[detail.user_id]} required/>
     <Field label="Begrunnelse for ekstra lesetilgang"><input required minLength={10} maxLength={200} value={reason} onChange={e=>setReason(e.target.value)}/></Field><button disabled={!reader||reason.trim().length<10}>Gi lesetilgang</button>
    </fieldset></form>
-   <details className="hr-ending" open={ending} onToggle={event=>setEnding(event.currentTarget.open)}><summary>Avslutt arbeidsforhold i HR</summary><p>Dette fjerner medarbeideren fra HR-registeret og sperrer personens HR-tilgang i firmaet. Leder- og lesertildelinger for personen fjernes også hos andre medarbeidere. Register og ekstra lesere slettes. Et minimalt slettebevis beholdes. Ordinær ProffDok-konto avsluttes ikke.</p><p>Valget kan ikke angres her. Gjenansettelse krever en egen avklaring med firmaadmin.</p>
+   <details className="hr-ending" open={ending} onToggle={event=>setEnding(event.currentTarget.open)}><summary>Avslutt arbeidsforhold i HR</summary><p>Dette fjerner medarbeideren fra HR-registeret og sperrer personens HR-tilgang i firmaet. Leder- og lesertildelinger for personen fjernes også hos andre medarbeidere. Register, ekstra lesere og HR-innhold slettes. Filer slettes i en egen kø. Slettekvitteringen viser når alt er slettet. Et minimalt slettebevis beholdes. Ordinær ProffDok-konto avsluttes ikke.</p><p>Valget kan ikke angres her. Gjenansettelse krever en egen avklaring med firmaadmin.</p>
     <label className="hr-check"><input type="checkbox" checked={endConfirmed} disabled={busy} onChange={e=>setEndConfirmed(e.target.checked)}/>Jeg bekrefter at arbeidsforholdet er avsluttet og at HR-registeroppføringen skal slettes.</label>
     <button type="button" className="hr-danger" disabled={busy||!endConfirmed} onClick={()=>command('end',{id:detail.id,revision:detail.revision,confirm:'END_AND_DELETE'},'Arbeidsforholdet er avsluttet i HR. Registeroppføring og tildelinger er slettet.')}>Avslutt og slett HR-registeroppføring</button>
    </details></>}
