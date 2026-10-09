@@ -1,3 +1,13 @@
+## TEST OK – SJA-bilder, 9. oktober 2026 kl. 15:01
+
+Kenneth svarte «test ok» etter den avgrensede SJA-bildeprøven i samme Sandbox Preview. Godkjenningen gjelder ett testbilde i SJA-utkast med lagring/gjenåpning, egen og samlet PDF, og bilde/manifest.json i vedleggs-ZIP på head `65655dea4a220352075b3c50dd0530a53aab758f`. Dette er brukerens godkjenning, ikke en ny utviklerdrevet nettleserprøve. Ingen bestemt sak, enhet eller antall filer utover prøven er dokumentert.
+
+Tidligere TEST OK **00:59 / 01:29 / 01:55 / 02:28** beholdes uten omtest. SJA-bildeprøven trenger ikke gjentas uten konkret feil eller relevant regresjon. Mobilkamera, flerbruker, faktiske private avviks-/prosjektkontroll-/legacyfiler, risikobilder, eldre prosjektavviksuttrekk og versjonerte underskjema beholder sine egne restprøver. Neste uavhengige utviklingspunkt er påminnelser, deretter kildeoppdatering. HR er ikke startet.
+
+Denne registreringen endrer bare dokumentasjon på feature-branchen; PR #216 forblir draft. Ingen Production-release eller main/demo-merge er godkjent eller utført. KS/HMS-e-postutsending skal fortsatt være deaktivert. Eldre beskrivelser av «ikke TEST OK for SJA-bilder» nedenfor er historisk status før denne godkjenningen.
+
+---
+
 ## Versjonerte underskjema – avgrenset B-leveranse 9. oktober 2026
 
 Kontrollert start remote feature `131d65ca97b7a401417e439b185ceac2afa5b6ff` / tree `806b61458891c92b25ed61a02676377101e9d1f2`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Sjekklistesentral kan feste eksakt publisert child-versjon etter et rotpunkt. Publisering lagrer root, utflatet utføringsliste og komplett child-versjon/hash/innhold. Samme-firma/aktiv-mal, syklus og maks 100 ferdige punkter håndheves server-side. Gamle parent-/prosjektkopier omskrives ikke.

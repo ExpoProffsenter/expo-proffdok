@@ -1,3 +1,13 @@
+## TEST OK – SJA-bilder, 9. oktober 2026 kl. 15:01
+
+Kenneth svarte «test ok» etter den avgrensede SJA-bildeprøven i samme Sandbox Preview. Godkjenningen gjelder ett testbilde i SJA-utkast med lagring/gjenåpning, egen og samlet PDF, og bilde/manifest.json i vedleggs-ZIP på head `65655dea4a220352075b3c50dd0530a53aab758f`. Dette er brukerens godkjenning, ikke en ny utviklerdrevet nettleserprøve. Ingen bestemt sak, enhet eller antall filer utover prøven er dokumentert.
+
+Tidligere TEST OK **00:59 / 01:29 / 01:55 / 02:28** beholdes uten omtest. SJA-bildeprøven trenger ikke gjentas uten konkret feil eller relevant regresjon. Mobilkamera, flerbruker, faktiske private avviks-/prosjektkontroll-/legacyfiler, risikobilder, eldre prosjektavviksuttrekk og versjonerte underskjema beholder sine egne restprøver. Neste uavhengige utviklingspunkt er påminnelser, deretter kildeoppdatering. HR er ikke startet.
+
+Denne registreringen endrer bare dokumentasjon på feature-branchen; PR #216 forblir draft. Ingen Production-release eller main/demo-merge er godkjent eller utført. KS/HMS-e-postutsending skal fortsatt være deaktivert. Eldre beskrivelser av «ikke TEST OK for SJA-bilder» nedenfor er historisk status før denne godkjenningen.
+
+---
+
 ## Versjonerte underskjema – levert utviklerscope
 
 Eksakt publisert child-versjon per rotpunkt, syklus-/tilgangskontroll og uforanderlig dependency-snapshot er implementert i feature/Sandbox. Prosjekt- og selvstendig gjennomføring bruker samme ferdig utflatede versjonssnapshot. Sandbox-migrasjoner `20261009040633` + `20261009041152`, 17 rollback-assertions, faktisk React og faktisk/visuell PDF PASS. `6faf58df` / tree `2e8562f5` er grønn full CI og READY Sandbox; innlogget read-only UI PASS. Bruker-TEST OK gjenstår; tidligere godkjenninger består. Neste uavhengige C-punkt er påminnelser, deretter kildeoppdatering. HR starter ikke nå. [Detaljer](CHECKLIST_SUBFORMS_20261009.md).
