@@ -40,3 +40,21 @@ Kort ny produktprøve: **Meny → Min side → Profil og e-post**, kontroller ko
 ## Oppstartsrettelse funnet i faktisk Preview
 
 Første innloggede reload av kode `5c105deba84f53f1780a95cb135ad83a3d6673bc` avdekket `Cannot read properties of null (reading company_id)` under auth-hydrering: null kontekst og manglende aktør ble sammenlignet som to undefined-verdier. Rettet med eksplisitt krav om både kontekst og aktør før firmalesing. Permanent kritisk prøve dekker null/undefined/tom aktør, og faktisk React-prøve monterer tom innloggingsstatus før ekte kontekst. Ingen browser-PASS på den første utgaven; ny kode/CI/Preview og faktisk ny reload må verifiseres.
+
+## Faktisk innlogget Preview-kontroll etter oppstartsretting
+
+Kode **45051f8e4713f6351633d216c6a7912bdd64246c**, tree **99928d21a01e28e7f11628ad94eb9a049b6509dc**, parent **5c105deba84f53f1780a95cb135ad83a3d6673bc**. PR Core Safety **37995676186 SUCCESS**, jobb **114040989598** med scope guard/fullcritical grønne. Vercel **dpl_3ACVRT1SreEnRNBZDLQM9Z9kQikq READY Preview**, eksakt SHA/feature-ref/prosjekt/fast alias, direkte branch-env **EXPO_BACKEND_TARGET=sandbox**. Main fortsatt **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Draft/ikke merged.
+
+**Faktisk innlogget Skynett-desktop PASS** på rettet kode. Ordinær reload i samme fane beholder innloggingen. Min side finnes i Meny. Ved **1363×936** har oversikten tre kort i samme rad, ingen side-/høydescroll (pageHeight=936); kortene er ca. 349×383 px. Profil viser fullt navn/mobil/readonly konto-e-post og to sammenleggbare detaljer. Eksisterende rapportfelt, rapportrolle og e-postvalg åpner korrekt. Privat kontaktforklaring viser avtalte lesere og ærlig fortsatt lukket lagring, uten adresse-/pårørendeinputs.
+
+Den faktiske personalhåndboka har **10 tildelte rutiner**, kun Min personalhåndbok/Les og bekreft, uten forvaltningsmeny. En faktisk rutine åpnet med innhold/godkjenner/egen bekreftelsesstatus; ingen bekreftelse/PDF eller B/C-omtest. Mine oppfølginger viser egen oppføring uten adminoppsett/leder-/leserredigering, også når aktøren er firmaadmin. Hovedvalget HR gir separat faktisk forvaltning.
+
+HR-oppsett: tekstfeltene er **506×110 px**, samme top på desktop, uten horisontal overflow. Begge tekstforslag åpnet. «Bruk forslag til formål» viste eksplisitt Erstatt teksten/Behold min tekst; **Behold min tekst** bevarte begge opprinnelige tekster. Om 3 måneder satte UI-datoen til **2027-01-09**. **Oppsettet ble ikke lagret**; siste lesende SQL bekrefter fortsatt **2026-10-23** og uendret 1 firma/medarbeider, 0 private artifacts/filer/receipts/jobs/Storage/QA-firmaer, content=false/restore quarantined og KS-mail disabled. Ingen kontaktprofil-/rettighets-/personendring. UI står igjen på Min side med menyen lukket, én fane.
+
+Originale uendrede JPEG-bevis (samme bytes som visuelt kontrollert):
+- [Min side, tre kort](screenshots/min-side-overview-20261009.jpg)
+- [Kompakt kontaktprofil](screenshots/min-side-contact-20261009.jpg)
+- [HR-oppsett, to tekstkolonner](screenshots/hr-setup-compact-20261009.jpg)
+- [Kontrollfrist og knapper, ulagret prøve](screenshots/hr-setup-date-20261009.jpg)
+
+Dette er desktop/én konto. Negative roller, private kontaktverdier/sletting og faktiske skriveforløp er separate SQL/React-prøver, ikke separate innloggede medarbeider-/lederøkter eller et virkelig pårørendeskrivebevis. Mobilkamera/mobilhardware og full Supabase-cloud-restore er ikke gradert PASS. Ekstern holdbar driftsbinding/ack og full isolert cloud-restore må fortsatt gjennomføres før adresse/pårørende og annet privat HR-innhold åpnes.
