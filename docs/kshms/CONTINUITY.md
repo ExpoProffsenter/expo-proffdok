@@ -1,3 +1,15 @@
+## Publisert kvalitet-/HMS-uttrekk – innlogget utviklerbevis 9. oktober 2026
+
+Funksjonshead **0e2de193164dad2342206cac1e2a7610f3c265d0**, tree **89b048c374fe88cea22251d1fdea387502c37bf4**, identisk med bevart lokal testcommit **2ec757530ca2736ed34ac56faa113250f3fb2209**. Alle 18 blobber/tree og faktisk publisert git-objekt hashkontrollert; lokal feature-branch er justert til eksakt publisert head. Baseline da2e5a79, main **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Publisert med expected-head og uten force. READY **dpl_BPX5n2GejD1xCUULTz9EUG7rAPoc**, samme faste Sandbox-alias, riktig SHA/feature-ref og Sandbox-backend. Core Safety **37863966196**, jobb **113606139996**, inkludert full critical build: completed/success. Lokal full Sandbox build, scope/docs-guard, nye og opprinnelige critical/React/PDF/ZIP-prøver PASS. PDF-rendering kontrollert.
+
+Innlogget skyfane 5 gjenbrukte demoøkten etter appens «Oppdater nå». Dokumentlisten startet uten valg; ny gruppe viste seks avvik (fem HMS/én kvalitet). Alle seks eksisterende lagrede saker ble valgt uten å endre dem. «Vis vedleggslisten» viste 0 vedlegg og sperret ZIP/bekreftelse. Bekreftet dokumentvalg ga faktisk nedlastet **23-siders PDF** med begge kategorier, historikk og manifest. PDF-en ble tekst-/sidekontrollert og alle sider rendret/visuelt kontrollert. «Fjern Ulykke fra uttrekket» ga fem valg, nullstilte PDF-bekreftelsen/vedleggslisten og sperret PDF. [Nettleserbevis](deviation-extract-proof.jpg). Deretter valg og omfang tømt; én innlogget fane, ingen popup. Ingen saks-/database-/Storage-skriving, signering eller lukking.
+
+Dette er utviklerbevis, **ikke Kenneths nye TEST OK**. Ny kvalitet-/HMS-brukerprøve, private originaler/bilder fra faktisk lagret avvik, mobil/flere brukere og tidligere åpne delprøver består. Sandbox-avvikene har ingen private filer; slik faktisk transport kan derfor ikke erklæres ferdig. Lokale syntetiske transportprøver dekker begge kategorier, fire private originaler, filinnhold/CRC/SHA-256 og feil-/tilgangsvern. Bevar brukerens TEST OK **00:59 egen SJA-PDF / 01:29 samlet PDF / 01:55 ZIP med to bilder og manifest.json**, 9. oktober Europe/Oslo. Øvrig vedleggsdekning gjenstår før versjonerte underskjema, påminnelser og kildeoppdatering; HR følger senere med avklart HR_SCOPE_20261008.md. KS/HMS-e-post forblir disabled (direkte lest enabled=false). Ingen Production/main/demo-merge eller ekte e-post.
+
+Etterfølgende beviscommit inneholder bare dokumentasjon og skjermbilde; funksjonskode er uendret.
+
+---
+
 ## Kvalitet-/HMS-avvik i dokument- og vedleggsuttrekk – 9. oktober 2026
 
 Miljømål **BEGGE**, kun feature/Sandbox nå. Baseline `da2e5a79824c1358948ed535768b81277a2ecb41`, faktisk main `155f6c4ac01f126c1db0c65da385cfd9305587d5`, draft PR #216. Ny avgrenset del av øvrig vedleggsdekning: egen gruppe **Kvalitets- og HMS-avvik med historikk og bilder** i Dokumentuttrekk. Valgte lagrede KS/HMS-saker får full historikk/private bilder i PDF og private originaler i ZIP, med eksisterende bekreftelse/manifest/konsistens-/tilgangsvern. [Scope og QA](DEVIATION_ATTACHMENTS_20261009.md).

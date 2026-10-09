@@ -1,3 +1,9 @@
+## Kvalitet-/HMS-uttrekk: READY og grønn full critical build
+
+Funksjonshead **0e2de193164dad2342206cac1e2a7610f3c265d0** er READY/grønn Core Safety. Innlogget utviklerprøve lastet ned seks lagrede kvalitets-/HMS-saker på 23 sider med historikk/manifest; tom privat vedleggsliste sperret ZIP, endret utvalg nullstilte bekreftelsen. Eksakt head/tree/deploy/CI og [nettleserbevis](deviation-extract-proof.jpg) er ført i CONTINUITY/QA. Tidligere TEST OK **00:59 / 01:29 / 01:55** beholdes. Ny avviks-TEST OK, faktisk private avviksfiler, mobil/flere brukere og øvrig vedleggsdekning gjenstår. KS/HMS-e-post deaktivert; ingen Production/main/demo-merge. Én avgrenset leveranse, ingen underskjema/HR i denne runden.
+
+---
+
 ## Kvalitet-/HMS-avvik i dokument- og vedleggsuttrekk – 9. oktober 2026
 
 Miljømål **BEGGE**, kun feature/Sandbox nå. Baseline `da2e5a79824c1358948ed535768b81277a2ecb41`, faktisk main `155f6c4ac01f126c1db0c65da385cfd9305587d5`, draft PR #216. Ny avgrenset del av øvrig vedleggsdekning: egen gruppe **Kvalitets- og HMS-avvik med historikk og bilder** i Dokumentuttrekk. Valgte lagrede KS/HMS-saker får full historikk/private bilder i PDF og private originaler i ZIP, med eksisterende bekreftelse/manifest/konsistens-/tilgangsvern. [Scope og QA](DEVIATION_ATTACHMENTS_20261009.md).

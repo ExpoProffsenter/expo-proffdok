@@ -6,6 +6,8 @@ Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-rin
 2. Bekreft dokumentvalget og trykk **Last ned samlet PDF**. Kontroller riktig kategori, sak/revisjon, hele historikken, eventuell lagret lukking og manifest. Bare valgte dokumenter følger filen. Nedlasting skal ikke endre saken.
 3. Har saken private vedlegg: **Vis vedleggslisten → bekreft → Last ned vedlegg (ZIP)**. Originalene og manifest.json skal høre til valgt sak. Uten vedlegg skal listen være tom og ZIP sperret. Endre omfang eller fjern saken: vedleggslisten/bekreftelsen skal tømmes.
 
+Innlogget utviklerprøve på funksjonshead **0e2de193**: seks lagrede kvalitet-/HMS-avvik ga faktisk **23-siders PDF** med historikk/manifest. Tom vedleggsliste sperret ZIP; fjerning nullstilte bekreftelse/listen. Én fane, valg/omfang tømt, ingen saksendring. [Bevis](deviation-extract-proof.jpg). Dette er ikke ny bruker-TEST OK.
+
 Utvikler har testet permanent kategorisperre, hele historikken over flere sider, privat transport/PDF/ZIP/CRC/SHA-256, manglende/endret fil/tilgang og sene firma-/bruker-/avmonteringssvar. Faktisk React gir PDF med begge kategorier og ZIP med fire private kvalitet-/HMS-originaler sammen med gamle vedlegg. Transporten er simulert, ikke reelt innlogget privatfilbevis. Sandboxs eksisterende avvik har ingen private filer; ikke endre/signér/lukk en reell sak bare for denne prøven. Mobil/flere brukere og øvrige tidligere restprøver består. Ukoblede eldre prosjektavvik vises ikke i denne gruppen. Ingen e-postsending eller Production-godkjenning.
 
 ---
