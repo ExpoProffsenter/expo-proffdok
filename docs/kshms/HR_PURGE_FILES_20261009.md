@@ -41,3 +41,15 @@ CLI-generert lokal migrasjon `20261009193953_hr_content_purge_foundation.sql`, l
 Databasebackup omfatter Storage-metadata, ikke filbytes. Derfor må database og filkopier kontrolleres sammen ved restore. [Supabase backups](https://supabase.com/docs/guides/platform/backups) · [Storage API-sletting](https://supabase.com/docs/guides/storage/management/delete-objects) · [Datatilsynet personalmappe](https://www.datatilsynet.no/personvern-pa-ulike-omrader/personvern-pa-arbeidsplassen/personalmappe/).
 
 Tidligere H1 75 / H2 16 og B/C 45 / varsler 36 / avvik 37 / revisjon 36 / øvrige oppgaver 41 PASS beholdes som historiske bevis. Kenneths TEST OK for H2-menyen og særlig 9. oktober SJA-PDF, samlet PDF, ZIP/bilder/manifest, kvalitet/HMS-uttrekk og SJA-bilder beholdes. Ingen ny obligatorisk omtest. Ingen main/demo-merge, Production-release eller e-postsending; den ene autoriserte testmailen er ikke sendt. Faktisk mobilkamera/flere samtidige browserøkter, full restore og 100-firma-kapasitet er ikke gradert PASS. Endelig SHA/CI/READY Preview og faktisk Hjelp-browserkontroll føres etter publisering.
+
+## Faktisk innlogget Hjelp-kontroll etter publisering
+
+Kode-SHA **`dd511f7577baa145836bfdb23bdcae283f1fa866`**, tree **`19972b791f9937423ee5bb02b92a8f4d57026398`**. PR Core Safety **37985178018**, jobb **114005274294** SUCCESS, inkludert scope isolation og full critical build. Vercel **`dpl_Dyv4mSiaEWNEi18BbidjqhXCcerD` READY Preview**, riktig prosjekt/eksakt feature-SHA/fast alias, direkte branch-env **EXPO_BACKEND_TARGET=sandbox**. Den første H3-kodeleveransen `c154d7d6905bbea74696e6a299b4796881e280b5` hadde også grønn Core Safety 37984849101 / jobb 114004153833 og READY Preview.
+
+Én eksisterende innlogget Skynett-fane, ordinær reload, ingen credentials/JWT eller auth-omgåelse. Hjelp viser nøyaktig ett KS/HMS-punkt og ett HR-punkt. KS/HMS viser alle 11 kapitler; kildeforslagskapittelet åpnet med riktig arbeidsflyt/viktige punkter. Bytte til HR lukker KS/HMS; HR-kapittelet åpnet med riktig register-, tilgangs- og slettetekst. Ingen HR-data, grant eller registerinnstillinger endret i browser. Begge hovedpunkter ble lukket etter prøven.
+
+Nettleseren avdekket at eldre tilgangs-UX overskrev hjelpedatoer i span-elementer med 29. september. Hjelpens egen dato bruker nå semantisk time-element, uten endring av tilgangsmodulen; faktisk synlig dato **09.10.2026** kontrollert etter publisering. Kapitteltitler har stor forbokstav. Faktisk React/Hjelp-prøve og critical-kontroll PASS etter begge små rettingene. Dette er desktopbevis, ikke mobil-/flerbruker-/HR-fil- eller restore-bevis.
+
+Bildet er et originalt viewport-opptak fra denne kodeversjonen. Siste sluttføringscommit endrer bare dokumentasjon og skjermbevis. Endelig SHA/CI/Preview føres i draft PR #216; main fortsatt `155f6c4ac01f126c1db0c65da385cfd9305587d5`.
+
+![Samlet Hjelp med ett KS/HMS-punkt og ett HR-punkt](help-groups-proof-20261009.jpg)

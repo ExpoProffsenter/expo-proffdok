@@ -1,3 +1,7 @@
+## Faktisk Hjelp-Preview kontrollert – 9. oktober 2026
+
+Ett KS/HMS-punkt med 11 kapitler og ett HR-punkt, riktig åpning/bytte/innhold og oppdateringsdato **09.10.2026** sett i én eksisterende innlogget Skynett-fane. Ingen HR-data endret. Kode-SHA `dd511f7577baa145836bfdb23bdcae283f1fa866`; Core Safety 37985178018 / jobb 114005274294 SUCCESS; Vercel `dpl_Dyv4mSiaEWNEi18BbidjqhXCcerD` READY Preview på eksakt SHA og Sandbox-binding. [Originalt skjermbevis og H3-kontrakt](HR_PURGE_FILES_20261009.md#faktisk-innlogget-hjelp-kontroll-etter-publisering). Historiske tester/TEST OK beholdes. Sensitivt HR-innhold fortsatt stengt; uavhengig manifest og full isolert restore gjenstår.
+
 ## H3 og samlet Hjelp – 9. oktober 2026
 
 Miljømål **BEGGE**, bare feature/Preview og Sandbox, draft PR #216. Hjelp har nå ett **KS/HMS**-punkt med 11 kapitler og ett **HR**-punkt; tidligere hjelpeinnhold beholdes. HR-slettefundamentet omfatter registrert innhold, versjoner, kladder, søkeuttrekk, eksporter og private filer. Tilgang sperres straks; **Slettekvitteringer** viser pågående filsletting og ferdig sletting korrekt.
