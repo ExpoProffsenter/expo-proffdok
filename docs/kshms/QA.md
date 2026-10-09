@@ -1,5 +1,9 @@
 ## Faktisk Hjelp-Preview kontrollert – 9. oktober 2026
 
+### Endelig Preview-kontroll av Hjelp og tilgang
+
+Kode **b5d71aabf4eb461bfe8b5649e83a1db50a2d12dc**, Core Safety **37990397400 SUCCESS**, Preview **dpl_4tq9kauNxRxoQyfQhuLkSkHYduuZ READY**, eksakt SHA og Sandbox. Faktisk innlogget desktop: 34 Hjelp-punkter med ikon/riktig flyt, firmaaktivering og fire eksisterende brukerkort PASS. Lokal checkbox-layout og «Lagre og lukk»-integrasjon rettet; faktiske beregnede mål/visuell kontroll PASS. Browseren endret ingen rettigheter eller HR-personer; popup lukket. SQL/React tester tildeling og negative roller separat. [Originale bevis og detaljert scope](HELP_ACCESS_20261009.md#endelig-faktisk-desktopkontroll). Ingen ny B/C-omtest, mail eller merge.
+
 ## Hjelp og moduladgang på brukerkort – 9. oktober 2026
 
 Alle hjelpepunkter har ikon, og rekkefølgen følger arbeidsflyten. KS/HMS og HR filtreres med egne ferske rettigheter; øvrig modulhjelp følger også tildeling. Systemadmin aktiverer KS/HMS/HR i firmaoversikten; firmaadmin/systemadmin gir individuelle valg på eksisterende brukerkort. HR-modultilgang gir ikke automatisk individuelt HR-innsyn. **38 nye faktiske SQL assertions PASS**, berørte H1/H2/H3 **75/16/61 PASS**, faktisk React/DOM og full Sandbox critical/build PASS. Eksisterende 1 HR-firma/1 medarbeider beholdt; innhold stengt og restore quarantined. Bare feature/Sandbox, ingen mail/merge/Production. [Scope, vei til tilgang og bevis](HELP_ACCESS_20261009.md). Publisert eksakt SHA, CI og Preview føres i draft PR #216.

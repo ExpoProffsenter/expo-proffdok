@@ -623,3 +623,9 @@ Oppgi fane, knapp, hva du gjorde og hva som skjedde. For ny innlogging: si om du
 4. Rediger en godkjent rutine: Ulagret tekst skal stoppe neste/publisering. **Lagre utkast** skal åpne ny vurdering og vise **Endringer må godkjennes**. Ny godkjenning skal opprette v2, mens v1 og gamle bekreftelser beholdes. Bytt fane mens du redigerer for å kontrollere den eksisterende bevaringen.
 
 Det er fortsatt bare de valgte rutinene i håndboken som er klare når neste-knappen vises. Sjekklister/SJA/risiko, samlet avvik, varsler/PDF og valgfri personal/stoffkartotek følger de neste leveransene i [planen](PLAN.md).
+
+## Kort vei til KS/HMS-/HR-tilgang
+
+Firmaadmin: **Meny → Firmaadmin → Brukere og tilganger**, finn brukeren og åpne **KS/HMS og HR**. Velg modulene og trykk **Lagre KS/HMS- og HR-tilgang**. Systemadmin: **Firmaer, brukere og tilganger**, åpne firmaet, aktiver firmaets avtalte moduler under **Firmaets KS/HMS- og HR-avtale** først. Velg deretter brukere på kortene i samme dialog; **Lagre og lukk** omfatter også nye modulvalg. HR-grant gir ikke automatisk innsyn i andre medarbeidere. **Hjelp** viser relevante moduler med ikon og følger arbeidsflyten.
+
+Dette er ny, avgrenset tilgangsflate, ikke ny B/C-/PDF-/ZIP-testliste. Agentens faktiske desktopkontroll er lesende; skrive-/negative prøver er SQL/React med syntetiske data. Tidligere Kenneth TEST OK beholdes.
