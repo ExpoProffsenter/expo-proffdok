@@ -39,6 +39,8 @@ try{
   const submit=async text=>act(async()=>button(text).closest('form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true})));
   const personal={...context,company_name:'QA Firma',personal_page:true,company_kshms:true,company_hr:true,hr_management:false};
   const props=()=>({context:personal,kshmsContext:{...context},hrContext:context,userId:'self',authUser:structuredClone(account),supabaseClient:w.__client});
+  await act(async()=>w.__render('page',{context:null,userId:undefined,authUser:null,supabaseClient:w.__client}));
+  assert(!doc.querySelector('.personal-page'),'anonymous loading must not crash or expose Min side');
   await act(async()=>w.__render('page',props()));
   assert.equal(doc.querySelectorAll('.personal-card').length,3,'compact overview has three cards');
   assert.equal(doc.querySelectorAll('.personal-upcoming').length,2,'upcoming HR types are grouped');

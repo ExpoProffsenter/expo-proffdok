@@ -20,7 +20,7 @@ export function usePersonalAccess(userId){
  return context?.user_id===userId?context:null;
 }
 export function personalRights(personal,kshms,hr,userId){
- const valid=Boolean(personal?.user_id===userId&&personal.company_id);
+ const valid=Boolean(personal&&userId&&personal.user_id===userId&&personal.company_id);
  const same=value=>valid&&value?.user_id===userId&&value.company_id===personal.company_id;
  return {enabled:valid&&personal.personal_page===true,kshms:Boolean(same(kshms)&&personal.company_kshms===true&&kshms.enabled),
   hr:Boolean(same(hr)&&personal.company_hr===true&&hr.available),hrManagement:Boolean(same(hr)&&personal.company_hr===true&&hr.available&&personal.hr_management===true)};

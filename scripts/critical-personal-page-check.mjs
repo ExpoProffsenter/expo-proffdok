@@ -5,6 +5,11 @@ import {createGlobalAppTabs,createProjectWorkspaceTabs} from '../src/modules/pro
 import {kshmsNavigationGroups} from '../src/modules/kshms/kshmsNavigation.mjs';
 const personal={user_id:'self',company_id:'a',personal_page:true,company_kshms:true,company_hr:true,hr_management:false};
 const ks={user_id:'self',company_id:'a',enabled:true},hr={user_id:'self',company_id:'a',available:true,administer:false};
+// Actual Preview startup: both context and actor are initially absent.
+for(const value of [null,undefined])for(const actor of [null,undefined,'']){
+ assert.deepEqual(personalRights(value,null,null,actor),{enabled:false,kshms:false,hr:false,hrManagement:false});
+ assert.equal(personalRights({company_id:'a',personal_page:true},null,null,actor).enabled,false);
+}
 assert.deepEqual(personalRights(personal,ks,hr,'self'),{enabled:true,kshms:true,hr:true,hrManagement:false});
 assert(!personalRights({...personal,company_kshms:false},ks,hr,'self').kshms);
 assert(!personalRights({...personal,company_hr:false,hr_management:true},ks,hr,'self').hrManagement);

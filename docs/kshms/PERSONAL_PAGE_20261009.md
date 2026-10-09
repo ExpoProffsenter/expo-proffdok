@@ -36,3 +36,7 @@ Lesende etterkontroll: **1 eksisterende HR-firma / 1 medarbeider**, **0 artefakt
 Eksakt feature-SHA, Core Safety/fullcritical, READY Preview og Sandbox-binding føres i draft PR #216; nettleserbevis legges til etter publisering. Ingen ny browser-PASS påstås før dette. Fast adresse: [Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe).
 
 Kort ny produktprøve: **Meny → Min side → Profil og e-post**, kontroller kontaktfelter og sammenleggbar **Rapportopplysninger og e-postvalg**. **HR → Oppsett og kontrollfrist**, åpne **Tekstforslag: formål / behandlingsgrunnlag** og kontroller **Om 3 måneder / Om 6 måneder**. Ikke lagre et juridisk grunnlag du ikke har vurdert. Tidligere Kenneth TEST OK, spesielt 9. oktober SJA-PDF/samlet PDF/ZIP/bilder/manifest/kvalitet/HMS/SJA-bilder, beholdes uten ny obligatorisk omtest.
+
+## Oppstartsrettelse funnet i faktisk Preview
+
+Første innloggede reload av kode `5c105deba84f53f1780a95cb135ad83a3d6673bc` avdekket `Cannot read properties of null (reading company_id)` under auth-hydrering: null kontekst og manglende aktør ble sammenlignet som to undefined-verdier. Rettet med eksplisitt krav om både kontekst og aktør før firmalesing. Permanent kritisk prøve dekker null/undefined/tom aktør, og faktisk React-prøve monterer tom innloggingsstatus før ekte kontekst. Ingen browser-PASS på den første utgaven; ny kode/CI/Preview og faktisk ny reload må verifiseres.
