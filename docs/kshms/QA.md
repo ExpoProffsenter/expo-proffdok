@@ -1,3 +1,9 @@
+## B/C-sluttkontroll og drift – 9. oktober 2026
+
+Samlet B/C-utviklerreview er gjennomført; alle seks påminnelsestyper er levert. Ny lesende Sandbox-kontroll bekrefter 20/20 offentlige KS-tabeller med RLS, worker disabled og en liten eksisterende kø. Avgrensede SQL-planer er dokumentert; ingen 100-firma-kapasitet eller browser-/fil-/leveringsbevis påstås. Håndbok-/malhistorikk og store eksporter er konkrete vekstpunkter før større utrulling. Bare dokumentasjon endret, ingen ny obligatorisk Kenneth-prøve; tidligere TEST OK beholdes. Neste utviklingspunkt er avklart HR-tilgang/private filer/sletting før sensitivt innhold. Releasebevis og ekte e-postaktivering/mottak følger egne konkrete punkter. [Sluttstatus, scope og målinger](BC_CLOSEOUT_20261009.md). Miljømål **BEGGE**, bare feature/Preview; ingen merge/Production. Publisert SHA og grønn CI/READY Preview føres i draft PR #216.
+
+---
+
 ## Oppgavepåminnelser – 9. oktober 2026
 
 Miljømål **BEGGE**, levering bare feature/Sandbox. Påminnelser følger opp ufullførte vernerunder, risiko, SJA og egne lesebekreftelser etter minst sju dager. Framtidig planlagt dato utsetter oppfølgingen. Ingen nye arbeidsfrister eller automatiske signeringer. Egen appoversikt åpner eksisterende arbeidsflater. **41 ulike Sandbox-assertions PASS**; eksisterende seks varseltyper **36 PASS**, avvikspåminnelser **37 PASS** og revisjonspåminnelser **36 PASS**. Faktisk React-appflyt og berørte kilde-/revisjonsflyter PASS; full critical/build PASS. Migrasjon 20261009171349 og Edge v7 levert, worker **enabled=false**, 0 syntetiske firma/brukere. Tidligere TEST OK beholdes; ingen ny obligatorisk Kenneth-prøve. Testmailen er ikke sendt. Neste punkt: samlet B/C-sluttkontroll og drift/kapasitet før HR. [Scope og QA](TASK_REMINDERS_20261009.md). Publisert SHA, CI og READY Preview føres i draft PR #216.

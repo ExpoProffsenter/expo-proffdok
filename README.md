@@ -1,3 +1,9 @@
+## KS/HMS – B/C-sluttkontroll og drift
+
+Samlet B/C-utviklerreview er gjennomført, med påminnelser for alle seks typer. [Sluttstatus og lesende driftsmålinger](docs/kshms/BC_CLOSEOUT_20261009.md) viser hva som er levert og hvilke konkrete bevis som gjenstår før release/større utrulling. Tidligere TEST OK beholdes. Neste utviklingspunkt er det avklarte HR-fundamentet. E-post skal aktiveres og mottak verifiseres ved senere godkjent Production-release.
+
+---
+
 ## Oppgavepåminnelser – feature/Sandbox
 
 KS/HMS følger opp dine ufullførte vernerunder, risikovurderinger, SJA og lesebekreftelser etter minst sju dager. Snarveier åpner eksisterende arbeidsflater; fullføring og egen bekreftelse/signering lagres fortsatt av deg. Styrt ukentlig e-postoppfølging er klar i privat kø; Sandbox-transport er fortsatt deaktivert. [Scope og QA](docs/kshms/TASK_REMINDERS_20261009.md). Tidligere TEST OK beholdes.

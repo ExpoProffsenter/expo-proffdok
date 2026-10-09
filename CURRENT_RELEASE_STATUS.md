@@ -1,3 +1,9 @@
+## B/C-sluttkontroll og drift – 9. oktober 2026
+
+Samlet B/C-utviklerreview er gjennomført. Alle seks påminnelsestyper er levert; tidligere TEST OK beholdes. Ny lesende Sandbox-måling og konkrete kapasitetsrestpunkter er dokumentert, uten påstand om 100-firma-lasttest. Bare dokumentasjon endret, ingen ny obligatorisk Kenneth-prøve. Neste utviklingspunkt: avklart HR-tilgang/private filer/sletting før sensitivt innhold. Faktiske fil-/mobil-/flerbrukerbevis, den ene usendte testmailen og aktivert/verifisert Production-e-post er separate releasepunkter. Miljømål **BEGGE**, levering bare feature/Preview. [Sluttstatus og drift](docs/kshms/BC_CLOSEOUT_20261009.md). Publisert SHA, grønn CI og READY Preview føres i draft PR #216.
+
+---
+
 ## Oppgavepåminnelser – 9. oktober 2026
 
 Miljømål **BEGGE**, levering bare feature/Sandbox. Påminnelser følger opp ufullførte vernerunder, risiko, SJA og egne lesebekreftelser etter minst sju dager. Framtidig planlagt dato utsetter oppfølgingen. Ingen nye arbeidsfrister eller automatiske signeringer. Egen appoversikt åpner eksisterende arbeidsflater. **41 ulike Sandbox-assertions PASS**; eksisterende seks varseltyper **36 PASS**, avvikspåminnelser **37 PASS** og revisjonspåminnelser **36 PASS**. Faktisk React-appflyt og berørte kilde-/revisjonsflyter PASS; full critical/build PASS. Migrasjon 20261009171349 og Edge v7 levert, worker **enabled=false**, 0 syntetiske firma/brukere. Tidligere TEST OK beholdes; ingen ny obligatorisk Kenneth-prøve. Testmailen er ikke sendt. Neste punkt: samlet B/C-sluttkontroll og drift/kapasitet før HR. [Scope og QA](docs/kshms/TASK_REMINDERS_20261009.md). Publisert SHA, CI og READY Preview føres i draft PR #216.
