@@ -1,3 +1,7 @@
+## KS/HMS og HR: Min side-stilen videreført – 10. oktober 2026
+
+Kenneths «waowh, kjempebra» er registrert som **TEST OK for Min sides visuelle retning**. Samme petrolfargede toppfelt, ikoner og kortstil er nå ført videre til KS/HMS/HR innen eksisterende rettigheter. KS-navigasjonens flyt beholdes; HR får relevante snarveier og registeret foran oppsett. Berørte faktiske React-prøver, permanent HR-navigation-critical og full Sandbox build PASS. Faktisk ny browserkontroll følger publisering. Ingen backend eller privat innholdsport endret, tidligere TEST OK beholdes. [Avgrenset scope/bevis](MODULE_LAYOUT_20261010.md). [Varig designretning: vurder senere i hele appen](../architecture/UX_DIRECTION_20261010.md).
+
 ## Min side: mer personlig og stabil ved faneretur – 10. oktober 2026
 
 Personlig velkomst, tre tydeligere kort og kompakt egen/delt HR-visning. Valgt fane/oppførings-ID beholdes ved screenshot/fokus, mens gamle HR-data fortsatt fjernes og først kommer tilbake etter fersk listetilgang/dobbel get. Ingen privat innholdsport eller database endret. Faktiske nye og berørte React-/critical-prøver samt full Sandbox build PASS. Bare feature/Preview; tidligere Kenneth TEST OK beholdes. [Scope, rotårsak, sikkerhetskontrakt og aktuelt bevis](PERSONAL_UX_20261010.md). Publisert SHA/CI/Preview føres i draft PR #216.

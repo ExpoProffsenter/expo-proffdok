@@ -41,4 +41,6 @@ assert(!/is_systemadmin|kshms_private|user_metadata|create policy/i.test(migrati
 for(const [file,selector] of [['src/modules/hr/hr.css','.hr-module>header.hr-heading'],['src/modules/kshms/kshms.css','.ks-module>header.ks-heading']]){
  const css=fs.readFileSync(file,'utf8');assert(css.includes(selector+'{position:static;top:auto;z-index:auto}'),'Module header inherited app sticky positioning');
 }
+const workspaceCss=fs.readFileSync('src/modules/ui/moduleWorkspace.css','utf8');
+assert(workspaceCss.includes('position:static;top:auto;z-index:auto')&&workspaceCss.includes('.hr-module .module-heading h2{color:#fff'),'Shared module headings must avoid the app sticky layer and inherited dark heading color');
 console.log('✅ HR/menu H2: stable grouped routes, isolated global gate, foreground/background revocation, stale identity/offline/dispose and closed content surface PASS');

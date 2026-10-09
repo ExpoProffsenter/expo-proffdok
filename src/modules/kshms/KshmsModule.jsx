@@ -22,6 +22,8 @@ import { acknowledgmentOverview,pendingAssignmentOptions } from './kshmsFollowup
 import { filterFirmRoutines,matchesRoutineSearch } from './kshmsSearch.mjs';
 import { SETUP_TEXT_FIELDS,ROUTINE_TEXT_SUGGESTIONS,fillEmptySetup,changeSetupTrades,routineWithSuggestions,fillEmptyRoutine,ROUTINE_WRITING_TIPS } from './kshmsWriting.mjs';
 import './kshms.css';
+import ModuleHeading from '../ui/ModuleHeading.jsx';
+import {ShieldCheck,Info} from 'lucide-react';
 import KshmsDeviations from './KshmsDeviations.jsx';
 import KshmsChecklistCentral from './KshmsChecklistCentral.jsx';
 import KshmsExecutions from './KshmsExecutions.jsx';
@@ -202,8 +204,8 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
  const visibleAssignments=ownAssignments.filter(assignment=>matchesRoutineSearch(data.versions.find(version=>version.id===assignment.version_id)?.content,readingQuery));
  const changeSetupText=(field,value)=>{setupSuggestionFields.current.delete(field);setSetup(previous=>({...previous,[field]:value}));};
  return <section className="ks-module" aria-label="KS/HMS håndbok">
-  <header className="ks-heading"><div><span className="ks-eyebrow">{context.company_name}</span><h2>{personalOnly?'Personalhåndboka':'KS/HMS'}</h2><p>{personalOnly?'Dine tildelte rutiner og egen gjennomgang':'Rutiner, trygt arbeid og dokumentasjon'}</p></div><span className="ks-badge">{canManage?canAdmin?'Firmaadmin':'KS/HMS-ansvarlig':'Ansatt'}</span></header>
-  <p className="ks-scope">{canManage?'Du bygger firmaets KS/HMS-håndbok. Både firmaadmin og KS/HMS-ansvarlig kan velge, skrive, endre og godkjenne rutiner. En rutine forklarer hvordan en oppgave skal gjøres. Firmaadmin styrer ansattes tilgang. Firmaet må lære opp ansatte og følge rutinene i arbeidet.':'Her finner du rutinene du har fått. De forklarer hvordan du skal jobbe trygt og gjøre oppgavene riktig. I «Les og bekreft» ser du hva du skal lese og hva du allerede har bekreftet.'}</p>
+  {personalOnly?<header className="ks-heading"><div><span className="ks-eyebrow">{context.company_name}</span><h2>Personalhåndboka</h2><p>Dine tildelte rutiner og egen gjennomgang</p></div><span className="ks-badge">Ansatt</span></header>:<ModuleHeading className="ks-heading" companyName={context.company_name} title="KS/HMS" description="Rutiner, trygt arbeid og dokumentasjon – samlet for firmaet." role={canManage?canAdmin?'Firmaadmin':'KS/HMS-ansvarlig':'Ansatt'} icon={ShieldCheck}/>}
+  <details className="module-guide"><summary><Info aria-hidden="true"/>{personalOnly?'Slik bruker du personalhåndboka':'Slik bruker du KS/HMS'}</summary><p className="ks-scope">{canManage?'Du bygger firmaets KS/HMS-håndbok. Både firmaadmin og KS/HMS-ansvarlig kan velge, skrive, endre og godkjenne rutiner. En rutine forklarer hvordan en oppgave skal gjøres. Firmaadmin styrer ansattes tilgang. Firmaet må lære opp ansatte og følge rutinene i arbeidet.':'Her finner du rutinene du har fått. De forklarer hvordan du skal jobbe trygt og gjøre oppgavene riktig. I «Les og bekreft» ser du hva du skal lese og hva du allerede har bekreftet.'}</p></details>
   <KshmsNavigation screen={screen} canManage={canManage} pendingCount={pending.length} onNavigate={setScreen} personalOnly={personalOnly}/>
   {!personalOnly&&<KshmsAssignmentReminders key={`assignment-reminders:${companyId}:${userId}`} context={data.context} refreshKey={data.acknowledgments.length} busy={busy} onOpen={target=>setScreen(target)}/>}
   {!personalOnly&&<KshmsReviewReminder key={`${companyId}:${userId}`} context={data.context} settingsRevision={data.settings?.revision} busy={busy} onOpen={openReview}/>}

@@ -61,8 +61,13 @@ try{
   const salesHelp=buttons().find(b=>b.querySelector('b')?.textContent.includes('Befaring / Våtromstilbud'));assert(salesHelp);await act(async()=>salesHelp.click());assert(window.document.body.textContent.includes('Publiserte og aksepterte tilbudsversjoner'));assert.equal(window.document.querySelectorAll('.help-topic-chapter').length,0);
   await act(async()=>window.__render('nav',{}));
   assert.deepEqual([...window.document.querySelectorAll('[role=group]')].map(g=>g.getAttribute('aria-label')),['Daglig arbeid','Mine rutiner','Forvaltning']);
+  assert([...window.document.querySelectorAll('.ks-tabs button')].every(button=>button.querySelector('svg[aria-hidden=true]')),'All existing KS screens need a visible decorative icon without replacing the accessible label');
   assert.equal(button('Håndbok').getAttribute('aria-pressed'),'true');await click('Avvik/RUH');assert.equal(button('Avvik/RUH').getAttribute('aria-pressed'),'true');assert.equal(button('Håndbok').getAttribute('aria-pressed'),'false');
-  await act(async()=>window.__render('hr',{context}));assert(window.document.body.textContent.includes('registeret er avslått'));assert(!buttons().some(b=>b.textContent==='Legg til i registeret'));
+  await act(async()=>window.__render('hr',{context}));
+  assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,3);assert(window.document.querySelector('.module-heading'));
+  await click('Se medarbeidere');assert.equal(window.document.activeElement,window.document.querySelector('.hr-register-target'));
+  await click('Se slettekvitteringer');const emptyReceipts=[...window.document.querySelectorAll('details')].find(d=>d.querySelector('summary')?.textContent==='Slettekvitteringer');assert(emptyReceipts.open);assert(emptyReceipts.textContent.includes('Ingen slettekvitteringer ennå'));
+  await click('Åpne oppsett');assert.equal(window.document.activeElement,[...window.document.querySelectorAll('details')].find(d=>d.querySelector('summary')?.textContent.startsWith('Oppsett og kontrollfrist')));assert(window.document.body.textContent.includes('registeret er avslått'));assert(!buttons().some(b=>b.textContent==='Legg til i registeret'));
   await write('Formål med registeret','Syntetisk lederregister');await write('Firmaets vurderte behandlingsgrunnlag','Syntetisk vurdering av grunnlag');await write('Neste kontroll av behov og tilgang','2026-11-09');await tick('Aktiver medarbeiderregisteret');await submit('Lagre HR-oppsett');
   assert(button('Legg til i registeret').disabled);await click('Hent flere appbrukere til valgene');await write('Medarbeider','self');await write('Nærmeste leder for ny medarbeider','old');await submit('Legg til i registeret');assert.equal(employees.length,1);assert.equal(commands.at(-1).p_action,'create');
   await click('Hent flere appbrukere til valgene');await write('Ekstra leser','old');await write('Begrunnelse for ekstra lesetilgang','Syntetisk særskilt begrunnelse');await submit('Gi lesetilgang');assert(window.document.querySelector('.hr-grants').textContent.includes('Syntetisk særskilt begrunnelse'));
@@ -78,7 +83,7 @@ try{
   lateGet={};let opening;await act(async()=>{window.document.querySelector('.hr-employee').click();});assert(lateGet.resolve);const old=lateGet.resolve;lateGet=null;
   await act(async()=>window.__unmount());await act(async()=>old({data:{context,employee:employees[0]}}));assert(!window.document.querySelector('.hr-detail'),'Late personal data revived unmounted UI');
   const selfContext={...context,user_id:'self',administer:false};context.user_id='self';context.administer=false;
-  await act(async()=>window.__render('hr',{context:selfContext}));assert(!window.document.body.textContent.includes('Ekstra lesetilgang'));assert(!buttons().some(b=>b.textContent==='Lagre HR-oppsett'));assert(window.document.body.textContent.includes('Mine oppfølginger'));
+  await act(async()=>window.__render('hr',{context:selfContext}));assert.equal(window.document.querySelectorAll('.hr-workspace-card').length,1,'Non-admin must not get setup/deletion shortcuts');assert(!buttons().some(b=>['Åpne oppsett','Se slettekvitteringer'].includes(b.textContent.trim())));assert(!window.document.body.textContent.includes('Ekstra lesetilgang'));assert(!buttons().some(b=>b.textContent==='Lagre HR-oppsett'));assert(window.document.body.textContent.includes('Mine oppfølginger'));
   revoked=true;await act(async()=>window.dispatchEvent(new window.Event('focus')));assert(!window.document.querySelector('.hr-employee'));assert(window.document.querySelector('[role=alert]'));
   assert.equal(window.localStorage.length,0);assert.equal(window.sessionStorage.length,0);
   await act(async()=>window.__unmount());

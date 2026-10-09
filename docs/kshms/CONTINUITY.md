@@ -1,3 +1,7 @@
+## KS/HMS og HR: Min side-stilen videreført – 10. oktober 2026
+
+Kenneths «waowh, kjempebra» er registrert som **TEST OK for Min sides visuelle retning**. Samme petrolfargede toppfelt, ikoner og kortstil er nå ført videre til KS/HMS/HR innen eksisterende rettigheter. KS-navigasjonens flyt beholdes; HR får relevante snarveier og registeret foran oppsett. Berørte faktiske React-prøver, permanent HR-navigation-critical og full Sandbox build PASS. Faktisk ny browserkontroll følger publisering. Ingen backend eller privat innholdsport endret, tidligere TEST OK beholdes. [Avgrenset scope/bevis](MODULE_LAYOUT_20261010.md). [Varig designretning: vurder senere i hele appen](../architecture/UX_DIRECTION_20261010.md).
+
 ### Min side: faktisk ny utforming kontrollert
 
 Kode **5e2be88b1bee67963027ddd9d578fe7de2a20d4d**, Core Safety **37997879229** / jobb **114048436996 SUCCESS**, **dpl_3cam6F9TVUS2nqHWebsRm4ZHGX6L READY** eksakt SHA/Sandbox. Innlogget Skynett: velkomst/tre kort og kompakt egen HR uten scrolling ved 1363×936, hvit overskrift, egen detalj/fokusretur, bevart profil/rapport/e-post og fortsatt lukket privat kontaktport PASS. Første kontrastfeil funnet og rettet før sluttkontroll. F6/Escape er konkret browser-fokusprøve; Windows screenshotverktøy/mobil/separate kontoer ikke påstått. Ingen data/rettigheter lagret. [To originale skjermbilder og eksakt bevis](PERSONAL_UX_20261010.md#faktisk-innlogget-sluttkontroll). Tidligere TEST OK beholdes.
