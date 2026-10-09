@@ -8,6 +8,7 @@ const changed=()=>Error('Dokumenter eller vedlegg er endret. Vis vedleggslisten 
 const safeName=value=>String(value||'fil').normalize('NFC').replace(/[\\/:*?"<>|\x00-\x1f\x7f\u202a-\u202e\u2066-\u2069]/g,'-').replace(/\.{2,}/g,'-').replace(/^\.+|\.+$/g,'').slice(0,120)||'fil';
 const imageBytes=data=>{if(!reportPhoto({data}))throw Error('Et lagret bilde kunne ikke bekreftes.');const binary=atob(data.split(',')[1]);return Uint8Array.from(binary,c=>c.charCodeAt(0));};
 const typeOf=file=>file.type||file.mimeType||FILE_TYPES[String(file.name||'').split('.').at(-1).toLowerCase()];
+const embeddedExtension=file=>({jpeg:'jpg',png:'png',webp:'webp'})[/^data:image\/(jpeg|png|webp);/.exec(file.data||'')?.[1]]||'bin';
 
 export function projectAttachmentObject(file,storageUrl){
  let url,base;try{url=new URL(file.url);base=new URL(storageUrl);}catch{throw Error('Prosjektvedleggets lagringssted kunne ikke bekreftes.');}
@@ -30,6 +31,7 @@ export function inspectionAttachmentEntries(snapshots){
   if(['ruhs','deviations'].includes(kind))for(const file of snapshot.files)add('private',file);
   if(kind==='sjas')for(const [index,file] of (row.content.photos||[]).entries())add('embedded',{...file,name:`SJA-bilde-${index+1}.jpg`},'Bilder fra arbeidsstedet');
   if(kind==='rounds')for(const point of row.content.points||[])for(const file of row.content.answers?.[point.id]?.photos||[])add('embedded',file,point.title||point.id);
+  if(kind==='risks')for(const [index,risk] of (row.content.risks||[]).entries())for(const [photoIndex,file] of (risk.photos||[]).entries())add('embedded',{...file,name:`Risiko-${index+1}-bilde-${photoIndex+1}.${embeddedExtension(file)}`},risk.hazard||`Fare ${index+1}`);
   if(kind==='legacy')for(const file of row.content.photos)add('project',file);
   if(kind==='runs')for(const point of row.definition.items||[])for(const file of row.answers?.[point]?.photos||[])add('project',file,point);
  }

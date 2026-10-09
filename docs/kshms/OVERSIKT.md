@@ -1,3 +1,11 @@
+## Risikobilder – avgrenset vedleggsleveranse 9. oktober 2026
+
+Inntil tre komprimerte bilder per fare er implementert i samme private, revisjonerte risikovurderingssnapshot. Bildene følger egen PDF, valgt prosjektrapport, samlet Dokumentuttrekk og bekreftet ZIP/manifest. Gamle vurderinger uten bilder virker som før; ny vurdering med samme farer arver ikke bilder. Ingen ny Storage/tabell/RLS/policy. Faktisk React, tre PDF-flyter, visuell kontroll, ZIP og full Sandbox critical build er PASS. Privat migrasjon `20261009031544 kshms_risk_photos` er anvendt og direkte funksjons-/ACL-prøvd på Sandbox; mailer er fortsatt `enabled=false`. Featurepublisering føres når verifisert. [Scope og QA](RISK_ATTACHMENTS_20261009.md).
+
+Dette er ikke ny bruker-TEST OK. TEST OK 00:59 / 01:29 / 01:55 / 02:28 beholdes. Faktisk innlogget risiko- og SJA-bilde/kamera, faktiske private filer, mobil/flere brukere og øvrig dokumentert vedleggsbevis gjenstår. Neste uavhengige punkt er versjonerte underskjema, deretter påminnelser og kildeoppdatering. HR starter ikke i natt. Ingen e-post eller Production/main/demo-merge.
+
+---
+
 ## SJA-bilder – avgrenset vedleggsleveranse 9. oktober 2026
 
 Miljømål **BEGGE**; bare feature/Sandbox publiseres. Kontrollert start-head `7a68293c8ad3aae4191a1e766b1dbf278ab54eef`, main `155f6c4ac01f126c1db0c65da385cfd9305587d5`, draft PR #216. SJA-utkast kan få inntil tre komprimerte bilder fra arbeidsstedet. Bildene lagres i samme revisjonssnapshot som teksten og følger egen SJA-PDF, valgt SJA i samlet PDF og bekreftet vedleggs-ZIP med egne JPG-filer/SHA-256-manifest. Gamle SJA-er forblir gyldige uten bilder.

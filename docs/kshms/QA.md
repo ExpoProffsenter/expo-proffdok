@@ -1,3 +1,15 @@
+## Risikobilder – QA før publisering
+
+- Critical validering/PDF/uttrekk/ZIP PASS: bilde og legacy, duplikat/maksgrense/type, immutable snapshot, risikobilde i PDF og ZIP-manifest, tilgang/revisjon/sene svar og ingen eksportskriving.
+- Faktisk React: filvalg → eksisterende komprimering → preview → command/readback → fullføring/historikk PASS; ny vurdering med samme farer har 0 bilder.
+- Faktisk jsPDF/Poppler: 2-siders egen risiko-PDF, 16-siders åtte-type uttrekk og 9-siders prosjektrapport PASS. Risikosider med matrise/bilde/fullføring visuelt kontrollert uten klipp eller overlapp.
+- Faktisk React/ZIP: syv filer + `manifest.json`; risikooriginal har riktig dokumentgruppe/fare, CRC32, byte og SHA-256. Reset, tomt/endrede valg, Storage-/tilgangs- og late-scope-sperrer PASS.
+- Sandbox-trial med rollback PASS: legacy → `photos: []`, ett JPEG beholdt; fire bilder, duplikat-ID og SVG avvist; privat ACL består. Migrasjon `20261009031544 kshms_risk_photos` er deretter anvendt bare i Sandbox; direkte funksjonsprøve gir bilde=1/legacy=0 og PUBLIC/anon/authenticated EXECUTE=false. Mailer er direkte lest `enabled=false`.
+
+Full `EXPO_BACKEND_TARGET=sandbox npm run build` er PASS. Scope/docs-guard, eksakt tree/publisering, Core Safety og READY Preview føres etter verifisering. Supabase-advisors viser ingen nytt funn knyttet til denne funksjonsendringen; eksisterende prosjektfunn er uendret scope. Ingen bruker-TEST OK, faktisk innlogget opplasting, mobil eller flerbruker hevdes. [Detaljer](RISK_ATTACHMENTS_20261009.md).
+
+---
+
 ## SJA-bilder – QA, Sandbox-validator og publiseringsbevis
 
 - `critical-kshms-sja-check`, SJA-PDF, inspeksjonsuttrekk og vedleggsarkiv: PASS, inkludert maks tre, JPEG-only snapshot, duplikat/ugyldig data, readback/retry/signatur, final access/change og migrasjonsscope.

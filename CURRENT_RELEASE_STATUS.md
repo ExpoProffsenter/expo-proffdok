@@ -1,3 +1,11 @@
+## Risikobilder – lokal QA før featurepublisering 9. oktober 2026
+
+Start kontrollert mot remote feature `0b6c0ffab2705c06b7314f2484cb187412c9f02d` / tree `d84c3ae5742d07b3d431132be99a3f0b579a5932`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Risikovurdering kan lagre inntil tre komprimerte bilder per fare i samme private revisjonssnapshot. Egen PDF, valgt prosjektrapport, samlet PDF og ZIP/manifest er faktisk prøvd; visuell PDF-kontroll og full Sandbox critical build PASS. Privat migrasjon `20261009031544 kshms_risk_photos` er anvendt bare på Sandbox og direkte verifisert for bilde, legacy og stengte EXECUTE-grants; e-post-worker er fortsatt `enabled=false`. Eksakt featurepublisering/CI/READY og innlogget read-only-regresjon gjenstår før publisert status. [Scope/QA](docs/kshms/RISK_ATTACHMENTS_20261009.md).
+
+Tidligere TEST OK **00:59 / 01:29 / 01:55 / 02:28** beholdes. Dette er ikke ny risikobilde-TEST OK. Faktisk innlogget risiko-/SJA-bilde/kamera, private filer, mobil/flere brukere og restbevis gjenstår. Neste uavhengige punkt er versjonerte underskjema; deretter påminnelser og kildeoppdatering. Ingen HR i natt, e-post, Production/main/demo-merge.
+
+---
+
 ## Publiserte SJA-bilder – utviklerbevis 9. oktober 2026
 
 Funksjonshead **785d01389d2059026711ea1a8af12762e75fc4b9**, tree **cd5257609f1a3e2c375b9faf7d9146bc561ed429**, publisert fra expected-head `7a68293c8ad3aae4191a1e766b1dbf278ab54eef` uten force; alle 25 blobber og samlet tree hash-/bytekontrollert. Main er fortsatt `155f6c4ac01f126c1db0c65da385cfd9305587d5`, PR #216 draft. Core Safety **37874352426**, jobb **113639379783**, full critical build completed/success. Vercel Preview **dpl_Dd3VioNsdD4idRkMGodqfpTamDqG** er READY på eksakt SHA/feature-ref/faste alias; branch-env er direkte lest som `EXPO_BACKEND_TARGET=sandbox`.

@@ -20,7 +20,7 @@ window.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){}});window.HTMLC
 const company=fixtureRound.company_id,user=fixtureRound.completed_by||'11111111-1111-4111-8111-111111111111';
 const context={company_id:company,user_id:user,company_name:'QA firma',enabled:true,manage:false};
 const round={...structuredClone(fixtureRound),project_id:null};round.content.answers[round.content.points[0].id].photos[0].data=photo;round.content.review='Kontrollert område og videre oppfølging. '.repeat(110)+'QA LANGTEKST SLUTT';
-const risk={...structuredClone(fixtureRisk),project_id:null};const rows={round,risk},before=JSON.stringify(rows),exports=[],calls=[];
+const risk={...structuredClone(fixtureRisk),project_id:null};risk.content.risks[0].photos[0].data=photo;const rows={round,risk},before=JSON.stringify(rows),exports=[],calls=[];
 window.__save=(name,bytes)=>exports.push({name,bytes:new Uint8Array(bytes)});
 let fail=false,revision=false,defer=null;
 window.__rpc=async(name,args)=>{calls.push(name);if(name==='work_profile_company_profile')return {companyId:company,companyName:'QA firma',logoUrl:'/qa-logo.png'};if(name==='kshms_job_choices')return {context,projects:[],routines:[]};if(name==='kshms_execution_state')return {context,records:[rows[args.p_kind]],members:[],templates:[]};if(name==='kshms_execution_detail'){if(fail){fail=false;throw Error('QA tilgang avslått');}if(defer)await defer.promise;const r=Object.values(rows).find(r=>r.id===args.p_id);return {context,record:{...structuredClone(r),revision:revision?r.revision+1:r.revision},links:[]};}throw Error('Unexpected mutation '+name);};

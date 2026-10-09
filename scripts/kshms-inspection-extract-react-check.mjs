@@ -25,7 +25,7 @@ let imageUrl='';window.URL.createObjectURL=()=> 'blob:qa-photo';window.URL.revok
 window.Image=class{set src(url){this.width=url.includes('logo')?400:500;this.height=url.includes('logo')?100:400;imageUrl=url;window.setTimeout(()=>this.onload?.(),0);}};
 window.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){},fillRect(){}});window.HTMLCanvasElement.prototype.toDataURL=()=>imageUrl.includes('logo')?logo:photo;
 let mode='',deferred=null,contextReads=0;const exports=[],calls=[],storage=[];
-const source=structuredClone(sources),fixture=deviationQA?deviationFixture(source):null,selection=fixture?[...baseSelection,...fixture.selected]:baseSelection;source.sjas[0].content.task='Kontroller trykk og sperring. '.repeat(120)+'QA LANGTEKST SLUTT';
+const source=structuredClone(sources),fixture=deviationQA?deviationFixture(source):null,selection=fixture?[...baseSelection,...fixture.selected]:baseSelection;source.sjas[0].content.task='Kontroller trykk og sperring. '.repeat(120)+'QA LANGTEKST SLUTT';source.risks[0].content.risks[0].photos[0].data=photo;
 const original=JSON.stringify(source);
 const inner=fixture?.rpc||fixtureRpc({source});
 const rpc=(name,args)=>{calls.push({name,args});return inner(name,args);};

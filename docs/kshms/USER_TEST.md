@@ -1,3 +1,15 @@
+## Ny kort Preview-prøve – bilde i risikovurdering
+
+Dette gjelder bare nye risikobilder. Tidligere TEST OK 9. oktober kl. 00:59 / 01:29 / 01:55 / 02:28 beholdes og skal ikke gjentas uten konkret regresjon.
+
+1. Bruk et trygt eksisterende risikoutkast. Åpne én fare, legg til ett testbilde under **Bilder til faren**, lagre utkastet og åpne det igjen. Bildet skal stå på samme fare. Ikke opprett eller fullfør en reell vurdering bare for prøven.
+2. Trykk **Last ned PDF** fra den lagrede utgaven. Bildet skal stå under riktig fare sammen med matrise, før/etter, tiltak og beslutning. I prosjektets rapport skal bildet bare følge hvis akkurat vurderingen velges.
+3. I **Dokumentuttrekk**, velg vurderingen, trykk **Vis vedleggslisten**, bekreft og last ned ZIP. Bildet og `manifest.json` skal vise riktig dokument-ID, revisjon og farenavn. Fjern vurderingen eller endre omfanget: liste/bekreftelse nullstilles.
+
+Utvikler har prøvd faktisk React-opplasting/readback, tre faktiske PDF-flyter med visuell kontroll og faktisk ZIP/CRC/SHA-256. Dette er ikke innlogget brukerbevis. Kamera, mobil/flere brukere og faktiske private filer består. [Scope/QA](RISK_ATTACHMENTS_20261009.md).
+
+---
+
 ## Ny kort Preview-prøve – SJA-bilde
 
 Dette gjelder bare nye SJA-bilder. Tidligere TEST OK 9. oktober kl. 00:59 / 01:29 / 01:55 / 02:28 beholdes og skal ikke gjentas uten konkret regresjon.

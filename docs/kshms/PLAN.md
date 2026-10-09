@@ -1,3 +1,11 @@
+## Risikobilder – gjeldende avgrensede B/C-punkt
+
+Inntil tre komprimerte bilder per fare er implementert i risikovurderingens versjonerte snapshot og koblet til egen PDF, prosjektrapport, samlet PDF og vedleggs-ZIP. Legacy uten bilder, ny vurdering uten bildearv, privat validator og eksisterende immutable fullføring beholdes. Faktisk React/PDF/ZIP, visuell kontroll og full Sandbox critical build er PASS. Privat migrasjon `20261009031544 kshms_risk_photos` er anvendt og funksjons-/ACL-prøvd i Sandbox; featurepublisering registreres før leveransen markeres publisert. [Scope/QA](RISK_ATTACHMENTS_20261009.md).
+
+Etter denne leveransen står faktiske innloggede filprøver igjen som bevis, ikke ny funksjonsimplementasjon. Neste uavhengige planpunkt er versjonerte underskjema, så påminnelser og kildeoppdatering. HR starter ikke i natt. Tidligere TEST OK beholdes; ny kort prøve gjelder bare risikobilder.
+
+---
+
 ## SJA-bilder – gjeldende avgrensede B/C-punkt
 
 Inntil tre komprimerte arbeidsstedsbilder er implementert i SJA-revisjonen og koblet til egen PDF, samlet PDF og vedleggs-ZIP. Eksisterende privat SJA-kontrakt, revisjonskontroll og signert-uforanderlighet beholdes; ingen ny Storage/tabell/RLS/policy. Faktiske React/PDF/ZIP-prøver, visuell kontroll og full Sandbox-build er PASS. Privat validator-migrasjon `20261009022028 kshms_sja_photos` er anvendt og funksjonsprøvd bare på Sandbox. Funksjonshead `785d01389d2059026711ea1a8af12762e75fc4b9` er publisert med grønn full CI og READY Sandbox Preview; innlogget read-only regresjonskontroll PASS. Leveransen er utviklerferdig, men ikke bruker-TEST OK.

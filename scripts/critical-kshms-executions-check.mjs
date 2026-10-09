@@ -19,6 +19,9 @@ assert.throws(()=>executionContent({...round.content,answers:{[point.id]:{...rou
 assert.throws(()=>executionContent({...round.content,points:[point,point]},'round'),/ulike/);
 const risk=newExecution('risk',user);Object.assign(risk.content,{...round.content,title:'Planlagt kapping',points:[],answers:{},risks:[newRisk()],basis:'Konsekvens gjelder personskade. Tidsrommet er dagens jobb.',acceptance:{low_max:4,medium_max:12,description:'Krav om kontroll før aksept. Ved høy risiko stanser vi.',confirmed:true}});
 Object.assign(risk.content.risks[0],{activity:'Kapping',hazard:'Støv',consequence:'Lungeskade',existing_measures:'Adskilt område',planned_measures:'Avsug og kontroll',owner_id:user,due_on:'2026-10-09',probability_before:4,consequence_before:5,probability_after:1,consequence_after:3,follow_up:'Verneombudet kontrollerer avsuget.',effect_status:'planned',decision:'accepted',reason:'Etterkontroll kreves.'});
+const riskPhoto={id:crypto.randomUUID(),data:'data:image/jpeg;base64,aGVsbG8='};risk.content.risks[0].photos=[riskPhoto];assert.equal(executionContent(risk.content,'risk').risks[0].photos[0].id,riskPhoto.id);
+assert.throws(()=>executionContent({...risk.content,risks:[{...risk.content.risks[0],photos:[riskPhoto,riskPhoto]}]},'risk'),/Risikobildet/);
+assert.throws(()=>executionContent({...risk.content,risks:[{...risk.content.risks[0],photos:Array.from({length:4},()=>({id:crypto.randomUUID(),data:riskPhoto.data}))}]},'risk'),/tre bilder per fare/);
 assert(executionIssues(executionContent(risk.content,'risk'),'risk').some(i=>i.key.endsWith('-decision')),'Forecast score cannot authorize work');
 risk.content.risks[0].decision='needs_action';assert.equal(executionIssues(executionContent(risk.content,'risk'),'risk').length,0);
 Object.assign(risk.content.risks[0],{effect_status:'verified',verified_on:'2026-10-08',decision:'accepted'});assert.equal(executionIssues(executionContent(risk.content,'risk'),'risk').length,0);

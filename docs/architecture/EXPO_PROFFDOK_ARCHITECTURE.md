@@ -1,3 +1,11 @@
+# Risikobilder i eksisterende privat gjennomføringssnapshot – Preview 9. oktober 2026
+
+`KshmsExecutions` gjenbruker den eksisterende komprimerings- og bildevalideringen for inntil tre JPG-/PNG-/WebP-bilder per fare. Bildene ligger i samme private, versjonerte `kshms_executions.content` som fare, tiltak og score. Migrasjon `20261009030000_kshms_risk_photos.sql` utvider bare den private innholdsvalidatoren; den oppretter ingen tabell, Storage-bucket, RLS-policy eller offentlig RPC. Eldre snapshots normaliseres til tom bildeliste. Ny vurdering med samme farer kopierer tekstgrunnlaget, men ikke bildene. Konfliktvisningen viser bare antall bilder og eksponerer ikke base64-data.
+
+`executionReportDocument` er fortsatt én felles lagret-dokumentmodell for egen PDF, prosjektrapport og samlet dokumentuttrekk. Vedleggsarkivet tar bare med bilder fra uttrykkelig valgte risikovurderinger og binder dem til dokument, revisjon, fare, byteantall og SHA-256 i manifestet. Rapportblokken tolererer nå dokumenttyper uten `closing` og tomme rader, slik at SJA-bilder i prosjektrapporten ikke utløser en React-krasj. Ingen save-/complete-, e-post-, navigasjons- eller Production-endring inngår. [Avgrensning og QA](../kshms/RISK_ATTACHMENTS_20261009.md).
+
+---
+
 # Rutine-/sjekkliste-PDF – avgrenset B/C i Sandbox
 
 KshmsDocumentPdfButton og kshmsDocumentPdf.mjs bruker eksisterende kshms_get_state/kshms_checklist_state/project_checklist_state og firmaprofil. Eksakte utgaver/hash/svar/revisjon og eksisterende firma-/bruker-/prosjekttilgang kontrolleres før/etter asynkron lasting. Ulagret kontroll sperres; sene scope-/skjermsvar stoppes. appendExecutionPdf gjenbrukes uten layout-/lagringsendring; eksisterende logo-loader eksporteres. Main sender bare eksisterende publicProjectFileUrl til prosjektpopupen. Ingen DDL/RLS/Storage/auth-, autosave-/navigasjons- eller e-postendring. Filadresser blir rasterbilder, ikke tekst/lenker. Rutine-PDF utelater medarbeidertildelinger/bekreftelser og upubliserte utkast. Se [kontrakt og tester](../kshms/DOCUMENT_PDF_20261008.md).

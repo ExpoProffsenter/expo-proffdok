@@ -1,3 +1,13 @@
+## Gjeldende fortsettelsespunkt – risikobilder lokalt ferdigprøvd
+
+Kontrollert fra remote feature-head `0b6c0ffab2705c06b7314f2484cb187412c9f02d`, tree `d84c3ae5742d07b3d431132be99a3f0b579a5932`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Lokal checkout har annen commitidentitet etter tidligere GitHub-objectpublisering, men samme verifiserte tree og ren start. Miljømål BEGGE, kun feature/Sandbox.
+
+Avgrenset implementasjon: inntil tre komprimerte bilder per fare i privat, revisjonert risikovurdering; egen PDF, valgt prosjektrapport, samlet uttrekk og ZIP/manifest. Ingen ny Storage/tabell/RLS/policy. Faktisk React-fil/canvas/readback, standalone-/prosjektrapport-/uttrekks-PDF, visuell kontroll, React/ZIP og full Sandbox critical build PASS. Privat validator `20261009031544 kshms_risk_photos` er anvendt og direkte funksjons-/ACL-prøvd i Sandbox; e-post-worker er fortsatt `enabled=false`. Featurepublisering gjenstår og skal ikke kalles ferdig før eksakt bevis er ført. [Scope](RISK_ATTACHMENTS_20261009.md).
+
+Bevar TEST OK 00:59 / 01:29 / 01:55 / 02:28. Ny risikobildeprøve er ikke godkjent. Ikke opprett/fullfør reell vurdering for testdata. Åpne restpunkter etter denne leveransen: faktisk innlogget risiko-/SJA-bilde og kamera, faktiske private avviks-/prosjektkontroll-/legacyfiler, mobil/flere brukere; deretter versjonerte underskjema, påminnelser og kildeoppdatering. HR starter ikke i natt.
+
+---
+
 ## Gjeldende fortsettelsespunkt – SJA-bilder publisert og verifisert
 
 Kontrollert 9. oktober 2026 fra ren `feat-kshms-foundation` på `7a68293c8ad3aae4191a1e766b1dbf278ab54eef`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Eksplisitt scope: `KshmsSja.jsx`/CSS, SJA-/bildevalidering, SJA PDF/samle-PDF/ZIP, én privat validator-migrering, relevante critical-/React-prøver og HJELP/README/architecture/statusdokumenter. Ingen HR, risiko-bilder, generell navigasjon, ny Storage/tabell/RLS/policy, e-post, Production/main/demo.
