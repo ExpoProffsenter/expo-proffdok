@@ -1,3 +1,13 @@
+## TEST OK – kvalitets-/HMS-avvik, 9. oktober kl. 02:28
+
+Kenneth ga **TEST OK 9. oktober 2026 kl. 02:28 Europe/Oslo** for den avgrensede kvalitets-/HMS-leveransen på publisert head **f9e0f7b52a0573cf662fce07f8158c47576c8598** (funksjonskode **0e2de193164dad2342206cac1e2a7610f3c265d0**). Godkjenningen gjelder den nye avviksdekningen i Dokumentuttrekk og den fremlagte korte brukerprøven. Utviklers innloggede bevis omfatter seks lagrede avvik, 23-siders PDF med begge kategorier/historikk/manifest, tom vedleggsliste med sperret ZIP og nullstilling ved fjerning. Bevishead f9e0f7b5 var READY **dpl_3DB6k8cwp3K1eBvzMcG8Ludc8JFk**, grønn Core Safety **37864641901** / full critical build **113608347101** completed/success.
+
+Tidligere TEST OK **00:59 egen SJA-PDF / 01:29 samlet PDF / 01:55 ZIP med to bilder og manifest.json** beholdes. Denne nye godkjenningen er **ikke faktisk privatfilbevis**: Sandbox-avvikene har ingen private originaler/bilder. Faktisk private avviksfiler, private prosjektkontrollfiler, mobil/flere brukere og øvrige tidligere separate restprøver består. Den godkjente avviksprøven skal ikke gjentas uten konkret feil eller relevant regresjon. Ukoblede eldre prosjektavvik og andre filtilknytninger/full tilsynsdekning er fortsatt ufullført B/C-scope. Fortsett én avgrenset del av øvrig vedleggsdekning før versjonerte underskjema, påminnelser og kildeoppdatering; HR følger senere etter avklart HR_SCOPE_20261008.md.
+
+Denne oppfølgingen endrer bare dokumentert godkjenningsstatus. Miljømål **BEGGE**, kun feature/Sandbox. Faktisk branch/main kontrollert før endring: f9e0f7b5 / **155f6c4ac01f126c1db0c65da385cfd9305587d5**, draft PR #216. Ingen app-/backend-/databaseendring, Production-release/main/demo-merge eller ekte e-post. KS/HMS-e-postutsending forblir deaktivert.
+
+---
+
 ## Publisert kvalitet-/HMS-uttrekk – innlogget utviklerbevis 9. oktober 2026
 
 Funksjonshead **0e2de193164dad2342206cac1e2a7610f3c265d0**, tree **89b048c374fe88cea22251d1fdea387502c37bf4**, identisk med bevart lokal testcommit **2ec757530ca2736ed34ac56faa113250f3fb2209**. Alle 18 blobber/tree og faktisk publisert git-objekt hashkontrollert; lokal feature-branch er justert til eksakt publisert head. Baseline da2e5a79, main **155f6c4ac01f126c1db0c65da385cfd9305587d5**. Publisert med expected-head og uten force. READY **dpl_BPX5n2GejD1xCUULTz9EUG7rAPoc**, samme faste Sandbox-alias, riktig SHA/feature-ref og Sandbox-backend. Core Safety **37863966196**, jobb **113606139996**, inkludert full critical build: completed/success. Lokal full Sandbox build, scope/docs-guard, nye og opprinnelige critical/React/PDF/ZIP-prøver PASS. PDF-rendering kontrollert.

@@ -10,6 +10,8 @@ Niende gruppe: **Kvalitets- og HMS-avvik med historikk og bilder**. Eksisterende
 
 Generaliserte leser/renderer ligger i eksisterende kshmsRuhPdf.mjs. RUH-only-wrappere og downloadRuhPdf avviser fortsatt kvalitet/HMS. Forrige RUH-dokumenttype/innhold er identisk. Opprinnelige critical-krav beholdes; ny checker legges til eksisterende kjede.
 
+Kenneths **TEST OK 9. oktober 2026 kl. 02:28 Europe/Oslo** på head **f9e0f7b5** godkjenner denne avgrensede leveransen. Faktiske private avviksfiler, mobil/flere brukere og øvrig B/C-scope er fortsatt åpne. Tidligere TEST OK beholdes; ingen Production-/merge-/e-postgodkjenning. Eksakt godkjenning står øverst i CONTINUITY/USER_TEST.
+
 ## QA og begrensninger
 
 - critical-kshms-deviation-extract-check PASS: begge kategorier, tom filtrert side med servercursor, kategoriforveksling/ukjent kategori, uttømmende 55-hendelseshistorikk, endret historikk/filer/tilgang, sent avbrudd og RUH-only-sperre. PDF med historikk og ZIP med fire private originaler uavhengig kontrollert for CRC/SHA-256/ID-er.
