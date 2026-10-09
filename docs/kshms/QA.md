@@ -6,7 +6,9 @@
 - Faktisk React/ZIP: syv filer + `manifest.json`; risikooriginal har riktig dokumentgruppe/fare, CRC32, byte og SHA-256. Reset, tomt/endrede valg, Storage-/tilgangs- og late-scope-sperrer PASS.
 - Sandbox-trial med rollback PASS: legacy → `photos: []`, ett JPEG beholdt; fire bilder, duplikat-ID og SVG avvist; privat ACL består. Migrasjon `20261009031544 kshms_risk_photos` er deretter anvendt bare i Sandbox; direkte funksjonsprøve gir bilde=1/legacy=0 og PUBLIC/anon/authenticated EXECUTE=false. Mailer er direkte lest `enabled=false`.
 
-Full `EXPO_BACKEND_TARGET=sandbox npm run build` er PASS. Scope/docs-guard, eksakt tree/publisering, Core Safety og READY Preview føres etter verifisering. Supabase-advisors viser ingen nytt funn knyttet til denne funksjonsendringen; eksisterende prosjektfunn er uendret scope. Ingen bruker-TEST OK, faktisk innlogget opplasting, mobil eller flerbruker hevdes. [Detaljer](RISK_ATTACHMENTS_20261009.md).
+Full `EXPO_BACKEND_TARGET=sandbox npm run build`, scope/docs-guard og diff-check PASS. Funksjonshead **bcd0579cebdeaaaa4578abab14dc5522bf0abd88**, tree **03e3ecf71fcde6c43e714997f57a24f1f213f810**; 24 blobber/tree hashverifisert og expected-head uten force. Core Safety **37878651320**, jobb **113652964404** med full critical build success. Vercel **dpl_AKRXJxtRxZuNRif9ej4d2oUJ5vk3** READY på eksakt SHA/feature-ref/alias; branch-env direkte lest Sandbox. Supabase-advisors viser ingen nytt funn knyttet til denne funksjonsendringen; eksisterende prosjektfunn er uendret scope.
+
+Innlogget Preview etter reload: ny «Bilder til faren (inntil tre)» og personverntekst vises. Det fantes null eksisterende risikovurderinger; tomt skjema ble åpnet og lukket uten filvalg, lagring eller fullføring, og listen sto fortsatt på null. Ingen bruker-TEST OK, faktisk innlogget opplasting, mobil eller flerbruker hevdes. [Detaljer](RISK_ATTACHMENTS_20261009.md).
 
 ---
 

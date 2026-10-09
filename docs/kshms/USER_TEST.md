@@ -2,6 +2,8 @@
 
 Dette gjelder bare nye risikobilder. Tidligere TEST OK 9. oktober kl. 00:59 / 01:29 / 01:55 / 02:28 beholdes og skal ikke gjentas uten konkret regresjon.
 
+Funksjonshead `bcd0579cebdeaaaa4578abab14dc5522bf0abd88` er READY med grønn full critical build på den faste Sandbox Preview-en. Utviklers innloggede reload viser bildefelt og personverntekst i et tomt ulagret skjema; Sandbox hadde ingen eksisterende risikovurderinger. Ingen fil ble valgt eller data lagret. Faktisk innlogget opplasting/readback/PDF/ZIP er derfor fortsatt denne nye avgrensede brukerprøven.
+
 1. Bruk et trygt eksisterende risikoutkast. Åpne én fare, legg til ett testbilde under **Bilder til faren**, lagre utkastet og åpne det igjen. Bildet skal stå på samme fare. Ikke opprett eller fullfør en reell vurdering bare for prøven.
 2. Trykk **Last ned PDF** fra den lagrede utgaven. Bildet skal stå under riktig fare sammen med matrise, før/etter, tiltak og beslutning. I prosjektets rapport skal bildet bare følge hvis akkurat vurderingen velges.
 3. I **Dokumentuttrekk**, velg vurderingen, trykk **Vis vedleggslisten**, bekreft og last ned ZIP. Bildet og `manifest.json` skal vise riktig dokument-ID, revisjon og farenavn. Fjern vurderingen eller endre omfanget: liste/bekreftelse nullstilles.

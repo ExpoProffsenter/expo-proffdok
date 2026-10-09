@@ -17,7 +17,9 @@ Eksplisitt appscope: `KshmsExecutions.jsx`, `kshmsExecutions.mjs`, utførelses-/
 - Tilgang, fersk revisjon, endret utvalg/omfang, manglende bilde, filtype/størrelse, sen firma-/bruker-/avmonteringsrespons og ingen skrive-RPC i eksportflytene PASS.
 - Sandbox-transaksjonstrial med rollback: nytt bilde og legacy-normalisering PASS; fire bilder, duplikat-ID og SVG avvises; PUBLIC/anon/authenticated har ikke EXECUTE. Migrasjonen endrer bare privat validatorfunksjon.
 
-Full critical Sandbox-build PASS. Migrasjon `20261009031544 kshms_risk_photos` er anvendt bare på `demo-sandbox` (`ppvircenkjizeiqdxphj`); direkte prøve etter anvendelse gir bilde=1, legacy=0 og PUBLIC/anon/authenticated EXECUTE=false. E-post-worker er direkte lest `enabled=false`. Supabase security/performance-advisors er kontrollert etter DDL og viser ingen nytt funn knyttet til endringen. Eksakt publisert head/tree, CI, READY deploy og innlogget read-only-regresjon føres etter verifisering.
+Full critical Sandbox-build PASS. Migrasjon `20261009031544 kshms_risk_photos` er anvendt bare på `demo-sandbox` (`ppvircenkjizeiqdxphj`); direkte prøve etter anvendelse gir bilde=1, legacy=0 og PUBLIC/anon/authenticated EXECUTE=false. E-post-worker er direkte lest `enabled=false`. Supabase security/performance-advisors er kontrollert etter DDL og viser ingen nytt funn knyttet til endringen.
+
+Funksjonshead **bcd0579cebdeaaaa4578abab14dc5522bf0abd88**, tree **03e3ecf71fcde6c43e714997f57a24f1f213f810**, 24 endrede blobber/tree hashverifisert og publisert med expected-head uten force. Core Safety **37878651320**, full critical jobb **113652964404** success. Vercel **dpl_AKRXJxtRxZuNRif9ej4d2oUJ5vk3** READY på eksakt SHA/feature-ref/fast alias; `EXPO_BACKEND_TARGET=sandbox` direkte lest. Innlogget Preview etter reload viste bildefelt og personverntekst i et tomt, ulagret skjema. Det fantes ingen eksisterende risikovurderinger; ingen fil ble valgt, ingenting lagret/fullført, popup lukket og listen sto fortsatt på null.
 
 ## Brukerprøve og restpunkter
 
