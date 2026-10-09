@@ -1,3 +1,11 @@
+## KS/HMS – samlet B/C-gjennomgang
+
+Gjeldende avgrensning står i [OVERSIKT](../kshms/OVERSIKT.md), med [kravkart/runtimebevis](../kshms/BC_REVIEW_20261009.md). Kombinert ti-gruppe React/PDF og ZIP med kvalitet/HMS og legacy samtidig er verifisert; prosjekt-/rolle-RPC er kontrollert etter senere migrasjoner. Denne endringen berører bare status/hjelp og én vedleggstekst, ikke eksporthandler eller backend. Tall/dato finnes i faste skjemaer, men ikke som egendefinerte svarfelt i firmamalen. Generell originalfilopplasting i selvstendig kontroll er ikke implementert, men er heller ikke innført som nytt obligatorisk scope. Håndbokrevisjonspåminnelser er neste konkrete C-scope.
+
+Direkte Sandbox-audit bekrefter privat kshms-private og eksisterende offentlig project-images. Innlogget uttrekkskontroll endrer ikke bucketens offentlige natur; fremtidig sensitiv HR-/privatfilflyt må bruke særskilt privat tilgang. Ingen bucket/policy/grant endres her. Cron er aktiv, transport enabled=false. Autentisert faktisk e-posttest og generell releaseaktivering er atskilte.
+
+---
+
 ## Kildeoppdateringsforslag – feature/Sandbox
 
 `sourceUpdateOverview` leser eksisterende håndbokstate og krever enabled/manage samt eksakt firma-/brukerscope. Den utelater arkiverte, fremmede og egne rutiner uten kjent source_key og skiller eldre utkastgrunnlag fra vurdert utkast med eldre publisert grunnlag. `KshmsSourceUpdates` åpner eksisterende editor. `KshmsSourceProposal` viser åtte felt med faktisk firmatekst/forslag; applySourceField kloner bare ett felt uten å flytte source_revision, mens markSourceReviewed er en egen eksplisitt handling som ikke senker et nyere grunnlag. Referansenes checked_on beholdes ved tekstvurdering.

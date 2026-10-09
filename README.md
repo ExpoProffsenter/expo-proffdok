@@ -1,3 +1,9 @@
+## KS/HMS – samlet B/C-status
+
+Den [samlede planoversikten](docs/kshms/OVERSIKT.md) viser faktisk leveranse og gjenstående funksjoner/bevis. Ti dokumentgrupper er kontrollert sammen i PDF og ZIP; underskjema, avvik/RUH-påminnelser og kildeoppdatering er levert i feature/Sandbox. Tidligere TEST OK beholdes. [Gjennomgang og testbevis](docs/kshms/BC_REVIEW_20261009.md). Ingen Production-release eller generell e-postaktivering.
+
+---
+
 ## Kildeoppdateringsforslag – feature/Sandbox
 
 Oppfølging og revisjon viser nyere sentrale tekstforslag og vurderte utkast som fortsatt må godkjennes. Sammenlign firmaets tekst med forslaget; velg bare feltene dere trenger. Ett felt markerer ikke hele forslaget som vurdert. **Jeg har vurdert hele tekstforslaget**, **Lagre utkast** og firmagodkjenning er separate handlinger. Gamle godkjente utgaver og ansattbekreftelser beholdes. Nettkilder kontrolleres manuelt. [Scope og QA](docs/kshms/SOURCE_UPDATES_20261009.md).
