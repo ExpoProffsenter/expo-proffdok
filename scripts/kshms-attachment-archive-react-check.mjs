@@ -5,7 +5,9 @@ import os from 'node:os';
 import {build} from 'vite';
 import react from '@vitejs/plugin-react';
 import {company,user,project} from './critical-kshms-ruh-pdf-check.mjs';
-import {sources,selection,fixtureRpc,context} from './critical-kshms-inspection-extract-check.mjs';
+import {sources,selection as baseSelection,fixtureRpc,context} from './critical-kshms-inspection-extract-check.mjs';
+import {deviationFixture} from './critical-kshms-deviation-extract-check.mjs';
+const deviationQA=Boolean(process.env.KSHMS_DEVIATION_QA);
 const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 import {webcrypto} from 'node:crypto';
 import {attachmentSource,storageUrl,verifyArchive} from './critical-kshms-attachment-archive-check.mjs';
@@ -17,10 +19,11 @@ const dom=new JSDOM('<div id="app"></div>',{url:'https://qa.example.invalid',pre
 window.MessageChannel=class{constructor(){this.port1={};this.port2={postMessage:()=>window.setTimeout(()=>this.port1.onmessage?.({data:null}),0)};}};window.IS_REACT_ACT_ENVIRONMENT=true;window.TextEncoder=TextEncoder;
 
 window.Uint8Array=Uint8Array;window.Blob=Blob;window.structuredClone=structuredClone;Object.defineProperty(window,'crypto',{value:webcrypto});
-let mode='',contexts=0,deferred=null;const source=attachmentSource(),original=JSON.stringify(source),calls=[],storage=[],exports=[];
-const rpc=fixtureRpc({source,onCall:(name,args)=>calls.push({name,args})});
+let mode='',contexts=0,deferred=null;const source=attachmentSource(),fixture=deviationQA?deviationFixture(source):null,selection=fixture?[...baseSelection,...fixture.selected]:baseSelection,original=JSON.stringify(source),calls=[],storage=[],exports=[];
+const inner=fixture?.rpc||fixtureRpc({source});
+const rpc=(name,args)=>{calls.push({name,args});return inner(name,args);};
 window.__rpc=async(name,args)=>{if(name==='get_kshms_context'){contexts++;if(mode==='role-final'&&contexts===2)return {...context,manage:false};if(deferred&&contexts===2)await deferred.promise;}return rpc(name,args);};
-window.__client={supabaseUrl:storageUrl,storage:{from:bucket=>({download:async object=>{storage.push({bucket,object});if(mode==='storage')return {error:{message:'denied'}};const file=source.files.find(f=>f.object_name===object)||source.runs[0].answers.Koblinger.photos[0];return {data:new Blob(['x'.repeat(file.size_bytes||file.size)],{type:file.mime_type||file.type})};}})}};
+window.__client={supabaseUrl:storageUrl,storage:{from:bucket=>({download:async object=>{storage.push({bucket,object});if(mode==='storage')return {error:{message:'denied'}};const file=[...source.files,...(fixture?.attachments||[])].find(f=>f.object_name===object)||source.runs[0].answers.Koblinger.photos[0];return {data:new Blob(['x'.repeat(file.size_bytes||file.size)],{type:file.mime_type||file.type})};}})}};
 const blobs=new Map();window.URL.createObjectURL=blob=>{const url='blob:archive-'+blobs.size;blobs.set(url,blob);return url;};window.URL.revokeObjectURL=()=>{};
 window.HTMLAnchorElement.prototype.click=function(){exports.push({name:this.download,blob:blobs.get(this.href)});};
 window.eval((Array.isArray(built)?built[0]:built).output.find(x=>x.type==='chunk'&&x.isEntry).code);
@@ -30,16 +33,17 @@ const button=name=>[...document.querySelectorAll('button')].find(b=>b.textConten
 const click=async name=>{const b=typeof name==='string'?button(name):name;assert(b,name);assert(!b.disabled,name+' disabled');await act(async()=>{b.click();await pause(150);});};
 const fill=async(element,value)=>act(async()=>{const proto=element.tagName==='TEXTAREA'?window.HTMLTextAreaElement.prototype:window.HTMLSelectElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(element,value);element.dispatchEvent(new window.Event(element.tagName==='SELECT'?'change':'input',{bubbles:true}));await pause(10);});
 const check=async el=>act(async()=>{el.click();await pause(20);});
-const choose=async kind=>{const row=selection.find(v=>v.kind===kind);await check([...document.querySelectorAll('fieldset label')].find(l=>l.textContent.includes(row.id)).querySelector('input'));};
+const choose=async kind=>{for(const row of selection.filter(v=>v.kind===kind))await check([...document.querySelectorAll('fieldset label')].find(l=>l.textContent.includes(row.id)).querySelector('input'));};
 const confirm=()=>check([...document.querySelectorAll('label')].find(l=>l.textContent.includes('Jeg har kontrollert vedleggslisten')).querySelector('input'));
 await render();await fill(document.querySelector('textarea'),'QA vedlegg');await click('Hent dokumentlisten');assert(button('Vis vedleggslisten').disabled);assert(!button('Last ned vedlegg (ZIP)'));
-await fill(document.querySelector('select'),project);await click('Hent prosjektkontroller');for(const kind of ['ruhs','rounds','runs'])await choose(kind);
-await click('Vis vedleggslisten');assert.equal(storage.length,0,'Preview must not download');assert.equal(document.querySelectorAll('[aria-label="Vedleggslisten"] li').length,5);assert(button('Last ned vedlegg (ZIP)').disabled);
-await confirm();contexts=0;await click('Last ned vedlegg (ZIP)');assert.equal(exports.length,1);const bytes=await exports[0].blob.arrayBuffer(),manifest=verifyArchive(bytes);assert.equal(manifest.files.length,5);assert.equal(storage.filter(v=>v.bucket==='kshms-private').length,3);assert.equal(storage.filter(v=>v.bucket==='project-images').length,1);fs.writeFileSync(path.join(output,'actual-react-attachments.zip'),Buffer.from(bytes));
+await fill(document.querySelector('select'),project);await click('Hent prosjektkontroller');for(const kind of ['ruhs','rounds','runs',...(deviationQA?['deviations']:[])])await choose(kind);
+await click('Vis vedleggslisten');assert.equal(storage.length,0,'Preview must not download');assert.equal(document.querySelectorAll('[aria-label="Vedleggslisten"] li').length,deviationQA?9:5);assert(button('Last ned vedlegg (ZIP)').disabled);
+await confirm();contexts=0;await click('Last ned vedlegg (ZIP)');assert.equal(exports.length,1);const bytes=await exports[0].blob.arrayBuffer(),manifest=verifyArchive(bytes);assert.equal(manifest.files.length,deviationQA?9:5);assert.equal(storage.filter(v=>v.bucket==='kshms-private').length,deviationQA?7:3);assert.equal(storage.filter(v=>v.bucket==='project-images').length,1);if(deviationQA){assert.equal(manifest.files.filter(f=>fixture.cases.some(c=>c.id===f.documentId)).length,4);assert(manifest.files.some(f=>f.originalName==='quality-Original.pdf'));assert(manifest.files.some(f=>f.originalName==='hms-Original.pdf'));}
+fs.writeFileSync(path.join(output,deviationQA?'actual-react-quality-hms-attachments.zip':'actual-react-attachments.zip'),Buffer.from(bytes));
 for(const failure of ['storage','role-final']){mode=failure;contexts=0;await click('Last ned vedlegg (ZIP)');assert.equal(exports.length,1);assert(document.querySelector('[role="alert"]'));}mode='';
 await fill(document.querySelector('textarea'),'Ny avgrensning');assert(!button('Last ned vedlegg (ZIP)'));await click('Vis vedleggslisten');assert(button('Last ned vedlegg (ZIP)').disabled);await confirm();
-await choose('runs');assert(!button('Last ned vedlegg (ZIP)'));await click('Vis vedleggslisten');assert.equal(document.querySelectorAll('[aria-label="Vedleggslisten"] li').length,4);assert(button('Last ned vedlegg (ZIP)').disabled);
-await choose('ruhs');await choose('rounds');await choose('sjas');await click('Vis vedleggslisten');assert(document.body.textContent.includes('Ingen støttede vedlegg'));assert(button('Last ned vedlegg (ZIP)').disabled);await choose('sjas');await choose('ruhs');await click('Vis vedleggslisten');await confirm();
+await choose('runs');assert(!button('Last ned vedlegg (ZIP)'));await click('Vis vedleggslisten');assert.equal(document.querySelectorAll('[aria-label="Vedleggslisten"] li').length,deviationQA?8:4);assert(button('Last ned vedlegg (ZIP)').disabled);
+if(deviationQA)await choose('deviations');await choose('ruhs');await choose('rounds');await choose('sjas');await click('Vis vedleggslisten');assert(document.body.textContent.includes('Ingen støttede vedlegg'));assert(button('Last ned vedlegg (ZIP)').disabled);await choose('sjas');await choose('ruhs');await click('Vis vedleggslisten');await confirm();
 const defer=()=>{let resolve;return {promise:new Promise(r=>resolve=r),resolve};};
 for(const action of ['company','user','unmount']){
  contexts=0;deferred=defer();await click('Last ned vedlegg (ZIP)');assert(button('Last ned vedlegg (ZIP)').disabled);

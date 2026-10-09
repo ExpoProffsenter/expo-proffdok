@@ -1,4 +1,5 @@
 import './critical-kshms-attachment-archive-check.mjs';
+import './critical-kshms-deviation-extract-check.mjs';
 import fs from 'node:fs';
 import './critical-kshms-inspection-extract-check.mjs';
 import assert from 'node:assert/strict';

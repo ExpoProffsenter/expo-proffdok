@@ -1,3 +1,11 @@
+## Kvalitet-/HMS-avvik i dokument- og vedleggsuttrekk – 9. oktober 2026
+
+Miljømål **BEGGE**, kun feature/Sandbox nå. Baseline `da2e5a79824c1358948ed535768b81277a2ecb41`, faktisk main `155f6c4ac01f126c1db0c65da385cfd9305587d5`, draft PR #216. Ny avgrenset del av øvrig vedleggsdekning: egen gruppe **Kvalitets- og HMS-avvik med historikk og bilder** i Dokumentuttrekk. Valgte lagrede KS/HMS-saker får full historikk/private bilder i PDF og private originaler i ZIP, med eksisterende bekreftelse/manifest/konsistens-/tilgangsvern. [Scope og QA](DEVIATION_ATTACHMENTS_20261009.md).
+
+TEST OK for egen SJA-PDF **00:59**, samlet PDF **01:29** og ZIP med to bilder/manifest **01:55** 9. oktober beholdes som separate dokumenterte godkjenninger. De er ikke ny TEST OK for kvalitet/HMS. Innlogget Sandbox har fem HMS-saker/én kvalitetssak, ingen private avviksfiler. Ny faktisk privatfilprøve, mobil/flere brukere og tidligere separate restprøver er fortsatt åpne. Nye filtilknytninger på andre dokumenttyper og full legacy-/tilsynsdekning er ikke erklært ferdig. Øvrig vedleggsdekning følger før versjonerte underskjema, deretter påminnelser og kildeoppdatering før HR; HR_SCOPE_20261008.md beholdes. Ingen Production/main/demo-merge eller ekte e-post; Sandbox KS/HMS-enabled=false bekreftet direkte og beholdt.
+
+---
+
 ## Publisert PDF-/ZIP-forklaring – innlogget kontroll
 
 Tekst-/TEST OK-oppfølging publisert på **085336ade9be3a9778a3c5d00ad7c58c7dc0a98a**, tree **ecbbd5aa8be7fd6ccdc72e6eb254da104cc724ba**, identisk med lokal testcommit 496c73e25026d070bf38e2b8f72da7acc03d30f4 (bevart). Alle 11 blobber/tree og faktisk publisert git-objekt hashkontrollert, expected-head 359dac0e og uten force. READY **dpl_8wuuYDCorLQwMaZde1QL39pihcCs**, eksakt SHA og samme faste Sandbox-alias; Core Safety **37862362107**, jobb/full critical build **113600849615** completed/success. Lokal full Sandbox build og faktisk React/ZIP PASS. PR #216 fortsatt draft/main uendret 155f6c4ac01f126c1db0c65da385cfd9305587d5. Bare to apptekstfiler og ni dokumenter i denne slice; ingen handler/format/backend-endring. Etterfølgende beviscommit er bare dokumentasjon/skjermbilde.

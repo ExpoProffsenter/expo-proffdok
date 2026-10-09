@@ -1,3 +1,15 @@
+## Kort ny prøve – kvalitet-/HMS-avvik i Dokumentuttrekk
+
+Bruk [samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe) og eksisterende innlogging. Tidligere TEST OK kl. **00:59 / 01:29 / 01:55** 9. oktober beholdes. Bare ny avviksdekning skal vurderes:
+
+1. **KS/HMS → Dokumentuttrekk → Hent dokumentlisten**. Skriv omfang. Åpne **Kvalitets- og HMS-avvik med historikk og bilder**. Velg én allerede lagret testsak; ingen sak skal være forhåndsvalgt.
+2. Bekreft dokumentvalget og trykk **Last ned samlet PDF**. Kontroller riktig kategori, sak/revisjon, hele historikken, eventuell lagret lukking og manifest. Bare valgte dokumenter følger filen. Nedlasting skal ikke endre saken.
+3. Har saken private vedlegg: **Vis vedleggslisten → bekreft → Last ned vedlegg (ZIP)**. Originalene og manifest.json skal høre til valgt sak. Uten vedlegg skal listen være tom og ZIP sperret. Endre omfang eller fjern saken: vedleggslisten/bekreftelsen skal tømmes.
+
+Utvikler har testet permanent kategorisperre, hele historikken over flere sider, privat transport/PDF/ZIP/CRC/SHA-256, manglende/endret fil/tilgang og sene firma-/bruker-/avmonteringssvar. Faktisk React gir PDF med begge kategorier og ZIP med fire private kvalitet-/HMS-originaler sammen med gamle vedlegg. Transporten er simulert, ikke reelt innlogget privatfilbevis. Sandboxs eksisterende avvik har ingen private filer; ikke endre/signér/lukk en reell sak bare for denne prøven. Mobil/flere brukere og øvrige tidligere restprøver består. Ukoblede eldre prosjektavvik vises ikke i denne gruppen. Ingen e-postsending eller Production-godkjenning.
+
+---
+
 ## TEST OK 9. oktober kl. 01:55: ZIP-nedlasting og innhold
 
 Kenneths TEST OK er presisert **9. oktober 2026 kl. 01:55 Europe/Oslo**: ZIP fra Voldsløkka-vernerunden er lastet ned og åpnet, med **to bilder i vedlegg og én JSON-fil**. Skjermbildet viser åpnet «KS-HMS vedlegg – test omfang», mappen «vedlegg» og «manifest.json». Dette bekrefter innlogget ZIP-nedlasting/innhold på publisert head **359dac0ed2df86ab43cb545ece6716161f9bdc87** (funksjon 42a38e91), etter PDF-/ZIP-avklaringen kl. 01:51–01:53. Tidligere TEST OK beholdes. Ingen ny mobil-, flerbruker-, privat RUH-original-/prosjektkontrollfil- eller Production-/merge-/e-postgodkjenning følger.

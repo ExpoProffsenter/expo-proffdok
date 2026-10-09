@@ -1,13 +1,13 @@
 import {sameRunValue} from '../checklist/checklistRuns.mjs';
 import {routinePdfDocument,checklistTemplatePdfDocument,checklistRunPdfDocument} from './kshmsDocumentPdf.mjs';
 import {sjaPdfDocument} from './kshmsSjaPdf.mjs';
-import {readRuhPdfSnapshot,ruhPdfDocument,loadRuhImage} from './kshmsRuhPdf.mjs';
+import {readRuhPdfSnapshot,ruhPdfDocument,readDeviationPdfSnapshot,deviationPdfDocument,loadRuhImage} from './kshmsRuhPdf.mjs';
 import {executionReportDocument,loadCompanyLogo,reportPhoto} from './kshmsExecutionReport.mjs';
 import {appendBoxedPdf} from './kshmsBoxedPdf.mjs';
 import {formatDeviationDateTime,formatDeviationDate} from '../deviations/deviationDates.mjs';
 import {routineNumber} from '../kshms/kshmsJobChoices.mjs';
 
-export const EXTRACT_GROUPS={routines:'Godkjente rutineutgaver',templates:'Publiserte sjekklistemaler',reviews:'Signerte håndbokrevisjoner',sjas:'SJA',ruhs:'RUH med historikk og bilder',rounds:'Vernerunder / kontroller',risks:'Risikovurderinger 5×5',runs:'Lagrede prosjektkontroller'};
+export const EXTRACT_GROUPS={routines:'Godkjente rutineutgaver',templates:'Publiserte sjekklistemaler',reviews:'Signerte håndbokrevisjoner',sjas:'SJA',ruhs:'RUH med historikk og bilder',deviations:'Kvalitets- og HMS-avvik med historikk og bilder',rounds:'Vernerunder / kontroller',risks:'Risikovurderinger 5×5',runs:'Lagrede prosjektkontroller'};
 export const extractKey=row=>`${row.kind}:${row.id}`;
 const when=value=>formatDeviationDateTime(value)||'Ikke oppgitt';
 const changed=()=>Error('Et valgt dokument er endret eller ikke lenger tilgjengelig. Oppdater listen og velg på nytt.');
@@ -15,22 +15,22 @@ const checkContext=(value,companyId,userId)=>{
  if(!value?.enabled||!value.manage||value.company_id!==companyId||value.user_id!==userId)throw Error('Uttrekk krever firmaadmin eller KS/HMS-ansvarlig i det valgte firmaet. Tilgangen er endret.');
 };
 const unique=rows=>{if(!Array.isArray(rows)||rows.some(row=>!row?.id)||new Set(rows.map(row=>row.id)).size!==rows.length)throw Error('Dokumentlisten kunne ikke bekreftes.');return rows;};
-const choice=(kind,row,title)=>({kind,id:row.id,title:title||row.title||row.content?.title||'Uten navn',revision:row.revision,number:row.number,hash:row.content_hash,status:row.status,projectId:row.project_id||null});
+const choice=(kind,row,title)=>({kind,id:row.id,title:title||row.title||row.content?.title||'Uten navn',revision:row.revision,number:row.number,hash:row.content_hash,status:row.status,projectId:row.project_id||null,...(kind==='deviations'?{category:row.category}:{})});
 
 export async function loadExtractPage({kind,rpc,companyId,userId,query='',cursor=null,isCurrent=()=>true}){
  const args={p_company_id:companyId,p_status:'all',p_query:query},execution=['rounds','risks'].includes(kind);
- const name=kind==='sjas'?'kshms_sja_state':kind==='ruhs'?'kshms_deviation_state':'kshms_execution_state';
- if(!['sjas','ruhs','rounds','risks'].includes(kind))throw Error('Ukjent dokumentgruppe.');
+ const name=kind==='sjas'?'kshms_sja_state':['ruhs','deviations'].includes(kind)?'kshms_deviation_state':'kshms_execution_state';
+ if(!['sjas','ruhs','deviations','rounds','risks'].includes(kind))throw Error('Ukjent dokumentgruppe.');
  if(kind!=='sjas'){args.p_before=cursor?.before||cursor?.updated_at||null;args.p_before_id=cursor?.id||null;}
  if(execution)args.p_kind=kind==='rounds'?'round':'risk';
  const result=await rpc(name,args);if(!isCurrent())return null;checkContext(result?.context,companyId,userId);
- const rows=unique(result[kind==='sjas'?'items':kind==='ruhs'?'cases':'records']);
+ const rows=unique(result[kind==='sjas'?'items':['ruhs','deviations'].includes(kind)?'cases':'records']);
  if(result.next&&(!rows.length||!result.next.id||!(result.next.before||result.next.updated_at)||sameRunValue(cursor,result.next)))throw Error('Neste side kunne ikke bekreftes. Oppdater listen.');
- return {rows:rows.filter(row=>kind!=='ruhs'||row.category==='ruh').map(row=>choice(kind,row)),next:result.next||null,total:result.total??null};
+ return {rows:rows.filter(row=>kind==='ruhs'?row.category==='ruh':kind==='deviations'?['quality','hms'].includes(row.category):true).map(row=>choice(kind,row)),next:result.next||null,total:result.total??null};
 }
 
 export async function loadExtractChoices({rpc,companyId,userId,query='',isCurrent=()=>true}){
- const kinds=['sjas','ruhs','rounds','risks'];
+ const kinds=['sjas','ruhs','deviations','rounds','risks'];
  const results=await Promise.all([
   rpc('kshms_get_state',{p_company_id:companyId}),rpc('kshms_checklist_state',{p_company_id:companyId}),rpc('kshms_job_choices',{p_company_id:companyId}),
   ...kinds.map(kind=>loadExtractPage({kind,rpc,companyId,userId,query,isCurrent}))
@@ -53,7 +53,7 @@ function reviewDocument(row){
 }
 
 export function validateInspectionSelection(selection){
- if(!Array.isArray(selection)||!selection.length||selection.length>50||new Set(selection.map(extractKey)).size!==selection.length||selection.some(v=>!EXTRACT_GROUPS[v.kind]||!v.id))throw Error('Velg mellom 1 og 50 dokumenter.');
+ if(!Array.isArray(selection)||!selection.length||selection.length>50||new Set(selection.map(extractKey)).size!==selection.length||selection.some(v=>!EXTRACT_GROUPS[v.kind]||!v.id||v.kind==='deviations'&&!['quality','hms'].includes(v.category)))throw Error('Velg mellom 1 og 50 dokumenter.');
 }
 export async function checkInspectionContext({rpc,companyId,userId,isCurrent=()=>true}){
  const x=await rpc('get_kshms_context');if(!isCurrent())return false;checkContext(x,companyId,userId);return true;
@@ -69,10 +69,10 @@ export async function readInspectionSnapshots({selection,rpc,companyId,userId,is
     const row=unique(result[kind==='reviews'?'reviews':'versions']).find(v=>v.id===expected.id);if(!row||row.company_id!==companyId)throw changed();
     if(kind==='reviews')bundle={kind,row};
     else{const parent=unique(result[kind==='routines'?'routines':'templates']).find(v=>v.id===row[kind==='routines'?'routine_id':'template_id']);if(!parent||parent.company_id!==companyId||row.number!==expected.number||row.content_hash!==expected.hash)throw changed();bundle={kind,row,parent:{id:parent.id,reference_number:parent.reference_number,archived:parent.archived}};}
-   }else if(kind==='ruhs'){
+   }else if(['ruhs','deviations'].includes(kind)){
     const detail=await rpc('kshms_deviation_detail',{p_company_id:companyId,p_id:expected.id,p_before:null,p_before_id:null});if(!isCurrent())return null;
-    if(detail.case?.id!==expected.id||detail.case.company_id!==companyId||detail.case.category!=='ruh'||detail.case.revision!==expected.revision||detail.case.status!==expected.status)throw changed();
-    const snapshot=await readRuhPdfSnapshot({expected:detail.case,rpc,companyId,isCurrent});if(!snapshot)return null;bundle={kind,row:snapshot.case,snapshot};
+    if(detail.case?.id!==expected.id||detail.case.company_id!==companyId||detail.case.category!==(kind==='ruhs'?'ruh':expected.category)||detail.case.revision!==expected.revision||detail.case.status!==expected.status)throw changed();
+    const snapshot=await (kind==='ruhs'?readRuhPdfSnapshot:readDeviationPdfSnapshot)({expected:detail.case,rpc,companyId,isCurrent});if(!snapshot)return null;bundle={kind,row:snapshot.case,snapshot};
    }else{
     const runs=kind==='runs';const result=await rpc(runs?'project_checklist_state':kind==='sjas'?'kshms_sja_detail':'kshms_execution_detail',{p_company_id:companyId,...(runs?{p_project_id:expected.projectId}:{p_id:expected.id})});if(!isCurrent())return null;
     if(runs){const x=result?.context;if(x?.company_id!==companyId||x.user_id!==userId||x.project_id!==expected.projectId)throw changed();}
@@ -92,11 +92,11 @@ export async function downloadInspectionExtract({selection,scopeText,rpc,company
  const read=()=>readInspectionSnapshots({selection,rpc,companyId,userId,isCurrent});
  if(!await check())return null;const saved=await read();if(!saved)return null;
  const profile=await rpc('work_profile_company_profile',{p_company_id:companyId});if(!isCurrent())return null;if(profile?.companyId!==companyId)throw Error('Firmaprofilen kunne ikke bekreftes.');
- const documents=saved.map(({kind,row,parent,snapshot})=>kind==='routines'?routinePdfDocument(row,parent):kind==='templates'?checklistTemplatePdfDocument(row,parent):kind==='reviews'?reviewDocument(row):kind==='sjas'?sjaPdfDocument(row):kind==='ruhs'?ruhPdfDocument(snapshot):kind==='runs'?checklistRunPdfDocument(row):executionReportDocument(row));
- for(const document of documents)for(const block of document.blocks||[])for(const photo of block.photos||[]){
+ const documents=saved.map(({kind,row,parent,snapshot})=>kind==='routines'?routinePdfDocument(row,parent):kind==='templates'?checklistTemplatePdfDocument(row,parent):kind==='reviews'?reviewDocument(row):kind==='sjas'?sjaPdfDocument(row):kind==='ruhs'?ruhPdfDocument(snapshot):kind==='deviations'?deviationPdfDocument(snapshot):kind==='runs'?checklistRunPdfDocument(row):executionReportDocument(row));
+ for(const [index,document] of documents.entries())for(const block of document.blocks||[])for(const photo of block.photos||[]){
   if(!photo.file)continue;const file=photo.file;let data;
-  if(document.type==='RUH med historikk og vedlegg'){
-   const blob=await downloadFile(file);if(!isCurrent())return null;if(blob?.size!==file.size_bytes||blob?.type!==file.mime_type)throw Error('Et valgt RUH-bilde mangler eller er endret. Uttrekket er ikke laget.');
+  if(['ruhs','deviations'].includes(saved[index].kind)){
+   const blob=await downloadFile(file);if(!isCurrent())return null;if(blob?.size!==file.size_bytes||blob?.type!==file.mime_type)throw Error('Et valgt avviksbilde mangler eller er endret. Uttrekket er ikke laget.');
    data=await loadPrivateImage(blob);
   }else{const url=resolveFileUrl(file);if(!url)throw Error('Et valgt kontrollbilde mangler. Uttrekket er ikke laget.');data=await loadImage(url);}
   if(!isCurrent())return null;if(!reportPhoto({data}))throw Error('Et valgt bilde kunne ikke hentes. Uttrekket er ikke laget.');photo.data=data;delete photo.file;

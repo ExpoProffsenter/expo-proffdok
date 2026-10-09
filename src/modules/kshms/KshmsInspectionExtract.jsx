@@ -44,7 +44,7 @@ export default function KshmsInspectionExtract({context}){
  const toggle=row=>{clearAttachments();setConfirmed(false);setNotice('');setSelected(previous=>previous.some(value=>extractKey(value)===extractKey(row))?previous.filter(value=>extractKey(value)!==extractKey(row)):[...previous,row]);};
  const download=()=>run(async current=>{
   const client=getAppSupabaseClient();if(!client)throw Error('Appens innlogging er ikke klar.');
-  const result=await downloadInspectionExtract({selection:selected,scopeText,rpc:kshmsRpc,companyId,userId,isCurrent:current,downloadFile:async file=>{const {data,error:failure}=await client.storage.from('kshms-private').download(file.object_name);if(failure)throw Error('Et valgt RUH-bilde kunne ikke hentes. Uttrekket er ikke laget.');return data;}});
+  const result=await downloadInspectionExtract({selection:selected,scopeText,rpc:kshmsRpc,companyId,userId,isCurrent:current,downloadFile:async file=>{const {data,error:failure}=await client.storage.from('kshms-private').download(file.object_name);if(failure)throw Error('Et valgt avviksbilde kunne ikke hentes. Uttrekket er ikke laget.');return data;}});
   if(result&&current())setNotice(`PDF er laget med ${result.documents} valgte dokumenter og manifest (${result.pages} sider).${result.logoMissing?' Logoen kunne ikke hentes. Firmanavnet er brukt.':''}`);
  });
  const previewAttachments=()=>run(async current=>{
@@ -55,7 +55,7 @@ export default function KshmsInspectionExtract({context}){
  const downloadAttachments=()=>run(async current=>{
   const client=getAppSupabaseClient();if(!client)throw Error('Appens innlogging er ikke klar.');
   const result=await downloadInspectionAttachmentArchive({preview:attachmentPreview,selection:selected,scopeText,rpc:kshmsRpc,companyId,userId,isCurrent:current,
-   downloadPrivate:async file=>{const {data,error:failure}=await client.storage.from('kshms-private').download(file.object_name);if(failure)throw Error('Et RUH-vedlegg kunne ikke hentes. Ingen vedleggspakke er laget.');return data;},
+   downloadPrivate:async file=>{const {data,error:failure}=await client.storage.from('kshms-private').download(file.object_name);if(failure)throw Error('Et avviksvedlegg kunne ikke hentes. Ingen vedleggspakke er laget.');return data;},
    downloadProject:async file=>{const object=projectAttachmentObject(file,client.supabaseUrl);const {data,error:failure}=await client.storage.from('project-images').download(object);if(failure)throw Error('Et prosjektvedlegg kunne ikke hentes. Ingen vedleggspakke er laget.');return data;}
   });
   if(result&&current())setNotice(`ZIP er laget med ${result.files} vedlegg og manifest. Kontroller innholdet før deling.`);
@@ -64,9 +64,9 @@ export default function KshmsInspectionExtract({context}){
  return <section className="ks-card" aria-label="Dokumentuttrekk">
   <h3>Samlet dokument- og tilsynsuttrekk</h3>
   <p>Beskriv hva du vil dokumentere. Hent listen og huk av dokumentene du trenger. Du kan laste ned en PDF med dokumentene, en ZIP-pakke med vedleggene, eller begge. Bruk «Last ned samlet PDF» for rapporten. For bilder og originalfiler: trykk «Vis vedleggslisten» lenger ned, bekreft listen og trykk «Last ned vedlegg (ZIP)».</p>
-  <p className="ks-field-hint">Du får lagret dokumentasjon. Ulagrede endringer følger ikke med. RUH inkluderer hele historikken og lagrede bilder. Andre originalfiler følger ikke PDF-en. Bruk vedleggslisten nedenfor for en egen ZIP-pakke. HR, fortrolige varslinger, ansattes lesebekreftelser og opplæringsbevis tas ikke med. Uttrekket er ingen tilsynsgodkjenning.</p>
+  <p className="ks-field-hint">Du får lagret dokumentasjon. Ulagrede endringer følger ikke med. RUH, kvalitet- og HMS-avvik inkluderer hele historikken og lagrede bilder. Bare saker lagret i KS/HMS-avvikssentralen vises; ukoblede eldre prosjektavvik tas ikke med. Andre originalfiler følger ikke PDF-en. Bruk vedleggslisten nedenfor for en egen ZIP-pakke. HR, fortrolige varslinger, ansattes lesebekreftelser og opplæringsbevis tas ikke med. Uttrekket er ingen tilsynsgodkjenning.</p>
   <label className="ks-field"><span>Omfang / hva skal dokumenteres?</span><textarea value={scopeText} disabled={busy} maxLength={2000} rows={2} onChange={event=>{clearAttachments();setScopeText(event.target.value);setConfirmed(false);setNotice('');}} placeholder="For eksempel: Kontroll av arbeid på testprosjekt, oktober 2026"/></label>
-  <label className="ks-field"><span>Søk etter SJA, RUH, kontroller og risiko</span><input value={query} disabled={busy} maxLength={160} onChange={event=>setQuery(event.target.value)}/></label>
+  <label className="ks-field"><span>Søk etter SJA, avvik, RUH, kontroller og risiko</span><input value={query} disabled={busy} maxLength={160} onChange={event=>setQuery(event.target.value)}/></label>
   <button type="button" disabled={busy} onClick={load}>{catalog?'Oppdater dokumentlisten':'Hent dokumentlisten'}</button>
   {catalog&&<>
    <p>Ingen dokumenter velges automatisk. Oppdatering av listen tømmer valget. Rutine- og malutgaver vises også når de er historiske; kontroller status i PDF-en.</p>
@@ -88,7 +88,7 @@ export default function KshmsInspectionExtract({context}){
    <div className="ks-actions"><button type="button" disabled={busy||!confirmed||!scopeText.trim()||!selected.length||selected.length>50} onClick={download}>{busy?'Arbeider …':'Last ned samlet PDF'}</button><button type="button" className="secondary" disabled={busy||!selected.length} onClick={()=>{clearAttachments();setSelected([]);setConfirmed(false);setNotice('');}}>Tøm dokumentvalget</button></div>
    {selected.length>50&&<p role="alert">Velg maksimalt 50 dokumenter per uttrekk.</p>}
    <h4>Vedlegg til valgte dokumenter</h4>
-   <p>Trykk «Vis vedleggslisten» først. Deretter vises bekreftelsen og knappen «Last ned vedlegg (ZIP)». ZIP samler bildene og originalfilene i én pakke, så du slipper å hente dem enkeltvis. Bruk pakken når du trenger filene separat til eget arkiv eller sammen med rapporten. Pakken kan inneholde lagrede RUH-filer, vernerunde-bilder og prosjektkontrollvedlegg. Rapporten følger bare PDF-nedlastingen. Bilder følger slik de er lagret i appen. ZIP er ikke kryptert.</p>
+   <p>Trykk «Vis vedleggslisten» først. Deretter vises bekreftelsen og knappen «Last ned vedlegg (ZIP)». ZIP samler bildene og originalfilene i én pakke, så du slipper å hente dem enkeltvis. Bruk pakken når du trenger filene separat til eget arkiv eller sammen med rapporten. Pakken kan inneholde lagrede kvalitet-/HMS-/RUH-filer, vernerunde-bilder og prosjektkontrollvedlegg. Rapporten følger bare PDF-nedlastingen. Bilder følger slik de er lagret i appen. ZIP er ikke kryptert.</p>
    <button type="button" className="secondary" disabled={busy||!selected.length||selected.length>50} onClick={previewAttachments}>Vis vedleggslisten</button>
    {attachmentPreview&&<>
     <p>{attachmentPreview.entries.length} vedlegg. Maksimalt 100 vedlegg, 10 MB per fil og 50 MB per pakke. Pakken inneholder mappen «vedlegg» og filen «manifest.json». Manifestet er en filoversikt som viser hvilket dokument og punkt hver fil hører til, og en kontrollsum for filinnholdet. Behold filoversikten sammen med vedleggene.</p>

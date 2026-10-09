@@ -27,7 +27,7 @@ export function inspectionAttachmentEntries(snapshots){
    deviationFileType({name:name||'fil',type,size:size||1});
    entries.push({documentId:row.id,kind,documentTitle:row.title||row.content?.title||row.definition?.category||EXTRACT_GROUPS[kind],revision:row.revision??row.number??null,projectId:row.project_id||null,fileId:file.id||String(entries.length+1),name:name||'fil',type,size,point,source,file});
   };
-  if(kind==='ruhs')for(const file of snapshot.files)add('private',file);
+  if(['ruhs','deviations'].includes(kind))for(const file of snapshot.files)add('private',file);
   if(kind==='rounds')for(const point of row.content.points||[])for(const file of row.content.answers?.[point.id]?.photos||[])add('embedded',file,point.title||point.id);
   if(kind==='runs')for(const point of row.definition.items||[])for(const file of row.answers?.[point]?.photos||[])add('project',file,point);
  }

@@ -5,7 +5,9 @@ import os from 'node:os';
 import {build} from 'vite';
 import react from '@vitejs/plugin-react';
 import {company,user,project} from './critical-kshms-ruh-pdf-check.mjs';
-import {sources,selection,fixtureRpc,context} from './critical-kshms-inspection-extract-check.mjs';
+import {sources,selection as baseSelection,fixtureRpc,context} from './critical-kshms-inspection-extract-check.mjs';
+import {deviationFixture} from './critical-kshms-deviation-extract-check.mjs';
+const deviationQA=Boolean(process.env.KSHMS_DEVIATION_QA);
 const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const {getDocument}=await import(process.env.KSHMS_PDFJS_PATH||'pdfjs-dist/legacy/build/pdf.mjs');
 const root=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'ks-extract-')),entry=path.join(temp,'entry.jsx');
@@ -19,9 +21,10 @@ let imageUrl='';window.URL.createObjectURL=()=> 'blob:qa-photo';window.URL.revok
 window.Image=class{set src(url){this.width=url.includes('logo')?400:500;this.height=url.includes('logo')?100:400;imageUrl=url;window.setTimeout(()=>this.onload?.(),0);}};
 window.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){},fillRect(){}});window.HTMLCanvasElement.prototype.toDataURL=()=>imageUrl.includes('logo')?logo:photo;
 let mode='',deferred=null,contextReads=0;const exports=[],calls=[],storage=[];
-const source=structuredClone(sources);source.sjas[0].content.task='Kontroller trykk og sperring. '.repeat(120)+'QA LANGTEKST SLUTT';
+const source=structuredClone(sources),fixture=deviationQA?deviationFixture(source):null,selection=fixture?[...baseSelection,...fixture.selected]:baseSelection;source.sjas[0].content.task='Kontroller trykk og sperring. '.repeat(120)+'QA LANGTEKST SLUTT';
 const original=JSON.stringify(source);
-const rpc=fixtureRpc({source,onCall:(name,args)=>calls.push({name,args})});
+const inner=fixture?.rpc||fixtureRpc({source});
+const rpc=(name,args)=>{calls.push({name,args});return inner(name,args);};
 window.__rpc=async(name,args)=>{if(name==='get_kshms_context'){contextReads++;if(mode==='role-final'&&contextReads===2)return {...context,manage:false};if(deferred&&contextReads===2)await deferred.promise;}return rpc(name,args);};
 window.__client={storage:{from:bucket=>({download:async object=>{storage.push({bucket,object});if(mode==='storage')return {data:null,error:{message:'denied'}};return {data:new window.Blob(['four'],{type:'image/png'}),error:null};}})}};
 window.__save=(name,bytes)=>exports.push({name,bytes:new Uint8Array(bytes)});
@@ -40,9 +43,10 @@ assert(button('Last ned samlet PDF').disabled);await check([...document.querySel
 assert(!button('Last ned samlet PDF').disabled);contextReads=0;await click('Last ned samlet PDF');assert.equal(exports.length,1);
 let pdf=await readPdf(exports[0]);for(const value of ['Manifest','Lagret signatur','Lagret revisjonssignatur','OPPRINNELIG hendelse','QA LANGTEKST SLUTT','Original.pdf','forventet effekt',...selection.map(r=>r.id)])assert(pdf.text.replace(/\s+/g,'').includes(value.replace(/\s+/g,'')),value);
 for(const value of ['token=','PRIVATE EMPLOYEE','private.png','ULAGRET FORSLAG','NYTT UPUBLISERT'])assert(!pdf.text.includes(value),value);
-assert(pdf.images>=8);assert(pdf.pages>=10);assert(storage.every(x=>x.bucket==='kshms-private'));fs.writeFileSync(path.join(output,'extract-all-eight-types.pdf'),exports[0].bytes);
+assert(pdf.images>=8);assert(pdf.pages>=10);assert(storage.every(x=>x.bucket==='kshms-private'));if(deviationQA)for(const value of ['Kvalitetsavvik med historikk','HMS-avvik med historikk','quality-Original.pdf','hms-Original.pdf'])assert(pdf.text.includes(value),value);
+fs.writeFileSync(path.join(output,deviationQA?'extract-with-quality-hms.pdf':'extract-all-eight-types.pdf'),exports[0].bytes);
 for(const failure of ['storage','role-final']){mode=failure;contextReads=0;await click('Last ned samlet PDF');assert.equal(exports.length,1);assert(document.querySelector('[role="alert"]'));}mode='';
-await click([...document.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')===`Fjern ${selection[0].title} fra uttrekket`)||[...document.querySelectorAll('li button')][0]);assert(button('Last ned samlet PDF').disabled);assert.equal(document.querySelectorAll('input:checked').length,7);
+await click([...document.querySelectorAll('button')].find(b=>b.getAttribute('aria-label')===`Fjern ${selection[0].title} fra uttrekket`)||[...document.querySelectorAll('li button')][0]);assert(button('Last ned samlet PDF').disabled);assert.equal(document.querySelectorAll('input:checked').length,selection.length-1);
 await check([...document.querySelectorAll('label')].find(l=>l.textContent.includes('Jeg har kontrollert omfanget')).querySelector('input'));contextReads=0;await click('Last ned samlet PDF');assert.equal(exports.length,2);pdf=await readPdf(exports[1]);assert(!pdf.text.includes('Firmaets lagrede fremgangsmåte'));fs.writeFileSync(path.join(output,'extract-without-routine.pdf'),exports[1].bytes);
 const defer=()=>{let resolve;return {promise:new Promise(r=>resolve=r),resolve};};
 for(const action of ['company','user','unmount']){

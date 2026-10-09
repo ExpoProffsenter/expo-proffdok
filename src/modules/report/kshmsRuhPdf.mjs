@@ -21,7 +21,12 @@ const fields=row=>[
 // are never rendered. Historical identity snapshots remain historical.
 export function ruhPdfDocument({case:row,events,files}){
  if(row?.category!=='ruh'||!row.id||!Array.isArray(events)||!Array.isArray(files))throw Error('RUH-dokumentasjonen kunne ikke bekreftes.');
- return {id:row.id,type:'RUH med historikk og vedlegg',title:row.title,fields:[['Dokumentbruk','Internt uttrekk. Vurder innhold og mottaker før du deler filen.'],...fields(row),['Historikk / vedlegg',`${events.length} historikkhendelser / ${files.length} lagrede vedlegg`]],blocks:[
+ return deviationPdfDocument({case:row,events,files});
+}
+
+export function deviationPdfDocument({case:row,events,files}){
+ if(!['quality','hms','ruh'].includes(row?.category)||!row.id||!Array.isArray(events)||!Array.isArray(files))throw Error('Avviksdokumentasjonen kunne ikke bekreftes.');
+ return {id:row.id,type:row.category==='ruh'?'RUH med historikk og vedlegg':`${row.category==='quality'?'Kvalitetsavvik':'HMS-avvik'} med historikk og vedlegg`,title:row.title,fields:[['Dokumentbruk','Internt uttrekk. Vurder innhold og mottaker før du deler filen.'],...fields(row),['Historikk / vedlegg',`${events.length} historikkhendelser / ${files.length} lagrede vedlegg`]],blocks:[
   ...files.map((file,i)=>({title:`Vedlegg ${i+1}: ${file.name}`,fields:[['Filtype / størrelse',`${file.mime_type} / ${Math.ceil(file.size_bytes/1024)} KB`],['Lagret tidspunkt',when(file.uploaded_at)],['Innhold',imageTypes.includes(file.mime_type)?'Lagret bilde, gjengitt nedenfor.':'Originalfilen følger ikke PDF-en. Åpne vedlegget i appen.']],photos:imageTypes.includes(file.mime_type)?[{file}]:[]})),
   ...[...events].reverse().map((event,i)=>({title:`Historikk ${i+1}: ${names[event.action]||event.action}`,fields:[['Utført av - lagret identitet',identityText(event.actor_identity,event.actor_id)],['Tidspunkt / hendelses-ID',`${when(event.created_at)} / ${event.id}`],...(event.action==='file'?[['Vedleggsnavn',event.snapshot.name],['Fil-ID / størrelse',`${event.snapshot.id} / ${Math.ceil(event.snapshot.size_bytes/1024)} KB`]]:fields(event.snapshot))],photos:[]}))
  ],closing:[['Avslutning',row.status==='closed'?'Lukking er lagret etter ansvarligs egen kontroll. Tidligere utgaver og eventuelle gjenåpninger står i historikken.':'Saken er ikke lukket. Dette uttrekket bekrefter ingen ferdig oppfølging.'],['Deling','Nedlasting sender ikke dokumentet eller endrer valget for prosjektrapport.']]};
@@ -72,10 +77,18 @@ export async function downloadRuhPdf({expected,rpc,companyId,userId,projectId=nu
 
 // Shared complete, read-only RUH snapshot for standalone and selected extracts.
 export async function readRuhPdfSnapshot({expected,rpc,companyId,projectId=null,isCurrent=()=>true}){
+ if(expected?.category!=='ruh')throw Error('Åpne en lagret RUH før PDF.');
+ return readDeviationPdfSnapshot({expected,rpc,companyId,projectId,isCurrent});
+}
+
+// Same exhaustive history and private-file checks for all three case types.
+// Standalone RUH entry points above retain their explicit RUH-only contract.
+export async function readDeviationPdfSnapshot({expected,rpc,companyId,projectId=null,isCurrent=()=>true}){
+ if(!expected?.id||expected.company_id!==companyId||!['quality','hms','ruh'].includes(expected.category))throw Error('Åpne et lagret avvik før uttrekk.');
   let cursor=null;const events=[],seen=new Set(),cursors=new Set();let row;
   do{
    const result=await rpc('kshms_deviation_detail',{p_company_id:companyId,p_id:expected.id,p_before:cursor?.before||null,p_before_id:cursor?.id||null});if(!isCurrent())return null;
-   if(result.case?.company_id!==companyId||result.case.id!==expected.id||result.case.category!=='ruh'||projectId&&result.case.project_id!==projectId||!sameRunValue(result.case,expected))throw Error('En nyere sak er lagret. Trykk «Oppdater sak» før PDF.');
+   if(result.case?.company_id!==companyId||result.case.id!==expected.id||result.case.category!==expected.category||projectId&&result.case.project_id!==projectId||!sameRunValue(result.case,expected))throw Error('En nyere sak er lagret. Trykk «Oppdater sak» før PDF.');
    row=result.case;if(!Array.isArray(result.events))throw Error('Historikken kunne ikke bekreftes.');
    for(const event of result.events){
     if(!event.id||seen.has(event.id)||event.company_id!==companyId||event.deviation_id!==row.id||!names[event.action]||!event.snapshot||event.action!=='file'&&(event.snapshot.id!==row.id||event.snapshot.company_id!==companyId))throw Error('Historikken er ufullstendig eller gjelder en annen sak. PDF er ikke laget.');
