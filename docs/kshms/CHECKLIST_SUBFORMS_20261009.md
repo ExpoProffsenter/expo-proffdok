@@ -34,7 +34,8 @@ Sandbox-migrasjon `20261009040633 kshms_checklist_subforms` erstatter sjekkliste
 - Kritisk modul og faktisk React: PASS for eksakt v3-valg, payload, response-loss/retry, publisert dependency/hash, uforanderlig prosjektkopi og eksisterende Ok/Avvik-editor.
 - Faktisk Sandbox rollback: **17 assertions PASS** for v1/v2, identisk republisering, parent/child-immutabilitet, syklus, manglende/arkivert child, ren utføringsform, faktisk selvstendig kontroll, full versjonsliste og ACL. Alle syntetiske rader rullet tilbake.
 - Faktisk jsPDF/PDF.js: fem uttrekk PASS. Child v3-ID/hash og utflatet punkt finnes i tom mal-PDF. A4-siden er tekstkontrollert, rendret med Poppler og visuelt kontrollert uten klipp eller overlapp.
-- Sandbox direkte: migrasjon finnes én gang, sentral-RPC authenticated=true/anon=false, privat snapshot authenticated=false og mailer `enabled=false`.
-- Full critical build, scope/docs-guard, diff-check, eksakt publisert tree, CI og Vercel føres i statusdokumentene etter publisering.
+- Sandbox direkte: begge migrasjoner finnes én gang, sentral-RPC authenticated=true/anon=false, privat snapshot authenticated=false og mailer `enabled=false`.
+- Full lokal Sandbox critical build, scope/docs-guard og diff-check PASS. Funksjonshead `6faf58df375ce12a4779f71fac98b1c2bfc5ce5e`, tree `2e8562f56150509669bc8635acda3800f3be3f14`; 20 blobber/tree eksakt. Core Safety `37883044933`, full critical jobb `113666839672` success. Vercel `dpl_JACGxacWsYSkCxcdKZGDAk8UK14F` READY på eksakt SHA/feature-alias og Sandbox-env.
+- Innlogget Preview etter reload: bevart demoøkt i én fane. Bunnledning v1 åpnet skrivefritt; velger og forklaring vises på begge punkter. Egen mal er utelatt og ingen andre child-maler finnes. Dialog lukket uten lagring, publisering eller gjennomføringsendring.
 
 Dette er utviklerbevis, ikke Kenneths TEST OK. Innlogget Preview-prøve skal bruke eksisterende ufarlige testmaler; ikke opprett, fullfør eller signer en reell kontroll bare for testdata. Faktiske private filer, mobil/flere brukere og tidligere separate vedleggsprøver består. Neste uavhengige B/C-punkt er påminnelser, deretter kildeoppdatering. HR er ikke startet.

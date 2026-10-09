@@ -4,7 +4,7 @@
 - Sandbox-migrasjonene `20261009040633` og `20261009041152` anvendt. Rollback-script: **17 assertions PASS**, alle syntetiske data rullet tilbake. Child v1/v2, parent v1/v2, identisk hashgjenbruk, uforanderlighet, syklus, manglende/arkivert child, ren utføringsform, faktisk selvstendig kontroll, alle versjoner og private/public ACL kontrollert.
 - Faktisk jsPDF/PDF.js: fem dokumenter PASS. Mal-PDF viser versjonsfast child v3-ID/hash og utflatet child-punkt. Poppler tekst/sidekontroll og visuell A4-kontroll PASS uten klipp/overlapp.
 - Direkte Sandbox-kontroll: migration_count=1, state authenticated=true/anon=false, privat snapshot authenticated=false, mailer enabled=false. Supabase-advisors har ingen nytt funn knyttet til de nye private funksjonene; eksisterende prosjektfunn består.
-- Full critical build, scope/docs-guard, diff-check og publiseringsbevis føres etter endelig kjøring. Dette er utviklerbevis, ikke bruker-TEST OK. [Detaljer](CHECKLIST_SUBFORMS_20261009.md).
+- Full lokal Sandbox critical build, scope/docs-guard og diff-check PASS. Funksjonshead `6faf58df375ce12a4779f71fac98b1c2bfc5ce5e`, tree `2e8562f56150509669bc8635acda3800f3be3f14`; 20 blobber/tree eksakt verifisert. Core Safety `37883044933`, jobb `113666839672`, success. Vercel `dpl_JACGxacWsYSkCxcdKZGDAk8UK14F` READY på eksakt SHA/feature-alias/Sandbox-env. Innlogget reload/read-only versjonsvelger PASS, dialog lukket uten dataendring. Dette er utviklerbevis, ikke bruker-TEST OK. [Detaljer](CHECKLIST_SUBFORMS_20261009.md).
 
 ---
 

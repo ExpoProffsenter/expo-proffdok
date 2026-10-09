@@ -1,6 +1,6 @@
 ## Ny kort Preview-prøve – versjonert underskjema
 
-Dette gjelder bare nye underskjema. Tidligere TEST OK 9. oktober kl. 00:59 / 01:29 / 01:55 / 02:28 beholdes og skal ikke gjentas.
+Dette gjelder bare nye underskjema. Funksjonshead `6faf58df375ce12a4779f71fac98b1c2bfc5ce5e` er grønn full CI og READY på fast Sandbox Preview. Utviklers innloggede reload bekreftet velger/forklaring på begge punktene i Bunnledning v1 uten endring eller lagring. Tidligere TEST OK 9. oktober kl. 00:59 / 01:29 / 01:55 / 02:28 beholdes og skal ikke gjentas.
 
 1. I Sjekklistesentral åpner du en ufarlig testmal eller lager et tydelig testutkast. Etter ett punkt velger du en allerede publisert testmal/versjon under **Underskjema etter sjekkpunkt …**. Listen skal vise navn, `vN` og fag. Ikke bruk eller endre en reell kontrollmal bare for prøven.
 2. Lagre/publiser testutgaven. Åpne **Publisert sjekklistemal** og last ned PDF. Den skal vise child-navn, eksakt versjon/ID/hash og child-punktet med `Underskjema`-prefiks. Senere child-endring skal ikke endre den gamle parent-PDF-en.

@@ -1,6 +1,6 @@
 ## Versjonerte underskjema – gjeldende avgrensede B-punkt
 
-Sjekklistesentral kan velge en eksakt publisert child-versjon per rotpunkt. Serveren lagrer rot, utflatet utføringsliste og uforanderlig dependency-ID/hash/innhold; samme-firma/aktiv-mal, syklus og 100-punktsgrense håndheves. Eksisterende prosjekt- og selvstendige kontroller fortsetter på samme snapshotmodell. Sandbox-migrasjoner `20261009040633` + `20261009041152`; 17 rollback-assertions, faktisk React og faktisk/visuell PDF PASS. Dette er utviklerbevis, ikke TEST OK. Neste uavhengige B/C er påminnelser, deretter kildeoppdatering; HR er ikke startet. [Scope/QA](CHECKLIST_SUBFORMS_20261009.md).
+Sjekklistesentral kan velge en eksakt publisert child-versjon per rotpunkt. Serveren lagrer rot, utflatet utføringsliste og uforanderlig dependency-ID/hash/innhold; samme-firma/aktiv-mal, syklus og 100-punktsgrense håndheves. Eksisterende prosjekt- og selvstendige kontroller fortsetter på samme snapshotmodell. Sandbox-migrasjoner `20261009040633` + `20261009041152`; 17 rollback-assertions, faktisk React og faktisk/visuell PDF PASS. Funksjonshead `6faf58df375ce12a4779f71fac98b1c2bfc5ce5e`, tree `2e8562f56150509669bc8635acda3800f3be3f14`; grønn full CI og READY `dpl_JACGxacWsYSkCxcdKZGDAk8UK14F`. Innlogget read-only UI etter reload PASS uten dataendring. Dette er utviklerbevis, ikke TEST OK. Neste uavhengige B/C er påminnelser, deretter kildeoppdatering; HR er ikke startet. [Scope/QA](CHECKLIST_SUBFORMS_20261009.md).
 
 ---
 

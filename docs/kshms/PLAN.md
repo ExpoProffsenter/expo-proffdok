@@ -1,6 +1,6 @@
 ## Versjonerte underskjema – levert utviklerscope
 
-Eksakt publisert child-versjon per rotpunkt, syklus-/tilgangskontroll og uforanderlig dependency-snapshot er implementert i feature/Sandbox. Prosjekt- og selvstendig gjennomføring bruker samme ferdig utflatede versjonssnapshot. Sandbox-migrasjoner `20261009040633` + `20261009041152`, 17 rollback-assertions, faktisk React og faktisk/visuell PDF PASS. Bruker-TEST OK gjenstår; tidligere godkjenninger består. Neste uavhengige C-punkt er påminnelser, deretter kildeoppdatering. HR starter ikke nå. [Detaljer](CHECKLIST_SUBFORMS_20261009.md).
+Eksakt publisert child-versjon per rotpunkt, syklus-/tilgangskontroll og uforanderlig dependency-snapshot er implementert i feature/Sandbox. Prosjekt- og selvstendig gjennomføring bruker samme ferdig utflatede versjonssnapshot. Sandbox-migrasjoner `20261009040633` + `20261009041152`, 17 rollback-assertions, faktisk React og faktisk/visuell PDF PASS. `6faf58df` / tree `2e8562f5` er grønn full CI og READY Sandbox; innlogget read-only UI PASS. Bruker-TEST OK gjenstår; tidligere godkjenninger består. Neste uavhengige C-punkt er påminnelser, deretter kildeoppdatering. HR starter ikke nå. [Detaljer](CHECKLIST_SUBFORMS_20261009.md).
 
 ---
 
