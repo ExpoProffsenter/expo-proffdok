@@ -26,6 +26,9 @@ do $$declare c uuid:=gen_random_uuid();b uuid:=gen_random_uuid();u uuid;k text;b
  end loop;
  update public.profiles set system_role='systemadmin',is_admin=true where id=current_setting('hr.qa.system')::uuid;
  insert into public.company_module_access(company_id,module_key,enabled) values(c,'kshms',true);
+ -- Existing relationship scenarios now run behind explicit module entitlements.
+ insert into public.company_module_access(company_id,module_key,enabled) values(c,'hr',true),(b,'hr',true);
+ insert into hr_private.module_access(company_id,user_id,enabled) select company_id,user_id,true from public.sales_company_memberships where company_id in (c,b);
  insert into public.kshms_member_access(company_id,user_id,role,enabled,changed_by) values(c,current_setting('hr.qa.ks')::uuid,'responsible',true,current_setting('hr.qa.admin')::uuid);
 end$$;
 -- Everything below is isolated, synthetic and rolled back. No HTTP/browser login.

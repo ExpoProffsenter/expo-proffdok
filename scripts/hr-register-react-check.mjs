@@ -46,7 +46,7 @@ try{
   const write=async(label,value)=>{const input=field(label);await act(async()=>{const proto=input.tagName==='SELECT'?window.HTMLSelectElement.prototype:input.tagName==='TEXTAREA'?window.HTMLTextAreaElement.prototype:window.HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(input,value);input.dispatchEvent(new window.Event(input.tagName==='SELECT'?'change':'input',{bubbles:true}));});};
   const tick=async text=>act(async()=>{const label=[...window.document.querySelectorAll('label')].find(l=>l.textContent.includes(text));assert(label,text);label.querySelector('input[type=checkbox]').click();});
   const submit=async text=>act(async()=>button(text).closest('form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true})));
-  await act(async()=>window.__render('help',{isSystemAdmin:true,authUser:{id:'admin'}}));
+  await act(async()=>window.__render('help',{isSystemAdmin:true,authUser:{id:'admin'},helpAccess:{userId:'admin',isSystemAdmin:true,isCompanyAdmin:true,moduleKeys:['projects','sales','store_offers']},kshmsContext:{user_id:'admin',enabled:true},hrContext:{user_id:'admin',available:true}}));
   const helpRoot=title=>buttons().find(b=>b.querySelector('b')?.textContent===title);
   assert.equal(buttons().filter(b=>b.querySelector('b')?.textContent==='KS/HMS').length,1);assert.equal(buttons().filter(b=>b.querySelector('b')?.textContent==='HR').length,1);
   assert(!buttons().some(b=>/^KS\/HMS –/.test(b.querySelector('b')?.textContent||'')));assert.equal(window.document.querySelectorAll('.help-topic-chapter').length,0);

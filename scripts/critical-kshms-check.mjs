@@ -1,3 +1,4 @@
+import './critical-people-module-access-check.mjs';
 import './critical-hr-foundation-check.mjs';
 import './critical-hr-navigation-check.mjs';
 import './critical-hr-purge-check.mjs';

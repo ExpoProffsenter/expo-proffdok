@@ -20,6 +20,8 @@ import { setManagedProCatalogNetPriceAccess } from "./proUserAccessClient.js";
 
 import { readCordelAccess, setCordelAccess } from "../cordel/cordelAccess.js";
 
+import PeopleModuleAccess from './PeopleModuleAccess.jsx';
+
 const MOUNT_ATTR = "data-systemadmin-unified-access";
 const INTERNAL_COMMERCE_COMPANIES = new Set([
   "ringside rorleggerbedrift as",
@@ -182,10 +184,12 @@ function UnifiedAccessControls({ user, onReload }) {
         </div>
         {targetIsSystemAdmin ? (
           <small style={{ color: "#087f88", fontWeight: 800 }}>
-            Systemadministrator har alltid alle tilganger
+            Systemadmin har ordinære hovedmoduler. KS/HMS og HR følger firma og tilgang.
           </small>
         ) : null}
       </div>
+
+      <PeopleModuleAccess companyId={user.company_scope_id} userId={user.user_id} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 8, marginTop: 10 }}>
         {MODULE_CATALOG.map((module) => {

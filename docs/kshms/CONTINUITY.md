@@ -1,5 +1,10 @@
 ## Hjelp: håndbok først og anbefalt HR-bruk – 9. oktober 2026
 
+## Hjelp og moduladgang på brukerkort – 9. oktober 2026
+
+Alle hjelpepunkter har ikon, og rekkefølgen følger arbeidsflyten. KS/HMS og HR filtreres med egne ferske rettigheter; øvrig modulhjelp følger også tildeling. Systemadmin aktiverer KS/HMS/HR i firmaoversikten; firmaadmin/systemadmin gir individuelle valg på eksisterende brukerkort. HR-modultilgang gir ikke automatisk individuelt HR-innsyn. **38 nye faktiske SQL assertions PASS**, berørte H1/H2/H3 **75/16/61 PASS**, faktisk React/DOM og full Sandbox critical/build PASS. Eksisterende 1 HR-firma/1 medarbeider beholdt; innhold stengt og restore quarantined. Bare feature/Sandbox, ingen mail/merge/Production. [Scope, vei til tilgang og bevis](HELP_ACCESS_20261009.md). Publisert eksakt SHA, CI og Preview føres i draft PR #216.
+
+
 Kenneths avgrensede rettelser: **Bygg firmaets håndbok** er første KS/HMS-kapittel; **Anbefalt bruk** under HR har tre konkrete råd. Faktisk React-prøve for første kapittel, bevart kildeforslagsflyt og ikke-tom HR-anbefaling PASS; eksisterende HR/Hjelp-critical PASS. Faktisk innlogget Skynett-Hjelp PASS på kode-SHA `5b6bcfa793f5fea4e4202057aa119bdc2a768d2b`: håndbok først/åpning og tre synlige HR-råd. Core Safety 37986453053 / jobb 114009533221 SUCCESS; Vercel `dpl_EV4CySfApys2RqoFbJ7wVVPLeZG4` READY, eksakt SHA og Sandbox-binding. Originale skjermbilder lagret. Bare hjelpeinnhold/prøve/status endret. HR-portene og neste manifest/restore-scope består. Tidligere tester/TEST OK beholdes. [Scope, QA og sluttbevis](HELP_ORDER_20261009.md).
 
 ## Faktisk Hjelp-Preview kontrollert – 9. oktober 2026

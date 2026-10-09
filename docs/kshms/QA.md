@@ -1,5 +1,10 @@
 ## Faktisk Hjelp-Preview kontrollert – 9. oktober 2026
 
+## Hjelp og moduladgang på brukerkort – 9. oktober 2026
+
+Alle hjelpepunkter har ikon, og rekkefølgen følger arbeidsflyten. KS/HMS og HR filtreres med egne ferske rettigheter; øvrig modulhjelp følger også tildeling. Systemadmin aktiverer KS/HMS/HR i firmaoversikten; firmaadmin/systemadmin gir individuelle valg på eksisterende brukerkort. HR-modultilgang gir ikke automatisk individuelt HR-innsyn. **38 nye faktiske SQL assertions PASS**, berørte H1/H2/H3 **75/16/61 PASS**, faktisk React/DOM og full Sandbox critical/build PASS. Eksisterende 1 HR-firma/1 medarbeider beholdt; innhold stengt og restore quarantined. Bare feature/Sandbox, ingen mail/merge/Production. [Scope, vei til tilgang og bevis](HELP_ACCESS_20261009.md). Publisert eksakt SHA, CI og Preview føres i draft PR #216.
+
+
 Ett KS/HMS-punkt med 11 kapitler og ett HR-punkt, riktig åpning/bytte/innhold og oppdateringsdato **09.10.2026** sett i én eksisterende innlogget Skynett-fane. Ingen HR-data endret. Kode-SHA `dd511f7577baa145836bfdb23bdcae283f1fa866`; Core Safety 37985178018 / jobb 114005274294 SUCCESS; Vercel `dpl_Dyv4mSiaEWNEi18BbidjqhXCcerD` READY Preview på eksakt SHA og Sandbox-binding. [Originalt skjermbevis og H3-kontrakt](HR_PURGE_FILES_20261009.md#faktisk-innlogget-hjelp-kontroll-etter-publisering). Historiske tester/TEST OK beholdes. Sensitivt HR-innhold fortsatt stengt; uavhengig manifest og full isolert restore gjenstår.
 
 ## H3 og samlet Hjelp – 9. oktober 2026
