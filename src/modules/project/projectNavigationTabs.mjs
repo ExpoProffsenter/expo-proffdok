@@ -9,6 +9,7 @@ export function createGlobalAppTabs({
   isCompanyAdminUser = false,
   canUseAdminProjectSync = false,
   canUseKshms = false,
+  canUseHr = false,
 } = {}) {
   return [
     ["prosjekt", "Startside"],
@@ -18,6 +19,7 @@ export function createGlobalAppTabs({
     ...(isCompanyAdminUser ? [["firmaadmin", "Firma"]] : []),
     ["prosjektliste", "Prosjektliste"],
     ...(canUseKshms ? [["kshms", "KS/HMS"]] : []),
+    ...(canUseHr ? [["hr", "HR"]] : []),
     ["hjelp", "Hjelp"],
     ...(canUseAdminProjectSync ? [["admin", "Systemadmin"]] : []),
   ];

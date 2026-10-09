@@ -1,5 +1,6 @@
 import CompanyCustomerPicker from "./modules/customers/CompanyCustomerPicker.jsx";
 import { useKshmsAccess } from './modules/kshms/kshmsAccess.js';
+import { useHrAccess } from './modules/hr/hrAccess.js';
 import { useKshmsProjectReport, KshmsProjectReportChoice, KshmsProjectReportDialog } from './modules/kshms/KshmsProjectReport.jsx';
 // Expo ProffDok – main application entry. Historical phase/deploy notes are preserved in Git history.
 // FASE 28C1: Startside viser konkrete prosjekter som krever oppfølging via projectListTools.
@@ -80,6 +81,7 @@ const import_supabase_js = { createClient };
 const import_lucide_react = { Camera, FileText, Plus, Trash2, Download, Building2, ClipboardCheck, BadgeCheck };
 const import_jsx_runtime = { jsx, jsxs, Fragment };
 const KshmsModule = React.lazy(() => import('./modules/kshms/KshmsModule.jsx'));
+const HrModule = React.lazy(() => import('./modules/hr/HrModule.jsx'));
 const KshmsTasks = React.lazy(() => import('./modules/kshms/KshmsTasks.jsx'));
 const KshmsActivation = React.lazy(() => import('./modules/kshms/KshmsActivation.jsx'));
   var supabase = getAppSupabaseClient() || (0, import_supabase_js.createClient)(
@@ -838,6 +840,7 @@ const KshmsActivation = React.lazy(() => import('./modules/kshms/KshmsActivation
     const [mobileCreatingProject, setMobileCreatingProject] = (0, import_react.useState)(false);
     const [authUser, setAuthUser] = (0, import_react.useState)(null);
     const kshmsContext = useKshmsAccess(authUser?.id);
+    const hrContext = useHrAccess(authUser?.id);
     const [openedKshmsScope, setOpenedKshmsScope] = (0, import_react.useState)(null);
     const [kshmsDeviationRequest, setKshmsDeviationRequest] = (0, import_react.useState)(null);
     const kshmsScopeKey = kshmsContext?.enabled ? `${kshmsContext.user_id}:${kshmsContext.company_id}` : null;
@@ -2067,6 +2070,7 @@ ${skippedCount} eksisterende punkter ble hoppet over.` : ""}` : "Alle valgte sje
     const globalTabs = createGlobalAppTabs({
       isCompanyAdminUser,
       canUseKshms: Boolean(kshmsContext?.enabled),
+      canUseHr: Boolean(hrContext?.available && hrContext.user_id === authUser?.id),
       canUseAdminProjectSync
     });
     const tabs = hasActiveProjectWorkspace ? projectTabs : globalTabs;
@@ -6988,6 +6992,8 @@ ${appLink}`;
                 ] }),
         kshmsContext?.enabled && (tab === "kshms" || openedKshmsScope === kshmsScopeKey) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { hidden: tab !== "kshms", children: (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: tab === "kshms" ? "Henter KS/HMS …" : null, children: (0, import_jsx_runtime.jsx)(KshmsModule, { context: kshmsContext, deviationRequest: kshmsDeviationRequest }, kshmsScopeKey) }) }),
         tab === "kshms" && !kshmsContext?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { role: "status", children: "KS/HMS er ikke tilgjengelig i aktivt firma. Kontroller arbeidsprofil og modulgrant hos firmaadmin." }),
+        tab === "hr" && hrContext?.available && hrContext.user_id === authUser?.id && !hasActiveProjectWorkspace && (0, import_jsx_runtime.jsx)(React.Suspense, { fallback: "Henter HR …", children: (0, import_jsx_runtime.jsx)(HrModule, { context: hrContext }, `${hrContext.user_id}:${hrContext.company_id}:${hrContext.administer}`) }),
+        tab === "hr" && !hrContext?.available && (0, import_jsx_runtime.jsx)("p", { role: "status", children: "Kontrollerer HR-tilgangen. Hvis registeret ikke åpnes, kontroller aktivt firma eller kontakt firmaadmin." }),
                 tab === "hjelp" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(HelpCenter, { isAdmin: isAdminUser, isCompanyAdmin: isCompanyAdminUser, isSystemAdmin: isSystemAdminUser, termsAccepted, termsAcceptanceRecord, authUser, formatTermsAcceptedAt }),
         tab === "admin" && canUseAdminProjectSync && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Section, { title: "Systemadmin", icon: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_lucide_react.BadgeCheck, {}), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "note", children: isAdminUser ? "Her kan systemadministrator godkjenne brukere, vedlikeholde Produktmaster og synke aktive prosjekter mot Produktmaster. Låste prosjekter røres ikke." : "Her kan du synke åpnet prosjekt mot Produktmaster." }),

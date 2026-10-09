@@ -1,3 +1,5 @@
+import {kshmsNavigationGroups} from '../src/modules/kshms/kshmsNavigation.mjs';
+const actualMenu=kshmsNavigationGroups({canManage:true}).flatMap(group=>group.items);
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { blankChecklist,checklistContent,checklistDraftKey,persistChecklistDraft,readChecklistDraft,sameChecklistContent,saveChecklistTemplate,appendProjectChecklist,projectChecklistTemplate,importPublishedChecklist } from '../src/modules/kshms/kshmsChecklists.mjs';
@@ -73,7 +75,7 @@ assert(pickers[0]>panels[1]&&pickers[0]<checklistPanel&&pickers[1]>checklistPane
 assert(main.slice(panels[1],pickers[0]).includes('!isSimpleOrderProject(project)'),'General orders exposed equipment intake');
 assert(main.slice(checklistPanel,pickers[1]).includes('isSimpleOrderProject(project) && authUser'),'General orders need intake directly in Sjekklister');
 assert(main.includes('...firmChecklistTemplate'),'Imported copies omitted from checklist/progress/report');
-const central=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(central.includes("['checklists','Sjekklistesentral']")&&central.includes("screen==='checklists'||checklistsOpened"));
+const central=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(central.includes('<KshmsNavigation screen={screen} canManage={canManage}')&&actualMenu.some(([key,label])=>key==='checklists'&&label==='Sjekklistesentral')&&central.includes("screen==='checklists'||checklistsOpened"));
 const migration=fs.readFileSync('supabase/migrations/20261009040633_kshms_checklist_subforms.sql','utf8');
 for(const needle of ['checklist_snapshot_contains_template','checklist_point_uuid','root_points','dependencies','subform_version_id','jsonb_array_length(flat_points)>100',"revoke all on function kshms_private.checklist_content"])assert(migration.includes(needle),`Missing subform guard: ${needle}`);
 const executionShape=fs.readFileSync('supabase/migrations/20261009041152_kshms_checklist_subform_execution_shape.sql','utf8');assert(executionShape.includes("point-'subform_version_id'"),'Dependency reference leaked into execution point');

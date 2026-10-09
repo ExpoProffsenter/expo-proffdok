@@ -1,3 +1,5 @@
+import {kshmsNavigationGroups} from '../src/modules/kshms/kshmsNavigation.mjs';
+const actualMenu=kshmsNavigationGroups({canManage:true}).flatMap(group=>group.items);
 import assert from 'node:assert/strict';
 import './critical-kshms-sja-pdf-check.mjs';
 import fs from 'node:fs';
@@ -58,7 +60,7 @@ persistSjaDraft(storage,user,company,projectEditor,projectId);assert.deepEqual(r
 let projectSent;const projectRpc=async(name,args)=>{if(name==='kshms_sja_command'){projectSent=args;return {sja:{revision:1}};}return {context:{company_id:company,user_id:user,enabled:true},sja:{id:projectEditor.id,company_id:company,project_id:projectId,revision:1,status:'draft',content:sjaContent(content)}};};
 await saveSja({companyId:company,userId:user,editor:projectEditor,action:'save',rpc:projectRpc});assert.equal(projectSent.p_payload.project_id,projectId);
 await assert.rejects(saveSja({companyId:company,userId:user,editor:projectEditor,action:'save',rpc:async(name,args)=>name==='kshms_sja_command'?projectRpc(name,args):{...(await projectRpc(name,args)),sja:{...(await projectRpc(name,args)).sja,project_id:crypto.randomUUID()}}}),/Prosjektkoblingen/);
-const module=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(module.includes("['sja','SJA']")&&module.includes("screen==='sja'||sjaOpened")&&module.includes("active={screen==='sja'}"));
+const module=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(module.includes('<KshmsNavigation screen={screen} canManage={canManage}')&&actualMenu.some(([key,label])=>key==='sja'&&label==='SJA')&&module.includes("screen==='sja'||sjaOpened")&&module.includes("active={screen==='sja'}"));
 const view=fs.readFileSync('src/modules/kshms/KshmsSja.jsx','utf8');assert(view.includes('editor && active'));assert(view.indexOf('className="ks-field-hint" id=')<view.indexOf('{multiline ? <textarea'),'Hints moved below the fields');assert(view.includes('Jeg har sammenlignet – fortsett med min kladd'));
 assert(view.includes('data-sja-field="photos"')&&view.includes('prepareKshmsPhoto'),'SJA photo handler is not mounted');
 const migration=fs.readFileSync('supabase/migrations/20261009022000_kshms_sja_photos.sql','utf8');assert(migration.includes("jsonb_build_object('photos',rows_data)")&&migration.includes('>3')&&migration.includes('data:image/jpeg;base64'));for(const forbidden of [/^\s*create\s+table/im,/^\s*alter\s+table/im,/^\s*create\s+policy/im,/storage\./i])assert(!forbidden.test(migration),'SJA photo migration expanded database scope');

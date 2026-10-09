@@ -1,3 +1,11 @@
+## HR-register og smartere KS/HMS-meny – 9. oktober 2026
+
+Miljømål **BEGGE**, levering bare feature/Preview/Sandbox, draft PR #216. H2 gir eget HR-hovedvalg med firmaadmins medarbeider-/leder-/leserregister og medarbeiderens Mine oppfølginger. HR har fortsatt ingen samtale-/fraværsinnhold, filer eller eksport; full innholdspurge/restore må leveres før sensitivt innhold åpnes. Ingen firma aktivert av leveransen. KS/HMS-menyen er gruppert i Daglig arbeid, Mine rutiner og Forvaltning; eksisterende faner, snarveier og utkastbevaring beholdes.
+
+**16 nye faktiske Sandbox-assertions PASS**, faktisk HR/meny-React og berørt håndbok/kildeforslag-React PASS, permanent hook/tilgang/revisjon/late-response-prøve og full critical build PASS. Fem HR-FK-indekser forbedrer slettestien. Skynettleseren fungerer igjen; faktisk ny layout etter publisering og eksakt SHA/CI/Preview føres i PR #216. Tidligere Kenneth TEST OK og B/C/PDF/ZIP-bevis beholdes uten ny obligatorisk omtest. Ingen mail/merge/Production. Neste: privat fil-/full slettekontrakt. [Scope og QA](../kshms/HR_UI_MENU_20261009.md).
+
+---
+
 ## HR H1 – isolert tilgangsregister
 
 Fem smale authenticated RPC-er bruker privat schema med fire RLS-tabeller og fem stengte hjelpere. HR har egen firmainnstilling; fersk arbeidsprofil/medlemskap/profil og medarbeider-/leder-/leserrelasjoner gir innsyn uten KS-/supportbypass. Firmalås og forventet revisjon beskytter endringer. Fratredelse sletter register/grants og rydder egne leder-/leserrelasjoner hos andre; minimal separat slettesperre hindrer reaktivering. Ingen innholds-/versjons-/kladd-/fil-/eksport-API eller HR-meny finnes ennå. Ny hr-private er privat og tom uten klientpolicy; API-purge/restore må leveres før filer åpnes. Den nye flyktige transporttjenesten er foreløpig frakoblet React/global events. 75 Sandbox-assertions, permanent runtime og byteidentisk funksjonsreadback PASS. [Scope og neste gate](../kshms/HR_FOUNDATION_20261009.md). KS-kode/roller/worker og hovednavigasjon er uendret.

@@ -1,6 +1,6 @@
 # KS/HMS – gjeldende samlet status
 
-Oppdatert 9. oktober 2026 etter HR H1-sikkerhetsfundamentet og tidligere B/C-sluttkontroll. [Sluttkontroll](BC_CLOSEOUT_20261009.md). Denne oversikten erstatter de historiske fortsettelsespunktene. [Tidligere oversikt](archive/OVERSIKT_before_BC_REVIEW_20261009.md) er bevart; [PLAN](PLAN.md) har vedtatt omfang og [CONTINUITY](CONTINUITY.md) har leveringshistorikk.
+Oppdatert 9. oktober 2026 etter HR H2-registerflaten, gruppert KS/HMS-meny og tidligere B/C-sluttkontroll. [Sluttkontroll](BC_CLOSEOUT_20261009.md). Denne oversikten erstatter de historiske fortsettelsespunktene. [Tidligere oversikt](archive/OVERSIKT_before_BC_REVIEW_20261009.md) er bevart; [PLAN](PLAN.md) har vedtatt omfang og [CONTINUITY](CONTINUITY.md) har leveringshistorikk.
 
 KS/HMS er utviklet på **feat-kshms-foundation**, draft PR **#216**, mot egen Sandbox. Modulen er ikke satt i produksjon. Miljømål er **BEGGE**; merge, Production-verifisering og main → demo følger først ved senere godkjent release. [Samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe).
 
@@ -12,7 +12,7 @@ KS/HMS er utviklet på **feat-kshms-foundation**, draft PR **#216**, mot egen Sa
 | A2 – rutineinnhold | 73 selvstendige forslag med sporbar håndtering av 121 innholdstemaer fra begge håndbøkene, seks hovedkapitler og faste rutinenumre. | Konkret firmatilpasning og faglig vurdering. Temadekning er ikke godkjenning av alle spesialtilfeller. |
 | B – utførelse | Sjekklistesentral, prosjekt-/selvstendige kontroller, versjonerte underskjema, Avvik/RUH, SJA, vernerunder og 5×5 med eget ansvar/fullføring/signering. SJA- og risikobilder inngår i snapshot/PDF/ZIP. | Faktisk fil-/mobil-/kamerabevis og separate samtidige brukerøkter. Firmamalene er status/kommentar/bilder; tall/dato finnes i faste skjemaer. Generell skjemabygger er ikke et nytt obligatorisk krav. |
 | C – varsler og rapporter | Seks typer appoppgaver/privat tildelingskø, fristmerker, styrte avvik/RUH-påminnelser, håndbokrevisjonspåminnelser og oppfølging av ufullførte vernerunder, risiko, SJA og lesebekreftelser. Kildeoppdateringsoversikt og eksplisitt sammenligning/vurdering. Egen PDF, valgt prosjektrapport, ti grupper i samlet PDF og bekreftet ZIP/manifest. | Faktisk e-postlevering/aktivering ved release. HR/opplæringsbevis inngår ikke i uttrekket; full tilsynsdekning er ikke erklært. |
-| D – HR og stoffkartotek | Felles personalrutiner og HR H1-backend: medarbeider/leder/leser, fersk tilgang og sletting av register. 75 Sandbox-assertions PASS; ingen firma aktivert, ingen ny HR-brukerflate. | HR-registerets brukerflate, private filer/full innholdspurge/restore, kompetansebevis/utløp, medarbeidersamtaler og sykefravær. Valgfritt stoffkartotek. [Avklart HR-scope](HR_SCOPE_20261008.md). |
+| D – HR og stoffkartotek | Felles personalrutiner og HR H1-backend: medarbeider/leder/leser, fersk tilgang og sletting av register. H2 har eget HR-register/Mine oppfølginger. H1 75 og H2 16 Sandbox-assertions PASS; ingen firma aktivert. | Private filer/full innholdspurge/restore, kompetansebevis/utløp, medarbeidersamtaler og sykefravær. Valgfritt stoffkartotek. [Avklart HR-scope](HR_SCOPE_20261008.md). |
 | E – pilot og drift | Løpende SQL-/React-/critical-QA, flere innloggede desktop-/PDF-/ZIP-delprøver og bruker-TEST OK. | Faktiske filer/mobil/flere økter, representativ belastningstest/restore, full pilot, samlet releasegodkjenning, Production-verifisering og main → demo. Supportmodus etter pilot. |
 
 ## Samlet utviklerkontroll
@@ -36,7 +36,7 @@ Disse skal ikke gjentas uten konkret feil eller relevant regresjon. Utviklerbevi
 
 ## E-post og innlogget test
 
-Appoppgavene virker med e-post deaktivert. Cron finnes, men Sandbox-transport er direkte kontrollert **enabled=false**. Kenneth autoriserte én kontrollert test til sin valgte arbeidsadresse 9. oktober kl. 17:29. Testen er **ikke sendt**: skynettverktøyet avviser fortsatt økten med native-credential-state-feil. Ingen browser-PASS eller ekte levering påstås. Én fane og lukking av popup gjelder når økten er tilgjengelig.
+Appoppgavene virker med e-post deaktivert. Cron finnes, men Sandbox-transport er direkte kontrollert **enabled=false**. Kenneth autoriserte én kontrollert test til sin valgte arbeidsadresse 9. oktober kl. 17:29. Testen er **ikke sendt**. Skynettleseren fungerer igjen i én eksisterende innlogget fane; gammel app ble oppdatert med ordinær reload uten ny innlogging. Ny meny-/HR-layout kontrolleres etter publisering, med eksakt resultat i draft PR #216. Dette er ikke e-post-/mobil-/flerbruker-/filbevis. Én fane og lukking av popup gjelder fortsatt.
 
 KS/HMS-varsler og påminnelser skal **aktiveres og verifiseres ved senere godkjent produksjonssetting**, med eksisterende Resend, riktig origin og mottaker-/tilgangskontroll. Generell sending er fortsatt ikke aktivert eller bestilt nå.
 
@@ -44,7 +44,7 @@ KS/HMS-varsler og påminnelser skal **aktiveres og verifiseres ved senere godkje
 
 Samlet B/C-utviklerreview og driftsvurdering er gjennomført. [Sluttstatus og konkrete restpunkter](BC_CLOSEOUT_20261009.md). Ingen ny runde med like tester eller nye generelle funksjonskrav.
 
-1. [HR H1 levert](HR_FOUNDATION_20261009.md). Neste: eget HR-hovedvalg/register og Mine oppfølginger, deretter privat fil-/innholdspurge og restore-gate før sensitivt innhold. [Avklart scope](HR_SCOPE_20261008.md) beholdes.
+1. [HR H1](HR_FOUNDATION_20261009.md) og [H2-register/meny](HR_UI_MENU_20261009.md) levert. Neste: privat fil-/full innholdspurge og restore-gate før sensitivt innhold. [Avklart scope](HR_SCOPE_20261008.md) beholdes.
 2. Før større utrulling: smal håndbok-/malhistorikk, store eksporter og representativ isolert belastningstest/restore etter [CAPACITY](CAPACITY.md).
-3. Agenten følger opp faktiske filer/mobil/flere økter og den ene testmailen når innlogget runtime fungerer. Tidligere TEST OK beholdes.
+3. Agenten følger opp faktiske filer/mobil/flere økter og den ene testmailen i fungerende innlogget runtime, uten å gjenåpne B/C-gjennomgangen. Tidligere TEST OK beholdes.
 4. Ved godkjent release: faktisk e-postaktivering/mottak, Production-verifisering og kontrollert main → demo. Grønn build alene erklærer ikke hele KS/HMS ferdig.

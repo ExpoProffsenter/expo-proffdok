@@ -1,3 +1,5 @@
+import {kshmsNavigationGroups} from '../src/modules/kshms/kshmsNavigation.mjs';
+const actualMenu=kshmsNavigationGroups({canManage:true}).flatMap(group=>group.items);
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {newExecution,newRisk,executionContent,executionIssues,riskScore,riskBand,validDate,saveExecution,EXECUTION_STATEMENT,EXECUTION_CHANGE_EVENT,publishExecutionChange,isUuid,storeExecutionDraft,readExecutionDraft} from '../src/modules/kshms/kshmsExecutions.mjs';
@@ -65,7 +67,7 @@ task.fakeDocument.visibilityState='hidden';const beforeHidden=task.requests.leng
 task.fakeDocument.visibilityState='visible';task.fakeDocument.dispatchEvent(new Event('visibilitychange'));task.requests.at(-1).resolve(pending);await Promise.resolve();assert.equal(task.states[0].count,2);
 task.fakeWindow.dispatchEvent(new Event('focus'));task.requests.at(-1).reject(Object.assign(Error('Access revoked'),{code:'42501'}));await Promise.resolve();assert.equal(task.states[0],null,'Revoked module retained private task data');
 task.fakeWindow.dispatchEvent(new Event('focus'));const late=task.requests.at(-1);task.cleanups[0]();late.resolve(pending);await Promise.resolve();assert.equal(task.states[0],null,'Unmounted scope accepted a late task response');const beforeCleanup=task.requests.length;task.fakeWindow.dispatchEvent(new Event('focus'));assert.equal(task.requests.length,beforeCleanup);
-const module=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(module.includes("['rounds','Vernerunder/kontroller']")&&module.includes("['risk','Risikovurdering']"));assert(module.includes('opened[key]||screen===key'),'Navigation must keep execution draft surfaces mounted');
+const module=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(module.includes('<KshmsNavigation screen={screen} canManage={canManage}')&&actualMenu.some(([key,label])=>key==='rounds'&&label==='Vernerunder/kontroller')&&actualMenu.some(([key,label])=>key==='risk'&&label==='Risikovurdering'));assert(module.includes('opened[key]||screen===key'),'Navigation must keep execution draft surfaces mounted');
 console.log('critical-kshms-executions-check: OK — scoped project drafts, risk decisions, confirmed completion/readback and actual task effect with offline/late/revoked access');
 
 await import('./critical-kshms-execution-pdf-check.mjs');
