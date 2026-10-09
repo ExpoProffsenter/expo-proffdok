@@ -3,6 +3,7 @@ import './critical-hr-foundation-check.mjs';
 import './critical-hr-navigation-check.mjs';
 import './critical-hr-purge-check.mjs';
 import './critical-hr-deletion-ledger-check.mjs';
+import './critical-hr-cloud-deletion-ledger-check.mjs';
 import './critical-personal-page-check.mjs';
 import './critical-kshms-task-reminders-check.mjs';
 import './critical-kshms-review-reminders-check.mjs';

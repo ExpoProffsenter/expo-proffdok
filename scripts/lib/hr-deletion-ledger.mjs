@@ -29,6 +29,12 @@ function credentials(project, key) {
   if (!/^[a-z]{20}$/.test(project) || !/^[a-f0-9]{64}$/.test(key)) fail();
 }
 function sign(payload, key) { return createHmac('sha256', Buffer.from(key,'hex')).update(JSON.stringify(payload)).digest('hex'); }
+export function sealLedger(payload, project, key) {
+  credentials(project,key);
+  const envelope={payload,hmac:sign(payload,key)};
+  verifyLedger(envelope,project,key);
+  return envelope;
+}
 export function verifyLedger(envelope, project, key) {
   credentials(project,key);
   if (!exact(envelope,['payload','hmac']) || !exact(envelope.payload,['format','project','generation','receipts'])
