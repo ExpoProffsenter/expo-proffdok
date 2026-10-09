@@ -1,3 +1,5 @@
+**Feature/Preview 10. oktober:** Organisasjonskart under KS/HMS, også uten HR-avtale: avdelinger, stillinger, lærlinger og egen PDF. 63 Sandbox assertions, berørt H1/H3 75/61, faktisk React og visuelt kontrollert syntetisk PDF PASS. Privat HR fortsatt stengt; ingen mail/merge/Production. [Scope og bevis](docs/kshms/ORGANIZATION_SCOPE_20261010.md).
+
 **Feature/Preview 10. oktober:** Kenneth TEST OK for KS/HMS-/HR-layout er mottatt. H5a gir privat slettemanifest-adapter med 38 lokale feil-/samtidighetsscenarioer og faktisk versjonslåst SDK på syntetisk HTTP; full Sandbox build PASS. Eksternt lager ikke opprettet: Vercel 403 forbidden. Privat HR fortsatt stengt; driftsbinding/DB-ack og isolert Supabase-restore gjenstår. [Scope og konkret blokkering](docs/kshms/HR_CLOUD_LEDGER_20261010.md). Ingen main/demo/Production eller e-post.
 
 **Feature/Preview 9. oktober:** Min side og HR-tekstforslag er utviklerverifisert; privat adresse/pårørende fortsatt bak lukket HR-port. [Avgrenset scope og bevis](docs/kshms/PERSONAL_PAGE_20261009.md). Ingen Production/main/demo-release.

@@ -5,7 +5,7 @@ import {createGlobalAppTabs,createProjectWorkspaceTabs} from '../src/modules/pro
 
 const groups=kshmsNavigationGroups({canManage:true,pendingCount:10});
 assert.deepEqual(groups.map(g=>g.label),['Daglig arbeid','Mine rutiner','Forvaltning']);
-assert.deepEqual(groups.flatMap(g=>g.items.map(i=>i[0])),['deviations','sja','rounds','risk','reading','personal','handbook','checklists','followup','extract','setup']);
+assert.deepEqual(groups.flatMap(g=>g.items.map(i=>i[0])),['deviations','sja','rounds','risk','reading','personal','organization','handbook','checklists','followup','extract','setup']);
 assert.equal(groups[1].items[0][1],'Les og bekreft (10)');
 assert.equal(kshmsNavigationGroups().length,2);
 assert(!createGlobalAppTabs({canUseKshms:true,canUseAdminProjectSync:true}).some(([id])=>id==='hr'));

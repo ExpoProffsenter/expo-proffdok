@@ -58,7 +58,8 @@ const edge=fs.readFileSync('supabase/functions/hr-file-access/index.ts','utf8');
 // Every existing guide is preserved under exactly one family, with no sibling duplicates.
 const help=fs.readFileSync('src/modules/help/helpToolsCore.js','utf8');
 const records=help.split('\n').filter(line=>/key["']?\s*:\s*["'](?:kshms|hr)-/.test(line)).map(line=>new Function('return ('+line.trim().replace(/,$/,'')+')')());
-assert.equal(records.filter(row=>row.key.startsWith('kshms-')).length,11);assert.equal(records.filter(row=>row.key.startsWith('hr-')).length,1);
+assert.equal(records.filter(row=>row.key.startsWith('kshms-')).length,12);assert.equal(records.filter(row=>row.key.startsWith('hr-')).length,1);
+assert(records.some(row=>row.key==='kshms-organization'));
 const other={key:'sales',title:'Unchanged sales'},grouped=groupHelpTopics([...records,other]);
 assert.deepEqual(grouped.map(row=>row.key),['kshms','hr','sales']);assert.equal(grouped[2],other);
 assert.equal(grouped.flatMap(row=>row.chapters||[]).length,records.length);

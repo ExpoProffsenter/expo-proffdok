@@ -1,3 +1,9 @@
+## Organisasjonskart under KS/HMS – 10. oktober 2026
+
+Kenneth plasserer byggeren under **KS/HMS**, tilgjengelig også uten HR-avtale. Avdelinger/underavdelinger, frie stillinger, ledere/mellomledere/ansatte/lærlinger, søk/filter/zoom og egen PDF. Firmaadmin bygger hele kartet; avdelingsledere sin gren; kartroller gir ingen automatisk HR-innsyn. Nærmeste leder deles kontrollert med eksisterende HR-register etter uttrykkelig firmaadminbekreftelse.
+
+**63 nye faktiske rollback Sandbox SQL assertions PASS**, berørte H1/H3 **75/61 PASS**, faktisk ny/berørt React PASS, tre syntetiske PDF-sider med 48 medarbeidere visuelt kontrollert og ferske eksportavslag PASS. H3 fant og fikk rettet en konkret trigger-scope-regresjon uten svekket prøve. 8 live funksjoner byteidentiske/ACL/tomt search_path. Privat HR fortsatt stengt; ingen mail/main/demo/Production. Full critical/build og eksakt publiseringsbevis føres i draft PR #216. Tidligere Kenneth TEST OK og B/C/PDF/ZIP-bevis beholdes. [Avklart scope, prøver, PDF og nye brukerknapper](ORGANIZATION_SCOPE_20261010.md).
+
 ## HR H5a og godkjent KS/HMS-/HR-layout – 10. oktober 2026
 
 Kenneths «kjempefint, takk. kjør videre» er registrert som **TEST OK for levert KS/HMS-/HR-layout**. Varig ønske om senere vurdering av samme utforming i hele appen beholdes. Ingen ny layout-/B/C-/PDF-/ZIP-omtest kreves.

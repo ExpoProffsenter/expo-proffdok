@@ -51,7 +51,7 @@ try{
   const helpRoot=title=>buttons().find(b=>b.querySelector('b')?.textContent===title);
   assert.equal(buttons().filter(b=>b.querySelector('b')?.textContent==='KS/HMS').length,1);assert.equal(buttons().filter(b=>b.querySelector('b')?.textContent==='HR').length,1);
   assert(!buttons().some(b=>/^KS\/HMS –/.test(b.querySelector('b')?.textContent||'')));assert.equal(window.document.querySelectorAll('.help-topic-chapter').length,0);
-  await act(async()=>helpRoot('KS/HMS').click());assert.equal(helpRoot('KS/HMS').getAttribute('aria-expanded'),'true');assert.equal(window.document.querySelectorAll('.help-topic-chapter').length,11);assert(![...window.document.querySelectorAll('.help-topic-chapter')].some(d=>d.open));
+  await act(async()=>helpRoot('KS/HMS').click());assert.equal(helpRoot('KS/HMS').getAttribute('aria-expanded'),'true');assert.equal(window.document.querySelectorAll('.help-topic-chapter').length,12);assert(![...window.document.querySelectorAll('.help-topic-chapter')].some(d=>d.open));
   const chapters=[...window.document.querySelectorAll('.help-topic-chapter')];assert.equal(chapters[0].querySelector('summary').textContent,'Bygg firmaets håndbok');
   await act(async()=>chapters[0].querySelector('summary').click());assert(chapters[0].open);assert(chapters[0].textContent.includes('Godkjenn og publiser'));
   const sourceChapter=chapters.find(chapter=>chapter.querySelector('summary').textContent==='Vurder nye tekstforslag');assert(sourceChapter);await act(async()=>sourceChapter.querySelector('summary').click());assert(sourceChapter.open);assert(sourceChapter.textContent.includes('Sammenlign tekstforslag'));

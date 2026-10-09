@@ -1,6 +1,7 @@
 import { routineNumber } from './kshmsJobChoices.mjs';
 import { useEffect,useId,useRef,useState } from 'react';
 import KshmsNavigation from './KshmsNavigation.jsx';
+import OrganizationChart from '../organization/OrganizationChart.jsx';
 import { ACK_STATEMENT,CHAPTERS,ROUTINE_CATALOG,TRADES,blankRoutine,currentVersionSnapshot,suggestedRoutines } from './kshmsCatalog.mjs';
 import { draftKey,persistDraft,readDraft,routineApprovalState,handbookProgress,pendingReadingVersions } from './kshmsDraft.mjs';
 import { kshmsRpc } from './kshmsAccess.js';
@@ -32,6 +33,8 @@ import KshmsInspectionExtract from './KshmsInspectionExtract.jsx';
 import {readNotificationLink} from './kshmsNotificationLinks.mjs';
 const dateTime = value => new Date(value).toLocaleString('nb-NO');
 const sourceTypes = {law:'Lov eller forskrift',professional:'Fag, veiledning eller kontrakt',company:'Firmaets egne regler',product:'ProffDoks valg'};
+// Preserve only this new screen choice across a rights refresh; never cache payload/authority.
+let lastOrganizationView={scope:null,selected:false};
 const emptySetup = {trades:[],activities:'',responsibilities:'',risks:'',responsible_user_id:'',revision:0};
 export function ExecutionSurfaces({screen,companyId,userId,context}){
  const [opened,setOpened]=useState({});
@@ -63,8 +66,11 @@ function References({value,onChange}) {
 }
 export default function KshmsModule({context,deviationRequest,personalOnly=false}) {
  const companyId=context.company_id,userId=context.user_id;
+ const organizationScope=`${companyId}:${userId}`;
+ const resumeOrganization=!personalOnly&&lastOrganizationView.scope===organizationScope&&lastOrganizationView.selected;
  const emailLink=readNotificationLink(window.location?.search||'',companyId);
- const [data,setData]=useState(null),[screen,setScreen]=useState(()=>personalOnly?'personal':context.manage?'handbook':'reading'),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+ const [data,setData]=useState(null),[screen,setScreen]=useState(()=>personalOnly?'personal':resumeOrganization?'organization':context.manage?'handbook':'reading'),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+ useEffect(()=>{lastOrganizationView={scope:organizationScope,selected:!personalOnly&&screen==='organization'};},[organizationScope,personalOnly,screen]);
  const [deviationsOpened,setDeviationsOpened]=useState(false);
  const [checklistsOpened,setChecklistsOpened]=useState(false);
  const [sjaOpened,setSjaOpened]=useState(false);
@@ -86,7 +92,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
  const requestScope=useRef(null),editorRef=useRef(null),libraryPreviewRef=useRef(null),firstView=useRef(false),flowRef=useRef(null),setupRef=useRef(null),libraryRef=useRef(null),followupRef=useRef(null),[editorFocus,setEditorFocus]=useState(0),[flowFocus,setFlowFocus]=useState(0),[libraryFocus,setLibraryFocus]=useState(0);
  const load = async()=>{const value=await kshmsRpc('kshms_get_state',{p_company_id:companyId});setData(value);return value;};
  useEffect(()=>{let active=true;const scope={active:true};requestScope.current=scope;setData(null);setError('');setBusy(false);setLibraryProgress(null);
-  kshmsRpc('kshms_get_state',{p_company_id:companyId}).then(value=>{if(active){setData(value);const prepared=fillEmptySetup(value.settings||emptySetup);setupSuggestionFields.current=new Set(prepared.filled);setSetup(prepared.setup);if(!firstView.current){const linkedTab=emailLink?.matchingCompany?emailLink.kind==='sja'?'sja':emailLink.kind==='reading'?'reading':emailLink.kind==='review'&&value.context.manage?'followup':null:null;setScreen(personalOnly?'personal':linkedTab||(value.context.manage?value.settings?'handbook':'setup':'reading'));firstView.current=true;}setCached(readDraft(window.localStorage,userId,companyId));setNextReview(value.settings?.next_review_on||new Date(Date.now()+360*86400000).toISOString().slice(0,10));}}).catch(e=>{if(active)setError(e.message)});
+  kshmsRpc('kshms_get_state',{p_company_id:companyId}).then(value=>{if(active){setData(value);const prepared=fillEmptySetup(value.settings||emptySetup);setupSuggestionFields.current=new Set(prepared.filled);setSetup(prepared.setup);if(!firstView.current){const linkedTab=emailLink?.matchingCompany?emailLink.kind==='sja'?'sja':emailLink.kind==='reading'?'reading':emailLink.kind==='review'&&value.context.manage?'followup':null:null;setScreen(personalOnly?'personal':linkedTab||(resumeOrganization?'organization':value.context.manage?value.settings?'handbook':'setup':'reading'));firstView.current=true;}setCached(readDraft(window.localStorage,userId,companyId));setNextReview(value.settings?.next_review_on||new Date(Date.now()+360*86400000).toISOString().slice(0,10));}}).catch(e=>{if(active)setError(e.message)});
   return()=>{active=false;scope.active=false};
  },[companyId,userId,context.manage,context.publish,context.administer,personalOnly]);
  useEffect(()=>{const warn=e=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[dirty]);
@@ -209,6 +215,7 @@ export default function KshmsModule({context,deviationRequest,personalOnly=false
   <KshmsNavigation screen={screen} canManage={canManage} pendingCount={pending.length} onNavigate={setScreen} personalOnly={personalOnly}/>
   {!personalOnly&&<KshmsAssignmentReminders key={`assignment-reminders:${companyId}:${userId}`} context={data.context} refreshKey={data.acknowledgments.length} busy={busy} onOpen={target=>setScreen(target)}/>}
   {!personalOnly&&<KshmsReviewReminder key={`${companyId}:${userId}`} context={data.context} settingsRevision={data.settings?.revision} busy={busy} onOpen={openReview}/>}
+  {!personalOnly&&screen==='organization'&&<OrganizationChart key={`organization:${companyId}:${userId}`} context={data.context}/>}
   {canManage&&screen==='extract'&&<KshmsInspectionExtract key={`${companyId}:${userId}`} context={data.context}/>}
   <ExecutionSurfaces screen={screen} companyId={companyId} userId={userId} context={context}/>
   {canManage&&(screen==='checklists'||checklistsOpened)&&<div hidden={screen!=='checklists'}><KshmsChecklistCentral key={`${companyId}:${userId}`} context={data.context} active={screen==='checklists'}/></div>}

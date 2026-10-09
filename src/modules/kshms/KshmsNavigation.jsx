@@ -1,7 +1,7 @@
 import React from 'react';
-import {AlertTriangle,ClipboardCheck,ClipboardList,ShieldCheck,BookOpen,BookMarked,CheckCheck,CalendarCheck,FileArchive,Settings,Layers,UserRound,BriefcaseBusiness} from 'lucide-react';
+import {AlertTriangle,ClipboardCheck,ClipboardList,ShieldCheck,BookOpen,BookMarked,CheckCheck,CalendarCheck,FileArchive,Settings,Layers,UserRound,BriefcaseBusiness,Network} from 'lucide-react';
 import {kshmsNavigationGroups} from './kshmsNavigation.mjs';
-const icons={deviations:AlertTriangle,sja:ClipboardCheck,rounds:ClipboardList,risk:ShieldCheck,reading:CheckCheck,personal:BookMarked,handbook:BookOpen,checklists:ClipboardList,followup:CalendarCheck,extract:FileArchive,setup:Settings};
+const icons={organization:Network,deviations:AlertTriangle,sja:ClipboardCheck,rounds:ClipboardList,risk:ShieldCheck,reading:CheckCheck,personal:BookMarked,handbook:BookOpen,checklists:ClipboardList,followup:CalendarCheck,extract:FileArchive,setup:Settings};
 const groupIcons={'Daglig arbeid':BriefcaseBusiness,'Mine rutiner':UserRound,'Forvaltning':Layers};
 export default function KshmsNavigation({screen,canManage,pendingCount,onNavigate,personalOnly=false}) {
  return <nav className={personalOnly?'ks-navigation ks-navigation-personal':'ks-navigation'} aria-label="KS/HMS visning">
