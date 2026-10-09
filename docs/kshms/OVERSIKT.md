@@ -17,6 +17,8 @@ KS/HMS er utviklet på **feat-kshms-foundation**, draft PR **#216**, mot egen Sa
 
 ## Samlet utviklerkontroll
 
+Ny H2-kontroll: faktisk innlogget desktopmeny, HR-oppsett og berørte skjerminnganger PASS. Menyen er gruppert etter daglig arbeid, egne rutiner og forvaltning. En reell modulheader-overlapp ved scrolling er rettet og kontrollert i HR og KS/HMS; [testet kode-SHA og originale skjermbilder](HR_UI_MENU_20261009.md#endelig-faktisk-desktopkontroll-etter-layoutrettingen). Ingen firma aktivert eller virkelige HR-personer registrert. Dette er nytt avgrenset utviklerbevis, ikke ny Kenneth TEST OK eller mobil-/fil-/flerbrukerbevis.
+
 Øvrige oppgavepåminnelser: **41 ulike Sandbox-assertions PASS** og faktisk React-appflyt PASS; seks opprinnelige varsler **36 PASS**, avvikspåminnelser **37 PASS** og revisjonspåminnelser **36 PASS**. Alle seks typer har nå styrte påminnelser. Worker v7 er levert og forblir **enabled=false**. [Scope og QA](TASK_REMINDERS_20261009.md).
 
 Tidligere leveranse av revisjonspåminnelse: **36 Sandbox-assertions PASS**, eksisterende seks varseltyper **36 PASS** og avvik/RUH-påminnelser **37 PASS**. Faktisk React-prøve dekker åpning, tekstbevaring, retry, lagret signering, offline/revokering og sent firma-svar. E-postworker v6 ble levert til Sandbox; gjeldende v7 er omtalt over og forblir **enabled=false**. [Detaljer](REVIEW_REMINDERS_20261009.md).
