@@ -52,4 +52,5 @@ assert(Object.values(HR_SETUP_SUGGESTIONS).every(text=>text.length<=500));
 assert.equal(suggestedReviewDate(3,new Date('2026-10-31T11:00:00Z')),'2027-01-31');
 assert.equal(suggestedReviewDate(6,new Date('2026-08-31T11:00:00Z')),'2027-02-28');
 assert.equal(suggestedReviewDate(3,new Date('2026-10-09T22:30:00Z')),'2027-01-10');
+assert(fs.readFileSync('src/modules/personal/personal.css','utf8').includes('.personal-page .personal-heading h2{color:#fff}'),'Greeting needs an explicit high-contrast foreground against the dark hero; global h2 colors must not win');
 console.log('✅ Min side: company label/user scopes, HR manager split, personal-only handbook, preserved profile mount, late/background/offline revocation and project isolation PASS');
