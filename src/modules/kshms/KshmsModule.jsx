@@ -6,6 +6,9 @@ import { kshmsRpc } from './kshmsAccess.js';
 import { publishManagedAccessChange } from '../access/moduleAccessClient.js';
 import { addLibraryRoutines } from './kshmsLibrary.mjs';
 import KshmsRoutineLibrary from './KshmsRoutineLibrary.jsx';
+import KshmsSourceUpdates from './KshmsSourceUpdates.jsx';
+import KshmsSourceProposal from './KshmsSourceProposal.jsx';
+import {applySourceField,markSourceReviewed} from './kshmsSourceUpdates.mjs';
 import KshmsRoutineSearch from './KshmsRoutineSearch.jsx';
 import KshmsHandbookProgress from './KshmsHandbookProgress.jsx';
 import KshmsAcknowledgments from './KshmsAcknowledgments.jsx';
@@ -95,9 +98,9 @@ export default function KshmsModule({context,deviationRequest}) {
   catch(e){if(e.code==='40001'){try{await load()}catch{}setError('En annen person har lagret endringer. Sammenlign din tekst med den lagrede teksten før du lagrer igjen. Ditt utkast er beholdt på denne enheten.');}else setError(e.message);return null;}
   finally{setBusy(false);}
  };
- const chooseEditor=(draft,routine=null)=>{
+ const chooseEditor=(draft,routine=null,compareSource=false)=>{
   if(dirty && !window.confirm('Åpne en annen rutine? Teksten du jobber med, er lagret på denne enheten. Du kan hente den inn igjen.'))return;
-  setEditor({id:routine?.id||null,revision:routine?.revision||0,draft:structuredClone(draft)});setSources(structuredClone(draft.references||[]));setDirty(false);setProposal(null);setScreen('handbook');setEditorFocus(previous=>previous+1);
+  setEditor({id:routine?.id||null,revision:routine?.revision||0,draft:structuredClone(draft)});setSources(structuredClone(draft.references||[]));setDirty(false);setProposal(compareSource?ROUTINE_CATALOG.find(r=>r.key===draft.source_key)||null:null);setScreen('handbook');setEditorFocus(previous=>previous+1);
  };
  const choosePublication=routine=>{
   if(busy)return;
@@ -153,6 +156,12 @@ export default function KshmsModule({context,deviationRequest}) {
   setEditor(next);setDirty(true);
   try{persistDraft(window.localStorage,userId,companyId,{...next,sources:sourceValue});setCached(readDraft(window.localStorage,userId,companyId));}
   catch{setError('Utkastet kunne ikke sikres på denne enheten. Trykk «Lagre utkast» før du lukker appen.');}
+ };
+ const changeSourceDraft=key=>{
+  if(busy||!editor||!proposal||!requestScope.current?.active||data.context.company_id!==companyId||data.context.user_id!==userId||data.context.enabled!==true||data.context.manage!==true)return;
+  const draft={...editor.draft,references:sources};
+  const next=key?applySourceField(draft,proposal,key):markSourceReviewed(draft,proposal);
+  setSources(next.references);cacheEditor({...editor,draft:next},next.references);
  };
  const save=async e=>{e.preventDefault();let draft;
   try{draft={...editor.draft,references:validateReferences(sources)}}catch(err){setError(err.message);return;}
@@ -238,7 +247,7 @@ export default function KshmsModule({context,deviationRequest}) {
      <div className="ks-actions"><button disabled={busy}>Lagre utkast</button><button type="button" className="secondary" onClick={()=>{setEditor(null);setDirty(false)}}>Lukk redigering</button>{editor.draft.source_key&&<button type="button" className="secondary" onClick={()=>setProposal(ROUTINE_CATALOG.find(r=>r.key===editor.draft.source_key)||null)}>Vurder ProffDoks tekstforslag</button>}</div>
     </form>
     {data.routines.some(r=>r.id===editor.id&&r.revision!==editor.revision)&&<aside className="ks-proposal"><h4>En annen person har endret rutinen</h4><p>Teksten under er lagret av en annen person. Sammenlign den med teksten du jobber med. Velg å beholde din tekst først når du har sjekket forskjellene.</p><Content content={data.routines.find(r=>r.id===editor.id).draft} draft/><button type="button" className="secondary" onClick={()=>{cacheEditor({...editor,revision:data.routines.find(r=>r.id===editor.id).revision});setError('')}}>Jeg har sammenlignet – behold min tekst</button></aside>}
-    {proposal&&<aside className="ks-proposal"><h4>Velg hvilken tekst du vil bruke</h4><p>Her ser du ProffDoks forslag. Trykk på et felt du vil bruke. Bare det feltet endres i utkastet ditt. Lagre utkastet etterpå. Firmaadmin eller KS/HMS-ansvarlig må godkjenne endringen.</p><Content content={proposal} draft/>{['goal','responsibility','procedure','documentation','confirmation','references'].map(key=><button type="button" className="secondary" key={key} onClick={()=>{const next={...editor,draft:{...editor.draft,[key]:structuredClone(proposal[key]),source_revision:proposal.source_revision}};const refs=key==='references'?next.draft.references:sources;if(key==='references')setSources(refs);cacheEditor(next,refs)}}>Bruk forslagets {({goal:'mål',responsibility:'ansvar',procedure:'fremgangsmåte',documentation:'dokumentasjon',confirmation:'gjennomgang',references:'kilder'})[key]}</button>)}</aside>}
+    {proposal&&data.context.company_id===companyId&&data.context.user_id===userId&&data.context.enabled===true&&<KshmsSourceProposal draft={{...editor.draft,references:sources}} proposal={proposal} busy={busy} onApply={changeSourceDraft} onReviewed={()=>changeSourceDraft(null)} onClose={()=>setProposal(null)}/>}
    </div>}
    {publication&&canPublish&&<div className="ks-card ks-editor ks-publication" ref={publicationRef} tabIndex={-1} aria-labelledby={publicationHeadingId} aria-busy={busy}>
     <h3 id={publicationHeadingId}>Her godkjenner du rutinen: {publication.draft.title}</h3>
@@ -277,6 +286,7 @@ export default function KshmsModule({context,deviationRequest}) {
    {!reading&&ownAssignments.length>0&&!pending.length&&<div className="ks-card ks-handbook-progress ready ks-flow-target" ref={readingDoneRef} tabIndex={-1} role="region" aria-label="Gjennomgangen er fullført"><h3>Du er ferdig med gjennomgangen</h3><p>Alle rutineutgaver som krever bekreftelse, er bekreftet. Du kan åpne rutinene over når du trenger dem. Nye eller viktige endringer kan gi deg en ny utgave å lese og bekrefte.</p><button type="button" className="secondary" onClick={()=>setScreen('personal')}>Åpne Min personalhåndbok</button>{readingFeedback&&<p className="ks-notice" role="status">{readingFeedback}</p>}</div>}
   </div>}
   {screen==='followup'&&canManage&&<>
+   <KshmsSourceUpdates data={data} companyId={companyId} userId={userId} busy={busy} onReview={(routine,compare)=>chooseEditor(routine.draft,routine,compare)}/>
    <div className="ks-card ks-flow-target" ref={followupRef} tabIndex={-1}><h3>Neste steg: Ansatte leser og bekrefter</h3><p>Ansatte skal lese og bekrefte rutinene før de begynner å arbeide. Dette er firmaets regel. Firmaadmin og KS/HMS-ansvarlig følger opp hvem som mangler gjennomgang.</p><p>Når du godkjenner en rutine, får firmaadmin og ansatte med KS/HMS-tilgang utgaven i «Les og bekreft». De åpner hver rutine i sin egen app, leser teksten og bekrefter egen gjennomgang. Avklar spørsmål og nødvendig opplæring med dem.</p><p>Firmaadmin gir andre ansatte tilgang i «Oppstart og tilgang». Etterpå kan du gi nye medarbeidere de godkjente rutinene under. Utgaver som krever egen gjennomgang, får også et e-postvarsel når firmaets e-postutsending er aktivert.</p>
     {canAdmin&&<button type="button" className="secondary" onClick={()=>{setScreen('setup');setFlowFocus(previous=>previous+1)}}>Velg ansattes tilgang</button>}
     {pending.length>0&&<p>Du har også egne rutiner å lese. Åpne fanen «Les og bekreft» og bekreft din egen gjennomgang.</p>}

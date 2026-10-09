@@ -1,3 +1,15 @@
+## Kildeoppdateringsforslag – gjeldende fortsettelsespunkt 9. oktober 2026
+
+Miljømål **BEGGE**, levering bare feature/Sandbox. Oppfølging og revisjon har nå en samlet oversikt over nyere sentrale ProffDok-tekstforslag og vurderte utkast som fortsatt må firmagodkjennes. Sammenligningen viser firmaets tekst og forslaget felt for felt. Å bruke ett felt endrer bare dette feltet; bare **Jeg har vurdert hele tekstforslaget** flytter utkastets forslagsutgave. Egne tilpasninger beholdes. Lagre utkast og Godkjenn og publiser er separate handlinger. Gjeldende godkjente utgaver og gamle ansattbekreftelser omskrives ikke. Ingen nettkilde markeres kontrollert av denne vurderingen, og dette er ikke automatisk lovovervåking.
+
+**Utvikler-QA:** permanent critical-kjede og full lokal build PASS; faktisk React/Vite/JSDOM PASS for sammenligning, manuell kildedato, lokal kladd, feilet lagring/retry, lagret vurdering uten publisering, eksplisitt godkjenning, nye tildelinger og bevarte historiske bekreftelser. Ekte Sandbox-RPC i rollback-transaksjon: **22 assertions PASS**, inkludert firma-/rolle-/revisjonskontroll, kildegrunnlag, immutable v1/v2 og avslått modul. Direkte sluttkontroll: 0 syntetiske firma/brukere, worker `enabled=false`. Ingen ny migrasjon, RPC, RLS/Storage eller global navigasjon. Publisert SHA, Core Safety og READY Preview dokumenteres i draft PR #216 etter levering. [Scope og QA](docs/kshms/SOURCE_UPDATES_20261009.md).
+
+Kenneths TEST OK **00:59 / 01:29 / 01:55 / 02:28 / 15:01** beholdes. Ingen ny obligatorisk Kenneth-prøve opprettes. Innlogget browserbevis er fortsatt blokkert etter reset av `native credential state cannot be safely resumed`; dette er ikke browser-PASS. Neste punkt er samlet helhetlig B/C-vurdering og målrettet dekning av faktiske filer, mobil og flerbruker før HR. Tidligere fortsettelsespunkter nedenfor er historikk.
+
+**E-postavklaring:** Kenneth autoriserte én kontrollert test til sin valgte arbeidsadresse 9. oktober kl. 17:29. Testen er ikke sendt; Production-testendpoint krever fungerende innlogget systemadminøkt. Generell køaktivering er fortsatt avslått. KS/HMS-varsler og fristpåminnelser skal aktiveres og verifiseres ved senere godkjent produksjonssetting. Ingen Production-release eller main/demo-merge er bestilt. Denne avklaringen supplerer de eldre sendingstillatelsene nedenfor.
+
+---
+
 ## TEST OK – SJA-bilder, 9. oktober 2026 kl. 15:01
 
 Kenneth svarte «test ok» etter den avgrensede SJA-bildeprøven i samme Sandbox Preview. Godkjenningen gjelder ett testbilde i SJA-utkast med lagring/gjenåpning, egen og samlet PDF, og bilde/manifest.json i vedleggs-ZIP på head `65655dea4a220352075b3c50dd0530a53aab758f`. Dette er brukerens godkjenning, ikke en ny utviklerdrevet nettleserprøve. Ingen bestemt sak, enhet eller antall filer utover prøven er dokumentert.

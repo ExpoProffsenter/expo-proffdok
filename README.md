@@ -1,3 +1,9 @@
+## Kildeoppdateringsforslag – feature/Sandbox
+
+Oppfølging og revisjon viser nyere sentrale tekstforslag og vurderte utkast som fortsatt må godkjennes. Sammenlign firmaets tekst med forslaget; velg bare feltene dere trenger. Ett felt markerer ikke hele forslaget som vurdert. **Jeg har vurdert hele tekstforslaget**, **Lagre utkast** og firmagodkjenning er separate handlinger. Gamle godkjente utgaver og ansattbekreftelser beholdes. Nettkilder kontrolleres manuelt. [Scope og QA](docs/kshms/SOURCE_UPDATES_20261009.md).
+
+---
+
 ## Fristpåminnelser for avvik/RUH – feature/Sandbox
 
 Oppgavelisten skiller passert frist, frist i dag og frist innen tre dager i norsk tid. Åpne avvik/RUH får styrte ukespåminnelser via eksisterende privat leveringskø når e-post senere aktiveres. Kø og leveringskontroll følger ansvarlig, frist og gjeldende tilgang; gamle perioder og reaktiverte køer spilles ikke av. Transport forblir deaktivert i Sandbox. [Scope og QA](docs/kshms/DEVIATION_REMINDERS_20261009.md).

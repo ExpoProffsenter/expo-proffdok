@@ -1,3 +1,11 @@
+## Kildeoppdateringsforslag – feature/Sandbox
+
+`sourceUpdateOverview` leser eksisterende håndbokstate og krever enabled/manage samt eksakt firma-/brukerscope. Den utelater arkiverte, fremmede og egne rutiner uten kjent source_key og skiller eldre utkastgrunnlag fra vurdert utkast med eldre publisert grunnlag. `KshmsSourceUpdates` åpner eksisterende editor. `KshmsSourceProposal` viser åtte felt med faktisk firmatekst/forslag; applySourceField kloner bare ett felt uten å flytte source_revision, mens markSourceReviewed er en egen eksplisitt handling som ikke senker et nyere grunnlag. Referansenes checked_on beholdes ved tekstvurdering.
+
+Editorens eksisterende firma-/brukerscoped localStorage-kladd og save/publish/ack gjenbrukes. Ingen nye fetch-effekter, global state, RPC, migrasjon, RLS/Storage, signatur eller navigasjon. Native details og scoped responsiv CSS brukes. Permanent critical-kjede, faktisk React og 22 rollback-assertions mot ekte Sandbox-RPC er grønne. [Scope og QA](../kshms/SOURCE_UPDATES_20261009.md).
+
+---
+
 ## Fristpåminnelser for avvik/RUH – feature/Sandbox
 
 Oppgavelisten skiller passert frist, frist i dag og frist innen tre dager i norsk tid. Åpne avvik/RUH får styrte ukespåminnelser via eksisterende privat leveringskø når e-post senere aktiveres. Kø og leveringskontroll følger ansvarlig, frist og gjeldende tilgang; gamle perioder og reaktiverte køer spilles ikke av. Transport forblir deaktivert i Sandbox. `kshms_deviation_tasks` beregner friststatus med Europe/Oslo. Private collector låser saken og oppretter kun aktuell syvdagersperiode i outbox; separate delvise unike indekser bevarer tildelings-idempotens og påminnelses-idempotens. `notification_active` bevarer de seks eksisterende oppgavetypenes kontroll og legger til frist-/periode-/aktiveringsvern for påminnelser. Profilens tilgangsendringer undertrykker ventende påminnelser. Workerens token, reservasjon, retry, siste tilgangskontroll og beskyttede lenke er bevart. [Scope og QA](../kshms/DEVIATION_REMINDERS_20261009.md).
