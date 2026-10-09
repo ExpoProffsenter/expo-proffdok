@@ -14,7 +14,8 @@ try{
  try{
   const w=dom.window;w.IS_REACT_ACT_ENVIRONMENT=true;w.HTMLElement.prototype.scrollIntoView=function(){};
   w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
-  let account={id:'self',email:'self@example.invalid',user_metadata:{full_name:'QA Medarbeider',mobile:'12345678',other:'preserve'}},updates=[],pref=false,prefWrites=[],contactAvailable=false,contactRev=1,employeeRev=3,revoked=false,lateContact=null;
+  let account={id:'self',email:'self@example.invalid',user_metadata:{full_name:'QA Medarbeider',mobile:'12345678',other:'preserve'}},updates=[],pref=false,prefWrites=[],contactAvailable=false,contactRev=1,employeeRev=3,revoked=false,lateContact=null,lateList=null;
+  const employees=[{id:'e',user_id:'self',email:'self@example.invalid',leader_id:'leader',revision:3,readers:[]},{id:'shared',user_id:'other',email:'shared@example.invalid',leader_id:'leader',revision:1,readers:[]}];
   const context={company_id:'a',user_id:'self',enabled:true,available:true,administer:false};
   let contactData={address:'QA Gate',relative_name:'QA Pårørende',relative_phone:'87654321'};
   const contact=()=>({context,registered:true,available:contactAvailable,editable:true,employee:{id:'e',revision:employeeRev},revision:contactRev,data:contactAvailable?structuredClone(contactData):null});
@@ -27,7 +28,8 @@ try{
     return {data:contact()};
    }
    if(name==='hr_contact_save'){assert.equal(args.p_contact_revision,contactRev);assert.equal(args.p_employee_revision,employeeRev);contactData=structuredClone(args.p_data);contactRev++;return {data:{context,employee:{id:'e',revision:employeeRev},revision:contactRev}};}
-   if(name==='hr_personal_list')return {data:{context,employees:[],next:null}};
+   if(name==='hr_personal_list'){if(revoked)return {error:{code:'42501',message:'revoked'}};if(lateList)return new Promise(resolve=>lateList.resolve=resolve);return {data:{context,employees:structuredClone(employees),next:null}};}
+   if(name==='hr_employee_get')return {data:{context,employee:structuredClone(employees.find(e=>e.id===args.p_employee_id))}};
    throw new Error('Unexpected RPC '+name);
   }};
   w.eval((Array.isArray(bundle)?bundle[0]:bundle).output.find(i=>i.type==='chunk').code);
@@ -45,6 +47,16 @@ try{
   assert.equal(doc.querySelectorAll('.personal-card').length,3,'compact overview has three cards');
   assert.equal(doc.querySelectorAll('.personal-upcoming').length,2,'upcoming HR types are grouped');
   assert.equal(doc.querySelectorAll('.personal-status').length,2);
+  await click('Mine oppfølginger');assert.equal(doc.querySelectorAll('.hr-employee').length,2);assert(doc.body.textContent.includes('Min medarbeideroppføring'));assert(doc.body.textContent.includes('Delt med deg · ekstra lesetilgang'));assert(!doc.querySelector('.hr-heading'),'personal HR must not repeat the page heading');
+  await act(async()=>doc.querySelector('.hr-employee').click());assert(doc.querySelector('.hr-detail'));
+  await act(async()=>w.__render('page',{...props(),context:null,kshmsContext:null,hrContext:null}));
+  assert.equal(button('Mine oppfølginger').getAttribute('aria-pressed'),'true','screenshot/focus refresh keeps selected pane');assert(doc.querySelector('.personal-checking'));assert(!doc.querySelector('.hr-employee'));assert(!doc.querySelector('.hr-detail'));assert(doc.querySelector('.personal-settings').parentElement.hidden,'must not jump to profile');assert(!doc.querySelector('.personal-settings').open,'must not expand report settings during a refresh');
+  await act(async()=>w.__render('page',props()));assert(doc.querySelector('.hr-detail'),'fresh remount restores selected ID after scoped list + double read');
+  lateList={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!doc.querySelector('.hr-detail'),'background payload clears immediately');const resumeList=lateList.resolve;lateList=null;await act(async()=>resumeList({data:{context,employees:structuredClone(employees),next:null}}));assert(doc.querySelector('.hr-detail'));
+  Object.defineProperty(doc,'visibilityState',{value:'hidden',configurable:true});await act(async()=>doc.dispatchEvent(new w.Event('visibilitychange')));assert(!doc.querySelector('.hr-detail'));assert(!doc.querySelector('.hr-employee'));Object.defineProperty(doc,'visibilityState',{value:'visible',configurable:true});await act(async()=>doc.dispatchEvent(new w.Event('visibilitychange')));assert(doc.querySelector('.hr-detail'),'background return requires fresh reads and retains only chosen ID');
+  revoked=true;await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!doc.querySelector('.hr-employee'));assert(!doc.querySelector('.hr-detail'));revoked=false;
+  await act(async()=>w.__render('page',{...props(),context:{...personal,company_id:'b'},hrContext:{...context,company_id:'b'},kshmsContext:{...context,company_id:'b'}}));assert.equal(button('Oversikt').getAttribute('aria-pressed'),'true','company switch resets old record selection');
+  await act(async()=>w.__render('page',props()));
   await click('Profil og e-post');assert.equal(input('Fullt navn').value,'QA Medarbeider');assert.equal(input('E-postadresse').readOnly,true);
   assert(!doc.querySelector('input[autocomplete="street-address"]'),'closed private gate must not collect data');
   await write('Fullt navn','QA Endret navn');await write('Mobilnummer','11223344');
@@ -57,6 +69,7 @@ try{
   await act(async()=>w.__render('page',props()));assert(button('Lagre kontaktopplysninger').disabled);
   await click('Lagre e-postvalg');assert.deepEqual(prefWrites,[true]);
   await write('Fullt navn','QA Skal ikke lagres');account={...account,id:'someone-else'};await submit('Lagre kontaktopplysninger');assert.equal(updates.length,1,'different authenticated actor must not receive old form');assert(doc.querySelector('[role=alert]'));
+  await act(async()=>w.__render('page',{...props(),context:null,userId:'other',authUser:{id:'other',email:'other@example.invalid'}}));assert(!doc.querySelector('.personal-page'),'actor switch must drop remembered navigation');
   await act(async()=>w.__unmount());
   account.id='self';contactAvailable=true;
   await act(async()=>w.__render('private',{context}));assert.equal(input('Pårørendes fulle navn').value,'QA Pårørende');await write('Pårørendes telefon','44556677');await act(async()=>w.dispatchEvent(new w.Event('focus')));assert.equal(input('Pårørendes telefon').value,'44556677','unchanged foreground check preserves contact draft');await submit('Lagre adresse og pårørende');assert.equal(contactData.relative_phone,'44556677');assert.equal(contactRev,2);assert(doc.body.textContent.includes('Kontaktprofilen er lagret'));

@@ -4,6 +4,7 @@ import {hrRpc} from './hrAccess.js';
 import {MANAGED_ACCESS_EVENT,MODULE_ACCESS_EVENT,publishManagedAccessChange} from '../access/moduleAccessClient.js';
 import {WORK_PROFILE_EVENT} from '../access/workProfileClient.js';
 import './hr.css';
+import {UserRound,ShieldCheck,ChevronRight} from 'lucide-react';
 import HrTextSuggestion from './HrTextSuggestion.jsx';
 import PrivateContact from './PrivateContact.jsx';
 import {HR_SETUP_SUGGESTIONS,suggestedReviewDate} from './hrSetupSuggestions.mjs';
@@ -17,7 +18,7 @@ function UserSelect({label,value,onChange,members,exclude=[],required=false}) {
  </select></Field>;
 }
 
-export default function HrModule({context,audience='legacy'}) {
+export default function HrModule({context,audience='legacy',initialEmployeeId=null,onEmployeeSelect}) {
  const {company_id:companyId,user_id:userId}=context;
  const administer=context.administer===true&&audience!=='personal';
  const list=(session,after=null)=>audience==='personal'?session.personalList(after):audience==='management'?session.managementList(after):session.list(after);
@@ -27,6 +28,10 @@ export default function HrModule({context,audience='legacy'}) {
  const [leader,setLeader]=useState(''),[clearOld,setClearOld]=useState(false),[reader,setReader]=useState(''),[reason,setReason]=useState(''),[ending,setEnding]=useState(false),[endConfirmed,setEndConfirmed]=useState(false);
  const [query,setQuery]=useState('');
  const sessionRef=useRef(null),revision=useRef(0),busyRef=useRef(false),detailRef=useRef(null),regionRef=useRef(null);
+ // This ref holds only the chosen record ID. Every return performs a new scoped list + double read.
+ const selectedId=useRef(initialEmployeeId),selectionScope=useRef(companyId+':'+userId),selectionCallback=useRef(onEmployeeSelect);selectionCallback.current=onEmployeeSelect;
+ if(selectionScope.current!==companyId+':'+userId){selectionScope.current=companyId+':'+userId;selectedId.current=null;}
+ const selectId=id=>{selectedId.current=id;selectionCallback.current?.(id);};
  const clear=useCallback(()=>{setData(null);setMembers([]);setMemberNext(null);setDetail(null);detailRef.current=null;setLeader('');setReader('');setReason('');setClearOld(false);setEnding(false);setEndConfirmed(false);},[]);
  const installDetail=employee=>{setDetail(employee);detailRef.current=employee;setLeader(employee?.leader_id||'');setClearOld(false);setReader('');setReason('');setEnding(false);setEndConfirmed(false);};
  const load=useCallback(async(session)=>{
@@ -47,7 +52,7 @@ export default function HrModule({context,audience='legacy'}) {
   sessionRef.current=session;
   const refresh=async()=>{
    const ticket=++revision.current;session.invalidate();setError('');setNotice('');setBusy(true);busyRef.current=true;
-   try{if(document.visibilityState!=='hidden'){const result=await load(session);if(alive&&ticket===revision.current)install(result);}}
+   try{if(document.visibilityState!=='hidden'){const result=await load(session);const id=selectedId.current;const fresh=id&&result.listing.employees.some(employee=>employee.id===id)?await session.get(id):null;if(alive&&ticket===revision.current){install(result);if(fresh)installDetail(fresh.employee);else selectId(null);}}}
    catch(e){if(alive&&ticket===revision.current)setError(e.code==='42501'?'HR-tilgangen er endret. Kontroller aktivt firma eller kontakt firmaadmin.':e.message);}
    finally{if(alive&&ticket===revision.current){setBusy(false);busyRef.current=false;}}
   };
@@ -81,7 +86,7 @@ export default function HrModule({context,audience='legacy'}) {
   catch(e){if(current())setError(e.code==='40001'?'En annen bruker har endret registeret. Trykk «Oppdater registeret» og se over endringen.':e.message);}
   finally{if(current()){setBusy(false);busyRef.current=false;}}
  };
- const open=id=>run(async(session,current)=>{installDetail(null);const result=await session.get(id);if(current()){installDetail(result.employee);regionRef.current?.focus();}});
+ const open=id=>run(async(session,current)=>{installDetail(null);const result=await session.get(id);if(current()){installDetail(result.employee);selectId(result.employee.id);regionRef.current?.focus();}});
  const command=(action,payload,message)=>run(async(session,current)=>{
   // Fresh detail before every edit; expected revision still protects the write.
   if(action!=='create'){const fresh=await session.get(payload.id);if(fresh.employee.revision!==payload.revision){session.invalidate();throw new Error('Medarbeideren er endret. Oppdater registeret før du fortsetter.');}}
@@ -89,7 +94,7 @@ export default function HrModule({context,audience='legacy'}) {
   if(action==='end')message=hrClosureMessage(result);
   let refreshed;
   try{refreshed=await load(session);}catch(e){if(current()){installDetail(null);setNotice(message);setError('Handlingen er lagret. Registeret kunne ikke hentes på nytt. Kontroller aktivt firma og oppdater registeret.');}return;}
-  if(current()){install(refreshed);installDetail(result.employee||null);setEmployeeUser('');setNewLeader('');setNotice(message);}
+  if(current()){install(refreshed);installDetail(result.employee||null);selectId(result.employee?.id||null);setEmployeeUser('');setNewLeader('');setNotice(message);}
   // Other sessions must still freshly check in the database; this clears this tab's subscribers.
  });
  const refresh=()=>run(async(session,current)=>{session.invalidate();const result=await load(session);if(current())install(result);});
@@ -97,10 +102,10 @@ export default function HrModule({context,audience='legacy'}) {
  const employees=data?.employees||[],shown=employees.filter(employee=>(employee.email||'').toLocaleLowerCase('nb-NO').includes(query.trim().toLocaleLowerCase('nb-NO')));
  const oldHasReader=Boolean(detail?.leader_id&&detail.readers?.some(grant=>grant.user_id===detail.leader_id));
  const selectedLeaderMissing=Boolean(leader&&!members.some(member=>member.id===leader));
- return <section className="hr-module" aria-label="HR">
-  <header className="hr-heading"><div><span className="hr-eyebrow">{context.company_name}</span><h2>{audience==='personal'?'Mine oppfølginger':'HR'}</h2><p>{administer?'Medarbeidere og tilgang':audience==='management'?'Medarbeideroppfølging':'Mine oppfølginger'}</p></div><span className="hr-status">{administer?'Firmaadmin':audience==='management'?'Nærmeste leder':'Personlig tilgang'}</span></header>
-  <div className="hr-intro"><strong>Riktig leder. Riktig tilgang.</strong><p>{administer?'Registrer medarbeidere og velg nærmeste leder. Se over hvem som får lese før dere begynner med oppfølging.':audience==='management'?'Her ser du medarbeiderne du er registrert som nærmeste leder for. Egne oppfølginger ligger på Min side.':'Her ser du egen registeroppføring og medarbeidere du har fått uttrykkelig lesetilgang til.'}</p><p>Samtaler og sykefraværsoppfølging kommer i neste del. Du kan foreløpig ikke lagre referat, fraværsopplysninger eller filer her.</p></div>
-  <div className="hr-toolbar"><h3>{administer?'Medarbeiderregister':'Mine oppfølginger'}</h3><button type="button" className="secondary" disabled={busy} onClick={refresh}>Oppdater registeret</button></div>
+ return <section className={audience==='personal'?'hr-module hr-personal':'hr-module'} aria-label={audience==='personal'?'Mine oppfølginger':'HR'}>
+  {audience!=='personal'&&<header className="hr-heading"><div><span className="hr-eyebrow">{context.company_name}</span><h2>{audience==='personal'?'Mine oppfølginger':'HR'}</h2><p>{administer?'Medarbeidere og tilgang':audience==='management'?'Medarbeideroppfølging':'Mine oppfølginger'}</p></div><span className="hr-status">{administer?'Firmaadmin':audience==='management'?'Nærmeste leder':'Personlig tilgang'}</span></header>}
+  {audience==='personal'?<div className="hr-personal-intro"><ShieldCheck aria-hidden="true"/><div><strong>Din oppføring. Din tilgang.</strong><p>Se egen medarbeideroppføring og det firmaadmin har delt med deg.</p></div></div>:<div className="hr-intro"><strong>Riktig leder. Riktig tilgang.</strong><p>{administer?'Registrer medarbeidere og velg nærmeste leder. Se over hvem som får lese før dere begynner med oppfølging.':audience==='management'?'Her ser du medarbeiderne du er registrert som nærmeste leder for. Egne oppfølginger ligger på Min side.':'Her ser du egen registeroppføring og medarbeidere du har fått uttrykkelig lesetilgang til.'}</p><p>Samtaler og sykefraværsoppfølging kommer i neste del. Du kan foreløpig ikke lagre referat, fraværsopplysninger eller filer her.</p></div>}
+  <div className="hr-toolbar"><h3>{administer?'Medarbeiderregister':audience==='personal'?'Dine oppføringer':'Mine oppfølginger'}</h3><button type="button" className="secondary" disabled={busy} onClick={refresh}>Oppdater registeret</button></div>
   {error&&<p className="hr-error" role="alert">{error}</p>}{notice&&<p className="hr-notice" role="status">{notice}</p>}
   {busy&&<p role="status">Kontrollerer tilgang og register …</p>}
   {administer&&data&&<details className="hr-card" open={!data.settings}>
@@ -126,8 +131,8 @@ export default function HrModule({context,audience='legacy'}) {
     </fieldset></form>
    </details>}
    {administer&&memberNext&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await session.state(memberNext);if(current()){setMembers(previous=>[...previous,...page.members.filter(member=>!previous.some(p=>p.id===member.id))]);setMemberNext(page.next);}})}>Hent flere appbrukere til valgene</button>}
-   {employees.length>0&&<Field label="Søk etter medarbeider"><input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></Field>}
-   <div className="hr-list">{shown.map(employee=><button type="button" className="hr-employee secondary" key={employee.id} disabled={busy} aria-pressed={detail?.id===employee.id} onClick={()=>open(employee.id)}><span><strong>{employee.email||'Medarbeider'}</strong><small>{employee.user_id===userId?'Din medarbeidertilgang':employee.leader_id===userId?'Du er nærmeste leder':administer?'Firmaregister':'Ekstra lesetilgang'}</small></span><span>{employee.leader_id?'Leder registrert':'Leder mangler'} →</span></button>)}</div>
+   {employees.length>(audience==='personal'?1:0)&&<Field label="Søk etter medarbeider"><input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></Field>}
+   <div className="hr-list">{shown.map(employee=><button type="button" className="hr-employee secondary" key={employee.id} disabled={busy} aria-pressed={detail?.id===employee.id} onClick={()=>open(employee.id)}>{audience==='personal'&&<span className="hr-personal-avatar" aria-hidden="true"><UserRound/></span>}<span className="hr-employee-label"><strong>{audience==='personal'&&employee.user_id===userId?'Min medarbeideroppføring':employee.email||'Medarbeider'}</strong><small>{audience==='personal'&&employee.user_id===userId?employee.email:employee.user_id===userId?'Din medarbeidertilgang':audience==='personal'?'Delt med deg · ekstra lesetilgang':employee.leader_id===userId?'Du er nærmeste leder':administer?'Firmaregister':'Ekstra lesetilgang'}</small></span><span className="hr-employee-state">{employee.leader_id?'Leder registrert':'Leder mangler'} {audience==='personal'?<ChevronRight size={18} aria-hidden="true"/>:'→'}</span></button>)}</div>
    {!shown.length&&<div className="hr-empty"><h4>{employees.length?'Ingen treff':'Ingen medarbeidere å vise'}</h4><p>{employees.length?'Prøv et annet søk.':administer?'Start med «Legg til medarbeider». Deretter velger du leder og kontrollerer tilgangen.':'Firmaadmin registrerer medarbeider og nærmeste leder. Oppfølgingene vises her når de er tilgjengelige for deg.'}</p></div>}
    {data.next&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await list(session,data.next);if(current())setData(previous=>({...previous,employees:[...previous.employees,...page.employees.filter(employee=>!previous.employees.some(p=>p.id===employee.id))],next:page.next}));})}>Hent flere medarbeidere</button>}
   </>}
@@ -135,7 +140,8 @@ export default function HrModule({context,audience='legacy'}) {
    <ul>{data.purges.receipts.map(receipt=><li key={receipt.id}>{receipt.kind==='employment'?'Avsluttet arbeidsforhold':'Slettet HR-innhold'} · {new Date(receipt.requested_at).toLocaleString('nb-NO',{timeZone:'Europe/Oslo'})} · <strong>{receipt.state==='complete'?'Slettet':'Tilgang sperret · filsletting pågår'}</strong></li>)}</ul>
    {data.purges.next&&<button type="button" className="secondary" disabled={busy} onClick={()=>run(async(session,current)=>{const page=await session.purgeStatus(data.purges.next);if(current())setData(previous=>({...previous,purges:{receipts:[...previous.purges.receipts,...page.receipts.filter(receipt=>!previous.purges.receipts.some(p=>p.id===receipt.id))],next:page.next}}));})}>Hent flere slettekvitteringer</button>}
   </details>}
-  {detail&&<article className="hr-card hr-detail" ref={regionRef} tabIndex={-1} aria-label="Medarbeiderens tilgang"><div className="hr-toolbar"><h3>{detail.email||'Medarbeider'}</h3><button type="button" className="secondary" onClick={()=>installDetail(null)}>Lukk medarbeider</button></div>
+  {audience==='personal'&&<details className="hr-personal-roadmap"><summary><UserRound size={18} aria-hidden="true"/>Hva kommer her?</summary><p>Medarbeidersamtaler og sykefraværsoppfølging kommer i neste del. Da forbereder du samtalen, og du og leder fullfører sammen. Nærmeste leder starter sykefraværsoppfølging. Du kan ikke lagre referat, fraværsopplysninger eller filer ennå.</p></details>}
+  {detail&&<article className="hr-card hr-detail" ref={regionRef} tabIndex={-1} aria-label="Medarbeiderens tilgang"><div className="hr-toolbar"><h3>{detail.email||'Medarbeider'}</h3><button type="button" className="secondary" onClick={()=>{installDetail(null);selectId(null);}}>Lukk medarbeider</button></div>
    <p>{administer?'Kontroller leder og ekstra lesere. Endringen lagres først når du trykker knappen.':'Dette er din tilgjengelige registeroppføring. Firmaadmin styrer leder og ekstra lesetilgang.'}</p>
    <PrivateContact key={detail.id+':'+detail.revision} context={context} employee={detail}/>
    {!administer&&<p>{detail.leader_id?'Nærmeste leder er registrert.':'Nærmeste leder er ikke registrert. Kontakt firmaadmin.'}</p>}

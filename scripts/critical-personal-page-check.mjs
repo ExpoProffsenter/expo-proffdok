@@ -36,7 +36,9 @@ const main=fs.readFileSync('src/main.jsx','utf8'),ui=fs.readFileSync('src/module
 assert(main.includes('canUseHr: ownRights.hrManagement')&&main.includes('personalPage: ownRights.enabled'));
 assert(main.includes('context: !isProjectSupportReadOnly && !hasActiveProjectWorkspace ? personalContext : null'));
 assert(main.includes('audience: "management"')&&ui.includes('audience="personal"'));
-assert(ui.includes('<div hidden={screen!==\'profile\'}>')&&ui.includes('open={!rights.enabled}')&&ui.includes('{children}</details>'),'Profile/email drafts must remain mounted across Min side sections/access refresh');
+assert(ui.includes('<div hidden={screen!==\'profile\'}>')&&ui.includes('open={!nav?.enabled}')&&ui.includes('{children}</details>'),'Profile/email drafts must remain mounted across Min side sections/access refresh');
+assert(ui.includes("screen==='hr'&&rights.hr&&")&&ui.includes("screen==='handbook'&&rights.kshms&&")&&ui.includes('aria-busy={pending}'),'Navigation memory must never authorize module content');
+assert(ui.includes('authUser?.id===userId?previous:null')&&ui.includes('selection.scope===nav?.scope'),'Remembered navigation must be actor/scope-bound');
 assert(!/localStorage|sessionStorage|indexedDB|createSignedUrl/.test(source+ui));
 assert(sql.includes("e.leader_id=auth.uid()")&&sql.includes("e.user_id=auth.uid() or exists"));
 assert(!/user_metadata|is_systemadmin|create policy|content_enabled.?true/.test(sql));
