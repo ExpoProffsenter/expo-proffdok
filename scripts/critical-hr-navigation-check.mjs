@@ -36,4 +36,9 @@ const migration=fs.readFileSync('supabase/migrations/20261009185827_hr_navigatio
 assert(migration.includes('hr_private.require_actor(c)')&&migration.includes('content_enabled\',false'));
 assert(migration.includes('from public,anon,authenticated,service_role'));
 assert(!/is_systemadmin|kshms_private|user_metadata|create policy/i.test(migration));
+// Real Preview regression: app-wide header rule made module titles stick over
+// the app logo at scrollY>0. Only the actual app header may own that layer.
+for(const [file,selector] of [['src/modules/hr/hr.css','.hr-module>header.hr-heading'],['src/modules/kshms/kshms.css','.ks-module>header.ks-heading']]){
+ const css=fs.readFileSync(file,'utf8');assert(css.includes(selector+'{position:static;top:auto;z-index:auto}'),'Module header inherited app sticky positioning');
+}
 console.log('✅ HR/menu H2: stable grouped routes, isolated global gate, foreground/background revocation, stale identity/offline/dispose and closed content surface PASS');
