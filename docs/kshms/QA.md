@@ -1,3 +1,13 @@
+## Versjonerte underskjema – QA og Sandbox
+
+- Permanent kritisk modul og faktisk React PASS: eksakt v3-valg/payload, response-loss/retry, dependency/hash, prosjektkopi og eksisterende Ok/Avvik.
+- Sandbox-migrasjonene `20261009040633` og `20261009041152` anvendt. Rollback-script: **17 assertions PASS**, alle syntetiske data rullet tilbake. Child v1/v2, parent v1/v2, identisk hashgjenbruk, uforanderlighet, syklus, manglende/arkivert child, ren utføringsform, faktisk selvstendig kontroll, alle versjoner og private/public ACL kontrollert.
+- Faktisk jsPDF/PDF.js: fem dokumenter PASS. Mal-PDF viser versjonsfast child v3-ID/hash og utflatet child-punkt. Poppler tekst/sidekontroll og visuell A4-kontroll PASS uten klipp/overlapp.
+- Direkte Sandbox-kontroll: migration_count=1, state authenticated=true/anon=false, privat snapshot authenticated=false, mailer enabled=false. Supabase-advisors har ingen nytt funn knyttet til de nye private funksjonene; eksisterende prosjektfunn består.
+- Full critical build, scope/docs-guard, diff-check og publiseringsbevis føres etter endelig kjøring. Dette er utviklerbevis, ikke bruker-TEST OK. [Detaljer](CHECKLIST_SUBFORMS_20261009.md).
+
+---
+
 ## Risikobilder – QA før publisering
 
 - Critical validering/PDF/uttrekk/ZIP PASS: bilde og legacy, duplikat/maksgrense/type, immutable snapshot, risikobilde i PDF og ZIP-manifest, tilgang/revisjon/sene svar og ingen eksportskriving.

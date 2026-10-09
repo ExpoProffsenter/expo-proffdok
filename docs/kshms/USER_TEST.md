@@ -1,3 +1,15 @@
+## Ny kort Preview-prøve – versjonert underskjema
+
+Dette gjelder bare nye underskjema. Tidligere TEST OK 9. oktober kl. 00:59 / 01:29 / 01:55 / 02:28 beholdes og skal ikke gjentas.
+
+1. I Sjekklistesentral åpner du en ufarlig testmal eller lager et tydelig testutkast. Etter ett punkt velger du en allerede publisert testmal/versjon under **Underskjema etter sjekkpunkt …**. Listen skal vise navn, `vN` og fag. Ikke bruk eller endre en reell kontrollmal bare for prøven.
+2. Lagre/publiser testutgaven. Åpne **Publisert sjekklistemal** og last ned PDF. Den skal vise child-navn, eksakt versjon/ID/hash og child-punktet med `Underskjema`-prefiks. Senere child-endring skal ikke endre den gamle parent-PDF-en.
+3. Hent parent-utgaven i et trygt testprosjekt eller en testkontroll. Punktene skal komme i riktig rekkefølge og kunne besvares med eksisterende Ok/Avvik-flyt. En allerede hentet kopi skal ikke endres hvis child eller parent senere publiseres på nytt.
+
+Utvikler har verifisert React, Sandbox rollback og faktisk/visuell PDF. Dette er ikke Kenneths TEST OK eller mobil-/flerbrukerbevis. [Scope/QA](CHECKLIST_SUBFORMS_20261009.md).
+
+---
+
 ## Ny kort Preview-prøve – bilde i risikovurdering
 
 Dette gjelder bare nye risikobilder. Tidligere TEST OK 9. oktober kl. 00:59 / 01:29 / 01:55 / 02:28 beholdes og skal ikke gjentas uten konkret regresjon.

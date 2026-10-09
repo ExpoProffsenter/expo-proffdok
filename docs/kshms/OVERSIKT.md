@@ -1,3 +1,9 @@
+## Versjonerte underskjema – gjeldende avgrensede B-punkt
+
+Sjekklistesentral kan velge en eksakt publisert child-versjon per rotpunkt. Serveren lagrer rot, utflatet utføringsliste og uforanderlig dependency-ID/hash/innhold; samme-firma/aktiv-mal, syklus og 100-punktsgrense håndheves. Eksisterende prosjekt- og selvstendige kontroller fortsetter på samme snapshotmodell. Sandbox-migrasjoner `20261009040633` + `20261009041152`; 17 rollback-assertions, faktisk React og faktisk/visuell PDF PASS. Dette er utviklerbevis, ikke TEST OK. Neste uavhengige B/C er påminnelser, deretter kildeoppdatering; HR er ikke startet. [Scope/QA](CHECKLIST_SUBFORMS_20261009.md).
+
+---
+
 ## Risikobilder – avgrenset vedleggsleveranse 9. oktober 2026
 
 Inntil tre komprimerte bilder per fare er implementert i samme private, revisjonerte risikovurderingssnapshot. Bildene følger egen PDF, valgt prosjektrapport, samlet Dokumentuttrekk og bekreftet ZIP/manifest. Gamle vurderinger uten bilder virker som før; ny vurdering med samme farer arver ikke bilder. Ingen ny Storage/tabell/RLS/policy. Faktisk React, tre PDF-flyter, visuell kontroll, ZIP og full Sandbox critical build er PASS. Privat migrasjon `20261009031544 kshms_risk_photos` er anvendt og direkte funksjons-/ACL-prøvd på Sandbox; mailer er fortsatt `enabled=false`.

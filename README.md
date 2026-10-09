@@ -1,3 +1,9 @@
+# KS/HMS – versjonerte underskjema i Sandbox
+
+Sjekklistesentral kan feste en eksakt publisert underskjemaversjon etter et punkt. Publisering lagrer rotpunkter, ferdig utføringsliste og komplett dependency-ID/hash/snapshot. Syklus, fremmed/arkivert mal og mer enn 100 ferdige punkter stoppes server-side. Eksisterende prosjekt- og selvstendige kontroller bruker samme utførelsesmodell; gamle publiserte utgaver omskrives ikke. Tom mal-PDF viser child-versjonene. [Scope/testbevis](docs/kshms/CHECKLIST_SUBFORMS_20261009.md), [kort prøve](docs/kshms/USER_TEST.md). Bare feature/Sandbox; Production er ikke godkjent.
+
+---
+
 # KS/HMS – egne rutine- og sjekkliste-PDF-er
 
 Godkjente rutineutgaver og publiserte sjekklistemaler kan lastes ned. Lagrede prosjektkontroller har egen PDF med svar, bilder og eventuell fullføring. Utkast/maler og historikk merkes; tilgang og lagret innhold leses på nytt. Ingen automatisk deling eller egen ansattbekreftelse. [Omfang/testbevis](docs/kshms/DOCUMENT_PDF_20261008.md), [kort prøve](docs/kshms/USER_TEST.md). Samme feature/Sandbox; Production er ikke godkjent.

@@ -1,3 +1,13 @@
+## Gjeldende fortsettelsespunkt – versjonerte underskjema
+
+Start kontrollert mot remote feature `131d65ca97b7a401417e439b185ceac2afa5b6ff`, tree `806b61458891c92b25ed61a02676377101e9d1f2`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Leveransen gjør én eksakt publisert underskjemaversjon valgfri etter hvert sjekkpunkt. Publisering lagrer root, ferdig utflatet utføring og komplett child-ID/hash/snapshot. Fremmed, manglende, arkivert og sirkulær dependency stoppes; historiske child-versjoner kan velges i manager-sentralen. Prosjektkopier og gjennomføringer forblir uforanderlige.
+
+Sandbox `20261009040633 kshms_checklist_subforms` + `20261009041152 kshms_checklist_subform_execution_shape` anvendt; 17 rollback-assertions PASS, inkludert selvstendig kontroll med utflatet snapshot, og alle syntetiske rader rullet tilbake. Authenticated manager-RPC åpen, anon lukket og privat snapshot-hjelper lukket. Mailer direkte `enabled=false`. Faktisk React og fem faktiske PDF-uttrekk PASS; child v3-ID/hash og utflatet punkt finnes i mal-PDF. Poppler/A4 visuelt kontrollert uten klipp/overlapp. Full build/publisert head/tree/CI/Vercel og innlogget Preview føres når ferdig. [Scope/QA](CHECKLIST_SUBFORMS_20261009.md).
+
+Ingen Kenneth TEST OK for denne delen. TEST OK 00:59 / 01:29 / 01:55 / 02:28 beholdes uten omtest. Faktiske private filer, mobil/flere brukere og restprøver består. Neste uavhengige B/C er påminnelser og deretter kildeoppdatering; HR er ikke startet. Ingen ekte e-post, Production/main/demo-merge.
+
+---
+
 ## Gjeldende fortsettelsespunkt – risikobilder publisert og verifisert
 
 Kontrollert fra remote feature-head `0b6c0ffab2705c06b7314f2484cb187412c9f02d`, tree `d84c3ae5742d07b3d431132be99a3f0b579a5932`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Lokal checkout har annen commitidentitet etter tidligere GitHub-objectpublisering, men samme verifiserte tree og ren start. Miljømål BEGGE, kun feature/Sandbox.

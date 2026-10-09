@@ -1,3 +1,13 @@
+## Versjonerte underskjema – avgrenset B-leveranse 9. oktober 2026
+
+Kontrollert start remote feature `131d65ca97b7a401417e439b185ceac2afa5b6ff` / tree `806b61458891c92b25ed61a02676377101e9d1f2`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Sjekklistesentral kan feste eksakt publisert child-versjon etter et rotpunkt. Publisering lagrer root, utflatet utføringsliste og komplett child-versjon/hash/innhold. Samme-firma/aktiv-mal, syklus og maks 100 ferdige punkter håndheves server-side. Gamle parent-/prosjektkopier omskrives ikke.
+
+Sandbox-migrasjonene `20261009040633 kshms_checklist_subforms` og `20261009041152 kshms_checklist_subform_execution_shape` anvendt. 17 rollback-assertions PASS, inkludert faktisk selvstendig kontroll; faktisk React og fem faktiske PDF-er PASS; A4-mal visuelt kontrollert. RPC/privat ACL og mailer `enabled=false` direkte kontrollert. Full build/publisert head/tree/CI/Vercel og innlogget Preview føres etter publisering. [Scope/QA](docs/kshms/CHECKLIST_SUBFORMS_20261009.md).
+
+Dette er ikke Kenneths TEST OK. Tidligere TEST OK 00:59 / 01:29 / 01:55 / 02:28 beholdes. Faktiske private filer, mobil/flere brukere og separate restprøver består. Neste B/C er påminnelser, deretter kildeoppdatering; HR er ikke startet. Ingen ekte e-post eller Production/main/demo-merge.
+
+---
+
 ## Risikobilder – publisert utviklerbevis 9. oktober 2026
 
 Start kontrollert mot remote feature `0b6c0ffab2705c06b7314f2484cb187412c9f02d` / tree `d84c3ae5742d07b3d431132be99a3f0b579a5932`; main `155f6c4ac01f126c1db0c65da385cfd9305587d5`; PR #216 draft. Funksjonshead **bcd0579cebdeaaaa4578abab14dc5522bf0abd88**, tree **03e3ecf71fcde6c43e714997f57a24f1f213f810**, publisert fra expected-head uten force; alle 24 endrede blobber og samlet tree matcher lokal testcommit. Core Safety **37878651320**, full critical jobb **113652964404** completed/success. Vercel **dpl_AKRXJxtRxZuNRif9ej4d2oUJ5vk3** er READY på eksakt SHA/feature-ref/fast alias og direkte lest `EXPO_BACKEND_TARGET=sandbox`.

@@ -8,6 +8,8 @@ const editor={id:template,revision:0,requestId:instance,content};
 const published={id:version,template_id:template,company_id:company,number:1,content_hash:'hash1',content};
 assert.equal(blankChecklist(()=>instance).content.title,'');
 assert.equal(checklistContent({...content,title:' Rørkontroll '}).title,'Rørkontroll');
+assert.equal(checklistContent({...content,points:[{...content.points[0],subform_version_id:version}]}).points[0].subform_version_id,version);
+assert.throws(()=>checklistContent({...content,points:[{...content.points[0],subform_version_id:'bad'}]}),/gyldig underskjema/);
 assert.throws(()=>checklistContent({...content,points:[content.points[0],{...content.points[0],id:instance,title:'kontroller rørene'}]}),/ulik tekst/);
 const memory=new Map(),storage={getItem:key=>memory.get(key),setItem:(key,value)=>memory.set(key,value)};
 persistChecklistDraft(storage,'admin',company,editor);assert.equal(readChecklistDraft(storage,'admin',company).requestId,instance);
@@ -25,6 +27,12 @@ for(const failure of ['command','read','text','foreign','late','']){
  assert.equal(calls,['command','late'].includes(failure)?1:2);
 }
 const copy={id:instance,company_id:company,template_id:template,version_id:version,version:1,content_hash:'hash1',content};
+const nestedPoint='66666666-6666-4666-8666-666666666666';
+const nestedContent={...content,root_points:[{...content.points[0],subform_version_id:instance}],points:[content.points[0],{...content.points[0],id:nestedPoint,title:'Underskjema · Trykkprøve · Kontroller trykk'}],dependencies:[{version_id:instance,template_id:point,number:3,content_hash:'nested-hash',title:'Trykkprøve',trade:'Rørlegger',content}]};
+assert(sameChecklistContent(nestedContent,structuredClone(nestedContent)),'Exact dependency snapshot comparison failed');
+assert(sameChecklistContent({...content,points:nestedContent.root_points},nestedContent),'Draft did not compare with published root points');
+const nestedCopy=appendProjectChecklist({}, {...copy,content:nestedContent}).instance;
+assert.equal(nestedCopy.content.dependencies[0].content_hash,'nested-hash');assert.equal(projectChecklistTemplate([nestedCopy])[0].items.length,2);
 const original={projectName:'General or wetroom',projectDeviations:[{id:'legacy',status:'Åpent'}],customChecklistGroups:[{text:'Keep'}]};
 const added=appendProjectChecklist(original,copy);assert.equal(original.kshmsChecklistInstances,undefined);
 assert.equal(added.project.projectDeviations,original.projectDeviations);assert.equal(added.project.customChecklistGroups,original.customChecklistGroups);
@@ -66,6 +74,9 @@ assert(main.slice(panels[1],pickers[0]).includes('!isSimpleOrderProject(project)
 assert(main.slice(checklistPanel,pickers[1]).includes('isSimpleOrderProject(project) && authUser'),'General orders need intake directly in Sjekklister');
 assert(main.includes('...firmChecklistTemplate'),'Imported copies omitted from checklist/progress/report');
 const central=fs.readFileSync('src/modules/kshms/KshmsModule.jsx','utf8');assert(central.includes("['checklists','Sjekklistesentral']")&&central.includes("screen==='checklists'||checklistsOpened"));
+const migration=fs.readFileSync('supabase/migrations/20261009040633_kshms_checklist_subforms.sql','utf8');
+for(const needle of ['checklist_snapshot_contains_template','checklist_point_uuid','root_points','dependencies','subform_version_id','jsonb_array_length(flat_points)>100',"revoke all on function kshms_private.checklist_content"])assert(migration.includes(needle),`Missing subform guard: ${needle}`);
+const executionShape=fs.readFileSync('supabase/migrations/20261009041152_kshms_checklist_subform_execution_shape.sql','utf8');assert(executionShape.includes("point-'subform_version_id'"),'Dependency reference leaked into execution point');
 const orderUx=fs.readFileSync('src/modules/project/simpleOrderWorkspaceUx.js','utf8');
 const hidden=orderUx.slice(orderUx.indexOf('const HIDDEN_NAV_LABELS'),orderUx.indexOf('const CUSTOMER_ACTION_PATTERN'));
 assert(hidden.includes("'Fag/utstyr'"),'General order exposed Fag/utstyr against the agreed scope');

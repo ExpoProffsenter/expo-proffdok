@@ -6,6 +6,10 @@
 
 ---
 
+# Versjonerte underskjema – avgrenset B i Sandbox
+
+Sjekklistedraften kan peke fra et rotpunkt til én eksakt `kshms_checklist_versions.id`. `kshms_private.checklist_snapshot` validerer samme firma/aktiv mal, stopper direkte og transitiv syklus, begrenser den ferdige listen til 100 punkter og lager deterministiske child-punkt-ID-er. Publisert `content` beholder `root_points`, ferdig utflatede `points` og komplette `dependencies` med versjons-ID/hash/innhold. Child-referansen finnes bare i root/dependency, ikke utføringspunktet, så eksisterende utførelses-RPC-er validerer og låser den utflatete listen som før. Historiske versjoner er valgbare bare gjennom manager-RPC; prosjektkatalogen tilbyr fortsatt nyeste aktive mal. Ingen ny tabell, Storage, RLS-policy, e-post eller Production-endring. Sandbox-migrasjoner `20261009040633` og `20261009041152`. [Kontrakt og QA](../kshms/CHECKLIST_SUBFORMS_20261009.md).
+
 # Rutine-/sjekkliste-PDF – avgrenset B/C i Sandbox
 
 KshmsDocumentPdfButton og kshmsDocumentPdf.mjs bruker eksisterende kshms_get_state/kshms_checklist_state/project_checklist_state og firmaprofil. Eksakte utgaver/hash/svar/revisjon og eksisterende firma-/bruker-/prosjekttilgang kontrolleres før/etter asynkron lasting. Ulagret kontroll sperres; sene scope-/skjermsvar stoppes. appendExecutionPdf gjenbrukes uten layout-/lagringsendring; eksisterende logo-loader eksporteres. Main sender bare eksisterende publicProjectFileUrl til prosjektpopupen. Ingen DDL/RLS/Storage/auth-, autosave-/navigasjons- eller e-postendring. Filadresser blir rasterbilder, ikke tekst/lenker. Rutine-PDF utelater medarbeidertildelinger/bekreftelser og upubliserte utkast. Se [kontrakt og tester](../kshms/DOCUMENT_PDF_20261008.md).

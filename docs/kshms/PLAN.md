@@ -1,3 +1,9 @@
+## Versjonerte underskjema – levert utviklerscope
+
+Eksakt publisert child-versjon per rotpunkt, syklus-/tilgangskontroll og uforanderlig dependency-snapshot er implementert i feature/Sandbox. Prosjekt- og selvstendig gjennomføring bruker samme ferdig utflatede versjonssnapshot. Sandbox-migrasjoner `20261009040633` + `20261009041152`, 17 rollback-assertions, faktisk React og faktisk/visuell PDF PASS. Bruker-TEST OK gjenstår; tidligere godkjenninger består. Neste uavhengige C-punkt er påminnelser, deretter kildeoppdatering. HR starter ikke nå. [Detaljer](CHECKLIST_SUBFORMS_20261009.md).
+
+---
+
 ## Risikobilder – gjeldende avgrensede B/C-punkt
 
 Inntil tre komprimerte bilder per fare er implementert i risikovurderingens versjonerte snapshot og koblet til egen PDF, prosjektrapport, samlet PDF og vedleggs-ZIP. Legacy uten bilder, ny vurdering uten bildearv, privat validator og eksisterende immutable fullføring beholdes. Faktisk React/PDF/ZIP, visuell kontroll og full Sandbox critical build er PASS. Privat migrasjon `20261009031544 kshms_risk_photos` er anvendt og funksjons-/ACL-prøvd i Sandbox. Funksjonshead `bcd0579cebdeaaaa4578abab14dc5522bf0abd88`, tree `03e3ecf71fcde6c43e714997f57a24f1f213f810`, grønn full CI og READY Sandbox Preview. Innlogget read-only UI-regresjon PASS uten dataendring. Leveransen er utviklerferdig, men ikke bruker-TEST OK. [Scope/QA](RISK_ATTACHMENTS_20261009.md).

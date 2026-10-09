@@ -14,13 +14,16 @@ window.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2
 window.HTMLElement.prototype.scrollIntoView=function(){};
 const company='11111111-1111-4111-8111-111111111111',projectId='99999999-9999-4999-8999-999999999999';
 const context={company_id:company,user_id:'admin',manage:true,publish:true};
+const subformTemplate='88888888-8888-4888-8888-888888888888',subformVersionId='66666666-6666-4666-8666-666666666666',subformPoint='55555555-5555-4555-8555-555555555555';
+const subformRow={id:subformTemplate,company_id:company,revision:1,archived:false,draft:{title:'Trykkprøve',trade:'Rørlegger',instructions:'Utfør trykkprøve',points:[{id:subformPoint,title:'Kontroller trykk',guidance:'Les av manometer',image_required:true,comment_required:false}]}};
+const subformVersion={id:subformVersionId,template_id:subformTemplate,company_id:company,number:3,content_hash:'subform-hash',content:subformRow.draft};
 let row=null,version=null,failPublish=true;const receipts=new Map(),commands=[];
 window.__rpc=async(name,args)=>{
- if(name==='kshms_checklist_state')return {context,templates:row?[row]:[],versions:version?[version]:[]};
+ if(name==='kshms_checklist_state')return {context,templates:[subformRow,...(row?[row]:[])],versions:[subformVersion,...(version?[version]:[])]};
  if(name==='kshms_checklist_command'){
   commands.push({action:args.p_action,request:args.p_request_id});if(receipts.has(args.p_request_id))return receipts.get(args.p_request_id);
   row={id:args.p_payload.id,revision:(row?.revision||0)+1,company_id:company,draft:args.p_payload.content};
-  if(args.p_action==='publish')version={id:'33333333-3333-4333-8333-333333333333',template_id:row.id,company_id:company,number:1,content_hash:'hash1',content:row.draft};
+  if(args.p_action==='publish'){const root=structuredClone(row.draft.points),linked=root.find(point=>point.subform_version_id);version={id:'33333333-3333-4333-8333-333333333333',template_id:row.id,company_id:company,number:1,content_hash:'hash1',content:linked?{...row.draft,root_points:root,points:[...root,{...subformRow.draft.points[0],id:'77777777-7777-4777-8777-777777777777',title:'Underskjema · Trykkprøve · Kontroller trykk'}],dependencies:[{version_id:subformVersion.id,template_id:subformTemplate,number:3,content_hash:subformVersion.content_hash,title:'Trykkprøve',trade:'Rørlegger',content:subformVersion.content}]}:row.draft};}
   const result={template:row,version:args.p_action==='publish'?version:null};receipts.set(args.p_request_id,result);
   if(args.p_action==='publish'&&failPublish){failPublish=false;throw Error('Response lost after commit');}return result;
  }
@@ -32,9 +35,11 @@ const act=window.__act,button=text=>[...window.document.querySelectorAll('button
 const input=label=>[...window.document.querySelectorAll('label')].find(node=>node.querySelector('span')?.textContent===label)?.querySelector('input,textarea,select');
 const click=async node=>{assert(node,'Missing button');await act(async()=>{node.click();});};
 const write=async(label,value)=>{const field=input(label);assert(field,label);await act(async()=>{const prototype=field.tagName==='TEXTAREA'?window.HTMLTextAreaElement.prototype:window.HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(prototype,'value').set.call(field,value);field.dispatchEvent(new window.Event('input',{bubbles:true}));});};
+const select=async(label,value)=>{const field=input(label);assert.equal(field?.tagName,'SELECT',label);await act(async()=>{Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype,'value').set.call(field,value);field.dispatchEvent(new window.Event('change',{bubbles:true}));});};
 await act(async()=>window.__render('central',{context}));await click(button('Ny sjekkliste'));
 assert(window.document.querySelector('[role="dialog"]'));
 await write('Navn på sjekklisten','Rørsjekkliste');await write('Tekst for sjekkpunkt 1','Kontroller rør');await write('Hjelpetekst for sjekkpunkt 1','Kontroller koblinger');
+await select('Underskjema etter sjekkpunkt 1 (valgfritt)',subformVersionId);assert.equal(input('Underskjema etter sjekkpunkt 1 (valgfritt)').selectedOptions[0].textContent,'Trykkprøve · v3 · Rørlegger');
 await click(button('Legg til sjekkpunkt'));await write('Tekst for sjekkpunkt 2','Kontroller merking');
 await click(window.document.querySelector('[aria-label="Flytt sjekkpunkt 2 opp"]'));assert.equal(input('Tekst for sjekkpunkt 1').value,'Kontroller merking');assert.equal(input('Hjelpetekst for sjekkpunkt 2').value,'Kontroller koblinger');
 await act(async()=>window.__render('central',{context,active:false}));assert.equal(window.document.querySelector('[role="dialog"]'),null,'Hidden central left portalled dialog open');
@@ -44,6 +49,7 @@ const dialog=window.document.querySelector('[role="dialog"]');dialog.scrollTop=4
 await write('Navn på sjekklisten','Publisert rørsjekkliste');await click(button('Lagre og publiser'));
 assert(window.document.querySelector('[role="dialog"]'),'Lost response discarded builder');assert.equal(input('Navn på sjekklisten').value,'Publisert rørsjekkliste');
 await click(button('Lagre og publiser'));assert.equal(window.document.querySelector('[role="dialog"]'),null);assert.equal(commands[1].request,commands[2].request,'Retry changed request id');assert.equal(window.localStorage.getItem('expo:kshms:checklist-draft:v1:admin:'+company),null);
+assert.equal(row.draft.points.find(point=>point.title==='Kontroller rør').subform_version_id,subformVersionId,'Pinned subform edition was not submitted');assert.equal(version.content.dependencies[0].content_hash,'subform-hash');
 await act(async()=>window.__unmount());
 const order=window.document.createElement('div');order.innerHTML='<nav><button>Prosjektoversikt</button><button>Fag/utstyr</button><button>Garanti</button><button>Sjekklister</button></nav><div data-expo-workflow-type="simple_order"></div>';window.document.body.append(order);
 const frames=[];window.requestAnimationFrame=fn=>{frames.push(fn);return frames.length;};window.__installOrderUx();
