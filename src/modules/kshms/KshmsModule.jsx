@@ -7,6 +7,7 @@ import { publishManagedAccessChange } from '../access/moduleAccessClient.js';
 import { addLibraryRoutines } from './kshmsLibrary.mjs';
 import KshmsRoutineLibrary from './KshmsRoutineLibrary.jsx';
 import KshmsSourceUpdates from './KshmsSourceUpdates.jsx';
+import KshmsReviewReminder from './KshmsReviewReminder.jsx';
 import KshmsSourceProposal from './KshmsSourceProposal.jsx';
 import {applySourceField,markSourceReviewed} from './kshmsSourceUpdates.mjs';
 import KshmsRoutineSearch from './KshmsRoutineSearch.jsx';
@@ -75,6 +76,7 @@ export default function KshmsModule({context,deviationRequest}) {
  const readingRef=useRef(null),readingDoneRef=useRef(null),completionRef=useRef(null),[readingFocus,setReadingFocus]=useState(0),[completionFocus,setCompletionFocus]=useState(0),[readingFeedback,setReadingFeedback]=useState('');
  const [handbookQuery,setHandbookQuery]=useState(''),[readingQuery,setReadingQuery]=useState(''),[personalQuery,setPersonalQuery]=useState('');
  const setupSuggestionFields=useRef(new Set());
+ const reviewRef=useRef(null),[reviewFocus,setReviewFocus]=useState(0);
  const [findings,setFindings]=useState(''),[followUp,setFollowUp]=useState(''),[nextReview,setNextReview]=useState(''),[reviewChecked,setReviewChecked]=useState(false);
  const [selectedKeys,setSelectedKeys]=useState([]),[libraryFilter,setLibraryFilter]=useState('recommended'),[libraryPreview,setLibraryPreview]=useState(null),[libraryProgress,setLibraryProgress]=useState(null),[libraryFeedback,setLibraryFeedback]=useState(null),[libraryOpen,setLibraryOpen]=useState(false);
  const requestScope=useRef(null),editorRef=useRef(null),libraryPreviewRef=useRef(null),firstView=useRef(false),flowRef=useRef(null),setupRef=useRef(null),libraryRef=useRef(null),followupRef=useRef(null),[editorFocus,setEditorFocus]=useState(0),[flowFocus,setFlowFocus]=useState(0),[libraryFocus,setLibraryFocus]=useState(0);
@@ -92,6 +94,8 @@ export default function KshmsModule({context,deviationRequest}) {
  useEffect(()=>{if(overviewFocus&&overviewRef.current){overviewRef.current.focus();overviewRef.current.scrollIntoView({block:'start'});}},[overviewFocus]);
  useEffect(()=>{if(flowFocus){const target=screen==='setup'?setupRef.current:screen==='followup'?followupRef.current:flowRef.current;target?.focus();target?.scrollIntoView({block:'start'});}},[flowFocus,screen]);
  useEffect(()=>{if(libraryFocus){libraryRef.current?.focus();libraryRef.current?.scrollIntoView({block:'start'});}},[libraryFocus]);
+ useEffect(()=>{if(reviewFocus&&reviewRef.current){reviewRef.current.open=true;reviewRef.current.focus();reviewRef.current.scrollIntoView({block:'start'});}},[reviewFocus]);
+ const openReview=()=>{if(busy||!data?.context?.responsible||data.context.company_id!==companyId||data.context.user_id!==userId)return;setScreen('followup');setReviewFocus(previous=>previous+1);};
  const run=async(action,payload,success='Lagret.',onSaved=null)=>{
   setBusy(true);setError('');setNotice('');
   try{const result=await kshmsRpc('kshms_command',{p_company_id:companyId,p_action:action,p_payload:payload});const value=await load();if(action==='settings'){setupSuggestionFields.current.clear();setSetup(value.settings||emptySetup);}setNotice(success);onSaved?.(result,value);return result;}
@@ -199,6 +203,7 @@ export default function KshmsModule({context,deviationRequest}) {
   <header className="ks-heading"><div><span className="ks-eyebrow">{context.company_name}</span><h2>KS/HMS</h2><p>Firmaets håndbok og rutiner</p></div><span className="ks-badge">{canManage?canAdmin?'Firmaadmin – bygge håndbok':'KS/HMS-ansvarlig – bygge håndbok':'Ansatt – lese og bekrefte'}</span></header>
   <p className="ks-scope">{canManage?'Du bygger firmaets KS/HMS-håndbok. Både firmaadmin og KS/HMS-ansvarlig kan velge, skrive, endre og godkjenne rutiner. En rutine forklarer hvordan en oppgave skal gjøres. Firmaadmin styrer ansattes tilgang. Firmaet må lære opp ansatte og følge rutinene i arbeidet.':'Her finner du rutinene du har fått. De forklarer hvordan du skal jobbe trygt og gjøre oppgavene riktig. I «Les og bekreft» ser du hva du skal lese og hva du allerede har bekreftet.'}</p>
   <nav className="ks-tabs" aria-label="KS/HMS visning">{[...(canManage?[['handbook','Håndbok'],['checklists','Sjekklistesentral']]:[]),['personal','Min personalhåndbok'],['reading',`Les og bekreft (${pending.length})`],['deviations','Avvik/RUH'],['sja','SJA'],['rounds','Vernerunder/kontroller'],['risk','Risikovurdering'],...(canManage?[['extract','Dokumentuttrekk'],['setup','Oppstart og tilgang'],['followup','Oppfølging og revisjon']]:[])].map(([key,label])=><button type="button" key={key} className={screen===key?'active':'secondary'} aria-pressed={screen===key} onClick={()=>setScreen(key)}>{label}</button>)}</nav>
+  <KshmsReviewReminder key={`${companyId}:${userId}`} context={data.context} settingsRevision={data.settings?.revision} busy={busy} onOpen={openReview}/>
   {canManage&&screen==='extract'&&<KshmsInspectionExtract key={`${companyId}:${userId}`} context={data.context}/>}
   <ExecutionSurfaces screen={screen} companyId={companyId} userId={userId} context={context}/>
   {canManage&&(screen==='checklists'||checklistsOpened)&&<div hidden={screen!=='checklists'}><KshmsChecklistCentral key={`${companyId}:${userId}`} context={data.context} active={screen==='checklists'}/></div>}
@@ -295,7 +300,7 @@ export default function KshmsModule({context,deviationRequest}) {
    </div>
    <div className="ks-card"><h3>Her kontrollerer dere at håndboken fortsatt passer</h3><p>Å kontrollere og oppdatere håndboken kalles revisjon. Les rutinene og sjekk om de passer arbeidet dere gjør nå. Noter hva som må endres, hvem som gjør det, og når det skal være klart.</p><p className={overdue?'ks-error':''}>Neste kontroll: {data.settings?.next_review_on||'Lagre oppstart først'}{overdue?' · Datoen er passert':''}</p><p>I ProffDok skal håndboken kontrolleres minst én gang i året. Dette er vår avtalte regel. Endringer eller hendelser kan gjøre at dere må kontrollere tidligere. Den valgte KS/HMS-ansvarlige signerer kontrollen.</p>
     <p>Neste steg etter publisering er at ansatte leser rutinene. Du trenger ikke signere en revisjon bare for å gå videre. Åpne kontrollen under når du faktisk skal gjennomgå håndboken.</p>
-    <details className="ks-followup-section"><summary>Gjennomfør revisjon</summary>{data.context.responsible?<form onSubmit={async e=>{e.preventDefault();const result=await run('review',{settings_revision:data.settings.revision,version_snapshot:currentVersionSnapshot(data),findings,follow_up:followUp,next_review_on:nextReview},'Kontrollen er signert og lagret sammen med utgavene du kontrollerte.');if(result){setReviewChecked(false);setFindings('');setFollowUp('')}}}>
+    <details className="ks-followup-section" ref={reviewRef} tabIndex={-1}><summary>Gjennomfør revisjon</summary>{data.context.responsible?<form onSubmit={async e=>{e.preventDefault();const result=await run('review',{settings_revision:data.settings.revision,version_snapshot:currentVersionSnapshot(data),findings,follow_up:followUp,next_review_on:nextReview},'Kontrollen er signert og lagret sammen med utgavene du kontrollerte.');if(result){setReviewChecked(false);setFindings('');setFollowUp('')}}}>
      <p>Kontrollen gjelder {latest.length} godkjente rutiner. Sjekk også om utkast må ferdigstilles eller gamle rutiner tas ut av bruk før du signerer.</p>
      <Field label="Hva har du kontrollert?" hint="Skriv hvilke rutiner du har gått gjennom, og om noe må endres." value={findings} onChange={setFindings} multiline required/>
      <Field label="Hva skal gjøres videre?" hint="Skriv hva som skal gjøres, hvem som gjør det, og fristen. Hvis alt er i orden, forklar kort hvorfor." value={followUp} onChange={setFollowUp} multiline required/>

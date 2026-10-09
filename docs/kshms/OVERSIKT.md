@@ -1,6 +1,6 @@
 # KS/HMS – gjeldende samlet status
 
-Oppdatert 9. oktober 2026 etter samlet B/C-gjennomgang. Denne oversikten erstatter de historiske fortsettelsespunktene. [Tidligere oversikt](archive/OVERSIKT_before_BC_REVIEW_20261009.md) er bevart; [PLAN](PLAN.md) har vedtatt omfang og [CONTINUITY](CONTINUITY.md) har leveringshistorikk.
+Oppdatert 9. oktober 2026 etter håndbokrevisjonspåminnelser. Denne oversikten erstatter de historiske fortsettelsespunktene. [Tidligere oversikt](archive/OVERSIKT_before_BC_REVIEW_20261009.md) er bevart; [PLAN](PLAN.md) har vedtatt omfang og [CONTINUITY](CONTINUITY.md) har leveringshistorikk.
 
 KS/HMS er utviklet på **feat-kshms-foundation**, draft PR **#216**, mot egen Sandbox. Modulen er ikke satt i produksjon. Miljømål er **BEGGE**; merge, Production-verifisering og main → demo følger først ved senere godkjent release. [Samme Sandbox Preview](https://expo-proffdok-git-feat-kshms-foundation-ringside.vercel.app/?progressTest=safe).
 
@@ -11,11 +11,13 @@ KS/HMS er utviklet på **feat-kshms-foundation**, draft PR **#216**, mot egen Sa
 | A – håndbok og tilgang | Firmaaktivering, roller/oppstart, egne utkast, godkjenning, faste utgaver, egen gjennomgang, Min personalhåndbok og signert håndbokrevisjon. | Samlet release-QA. Firmaet velger, tilpasser og godkjenner sine rutiner før bruk. |
 | A2 – rutineinnhold | 73 selvstendige forslag med sporbar håndtering av 121 innholdstemaer fra begge håndbøkene, seks hovedkapitler og faste rutinenumre. | Konkret firmatilpasning og faglig vurdering. Temadekning er ikke godkjenning av alle spesialtilfeller. |
 | B – utførelse | Sjekklistesentral, prosjekt-/selvstendige kontroller, versjonerte underskjema, Avvik/RUH, SJA, vernerunder og 5×5 med eget ansvar/fullføring/signering. SJA- og risikobilder inngår i snapshot/PDF/ZIP. | Faktisk fil-/mobil-/kamerabevis og separate samtidige brukerøkter. Firmamalene er status/kommentar/bilder; tall/dato finnes i faste skjemaer. Generell skjemabygger er ikke et nytt obligatorisk krav. |
-| C – varsler og rapporter | Seks typer appoppgaver/privat tildelingskø, fristmerker og styrte avvik/RUH-påminnelser. Kildeoppdateringsoversikt og eksplisitt sammenligning/vurdering. Egen PDF, valgt prosjektrapport, ti grupper i samlet PDF og bekreftet ZIP/manifest. | Påminnelser for håndbokrevisjon og øvrige avtalte oppgaver. Faktisk e-postlevering/aktivering ved release. HR/opplæringsbevis inngår ikke i uttrekket; full tilsynsdekning er ikke erklært. |
+| C – varsler og rapporter | Seks typer appoppgaver/privat tildelingskø, fristmerker, styrte avvik/RUH-påminnelser og håndbokrevisjonspåminnelser. Kildeoppdateringsoversikt og eksplisitt sammenligning/vurdering. Egen PDF, valgt prosjektrapport, ti grupper i samlet PDF og bekreftet ZIP/manifest. | Påminnelser for øvrige avtalte oppgaver. Faktisk e-postlevering/aktivering ved release. HR/opplæringsbevis inngår ikke i uttrekket; full tilsynsdekning er ikke erklært. |
 | D – HR og stoffkartotek | Felles personalrutiner i håndboken. Individuell HR er ikke startet. | Kompetansebevis/utløp, medarbeidersamtaler, sykefraværsoppfølging, egen medarbeider-/ledertilgang og sletting. Valgfritt stoffkartotek. [Avklart HR-scope](HR_SCOPE_20261008.md). |
 | E – pilot og drift | Løpende SQL-/React-/critical-QA, flere innloggede desktop-/PDF-/ZIP-delprøver og bruker-TEST OK. | Faktiske filer/mobil/flere økter, kapasitet/drift, full pilot, samlet releasegodkjenning, Production-verifisering og main → demo. Supportmodus etter pilot. |
 
 ## Samlet utviklerkontroll
+
+Ny revisjonspåminnelse: **36 Sandbox-assertions PASS**, eksisterende seks varseltyper **36 PASS** og avvik/RUH-påminnelser **37 PASS**. Faktisk React-prøve dekker åpning, tekstbevaring, retry, lagret signering, offline/revokering og sent firma-svar. E-postworker v6 er levert til Sandbox og forblir **enabled=false**. [Detaljer](REVIEW_REMINDERS_20261009.md).
 
 På dagens funksjonshead `43c12561775b2d6fa20490df28db9c492cac8b70`: **45 Sandbox-RPC-kontroller PASS** for prosjekt, roller, ansvarsskifte, egen kontroll-/risikofullføring, lås/revokering og paging. Syntetiske data rullet tilbake. Én kombinert React-/eksportprøve dekker alle ti eksisterende dokumentgrupper: **26-siders PDF / 25 uten rutine**, og **ZIP med 13 filer + manifest**, uavhengig innholds-/CRC-/hashkontroll. Alle 26 PDF-sider rendret og visuelt kontrollert. Dette bruker syntetisk transport og erstatter ikke faktisk innlogget Storage-bevis.
 
@@ -38,7 +40,7 @@ KS/HMS-varsler og påminnelser skal **aktiveres og verifiseres ved senere godkje
 
 ## Neste utviklingspunkt
 
-1. C-påminnelser for håndbokrevisjon/årlig kontroll er neste konkrete funksjonsleveranse.
-2. Utvid C-påminnelser til øvrige avtalte typer. HR-utløp kommer sammen med D.
+1. C-påminnelser for håndbokrevisjon/årlig kontroll er levert og utviklerverifisert i feature/Sandbox. [Scope og QA](REVIEW_REMINDERS_20261009.md).
+2. Neste funksjon: C-påminnelser for øvrige avtalte typer. HR-utløp kommer sammen med D.
 3. Agenten dekker faktiske filer/mobil/flere økter og den ene testmailen når innlogget runtime fungerer. Bevar godkjente delprøver.
 4. Samlet B/C-review før HR-fundamentet. Hele KS/HMS kalles ikke ferdig av grønn build alene.

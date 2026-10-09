@@ -1,3 +1,9 @@
+## Håndbokrevisjonspåminnelse – feature/Sandbox
+
+Utpekt ansvarlig ser nær/passert revisjonsdato og åpner eksisterende skjema med **Åpne håndbokrevisjon**. Egen vurdering og **Signer revisjon** lagrer gjennomgangen. Styrte ukentlige påminnelser er klare i privat kø; e-posttransport er fortsatt deaktivert. [Scope og utviklerbevis](docs/kshms/REVIEW_REMINDERS_20261009.md). Tidligere TEST OK beholdes.
+
+---
+
 ## KS/HMS – samlet B/C-status
 
 Den [samlede planoversikten](docs/kshms/OVERSIKT.md) viser faktisk leveranse og gjenstående funksjoner/bevis. Ti dokumentgrupper er kontrollert sammen i PDF og ZIP; underskjema, avvik/RUH-påminnelser og kildeoppdatering er levert i feature/Sandbox. Tidligere TEST OK beholdes. [Gjennomgang og testbevis](docs/kshms/BC_REVIEW_20261009.md). Ingen Production-release eller generell e-postaktivering.

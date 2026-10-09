@@ -27,6 +27,7 @@ try {
   window.__rpc=async(name,args)=>{
    assert.equal(args.p_company_id,company);
    if(name==='kshms_get_state')return structuredClone(state());
+   if(name==='kshms_review_task')return {company_id:company,user_id:user,as_of:'2026-10-09',task:null};
    assert.equal(name,'kshms_command');commands.push(structuredClone(args));
    if(args.p_action==='save'){if(failSave){failSave=false;throw Error('Synthetic network failure before commit');}assert.equal(args.p_payload.revision,routine.revision);routine={...routine,revision:routine.revision+1,draft:structuredClone(args.p_payload.draft)};return structuredClone(routine);}
    if(args.p_action==='publish'){assert.equal(args.p_payload.revision,routine.revision);const next={...first,id:'66666666-6666-4666-8666-666666666666',number:2,content:structuredClone(routine.draft),content_hash:'new-hash'};versions.unshift(next);routine={...routine,revision:routine.revision+1};for(const member of [user,reader])assignments.push({user_id:member,version_id:next.id});return structuredClone(next);}

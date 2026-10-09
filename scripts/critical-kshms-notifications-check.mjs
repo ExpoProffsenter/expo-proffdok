@@ -22,20 +22,22 @@ const disabled=createAssignmentMailer({apiKey:'test',from:'sender',verifyTranspo
 assert.equal((await disabled(req())).status,401);assert.equal((await disabled(req('check'))).status,200);
 const unconfigured=createAssignmentMailer({apiKey:'',from:'',verifyTransport:async()=>true,rpc:async name=>{if(name==='kshms_email_worker_authorize')return {enabled:true};reservations++;throw Error('Unconfigured reserve');},fetcher:()=>{throw Error('Unconfigured worker sent');}});
 assert.equal((await unconfigured(req())).status,503);assert.equal((await unconfigured(req('check'))).status,503);assert.equal(reservations,0);
-for(const kind of ['round','risk','sja','reading','review','deviation']){
+for(const kind of ['round','risk','sja','reading','review','deviation','review-reminder']){
  let offered=true,finished=false;
  const worker=createAssignmentMailer({apiKey:'test',from:'sender',verifyTransport:async()=>true,rpc:async(name,args)=>{
   if(name==='kshms_email_worker_authorize')return {enabled:true};
-  if(name==='kshms_email_reserve'){if(!offered)return null;offered=false;return {...base,object_id:kind==='review'?company:object,notification_kind:kind,notification_phase:kind==='deviation'?'reminder':'assignment'};}
+  if(name==='kshms_email_reserve'){if(!offered)return null;offered=false;return {...base,object_id:kind.startsWith('review')?company:object,notification_kind:kind==='review-reminder'?'review':kind,notification_phase:['deviation','review-reminder'].includes(kind)?'reminder':'assignment'};}
   if(name==='kshms_email_validate_attempt')return true;
   if(name==='kshms_email_finish_attempt'){assert.equal(args.p_id,base.id);assert.equal(args.p_attempt,1);assert.equal(args.p_sent,true);finished=true;return;}
   throw Error('Unexpected RPC');
  },fetcher:async(url,options)=>{assert.equal(url,'https://api.resend.com/emails');assert.equal(options.headers['Idempotency-Key'],`kshms-assignment/${base.id}`);const body=JSON.parse(options.body);assert(!JSON.stringify(body).includes('PRIVATE'));sends++;return new Response(JSON.stringify({id:'provider-stub'}),{status:200});}});
  assert.equal((await worker(req())).status,200);assert(finished);
 }
-assert.equal(sends,6);
+assert.equal(sends,7);
 const reminder=assignmentEmail({...base,notification_phase:'reminder'},'Sender');
 assert(reminder.subject.includes('Påminnelse'));assert(!JSON.stringify(reminder).includes('PRIVATE'));
 assert.equal(new URL(reminder.text.match(/https:\/\/\S+/)[0]).searchParams.get('kshmsDeviation'),object);
-for(const patch of [{notification_phase:'unknown'},{notification_phase:'reminder',notification_kind:'reading'}])assert.throws(()=>assignmentEmail({...base,...patch},'Sender'));
+for(const patch of [{notification_phase:'unknown'},...['reading','round','risk','sja'].map(notification_kind=>({notification_phase:'reminder',notification_kind}))])assert.throws(()=>assignmentEmail({...base,...patch},'Sender'));
+const reviewReminder=assignmentEmail({...base,notification_kind:'review',object_id:company,notification_phase:'reminder'},'Sender');
+assert(reviewReminder.subject.includes('Påminnelse'));assert(!JSON.stringify(reviewReminder).includes('PRIVATE'));assert.equal(new URL(reviewReminder.text.match(/https:\/\/\S+/)[0]).searchParams.get('kshmsReview'),company);
 console.log('critical-kshms-notifications-check: OK — six notification kinds, protected links, minimal bodies, disabled health/no reservation, provider stub and fenced idempotency');

@@ -1,3 +1,9 @@
+## Håndbokrevisjonspåminnelser – 9. oktober 2026
+
+Miljømål **BEGGE**, leveranse bare feature/Sandbox. Utpekt ansvarlig får egen revisjonsoppgave og åpner eksisterende skjema uten automatisk signering. Ukentlige påminnelser bruker bare aktuell periode, med sju dagers sendepause og fersk kontroll av ansvar, dato og tilgang. **36 nye Sandbox-assertions PASS**, eksisterende varseltyper **36 PASS**, avvik/RUH-påminnelser **37 PASS** og faktisk React-flyt/kildeoppdateringsregresjon PASS. Full critical/build PASS. Migrasjon 20261009164036 og Edge v6 levert; worker fortsatt **enabled=false**, syntetiske data rullet tilbake. Tidligere TEST OK beholdes; ingen ny obligatorisk Kenneth-prøve. Testmailen er ikke sendt. Neste funksjon er øvrige C-påminnelser; faktisk innlogget fil-/mobil-/flerbrukerbevis og kontrollert release gjenstår. [Scope og QA](REVIEW_REMINDERS_20261009.md). Publisert SHA, CI og READY Preview føres i draft PR #216.
+
+---
+
 ## Samlet B/C-gjennomgang – 9. oktober 2026
 
 [OVERSIKT](OVERSIKT.md) er nå en kompakt, oppdatert A–E-status; tidligere oversikt er arkivert. Underskjema, avvik/RUH-påminnelser, kildeoppdatering og ti-gruppe PDF/ZIP er registrert som levert. Gjenstående funksjonsgap skilles fra innlogget fil-/mobil-/flerbrukerbevis. Neste konkrete utviklingsscope er håndbokrevisjonspåminnelser, deretter øvrige C-påminnelser før HR. Tall/dato er dekket i faste skjemaer; generell skjemabygger legges ikke til som nytt obligatorisk krav. **45 faktiske Sandbox-RPC-assertions PASS**, kombinert React/PDF med alle ti grupper **26 / 25 sider**, ZIP **13 filer + manifest** og visuell kontroll av alle 26 sider PASS. Syntetisk transport er ikke faktisk innlogget Storage-bevis. Ingen ny obligatorisk Kenneth-prøve; tidligere TEST OK beholdes. Testmailen er autorisert, ikke sendt; transport fortsatt disabled. Miljømål BEGGE, bare feature/Sandbox. [Kravkart og bevis](BC_REVIEW_20261009.md).
