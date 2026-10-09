@@ -1,6 +1,6 @@
 ## Hjelp – to avgrensede rettelser, 9. oktober 2026
 
-**Hjelp → KS/HMS:** «Bygg firmaets håndbok» skal være første kapittel. **Hjelp → HR → Medarbeidere og tilgang:** «Anbefalt bruk» skal vise tre konkrete råd. Dette er hele den valgfrie visuelle prøven; ingen ny B/C-/PDF-/ZIP-omtest. Faktisk React-prøve PASS; ny innlogget Preview-kontroll føres i [sluttbeviset](HELP_ORDER_20261009.md).
+**Hjelp → KS/HMS:** «Bygg firmaets håndbok» skal være første kapittel. **Hjelp → HR → Medarbeidere og tilgang:** «Anbefalt bruk» skal vise tre konkrete råd. Dette er hele den valgfrie visuelle prøven; ingen ny B/C-/PDF-/ZIP-omtest. Faktisk React-prøve og faktisk innlogget Skynett-kontroll PASS; begge rettelser er visuelt bekreftet. [Originale skjermbilder og eksakt kodeversjon](HELP_ORDER_20261009.md#faktisk-innlogget-sluttkontroll).
 
 ## Samlet Hjelp – 9. oktober 2026
 

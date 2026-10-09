@@ -1,6 +1,6 @@
 ## Hjelp: håndbok først og anbefalt HR-bruk – 9. oktober 2026
 
-Kenneths avgrensede rettelser: **Bygg firmaets håndbok** er første KS/HMS-kapittel; **Anbefalt bruk** under HR har tre konkrete råd. Faktisk React-prøve for første kapittel, bevart kildeforslagsflyt og ikke-tom HR-anbefaling PASS; eksisterende HR/Hjelp-critical PASS. Bare hjelpeinnhold/prøve/status endret. HR-portene og neste manifest/restore-scope består. Tidligere tester/TEST OK beholdes. [Scope, QA og sluttbevis](HELP_ORDER_20261009.md).
+Kenneths avgrensede rettelser: **Bygg firmaets håndbok** er første KS/HMS-kapittel; **Anbefalt bruk** under HR har tre konkrete råd. Faktisk React-prøve for første kapittel, bevart kildeforslagsflyt og ikke-tom HR-anbefaling PASS; eksisterende HR/Hjelp-critical PASS. Faktisk innlogget Skynett-Hjelp PASS på kode-SHA `5b6bcfa793f5fea4e4202057aa119bdc2a768d2b`: håndbok først/åpning og tre synlige HR-råd. Core Safety 37986453053 / jobb 114009533221 SUCCESS; Vercel `dpl_EV4CySfApys2RqoFbJ7wVVPLeZG4` READY, eksakt SHA og Sandbox-binding. Originale skjermbilder lagret. Bare hjelpeinnhold/prøve/status endret. HR-portene og neste manifest/restore-scope består. Tidligere tester/TEST OK beholdes. [Scope, QA og sluttbevis](HELP_ORDER_20261009.md).
 
 ## Faktisk Hjelp-Preview kontrollert – 9. oktober 2026
 
