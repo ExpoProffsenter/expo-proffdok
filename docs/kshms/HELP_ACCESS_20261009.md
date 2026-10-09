@@ -13,7 +13,7 @@ Berørte filer: React-Hjelp og nytt presentasjons-/fersk-tilgangslag, eksisteren
 | Hvem | Firma/bruker | Faktisk vei |
 |---|---|---|
 | Systemadmin | Firmaets kjøpte moduler | **Systemadmin → Firmaer, brukere og tilganger → firma → Firmaets KS/HMS- og HR-avtale → Lagre firmaets moduler** |
-| Firmaadmin | Brukere i eget aktive firma | **Firma → Brukere og tilganger → brukerkort → KS/HMS og HR → Lagre KS/HMS- og HR-tilgang** |
+| Firmaadmin | Brukere i eget aktive firma | **Firmaadmin → Brukere og tilganger → brukerkort → KS/HMS og HR → Lagre KS/HMS- og HR-tilgang** |
 | Systemadmin | Firmaets brukere | Eksisterende brukerkort under samme firmaoversikt, samme **KS/HMS og HR**-felt og lagreknapp. |
 
 KS/HMS har medarbeider-/ansvarligvalg. En utpekt ansvarlig må erstattes i oppstarten før nødvendig tilgang fjernes. Firmamodul av viser kontaktbeskjed og tillater ikke ny tildeling. Firmaaktivering er tilgangsregistrering, ingen betalingshendelse. Firmaadmin kan ikke endre en systemadministrators brukertilgang. Firmaadmins egne modulrettigheter følger firmarollen, uten kunstig checkbox-grant.
@@ -38,3 +38,9 @@ Lokale CLI-genererte migrasjoner `20261009203431_people_module_entitlements` / `
 - Permanent `critical-people-module-access-check` inngår i full critical build. Eksisterende HR/Help React **PASS**. Full lokal Sandbox critical/Vite build **PASS**.
 
 Faktisk innlogget Preview-kontroll og publisert eksakt SHA/CI/deployment føres etter publisering. Tidligere Kenneth TEST OK og B/C/PDF/ZIP-bevis beholdes. Sensitivt HR-innhold fortsatt stengt; uavhengig slettemanifest/full isolert restore gjenstår før innhold åpnes. Ingen ny obligatorisk B/C-omtest, e-post, merge eller Production-release.
+
+## Rettelse etter første faktiske Preview-kontroll
+
+Kode `28961ca226650c35deabed454df9b98a1e3964c4`, Core Safety 37989398459 / jobb 114019412165 SUCCESS, Preview `dpl_BaG6wC9DLyhUb54YcGyZgpZWhVyc` READY. Fersk innlogget Hjelp viste **34 toppvalg med ikon**, riktig rekkefølge og bevarte 11+1 kapitler. Faktisk firmadialog og fire brukerkort viste korrekte KS/HMS-/HR-grants. Ingen valg ble endret.
+
+Visuell kontroll avdekket global tekstinput-bredde på avkrysninger. Ny lokal CSS gir 24 px bokser ved siden av teksten, også på den tilstøtende eksisterende Generelle tilbud-avkrysningen; øvrige flater påvirkes ikke. Faktisk React/CSS-prøve med motstridende global input-stil PASS. «Lagre og lukk» registrerer nå nye bruker-/firmasaveknapper, venter på lagring og holder dialogen åpen ved feil; kryss-lukking kan ikke hoppe over nye ulagrede valg. Andre brukeres uavhengige modulkladder/lagringssvar beholdes under samlet lagring. Permanent runtime-prøve av de faktiske modalpredikatene og React-signalprøve PASS. Ingen SQL-kontrakt endret i denne rettelsen. Åtte live funksjonskropper var byteidentiske ved readback; ACL/tomt search_path kontrollert.

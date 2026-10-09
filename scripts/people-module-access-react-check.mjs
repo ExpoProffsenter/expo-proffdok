@@ -8,8 +8,10 @@ const {JSDOM}=await import(process.env.KSHMS_JSDOM_PATH||'jsdom');
 const cwd=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'people-access-')),entry=path.join(temp,'entry.jsx');
 try{
  fs.writeFileSync(entry,`import React,{act} from '${cwd}/node_modules/react/index.js';import {createRoot} from '${cwd}/node_modules/react-dom/client.js';import Access from '${cwd}/src/modules/access/PeopleModuleAccess.jsx';import {createHelpCenter} from '${cwd}/src/modules/help/helpTools.js';const Box=({children})=>React.createElement('div',null,children);const Help=createHelpCenter({Section:Box,Grid:Box,AppInstallGuide:()=>null,EXPO_PROFFDOK_TERMS_VERSION:'test',expoProffDokTermsSections:[]});const root=createRoot(document.getElementById('app'));globalThis.__act=act;globalThis.__render=(kind,props)=>root.render(React.createElement(kind==='help'?Help:Access,props));globalThis.__unmount=()=>root.render(null);`);
- const bundle=await build({root:cwd,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'PeopleProof'}},plugins:[react(),{name:'synthetic-client',enforce:'pre',resolveId(id){if(/cordelAccess\.js$/.test(id))return '\0cordel';if(/appSupabaseClientRegistry\.js$/.test(id))return '\0client';},load(id){if(id==='\0cordel')return 'export const useCordelAccess=()=>false;';if(id==='\0client')return 'export const getAppSupabaseClient=()=>globalThis.__client;';}}]});
- const dom=new JSDOM('<div id="app"></div>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true});
+ const bundle=await build({root:cwd,configFile:false,logLevel:'silent',define:{'process.env.NODE_ENV':'"development"'},build:{write:false,minify:false,lib:{entry,formats:['iife'],name:'PeopleProof',cssFileName:'people-proof'}},plugins:[react(),{name:'synthetic-client',enforce:'pre',resolveId(id){if(/cordelAccess\.js$/.test(id))return '\0cordel';if(/appSupabaseClientRegistry\.js$/.test(id))return '\0client';},load(id){if(id==='\0cordel')return 'export const useCordelAccess=()=>false;';if(id==='\0client')return 'export const getAppSupabaseClient=()=>globalThis.__client;';}}]});
+ const output=(Array.isArray(bundle)?bundle[0]:bundle).output;
+ const css=output.find(x=>x.type==='asset'&&x.fileName.endsWith('.css'))?.source||'';
+ const dom=new JSDOM('<style>input {width:100%;flex:1;} </style><style>'+css+'</style><div id="app"></div>',{url:'https://example.invalid',runScripts:'outside-only',pretendToBeVisual:true});
  try{
   const {window:w}=dom;w.IS_REACT_ACT_ENVIRONMENT=true;
   w.MessageChannel=class{constructor(){this.port1={onmessage:null};this.port2={postMessage:()=>setImmediate(()=>this.port1.onmessage?.())};}};
@@ -47,16 +49,17 @@ try{
   const input=key=>[...w.document.querySelectorAll('.people-module-access label')].find(n=>n.querySelector('b')?.textContent===key)?.querySelector('input');
   const button=text=>{const node=[...w.document.querySelectorAll('button')].find(n=>n.textContent===text);assert(node,text);return node;};
   const save=()=>button('Lagre KS/HMS- og HR-tilgang');
-  assert(!input('HR').checked&&!input('KS/HMS').checked);assert(!input('HR').disabled);assert(save().disabled);
+  assert.equal(w.getComputedStyle(input('HR')).width,'24px');assert.equal(w.getComputedStyle(input('HR')).flexBasis,'24px');assert(!input('HR').checked&&!input('KS/HMS').checked);assert(!input('HR').disabled);assert(save().disabled);
   await act(async()=>{input('HR').click();input('KS/HMS').click();});
-  await act(async()=>save().click());assert.equal(writes.length,1);assert(user.hr&&user.kshms);assert(input('HR').checked&&input('KS/HMS').checked);
+  await act(async()=>w.dispatchEvent(new w.CustomEvent('expo-proffdok-managed-access-changed',{detail:{source:'people-module-access',userId:'other',companyId:'c'}})));assert(input('HR').checked&&input('KS/HMS').checked,'another saved user erased this independent draft');assert.equal(save().getAttribute('data-people-module-save'),'user');
+  await act(async()=>save().click());assert.equal(writes.length,1);assert(w.document.querySelector('[role=status]').textContent.includes('tilgang lagret'));assert(user.hr&&user.kshms);assert(input('HR').checked&&input('KS/HMS').checked);
   await act(async()=>input('HR').click());fail=true;await act(async()=>save().click());assert(w.document.querySelector('[role=alert]').textContent.includes('Hent på nytt'));assert(user.hr,'failed write did not revoke stored access');
   fail=false;await act(async()=>button('Hent modultilgang på nytt').click());assert(input('HR').checked);
   user={...user,company:{...company,hr:false},hr:false};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(input('HR').disabled&&!input('HR').checked);
   user={...user,firmaadmin:true};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(input('KS/HMS').disabled&&input('KS/HMS').checked);assert(!w.document.querySelector('button')?.textContent.includes('Lagre KS/HMS'));
   user={...user,firmaadmin:false};late={};await act(async()=>w.dispatchEvent(new w.Event('focus')));assert(!w.document.querySelector('input'),'fresh access read clears old controls');
   const old=late.resolve;late=null;await render('access',{companyId:'new',userId:'other'});assert(w.document.querySelector('[role=alert]'),'mismatched response refused');await act(async()=>old({data:user}));assert(!w.document.querySelector('input'),'late old response refused');
-  await render('access',{companyId:'c'});assert(input('HR').checked);await act(async()=>input('HR').click());await act(async()=>button('Lagre firmaets moduler').click());assert.equal(company.hr,false);assert.equal(writes.at(-1).name,'people_modules_company_set');
+  await render('access',{companyId:'c'});assert(input('HR').checked);await act(async()=>input('HR').click());await act(async()=>button('Lagre firmaets moduler').click());assert.equal(company.hr,false);assert(w.document.body.textContent.includes('Ikke aktivert på firmaet.'));assert.equal(writes.at(-1).name,'people_modules_company_set');
   await act(async()=>w.__unmount());assert.equal(w.localStorage.length,0);assert.equal(w.sessionStorage.length,0);
   console.log('People access / complete Help React PASS: every root icon, workflow order, effective generic/module/role and supplemental gates, old actor rejection, company activation, atomic scoped user save, inherited firmaadmin, unavailable license, failed CAS, fresh clearing and late response refusal. Synthetic transport.');
  }finally{dom.window.close();}

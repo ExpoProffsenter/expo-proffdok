@@ -16,6 +16,15 @@ assert(!/create policy|auth\.jwt|user_metadata/i.test(sql));
 assert(fs.readFileSync('supabase/migrations/20261009203950_people_module_access_closure.sql','utf8').includes('delete from hr_private.module_access'));
 for(const file of ['moduleAccessUx.jsx','systemAdminUnifiedUserAccessUx.jsx','systemAdminCompanyAccessUx.jsx'])assert(fs.readFileSync('src/modules/access/'+file,'utf8').includes('PeopleModuleAccess companyId='));
 const main=fs.readFileSync('src/main.jsx','utf8');assert(main.includes('formatTermsAcceptedAt, kshmsContext, hrContext'));assert(!main.includes('jsx)(KshmsActivation'));
+const css=fs.readFileSync('src/modules/access/PeopleModuleAccess.css','utf8');assert(css.includes('.people-module-access label input[type="checkbox"]'));assert(css.includes('flex:0 0 24px !important'));assert(css.includes('.company-store-offers-access label input[type="checkbox"]'));
+const modal=fs.readFileSync('src/modules/access/systemAdminCompanyModalUx.js','utf8');
+const modalChecks=new Function('buttonBelongsToVisibleUserCard','visibleElement','compactText',modal.slice(modal.indexOf('function dirtyAccessButtons'),modal.indexOf('function visibleSaveError'))+';return {dirtyAccessButtons,accessSaveBusy};')(b=>b.card,b=>b.visible,s=>s.trim());
+const button=(attrs={},flags={})=>({disabled:false,visible:true,card:false,textContent:'Lagre firmaets moduler',hasAttribute:k=>k in attrs,getAttribute:k=>attrs[k]||null,...flags});
+const companySave=button({'data-people-module-save':'company'}),userSave=button({'data-people-module-save':'user'},{card:true}),oldSave=button({}, {card:true,textContent:'Lagre tilganger'}),hidden=button({'data-people-module-save':'user'},{visible:false});
+const panel={querySelectorAll:()=>[companySave,userSave,oldSave,hidden]};assert.deepEqual(modalChecks.dirtyAccessButtons(panel),[companySave,userSave,oldSave]);
+companySave.disabled=true;assert.deepEqual(modalChecks.dirtyAccessButtons(panel),[userSave,oldSave]);assert(!modalChecks.accessSaveBusy(panel));
+const saving=button({'data-people-module-save':'user','data-access-saving':'true'},{disabled:true});assert(modalChecks.accessSaveBusy({querySelectorAll:()=>[saving]}));
+assert(modal.includes('node.getAttribute("role") === "alert" && node.closest(".people-module-access")'),'Save errors must hold the firm open');
 // Execute the actual fresh Help hook, including out-of-order and rejected reads.
 const src=fs.readFileSync('src/modules/help/useHelpModuleAccess.js','utf8').split('export function ')[1];
 let state;const requests=[],cleanup=[];const win=new EventTarget(),doc=new EventTarget();doc.visibilityState='visible';
